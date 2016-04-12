@@ -4,6 +4,7 @@
             "dev-master": {
                 "name": "monarc/core",
                 "type": "library",
+                "version": "dev-master",
                 "description": "Core for Monarc project",
                 "authors": [
                     {"name": "Cyril Rouyer", "email": "cyril@netlor.fr"},
