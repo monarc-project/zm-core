@@ -1,0 +1,7 @@
+{
+    "packages": {
+        "monarc/core": {
+            "dev-master": { @composer.json }
+        }
+    }
+}
