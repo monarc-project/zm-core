@@ -1,7 +1,26 @@
 {
     "packages": {
         "monarc/core": {
-            "dev-master": { @composer.json }
+            "dev-master": {
+                "name": "monarc/core",
+                "type": "library",
+                "description": "Core for Monarc project",
+                "authors": [
+                    {"name": "Cyril Rouyer", "email": "cyril@netlor.fr"},
+                    {"name": "Guillaume Lesniak", "email": "guillaume@netlor.fr"},
+                    {"name": "Jerôme De Almeida", "email": "jerome.dealmeida@vesperiagroup.com"},
+                    {"name": "Thomas Metois", "email": "thomas@netlor.fr"}
+                ],
+                "require": {
+                    "php": ">=5.5",
+                    "zendframework/zendframework": "2.5.3",
+                    "doctrine/doctrine-orm-module": "dev-master",
+                    "doctrine/migrations": "^1.4"
+                },
+                "autoload": {
+                    "psr-0": {"MonarcCore\\":"src/"}
+                }
+            }
         }
     }
 }
