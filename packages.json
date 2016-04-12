@@ -28,7 +28,7 @@
                     "doctrine/migrations": "^1.4"
                 },
                 "autoload": {
-                    "psr-0": {"MonarcCore\\":"src/"}
+                    "psr-0": {"MonarcCore\\":"/"}
                 }
             }
         }
