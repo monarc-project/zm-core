@@ -12,6 +12,15 @@
                     {"name": "Jerôme De Almeida", "email": "jerome.dealmeida@vesperiagroup.com"},
                     {"name": "Thomas Metois", "email": "thomas@netlor.fr"}
                 ],
+                "dist": {
+                    "url": "https://rhea.netlor.fr/CASES/zm_common/archive/master.zip",
+                    "type": "zip"
+                },
+                "source": {
+                    "url": "https://rhea.netlor.fr:3000/CASES/zm_common.git",
+                    "type": "git",
+                    "reference": "master"
+                },
                 "require": {
                     "php": ">=5.5",
                     "zendframework/zendframework": "2.5.3",
