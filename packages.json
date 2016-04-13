@@ -13,11 +13,11 @@
                     {"name": "Thomas Metois", "email": "thomas@netlor.fr"}
                 ],
                 "dist": {
-                    "url": "https://rhea.netlor.fr/CASES/zm_common/archive/master.zip",
+                    "url": "https://rhea.netlor.fr/monarc/zm_core/archive/master.zip",
                     "type": "zip"
                 },
                 "source": {
-                    "url": "https://rhea.netlor.fr:3000/CASES/zm_common.git",
+                    "url": "https://rhea.netlor.fr:3000/monarc/zm_core.git",
                     "type": "git",
                     "reference": "master"
                 },
