@@ -30,17 +30,52 @@ abstract class AbstractEntityTable
         return $this->class;
     }
 
-    public function fetchAll() // TODO: ajouter pagination
+    public function fetchAll()
     {
         $c = $this->getClass();
-        if(class_exists($c)){
+        if (class_exists($c)) {
             $all = $this->getDb()->fetchAll(new $c());
             $return = array();
-            foreach($all as $a){
+            foreach ($all as $a) {
                 $return[] = $a->getJsonArray();
             }
             return $return;
-        }else{
+        } else {
+            return false;
+        }
+    }
+
+    public function fetchAllFiltered($page = 1, $limit = 25, $order = null, $filter = null)
+    {
+        $c = $this->getClass();
+        if (class_exists($c)) {
+            $all = $this->getDb()->fetchAllFiltered(new $c(), $page, $limit, $order, $filter);
+            $return = array();
+            foreach ($all as $a) {
+                $return[] = $a->getJsonArray();
+            }
+            return $return;
+        } else {
+            return false;
+        }
+    }
+
+    public function count()
+    {
+        $c = $this->getClass();
+        if (class_exists($c)) {
+            return $this->getDb()->count(new $c());
+        } else {
+            return false;
+        }
+    }
+
+    public function countFiltered($page = 1, $limit = 25, $order = null, $filter = null)
+    {
+        $c = $this->getClass();
+        if (class_exists($c)) {
+            return $this->getDb()->countFiltered(new $c(), $page, $limit, $order, $filter);
+        } else {
             return false;
         }
     }

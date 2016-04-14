@@ -24,4 +24,24 @@ abstract class AbstractService
     {
         return $this->serviceFactory;
     }
+
+    protected function parseFrontendOrder($order) {
+        if ($order == null) {
+            return null;
+        } else if (substr($order, 0, 1) == '-') {
+            return array(substr($order, 1), 'ASC');
+        } else {
+            return array($order, 'DESC');
+        }
+    }
+
+    protected function parseFrontendFilter($filter, $columns = array()) {
+        $output = array();
+
+        foreach ($columns as $c) {
+            $output[$c] = $filter;
+        }
+
+        return $output;
+    }
 }
