@@ -83,8 +83,7 @@ class Db {
      */
     private function buildFilteredQuery($repository, $page = 1, $limit = 25, $order = null, $filter = null)
     {
-        $qb = $repository->createQueryBuilder('n');
-        $qb->from($repository->getClassName(), 't');
+        $qb = $repository->createQueryBuilder('t');
 
         // Add filter in WHERE xx LIKE %y% OR zz LIKE %y% ...
         if ($filter != null && is_array($filter)) {
