@@ -6,10 +6,17 @@ abstract class AbstractEntityTable
     protected $db;
     protected $class;
 
-    public function __construct(\MonarcCore\Model\Db $dbService)
+    public function __construct(\MonarcCore\Model\Db $dbService, $class = null)
     {
         $this->db = $dbService;
-        $this->class = '\MonarcCore\Model\Entity\\'.substr(end(explode('\\', get_class($this))), 0, -5);
+        if ($class != null) {
+            $this->class = $class;
+        } else {
+            $thisClassName = get_class($this);
+            $classParts = explode('\\', $thisClassName);
+            $lastClassPart = end($classParts);
+            $this->class = '\MonarcCore\Model\Entity\\' . substr($lastClassPart, 0, -5);
+        }
     }
     protected function getDb()
     {
