@@ -113,8 +113,11 @@ abstract class AbstractEntityTable
         $c = $this->getClass();
         if(class_exists($c)){
             $id  = (int) $id;
+
             $entity = new $c();
             $entity->set('id',$id);
+            $entity = $this->getDb()->fetch($entity);
+
             $this->getDb()->delete($entity);
             return true;
         }else{
