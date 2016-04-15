@@ -82,17 +82,23 @@ abstract class AbstractEntityTable
 
     public function get($id)
     {
+        $ent = $this->getEntity($id);
+        if ($ent !== false) {
+            return $ent->getJsonArray();
+        } else {
+            return false;
+        }
+    }
+
+    public function getEntity($id)
+    {
         $c = $this->getClass();
         if(class_exists($c)){
             //$id  = (int)$id;
             $entity = new $c();
             $entity->set('id',$id);
             $entity = $this->getDb()->fetch($entity);
-            if(!empty($entity)){
-                return $entity->getJsonArray();
-            }else{
-                return array();
-            }
+            return $entity;
         }else{
             return false;
         }
