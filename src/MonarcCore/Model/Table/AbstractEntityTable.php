@@ -30,14 +30,14 @@ abstract class AbstractEntityTable
         return $this->class;
     }
 
-    public function fetchAll()
+    public function fetchAll($fields = array())
     {
         $c = $this->getClass();
         if (class_exists($c)) {
             $all = $this->getDb()->fetchAll(new $c());
             $return = array();
             foreach ($all as $a) {
-                $return[] = $a->getJsonArray();
+                $return[] = $a->getJsonArray($fields);
             }
             return $return;
         } else {
@@ -45,14 +45,14 @@ abstract class AbstractEntityTable
         }
     }
 
-    public function fetchAllFiltered($page = 1, $limit = 25, $order = null, $filter = null)
+    public function fetchAllFiltered($fields = array(), $page = 1, $limit = 25, $order = null, $filter = null)
     {
         $c = $this->getClass();
         if (class_exists($c)) {
             $all = $this->getDb()->fetchAllFiltered(new $c(), $page, $limit, $order, $filter);
             $return = array();
             foreach ($all as $a) {
-                $return[] = $a->getJsonArray();
+                $return[] = $a->getJsonArray($fields);
             }
             return $return;
         } else {
@@ -80,11 +80,11 @@ abstract class AbstractEntityTable
         }
     }
 
-    public function get($id)
+    public function get($id, $fields = array())
     {
         $ent = $this->getEntity($id);
         if ($ent !== false) {
-            return $ent->getJsonArray();
+            return $ent->getJsonArray($fields);
         } else {
             return false;
         }

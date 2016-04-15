@@ -11,9 +11,18 @@ abstract class AbstractEntity
         return get_object_vars($this);
     }
 
-    public function getJsonArray()
+    public function getJsonArray($fields = array())
     {
-        return get_object_vars($this);
+        if (empty($fields)) {
+            return get_object_vars($this);
+        } else {
+            $output = array();
+            foreach ($fields as $field) {
+                $output[$field] = $this->get($field);
+            }
+
+            return $output;
+        }
     }
 
     public function exchangeArray(array $options)
