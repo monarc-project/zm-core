@@ -21,6 +21,10 @@ class Db {
         return $entities;
     }
 
+    public function getRepository($class){
+        return $this->entityManager->getRepository($class);
+    }
+
     /**
      * @param Entity $entity
      * @param int $page

@@ -38,12 +38,33 @@ class Module
     {
         return array(
             'invokables' => array(
+                '\MonarcCore\Model\Entity\User' => '\MonarcCore\Model\Entity\User',
             ),
             'factories' => array(
                 '\MonarcCore\Model\Db' => function($serviceManager){
                     return new Model\Db($serviceManager->get('doctrine.entitymanager.orm_default'));
                 },
                 '\MonarcCore\Service\IndexService' => '\MonarcCore\Service\IndexServiceFactory',
+
+                '\MonarcCore\Service\AuthenticationService' => '\MonarcCore\Service\AuthenticationServiceFactory',
+                '\MonarcCore\Model\Table\UserTable' => function($sm){
+                    return new Model\Table\UserTable($sm->get('\MonarcCore\Model\Db'));
+                },
+                /* Authentification */
+                '\MonarcCore\Storage\Authentication' => function($sm){
+                    return new Storage\Authentication();
+                },
+                '\MonarcCore\Adapter\Authentication' => function($sm){
+                    $aa = new Adapter\Authentication();
+                    $aa->setUserTable($sm->get('\MonarcCore\Model\Table\UserTable'));
+                    return $aa;
+                },
+                /*'\MonarcCore\Service\AuthenticationService' => function($sm){
+                    return new \Zend\Authentication\AuthenticationService(
+                        $sm->get('\MonarcCore\Storage\Authentication'),
+                        $sm->get('\MonarcCore\Adapter\Authentication')
+                    );
+                },*/
             ),
         );
     }
@@ -55,6 +76,7 @@ class Module
             ),
             'factories' => array(
                 '\MonarcCore\Controller\Index' => '\MonarcCore\Controller\IndexControllerFactory',
+                '\MonarcCore\Controller\Authentication' => '\MonarcCore\Controller\AuthenticationControllerFactory',
             ),
         );
     }

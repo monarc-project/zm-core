@@ -14,6 +14,18 @@ return array(
                     ),
                 ),
             ),
+            'auth' => array(
+                'type'    => 'segment',
+                'options' => array(
+                    'route'    => '/auth[/:id]',
+                    'constraints' => array(
+                        'id'     => '[a-z-A-Z0-9]+',
+                    ),
+                    'defaults' => array(
+                        'controller' => '\MonarcCore\Controller\Authentication',
+                    ),
+                ),
+            ),
         ),
     ),
 
