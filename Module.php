@@ -50,6 +50,7 @@ class Module
                 '\MonarcCore\Model\Table\UserTable' => function($sm){
                     return new Model\Table\UserTable($sm->get('\MonarcCore\Model\Db'));
                 },
+				'\MonarcCore\Service\UserService' => '\MonarcCore\Service\UserServiceFactory',
                 /* Authentification */
                 '\MonarcCore\Storage\Authentication' => function($sm){
                     return new Storage\Authentication();
