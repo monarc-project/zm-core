@@ -38,12 +38,20 @@ class Module
     {
         return array(
             'invokables' => array(
+                '\MonarcCore\Model\Entity\User' => '\MonarcCore\Model\Entity\User',
             ),
             'factories' => array(
                 '\MonarcCore\Model\Db' => function($serviceManager){
                     return new Model\Db($serviceManager->get('doctrine.entitymanager.orm_default'));
                 },
                 '\MonarcCore\Service\IndexService' => '\MonarcCore\Service\IndexServiceFactory',
+
+                // Users table
+                '\MonarcCore\Model\Table\UserTable' => function($sm){
+                    return new Model\Table\UserTable($sm->get('\MonarcCore\Model\Db'));
+                },
+                '\MonarcCore\Service\UserService' => '\MonarcCore\Service\UserServiceFactory',
+
             ),
         );
     }
