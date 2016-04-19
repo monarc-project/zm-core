@@ -17,14 +17,6 @@ class AuthenticationService extends AbstractService
         }
     }
 
-    public function hash($pwd){
-    	return password_hash($pwd,PASSWORD_BCRYPT); // TODO: concaténé un salt privé
-    }
-
-    public function verify($pwd,$hash){
-    	return password_verify($pwd,$hash);
-    }
-
     public function authenticate($data, &$token = null)
     {
         if(!empty($data['login']) && !empty($data['password'])){
@@ -32,12 +24,7 @@ class AuthenticationService extends AbstractService
             if($res->isValid()){
                 $user = $this->get('adapter')->getUser();
                 $token = uniqid('',true);
-                $this->get('storage')->addItem($token,array(
-                    'id' => $user->get('id'),
-                    'email' => $user->get('email'),
-                    'firstname' => $user->get('firstname'),
-                    'lastname' => $user->get('lastname'),
-                ));
+                $this->get('storage')->addItem($token,$user);
                 return true;
             }
         }

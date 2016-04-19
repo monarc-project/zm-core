@@ -8,6 +8,7 @@ class Authentication extends AbstractAdapter
 {
     protected $userTable;
     protected $user;
+    protected $security;
 
     public function setUserTable(\MonarcCore\Model\Table\UserTable $userTable){
         $this->userTable = $userTable;
@@ -25,6 +26,14 @@ class Authentication extends AbstractAdapter
         return $this->user;
     }
 
+    public function setSecurity($security){
+        $this->security = $security;
+        return $this;
+    }
+    public function getSecurity(){
+        return $this->security;
+    }
+
     public function authenticate()
     {
         $identity = $this->getIdentity();
@@ -39,7 +48,7 @@ class Authentication extends AbstractAdapter
                 //$now = mktime();
                 // TODO: faire le test sur dateStart && dateEnd
                 if($user->get('status')){
-                    if($this->verifyPwd($credential,$user->get('password'))){
+                    if($this->getSecurity()->verifyPwd($credential,$user->get('password'))){
                         $this->setUser($user);
                         return new Result(Result::SUCCESS, $this->getIdentity());
                     }else{
@@ -53,9 +62,5 @@ class Authentication extends AbstractAdapter
                 return new Result(Result::FAILURE_IDENTITY_AMBIGUOUS, $this->getIdentity());
                 break;
         }
-    }
-
-    public function verifyPwd($pwd,$hash){
-        return password_verify($pwd,$hash);
     }
 }

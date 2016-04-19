@@ -77,6 +77,10 @@ class Db {
         $this->entityManager->flush();
     }
 
+    public function lastInsertId(){
+        return $this->entityManager->getConnection()->lastInsertId();
+    }
+
     /**
      * @param EntityRepository $repository
      * @param int $page

@@ -1,18 +1,46 @@
 <?php
 namespace MonarcCore;
 
-use Zend\Mvc\ModuleRouteListener;
+//use Zend\Mvc\ModuleRouteListener;
 use Zend\Mvc\MvcEvent;
 use \Zend\Mvc\Controller\ControllerManager;
 use Zend\View\Model\JsonModel;
+use Zend\Mvc\Router\RouteMatch;
 
 class Module
 {
+
     public function onBootstrap(MvcEvent $e)
     {
         $eventManager = $e->getApplication()->getEventManager();
-        $moduleRouteListener = new ModuleRouteListener();
-        $moduleRouteListener->attach($eventManager);
+        //$moduleRouteListener = new ModuleRouteListener();
+        //$moduleRouteListener->attach($eventManager);
+
+        $sm  = $e->getApplication()->getServiceManager();
+        $serv = $sm->get('\MonarcCore\Service\AuthenticationService');
+        $eventManager->attach(MvcEvent::EVENT_ROUTE, function($e) use ($serv) {
+            $match = $e->getRouteMatch();
+
+            // No route match, this is a 404
+            if (!$match instanceof RouteMatch) {
+                return;
+            }
+
+            // Route is whitelisted
+            $name = $match->getMatchedRouteName();
+            if($name == 'auth'){
+                return;
+            }
+
+            $token = $e->getRequest()->getHeader('token');
+            if(!empty($token)){
+                if($serv->checkConnect(array('token'=>$token->getFieldValue()))){
+                    return;
+                }
+            }
+
+            return $e->getResponse()->setStatusCode(401);
+        },-100);
 
         $eventManager->attach(MvcEvent::EVENT_DISPATCH_ERROR, array($this, 'onDispatchError'), 0);
         $eventManager->attach(MvcEvent::EVENT_RENDER_ERROR, array($this, 'onRenderError'), 0);
@@ -46,18 +74,27 @@ class Module
                 },
                 '\MonarcCore\Service\IndexService' => '\MonarcCore\Service\IndexServiceFactory',
 
-                '\MonarcCore\Service\AuthenticationService' => '\MonarcCore\Service\AuthenticationServiceFactory',
                 '\MonarcCore\Model\Table\UserTable' => function($sm){
                     return new Model\Table\UserTable($sm->get('\MonarcCore\Model\Db'));
                 },
-				'\MonarcCore\Service\UserService' => '\MonarcCore\Service\UserServiceFactory',
+                '\MonarcCore\Service\UserService' => '\MonarcCore\Service\UserServiceFactory',
+                '\MonarcCore\Model\Table\UserTokenTable' => function($sm){
+                    return new Model\Table\UserTokenTable($sm->get('\MonarcCore\Model\Db'));
+                },
+                /* Security */
+                '\MonarcCore\Service\SecurityService' => '\MonarcCore\Service\SecurityServiceFactory',
                 /* Authentification */
+                '\MonarcCore\Service\AuthenticationService' => '\MonarcCore\Service\AuthenticationServiceFactory',
                 '\MonarcCore\Storage\Authentication' => function($sm){
-                    return new Storage\Authentication();
+                    $sa = new Storage\Authentication();
+                    $sa->setUserTokenTable($sm->get('\MonarcCore\Model\Table\UserTokenTable'));
+                    $sa->setConfig($sm->get('config'));
+                    return $sa;
                 },
                 '\MonarcCore\Adapter\Authentication' => function($sm){
                     $aa = new Adapter\Authentication();
                     $aa->setUserTable($sm->get('\MonarcCore\Model\Table\UserTable'));
+                    $aa->setSecurity($sm->get('\MonarcCore\Service\SecurityService'));
                     return $aa;
                 },
                 /*'\MonarcCore\Service\AuthenticationService' => function($sm){

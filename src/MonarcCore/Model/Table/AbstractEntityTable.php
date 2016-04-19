@@ -114,7 +114,7 @@ abstract class AbstractEntityTable
         $id = (int)$entity->get('id');
         $this->getDb()->save($entity);
         if ($id == 0) {
-            //$id = $this->tableGateway->getLastInsertValue();
+            $id = $this->getDb()->lastInsertId();
         }
         return $id;
     }

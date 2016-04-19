@@ -15,4 +15,9 @@ class AuthenticationController extends AbstractController
 			return new JsonModel(array());
 		}
 	}
+
+	public function delete($id){
+		$this->getService()->logout(array('token'=>$id));
+		return new JsonModel(array());
+	}
 }

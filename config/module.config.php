@@ -19,7 +19,7 @@ return array(
                 'options' => array(
                     'route'    => '/auth[/:id]',
                     'constraints' => array(
-                        'id'     => '[a-z-A-Z0-9]+',
+                        'id'     => '.+',
                     ),
                     'defaults' => array(
                         'controller' => '\MonarcCore\Controller\Authentication',
@@ -55,5 +55,10 @@ return array(
             'routes' => array(
             ),
         ),
+    ),
+
+    'monarc' => array(
+        'ttl' => 20, // timeout
+        'salt' => '', // salt privé pour chiffrement pwd
     ),
 );
