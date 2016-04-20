@@ -26,6 +26,11 @@ abstract class AbstractEntityTable
         return $this->db;
     }
 
+    public function getRepository()
+    {
+        return $this->getDb()->getRepository($this->getClass());
+    }
+
     public function getClass(){
         return $this->class;
     }

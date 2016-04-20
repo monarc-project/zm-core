@@ -21,6 +21,10 @@ class Db {
         return $entities;
     }
 
+    public function getRepository($class){
+        return $this->entityManager->getRepository($class);
+    }
+
     /**
      * @param Entity $entity
      * @param int $page
@@ -72,6 +76,10 @@ class Db {
     public function flush()
     {
         $this->entityManager->flush();
+    }
+
+    public function lastInsertId(){
+        return $this->entityManager->getConnection()->lastInsertId();
     }
 
     /**
