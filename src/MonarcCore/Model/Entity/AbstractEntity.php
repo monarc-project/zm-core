@@ -6,6 +6,13 @@ abstract class AbstractEntity
 {
     use \MonarcCore\Model\GetAndSet;
 
+    public function __construct()
+    {
+        if (property_exists($this, 'createdAt')) {
+            $this->createdAt = new \DateTime("now");
+        }
+    }
+
     public function getArrayCopy()
     {
         return get_object_vars($this);

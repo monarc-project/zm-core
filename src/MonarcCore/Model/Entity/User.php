@@ -5,7 +5,7 @@ namespace MonarcCore\Model\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Users
+ * User
  *
  * @ORM\Table(name="users", uniqueConstraints={@ORM\UniqueConstraint(name="email", columns={"email"})})
  * @ORM\Entity
@@ -20,13 +20,6 @@ class User extends AbstractEntity
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     protected $id;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="role", type="string", length=255, nullable=true)
-     */
-    protected $role;
 
     /**
      * @var \DateTime
@@ -118,6 +111,5 @@ class User extends AbstractEntity
      * @ORM\Column(name="updated_at", type="datetime", nullable=true)
      */
     protected $updatedAt;
-
 }
 

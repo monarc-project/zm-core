@@ -67,6 +67,7 @@ class Db {
         if ($last) {
             $this->entityManager->flush();
         }
+        return $entity->id;
     }
     public function flush()
     {

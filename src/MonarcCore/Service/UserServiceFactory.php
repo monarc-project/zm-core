@@ -5,6 +5,7 @@ class UserServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = array(
         'userTable'=> '\MonarcCore\Model\Table\UserTable',
+        'roleTable'=> '\MonarcCore\Model\Table\UserRoleTable',
         'userEntity'=> '\MonarcCore\Model\Entity\User',
     );
 }

@@ -2,11 +2,13 @@
 namespace MonarcCore\Service;
 
 use MonarcCore\Model\Entity\User;
+use MonarcCore\Model\Entity\UserRole;
 use MonarcCore\Model\Table\UserTable;
 
 class UserService extends AbstractService
 {
     protected $userTable;
+    protected $roleTable;
     protected $userEntity;
 
     public function getTotalCount()
@@ -45,13 +47,29 @@ class UserService extends AbstractService
 
     public function create($data)
     {
+
+        //user
         /** @var UserTable $userTable */
         $userTable = $this->get('userTable');
 
-        $entity = new User();
-        $entity->exchangeArray($data);
+        $userEntity = new User();
+        $userEntity->exchangeArray($data);
 
-        $userTable->save($entity);
+        $userTable->save($userEntity);
+
+        //user role
+        $roleData = [
+            'user' => $userEntity,
+            'role' => 'sysadmin',
+        ];
+
+        /** @var UserRoleTable $userRoleTable */
+        $userRoleTable = $this->get('roleTable');
+
+        $userRoleEntity = new UserRole();
+        $userRoleEntity->exchangeArray($roleData);
+
+        $userRoleTable->save($userRoleEntity);
     }
 
     public function update($data) {

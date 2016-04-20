@@ -50,6 +50,10 @@ class Module
                 '\MonarcCore\Model\Table\UserTable' => function($sm){
                     return new Model\Table\UserTable($sm->get('\MonarcCore\Model\Db'));
                 },
+                // User Role table
+                '\MonarcCore\Model\Table\UserRoleTable' => function($sm){
+                    return new Model\Table\UserRoleTable($sm->get('\MonarcCore\Model\Db'));
+                },
                 '\MonarcCore\Service\UserService' => '\MonarcCore\Service\UserServiceFactory',
 
             ),
