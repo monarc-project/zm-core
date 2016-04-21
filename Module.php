@@ -113,11 +113,14 @@ class Module
                 // Récupération du user connecté
                 '\MonarcCore\Service\ConnectedUserService' => function($sm){
                     $uc = new Service\ConnectedUserService();
-                    $token = $sm->get('Request')->getHeader('token');
-                    if(!empty($token)){
-                        $dd = $sm->get('\MonarcCore\Storage\Authentication')->getItem($token->getFieldValue(),$success);
-                        if($success){
-                            $uc->setConnectedUser($dd->get('user'));
+                    $request = $token = $sm->get('Request');
+                    if(!empty($request) && method_exists($request, 'getHeader')){
+                        $token = $request->getHeader('token');
+                        if(!empty($token)){
+                            $dd = $sm->get('\MonarcCore\Storage\Authentication')->getItem($token->getFieldValue(),$success);
+                            if($success){
+                                $uc->setConnectedUser($dd->get('user'));
+                            }
                         }
                     }
                     return $uc;
