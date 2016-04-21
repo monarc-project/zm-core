@@ -67,6 +67,7 @@ class Module
         return array(
             'invokables' => array(
                 '\MonarcCore\Model\Entity\User' => '\MonarcCore\Model\Entity\User',
+                '\MonarcCore\Model\Entity\UserRole' => '\MonarcCore\Model\Entity\UserRole',
                 '\MonarcCore\Model\Entity\Role' => '\MonarcCore\Model\Entity\Role',
             ),
             'factories' => array(
@@ -87,6 +88,7 @@ class Module
                     return $urtable;
                 },
                 '\MonarcCore\Service\UserService' => '\MonarcCore\Service\UserServiceFactory',
+                '\MonarcCore\Service\UserRoleService' => '\MonarcCore\Service\UserRoleServiceFactory',
                 '\MonarcCore\Service\RoleService' => '\MonarcCore\Service\RoleServiceFactory',
                 '\MonarcCore\Model\Table\UserTokenTable' => function($sm){
                     return new Model\Table\UserTokenTable($sm->get('\MonarcCore\Model\Db'));

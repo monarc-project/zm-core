@@ -3,8 +3,6 @@ namespace MonarcCore\Service;
 
 class RoleService extends AbstractService
 {
-
-    protected $roleEntity;
     protected $config;
 
     public function __construct($serviceFactory = null)
