@@ -47,7 +47,6 @@ class UserService extends AbstractService
 
     public function create($data)
     {
-
         //user
         /** @var UserTable $userTable */
         $userTable = $this->get('userTable');
@@ -58,18 +57,21 @@ class UserService extends AbstractService
         $userTable->save($userEntity);
 
         //user role
-        $roleData = [
-            'user' => $userEntity,
-            'role' => 'sysadmin',
-        ];
-
         /** @var UserRoleTable $userRoleTable */
         $userRoleTable = $this->get('roleTable');
+        if (array_key_exists('role', $data)) {
+            foreach ($data['role'] as $role) {
+                $roleData = [
+                    'user' => $userEntity,
+                    'role' => $role,
+                ];
 
-        $userRoleEntity = new UserRole();
-        $userRoleEntity->exchangeArray($roleData);
+                $userRoleEntity = new UserRole();
+                $userRoleEntity->exchangeArray($roleData);
 
-        $userRoleTable->save($userRoleEntity);
+                $userRoleTable->save($userRoleEntity);
+            }
+        }
     }
 
     public function update($data) {

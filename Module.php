@@ -67,6 +67,7 @@ class Module
         return array(
             'invokables' => array(
                 '\MonarcCore\Model\Entity\User' => '\MonarcCore\Model\Entity\User',
+                '\MonarcCore\Model\Entity\Role' => '\MonarcCore\Model\Entity\Role',
             ),
             'factories' => array(
                 '\MonarcCore\Model\Db' => function($serviceManager){
@@ -82,6 +83,7 @@ class Module
                     return new Model\Table\UserRoleTable($sm->get('\MonarcCore\Model\Db'));
                 },
                 '\MonarcCore\Service\UserService' => '\MonarcCore\Service\UserServiceFactory',
+                '\MonarcCore\Service\RoleService' => '\MonarcCore\Service\RoleServiceFactory',
                 '\MonarcCore\Model\Table\UserTokenTable' => function($sm){
                     return new Model\Table\UserTokenTable($sm->get('\MonarcCore\Model\Db'));
                 },

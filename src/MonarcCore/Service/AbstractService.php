@@ -9,7 +9,7 @@ abstract class AbstractService
 
     public function __construct($serviceFactory = null)
     {
-        if($serviceFactory instanceof \MonarcCore\Model\Table\AbstractEntityTable || $serviceFactory instanceof \MonarcCore\Model\Entity\AbstractEntity){
+        /*if($serviceFactory instanceof \MonarcCore\Model\Table\AbstractEntityTable || $serviceFactory instanceof \MonarcCore\Model\Entity\AbstractEntity){
             $this->serviceFactory = $serviceFactory;
         }elseif(is_array($serviceFactory)){
             foreach($serviceFactory as $k => $v){
@@ -17,6 +17,14 @@ abstract class AbstractService
                     $this->set($k,$v);
                 }
             }
+        }*/
+
+        if (is_array($serviceFactory)) {
+            foreach($serviceFactory as $k => $v){
+                $this->set($k,$v);
+            }
+        } else {
+            $this->serviceFactory = $serviceFactory;
         }
     }
 

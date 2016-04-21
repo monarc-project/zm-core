@@ -61,4 +61,9 @@ return array(
         'ttl' => 20, // timeout
         'salt' => '', // salt privé pour chiffrement pwd
     ),
+
+    'permissions' => array(
+        'auth',
+        'monarc_api_admin_roles',
+    )
 );
