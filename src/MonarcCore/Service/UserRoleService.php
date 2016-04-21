@@ -13,13 +13,19 @@ class UserRoleService extends AbstractService
         /** @var UserRoleTable $userRoleTable */
         $userRoleTable = $this->get('userRoleTable');
 
-        return $userRoleTable->fetchAllFiltered(
+        return $userRoleTable->getRepository()->createQueryBuilder('t')
+            ->select(array('t.id','t.role'))
+            ->where('t.user = :id')
+            ->setParameter(':id',$filter)
+            ->getQuery()->getResult();
+
+        /*return $userRoleTable->fetchAllFiltered(
             array('id', 'user_id', 'role'),
             $page,
             $limit,
             $this->parseFrontendOrder($order),
             $this->parseFrontendFilter($filter, array('user_id'))
-        );
+        );*/
     }
 
     public function getEntity($id)
