@@ -69,17 +69,21 @@ class Module
                 '\MonarcCore\Model\Entity\User' => '\MonarcCore\Model\Entity\User',
             ),
             'factories' => array(
-                '\MonarcCore\Model\Db' => function($serviceManager){
-                    return new Model\Db($serviceManager->get('doctrine.entitymanager.orm_default'));
+                '\MonarcCore\Model\Db' => function($sm){
+                    return new Model\Db($sm->get('doctrine.entitymanager.orm_default'));
                 },
                 '\MonarcCore\Service\IndexService' => '\MonarcCore\Service\IndexServiceFactory',
 
                 '\MonarcCore\Model\Table\UserTable' => function($sm){
-                    return new Model\Table\UserTable($sm->get('\MonarcCore\Model\Db'));
+                    $utable = new Model\Table\UserTable($sm->get('\MonarcCore\Model\Db'));
+                    $utable->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
+                    return $utable;
                 },
                 // User Role table
                 '\MonarcCore\Model\Table\UserRoleTable' => function($sm){
-                    return new Model\Table\UserRoleTable($sm->get('\MonarcCore\Model\Db'));
+                    $urtable = new Model\Table\UserRoleTable($sm->get('\MonarcCore\Model\Db'));
+                    $urtable->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
+                    return $urtable;
                 },
                 '\MonarcCore\Service\UserService' => '\MonarcCore\Service\UserServiceFactory',
                 '\MonarcCore\Model\Table\UserTokenTable' => function($sm){
@@ -88,7 +92,6 @@ class Module
                 /* Security */
                 '\MonarcCore\Service\SecurityService' => '\MonarcCore\Service\SecurityServiceFactory',
                 /* Authentification */
-                '\MonarcCore\Service\AuthenticationService' => '\MonarcCore\Service\AuthenticationServiceFactory',
                 '\MonarcCore\Storage\Authentication' => function($sm){
                     $sa = new Storage\Authentication();
                     $sa->setUserTokenTable($sm->get('\MonarcCore\Model\Table\UserTokenTable'));
@@ -101,12 +104,20 @@ class Module
                     $aa->setSecurity($sm->get('\MonarcCore\Service\SecurityService'));
                     return $aa;
                 },
-                /*'\MonarcCore\Service\AuthenticationService' => function($sm){
-                    return new \Zend\Authentication\AuthenticationService(
-                        $sm->get('\MonarcCore\Storage\Authentication'),
-                        $sm->get('\MonarcCore\Adapter\Authentication')
-                    );
-                },*/
+                '\MonarcCore\Service\AuthenticationService' => '\MonarcCore\Service\AuthenticationServiceFactory',
+
+                // Récupération du user connecté
+                '\MonarcCore\Service\ConnectedUserService' => function($sm){
+                    $uc = new Service\ConnectedUserService();
+                    $token = $sm->get('Request')->getHeader('token');
+                    if(!empty($token)){
+                        $dd = $sm->get('\MonarcCore\Storage\Authentication')->getItem($token->getFieldValue(),$success);
+                        if($success){
+                            $uc->setConnectedUser($dd->get('user'));
+                        }
+                    }
+                    return $uc;
+                },
             ),
         );
     }

@@ -6,6 +6,8 @@ abstract class AbstractEntityTable
     protected $db;
     protected $class;
 
+    protected $connectedUser;
+
     public function __construct(\MonarcCore\Model\Db $dbService, $class = null)
     {
         $this->db = $dbService;
@@ -33,6 +35,14 @@ abstract class AbstractEntityTable
 
     public function getClass(){
         return $this->class;
+    }
+
+    public function setConnectedUser($cu){
+        $this->connectedUser = $cu;
+        return $this;
+    }
+    public function getConnectedUser(){
+        return $this->connectedUser;
     }
 
     public function fetchAll($fields = array())
@@ -111,6 +121,17 @@ abstract class AbstractEntityTable
 
     public function save(\MonarcCore\Model\Entity\AbstractEntity $entity)
     {
+        if(!empty($this->connectedUser) && isset($this->connectedUser['firstname']) && isset($this->connectedUser['lastname'])){
+            $id = $entity->get('id');
+            if(empty($id)){
+                $entity->set('creator',trim($this->connectedUser['firstname']." ".$this->connectedUser['lastname']));
+                $entity->set('createdAt',new \DateTime());
+            }else{
+                $entity->set('updater',trim($this->connectedUser['firstname']." ".$this->connectedUser['lastname']));
+                $entity->set('updatedAt',new \DateTime());
+            }
+        }
+
         $id = $this->getDb()->save($entity);
 
         return $id;
