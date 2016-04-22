@@ -28,7 +28,7 @@ class Module
 
             // Route is whitelisted
             $name = $match->getMatchedRouteName();
-            if($name == 'auth'){
+            if($name == 'auth' || $name == 'home'){
                 return;
             }
 
