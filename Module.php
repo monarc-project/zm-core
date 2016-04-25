@@ -26,18 +26,12 @@ class Module
                 return;
             }
 
-
-            $sm = $e->getApplication()->getServiceManager();
-            $config = $sm->get('Config');
+            $config = $e->getApplication()->getServiceManager()->get('Config');
             $permissions = $config['permissions'];
 
             // Route is whitelisted
             $name = $match->getMatchedRouteName();
-<<<<<<< HEAD
             if (in_array($name, $permissions)) {
-=======
-            if($name == 'auth' || $name == 'home'){
->>>>>>> ad640f20274e670f9094992577f2a3112e27bbe1
                 return;
             }
 
