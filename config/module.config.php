@@ -76,6 +76,7 @@ return array(
         'home',
         'auth',
         'monarc_api_admin_roles',
+<<<<<<< HEAD
         'monarc_api_admin_passwords',
     ),
 
@@ -83,4 +84,8 @@ return array(
         'name' => 'Cases',
         'mail' => 'info@cases.lu',
     ]
+=======
+        'home',
+    )
+>>>>>>> ad640f20274e670f9094992577f2a3112e27bbe1
 );
