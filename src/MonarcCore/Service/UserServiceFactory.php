@@ -7,5 +7,6 @@ class UserServiceFactory extends AbstractServiceFactory
         'userTable'=> '\MonarcCore\Model\Table\UserTable',
         'roleTable'=> '\MonarcCore\Model\Table\UserRoleTable',
         'userEntity'=> '\MonarcCore\Model\Entity\User',
+        'mailService'=> '\MonarcCore\Service\MailService',
     );
 }

@@ -35,6 +35,16 @@ return array(
         ),
     ),
 
+    'service_manager' => array(
+        'invokables' => array(
+            'MonarcCore\Service\Mime\Part' => 'Zend\Mime\Part',
+            'MonarcCore\Service\Mime\Message' => 'Zend\Mime\Message',
+            'MonarcCore\Service\Mail\Message' => 'Zend\Mail\Message',
+            'MonarcCore\Service\Mail\Transport\Smtp' => 'Zend\Mail\Transport\Smtp',
+            'MonarcCore\Service\Mail\Transport\SmtpOptions' => 'Zend\Mail\Transport\SmtpOptions'
+        ),
+    ),
+
     'doctrine' => array(
         'driver' => array(
             'Monarc_core_driver' => array(
@@ -63,7 +73,14 @@ return array(
     ),
 
     'permissions' => array(
+        'home',
         'auth',
         'monarc_api_admin_roles',
-    )
+        'monarc_api_admin_passwords',
+    ),
+
+    'cases' => [
+        'name' => 'Cases',
+        'mail' => 'info@cases.lu',
+    ]
 );

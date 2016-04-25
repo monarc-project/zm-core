@@ -26,9 +26,14 @@ class Module
                 return;
             }
 
+
+            $sm = $e->getApplication()->getServiceManager();
+            $config = $sm->get('Config');
+            $permissions = $config['permissions'];
+
             // Route is whitelisted
             $name = $match->getMatchedRouteName();
-            if($name == 'auth'){
+            if (in_array($name, $permissions)) {
                 return;
             }
 
@@ -81,6 +86,9 @@ class Module
                     $utable->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
                     return $utable;
                 },
+                '\MonarcCore\Model\Table\PasswordTokenTable' => function($sm){
+                    return new Model\Table\PasswordTokenTable($sm->get('\MonarcCore\Model\Db'));
+                },
                 // User Role table
                 '\MonarcCore\Model\Table\UserRoleTable' => function($sm){
                     $urtable = new Model\Table\UserRoleTable($sm->get('\MonarcCore\Model\Db'));
@@ -90,6 +98,8 @@ class Module
                 '\MonarcCore\Service\UserService' => '\MonarcCore\Service\UserServiceFactory',
                 '\MonarcCore\Service\UserRoleService' => '\MonarcCore\Service\UserRoleServiceFactory',
                 '\MonarcCore\Service\RoleService' => '\MonarcCore\Service\RoleServiceFactory',
+                '\MonarcCore\Service\MailService' => '\MonarcCore\Service\MailServiceFactory',
+                '\MonarcCore\Service\PasswordService' => '\MonarcCore\Service\PasswordServiceFactory',
                 '\MonarcCore\Model\Table\UserTokenTable' => function($sm){
                     return new Model\Table\UserTokenTable($sm->get('\MonarcCore\Model\Db'));
                 },
