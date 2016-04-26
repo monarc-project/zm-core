@@ -69,7 +69,7 @@ class Module
     {
         return array(
             'invokables' => array(
-                '\MonarcCore\Model\Entity\User' => '\MonarcCore\Model\Entity\User',
+                //'\MonarcCore\Model\Entity\User' => '\MonarcCore\Model\Entity\User',
                 '\MonarcCore\Model\Entity\UserRole' => '\MonarcCore\Model\Entity\UserRole',
                 '\MonarcCore\Model\Entity\Role' => '\MonarcCore\Model\Entity\Role',
                 '\MonarcCore\Model\Entity\Model' => '\MonarcCore\Model\Entity\Model',
@@ -80,6 +80,14 @@ class Module
                 },
                 '\MonarcCore\Service\IndexService' => '\MonarcCore\Service\IndexServiceFactory',
 
+                '\MonarcCore\Model\Entity\User' => function($sm){
+                    $u = new Model\Entity\User();
+                    $u->setDbAdpater($sm->get('\MonarcCore\Model\Db'));
+                    $conf = $sm->get('Config');
+                    $salt = isset($conf['monarc']['salt'])?$conf['monarc']['salt']:'';
+                    $u->setUserSalt($salt);
+                    return $u;
+                },
                 '\MonarcCore\Model\Table\UserTable' => function($sm){
                     $utable = new Model\Table\UserTable($sm->get('\MonarcCore\Model\Db'));
                     $utable->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
@@ -153,6 +161,22 @@ class Module
             'factories' => array(
                 '\MonarcCore\Controller\Index' => '\MonarcCore\Controller\IndexControllerFactory',
                 '\MonarcCore\Controller\Authentication' => '\MonarcCore\Controller\AuthenticationControllerFactory',
+            ),
+        );
+    }
+
+    public function getInputFilterConfig(){
+        return array(
+            'invokables' => array(
+                '\MonarcCore\Filter\Password' => '\MonarcCore\Filter\Password',
+            ),
+        );
+    }
+
+    public function getValidatorConfig(){
+        return array(
+            'invokables' => array(
+                '\MonarcCore\Validator\UniqueEmail' => '\MonarcCore\Validator\UniqueEmail',
             ),
         );
     }

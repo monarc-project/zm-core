@@ -2,6 +2,8 @@
 
 namespace MonarcCore\Model\Entity;
 
+use Zend\InputFilter\InputFilterInterface;
+
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -104,5 +106,86 @@ class User extends AbstractEntity
      * @ORM\Column(name="updated_at", type="datetime", nullable=true)
      */
     protected $updatedAt;
+
+    public function getInputFilter(){
+        if (!$this->inputFilter) {
+            parent::getInputFilter();
+            $this->inputFilter->add(array(
+                'name' => 'firstname',
+                'required' => true,
+                'filters' => array(
+                    array('name' => 'StringTrim',),
+                ),
+                'validators' => array(),
+            ));
+            $this->inputFilter->add(array(
+                'name' => 'lastname',
+                'required' => true,
+                'filters' => array(
+                    array('name' => 'StringTrim',),
+                ),
+                'validators' => array(),
+            ));
+            $this->inputFilter->add(array(
+                'name' => 'email',
+                'required' => true,
+                'filters' => array(
+                    array('name' => 'StringTrim',),
+                ),
+                'validators' => array(
+                    array('name' => 'EmailAddress',),
+                    array(
+                        'name' => '\MonarcCore\Validator\UniqueEmail',
+                        'options' => array(
+                            'adapter' => $this->getDbAdapter(),
+                        ),
+                    ),
+                ),
+            ));
+            $this->inputFilter->add(array(
+                'name' => 'password',
+                'allowEmpty' => true,
+                'continueIfEmpty' => true,
+                'required' => false,
+                'filters' => array(
+                    array(
+                        'name' => '\MonarcCore\Filter\Password',
+                        'options' => array(
+                            'salt' => $this->getUserSalt(),
+                        ),
+                    ),
+                ),
+            ));
+        }
+        return $this->inputFilter;
+    }
+
+    public function setUserSalt($userSalt){
+        $this->parameters['userSalt'] = $userSalt;
+        return $this;
+    }
+    public function getUserSalt(){
+        return isset($this->parameters['userSalt'])?$this->parameters['userSalt']:'';
+    }
+
+    public function exchangeArray(array $options)
+    {
+        $filter = $this->getInputFilter()
+            ->setData($options)
+            ->setValidationGroup(InputFilterInterface::VALIDATE_ALL);
+        $isValid = $filter->isValid();
+        if(!$isValid){
+            // TODO: ici on pourrait remonter la liste des champs qui ne vont pas
+            throw new \Exception("Invalid data set");
+        }
+        $options = $filter->getValues();
+        if(empty($options['password'])){
+            unset($options['password']);
+        }
+        foreach($options as $k => $v){
+            $this->set($k,$v);
+        }
+        return $this;
+    }
 }
 

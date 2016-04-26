@@ -52,7 +52,7 @@ class UserService extends AbstractService
         /** @var UserTable $userTable */
         $userTable = $this->get('userTable');
 
-        $userEntity = new User();
+        $userEntity = $this->get('userEntity');//new User();
         $userEntity->exchangeArray($data);
 
         $userTable->save($userEntity);
