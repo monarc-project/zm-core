@@ -10,6 +10,7 @@ class UserService extends AbstractService
     protected $userTable;
     protected $roleTable;
     protected $userEntity;
+    protected $mailService;
 
     public function getTotalCount()
     {
@@ -97,4 +98,16 @@ class UserService extends AbstractService
 
         $userTable->delete($id);
     }
+    public function getByEmail($email)
+    {
+        /** @var UserTable $userTable */
+        $userTable = $this->get('userTable');
+
+        return $userTable->getRepository()->createQueryBuilder('u')
+            ->select(array('u.id', 'u.firstname', 'u.lastname', 'u.email', 'u.phone', 'u.status'))
+            ->where('u.email = :email')
+            ->setParameter(':email', $email)
+            ->getQuery()->getResult();
+    }
+
 }

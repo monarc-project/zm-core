@@ -22,10 +22,12 @@ class UserRole extends AbstractEntity
     protected $id;
 
     /**
-     * @var integer
+     * @var \MonarcCore\Model\Entity\User
      *
-     * @ORM\ManyToOne(targetEntity="\MonarcCore\Model\Entity\User")
-     * @ORM\JoinColumn(name="user_id", referencedColumnName="id")
+     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\User")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="user_id", referencedColumnName="id", nullable=true)
+     * })
      */
     protected $user;
 

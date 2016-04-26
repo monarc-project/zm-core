@@ -9,7 +9,6 @@ abstract class AbstractServiceFactory implements FactoryInterface
     protected $ressources;
 
     public function createService(ServiceLocatorInterface $serviceLocator){
-
         $c = substr(get_class($this),0,-7);
         if(class_exists($c)){
             $fn = $this->getRessources();
@@ -19,6 +18,8 @@ abstract class AbstractServiceFactory implements FactoryInterface
                 $sls = array();
                 foreach ($fn as $k => $v) {
                     $sls[$k] = $serviceLocator->get($v);
+                }
+                foreach($sls as $k) {
                 }
                 return new $c($sls);
             }else{

@@ -67,7 +67,7 @@ class Db {
     }
     public function save($entity, $last = true)
     {
-        $this->entityManager->persist($entity);
+        $this->entityManager->merge($entity);
         if ($last) {
             $this->entityManager->flush();
         }
