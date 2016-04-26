@@ -98,6 +98,7 @@ class UserService extends AbstractService
 
         $userTable->delete($id);
     }
+
     public function getByEmail($email)
     {
         /** @var UserTable $userTable */

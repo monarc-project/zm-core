@@ -73,6 +73,7 @@ return array(
     ),
 
     'permissions' => array(
+        'monarc',
         'home',
         'auth',
         'monarc_api_admin_roles',
