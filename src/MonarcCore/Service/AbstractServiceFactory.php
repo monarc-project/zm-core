@@ -19,8 +19,6 @@ abstract class AbstractServiceFactory implements FactoryInterface
                 foreach ($fn as $k => $v) {
                     $sls[$k] = $serviceLocator->get($v);
                 }
-                foreach($sls as $k) {
-                }
                 return new $c($sls);
             }else{
                 return new $c($serviceLocator->get($fn));

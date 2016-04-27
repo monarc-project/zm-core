@@ -160,5 +160,84 @@ class Model extends AbstractEntity
      * @ORM\Column(name="updated_at", type="datetime", nullable=true)
      */
     protected $updatedAt;
+
+
+    public function getInputFilter(){
+        if (!$this->inputFilter) {
+            parent::getInputFilter();
+            $this->inputFilter->add(array(
+                'name' => 'label1',
+                'required' => true,
+                'allow_empty' => true,
+                'filters' => array(
+                    array('name' => 'Alpha'),
+                ),
+                'validators' => array(),
+            ));
+            $this->inputFilter->add(array(
+                'name' => 'label2',
+                'required' => true,
+                'allow_empty' => true,
+                'filters' => array(
+                    array('name' => 'Alpha'),
+                ),
+                'validators' => array(),
+            ));
+            $this->inputFilter->add(array(
+                'name' => 'label3',
+                'required' => true,
+                'allow_empty' => true,
+                'filters' => array(
+                    array('name' => 'Alpha'),
+                ),
+                'validators' => array(),
+            ));
+            $this->inputFilter->add(array(
+                'name' => 'label4',
+                'required' => true,
+                'allow_empty' => true,
+                'filters' => array(
+                    array('name' => 'Alpha'),
+                ),
+                'validators' => array(),
+            ));
+            $this->inputFilter->add(array(
+                'name' => 'description1',
+                'required' => true,
+                'allow_empty' => true,
+                'filters' => array(
+                    array('name' => 'Alpha'),
+                ),
+                'validators' => array(),
+            ));
+            $this->inputFilter->add(array(
+                'name' => 'description2',
+                'required' => true,
+                'allow_empty' => true,
+                'filters' => array(
+                    array('name' => 'Alpha'),
+                ),
+                'validators' => array(),
+            ));
+            $this->inputFilter->add(array(
+                'name' => 'description3',
+                'required' => true,
+                'allow_empty' => true,
+                'filters' => array(
+                    array('name' => 'Alpha'),
+                ),
+                'validators' => array(),
+            ));
+            $this->inputFilter->add(array(
+                'required' => true,
+                'allow_empty' => true,
+                'filters' => array(
+                    array('name' => 'Alpha'),
+                ),
+                'validators' => array(),
+            ));
+        }
+        return $this->inputFilter;
+    }
 }
 
