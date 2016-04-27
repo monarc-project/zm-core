@@ -142,7 +142,7 @@ class User extends AbstractEntity
                             /*'exclude' => array(
                                 'field' => 'id',
                                 'value' => $this->get('id'),
-                            ),*/
+                            ),
                         ),*/
                         'name' => '\MonarcCore\Validator\UniqueEmail',
                         'options' => array(
