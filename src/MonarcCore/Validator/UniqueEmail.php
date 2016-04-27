@@ -8,6 +8,7 @@ class UniqueEmail extends AbstractValidator
 {
 	protected $options = array(
 		'adapter' => null,
+		'id' => 0,
 	);
 
 	const ALREADYUSED = "ALREADYUSED";
@@ -24,7 +25,7 @@ class UniqueEmail extends AbstractValidator
 			return false;
 		}else{
 			$res = $this->options['adapter']->getRepository('\MonarcCore\Model\Entity\User')->findOneByEmail($value);
-			if(!empty($res)){
+			if(!empty($res) && $this->options['id'] != $res->get('id')){
 				$this->error(self::ALREADYUSED);
 				return false;
 			}

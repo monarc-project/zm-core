@@ -135,9 +135,19 @@ class User extends AbstractEntity
                 'validators' => array(
                     array('name' => 'EmailAddress',),
                     array(
+                        /*'name' => 'DoctrineModule\Validator\NoObjectExists',
+                        'options' => array(
+                            'object_repository' => $entityManager->getRepository('\MonarcCore\Model\Table\UserTable'),
+                            'fields' => 'email',
+                            /*'exclude' => array(
+                                'field' => 'id',
+                                'value' => $this->get('id'),
+                            ),*/
+                        ),*/
                         'name' => '\MonarcCore\Validator\UniqueEmail',
                         'options' => array(
                             'adapter' => $this->getDbAdapter(),
+                            'id' => $this->get('id'),
                         ),
                     ),
                 ),
