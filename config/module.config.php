@@ -36,6 +36,9 @@ return array(
     ),
 
     'service_manager' => array(
+        /*'abstract_factories' => array(
+            'MonarcCore\Service\AbstractFactory',
+        ),*/
         'invokables' => array(
             'MonarcCore\Service\Mime\Part' => 'Zend\Mime\Part',
             'MonarcCore\Service\Mime\Message' => 'Zend\Mime\Message',
@@ -73,6 +76,7 @@ return array(
     ),
 
     'permissions' => array(
+        'monarc',
         'home',
         'auth',
         'monarc_api_admin_roles',

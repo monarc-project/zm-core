@@ -1,7 +1,7 @@
 <?php
 namespace MonarcCore\Service;
 
-abstract class AbstractService
+abstract class AbstractService extends AbstractServiceFactory
 {
     use \MonarcCore\Model\GetAndSet;
 

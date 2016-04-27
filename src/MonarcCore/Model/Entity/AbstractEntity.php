@@ -2,6 +2,7 @@
 
 namespace MonarcCore\Model\Entity;
 
+use Zend\Http\Response;
 use Zend\InputFilter\InputFilter;
 use Zend\InputFilter\InputFilterAwareInterface;
 use Zend\InputFilter\InputFilterInterface;
@@ -48,8 +49,17 @@ abstract class AbstractEntity implements InputFilterAwareInterface
             ->setValidationGroup(InputFilterInterface::VALIDATE_ALL);
         $isValid = $filter->isValid();
         if(!$isValid){
-            // TODO: ici on pourrait remonter la liste des champs qui ne vont pas
-            throw new \Exception("Invalid data set");
+            $field_errors = array();
+
+            foreach ($filter->getInvalidInput() as $field => $error) {
+                foreach ($error->getMessages() as $message) {
+                    if (!empty($field)) {
+                        $field_errors[] = str_replace('Value', ucfirst($field), $message);
+                    }
+                }
+            }
+
+            throw new \Exception(implode(",", $field_errors), '422');
         }
         $options = $filter->getValues();
         foreach($options as $k => $v){

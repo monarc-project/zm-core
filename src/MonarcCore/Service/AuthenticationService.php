@@ -8,15 +8,6 @@ class AuthenticationService extends AbstractService
     protected $storage;
     protected $adapter;
 
-    public function __construct($serviceFactory = null)
-    {
-        if(is_array($serviceFactory)){
-            foreach($serviceFactory as $k => $v){
-                $this->set($k,$v);
-            }
-        }
-    }
-
     public function authenticate($data, &$token = null)
     {
         if(!empty($data['login']) && !empty($data['password'])){
