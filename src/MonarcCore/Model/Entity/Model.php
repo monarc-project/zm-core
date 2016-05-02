@@ -87,49 +87,49 @@ class Model extends AbstractEntity
     /**
      * @var boolean
      *
-     * @ORM\Column(name="status", type="boolean", nullable=true)
+     * @ORM\Column(name="status", type="boolean", options={"unsigned":true, "default":1})
      */
     protected $status = '1';
 
     /**
      * @var boolean
      *
-     * @ORM\Column(name="is_scales_updatable", type="boolean", nullable=true)
+     * @ORM\Column(name="is_scales_updatable", type="boolean", options={"unsigned":true, "default":1})
      */
     protected $isScalesUpdatable = '1';
 
     /**
      * @var boolean
      *
-     * @ORM\Column(name="is_default", type="boolean", nullable=true)
+     * @ORM\Column(name="is_default", type="boolean", options={"unsigned":true, "default":0})
      */
     protected $isDefault = '0';
 
     /**
      * @var boolean
      *
-     * @ORM\Column(name="is_deleted", type="boolean", nullable=true)
+     * @ORM\Column(name="is_deleted", type="boolean", options={"unsigned":true, "default":0})
      */
     protected $isDeleted = '0';
 
     /**
      * @var boolean
      *
-     * @ORM\Column(name="is_generic", type="boolean", nullable=true)
+     * @ORM\Column(name="is_generic", type="boolean", options={"unsigned":true, "default":1})
      */
     protected $isGeneric = '1';
 
     /**
      * @var boolean
      *
-     * @ORM\Column(name="is_regulator", type="boolean", nullable=true)
+     * @ORM\Column(name="is_regulator", type="boolean", options={"unsigned":true, "default":0})
      */
     protected $isRegulator = '0';
 
     /**
      * @var boolean
      *
-     * @ORM\Column(name="show_rolf_brut", type="boolean", nullable=true)
+     * @ORM\Column(name="show_rolf_brut", type="boolean", options={"unsigned":true, "default":1})
      */
     protected $showRolfBrut = '1';
 
@@ -165,77 +165,41 @@ class Model extends AbstractEntity
     public function getInputFilter(){
         if (!$this->inputFilter) {
             parent::getInputFilter();
-            $this->inputFilter->add(array(
-                'name' => 'label1',
-                'required' => true,
-                'allow_empty' => true,
-                'filters' => array(
-                    array('name' => 'Alpha'),
-                ),
-                'validators' => array(),
-            ));
-            $this->inputFilter->add(array(
-                'name' => 'label2',
-                'required' => true,
-                'allow_empty' => true,
-                'filters' => array(
-                    array('name' => 'Alpha'),
-                ),
-                'validators' => array(),
-            ));
-            $this->inputFilter->add(array(
-                'name' => 'label3',
-                'required' => true,
-                'allow_empty' => true,
-                'filters' => array(
-                    array('name' => 'Alpha'),
-                ),
-                'validators' => array(),
-            ));
-            $this->inputFilter->add(array(
-                'name' => 'label4',
-                'required' => true,
-                'allow_empty' => true,
-                'filters' => array(
-                    array('name' => 'Alpha'),
-                ),
-                'validators' => array(),
-            ));
-            $this->inputFilter->add(array(
-                'name' => 'description1',
-                'required' => true,
-                'allow_empty' => true,
-                'filters' => array(
-                    array('name' => 'Alpha'),
-                ),
-                'validators' => array(),
-            ));
-            $this->inputFilter->add(array(
-                'name' => 'description2',
-                'required' => true,
-                'allow_empty' => true,
-                'filters' => array(
-                    array('name' => 'Alpha'),
-                ),
-                'validators' => array(),
-            ));
-            $this->inputFilter->add(array(
-                'name' => 'description3',
-                'required' => true,
-                'allow_empty' => true,
-                'filters' => array(
-                    array('name' => 'Alpha'),
-                ),
-                'validators' => array(),
-            ));
-            $this->inputFilter->add(array(
-                'required' => true,
-                'allow_empty' => true,
-                'filters' => array(
-                    array('name' => 'Alpha'),
-                ),
-                'validators' => array(),
-            ));
+
+            $texts = ['label1', 'label2', 'label3', 'label4', 'description1', 'description2', 'description3', 'description4'];
+            $booleans = ['status', 'isScalesUpdatable', 'isDefault', 'isDeleted', 'isGeneric', 'isRegulator', 'showRolfBrut'];
+
+            foreach($texts as $text) {
+                $this->inputFilter->add(array(
+                    'name' => $text,
+                    'required' => true,
+                    'allow_empty' => true,
+                    'filters' => array(
+                        array(
+                            'name' => 'Alnum',
+                            'options' => array(
+                                'allow_white_space' => true,
+                            )
+                        ),
+                    ),
+                    'validators' => array(),
+                ));
+            }
+            foreach($booleans as $boolean) {
+                $this->inputFilter->add(array(
+                    'name' => $boolean,
+                    'required' => false,
+                    'filters' => array(),
+                    'validators' => array(
+                        array(
+                            'name' => 'InArray',
+                            'options' => array(
+                                'haystack' => [0, 1],
+                            ),
+                        ),
+                    ),
+                ));
+            }
         }
         return $this->inputFilter;
     }
