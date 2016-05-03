@@ -154,7 +154,7 @@ class UserService extends AbstractService
 
     /**
      * Get By Email
-     * 
+     *
      * @param $email
      * @return array
      */

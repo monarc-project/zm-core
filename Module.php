@@ -73,6 +73,7 @@ class Module
                 '\MonarcCore\Model\Entity\UserRole' => '\MonarcCore\Model\Entity\UserRole',
                 '\MonarcCore\Model\Entity\Role' => '\MonarcCore\Model\Entity\Role',
                 '\MonarcCore\Model\Entity\Model' => '\MonarcCore\Model\Entity\Model',
+                '\MonarcCore\Model\Entity\Asset' => '\MonarcCore\Model\Entity\Asset',
             ),
             'factories' => array(
                 '\MonarcCore\Model\Db' => function($sm){
@@ -99,6 +100,11 @@ class Module
                     $mtable->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
                     return $mtable;
                 },
+                '\MonarcCore\Model\Table\AssetTable' => function($sm){
+                    $atable = new Model\Table\AssetTable($sm->get('\MonarcCore\Model\Db'));
+                    $atable->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
+                    return $atable;
+                },
                 '\MonarcCore\Model\Table\PasswordTokenTable' => function($sm){
                     return new Model\Table\PasswordTokenTable($sm->get('\MonarcCore\Model\Db'));
                 },
@@ -114,6 +120,7 @@ class Module
                 '\MonarcCore\Service\MailService' => '\MonarcCore\Service\MailServiceFactory',
                 '\MonarcCore\Service\PasswordService' => '\MonarcCore\Service\PasswordServiceFactory',
                 '\MonarcCore\Service\ModelService' => '\MonarcCore\Service\ModelServiceFactory',
+                '\MonarcCore\Service\AssetService' => '\MonarcCore\Service\AssetServiceFactory',
                 '\MonarcCore\Model\Table\UserTokenTable' => function($sm){
                     return new Model\Table\UserTokenTable($sm->get('\MonarcCore\Model\Db'));
                 },
