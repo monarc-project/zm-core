@@ -44,6 +44,16 @@ abstract class AbstractService extends AbstractServiceFactory
         }
     }
 
+    protected function parseFrontOrder($order) {
+        if ($order == null) {
+            return null;
+        } else if (substr($order, 0, 1) == '-') {
+            return array(substr($order, 1) => 'ASC');
+        } else {
+            return array($order => 'DESC');
+        }
+    }
+
     protected function parseFrontendFilter($filter, $columns = array()) {
         $output = array();
 

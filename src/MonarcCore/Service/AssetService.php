@@ -82,6 +82,7 @@ class AssetService extends AbstractService implements ObjectManagerAwareInterfac
     public function getList($page = 1, $limit = 25, $order = null, $filter = null){
 
         $filter = $this->parseFrontendFilter($filter);
+        $order = $this->parseFrontOrder($order);
 
         if (is_null($page)) {
             $page = 1;

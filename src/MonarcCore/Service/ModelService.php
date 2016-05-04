@@ -61,6 +61,8 @@ class ModelService extends AbstractService implements ObjectManagerAwareInterfac
 
         $filter = $this->parseFrontendFilter($filter);
         $filter['isDeleted'] = 0;
+        
+        $order = $this->parseFrontOrder($order);
 
         if (is_null($page)) {
             $page = 1;
