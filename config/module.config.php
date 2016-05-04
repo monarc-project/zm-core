@@ -46,10 +46,6 @@ return array(
             'MonarcCore\Service\Mail\Transport\Smtp' => 'Zend\Mail\Transport\Smtp',
             'MonarcCore\Service\Mail\Transport\SmtpOptions' => 'Zend\Mail\Transport\SmtpOptions'
         ),
-        'initializers' =>
-        [
-            \MonarcCore\Service\Initializer\ObjectManagerInitializer::class
-        ]
     ),
 
     'doctrine' => array(
