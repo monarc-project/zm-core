@@ -111,6 +111,7 @@ class Module
                 '\MonarcCore\Service\PasswordService' => '\MonarcCore\Service\PasswordServiceFactory',
                 '\MonarcCore\Service\ModelService' => '\MonarcCore\Service\ModelServiceFactory',
                 '\MonarcCore\Service\AssetService' => '\MonarcCore\Service\AssetServiceFactory',
+                '\MonarcCore\Service\VulnerabilityService' => '\MonarcCore\Service\VulnerabilityServiceFactory',
                 '\MonarcCore\Model\Table\UserTokenTable' => function($sm){
                     return new Model\Table\UserTokenTable($sm->get('\MonarcCore\Model\Db'));
                 },
