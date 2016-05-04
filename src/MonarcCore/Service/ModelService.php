@@ -1,105 +1,131 @@
 <?php
 namespace MonarcCore\Service;
 
+use Doctrine\ORM\EntityRepository;
+use DoctrineModule\Persistence\ObjectManagerAwareInterface;
+use DoctrineModule\Persistence\ProvidesObjectManager;
 use MonarcCore\Model\Entity\Model;
-use MonarcCore\Model\Table\ModelTable;
 
-class ModelService extends AbstractService
+/**
+ * Model Service
+ *
+ * Class ModelService
+ * @package MonarcCore\Service
+ */
+class ModelService extends AbstractService implements ObjectManagerAwareInterface
 {
-    protected $modelTable;
+    use ProvidesObjectManager;
 
-    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null) {
+    /**
+     * @var EntityRepository
+     */
+    protected $repository;
 
-        $modelTable = $this->get('modelTable');
-
-        return $modelTable->countFiltered($page, $limit, $this->parseFrontendOrder($order),
-            $this->parseFrontendFilter($filter, array('label1', 'label2', 'label3', 'label4')));
+    /**
+     * @return EntityRepository
+     */
+    public function getRepository()
+    {
+        if(!$this->repository) {
+            $this->repository = $this->objectManager->getRepository(Model::class);
+        }
+        return $this->repository;
     }
 
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null){
+    /**
+     * Get Filtered Count
+     *
+     * @param null $filter
+     * @return int
+     */
+    public function getFilteredCount($filter = null) {
 
-        $filter = $this->parseFrontendFilter($filter, []);
+        $filter = $this->parseFrontendFilter($filter);
         $filter['isDeleted'] = 0;
 
-        /** @var ModelTable $modelTable */
-        $modelTable = $this->get('modelTable');
-
-        return $modelTable->fetchAllFiltered(
-            array(
-                'id', 'status',
-                'label1', 'label2', 'label3', 'label4',
-                'description1', 'description2', 'description3', 'description4',
-                'isScalesUpdatable', 'isDefault', 'isDeleted', 'isGeneric', 'isRegulator',
-                'showRolfBrut'
-            ),
-            $page,
-            $limit,
-            $this->parseFrontendOrder($order),
+        return count($this->getRepository()->findBy(
             $filter
+        ));
+    }
+
+    /**
+     * Get List
+     *
+     * @param int $page
+     * @param int $limit
+     * @param null $order
+     * @param null $filter
+     * @return array
+     */
+    public function getList($page = 1, $limit = 25, $order = null, $filter = null){
+
+        $filter = $this->parseFrontendFilter($filter);
+        $filter['isDeleted'] = 0;
+
+        if (is_null($page)) {
+            $page = 1;
+        }
+
+        return $this->getRepository()->findBy(
+            $filter,
+            $order,
+            $limit,
+            ($page - 1) * $limit
         );
     }
 
-    public function getEntity($id)
-    {
-        return $this->get('modelTable')->get($id);
+    /**
+     * Get Entity
+     *
+     * @param $id
+     * @return array
+     */
+    public function getEntity($id){
+
+        return $this->getRepository()->find($id);
     }
 
-
+    /**
+     * Create
+     *
+     * @param $data
+     * @throws \Exception
+     */
     public function create($data) {
 
         $modelEntity = new Model();
-
         $modelEntity->exchangeArray($data);
 
-        $modelTable = $this->get('modelTable');
-        $modelTable->save($modelEntity);
+        $this->objectManager->persist($modelEntity);
+        $this->objectManager->flush();
     }
 
+    /**
+     * Update
+     *
+     * @param $id
+     * @param $data
+     */
     public function update($id, $data) {
-        $modelTable = $this->get('modelTable');
 
-        $entity = $modelTable->getEntity($id);
+        $modelEntity = $this->getEntity($id);
+        $modelEntity->exchangeArray($data);
 
-        $data['id'] = $id;
-
-        if ($entity != null) {
-
-            $entity->exchangeArray($data);
-            $modelTable->save($entity);
-            return true;
-        } else {
-            return false;
-        }
+        $this->objectManager->persist($modelEntity);
+        $this->objectManager->flush();
     }
 
+    /**
+     * Delete
+     *
+     * @param $id
+     */
     public function delete($id) {
-        $modelTable = $this->get('modelTable');
 
-        $entity = $modelTable->getEntity($id);
+        $modelEntity = $this->getEntity($id);
+        $modelEntity->setIsDeleted(1);
 
-        if ($entity) {
-
-            $data = $entity->toArray()[0];
-            $data['isDeleted'] = 1;
-
-            foreach($data as $key => $value) {
-                if ($value == true) {
-                    $data[$key] = 1;
-                } else if ($value == false) {
-                    $data[$key] = 0;
-                }
-            }
-
-            if ($entity != null) {
-
-                $entity->exchangeArray($data);
-                $modelTable->save($entity);
-                return true;
-            } else {
-                return false;
-            }
-        } else {
-            return false;
-        }
+        $this->objectManager->persist($modelEntity);
+        $this->objectManager->flush();
     }
 }

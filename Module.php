@@ -95,16 +95,6 @@ class Module
                     return $utable;
                 },
 
-                '\MonarcCore\Model\Table\ModelTable' => function($sm){
-                    $mtable = new Model\Table\ModelTable($sm->get('\MonarcCore\Model\Db'));
-                    $mtable->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
-                    return $mtable;
-                },
-                '\MonarcCore\Model\Table\AssetTable' => function($sm){
-                    $atable = new Model\Table\AssetTable($sm->get('\MonarcCore\Model\Db'));
-                    $atable->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
-                    return $atable;
-                },
                 '\MonarcCore\Model\Table\PasswordTokenTable' => function($sm){
                     return new Model\Table\PasswordTokenTable($sm->get('\MonarcCore\Model\Db'));
                 },

@@ -1,8 +1,12 @@
 <?php
 namespace MonarcCore\Service;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\EntityRepository;
+use DoctrineModule\Persistence\ObjectManagerAwareInterface;
+use DoctrineModule\Persistence\ProvidesObjectManager;
 use MonarcCore\Model\Entity\Asset;
-use MonarcCore\Model\Table\AssetTable;
+use MonarcCore\Model\Entity\Model;
 
 /**
  * Asset Service
@@ -10,64 +14,96 @@ use MonarcCore\Model\Table\AssetTable;
  * Class AssetService
  * @package MonarcCore\Service
  */
-class AssetService extends AbstractService
+class AssetService extends AbstractService implements ObjectManagerAwareInterface
 {
-    protected $assetTable;
+    use ProvidesObjectManager;
+
+    protected $modelService;
+
+    /**
+     * @return mixed
+     */
+    public function getModelService()
+    {
+        return $this->modelService;
+    }
+
+    /**
+     * @param mixed $modelService
+     * @return AssetService
+     */
+    public function setModelService($modelService)
+    {
+        $this->modelService = $modelService;
+        return $this;
+    }
+
+
+    /**
+     * @var EntityRepository
+     */
+    protected $repository;
+
+    /**
+     * @return EntityRepository
+     */
+    public function getRepository()
+    {
+        if(!$this->repository) {
+            $this->repository = $this->objectManager->getRepository(Asset::class);
+        }
+        return $this->repository;
+    }
 
     /**
      * Get Filtered Count
      *
-     * @param int $page
-     * @param int $limit
-     * @param null $order
      * @param null $filter
-     * @return bool|mixed
+     * @return int
      */
-    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null) {
+    public function getFilteredCount($filter = null) {
 
-        /** @var AssetTable $assetTable */
-        $assetTable = $this->get('assetTable');
+        $filter = $this->parseFrontendFilter($filter);
 
-        return $assetTable->countFiltered($page, $limit, $this->parseFrontendOrder($order),
-            $this->parseFrontendFilter($filter, array('label1', 'label2', 'label3', 'label4')));
+        return count($this->getRepository()->findBy(
+            $filter
+        ));
     }
 
     /**
-     * get List
+     * Get List
      *
      * @param int $page
      * @param int $limit
      * @param null $order
      * @param null $filter
-     * @return array|bool
+     * @return array
      */
     public function getList($page = 1, $limit = 25, $order = null, $filter = null){
 
-        /** @var AssetTable $assetTable */
-        $assetTable = $this->get('assetTable');
+        $filter = $this->parseFrontendFilter($filter);
 
-        return $assetTable->fetchAllFiltered(
-            array(
-                'id', 'status',
-                'label1', 'label2', 'label3', 'label4',
-                'description1', 'description2', 'description3', 'description4',
-                'mode', 'type', 'code'
-            ),
-            $page,
+        if (is_null($page)) {
+            $page = 1;
+        }
+
+        return $this->getRepository()->findBy(
+            $filter,
+            $order,
             $limit,
-            $this->parseFrontendOrder($order),
-            $this->parseFrontendFilter($filter, [])
+            ($page - 1) * $limit
         );
     }
 
     /**
      * Get Entity
+     *
      * @param $id
-     * @return mixed
+     * @return array
      */
-    public function getEntity($id)
-    {
-        return $this->get('assetTable')->get($id);
+    public function getEntity($id){
+
+        return $this->getRepository()->find($id);
     }
 
     /**
@@ -79,12 +115,21 @@ class AssetService extends AbstractService
     public function create($data) {
 
         $assetEntity = new Asset();
+
+        //retrieve model entity
+        if (array_key_exists('models', $data)) {
+            $modelService = $this->getModelService();
+            $modelEntity = $modelService->getEntity($data['models']);
+
+            $assetEntity->addModel($modelEntity);
+            unset($data['models']);
+        }
+
         $assetEntity->exchangeArray($data);
 
 
-        /** @var AssetTable $assetTable */
-        $assetTable = $this->get('assetTable');
-        $assetTable->save($assetEntity);
+        $this->objectManager->persist($assetEntity);
+        $this->objectManager->flush();
     }
 
     /**
@@ -92,25 +137,14 @@ class AssetService extends AbstractService
      *
      * @param $id
      * @param $data
-     * @return bool
      */
     public function update($id, $data) {
 
-        /** @var AssetTable $assetTable */
-        $assetTable = $this->get('assetTable');
+        $entity = $this->getEntity($id);
+        $entity->exchangeArray($data);
 
-        $entity = $assetTable->getEntity($id);
-
-        $data['id'] = $id;
-
-        if ($entity != null) {
-
-            $entity->exchangeArray($data);
-            $assetTable->save($entity);
-            return true;
-        } else {
-            return false;
-        }
+        $this->objectManager->persist($entity);
+        $this->objectManager->flush();
     }
 
     /**
@@ -119,9 +153,9 @@ class AssetService extends AbstractService
      * @param $id
      */
     public function delete($id) {
-        /** @var AssetTable $assetTable */
-        $assetTable = $this->get('assetTable');
+        $entity = $this->getEntity($id);
 
-        $assetTable->delete($id);
+        $this->objectManager->remove($entity);
+        $this->objectManager->flush();
     }
 }

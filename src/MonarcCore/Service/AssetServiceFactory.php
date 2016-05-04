@@ -1,9 +1,18 @@
 <?php
 namespace MonarcCore\Service;
 
-class AssetServiceFactory extends AbstractServiceFactory
+use Zend\ServiceManager\FactoryInterface;
+use Zend\ServiceManager\ServiceLocatorInterface;
+
+class AssetServiceFactory implements FactoryInterface
 {
-    protected $ressources = array(
-        'assetTable'=> '\MonarcCore\Model\Table\AssetTable',
-    );
+    public function createService(ServiceLocatorInterface $serviceLocator)
+    {
+        $service = new AssetService();
+
+        $modelService = $serviceLocator->get('\MonarcCore\Service\ModelService');
+        $service->setModelService($modelService);
+
+        return $service;
+    }
 }

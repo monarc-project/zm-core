@@ -2,6 +2,7 @@
 
 namespace MonarcCore\Model\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -27,6 +28,17 @@ class Asset extends AbstractEntity
      * @ORM\Column(name="anr_id", type="integer", nullable=true)
      */
     protected $anr;
+
+    /**
+     * @var \MonarcCore\Model\Entity\Model
+     *
+     * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Model", cascade={"persist"})
+     * @ORM\JoinTable(name="assets_models",
+     *  joinColumns={@ORM\JoinColumn(name="asset_id", referencedColumnName="id")},
+     *  inverseJoinColumns={@ORM\JoinColumn(name="model_id", referencedColumnName="id")}
+     * )
+     */
+    protected $models;
 
     /**
      * @var string
@@ -140,6 +152,15 @@ class Asset extends AbstractEntity
      */
     protected $updatedAt;
 
+    /**
+     * Add model
+     *
+     * @param Model $model
+     */
+    public function addModel(Model $model)
+    {
+        $this->models->add($model);
+    }
 
     public function getInputFilter(){
         if (!$this->inputFilter) {
@@ -165,6 +186,11 @@ class Asset extends AbstractEntity
             }
         }
         return $this->inputFilter;
+    }
+
+    public function __construct()
+    {
+        $this->models = new ArrayCollection();
     }
 }
 

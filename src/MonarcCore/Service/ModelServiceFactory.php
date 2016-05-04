@@ -1,9 +1,13 @@
 <?php
 namespace MonarcCore\Service;
 
-class ModelServiceFactory extends AbstractServiceFactory
+use Zend\ServiceManager\FactoryInterface;
+use Zend\ServiceManager\ServiceLocatorInterface;
+
+class ModelServiceFactory implements FactoryInterface
 {
-    protected $ressources = array(
-        'modelTable'=> '\MonarcCore\Model\Table\ModelTable',
-    );
+    public function createService(ServiceLocatorInterface $serviceLocator)
+    {
+        return  new ModelService();
+    }
 }

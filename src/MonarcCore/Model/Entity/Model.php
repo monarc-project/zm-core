@@ -161,6 +161,44 @@ class Model extends AbstractEntity
      */
     protected $updatedAt;
 
+    /**
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * @param int $id
+     * @return Model
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
+        return $this;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isIsDeleted()
+    {
+        return $this->isDeleted;
+    }
+
+    /**
+     * @param boolean $isDeleted
+     * @return Model
+     */
+    public function setIsDeleted($isDeleted)
+    {
+        $this->isDeleted = $isDeleted;
+        return $this;
+    }
+
+
+
 
     public function getInputFilter(){
         if (!$this->inputFilter) {
@@ -189,6 +227,7 @@ class Model extends AbstractEntity
                 $this->inputFilter->add(array(
                     'name' => $boolean,
                     'required' => false,
+                    'allow_empty' => true,
                     'filters' => array(),
                     'validators' => array(
                         array(
