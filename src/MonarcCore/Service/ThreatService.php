@@ -5,20 +5,23 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityRepository;
 use DoctrineModule\Persistence\ObjectManagerAwareInterface;
 use DoctrineModule\Persistence\ProvidesObjectManager;
-use MonarcCore\Model\Entity\Asset;
-use MonarcCore\Model\Entity\Model;
+use MonarcCore\Model\Entity\Threat;
 
 /**
- * Asset Service
+ * Threat Service
  *
- * Class AssetService
+ * Class ThreatService
  * @package MonarcCore\Service
  */
-class AssetService extends AbstractService implements ObjectManagerAwareInterface
+class ThreatService extends AbstractService implements ObjectManagerAwareInterface
 {
     use ProvidesObjectManager;
 
     protected $modelService;
+
+    protected $themeService;
+
+    protected $repository;
 
     /**
      * @return mixed
@@ -38,11 +41,23 @@ class AssetService extends AbstractService implements ObjectManagerAwareInterfac
         return $this;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getThemeService()
+    {
+        return $this->themeService;
+    }
 
     /**
-     * @var EntityRepository
+     * @param mixed $themeService
+     * @return ThreatService
      */
-    protected $repository;
+    public function setThemeService($themeService)
+    {
+        $this->themeService = $themeService;
+        return $this;
+    }
 
     /**
      * @return EntityRepository
@@ -50,7 +65,7 @@ class AssetService extends AbstractService implements ObjectManagerAwareInterfac
     public function getRepository()
     {
         if(!$this->repository) {
-            $this->repository = $this->objectManager->getRepository(Asset::class);
+            $this->repository = $this->objectManager->getRepository(Threat::class);
         }
         return $this->repository;
     }
@@ -81,13 +96,7 @@ class AssetService extends AbstractService implements ObjectManagerAwareInterfac
      */
     public function getList($page = 1, $limit = 25, $order = null, $filter = null){
 
-        $columns = array(
-            'label1', 'label2', 'label3', 'label4',
-            'description1', 'description2', 'description3', 'description4',
-            'code'
-        );
-
-        $filter = $this->parseFrontendFilter($filter, $columns);
+        $filter = $this->parseFrontendFilter($filter);
         $order = $this->parseFrontOrder($order);
 
         if (is_null($page)) {

@@ -55,8 +55,11 @@ class ThemeService extends AbstractService implements ObjectManagerAwareInterfac
      * @return array
      */
     public function getList($page = 1, $limit = 25, $order = null, $filter = null){
+        $columns = array(
+            'label1', 'label2', 'label3', 'label4'
+        );
 
-        $filter = $this->parseFrontendFilter($filter);
+        $filter = $this->parseFrontendFilter($filter, $columns);
 
         $order = $this->parseFrontOrder($order);
 

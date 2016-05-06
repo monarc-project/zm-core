@@ -59,7 +59,12 @@ class ModelService extends AbstractService implements ObjectManagerAwareInterfac
      */
     public function getList($page = 1, $limit = 25, $order = null, $filter = null){
 
-        $filter = $this->parseFrontendFilter($filter);
+        $columns = array(
+            'label1', 'label2', 'label3', 'label4',
+            'description1', 'description2', 'description3', 'description4'
+        );
+
+        $filter = $this->parseFrontendFilter($filter, $columns);
         $filter['isDeleted'] = 0;
 
         $order = $this->parseFrontOrder($order);

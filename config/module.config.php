@@ -59,6 +59,7 @@ return array(
             'MonarcCore\Service\PasswordService'        => 'MonarcCore\Service\PasswordServiceFactory',
             'MonarcCore\Service\RoleService'            => 'MonarcCore\Service\RoleServiceFactory',
             'MonarcCore\Service\ThemeService'           => 'MonarcCore\Service\ThemeServiceFactory',
+            'MonarcCore\Service\ThreatService'          => 'MonarcCore\Service\ThreatServiceFactory',
             'MonarcCore\Service\UserRoleService'        => 'MonarcCore\Service\UserRoleServiceFactory',
             'MonarcCore\Service\UserService'            => 'MonarcCore\Service\UserServiceFactory',
             'MonarcCore\Service\VulnerabilityService'   => 'MonarcCore\Service\VulnerabilityServiceFactory',
