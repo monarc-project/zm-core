@@ -21,7 +21,11 @@ class ThreatService extends AbstractService implements ObjectManagerAwareInterfa
 
     protected $themeService;
 
-    protected $repository;
+    protected $filterColumns = [
+        'label1', 'label2', 'label3', 'label4',
+        'description1', 'description2', 'description3', 'description4',
+        'code'
+    ];
 
     /**
      * @return mixed
@@ -60,69 +64,6 @@ class ThreatService extends AbstractService implements ObjectManagerAwareInterfa
     }
 
     /**
-     * @return EntityRepository
-     */
-    public function getRepository()
-    {
-        if(!$this->repository) {
-            $this->repository = $this->objectManager->getRepository(Threat::class);
-        }
-        return $this->repository;
-    }
-
-    /**
-     * Get Filtered Count
-     *
-     * @param null $filter
-     * @return int
-     */
-    public function getFilteredCount($filter = null) {
-
-        $filter = $this->parseFrontendFilter($filter);
-
-        return count($this->getRepository()->findBy(
-            $filter
-        ));
-    }
-
-    /**
-     * Get List
-     *
-     * @param int $page
-     * @param int $limit
-     * @param null $order
-     * @param null $filter
-     * @return array
-     */
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null){
-
-        $filter = $this->parseFrontendFilter($filter);
-        $order = $this->parseFrontOrder($order);
-
-        if (is_null($page)) {
-            $page = 1;
-        }
-
-        return $this->getRepository()->findBy(
-            $filter,
-            $order,
-            $limit,
-            ($page - 1) * $limit
-        );
-    }
-
-    /**
-     * Get Entity
-     *
-     * @param $id
-     * @return array
-     */
-    public function getEntity($id){
-
-        return $this->getRepository()->find($id);
-    }
-
-    /**
      * Create
      *
      * @param $data
@@ -156,18 +97,6 @@ class ThreatService extends AbstractService implements ObjectManagerAwareInterfa
         $assetEntity->set('updatedAt',new \DateTime());
 
         $this->objectManager->persist($assetEntity);
-        $this->objectManager->flush();
-    }
-
-    /**
-     * Delete
-     *
-     * @param $id
-     */
-    public function delete($id) {
-        $entity = $this->getEntity($id);
-
-        $this->objectManager->remove($entity);
         $this->objectManager->flush();
     }
 }

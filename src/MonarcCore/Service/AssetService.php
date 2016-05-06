@@ -20,6 +20,12 @@ class AssetService extends AbstractService implements ObjectManagerAwareInterfac
 
     protected $modelService;
 
+    protected $filterColumns = [
+        'label1', 'label2', 'label3', 'label4',
+        'description1', 'description2', 'description3', 'description4',
+        'code'
+    ];
+
     /**
      * @return mixed
      */
@@ -56,21 +62,6 @@ class AssetService extends AbstractService implements ObjectManagerAwareInterfac
     }
 
     /**
-     * Get Filtered Count
-     *
-     * @param null $filter
-     * @return int
-     */
-    public function getFilteredCount($filter = null) {
-
-        $filter = $this->parseFrontendFilter($filter);
-
-        return count($this->getRepository()->findBy(
-            $filter
-        ));
-    }
-
-    /**
      * Get List
      *
      * @param int $page
@@ -81,25 +72,12 @@ class AssetService extends AbstractService implements ObjectManagerAwareInterfac
      */
     public function getList($page = 1, $limit = 25, $order = null, $filter = null){
 
-        $columns = array(
-            'label1', 'label2', 'label3', 'label4',
-            'description1', 'description2', 'description3', 'description4',
-            'code'
-        );
-
-        $filter = $this->parseFrontendFilter($filter, $columns);
+        $filter = $this->parseFrontendFilter($filter, $this->filterColumns);
         $order = $this->parseFrontOrder($order);
 
-        if (is_null($page)) {
-            $page = 1;
-        }
+        $qb = $this->buildFilteredQuery($page, $limit, $order, $filter);
 
-        return $this->getRepository()->findBy(
-            $filter,
-            $order,
-            $limit,
-            ($page - 1) * $limit
-        );
+        return $qb->getQuery()->getResult();
     }
 
     /**
