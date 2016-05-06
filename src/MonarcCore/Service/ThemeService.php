@@ -61,7 +61,7 @@ class ThemeService extends AbstractService implements ObjectManagerAwareInterfac
 
         $filter = $this->parseFrontendFilter($filter, $columns);
 
-        $order = $this->parseFrontOrder($order);
+        $order = $this->parseFrontendOrder($order);
 
         if (is_null($page)) {
             $page = 1;

@@ -20,6 +20,8 @@ class AssetService extends AbstractService implements ObjectManagerAwareInterfac
 
     protected $modelService;
 
+    protected $repository;
+
     protected $filterColumns = [
         'label1', 'label2', 'label3', 'label4',
         'description1', 'description2', 'description3', 'description4',
@@ -44,12 +46,6 @@ class AssetService extends AbstractService implements ObjectManagerAwareInterfac
         return $this;
     }
 
-
-    /**
-     * @var EntityRepository
-     */
-    protected $repository;
-
     /**
      * @return EntityRepository
      */
@@ -59,36 +55,6 @@ class AssetService extends AbstractService implements ObjectManagerAwareInterfac
             $this->repository = $this->objectManager->getRepository(Asset::class);
         }
         return $this->repository;
-    }
-
-    /**
-     * Get List
-     *
-     * @param int $page
-     * @param int $limit
-     * @param null $order
-     * @param null $filter
-     * @return array
-     */
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null){
-
-        $filter = $this->parseFrontendFilter($filter, $this->filterColumns);
-        $order = $this->parseFrontOrder($order);
-
-        $qb = $this->buildFilteredQuery($page, $limit, $order, $filter);
-
-        return $qb->getQuery()->getResult();
-    }
-
-    /**
-     * Get Entity
-     *
-     * @param $id
-     * @return array
-     */
-    public function getEntity($id){
-
-        return $this->getRepository()->find($id);
     }
 
     /**
@@ -125,18 +91,6 @@ class AssetService extends AbstractService implements ObjectManagerAwareInterfac
         $assetEntity->set('updatedAt',new \DateTime());
 
         $this->objectManager->persist($assetEntity);
-        $this->objectManager->flush();
-    }
-
-    /**
-     * Delete
-     *
-     * @param $id
-     */
-    public function delete($id) {
-        $entity = $this->getEntity($id);
-
-        $this->objectManager->remove($entity);
         $this->objectManager->flush();
     }
 }

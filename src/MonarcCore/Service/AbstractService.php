@@ -9,7 +9,13 @@ abstract class AbstractService extends AbstractServiceFactory
 
     protected $connectedUser;
 
-    protected $repository;
+    /**
+     * @return null
+     */
+    protected function getServiceFactory()
+    {
+        return $this->serviceFactory;
+    }
 
     /**
      * @return mixed
@@ -29,6 +35,12 @@ abstract class AbstractService extends AbstractServiceFactory
         return $this;
     }
 
+    /**
+     * Construct
+     *
+     * AbstractService constructor.
+     * @param null $serviceFactory
+     */
     public function __construct($serviceFactory = null)
     {
         if (is_array($serviceFactory)){
@@ -40,6 +52,77 @@ abstract class AbstractService extends AbstractServiceFactory
         }
     }
 
+    /**
+     * Get List
+     *
+     * @param int $page
+     * @param int $limit
+     * @param null $order
+     * @param null $filter
+     * @return array
+     */
+    public function getList($page = 1, $limit = 25, $order = null, $filter = null){
+
+        $filter = $this->parseFrontendFilter($filter, $this->filterColumns);
+        $order = $this->parseFrontendOrder($order);
+
+        $qb = $this->buildFilteredQuery($page, $limit, $order, $filter);
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Get Entity
+     *
+     * @param $id
+     * @return array
+     */
+    public function getEntity($id){
+
+        return $this->getRepository()->find($id);
+    }
+
+    /**
+     * Update Entity
+     *
+     * @param $id
+     * @param $data
+     */
+    public function update($id, $data) {
+
+        $entity = $this->getEntity($id);
+        $entity->exchangeArray($data);
+
+        $connectedUser = trim($this->getConnectedUser()['firstname'] . " " . $this->getConnectedUser()['lastname']);
+
+        $entity->set('updater', $connectedUser);
+        $entity->set('updatedAt',new \DateTime());
+
+        $this->objectManager->persist($entity);
+        $this->objectManager->flush();
+    }
+
+    /**
+     * Delete
+     *
+     * @param $id
+     */
+    public function delete($id) {
+        $entity = $this->getEntity($id);
+
+        $this->objectManager->remove($entity);
+        $this->objectManager->flush();
+    }
+
+    /**
+     * Get Filtered Count
+     *
+     * @param int $page
+     * @param int $limit
+     * @param null $order
+     * @param null $filter
+     * @return mixed
+     */
     public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null) {
 
         $order = $this->parseFrontendOrder($order);
@@ -51,6 +134,15 @@ abstract class AbstractService extends AbstractServiceFactory
         return $qb->getQuery()->getSingleScalarResult();
     }
 
+    /**
+     * Build Filtered Query
+     *
+     * @param int $page
+     * @param int $limit
+     * @param null $order
+     * @param null $filter
+     * @return mixed
+     */
     protected function buildFilteredQuery($page = 1, $limit = 25, $order = null, $filter = null) {
 
         $qb = $this->getRepository()->createQueryBuilder('t');
@@ -87,31 +179,13 @@ abstract class AbstractService extends AbstractServiceFactory
         return $qb;
     }
 
-    protected function getServiceFactory()
-    {
-        return $this->serviceFactory;
-    }
-
-    protected function parseFrontendOrder($order) {
-        if ($order == null) {
-            return null;
-        } else if (substr($order, 0, 1) == '-') {
-            return array(substr($order, 1), 'ASC');
-        } else {
-            return array($order, 'DESC');
-        }
-    }
-
-    protected function parseFrontOrder($order) {
-        if ($order == null) {
-            return null;
-        } else if (substr($order, 0, 1) == '-') {
-            return array(substr($order, 1), 'ASC');
-        } else {
-            return array($order, 'DESC');
-        }
-    }
-
+    /**
+     * Parse Frontend Filter
+     *
+     * @param $filter
+     * @param array $columns
+     * @return array
+     */
     protected function parseFrontendFilter($filter, $columns = array()) {
         $output = array();
 
@@ -120,6 +194,22 @@ abstract class AbstractService extends AbstractServiceFactory
         }
 
         return $output;
+    }
+
+    /**
+     * Parse Frontend Order
+     *
+     * @param $order
+     * @return array|null
+     */
+    protected function parseFrontendOrder($order) {
+        if ($order == null) {
+            return null;
+        } else if (substr($order, 0, 1) == '-') {
+            return array(substr($order, 1), 'ASC');
+        } else {
+            return array($order, 'DESC');
+        }
     }
 
     /**
@@ -138,26 +228,6 @@ abstract class AbstractService extends AbstractServiceFactory
         $this->objectManager->flush();
 
         return $entity->getId();
-    }
-
-    /**
-     * Update Entity
-     *
-     * @param $id
-     * @param $data
-     */
-    public function update($id, $data) {
-
-        $entity = $this->getEntity($id);
-        $entity->exchangeArray($data);
-
-        $connectedUser = trim($this->getConnectedUser()['firstname'] . " " . $this->getConnectedUser()['lastname']);
-
-        $entity->set('updater', $connectedUser);
-        $entity->set('updatedAt',new \DateTime());
-
-        $this->objectManager->persist($entity);
-        $this->objectManager->flush();
     }
 
     /**
@@ -184,63 +254,9 @@ abstract class AbstractService extends AbstractServiceFactory
         return $entity;
     }
 
-    /**
-     * @return EntityRepository
-     */
-    public function getRepository()
-    {
-        if(!$this->repository) {
-            $this->repository = $this->objectManager->getRepository(Threat::class);
-        }
-        return $this->repository;
-    }
 
-    /**
-     * Get List
-     *
-     * @param int $page
-     * @param int $limit
-     * @param null $order
-     * @param null $filter
-     * @return array
-     */
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null){
 
-        $filter = $this->parseFrontendFilter($filter, $this->filterColumns);
-        $order = $this->parseFrontOrder($order);
 
-        if (is_null($page)) {
-            $page = 1;
-        }
 
-        return $this->getRepository()->findBy(
-            $filter,
-            $order,
-            $limit,
-            ($page - 1) * $limit
-        );
-    }
 
-    /**
-     * Get Entity
-     *
-     * @param $id
-     * @return array
-     */
-    public function getEntity($id){
-
-        return $this->getRepository()->find($id);
-    }
-
-    /**
-     * Delete
-     *
-     * @param $id
-     */
-    public function delete($id) {
-        $entity = $this->getEntity($id);
-
-        $this->objectManager->remove($entity);
-        $this->objectManager->flush();
-    }
 }
