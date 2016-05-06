@@ -12,7 +12,7 @@ class ConnectedUserService
 		if(! $connectedUser instanceof \MonarcCore\Model\Entity\User){
 			$connectedUser = new \MonarcCore\Model\Entity\User();
 		}
-		$this->connectedUser = current($connectedUser->toArray());
+		$this->connectedUser = $connectedUser->toArray();
 		return $this;
 	}
 }
