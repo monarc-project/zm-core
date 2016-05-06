@@ -116,16 +116,7 @@ class AssetService extends AbstractService implements ObjectManagerAwareInterfac
     public function create($data) {
 
         $assetEntity = new Asset();
-
-        //retrieve model entity
-        if (array_key_exists('models', $data)) {
-            $modelService = $this->getModelService();
-            $modelEntity = $modelService->getEntity($data['models']);
-
-            $assetEntity->addModel($modelEntity);
-            unset($data['models']);
-        }
-
+        $assetEntity = $this->addModel($assetEntity, $data);
         $assetEntity->exchangeArray($data);
 
         return $this->save($assetEntity);
@@ -140,21 +131,9 @@ class AssetService extends AbstractService implements ObjectManagerAwareInterfac
     public function update($id, $data) {
 
         $assetEntity = $this->getEntity($id);
-
         $assetEntity->setModels(new ArrayCollection());
-
-        //retrieve model entity
-        if (array_key_exists('models', $data)) {
-            $modelService = $this->getModelService();
-            $modelEntity = $modelService->getEntity($data['models']);
-
-            $assetEntity->addModel($modelEntity);
-            unset($data['models']);
-        }
-
-
+        $assetEntity = $this->addModel($assetEntity, $data);
         $assetEntity->exchangeArray($data);
-
 
         $connectedUser = trim($this->getConnectedUser()['firstname'] . " " . $this->getConnectedUser()['lastname']);
 

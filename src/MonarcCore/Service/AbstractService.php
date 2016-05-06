@@ -121,4 +121,28 @@ abstract class AbstractService extends AbstractServiceFactory
         $this->objectManager->persist($entity);
         $this->objectManager->flush();
     }
+
+    /**
+     * Add Model
+     * @param $entity
+     * @param $data
+     */
+    public function addModel($entity, &$data){
+        if (array_key_exists('models', $data)) {
+            if (!is_array($data['models'])) {
+                $data['models'] = [$data['models']];
+            }
+
+            $modelService = $this->getModelService();
+            foreach ($data['models'] as $model) {
+                $modelEntity = $modelService->getEntity($model);
+
+                $entity->addModel($modelEntity);
+            }
+
+            unset($data['models']);
+        }
+
+        return $entity;
+    }
 }
