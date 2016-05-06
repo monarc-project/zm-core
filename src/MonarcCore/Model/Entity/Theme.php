@@ -2,16 +2,15 @@
 
 namespace MonarcCore\Model\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Asset
+ * Thme
  *
- * @ORM\Table(name="assets")
+ * @ORM\Table(name="themes")
  * @ORM\Entity
  */
-class Asset extends AbstractEntity
+class Theme extends AbstractEntity
 {
     /**
      * @var integer
@@ -28,17 +27,6 @@ class Asset extends AbstractEntity
      * @ORM\Column(name="anr_id", type="integer", nullable=true)
      */
     protected $anr;
-
-    /**
-     * @var \MonarcCore\Model\Entity\Model
-     *
-     * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Model", cascade={"persist"})
-     * @ORM\JoinTable(name="assets_models",
-     *  joinColumns={@ORM\JoinColumn(name="asset_id", referencedColumnName="id")},
-     *  inverseJoinColumns={@ORM\JoinColumn(name="model_id", referencedColumnName="id")}
-     * )
-     */
-    protected $models;
 
     /**
      * @var string
@@ -67,62 +55,6 @@ class Asset extends AbstractEntity
      * @ORM\Column(name="label4", type="string", length=255, nullable=true)
      */
     protected $label4;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="description1", type="string", length=255, nullable=true)
-     */
-    protected $description1;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="description2", type="string", length=255, nullable=true)
-     */
-    protected $description2;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="description3", type="string", length=255, nullable=true)
-     */
-    protected $description3;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="description4", type="string", length=255, nullable=true)
-     */
-    protected $description4;
-
-    /**
-     * @var boolean
-     *
-     * @ORM\Column(name="status", type="boolean", options={"unsigned":true, "default":1})
-     */
-    protected $status = '1';
-
-    /**
-     * @var smallint
-     *
-     * @ORM\Column(name="mode", type="smallint", options={"unsigned":true, "default":1})
-     */
-    protected $mode = '1';
-
-    /**
-     * @var smallint
-     *
-     * @ORM\Column(name="type", type="smallint", options={"unsigned":true, "default":3})
-     */
-    protected $type = '3';
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="code", type="string", length=255, nullable=true)
-     */
-    protected $code;
 
     /**
      * @var string
@@ -162,7 +94,7 @@ class Asset extends AbstractEntity
 
     /**
      * @param int $id
-     * @return Asset
+     * @return Model
      */
     public function setId($id)
     {
@@ -170,39 +102,11 @@ class Asset extends AbstractEntity
         return $this;
     }
 
-    /**
-     * @return Model
-     */
-    public function getModels()
-    {
-        return $this->models;
-    }
-
-    /**
-     * @param Model $models
-     * @return Asset
-     */
-    public function setModels($models)
-    {
-        $this->models = $models;
-        return $this;
-    }
-
-    /**
-     * Add model
-     *
-     * @param Model $model
-     */
-    public function addModel(Model $model)
-    {
-        $this->models->add($model);
-    }
-
     public function getInputFilter(){
         if (!$this->inputFilter) {
             parent::getInputFilter();
 
-            $texts = ['label1', 'label2', 'label3', 'label4', 'description1', 'description2', 'description3', 'description4'];
+            $texts = ['label1', 'label2', 'label3', 'label4'];
 
             foreach($texts as $text) {
                 $this->inputFilter->add(array(
@@ -220,13 +124,9 @@ class Asset extends AbstractEntity
                     'validators' => array(),
                 ));
             }
+
         }
         return $this->inputFilter;
-    }
-
-    public function __construct()
-    {
-        $this->models = new ArrayCollection();
     }
 }
 

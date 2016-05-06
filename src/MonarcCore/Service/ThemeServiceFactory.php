@@ -4,16 +4,14 @@ namespace MonarcCore\Service;
 use Zend\ServiceManager\FactoryInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 
-class AssetServiceFactory implements FactoryInterface
+class ThemeServiceFactory implements FactoryInterface
 {
     public function createService(ServiceLocatorInterface $serviceLocator)
     {
         $connectedUser = $serviceLocator->get('MonarcCore\Service\ConnectedUserService')->getConnectedUser();
-        $modelService = $serviceLocator->get('\MonarcCore\Service\ModelService');
 
-        $service = new AssetService();
+        $service = new ThemeService();
         $service->setConnectedUser($connectedUser);
-        $service->setModelService($modelService);
 
         return $service;
     }

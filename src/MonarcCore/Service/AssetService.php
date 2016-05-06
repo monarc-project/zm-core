@@ -128,23 +128,40 @@ class AssetService extends AbstractService implements ObjectManagerAwareInterfac
 
         $assetEntity->exchangeArray($data);
 
-
-        $this->objectManager->persist($assetEntity);
-        $this->objectManager->flush();
+        return $this->save($assetEntity);
     }
 
     /**
-     * Update
+     * Update Entity
      *
      * @param $id
      * @param $data
      */
     public function update($id, $data) {
 
-        $entity = $this->getEntity($id);
-        $entity->exchangeArray($data);
+        $assetEntity = $this->getEntity($id);
 
-        $this->objectManager->persist($entity);
+        $assetEntity->setModels(new ArrayCollection());
+
+        //retrieve model entity
+        if (array_key_exists('models', $data)) {
+            $modelService = $this->getModelService();
+            $modelEntity = $modelService->getEntity($data['models']);
+
+            $assetEntity->addModel($modelEntity);
+            unset($data['models']);
+        }
+
+
+        $assetEntity->exchangeArray($data);
+
+
+        $connectedUser = trim($this->getConnectedUser()['firstname'] . " " . $this->getConnectedUser()['lastname']);
+
+        $assetEntity->set('updater', $connectedUser);
+        $assetEntity->set('updatedAt',new \DateTime());
+
+        $this->objectManager->persist($assetEntity);
         $this->objectManager->flush();
     }
 

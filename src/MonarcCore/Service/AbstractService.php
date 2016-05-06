@@ -7,6 +7,26 @@ abstract class AbstractService extends AbstractServiceFactory
 
     protected $serviceFactory;
 
+    protected $connectedUser;
+
+    /**
+     * @return mixed
+     */
+    public function getConnectedUser()
+    {
+        return $this->connectedUser;
+    }
+
+    /**
+     * @param mixed $connectedUser
+     * @return AbstractService
+     */
+    public function setConnectedUser($connectedUser)
+    {
+        $this->connectedUser = $connectedUser;
+        return $this;
+    }
+
     public function __construct($serviceFactory = null)
     {
         /*if($serviceFactory instanceof \MonarcCore\Model\Table\AbstractEntityTable || $serviceFactory instanceof \MonarcCore\Model\Entity\AbstractEntity){
@@ -62,5 +82,43 @@ abstract class AbstractService extends AbstractServiceFactory
         }
 
         return $output;
+    }
+
+    /**
+     * Save Entity
+     *
+     * @param $entity
+     */
+    protected function save($entity) {
+
+        $connectedUser = trim($this->getConnectedUser()['firstname'] . " " . $this->getConnectedUser()['lastname']);
+
+        $entity->set('creator', $connectedUser);
+        $entity->set('createdAt',new \DateTime());
+
+        $this->objectManager->persist($entity);
+        $this->objectManager->flush();
+
+        return $entity->getId();
+    }
+
+    /**
+     * Update Entity
+     *
+     * @param $id
+     * @param $data
+     */
+    public function update($id, $data) {
+
+        $entity = $this->getEntity($id);
+        $entity->exchangeArray($data);
+
+        $connectedUser = trim($this->getConnectedUser()['firstname'] . " " . $this->getConnectedUser()['lastname']);
+
+        $entity->set('updater', $connectedUser);
+        $entity->set('updatedAt',new \DateTime());
+
+        $this->objectManager->persist($entity);
+        $this->objectManager->flush();
     }
 }

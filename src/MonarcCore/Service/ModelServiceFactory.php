@@ -8,6 +8,11 @@ class ModelServiceFactory implements FactoryInterface
 {
     public function createService(ServiceLocatorInterface $serviceLocator)
     {
-        return  new ModelService();
+        $connectedUser = $serviceLocator->get('MonarcCore\Service\ConnectedUserService')->getConnectedUser();
+
+        $service = new ModelService();
+        $service->setConnectedUser($connectedUser);
+
+        return $service;
     }
 }

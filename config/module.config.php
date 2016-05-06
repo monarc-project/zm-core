@@ -40,11 +40,28 @@ return array(
             'MonarcCore\Service\AbstractFactory',
         ),*/
         'invokables' => array(
-            'MonarcCore\Service\Mime\Part' => 'Zend\Mime\Part',
-            'MonarcCore\Service\Mime\Message' => 'Zend\Mime\Message',
-            'MonarcCore\Service\Mail\Message' => 'Zend\Mail\Message',
-            'MonarcCore\Service\Mail\Transport\Smtp' => 'Zend\Mail\Transport\Smtp',
+            'MonarcCore\Model\Entity\Asset'     => 'MonarcCore\Model\Entity\Asset',
+            'MonarcCore\Model\Entity\Model'     => 'MonarcCore\Model\Entity\Model',
+            'MonarcCore\Model\Entity\Role'      => 'MonarcCore\Model\Entity\Role',
+            'MonarcCore\Model\Entity\UserRole'  => 'MonarcCore\Model\Entity\UserRole',
+            'MonarcCore\Service\Mime\Part'      => 'Zend\Mime\Part',
+            'MonarcCore\Service\Mime\Message'   => 'Zend\Mime\Message',
+            'MonarcCore\Service\Mail\Message'   => 'Zend\Mail\Message',
+            'MonarcCore\Service\Mail\Transport\Smtp'        => 'Zend\Mail\Transport\Smtp',
             'MonarcCore\Service\Mail\Transport\SmtpOptions' => 'Zend\Mail\Transport\SmtpOptions'
+        ),
+        'factories' => array(
+            'MonarcCore\Service\AssetService'           => 'MonarcCore\Service\AssetServiceFactory',
+            'MonarcCore\Service\AuthenticationService'  => 'MonarcCore\Service\AuthenticationServiceFactory',
+            'MonarcCore\Service\IndexService'           => 'MonarcCore\Service\IndexServiceFactory',
+            'MonarcCore\Service\MailService'            => 'MonarcCore\Service\MailServiceFactory',
+            'MonarcCore\Service\ModelService'           => 'MonarcCore\Service\ModelServiceFactory',
+            'MonarcCore\Service\PasswordService'        => 'MonarcCore\Service\PasswordServiceFactory',
+            'MonarcCore\Service\RoleService'            => 'MonarcCore\Service\RoleServiceFactory',
+            'MonarcCore\Service\ThemeService'           => 'MonarcCore\Service\ThemeServiceFactory',
+            'MonarcCore\Service\UserRoleService'        => 'MonarcCore\Service\UserRoleServiceFactory',
+            'MonarcCore\Service\UserService'            => 'MonarcCore\Service\UserServiceFactory',
+            'MonarcCore\Service\VulnerabilityService'   => 'MonarcCore\Service\VulnerabilityServiceFactory',
         ),
         'initializers' =>
         [
@@ -85,6 +102,7 @@ return array(
         'auth',
         'monarc_api_admin_roles',
         'monarc_api_admin_passwords',
+        'monarc_api_themes',
     ),
 
     'cases' => [
