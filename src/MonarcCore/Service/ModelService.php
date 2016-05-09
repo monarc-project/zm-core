@@ -1,9 +1,7 @@
 <?php
 namespace MonarcCore\Service;
 
-use Doctrine\ORM\EntityRepository;
-use DoctrineModule\Persistence\ObjectManagerAwareInterface;
-use DoctrineModule\Persistence\ProvidesObjectManager;
+use MonarcCore\Model\Table\ModelTable;
 use MonarcCore\Model\Entity\Model;
 
 /**
@@ -12,25 +10,15 @@ use MonarcCore\Model\Entity\Model;
  * Class ModelService
  * @package MonarcCore\Service
  */
-class ModelService extends AbstractService implements ObjectManagerAwareInterface
+class ModelService extends AbstractService
 {
-    use ProvidesObjectManager;
+    protected $modelTable;
+    protected $modelEntity;
 
-    /**
-     * @var EntityRepository
-     */
-    protected $repository;
-
-    /**
-     * @return EntityRepository
-     */
-    public function getRepository()
-    {
-        if(!$this->repository) {
-            $this->repository = $this->objectManager->getRepository(Model::class);
-        }
-        return $this->repository;
-    }
+    protected $filterColumns = array(
+        'label1', 'label2', 'label3', 'label4',
+        'description1', 'description2', 'description3', 'description4',
+    );
 
     /**
      * Get Filtered Count
@@ -38,14 +26,11 @@ class ModelService extends AbstractService implements ObjectManagerAwareInterfac
      * @param null $filter
      * @return int
      */
-    public function getFilteredCount($filter = null) {
+    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null) {
+        $modelTable = $this->get('modelTable');
 
-        $filter = $this->parseFrontendFilter($filter);
-        $filter['isDeleted'] = 0;
-
-        return count($this->getRepository()->findBy(
-            $filter
-        ));
+        return $modelTable->countFiltered($page, $limit, $this->parseFrontendOrder($order),
+            $this->parseFrontendFilter($filter, $this->filterColumns));
     }
 
     /**
@@ -59,25 +44,14 @@ class ModelService extends AbstractService implements ObjectManagerAwareInterfac
      */
     public function getList($page = 1, $limit = 25, $order = null, $filter = null){
 
-        $columns = array(
-            'label1', 'label2', 'label3', 'label4',
-            'description1', 'description2', 'description3', 'description4'
-        );
+        $modelTable = $this->get('modelTable');
 
-        $filter = $this->parseFrontendFilter($filter, $columns);
-        $filter['isDeleted'] = 0;
-
-        $order = $this->parseFrontendOrder($order);
-
-        if (is_null($page)) {
-            $page = 1;
-        }
-
-        return $this->getRepository()->findBy(
-            $filter,
-            $order,
+        return $modelTable->fetchAllFiltered(
+            array_keys($this->get('modelEntity')->getJsonArray()),
+            $page,
             $limit,
-            ($page - 1) * $limit
+            $this->parseFrontendOrder($order),
+            $this->parseFrontendFilter($filter, $this->filterColumns)
         );
     }
 
@@ -89,7 +63,7 @@ class ModelService extends AbstractService implements ObjectManagerAwareInterfac
      */
     public function getEntity($id){
 
-        return $this->getRepository()->find($id);
+        return $this->get('modelTable')->get($id);
     }
 
     /**
@@ -100,10 +74,11 @@ class ModelService extends AbstractService implements ObjectManagerAwareInterfac
      */
     public function create($data) {
 
-        $modelEntity = new Model();
+        $modelTable = $this->get('modelTable');
+        $modelEntity = $this->get('modelEntity');
         $modelEntity->exchangeArray($data);
 
-        return $this->save($modelEntity);
+        return $modelTable->save($modelEntity);
     }
 
     /**
@@ -112,11 +87,11 @@ class ModelService extends AbstractService implements ObjectManagerAwareInterfac
      * @param $id
      */
     public function delete($id) {
+        $modelEntity = $this->get('modelEntity');
+        $modelEntity->delete($id);
+    }
 
-        $modelEntity = $this->getEntity($id);
-        $modelEntity->setIsDeleted(1);
-
-        $this->objectManager->persist($modelEntity);
-        $this->objectManager->flush();
+    public function update($id,$data){
+        //$modelEntity = $this->get('modelTable')->get($id);
     }
 }

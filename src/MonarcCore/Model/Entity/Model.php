@@ -217,7 +217,7 @@ class Model extends AbstractEntity
                             'name' => 'Alnum',
                             'options' => array(
                                 'allow_white_space' => true,
-                            )
+                            ),
                         ),
                     ),
                     'validators' => array(),
