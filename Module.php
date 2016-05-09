@@ -35,7 +35,12 @@ class Module
                 return;
             }
 
-            $token = $e->getRequest()->getHeader('token');
+            $request = $e->getRequest();
+            if($request instanceof \Zend\Console\Request){
+                return;
+            }
+
+            $token = $request->getHeader('token');
             if(!empty($token)){
                 if($serv->checkConnect(array('token'=>$token->getFieldValue()))){
                     return;
