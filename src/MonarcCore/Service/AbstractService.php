@@ -203,6 +203,18 @@ abstract class AbstractService extends AbstractServiceFactory
      * @return array|null
      */
     protected function parseFrontendOrder($order) {
+        if(strpos($order, '_') !== false){
+            $o = explode('_', $order);
+            $order = "";
+            foreach($o as $n => $oo){
+                if($n <= 0){
+                    $order = $oo;
+                }else{
+                    $order .= ucfirst($oo);
+                }
+            }
+        }
+
         if ($order == null) {
             return null;
         } else if (substr($order, 0, 1) == '-') {
