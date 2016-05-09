@@ -6,6 +6,7 @@ use Zend\View\Model\JsonModel;
 class AuthenticationController extends AbstractController
 {
 	public function create($data){
+
 		$t = null;
 		if($this->getService()->authenticate($data,$t)){
 			$this->response->setStatusCode(200);

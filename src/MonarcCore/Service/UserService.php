@@ -5,6 +5,12 @@ use MonarcCore\Model\Entity\User;
 use MonarcCore\Model\Entity\UserRole;
 use MonarcCore\Model\Table\UserTable;
 
+/**
+ * User Service
+ *
+ * Class UserService
+ * @package MonarcCore\Service
+ */
 class UserService extends AbstractService
 {
     protected $userTable;
@@ -12,6 +18,11 @@ class UserService extends AbstractService
     protected $userEntity;
     protected $mailService;
 
+    /**
+     * Get Total Count
+     *
+     * @return bool|mixed
+     */
     public function getTotalCount()
     {
         /** @var UserTable $userTable */
@@ -19,6 +30,15 @@ class UserService extends AbstractService
         return $userTable->count();
     }
 
+    /**
+     * Get Filtered Count
+     *
+     * @param int $page
+     * @param int $limit
+     * @param null $order
+     * @param null $filter
+     * @return bool|mixed
+     */
     public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null) {
         /** @var UserTable $userTable */
         $userTable = $this->get('userTable');
@@ -27,6 +47,15 @@ class UserService extends AbstractService
             $this->parseFrontendFilter($filter, array('firstname', 'lastname', 'email')));
     }
 
+    /**
+     * Get List
+     *
+     * @param int $page
+     * @param int $limit
+     * @param null $order
+     * @param null $filter
+     * @return array|bool
+     */
     public function getList($page = 1, $limit = 25, $order = null, $filter = null)
     {
         /** @var UserTable $userTable */
@@ -41,11 +70,23 @@ class UserService extends AbstractService
         );
     }
 
+    /**
+     * Get Entity
+     *
+     * @param $id
+     * @return mixed
+     */
     public function getEntity($id)
     {
         return $this->get('userTable')->get($id);
     }
 
+    /**
+     * Create
+     *
+     * @param $data
+     * @throws \Exception
+     */
     public function create($data)
     {
         //user
@@ -75,6 +116,13 @@ class UserService extends AbstractService
         }
     }
 
+    /**
+     * Update
+     *
+     * @param $data
+     * @return bool
+     * @throws \Exception
+     */
     public function update($data) {
         /** @var UserTable $userTable */
         $userTable = $this->get('userTable');
@@ -91,6 +139,11 @@ class UserService extends AbstractService
         }
     }
 
+    /**
+     * Delete
+     *
+     * @param $id
+     */
     public function delete($id)
     {
         /** @var UserTable $userTable */
@@ -99,6 +152,12 @@ class UserService extends AbstractService
         $userTable->delete($id);
     }
 
+    /**
+     * Get By Email
+     *
+     * @param $email
+     * @return array
+     */
     public function getByEmail($email)
     {
         /** @var UserTable $userTable */

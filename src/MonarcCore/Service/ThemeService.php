@@ -4,15 +4,15 @@ namespace MonarcCore\Service;
 use Doctrine\ORM\EntityRepository;
 use DoctrineModule\Persistence\ObjectManagerAwareInterface;
 use DoctrineModule\Persistence\ProvidesObjectManager;
-use MonarcCore\Model\Entity\Model;
+use MonarcCore\Model\Entity\Theme;
 
 /**
- * Model Service
+ * Theme Service
  *
- * Class ModelService
+ * Class ThemeService
  * @package MonarcCore\Service
  */
-class ModelService extends AbstractService implements ObjectManagerAwareInterface
+class ThemeService extends AbstractService implements ObjectManagerAwareInterface
 {
     use ProvidesObjectManager;
 
@@ -27,7 +27,7 @@ class ModelService extends AbstractService implements ObjectManagerAwareInterfac
     public function getRepository()
     {
         if(!$this->repository) {
-            $this->repository = $this->objectManager->getRepository(Model::class);
+            $this->repository = $this->objectManager->getRepository(Theme::class);
         }
         return $this->repository;
     }
@@ -41,11 +41,8 @@ class ModelService extends AbstractService implements ObjectManagerAwareInterfac
     public function getFilteredCount($filter = null) {
 
         $filter = $this->parseFrontendFilter($filter);
-        $filter['isDeleted'] = 0;
 
-        return count($this->getRepository()->findBy(
-            $filter
-        ));
+        return count($this->getRepository()->findBy($filter));
     }
 
     /**
@@ -58,14 +55,11 @@ class ModelService extends AbstractService implements ObjectManagerAwareInterfac
      * @return array
      */
     public function getList($page = 1, $limit = 25, $order = null, $filter = null){
-
         $columns = array(
-            'label1', 'label2', 'label3', 'label4',
-            'description1', 'description2', 'description3', 'description4'
+            'label1', 'label2', 'label3', 'label4'
         );
 
         $filter = $this->parseFrontendFilter($filter, $columns);
-        $filter['isDeleted'] = 0;
 
         $order = $this->parseFrontendOrder($order);
 
@@ -100,23 +94,9 @@ class ModelService extends AbstractService implements ObjectManagerAwareInterfac
      */
     public function create($data) {
 
-        $modelEntity = new Model();
-        $modelEntity->exchangeArray($data);
+        $themeEntity = new Theme();
+        $themeEntity->exchangeArray($data);
 
-        return $this->save($modelEntity);
-    }
-
-    /**
-     * Delete
-     *
-     * @param $id
-     */
-    public function delete($id) {
-
-        $modelEntity = $this->getEntity($id);
-        $modelEntity->setIsDeleted(1);
-
-        $this->objectManager->persist($modelEntity);
-        $this->objectManager->flush();
+        return $this->save($themeEntity);
     }
 }

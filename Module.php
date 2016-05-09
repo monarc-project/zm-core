@@ -75,16 +75,11 @@ class Module
         return array(
             'invokables' => array(
                 //'\MonarcCore\Model\Entity\User' => '\MonarcCore\Model\Entity\User',
-                '\MonarcCore\Model\Entity\UserRole' => '\MonarcCore\Model\Entity\UserRole',
-                '\MonarcCore\Model\Entity\Role' => '\MonarcCore\Model\Entity\Role',
-                '\MonarcCore\Model\Entity\Model' => '\MonarcCore\Model\Entity\Model',
             ),
             'factories' => array(
                 '\MonarcCore\Model\Db' => function($sm){
                     return new Model\Db($sm->get('doctrine.entitymanager.orm_default'));
                 },
-                '\MonarcCore\Service\IndexService' => '\MonarcCore\Service\IndexServiceFactory',
-
                 '\MonarcCore\Model\Entity\User' => function($sm){
                     $u = new Model\Entity\User();
                     $u->setDbAdpater($sm->get('\MonarcCore\Model\Db'));
@@ -99,11 +94,6 @@ class Module
                     return $utable;
                 },
 
-                '\MonarcCore\Model\Table\ModelTable' => function($sm){
-                    $mtable = new Model\Table\ModelTable($sm->get('\MonarcCore\Model\Db'));
-                    $mtable->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
-                    return $mtable;
-                },
                 '\MonarcCore\Model\Table\PasswordTokenTable' => function($sm){
                     return new Model\Table\PasswordTokenTable($sm->get('\MonarcCore\Model\Db'));
                 },
@@ -113,12 +103,6 @@ class Module
                     $urtable->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
                     return $urtable;
                 },
-                '\MonarcCore\Service\UserService' => '\MonarcCore\Service\UserServiceFactory',
-                '\MonarcCore\Service\UserRoleService' => '\MonarcCore\Service\UserRoleServiceFactory',
-                '\MonarcCore\Service\RoleService' => '\MonarcCore\Service\RoleServiceFactory',
-                '\MonarcCore\Service\MailService' => '\MonarcCore\Service\MailServiceFactory',
-                '\MonarcCore\Service\PasswordService' => '\MonarcCore\Service\PasswordServiceFactory',
-                '\MonarcCore\Service\ModelService' => '\MonarcCore\Service\ModelServiceFactory',
                 '\MonarcCore\Model\Table\UserTokenTable' => function($sm){
                     return new Model\Table\UserTokenTable($sm->get('\MonarcCore\Model\Db'));
                 },
@@ -137,9 +121,6 @@ class Module
                     $aa->setSecurity($sm->get('\MonarcCore\Service\SecurityService'));
                     return $aa;
                 },
-                '\MonarcCore\Service\AuthenticationService' => '\MonarcCore\Service\AuthenticationServiceFactory',
-
-                // Récupération du user connecté
                 '\MonarcCore\Service\ConnectedUserService' => function($sm){
                     $uc = new Service\ConnectedUserService();
                     $request = $token = $sm->get('Request');

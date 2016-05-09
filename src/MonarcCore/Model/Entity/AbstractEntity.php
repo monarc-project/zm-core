@@ -47,6 +47,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
         $filter = $this->getInputFilter()
             ->setData($options)
             ->setValidationGroup(InputFilterInterface::VALIDATE_ALL);
+
         $isValid = $filter->isValid();
         if(!$isValid){
             $field_errors = array();
@@ -54,7 +55,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
             foreach ($filter->getInvalidInput() as $field => $error) {
                 foreach ($error->getMessages() as $message) {
                     if (!empty($field)) {
-                        $field_errors[] = str_replace('Value', ucfirst($field), $message);
+                        $field_errors[] = str_replace('Value', $field, $message);
                     }
                 }
             }
@@ -63,14 +64,17 @@ abstract class AbstractEntity implements InputFilterAwareInterface
         }
         $options = $filter->getValues();
         foreach($options as $k => $v){
-            $this->set($k,$v);
+            if (!is_null($v)) {
+                $this->set($k, $v);
+            }
         }
+
         return $this;
     }
 
     public function toArray()
     {
-      return array(get_object_vars($this));
+      return get_object_vars($this);
     }
 
     public function getInputFilter(){
