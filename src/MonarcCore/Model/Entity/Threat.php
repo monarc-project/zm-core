@@ -384,6 +384,54 @@ class Threat extends AbstractEntity
                     'validators' => array(),
                 ));
             }
+            $this->inputFilter->add(array(
+                'name' => 'c',
+                'required' => false,
+                'allow_empty' => true,
+                'continue_if_empty' => true,
+                'filters' => array(),
+                'validators' => array(
+                    array(
+                        'name' => 'InArray',
+                        'options' => array(
+                            'haystack' => [0, 1],
+                        ),
+                        'default' => 0,
+                    ),
+                ),
+            ));
+            $this->inputFilter->add(array(
+                'name' => 'i',
+                'required' => false,
+                'allow_empty' => true,
+                'continue_if_empty' => true,
+                'filters' => array(),
+                'validators' => array(
+                    array(
+                        'name' => 'InArray',
+                        'options' => array(
+                            'haystack' => [0, 1],
+                        ),
+                        'default' => 0,
+                    ),
+                ),
+            ));
+            $this->inputFilter->add(array(
+                'name' => 'd',
+                'required' => false,
+                'allow_empty' => true,
+                'continue_if_empty' => true,
+                'filters' => array(),
+                'validators' => array(
+                    array(
+                        'name' => 'InArray',
+                        'options' => array(
+                            'haystack' => [0, 1],
+                        ),
+                        'default' => 0,
+                    ),
+                ),
+            ));
         }
         return $this->inputFilter;
     }

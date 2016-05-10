@@ -85,8 +85,10 @@ class AssetService extends AbstractService
         if (!empty($mods)) {
             $modelTable = $this->get('modelTable');
             foreach ($mods as $k => $modelid) {
-                $model = $modelTable->getEntity($modelid);
-                $assetEntity->setModel($k,$model);
+                if(!empty($modelid)){
+                    $model = $modelTable->getEntity($modelid);
+                    $assetEntity->setModel($k,$model);
+                }
             }
         }
         return $assetTable->save($assetEntity);
@@ -104,8 +106,27 @@ class AssetService extends AbstractService
 
     public function update($id,$data){
         $assetTable = $this->get('assetTable');
-        $assetEntity = $assetTable->get($id);
+        $assetEntity = $assetTable->getEntity($id);
+        $mods = isset($data['models'])?$data['models']:array();
+        unset($data['models']);
         $assetEntity->exchangeArray($data);
+        $assetEntity->get('models')->initialize();
+        foreach($assetEntity->get('models') as $k => $v){
+            if(in_array($v->get('id'), $mods)){
+                unset($mods[array_search($v->get('id'), $mods)]);
+            }else{
+                $assetEntity->get('models')->removeElement($v);
+            }
+        }
+        if(!empty($mods)){
+            $modelTable = $this->get('modelTable');
+            foreach ($mods as $k => $modelid) {
+                if(!empty($modelid)){
+                    $model = $modelTable->getEntity($modelid);
+                    $assetEntity->setModel($k,$model);
+                }
+            }
+        }
         return $assetTable->save($assetEntity);
     }
 }

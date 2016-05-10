@@ -85,8 +85,10 @@ class ThreatService extends AbstractService
         if (!empty($mods)) {
             $modelTable = $this->get('modelTable');
             foreach ($mods as $k => $modelid) {
-                $model = $modelTable->getEntity($modelid);
-                $threatEntity->setModel($k,$model);
+                if(!empty($modelid)){
+                    $model = $modelTable->getEntity($modelid);
+                    $threatEntity->setModel($k,$model);
+                }
             }
         }
         return $threatTable->save($threatEntity);
@@ -110,14 +112,24 @@ class ThreatService extends AbstractService
      */
     public function update($id,$data){
         $threatTable = $this->get('threatTable');
-        $threatEntity = $threatTable->get($id);
+        $mods = isset($data['models'])?$data['models']:array();
+        unset($data['models']);
         $threatEntity->exchangeArray($data);
-        $mods = $threatEntity->get('models');
-        if (!empty($mods)) {
+        $threatEntity->get('models')->initialize();
+        foreach($threatEntity->get('models') as $k => $v){
+            if(in_array($v->get('id'), $mods)){
+                unset($mods[array_search($v->get('id'), $mods)]);
+            }else{
+                $threatEntity->get('models')->removeElement($v);
+            }
+        }
+        if(!empty($mods)){
             $modelTable = $this->get('modelTable');
             foreach ($mods as $k => $modelid) {
-                $model = $modelTable->getEntity($modelid);
-                $threatEntity->setModel($k,$model);
+                if(!empty($modelid)){
+                    $model = $modelTable->getEntity($modelid);
+                    $threatEntity->setModel($k,$model);
+                }
             }
         }
         return $threatTable->save($threatEntity);

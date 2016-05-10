@@ -93,7 +93,7 @@ class ModelService extends AbstractService
 
     public function update($id,$data){
         $modelTable = $this->get('modelTable');
-        $modelEntity = $modelTable->get($id);
+        $modelEntity = $modelTable->getEntity($id);
         $modelEntity->exchangeArray($data);
         return $modelTable->save($modelEntity);
     }
