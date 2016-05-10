@@ -76,6 +76,7 @@ class Module
             'invokables' => array(
                 //'\MonarcCore\Model\Entity\User' => '\MonarcCore\Model\Entity\User',
                 '\MonarcCore\Model\Entity\Model' => '\MonarcCore\Model\Entity\Model',
+                '\MonarcCore\Model\Entity\Asset' => '\MonarcCore\Model\Entity\Asset',
             ),
             'factories' => array(
                 '\MonarcCore\Model\Db' => function($sm){
@@ -97,6 +98,11 @@ class Module
 
                 '\MonarcCore\Model\Table\ModelTable' => function($sm){
                     $utable = new Model\Table\ModelTable($sm->get('\MonarcCore\Model\Db'));
+                    $utable->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
+                    return $utable;
+                },
+                '\MonarcCore\Model\Table\AssetTable' => function($sm){
+                    $utable = new Model\Table\AssetTable($sm->get('\MonarcCore\Model\Db'));
                     $utable->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
                     return $utable;
                 },

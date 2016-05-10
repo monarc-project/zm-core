@@ -30,9 +30,8 @@ class Asset extends AbstractEntity
     protected $anr;
 
     /**
-     * @var \MonarcCore\Model\Entity\Model
-     *
-     * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Model", cascade={"persist"})
+     * @var \Doctrine\Common\Collections\Collection
+     * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Model", inversedBy="assets", cascade={"persist"})
      * @ORM\JoinTable(name="assets_models",
      *  joinColumns={@ORM\JoinColumn(name="asset_id", referencedColumnName="id")},
      *  inverseJoinColumns={@ORM\JoinColumn(name="model_id", referencedColumnName="id")}
@@ -179,6 +178,14 @@ class Asset extends AbstractEntity
     }
 
     /**
+     * @return Model
+     */
+    public function getModel($id)
+    {
+        return $this->models[$id];
+    }
+
+    /**
      * @param Model $models
      * @return Asset
      */
@@ -195,7 +202,17 @@ class Asset extends AbstractEntity
      */
     public function addModel(Model $model)
     {
-        $this->models->add($model);
+        $this->models[] = $model;
+    }
+    /**
+     * Set model
+     *
+     * @param key
+     * @param Model $model
+     */
+    public function setModel($id, Model $model)
+    {
+        $this->models[$id] = $model;
     }
 
     public function getInputFilter(){

@@ -2,6 +2,7 @@
 
 namespace MonarcCore\Model\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -160,6 +161,17 @@ class Model extends AbstractEntity
      * @ORM\Column(name="updated_at", type="datetime", nullable=true)
      */
     protected $updatedAt;
+
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Asset", mappedBy="models", cascade={"persist"})
+     */
+    protected $assets;
+
+    public function __construct()
+    {
+        $this->assets = new ArrayCollection();
+    }
 
     /**
      * @return int

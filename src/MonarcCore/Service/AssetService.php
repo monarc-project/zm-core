@@ -1,10 +1,6 @@
 <?php
 namespace MonarcCore\Service;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\ORM\EntityRepository;
-use DoctrineModule\Persistence\ObjectManagerAwareInterface;
-use DoctrineModule\Persistence\ProvidesObjectManager;
 use MonarcCore\Model\Entity\Asset;
 use MonarcCore\Model\Entity\Model;
 
@@ -14,47 +10,65 @@ use MonarcCore\Model\Entity\Model;
  * Class AssetService
  * @package MonarcCore\Service
  */
-class AssetService extends AbstractService implements ObjectManagerAwareInterface
+class AssetService extends AbstractService
 {
-    use ProvidesObjectManager;
 
-    protected $modelService;
+    protected $assetTable;
+    protected $assetEntity;
+    protected $modelTable;
 
     protected $repository;
 
     protected $filterColumns = [
         'label1', 'label2', 'label3', 'label4',
         'description1', 'description2', 'description3', 'description4',
-        'code'
+        'code',
     ];
 
     /**
-     * @return mixed
+     * Get Filtered Count
+     *
+     * @param null $filter
+     * @return int
      */
-    public function getModelService()
-    {
-        return $this->modelService;
+    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null) {
+        $assetTable = $this->get('assetTable');
+
+        return $assetTable->countFiltered($page, $limit, $this->parseFrontendOrder($order),
+            $this->parseFrontendFilter($filter, $this->filterColumns));
     }
 
     /**
-     * @param mixed $modelService
-     * @return AssetService
+     * Get List
+     *
+     * @param int $page
+     * @param int $limit
+     * @param null $order
+     * @param null $filter
+     * @return array
      */
-    public function setModelService($modelService)
-    {
-        $this->modelService = $modelService;
-        return $this;
+    public function getList($page = 1, $limit = 25, $order = null, $filter = null){
+
+        $assetTable = $this->get('assetTable');
+
+        return $assetTable->fetchAllFiltered(
+            array_keys($this->get('assetEntity')->getJsonArray()),
+            $page,
+            $limit,
+            $this->parseFrontendOrder($order),
+            $this->parseFrontendFilter($filter, $this->filterColumns)
+        );
     }
 
     /**
-     * @return EntityRepository
+     * Get Entity
+     *
+     * @param $id
+     * @return array
      */
-    public function getRepository()
-    {
-        if(!$this->repository) {
-            $this->repository = $this->objectManager->getRepository(Asset::class);
-        }
-        return $this->repository;
+    public function getEntity($id){
+
+        return $this->get('assetTable')->get($id);
     }
 
     /**
@@ -65,32 +79,35 @@ class AssetService extends AbstractService implements ObjectManagerAwareInterfac
      */
     public function create($data) {
 
-        $assetEntity = new Asset();
-        $assetEntity = $this->addModel($assetEntity, $data);
+        $assetTable = $this->get('assetTable');
+        $assetEntity = $this->get('assetEntity');
         $assetEntity->exchangeArray($data);
 
-        return $this->save($assetEntity);
+        $mods = $assetEntity->get('models');
+        if (!empty($mods)) {
+            $modelTable = $this->get('modelTable');
+            foreach ($mods as $k => $modelid) {
+                $model = $modelTable->getEntity($modelid);
+                $assetEntity->setModel($k,$model);
+            }
+        }
+        return $assetTable->save($assetEntity);
     }
 
     /**
-     * Update Entity
+     * Delete
      *
      * @param $id
-     * @param $data
      */
-    public function update($id, $data) {
+    public function delete($id) {
+        $assetEntity = $this->get('assetEntity');
+        $assetEntity->delete($id);
+    }
 
-        $assetEntity = $this->getEntity($id);
-        $assetEntity->setModels(new ArrayCollection());
-        $assetEntity = $this->addModel($assetEntity, $data);
+    public function update($id,$data){
+        $assetTable = $this->get('assetTable');
+        $assetEntity = $assetTable->get($id);
         $assetEntity->exchangeArray($data);
-
-        $connectedUser = trim($this->getConnectedUser()['firstname'] . " " . $this->getConnectedUser()['lastname']);
-
-        $assetEntity->set('updater', $connectedUser);
-        $assetEntity->set('updatedAt',new \DateTime());
-
-        $this->objectManager->persist($assetEntity);
-        $this->objectManager->flush();
+        return $assetTable->save($assetEntity);
     }
 }
