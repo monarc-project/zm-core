@@ -17,8 +17,6 @@ class AssetService extends AbstractService
     protected $assetEntity;
     protected $modelTable;
 
-    protected $repository;
-
     protected $filterColumns = [
         'label1', 'label2', 'label3', 'label4',
         'description1', 'description2', 'description3', 'description4',

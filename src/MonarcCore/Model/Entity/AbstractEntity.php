@@ -105,6 +105,8 @@ abstract class AbstractEntity implements InputFilterAwareInterface
                         $inputFilter->add(array(
                             'name' => $k,
                             'required' => false,
+                            'allow_empty' => true,
+                            'continue_if_empty' => true,
                             'filters' => array(),
                             'validators' => array(),
                         ));

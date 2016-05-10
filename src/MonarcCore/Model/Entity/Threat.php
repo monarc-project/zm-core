@@ -42,7 +42,7 @@ class Threat extends AbstractEntity
     /**
      * @var \MonarcCore\Model\Entity\Model
      *
-     * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Model", cascade={"persist"})
+     * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Model", inversedBy="threats", cascade={"persist"})
      * @ORM\JoinTable(name="threats_models",
      *  joinColumns={@ORM\JoinColumn(name="threat_id", referencedColumnName="id")},
      *  inverseJoinColumns={@ORM\JoinColumn(name="model_id", referencedColumnName="id")}

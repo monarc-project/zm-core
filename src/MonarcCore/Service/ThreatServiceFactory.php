@@ -1,22 +1,12 @@
 <?php
 namespace MonarcCore\Service;
 
-use Zend\ServiceManager\FactoryInterface;
-use Zend\ServiceManager\ServiceLocatorInterface;
-
-class ThreatServiceFactory implements FactoryInterface
+class ThreatServiceFactory extends AbstractServiceFactory
 {
-    public function createService(ServiceLocatorInterface $serviceLocator)
-    {
-        $connectedUser = $serviceLocator->get('MonarcCore\Service\ConnectedUserService')->getConnectedUser();
-        $modelService = $serviceLocator->get('\MonarcCore\Service\ModelService');
-        $themeService = $serviceLocator->get('\MonarcCore\Service\ThemeService');
-
-        $service = new ThreatService();
-        $service->setConnectedUser($connectedUser);
-        $service->setModelService($modelService);
-        $service->setThemeService($themeService);
-
-        return $service;
-    }
+    protected $ressources = array(
+        'threatTable'=> '\MonarcCore\Model\Table\ThreatTable',
+        'threatEntity'=> '\MonarcCore\Model\Entity\Threat',
+        'modelTable' => '\MonarcCore\Model\Table\ModelTable',
+    );
 }
+

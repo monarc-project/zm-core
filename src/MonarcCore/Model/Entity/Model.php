@@ -168,9 +168,16 @@ class Model extends AbstractEntity
      */
     protected $assets;
 
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Threat", mappedBy="models", cascade={"persist"})
+     */
+    protected $threats;
+
     public function __construct()
     {
         $this->assets = new ArrayCollection();
+        $this->threats = new ArrayCollection();
     }
 
     /**

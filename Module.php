@@ -77,6 +77,7 @@ class Module
                 //'\MonarcCore\Model\Entity\User' => '\MonarcCore\Model\Entity\User',
                 '\MonarcCore\Model\Entity\Model' => '\MonarcCore\Model\Entity\Model',
                 '\MonarcCore\Model\Entity\Asset' => '\MonarcCore\Model\Entity\Asset',
+                '\MonarcCore\Model\Entity\Threat' => '\MonarcCore\Model\Entity\Threat',
             ),
             'factories' => array(
                 '\MonarcCore\Model\Db' => function($sm){
@@ -103,6 +104,11 @@ class Module
                 },
                 '\MonarcCore\Model\Table\AssetTable' => function($sm){
                     $utable = new Model\Table\AssetTable($sm->get('\MonarcCore\Model\Db'));
+                    $utable->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
+                    return $utable;
+                },
+                '\MonarcCore\Model\Table\ThreatTable' => function($sm){
+                    $utable = new Model\Table\ThreatTable($sm->get('\MonarcCore\Model\Db'));
                     $utable->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
                     return $utable;
                 },

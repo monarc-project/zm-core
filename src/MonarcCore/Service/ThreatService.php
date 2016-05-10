@@ -1,11 +1,8 @@
 <?php
 namespace MonarcCore\Service;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\ORM\EntityRepository;
-use DoctrineModule\Persistence\ObjectManagerAwareInterface;
-use DoctrineModule\Persistence\ProvidesObjectManager;
 use MonarcCore\Model\Entity\Threat;
+use MonarcCore\Model\Entity\Model;
 
 /**
  * Threat Service
@@ -13,54 +10,63 @@ use MonarcCore\Model\Entity\Threat;
  * Class ThreatService
  * @package MonarcCore\Service
  */
-class ThreatService extends AbstractService implements ObjectManagerAwareInterface
+class ThreatService extends AbstractService
 {
-    use ProvidesObjectManager;
 
-    protected $modelService;
-
-    protected $themeService;
+    protected $threatTable;
+    protected $threatEntity;
+    protected $modelTable;
 
     protected $filterColumns = [
         'label1', 'label2', 'label3', 'label4',
         'description1', 'description2', 'description3', 'description4',
-        'code'
+        'code',
     ];
 
-    /**
-     * @return mixed
+     /**
+     * Get Filtered Count
+     *
+     * @param null $filter
+     * @return int
      */
-    public function getModelService()
-    {
-        return $this->modelService;
+    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null) {
+        $threatTable = $this->get('threatTable');
+
+        return $threatTable->countFiltered($page, $limit, $this->parseFrontendOrder($order),
+            $this->parseFrontendFilter($filter, $this->filterColumns));
     }
 
     /**
-     * @param mixed $modelService
-     * @return AssetService
+     * Get List
+     *
+     * @param int $page
+     * @param int $limit
+     * @param null $order
+     * @param null $filter
+     * @return array
      */
-    public function setModelService($modelService)
-    {
-        $this->modelService = $modelService;
-        return $this;
+    public function getList($page = 1, $limit = 25, $order = null, $filter = null){
+
+        $threatTable = $this->get('threatTable');
+
+        return $threatTable->fetchAllFiltered(
+            array_keys($this->get('threatEntity')->getJsonArray()),
+            $page,
+            $limit,
+            $this->parseFrontendOrder($order),
+            $this->parseFrontendFilter($filter, $this->filterColumns)
+        );
     }
 
     /**
-     * @return mixed
+     * Get Entity
+     *
+     * @param $id
+     * @return array
      */
-    public function getThemeService()
-    {
-        return $this->themeService;
-    }
+    public function getEntity($id){
 
-    /**
-     * @param mixed $themeService
-     * @return ThreatService
-     */
-    public function setThemeService($themeService)
-    {
-        $this->themeService = $themeService;
-        return $this;
+        return $this->get('threatTable')->get($id);
     }
 
     /**
@@ -71,11 +77,29 @@ class ThreatService extends AbstractService implements ObjectManagerAwareInterfa
      */
     public function create($data) {
 
-        $assetEntity = new Asset();
-        $assetEntity = $this->addModel($assetEntity, $data);
-        $assetEntity->exchangeArray($data);
+        $threatTable = $this->get('threatTable');
+        $threatEntity = $this->get('threatEntity');
+        $threatEntity->exchangeArray($data);
 
-        return $this->save($assetEntity);
+        $mods = $threatEntity->get('models');
+        if (!empty($mods)) {
+            $modelTable = $this->get('modelTable');
+            foreach ($mods as $k => $modelid) {
+                $model = $modelTable->getEntity($modelid);
+                $threatEntity->setModel($k,$model);
+            }
+        }
+        return $threatTable->save($threatEntity);
+    }
+
+    /**
+     * Delete
+     *
+     * @param $id
+     */
+    public function delete($id) {
+        $threatEntity = $this->get('threatEntity');
+        $threatEntity->delete($id);
     }
 
     /**
@@ -84,19 +108,18 @@ class ThreatService extends AbstractService implements ObjectManagerAwareInterfa
      * @param $id
      * @param $data
      */
-    public function update($id, $data) {
-
-        $assetEntity = $this->getEntity($id);
-        $assetEntity->setModels(new ArrayCollection());
-        $assetEntity = $this->addModel($assetEntity, $data);
-        $assetEntity->exchangeArray($data);
-
-        $connectedUser = trim($this->getConnectedUser()['firstname'] . " " . $this->getConnectedUser()['lastname']);
-
-        $assetEntity->set('updater', $connectedUser);
-        $assetEntity->set('updatedAt',new \DateTime());
-
-        $this->objectManager->persist($assetEntity);
-        $this->objectManager->flush();
+    public function update($id,$data){
+        $threatTable = $this->get('threatTable');
+        $threatEntity = $threatTable->get($id);
+        $threatEntity->exchangeArray($data);
+        $mods = $threatEntity->get('models');
+        if (!empty($mods)) {
+            $modelTable = $this->get('modelTable');
+            foreach ($mods as $k => $modelid) {
+                $model = $modelTable->getEntity($modelid);
+                $threatEntity->setModel($k,$model);
+            }
+        }
+        return $threatTable->save($threatEntity);
     }
 }
