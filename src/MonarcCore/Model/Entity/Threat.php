@@ -353,6 +353,17 @@ class Threat extends AbstractEntity
     protected $updatedAt;
 
     /**
+     * Set model
+     *
+     * @param key
+     * @param Model $model
+     */
+    public function setModel($id, Model $model)
+    {
+        $this->models[$id] = $model;
+    }
+
+    /**
      * Add model
      *
      * @param Model $model

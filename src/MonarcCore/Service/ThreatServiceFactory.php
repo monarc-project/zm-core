@@ -4,8 +4,8 @@ namespace MonarcCore\Service;
 class ThreatServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = array(
-        'threatTable'=> '\MonarcCore\Model\Table\ThreatTable',
-        'threatEntity'=> '\MonarcCore\Model\Entity\Threat',
+        'table'=> '\MonarcCore\Model\Table\ThreatTable',
+        'entity'=> '\MonarcCore\Model\Entity\Threat',
         'modelTable' => '\MonarcCore\Model\Table\ModelTable',
     );
 }
