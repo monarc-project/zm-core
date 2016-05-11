@@ -364,6 +364,17 @@ class Threat extends AbstractEntity
     }
 
     /**
+     * Set theme
+     *
+     * @param key
+     * @param Theme $theme
+     */
+    public function setTheme(Theme $theme)
+    {
+        $this->theme = $theme;
+    }
+
+    /**
      * Add model
      *
      * @param Model $model

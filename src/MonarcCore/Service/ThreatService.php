@@ -10,6 +10,7 @@ namespace MonarcCore\Service;
 class ThreatService extends AbstractService
 {
     protected $modelTable;
+    protected $themeTable;
 
     protected $filterColumns = [
         'label1', 'label2', 'label3', 'label4',
@@ -37,6 +38,13 @@ class ThreatService extends AbstractService
                     $entity->setModel($key, $model);
                 }
             }
+        }
+
+        $themeId = $entity->get('theme');
+        if (!empty($models)) {
+            $themeTable = $this->get('themeTable');
+            $theme = $themeTable->getEntity($themeId);
+            $entity->setTheme($theme);
         }
 
         return $this->get('table')->save($entity);
