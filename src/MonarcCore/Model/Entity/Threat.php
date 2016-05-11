@@ -32,7 +32,7 @@ class Threat extends AbstractEntity
     /**
      * @var \MonarcCore\Model\Entity\Theme
      *
-     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Theme")
+     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Theme", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="theme_id", referencedColumnName="id", nullable=true)
      * })
