@@ -29,6 +29,7 @@ class ThreatService extends AbstractService
         $entity = $this->get('entity');
         $entity->exchangeArray($data);
 
+
         $models = $entity->get('models');
         if (!empty($models)) {
             $modelTable = $this->get('modelTable');
@@ -39,11 +40,10 @@ class ThreatService extends AbstractService
                 }
             }
         }
-
+        
         $themeId = $entity->get('theme');
-        if (!empty($models)) {
-            $themeTable = $this->get('themeTable');
-            $theme = $themeTable->getEntity($themeId);
+        if (!empty($themeId)) {
+            $theme = $this->get('themeTable')->getEntity($themeId);
             $entity->setTheme($theme);
         }
 
