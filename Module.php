@@ -101,7 +101,6 @@ class Module
                     $utable->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
                     return $utable;
                 },
-
                 '\MonarcCore\Model\Table\ThemeTable' => function($sm){
                     $table = new Model\Table\ThemeTable($sm->get('\MonarcCore\Model\Db'));
                     $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
@@ -117,11 +116,14 @@ class Module
                     $utable->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
                     return $utable;
                 },
-
+                '\MonarcCore\Model\Table\VulnerabilityTable' => function($sm){
+                    $table = new Model\Table\VulnerabilityTable($sm->get('\MonarcCore\Model\Db'));
+                    $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
+                    return $table;
+                },
                 '\MonarcCore\Model\Table\PasswordTokenTable' => function($sm){
                     return new Model\Table\PasswordTokenTable($sm->get('\MonarcCore\Model\Db'));
                 },
-                // User Role table
                 '\MonarcCore\Model\Table\UserRoleTable' => function($sm){
                     $urtable = new Model\Table\UserRoleTable($sm->get('\MonarcCore\Model\Db'));
                     $urtable->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());

@@ -204,6 +204,7 @@ class Asset extends AbstractEntity
     {
         $this->models[] = $model;
     }
+
     /**
      * Set model
      *

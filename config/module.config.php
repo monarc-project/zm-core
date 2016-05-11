@@ -40,14 +40,15 @@ return array(
             'MonarcCore\Service\AbstractFactory',
         ),*/
         'invokables' => array(
-            'MonarcCore\Model\Entity\Asset'     => 'MonarcCore\Model\Entity\Asset',
-            'MonarcCore\Model\Entity\Model'     => 'MonarcCore\Model\Entity\Model',
-            'MonarcCore\Model\Entity\Role'      => 'MonarcCore\Model\Entity\Role',
-            'MonarcCore\Model\Entity\Theme'     => 'MonarcCore\Model\Entity\Theme',
-            'MonarcCore\Model\Entity\UserRole'  => 'MonarcCore\Model\Entity\UserRole',
-            'MonarcCore\Service\Mime\Part'      => 'Zend\Mime\Part',
-            'MonarcCore\Service\Mime\Message'   => 'Zend\Mime\Message',
-            'MonarcCore\Service\Mail\Message'   => 'Zend\Mail\Message',
+            'MonarcCore\Model\Entity\Asset'         => 'MonarcCore\Model\Entity\Asset',
+            'MonarcCore\Model\Entity\Model'         => 'MonarcCore\Model\Entity\Model',
+            'MonarcCore\Model\Entity\Role'          => 'MonarcCore\Model\Entity\Role',
+            'MonarcCore\Model\Entity\Theme'         => 'MonarcCore\Model\Entity\Theme',
+            'MonarcCore\Model\Entity\UserRole'      => 'MonarcCore\Model\Entity\UserRole',
+            'MonarcCore\Model\Entity\Vulnerability' => 'MonarcCore\Model\Entity\Vulnerability',
+            'MonarcCore\Service\Mime\Part'          => 'Zend\Mime\Part',
+            'MonarcCore\Service\Mime\Message'       => 'Zend\Mime\Message',
+            'MonarcCore\Service\Mail\Message'       => 'Zend\Mail\Message',
             'MonarcCore\Service\Mail\Transport\Smtp'        => 'Zend\Mail\Transport\Smtp',
             'MonarcCore\Service\Mail\Transport\SmtpOptions' => 'Zend\Mail\Transport\SmtpOptions'
         ),
