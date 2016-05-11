@@ -1,9 +1,6 @@
 <?php
 namespace MonarcCore\Service;
 
-use MonarcCore\Model\Entity\Asset;
-use MonarcCore\Model\Entity\Model;
-
 /**
  * Asset Service
  *
@@ -12,9 +9,6 @@ use MonarcCore\Model\Entity\Model;
  */
 class AssetService extends AbstractService
 {
-
-    protected $assetTable;
-    protected $assetEntity;
     protected $modelTable;
 
     protected $filterColumns = [
@@ -24,52 +18,6 @@ class AssetService extends AbstractService
     ];
 
     /**
-     * Get Filtered Count
-     *
-     * @param null $filter
-     * @return int
-     */
-    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null) {
-        $assetTable = $this->get('assetTable');
-
-        return $assetTable->countFiltered($page, $limit, $this->parseFrontendOrder($order),
-            $this->parseFrontendFilter($filter, $this->filterColumns));
-    }
-
-    /**
-     * Get List
-     *
-     * @param int $page
-     * @param int $limit
-     * @param null $order
-     * @param null $filter
-     * @return array
-     */
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null){
-
-        $assetTable = $this->get('assetTable');
-
-        return $assetTable->fetchAllFiltered(
-            array_keys($this->get('assetEntity')->getJsonArray()),
-            $page,
-            $limit,
-            $this->parseFrontendOrder($order),
-            $this->parseFrontendFilter($filter, $this->filterColumns)
-        );
-    }
-
-    /**
-     * Get Entity
-     *
-     * @param $id
-     * @return array
-     */
-    public function getEntity($id){
-
-        return $this->get('assetTable')->get($id);
-    }
-
-    /**
      * Create
      *
      * @param $data
@@ -77,56 +25,58 @@ class AssetService extends AbstractService
      */
     public function create($data) {
 
-        $assetTable = $this->get('assetTable');
-        $assetEntity = $this->get('assetEntity');
-        $assetEntity->exchangeArray($data);
+        $entity = $this->get('entity');
+        $entity->exchangeArray($data);
 
-        $mods = $assetEntity->get('models');
-        if (!empty($mods)) {
+        $models = $entity->get('models');
+        if (!empty($models)) {
             $modelTable = $this->get('modelTable');
-            foreach ($mods as $k => $modelid) {
-                if(!empty($modelid)){
-                    $model = $modelTable->getEntity($modelid);
-                    $assetEntity->setModel($k,$model);
+            foreach ($models as $key => $modelId) {
+                if (!empty($modelId)) {
+                    $model = $modelTable->getEntity($modelId);
+                    $entity->setModel($key, $model);
                 }
             }
         }
-        return $assetTable->save($assetEntity);
+
+        return $this->get('table')->save($entity);
     }
+
 
     /**
-     * Delete
+     * Update
      *
      * @param $id
+     * @param $data
+     * @return mixed
      */
-    public function delete($id) {
-        $assetEntity = $this->get('assetEntity');
-        $assetEntity->delete($id);
-    }
-
     public function update($id,$data){
-        $assetTable = $this->get('assetTable');
-        $assetEntity = $assetTable->getEntity($id);
-        $mods = isset($data['models'])?$data['models']:array();
+
+        $models = isset($data['models']) ? $data['models'] : array();
         unset($data['models']);
-        $assetEntity->exchangeArray($data);
-        $assetEntity->get('models')->initialize();
-        foreach($assetEntity->get('models') as $k => $v){
-            if(in_array($v->get('id'), $mods)){
-                unset($mods[array_search($v->get('id'), $mods)]);
-            }else{
-                $assetEntity->get('models')->removeElement($v);
+
+        $entity = $this->get('table')->getEntity($id);
+        $entity->exchangeArray($data);
+        $entity->get('models')->initialize();
+
+        foreach($entity->get('models') as $model){
+            if (in_array($model->get('id'), $models)){
+                unset($models[array_search($model->get('id'), $models)]);
+            } else {
+                $entity->get('models')->removeElement($model);
             }
         }
-        if(!empty($mods)){
+
+        if (!empty($models)){
             $modelTable = $this->get('modelTable');
-            foreach ($mods as $k => $modelid) {
-                if(!empty($modelid)){
-                    $model = $modelTable->getEntity($modelid);
-                    $assetEntity->setModel($k,$model);
+            foreach ($models as $key => $modelId) {
+                if(!empty($modelId)){
+                    $model = $modelTable->getEntity($modelId);
+                    $entity->setModel($key, $model);
                 }
             }
         }
-        return $assetTable->save($assetEntity);
+
+        return $this->get('table')->save($entity);
     }
 }

@@ -6,8 +6,8 @@ abstract class AbstractService extends AbstractServiceFactory
     use \MonarcCore\Model\GetAndSet;
 
     protected $serviceFactory;
-
-    protected $connectedUser;
+    protected $table;
+    protected $entity;
 
     /**
      * @return null
@@ -15,24 +15,6 @@ abstract class AbstractService extends AbstractServiceFactory
     protected function getServiceFactory()
     {
         return $this->serviceFactory;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getConnectedUser()
-    {
-        return $this->connectedUser;
-    }
-
-    /**
-     * @param mixed $connectedUser
-     * @return AbstractService
-     */
-    public function setConnectedUser($connectedUser)
-    {
-        $this->connectedUser = $connectedUser;
-        return $this;
     }
 
     /**
@@ -50,133 +32,6 @@ abstract class AbstractService extends AbstractServiceFactory
         } else {
             $this->serviceFactory = $serviceFactory;
         }
-    }
-
-    /**
-     * Get List
-     *
-     * @param int $page
-     * @param int $limit
-     * @param null $order
-     * @param null $filter
-     * @return array
-     */
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null){
-
-        $filter = $this->parseFrontendFilter($filter, $this->filterColumns);
-        $order = $this->parseFrontendOrder($order);
-
-        $qb = $this->buildFilteredQuery($page, $limit, $order, $filter);
-
-        return $qb->getQuery()->getResult();
-    }
-
-    /**
-     * Get Entity
-     *
-     * @param $id
-     * @return array
-     */
-    public function getEntity($id){
-
-        return $this->getRepository()->find($id);
-    }
-
-    /**
-     * Update Entity
-     *
-     * @param $id
-     * @param $data
-     */
-    public function update($id, $data) {
-
-        $entity = $this->getEntity($id);
-        $entity->exchangeArray($data);
-
-        $connectedUser = trim($this->getConnectedUser()['firstname'] . " " . $this->getConnectedUser()['lastname']);
-
-        $entity->set('updater', $connectedUser);
-        $entity->set('updatedAt',new \DateTime());
-
-        $this->objectManager->persist($entity);
-        $this->objectManager->flush();
-    }
-
-    /**
-     * Delete
-     *
-     * @param $id
-     */
-    public function delete($id) {
-        $entity = $this->getEntity($id);
-
-        $this->objectManager->remove($entity);
-        $this->objectManager->flush();
-    }
-
-    /**
-     * Get Filtered Count
-     *
-     * @param int $page
-     * @param int $limit
-     * @param null $order
-     * @param null $filter
-     * @return mixed
-     */
-    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null) {
-
-        $order = $this->parseFrontendOrder($order);
-        $filter = $this->parseFrontendFilter($filter, $this->filterColumns);
-
-        $qb = $this->buildFilteredQuery($page, $limit, $order, $filter);
-        $qb->select('count(t.id)');
-
-        return $qb->getQuery()->getSingleScalarResult();
-    }
-
-    /**
-     * Build Filtered Query
-     *
-     * @param int $page
-     * @param int $limit
-     * @param null $order
-     * @param null $filter
-     * @return mixed
-     */
-    protected function buildFilteredQuery($page = 1, $limit = 25, $order = null, $filter = null) {
-
-        $qb = $this->getRepository()->createQueryBuilder('t');
-
-        // Add filter in WHERE xx LIKE %y% OR zz LIKE %y% ...
-        if ($filter != null && is_array($filter)) {
-            $isFirst = true;
-
-            $searchIndex = 1;
-
-            foreach ($filter as $colName => $value) {
-                if ($isFirst) {
-                    $qb->where("t.$colName LIKE :filter_$searchIndex");
-                    $qb->setParameter(":filter_$searchIndex",  '%' . $value . '%');
-                    $isFirst = false;
-                } else {
-                    $qb->orWhere("t.$colName LIKE :filter_$searchIndex");
-                    $qb->setParameter(":filter_$searchIndex",  '%' . $value . '%');
-                }
-
-                ++$searchIndex;
-            }
-        }
-
-        // Add order
-        if ($order != null) {
-            $qb->orderBy('t.' . $order[0], $order[1]);
-        }
-
-        // Add limit and offset
-        $qb->setFirstResult(($page - 1) * $limit);
-        $qb->setMaxResults($limit);
-
-        return $qb;
     }
 
     /**
@@ -224,51 +79,85 @@ abstract class AbstractService extends AbstractServiceFactory
         }
     }
 
+
     /**
-     * Save Entity
+     * Get Filtered Count
      *
-     * @param $entity
+     * @param null $filter
+     * @return int
      */
-    protected function save($entity) {
+    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null) {
 
-        $connectedUser = trim($this->getConnectedUser()['firstname'] . " " . $this->getConnectedUser()['lastname']);
-
-        $entity->set('creator', $connectedUser);
-        $entity->set('createdAt',new \DateTime());
-
-        $this->objectManager->persist($entity);
-        $this->objectManager->flush();
-
-        return $entity->getId();
+        return $this->get('table')->countFiltered($page, $limit, $this->parseFrontendOrder($order),
+            $this->parseFrontendFilter($filter, $this->filterColumns));
     }
 
     /**
-     * Add Model
-     * @param $entity
-     * @param $data
+     * Get List
+     *
+     * @param int $page
+     * @param int $limit
+     * @param null $order
+     * @param null $filter
+     * @return array
      */
-    public function addModel($entity, &$data){
-        if (array_key_exists('models', $data)) {
-            if (!is_array($data['models'])) {
-                $data['models'] = [$data['models']];
-            }
+    public function getList($page = 1, $limit = 25, $order = null, $filter = null){
 
-            $modelService = $this->getModelService();
-            foreach ($data['models'] as $model) {
-                $modelEntity = $modelService->getEntity($model);
-
-                $entity->addModel($modelEntity);
-            }
-
-            unset($data['models']);
-        }
-
-        return $entity;
+        return $this->get('table')->fetchAllFiltered(
+            array_keys($this->get('entity')->getJsonArray()),
+            $page,
+            $limit,
+            $this->parseFrontendOrder($order),
+            $this->parseFrontendFilter($filter, $this->filterColumns)
+        );
     }
 
+    /**
+     * Get Entity
+     *
+     * @param $id
+     * @return array
+     */
+    public function getEntity($id){
 
+        return $this->get('table')->get($id);
+    }
 
+    /**
+     * Create
+     *
+     * @param $data
+     * @throws \Exception
+     */
+    public function create($data) {
 
+        $entity = $this->get('entity');
+        $entity->exchangeArray($data);
 
+        return $this->get('table')->save($entity);
+    }
 
+    /**
+     * Update
+     *
+     * @param $id
+     * @param $data
+     * @return mixed
+     */
+    public function update($id,$data){
+
+        $entity = $this->get('table')->getEntity($id);
+        $entity->exchangeArray($data);
+
+        return $this->get('table')->save($entity);
+    }
+
+    /**
+     * Delete
+     *
+     * @param $id
+     */
+    public function delete($id) {
+        $this->get('table')->delete($id);
+    }
 }

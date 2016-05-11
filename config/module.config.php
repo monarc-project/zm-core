@@ -43,6 +43,7 @@ return array(
             'MonarcCore\Model\Entity\Asset'     => 'MonarcCore\Model\Entity\Asset',
             'MonarcCore\Model\Entity\Model'     => 'MonarcCore\Model\Entity\Model',
             'MonarcCore\Model\Entity\Role'      => 'MonarcCore\Model\Entity\Role',
+            'MonarcCore\Model\Entity\Theme'     => 'MonarcCore\Model\Entity\Theme',
             'MonarcCore\Model\Entity\UserRole'  => 'MonarcCore\Model\Entity\UserRole',
             'MonarcCore\Service\Mime\Part'      => 'Zend\Mime\Part',
             'MonarcCore\Service\Mime\Message'   => 'Zend\Mime\Message',

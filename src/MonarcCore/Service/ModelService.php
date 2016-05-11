@@ -91,6 +91,13 @@ class ModelService extends AbstractService
         $modelEntity->delete($id);
     }
 
+    /**
+     * Update
+     *
+     * @param $id
+     * @param $data
+     * @return mixed
+     */
     public function update($id,$data){
         $modelTable = $this->get('modelTable');
         $modelEntity = $modelTable->getEntity($id);
