@@ -8,11 +8,11 @@ class ConfigService extends AbstractService
 
     public function getlanguage() {
 
-        $language = $this->config['language'];
+        $languages = $this->config['languages'];
         $defaultLanguageIndex = $this->config['defaultLanguageIndex'];
 
         return [
-            'language' => $language,
+            'languages' => $languages,
             'defaultLanguageIndex' => $defaultLanguageIndex,
         ];
     }
