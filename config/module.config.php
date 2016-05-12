@@ -41,6 +41,7 @@ return array(
         ),*/
         'invokables' => array(
             'MonarcCore\Model\Entity\Asset'         => 'MonarcCore\Model\Entity\Asset',
+            'MonarcCore\Model\Entity\Measure'       => 'MonarcCore\Model\Entity\Measure',
             'MonarcCore\Model\Entity\Model'         => 'MonarcCore\Model\Entity\Model',
             'MonarcCore\Model\Entity\Role'          => 'MonarcCore\Model\Entity\Role',
             'MonarcCore\Model\Entity\Theme'         => 'MonarcCore\Model\Entity\Theme',
@@ -58,6 +59,7 @@ return array(
             'MonarcCore\Service\ConfigService'          => 'MonarcCore\Service\ConfigServiceFactory',
             'MonarcCore\Service\IndexService'           => 'MonarcCore\Service\IndexServiceFactory',
             'MonarcCore\Service\MailService'            => 'MonarcCore\Service\MailServiceFactory',
+            'MonarcCore\Service\MeasureService'         => 'MonarcCore\Service\MeasureServiceFactory',
             'MonarcCore\Service\ModelService'           => 'MonarcCore\Service\ModelServiceFactory',
             'MonarcCore\Service\PasswordService'        => 'MonarcCore\Service\PasswordServiceFactory',
             'MonarcCore\Service\RoleService'            => 'MonarcCore\Service\RoleServiceFactory',
