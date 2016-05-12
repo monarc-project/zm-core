@@ -55,6 +55,7 @@ return array(
         'factories' => array(
             'MonarcCore\Service\AssetService'           => 'MonarcCore\Service\AssetServiceFactory',
             'MonarcCore\Service\AuthenticationService'  => 'MonarcCore\Service\AuthenticationServiceFactory',
+            'MonarcCore\Service\ConfigService'          => 'MonarcCore\Service\ConfigServiceFactory',
             'MonarcCore\Service\IndexService'           => 'MonarcCore\Service\IndexServiceFactory',
             'MonarcCore\Service\MailService'            => 'MonarcCore\Service\MailServiceFactory',
             'MonarcCore\Service\ModelService'           => 'MonarcCore\Service\ModelServiceFactory',
@@ -106,6 +107,7 @@ return array(
         'monarc_api_admin_roles',
         'monarc_api_admin_passwords',
         'monarc_api_themes',
+        'monarc_api_config',
     ),
 
     'cases' => [
