@@ -40,6 +40,7 @@ return array(
             'MonarcCore\Service\AbstractFactory',
         ),*/
         'invokables' => array(
+            'MonarcCore\Model\Entity\Amv'           => 'MonarcCore\Model\Entity\Amv',
             'MonarcCore\Model\Entity\Asset'         => 'MonarcCore\Model\Entity\Asset',
             'MonarcCore\Model\Entity\Measure'       => 'MonarcCore\Model\Entity\Measure',
             'MonarcCore\Model\Entity\Model'         => 'MonarcCore\Model\Entity\Model',
@@ -54,6 +55,7 @@ return array(
             'MonarcCore\Service\Mail\Transport\SmtpOptions' => 'Zend\Mail\Transport\SmtpOptions'
         ),
         'factories' => array(
+            'MonarcCore\Service\AmvService'             => 'MonarcCore\Service\AmvServiceFactory',
             'MonarcCore\Service\AssetService'           => 'MonarcCore\Service\AssetServiceFactory',
             'MonarcCore\Service\AuthenticationService'  => 'MonarcCore\Service\AuthenticationServiceFactory',
             'MonarcCore\Service\ConfigService'          => 'MonarcCore\Service\ConfigServiceFactory',

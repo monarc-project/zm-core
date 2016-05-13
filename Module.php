@@ -92,14 +92,14 @@ class Module
                     return $u;
                 },
                 '\MonarcCore\Model\Table\UserTable' => function($sm){
-                    $utable = new Model\Table\UserTable($sm->get('\MonarcCore\Model\Db'));
-                    $utable->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
-                    return $utable;
+                    $table = new Model\Table\UserTable($sm->get('\MonarcCore\Model\Db'));
+                    $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
+                    return $table;
                 },
                 '\MonarcCore\Model\Table\ModelTable' => function($sm){
-                    $utable = new Model\Table\ModelTable($sm->get('\MonarcCore\Model\Db'));
-                    $utable->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
-                    return $utable;
+                    $table = new Model\Table\ModelTable($sm->get('\MonarcCore\Model\Db'));
+                    $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
+                    return $table;
                 },
                 '\MonarcCore\Model\Table\MeasureTable' => function($sm){
                     $table = new Model\Table\MeasureTable($sm->get('\MonarcCore\Model\Db'));
@@ -112,14 +112,19 @@ class Module
                     return $table;
                 },
                 '\MonarcCore\Model\Table\AssetTable' => function($sm){
-                    $utable = new Model\Table\AssetTable($sm->get('\MonarcCore\Model\Db'));
-                    $utable->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
-                    return $utable;
+                    $table = new Model\Table\AssetTable($sm->get('\MonarcCore\Model\Db'));
+                    $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
+                    return $table;
+                },
+                '\MonarcCore\Model\Table\AmvTable' => function($sm){
+                    $table = new Model\Table\AmvTable($sm->get('\MonarcCore\Model\Db'));
+                    $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
+                    return $table;
                 },
                 '\MonarcCore\Model\Table\ThreatTable' => function($sm){
-                    $utable = new Model\Table\ThreatTable($sm->get('\MonarcCore\Model\Db'));
-                    $utable->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
-                    return $utable;
+                    $table = new Model\Table\ThreatTable($sm->get('\MonarcCore\Model\Db'));
+                    $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
+                    return $table;
                 },
                 '\MonarcCore\Model\Table\VulnerabilityTable' => function($sm){
                     $table = new Model\Table\VulnerabilityTable($sm->get('\MonarcCore\Model\Db'));
@@ -130,9 +135,9 @@ class Module
                     return new Model\Table\PasswordTokenTable($sm->get('\MonarcCore\Model\Db'));
                 },
                 '\MonarcCore\Model\Table\UserRoleTable' => function($sm){
-                    $urtable = new Model\Table\UserRoleTable($sm->get('\MonarcCore\Model\Db'));
-                    $urtable->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
-                    return $urtable;
+                    $table = new Model\Table\UserRoleTable($sm->get('\MonarcCore\Model\Db'));
+                    $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
+                    return $table;
                 },
                 '\MonarcCore\Model\Table\UserTokenTable' => function($sm){
                     return new Model\Table\UserTokenTable($sm->get('\MonarcCore\Model\Db'));
