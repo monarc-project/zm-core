@@ -375,6 +375,24 @@ class Threat extends AbstractEntity
     }
 
     /**
+     * @return Model
+     */
+    public function getModels()
+    {
+        return $this->models;
+    }
+
+    /**
+     * @param Model $models
+     * @return Threat
+     */
+    public function setModels($models)
+    {
+        $this->models = $models;
+        return $this;
+    }
+
+    /**
      * Add model
      *
      * @param Model $model

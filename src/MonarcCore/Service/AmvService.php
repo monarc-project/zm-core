@@ -39,6 +39,12 @@ class AmvService extends AbstractService
             }
         }
 
+        $authorized = $this->compliesRequirement($entity);
+
+        if (!$authorized) {
+            throw new \Exception('Not Authorized');
+        }
+
         return $this->get('table')->save($entity);
     }
 
@@ -66,5 +72,49 @@ class AmvService extends AbstractService
         }
 
         return $this->get('table')->save($entity);
+    }
+
+    /**
+     * Complies Requirement
+     *
+     * @param $amv
+     * @return bool
+     */
+    public function compliesRequirement($amv) {
+
+        $assetMode = $amv->getAsset()->mode;
+        $threatMode = $amv->getThreat()->mode;
+        $vulnerabilityMode = $amv->getVulnerability()->mode;
+
+        if ((!$assetMode) && (!$threatMode) && (!$vulnerabilityMode)) {
+            return true;
+        } else if (!$assetMode) {
+            return false;
+        } else  if ($assetMode && $threatMode && $vulnerabilityMode) {
+
+            $threatModels = [];
+            foreach ($amv->getThreat()->getModels() as $model) {
+                $threatModels[] = $model->id;
+            }
+
+            $vulnerabilityModels = [];
+            foreach ($amv->getVulnerability()->getModels() as $model) {
+                $vulnerabilityModels[] = $model->id;
+            }
+
+            foreach ($amv->getAsset()->getModels() as $model) {
+                if ((in_array($model->id, $threatModels)) && (in_array($model->id, $vulnerabilityModels))) {
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            foreach ($amv->getAsset()->getModels() as $model) {
+                if ($model->isRegulator) {
+                    return false;
+                }
+            }
+            return true;
+        }
     }
 }
