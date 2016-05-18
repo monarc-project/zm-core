@@ -14,6 +14,8 @@ class AmvService extends AbstractService
     protected $threatTable;
     protected $vulnerabilityTable;
 
+    protected $errorMessage;
+
     protected $filterColumns = array();
 
     protected $dependencies = ['asset', 'threat', 'vulnerability', 'measure1', 'measure2', 'measure3'];
@@ -42,7 +44,7 @@ class AmvService extends AbstractService
         $authorized = $this->compliesRequirement($entity);
 
         if (!$authorized) {
-            throw new \Exception('Not Authorized');
+            throw new \Exception($this->errorMessage);
         }
 
         return $this->get('table')->save($entity);
@@ -75,7 +77,7 @@ class AmvService extends AbstractService
         $authorized = $this->compliesRequirement($entity);
 
         if (!$authorized) {
-            throw new \Exception('Not Authorized');
+            throw new \Exception($this->errorMessage);
         }
 
         return $this->get('table')->save($entity);
@@ -147,6 +149,7 @@ class AmvService extends AbstractService
         if ((!$assetMode) && (!$threatMode) && (!$vulnerabilityMode)) {
             return true;
         } else if (!$assetMode) {
+            $this->errorMessage = 'Asset mode can\'t be null';
             return false;
         } else  if ($assetMode && $threatMode && $vulnerabilityMode) {
             foreach ($assetModelsIds as $modelId) {
@@ -154,10 +157,12 @@ class AmvService extends AbstractService
                     return true;
                 }
             }
+            $this->errorMessage = 'One model must be common to asset, threat and vulnerability';
             return false;
         } else {
             foreach ($assetModelsIsRegulator as $modelIsRegulator) {
                 if ($modelIsRegulator) {
+                    $this->errorMessage = 'All asset models must\'nt be regulator';
                     return false;
                 }
             }
