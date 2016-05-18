@@ -54,6 +54,7 @@ class AmvService extends AbstractService
      * @param $id
      * @param $data
      * @return mixed
+     * @throws \Exception
      */
     public function update($id, $data){
 
@@ -71,6 +72,12 @@ class AmvService extends AbstractService
             }
         }
 
+        $authorized = $this->compliesRequirement($entity);
+
+        if (!$authorized) {
+            throw new \Exception('Not Authorized');
+        }
+
         return $this->get('table')->save($entity);
     }
 
@@ -86,31 +93,71 @@ class AmvService extends AbstractService
         $threatMode = $amv->getThreat()->mode;
         $vulnerabilityMode = $amv->getVulnerability()->mode;
 
+        $assetModels = $amv->getAsset()->getModels();
+        $assetModelsIds = [];
+        $assetModelsIsRegulator = [];
+        foreach ($assetModels as $model) {
+            $assetModelsIds[] = $model->id;
+            $assetModelsIsRegulator[] = $model->isRegulator;
+        }
+
+        $threatModels = $amv->getThreat()->getModels();
+        $threatModelsIds = [];
+        foreach ($threatModels as $model) {
+            $threatModelsIds[] = $model->id;
+        }
+
+        $vulnerabilityModels = $amv->getVulnerability()->getModels();
+        $vulnerabilityModelsIds = [];
+        foreach ($vulnerabilityModels as $model) {
+            $vulnerabilityModelsIds[] = $model->id;
+        }
+
+        return $this->compliesControl($assetMode, $threatMode, $vulnerabilityMode, $assetModelsIds, $threatModelsIds, $vulnerabilityModelsIds, $assetModelsIsRegulator);
+    }
+
+
+    /**
+     * Complies control
+     *
+     * @param $assetMode
+     * @param $threatMode
+     * @param $vulnerabilityMode
+     * @param $assetModelsIds
+     * @param $threatModelsIds
+     * @param $vulnerabilityModelsIds
+     * @param $assetModelsIsRegulator
+     * @return bool
+     */
+    public function compliesControl($assetMode, $threatMode, $vulnerabilityMode, $assetModelsIds, $threatModelsIds, $vulnerabilityModelsIds, $assetModelsIsRegulator) {
+
+        if (!is_array($assetModelsIds)) {
+            $assetModelsIds = [$assetModelsIds];
+        }
+        if (!is_array($threatModelsIds)) {
+            $threatModelsIds = [$threatModelsIds];
+        }
+        if (!is_array($vulnerabilityModelsIds)) {
+            $vulnerabilityModelsIds = [$vulnerabilityModelsIds];
+        }
+        if (!is_array($assetModelsIsRegulator)) {
+            $assetModelsIsRegulator = [$assetModelsIsRegulator];
+        }
+
         if ((!$assetMode) && (!$threatMode) && (!$vulnerabilityMode)) {
             return true;
         } else if (!$assetMode) {
             return false;
         } else  if ($assetMode && $threatMode && $vulnerabilityMode) {
-
-            $threatModels = [];
-            foreach ($amv->getThreat()->getModels() as $model) {
-                $threatModels[] = $model->id;
-            }
-
-            $vulnerabilityModels = [];
-            foreach ($amv->getVulnerability()->getModels() as $model) {
-                $vulnerabilityModels[] = $model->id;
-            }
-
-            foreach ($amv->getAsset()->getModels() as $model) {
-                if ((in_array($model->id, $threatModels)) && (in_array($model->id, $vulnerabilityModels))) {
+            foreach ($assetModelsIds as $modelId) {
+                if ((in_array($modelId, $threatModelsIds)) && (in_array($modelId, $vulnerabilityModelsIds))) {
                     return true;
                 }
             }
             return false;
         } else {
-            foreach ($amv->getAsset()->getModels() as $model) {
-                if ($model->isRegulator) {
+            foreach ($assetModelsIsRegulator as $modelIsRegulator) {
+                if ($modelIsRegulator) {
                     return false;
                 }
             }
