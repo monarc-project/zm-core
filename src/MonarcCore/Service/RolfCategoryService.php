@@ -10,6 +10,6 @@ namespace MonarcCore\Service;
 class RolfCategoryService extends AbstractService
 {
     protected $filterColumns = array(
-        'label1', 'label2', 'label3', 'label4',
+        'code', 'label1', 'label2', 'label3', 'label4',
     );
 }
