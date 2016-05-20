@@ -31,7 +31,7 @@ class RolfRisk extends AbstractEntity
      *  inverseJoinColumns={@ORM\JoinColumn(name="rolf_category_id", referencedColumnName="id")}
      * )
      */
-    protected $rolfCategories;
+    protected $categories;
 
     /**
      * @var \MonarcCore\Model\Entity\RolfTag
@@ -42,7 +42,7 @@ class RolfRisk extends AbstractEntity
      *  inverseJoinColumns={@ORM\JoinColumn(name="rolf_tag_id", referencedColumnName="id")}
      * )
      */
-    protected $rolfTags;
+    protected $tags;
 
     /**
      * @var string
@@ -141,9 +141,9 @@ class RolfRisk extends AbstractEntity
      * @param key
      * @param RolfCategory $rolfCategory
      */
-    public function setRolfCategory($id, RolfCategory $rolfCategory)
+    public function setCategory($id, RolfCategory $rolfCategory)
     {
-        $this->rolfCategories[$id] = $rolfCategory;
+        $this->categories[$id] = $rolfCategory;
     }
 
     /**
@@ -152,9 +152,9 @@ class RolfRisk extends AbstractEntity
      * @param key
      * @param RolfTag $rolfTag
      */
-    public function setRolfTag($id, RolfTag $rolfTag)
+    public function setTag($id, RolfTag $rolfTag)
     {
-        $this->rolfTags[$id] = $rolfTag;
+        $this->tags[$id] = $rolfTag;
     }
 
     public function getInputFilter(){

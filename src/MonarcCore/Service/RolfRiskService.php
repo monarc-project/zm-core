@@ -27,25 +27,25 @@ class RolfRiskService extends AbstractService
         $entity = $this->get('entity');
         $entity->exchangeArray($data);
 
-        $rolfCategories = $entity->get('rolfCategories');
+        $rolfCategories = $entity->get('categories');
         if (!empty($rolfCategories)) {
             $rolfCategoryTable = $this->get('rolfCategoryTable');
             foreach ($rolfCategories as $key => $rolfCategoryId) {
                 if (!empty($rolfCategoryId)) {
                     $rolfCategory = $rolfCategoryTable->getEntity($rolfCategoryId);
 
-                    $entity->setRolfCategory($key, $rolfCategory);
+                    $entity->setCategory($key, $rolfCategory);
                 }
             }
         }
 
-        $rolfTags = $entity->get('rolfTags');
+        $rolfTags = $entity->get('tags');
         if (!empty($rolfTags)) {
             $rolfTagTable = $this->get('rolfTagTable');
             foreach ($rolfTags as $key => $rolfTagId) {
                 if (!empty($rolfTagId)) {
                     $rolfTag = $rolfTagTable->getEntity($rolfTagId);
-                    $entity->setRolfTag($key, $rolfTag);
+                    $entity->setTag($key, $rolfTag);
                 }
             }
         }
@@ -62,29 +62,29 @@ class RolfRiskService extends AbstractService
      */
     public function update($id,$data){
 
-        $rolfCategories = isset($data['rolfCategories']) ? $data['rolfCategories'] : array();
-        unset($data['rolfCategories']);
-        $rolfTags = isset($data['rolfTags']) ? $data['rolfTags'] : array();
-        unset($data['rolfTags']);
+        $rolfCategories = isset($data['categories']) ? $data['categories'] : array();
+        unset($data['categories']);
+        $rolfTags = isset($data['tags']) ? $data['tags'] : array();
+        unset($data['tags']);
 
         $entity = $this->get('table')->getEntity($id);
         $entity->exchangeArray($data);
-        $entity->get('rolfCategories')->initialize();
-        $entity->get('rolfTags')->initialize();
+        $entity->get('categories')->initialize();
+        $entity->get('tags')->initialize();
 
-        foreach($entity->get('rolfCategories') as $rolfCategory){
+        foreach($entity->get('categories') as $rolfCategory){
             if (in_array($rolfCategory->get('id'), $rolfCategories)){
                 unset($rolfCategories[array_search($rolfCategory->get('id'), $rolfCategories)]);
             } else {
-                $entity->get('rolfCategories')->removeElement($rolfCategories);
+                $entity->get('categories')->removeElement($rolfCategories);
             }
         }
 
-        foreach($entity->get('rolfTags') as $rolfTag){
+        foreach($entity->get('tags') as $rolfTag){
             if (in_array($rolfTag->get('id'), $rolfTags)){
                 unset($rolfTags[array_search($rolfTag->get('id'), $rolfTags)]);
             } else {
-                $entity->get('rolfTags')->removeElement($rolfTags);
+                $entity->get('tags')->removeElement($rolfTags);
             }
         }
 
@@ -93,7 +93,7 @@ class RolfRiskService extends AbstractService
             foreach ($rolfCategories as $key => $rolfCategoryId) {
                 if(!empty($rolfCategoryId)){
                     $rolfCategory = $rolfCategoryTable->getEntity($rolfCategoryId);
-                    $entity->setRolfCategory($key, $rolfCategory);
+                    $entity->setCategory($key, $rolfCategory);
                 }
             }
         }
@@ -103,7 +103,7 @@ class RolfRiskService extends AbstractService
             foreach ($rolfTags as $key => $rolfTagId) {
                 if(!empty($rolfTagId)){
                     $rolfTag = $rolfTagTable->getEntity($rolfTagId);
-                    $entity->setRolfTag($key, $rolfTag);
+                    $entity->setTag($key, $rolfTag);
                 }
             }
         }
