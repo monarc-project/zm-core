@@ -84,7 +84,7 @@ class RolfRiskService extends AbstractService
             if (in_array($rolfTag->get('id'), $rolfTags)){
                 unset($rolfTags[array_search($rolfTag->get('id'), $rolfTags)]);
             } else {
-                $entity->get('tags')->removeElement($rolfTags);
+                $entity->get('tags')->removeElement($rolfTag);
             }
         }
 
