@@ -1,6 +1,7 @@
 <?php
 namespace MonarcCore\Model;
 
+use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\Entity;
@@ -62,8 +63,12 @@ class Db {
     }
     public function delete($entity)
     {
-        $this->entityManager->remove($entity);
-        $this->entityManager->flush();
+        try {
+            $this->entityManager->remove($entity);
+            $this->entityManager->flush();
+        } catch (ForeignKeyConstraintViolationException $e) {
+            throw new \Exception('Foreign key violation', '400');
+        }
     }
     public function save($entity, $last = true)
     {
