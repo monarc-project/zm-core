@@ -17,7 +17,7 @@ class AuthenticationController extends AbstractController
 		}
 	}
 
-	public function deleteList(){
+	public function deleteList($data){
 
 		$request = $this->getRequest();
 		$token = $request->getHeader('token');
