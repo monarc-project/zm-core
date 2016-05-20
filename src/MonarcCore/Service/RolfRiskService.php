@@ -76,7 +76,7 @@ class RolfRiskService extends AbstractService
             if (in_array($rolfCategory->get('id'), $rolfCategories)){
                 unset($rolfCategories[array_search($rolfCategory->get('id'), $rolfCategories)]);
             } else {
-                $entity->get('categories')->removeElement($rolfCategories);
+                $entity->get('categories')->removeElement($rolfCategory);
             }
         }
 
