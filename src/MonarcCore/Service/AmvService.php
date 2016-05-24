@@ -14,11 +14,15 @@ class AmvService extends AbstractService
     protected $threatTable;
     protected $vulnerabilityTable;
 
+    protected $historicalService;
+
     protected $errorMessage;
 
     protected $filterColumns = array();
 
     protected $dependencies = ['asset', 'threat', 'vulnerability', 'measure1', 'measure2', 'measure3'];
+
+
 
     /**
      * Create
@@ -61,7 +65,32 @@ class AmvService extends AbstractService
     public function update($id, $data){
 
         $entity = $this->get('table')->getEntity($id);
+
+        //clone current entity for retrieve difference with new
+        $oldEntity = clone $entity;
+
+        //virtual name for historisation
+        $label = [];
+        for($i =1; $i<=4; $i++) {
+            $name = [];
+            $lab = 'label' . $i;
+            if ($entity->asset->$lab) {
+                $name[] = $entity->asset->$lab;
+            }
+            if ($entity->threat->$lab) {
+                $name[] = $entity->threat->$lab;
+            }
+            if ($entity->vulnerability->$lab) {
+                $name[] = $entity->vulnerability->$lab;
+            }
+            $label[] = implode('-', $name);
+        }
+        $this->label = $label;
+
         $entity->exchangeArray($data);
+
+        //historisation
+        $this->historizeUpdate('amv', $entity, $oldEntity);
 
         foreach($this->dependencies as $dependency) {
             $fieldValue = isset($data[$dependency]) ? $data[$dependency] : array();

@@ -10,5 +10,6 @@ class AmvServiceFactory extends AbstractServiceFactory
         'measureTable' => '\MonarcCore\Model\Table\MeasureTable',
         'threatTable' => '\MonarcCore\Model\Table\ThreatTable',
         'vulnerabilityTable' => '\MonarcCore\Model\Table\VulnerabilityTable',
+        'historicalService'=> 'MonarcCore\Service\HistoricalService',
     );
 }

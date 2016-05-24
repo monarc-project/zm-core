@@ -50,6 +50,7 @@ abstract class AbstractController extends AbstractRestfulController
     }
 
     public function formatDependencies(&$entity, $dependencies) {
+
         foreach($dependencies as $dependency) {
             if (!empty($entity[$dependency])) {
                 $entity[$dependency] = $entity[$dependency]->getJsonArray();

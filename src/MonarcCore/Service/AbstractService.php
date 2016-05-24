@@ -8,6 +8,7 @@ abstract class AbstractService extends AbstractServiceFactory
     protected $serviceFactory;
     protected $table;
     protected $entity;
+    protected $label;
 
     /**
      * @return null
@@ -159,5 +160,47 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     public function delete($id) {
         $this->get('table')->delete($id);
+    }
+
+    public function compareEntities($newEntity, $oldEntity){
+
+        $exceptions = ['creator', 'created_at', 'updater', 'updated_at', 'inputFilter'];
+
+        $diff = [];
+        foreach ($newEntity->getArrayCopy() as $key => $value) {
+            if (!in_array($key, $exceptions)) {
+                if (in_array($key, $this->dependencies)) {
+                    if ($oldEntity->$key->id != $value) {
+                        $diff[] = $key . ': ' . $oldEntity->$key->id . ' => ' . $value;
+                    }
+                } else {
+                    if ($oldEntity->$key != $value) {
+                        $diff[] = $key . ': ' . $oldEntity->$key . ' => ' . $value;
+                    }
+                }
+            }
+        }
+
+        return $diff;
+    }
+
+    public function historizeUpdate($type, $newEntity, $oldEntity) {
+        $diff = $this->compareEntities($newEntity, $oldEntity);
+
+        if (count($diff)) {
+            $data = [
+                'type' => $type,
+                'sourceId' => $newEntity->id,
+                'action' => 'update',
+                'label1' => property_exists($newEntity, 'label1') ? $newEntity->label1 : $this->label[0],
+                'label2' => property_exists($newEntity, 'label2') ? $newEntity->label2 : $this->label[1],
+                'label3' => property_exists($newEntity, 'label3') ? $newEntity->label3 : $this->label[2],
+                'label4' => property_exists($newEntity, 'label4') ? $newEntity->label4 : $this->label[3],
+                'details' => implode(', ', $diff),
+            ];
+
+            $historicalService = $this->get('historicalService');
+            $historicalService->create($data);
+        }
     }
 }

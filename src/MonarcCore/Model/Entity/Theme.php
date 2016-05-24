@@ -5,7 +5,7 @@ namespace MonarcCore\Model\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Thme
+ * Theme
  *
  * @ORM\Table(name="themes")
  * @ORM\Entity

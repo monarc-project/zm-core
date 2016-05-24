@@ -111,6 +111,11 @@ class Module
                     $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
                     return $table;
                 },
+                '\MonarcCore\Model\Table\HistoricalTable' => function($sm){
+                    $table = new Model\Table\HistoricalTable($sm->get('\MonarcCore\Model\Db'));
+                    $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
+                    return $table;
+                },
                 '\MonarcCore\Model\Table\AssetTable' => function($sm){
                     $table = new Model\Table\AssetTable($sm->get('\MonarcCore\Model\Db'));
                     $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
