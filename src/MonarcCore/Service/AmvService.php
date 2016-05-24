@@ -33,7 +33,10 @@ class AmvService extends AbstractService
     public function create($data) {
 
         $entity = $this->get('entity');
+
         $entity->exchangeArray($data);
+
+        $newEntity = clone $entity;
 
         foreach($this->dependencies as $dependency) {
             $value = $entity->get($dependency);
@@ -51,10 +54,36 @@ class AmvService extends AbstractService
             throw new \Exception($this->errorMessage);
         }
 
-        return $this->get('table')->save($entity);
+        $id = $this->get('table')->save($entity);
+
+        //historisation
+        $newEntity = $this->getEntity($id);
+
+        //virtual name for historisation
+        $label = [];
+        for($i =1; $i<=4; $i++) {
+            $name = [];
+            $lab = 'label' . $i;
+            if ($newEntity['asset']->$lab) {
+                $name[] = $newEntity['asset']->$lab;
+            }
+            if ($newEntity['threat']->$lab) {
+                $name[] = $newEntity['threat']->$lab;
+            }
+            if ($newEntity['vulnerability']->$lab) {
+                $name[] = $newEntity['vulnerability']->$lab;
+            }
+            $label[] = implode('-', $name);
+        }
+        $this->label = $label;
+
+        $this->historizeCreate('amv', $newEntity);
+
+        return $id;
     }
 
     /**
+     *
      * Update
      *
      * @param $id
@@ -112,6 +141,43 @@ class AmvService extends AbstractService
         $this->historizeUpdate('amv', $newEntity, $oldEntity);
 
         return $this->get('table')->save($entity);
+    }
+
+    /**
+     * Delete
+     *
+     * @param $id
+     */
+    public function delete($id) {
+
+        //historisation
+        $entity = $this->getEntity($id);
+
+        if ($entity) {
+
+            //virtual name for historisation
+            $label = [];
+            for ($i = 1; $i <= 4; $i++) {
+                $name = [];
+                $lab = 'label' . $i;
+                if ($entity['asset']->$lab) {
+                    $name[] = $entity['asset']->$lab;
+                }
+                if ($entity['threat']->$lab) {
+                    $name[] = $entity['threat']->$lab;
+                }
+                if ($entity['vulnerability']->$lab) {
+                    $name[] = $entity['vulnerability']->$lab;
+                }
+                $label[] = implode('-', $name);
+            }
+            $this->label = $label;
+
+            $this->historizeDelete('amv', $entity);
+
+
+            //$this->get('table')->delete($id);
+        }
     }
 
     /**

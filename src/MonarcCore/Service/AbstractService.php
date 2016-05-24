@@ -162,6 +162,13 @@ abstract class AbstractService extends AbstractServiceFactory
         $this->get('table')->delete($id);
     }
 
+    /**
+     * Compare Entities
+     *
+     * @param $newEntity
+     * @param $oldEntity
+     * @return array
+     */
     public function compareEntities($newEntity, $oldEntity){
 
         $exceptions = ['creator', 'created_at', 'updater', 'updated_at', 'inputFilter'];
@@ -184,23 +191,70 @@ abstract class AbstractService extends AbstractServiceFactory
         return $diff;
     }
 
-    public function historizeUpdate($type, $newEntity, $oldEntity) {
-        $diff = $this->compareEntities($newEntity, $oldEntity);
+    /**
+     * Historize update
+     *
+     * @param $type
+     * @param $entity
+     * @param $oldEntity
+     */
+    public function historizeUpdate($type, $entity, $oldEntity) {
+
+        $diff = $this->compareEntities($entity, $oldEntity);
 
         if (count($diff)) {
-            $data = [
-                'type' => $type,
-                'sourceId' => $newEntity->id,
-                'action' => 'update',
-                'label1' => property_exists($newEntity, 'label1') ? $newEntity->label1 : $this->label[0],
-                'label2' => property_exists($newEntity, 'label2') ? $newEntity->label2 : $this->label[1],
-                'label3' => property_exists($newEntity, 'label3') ? $newEntity->label3 : $this->label[2],
-                'label4' => property_exists($newEntity, 'label4') ? $newEntity->label4 : $this->label[3],
-                'details' => implode(', ', $diff),
-            ];
-
-            $historicalService = $this->get('historicalService');
-            $historicalService->create($data);
+            $this->historize($entity, $type, 'update', implode(', ', $diff));
         }
+    }
+
+    /**
+     * Historize create
+     *
+     * @param $type
+     * @param $entity
+     */
+    public function historizeCreate($type, $entity) {
+        $this->historize($entity, $type, 'create', '');
+    }
+
+    /**
+     * Historize delete
+     *
+     * @param $type
+     * @param $entity
+     */
+    public function historizeDelete($type, $entity) {
+        $this->historize($entity, $type, 'delete', '');
+    }
+
+    /**
+     * Historize
+     *
+     * @param $entity
+     * @param $type
+     * @param $verb
+     * @param $details
+     */
+    public function historize($entity, $type, $verb, $details) {
+
+        $entityId = null;
+        if (is_object($entity) && (property_exists($entity, 'id'))) {
+            $entityId = $entity->id;
+        } else if (is_array($entity) && (array_key_exists('id', $entity))) {
+            $entityId = $entity['id'];
+        }
+        $data = [
+            'type' => $type,
+            'sourceId' => $entityId,
+            'action' => $verb,
+            'label1' => (is_object($entity) && property_exists($entity, 'label1')) ? $entity->label1 : $this->label[0],
+            'label2' => (is_object($entity) && property_exists($entity, 'label2')) ? $entity->label2 : $this->label[1],
+            'label3' => (is_object($entity) && property_exists($entity, 'label3')) ? $entity->label3 : $this->label[2],
+            'label4' => (is_object($entity) && property_exists($entity, 'label4')) ? $entity->label4 : $this->label[3],
+            'details' => $details,
+        ];
+
+        $historicalService = $this->get('historicalService');
+        $historicalService->create($data);
     }
 }
