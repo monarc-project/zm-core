@@ -89,8 +89,7 @@ class AmvService extends AbstractService
 
         $entity->exchangeArray($data);
 
-        //historisation
-        $this->historizeUpdate('amv', $entity, $oldEntity);
+        $newEntity = clone $entity;
 
         foreach($this->dependencies as $dependency) {
             $fieldValue = isset($data[$dependency]) ? $data[$dependency] : array();
@@ -108,6 +107,9 @@ class AmvService extends AbstractService
         if (!$authorized) {
             throw new \Exception($this->errorMessage);
         }
+
+        //historisation
+        $this->historizeUpdate('amv', $newEntity, $oldEntity);
 
         return $this->get('table')->save($entity);
     }
