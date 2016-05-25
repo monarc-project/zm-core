@@ -2,10 +2,12 @@
 namespace MonarcCore\Service;
 
 use MonarcCore\Model\Table\UserRoleTable;
+use Zend\Http\Header\GenericHeader;
 
 class UserRoleService extends AbstractService
 {
     protected $userRoleTable;
+    protected $userTokenTable;
     protected $userRoleEntity;
 
     public function getList($page = 1, $limit = 25, $order = null, $filter = null)
@@ -35,6 +37,30 @@ class UserRoleService extends AbstractService
             ->where('t.user = :id')
             ->setParameter(':id',$userId)
             ->getQuery()->getResult();
+    }
+
+    public function getByUserToken($token) {
+
+        if ($token instanceof GenericHeader) {
+            $token = $token->getFieldValue();
+        }
+
+        $userTokenTable = $this->get('userTokenTable');
+
+        $userToken = $userTokenTable->getRepository()->createQueryBuilder('t')
+            ->select(array('t.id', 'IDENTITY(t.user) as userId', 't.token', 't.dateEnd'))
+            ->where('t.token = :token')
+            ->setParameter(':token', $token)
+            ->getQuery()
+            ->getResult();
+
+        if (count($userToken)) {
+            $userId = $userToken[0]['userId'];
+
+            return $this->getByUserId($userId);
+        } else {
+            throw new \Exception('No user');
+        }
     }
 
 }

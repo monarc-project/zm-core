@@ -6,5 +6,6 @@ class UserRoleServiceFactory extends AbstractServiceFactory
     protected $ressources = array(
         'userRoleTable'=> '\MonarcCore\Model\Table\UserRoleTable',
         'userRoleEntity'=> '\MonarcCore\Model\Entity\UserRole',
+        'userTokenTable'=> '\MonarcCore\Model\Table\UserTokenTable',
     );
 }
