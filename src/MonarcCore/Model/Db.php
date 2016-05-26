@@ -46,9 +46,9 @@ class Db {
         return $repository->createQueryBuilder('u')->select('count(u.id)')->getQuery()->getSingleScalarResult();
     }
 
-    public function countFiltered($entity, $page = 1, $limit = 25, $order = null, $filter = null) {
+    public function countFiltered($entity, $limit = 25, $order = null, $filter = null) {
         $repository = $this->entityManager->getRepository(get_class($entity));
-        $qb = $this->buildFilteredQuery($repository, $page, $limit, $order, $filter);
+        $qb = $this->buildFilteredQuery($repository, 1, $limit, $order, $filter);
         $qb->select('count(t.id)');
 
         return $qb->getQuery()->getSingleScalarResult();

@@ -89,7 +89,7 @@ abstract class AbstractEntityTable
     {
         $c = $this->getClass();
         if (class_exists($c)) {
-            return $this->getDb()->countFiltered(new $c(), $page, $limit, $order, $filter);
+            return $this->getDb()->countFiltered(new $c(), $limit, $order, $filter);
         } else {
             return false;
         }
