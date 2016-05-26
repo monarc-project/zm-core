@@ -36,8 +36,6 @@ class AmvService extends AbstractService
 
         $entity->exchangeArray($data);
 
-        $newEntity = clone $entity;
-
         foreach($this->dependencies as $dependency) {
             $value = $entity->get($dependency);
             if (!empty($value)) {

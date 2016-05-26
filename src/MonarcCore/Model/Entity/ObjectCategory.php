@@ -122,6 +122,42 @@ class ObjectCategory extends AbstractEntity
         return $this;
     }
 
+    /**
+     * @return ObjectCategory
+     */
+    public function getParent()
+    {
+        return $this->parent;
+    }
+
+    /**
+     * @param ObjectCategory $parent
+     * @return ObjectCategory
+     */
+    public function setParent($parent)
+    {
+        $this->parent = $parent;
+        return $this;
+    }
+
+    /**
+     * @return ObjectCategory
+     */
+    public function getRoot()
+    {
+        return $this->root;
+    }
+
+    /**
+     * @param ObjectCategory $root
+     * @return ObjectCategory
+     */
+    public function setRoot($root)
+    {
+        $this->root = $root;
+        return $this;
+    }
+
     public function getInputFilter(){
         if (!$this->inputFilter) {
             parent::getInputFilter();
