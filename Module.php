@@ -106,8 +106,18 @@ class Module
                     $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
                     return $table;
                 },
+                '\MonarcCore\Model\Table\ObjectTable' => function($sm){
+                    $table = new Model\Table\ObjectTable($sm->get('\MonarcCore\Model\Db'));
+                    $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
+                    return $table;
+                },
                 '\MonarcCore\Model\Table\ObjectCategoryTable' => function($sm){
                     $table = new Model\Table\ObjectCategoryTable($sm->get('\MonarcCore\Model\Db'));
+                    $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
+                    return $table;
+                },
+                '\MonarcCore\Model\Table\ObjectObjectTable' => function($sm){
+                    $table = new Model\Table\ObjectObjectTable($sm->get('\MonarcCore\Model\Db'));
                     $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
                     return $table;
                 },

@@ -45,8 +45,10 @@ abstract class AbstractService extends AbstractServiceFactory
     protected function parseFrontendFilter($filter, $columns = array()) {
         $output = array();
 
-        foreach ($columns as $c) {
-            $output[$c] = $filter;
+        if ($columns) {
+            foreach ($columns as $c) {
+                $output[$c] = $filter;
+            }
         }
 
         return $output;
@@ -256,5 +258,17 @@ abstract class AbstractService extends AbstractServiceFactory
 
         $historicalService = $this->get('historicalService');
         $historicalService->create($data);
+    }
+
+    public function formatDependencies(&$entity, $dependencies) {
+
+        foreach($dependencies as $dependency) {
+            if (!empty($entity[$dependency])) {
+                $entity[$dependency] = $entity[$dependency]->getJsonArray();
+                unset($entity[$dependency]['__initializer__']);
+                unset($entity[$dependency]['__cloner__']);
+                unset($entity[$dependency]['__isInitialized__']);
+            }
+        }
     }
 }

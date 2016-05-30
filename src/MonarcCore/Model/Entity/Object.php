@@ -23,6 +23,13 @@ class Object extends AbstractEntity
     protected $id;
 
     /**
+     * @var integer
+     *
+     * @ORM\Column(name="anr_id", type="integer", nullable=true)
+     */
+    protected $anr;
+
+    /**
      * @var \MonarcCore\Model\Entity\ObjectCategory
      *
      * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\ObjectCategory", cascade={"persist"})
@@ -41,6 +48,16 @@ class Object extends AbstractEntity
      * })
      */
     protected $asset;
+
+    /**
+     * @var \MonarcCore\Model\Entity\Object
+     *
+     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Object", cascade={"persist"})
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="source_bdc_object_id", referencedColumnName="id", nullable=true)
+     * })
+     */
+    protected $source;
 
     /**
      * @var \MonarcCore\Model\Entity\RolfTag
