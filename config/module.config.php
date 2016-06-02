@@ -1,5 +1,33 @@
 <?php
 return array(
+    // DOCTRINE CONF
+    'doctrine' => array(
+        'driver' => array(
+            'Monarc_core_driver' => array(
+                'class' => 'Doctrine\ORM\Mapping\Driver\AnnotationDriver',
+                'cache' => 'array',
+                'paths' => array(__DIR__ . '/../src/MonarcCore/Model/Entity'),
+            ),
+            'orm_default' => array(
+                'drivers' => array(
+                    'MonarcCore\Model\Entity' => 'Monarc_core_driver',
+                ),
+            ),
+            'Monarc_cli_driver' => array(
+                'class' => 'Doctrine\ORM\Mapping\Driver\AnnotationDriver',
+                'cache' => 'array',
+                'paths' => array(__DIR__ . '/../src/MonarcCore/Model/Entity'),
+            ),
+            'orm_cli' => array(
+                'class' => 'Doctrine\ORM\Mapping\Driver\DriverChain',
+                'drivers' => array(
+                    'MonarcCore\Model\Entity' => 'Monarc_cli_driver',
+                ),
+            ),
+        ),
+    ),
+    // END DOCTRINE CONF
+
     'router' => array(
         'routes' => array(
             'monarc' => array(
@@ -70,21 +98,6 @@ return array(
         ]
     ),
 
-    'doctrine' => array(
-        'driver' => array(
-            'Monarc_core_driver' => array(
-                'class' => 'Doctrine\ORM\Mapping\Driver\AnnotationDriver',
-                'cache' => 'array',
-                'paths' => array(__DIR__ . '/../src/MonarcCore/Model/Entity'),
-            ),
-            'orm_default' => array(
-                'drivers' => array(
-                    'MonarcCore\Model\Entity' => 'Monarc_core_driver',
-                ),
-            ),
-        ),
-    ),
-
     'console' => array(
         'router' => array(
             'routes' => array(
@@ -109,5 +122,5 @@ return array(
     'cases' => [
         'name' => 'Cases',
         'mail' => 'info@cases.lu',
-    ]
+    ],
 );

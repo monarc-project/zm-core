@@ -83,16 +83,19 @@ class Module
                 '\MonarcCore\Model\Db' => function($sm){
                     return new Model\Db($sm->get('doctrine.entitymanager.orm_default'));
                 },
+                '\MonarcCli\Model\Db' => function($sm){
+                    return new Model\Db($sm->get('doctrine.entitymanager.orm_cli'));
+                },
                 '\MonarcCore\Model\Entity\User' => function($sm){
                     $u = new Model\Entity\User();
-                    $u->setDbAdpater($sm->get('\MonarcCore\Model\Db'));
+                    $u->setDbAdpater($sm->get('\MonarcCli\Model\Db'));
                     $conf = $sm->get('Config');
                     $salt = isset($conf['monarc']['salt'])?$conf['monarc']['salt']:'';
                     $u->setUserSalt($salt);
                     return $u;
                 },
                 '\MonarcCore\Model\Table\UserTable' => function($sm){
-                    $utable = new Model\Table\UserTable($sm->get('\MonarcCore\Model\Db'));
+                    $utable = new Model\Table\UserTable($sm->get('\MonarcCli\Model\Db'));
                     $utable->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
                     return $utable;
                 },
@@ -118,12 +121,12 @@ class Module
                 },
                 // User Role table
                 '\MonarcCore\Model\Table\UserRoleTable' => function($sm){
-                    $urtable = new Model\Table\UserRoleTable($sm->get('\MonarcCore\Model\Db'));
+                    $urtable = new Model\Table\UserRoleTable($sm->get('\MonarcCli\Model\Db'));
                     $urtable->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
                     return $urtable;
                 },
                 '\MonarcCore\Model\Table\UserTokenTable' => function($sm){
-                    return new Model\Table\UserTokenTable($sm->get('\MonarcCore\Model\Db'));
+                    return new Model\Table\UserTokenTable($sm->get('\MonarcCli\Model\Db'));
                 },
                 /* Security */
                 '\MonarcCore\Service\SecurityService' => '\MonarcCore\Service\SecurityServiceFactory',
