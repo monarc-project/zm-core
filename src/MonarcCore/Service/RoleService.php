@@ -5,7 +5,7 @@ class RoleService extends AbstractService
 {
     protected $config;
 
-    public function getFilteredCount() {
+    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null) {
 
         $config = $this->config;
         $roles = $config['roles'];
@@ -13,7 +13,7 @@ class RoleService extends AbstractService
         return count($roles);
     }
 
-    public function getList()
+    public function getList($page = 1, $limit = 25, $order = null, $filter = null)
     {
         $roleCollection = [];
 

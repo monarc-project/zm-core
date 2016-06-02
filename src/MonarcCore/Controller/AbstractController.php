@@ -48,4 +48,16 @@ abstract class AbstractController extends AbstractRestfulController
     {
         return $this->methodNotAllowed();
     }
+
+    public function formatDependencies(&$entity, $dependencies) {
+
+        foreach($dependencies as $dependency) {
+            if (!empty($entity[$dependency])) {
+                $entity[$dependency] = $entity[$dependency]->getJsonArray();
+                unset($entity[$dependency]['__initializer__']);
+                unset($entity[$dependency]['__cloner__']);
+                unset($entity[$dependency]['__isInitialized__']);
+            }
+        }
+    }
 }

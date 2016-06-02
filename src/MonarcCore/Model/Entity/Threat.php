@@ -32,7 +32,7 @@ class Threat extends AbstractEntity
     /**
      * @var \MonarcCore\Model\Entity\Theme
      *
-     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Theme")
+     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Theme", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="theme_id", referencedColumnName="id", nullable=true)
      * })
@@ -351,6 +351,46 @@ class Threat extends AbstractEntity
      * @ORM\Column(name="updated_at", type="datetime", nullable=true)
      */
     protected $updatedAt;
+
+    /**
+     * Set model
+     *
+     * @param key
+     * @param Model $model
+     */
+    public function setModel($id, Model $model)
+    {
+        $this->models[$id] = $model;
+    }
+
+    /**
+     * Set theme
+     *
+     * @param key
+     * @param Theme $theme
+     */
+    public function setTheme(Theme $theme)
+    {
+        $this->theme = $theme;
+    }
+
+    /**
+     * @return Model
+     */
+    public function getModels()
+    {
+        return $this->models;
+    }
+
+    /**
+     * @param Model $models
+     * @return Threat
+     */
+    public function setModels($models)
+    {
+        $this->models = $models;
+        return $this;
+    }
 
     /**
      * Add model

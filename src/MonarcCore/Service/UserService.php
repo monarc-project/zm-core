@@ -123,12 +123,12 @@ class UserService extends AbstractService
      * @return bool
      * @throws \Exception
      */
-    public function update($data) {
+    public function update($id, $data) {
         /** @var UserTable $userTable */
         $userTable = $this->get('userTable');
 
         /** @var User $entity */
-        $entity = $userTable->getEntity($data['id']);
+        $entity = $userTable->getEntity($id);
 
         if ($entity != null) {
             $entity->exchangeArray($data);
