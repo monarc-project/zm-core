@@ -106,7 +106,7 @@ class Theme extends AbstractEntity
         if (!$this->inputFilter) {
             parent::getInputFilter();
 
-            $texts = ['label1', 'label2', 'label3', 'label4'];
+            $texts = ['label1'];
 
             foreach($texts as $text) {
                 $this->inputFilter->add(array(
