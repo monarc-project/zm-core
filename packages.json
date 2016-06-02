@@ -10,6 +10,7 @@
                     {"name": "Cyril Rouyer", "email": "cyril@netlor.fr"},
                     {"name": "Guillaume Lesniak", "email": "guillaume@netlor.fr"},
                     {"name": "Jerôme De Almeida", "email": "jerome.dealmeida@vesperiagroup.com"},
+                    {"name": "Benjamin Ganivet", "email": "benjamin@netlor.fr"},
                     {"name": "Thomas Metois", "email": "thomas@netlor.fr"}
                 ],
                 "dist": {
@@ -25,7 +26,6 @@
                     "php": ">=5.5",
                     "zendframework/zendframework": "2.5.3",
                     "doctrine/doctrine-orm-module": "^0.10",
-                    "doctrine/migrations": "^1.4",
                     "robmorgan/phinx": "0.5.*"
                 },
                 "autoload": {
