@@ -84,7 +84,12 @@ class Module
                     return new Model\Db($sm->get('doctrine.entitymanager.orm_default'));
                 },
                 '\MonarcCli\Model\Db' => function($sm){
-                    return new Model\Db($sm->get('doctrine.entitymanager.orm_cli'));
+                    try{
+                        $sm->get('doctrine.entitymanager.orm_cli')->getConnection()->connect();
+                        return new Model\Db($sm->get('doctrine.entitymanager.orm_cli'));
+                    }catch(\Exception $e){
+                        return new Model\Db($sm->get('doctrine.entitymanager.orm_default'));
+                    }
                 },
                 '\MonarcCore\Model\Entity\User' => function($sm){
                     $u = new Model\Entity\User();
