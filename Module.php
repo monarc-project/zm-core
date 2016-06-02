@@ -131,7 +131,7 @@ class Module
                     return $table;
                 },
                 '\MonarcCore\Model\Table\HistoricalTable' => function($sm){
-                    $table = new Model\Table\HistoricalTable($sm->get('\MonarcCore\Model\Db'));
+                    $table = new Model\Table\HistoricalTable($sm->get('\MonarcCli\Model\Db'));
                     $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
                     return $table;
                 },
