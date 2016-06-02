@@ -28,6 +28,11 @@ class FixMigrationsColumns extends AbstractMigration
     public function change()
     {
         $table = $this->table('threats');
+        $exists = $table->hasForeignKey('threat_theme_id');
+        if ($exists) {
+            $table->dropForeignKey('threat_theme_id');
+        }
         $table->renameColumn('threat_theme_id','theme_id');
+        $table->addForeignKey('theme_id', 'themes', 'id', array('delete' => 'CASCADE','update' => 'RESTRICT'))->update();
     }
 }
