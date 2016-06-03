@@ -312,6 +312,9 @@ class Object extends AbstractEntity
             $texts = [
                 'name1', 'name2', 'name3', 'name4',
                 'label1', 'label2', 'label3', 'label4',
+            ];
+
+            $descriptions = [
                 'description1', 'description2', 'description3', 'description4'
             ];
 
@@ -331,6 +334,24 @@ class Object extends AbstractEntity
                     'validators' => array(),
                 ));
             }
+
+            foreach($descriptions as $description) {
+                $this->inputFilter->add(array(
+                    'name' => $description,
+                    'required' => false,
+                    'allow_empty' => true,
+                    'filters' => array(
+                        array(
+                            'name' => 'Alnum',
+                            'options' => array(
+                                'allow_white_space' => true,
+                            )
+                        ),
+                    ),
+                    'validators' => array(),
+                ));
+            }
+
             $this->inputFilter->add(array(
                 'name' => 'c',
                 'required' => false,
