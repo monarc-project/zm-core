@@ -137,6 +137,8 @@ abstract class AbstractService extends AbstractServiceFactory
         $entity = $this->get('entity');
         $entity->exchangeArray($data);
 
+
+
         return $this->get('table')->save($entity);
     }
 
@@ -260,9 +262,16 @@ abstract class AbstractService extends AbstractServiceFactory
         $historicalService->create($data);
     }
 
+    /**
+     * Format dependencies
+     * 
+     * @param $entity
+     * @param $dependencies
+     */
     public function formatDependencies(&$entity, $dependencies) {
 
         foreach($dependencies as $dependency) {
+
             if (!empty($entity[$dependency])) {
                 $entity[$dependency] = $entity[$dependency]->getJsonArray();
                 unset($entity[$dependency]['__initializer__']);

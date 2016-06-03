@@ -28,37 +28,38 @@ class ObjectService extends AbstractService
      */
     public function getList($page = 1, $limit = 25, $order = null, $filter = null){
 
-        $objectObjectService = $this->get('objectObjectService');
+        //retrieve all objects
+        $objects = parent::getList($page = 1, $limit = 25, $order = null, $filter = null);
+        $objectsArray = [];
+        $rootArray = [];
+        foreach($objects as $object) {
+            $rootArray[$object['id']] = $object;
+            $objectsArray[$object['id']] = $object;
+        }
 
+        //retrieve link father - child
+        $objectObjectService = $this->get('objectObjectService');
         $objectsObjects = $objectObjectService->getList($page = 1, $limit = 25, $order = null, $filter = null);
 
-        $fatherList = [];
-        $childList = [];
-        $fatherObject = [];
+        //hierarchy
         $childHierarchy = [];
         foreach($objectsObjects as $objectsObject) {
-            $fatherList[] = $objectsObject['father']->id;
-            $childList[] = $objectsObject['child']->id;
-            $fatherObject[$objectsObject['father']->id] = $objectsObject['father'];
+            if (!is_null($objectsObject['child'])) {
+                if (array_key_exists($objectsObject['child']->id, $rootArray)) {
+                    unset($rootArray[$objectsObject['child']->id]);
+                }
+            }
+
             $childHierarchy[] = [
-                'father' => $objectsObject['father'],
-                'child' => $objectsObject['child'],
+                'father' => $objectsObject['father']->id,
+                'child' => $objectsObject['child']->id,
             ];
         }
-        $fatherList = array_unique($fatherList);
-        $childList = array_unique($childList);
 
-        $rootList = [];
-        foreach($fatherList as $father) {
-            if (! in_array($father, $childList)) {
-                $rootList[] = $father;
-            }
-        }
-
-
+        //recursive
         $hierarchy = [];
-        foreach($rootList as $root) {
-            $hierarchy[] = $this->recursiveChild($hierarchy, $fatherObject[$root], $childHierarchy);
+        foreach($rootArray as $root) {
+            $hierarchy[] = $this->recursiveChild($hierarchy, $root['id'], $childHierarchy, $objectsArray);
         }
 
         return $hierarchy;
@@ -73,24 +74,19 @@ class ObjectService extends AbstractService
      * @param $childHierarchy
      * @return mixed
      */
-    public function recursiveChild($hierarchy, $parent, &$childHierarchy) {
+    public function recursiveChild($hierarchy, $parent, &$childHierarchy, $objectsArray) {
+
 
         $childs = [];
         foreach($childHierarchy as $key => $link) {
-            $fatherId = (int) $link['father']->id;
-            if ($fatherId == $parent->id) {
-
-                $childs[] = $this->recursiveChild($hierarchy, $link['child'], $childHierarchy);
+            if ((int) $link['father'] == $parent) {
+                $childs[] = $this->recursiveChild($hierarchy, $link['child'], $childHierarchy, $objectsArray);
                 unset($childHierarchy[$key]);
             }
         }
 
-
-        $hierarchy = $parent->getJsonArray();
+        $hierarchy = $objectsArray[$parent];
         $this->formatDependencies($hierarchy, $this->dependencies);
-        unset($hierarchy['__initializer__']);
-        unset($hierarchy['__cloner__']);
-        unset($hierarchy['__isInitialized__']);
         if ($childs) {
             $hierarchy['childs'] = $childs;
         }
