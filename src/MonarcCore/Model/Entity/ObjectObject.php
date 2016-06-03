@@ -93,5 +93,43 @@ class ObjectObject extends AbstractEntity
         $this->id = $id;
         return $this;
     }
+
+    /**
+     * @return Object
+     */
+    public function getFather()
+    {
+        return $this->father;
+    }
+
+    /**
+     * @param Object $father
+     * @return ObjectObject
+     */
+    public function setFather($father)
+    {
+        $this->father = $father;
+        return $this;
+    }
+
+    /**
+     * @return Object
+     */
+    public function getChild()
+    {
+        return $this->child;
+    }
+
+    /**
+     * @param Object $child
+     * @return ObjectObject
+     */
+    public function setChild($child)
+    {
+        $this->child = $child;
+        return $this;
+    }
+
+
 }
 

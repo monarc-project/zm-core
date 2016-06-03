@@ -119,6 +119,18 @@ class ObjectService extends AbstractService
             }
         }
 
-        return $this->get('table')->save($entity);
+        $id = $this->get('table')->save($entity);
+
+        if (array_key_exists('parent', $data)) {
+            $objectObjectData = [
+                'father' => (int) $data['parent'],
+                'child' => (int) $id,
+            ];
+
+            $objectObjectService = $this->get('objectObjectService');
+            $objectObjectService->create($objectObjectData);
+        }
+
+        return $id;
     }
 }
