@@ -11,6 +11,10 @@ class ObjectService extends AbstractService
 {
     protected $objectObjectService;
 
+    protected $assetTable;
+    protected $categoryTable;
+    protected $rolfTagTable;
+
     protected $dependencies = ['asset', 'category', 'rolfTag'];
 
     /**
@@ -61,9 +65,15 @@ class ObjectService extends AbstractService
 
     }
 
-
+    /**
+     * Recursive child
+     *
+     * @param $hierarchy
+     * @param $parent
+     * @param $childHierarchy
+     * @return mixed
+     */
     public function recursiveChild($hierarchy, $parent, &$childHierarchy) {
-
 
         $childs = [];
         foreach($childHierarchy as $key => $link) {
@@ -86,5 +96,29 @@ class ObjectService extends AbstractService
         }
 
         return $hierarchy;
+    }
+
+    /**
+     * Create
+     *
+     * @param $data
+     * @throws \Exception
+     */
+    public function create($data) {
+
+        $entity = $this->get('entity');
+        $entity->exchangeArray($data);
+
+        foreach($this->dependencies as $dependency) {
+            $value = $entity->get($dependency);
+            if (!empty($value)) {
+                $tableName = preg_replace("/[0-9]/", "", $dependency)  . 'Table';
+                $method = 'set' . ucfirst($dependency);
+                $dependencyEntity = $this->get($tableName)->getEntity($value);
+                $entity->$method($dependencyEntity);
+            }
+        }
+
+        return $this->get('table')->save($entity);
     }
 }

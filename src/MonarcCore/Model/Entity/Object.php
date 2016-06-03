@@ -251,6 +251,60 @@ class Object extends AbstractEntity
      */
     protected $updatedAt;
 
+    /**
+     * @return ObjectCategory
+     */
+    public function getCategory()
+    {
+        return $this->category;
+    }
+
+    /**
+     * @param ObjectCategory $category
+     * @return Object
+     */
+    public function setCategory($category)
+    {
+        $this->category = $category;
+        return $this;
+    }
+
+    /**
+     * @return Asset
+     */
+    public function getAsset()
+    {
+        return $this->asset;
+    }
+
+    /**
+     * @param Asset $asset
+     * @return Object
+     */
+    public function setAsset($asset)
+    {
+        $this->asset = $asset;
+        return $this;
+    }
+
+    /**
+     * @return RolfTag
+     */
+    public function getRolfTag()
+    {
+        return $this->rolfTag;
+    }
+
+    /**
+     * @param RolfTag $rolfTag
+     * @return Object
+     */
+    public function setRolfTag($rolfTag)
+    {
+        $this->rolfTag = $rolfTag;
+        return $this;
+    }
+
     public function getInputFilter(){
         if (!$this->inputFilter) {
             parent::getInputFilter();
