@@ -125,8 +125,10 @@ class Db {
         }
 
         // Add limit and offset
-        $qb->setFirstResult(($page - 1) * $limit);
-        $qb->setMaxResults($limit);
+        if ($limit > 0) {
+            $qb->setFirstResult(($page - 1) * $limit);
+            $qb->setMaxResults($limit);
+        }
 
         return $qb;
     }
