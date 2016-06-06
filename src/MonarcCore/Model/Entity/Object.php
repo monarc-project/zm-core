@@ -400,6 +400,78 @@ class Object extends AbstractEntity
                     ),
                 ),
             ));
+            $this->inputFilter->add(array(
+                'name' => 'scope',
+                'required' => false,
+                'allow_empty' => true,
+                'continue_if_empty' => true,
+                'filters' => array(),
+                'validators' => array(
+                    array(
+                        'name' => 'IsInt',
+                    ),
+                ),
+            ));
+            $this->inputFilter->add(array(
+                'name' => 'mode',
+                'required' => false,
+                'allow_empty' => true,
+                'continue_if_empty' => true,
+                'filters' => array(),
+                'validators' => array(
+                    array(
+                        'name' => 'IsInt',
+                    ),
+                ),
+            ));
+            $this->inputFilter->add(array(
+                'name' => 'asset',
+                'required' => true,
+                'allow_empty' => true,
+                'continue_if_empty' => true,
+                'filters' => array(),
+                'validators' => array(
+                    array(
+                        'name' => 'IsInt',
+                    ),
+                ),
+            ));
+            $this->inputFilter->add(array(
+                'name' => 'category',
+                'required' => true,
+                'allow_empty' => true,
+                'continue_if_empty' => true,
+                'filters' => array(),
+                'validators' => array(
+                    array(
+                        'name' => 'IsInt',
+                    ),
+                ),
+            ));
+            $this->inputFilter->add(array(
+                'name' => 'rolfTag',
+                'required' => true,
+                'allow_empty' => true,
+                'continue_if_empty' => true,
+                'filters' => array(),
+                'validators' => array(
+                    array(
+                        'name' => 'IsInt',
+                    ),
+                ),
+            ));
+            $this->inputFilter->add(array(
+                'name' => 'position',
+                'required' => true,
+                'allow_empty' => true,
+                'continue_if_empty' => true,
+                'filters' => array(),
+                'validators' => array(
+                    array(
+                        'name' => 'IsInt',
+                    ),
+                ),
+            ));
         }
         return $this->inputFilter;
     }
