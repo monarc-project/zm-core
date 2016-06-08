@@ -70,9 +70,9 @@ class Object extends AbstractEntity
     protected $rolfTag;
 
     /**
-     * @var smallint
+     * @var string
      *
-     * @ORM\Column(name="type", type="smallint", options={"unsigned":true})
+     * @ORM\Column(name="type", type="string", length=255, nullable=true)
      */
     protected $type = 'anr';
 
