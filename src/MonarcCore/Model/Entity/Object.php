@@ -203,9 +203,9 @@ class Object extends AbstractEntity
     protected $d = '1';
 
     /**
-     * @var boolean
+     * @var smallint
      *
-     * @ORM\Column(name="position", type="boolean", options={"unsigned":true, "default":1})
+     * @ORM\Column(name="position", type="smallint", options={"unsigned":true, "default":1})
      */
     protected $position = '1';
 
@@ -461,14 +461,17 @@ class Object extends AbstractEntity
                 ),
             ));
             $this->inputFilter->add(array(
-                'name' => 'position',
+                'name' => 'implicitPosition',
                 'required' => true,
-                'allow_empty' => true,
-                'continue_if_empty' => true,
+                'allow_empty' => false,
+                'continue_if_empty' => false,
                 'filters' => array(),
                 'validators' => array(
                     array(
-                        'name' => 'IsInt',
+                        'name' => 'InArray',
+                        'options' => array(
+                            'haystack' => [1, 2, 3],
+                        ),
                     ),
                 ),
             ));

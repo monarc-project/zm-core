@@ -51,6 +51,7 @@ class ObjectService extends AbstractService
             }
 
             $childHierarchy[] = [
+                'id' => $objectsObject['id'],
                 'father' => $objectsObject['father']->id,
                 'child' => $objectsObject['child']->id,
             ];
@@ -76,11 +77,12 @@ class ObjectService extends AbstractService
      */
     public function recursiveChild($hierarchy, $parent, &$childHierarchy, $objectsArray) {
 
-
         $childs = [];
         foreach($childHierarchy as $key => $link) {
             if ((int) $link['father'] == $parent) {
-                $childs[] = $this->recursiveChild($hierarchy, $link['child'], $childHierarchy, $objectsArray);
+                $recursiveChild = $this->recursiveChild($hierarchy, $link['child'], $childHierarchy, $objectsArray);
+                $recursiveChild['objectObjectId'] = $link['id'];
+                $childs[] = $recursiveChild;
                 unset($childHierarchy[$key]);
             }
         }
@@ -88,6 +90,7 @@ class ObjectService extends AbstractService
         $hierarchy = $objectsArray[$parent];
         $this->formatDependencies($hierarchy, $this->dependencies);
         if ($childs) {
+            $hierarchy['childs'] = $childs;
             $hierarchy['childs'] = $childs;
         }
 
@@ -103,6 +106,12 @@ class ObjectService extends AbstractService
     public function create($data) {
 
         $entity = $this->get('entity');
+
+        $previous = (array_key_exists('previous', $data)) ? $data['previous'] : null;
+
+        $position = $this->managePositionCreation($data['category'], (int) $data['implicitPosition'], $previous);
+        $data['position'] = $position;
+
         $entity->exchangeArray($data);
 
         foreach($this->dependencies as $dependency) {
@@ -128,5 +137,138 @@ class ObjectService extends AbstractService
         }
 
         return $id;
+    }
+
+    /**
+     * Update
+     *
+     * @param $id
+     * @param $data
+     * @return mixed
+     */
+    public function update($id, $data){
+
+        $entity = $this->get('table')->getEntity($id);
+
+        $previous = (array_key_exists('previous', $data)) ? $data['previous'] : null;
+
+        $data['position'] = $this->managePositionUpdate($entity, $data['category'], $data['implicitPosition'], $previous);
+        $entity->exchangeArray($data);
+
+        foreach($this->dependencies as $dependency) {
+            $value = $entity->get($dependency);
+            if (!empty($value)) {
+                $tableName = preg_replace("/[0-9]/", "", $dependency)  . 'Table';
+                $method = 'set' . ucfirst($dependency);
+                $dependencyEntity = $this->get($tableName)->getEntity($value);
+                $entity->$method($dependencyEntity);
+            }
+        }
+
+        //add and remove parent is manage in service objects-components
+
+        return $this->get('table')->save($entity);
+    }
+
+    /**
+     * Delete
+     *
+     * @param $id
+     */
+    public function delete($id) {
+
+        $entity = $this->getEntity($id);
+
+        $objectCategoryId = $entity['category']->id;
+        $position = $entity['position'];
+
+        $this->get('table')->changePositionsByCategory($objectCategoryId, $position, 'down', 'after');
+
+        $this->get('table')->delete($id);
+    }
+
+
+    /**
+     * Manage position
+     *
+     * @param $objectCategoryId
+     * @param $implicitPosition
+     * @param null $previous
+     * @return int
+     */
+    protected function managePositionCreation($objectCategoryId, $implicitPosition, $previous = null) {
+        $position = 1;
+
+        switch ($implicitPosition) {
+            case 1:
+                $this->get('table')->changePositionsByCategory($objectCategoryId, 1, 'up', 'after');
+                $position = 1;
+                break;
+            case 2:
+                $maxPosition = $this->get('table')->maxPositionByCategory($objectCategoryId);
+                $position = $maxPosition + 1;
+                break;
+            case 3:
+                $previousObject = $this->get('table')->getEntity($previous);
+                $this->get('table')->changePositionsByCategory($objectCategoryId, $previousObject->position + 1, 'up', 'after');
+                $position = $previousObject->position + 1;
+                break;
+        }
+
+        return $position;
+    }
+
+
+    /**
+     * Manage position update
+     *
+     * @param $object
+     * @param $newObjectCategoryId
+     * @param $implicitPosition
+     * @param null $previous
+     * @return int
+     */
+    protected function managePositionUpdate($object, $newObjectCategoryId, $implicitPosition, $previous = null) {
+
+        $position = 1;
+
+        if ($newObjectCategoryId == $object->category->id) {
+            switch ($implicitPosition) {
+                case 1:
+                    $this->get('table')->changePositionsByCategory($object->category->id, $object->position, 'up', 'before');
+                    $position = 1;
+                    break;
+                case 2:
+                    $this->get('table')->changePositionsByCategory($object->category->id, $object->position, 'down', 'after');
+                    $maxPosition = $this->get('table')->maxPositionByCategory($object->category->id);
+                    $position = $maxPosition + 1;
+                    break;
+                case 3:
+                    $previousObject = $this->get('table')->getEntity($previous);
+                    $this->get('table')->changePositionsByCategory($object->category->id, $object->position, 'down', 'after');
+                    $this->get('table')->changePositionsByCategory($object->category->id, $previousObject->position, 'up', 'after');
+                    $position = $previousObject->position + 1;
+                    break;
+            }
+        } else {
+            $this->get('table')->changePositionsByCategory($object->category->id, $object->position, 'down', 'after');
+            switch ($implicitPosition) {
+                case 1:
+                    $this->get('table')->changePositionsByCategory($newObjectCategoryId, 1, 'up', 'after');
+                    $position = 1;
+                    break;
+                case 2:
+                    $maxPosition = $this->get('table')->maxPositionByCategory($newObjectCategoryId);
+                    $position = $maxPosition + 1;
+                    break;
+                case 3:
+                    $previousObject = $this->get('table')->getEntity($previous);
+                    $this->get('table')->changePositionsByCategory($newObjectCategoryId, $previousObject->position, 'up', 'after', true);
+                    $position = $previousObject->position + 1;
+                    break;
+            }
+        }
+
+        return $position;
     }
 }
