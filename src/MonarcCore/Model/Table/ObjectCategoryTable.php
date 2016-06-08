@@ -20,15 +20,27 @@ class ObjectCategoryTable extends AbstractEntityTable {
         if (!$strict) {
             $sign .= '=';
         }
+        if (is_null($parentId)) {
+            return $this->getRepository()->createQueryBuilder('t')
+                ->update()
+                ->set('t.position', 't.position' . $positionDirection)
+                ->where('t.parent IS NULL')
+                ->andWhere('t.position ' . $sign . ' :position')
+                ->setParameter(':position', $position)
+                ->getQuery()
+                ->getResult();
+        } else {
+            return $this->getRepository()->createQueryBuilder('t')
+                ->update()
+                ->set('t.position', 't.position' . $positionDirection)
+                ->where('t.parent = :parentid')
+                ->andWhere('t.position ' . $sign . ' :position')
+                ->setParameter(':parentid', $parentId)
+                ->setParameter(':position', $position)
+                ->getQuery()
+                ->getResult();
+        }
 
-        return $this->getRepository()->createQueryBuilder('t')
-            ->update()
-            ->set('t.position', 't.position' . $positionDirection)
-            ->where('t.category = :objectcategoryid')
-            ->andWhere('t.position ' . $sign . ' :position')
-            ->setParameter(':objectcategoryid', $parentId)
-            ->setParameter(':position', $position)
-            ->getQuery()
-            ->getResult();
+
     }
 }
