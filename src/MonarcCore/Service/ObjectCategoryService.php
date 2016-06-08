@@ -20,6 +20,13 @@ class ObjectCategoryService extends AbstractService
     public function create($data) {
 
         $entity = $this->get('entity');
+
+        $previous = (array_key_exists('previous', $data)) ? $data['previous'] : null;
+        $parent = (array_key_exists('parent', $data)) ? $data['parent'] : null;
+
+        $position = $this->managePositionCreation($parent, (int) $data['implicitPosition'], $previous);
+        $data['position'] = $position;
+
         $entity->exchangeArray($data);
 
         //parent and root
@@ -112,5 +119,36 @@ class ObjectCategoryService extends AbstractService
         } else {
             return $entity;
         }
+    }
+
+
+    /**
+     * Manage position
+     *
+     * @param $parentId
+     * @param $implicitPosition
+     * @param null $previous
+     * @return int
+     */
+    protected function managePositionCreation($parentId, $implicitPosition, $previous = null) {
+        $position = 1;
+
+        switch ($implicitPosition) {
+            case 1:
+                $this->get('table')->changePositionsByParent($parentId, 1, 'up', 'after');
+                $position = 1;
+                break;
+            case 2:
+                $maxPosition = $this->get('table')->maxPositionByCategory($parentId);
+                $position = $maxPosition + 1;
+                break;
+            case 3:
+                $previousObject = $this->get('table')->getEntity($previous);
+                $this->get('table')->changePositionsByParent($parentId, $previousObject->position + 1, 'up', 'after');
+                $position = $previousObject->position + 1;
+                break;
+        }
+
+        return $position;
     }
 }

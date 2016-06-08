@@ -152,7 +152,10 @@ class ObjectService extends AbstractService
 
         $previous = (array_key_exists('previous', $data)) ? $data['previous'] : null;
 
-        $data['position'] = $this->managePositionUpdate($entity, $data['category'], $data['implicitPosition'], $previous);
+        if (array_key_exists('implicitPosition', $data)) {
+            $data['position'] = $this->managePositionUpdate($entity, $data['category'], $data['implicitPosition'], $previous);
+        }
+
         $entity->exchangeArray($data);
 
         foreach($this->dependencies as $dependency) {

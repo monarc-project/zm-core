@@ -72,9 +72,9 @@ class Object extends AbstractEntity
     /**
      * @var smallint
      *
-     * @ORM\Column(name="type", type="smallint", options={"unsigned":true, "default":3})
+     * @ORM\Column(name="type", type="smallint", options={"unsigned":true})
      */
-    protected $type = '3';
+    protected $type = 'anr';
 
     /**
      * @var smallint
@@ -462,7 +462,7 @@ class Object extends AbstractEntity
             ));
             $this->inputFilter->add(array(
                 'name' => 'implicitPosition',
-                'required' => true,
+                'required' => false,
                 'allow_empty' => false,
                 'continue_if_empty' => false,
                 'filters' => array(),

@@ -4,9 +4,13 @@ namespace MonarcCore\Model\Table;
 class ObjectTable extends AbstractEntityTable {
 
     /**
-     * In
+     * Change positions by category
+     *
      * @param $objectCategoryId
      * @param $position
+     * @param string $direction
+     * @param string $referential
+     * @param bool $strict
      * @return array
      */
     public function changePositionsByCategory($objectCategoryId, $position, $direction = 'up', $referential = 'after', $strict = false)

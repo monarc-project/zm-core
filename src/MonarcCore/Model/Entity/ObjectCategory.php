@@ -181,6 +181,23 @@ class ObjectCategory extends AbstractEntity
                 ));
             }
 
+
+            $this->inputFilter->add(array(
+                'name' => 'implicitPosition',
+                'required' => true,
+                'allow_empty' => false,
+                'continue_if_empty' => false,
+                'filters' => array(),
+                'validators' => array(
+                    array(
+                        'name' => 'InArray',
+                        'options' => array(
+                            'haystack' => [1, 2, 3],
+                        ),
+                    ),
+                ),
+            ));
+
         }
         return $this->inputFilter;
     }
