@@ -248,9 +248,15 @@ class ObjectService extends AbstractService
                     break;
                 case 3:
                     $previousObject = $this->get('table')->getEntity($previous);
-                    $this->get('table')->changePositionsByCategory($object->category->id, $object->position, 'down', 'after');
-                    $this->get('table')->changePositionsByCategory($object->category->id, $previousObject->position, 'up', 'after');
-                    $position = $previousObject->position + 1;
+                    if ($object->position < $previousObject->position) {
+                        $this->get('table')->changePositionsByCategory($object->parent->id, $object->position, 'down', 'after');
+                        $this->get('table')->changePositionsByCategory($object->parent->id, $previousObject->position, 'up', 'after');
+                        $position = $previousObject->position;
+                    } else {
+                        $this->get('table')->changePositionsByCategory($object->parent->id, $previousObject->position, 'up', 'after', true);
+                        $this->get('table')->changePositionsByCategory($object->parent->id, $object->position, 'down', 'after', true);
+                        $position = $previousObject->position + 1;
+                    }
                     break;
             }
         } else {

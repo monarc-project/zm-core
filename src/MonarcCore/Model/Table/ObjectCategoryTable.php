@@ -40,7 +40,31 @@ class ObjectCategoryTable extends AbstractEntityTable {
                 ->getQuery()
                 ->getResult();
         }
+    }
 
+    /**
+     * Max position by parent
+     *
+     * @param $parentId
+     * @return mixed
+     */
+    public function maxPositionByParent($parentId)
+    {
+        if (is_null($parentId)) {
+            $maxPosition = $this->getRepository()->createQueryBuilder('t')
+                ->select(array('max(t.position)'))
+                ->where('t.parent IS NULL')
+                ->getQuery()
+                ->getResult();
+        } else {
+            $maxPosition = $this->getRepository()->createQueryBuilder('t')
+                ->select(array('max(t.position)'))
+                ->where('t.parent = :parentid')
+                ->setParameter(':parentid', $parentId)
+                ->getQuery()
+                ->getResult();
+        }
 
+        return $maxPosition[0][1];
     }
 }
