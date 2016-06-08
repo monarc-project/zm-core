@@ -94,6 +94,13 @@ class ObjectCategoryService extends AbstractService
      */
     public function delete($id) {
 
+        $entity = $this->getEntity($id);
+
+        $objectParentId = $entity['parent']->id;
+        $position = $entity['position'];
+
+        $this->get('table')->changePositionsByParent($objectParentId, $position, 'down', 'after');
+
         $this->get('table')->getRepository()->createQueryBuilder('t')
             ->update()
             ->set('t.parent', ':parentset')
