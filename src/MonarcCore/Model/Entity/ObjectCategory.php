@@ -169,7 +169,8 @@ class ObjectCategory extends AbstractEntity
                     'name' => $text,
                     'required' => true,
                     'allow_empty' => true,
-                    'filters' => array(
+                    'filters' => array(),
+                    'validators' => array(
                         array(
                             'name' => 'Alnum',
                             'options' => array(
@@ -177,7 +178,6 @@ class ObjectCategory extends AbstractEntity
                             )
                         ),
                     ),
-                    'validators' => array(),
                 ));
             }
 

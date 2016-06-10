@@ -9,7 +9,7 @@ namespace MonarcCore\Service;
  */
 class ObjectCategoryService extends AbstractService
 {
-    protected $filterColumns = ['label1', 'label2', 'label3', 'label4',];
+    protected $filterColumns = ['label1', 'label2', 'label3', 'label4'];
 
     /**
      * Create

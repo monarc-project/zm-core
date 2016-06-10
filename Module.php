@@ -125,6 +125,11 @@ class Module
                     $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
                     return $table;
                 },
+                '\MonarcCore\Model\Table\ObjectRiskTable' => function($sm){
+                    $table = new Model\Table\ObjectRiskTable($sm->get('\MonarcCore\Model\Db'));
+                    $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
+                    return $table;
+                },
                 '\MonarcCore\Model\Table\ObjectObjectTable' => function($sm){
                     $table = new Model\Table\ObjectObjectTable($sm->get('\MonarcCore\Model\Db'));
                     $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());

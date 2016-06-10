@@ -137,8 +137,6 @@ abstract class AbstractService extends AbstractServiceFactory
         $entity = $this->get('entity');
         $entity->exchangeArray($data);
 
-
-
         return $this->get('table')->save($entity);
     }
 
