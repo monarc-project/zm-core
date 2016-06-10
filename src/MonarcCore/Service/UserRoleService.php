@@ -10,7 +10,17 @@ class UserRoleService extends AbstractService
     protected $userTokenTable;
     protected $userRoleEntity;
 
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null)
+    /**
+     * Get List
+     *
+     * @param int $page
+     * @param int $limit
+     * @param null $order
+     * @param null $filter
+     * @param array $options
+     * @return array
+     */
+    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $options = [])
     {
         /** @var UserRoleTable $userRoleTable */
         $userRoleTable = $this->get('userRoleTable');

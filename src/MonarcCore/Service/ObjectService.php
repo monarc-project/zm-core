@@ -26,9 +26,10 @@ class ObjectService extends AbstractService
      * @param int $limit
      * @param null $order
      * @param null $filter
+     * @param array $options
      * @return array
      */
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null){
+    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $options = []){
 
         //retrieve all objects
         $objects = parent::getList($page = 1, $limit = 25, $order, $filter);
@@ -45,7 +46,7 @@ class ObjectService extends AbstractService
 
         //hierarchy
         $childHierarchy = [];
-        foreach($objectsObjects as $objectsObject) {
+        foreach ($objectsObjects as $objectsObject) {
             if (!is_null($objectsObject['child'])) {
                 if (array_key_exists($objectsObject['child']->id, $rootArray)) {
                     unset($rootArray[$objectsObject['child']->id]);
@@ -59,14 +60,32 @@ class ObjectService extends AbstractService
             ];
         }
 
-        //recursive
-        $hierarchy = [];
-        foreach($rootArray as $root) {
-            $hierarchy[] = $this->recursiveChild($hierarchy, $root['id'], $childHierarchy, $objectsArray);
+        if ($options['lock'] == 'true') {
+            return $rootArray;
+        } else {
+
+            //recursive
+            $hierarchy = [];
+            foreach ($rootArray as $root) {
+                $hierarchy[] = $this->recursiveChild($hierarchy, $root['id'], $childHierarchy, $objectsArray);
+            }
+
+
+            return $hierarchy;
         }
+    }
 
-        return $hierarchy;
-
+    /**
+     * Get Filtered Count
+     *
+     * @param int $page
+     * @param int $limit
+     * @param null $order
+     * @param null $filter
+     * @return mixed
+     */
+    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null){
+        return count(parent::getList($page = 1, $limit = 25, $order, $filter));
     }
 
     /**
