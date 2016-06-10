@@ -106,13 +106,17 @@ class Db {
             $searchIndex = 1;
 
             foreach ($filter as $colName => $value) {
+
+                $where = (is_int($value)) ? "t.$colName = :filter_$searchIndex" : "t.$colName LIKE :filter_$searchIndex";
+                $parameterValue = (is_int($value)) ? $value : '%' . $value . '%';
+
                 if ($isFirst) {
-                    $qb->where("t.$colName LIKE :filter_$searchIndex");
-                    $qb->setParameter(":filter_$searchIndex",  '%' . $value . '%');
+                    $qb->where($where);
+                    $qb->setParameter(":filter_$searchIndex", $parameterValue);
                     $isFirst = false;
                 } else {
-                    $qb->orWhere("t.$colName LIKE :filter_$searchIndex");
-                    $qb->setParameter(":filter_$searchIndex",  '%' . $value . '%');
+                    $qb->orWhere($where);
+                    $qb->setParameter(":filter_$searchIndex", $parameterValue);
                 }
 
                 ++$searchIndex;

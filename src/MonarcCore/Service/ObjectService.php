@@ -15,6 +15,8 @@ class ObjectService extends AbstractService
     protected $categoryTable;
     protected $rolfTagTable;
 
+    protected $filterColumns = ['category'];
+
     protected $dependencies = ['asset', 'category', 'rolfTag'];
 
     /**
@@ -29,7 +31,7 @@ class ObjectService extends AbstractService
     public function getList($page = 1, $limit = 25, $order = null, $filter = null){
 
         //retrieve all objects
-        $objects = parent::getList($page = 1, $limit = 25, $order = null, $filter = null);
+        $objects = parent::getList($page = 1, $limit = 25, $order, $filter);
         $objectsArray = [];
         $rootArray = [];
         foreach($objects as $object) {
@@ -39,7 +41,7 @@ class ObjectService extends AbstractService
 
         //retrieve link father - child
         $objectObjectService = $this->get('objectObjectService');
-        $objectsObjects = $objectObjectService->getList($page = 1, $limit = 25, $order = null, $filter = null);
+        $objectsObjects = $objectObjectService->getList($page = 1, $limit = 25, $order, $filter);
 
         //hierarchy
         $childHierarchy = [];
