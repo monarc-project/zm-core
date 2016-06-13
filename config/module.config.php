@@ -70,6 +70,7 @@ return array(
         'invokables' => array(
             'MonarcCore\Model\Entity\Amv'               => 'MonarcCore\Model\Entity\Amv',
             'MonarcCore\Model\Entity\Asset'             => 'MonarcCore\Model\Entity\Asset',
+            'MonarcCore\Model\Entity\Guide'             => 'MonarcCore\Model\Entity\Guide',
             'MonarcCore\Model\Entity\Historical'        => 'MonarcCore\Model\Entity\Historical',
             'MonarcCore\Model\Entity\Measure'           => 'MonarcCore\Model\Entity\Measure',
             'MonarcCore\Model\Entity\Model'             => 'MonarcCore\Model\Entity\Model',
@@ -95,6 +96,7 @@ return array(
             'MonarcCore\Service\AssetService'           => 'MonarcCore\Service\AssetServiceFactory',
             'MonarcCore\Service\AuthenticationService'  => 'MonarcCore\Service\AuthenticationServiceFactory',
             'MonarcCore\Service\ConfigService'          => 'MonarcCore\Service\ConfigServiceFactory',
+            'MonarcCore\Service\GuideService'           => 'MonarcCore\Service\GuideServiceFactory',
             'MonarcCore\Service\HistoricalService'      => 'MonarcCore\Service\HistoricalServiceFactory',
             'MonarcCore\Service\IndexService'           => 'MonarcCore\Service\IndexServiceFactory',
             'MonarcCore\Service\MailService'            => 'MonarcCore\Service\MailServiceFactory',
@@ -139,8 +141,9 @@ return array(
         'auth',
         'monarc_api_admin_roles',
         'monarc_api_admin_passwords',
-        'monarc_api_themes',
         'monarc_api_config',
+        'monarc_api_guides',
+        'monarc_api_themes',
     ),
 
     'cases' => [
