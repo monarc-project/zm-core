@@ -135,8 +135,20 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     public function create($data) {
 
+        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+
         $entity = $this->get('entity');
         $entity->exchangeArray($data);
+
+        foreach($dependencies as $dependency) {
+            $value = $entity->get($dependency);
+            if (!empty($value)) {
+                $tableName = preg_replace("/[0-9]/", "", $dependency)  . 'Table';
+                $method = 'set' . ucfirst($dependency);
+                $dependencyEntity = $this->get($tableName)->getEntity($value);
+                $entity->$method($dependencyEntity);
+            }
+        }
 
         return $this->get('table')->save($entity);
     }
@@ -150,8 +162,20 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     public function update($id,$data){
 
+        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+
         $entity = $this->get('table')->getEntity($id);
         $entity->exchangeArray($data);
+
+        foreach($dependencies as $dependency) {
+            $value = $entity->get($dependency);
+            if (!empty($value)) {
+                $tableName = preg_replace("/[0-9]/", "", $dependency)  . 'Table';
+                $method = 'set' . ucfirst($dependency);
+                $dependencyEntity = $this->get($tableName)->getEntity($value);
+                $entity->$method($dependencyEntity);
+            }
+        }
 
         return $this->get('table')->save($entity);
     }
