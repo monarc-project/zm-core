@@ -153,7 +153,7 @@ class Guide extends AbstractEntity
                     array(
                         'name' => 'InArray',
                         'options' => array(
-                            'haystack' => [0, 1, 2, 3],
+                            'haystack' => [1, 2, 3, 4],
                         ),
                         'default' => 0,
                     ),

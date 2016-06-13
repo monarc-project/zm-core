@@ -143,6 +143,7 @@ return array(
         'monarc_api_admin_passwords',
         'monarc_api_config',
         'monarc_api_guides',
+        'monarc_api_guides_types',
         'monarc_api_themes',
     ),
 
