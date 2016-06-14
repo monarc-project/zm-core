@@ -88,7 +88,7 @@ return array(
             'MonarcCore\Service\Mime\Message'           => 'Zend\Mime\Message',
             'MonarcCore\Service\Mail\Message'           => 'Zend\Mail\Message',
             'MonarcCore\Service\Mail\Transport\Smtp'        => 'Zend\Mail\Transport\Smtp',
-            'MonarcCore\Service\Mail\Transport\SmtpOptions' => 'Zend\Mail\Transport\SmtpOptions'
+            'MonarcCore\Service\Mail\Transport\SmtpOptions' => 'Zend\Mail\Transport\SmtpOptions',
         ),
         'factories' => array(
             'MonarcCore\Service\AmvService'             => 'MonarcCore\Service\AmvServiceFactory',
@@ -114,6 +114,7 @@ return array(
             'MonarcCore\Service\UserRoleService'        => 'MonarcCore\Service\UserRoleServiceFactory',
             'MonarcCore\Service\UserService'            => 'MonarcCore\Service\UserServiceFactory',
             'MonarcCore\Service\VulnerabilityService'   => 'MonarcCore\Service\VulnerabilityServiceFactory',
+            'MonarcCore\Service\DocModelService'        => 'MonarcCore\Service\DocModelServiceFactory',
         ),
         'initializers' =>
         [

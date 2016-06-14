@@ -78,6 +78,7 @@ class Module
                 '\MonarcCore\Model\Entity\Model' => '\MonarcCore\Model\Entity\Model',
                 '\MonarcCore\Model\Entity\Asset' => '\MonarcCore\Model\Entity\Asset',
                 '\MonarcCore\Model\Entity\Threat' => '\MonarcCore\Model\Entity\Threat',
+                '\MonarcCore\Model\Entity\DocModel' => '\MonarcCore\Model\Entity\DocModel',
             ),
             'factories' => array(
                 '\MonarcCore\Model\Db' => function($sm){
@@ -191,6 +192,11 @@ class Module
                 },
                 '\MonarcCore\Model\Table\UserTokenTable' => function($sm){
                     return new Model\Table\UserTokenTable($sm->get('\MonarcCli\Model\Db'));
+                },
+                '\MonarcCore\Model\Table\DocModelTable' => function($sm){
+                    $table = new Model\Table\DocModelTable($sm->get('\MonarcCore\Model\Db'));
+                    $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
+                    return $table;
                 },
                 /* Security */
                 '\MonarcCore\Service\SecurityService' => '\MonarcCore\Service\SecurityServiceFactory',
