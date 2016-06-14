@@ -36,11 +36,11 @@ class ObjectService extends AbstractService
      * @param $lock
      * @return array
      */
-    public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $lock){
+    public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $lock = null){
 
         $filterAnd = [];
-        if (!is_null($asset)) $filterAnd['asset'] = $asset;
-        if (!is_null($category)) $filterAnd['category'] = $category;
+        if ((!is_null($asset)) && ($asset != 0)) $filterAnd['asset'] = $asset;
+        if ((!is_null($category)) && ($category != 0)) $filterAnd['category'] = $category;
 
         //retrieve all objects
         $objects = $this->get('table')->fetchAllFiltered(
@@ -110,8 +110,8 @@ class ObjectService extends AbstractService
     public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null){
 
         $filterAnd = [];
-        if (!is_null($asset)) $filterAnd['asset'] = $asset;
-        if (!is_null($category)) $filterAnd['category'] = $category;
+        if ((!is_null($asset)) && ($asset != 0)) $filterAnd['asset'] = $asset;
+        if ((!is_null($category)) && ($category != 0)) $filterAnd['category'] = $category;
 
         return count($this->get('table')->fetchAllFiltered(
             array_keys($this->get('entity')->getJsonArray()),
