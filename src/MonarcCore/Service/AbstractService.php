@@ -303,4 +303,96 @@ abstract class AbstractService extends AbstractServiceFactory
             }
         }
     }
+
+    /**
+     * Manage position
+     *
+     * @param $field
+     * @param $parentId
+     * @param $implicitPosition
+     * @param null $previous
+     * @return int
+     */
+    protected function managePositionCreation($field, $parentId, $implicitPosition, $previous = null) {
+        $position = 1;
+
+        switch ($implicitPosition) {
+            case 1:
+                $this->get('table')->changePositionsByParent($field, $parentId, 1, 'up', 'after');
+                $position = 1;
+                break;
+            case 2:
+                $maxPosition = $this->get('table')->maxPositionByParent($field, $parentId);
+                $position = $maxPosition + 1;
+                break;
+            case 3:
+                $previousObject = $this->get('table')->getEntity($previous);
+                $this->get('table')->changePositionsByParent($field, $parentId, $previousObject->position + 1, 'up', 'after');
+                $position = $previousObject->position + 1;
+                break;
+        }
+
+        return $position;
+    }
+
+    /**
+     * Manage position update
+     *
+     * @param $field
+     * @param $entity
+     * @param $newParentId
+     * @param $implicitPosition
+     * @param null $previous
+     * @return int
+     */
+    protected function managePositionUpdate($field, $entity, $newParentId, $implicitPosition, $previous = null) {
+
+        $position = 1;
+        $entityParentId = $entity->$field->id;
+
+        if ($newParentId == $entityParentId) {
+            switch ($implicitPosition) {
+                case 1:
+                    $this->get('table')->changePositionsByParent($field, $entityParentId, $entity->position, 'up', 'before');
+                    $position = 1;
+                    break;
+                case 2:
+                    $this->get('table')->changePositionsByParent($field, $entityParentId, $entity->position, 'down', 'after');
+                    $maxPosition = $this->get('table')->maxPositionByParent($field, $entityParentId);
+                    $position = $maxPosition + 1;
+                    break;
+                case 3:
+                    $previousObject = $this->get('table')->getEntity($previous);
+                    if ($entity->position < $previousObject->position) {
+                        $this->get('table')->changePositionsByParent($field, $entityParentId, $entity->position, 'down', 'after');
+                        $this->get('table')->changePositionsByParent($field, $entityParentId, $previousObject->position, 'up', 'after');
+                        $position = $previousObject->position;
+                    } else {
+                        $this->get('table')->changePositionsByParent($field, $entityParentId, $previousObject->position, 'up', 'after', true);
+                        $this->get('table')->changePositionsByParent($field, $entityParentId, $entity->position, 'down', 'after', true);
+                        $position = $previousObject->position + 1;
+                    }
+                    break;
+            }
+        } else {
+            $this->get('table')->changePositionsByParent($field, $entityParentId, $entity->position, 'down', 'after');
+            switch ($implicitPosition) {
+                case 1:
+                    $this->get('table')->changePositionsByParent($field, $newParentId, 1, 'up', 'after');
+                    $position = 1;
+                    break;
+                case 2:
+                    $maxPosition = $this->get('table')->maxPositionByParent($field, $newParentId);
+                    $position = $maxPosition + 1;
+                    break;
+                case 3:
+                    $previousObject = $this->get('table')->getEntity($previous);
+                    $this->get('table')->changePositionsByParent($field, $newParentId, $previousObject->position, 'up', 'after', true);
+                    $position = $previousObject->position + 1;
+                    break;
+            }
+        }
+
+        return $position;
+    }
 }

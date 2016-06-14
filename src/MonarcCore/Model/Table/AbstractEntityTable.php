@@ -107,10 +107,9 @@ abstract class AbstractEntityTable
 
     public function getEntity($id)
     {
-        $c = $this->getClass();
-        if(class_exists($c)){
-            //$id  = (int)$id;
-            $entity = new $c();
+        $class = $this->getClass();
+        if(class_exists($class)){
+            $entity = new $class();
             $entity->set('id',$id);
             $entity = $this->getDb()->fetch($entity);
             return $entity;
@@ -152,5 +151,54 @@ abstract class AbstractEntityTable
         }else{
             return false;
         }
+    }
+
+    /**
+     * Change positions by parent
+     *
+     * @param $field
+     * @param $parentId
+     * @param $position
+     * @param string $direction
+     * @param string $referential
+     * @param bool $strict
+     * @return array
+     */
+    public function changePositionsByParent($field = 'parent', $parentId, $position, $direction = 'up', $referential = 'after', $strict = false)
+    {
+        $positionDirection = ($direction == 'up') ? '+1' : '-1';
+        $sign = ($referential == 'after') ? '>' : '<';
+        if (!$strict) {
+            $sign .= '=';
+        }
+
+        return $this->getRepository()->createQueryBuilder('t')
+            ->update()
+            ->set('t.position', 't.position' . $positionDirection)
+            ->where('t.' . $field . ' = :parentid')
+            ->andWhere('t.position ' . $sign . ' :position')
+            ->setParameter(':parentid', $parentId)
+            ->setParameter(':position', $position)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Max Position By Parent
+     *
+     * @param $field
+     * @param $parentId
+     * @return mixed
+     */
+    public function maxPositionByParent($field, $parentId)
+    {
+        $maxPosition = $this->getRepository()->createQueryBuilder('t')
+            ->select(array('max(t.position)'))
+            ->where('t.' . $field . ' = :parentid')
+            ->setParameter(':parentid', $parentId)
+            ->getQuery()
+            ->getResult();
+
+        return $maxPosition[0][1];
     }
 }

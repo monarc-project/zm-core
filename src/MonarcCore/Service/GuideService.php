@@ -11,10 +11,10 @@ class GuideService extends AbstractService
 {
 
     protected $types = [
-        1 => '__context_risks_management',
-        2 => '__summary_assessment_trends_threats',
-        3 => '__context_anr',
-        4 => '__summary_assets_impacts'
+        1 => 'Risk analysis context',
+        2 => 'Risk management context',
+        3 => 'Summary assessment of trends and threats',
+        4 => 'Summary of assets / impacts'
     ];
 
     /**
