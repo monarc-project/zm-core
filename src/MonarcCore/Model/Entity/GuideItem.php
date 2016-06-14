@@ -2,15 +2,16 @@
 
 namespace MonarcCore\Model\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Object Category
+ * Guide
  *
- * @ORM\Table(name="objects_categories")
+ * @ORM\Table(name="guides_items")
  * @ORM\Entity
  */
-class ObjectCategory extends AbstractEntity
+class GuideItem extends AbstractEntity
 {
     /**
      * @var integer
@@ -22,59 +23,56 @@ class ObjectCategory extends AbstractEntity
     protected $id;
 
     /**
-     * @var \MonarcCore\Model\Entity\ObjectCategory
+     * @var integer
      *
-     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\ObjectCategory", cascade={"persist"})
+     * @ORM\Column(name="anr_id", type="integer", nullable=true)
+     */
+    protected $anr;
+
+    /**
+     * @var \MonarcCore\Model\Entity\Guide
+     *
+     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Guide")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="root_id", referencedColumnName="id", nullable=true)
+     *   @ORM\JoinColumn(name="guide_id", referencedColumnName="id", nullable=true)
      * })
      */
-    protected $root;
-
-    /**
-     * @var \MonarcCore\Model\Entity\ObjectCategory
-     *
-     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\ObjectCategory", cascade={"persist"})
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="parent_id", referencedColumnName="id", nullable=true)
-     * })
-     */
-    protected $parent;
+    protected $guide;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="label1", type="string", length=255, nullable=true)
+     * @ORM\Column(name="description1", type="string", length=255, nullable=true)
      */
-    protected $label1;
+    protected $description1;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="label2", type="string", length=255, nullable=true)
+     * @ORM\Column(name="description2", type="string", length=255, nullable=true)
      */
-    protected $label2;
+    protected $description2;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="label3", type="string", length=255, nullable=true)
+     * @ORM\Column(name="description3", type="string", length=255, nullable=true)
      */
-    protected $label3;
+    protected $description3;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="label4", type="string", length=255, nullable=true)
+     * @ORM\Column(name="description4", type="string", length=255, nullable=true)
      */
-    protected $label4;
+    protected $description4;
 
     /**
      * @var smallint
      *
-     * @ORM\Column(name="position", type="smallint", options={"unsigned":true, "default":1})
+     * @ORM\Column(name="position", type="smallint", options={"unsigned":true})
      */
-    protected $position = '1';
+    protected $position;
 
     /**
      * @var string
@@ -114,7 +112,7 @@ class ObjectCategory extends AbstractEntity
 
     /**
      * @param int $id
-     * @return Model
+     * @return Asset
      */
     public function setId($id)
     {
@@ -123,38 +121,20 @@ class ObjectCategory extends AbstractEntity
     }
 
     /**
-     * @return ObjectCategory
+     * @return Guide
      */
-    public function getParent()
+    public function getGuide()
     {
-        return $this->parent;
+        return $this->guide;
     }
 
     /**
-     * @param ObjectCategory $parent
-     * @return ObjectCategory
+     * @param Guide $guide
+     * @return GuideItem
      */
-    public function setParent($parent)
+    public function setGuide($guide)
     {
-        $this->parent = $parent;
-        return $this;
-    }
-
-    /**
-     * @return ObjectCategory
-     */
-    public function getRoot()
-    {
-        return $this->root;
-    }
-
-    /**
-     * @param ObjectCategory $root
-     * @return ObjectCategory
-     */
-    public function setRoot($root)
-    {
-        $this->root = $root;
+        $this->guide = $guide;
         return $this;
     }
 
@@ -162,18 +142,38 @@ class ObjectCategory extends AbstractEntity
         if (!$this->inputFilter) {
             parent::getInputFilter();
 
-            $texts = ['label1', 'label2', 'label3', 'label4'];
+            $descriptions = [
+                'description1', 'description2', 'description3', 'description4'
+            ];
 
-            foreach($texts as $text) {
+            foreach($descriptions as $description) {
                 $this->inputFilter->add(array(
-                    'name' => $text,
-                    'required' => true,
+                    'name' => $description,
+                    'required' => false,
                     'allow_empty' => true,
-                    'filters' => array(),
+                    'filters' => array(
+                        array(
+                            'name' => 'Alnum',
+                            'options' => array(
+                                'allow_white_space' => true,
+                            )
+                        ),
+                    ),
                     'validators' => array(),
                 ));
             }
 
+            $this->inputFilter->add(array(
+                'name' => 'guide',
+                'required' => true,
+                'allow_empty' => false,
+                'filters' => array(),
+                'validators' => array(
+                    array(
+                        'name' => 'IsInt',
+                    ),
+                ),
+            ));
 
             $this->inputFilter->add(array(
                 'name' => 'implicitPosition',
@@ -190,7 +190,6 @@ class ObjectCategory extends AbstractEntity
                     ),
                 ),
             ));
-
         }
         return $this->inputFilter;
     }

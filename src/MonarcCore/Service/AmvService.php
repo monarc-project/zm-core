@@ -22,8 +22,6 @@ class AmvService extends AbstractService
 
     protected $dependencies = ['asset', 'threat', 'vulnerability', 'measure1', 'measure2', 'measure3'];
 
-
-
     /**
      * Create
      *

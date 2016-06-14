@@ -9,22 +9,24 @@ abstract class AbstractControllerFactory implements FactoryInterface
     protected $serviceName;
 
     public function createService(ServiceLocatorInterface $serviceLocator){
-        $c = substr(get_class($this),0,-7);
-        if(class_exists($c)){
-            $fn = $this->getServiceName();
-            if(empty($fn)){
-                return new $c();    
-            }elseif(is_array($fn)){
-                $sl = $serviceLocator->getServiceLocator();
+
+        $class = substr(get_class($this),0,-7);
+
+        if(class_exists($class)){
+            $service = $this->getServiceName();
+            if (empty($service)) {
+                return new $class();
+            } elseif (is_array($service)) {
+                $sm = $serviceLocator->getServiceLocator();
                 $sls = array();
-                foreach ($fn as $k => $v) {
-                    $sls[$k] = $sl->get($v);
+                foreach ($service as $key => $value) {
+                    $sls[$key] = $sm->get($value);
                 }
-                return new $c($sls);
-            }else{
-                return new $c($serviceLocator->getServiceLocator()->get($fn));
+                return new $class($sls);
+            } else {
+                return new $class($serviceLocator->getServiceLocator()->get($service));
             }
-        }else{
+        } else {
             return false;
         }
     }
