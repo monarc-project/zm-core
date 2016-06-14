@@ -64,16 +64,20 @@ class ObjectService extends AbstractService
             ];
         }
 
+        $newRoot = [];
+        foreach($rootArray as $value) {
+            $newRoot[] = $value;
+        }
+
         if ($options['lock'] == 'true') {
-            return $rootArray;
+            return $newRoot;
         } else {
 
             //recursive
             $hierarchy = [];
-            foreach ($rootArray as $root) {
+            foreach ($newRoot as $root) {
                 $hierarchy[] = $this->recursiveChild($hierarchy, $root['id'], $childHierarchy, $objectsArray);
             }
-
 
             return $hierarchy;
         }
