@@ -104,10 +104,9 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param int $limit
      * @param null $order
      * @param null $filter
-     * @param array $options
      * @return mixed
      */
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $options = []){
+    public function getList($page = 1, $limit = 25, $order = null, $filter = null){
 
         return $this->get('table')->fetchAllFiltered(
             array_keys($this->get('entity')->getJsonArray()),

@@ -170,14 +170,7 @@ class ObjectCategory extends AbstractEntity
                     'required' => true,
                     'allow_empty' => true,
                     'filters' => array(),
-                    'validators' => array(
-                        array(
-                            'name' => 'Alnum',
-                            'options' => array(
-                                'allow_white_space' => true,
-                            )
-                        ),
-                    ),
+                    'validators' => array(),
                 ));
             }
 

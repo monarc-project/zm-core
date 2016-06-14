@@ -15,7 +15,12 @@ class ObjectService extends AbstractService
     protected $categoryTable;
     protected $rolfTagTable;
 
-    protected $filterColumns = ['category'];
+    protected $filterColumns = [
+        'name1',
+        /*'name2', 'name3', 'name4',
+        'label1', 'label2', 'label3', 'label4',
+        'description1', 'description2', 'description3', 'description4',*/
+    ];
 
     protected $dependencies = ['asset', 'category', 'rolfTag'];
 
@@ -26,17 +31,27 @@ class ObjectService extends AbstractService
      * @param int $limit
      * @param null $order
      * @param null $filter
-     * @param array $options
+     * @param null $asset
+     * @param null $category
+     * @param $lock
      * @return array
      */
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $options = []){
+    public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $lock){
 
-        if ($filter == 0) {
-            $filter = null;
-        }
+        $filterAnd = [];
+        if (!is_null($asset)) $filterAnd['asset'] = $asset;
+        if (!is_null($category)) $filterAnd['category'] = $category;
 
         //retrieve all objects
-        $objects = parent::getList($page = 1, $limit = 25, $order, $filter);
+        $objects = $this->get('table')->fetchAllFiltered(
+            array_keys($this->get('entity')->getJsonArray()),
+            $page,
+            $limit,
+            $this->parseFrontendOrder($order),
+            $this->parseFrontendFilter($filter, $this->filterColumns),
+            $filterAnd
+        );
+
         $objectsArray = [];
         $rootArray = [];
         foreach($objects as $object) {
@@ -69,7 +84,7 @@ class ObjectService extends AbstractService
             $newRoot[] = $value;
         }
 
-        if ($options['lock'] == 'true') {
+        if ($lock == 'true') {
             return $newRoot;
         } else {
 
@@ -92,13 +107,20 @@ class ObjectService extends AbstractService
      * @param null $filter
      * @return mixed
      */
-    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null){
+    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null){
 
-        if ($filter == 0) {
-            $filter = null;
-        }
+        $filterAnd = [];
+        if (!is_null($asset)) $filterAnd['asset'] = $asset;
+        if (!is_null($category)) $filterAnd['category'] = $category;
 
-        return count(parent::getList($page = 1, $limit = 25, $order, $filter));
+        return count($this->get('table')->fetchAllFiltered(
+            array_keys($this->get('entity')->getJsonArray()),
+            $page,
+            $limit,
+            $this->parseFrontendOrder($order),
+            $this->parseFrontendFilter($filter, $this->filterColumns),
+            $filterAnd
+        ));
     }
 
     /**

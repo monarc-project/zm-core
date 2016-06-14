@@ -34,9 +34,10 @@ class Db {
      * @param array|null $filter
      * @return array
      */
-    public function fetchAllFiltered($entity, $page = 1, $limit = 25, $order = null, $filter = null) {
+    public function fetchAllFiltered($entity, $page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null) {
         $repository = $this->entityManager->getRepository(get_class($entity));
-        $qb = $this->buildFilteredQuery($repository, $page, $limit, $order, $filter);
+
+        $qb = $this->buildFilteredQuery($repository, $page, $limit, $order, $filter, $filterAnd);
 
         return $qb->getQuery()->getResult();
     }
@@ -95,16 +96,16 @@ class Db {
      * @param null $filter
      * @return QueryBuilder
      */
-    private function buildFilteredQuery($repository, $page = 1, $limit = 25, $order = null, $filter = null)
+    private function buildFilteredQuery($repository, $page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
     {
         $qb = $repository->createQueryBuilder('t');
 
-        // Add filter in WHERE xx LIKE %y% OR zz LIKE %y% ...
         if ($filter != null && is_array($filter)) {
             $isFirst = true;
 
             $searchIndex = 1;
 
+            // Add filter in WHERE xx LIKE %y% OR zz LIKE %y% ...
             foreach ($filter as $colName => $value) {
 
                 $where = (is_int($value)) ? "t.$colName = :filter_$searchIndex" : "t.$colName LIKE :filter_$searchIndex";
@@ -120,6 +121,26 @@ class Db {
                 }
 
                 ++$searchIndex;
+
+            }
+
+            // Add filter in WHERE xx LIKE %y% AND zz LIKE %y% ...
+            foreach ($filterAnd as $colName => $value) {
+
+                $where = (is_int($value)) ? "t.$colName = :filter_$searchIndex" : "t.$colName LIKE :filter_$searchIndex";
+                $parameterValue = (is_int($value)) ? $value : '%' . $value . '%';
+
+                if ($isFirst) {
+                    $qb->where($where);
+                    $qb->setParameter(":filter_$searchIndex", $parameterValue);
+                    $isFirst = false;
+                } else {
+                    $qb->andWhere($where);
+                    $qb->setParameter(":filter_$searchIndex", $parameterValue);
+                }
+
+                ++$searchIndex;
+
             }
         }
 
@@ -129,10 +150,8 @@ class Db {
         }
 
         // Add limit and offset
-        if ($limit > 0) {
-            $qb->setFirstResult(($page - 1) * $limit);
-            $qb->setMaxResults($limit);
-        }
+        $qb->setFirstResult(($page - 1) * $limit);
+        $qb->setMaxResults($limit);
 
         return $qb;
     }
