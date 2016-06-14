@@ -62,9 +62,9 @@ abstract class AbstractEntityTable
 
     public function fetchAllFiltered($fields = array(), $page = 1, $limit = 25, $order = null, $filter = null)
     {
-        $c = $this->getClass();
-        if (class_exists($c)) {
-            $all = $this->getDb()->fetchAllFiltered(new $c(), $page, $limit, $order, $filter);
+        $class = $this->getClass();
+        if (class_exists($class)) {
+            $all = $this->getDb()->fetchAllFiltered(new $class(), $page, $limit, $order, $filter);
             $return = array();
             foreach ($all as $a) {
                 $return[] = $a->getJsonArray($fields);

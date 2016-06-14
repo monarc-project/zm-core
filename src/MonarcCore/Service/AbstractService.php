@@ -43,11 +43,13 @@ abstract class AbstractService extends AbstractServiceFactory
      * @return array
      */
     protected function parseFrontendFilter($filter, $columns = array()) {
-        $output = array();
 
-        if ($columns) {
-            foreach ($columns as $c) {
-                $output[$c] = $filter;
+        $output = array();
+        if (!is_null($filter)) {
+            if ($columns) {
+                foreach ($columns as $c) {
+                    $output[$c] = $filter;
+                }
             }
         }
 

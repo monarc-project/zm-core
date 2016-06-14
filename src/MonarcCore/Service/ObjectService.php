@@ -31,6 +31,10 @@ class ObjectService extends AbstractService
      */
     public function getList($page = 1, $limit = 25, $order = null, $filter = null, $options = []){
 
+        if ($filter == 0) {
+            $filter = null;
+        }
+
         //retrieve all objects
         $objects = parent::getList($page = 1, $limit = 25, $order, $filter);
         $objectsArray = [];
@@ -42,7 +46,7 @@ class ObjectService extends AbstractService
 
         //retrieve link father - child
         $objectObjectService = $this->get('objectObjectService');
-        $objectsObjects = $objectObjectService->getList($page = 1, $limit = 25, $order, $filter);
+        $objectsObjects = $objectObjectService->getList($page = 1, $limit = 25, null, null);
 
         //hierarchy
         $childHierarchy = [];
@@ -85,6 +89,11 @@ class ObjectService extends AbstractService
      * @return mixed
      */
     public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null){
+
+        if ($filter == 0) {
+            $filter = null;
+        }
+
         return count(parent::getList($page = 1, $limit = 25, $order, $filter));
     }
 
