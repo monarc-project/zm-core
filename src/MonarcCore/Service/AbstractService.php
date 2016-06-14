@@ -296,7 +296,6 @@ abstract class AbstractService extends AbstractServiceFactory
     public function formatDependencies(&$entity, $dependencies) {
 
         foreach($dependencies as $dependency) {
-
             if (!empty($entity[$dependency])) {
                 $entity[$dependency] = $entity[$dependency]->getJsonArray();
                 unset($entity[$dependency]['__initializer__']);
