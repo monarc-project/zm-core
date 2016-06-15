@@ -42,7 +42,7 @@ class ObjectService extends AbstractService
         if ((!is_null($asset)) && ($asset != 0)) $filterAnd['asset'] = $asset;
         if ((!is_null($category)) && ($category != 0)) {
 
-            $child = $this->get('categoryTable')->getDescendants($category);
+            $child = ($lock == 'true') ? [] : $this->get('categoryTable')->getDescendants($category);
             $child[] = $category;
 
             $filterAnd['category'] = $child;
