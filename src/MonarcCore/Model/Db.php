@@ -125,22 +125,24 @@ class Db {
             }
 
             // Add filter in WHERE xx LIKE %y% AND zz LIKE %y% ...
-            foreach ($filterAnd as $colName => $value) {
+            if (!is_null($filterAnd)) {
+                foreach ($filterAnd as $colName => $value) {
 
-                $where = (is_int($value)) ? "t.$colName = :filter_$searchIndex" : "t.$colName LIKE :filter_$searchIndex";
-                $parameterValue = (is_int($value)) ? $value : '%' . $value . '%';
+                    $where = (is_int($value)) ? "t.$colName = :filter_$searchIndex" : "t.$colName LIKE :filter_$searchIndex";
+                    $parameterValue = (is_int($value)) ? $value : '%' . $value . '%';
 
-                if ($isFirst) {
-                    $qb->where($where);
-                    $qb->setParameter(":filter_$searchIndex", $parameterValue);
-                    $isFirst = false;
-                } else {
-                    $qb->andWhere($where);
-                    $qb->setParameter(":filter_$searchIndex", $parameterValue);
+                    if ($isFirst) {
+                        $qb->where($where);
+                        $qb->setParameter(":filter_$searchIndex", $parameterValue);
+                        $isFirst = false;
+                    } else {
+                        $qb->andWhere($where);
+                        $qb->setParameter(":filter_$searchIndex", $parameterValue);
+                    }
+
+                    ++$searchIndex;
+
                 }
-
-                ++$searchIndex;
-
             }
         }
 
