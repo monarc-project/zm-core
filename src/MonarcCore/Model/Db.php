@@ -128,8 +128,16 @@ class Db {
             if (!is_null($filterAnd)) {
                 foreach ($filterAnd as $colName => $value) {
 
-                    $where = (is_int($value)) ? "t.$colName = :filter_$searchIndex" : "t.$colName LIKE :filter_$searchIndex";
-                    $parameterValue = (is_int($value)) ? $value : '%' . $value . '%';
+                    if (is_array($value)) {
+                        $where = "t.$colName IN (:filter_$searchIndex)";
+                        $parameterValue = $value;
+                    } else if (is_int($value)) {
+                        $where = "t.$colName = :filter_$searchIndex";
+                        $parameterValue = $value;
+                    } else {
+                        $where = "t.$colName LIKE :filter_$searchIndex";
+                        $parameterValue = '%' . $value . '%';
+                    }
 
                     if ($isFirst) {
                         $qb->where($where);
