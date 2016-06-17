@@ -1,6 +1,8 @@
 <?php
 namespace MonarcCore\Service;
 
+use MonarcCore\Model\Entity\Model;
+
 abstract class AbstractService extends AbstractServiceFactory
 {
     use \MonarcCore\Model\GetAndSet;
@@ -293,8 +295,11 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param $dependencies
      */
     protected function setDependencies(&$entity, $dependencies) {
+
         foreach($dependencies as $dependency) {
+
             $value = $entity->get($dependency);
+
             if (!empty($value)) {
                 $tableName = preg_replace("/[0-9]/", "", $dependency)  . 'Table';
                 $method = 'set' . ucfirst($dependency);

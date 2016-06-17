@@ -12,7 +12,9 @@ use MonarcCore\Model\Entity\Model;
  */
 class ModelService extends AbstractService
 {
+    protected $dependencies = ['anr'];
     protected $anrService;
+    protected $anrTable;
     protected $filterColumns = array(
         'label1', 'label2', 'label3', 'label4',
         'description1', 'description2', 'description3', 'description4',
@@ -26,16 +28,24 @@ class ModelService extends AbstractService
      */
     public function create($data) {
 
-        $data = [
+        $entity = $this->get('entity');
+
+        //anr
+        $dataAnr = [
             'label1' => 'ANR',
             'label2' => 'ANR',
             'label3' => 'ANR',
             'label4' => 'ANR',
         ];
-        $this->get('anrService')->create($data);
+        $anrId = $this->get('anrService')->create($dataAnr);
 
-        $entity = $this->get('entity');
+        $data['anr'] = $anrId;
+
+        //model
         $entity->exchangeArray($data);
+
+        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $this->setDependencies($entity, $dependencies);
 
         return $this->get('table')->save($entity);
     }

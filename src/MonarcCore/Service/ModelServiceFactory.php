@@ -7,5 +7,6 @@ class ModelServiceFactory extends AbstractServiceFactory
         'table' => 'MonarcCore\Model\Table\ModelTable',
         'entity' => 'MonarcCore\Model\Entity\Model',
         'anrService' => 'MonarcCore\Service\AnrService',
+        'anrTable' => 'MonarcCore\Model\Table\AnrTable',
     );
 }

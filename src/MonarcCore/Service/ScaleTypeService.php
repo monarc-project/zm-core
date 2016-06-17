@@ -9,8 +9,9 @@ namespace MonarcCore\Service;
  */
 class ScaleTypeService extends AbstractService
 {
+    protected $anrTable;
     protected $scaleTable;
-    protected $dependencies = ['scale'];
+    protected $dependencies = ['anr', 'scale'];
     protected $types = [
         1 => 'C',
         2 => 'I',
@@ -66,8 +67,12 @@ class ScaleTypeService extends AbstractService
         $position = $this->managePositionCreation('scale', $parent, (int) $data['implicitPosition'], $previous);
 
         $data['position'] = $position;
-        $data['isSys'] = 0;
-        $data['type'] = 9;
+        if (!array_key_exists('isSys', $data)) {
+            $data['isSys'] = 0;
+        }
+        if (!array_key_exists('type', $data)) {
+            $data['type'] = 9;
+        }
 
         $entity = $this->get('entity');
         $entity->exchangeArray($data);

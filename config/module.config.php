@@ -128,6 +128,10 @@ return array(
             'MonarcCore\Service\VulnerabilityService'   => 'MonarcCore\Service\VulnerabilityServiceFactory',
             'MonarcCore\Service\DocModelService'        => 'MonarcCore\Service\DocModelServiceFactory',
         ),
+        'shared' => array(
+            'MonarcCore\Model\Entity\Scale' => false,
+            'MonarcCore\Model\Entity\ScaleType' => false,
+        ),
         'initializers' =>
         [
             \MonarcCore\Service\Initializer\ObjectManagerInitializer::class
