@@ -176,15 +176,8 @@ class ObjectService extends AbstractService
 
         $entity->exchangeArray($data);
 
-        foreach($this->dependencies as $dependency) {
-            $value = $entity->get($dependency);
-            if (!empty($value)) {
-                $tableName = preg_replace("/[0-9]/", "", $dependency)  . 'Table';
-                $method = 'set' . ucfirst($dependency);
-                $dependencyEntity = $this->get($tableName)->getEntity($value);
-                $entity->$method($dependencyEntity);
-            }
-        }
+        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $this->setDependencies($entity, $dependencies);
 
         $id = $this->get('table')->save($entity);
 
@@ -220,15 +213,8 @@ class ObjectService extends AbstractService
 
         $entity->exchangeArray($data);
 
-        foreach($this->dependencies as $dependency) {
-            $value = $entity->get($dependency);
-            if (!empty($value)) {
-                $tableName = preg_replace("/[0-9]/", "", $dependency)  . 'Table';
-                $method = 'set' . ucfirst($dependency);
-                $dependencyEntity = $this->get($tableName)->getEntity($value);
-                $entity->$method($dependencyEntity);
-            }
-        }
+        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $this->setDependencies($entity, $dependencies);
 
         //add and remove parent is manage in service objects-components
 

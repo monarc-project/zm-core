@@ -33,15 +33,7 @@ class GuideItemService extends AbstractService
 
         $entity->exchangeArray($data);
 
-        foreach($dependencies as $dependency) {
-            $value = $entity->get($dependency);
-            if (!empty($value)) {
-                $tableName = preg_replace("/[0-9]/", "", $dependency)  . 'Table';
-                $method = 'set' . ucfirst($dependency);
-                $dependencyEntity = $this->get($tableName)->getEntity($value);
-                $entity->$method($dependencyEntity);
-            }
-        }
+        $this->setDependencies($entity, $dependencies);
 
         return $this->get('table')->save($entity);
     }
@@ -55,28 +47,21 @@ class GuideItemService extends AbstractService
      */
     public function update($id,$data){
 
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-
-        $entity = $this->get('table')->getEntity($id);
-
         $previous = (array_key_exists('previous', $data)) ? $data['previous'] : null;
         $guide = (array_key_exists('guide', $data)) ? $data['guide'] : null;
+
+        $entity = $this->get('table')->getEntity($id);
 
         if (array_key_exists('implicitPosition', $data)) {
             $data['position'] = $this->managePositionUpdate('guide', $entity, $guide, $data['implicitPosition'], $previous);
         }
 
+        $entity = $this->get('table')->getEntity($id);
         $entity->exchangeArray($data);
 
-        foreach($dependencies as $dependency) {
-            $value = $entity->get($dependency);
-            if (!empty($value)) {
-                $tableName = preg_replace("/[0-9]/", "", $dependency)  . 'Table';
-                $method = 'set' . ucfirst($dependency);
-                $dependencyEntity = $this->get($tableName)->getEntity($value);
-                $entity->$method($dependencyEntity);
-            }
-        }
+        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $this->setDependencies($entity, $dependencies);
+
 
         return $this->get('table')->save($entity);
     }

@@ -136,20 +136,11 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     public function create($data) {
 
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-
         $entity = $this->get('entity');
         $entity->exchangeArray($data);
 
-        foreach($dependencies as $dependency) {
-            $value = $entity->get($dependency);
-            if (!empty($value)) {
-                $tableName = preg_replace("/[0-9]/", "", $dependency)  . 'Table';
-                $method = 'set' . ucfirst($dependency);
-                $dependencyEntity = $this->get($tableName)->getEntity($value);
-                $entity->$method($dependencyEntity);
-            }
-        }
+        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $this->setDependencies($entity, $dependencies);
 
         return $this->get('table')->save($entity);
     }
@@ -163,20 +154,11 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     public function update($id,$data){
 
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-
         $entity = $this->get('table')->getEntity($id);
         $entity->exchangeArray($data);
 
-        foreach($dependencies as $dependency) {
-            $value = $entity->get($dependency);
-            if (!empty($value)) {
-                $tableName = preg_replace("/[0-9]/", "", $dependency)  . 'Table';
-                $method = 'set' . ucfirst($dependency);
-                $dependencyEntity = $this->get($tableName)->getEntity($value);
-                $entity->$method($dependencyEntity);
-            }
-        }
+        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $this->setDependencies($entity, $dependencies);
 
         return $this->get('table')->save($entity);
     }
@@ -292,7 +274,7 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param $entity
      * @param $dependencies
      */
-    public function formatDependencies(&$entity, $dependencies) {
+    protected function formatDependencies(&$entity, $dependencies) {
 
         foreach($dependencies as $dependency) {
             if (!empty($entity[$dependency])) {
@@ -300,6 +282,25 @@ abstract class AbstractService extends AbstractServiceFactory
                 unset($entity[$dependency]['__initializer__']);
                 unset($entity[$dependency]['__cloner__']);
                 unset($entity[$dependency]['__isInitialized__']);
+            }
+        }
+    }
+
+    /**
+     * Set Dependencies
+     *
+     * @param $entity
+     * @param $dependencies
+     */
+    protected function setDependencies(&$entity, $dependencies) {
+        foreach($dependencies as $dependency) {
+            $value = $entity->get($dependency);
+            if (!empty($value)) {
+                $tableName = preg_replace("/[0-9]/", "", $dependency)  . 'Table';
+                $method = 'set' . ucfirst($dependency);
+                var_dump($tableName);
+                $dependencyEntity = $this->get($tableName)->getEntity($value);
+                $entity->$method($dependencyEntity);
             }
         }
     }

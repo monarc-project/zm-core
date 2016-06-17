@@ -63,6 +63,7 @@ abstract class AbstractEntityTable
     public function fetchAllFiltered($fields = array(), $page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
     {
         $class = $this->getClass();
+
         if (class_exists($class)) {
             $all = $this->getDb()->fetchAllFiltered(new $class(), $page, $limit, $order, $filter, $filterAnd);
             $return = array();

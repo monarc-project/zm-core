@@ -34,15 +34,8 @@ class AmvService extends AbstractService
 
         $entity->exchangeArray($data);
 
-        foreach($this->dependencies as $dependency) {
-            $value = $entity->get($dependency);
-            if (!empty($value)) {
-                $tableName = preg_replace("/[0-9]/", "", $dependency)  . 'Table';
-                $method = 'set' . ucfirst($dependency);
-                $dependencyEntity = $this->get($tableName)->getEntity($value);
-                $entity->$method($dependencyEntity);
-            }
-        }
+        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $this->setDependencies($entity, $dependencies);
 
         $authorized = $this->compliesRequirement($entity);
 

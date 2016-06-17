@@ -186,6 +186,21 @@ class Module
                     $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
                     return $table;
                 },
+                '\MonarcCore\Model\Table\ScaleTable' => function($sm){
+                    $table = new Model\Table\ScaleTable($sm->get('\MonarcCore\Model\Db'));
+                    $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
+                    return $table;
+                },
+                '\MonarcCore\Model\Table\ScaleCommentTable' => function($sm){
+                    $table = new Model\Table\ScaleCommentTable($sm->get('\MonarcCore\Model\Db'));
+                    $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
+                    return $table;
+                },
+                '\MonarcCore\Model\Table\ScaleTypeTable' => function($sm){
+                    $table = new Model\Table\ScaleTypeTable($sm->get('\MonarcCore\Model\Db'));
+                    $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
+                    return $table;
+                },
                 '\MonarcCore\Model\Table\VulnerabilityTable' => function($sm){
                     $table = new Model\Table\VulnerabilityTable($sm->get('\MonarcCore\Model\Db'));
                     $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
