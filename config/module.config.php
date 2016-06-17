@@ -69,6 +69,7 @@ return array(
         ),*/
         'invokables' => array(
             'MonarcCore\Model\Entity\Amv'               => 'MonarcCore\Model\Entity\Amv',
+            'MonarcCore\Model\Entity\Anr'               => 'MonarcCore\Model\Entity\Anr',
             'MonarcCore\Model\Entity\Asset'             => 'MonarcCore\Model\Entity\Asset',
             'MonarcCore\Model\Entity\Guide'             => 'MonarcCore\Model\Entity\Guide',
             'MonarcCore\Model\Entity\GuideItem'         => 'MonarcCore\Model\Entity\GuideItem',
@@ -97,6 +98,7 @@ return array(
         ),
         'factories' => array(
             'MonarcCore\Service\AmvService'             => 'MonarcCore\Service\AmvServiceFactory',
+            'MonarcCore\Service\AnrService'             => 'MonarcCore\Service\AnrServiceFactory',
             'MonarcCore\Service\AssetService'           => 'MonarcCore\Service\AssetServiceFactory',
             'MonarcCore\Service\AuthenticationService'  => 'MonarcCore\Service\AuthenticationServiceFactory',
             'MonarcCore\Service\ConfigService'          => 'MonarcCore\Service\ConfigServiceFactory',

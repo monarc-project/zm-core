@@ -298,7 +298,6 @@ abstract class AbstractService extends AbstractServiceFactory
             if (!empty($value)) {
                 $tableName = preg_replace("/[0-9]/", "", $dependency)  . 'Table';
                 $method = 'set' . ucfirst($dependency);
-                var_dump($tableName);
                 $dependencyEntity = $this->get($tableName)->getEntity($value);
                 $entity->$method($dependencyEntity);
             }
