@@ -223,13 +223,30 @@ class Model extends AbstractEntity
         if (!$this->inputFilter) {
             parent::getInputFilter();
 
-            $texts = ['label1', 'label2', 'label3', 'label4', 'description1', 'description2', 'description3', 'description4'];
+            $texts = ['label1', 'label2', 'label3', 'label4'];
+            $descriptions =  ['description1', 'description2', 'description3', 'description4'];
             $booleans = ['status', 'isScalesUpdatable', 'isDefault', 'isDeleted', 'isGeneric', 'isRegulator', 'showRolfBrut'];
 
             foreach($texts as $text) {
                 $this->inputFilter->add(array(
                     'name' => $text,
                     'required' => true,
+                    'allow_empty' => true,
+                    'filters' => array(
+                        array(
+                            'name' => 'Alnum',
+                            'options' => array(
+                                'allow_white_space' => true,
+                            ),
+                        ),
+                    ),
+                    'validators' => array(),
+                ));
+            }
+            foreach($descriptions as $description) {
+                $this->inputFilter->add(array(
+                    'name' => $description,
+                    'required' => false,
                     'allow_empty' => true,
                     'filters' => array(
                         array(
