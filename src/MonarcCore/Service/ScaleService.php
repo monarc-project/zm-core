@@ -13,10 +13,12 @@ class ScaleService extends AbstractService
     protected $scaleTypeService;
     protected $dependencies = ['anr'];
     protected $types = [
-      1 => 'TYPE_IMPACT',
-      2 => 'TYPE_THREAT',
-      3 => 'TYPE_VUL',
+      1 => 'impact',
+      2 => 'threat',
+      3 => 'vulnerability',
     ];
+
+
 
     /**
      * @return array
@@ -108,5 +110,24 @@ class ScaleService extends AbstractService
         }
 
         return $scaleId;
+    }
+
+    /**
+     * Upate By Anr and Type
+     *
+     * @param $anrId
+     * @param $type
+     * @param $data
+     * @return mixed
+     */
+    public function updateByAnrAndType($anrId, $type, $data) {
+
+        $types = array_flip(self::getTypes());
+
+        $type = $types[$type];
+
+        $entity =  $this->get('table')->getByAnrAndType($anrId, $type);
+
+        return $this->update($entity['id'], $data);
     }
 }
