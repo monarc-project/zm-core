@@ -86,11 +86,11 @@ abstract class AbstractEntityTable
         }
     }
 
-    public function countFiltered($page = 1, $limit = 25, $order = null, $filter = null)
+    public function countFiltered($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
     {
         $c = $this->getClass();
         if (class_exists($c)) {
-            return $this->getDb()->countFiltered(new $c(), $limit, $order, $filter);
+            return $this->getDb()->countFiltered(new $c(), $limit, $order, $filter, $filterAnd);
         } else {
             return false;
         }

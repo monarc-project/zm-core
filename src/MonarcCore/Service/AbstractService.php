@@ -93,10 +93,15 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param null $filter
      * @return int
      */
-    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null) {
+    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null) {
 
-        return $this->get('table')->countFiltered($page, $limit, $this->parseFrontendOrder($order),
-            $this->parseFrontendFilter($filter, $this->filterColumns));
+        return $this->get('table')->countFiltered(
+            $page,
+            $limit,
+            $this->parseFrontendOrder($order),
+            $this->parseFrontendFilter($filter, $this->filterColumns),
+            $filterAnd
+        );
     }
 
     /**
@@ -108,14 +113,15 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param null $filter
      * @return mixed
      */
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null){
+    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null){
 
         return $this->get('table')->fetchAllFiltered(
             array_keys($this->get('entity')->getJsonArray()),
             $page,
             $limit,
             $this->parseFrontendOrder($order),
-            $this->parseFrontendFilter($filter, $this->filterColumns)
+            $this->parseFrontendFilter($filter, $this->filterColumns),
+            $filterAnd
         );
     }
 

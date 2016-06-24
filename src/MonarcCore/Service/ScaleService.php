@@ -35,9 +35,9 @@ class ScaleService extends AbstractService
      * @param null $filter
      * @return mixed
      */
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null){
+    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null){
 
-        $scales = parent::getList($page, $limit, $order, $filter);
+        $scales = parent::getList($page, $limit, $order, $filter, $filterAnd);
 
         $types = $this->getTypes();
 
