@@ -233,7 +233,7 @@ class ObjectService extends AbstractService
         $objectCategoryId = $entity['category']->id;
         $position = $entity['position'];
 
-        $this->get('table')->changePositionsByCategory('category', $objectCategoryId, $position, 'down', 'after');
+        $this->get('table')->changePositionsByParent('category', $objectCategoryId, $position, 'down', 'after');
 
         $this->get('table')->delete($id);
     }

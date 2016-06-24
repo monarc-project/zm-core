@@ -8,5 +8,7 @@ class ScaleCommentServiceFactory extends AbstractServiceFactory
         'entity' => 'MonarcCore\Model\Entity\ScaleComment',
         'scaleTable' => 'MonarcCore\Model\Table\ScaleTable',
         'scaleTypeImpactTable' => 'MonarcCore\Model\Table\ScaleTypeTable',
+        'scaleService' => 'MonarcCore\Service\ScaleService',
+        'scaleTypeService' => 'MonarcCore\Service\ScaleTypeService',
     );
 }

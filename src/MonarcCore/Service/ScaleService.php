@@ -122,12 +122,24 @@ class ScaleService extends AbstractService
      */
     public function updateByAnrAndType($anrId, $type, $data) {
 
+        $entity = $this->getByAnrAndType($anrId, $type);
+
+        return $this->update($entity['id'], $data);
+    }
+
+    /**
+     * Get By Anr And Type
+     *
+     * @param $anrId
+     * @param $type
+     * @return mixed
+     */
+    public function getByAnrAndType($anrId, $type) {
+
         $types = array_flip(self::getTypes());
 
         $type = $types[$type];
 
-        $entity =  $this->get('table')->getByAnrAndType($anrId, $type);
-
-        return $this->update($entity['id'], $data);
+        return $this->get('table')->getByAnrAndType($anrId, $type);
     }
 }
