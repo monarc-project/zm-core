@@ -39,7 +39,7 @@ class UserService extends AbstractService
      * @param null $filter
      * @return bool|mixed
      */
-    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null) {
+    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null) {
         /** @var UserTable $userTable */
         $userTable = $this->get('userTable');
 
@@ -56,7 +56,7 @@ class UserService extends AbstractService
      * @param null $filter
      * @return array|bool
      */
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null)
+    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
     {
         /** @var UserTable $userTable */
         $userTable = $this->get('userTable');
