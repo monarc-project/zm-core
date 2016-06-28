@@ -120,6 +120,25 @@ class Measure extends AbstractEntity
         if (!$this->inputFilter) {
             parent::getInputFilter($patch);
 
+            $texts = ['label1', 'label2', 'label3', 'label4'];
+
+            foreach($texts as $text) {
+                $this->inputFilter->add(array(
+                    'name' => $text,
+                    'required' => ($patch) ? false : true,
+                    'allow_empty' => true,
+                    'filters' => array(
+                        array(
+                            'name' => 'Alnum',
+                            'options' => array(
+                                'allow_white_space' => true,
+                            ),
+                        ),
+                    ),
+                    'validators' => array(),
+                ));
+            }
+
             $this->inputFilter->add(array(
                 'name' => 'code',
                 'required' => ($patch) ? false : true,
@@ -131,26 +150,28 @@ class Measure extends AbstractEntity
                 ),
                 'validators' => array(),
             ));
+
+            $this->inputFilter->add(array(
+                'name' => 'status',
+                'required' => ($patch) ? false : true,
+                'allow_empty' => false,
+                'filters' => array(
+                    array('name' => 'ToInt'),
+                ),
+                'validators' => array(
+                    array(
+                        'name' => 'InArray',
+                        'options' => array(
+                            'haystack' => array(self::STATUS_INACTIVE, self::STATUS_ACTIVE),
+                        ),
+                    ),
+                ),
+            ));
         }
 
 
 
-        $this->inputFilter->add(array(
-            'name' => 'status',
-            'required' => ($patch) ? false : true,
-            'allow_empty' => false,
-            'filters' => array(
-                array('name' => 'ToInt'),
-            ),
-            'validators' => array(
-                array(
-                    'name' => 'InArray',
-                    'options' => array(
-                        'haystack' => array(self::STATUS_INACTIVE, self::STATUS_ACTIVE),
-                    ),
-                ),
-            ),
-        ));
+
 
         return $this->inputFilter;
     }
