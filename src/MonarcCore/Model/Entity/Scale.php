@@ -116,9 +116,9 @@ class Scale extends AbstractEntity
         return $this;
     }
 
-    public function getInputFilter(){
+    public function getInputFilter($patch = false){
         if (!$this->inputFilter) {
-            parent::getInputFilter();
+            parent::getInputFilter($patch);
 
             $this->inputFilter->add(array(
                 'name' => 'min',

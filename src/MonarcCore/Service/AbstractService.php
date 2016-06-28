@@ -1,7 +1,6 @@
 <?php
 namespace MonarcCore\Service;
 
-use MonarcCore\Model\Entity\Model;
 
 abstract class AbstractService extends AbstractServiceFactory
 {
@@ -164,6 +163,24 @@ abstract class AbstractService extends AbstractServiceFactory
 
         $entity = $this->get('table')->getEntity($id);
         $entity->exchangeArray($data);
+
+        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $this->setDependencies($entity, $dependencies);
+
+        return $this->get('table')->save($entity);
+    }
+
+    /**
+     * Patch
+     *
+     * @param $id
+     * @param $data
+     * @return mixed
+     */
+    public function patch($id,$data){
+
+        $entity = $this->get('table')->getEntity($id);
+        $entity->exchangeArray($data, true);
 
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);

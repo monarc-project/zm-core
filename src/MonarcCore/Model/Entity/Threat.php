@@ -107,9 +107,9 @@ class Threat extends AbstractEntity
     protected $description4;
 
     /**
-     * @var boolean
+     * @var smallint
      *
-     * @ORM\Column(name="status", type="boolean", options={"unsigned":true, "default":1})
+     * @ORM\Column(name="status", type="smallint", options={"unsigned":true, "default":1})
      */
     protected $status = '1';
 
@@ -402,16 +402,16 @@ class Threat extends AbstractEntity
         $this->models->add($model);
     }
 
-    public function getInputFilter(){
+    public function getInputFilter($patch = false){
         if (!$this->inputFilter) {
-            parent::getInputFilter();
+            parent::getInputFilter($patch);
 
             $texts = ['label1', 'label2', 'label3', 'label4', 'description1', 'description2', 'description3', 'description4'];
 
             foreach($texts as $text) {
                 $this->inputFilter->add(array(
                     'name' => $text,
-                    'required' => true,
+                    'required' => ($patch) ? false : true,
                     'allow_empty' => true,
                     'filters' => array(
                         array(
@@ -472,21 +472,40 @@ class Threat extends AbstractEntity
                     ),
                 ),
             ));
+
             $this->inputFilter->add(array(
                 'name' => 'code',
-                'required' => true,
+                'required' => ($patch) ? false : true,
                 'allow_empty' => false,
                 'continue_if_empty' => false,
                 'filters' => array(),
                 'validators' => array(),
             ));
+
             $this->inputFilter->add(array(
                 'name' => 'mode',
-                'required' => true,
+                'required' => ($patch) ? false : true,
                 'allow_empty' => false,
                 'continue_if_empty' => false,
                 'filters' => array(),
                 'validators' => array(),
+            ));
+
+            $this->inputFilter->add(array(
+                'name' => 'status',
+                'required' => ($patch) ? false : true,
+                'allow_empty' => false,
+                'filters' => array(
+                    array('name' => 'ToInt'),
+                ),
+                'validators' => array(
+                    array(
+                        'name' => 'InArray',
+                        'options' => array(
+                            'haystack' => array(self::STATUS_INACTIVE, self::STATUS_ACTIVE),
+                        ),
+                    ),
+                ),
             ));
         }
         return $this->inputFilter;

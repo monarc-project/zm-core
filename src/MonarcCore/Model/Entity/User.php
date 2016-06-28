@@ -38,9 +38,9 @@ class User extends AbstractEntity
     protected $dateEnd;
 
     /**
-     * @var boolean
+     * @var smallint
      *
-     * @ORM\Column(name="status", type="boolean", nullable=true)
+     * @ORM\Column(name="status", type="smallint", nullable=true)
      */
     protected $status = '1';
 
@@ -107,9 +107,9 @@ class User extends AbstractEntity
      */
     protected $updatedAt;
 
-    public function getInputFilter(){
+    public function getInputFilter($patch = false){
         if (!$this->inputFilter) {
-            parent::getInputFilter();
+            parent::getInputFilter($patch);
             $this->inputFilter->add(array(
                 'name' => 'firstname',
                 'required' => true,
@@ -178,9 +178,9 @@ class User extends AbstractEntity
         return isset($this->parameters['userSalt'])?$this->parameters['userSalt']:'';
     }
 
-    public function exchangeArray(array $options)
+    public function exchangeArray(array $options, $patch = false)
     {
-        $filter = $this->getInputFilter()
+        $filter = $this->getInputFilter($patch)
             ->setData($options)
             ->setValidationGroup(InputFilterInterface::VALIDATE_ALL);
         $isValid = $filter->isValid();

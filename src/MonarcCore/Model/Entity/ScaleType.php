@@ -179,9 +179,9 @@ class ScaleType extends AbstractEntity
         return $this;
     }
 
-    public function getInputFilter(){
+    public function getInputFilter($patch = false){
         if (!$this->inputFilter) {
-            parent::getInputFilter();
+            parent::getInputFilter($patch);
 
             $texts = ['label1', 'label2', 'label3', 'label4'];
 

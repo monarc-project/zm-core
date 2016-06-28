@@ -96,9 +96,9 @@ class Amv extends AbstractEntity
     protected $position = '1';
 
     /**
-     * @var boolean
+     * @var smallint
      *
-     * @ORM\Column(name="status", type="boolean", options={"unsigned":true, "default":1})
+     * @ORM\Column(name="status", type="smallint", options={"unsigned":true, "default":1})
      */
     protected $status = '1';
 
@@ -256,16 +256,16 @@ class Amv extends AbstractEntity
         return $this;
     }
 
-    public function getInputFilter(){
+    public function getInputFilter($patch = false){
         if (!$this->inputFilter) {
-            parent::getInputFilter();
+            parent::getInputFilter($patch);
 
             $texts = ['threat', 'vulnerability', 'asset'];
 
             foreach($texts as $text) {
                 $this->inputFilter->add(array(
                     'name' => $text,
-                    'required' => true,
+                    'required' => ($patch) ? false : true,
                     'allow_empty' => false,
                     'filters' => array(
                         array(

@@ -80,14 +80,14 @@ class DocModel extends AbstractEntity
     const MODEL_ASSETS_AND_MODELS_VALIDATION = 2; // Document model for Assets and models validation
     const MODEL_RISK_ANALYSIS = 3; // Document model for Risk analysis
 
-    public function getInputFilter(){
+    public function getInputFilter($patch = false){
         if (!$this->inputFilter) {
             $dirFile = './data/monarc/models/';
             if(!is_dir($dirFile)){
                 mkdir($dirFile,0775,true);
             }
 
-            parent::getInputFilter();
+            parent::getInputFilter($patch);
 
             $this->inputFilter->add(array(
                 'name' => 'description',

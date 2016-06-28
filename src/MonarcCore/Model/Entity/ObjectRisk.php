@@ -302,9 +302,9 @@ class ObjectRisk extends AbstractEntity
         return $this;
     }
 
-    public function getInputFilter(){
+    public function getInputFilter($patch = false){
         if (!$this->inputFilter) {
-            parent::getInputFilter();
+            parent::getInputFilter($patch);
 
             $dependencies = [
                 'object', 'amv', 'asset', 'threat',

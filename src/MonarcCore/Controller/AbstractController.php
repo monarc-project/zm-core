@@ -116,6 +116,20 @@ abstract class AbstractController extends AbstractRestfulController
     }
 
     /**
+     * Patch
+     *
+     * @param mixed $id
+     * @param mixed $data
+     * @return JsonModel
+     */
+    public function patch($id, $data)
+    {
+        $this->getService()->patch($id, $data);
+
+        return new JsonModel(array('status' => 'ok'));
+    }
+
+    /**
      * Format Dependencies
      *
      * @param $entity

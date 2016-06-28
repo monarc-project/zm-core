@@ -138,9 +138,9 @@ class GuideItem extends AbstractEntity
         return $this;
     }
 
-    public function getInputFilter(){
+    public function getInputFilter($patch = false){
         if (!$this->inputFilter) {
-            parent::getInputFilter();
+            parent::getInputFilter($patch);
 
             $descriptions = [
                 'description1', 'description2', 'description3', 'description4'

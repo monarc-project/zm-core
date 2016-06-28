@@ -89,9 +89,9 @@ class Model extends AbstractEntity
     protected $description4;
 
     /**
-     * @var boolean
+     * @var smallint
      *
-     * @ORM\Column(name="status", type="boolean", options={"unsigned":true, "default":1})
+     * @ORM\Column(name="status", type="smallint", options={"unsigned":true, "default":1})
      */
     protected $status = '1';
 
@@ -237,21 +237,18 @@ class Model extends AbstractEntity
         return $this;
     }
 
-
-
-
-    public function getInputFilter(){
+    public function getInputFilter($patch = false){
         if (!$this->inputFilter) {
-            parent::getInputFilter();
+            parent::getInputFilter($patch);
 
             $texts = ['label1', 'label2', 'label3', 'label4'];
             $descriptions =  ['description1', 'description2', 'description3', 'description4'];
-            $booleans = ['status', 'isScalesUpdatable', 'isDefault', 'isDeleted', 'isGeneric', 'isRegulator', 'showRolfBrut'];
+            $booleans = ['isScalesUpdatable', 'isDefault', 'isDeleted', 'isGeneric', 'isRegulator', 'showRolfBrut'];
 
             foreach($texts as $text) {
                 $this->inputFilter->add(array(
                     'name' => $text,
-                    'required' => true,
+                    'required' => ($patch) ? false : true,
                     'allow_empty' => true,
                     'filters' => array(
                         array(
@@ -296,6 +293,23 @@ class Model extends AbstractEntity
                     ),
                 ));
             }
+
+            $this->inputFilter->add(array(
+                'name' => 'status',
+                'required' => ($patch) ? false : true,
+                'allow_empty' => false,
+                'filters' => array(
+                    array('name' => 'ToInt'),
+                ),
+                'validators' => array(
+                    array(
+                        'name' => 'InArray',
+                        'options' => array(
+                            'haystack' => array(self::STATUS_INACTIVE, self::STATUS_ACTIVE),
+                        ),
+                    ),
+                ),
+            ));
         }
         return $this->inputFilter;
     }
