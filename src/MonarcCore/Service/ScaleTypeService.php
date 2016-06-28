@@ -74,7 +74,10 @@ class ScaleTypeService extends AbstractService
             $data['type'] = 9;
         }
 
-        $entity = $this->get('entity');
+        //$entity = $this->get('entity');
+        $class = $this->get('entity');
+        $entity = new $class();
+
         $entity->exchangeArray($data);
 
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];

@@ -59,7 +59,10 @@ class ScaleService extends AbstractService
     public function create($data) {
 
         //scale
-        $entity = $this->get('entity');
+        //$entity = $this->get('entity');
+        $class = $this->get('entity');
+        $entity = new $class();
+
         $entity->exchangeArray($data);
         $entity->setId(null);
 

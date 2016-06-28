@@ -20,7 +20,7 @@ class AmvService extends AbstractService
 
     protected $filterColumns = array();
 
-    protected $dependencies = ['asset', 'threat', 'vulnerability', 'measure1', 'measure2', 'measure3'];
+    protected $dependencies = ['asset', 'threat', 'vulnerability', 'measure1', 'measure2', 'measure3', 'status'];
 
     /**
      * Create
