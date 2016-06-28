@@ -472,6 +472,22 @@ class Threat extends AbstractEntity
                     ),
                 ),
             ));
+            $this->inputFilter->add(array(
+                'name' => 'code',
+                'required' => true,
+                'allow_empty' => false,
+                'continue_if_empty' => false,
+                'filters' => array(),
+                'validators' => array(),
+            ));
+            $this->inputFilter->add(array(
+                'name' => 'mode',
+                'required' => true,
+                'allow_empty' => false,
+                'continue_if_empty' => false,
+                'filters' => array(),
+                'validators' => array(),
+            ));
         }
         return $this->inputFilter;
     }
