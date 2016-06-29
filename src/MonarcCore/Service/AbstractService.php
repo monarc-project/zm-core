@@ -79,9 +79,9 @@ abstract class AbstractService extends AbstractServiceFactory
         if ($order == null) {
             return null;
         } else if (substr($order, 0, 1) == '-') {
-            return array(substr($order, 1), 'ASC');
+            return array(substr($order, 1), 'DESC');
         } else {
-            return array($order, 'DESC');
+            return array($order, 'ASC');
         }
     }
 
