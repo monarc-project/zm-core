@@ -18,9 +18,9 @@ class AmvService extends AbstractService
 
     protected $errorMessage;
 
-    protected $filterColumns = array();
+    protected $filterColumns = ['status'];
 
-    protected $dependencies = ['asset', 'threat', 'vulnerability', 'measure1', 'measure2', 'measure3', 'status'];
+    protected $dependencies = ['asset', 'threat', 'vulnerability', 'measure1', 'measure2', 'measure3'];
 
     /**
      * Create
@@ -31,7 +31,6 @@ class AmvService extends AbstractService
     public function create($data) {
 
         $entity = $this->get('entity');
-
         $entity->exchangeArray($data);
 
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];

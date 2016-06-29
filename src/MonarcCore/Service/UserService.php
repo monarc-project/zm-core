@@ -13,7 +13,6 @@ use MonarcCore\Model\Table\UserTable;
  */
 class UserService extends AbstractService
 {
-    protected $userTable;
     protected $roleTable;
     protected $userEntity;
     protected $mailService;
@@ -25,9 +24,7 @@ class UserService extends AbstractService
      */
     public function getTotalCount()
     {
-        /** @var UserTable $userTable */
-        $userTable = $this->get('userTable');
-        return $userTable->count();
+        return $this->get('table')->count();
     }
 
     /**
@@ -40,46 +37,12 @@ class UserService extends AbstractService
      * @return bool|mixed
      */
     public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null) {
-        /** @var UserTable $userTable */
-        $userTable = $this->get('userTable');
 
-        return $userTable->countFiltered($page, $limit, $this->parseFrontendOrder($order),
+        return $this->get('table')->countFiltered($page, $limit, $this->parseFrontendOrder($order),
             $this->parseFrontendFilter($filter, array('firstname', 'lastname', 'email')));
     }
 
-    /**
-     * Get List
-     *
-     * @param int $page
-     * @param int $limit
-     * @param null $order
-     * @param null $filter
-     * @return array|bool
-     */
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
-    {
-        /** @var UserTable $userTable */
-        $userTable = $this->get('userTable');
 
-        return $userTable->fetchAllFiltered(
-            array('id', 'firstname', 'lastname', 'email', 'phone', 'status'),
-            $page,
-            $limit,
-            $this->parseFrontendOrder($order),
-            $this->parseFrontendFilter($filter, array('firstname', 'lastname', 'email'))
-        );
-    }
-
-    /**
-     * Get Entity
-     *
-     * @param $id
-     * @return mixed
-     */
-    public function getEntity($id)
-    {
-        return $this->get('userTable')->get($id);
-    }
 
     /**
      * Create
@@ -89,14 +52,9 @@ class UserService extends AbstractService
      */
     public function create($data)
     {
-        //user
-        /** @var UserTable $userTable */
-        $userTable = $this->get('userTable');
+        $this->get('entity')->exchangeArray($data);
 
-        $userEntity = $this->get('userEntity');//new User();
-        $userEntity->exchangeArray($data);
-
-        $userTable->save($userEntity);
+        $this->get('table')->save($userEntity);
 
         //user role
         /** @var UserRoleTable $userRoleTable */
@@ -116,49 +74,6 @@ class UserService extends AbstractService
         }
     }
 
-    /**
-     * Update
-     *
-     * @param $data
-     * @return bool
-     * @throws \Exception
-     */
-    public function update($id, $data) {
-        /** @var UserTable $userTable */
-        $userTable = $this->get('userTable');
-
-        /** @var User $entity */
-        $entity = $userTable->getEntity($id);
-
-        if ($entity != null) {
-            $entity->exchangeArray($data);
-            $userTable->save($entity);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public function patch($id, $data) {
-
-        $entity = $this->get('table')->getEntity($id);
-
-        var_dump($data);
-        die;
-    }
-
-    /**
-     * Delete
-     *
-     * @param $id
-     */
-    public function delete($id)
-    {
-        /** @var UserTable $userTable */
-        $userTable = $this->get('userTable');
-
-        $userTable->delete($id);
-    }
 
     /**
      * Get By Email
@@ -168,10 +83,7 @@ class UserService extends AbstractService
      */
     public function getByEmail($email)
     {
-        /** @var UserTable $userTable */
-        $userTable = $this->get('userTable');
-
-        return $userTable->getRepository()->createQueryBuilder('u')
+        return $this->get('table')->getRepository()->createQueryBuilder('u')
             ->select(array('u.id', 'u.firstname', 'u.lastname', 'u.email', 'u.phone', 'u.status'))
             ->where('u.email = :email')
             ->setParameter(':email', $email)

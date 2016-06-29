@@ -112,7 +112,7 @@ class User extends AbstractEntity
             parent::getInputFilter($required);
             $this->inputFilter->add(array(
                 'name' => 'firstname',
-                'required' => true,
+                'required' => ($required) ? false : true,
                 'filters' => array(
                     array('name' => 'StringTrim',),
                 ),
@@ -120,7 +120,7 @@ class User extends AbstractEntity
             ));
             $this->inputFilter->add(array(
                 'name' => 'lastname',
-                'required' => true,
+                'required' => ($required) ? false : true,
                 'filters' => array(
                     array('name' => 'StringTrim',),
                 ),
@@ -128,7 +128,7 @@ class User extends AbstractEntity
             ));
             $this->inputFilter->add(array(
                 'name' => 'email',
-                'required' => true,
+                'required' => ($required) ? false : true,
                 'filters' => array(
                     array('name' => 'StringTrim',),
                 ),

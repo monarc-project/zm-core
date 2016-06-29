@@ -4,9 +4,9 @@ namespace MonarcCore\Service;
 class UserServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = array(
-        'userTable'=> '\MonarcCore\Model\Table\UserTable',
+        'table'=> '\MonarcCore\Model\Table\UserTable',
+        'entity'=> '\MonarcCore\Model\Entity\User',
         'roleTable'=> '\MonarcCore\Model\Table\UserRoleTable',
-        'userEntity'=> '\MonarcCore\Model\Entity\User',
         'mailService'=> '\MonarcCore\Service\MailService',
     );
 }
