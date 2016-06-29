@@ -37,8 +37,13 @@ class AuthenticationService extends AbstractService
         if(!empty($data['token'])){
             if($this->get('storage')->hasItem($data['token'])){
                 $dd = $this->get('storage')->getItem($data['token']);
-                $this->get('storage')->replaceItem($data['token'],$dd);
-                return true;
+                if($dd->get('dateEnd')->getTimestamp() < time()){
+                    $this->logout($data);
+                    return false;
+                }else{
+                    $this->get('storage')->replaceItem($data['token'],$dd);
+                    return true;
+                }
             }
         }
         return false;
