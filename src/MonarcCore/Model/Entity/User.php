@@ -107,9 +107,9 @@ class User extends AbstractEntity
      */
     protected $updatedAt;
 
-    public function getInputFilter($patch = false){
+    public function getInputFilter($required = false){
         if (!$this->inputFilter) {
-            parent::getInputFilter($patch);
+            parent::getInputFilter($required);
             $this->inputFilter->add(array(
                 'name' => 'firstname',
                 'required' => true,
@@ -133,7 +133,7 @@ class User extends AbstractEntity
                     array('name' => 'StringTrim',),
                 ),
                 'validators' => array(
-                    array('name' => 'EmailAddress',),
+                    array('name' => 'EmailAddress'),
                     array(
                         /*'name' => 'DoctrineModule\Validator\NoObjectExists',
                         'options' => array(
@@ -176,26 +176,6 @@ class User extends AbstractEntity
     }
     public function getUserSalt(){
         return isset($this->parameters['userSalt'])?$this->parameters['userSalt']:'';
-    }
-
-    public function exchangeArray(array $options, $patch = false)
-    {
-        $filter = $this->getInputFilter($patch)
-            ->setData($options)
-            ->setValidationGroup(InputFilterInterface::VALIDATE_ALL);
-        $isValid = $filter->isValid();
-        if(!$isValid){
-            // TODO: ici on pourrait remonter la liste des champs qui ne vont pas
-            throw new \Exception("Invalid data set");
-        }
-        $options = $filter->getValues();
-        if(empty($options['password'])){
-            unset($options['password']);
-        }
-        foreach($options as $k => $v){
-            $this->set($k,$v);
-        }
-        return $this;
     }
 }
 

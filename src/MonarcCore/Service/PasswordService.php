@@ -19,9 +19,16 @@ class PasswordService extends AbstractService
         if (count($user) == 1) {
 
             $user = $user[0];
+            $user['status'] = 1;
 
             $userEntity = new User();
             $userEntity->exchangeArray($user);
+
+            var_dump($user); die;
+
+
+
+
 
             $date = new \DateTime("now");
             $date->add(new \DateInterval("P1D"));

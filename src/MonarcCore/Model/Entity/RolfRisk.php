@@ -157,9 +157,9 @@ class RolfRisk extends AbstractEntity
         $this->tags[$id] = $rolfTag;
     }
 
-    public function getInputFilter($patch = false){
+    public function getInputFilter($required = false){
         if (!$this->inputFilter) {
-            parent::getInputFilter($patch);
+            parent::getInputFilter($required);
 
             $texts = ['label1', 'label2', 'label3', 'label4', 'description1', 'description2', 'description3', 'description4'];
 

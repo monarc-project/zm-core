@@ -256,16 +256,16 @@ class Amv extends AbstractEntity
         return $this;
     }
 
-    public function getInputFilter($patch = false){
+    public function getInputFilter($required = false){
         if (!$this->inputFilter) {
-            parent::getInputFilter($patch);
+            parent::getInputFilter($required);
 
             $texts = ['threat', 'vulnerability', 'asset'];
 
             foreach($texts as $text) {
                 $this->inputFilter->add(array(
                     'name' => $text,
-                    'required' => ($patch) ? false : true,
+                    'required' => ($required) ? false : true,
                     'allow_empty' => false,
                     'filters' => array(
                         array(

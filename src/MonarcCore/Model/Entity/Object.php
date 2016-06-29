@@ -305,9 +305,9 @@ class Object extends AbstractEntity
         return $this;
     }
 
-    public function getInputFilter($patch = false){
+    public function getInputFilter($required = false){
         if (!$this->inputFilter) {
-            parent::getInputFilter($patch);
+            parent::getInputFilter($required);
 
             $texts = [
                 'name1', 'name2', 'name3', 'name4',

@@ -211,7 +211,7 @@ class Module
                     return $table;
                 },
                 '\MonarcCore\Model\Table\PasswordTokenTable' => function($sm){
-                    return new Model\Table\PasswordTokenTable($sm->get('\MonarcCore\Model\Db'));
+                    return new Model\Table\PasswordTokenTable($sm->get('\MonarcCli\Model\Db'));
                 },
                 // User Role table
                 '\MonarcCore\Model\Table\UserRoleTable' => function($sm){

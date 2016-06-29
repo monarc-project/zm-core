@@ -237,9 +237,9 @@ class Model extends AbstractEntity
         return $this;
     }
 
-    public function getInputFilter($patch = false){
+    public function getInputFilter($required = false){
         if (!$this->inputFilter) {
-            parent::getInputFilter($patch);
+            parent::getInputFilter($required);
 
             $texts = ['label1', 'label2', 'label3', 'label4'];
             $descriptions =  ['description1', 'description2', 'description3', 'description4'];
@@ -248,7 +248,7 @@ class Model extends AbstractEntity
             foreach($texts as $text) {
                 $this->inputFilter->add(array(
                     'name' => $text,
-                    'required' => ($patch) ? false : true,
+                    'required' => ($required) ? false : true,
                     'allow_empty' => true,
                     'filters' => array(
                         array(
@@ -296,7 +296,7 @@ class Model extends AbstractEntity
 
             $this->inputFilter->add(array(
                 'name' => 'status',
-                'required' => ($patch) ? false : true,
+                'required' => ($required) ? false : true,
                 'allow_empty' => false,
                 'filters' => array(
                     array('name' => 'ToInt'),

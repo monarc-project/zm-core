@@ -17,6 +17,7 @@ class ThreatService extends AbstractService
         'description1', 'description2', 'description3', 'description4',
         'code',
     ];
+    protected $dependencies = ['theme'];
 
     /**
      * Create
@@ -73,6 +74,9 @@ class ThreatService extends AbstractService
                 $entity->get('models')->removeElement($model);
             }
         }
+
+        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $this->setDependencies($entity, $dependencies);
 
         if (!empty($models)){
             $modelTable = $this->get('modelTable');

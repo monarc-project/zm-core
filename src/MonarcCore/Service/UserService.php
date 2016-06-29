@@ -139,6 +139,14 @@ class UserService extends AbstractService
         }
     }
 
+    public function patch($id, $data) {
+
+        $entity = $this->get('table')->getEntity($id);
+
+        var_dump($data);
+        die;
+    }
+
     /**
      * Delete
      *
