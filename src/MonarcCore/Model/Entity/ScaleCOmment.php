@@ -182,9 +182,9 @@ class ScaleComment extends AbstractEntity
         return $values;
     }
 
-    public function getInputFilter($required = false){
+    public function getInputFilter($partial = false){
         if (!$this->inputFilter) {
-            parent::getInputFilter($required);
+            parent::getInputFilter($partial);
 
             $texts = ['comment1', 'comment2', 'comment3', 'comment4'];
 

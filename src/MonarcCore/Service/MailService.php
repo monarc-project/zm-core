@@ -18,6 +18,15 @@ class MailService extends AbstractService
      */
     public function send($email, $subject, $message) {
 
+        $headers = 'From: webmaster@example.com' . "\r\n" .
+            'Reply-To: webmaster@example.com' . "\r\n" .
+            'X-Mailer: PHP/' . phpversion();
+
+        mail($email, $subject, $message, $headers);
+
+
+        /*
+
         $html = $this->mimePart;
         $html->type = "text/html";
 
@@ -44,5 +53,6 @@ class MailService extends AbstractService
         $transport->send($mailMessage);
 
         //echo $mailMessage->toString();
+        */
     }
 }

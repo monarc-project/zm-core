@@ -118,9 +118,9 @@ class Guide extends AbstractEntity
     }
 
 
-    public function getInputFilter($required = false){
+    public function getInputFilter($partial = false){
         if (!$this->inputFilter) {
-            parent::getInputFilter($required);
+            parent::getInputFilter($partial);
 
             $descriptions = [
                 'description1', 'description2', 'description3', 'description4'

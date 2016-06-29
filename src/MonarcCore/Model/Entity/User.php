@@ -107,12 +107,12 @@ class User extends AbstractEntity
      */
     protected $updatedAt;
 
-    public function getInputFilter($required = false){
+    public function getInputFilter($partial = false){
         if (!$this->inputFilter) {
-            parent::getInputFilter($required);
+            parent::getInputFilter($partial);
             $this->inputFilter->add(array(
                 'name' => 'firstname',
-                'required' => ($required) ? false : true,
+                'required' => ($partial) ? false : true,
                 'filters' => array(
                     array('name' => 'StringTrim',),
                 ),
@@ -120,19 +120,15 @@ class User extends AbstractEntity
             ));
             $this->inputFilter->add(array(
                 'name' => 'lastname',
-                'required' => ($required) ? false : true,
+                'required' => ($partial) ? false : true,
                 'filters' => array(
                     array('name' => 'StringTrim',),
                 ),
                 'validators' => array(),
             ));
-            $this->inputFilter->add(array(
-                'name' => 'email',
-                'required' => ($required) ? false : true,
-                'filters' => array(
-                    array('name' => 'StringTrim',),
-                ),
-                'validators' => array(
+
+            if (!$partial) {
+                $validators = array(
                     array('name' => 'EmailAddress'),
                     array(
                         /*'name' => 'DoctrineModule\Validator\NoObjectExists',
@@ -150,7 +146,20 @@ class User extends AbstractEntity
                             'id' => $this->get('id'),
                         ),
                     ),
+                );
+            } else {
+                $validators = array(
+                    array('name' => 'EmailAddress'),
+                );
+            }
+
+            $this->inputFilter->add(array(
+                'name' => 'email',
+                'required' => ($partial) ? false : true,
+                'filters' => array(
+                    array('name' => 'StringTrim',),
                 ),
+                'validators' => $validators
             ));
             $this->inputFilter->add(array(
                 'name' => 'password',

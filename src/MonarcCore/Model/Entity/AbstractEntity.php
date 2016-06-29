@@ -46,9 +46,9 @@ abstract class AbstractEntity implements InputFilterAwareInterface
         return $this->dbadapter;
     }
 
-    public function exchangeArray(array $options, $required = false)
+    public function exchangeArray(array $options, $partial = false)
     {
-        $filter = $this->getInputFilter($required)
+        $filter = $this->getInputFilter($partial)
             ->setData($options)
             ->setValidationGroup(InputFilterInterface::VALIDATE_ALL);
 
@@ -82,7 +82,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
       return get_object_vars($this);
     }
 
-    public function getInputFilter($required = false){
+    public function getInputFilter($partial = false){
         if (!$this->inputFilter) {
             $inputFilter = new InputFilter();
             $attributes = get_object_vars($this);

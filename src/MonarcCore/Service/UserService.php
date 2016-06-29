@@ -52,9 +52,10 @@ class UserService extends AbstractService
      */
     public function create($data)
     {
-        $this->get('entity')->exchangeArray($data);
+        $userEntity = $this->get('entity');
+        $userEntity->exchangeArray($data);
 
-        $this->get('table')->save($userEntity);
+        $id = $this->get('table')->save($userEntity);
 
         //user role
         /** @var UserRoleTable $userRoleTable */
@@ -72,6 +73,8 @@ class UserService extends AbstractService
                 $userRoleTable->save($userRoleEntity);
             }
         }
+
+        return $id;
     }
 
 
@@ -83,11 +86,7 @@ class UserService extends AbstractService
      */
     public function getByEmail($email)
     {
-        return $this->get('table')->getRepository()->createQueryBuilder('u')
-            ->select(array('u.id', 'u.firstname', 'u.lastname', 'u.email', 'u.phone', 'u.status'))
-            ->where('u.email = :email')
-            ->setParameter(':email', $email)
-            ->getQuery()->getResult();
+        return $this->get('table')->getByEmail($email);
     }
 
 }

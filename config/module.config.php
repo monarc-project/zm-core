@@ -80,6 +80,7 @@ return array(
             'MonarcCore\Model\Entity\ObjectObject'      => 'MonarcCore\Model\Entity\ObjectObject',
             'MonarcCore\Model\Entity\ObjectCategory'    => 'MonarcCore\Model\Entity\ObjectCategory',
             'MonarcCore\Model\Entity\ObjectRisk'        => 'MonarcCore\Model\Entity\ObjectRisk',
+            'MonarcCore\Model\Entity\PasswordToken'     => 'MonarcCore\Model\Entity\PasswordToken',
             'MonarcCore\Model\Entity\RolfCategory'      => 'MonarcCore\Model\Entity\RolfCategory',
             'MonarcCore\Model\Entity\RolfRisk'          => 'MonarcCore\Model\Entity\RolfRisk',
             'MonarcCore\Model\Entity\RolfTag'           => 'MonarcCore\Model\Entity\RolfTag',

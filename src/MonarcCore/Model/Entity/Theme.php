@@ -102,9 +102,9 @@ class Theme extends AbstractEntity
         return $this;
     }
 
-    public function getInputFilter($required = false){
+    public function getInputFilter($partial = false){
         if (!$this->inputFilter) {
-            parent::getInputFilter($required);
+            parent::getInputFilter($partial);
 
             $texts = ['label1'];
 

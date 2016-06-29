@@ -216,16 +216,16 @@ class Asset extends AbstractEntity
         $this->models[$id] = $model;
     }
 
-    public function getInputFilter($required = false){
+    public function getInputFilter($partial = true){
         if (!$this->inputFilter) {
-            parent::getInputFilter($required);
+            parent::getInputFilter($partial);
 
             $texts = ['label1', 'label2', 'label3', 'label4', 'description1', 'description2', 'description3', 'description4'];
 
             foreach($texts as $text) {
                 $this->inputFilter->add(array(
                     'name' => $text,
-                    'required' => ($required) ? false : true,
+                    'required' => ($partial) ? false : true,
                     'allow_empty' => true,
                     'filters' => array(
                         array(
@@ -242,7 +242,7 @@ class Asset extends AbstractEntity
 
         $this->inputFilter->add(array(
             'name' => 'status',
-            'required' => ($required) ? false : true,
+            'required' => ($partial) ? false : true,
             'allow_empty' => false,
             'filters' => array(
                 array('name' => 'ToInt'),

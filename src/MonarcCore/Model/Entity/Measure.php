@@ -116,16 +116,16 @@ class Measure extends AbstractEntity
         return $this;
     }
 
-    public function getInputFilter($required = false){
+    public function getInputFilter($partial = false){
         if (!$this->inputFilter) {
-            parent::getInputFilter($required);
+            parent::getInputFilter($partial);
 
             $texts = ['description1', 'description2', 'description3', 'description4'];
 
             foreach($texts as $text) {
                 $this->inputFilter->add(array(
                     'name' => $text,
-                    'required' => ($required) ? false : true,
+                    'required' => ($partial) ? false : true,
                     'allow_empty' => true,
                     'filters' => array(
                         array(
@@ -141,7 +141,7 @@ class Measure extends AbstractEntity
 
             $this->inputFilter->add(array(
                 'name' => 'code',
-                'required' => ($required) ? false : true,
+                'required' => ($partial) ? false : true,
                 'allow_empty' => false,
                 'filters' => array(
                     array(
@@ -152,7 +152,7 @@ class Measure extends AbstractEntity
 
             $this->inputFilter->add(array(
                 'name' => 'status',
-                'required' => ($required) ? false : true,
+                'required' => ($partial) ? false : true,
                 'allow_empty' => false,
                 'filters' => array(
                     array('name' => 'ToInt'),

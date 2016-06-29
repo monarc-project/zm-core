@@ -7,28 +7,17 @@ use MonarcCore\Model\Entity\User;
 class PasswordService extends AbstractService
 {
     protected $userService;
-
+    protected $userEntity;
+    protected $userTable;
+    protected $passwordTokenEntity;
     protected $mailService;
-
     protected $passwordTokenTable;
 
     public function passwordForgotten($email) {
 
-        $user = $this->userService->getByEmail($email);
+        $user = $this->get('userService')->getByEmail($email);
 
-        if (count($user) == 1) {
-
-            $user = $user[0];
-            $user['status'] = 1;
-
-            $userEntity = new User();
-            $userEntity->exchangeArray($user);
-
-            var_dump($user); die;
-
-
-
-
+        if ($user) {
 
             $date = new \DateTime("now");
             $date->add(new \DateInterval("P1D"));
@@ -36,16 +25,17 @@ class PasswordService extends AbstractService
             //generate token
             $token = uniqid('', true);
             $passwordTokenData = [
-                'user' => $userEntity,
+                'user' => $user['id'],
                 'token' => $token,
                 'dateEnd' => $date
             ];
 
-            $passwordTokenEntity = new PasswordToken();
+            $passwordTokenEntity = $this->get('passwordTokenEntity');
             $passwordTokenEntity->exchangeArray($passwordTokenData);
 
-            $passwordTokenTable = $this->get('passwordTokenTable');
-            $passwordTokenTable->save($passwordTokenEntity);
+            $this->setDependencies($passwordTokenEntity, ['user']);
+
+            $this->get('passwordTokenTable')->save($passwordTokenEntity);
 
             //send mail
             $subject = 'Password forgotten';

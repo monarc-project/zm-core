@@ -31,7 +31,7 @@ class PasswordToken extends AbstractEntity
     /**
      * @var \MonarcCore\Model\Entity\User
      *
-     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\User")
+     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\User", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="user_id", referencedColumnName="id", nullable=true)
      * })
@@ -44,4 +44,22 @@ class PasswordToken extends AbstractEntity
      * @ORM\Column(name="date_end", type="datetime", precision=0, scale=0, nullable=true, unique=false)
      */
     protected $dateEnd;
+
+    /**
+     * @return User
+     */
+    public function getUser()
+    {
+        return $this->user;
+    }
+
+    /**
+     * @param User $user
+     * @return PasswordToken
+     */
+    public function setUser($user)
+    {
+        $this->user = $user;
+        return $this;
+    }
 }
