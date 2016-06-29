@@ -212,11 +212,11 @@ abstract class AbstractService extends AbstractServiceFactory
         foreach ($newEntity->getArrayCopy() as $key => $value) {
             if (!in_array($key, $exceptions)) {
                 if (in_array($key, $this->dependencies)) {
-                    if ($oldEntity->$key->id != $value) {
+                    if (($oldEntity->$key != null) && ($oldEntity->$key->id != $value)) {
                         $diff[] = $key . ': ' . $oldEntity->$key->id . ' => ' . $value;
                     }
                 } else {
-                    if ($oldEntity->$key != $value) {
+                    if (($oldEntity->$key != null) && ($oldEntity->$key->id != $value)) {
                         $diff[] = $key . ': ' . $oldEntity->$key . ' => ' . $value;
                     }
                 }
