@@ -135,7 +135,7 @@ class DocModel extends AbstractEntity
         return $this->inputFilter;
     }
 
-    public function exchangeArray(array $options)
+    public function exchangeArray(array $options,$patch = false)
     {
         parent::exchangeArray($options);
         if(!empty($this->path['tmp_name']) && file_exists($this->path['tmp_name'])){
