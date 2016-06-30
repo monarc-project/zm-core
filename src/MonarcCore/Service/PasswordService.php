@@ -6,13 +6,16 @@ use MonarcCore\Model\Entity\User;
 
 class PasswordService extends AbstractService
 {
-    protected $userService;
-    protected $userEntity;
-    protected $userTable;
     protected $passwordTokenEntity;
-    protected $mailService;
     protected $passwordTokenTable;
+    protected $userService;
+    protected $mailService;
 
+    /**
+     * Password forgotten
+     *
+     * @param $email
+     */
     public function passwordForgotten($email) {
 
         $user = $this->get('userService')->getByEmail($email);
@@ -49,37 +52,41 @@ class PasswordService extends AbstractService
                 <p>In case you have not made request for a new password, we kindly ask you to ignore this e-mail</p>
                 <p>Best regards,</p>";
 
-            $mailService = $this->get('mailService');
-            $mailService->send($email, $subject, $message);
+            $this->get('mailService')->send($email, $subject, $message);
         }
     }
 
-    public function newPassword($token, $password) {
+    /**
+     * New Password By Token
+     *
+     * @param $token
+     * @param $password
+     */
+    public function newPasswordByToken($token, $password) {
 
-        $passwordToken = $this->getByToken($token);
+        $date = new \DateTime("now");
+        $passwordToken = $this->get('passwordTokenTable')->getByToken($token, $date);
 
-        if (count($passwordToken)) {
-            $passwordToken = $passwordToken[0];
+        if ($passwordToken) {
 
-            $userId = $passwordToken['userId'];
-
-            if (new \DateTime('now') < $passwordToken['dateEnd']) {
-                $user = $this->userService->getEntity($userId);
-                $user['password'] = password_hash($password, PASSWORD_BCRYPT);
-                $this->userService->update($user);
-            }
+            $this->get('userService')->patch($passwordToken['userId'], ['password' => $password]);
         }
     }
 
-    public function getByToken($token) {
+    /**
+     * Verify Token
+     *
+     * @param $token
+     * @return bool
+     */
+    public function verifyToken($token) {
+        $date = new \DateTime("now");
+        $passwordToken = $this->get('passwordTokenTable')->getByToken($token, $date);
 
-        $passwordTokenTable = $this->get('passwordTokenTable');
+        if ($passwordToken) {
+            return true;
+        }
 
-        return $passwordTokenTable->getRepository()->createQueryBuilder('pt')
-            ->select(array('pt.id', 'IDENTITY(pt.user) as userId', 'pt.token', 'pt.dateEnd'))
-            ->where('pt.token = :token')
-            ->setParameter(':token', $token)
-            ->getQuery()
-            ->getResult();
+        return false;
     }
 }
