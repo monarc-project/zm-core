@@ -64,7 +64,7 @@ class PasswordService extends AbstractService
      * @param $password
      */
     public function newPasswordByToken($token, $password) {
-
+        ;
         $date = new \DateTime("now");
         $passwordToken = $this->get('passwordTokenTable')->getByToken($token, $date);
 
@@ -89,5 +89,28 @@ class PasswordService extends AbstractService
         }
 
         return false;
+    }
+
+    /**
+     * Change Password
+     *
+     * @param $userId
+     * @param $oldPassword
+     * @param $newPassword
+     * @throws \Exception
+     */
+    public function changePassword($userId, $oldPassword, $newPassword) {
+
+        $user = $this->get('userService')->getEntity($userId);
+
+        if ($user) {
+            if (password_verify($oldPassword, $user['password'])) {
+                $this->get('userService')->patch($userId, ['password' => $newPassword]);
+            } else {
+                throw new \Exception('Incorrest password', 422);
+            }
+        } else {
+            throw new \Exception('User not exist', 422);
+        }
     }
 }
