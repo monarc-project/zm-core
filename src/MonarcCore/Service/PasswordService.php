@@ -8,6 +8,7 @@ class PasswordService extends AbstractService
 {
     protected $passwordTokenEntity;
     protected $passwordTokenTable;
+    protected $userTable;
     protected $userService;
     protected $mailService;
 
