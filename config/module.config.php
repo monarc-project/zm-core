@@ -74,7 +74,6 @@ return array(
             'MonarcCore\Model\Entity\Guide'             => 'MonarcCore\Model\Entity\Guide',
             'MonarcCore\Model\Entity\GuideItem'         => 'MonarcCore\Model\Entity\GuideItem',
             'MonarcCore\Model\Entity\Historical'        => 'MonarcCore\Model\Entity\Historical',
-            'MonarcCore\Model\Entity\Measure'           => 'MonarcCore\Model\Entity\Measure',
             'MonarcCore\Model\Entity\Model'             => 'MonarcCore\Model\Entity\Model',
             'MonarcCore\Model\Entity\Object'            => 'MonarcCore\Model\Entity\Object',
             'MonarcCore\Model\Entity\ObjectObject'      => 'MonarcCore\Model\Entity\ObjectObject',

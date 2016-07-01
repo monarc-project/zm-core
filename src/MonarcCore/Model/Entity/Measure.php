@@ -117,6 +117,7 @@ class Measure extends AbstractEntity
     }
 
     public function getInputFilter($partial = false){
+
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);
 
@@ -139,6 +140,19 @@ class Measure extends AbstractEntity
                 ));
             }
 
+            $validatorsCode = [];
+            if (!$partial) {
+                $validatorsCode = array(
+                    array(
+                        'name' => '\MonarcCore\Validator\UniqueCode',
+                        'options' => array(
+                            'adapter' => $this->getDbAdapter(),
+                            'id' => $this->get('id'),
+                        ),
+                    ),
+                );
+            }
+
             $this->inputFilter->add(array(
                 'name' => 'code',
                 'required' => ($partial) ? false : true,
@@ -148,6 +162,7 @@ class Measure extends AbstractEntity
                         'name' => 'Alnum',
                     ),
                 ),
+                //'validators' => $validatorsCode
             ));
 
             $this->inputFilter->add(array(

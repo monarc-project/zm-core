@@ -4,6 +4,7 @@ namespace MonarcCore\Service;
 use MonarcCore\Model\Entity\User;
 use MonarcCore\Model\Entity\UserRole;
 use MonarcCore\Model\Table\UserTable;
+use MonarcCore\Validator\PasswordStrength;
 
 /**
  * User Service
@@ -79,6 +80,21 @@ class UserService extends AbstractService
 
 
     /**
+     * Patch
+     *
+     * @param $id
+     * @param $data
+     * @return mixed
+     * @throws \Exception
+     */
+    public function patch($id, $data){
+
+        $this->validatePassword($data);
+
+        return parent::patch($id, $data);
+    }
+
+    /**
      * Get By Email
      *
      * @param $email
@@ -87,6 +103,27 @@ class UserService extends AbstractService
     public function getByEmail($email)
     {
         return $this->get('table')->getByEmail($email);
+    }
+
+    /**
+     * Validate password
+     *
+     * @param $data
+     * @throws \Exception
+     */
+    protected function validatePassword($data) {
+
+        $password = $data['password'];
+
+        $passwordValidator = new PasswordStrength();
+        if (! $passwordValidator->isValid($password)) {
+            $errors = [];
+            foreach ($passwordValidator->getMessages() as $messageId => $message) {
+                $errors[] = $message;
+            }
+
+            throw new \Exception(implode($errors, ', '), 422);
+        }
     }
 
 }

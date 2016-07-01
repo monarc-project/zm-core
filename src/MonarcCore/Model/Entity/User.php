@@ -167,11 +167,6 @@ class User extends AbstractEntity
                 'allowEmpty' => true,
                 'continueIfEmpty' => true,
                 'required' => false,
-                'validators' => array(
-                    array(
-                        'name' => 'MonarcCore\Validator\PasswordStrength',
-                    ),
-                ),
                 'filters' => array(
                     array(
                         'name' => '\MonarcCore\Filter\Password',
@@ -180,6 +175,7 @@ class User extends AbstractEntity
                         ),
                     ),
                 ),
+                'validators' => array(),
             ));
         }
         return $this->inputFilter;

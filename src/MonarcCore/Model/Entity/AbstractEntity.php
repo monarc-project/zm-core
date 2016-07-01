@@ -57,7 +57,6 @@ abstract class AbstractEntity implements InputFilterAwareInterface
             $field_errors = array();
 
             foreach ($filter->getInvalidInput() as $field => $error) {
-                var_dump($field);
                 foreach ($error->getMessages() as $message) {
                     if (!empty($field)) {
                         $field_errors[] = str_replace('Value', $field, $message);

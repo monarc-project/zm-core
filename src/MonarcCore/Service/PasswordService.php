@@ -107,7 +107,7 @@ class PasswordService extends AbstractService
             if (password_verify($oldPassword, $user['password'])) {
                 $this->get('userService')->patch($userId, ['password' => $newPassword]);
             } else {
-                throw new \Exception('Incorrest password', 422);
+                throw new \Exception('Incorrect password', 422);
             }
         } else {
             throw new \Exception('User not exist', 422);

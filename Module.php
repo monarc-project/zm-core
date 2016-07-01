@@ -74,7 +74,6 @@ class Module
     {
         return array(
             'invokables' => array(
-                //'\MonarcCore\Model\Entity\User' => '\MonarcCore\Model\Entity\User',
                 '\MonarcCore\Model\Entity\Model' => '\MonarcCore\Model\Entity\Model',
                 '\MonarcCore\Model\Entity\Asset' => '\MonarcCore\Model\Entity\Asset',
                 '\MonarcCore\Model\Entity\Threat' => '\MonarcCore\Model\Entity\Threat',
@@ -99,6 +98,11 @@ class Module
                     $salt = isset($conf['monarc']['salt'])?$conf['monarc']['salt']:'';
                     $u->setUserSalt($salt);
                     return $u;
+                },
+                '\MonarcCore\Model\Entity\Measure' => function($sm){
+                    $entity = new Model\Entity\Measure();
+                    $entity->setDbAdpater($sm->get('\MonarcCore\Model\Db'));
+                    return $entity;
                 },
                 '\MonarcCore\Model\Table\UserTable' => function($sm){
                     $table = new Model\Table\UserTable($sm->get('\MonarcCli\Model\Db'));
