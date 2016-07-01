@@ -16,7 +16,7 @@ class PasswordTokenTable extends AbstractEntityTable {
             ->where('pt.token = :token')
             ->andWhere('pt.dateEnd >= :date')
             ->setParameter(':token', $token)
-            ->setParameter(':date', "'" . $date->format('Y-m-d H:i:s') . "'")
+            ->setParameter(':date', $date->format('Y-m-d H:i:s'))
             ->getQuery()
             ->getResult();
 
@@ -25,6 +25,21 @@ class PasswordTokenTable extends AbstractEntityTable {
         } else {
             return null;
         }
+    }
+
+    /**
+     * Delete Old
+     */
+    public function deleteOld() {
+
+        $date = new \DateTime("now");
+
+        $this->getRepository()->createQueryBuilder('pt')
+            ->delete()
+            ->where('pt.dateEnd < :date')
+            ->setParameter(':date', $date->format('Y-m-d H:i:s'))
+            ->getQuery()
+            ->getResult();
     }
 
 }

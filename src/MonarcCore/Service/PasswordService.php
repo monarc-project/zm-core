@@ -64,14 +64,16 @@ class PasswordService extends AbstractService
      * @param $password
      */
     public function newPasswordByToken($token, $password) {
-        ;
+
         $date = new \DateTime("now");
         $passwordToken = $this->get('passwordTokenTable')->getByToken($token, $date);
 
         if ($passwordToken) {
-
             $this->get('userService')->patch($passwordToken['userId'], ['password' => $password]);
         }
+
+        //delete old tokens
+        $this->get('passwordTokenTable')->deleteOld();
     }
 
     /**
