@@ -15,7 +15,6 @@ use MonarcCore\Validator\PasswordStrength;
 class UserService extends AbstractService
 {
     protected $roleTable;
-    protected $userEntity;
     protected $mailService;
 
     /**
@@ -53,29 +52,32 @@ class UserService extends AbstractService
      */
     public function create($data)
     {
-        $userEntity = $this->get('entity');
-        $userEntity->exchangeArray($data);
+        $user = $this->get('entity');
+        $user->exchangeArray($data);
 
-        $id = $this->get('table')->save($userEntity);
+        $id = $this->get('table')->save($user);
 
-        //user role
-        /** @var UserRoleTable $userRoleTable */
-        $userRoleTable = $this->get('roleTable');
-        if (array_key_exists('role', $data)) {
-            foreach ($data['role'] as $role) {
-                $roleData = [
-                    'user' => $userEntity,
-                    'role' => $role,
-                ];
-
-                $userRoleEntity = new UserRole();
-                $userRoleEntity->exchangeArray($roleData);
-
-                $userRoleTable->save($userRoleEntity);
-            }
-        }
+        $this->manageRoles($user, $data);
 
         return $id;
+    }
+
+    /**
+     * Update
+     *
+     * @param $id
+     * @param $data
+     * @return mixed
+     */
+    public function update($id,$data){
+
+        $user = $this->get('table')->getEntity($id);
+
+        if (array_key_exists('role', $data)) {
+            $this->manageRoles($user, $data);
+        }
+
+        return parent::update($id, $data);
     }
 
 
@@ -89,10 +91,19 @@ class UserService extends AbstractService
      */
     public function patch($id, $data){
 
-        $this->validatePassword($data);
+        if (array_key_exists('password', $data)) {
+            $this->validatePassword($data);
+        }
+
+        $user = $this->get('table')->getEntity($id);
+
+        if (array_key_exists('role', $data)) {
+            $this->manageRoles($user, $data);
+        }
 
         return parent::patch($id, $data);
     }
+
 
     /**
      * Get By Email
@@ -123,6 +134,32 @@ class UserService extends AbstractService
             }
 
             throw new \Exception(implode($errors, ', '), 422);
+        }
+    }
+
+    /**
+     * Manage Roles
+     *
+     * @param $user
+     * @param $data
+     * @throws \Exception
+     */
+    protected function manageRoles($user, $data) {
+
+        $userRoleTable = $this->get('roleTable');
+        $userRoleTable->deleteByUser($user->id);
+        if (array_key_exists('role', $data)) {
+            foreach ($data['role'] as $role) {
+                $roleData = [
+                    'user' => $user,
+                    'role' => $role,
+                ];
+
+                $userRoleEntity = new UserRole();
+                $userRoleEntity->exchangeArray($roleData);
+
+                $userRoleTable->save($userRoleEntity);
+            }
         }
     }
 

@@ -163,6 +163,11 @@ class User extends AbstractEntity
             ));
 
             $this->inputFilter->add(array(
+                'name' => 'role',
+                'required' => ($partial) ? false : true,
+            ));
+
+            $this->inputFilter->add(array(
                 'name' => 'password',
                 'allowEmpty' => true,
                 'continueIfEmpty' => true,
