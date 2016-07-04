@@ -93,7 +93,7 @@ class Module
                 },
                 '\MonarcCore\Model\Entity\User' => function($sm){
                     $u = new Model\Entity\User();
-                    $u->setDbAdpater($sm->get('\MonarcCli\Model\Db'));
+                    $u->setDbAdapter($sm->get('\MonarcCli\Model\Db'));
                     $conf = $sm->get('Config');
                     $salt = isset($conf['monarc']['salt'])?$conf['monarc']['salt']:'';
                     $u->setUserSalt($salt);
@@ -101,7 +101,7 @@ class Module
                 },
                 '\MonarcCore\Model\Entity\Measure' => function($sm){
                     $entity = new Model\Entity\Measure();
-                    $entity->setDbAdpater($sm->get('\MonarcCore\Model\Db'));
+                    $entity->setDbAdapter($sm->get('\MonarcCore\Model\Db'));
                     return $entity;
                 },
                 '\MonarcCore\Model\Table\UserTable' => function($sm){

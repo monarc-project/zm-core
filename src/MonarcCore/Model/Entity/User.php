@@ -108,6 +108,7 @@ class User extends AbstractEntity
     protected $updatedAt;
 
     public function getInputFilter($partial = false){
+
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);
             $this->inputFilter->add(array(

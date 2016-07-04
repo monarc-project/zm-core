@@ -162,7 +162,7 @@ class Measure extends AbstractEntity
                         'name' => 'Alnum',
                     ),
                 ),
-                //'validators' => $validatorsCode
+                'validators' => $validatorsCode
             ));
 
             $this->inputFilter->add(array(

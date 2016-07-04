@@ -42,4 +42,18 @@ class PasswordTokenTable extends AbstractEntityTable {
             ->getResult();
     }
 
+    /**
+     * Delete token
+     *
+     * @param $token
+     */
+    public function deleteToken($token) {
+        $this->getRepository()->createQueryBuilder('t')
+            ->delete()
+            ->where('t.token = :token')
+            ->setParameter(':token', $token)
+            ->getQuery()
+            ->getResult();
+    }
+
 }

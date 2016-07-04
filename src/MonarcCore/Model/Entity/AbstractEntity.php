@@ -38,8 +38,9 @@ abstract class AbstractEntity implements InputFilterAwareInterface
         }
     }
 
-    public function setDbAdpater($dbadapter){
+    public function setDbAdapter($dbadapter){
         $this->dbadapter = $dbadapter;
+
         return $this;
     }
     public function getDbAdapter(){
