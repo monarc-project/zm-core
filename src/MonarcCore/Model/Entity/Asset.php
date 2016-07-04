@@ -257,6 +257,30 @@ class Asset extends AbstractEntity
             ),
         ));
 
+        $validatorsCode = [];
+        if (!$partial) {
+            $validatorsCode = array(
+                array(
+                    'name' => '\MonarcCore\Validator\UniqueCode',
+                    'options' => array(
+                        'entity' => $this
+                    ),
+                ),
+            );
+        }
+
+        $this->inputFilter->add(array(
+            'name' => 'code',
+            'required' => ($partial) ? false : true,
+            'allow_empty' => false,
+            'filters' => array(
+                array(
+                    'name' => 'Alnum',
+                ),
+            ),
+            'validators' => $validatorsCode
+        ));
+
         return $this->inputFilter;
     }
 

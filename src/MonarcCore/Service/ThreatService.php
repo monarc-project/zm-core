@@ -64,6 +64,7 @@ class ThreatService extends AbstractService
         unset($data['models']);
 
         $entity = $this->get('table')->getEntity($id);
+        $entity->setDbAdapter($this->get('table')->getDb());
         $entity->exchangeArray($data);
         $entity->get('models')->initialize();
 

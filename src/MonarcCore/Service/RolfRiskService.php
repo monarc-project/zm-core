@@ -68,6 +68,7 @@ class RolfRiskService extends AbstractService
         unset($data['tags']);
 
         $entity = $this->get('table')->getEntity($id);
+        $entity->setDbAdapter($this->get('table')->getDb());
         $entity->exchangeArray($data);
         $entity->get('categories')->initialize();
         $entity->get('tags')->initialize();

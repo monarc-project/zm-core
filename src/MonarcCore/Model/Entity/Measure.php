@@ -146,8 +146,7 @@ class Measure extends AbstractEntity
                     array(
                         'name' => '\MonarcCore\Validator\UniqueCode',
                         'options' => array(
-                            'adapter' => $this->getDbAdapter(),
-                            'id' => $this->get('id'),
+                            'entity' => $this
                         ),
                     ),
                 );

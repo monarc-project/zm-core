@@ -136,6 +136,24 @@ class RolfRisk extends AbstractEntity
     protected $updatedAt;
 
     /**
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * @param int $id
+     * @return RolfRisk
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
+        return $this;
+    }
+
+    /**
      * Set rolf category
      *
      * @param key
@@ -180,6 +198,31 @@ class RolfRisk extends AbstractEntity
                 ));
             }
         }
+
+        $validatorsCode = [];
+        if (!$partial) {
+            $validatorsCode = array(
+                array(
+                    'name' => '\MonarcCore\Validator\UniqueCode',
+                    'options' => array(
+                        'entity' => $this
+                    ),
+                ),
+            );
+        }
+
+        $this->inputFilter->add(array(
+            'name' => 'code',
+            'required' => ($partial) ? false : true,
+            'allow_empty' => false,
+            'filters' => array(
+                array(
+                    'name' => 'Alnum',
+                ),
+            ),
+            'validators' => $validatorsCode
+        ));
+
         return $this->inputFilter;
     }
 

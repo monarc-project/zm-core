@@ -75,8 +75,6 @@ class Module
         return array(
             'invokables' => array(
                 '\MonarcCore\Model\Entity\Model' => '\MonarcCore\Model\Entity\Model',
-                '\MonarcCore\Model\Entity\Asset' => '\MonarcCore\Model\Entity\Asset',
-                '\MonarcCore\Model\Entity\Threat' => '\MonarcCore\Model\Entity\Threat',
                 '\MonarcCore\Model\Entity\DocModel' => '\MonarcCore\Model\Entity\DocModel',
             ),
             'factories' => array(
@@ -99,8 +97,38 @@ class Module
                     $u->setUserSalt($salt);
                     return $u;
                 },
+                '\MonarcCore\Model\Entity\Asset' => function($sm){
+                    $entity = new Model\Entity\Asset();
+                    $entity->setDbAdapter($sm->get('\MonarcCore\Model\Db'));
+                    return $entity;
+                },
                 '\MonarcCore\Model\Entity\Measure' => function($sm){
                     $entity = new Model\Entity\Measure();
+                    $entity->setDbAdapter($sm->get('\MonarcCore\Model\Db'));
+                    return $entity;
+                },
+                '\MonarcCore\Model\Entity\RolfRisk' => function($sm){
+                    $entity = new Model\Entity\RolfRisk();
+                    $entity->setDbAdapter($sm->get('\MonarcCore\Model\Db'));
+                    return $entity;
+                },
+                '\MonarcCore\Model\Entity\RolfCategory' => function($sm){
+                    $entity = new Model\Entity\RolfCategory();
+                    $entity->setDbAdapter($sm->get('\MonarcCore\Model\Db'));
+                    return $entity;
+                },
+                '\MonarcCore\Model\Entity\RolfTag' => function($sm){
+                    $entity = new Model\Entity\RolfTag();
+                    $entity->setDbAdapter($sm->get('\MonarcCore\Model\Db'));
+                    return $entity;
+                },
+                '\MonarcCore\Model\Entity\Threat' => function($sm){
+                    $entity = new Model\Entity\Threat();
+                    $entity->setDbAdapter($sm->get('\MonarcCore\Model\Db'));
+                    return $entity;
+                },
+                '\MonarcCore\Model\Entity\Vulnerability' => function($sm){
+                    $entity = new Model\Entity\Vulnerability();
                     $entity->setDbAdapter($sm->get('\MonarcCore\Model\Db'));
                     return $entity;
                 },

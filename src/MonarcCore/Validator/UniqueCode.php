@@ -7,8 +7,7 @@ use Zend\Validator\AbstractValidator;
 class UniqueCode extends AbstractValidator
 {
 	protected $options = array(
-		'adapter' => null,
-		'id' => '',
+        'entity' => null
 	);
 
 	const ALREADYUSED = "ALREADYUSED";
@@ -22,11 +21,11 @@ class UniqueCode extends AbstractValidator
 
 	public function isValid($value){
 
-		if(empty($this->options['adapter'])){
+		if(empty($this->options['entity'])){
 			return false;
 		}else{
-			$res = $this->options['adapter']->getRepository('\MonarcCore\Model\Entity\Measure')->findOneByCode($value);
-			if(!empty($res) && $this->options['id'] != $res->get('id')){
+            $res = $this->options['entity']->getDbAdapter()->getRepository(get_class($this->options['entity']))->findOneByCode($value);
+			if(!empty($res) && $this->options['entity']->getId() != $res->get('id')){
 				$this->error(self::ALREADYUSED);
 				return false;
 			}
