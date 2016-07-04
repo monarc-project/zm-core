@@ -39,6 +39,10 @@ abstract class AbstractEntity implements InputFilterAwareInterface
     }
 
     public function setDbAdapter($dbadapter){
+        if ($dbadapter == null) {
+            throw new \Exception("Trying to call setDbAdapter with a null adapter");
+        }
+
         $this->dbadapter = $dbadapter;
 
         return $this;

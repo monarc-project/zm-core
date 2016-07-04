@@ -160,8 +160,8 @@ abstract class AbstractService extends AbstractServiceFactory
      * @return mixed
      */
     public function update($id,$data){
-
         $entity = $this->get('table')->getEntity($id);
+        $entity->setDbAdapter($this->get('table')->getDb());
         $entity->exchangeArray($data);
 
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];

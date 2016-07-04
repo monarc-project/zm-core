@@ -20,7 +20,7 @@ abstract class AbstractEntityTable
             $this->class = '\MonarcCore\Model\Entity\\' . substr($lastClassPart, 0, -5);
         }
     }
-    protected function getDb()
+    public function getDb()
     {
         if(!$this->db) {
             $this->db = $this->getServiceLocator()->get('MonarcCore\Model\Db');
@@ -111,6 +111,7 @@ abstract class AbstractEntityTable
         $class = $this->getClass();
         if(class_exists($class)){
             $entity = new $class();
+            $entity->setDbAdapter($this->getDb());
             $entity->set('id',$id);
             $entity = $this->getDb()->fetch($entity);
             return $entity;

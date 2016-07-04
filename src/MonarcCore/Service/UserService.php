@@ -70,7 +70,7 @@ class UserService extends AbstractService
      * @return mixed
      */
     public function update($id,$data){
-
+        /** @var User $user */
         $user = $this->get('table')->getEntity($id);
 
         if (array_key_exists('role', $data)) {
