@@ -158,10 +158,15 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param $id
      * @param $data
      * @return mixed
+     * @throws \Exception
      */
     public function update($id,$data){
         $entity = $this->get('table')->getEntity($id);
         $entity->setDbAdapter($this->get('table')->getDb());
+
+        if (empty($data)) {
+            throw new \Exception('Data missing', 422);
+        }
         $entity->exchangeArray($data);
 
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
