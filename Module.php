@@ -280,6 +280,7 @@ class Module
         return array(
             'invokables' => array(
                 '\MonarcCore\Filter\Password' => '\MonarcCore\Filter\Password',
+                '\MonarcCore\Filter\SpecAlnum' => '\MonarcCore\Filter\SpecAlnum',
             ),
         );
     }

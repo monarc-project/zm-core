@@ -252,7 +252,7 @@ class Model extends AbstractEntity
                     'allow_empty' => true,
                     'filters' => array(
                         array(
-                            'name' => 'Alnum',
+                            'name' => '\MonarcCore\Filter\SpecAlnum',
                             'options' => array(
                                 'allow_white_space' => true,
                             ),
@@ -268,7 +268,7 @@ class Model extends AbstractEntity
                     'allow_empty' => true,
                     'filters' => array(
                         array(
-                            'name' => 'Alnum',
+                            'name' => '\MonarcCore\Filter\SpecAlnum',
                             'options' => array(
                                 'allow_white_space' => true,
                             ),
