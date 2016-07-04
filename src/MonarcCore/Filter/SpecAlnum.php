@@ -96,7 +96,7 @@ class SpecAlnum extends AbstractLocale
         }
 
         $whiteSpace = $this->options['allow_white_space'] ? '\s' : '';
-        $quotes     = $this->options['allow_quotes'] ? '\'' : '';
+        $quotes     = $this->options['allow_quotes'] ? '\'"' : '';
         $language   = Locale::getPrimaryLanguage($this->getLocale());
 
         if (!static::hasPcreUnicodeSupport()) {
