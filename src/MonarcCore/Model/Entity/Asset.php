@@ -242,7 +242,7 @@ class Asset extends AbstractEntity
 
         $this->inputFilter->add(array(
             'name' => 'status',
-            'required' => ($partial) ? false : true,
+            'required' => false,
             'allow_empty' => false,
             'filters' => array(
                 array('name' => 'ToInt'),
