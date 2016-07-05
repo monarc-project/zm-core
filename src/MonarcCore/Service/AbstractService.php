@@ -183,7 +183,7 @@ abstract class AbstractService extends AbstractServiceFactory
         $entity->setLanguage($this->getLanguage());
 
         if (empty($data)) {
-            throw new \Exception('Data missing', 422);
+            throw new \Exception('Data missing', 412);
         }
         $entity->exchangeArray($data);
 
