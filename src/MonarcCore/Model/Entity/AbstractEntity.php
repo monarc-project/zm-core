@@ -80,7 +80,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
                 }
             }
 
-            throw new \Exception(implode(",", $field_errors), '422');
+            throw new \Exception(implode(", ", $field_errors), '412');
         }
         $options = $filter->getValues();
         foreach($options as $k => $v){
