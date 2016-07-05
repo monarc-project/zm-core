@@ -163,11 +163,10 @@ class ObjectCategory extends AbstractEntity
             parent::getInputFilter($partial);
 
             $texts = ['label1', 'label2', 'label3', 'label4'];
-
             foreach($texts as $text) {
                 $this->inputFilter->add(array(
                     'name' => $text,
-                    'required' => true,
+                    'required' => ((strchr($text, (string) $this->getLanguage())) && (!$partial)) ? true : false,
                     'allow_empty' => true,
                     'filters' => array(),
                     'validators' => array(),

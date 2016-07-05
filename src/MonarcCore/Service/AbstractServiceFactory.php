@@ -9,20 +9,26 @@ abstract class AbstractServiceFactory implements FactoryInterface
     protected $ressources;
 
     public function createService(ServiceLocatorInterface $serviceLocator){
-        $c = substr(get_class($this),0,-7);
-        if(class_exists($c)){
-            $fn = $this->getRessources();
-            if(empty($fn)){
-                return new $c();    
-            }elseif(is_array($fn)){
+
+        $class = substr(get_class($this),0,-7);
+
+        if(class_exists($class)){
+            $ressources = $this->getRessources();
+            if (empty($ressources)) {
+                $instance = new $class();
+            } elseif (is_array($ressources)) {
                 $sls = array();
-                foreach ($fn as $k => $v) {
-                    $sls[$k] = $serviceLocator->get($v);
+                foreach ($ressources as $key => $value) {
+                    $sls[$key] = $serviceLocator->get($value);
                 }
-                return new $c($sls);
-            }else{
-                return new $c($serviceLocator->get($fn));
+                $instance = new $class($sls);
+            } else {
+                $instance = new $class($serviceLocator->get($ressources));
             }
+
+            $instance->setLanguage($this->getDefaultLanguage($serviceLocator));
+
+            return $instance;
         }else{
             return false;
         }
@@ -30,5 +36,14 @@ abstract class AbstractServiceFactory implements FactoryInterface
 
     public function getRessources(){
         return $this->ressources;
+    }
+
+    public function getDefaultLanguage($sm)
+    {
+        $config = $sm->get('Config');
+
+        $defaultLanguageIndex = $config['defaultLanguageIndex'];
+
+        return $defaultLanguageIndex;
     }
 }

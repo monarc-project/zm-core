@@ -126,7 +126,7 @@ class Measure extends AbstractEntity
             foreach($texts as $text) {
                 $this->inputFilter->add(array(
                     'name' => $text,
-                    'required' => ($partial) ? false : true,
+                    'required' => ((strchr($text, (string) $this->getLanguage())) && (!$partial)) ? true : false,
                     'allow_empty' => true,
                     'filters' => array(
                         array(
@@ -139,7 +139,6 @@ class Measure extends AbstractEntity
                     'validators' => array(),
                 ));
             }
-
             $validatorsCode = [];
             if (!$partial) {
                 $validatorsCode = array(

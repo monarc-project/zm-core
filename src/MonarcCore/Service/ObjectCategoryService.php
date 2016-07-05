@@ -56,6 +56,7 @@ class ObjectCategoryService extends AbstractService
     public function update($id, $data){
 
         $entity = $this->get('table')->getEntity($id);
+        $entity->setLanguage($this->getLanguage());
 
         $previous = (array_key_exists('previous', $data)) ? $data['previous'] : null;
         $parent = (array_key_exists('parent', $data)) ? $data['parent'] : null;

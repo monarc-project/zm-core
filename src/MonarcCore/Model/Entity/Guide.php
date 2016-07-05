@@ -122,10 +122,7 @@ class Guide extends AbstractEntity
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);
 
-            $descriptions = [
-                'description1', 'description2', 'description3', 'description4'
-            ];
-
+            $descriptions = ['description1', 'description2', 'description3', 'description4'];
             foreach($descriptions as $description) {
                 $this->inputFilter->add(array(
                     'name' => $description,
@@ -145,7 +142,7 @@ class Guide extends AbstractEntity
 
             $this->inputFilter->add(array(
                 'name' => 'type',
-                'required' => false,
+                'required' => true,
                 'allow_empty' => true,
                 'continue_if_empty' => true,
                 'filters' => array(),
@@ -162,7 +159,7 @@ class Guide extends AbstractEntity
 
             $this->inputFilter->add(array(
                 'name' => 'isWithItems',
-                'required' => false,
+                'required' => true,
                 'allow_empty' => true,
                 'continue_if_empty' => true,
                 'filters' => array(),

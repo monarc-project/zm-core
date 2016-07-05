@@ -313,15 +313,10 @@ class Object extends AbstractEntity
                 'name1', 'name2', 'name3', 'name4',
                 'label1', 'label2', 'label3', 'label4',
             ];
-
-            $descriptions = [
-                'description1', 'description2', 'description3', 'description4'
-            ];
-
             foreach($texts as $text) {
                 $this->inputFilter->add(array(
                     'name' => $text,
-                    'required' => true,
+                    'required' => ((strchr($text, (string) $this->getLanguage())) && (!$partial)) ? true : false,
                     'allow_empty' => true,
                     'filters' => array(
                         array(
@@ -335,6 +330,7 @@ class Object extends AbstractEntity
                 ));
             }
 
+            $descriptions = ['description1', 'description2', 'description3', 'description4'];
             foreach($descriptions as $description) {
                 $this->inputFilter->add(array(
                     'name' => $description,

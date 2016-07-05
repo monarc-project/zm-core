@@ -111,7 +111,7 @@ class RolfTag extends AbstractEntity
             foreach($texts as $text) {
                 $this->inputFilter->add(array(
                     'name' => $text,
-                    'required' => true,
+                    'required' => ((strchr($text, (string) $this->getLanguage())) && (!$partial)) ? true : false,
                     'allow_empty' => true,
                     'filters' => array(
                         array(

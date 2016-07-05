@@ -179,12 +179,29 @@ class RolfRisk extends AbstractEntity
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);
 
-            $texts = ['label1', 'label2', 'label3', 'label4', 'description1', 'description2', 'description3', 'description4'];
-
+            $texts = ['label1', 'label2', 'label3', 'label4'];
             foreach($texts as $text) {
                 $this->inputFilter->add(array(
                     'name' => $text,
-                    'required' => true,
+                    'required' => ((strchr($text, (string) $this->getLanguage())) && (!$partial)) ? true : false,
+                    'allow_empty' => true,
+                    'filters' => array(
+                        array(
+                            'name' => '\MonarcCore\Filter\SpecAlnum',
+                            'options' => array(
+                                'allow_white_space' => true,
+                            )
+                        ),
+                    ),
+                    'validators' => array(),
+                ));
+            }
+
+            $descriptions = ['description1', 'description2', 'description3', 'description4'];
+            foreach($descriptions as $description) {
+                $this->inputFilter->add(array(
+                    'name' => $description,
+                    'required' => false,
                     'allow_empty' => true,
                     'filters' => array(
                         array(

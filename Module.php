@@ -2,6 +2,7 @@
 namespace MonarcCore;
 
 //use Zend\Mvc\ModuleRouteListener;
+use Zend\Di\ServiceLocator;
 use Zend\Mvc\MvcEvent;
 use \Zend\Mvc\Controller\ControllerManager;
 use Zend\View\Model\JsonModel;
@@ -70,6 +71,15 @@ class Module
         );
     }
 
+    public function getDefaultLanguage($sm)
+    {
+        $config = $sm->get('Config');
+
+        $defaultLanguageIndex = $config['defaultLanguageIndex'];
+
+        return $defaultLanguageIndex;
+    }
+
     public function getServiceConfig()
     {
         return array(
@@ -89,6 +99,62 @@ class Module
                         return new Model\Db($sm->get('doctrine.entitymanager.orm_default'));
                     }
                 },
+                '\MonarcCore\Model\Entity\Asset' => function($sm){
+                    $entity = new Model\Entity\Asset();
+                    $entity->setDbAdapter($sm->get('\MonarcCore\Model\Db'));
+                    $entity->setLanguage($this->getDefaultLanguage($sm));
+                    return $entity;
+                },
+                '\MonarcCore\Model\Entity\Measure' => function($sm){
+                    $entity = new Model\Entity\Measure();
+                    $entity->setDbAdapter($sm->get('\MonarcCore\Model\Db'));
+                    $entity->setLanguage($this->getDefaultLanguage($sm));
+                    return $entity;
+                },
+                '\MonarcCore\Model\Entity\Model' => function($sm){
+                    $entity = new Model\Entity\Model();
+                    $entity->setLanguage($this->getDefaultLanguage($sm));
+                    return $entity;
+                },
+                '\MonarcCore\Model\Entity\Object' => function($sm){
+                    $entity = new Model\Entity\Object();
+                    $entity->setLanguage($this->getDefaultLanguage($sm));
+                    return $entity;
+                },
+                '\MonarcCore\Model\Entity\ObjectCategory' => function($sm){
+                    $entity = new Model\Entity\ObjectCategory();
+                    $entity->setLanguage($this->getDefaultLanguage($sm));
+                    return $entity;
+                },
+                '\MonarcCore\Model\Entity\RolfRisk' => function($sm){
+                    $entity = new Model\Entity\RolfRisk();
+                    $entity->setDbAdapter($sm->get('\MonarcCore\Model\Db'));
+                    $entity->setLanguage($this->getDefaultLanguage($sm));
+                    return $entity;
+                },
+                '\MonarcCore\Model\Entity\RolfCategory' => function($sm){
+                    $entity = new Model\Entity\RolfCategory();
+                    $entity->setDbAdapter($sm->get('\MonarcCore\Model\Db'));
+                    $entity->setLanguage($this->getDefaultLanguage($sm));
+                    return $entity;
+                },
+                '\MonarcCore\Model\Entity\RolfTag' => function($sm){
+                    $entity = new Model\Entity\RolfTag();
+                    $entity->setDbAdapter($sm->get('\MonarcCore\Model\Db'));
+                    $entity->setLanguage($this->getDefaultLanguage($sm));
+                    return $entity;
+                },
+                '\MonarcCore\Model\Entity\Theme' => function($sm){
+                    $entity = new Model\Entity\Theme();
+                    $entity->setLanguage($this->getDefaultLanguage($sm));
+                    return $entity;
+                },
+                '\MonarcCore\Model\Entity\Threat' => function($sm){
+                    $entity = new Model\Entity\Threat();
+                    $entity->setDbAdapter($sm->get('\MonarcCore\Model\Db'));
+                    $entity->setLanguage($this->getDefaultLanguage($sm));
+                    return $entity;
+                },
                 '\MonarcCore\Model\Entity\User' => function($sm){
                     $u = new Model\Entity\User();
                     $u->setDbAdapter($sm->get('\MonarcCli\Model\Db'));
@@ -97,39 +163,10 @@ class Module
                     $u->setUserSalt($salt);
                     return $u;
                 },
-                '\MonarcCore\Model\Entity\Asset' => function($sm){
-                    $entity = new Model\Entity\Asset();
-                    $entity->setDbAdapter($sm->get('\MonarcCore\Model\Db'));
-                    return $entity;
-                },
-                '\MonarcCore\Model\Entity\Measure' => function($sm){
-                    $entity = new Model\Entity\Measure();
-                    $entity->setDbAdapter($sm->get('\MonarcCore\Model\Db'));
-                    return $entity;
-                },
-                '\MonarcCore\Model\Entity\RolfRisk' => function($sm){
-                    $entity = new Model\Entity\RolfRisk();
-                    $entity->setDbAdapter($sm->get('\MonarcCore\Model\Db'));
-                    return $entity;
-                },
-                '\MonarcCore\Model\Entity\RolfCategory' => function($sm){
-                    $entity = new Model\Entity\RolfCategory();
-                    $entity->setDbAdapter($sm->get('\MonarcCore\Model\Db'));
-                    return $entity;
-                },
-                '\MonarcCore\Model\Entity\RolfTag' => function($sm){
-                    $entity = new Model\Entity\RolfTag();
-                    $entity->setDbAdapter($sm->get('\MonarcCore\Model\Db'));
-                    return $entity;
-                },
-                '\MonarcCore\Model\Entity\Threat' => function($sm){
-                    $entity = new Model\Entity\Threat();
-                    $entity->setDbAdapter($sm->get('\MonarcCore\Model\Db'));
-                    return $entity;
-                },
                 '\MonarcCore\Model\Entity\Vulnerability' => function($sm){
                     $entity = new Model\Entity\Vulnerability();
                     $entity->setDbAdapter($sm->get('\MonarcCore\Model\Db'));
+                    $entity->setLanguage($this->getDefaultLanguage($sm));
                     return $entity;
                 },
                 '\MonarcCore\Model\Table\UserTable' => function($sm){

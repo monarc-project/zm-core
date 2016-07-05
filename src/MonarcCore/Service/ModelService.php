@@ -29,6 +29,7 @@ class ModelService extends AbstractService
     public function create($data) {
 
         $entity = $this->get('entity');
+        $entity->setLanguage($this->getLanguage());
 
         //anr
         $dataAnr = [

@@ -5,7 +5,7 @@ abstract class AbstractEntityTable
 {
     protected $db;
     protected $class;
-
+    protected $language;
     protected $connectedUser;
 
     public function __construct(\MonarcCore\Model\Db $dbService, $class = null)

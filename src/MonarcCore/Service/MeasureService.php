@@ -10,6 +10,8 @@ namespace MonarcCore\Service;
 class MeasureService extends AbstractService
 {
     protected $filterColumns = array(
-        'description1', 'description2', 'description3', 'description4', 'code', 'status'
+        'label1', 'label2', 'label3', 'label4',
+        'description1', 'description2', 'description3', 'description4',
+        'code', 'status'
     );
 }

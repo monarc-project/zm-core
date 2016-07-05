@@ -10,8 +10,9 @@ use Zend\InputFilter\InputFilterInterface;
 abstract class AbstractEntity implements InputFilterAwareInterface
 {
     use \MonarcCore\Model\GetAndSet;
-    protected $inputFilter;
 
+    protected $inputFilter;
+    protected $language;
     protected $dbadapter;
     protected $parameters = array();
 
@@ -49,6 +50,16 @@ abstract class AbstractEntity implements InputFilterAwareInterface
     }
     public function getDbAdapter(){
         return $this->dbadapter;
+    }
+
+    public function getLanguage()
+    {
+        return $this->language;
+    }
+
+    public function setLanguage($language)
+    {
+        $this->language = $language;
     }
 
     public function exchangeArray(array $options, $partial = false)

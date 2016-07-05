@@ -353,6 +353,24 @@ class Threat extends AbstractEntity
     protected $updatedAt;
 
     /**
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * @param int $id
+     * @return Threat
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
+        return $this;
+    }
+
+    /**
      * Set model
      *
      * @param key
@@ -406,12 +424,11 @@ class Threat extends AbstractEntity
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);
 
-            $texts = ['label1', 'label2', 'label3', 'label4', 'description1', 'description2', 'description3', 'description4'];
-
+            $texts = ['label1', 'label2', 'label3', 'label4'];
             foreach($texts as $text) {
                 $this->inputFilter->add(array(
                     'name' => $text,
-                    'required' => ($partial) ? false : true,
+                    'required' => ((strchr($text, (string) $this->getLanguage())) && (!$partial)) ? true : false,
                     'allow_empty' => true,
                     'filters' => array(
                         array(
@@ -424,6 +441,25 @@ class Threat extends AbstractEntity
                     'validators' => array(),
                 ));
             }
+
+            $descriptions = ['description1', 'description2', 'description3', 'description4'];
+            foreach($descriptions as $description) {
+                $this->inputFilter->add(array(
+                    'name' => $description,
+                    'required' => false,
+                    'allow_empty' => true,
+                    'filters' => array(
+                        array(
+                            'name' => '\MonarcCore\Filter\SpecAlnum',
+                            'options' => array(
+                                'allow_white_space' => true,
+                            )
+                        ),
+                    ),
+                    'validators' => array(),
+                ));
+            }
+
             $this->inputFilter->add(array(
                 'name' => 'c',
                 'required' => false,
