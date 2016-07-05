@@ -164,4 +164,21 @@ class UserService extends AbstractService
         }
     }
 
+    /**
+     * Get Entity
+     *
+     * @param $id
+     * @return array
+     */
+    public function getEntity($id){
+        $user = $this->get('table')->get($id);
+        $roles = $this->get('roleTable')->getRepository()->findByUser($user['id']);
+        $user['role'] = array();
+        if(!empty($roles)){
+            foreach($roles as $r){
+                $user['role'][$r->get('role')] = $r->get('role');
+            }
+        }
+        return $user;
+    }
 }
