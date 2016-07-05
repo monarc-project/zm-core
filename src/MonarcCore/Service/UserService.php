@@ -53,6 +53,7 @@ class UserService extends AbstractService
     public function create($data)
     {
         $user = $this->get('entity');
+        $date['status'] = 1;
         $user->exchangeArray($data);
 
         $id = $this->get('table')->save($user);
