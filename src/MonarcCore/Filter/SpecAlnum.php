@@ -101,13 +101,13 @@ class SpecAlnum extends AbstractLocale
 
         if (!static::hasPcreUnicodeSupport()) {
             // POSIX named classes are not supported, use alternative a-zA-Z0-9 match
-            $pattern = '/[^a-zA-Z0-9' . $whiteSpace . $quotes . ']/';
+            $pattern = '/[^a-zA-Z0-9\\-_' . $whiteSpace . $quotes . ']/';
         } elseif ($language == 'ja'|| $language == 'ko' || $language == 'zh') {
             // Use english alphabet
-            $pattern = '/[^a-zA-Z0-9-_'  . $whiteSpace . $quotes . ']/u';
+            $pattern = '/[^a-zA-Z0-9\\-_'  . $whiteSpace . $quotes . ']/u';
         } else {
             // Use native language alphabet
-            $pattern = '/[^\p{L}\p{N}' . $whiteSpace . $quotes . ']/u';
+            $pattern = '/[^\p{L}\p{N}\\-_' . $whiteSpace . $quotes . ']/u';
         }
 
         return preg_replace($pattern, '', $value);
