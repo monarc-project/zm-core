@@ -237,4 +237,39 @@ class ObjectService extends AbstractService
 
         $this->get('table')->delete($id);
     }
+
+    /**
+     * Duplicate
+     *
+     * @param $data
+     * @return mixed
+     */
+    public function duplicate($data) {
+
+        $entity = $this->getEntity($data['id']);
+
+        $keysToRemove = ['id','position', 'creator', 'createdAt', 'updater', 'updatedAt', 'inputFilter', 'language', 'dbadapter', 'parameters'];
+
+        foreach($keysToRemove as $key) {
+            unset($entity[$key]);
+        }
+
+        foreach($this->dependencies as $dependency) {
+            if (is_object($entity[$dependency])) {
+                $entity[$dependency] = $entity[$dependency]->id;
+            }
+        }
+
+        $keys = array_keys($entity);
+
+        foreach($keys as $key) {
+            if (is_null($entity[$key])) {
+                unset($entity[$key]);
+            }
+        }
+
+        $entity['implicitPosition'] = array_key_exists('implicitPosition', $data) ? $data['implicitPosition'] : 2;
+
+        return $this->create($entity);
+    }
 }

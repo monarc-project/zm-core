@@ -364,6 +364,7 @@ class Object extends AbstractEntity
                     ),
                 ),
             ));
+
             $this->inputFilter->add(array(
                 'name' => 'i',
                 'required' => false,
@@ -380,6 +381,7 @@ class Object extends AbstractEntity
                     ),
                 ),
             ));
+
             $this->inputFilter->add(array(
                 'name' => 'd',
                 'required' => false,
@@ -396,6 +398,7 @@ class Object extends AbstractEntity
                     ),
                 ),
             ));
+
             $this->inputFilter->add(array(
                 'name' => 'scope',
                 'required' => false,
@@ -408,6 +411,7 @@ class Object extends AbstractEntity
                     ),
                 ),
             ));
+
             $this->inputFilter->add(array(
                 'name' => 'mode',
                 'required' => false,
@@ -420,6 +424,7 @@ class Object extends AbstractEntity
                     ),
                 ),
             ));
+
             $this->inputFilter->add(array(
                 'name' => 'asset',
                 'required' => true,
@@ -432,6 +437,7 @@ class Object extends AbstractEntity
                     ),
                 ),
             ));
+
             $this->inputFilter->add(array(
                 'name' => 'category',
                 'required' => true,
@@ -444,6 +450,7 @@ class Object extends AbstractEntity
                     ),
                 ),
             ));
+
             $this->inputFilter->add(array(
                 'name' => 'rolfTag',
                 'required' => true,
@@ -456,6 +463,7 @@ class Object extends AbstractEntity
                     ),
                 ),
             ));
+
             $this->inputFilter->add(array(
                 'name' => 'implicitPosition',
                 'required' => false,
