@@ -129,6 +129,13 @@ class DocModel extends AbstractEntity
                             'haystack' => array(self::MODEL_CONTEXT_VALIDATION,self::MODEL_ASSETS_AND_MODELS_VALIDATION,self::MODEL_RISK_ANALYSIS),
                         ),
                     ),
+                    array(
+                        'name' => '\MonarcCore\Validator\UniqueDocModel',
+                        'options' => array(
+                            'adapter' => $this->getDbAdapter(),
+                            'category' => $this->get('category'),
+                        ),
+                    ),
                 ),
             ));
         }

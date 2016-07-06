@@ -85,7 +85,6 @@ class Module
         return array(
             'invokables' => array(
                 '\MonarcCore\Model\Entity\Model' => '\MonarcCore\Model\Entity\Model',
-                '\MonarcCore\Model\Entity\DocModel' => '\MonarcCore\Model\Entity\DocModel',
             ),
             'factories' => array(
                 '\MonarcCore\Model\Db' => function($sm){
@@ -98,6 +97,11 @@ class Module
                     }catch(\Exception $e){
                         return new Model\Db($sm->get('doctrine.entitymanager.orm_default'));
                     }
+                },
+                '\MonarcCore\Model\Entity\DocModel' => function($sm){
+                    $dm = new Model\Entity\DocModel();
+                    $dm->setDbAdapter($sm->get('\MonarcCore\Model\Db'));
+                    return $dm;
                 },
                 '\MonarcCore\Model\Entity\Asset' => function($sm){
                     $entity = new Model\Entity\Asset();
@@ -354,6 +358,7 @@ class Module
         return array(
             'invokables' => array(
                 '\MonarcCore\Validator\UniqueEmail' => '\MonarcCore\Validator\UniqueEmail',
+                '\MonarcCore\Validator\UniqueDocModel' => '\MonarcCore\Validator\UniqueDocModel',
             ),
         );
     }
