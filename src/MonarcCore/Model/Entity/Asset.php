@@ -294,7 +294,7 @@ class Asset extends AbstractEntity
             'allow_empty' => false,
             'filters' => array(
                 array(
-                    'name' => 'Alnum',
+                    'name' => '\MonarcCore\Filter\SpecAlnum',
                 ),
             ),
             'validators' => $validatorsCode
