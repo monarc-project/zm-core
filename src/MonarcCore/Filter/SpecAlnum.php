@@ -104,7 +104,7 @@ class SpecAlnum extends AbstractLocale
             $pattern = '/[^a-zA-Z0-9' . $whiteSpace . $quotes . ']/';
         } elseif ($language == 'ja'|| $language == 'ko' || $language == 'zh') {
             // Use english alphabet
-            $pattern = '/[^a-zA-Z0-9'  . $whiteSpace . $quotes . ']/u';
+            $pattern = '/[^a-zA-Z0-9-_'  . $whiteSpace . $quotes . ']/u';
         } else {
             // Use native language alphabet
             $pattern = '/[^\p{L}\p{N}' . $whiteSpace . $quotes . ']/u';
