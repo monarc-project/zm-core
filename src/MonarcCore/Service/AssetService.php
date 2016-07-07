@@ -10,6 +10,7 @@ namespace MonarcCore\Service;
 class AssetService extends AbstractService
 {
     protected $modelTable;
+    protected $amvService;
 
     protected $filterColumns = [
         'label1', 'label2', 'label3', 'label4',
@@ -45,10 +46,11 @@ class AssetService extends AbstractService
 
     /**
      * Update
-     *
+     * 
      * @param $id
      * @param $data
      * @return mixed
+     * @throws \Exception
      */
     public function update($id,$data){
 
@@ -60,6 +62,10 @@ class AssetService extends AbstractService
         $entity->setLanguage($this->getLanguage());
         $entity->exchangeArray($data);
         $entity->get('models')->initialize();
+
+        if (!$this->get('amvService')->checkAMVIntegrityLevel($id, null, null)) {
+            throw new \Exception('Integrity AMV links violation', 412);
+        }
 
         foreach($entity->get('models') as $model){
             if (in_array($model->get('id'), $models)){
