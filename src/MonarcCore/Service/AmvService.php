@@ -254,4 +254,28 @@ class AmvService extends AbstractService
             return true;
         }
     }
+
+    /**
+     * Check AMV Integrity Level
+     *
+     * @param null $assetId
+     * @param null $threatId
+     * @param null $vulnerabilityId
+     * @return bool
+     */
+    public function checkAMVIntegrityLevel($assetId = null, $threatId = null, $vulnerabilityId = null) {
+        $amvs = $this->get('table')->findByAMV($assetId, $threatId, $vulnerabilityId);
+
+        foreach($amvs as $amv){
+
+            $amv = $this->get('table')->getEntity($amv['id']);
+            if(!$this->compliesRequirement($amv)){
+                return false;
+            }
+        }
+
+        var_dump('bob');
+
+        return true;
+    }
 }
