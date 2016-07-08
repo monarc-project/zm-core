@@ -38,7 +38,7 @@ class ModelObjectService extends AbstractService
                 unset($data['updater']);
                 unset($data['updated_at']);
             }
-            unset($data['id'])
+            unset($data['id']);
         }
         $entity = $this->get('entity');
         $entity->exchangeArray($data);
