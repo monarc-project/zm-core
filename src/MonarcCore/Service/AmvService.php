@@ -274,8 +274,6 @@ class AmvService extends AbstractService
             }
         }
 
-        var_dump('bob');
-
         return true;
     }
 }
