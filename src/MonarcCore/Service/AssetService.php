@@ -12,6 +12,9 @@ class AssetService extends AbstractService
     protected $modelTable;
     protected $amvService;
 
+    const IS_GENERIC = 0;
+    const IS_SPECIFIC = 1;
+
     protected $filterColumns = [
         'label1', 'label2', 'label3', 'label4',
         'description1', 'description2', 'description3', 'description4',
@@ -46,7 +49,7 @@ class AssetService extends AbstractService
 
     /**
      * Update
-     * 
+     *
      * @param $id
      * @param $data
      * @return mixed
@@ -55,7 +58,9 @@ class AssetService extends AbstractService
     public function update($id,$data){
 
         $models = isset($data['models']) ? $data['models'] : array();
+        $follow = isset($data['follow']) ? $data['follow'] : null;
         unset($data['models']);
+        unset($data['follow']);
 
         $entity = $this->get('table')->getEntity($id);
         $entity->setDbAdapter($this->get('table')->getDb());
@@ -63,8 +68,19 @@ class AssetService extends AbstractService
         $entity->exchangeArray($data);
         $entity->get('models')->initialize();
 
-        if (!$this->get('amvService')->checkAMVIntegrityLevel($id, null, null)) {
+        if (!$this->get('amvService')->checkAMVIntegrityLevel($models, $entity, null, null, $follow)) {
             throw new \Exception('Integrity AMV links violation', 412);
+        }
+
+        if ($entity->mode == self::IS_SPECIFIC) {
+            $associateObjects = $this->get('objectService')->getGenericByAsset($entity);
+            if (count($associateObjects)) {
+                throw new \Exception('Integrity AMV links violation', 412);
+            }
+        }
+
+        if (!$this->get('objectService')->checkModelsInstanciation($entity, $models)) {
+            throw new \Exception('Asset exist in another model', 412);
         }
 
         foreach($entity->get('models') as $model){
@@ -82,6 +98,10 @@ class AssetService extends AbstractService
                     $model = $modelTable->getEntity($modelId);
                     $entity->setModel($key, $model);
                 }
+            }
+
+            if ($follow) {
+                $this->get('amvService')->enforceAMVtoFollow($models, null, null, $entity);
             }
         }
 

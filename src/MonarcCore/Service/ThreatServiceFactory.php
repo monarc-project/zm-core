@@ -8,6 +8,7 @@ class ThreatServiceFactory extends AbstractServiceFactory
         'entity'=> '\MonarcCore\Model\Entity\Threat',
         'modelTable' => '\MonarcCore\Model\Table\ModelTable',
         'themeTable' => '\MonarcCore\Model\Table\ThemeTable',
+        'amvService' => 'MonarcCore\Service\AmvService',
     );
 }
 

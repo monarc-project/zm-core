@@ -11,6 +11,10 @@ class ThreatService extends AbstractService
 {
     protected $modelTable;
     protected $themeTable;
+    protected $amvService;
+
+    const IS_GENERIC = 0;
+    const IS_SPECIFIC = 1;
 
     protected $filterColumns = [
         'label1', 'label2', 'label3', 'label4',
@@ -57,17 +61,28 @@ class ThreatService extends AbstractService
      * @param $id
      * @param $data
      * @return mixed
+     * @throws \Exception
      */
     public function update($id,$data){
 
         $models = isset($data['models']) ? $data['models'] : array();
+        $follow = isset($data['follow']) ? $data['follow'] : null;
         unset($data['models']);
+        unset($data['follow']);
 
         $entity = $this->get('table')->getEntity($id);
         $entity->setDbAdapter($this->get('table')->getDb());
         $entity->setLanguage($this->getLanguage());
         $entity->exchangeArray($data);
         $entity->get('models')->initialize();
+
+        if (!$this->get('amvService')->checkAMVIntegrityLevel($models, null, $entity, null, $follow)) {
+            throw new \Exception('Integrity AMV links violation', 412);
+        }
+
+        if (($follow) && (!$this->get('amvService')->ensureAssetsIntegrityIfEnforced($models, null, $entity, null))) {
+            throw new \Exception('Assets Integrity', 412);
+        }
 
         foreach($entity->get('models') as $model){
             if (in_array($model->get('id'), $models)){
@@ -87,6 +102,11 @@ class ThreatService extends AbstractService
                     $model = $modelTable->getEntity($modelId);
                     $entity->setModel($key, $model);
                 }
+            }
+
+
+            if ($follow) {
+                $this->get('amvService')->enforceAMVtoFollow($models, null, null, $entity);
             }
         }
 

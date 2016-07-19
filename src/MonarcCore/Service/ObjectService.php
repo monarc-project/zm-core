@@ -122,6 +122,26 @@ class ObjectService extends AbstractService
     }
 
     /**
+     * Get generic by asset
+     *
+     * @param $asset
+     * @return mixed
+     */
+    public function getGenericByAsset($asset) {
+        return $this->get('table')->getGenericByAssetId($asset->getId());
+    }
+
+    /**
+     * Get anr by asset
+     *
+     * @param $asset
+     * @return mixed
+     */
+    public function getAnrByAsset($asset) {
+        return $this->get('table')->getAnrByAssetId($asset->getId());
+    }
+
+    /**
      * Recursive child
      *
      * @param $hierarchy
