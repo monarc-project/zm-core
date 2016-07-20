@@ -184,7 +184,7 @@ class RolfRisk extends AbstractEntity
                 $this->inputFilter->add(array(
                     'name' => $text,
                     'required' => ((strchr($text, (string) $this->getLanguage())) && (!$partial)) ? true : false,
-                    'allow_empty' => true,
+                    'allow_empty' => false,
                     'filters' => array(
                         array(
                             'name' => '\MonarcCore\Filter\SpecAlnum',
