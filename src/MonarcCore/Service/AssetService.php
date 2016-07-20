@@ -80,7 +80,7 @@ class AssetService extends AbstractService
             }
         }
 
-        if (!$this->get('objectService')->checkModelsInstanciation($entity, $models)) {
+        if (!$this->get('amvService')->checkModelsInstanciation($entity, $models)) {
             throw new \Exception('Asset exist in another model', 412);
         }
 
