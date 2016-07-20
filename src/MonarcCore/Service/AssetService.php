@@ -11,6 +11,7 @@ class AssetService extends AbstractService
 {
     protected $modelTable;
     protected $amvService;
+    protected $objectService;
 
     const IS_GENERIC = 0;
     const IS_SPECIFIC = 1;
