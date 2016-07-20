@@ -8,7 +8,6 @@ class AssetServiceFactory extends AbstractServiceFactory
         'entity'=> 'MonarcCore\Model\Entity\Asset',
         'modelTable' => 'MonarcCore\Model\Table\ModelTable',
         'amvService' => 'MonarcCore\Service\AmvService',
-        'objectService' => 'MonarcCore\Service\ObjectService',
     );
 }
 
