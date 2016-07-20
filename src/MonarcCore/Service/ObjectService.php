@@ -66,7 +66,7 @@ class ObjectService extends AbstractService
 
         //retrieve link father - child
         $objectObjectService = $this->get('objectObjectService');
-        $objectsObjects = $objectObjectService->getList($page = 1, $limit = 25, null, null);
+        $objectsObjects = $objectObjectService->getList($page, $limit, null, null);
 
         //hierarchy
         $childHierarchy = [];

@@ -24,6 +24,10 @@ class ObjectCategoryService extends AbstractService
         $previous = (array_key_exists('previous', $data)) ? $data['previous'] : null;
         $parent = (array_key_exists('parent', $data)) ? $data['parent'] : null;
 
+        if (!array_key_exists('implicitPosition', $data) || empty($data['implicitPosition'])) {
+            throw new \Exception("You must select a position for your category", 412);
+        }
+
         $position = $this->managePositionCreation('parent', $parent, (int) $data['implicitPosition'], $previous);
         $data['position'] = $position;
 
