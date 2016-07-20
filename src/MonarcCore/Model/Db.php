@@ -47,10 +47,10 @@ class Db {
      * @param array|null $filterAnd
      * @return array
      */
-    public function fetchAllFiltered($entity, $page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null) {
+    public function fetchAllFiltered($entity, $page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null, $filterJoin = null) {
         $repository = $this->entityManager->getRepository(get_class($entity));
 
-        $qb = $this->buildFilteredQuery($repository, $page, $limit, $order, $filter, $filterAnd);
+        $qb = $this->buildFilteredQuery($repository, $page, $limit, $order, $filter, $filterAnd, $filterJoin);
 
         return $qb->getQuery()->getResult();
     }
@@ -60,9 +60,9 @@ class Db {
         return $repository->createQueryBuilder('u')->select('count(u.id)')->getQuery()->getSingleScalarResult();
     }
 
-    public function countFiltered($entity, $limit = 25, $order = null, $filter = null, $filterAnd = null) {
+    public function countFiltered($entity, $limit = 25, $order = null, $filter = null, $filterAnd = null, $filterJoin = null) {
         $repository = $this->entityManager->getRepository(get_class($entity));
-        $qb = $this->buildFilteredQuery($repository, 1, $limit, $order, $filter, $filterAnd);
+        $qb = $this->buildFilteredQuery($repository, 1, $limit, $order, $filter, $filterAnd, $filterJoin);
         $qb->select('count(t.id)');
 
         return $qb->getQuery()->getSingleScalarResult();
@@ -109,11 +109,23 @@ class Db {
      * @param null $order
      * @param null $filter
      * @param null $filterAnd
+     * @param null $filterJoin
      * @return QueryBuilder
      */
-    private function buildFilteredQuery($repository, $page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
+    private function buildFilteredQuery($repository, $page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null, $filterJoin = null)
     {
         $qb = $repository->createQueryBuilder('t');
+
+        if (!is_null($filterJoin) && is_array($filterJoin)) {
+            foreach ($filterJoin as $join) {
+                if ($join['as'] == 't') {
+                    throw new \Exception('Cannot use "t" as a table alias');
+                }
+
+                $qb->join('t.' . $join['rel'], $join['as']);
+                $qb->addSelect($join['as']);
+            }
+        }
 
         if ((($filter != null) || ($filterAnd != null)) && is_array($filter))  {
             $isFirst = true;
@@ -123,9 +135,14 @@ class Db {
             // Add filter in WHERE xx LIKE %y% OR zz LIKE %y% ...
             foreach ($filter as $colName => $value) {
 
+                $fullColName = $colName;
+                if (strpos($fullColName, '.') === false) {
+                    $fullColName = 't.' . $fullColName;
+                }
+
                 if ($value !== '') {
 
-                    $where = (is_int($value)) ? "t.$colName = :filter_$searchIndex" : "t.$colName LIKE :filter_$searchIndex";
+                    $where = (is_int($value)) ? "$fullColName = :filter_$searchIndex" : "$fullColName LIKE :filter_$searchIndex";
                     $parameterValue = (is_int($value)) ? $value : '%' . $value . '%';
 
                     if ($isFirst) {
@@ -146,16 +163,21 @@ class Db {
             if (!is_null($filterAnd)) {
                 foreach ($filterAnd as $colName => $value) {
 
+                    $fullColName = $colName;
+                    if (strpos($fullColName, '.') === false) {
+                        $fullColName = 't.' . $fullColName;
+                    }
+
                     if ($value !== '') {
 
                         if (is_array($value)) {
-                            $where = "t.$colName IN (:filter_$searchIndex)";
+                            $where = "$fullColName IN (:filter_$searchIndex)";
                             $parameterValue = $value;
                         } else if (is_int($value)) {
-                            $where = "t.$colName = :filter_$searchIndex";
+                            $where = "$fullColName = :filter_$searchIndex";
                             $parameterValue = $value;
                         } else {
-                            $where = "t.$colName LIKE :filter_$searchIndex";
+                            $where = "$fullColName LIKE :filter_$searchIndex";
                             $parameterValue = '%' . $value . '%';
                         }
 
