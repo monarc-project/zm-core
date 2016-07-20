@@ -176,7 +176,7 @@ class AmvService extends AbstractService
      * @param $amv
      * @return bool
      */
-    public function compliesRequirement($amv, $asset, $assetModels = null, $threat, $threatModels = null, $vulnerability, $vulnerabilityModels = null) {
+    public function compliesRequirement($amv, $asset = null, $assetModels = null, $threat = null, $threatModels = null, $vulnerability = null, $vulnerabilityModels = null) {
 
         //asset
         $assetMode = (is_null($asset)) ? $amv->getAsset()->mode : $asset->mode;
@@ -225,6 +225,7 @@ class AmvService extends AbstractService
      * @param $vulnerabilityModelsIds
      * @param $assetModelsIsRegulator
      * @return bool
+     * @throws \Exception
      */
     public function compliesControl($assetMode, $threatMode, $vulnerabilityMode, $assetModelsIds, $threatModelsIds, $vulnerabilityModelsIds, $assetModelsIsRegulator) {
 
@@ -244,6 +245,7 @@ class AmvService extends AbstractService
         if ((!$assetMode) && (!$threatMode) && (!$vulnerabilityMode)) {
             return true;
         } else if (!$assetMode) {
+            throw new \Exception('Asset mode can\'t be null', 412);
             $this->errorMessage = 'Asset mode can\'t be null';
             return false;
         } else  if ($assetMode && $threatMode && $vulnerabilityMode) {
@@ -252,11 +254,13 @@ class AmvService extends AbstractService
                     return true;
                 }
             }
+            throw new \Exception('One model must be common to asset, threat and vulnerability', 412);
             $this->errorMessage = 'One model must be common to asset, threat and vulnerability';
             return false;
         } else {
             foreach ($assetModelsIsRegulator as $modelIsRegulator) {
                 if ($modelIsRegulator) {
+                    throw new \Exception('All asset models must\'nt be regulator', 412);
                     $this->errorMessage = 'All asset models must\'nt be regulator';
                     return false;
                 }
