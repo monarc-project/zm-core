@@ -44,6 +44,7 @@ class Db {
      * @param int $limit
      * @param array|null $order
      * @param array|null $filter
+     * @param array|null $filterAnd
      * @return array
      */
     public function fetchAllFiltered($entity, $page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null) {
@@ -107,6 +108,7 @@ class Db {
      * @param int $limit
      * @param null $order
      * @param null $filter
+     * @param null $filterAnd
      * @return QueryBuilder
      */
     private function buildFilteredQuery($repository, $page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
@@ -183,7 +185,7 @@ class Db {
             $qb->setFirstResult(($page - 1) * $limit);
             $qb->setMaxResults($limit);
         }
-        
+
         return $qb;
     }
 }

@@ -11,6 +11,23 @@ class ObjectCategoryService extends AbstractService
 {
     protected $filterColumns = ['label1', 'label2', 'label3', 'label4'];
 
+    public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $parentId = 0){
+        if ($parentId <= 0) {
+            return $this->getList($page, $limit, $order, $filter);
+        } else {
+            $filterAnd = ['parent' => $parentId];
+
+            return $this->get('table')->fetchAllFiltered(
+                array_keys($this->get('entity')->getJsonArray()),
+                $page,
+                $limit,
+                $this->parseFrontendOrder($order),
+                $this->parseFrontendFilter($filter, $this->filterColumns),
+                $filterAnd
+            );
+        }
+    }
+
     /**
      * Create
      *
