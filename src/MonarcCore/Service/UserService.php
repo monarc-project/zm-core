@@ -15,6 +15,8 @@ use MonarcCore\Validator\PasswordStrength;
 class UserService extends AbstractService
 {
     protected $roleTable;
+    protected $userTokenTable;
+    protected $passwordTokenTable;
     protected $mailService;
 
     /**

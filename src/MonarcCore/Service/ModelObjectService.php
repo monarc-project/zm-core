@@ -84,6 +84,9 @@ class ModelObjectService extends AbstractService
      * Delete
      *
      * @param $id
+     * @param $idm
+     * @return bool
+     * @throws \Exception
      */
     public function delete($id,$idm) {
         $entity = $this->get('table')->getEntity($id);

@@ -26,6 +26,18 @@ class Db {
         return $this->entityManager->getRepository($class);
     }
 
+    public function beginTransaction() {
+        $this->entityManager->getConnection()->beginTransaction();
+    }
+
+    public function commit() {
+        $this->entityManager->getConnection()->commit();
+    }
+
+    public function rollback() {
+        $this->entityManager->getConnection()->rollBack();
+    }
+
     /**
      * @param Entity $entity
      * @param int $page

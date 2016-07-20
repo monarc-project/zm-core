@@ -176,6 +176,9 @@ class Module
                 '\MonarcCore\Model\Table\UserTable' => function($sm){
                     $table = new Model\Table\UserTable($sm->get('\MonarcCli\Model\Db'));
                     $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
+                    $table->setUserRoleTable($sm->get('\MonarcCore\Model\Table\UserRoleTable'));
+                    $table->setUserTokenTable($sm->get('\MonarcCore\Model\Table\UserTokenTable'));
+                    $table->setPasswordTokenTable($sm->get('\MonarcCore\Model\Table\PasswordTokenTable'));
                     return $table;
                 },
                 '\MonarcCore\Model\Table\ModelTable' => function($sm){
