@@ -75,6 +75,19 @@ class Db {
         }
         return $this->entityManager->find(get_class($entity), $entity->get('id'));
     }
+    public function fetchByFields($entity, $fields)
+    {
+        $repository = $this->entityManager->getRepository(get_class($entity));
+        $qb = $repository->createQueryBuilder('u');
+
+        foreach ($fields as $key => $value) {
+            $qb->andWhere("u.$key = :$key");
+            $qb->setParameter($key, $value);
+        }
+
+
+        return $qb->getQuery()->getResult();
+    }
     public function delete($entity)
     {
         try {
