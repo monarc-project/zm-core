@@ -23,6 +23,8 @@ class ObjectService extends AbstractService
 
     protected $dependencies = ['asset', 'category', 'rolfTag'];
 
+    protected $forceType = 'bdc';
+
     /**
      * Get List
      *
@@ -46,6 +48,7 @@ class ObjectService extends AbstractService
 
             $filterAnd['category'] = $child;
         }
+        $filterAnd['type'] = $this->forceType;
 
         //retrieve all objects
         $objects = $this->get('table')->fetchAllFiltered(
@@ -117,6 +120,7 @@ class ObjectService extends AbstractService
         $filterAnd = [];
         if ((!is_null($asset)) && ($asset != 0)) $filterAnd['asset'] = $asset;
         if ((!is_null($category)) && ($category != 0)) $filterAnd['category'] = $category;
+        $filterAnd['type'] = $this->forceType;
 
         return parent::getFilteredCount($page, $limit, $order, $filter, $filterAnd);
     }
@@ -185,6 +189,7 @@ class ObjectService extends AbstractService
 
         $position = $this->managePositionCreation('category', $data['category'], (int) $data['implicitPosition'], $previous);
         $data['position'] = $position;
+        $data['type'] = $this->forceType;
 
         $entity->exchangeArray($data);
 
@@ -216,6 +221,10 @@ class ObjectService extends AbstractService
     public function update($id, $data){
 
         $entity = $this->get('table')->getEntity($id);
+        if(!$entity || $entity->get('type') != $this->forceType){
+            throw new \Exception('Entity `id` not found.');
+            return false;
+        }
         $entity->setLanguage($this->getLanguage());
 
         $previous = (array_key_exists('previous', $data)) ? $data['previous'] : null;
@@ -242,6 +251,10 @@ class ObjectService extends AbstractService
     public function delete($id) {
 
         $entity = $this->getEntity($id);
+        if(!$entity || $entity->get('type') != $this->forceType){
+            throw new \Exception('Entity `id` not found.');
+            return false;
+        }
 
         $objectCategoryId = $entity['category']->id;
         $position = $entity['position'];
@@ -260,6 +273,10 @@ class ObjectService extends AbstractService
     public function duplicate($data) {
 
         $entity = $this->getEntity($data['id']);
+        if(!$entity || $entity->get('type') != $this->forceType){
+            throw new \Exception('Entity `id` not found.');
+            return false;
+        }
 
         $keysToRemove = ['id','position', 'creator', 'createdAt', 'updater', 'updatedAt', 'inputFilter', 'language', 'dbadapter', 'parameters'];
 
