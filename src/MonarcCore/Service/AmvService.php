@@ -11,9 +11,12 @@ class AmvService extends AbstractService
 {
     protected $assetTable;
     protected $measureTable;
+    protected $modelTable;
     protected $threatTable;
     protected $vulnerabilityTable;
 
+    protected $modelService;
+    protected $objectService;
     protected $historicalService;
 
     protected $errorMessage;
@@ -163,8 +166,7 @@ class AmvService extends AbstractService
 
             $this->historizeDelete('amv', $entity);
 
-
-            //$this->get('table')->delete($id);
+            $this->get('table')->delete($id);
         }
     }
 
@@ -174,30 +176,38 @@ class AmvService extends AbstractService
      * @param $amv
      * @return bool
      */
-    public function compliesRequirement($amv) {
+    public function compliesRequirement($amv, $asset = null, $assetModels = null, $threat = null, $threatModels = null, $vulnerability = null, $vulnerabilityModels = null) {
 
-        $assetMode = $amv->getAsset()->mode;
-        $threatMode = $amv->getThreat()->mode;
-        $vulnerabilityMode = $amv->getVulnerability()->mode;
-
-        $assetModels = $amv->getAsset()->getModels();
+        //asset
+        $assetMode = (is_null($asset)) ? $amv->getAsset()->mode : $asset->mode;
+        $assetModels = (is_null($assetModels)) ? $amv->getAsset()->getModels() : $assetModels;
         $assetModelsIds = [];
         $assetModelsIsRegulator = [];
         foreach ($assetModels as $model) {
-            $assetModelsIds[] = $model->id;
-            $assetModelsIsRegulator[] = $model->isRegulator;
+            if (!is_object($model)) {
+                $model = $this->get('modelService')->getEntity($model);
+                $assetModelsIds[] = $model['id'];
+                $assetModelsIsRegulator[] = $model['isRegulator'];
+            } else {
+                $assetModelsIds[] = $model->id;
+                $assetModelsIsRegulator[] = $model->isRegulator;
+            }
         }
 
-        $threatModels = $amv->getThreat()->getModels();
+        //threat
+        $threatMode = (is_null($threat)) ? $amv->getThreat()->mode : $threat->mode;
+        $threatModels = (is_null($threatModels)) ? $amv->getThreat()->getModels() : $threatModels;
         $threatModelsIds = [];
         foreach ($threatModels as $model) {
-            $threatModelsIds[] = $model->id;
+            $threatModelsIds[] = (is_object($model)) ? $model->id : $model;
         }
 
-        $vulnerabilityModels = $amv->getVulnerability()->getModels();
+        //vulnerability
+        $vulnerabilityMode = (is_null($vulnerability)) ? $amv->getVulnerability()->mode : $vulnerability->mode;
+        $vulnerabilityModels = (is_null($vulnerabilityModels)) ? $amv->getVulnerability()->getModels() : $vulnerabilityModels;
         $vulnerabilityModelsIds = [];
         foreach ($vulnerabilityModels as $model) {
-            $vulnerabilityModelsIds[] = $model->id;
+            $vulnerabilityModelsIds[] = (is_object($model)) ? $model->id : $model;
         }
 
         return $this->compliesControl($assetMode, $threatMode, $vulnerabilityMode, $assetModelsIds, $threatModelsIds, $vulnerabilityModelsIds, $assetModelsIsRegulator);
@@ -215,6 +225,7 @@ class AmvService extends AbstractService
      * @param $vulnerabilityModelsIds
      * @param $assetModelsIsRegulator
      * @return bool
+     * @throws \Exception
      */
     public function compliesControl($assetMode, $threatMode, $vulnerabilityMode, $assetModelsIds, $threatModelsIds, $vulnerabilityModelsIds, $assetModelsIsRegulator) {
 
@@ -234,6 +245,7 @@ class AmvService extends AbstractService
         if ((!$assetMode) && (!$threatMode) && (!$vulnerabilityMode)) {
             return true;
         } else if (!$assetMode) {
+            throw new \Exception('Asset mode can\'t be null', 412);
             $this->errorMessage = 'Asset mode can\'t be null';
             return false;
         } else  if ($assetMode && $threatMode && $vulnerabilityMode) {
@@ -242,11 +254,13 @@ class AmvService extends AbstractService
                     return true;
                 }
             }
+            throw new \Exception('One model must be common to asset, threat and vulnerability', 412);
             $this->errorMessage = 'One model must be common to asset, threat and vulnerability';
             return false;
         } else {
             foreach ($assetModelsIsRegulator as $modelIsRegulator) {
                 if ($modelIsRegulator) {
+                    throw new \Exception('All asset models must\'nt be regulator', 412);
                     $this->errorMessage = 'All asset models must\'nt be regulator';
                     return false;
                 }
@@ -258,22 +272,154 @@ class AmvService extends AbstractService
     /**
      * Check AMV Integrity Level
      *
-     * @param null $assetId
-     * @param null $threatId
-     * @param null $vulnerabilityId
+     * @param $models
+     * @param null $asset
+     * @param null $threat
+     * @param null $vulnerability
+     * @param bool $follow
      * @return bool
      */
-    public function checkAMVIntegrityLevel($assetId = null, $threatId = null, $vulnerabilityId = null) {
-        $amvs = $this->get('table')->findByAMV($assetId, $threatId, $vulnerabilityId);
+    public function checkAMVIntegrityLevel($models, $asset = null, $threat = null, $vulnerability = null, $follow = false) {
+        $amvs = $this->get('table')->findByAMV($asset, $threat, $vulnerability);
 
         foreach($amvs as $amv){
 
             $amv = $this->get('table')->getEntity($amv['id']);
-            if(!$this->compliesRequirement($amv)){
+            $assetModels = ($asset || $follow) ? $models : null;
+            $threatsModels = ($threat || $follow) ? $models : null;
+            $vulnerabilityModels = ($vulnerability || $follow) ? $models : null;
+            if(!$this->compliesRequirement($amv, $asset, $assetModels, $threat, $threatsModels, $vulnerability, $vulnerabilityModels)){
                 return false;
             }
         }
 
         return true;
+    }
+
+    /**
+     * Ensure Assets Integrity If Enforced
+     *
+     * @param $models
+     * @param null $asset
+     * @param null $threat
+     * @param null $vulnerability
+     * @return bool
+     */
+    public function ensureAssetsIntegrityIfEnforced($models, $asset = null, $threat = null, $vulnerability = null) {
+        $amvs = $this->get('table')->findByAMV($asset, $threat, $vulnerability);
+
+        if (count($amvs)) {
+            $amvAssetsIds = array();
+            foreach ($amvs as $amv) {
+                $amvAssetsIds[$amv['assetId']] = $amv['assetId'];
+            }
+
+            if (!empty($amvAssetsIds)) {
+                $amvAssets = [];
+                foreach ($amvAssetsIds as $assetId) {
+
+                    $entity = $this->get('assetTable')->getEntity($assetId);
+                    $entity->setDbAdapter($this->get('assetTable')->getDb());
+                    $entity->setLanguage($this->getLanguage());
+                    $entity->get('models')->initialize();
+
+                    $amvAssets[] = $entity;
+                }
+                if (!empty($amvAssets)) {
+                    foreach ($amvAssets as $amvAsset) {
+                        if (!$this->checkModelsInstanciation($amvAsset, $models)) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Check Models Instanciation
+     *
+     * @param $entity
+     * @param $newModelsIds
+     * @return bool
+     */
+    public function checkModelsInstanciation($entity, $newModelsIds){
+        $modelsIds = array_combine($newModelsIds, $newModelsIds);//clefs = valeurs
+        $instances = $this->get('objectService')->getAnrByAsset($entity);
+        if(!empty($instances)){
+            foreach($instances as $instance){
+                if (! array_key_exists($instance['id'], $modelsIds)) {
+                    return false;//en gros si y'a une instance de cet asset dans un modèle et que ce modèle n'est pas dans la liste de ceux sélectionnés par l'utilisateur, ça va pas
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Enforce Amv To Follow
+     *
+     * @param $models
+     * @param null $asset
+     * @param null $threat
+     * @param null $vulnerability
+     */
+    public function enforceAMVtoFollow($models, $asset = null, $threat = null, $vulnerability = null)
+    {
+        $amvs = $this->get('table')->findByAMV($asset, $threat, $vulnerability);
+
+        if (!count($amvs)) {
+
+            $amvAssetsIds = array();
+            $amvThreatsIds = array();
+            $amvVulnerabilitiesIds = array();
+
+            foreach ($amvs as $amv) {
+                if (is_null($asset)) $amvAssetsIds[$amv['assetId']] = $amv['assetId'];
+                if (is_null($threat)) $amvThreatsIds[$amv['threatId']] = $amv['threatId'];
+                if (is_null($vulnerability)) $amvVulnerabilitiesIds[$amv['vulnerabilityId']] = $amv['vulnerabilityId'];
+            }
+
+            if (count($amvAssetsIds)) $this->enforceToFollow($amvAssetsIds, $models, 'asset');
+            if (count($amvThreatsIds)) $this->enforceToFollow($amvThreatsIds, $models, 'threat');
+            if (count($amvVulnerabilitiesIds)) $this->enforceToFollow($amvVulnerabilitiesIds, $models, 'vulnerability');
+        }
+    }
+
+    /**
+     * Enforce To Follow
+     *
+     * @param $entitiesIds
+     * @param $models
+     * @param $type
+     */
+    public function enforceToFollow($entitiesIds, $models, $type) {
+
+        $tableName = $type . 'Table';
+        $serviceName = ucfirst($type) . 'Service';
+
+        foreach($entitiesIds as $entitiesId) {
+            $entity = $this->get($tableName)->getEntity($entitiesId);
+            $entity->setDbAdapter($this->get($tableName)->getDb());
+            $entity->setLanguage($this->getLanguage());
+            $entity->get('models')->initialize();
+
+            if ($entity->mode == $serviceName::IS_SPECIFIC) { //petite sécurité pour pas construire de la daube
+
+                foreach($entity->get('models') as $model){
+                    $entity->get('models')->removeElement($model);
+                }
+
+                foreach($models as $modelId) {
+                    $model = $this->get('modelTable')->getEntity($modelId);
+                    $entity->setModel($modelId, $model);
+                }
+
+                $this->get($tableName)->save($entity);
+            }
+        }
     }
 }

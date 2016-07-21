@@ -11,6 +11,23 @@ class ObjectCategoryService extends AbstractService
 {
     protected $filterColumns = ['label1', 'label2', 'label3', 'label4'];
 
+    public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $parentId = 0){
+        if ($parentId <= 0) {
+            return $this->getList($page, $limit, $order, $filter);
+        } else {
+            $filterAnd = ['parent' => $parentId];
+
+            return $this->get('table')->fetchAllFiltered(
+                array_keys($this->get('entity')->getJsonArray()),
+                $page,
+                $limit,
+                $this->parseFrontendOrder($order),
+                $this->parseFrontendFilter($filter, $this->filterColumns),
+                $filterAnd
+            );
+        }
+    }
+
     /**
      * Create
      *
@@ -23,6 +40,10 @@ class ObjectCategoryService extends AbstractService
 
         $previous = (array_key_exists('previous', $data)) ? $data['previous'] : null;
         $parent = (array_key_exists('parent', $data)) ? $data['parent'] : null;
+
+        if (!array_key_exists('implicitPosition', $data) || empty($data['implicitPosition'])) {
+            throw new \Exception("You must select a position for your category", 412);
+        }
 
         $position = $this->managePositionCreation('parent', $parent, (int) $data['implicitPosition'], $previous);
         $data['position'] = $position;

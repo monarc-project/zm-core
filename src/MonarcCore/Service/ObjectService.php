@@ -66,7 +66,7 @@ class ObjectService extends AbstractService
 
         //retrieve link father - child
         $objectObjectService = $this->get('objectObjectService');
-        $objectsObjects = $objectObjectService->getList($page = 1, $limit = 25, null, null);
+        $objectsObjects = $objectObjectService->getList($page, $limit, null, null);
 
         //hierarchy
         $childHierarchy = [];
@@ -119,6 +119,26 @@ class ObjectService extends AbstractService
         if ((!is_null($category)) && ($category != 0)) $filterAnd['category'] = $category;
 
         return parent::getFilteredCount($page, $limit, $order, $filter, $filterAnd);
+    }
+
+    /**
+     * Get generic by asset
+     *
+     * @param $asset
+     * @return mixed
+     */
+    public function getGenericByAsset($asset) {
+        return $this->get('table')->getGenericByAssetId($asset->getId());
+    }
+
+    /**
+     * Get anr by asset
+     *
+     * @param $asset
+     * @return mixed
+     */
+    public function getAnrByAsset($asset) {
+        return $this->get('table')->getAnrByAssetId($asset->getId());
     }
 
     /**

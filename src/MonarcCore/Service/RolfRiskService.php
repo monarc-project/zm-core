@@ -16,6 +16,40 @@ class RolfRiskService extends AbstractService
         'code', 'label1', 'label2', 'label3', 'label4', 'description1', 'description2', 'description3', 'description4'
     );
 
+    public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $category = null, $tag = null)
+    {
+        $filterAnd = [];
+        $filterJoin = [];
+
+        if (!is_null($category)) {
+            $filterJoin[] = [
+                'as' => 'c',
+                'rel' => 'categories'
+            ];
+
+            $filterAnd['c.id'] = $category;
+        }
+
+        if (!is_null($tag)) {
+            $filterJoin[] = [
+                'as' => 'g',
+                'rel' => 'tags'
+            ];
+
+            $filterAnd['g.id'] = $tag;
+        }
+
+        return $this->get('table')->fetchAllFiltered(
+            array_keys($this->get('entity')->getJsonArray()),
+            $page,
+            $limit,
+            $this->parseFrontendOrder($order),
+            $this->parseFrontendFilter($filter, $this->filterColumns),
+            $filterAnd,
+            $filterJoin
+        );
+    }
+
     /**
      * Create
      *

@@ -6,22 +6,22 @@ class AmvTable extends AbstractEntityTable {
     /**
      * Find By AMV
      *
-     * @param $assetId
-     * @param $threatId
-     * @param $vulnerabilityId
-     * @return \Doctrine\ORM\QueryBuilder
+     * @param $asset
+     * @param $threat
+     * @param $vulnerability
+     * @return array
      */
-    public function findByAMV($assetId, $threatId, $vulnerabilityId) {
+    public function findByAMV($asset, $threat, $vulnerability) {
 
         $parameters = [];
-        if (!is_null($assetId)) {
-            $parameters['asset'] = $assetId;
+        if (!is_null($asset)) {
+            $parameters['asset'] = $asset->getId();
         }
-        if (!is_null($threatId)) {
-            $parameters['threat'] = $threatId;
+        if (!is_null($threat)) {
+            $parameters['threat'] = $threat->getId();
         }
-        if (!is_null($vulnerabilityId)) {
-            $parameters['vulnerability'] = $vulnerabilityId;
+        if (!is_null($vulnerability)) {
+            $parameters['vulnerability'] = $vulnerability->getId();
         }
 
         $amvs = $this->getRepository()->createQueryBuilder('amv')

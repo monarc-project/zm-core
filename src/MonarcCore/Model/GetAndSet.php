@@ -25,6 +25,11 @@ trait GetAndSet
     }
 
     public function set($key,$value){
+        if (!property_exists($this, $key)) {
+            http_response_code(500);
+            die("EXCEPTION: Trying to magically set $key, but the property doesn't exist in " . get_class($this));
+        }
+
         return $this->__set($key,$value);
     }
 }
