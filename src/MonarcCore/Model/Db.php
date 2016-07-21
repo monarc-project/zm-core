@@ -75,7 +75,7 @@ class Db {
         }
         return $this->entityManager->find(get_class($entity), $entity->get('id'));
     }
-    public function fetchByFields($entity, $fields)
+    public function fetchByFields($entity, $fields, $orderBy)
     {
         $repository = $this->entityManager->getRepository(get_class($entity));
         $qb = $repository->createQueryBuilder('u');
@@ -85,6 +85,9 @@ class Db {
             $qb->setParameter($key, $value);
         }
 
+        foreach ($orderBy as $field => $way) {
+            $qb->orderBy("u.$field", $way);
+        }
 
         return $qb->getQuery()->getResult();
     }

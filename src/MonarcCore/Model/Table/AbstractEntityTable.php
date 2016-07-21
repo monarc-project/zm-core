@@ -120,13 +120,13 @@ abstract class AbstractEntityTable
         }
     }
 
-    public function getEntityByFields($fields = array()) {
+    public function getEntityByFields($fields = array(), $orderBy = array()) {
         $class = $this->getClass();
         if (class_exists($class)) {
             $entity = new $class();
             $entity->setDbAdapter($this->getDb());
 
-            return $this->getDb()->fetchByFields($entity, $fields);
+            return $this->getDb()->fetchByFields($entity, $fields, $orderBy);
         } else {
             return false;
         }

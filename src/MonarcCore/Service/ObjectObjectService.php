@@ -40,6 +40,10 @@ class ObjectObjectService extends AbstractService
             $entity->setChild($childEntity);
         }
 
+        $previous = (array_key_exists('previous', $data)) ? $data['previous'] : null;
+        $position = $this->managePositionCreation('father', $data['father'], (int) $data['implicitPosition'], $previous);
+        $data['position'] = $position;
+
         return $this->get('table')->save($entity);
     }
 
@@ -47,12 +51,11 @@ class ObjectObjectService extends AbstractService
         /** @var ObjectObjectTable $table */
         $table = $this->get('table');
 
-        $children = $table->getEntityByFields(array('father' => $father_id));
+        $children = $table->getEntityByFields(array('father' => $father_id), array('position' => 'ASC'));
         $array_children = [];
 
         foreach ($children as $child) {
             /** @var ObjectObject $child */
-            //$child->setChild($this->get('objectTable')->getReference($child->getChild()));
             $child_array = $child->getJsonArray();
             $child_array['children'] = $this->getRecursiveChildren($child_array['child']);
 
