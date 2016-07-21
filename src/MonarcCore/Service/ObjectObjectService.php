@@ -21,6 +21,9 @@ class ObjectObjectService extends AbstractService
      * @throws \Exception
      */
     public function create($data) {
+        if ($data['father'] == $data['child']) {
+            throw new \Exception("You cannot add yourself as a component", 412);
+        }
 
         $entity = $this->get('entity');
         $entity->exchangeArray($data);
