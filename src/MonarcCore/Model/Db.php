@@ -189,6 +189,9 @@ class Db {
                         } else if (is_int($value)) {
                             $where = "$fullColName = :filter_$searchIndex";
                             $parameterValue = $value;
+                        } else if (is_null($value)) {
+                            $where = "$fullColName IS NULL";
+                            $parameterValue = null;
                         } else {
                             $where = "$fullColName LIKE :filter_$searchIndex";
                             $parameterValue = '%' . $value . '%';
@@ -196,11 +199,18 @@ class Db {
 
                         if ($isFirst) {
                             $qb->where($where);
-                            $qb->setParameter(":filter_$searchIndex", $parameterValue);
+
+                            if (!is_null($parameterValue)) {
+                                $qb->setParameter(":filter_$searchIndex", $parameterValue);
+                            }
+
                             $isFirst = false;
                         } else {
                             $qb->andWhere($where);
-                            $qb->setParameter(":filter_$searchIndex", $parameterValue);
+
+                            if (!is_null($parameterValue)) {
+                                $qb->setParameter(":filter_$searchIndex", $parameterValue);
+                            }
                         }
 
                         ++$searchIndex;
