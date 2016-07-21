@@ -49,6 +49,8 @@ class ObjectService extends AbstractService
             $filterAnd['category'] = $child;
         }
         $filterAnd['type'] = $this->forceType;
+        $filterAnd['model'] = null;
+
 
         //retrieve all objects
         $objects = $this->get('table')->fetchAllFiltered(
