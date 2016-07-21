@@ -1,5 +1,7 @@
 <?php
 namespace MonarcCore\Service;
+use MonarcCore\Model\Entity\ObjectObject;
+use MonarcCore\Model\Table\ObjectObjectTable;
 
 /**
  * Object Object Service
@@ -10,6 +12,7 @@ namespace MonarcCore\Service;
 class ObjectObjectService extends AbstractService
 {
     protected $objectTable;
+    protected $dependencies = ['child'];
 
     /**
      * Create
@@ -35,5 +38,26 @@ class ObjectObjectService extends AbstractService
         }
 
         return $this->get('table')->save($entity);
+    }
+
+    public function getRecursiveChildren($father_id) {
+        /** @var ObjectObjectTable $table */
+        $table = $this->get('table');
+
+        $children = $table->getEntityByFields(array('father' => $father_id));
+        $array_children = [];
+
+        foreach ($children as $child) {
+            /** @var ObjectObject $child */
+            //$child->setChild($this->get('objectTable')->getReference($child->getChild()));
+            $child_array = $child->getJsonArray();
+            $child_array['children'] = $this->getRecursiveChildren($child_array['child']);
+
+            $object_child = $this->get('objectTable')->get($child_array['child']);
+            $object_child['component_link_id'] = $child_array['id'];
+            $array_children[] = $object_child;
+        }
+
+        return $array_children;
     }
 }

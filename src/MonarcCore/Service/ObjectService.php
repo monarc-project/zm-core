@@ -1,5 +1,6 @@
 <?php
 namespace MonarcCore\Service;
+use MonarcCore\Model\Entity\Object;
 
 /**
  * Object Service
@@ -72,43 +73,24 @@ class ObjectService extends AbstractService
             $objectsArray[$object['id']] = $object;
         }
 
-        //retrieve link father - child
-        $objectObjectService = $this->get('objectObjectService');
-        $objectsObjects = $objectObjectService->getList($page, $limit, null, null);
-
-        //hierarchy
-        $childHierarchy = [];
-        foreach ($objectsObjects as $objectsObject) {
-            if (!is_null($objectsObject['child'])) {
-                if (array_key_exists($objectsObject['child']->id, $rootArray)) {
-                    unset($rootArray[$objectsObject['child']->id]);
-                }
-            }
-
-            $childHierarchy[] = [
-                'id' => $objectsObject['id'],
-                'father' => $objectsObject['father']->id,
-                'child' => $objectsObject['child']->id,
-            ];
-        }
-
         $newRoot = [];
         foreach($rootArray as $value) {
             $newRoot[] = $value;
         }
 
-        if ($lock == 'true') {
-            return $newRoot;
-        } else {
+        return $newRoot;
+    }
 
-            //recursive
-            $hierarchy = [];
-            foreach ($newRoot as $root) {
-                $hierarchy[] = $this->recursiveChild($hierarchy, $root['id'], $childHierarchy, $objectsArray);
-            }
+    public function getEntity($id) {
+        /** @var Object $entity */
+        $entity = $this->get('table')->get($id);
 
-            return $hierarchy;
-        }
+        // Retrieve children recursively
+        /** @var ObjectObjectService $objectObjectService */
+        $objectObjectService = $this->get('objectObjectService');
+        $entity['children'] = $objectObjectService->getRecursiveChildren($entity['id']);
+
+        return $entity;
     }
 
     /**
