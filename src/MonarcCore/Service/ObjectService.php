@@ -253,7 +253,7 @@ class ObjectService extends AbstractService
     public function delete($id) {
 
         $entity = $this->getEntity($id);
-        if(!$entity || $entity->get('type') != $this->forceType){
+        if(!$entity || $entity['type'] != $this->forceType){
             throw new \Exception('Entity `id` not found.');
             return false;
         }
@@ -275,9 +275,9 @@ class ObjectService extends AbstractService
     public function duplicate($data) {
 
         $entity = $this->getEntity($data['id']);
-        if(!$entity || $entity->get('type') != $this->forceType){
+
+        if(!$entity || $entity['type'] != $this->forceType){
             throw new \Exception('Entity `id` not found.');
-            return false;
         }
 
         $keysToRemove = ['id','position', 'creator', 'createdAt', 'updater', 'updatedAt', 'inputFilter', 'language', 'dbadapter', 'parameters'];
