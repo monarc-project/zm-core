@@ -120,6 +120,18 @@ abstract class AbstractEntityTable
         }
     }
 
+    public function getEntityByFields($fields = array()) {
+        $class = $this->getClass();
+        if (class_exists($class)) {
+            $entity = new $class();
+            $entity->setDbAdapter($this->getDb());
+
+            return $this->getDb()->fetchByFields($entity, $fields);
+        } else {
+            return false;
+        }
+    }
+
     public function save(\MonarcCore\Model\Entity\AbstractEntity $entity)
     {
         if(!empty($this->connectedUser) && isset($this->connectedUser['firstname']) && isset($this->connectedUser['lastname'])){
