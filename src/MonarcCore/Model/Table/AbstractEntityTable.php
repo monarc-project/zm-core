@@ -203,4 +203,8 @@ abstract class AbstractEntityTable
 
         return $maxPosition[0][1];
     }
+
+    public function getReference($id){
+        return $this->getDb()->getReference($this->getClass(),$id);
+    }
 }

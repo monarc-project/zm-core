@@ -174,4 +174,8 @@ class Db {
         
         return $qb;
     }
+
+    public function getReference($entityName, $id){
+        return $this->entityManager->getReference($entityName, $id);
+    }
 }
