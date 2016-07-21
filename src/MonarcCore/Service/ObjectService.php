@@ -11,6 +11,9 @@ class ObjectService extends AbstractService
 {
     protected $objectObjectService;
 
+    // Must be 16, 24 or 32 characters
+    const SALT = '__$$00_C4535_5M1L3_00$$__XMP0)XW';
+
     protected $assetTable;
     protected $categoryTable;
     protected $rolfTagTable;
@@ -255,7 +258,6 @@ class ObjectService extends AbstractService
         $entity = $this->getEntity($id);
         if(!$entity || $entity['type'] != $this->forceType){
             throw new \Exception('Entity `id` not found.');
-            return false;
         }
 
         $objectCategoryId = $entity['category']->id;
@@ -303,5 +305,28 @@ class ObjectService extends AbstractService
         $entity['implicitPosition'] = array_key_exists('implicitPosition', $data) ? $data['implicitPosition'] : 2;
 
         return $this->create($entity);
+    }
+
+    public function export($data) {
+        if (!array_key_exists('password', $data) || empty($data['password'])) {
+            throw new \Exception('You must type in a password', 412);
+        }
+
+        $entity = $this->getEntity($data['id']);
+
+        if (!$entity || $entity['type'] != $this->forceType) {
+            throw new \Exception('Entity `id` not found.');
+        }
+
+        $output = json_encode($entity);
+        return $this->encrypt($output);
+    }
+
+    protected function encrypt($data) {
+        return mcrypt_encrypt(MCRYPT_RIJNDAEL_256, self::SALT, $data, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND));
+    }
+
+    protected function decrypt($data) {
+        return mcrypt_decrypt(MCRYPT_RIJNDAEL_256, self::SALT, $data, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND));
     }
 }
