@@ -321,6 +321,42 @@ class Object extends AbstractEntity
         return $this;
     }
 
+    /**
+     * @return source
+     */
+    public function getsource()
+    {
+        return $this->source;
+    }
+
+    /**
+     * @param source $source
+     * @return Object
+     */
+    public function setsource($source)
+    {
+        $this->source = $source;
+        return $this;
+    }
+
+    /**
+     * @return model
+     */
+    public function getmodel()
+    {
+        return $this->model;
+    }
+
+    /**
+     * @param model $model
+     * @return Object
+     */
+    public function setmodel($model)
+    {
+        $this->model = $model;
+        return $this;
+    }
+
     public function getInputFilter($partial = false){
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);
