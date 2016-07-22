@@ -5,12 +5,16 @@ class ObjectServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = array(
         'table'=> '\MonarcCore\Model\Table\ObjectTable',
+        'entity'=> '\MonarcCore\Model\Entity\Object',
+
         'assetTable'=> '\MonarcCore\Model\Table\AssetTable',
         'amvTable'=> '\MonarcCore\Model\Table\AmvTable',
         'objectRiskTable' => '\MonarcCore\Model\Table\ObjectRiskTable',
         'categoryTable'=> '\MonarcCore\Model\Table\ObjectCategoryTable',
         'rolfTagTable'=> '\MonarcCore\Model\Table\RolfTagTable',
-        'entity'=> '\MonarcCore\Model\Entity\Object',
+
+        'riskEntity' => '\MonarcCore\Model\Entity\ObjectRisk',
+
         'objectObjectService'=> 'MonarcCore\Service\ObjectObjectService',
     );
 

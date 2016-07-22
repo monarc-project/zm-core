@@ -1,6 +1,7 @@
 <?php
 namespace MonarcCore\Service;
 use MonarcCore\Model\Entity\Object;
+use MonarcCore\Model\Entity\ObjectRisk;
 use MonarcCore\Model\Table\AmvTable;
 use MonarcCore\Model\Table\ObjectRiskTable;
 
@@ -24,6 +25,8 @@ class ObjectService extends AbstractService
     protected $amvTable;
     /** @var ObjectRiskTable */
     protected $objectRiskTable;
+    /** @var ObjectRisk */
+    protected $riskEntity;
 
     protected $filterColumns = [
         'name1', 'name2', 'name3', 'name4',
@@ -89,24 +92,25 @@ class ObjectService extends AbstractService
 
     public function getEntity($id, $mode = 'bdc') {
         /** @var Object $entity */
-        $entity = $this->get('table')->get($id);
+        $entity = $this->get('table')->getEntity($id);
+        $entity_arr = $entity->getJsonArray();
 
         // Retrieve children recursively
         /** @var ObjectObjectService $objectObjectService */
         $objectObjectService = $this->get('objectObjectService');
-        $entity['children'] = $objectObjectService->getRecursiveChildren($entity['id']);
+        $entity_arr['children'] = $objectObjectService->getRecursiveChildren($entity_arr['id']);
 
         // Calculate the risks table
-        $entity['risks'] = $this->buildRisksTable($entity, $mode);
+        $entity_arr['risks'] = $this->buildRisksTable($entity, $mode);
 
-        return $entity;
+        return $entity_arr;
     }
 
     protected function buildRisksTable($entity, $mode) {
         $output = [];
 
         // First, get all the AMV links for this object's asset
-        $amvs = $this->amvTable->findByAsset($entity['asset']);
+        $amvs = $this->amvTable->findByAsset($entity->getAsset()->getId());
 
         foreach ($amvs as $amv) {
             $amv_array = $amv->getJsonArray();
@@ -121,15 +125,16 @@ class ObjectService extends AbstractService
             $i_risk = null;
             $d_risk = null;
             $comment = null;
+            $risk_id = null;
 
             if ($mode == 'anr') {
-                $c_impact = $entity['c'];
-                $i_impact = $entity['i'];
-                $d_impact = $entity['d'];
+                $c_impact = $entity->getC();
+                $i_impact = $entity->getI();
+                $d_impact = $entity->getD();
 
                 // Fetch the risk assessment information from the DB for that AMV link
-                $risk = $this->objectRiskTable->getEntityByFields(['anr' => $entity['anr'],
-                    'object' => $entity['id'],
+                $risk = $this->objectRiskTable->getEntityByFields([ //'anr' => $entity->getAnr() ? $entity->getAnr()->getId() : null,
+                    'object' => $entity->getId(),
                     'amv' => $amv_array['id'],
                     'asset' => $amv_array['asset']['id'],
                     'threat' => $amv_array['threat']['id'],
@@ -139,9 +144,26 @@ class ObjectService extends AbstractService
                 if (count($risk) == 1) {
                     // If we have some info, display them here. Otherwise, we'll only display a placeholder.
                     $risk = $risk[0];
-                    $prob = $risk['threat_rate'];
-                    $qualif = $risk['vulnerability_rate'];
-                    $comment = $risk['comment'];
+                    $risk_id = $risk->getId();
+                    $prob = (string) $risk->getThreatRate();
+                    $qualif = (string) $risk->getVulnerabilityRate();
+                    $comment = $risk->getComment();
+                } else {
+                    // We have NO risk data for this, create the line!
+                    /** @var ObjectRisk $new_risk_entity */
+                    $new_risk_entity = new ObjectRisk();
+                    $new_risk_entity->setAnr($entity->getAnr());
+                    $new_risk_entity->setObject($entity);
+                    $new_risk_entity->setAmv($amv);
+                    $new_risk_entity->setAsset($amv->getAsset());
+                    $new_risk_entity->setThreat($amv->getThreat());
+                    $new_risk_entity->setVulnerability($amv->getVulnerability());
+
+                    $risk_id = $this->get('objectRiskTable')->save($new_risk_entity);
+
+                    $prob = "0";
+                    $qualif = "0";
+                    $comment = '';
                 }
 
                 if ($prob > 0 && $qualif > 0) {
@@ -158,6 +180,7 @@ class ObjectService extends AbstractService
             }
 
             $output[] = array(
+                'id' => $risk_id,
                 'c_impact' => $c_impact,
                 'i_impact' => $i_impact,
                 'd_impact' => $d_impact,
