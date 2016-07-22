@@ -13,7 +13,7 @@ class ObjectObjectService extends AbstractService
 {
     protected $objectTable;
     protected $dependencies = ['child'];
-    
+
     const IS_GENERIC = 0;
     const IS_SPECIFIC = 1;
 
