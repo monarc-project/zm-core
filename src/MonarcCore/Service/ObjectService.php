@@ -1,6 +1,7 @@
 <?php
 namespace MonarcCore\Service;
 use MonarcCore\Model\Entity\Object;
+use MonarcCore\Model\Table\AmvTable;
 
 /**
  * Object Service
@@ -18,6 +19,8 @@ class ObjectService extends AbstractService
     protected $assetTable;
     protected $categoryTable;
     protected $rolfTagTable;
+    /** @var AmvTable */
+    protected $amvTable;
 
     protected $filterColumns = [
         'name1', 'name2', 'name3', 'name4',
@@ -89,6 +92,34 @@ class ObjectService extends AbstractService
         /** @var ObjectObjectService $objectObjectService */
         $objectObjectService = $this->get('objectObjectService');
         $entity['children'] = $objectObjectService->getRecursiveChildren($entity['id']);
+
+        // Calculate the risks table
+        $entity['risks'] = [];
+
+        // First, get all the AMV links for this object's asset
+        $amvs = $this->amvTable->findByAsset($entity['asset']);
+        foreach ($amvs as $amv) {
+            $amv_array = $amv->getJsonArray();
+            $this->formatDependencies($amv_array, ['asset', 'threat', 'vulnerability']);
+            $entity['risks'][] = array(
+                'c_impact' => -1,
+                'i_impact' => -1,
+                'd_impact' => -1,
+                'threat_description' => $amv_array['threat']['label1'],
+                'prob' => null,
+                'vuln_description' => $amv_array['vulnerability']['label1'],
+                'qualif' => null,
+                'c_risk' => null,
+                'c_risk_enabled' => $amv_array['threat']['c'],
+                'i_risk' => null,
+                'i_risk_enabled' => $amv_array['threat']['i'],
+                'd_risk' => null,
+                'd_risk_enabled' => $amv_array['threat']['d'],
+                'comment' => null
+            );
+        }
+
+
 
         return $entity;
     }

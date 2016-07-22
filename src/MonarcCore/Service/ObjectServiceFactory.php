@@ -6,6 +6,7 @@ class ObjectServiceFactory extends AbstractServiceFactory
     protected $ressources = array(
         'table'=> '\MonarcCore\Model\Table\ObjectTable',
         'assetTable'=> '\MonarcCore\Model\Table\AssetTable',
+        'amvTable'=> '\MonarcCore\Model\Table\AmvTable',
         'categoryTable'=> '\MonarcCore\Model\Table\ObjectCategoryTable',
         'rolfTagTable'=> '\MonarcCore\Model\Table\RolfTagTable',
         'entity'=> '\MonarcCore\Model\Entity\Object',
