@@ -137,6 +137,23 @@ class ObjectObject extends AbstractEntity
         return $this;
     }
 
+    /**
+     * @return smallint
+     */
+    public function getPosition()
+    {
+        return $this->position;
+    }
+
+    /**
+     * @param smallint $position
+     */
+    public function setPosition($position)
+    {
+        $this->position = $position;
+        return $this;
+    }
+
 
 }
 
