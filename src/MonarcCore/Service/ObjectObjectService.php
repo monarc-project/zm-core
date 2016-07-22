@@ -13,6 +13,9 @@ class ObjectObjectService extends AbstractService
 {
     protected $objectTable;
     protected $dependencies = ['child'];
+    
+    const IS_GENERIC = 0;
+    const IS_SPECIFIC = 1;
 
     /**
      * Create
@@ -23,6 +26,14 @@ class ObjectObjectService extends AbstractService
     public function create($data) {
         if ($data['father'] == $data['child']) {
             throw new \Exception("You cannot add yourself as a component", 412);
+        }
+
+        // Ensure that we're not trying to add a specific item if the father is generic
+        $father = $this->objectTable->get($data['father']);
+        $child = $this->objectTable->get($data['child']);
+
+        if ($father['mode'] == self::IS_GENERIC && $child['mode'] == self::IS_SPECIFIC) {
+            throw new \Exception("You cannot add a specific object to a generic parent", 412);
         }
 
         $entity = $this->get('entity');
