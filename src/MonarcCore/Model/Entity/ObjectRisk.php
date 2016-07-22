@@ -311,7 +311,7 @@ class ObjectRisk extends AbstractEntity
     }
 
     /**
-     * @param int $anr
+     * @param Anr $anr
      */
     public function setAnr($anr)
     {
