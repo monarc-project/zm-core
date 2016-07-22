@@ -2,6 +2,7 @@
 namespace MonarcCore\Service;
 use MonarcCore\Model\Entity\Object;
 use MonarcCore\Model\Table\AmvTable;
+use MonarcCore\Model\Table\ObjectRiskTable;
 
 /**
  * Object Service
@@ -21,6 +22,8 @@ class ObjectService extends AbstractService
     protected $rolfTagTable;
     /** @var AmvTable */
     protected $amvTable;
+    /** @var ObjectRiskTable */
+    protected $objectRiskTable;
 
     protected $filterColumns = [
         'name1', 'name2', 'name3', 'name4',
@@ -108,21 +111,67 @@ class ObjectService extends AbstractService
         foreach ($amvs as $amv) {
             $amv_array = $amv->getJsonArray();
             $this->formatDependencies($amv_array, ['asset', 'threat', 'vulnerability']);
+
+            $c_impact = -1;
+            $i_impact = -1;
+            $d_impact = -1;
+            $prob = null;
+            $qualif = null;
+            $c_risk = null;
+            $i_risk = null;
+            $d_risk = null;
+            $comment = null;
+
+            if ($mode == 'anr') {
+                $c_impact = $entity['c'];
+                $i_impact = $entity['i'];
+                $d_impact = $entity['d'];
+
+                // Fetch the risk assessment information from the DB for that AMV link
+                $risk = $this->objectRiskTable->getEntityByFields(['anr' => $entity['anr'],
+                    'object' => $entity['id'],
+                    'amv' => $amv_array['id'],
+                    'asset' => $amv_array['asset']['id'],
+                    'threat' => $amv_array['threat']['id'],
+                    'vulnerability' => $amv_array['vulnerability']['id']
+                ]);
+
+                if (count($risk) == 1) {
+                    // If we have some info, display them here. Otherwise, we'll only display a placeholder.
+                    $risk = $risk[0];
+                    $prob = $risk['threat_rate'];
+                    $qualif = $risk['vulnerability_rate'];
+                    $comment = $risk['comment'];
+                }
+
+                if ($prob > 0 && $qualif > 0) {
+                    if ($amv_array['threat']['c']) {
+                        $c_risk = $c_impact * $prob * $qualif;
+                    }
+                    if ($amv_array['threat']['i']) {
+                        $i_risk = $c_impact * $prob * $qualif;
+                    }
+                    if ($amv_array['threat']['d']) {
+                        $d_risk = $c_impact * $prob * $qualif;
+                    }
+                }
+            }
+
             $output[] = array(
-                'c_impact' => -1,
-                'i_impact' => -1,
-                'd_impact' => -1,
+                'c_impact' => $c_impact,
+                'i_impact' => $i_impact,
+                'd_impact' => $d_impact,
                 'threat_description' => $amv_array['threat']['label1'],
-                'prob' => null,
+                'prob' => $prob,
                 'vuln_description' => $amv_array['vulnerability']['label1'],
-                'qualif' => null,
-                'c_risk' => null,
+                'qualif' => $qualif,
+                'c_risk' => $c_risk,
                 'c_risk_enabled' => $amv_array['threat']['c'],
-                'i_risk' => null,
+                'i_risk' => $i_risk,
                 'i_risk_enabled' => $amv_array['threat']['i'],
-                'd_risk' => null,
+                'd_risk' => $d_risk,
                 'd_risk_enabled' => $amv_array['threat']['d'],
-                'comment' => null
+                'comment' => $comment
             );
         }
 
