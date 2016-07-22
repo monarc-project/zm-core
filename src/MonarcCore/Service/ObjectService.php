@@ -84,7 +84,7 @@ class ObjectService extends AbstractService
         return $newRoot;
     }
 
-    public function getEntity($id) {
+    public function getEntity($id, $mode = 'bdc') {
         /** @var Object $entity */
         $entity = $this->get('table')->get($id);
 
@@ -94,14 +94,21 @@ class ObjectService extends AbstractService
         $entity['children'] = $objectObjectService->getRecursiveChildren($entity['id']);
 
         // Calculate the risks table
-        $entity['risks'] = [];
+        $entity['risks'] = $this->buildRisksTable($entity, $mode);
+
+        return $entity;
+    }
+
+    protected function buildRisksTable($entity, $mode) {
+        $output = [];
 
         // First, get all the AMV links for this object's asset
         $amvs = $this->amvTable->findByAsset($entity['asset']);
+
         foreach ($amvs as $amv) {
             $amv_array = $amv->getJsonArray();
             $this->formatDependencies($amv_array, ['asset', 'threat', 'vulnerability']);
-            $entity['risks'][] = array(
+            $output[] = array(
                 'c_impact' => -1,
                 'i_impact' => -1,
                 'd_impact' => -1,
@@ -119,9 +126,7 @@ class ObjectService extends AbstractService
             );
         }
 
-
-
-        return $entity;
+        return $output;
     }
 
     /**
