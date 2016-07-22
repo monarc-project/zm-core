@@ -66,4 +66,15 @@ class ObjectObjectService extends AbstractService
 
         return $array_children;
     }
+
+    public function moveObject($id, $direction) {
+        $entity = $this->get('table')->getEntity($id);
+
+        if ($entity->position == 1 && $direction == 'up') {
+            // Nothing to do
+            return;
+        }
+
+        $this->manageRelativePositionUpdate('father', $entity, $direction);
+    }
 }
