@@ -76,7 +76,7 @@ class UserService extends AbstractService
         /** @var User $user */
         $user = $this->get('table')->getEntity($id);
 
-        if (array_key_exists('role', $data)) {
+        if (isset($data['role'])) {
             $this->manageRoles($user, $data);
         }
 
@@ -94,13 +94,13 @@ class UserService extends AbstractService
      */
     public function patch($id, $data){
 
-        if (array_key_exists('password', $data)) {
+        if (isset($data['password'])) {
             $this->validatePassword($data);
         }
 
         $user = $this->get('table')->getEntity($id);
 
-        if (array_key_exists('role', $data)) {
+        if (isset($data['role'])) {
             $this->manageRoles($user, $data);
         }
 
@@ -151,7 +151,7 @@ class UserService extends AbstractService
 
         $userRoleTable = $this->get('roleTable');
         $userRoleTable->deleteByUser($user->id);
-        if (array_key_exists('role', $data)) {
+        if (isset($data['role'])) {
             foreach ($data['role'] as $role) {
                 $roleData = [
                     'user' => $user,

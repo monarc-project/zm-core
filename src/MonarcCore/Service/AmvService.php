@@ -355,7 +355,7 @@ class AmvService extends AbstractService
         $instances = $this->get('objectService')->getAnrByAsset($entity);
         if(!empty($instances)){
             foreach($instances as $instance){
-                if (! array_key_exists($instance['id'], $modelsIds)) {
+                if (! isset($modelsIds[$instance['id']])) {
                     return false;//en gros si y'a une instance de cet asset dans un modèle et que ce modèle n'est pas dans la liste de ceux sélectionnés par l'utilisateur, ça va pas
                 }
             }

@@ -49,10 +49,10 @@ class ScaleCommentService extends AbstractService
     public function create($data) {
 
         $entity = $this->get('entity');
-        if (array_key_exists('scale', $data)) {
+        if (isset($data['scale'])) {
             $scale = $this->get('scaleTable')->getEntity($data['scale']);
             $entity->setScale($scale);
-            if (($scale->type !=1) && (array_key_exists('scaleTypeImpact', $data))) {
+            if (($scale->type !=1) && (isset($data['scaleTypeImpact']))) {
                 unset($data['scaleTypeImpact']);
             }
         }
@@ -74,10 +74,10 @@ class ScaleCommentService extends AbstractService
     public function update($id,$data){
 
         $entity = $this->get('table')->getEntity($id);
-        if (array_key_exists('scale', $data)) {
+        if (isset($data['scale'])) {
             $scale = $this->get('scaleTable')->getEntity($data['scale']);
             $entity->setScale($scale);
-            if (($scale->type !=1) && (array_key_exists('scaleTypeImpact', $data))) {
+            if (($scale->type !=1) && (isset($data['scaleTypeImpact']))) {
                 unset($data['scaleTypeImpact']);
             }
         }

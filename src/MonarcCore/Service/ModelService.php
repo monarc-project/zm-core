@@ -137,7 +137,7 @@ class ModelService extends AbstractService
      * @throws \Exception
      */
     public function update($id, $data){
-        if (array_key_exists('isRegulator', $data) && array_key_exists('isGeneric', $data) &&
+        if (isset($data['isRegulator']) && isset($data['isGeneric']) &&
             $data['isRegulator'] && $data['isGeneric']) {
             throw new \Exception("A regulator model may not be generic", 412);
         }
