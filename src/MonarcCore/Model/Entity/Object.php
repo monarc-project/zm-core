@@ -493,7 +493,7 @@ class Object extends AbstractEntity
                     array(
                         'name' => 'InArray',
                         'options' => array(
-                            'haystack' => [0, 1],
+                            'haystack' => [-1, 0, 1, 2, 3, 4],
                         ),
                         'default' => 0,
                     ),
@@ -510,7 +510,7 @@ class Object extends AbstractEntity
                     array(
                         'name' => 'InArray',
                         'options' => array(
-                            'haystack' => [0, 1],
+                            'haystack' => [-1, 0, 1, 2, 3, 4],
                         ),
                         'default' => 0,
                     ),
@@ -527,7 +527,7 @@ class Object extends AbstractEntity
                     array(
                         'name' => 'InArray',
                         'options' => array(
-                            'haystack' => [0, 1],
+                            'haystack' => [-1, 0, 1, 2, 3, 4],
                         ),
                         'default' => 0,
                     ),
@@ -610,6 +610,22 @@ class Object extends AbstractEntity
                         'name' => 'InArray',
                         'options' => array(
                             'haystack' => [1, 2, 3],
+                        ),
+                    ),
+                ),
+            ));
+
+            $this->inputFilter->add(array(
+                'name' => 'mode',
+                'required' => true,
+                'allow_empty' => false,
+                'continue_if_empty' => false,
+                'filters' => array(),
+                'validators' => array(
+                    array(
+                        'name' => 'InArray',
+                        'options' => array(
+                            'haystack' => [0, 1],
                         ),
                     ),
                 ),

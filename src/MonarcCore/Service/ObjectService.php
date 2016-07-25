@@ -14,6 +14,7 @@ use MonarcCore\Model\Table\ObjectRiskTable;
 class ObjectService extends AbstractService
 {
     protected $objectObjectService;
+    protected $modelService;
 
     // Must be 16, 24 or 32 characters
     const SALT = '__$$00_C4535_5M1L3_00$$__XMP0)XW';
@@ -27,6 +28,9 @@ class ObjectService extends AbstractService
     protected $objectRiskTable;
     /** @var ObjectRisk */
     protected $riskEntity;
+
+    const BDC = 'bdc';
+    const ANR = 'anr';
 
     protected $filterColumns = [
         'name1', 'name2', 'name3', 'name4',
@@ -276,31 +280,57 @@ class ObjectService extends AbstractService
      * @param $data
      * @throws \Exception
      */
-    public function create($data) {
+    public function create($data, $context = self::BACK_OFFICE) {
 
-        $entity = $this->get('entity');
-
+        //position
         $previous = (array_key_exists('previous', $data)) ? $data['previous'] : null;
-
+        if (!array_key_exists('implicitPosition', $data)) {
+            throw  new \Exception('implicitPosition is missing', 412);
+        } else  if ($data['implicitPosition'] == 3) {
+            if (!$previous) {
+                throw  new \Exception('previous is missing', 412);
+            }
+        }
         $position = $this->managePositionCreation('category', $data['category'], (int) $data['implicitPosition'], $previous);
         $data['position'] = $position;
+        unset($data['implicitPosition']);
         $data['type'] = $this->forceType;
 
-        $entity->exchangeArray($data);
+        //create object
+        $object = $this->get('entity');
+        $object->exchangeArray($data);
 
+        //object dependencies
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($entity, $dependencies);
+        $this->setDependencies($object, $dependencies);
 
-        $id = $this->get('table')->save($entity);
+        if (array_key_exists('source', $data)) {
+            $object->source = $this->get('table')->getEntity($data['source']);
+        }
 
-        if (array_key_exists('parent', $data)) {
-            $objectObjectData = [
-                'father' => (int) $data['parent'],
-                'child' => (int) $id,
-            ];
+        //security
+        if ($object->mode == self::IS_GENERIC && $object->asset->mode == self::IS_SPECIFIC) {
+            throw new \Exception("You can't have a generic object based on a specific asset", 412);
+        }
+        if (array_key_exists('modelId', $data)) {
+            $this->get('modelService')->canAcceptObject($data['modelId'], $object, $context);
+        }
 
-            $objectObjectService = $this->get('objectObjectService');
-            $objectObjectService->create($objectObjectData);
+        if ($context == self::BACK_OFFICE) {
+            //create object type bdc
+            $object->type = self::BDC;
+            $id = $this->get('table')->save($object);
+
+            //attach object to anr
+            if (array_key_exists('modelId', $data)) {
+
+                $model = $this->get('modelService')->getEntity($data['modelId']);
+
+                $this->attachObjectToAnr($object, $model['anr']->id);
+            }
+        } else {
+            //create object type anr
+            $id = $this->get('table')->save($object);
         }
 
         return $id;
@@ -395,6 +425,62 @@ class ObjectService extends AbstractService
         $entity['implicitPosition'] = array_key_exists('implicitPosition', $data) ? $data['implicitPosition'] : 2;
 
         return $this->create($entity);
+    }
+
+
+    /**
+     * Instantiate Object To Anr
+     *
+     * @param $anrId
+     * @param $objectId
+     * @param $parentId
+     * @param $position
+     */
+    public function instantiateObjectToAnr($anrId, $objectId, $parentId, $position) {
+
+        if ($position == 0) {
+            $position = 1;
+        }
+        $this->get('table')->instantiateObjectToAnr($anrId, $objectId, $parentId, $position);
+    }
+
+
+    /**
+     * Attach object to Anr
+     *
+     * @param $object
+     * @param $anrId
+     * @param null $parent
+     */
+    public function attachObjectToAnr($object, $anrId, $parent = null)
+    {
+
+        $anrObject = clone $object;
+        $anrObject->id = null;
+        $anrObject->type = self::ANR;
+        $anrObject->anr = $anrId;
+        $anrObject->source = $this->get('table')->getEntity($object->id);
+
+        $id = $this->get('table')->save($anrObject);
+
+        if ($parent) {
+            $data = [
+                'anr' => $anrId,
+                'father' => $parent,
+                'child' => $id,
+            ];
+            $this->get('objectObjectService')->create($data);
+        }
+
+        //retrieve childs
+        $childs = $this->get('objectObjectService')->getChilds($object->id);
+        foreach ($childs as $child) {
+
+            $childObject = $this->get('table')->getEntity($child['childId']);
+
+            $this->attachObjectToAnr($childObject, $anrId, $id);
+
+        }
     }
 
     public function export($data) {

@@ -13,9 +13,6 @@ class AssetService extends AbstractService
     protected $amvService;
     protected $objectService;
 
-    const IS_GENERIC = 0;
-    const IS_SPECIFIC = 1;
-
     protected $filterColumns = [
         'label1', 'label2', 'label3', 'label4',
         'description1', 'description2', 'description3', 'description4',

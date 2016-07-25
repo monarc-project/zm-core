@@ -14,6 +14,12 @@ abstract class AbstractService extends AbstractServiceFactory
     protected $label;
     protected $language;
 
+    const IS_GENERIC = 0;
+    const IS_SPECIFIC = 1;
+
+    const BACK_OFFICE = 'back';
+    const FRONT_OFFICE = 'front';
+
     /**
      * @return null
      */

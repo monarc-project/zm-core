@@ -83,7 +83,12 @@ class UserTable extends AbstractEntityTable {
         }
     }
 
-
+    /**
+     * Delete
+     *
+     * @param $id
+     * @throws \Exception
+     */
     public function delete($id)
     {
         if ($this->getConnectedUser()['id'] == $id) {

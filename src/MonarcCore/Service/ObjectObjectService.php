@@ -36,7 +36,9 @@ class ObjectObjectService extends AbstractService
             throw new \Exception("You cannot add a specific object to a generic parent", 412);
         }
 
-        $entity = $this->get('entity');
+        $class = $this->get('entity');
+        $entity = new $class();
+
         $entity->exchangeArray($data);
 
         $fatherValue = $entity->get('father');
@@ -56,6 +58,17 @@ class ObjectObjectService extends AbstractService
         $entity->setPosition($position);
 
         return $this->get('table')->save($entity);
+    }
+
+    /**
+     * Get Childs
+     *
+     * @param $objectId
+     * @return mixed
+     */
+    public function getChilds($objectId)
+    {
+        return $this->get('table')->getChilds($objectId);
     }
 
     public function getRecursiveChildren($father_id) {
