@@ -210,7 +210,13 @@ class AmvService extends AbstractService
             $vulnerabilityModelsIds[] = (is_object($model)) ? $model->id : $model;
         }
 
-        return $this->compliesControl($assetMode, $threatMode, $vulnerabilityMode, $assetModelsIds, $threatModelsIds, $vulnerabilityModelsIds, $assetModelsIsRegulator);
+        $result = $this->compliesControl($assetMode, $threatMode, $vulnerabilityMode, $assetModelsIds, $threatModelsIds, $vulnerabilityModelsIds, $assetModelsIsRegulator);
+
+        if (strlen($this->errorMessage)) {
+            throw new \Exception($this->errorMessage, 412);
+        }
+
+        return $result;
     }
 
 
@@ -242,10 +248,11 @@ class AmvService extends AbstractService
             $assetModelsIsRegulator = [$assetModelsIsRegulator];
         }
 
+        $this->errorMessage = '';
+
         if ((!$assetMode) && (!$threatMode) && (!$vulnerabilityMode)) {
             return true;
         } else if (!$assetMode) {
-            throw new \Exception('Asset mode can\'t be null', 412);
             $this->errorMessage = 'Asset mode can\'t be null';
             return false;
         } else  if ($assetMode && $threatMode && $vulnerabilityMode) {
@@ -254,13 +261,11 @@ class AmvService extends AbstractService
                     return true;
                 }
             }
-            throw new \Exception('One model must be common to asset, threat and vulnerability', 412);
             $this->errorMessage = 'One model must be common to asset, threat and vulnerability';
             return false;
         } else {
             foreach ($assetModelsIsRegulator as $modelIsRegulator) {
                 if ($modelIsRegulator) {
-                    throw new \Exception('All asset models must\'nt be regulator', 412);
                     $this->errorMessage = 'All asset models must\'nt be regulator';
                     return false;
                 }
