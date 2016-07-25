@@ -247,6 +247,11 @@ class Module
                     $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
                     return $table;
                 },
+                '\MonarcCore\Model\Entity\Amv' => function($sm){
+                    $amv = new Model\Entity\Amv();
+                    $amv->setDbAdapter($sm->get('\MonarcCore\Model\Db'));
+                    return $amv;
+                },
                 '\MonarcCore\Model\Table\ThreatTable' => function($sm){
                     $table = new Model\Table\ThreatTable($sm->get('\MonarcCore\Model\Db'));
                     $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());

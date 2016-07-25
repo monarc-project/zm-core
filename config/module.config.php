@@ -68,7 +68,6 @@ return array(
             'MonarcCore\Service\AbstractFactory',
         ),*/
         'invokables' => array(
-            'MonarcCore\Model\Entity\Amv'               => 'MonarcCore\Model\Entity\Amv',
             'MonarcCore\Model\Entity\Anr'               => 'MonarcCore\Model\Entity\Anr',
             'MonarcCore\Model\Entity\Guide'             => 'MonarcCore\Model\Entity\Guide',
             'MonarcCore\Model\Entity\GuideItem'         => 'MonarcCore\Model\Entity\GuideItem',
