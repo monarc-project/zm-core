@@ -60,16 +60,17 @@ class ObjectObjectService extends AbstractService
         return $this->get('table')->save($entity);
     }
 
-<<<<<<< HEAD
     /**
      * Get Childs
      *
      * @param $objectId
      * @return mixed
      */
-    public function getChilds($objectId) {
+    public function getChilds($objectId)
+    {
         return $this->get('table')->getChilds($objectId);
-=======
+    }
+
     public function getRecursiveChildren($father_id) {
         /** @var ObjectObjectTable $table */
         $table = $this->get('table');
@@ -99,6 +100,5 @@ class ObjectObjectService extends AbstractService
         }
 
         $this->manageRelativePositionUpdate('father', $entity, $direction);
->>>>>>> 9d74ad411967be33e057512b62ef0bbefc3c8660
     }
 }
