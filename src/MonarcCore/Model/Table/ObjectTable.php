@@ -112,11 +112,29 @@ class ObjectTable extends AbstractEntityTable {
             ->getResult();
 
         return $objects;
+    }
 
-        var_dump($type);
-        var_dump($objectId);
-        var_dump($anrId);
-        die;
+    /**
+     * Find by Anr
+     *
+     * @param $anrId
+     * @return array
+     */
+    public function findByAnr($anrId) {
+        $objects =  $this->getRepository()->createQueryBuilder('o')
+            ->select(array(
+                'o.id', 'o.position',
+                'IDENTITY(o.category) as categoryId',
+                'o.name1', 'o.name2', 'o.name3', 'o.name4',
+                'o.label1', 'o.label2', 'o.label3', 'o.label4'
+            ))
+            ->where('o.type = \'anr\'')
+            ->andWhere('o.anr = :anr')
+            ->setParameter(':anr', $anrId)
+            ->orderBy('o.position')
+            ->getQuery()
+            ->getResult();
 
+        return $objects;
     }
 }
