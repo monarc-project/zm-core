@@ -18,13 +18,15 @@ class UserProfileService extends AbstractService
         unset($data['status']);
 
         $entity = $this->get('table')->getEntity($user['id']);
+        $entity->setDbAdapter($this->get('table')->getDb());
         if(!empty($data['new'])){
-            if(!empty($data['confirm']) && !empty($data['old']) && $data['new'] == $data['old'] && $this->securityService->verifyPwd($data['confirm'],$user->get('password'))){
+            if(!empty($data['confirm']) && !empty($data['old']) && $data['new'] == $data['old'] && $this->get('securityService')->verifyPwd($data['confirm'],$user->get('password'))){
                 $entity->exchangeArray(array('password'=>$data['new']));
             }
         }else{
             $entity->exchangeArray($data);
         }
-        return $this->get('table')->save($entity);
+        $this->get('table')->save($entity);
+        return array('status'=>'ok');
     }
 }

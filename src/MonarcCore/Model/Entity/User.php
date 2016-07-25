@@ -135,29 +135,16 @@ class User extends AbstractEntity
                 'validators' => array(),
             ));
 
+            $validators = array(
+                array('name' => 'EmailAddress'),
+            );
             if (!$partial) {
-                $validators = array(
-                    array('name' => 'EmailAddress'),
-                    array(
-                        /*'name' => 'DoctrineModule\Validator\NoObjectExists',
-                        'options' => array(
-                            'object_repository' => $entityManager->getRepository('\MonarcCore\Model\Table\UserTable'),
-                            'fields' => 'email',
-                            /*'exclude' => array(
-                                'field' => 'id',
-                                'value' => $this->get('id'),
-                            ),
-                        ),*/
-                        'name' => '\MonarcCore\Validator\UniqueEmail',
-                        'options' => array(
-                            'adapter' => $this->getDbAdapter(),
-                            'id' => $this->get('id'),
-                        ),
+                $validators[] = array(
+                    'name' => '\MonarcCore\Validator\UniqueEmail',
+                    'options' => array(
+                        'adapter' => $this->getDbAdapter(),
+                        'id' => $this->get('id'),
                     ),
-                );
-            } else {
-                $validators = array(
-                    array('name' => 'EmailAddress'),
                 );
             }
 
@@ -172,7 +159,7 @@ class User extends AbstractEntity
 
             $this->inputFilter->add(array(
                 'name' => 'role',
-                'required' => ($partial) ? false : true,
+                'required' => false,
             ));
 
             $this->inputFilter->add(array(
