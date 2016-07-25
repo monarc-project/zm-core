@@ -326,6 +326,10 @@ class ObjectService extends AbstractService
 
                 $model = $this->get('modelService')->getEntity($data['modelId']);
 
+                if (!$model['anr']) {
+                    throw new \Exception('No anr associated to this model', 412);
+                }
+                
                 $this->attachObjectToAnr($object, $model['anr']->id);
             }
         } else {
