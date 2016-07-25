@@ -495,6 +495,29 @@ class ObjectService extends AbstractService
         return $id;
     }
 
+    public function getCategoriesLibraryByAnr($anrId) {
+
+        $objects =  $this->get('table')->findByAnr($anrId);
+
+        $categoriesList = [];
+        foreach($objects as $object) {
+            $categoriesList[$object['categoryId']] = $object['categoryId'];
+        }
+
+        $categories = $this->get('categoryTable')->fetchAll();
+
+        foreach ($categories as $key => $category) {
+
+            foreach($objects as $object) {
+                if ($object['categoryId'] == $category['id']) {
+                    $categories[$key]['objects'][] = $object;
+                }
+            }
+        }
+
+        return $categories;
+    }
+
     public function export($data) {
         if (!array_key_exists('password', $data) || empty($data['password'])) {
             throw new \Exception('You must type in a password', 412);

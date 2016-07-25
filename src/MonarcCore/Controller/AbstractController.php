@@ -146,4 +146,39 @@ abstract class AbstractController extends AbstractRestfulController
             }
         }
     }
+
+    /**
+     * Recursive array
+     *
+     * @param $array
+     * @param $parent
+     * @param $level
+     * @return array
+     */
+    public function recursiveArray($array, $parent, $level, $fields)
+    {
+        $recursiveArray = [];
+        foreach ($array AS $node) {
+
+            $parentId = null;
+            if (! is_null($node['parent'])) {
+                $parentId = $node['parent']->id;
+            }
+
+            $nodeArray = [];
+
+            if ($parent == $parentId) {
+                foreach($fields as $field) {
+                    $nodeArray[$field] = $node[$field];
+                }
+                $nodeArray['child'] = $this->recursiveArray($array, $node['id'], ($level + 1), $fields);
+
+            }
+            if (!empty($nodeArray)) {
+                $recursiveArray[] = $nodeArray;
+            }
+        }
+
+        return $recursiveArray;
+    }
 }
