@@ -329,7 +329,7 @@ class ObjectService extends AbstractService
                 if (!$model['anr']) {
                     throw new \Exception('No anr associated to this model', 412);
                 }
-                
+
                 $this->attachObjectToAnr($object, $model['anr']->id);
             }
         } else {
@@ -345,7 +345,8 @@ class ObjectService extends AbstractService
      *
      * @param $id
      * @param $data
-     * @return mixed
+     * @return bool
+     * @throws \Exception
      */
     public function update($id, $data){
 
@@ -376,6 +377,7 @@ class ObjectService extends AbstractService
      * Delete
      *
      * @param $id
+     * @throws \Exception
      */
     public function delete($id) {
 
@@ -397,6 +399,7 @@ class ObjectService extends AbstractService
      *
      * @param $data
      * @return mixed
+     * @throws \Exception
      */
     public function duplicate($data) {
 
@@ -458,6 +461,9 @@ class ObjectService extends AbstractService
      */
     public function attachObjectToAnr($object, $anrId, $parent = null)
     {
+        if (!is_object($object)) {
+            $object = $this->get('table')->getEntity($object);
+        }
 
         $anrObject = clone $object;
         $anrObject->id = null;
@@ -485,6 +491,8 @@ class ObjectService extends AbstractService
             $this->attachObjectToAnr($childObject, $anrId, $id);
 
         }
+
+        return $id;
     }
 
     public function export($data) {
