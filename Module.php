@@ -209,6 +209,7 @@ class Module
                 '\MonarcCore\Model\Table\ObjectTable' => function($sm){
                     $table = new Model\Table\ObjectTable($sm->get('\MonarcCore\Model\Db'));
                     $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
+                    $table->setObjectObjectTable($sm->get('\MonarcCore\Model\Table\ObjectObjectTable'));
                     return $table;
                 },
                 '\MonarcCore\Model\Table\ObjectCategoryTable' => function($sm){

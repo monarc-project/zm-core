@@ -489,6 +489,22 @@ class Object extends AbstractEntity
                     ),
                 ),
             ));
+
+            $this->inputFilter->add(array(
+                'name' => 'mode',
+                'required' => true,
+                'allow_empty' => false,
+                'continue_if_empty' => false,
+                'filters' => array(),
+                'validators' => array(
+                    array(
+                        'name' => 'InArray',
+                        'options' => array(
+                            'haystack' => [0, 1],
+                        ),
+                    ),
+                ),
+            ));
         }
         return $this->inputFilter;
     }

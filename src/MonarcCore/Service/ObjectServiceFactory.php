@@ -9,6 +9,7 @@ class ObjectServiceFactory extends AbstractServiceFactory
         'categoryTable'=> '\MonarcCore\Model\Table\ObjectCategoryTable',
         'rolfTagTable'=> '\MonarcCore\Model\Table\RolfTagTable',
         'entity'=> '\MonarcCore\Model\Entity\Object',
+        'modelService'=> 'MonarcCore\Service\ModelService',
         'objectObjectService'=> 'MonarcCore\Service\ObjectObjectService',
     );
 

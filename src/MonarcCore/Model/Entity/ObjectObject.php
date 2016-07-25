@@ -49,6 +49,13 @@ class ObjectObject extends AbstractEntity
     protected $child;
 
     /**
+     * @var smallint
+     *
+     * @ORM\Column(name="position", type="smallint", options={"unsigned":true, "default":1})
+     */
+    protected $position = '1';
+
+    /**
      * @var string
      *
      * @ORM\Column(name="creator", type="string", length=255, nullable=true)
