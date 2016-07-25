@@ -120,6 +120,18 @@ abstract class AbstractEntityTable
         }
     }
 
+    public function getEntityByFields($fields = array(), $orderBy = array()) {
+        $class = $this->getClass();
+        if (class_exists($class)) {
+            $entity = new $class();
+            $entity->setDbAdapter($this->getDb());
+
+            return $this->getDb()->fetchByFields($entity, $fields, $orderBy);
+        } else {
+            return false;
+        }
+    }
+
     public function save(\MonarcCore\Model\Entity\AbstractEntity $entity)
     {
         if(!empty($this->connectedUser) && isset($this->connectedUser['firstname']) && isset($this->connectedUser['lastname'])){
@@ -202,5 +214,9 @@ abstract class AbstractEntityTable
             ->getResult();
 
         return $maxPosition[0][1];
+    }
+
+    public function getReference($id){
+        return $this->getDb()->getReference($this->getClass(),$id);
     }
 }

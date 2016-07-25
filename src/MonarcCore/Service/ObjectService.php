@@ -1,6 +1,9 @@
 <?php
 namespace MonarcCore\Service;
 use MonarcCore\Model\Entity\Object;
+use MonarcCore\Model\Entity\ObjectRisk;
+use MonarcCore\Model\Table\AmvTable;
+use MonarcCore\Model\Table\ObjectRiskTable;
 
 /**
  * Object Service
@@ -13,9 +16,18 @@ class ObjectService extends AbstractService
     protected $objectObjectService;
     protected $modelService;
 
+    // Must be 16, 24 or 32 characters
+    const SALT = '__$$00_C4535_5M1L3_00$$__XMP0)XW';
+
     protected $assetTable;
     protected $categoryTable;
     protected $rolfTagTable;
+    /** @var AmvTable */
+    protected $amvTable;
+    /** @var ObjectRiskTable */
+    protected $objectRiskTable;
+    /** @var ObjectRisk */
+    protected $riskEntity;
 
     const BDC = 'bdc';
     const ANR = 'anr';
@@ -27,6 +39,8 @@ class ObjectService extends AbstractService
     ];
 
     protected $dependencies = ['asset', 'category', 'rolfTag'];
+
+    protected $forceType = 'bdc';
 
     /**
      * Get List
@@ -51,6 +65,9 @@ class ObjectService extends AbstractService
 
             $filterAnd['category'] = $child;
         }
+        $filterAnd['type'] = $this->forceType;
+        $filterAnd['model'] = null;
+
 
         //retrieve all objects
         $objects = $this->get('table')->fetchAllFiltered(
@@ -69,43 +86,123 @@ class ObjectService extends AbstractService
             $objectsArray[$object['id']] = $object;
         }
 
-        //retrieve link father - child
-        $objectObjectService = $this->get('objectObjectService');
-        $objectsObjects = $objectObjectService->getList($page, $limit, null, null);
-
-        //hierarchy
-        $childHierarchy = [];
-        foreach ($objectsObjects as $objectsObject) {
-            if (!is_null($objectsObject['child'])) {
-                if (array_key_exists($objectsObject['child']->id, $rootArray)) {
-                    unset($rootArray[$objectsObject['child']->id]);
-                }
-            }
-
-            $childHierarchy[] = [
-                'id' => $objectsObject['id'],
-                'father' => $objectsObject['father']->id,
-                'child' => $objectsObject['child']->id,
-            ];
-        }
-
         $newRoot = [];
         foreach($rootArray as $value) {
             $newRoot[] = $value;
         }
 
-        if ($lock == 'true') {
-            return $newRoot;
-        } else {
+        return $newRoot;
+    }
 
-            //recursive
-            $hierarchy = [];
-            foreach ($newRoot as $root) {
-                $hierarchy[] = $this->recursiveChild($hierarchy, $root['id'], $childHierarchy, $objectsArray);
+    public function getEntity($id, $mode = 'bdc') {
+        /** @var Object $entity */
+        $entity = $this->get('table')->getEntity($id);
+        $entity_arr = $entity->getJsonArray();
+
+        // Retrieve children recursively
+        /** @var ObjectObjectService $objectObjectService */
+        $objectObjectService = $this->get('objectObjectService');
+        $entity_arr['children'] = $objectObjectService->getRecursiveChildren($entity_arr['id']);
+
+        // Calculate the risks table
+        $entity_arr['risks'] = $this->buildRisksTable($entity, $mode);
+
+        return $entity_arr;
+    }
+
+    protected function buildRisksTable($entity, $mode) {
+        $output = [];
+
+        // First, get all the AMV links for this object's asset
+        $amvs = $this->amvTable->findByAsset($entity->getAsset()->getId());
+
+        foreach ($amvs as $amv) {
+            $amv_array = $amv->getJsonArray();
+            $this->formatDependencies($amv_array, ['asset', 'threat', 'vulnerability']);
+
+            $c_impact = -1;
+            $i_impact = -1;
+            $d_impact = -1;
+            $prob = null;
+            $qualif = null;
+            $c_risk = null;
+            $i_risk = null;
+            $d_risk = null;
+            $comment = null;
+            $risk_id = null;
+
+            if ($mode == 'anr') {
+                $c_impact = $entity->getC();
+                $i_impact = $entity->getI();
+                $d_impact = $entity->getD();
+
+                // Fetch the risk assessment information from the DB for that AMV link
+                $risk = $this->objectRiskTable->getEntityByFields([ //'anr' => $entity->getAnr() ? $entity->getAnr()->getId() : null,
+                    'object' => $entity->getId(),
+                    'amv' => $amv_array['id'],
+                    'asset' => $amv_array['asset']['id'],
+                    'threat' => $amv_array['threat']['id'],
+                    'vulnerability' => $amv_array['vulnerability']['id']
+                ]);
+
+                if (count($risk) == 1) {
+                    // If we have some info, display them here. Otherwise, we'll only display a placeholder.
+                    $risk = $risk[0];
+                    $risk_id = $risk->getId();
+                    $prob = (string) $risk->getThreatRate();
+                    $qualif = (string) $risk->getVulnerabilityRate();
+                    $comment = $risk->getComment();
+                } else {
+                    // We have NO risk data for this, create the line!
+                    /** @var ObjectRisk $new_risk_entity */
+                    $new_risk_entity = new ObjectRisk();
+                    $new_risk_entity->setAnr($entity->getAnr());
+                    $new_risk_entity->setObject($entity);
+                    $new_risk_entity->setAmv($amv);
+                    $new_risk_entity->setAsset($amv->getAsset());
+                    $new_risk_entity->setThreat($amv->getThreat());
+                    $new_risk_entity->setVulnerability($amv->getVulnerability());
+
+                    $risk_id = $this->get('objectRiskTable')->save($new_risk_entity);
+
+                    $prob = "0";
+                    $qualif = "0";
+                    $comment = '';
+                }
+
+                if ($prob > 0 && $qualif > 0) {
+                    if ($amv_array['threat']['c']) {
+                        $c_risk = $c_impact * $prob * $qualif;
+                    }
+                    if ($amv_array['threat']['i']) {
+                        $i_risk = $c_impact * $prob * $qualif;
+                    }
+                    if ($amv_array['threat']['d']) {
+                        $d_risk = $c_impact * $prob * $qualif;
+                    }
+                }
             }
 
-            return $hierarchy;
+            $output[] = array(
+                'id' => $risk_id,
+                'c_impact' => $c_impact,
+                'i_impact' => $i_impact,
+                'd_impact' => $d_impact,
+                'threatDescription' => $amv_array['threat']['label1'],
+                'threatRate' => $prob,
+                'vulnDescription' => $amv_array['vulnerability']['label1'],
+                'vulnerabilityRate' => $qualif,
+                'c_risk' => $c_risk,
+                'c_risk_enabled' => $amv_array['threat']['c'],
+                'i_risk' => $i_risk,
+                'i_risk_enabled' => $amv_array['threat']['i'],
+                'd_risk' => $d_risk,
+                'd_risk_enabled' => $amv_array['threat']['d'],
+                'comment' => $comment
+            );
         }
+
+        return $output;
     }
 
     /**
@@ -122,6 +219,7 @@ class ObjectService extends AbstractService
         $filterAnd = [];
         if ((!is_null($asset)) && ($asset != 0)) $filterAnd['asset'] = $asset;
         if ((!is_null($category)) && ($category != 0)) $filterAnd['category'] = $category;
+        $filterAnd['type'] = $this->forceType;
 
         return parent::getFilteredCount($page, $limit, $order, $filter, $filterAnd);
     }
@@ -196,6 +294,7 @@ class ObjectService extends AbstractService
         $position = $this->managePositionCreation('category', $data['category'], (int) $data['implicitPosition'], $previous);
         $data['position'] = $position;
         unset($data['implicitPosition']);
+        $data['type'] = $this->forceType;
 
         //create object
         $object = $this->get('entity');
@@ -247,6 +346,10 @@ class ObjectService extends AbstractService
     public function update($id, $data){
 
         $entity = $this->get('table')->getEntity($id);
+        if(!$entity || $entity->get('type') != $this->forceType){
+            throw new \Exception('Entity `id` not found.');
+            return false;
+        }
         $entity->setLanguage($this->getLanguage());
 
         $previous = (array_key_exists('previous', $data)) ? $data['previous'] : null;
@@ -273,6 +376,9 @@ class ObjectService extends AbstractService
     public function delete($id) {
 
         $entity = $this->getEntity($id);
+        if(!$entity || $entity['type'] != $this->forceType){
+            throw new \Exception('Entity `id` not found.');
+        }
 
         $objectCategoryId = $entity['category']->id;
         $position = $entity['position'];
@@ -291,6 +397,10 @@ class ObjectService extends AbstractService
     public function duplicate($data) {
 
         $entity = $this->getEntity($data['id']);
+
+        if(!$entity || $entity['type'] != $this->forceType){
+            throw new \Exception('Entity `id` not found.');
+        }
 
         $keysToRemove = ['id','position', 'creator', 'createdAt', 'updater', 'updatedAt', 'inputFilter', 'language', 'dbadapter', 'parameters'];
 
@@ -317,6 +427,7 @@ class ObjectService extends AbstractService
         return $this->create($entity);
     }
 
+
     /**
      * Instantiate Object To Anr
      *
@@ -341,7 +452,8 @@ class ObjectService extends AbstractService
      * @param $anrId
      * @param null $parent
      */
-    public function attachObjectToAnr($object, $anrId, $parent = null) {
+    public function attachObjectToAnr($object, $anrId, $parent = null)
+    {
 
         $anrObject = clone $object;
         $anrObject->id = null;
@@ -369,5 +481,28 @@ class ObjectService extends AbstractService
             $this->attachObjectToAnr($childObject, $anrId, $id);
 
         }
+    }
+
+    public function export($data) {
+        if (!array_key_exists('password', $data) || empty($data['password'])) {
+            throw new \Exception('You must type in a password', 412);
+        }
+
+        $entity = $this->getEntity($data['id']);
+
+        if (!$entity || $entity['type'] != $this->forceType) {
+            throw new \Exception('Entity `id` not found.');
+        }
+
+        $output = json_encode($entity);
+        return $this->encrypt($output);
+    }
+
+    protected function encrypt($data) {
+        return mcrypt_encrypt(MCRYPT_RIJNDAEL_256, self::SALT, $data, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND));
+    }
+
+    protected function decrypt($data) {
+        return mcrypt_decrypt(MCRYPT_RIJNDAEL_256, self::SALT, $data, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND));
     }
 }

@@ -107,6 +107,13 @@ class User extends AbstractEntity
      */
     protected $updatedAt;
 
+    /**
+     * @var integer
+     *
+     * @ORM\Column(name="language", type="integer", precision=0, scale=0, nullable=false, unique=false)
+     */
+    protected $language;
+
     public function getInputFilter($partial = false){
 
         if (!$this->inputFilter) {
@@ -180,6 +187,17 @@ class User extends AbstractEntity
                             'salt' => $this->getUserSalt(),
                         ),
                     ),
+                ),
+                'validators' => array(),
+            ));
+
+            $this->inputFilter->add(array(
+                'name' => 'language',
+                'allowEmpty' => true,
+                'continueIfEmpty' => true,
+                'required' => false,
+                'filters' => array(
+                    array('name' => 'ToInt',),
                 ),
                 'validators' => array(),
             ));

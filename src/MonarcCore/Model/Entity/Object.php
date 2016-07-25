@@ -262,6 +262,12 @@ class Object extends AbstractEntity
     protected $updatedAt;
 
     /**
+     * @var int
+     * Not mapped to a column - used to determine the actual entity position
+     */
+    protected $implicitPosition;
+
+    /**
      * @return ObjectCategory
      */
     public function getCategory()
@@ -314,6 +320,125 @@ class Object extends AbstractEntity
         $this->rolfTag = $rolfTag;
         return $this;
     }
+
+    /**
+     * @return source
+     */
+    public function getsource()
+    {
+        return $this->source;
+    }
+
+    /**
+     * @param source $source
+     * @return Object
+     */
+    public function setsource($source)
+    {
+        $this->source = $source;
+        return $this;
+    }
+
+    /**
+     * @return model
+     */
+    public function getmodel()
+    {
+        return $this->model;
+    }
+
+    /**
+     * @param model $model
+     * @return Object
+     */
+    public function setmodel($model)
+    {
+        $this->model = $model;
+        return $this;
+    }
+
+    /**
+     * @return smallint
+     */
+    public function getC()
+    {
+        return $this->c;
+    }
+
+    /**
+     * @param smallint $c
+     */
+    public function setC($c)
+    {
+        $this->c = $c;
+    }
+
+    /**
+     * @return smallint
+     */
+    public function getI()
+    {
+        return $this->i;
+    }
+
+    /**
+     * @param smallint $i
+     */
+    public function setI($i)
+    {
+        $this->i = $i;
+    }
+
+    /**
+     * @return smallint
+     */
+    public function getD()
+    {
+        return $this->d;
+    }
+
+    /**
+     * @param smallint $d
+     */
+    public function setD($d)
+    {
+        $this->d = $d;
+    }
+
+    /**
+     * @return int
+     */
+    public function getAnr()
+    {
+        return $this->anr;
+    }
+
+    /**
+     * @param int $anr
+     */
+    public function setAnr($anr)
+    {
+        $this->anr = $anr;
+    }
+
+    /**
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * @param int $id
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
+    }
+
+
+
 
     public function getInputFilter($partial = false){
         if (!$this->inputFilter) {
@@ -368,7 +493,7 @@ class Object extends AbstractEntity
                     array(
                         'name' => 'InArray',
                         'options' => array(
-                            'haystack' => [0, 1],
+                            'haystack' => [-1, 0, 1, 2, 3, 4],
                         ),
                         'default' => 0,
                     ),
@@ -385,7 +510,7 @@ class Object extends AbstractEntity
                     array(
                         'name' => 'InArray',
                         'options' => array(
-                            'haystack' => [0, 1],
+                            'haystack' => [-1, 0, 1, 2, 3, 4],
                         ),
                         'default' => 0,
                     ),
@@ -402,7 +527,7 @@ class Object extends AbstractEntity
                     array(
                         'name' => 'InArray',
                         'options' => array(
-                            'haystack' => [0, 1],
+                            'haystack' => [-1, 0, 1, 2, 3, 4],
                         ),
                         'default' => 0,
                     ),

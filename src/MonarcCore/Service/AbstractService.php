@@ -2,6 +2,8 @@
 namespace MonarcCore\Service;
 
 
+use MonarcCore\Model\Table\ObjectObjectTable;
+
 abstract class AbstractService extends AbstractServiceFactory
 {
     use \MonarcCore\Model\GetAndSet;
@@ -355,7 +357,7 @@ abstract class AbstractService extends AbstractServiceFactory
             if (!empty($value)) {
                 $tableName = preg_replace("/[0-9]/", "", $dependency)  . 'Table';
                 $method = 'set' . ucfirst($dependency);
-                $dependencyEntity = $this->get($tableName)->getEntity($value);
+                $dependencyEntity = $this->get($tableName)->getReference($value);
                 $entity->$method($dependencyEntity);
             }
         }
@@ -454,5 +456,34 @@ abstract class AbstractService extends AbstractServiceFactory
         }
 
         return $position;
+    }
+
+    protected function manageRelativePositionUpdate($field, $entity, $direction) {
+        /** @var ObjectObjectTable $table */
+        $table = $this->get('table');
+
+        if ($direction == 'up') {
+            $entityAbove = $table->getEntityByFields([$field => $entity->$field, 'position' => $entity->position - 1]);
+
+            if (count($entityAbove) == 1) {
+                $entityAbove = $entityAbove[0];
+                $entityAbove->position = $entityAbove->position + 1;
+                $table->save($entityAbove);
+            }
+
+            $entity->position = $entity->position - 1;
+            $table->save($entity);
+        } else if ($direction == 'down') {
+            $entityBelow = $table->getEntityByFields([$field => $entity->$field, 'position' => $entity->position + 1]);
+
+            if (count($entityBelow) == 1) {
+                $entityBelow = $entityBelow[0];
+                $entityBelow->position = $entityBelow->position - 1;
+                $table->save($entityBelow);
+
+                $entity->position = $entity->position + 1;
+                $table->save($entity);
+            }
+        }
     }
 }

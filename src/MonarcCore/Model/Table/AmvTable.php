@@ -3,6 +3,11 @@ namespace MonarcCore\Model\Table;
 
 class AmvTable extends AbstractEntityTable {
 
+    public function findByAsset($asset)
+    {
+        return $this->getEntityByFields(['asset' => $asset]);
+    }
+
     /**
      * Find By AMV
      *

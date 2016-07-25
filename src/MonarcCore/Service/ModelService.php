@@ -28,7 +28,6 @@ class ModelService extends AbstractService
      * @throws \Exception
      */
     public function create($data) {
-
         $entity = $this->get('entity');
         $entity->setLanguage($this->getLanguage());
 
@@ -49,6 +48,12 @@ class ModelService extends AbstractService
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
 
+        // If we reached here, our object is ready to be saved.
+        // If we're the new default model, remove the previous one (if any)
+        if ($data['isDefault']) {
+            $this->resetCurrentDefault();
+        }
+
         return $this->get('table')->save($entity);
     }
 
@@ -60,7 +65,8 @@ class ModelService extends AbstractService
      * @param $context
      * @throws \Exception
      */
-    public function canAcceptObject($modelId, $object, $context) {
+    public function canAcceptObject($modelId, $object, $context)
+    {
 
         //retrieve data
         $data = $this->getEntity($modelId);
@@ -99,7 +105,7 @@ class ModelService extends AbstractService
                                 $authorized = true;
                             } else {
                                 if (!is_null($object->id)) {
-                                    if (count($this->get('objectTable')->findByTypeSourceAnr(ObjectService::ANR, $object->id, $model->anr->id))){
+                                    if (count($this->get('objectTable')->findByTypeSourceAnr(ObjectService::ANR, $object->id, $model->anr->id))) {
                                         $authorized = true;
                                     }
                                 }
@@ -120,5 +126,31 @@ class ModelService extends AbstractService
         if (!$authorized) {
             throw new \Exception('Bad mode for this object or models attached to asset incoherent with this object', 412);
         }
+    }
+
+     /**
+     * Update
+     *
+     * @param $id
+     * @param $data
+     * @return mixed
+     * @throws \Exception
+     */
+    public function update($id, $data){
+        if (array_key_exists('isRegulator', $data) && array_key_exists('isGeneric', $data) &&
+            $data['isRegulator'] && $data['isGeneric']) {
+            throw new \Exception("A regulator model may not be generic", 412);
+        }
+
+        // If we're the new default model, remove the previous one (if any)
+        if ($data['isDefault']) {
+            $this->resetCurrentDefault();
+        }
+
+        parent::update($id, $data);
+    }
+
+    protected function resetCurrentDefault() {
+        $this->get('table')->resetCurrentDefault();
     }
 }

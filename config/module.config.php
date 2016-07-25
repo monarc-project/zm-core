@@ -119,6 +119,7 @@ return array(
             'MonarcCore\Service\VulnerabilityService'   => 'MonarcCore\Service\VulnerabilityServiceFactory',
             'MonarcCore\Service\DocModelService'        => 'MonarcCore\Service\DocModelServiceFactory',
             'MonarcCore\Service\ModelObjectService'     => 'MonarcCore\Service\ModelObjectServiceFactory',
+            'MonarcCore\Service\UserProfileService'     => 'MonarcCore\Service\UserProfileServiceFactory',
         ),
         'shared' => array(
             'MonarcCore\Model\Entity\Scale' => false,

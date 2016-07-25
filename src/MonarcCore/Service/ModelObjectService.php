@@ -12,12 +12,18 @@ use MonarcCore\Model\Entity\Model;
  */
 class ModelObjectService extends AbstractService
 {
-    protected $anrService;
-    protected $anrTable;
+    protected $assetTable;
+    protected $categoryTable;
+    protected $rolfTagTable;
+    protected $sourceTable;
+    protected $modelTable;
+
     protected $filterColumns = array(
         'label1', 'label2', 'label3', 'label4',
         'description1', 'description2', 'description3', 'description4',
     );
+
+    protected $dependencies = ['asset', 'category', 'rolfTag', 'source', 'model'];
 
     /**
      * Create
@@ -27,12 +33,44 @@ class ModelObjectService extends AbstractService
      */
     public function create($data) {
 
-        if(!empty($data['id'])){
-            $obj = $this->get('table')->get($id);
+        if(!empty($data['id']) && !empty($data['model'])){
+            $obj = $this->get('table')->getEntity($data['id']);
             if(!$obj->get('model') && $obj->get('type') == 'bdc'){
-                $data = $obj->getJsonArray();
+                $model = $data['model'];
+                $obj->setDbAdapter($this->get('table')->getDb());
+                $data = $obj->getJsonArray(array(
+                    'anr',
+                    'category',
+                    'asset',
+                    'source',
+                    'rolfTag',
+                    'mode',
+                    'scope',
+                    'name1',
+                    'name2',
+                    'name3',
+                    'name4',
+                    'label1',
+                    'label2',
+                    'label3',
+                    'label4',
+                    'description1',
+                    'description2',
+                    'description3',
+                    'description4',
+                    'c',
+                    'i',
+                    'd',
+                    'position',
+                    'tokenImport',
+                    'originalName',
+                ));
+                $data['category'] = $data['category']->get('id');
+                $data['asset'] = $data['asset']->get('id');
+                $data['rolfTag'] = $data['rolfTag']->get('id');
                 $data['source'] = $obj->get('id');
                 $data['type'] = 'anr';
+                $data['model'] = $model;
                 unset($data['creator']);
                 unset($data['created_at']);
                 unset($data['updater']);
@@ -57,10 +95,10 @@ class ModelObjectService extends AbstractService
      * @return mixed
      * @throws \Exception
      */
-    public function update($id,$idm,$data){
+    public function update($id,$data){
         $entity = $this->get('table')->getEntity($id);
 
-        if($entity->get('model') != $idm || $entity->get('type') != 'anr'){
+        if(empty($data['model']) || $entity->get('model') != $data['model'] || $entity->get('type') != 'anr'){
             throw new \Exception('Entity `id` not found.');
             return false;
         }
@@ -88,7 +126,7 @@ class ModelObjectService extends AbstractService
      * @return bool
      * @throws \Exception
      */
-    public function delete($id,$idm) {
+    public function delete($id/*,$idm*/) {
         $entity = $this->get('table')->getEntity($id);
 
         if($entity->get('model') != $idm || $entity->get('type') != 'anr'){

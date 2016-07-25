@@ -302,6 +302,70 @@ class ObjectRisk extends AbstractEntity
         return $this;
     }
 
+    /**
+     * @return int
+     */
+    public function getAnr()
+    {
+        return $this->anr;
+    }
+
+    /**
+     * @param Anr $anr
+     */
+    public function setAnr($anr)
+    {
+        $this->anr = $anr;
+    }
+
+    /**
+     * @return int
+     */
+    public function getThreatRate()
+    {
+        return $this->threatRate;
+    }
+
+    /**
+     * @param int $threatRate
+     */
+    public function setThreatRate($threatRate)
+    {
+        $this->threatRate = $threatRate;
+    }
+
+    /**
+     * @return int
+     */
+    public function getVulnerabilityRate()
+    {
+        return $this->vulnerabilityRate;
+    }
+
+    /**
+     * @param int $vulnerabilityRate
+     */
+    public function setVulnerabilityRate($vulnerabilityRate)
+    {
+        $this->vulnerabilityRate = $vulnerabilityRate;
+    }
+
+    /**
+     * @return text
+     */
+    public function getComment()
+    {
+        return $this->comment;
+    }
+
+    /**
+     * @param text $comment
+     */
+    public function setComment($comment)
+    {
+        $this->comment = $comment;
+    }
+
     public function getInputFilter($partial = false){
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);
