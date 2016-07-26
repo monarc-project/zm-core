@@ -157,34 +157,6 @@ class Object extends AbstractEntity
     protected $label4;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="description1", type="string", length=255, nullable=true)
-     */
-    protected $description1;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="description2", type="string", length=255, nullable=true)
-     */
-    protected $description2;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="description3", type="string", length=255, nullable=true)
-     */
-    protected $description3;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="description4", type="string", length=255, nullable=true)
-     */
-    protected $description4;
-
-    /**
      * @var decimal
      *
      * @ORM\Column(name="disponibility", type="decimal", options={"unsigned":true, "default":0})
@@ -453,24 +425,6 @@ class Object extends AbstractEntity
                     'name' => $text,
                     'required' => ((strchr($text, (string) $this->getLanguage())) && (!$partial)) ? true : false,
                     'allow_empty' => false,
-                    'filters' => array(
-                        array(
-                            'name' => '\MonarcCore\Filter\SpecAlnum',
-                            'options' => array(
-                                'allow_white_space' => true,
-                            )
-                        ),
-                    ),
-                    'validators' => array(),
-                ));
-            }
-
-            $descriptions = ['description1', 'description2', 'description3', 'description4'];
-            foreach($descriptions as $description) {
-                $this->inputFilter->add(array(
-                    'name' => $description,
-                    'required' => false,
-                    'allow_empty' => true,
                     'filters' => array(
                         array(
                             'name' => '\MonarcCore\Filter\SpecAlnum',
