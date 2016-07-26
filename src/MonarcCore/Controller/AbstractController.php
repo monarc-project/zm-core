@@ -169,7 +169,9 @@ abstract class AbstractController extends AbstractRestfulController
 
             if ($parent == $parentId) {
                 foreach($fields as $field) {
-                    $nodeArray[$field] = $node[$field];
+                    if (array_key_exists($field, $node)) {
+                        $nodeArray[$field] = $node[$field];
+                    }
                 }
                 $nodeArray['child'] = $this->recursiveArray($array, $node['id'], ($level + 1), $fields);
 
