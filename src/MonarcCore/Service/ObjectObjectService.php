@@ -53,7 +53,7 @@ class ObjectObjectService extends AbstractService
             $entity->setChild($childEntity);
         }
 
-        $previous = (array_key_exists('previous', $data)) ? $data['previous'] : null;
+        $previous = (isset($data['previous'])) ? $data['previous'] : null;
         $position = $this->managePositionCreation('father', $data['father'], (int) $data['implicitPosition'], $previous);
         $entity->setPosition($position);
 

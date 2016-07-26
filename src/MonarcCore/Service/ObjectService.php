@@ -283,8 +283,8 @@ class ObjectService extends AbstractService
     public function create($data, $context = self::BACK_OFFICE) {
 
         //position
-        $previous = (array_key_exists('previous', $data)) ? $data['previous'] : null;
-        if (!array_key_exists('implicitPosition', $data)) {
+        $previous = (isset($data['previous'])) ? $data['previous'] : null;
+        if (!isset($data['implicitPosition'])) {
             throw  new \Exception('implicitPosition is missing', 412);
         } else  if ($data['implicitPosition'] == 3) {
             if (!$previous) {
@@ -304,7 +304,7 @@ class ObjectService extends AbstractService
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($object, $dependencies);
 
-        if (array_key_exists('source', $data)) {
+        if (isset($data['source'])) {
             $object->source = $this->get('table')->getEntity($data['source']);
         }
 
@@ -312,7 +312,7 @@ class ObjectService extends AbstractService
         if ($object->mode == self::IS_GENERIC && $object->asset->mode == self::IS_SPECIFIC) {
             throw new \Exception("You can't have a generic object based on a specific asset", 412);
         }
-        if (array_key_exists('modelId', $data)) {
+        if (isset($data['modelId'])) {
             $this->get('modelService')->canAcceptObject($data['modelId'], $object, $context);
         }
 
@@ -322,7 +322,7 @@ class ObjectService extends AbstractService
             $id = $this->get('table')->save($object);
 
             //attach object to anr
-            if (array_key_exists('modelId', $data)) {
+            if (isset($data['modelId'])) {
 
                 $model = $this->get('modelService')->getEntity($data['modelId']);
 
@@ -357,9 +357,9 @@ class ObjectService extends AbstractService
         }
         $entity->setLanguage($this->getLanguage());
 
-        $previous = (array_key_exists('previous', $data)) ? $data['previous'] : null;
+        $previous = (isset($data['previous'])) ? $data['previous'] : null;
 
-        if (array_key_exists('implicitPosition', $data)) {
+        if (isset($data['implicitPosition'])) {
             $data['position'] = $this->managePositionUpdate('category', $entity, $data['category'], $data['implicitPosition'], $previous);
         }
 
@@ -429,7 +429,7 @@ class ObjectService extends AbstractService
             }
         }
 
-        $entity['implicitPosition'] = array_key_exists('implicitPosition', $data) ? $data['implicitPosition'] : 2;
+        $entity['implicitPosition'] = isset($data['implicitPosition']) ? $data['implicitPosition'] : 2;
 
         return $this->create($entity);
     }
@@ -519,7 +519,7 @@ class ObjectService extends AbstractService
     }
 
     public function export($data) {
-        if (!array_key_exists('password', $data) || empty($data['password'])) {
+        if (empty($data['password'])) {
             throw new \Exception('You must type in a password', 412);
         }
 

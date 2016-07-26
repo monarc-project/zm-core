@@ -62,15 +62,15 @@ class ScaleTypeService extends AbstractService
      */
     public function create($data) {
 
-        $previous = (array_key_exists('previous', $data)) ? $data['previous'] : null;
-        $parent = (array_key_exists('scale', $data)) ? $data['scale'] : null;
+        $previous = (isset($data['previous'])) ? $data['previous'] : null;
+        $parent = (isset($data['scale'])) ? $data['scale'] : null;
         $position = $this->managePositionCreation('scale', $parent, (int) $data['implicitPosition'], $previous);
 
         $data['position'] = $position;
-        if (!array_key_exists('isSys', $data)) {
+        if (!isset($data['isSys'])) {
             $data['isSys'] = 0;
         }
-        if (!array_key_exists('type', $data)) {
+        if (!isset($data['type'])) {
             $data['type'] = 9;
         }
 
@@ -95,8 +95,8 @@ class ScaleTypeService extends AbstractService
      */
     public function update($id,$data){
 
-        $previous = (array_key_exists('previous', $data)) ? $data['previous'] : null;
-        $parent = (array_key_exists('scale', $data)) ? $data['scale'] : null;
+        $previous = (isset($data['previous'])) ? $data['previous'] : null;
+        $parent = (isset($data['scale'])) ? $data['scale'] : null;
         $position = $this->managePositionCreation('scale', $parent, (int) $data['implicitPosition'], $previous);
 
         $data['position'] = $position;

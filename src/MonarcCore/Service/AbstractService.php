@@ -306,7 +306,7 @@ abstract class AbstractService extends AbstractServiceFactory
         $entityId = null;
         if (is_object($entity) && (property_exists($entity, 'id'))) {
             $entityId = $entity->id;
-        } else if (is_array($entity) && (array_key_exists('id', $entity))) {
+        } else if (is_array($entity) && (isset($entity['id']))) {
             $entityId = $entity['id'];
         }
         $data = [

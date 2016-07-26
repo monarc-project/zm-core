@@ -38,10 +38,10 @@ class ObjectCategoryService extends AbstractService
 
         $entity = $this->get('entity');
 
-        $previous = (array_key_exists('previous', $data)) ? $data['previous'] : null;
-        $parent = (array_key_exists('parent', $data)) ? $data['parent'] : null;
+        $previous = (isset($data['previous'])) ? $data['previous'] : null;
+        $parent = (isset($data['parent'])) ? $data['parent'] : null;
 
-        if (!array_key_exists('implicitPosition', $data) || empty($data['implicitPosition'])) {
+        if (empty($data['implicitPosition'])) {
             throw new \Exception("You must select a position for your category", 412);
         }
 
@@ -79,10 +79,10 @@ class ObjectCategoryService extends AbstractService
         $entity = $this->get('table')->getEntity($id);
         $entity->setLanguage($this->getLanguage());
 
-        $previous = (array_key_exists('previous', $data)) ? $data['previous'] : null;
-        $parent = (array_key_exists('parent', $data)) ? $data['parent'] : null;
+        $previous = (isset($data['previous'])) ? $data['previous'] : null;
+        $parent = (isset($data['parent'])) ? $data['parent'] : null;
 
-        if (array_key_exists('implicitPosition', $data)) {
+        if (isset($data['implicitPosition'])) {
             $data['position'] = $this->managePositionUpdate('parent', $entity, $parent, $data['implicitPosition'], $previous);
         }
 
@@ -101,7 +101,7 @@ class ObjectCategoryService extends AbstractService
             $entity->setRoot(null);
         }
 
-        if ((! array_key_exists('parent', $data)) || (is_null($data['parent']))) {
+        if (empty($data['parent'])) {
             $entity->setParent(null);
             $entity->setRoot(null);
         }

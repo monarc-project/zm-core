@@ -25,8 +25,8 @@ class GuideItemService extends AbstractService
 
         $entity = $this->get('entity');
 
-        $previous = (array_key_exists('previous', $data)) ? $data['previous'] : null;
-        $guide = (array_key_exists('guide', $data)) ? $data['guide'] : null;
+        $previous = (isset($data['previous'])) ? $data['previous'] : null;
+        $guide = (isset($data['guide'])) ? $data['guide'] : null;
 
         $position = $this->managePositionCreation('guide', $guide, (int) $data['implicitPosition'], $previous);
         $data['position'] = $position;
@@ -47,12 +47,12 @@ class GuideItemService extends AbstractService
      */
     public function update($id,$data){
 
-        $previous = (array_key_exists('previous', $data)) ? $data['previous'] : null;
-        $guide = (array_key_exists('guide', $data)) ? $data['guide'] : null;
+        $previous = (isset($data['previous'])) ? $data['previous'] : null;
+        $guide = (isset($data['guide'])) ? $data['guide'] : null;
 
         $entity = $this->get('table')->getEntity($id);
 
-        if (array_key_exists('implicitPosition', $data)) {
+        if (isset($data['implicitPosition'])) {
             $data['position'] = $this->managePositionUpdate('guide', $entity, $guide, $data['implicitPosition'], $previous);
         }
 
