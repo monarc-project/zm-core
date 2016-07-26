@@ -52,7 +52,7 @@ class ScaleCommentService extends AbstractService
         if (isset($data['scale'])) {
             $scale = $this->get('scaleTable')->getEntity($data['scale']);
             $entity->setScale($scale);
-            if (($scale->type !=1) && (isset($data['scaleTypeImpact']))) {
+            if ($scale->type !=1) {
                 unset($data['scaleTypeImpact']);
             }
         }
@@ -77,7 +77,7 @@ class ScaleCommentService extends AbstractService
         if (isset($data['scale'])) {
             $scale = $this->get('scaleTable')->getEntity($data['scale']);
             $entity->setScale($scale);
-            if (($scale->type !=1) && (isset($data['scaleTypeImpact']))) {
+            if ($scale->type !=1) {
                 unset($data['scaleTypeImpact']);
             }
         }
