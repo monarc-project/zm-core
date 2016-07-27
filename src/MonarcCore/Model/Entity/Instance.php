@@ -126,34 +126,6 @@ class Instance extends AbstractEntity
     protected $label4;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="description1", type="string", length=255, nullable=true)
-     */
-    protected $description1;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="description2", type="string", length=255, nullable=true)
-     */
-    protected $description2;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="description3", type="string", length=255, nullable=true)
-     */
-    protected $description3;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="description4", type="string", length=255, nullable=true)
-     */
-    protected $description4;
-
-    /**
      * @var decimal
      *
      * @ORM\Column(name="disponibility", type="decimal", options={"unsigned":true, "default":0})

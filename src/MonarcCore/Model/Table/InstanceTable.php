@@ -65,8 +65,7 @@ class InstanceTable extends AbstractEntityTable {
                 'i.id', 'i.level', 'IDENTITY(i.parent) as parentId',
                 'i.c', 'i.i', 'i.d', 'i.ch', 'i.ih', 'i.dh',
                 'i.name1', 'i.name2', 'i.name3', 'i.name4',
-                'i.label1', 'i.label2', 'i.label3', 'i.label4',
-                'i.description1', 'i.description2', 'i.description3', 'i.description4'
+                'i.label1', 'i.label2', 'i.label3', 'i.label4'
             ))
             ->where('i.anr = :anrId')
             ->setParameter(':anrId', $anrId)

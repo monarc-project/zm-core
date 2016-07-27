@@ -15,8 +15,7 @@ class InstanceService extends AbstractService
     protected $dependencies = array('asset', 'object');
 
     protected $filterColumns = array(
-        'label1', 'label2', 'label3', 'label4',
-        'description1', 'description2', 'description3', 'description4',
+        'label1', 'label2', 'label3', 'label4'
     );
 
     protected $anrTable;
@@ -42,7 +41,6 @@ class InstanceService extends AbstractService
         $commonProperties = [
             'name1', 'name2', 'name3', 'name4',
             'label1', 'label2', 'label3', 'label4',
-            'description1', 'description2', 'description3', 'description4',
             'c', 'i', 'd'
         ];
 
