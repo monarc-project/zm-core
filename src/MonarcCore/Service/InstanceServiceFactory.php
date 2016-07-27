@@ -9,5 +9,6 @@ class InstanceServiceFactory extends AbstractServiceFactory
         'anrTable' => 'MonarcCore\Model\Table\AnrTable',
         'assetTable' => 'MonarcCore\Model\Table\AssetTable',
         'objectTable' => 'MonarcCore\Model\Table\ObjectTable',
+        'objectObjectService' => 'MonarcCore\Service\ObjectObjectService',
     );
 }

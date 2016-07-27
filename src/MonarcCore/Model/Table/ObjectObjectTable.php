@@ -9,9 +9,9 @@ class ObjectObjectTable extends AbstractEntityTable {
      * @param $objectId
      * @return array
      */
-    public function getChilds($objectId) {
+    public function getChildren($objectId) {
         $child = $this->getRepository()->createQueryBuilder('o')
-            ->select(array('IDENTITY(o.child) as childId'))
+            ->select(array('IDENTITY(o.child) as childId', 'o.position'))
             ->where('o.father = :father')
             ->setParameter(':father', $objectId)
             ->getQuery()

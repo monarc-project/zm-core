@@ -344,6 +344,24 @@ class Instance extends AbstractEntity
         return $this;
     }
 
+    /**
+     * @return smallint
+     */
+    public function getLevel()
+    {
+        return $this->level;
+    }
+
+    /**
+     * @param smallint $level
+     * @return Instance
+     */
+    public function setLevel($level)
+    {
+        $this->level = $level;
+        return $this;
+    }
+
     public function getInputFilter($partial = false){
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);

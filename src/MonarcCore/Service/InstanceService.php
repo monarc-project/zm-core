@@ -1,8 +1,8 @@
 <?php
 namespace MonarcCore\Service;
+use MonarcCore\Model\Entity\Instance;
+use MonarcCore\Model\Table\InstanceTable;
 
-use MonarcCore\Model\Table\ModelTable;
-use MonarcCore\Model\Entity\Model;
 
 /**
  * Instance Service
@@ -21,6 +21,11 @@ class InstanceService extends AbstractService
     protected $anrTable;
     protected $assetTable;
     protected $objectTable;
+    protected $objectObjectService;
+
+    const LEVEL_ROOT    = 1; //instance de racine d'un objet
+    const LEVEL_LEAF    = 2; //instance d'une feuille d'un objet
+    const LEVEL_INTER   = 3; //instance d'une noeud intermédiaire d'un objet
 
     /**
      * Instantiate Object To Anr
@@ -35,6 +40,9 @@ class InstanceService extends AbstractService
         if ($position == 0) {
             $position = 1;
         }
+
+        /** @var InstanceTable $table */
+        $table = $this->get('table');
 
         $object = $this->get('objectTable')->getEntity($objectId);
 
@@ -60,7 +68,9 @@ class InstanceService extends AbstractService
         }
 
         //create object
-        $instance = $this->get('entity');
+        $class = $this->get('entity');
+        $instance = new $class();
+        $instance->setLanguage($this->getLanguage());
         $instance->exchangeArray($data);
 
         //entity dependencies
@@ -68,9 +78,8 @@ class InstanceService extends AbstractService
         $this->setDependencies($instance, $dependencies);
 
         //parent and root
-        $parentValue = $instance->get('parent');
-        if (!empty($parentValue)) {
-            $parentEntity = $this->get('table')->getEntity($parentValue);
+        if ($parentId) {
+            $parentEntity = $table->getEntity($parentId);
             $instance->setParent($parentEntity);
 
             $rootEntity = $this->getRoot($instance);
@@ -80,7 +89,25 @@ class InstanceService extends AbstractService
             $instance->setRoot(null);
         }
 
-        $this->get('table')->createInstanceToAnr($instance, $anrId, $parentId, $position);
+        //retrieve children
+        /** @var ObjectObjectService $objectObjectService */
+        $objectObjectService = $this->get('objectObjectService');
+        $children = $objectObjectService->getChildren($objectId);
+
+        //level
+        if (!$parentId) {
+            $instance->setLevel(self::LEVEL_ROOT);
+        } else if (!count($children)) {
+            $instance->setLevel(self::LEVEL_LEAF);
+        } else {
+            $instance->setLevel(self::LEVEL_INTER);
+        }
+
+        $id = $table->createInstanceToAnr($instance, $anrId, $parentId, $position);
+
+        foreach($children as $child) {
+            $this->instantiateObjectToAnr($anrId, $child->child->id, $id, $child->position);
+        }
     }
 
     /**

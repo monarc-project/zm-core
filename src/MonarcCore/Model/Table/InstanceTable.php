@@ -4,12 +4,13 @@ namespace MonarcCore\Model\Table;
 class InstanceTable extends AbstractEntityTable {
 
     /**
-     * Create instance to anr
+     * Create instance to Anr
      *
      * @param $instance
      * @param $anrId
      * @param $parentId
      * @param $position
+     * @return null
      * @throws Exception
      */
     public function createInstanceToAnr($instance, $anrId, $parentId, $position) {
@@ -21,9 +22,11 @@ class InstanceTable extends AbstractEntityTable {
             $this->shiftPositionFromPosition($anrId, $parentId, $position);
 
             //create instance
-            $this->save($instance);
+            $id = $this->save($instance);
 
             $this->getDb()->commit();
+
+            return $id;
         } catch (Exception $e) {
             $this->getDb()->rollBack();
             throw $e;
