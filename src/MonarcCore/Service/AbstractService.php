@@ -237,18 +237,18 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     public function compareEntities($newEntity, $oldEntity){
 
-        $exceptions = ['creator', 'created_at', 'updater', 'updated_at', 'inputFilter'];
+        $exceptions = ['creator', 'created_at', 'updater', 'updated_at', 'inputFilter', 'dbadapter', 'parameters', 'language'];
 
         $diff = [];
         foreach ($newEntity->getArrayCopy() as $key => $value) {
             if (!in_array($key, $exceptions)) {
-                if (in_array($key, $this->dependencies)) {
-                    if (($oldEntity->$key != null) && ($oldEntity->$key->id != $value)) {
-                        $diff[] = $key . ': ' . $oldEntity->$key->id . ' => ' . $value;
+                if (in_array($key, $this->dependencies) && is_object($oldEntity->get($key))) {
+                    if (($oldEntity->get($key) != null) && ($oldEntity->get($key)->get('id') != $value)) {
+                        $diff[] = $key . ': ' . $oldEntity->get($key)->get('id') . ' => ' . $value;
                     }
                 } else {
-                    if (($oldEntity->$key != null) && ($oldEntity->$key->id != $value)) {
-                        $diff[] = $key . ': ' . $oldEntity->$key . ' => ' . $value;
+                    if (($oldEntity->get($key) != null) && ($oldEntity->get($key) != $value)) {
+                        $diff[] = $key . ': ' . $oldEntity->get($key) . ' => ' . $value;
                     }
                 }
             }
