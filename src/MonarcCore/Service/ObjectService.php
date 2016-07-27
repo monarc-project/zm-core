@@ -434,24 +434,6 @@ class ObjectService extends AbstractService
         return $this->create($entity);
     }
 
-
-    /**
-     * Instantiate Object To Anr
-     *
-     * @param $anrId
-     * @param $objectId
-     * @param $parentId
-     * @param $position
-     */
-    public function instantiateObjectToAnr($anrId, $objectId, $parentId, $position) {
-
-        if ($position == 0) {
-            $position = 1;
-        }
-        $this->get('table')->instantiateObjectToAnr($anrId, $objectId, $parentId, $position);
-    }
-
-
     /**
      * Attach object to Anr
      *
@@ -495,27 +477,47 @@ class ObjectService extends AbstractService
         return $id;
     }
 
+    /**
+     * Get Categories Library By Anr
+     *
+     * @param $anrId
+     * @return mixed
+     */
     public function getCategoriesLibraryByAnr($anrId) {
 
         $objects =  $this->get('table')->findByAnr($anrId);
 
-        $categoriesList = [];
-        foreach($objects as $object) {
-            $categoriesList[$object['categoryId']] = $object['categoryId'];
+        //retrieve objects categories
+        $objectsCategoriesIds = [];
+        foreach ($objects as $object) {
+            $objectsCategoriesIds[$object['categoryId']] = $object['categoryId'];
         }
 
-        $categories = $this->get('categoryTable')->fetchAll();
+        if ($objectsCategoriesIds) {
 
-        foreach ($categories as $key => $category) {
+            $rootCategories = $this->get('categoryTable')->getRootCategories($objectsCategoriesIds);
 
-            foreach($objects as $object) {
-                if ($object['categoryId'] == $category['id']) {
-                    $categories[$key]['objects'][] = $object;
+            foreach ($rootCategories as $key => $rootCategory) {
+                if (!is_null($rootCategory['rootId'])) {
+                    $rootCategories[$key] = $rootCategory['rootId'];
+                } else {
+                    unset($rootCategories[$key]);
                 }
             }
-        }
 
-        return $categories;
+            $categories = $this->get('categoryTable')->getByRootsOrIds($rootCategories, array_merge($objectsCategoriesIds, $rootCategories));
+            foreach ($categories as $key => $category) {
+                foreach ($objects as $object) {
+                    if ($object['categoryId'] == $category['id']) {
+                        $categories[$key]['objects'][] = $object;
+                    }
+                }
+            }
+
+            return $categories;
+        } else {
+            return [];
+        }
     }
 
     public function export($data) {

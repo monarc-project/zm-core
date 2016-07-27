@@ -65,32 +65,6 @@ class ObjectTable extends AbstractEntityTable {
     }
 
     /**
-     * Instantiate Object To Anr
-     *
-     * @param $anrId
-     * @param $objectId
-     * @param $parentId
-     * @param $position
-     * @throws Exception
-     */
-    public function instantiateObjectToAnr($anrId, $objectId, $parentId, $position) {
-
-        $this->getDb()->beginTransaction();
-
-        try {
-
-            $this->getObjectObjectTable()->shiftPositionFromPosition($anrId, $parentId, $position); //change position other
-            //create object
-            //specifi position object
-
-            $this->getDb()->commit();
-        } catch (Exception $e) {
-            $this->getDb()->rollBack();
-            throw $e;
-        }
-    }
-
-    /**
      * Find by type, source and anr
      *
      * @param $type
@@ -131,7 +105,7 @@ class ObjectTable extends AbstractEntityTable {
             ->where('o.type = \'anr\'')
             ->andWhere('o.anr = :anr')
             ->setParameter(':anr', $anrId)
-            ->orderBy('o.position')
+            ->orderBy('o.position', 'ASC')
             ->getQuery()
             ->getResult();
 

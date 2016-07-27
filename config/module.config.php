@@ -96,6 +96,7 @@ return array(
             'MonarcCore\Service\GuideItemService'       => 'MonarcCore\Service\GuideItemServiceFactory',
             'MonarcCore\Service\HistoricalService'      => 'MonarcCore\Service\HistoricalServiceFactory',
             'MonarcCore\Service\IndexService'           => 'MonarcCore\Service\IndexServiceFactory',
+            'MonarcCore\Service\InstanceService'        => 'MonarcCore\Service\InstanceServiceFactory',
             'MonarcCore\Service\MailService'            => 'MonarcCore\Service\MailServiceFactory',
             'MonarcCore\Service\MeasureService'         => 'MonarcCore\Service\MeasureServiceFactory',
             'MonarcCore\Service\ModelService'           => 'MonarcCore\Service\ModelServiceFactory',
