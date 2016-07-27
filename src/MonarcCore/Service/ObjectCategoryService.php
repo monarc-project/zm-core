@@ -143,18 +143,4 @@ class ObjectCategoryService extends AbstractService
 
         $this->get('table')->delete($id);
     }
-
-    /**
-     * Get root
-     *
-     * @param $entity
-     * @return mixed
-     */
-    public function getRoot($entity) {
-        if (!is_null($entity->getParent())) {
-            return $this->getRoot($entity->getParent());
-        } else {
-            return $entity;
-        }
-    }
 }

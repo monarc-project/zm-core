@@ -66,9 +66,12 @@ class ObjectObjectService extends AbstractService
      * @param $objectId
      * @return mixed
      */
-    public function getChilds($objectId)
+    public function getChildren($objectId)
     {
-        return $this->get('table')->getChilds($objectId);
+        /** @var ObjectObjectTable $table */
+        $table = $this->get('table');
+
+        return $table->getEntityByFields(array('father' => $objectId), array('position' => 'ASC'));
     }
 
     public function getRecursiveChildren($father_id) {
@@ -81,9 +84,9 @@ class ObjectObjectService extends AbstractService
         foreach ($children as $child) {
             /** @var ObjectObject $child */
             $child_array = $child->getJsonArray();
-            $child_array['children'] = $this->getRecursiveChildren($child_array['child']);
 
             $object_child = $this->get('objectTable')->get($child_array['child']);
+            $object_child['children'] = $this->getRecursiveChildren($child_array['child']);
             $object_child['component_link_id'] = $child_array['id'];
             $array_children[] = $object_child;
         }

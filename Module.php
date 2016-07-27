@@ -109,6 +109,12 @@ class Module
                     $entity->setLanguage($this->getDefaultLanguage($sm));
                     return $entity;
                 },
+                '\MonarcCore\Model\Entity\Country' => function($sm){
+                    $entity = new Model\Entity\Country();
+                    $entity->setDbAdapter($sm->get('\MonarcCore\Model\Db'));
+                    $entity->setLanguage($this->getDefaultLanguage($sm));
+                    return $entity;
+                },
                 '\MonarcCore\Model\Entity\Measure' => function($sm){
                     $entity = new Model\Entity\Measure();
                     $entity->setDbAdapter($sm->get('\MonarcCore\Model\Db'));
@@ -122,6 +128,11 @@ class Module
                 },
                 '\MonarcCore\Model\Entity\Object' => function($sm){
                     $entity = new Model\Entity\Object();
+                    $entity->setLanguage($this->getDefaultLanguage($sm));
+                    return $entity;
+                },
+                '\MonarcCore\Model\Entity\Instance' => function($sm){
+                    $entity = new Model\Entity\Instance();
                     $entity->setLanguage($this->getDefaultLanguage($sm));
                     return $entity;
                 },
@@ -191,6 +202,11 @@ class Module
                     $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
                     return $table;
                 },
+                '\MonarcCore\Model\Table\CountryTable' => function($sm){
+                    $table = new Model\Table\CountryTable($sm->get('\MonarcCore\Model\Db'));
+                    $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
+                    return $table;
+                },
                 '\MonarcCore\Model\Table\GuideTable' => function($sm){
                     $table = new Model\Table\GuideTable($sm->get('\MonarcCore\Model\Db'));
                     $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
@@ -210,6 +226,11 @@ class Module
                     $table = new Model\Table\ObjectTable($sm->get('\MonarcCore\Model\Db'));
                     $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
                     $table->setObjectObjectTable($sm->get('\MonarcCore\Model\Table\ObjectObjectTable'));
+                    return $table;
+                },
+                '\MonarcCore\Model\Table\InstanceTable' => function($sm){
+                    $table = new Model\Table\InstanceTable($sm->get('\MonarcCore\Model\Db'));
+                    $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
                     return $table;
                 },
                 '\MonarcCore\Model\Table\ObjectCategoryTable' => function($sm){

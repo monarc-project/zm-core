@@ -148,12 +148,14 @@ abstract class AbstractController extends AbstractRestfulController
     }
 
     /**
-     * Recursive array
+     * recursive array
      *
      * @param $array
      * @param $parent
      * @param $level
+     * @param $fields
      * @return array
+     * @throws \Exception
      */
     public function recursiveArray($array, $parent, $level, $fields)
     {
@@ -161,8 +163,16 @@ abstract class AbstractController extends AbstractRestfulController
         foreach ($array AS $node) {
 
             $parentId = null;
-            if (! is_null($node['parent'])) {
-                $parentId = $node['parent']->id;
+            if (array_key_exists('parent', $node)) {
+                if (!is_null($node['parent'])) {
+                    $parentId = $node['parent']->id;
+                }
+            } else if (array_key_exists('parentId', $node)) {
+                if (!is_null($node['parentId'])) {
+                    $parentId = $node['parentId'];
+                }
+            } else {
+                throw new \Exception('Parent missing', 412);
             }
 
             $nodeArray = [];
@@ -173,7 +183,10 @@ abstract class AbstractController extends AbstractRestfulController
                         $nodeArray[$field] = $node[$field];
                     }
                 }
-                $nodeArray['child'] = $this->recursiveArray($array, $node['id'], ($level + 1), $fields);
+                $child = $this->recursiveArray($array, $node['id'], ($level + 1), $fields);
+                if ($child) {
+                    $nodeArray['child'] = $child;
+                }
 
             }
             if (!empty($nodeArray)) {
