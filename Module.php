@@ -109,6 +109,12 @@ class Module
                     $entity->setLanguage($this->getDefaultLanguage($sm));
                     return $entity;
                 },
+                '\MonarcCore\Model\Entity\Country' => function($sm){
+                    $entity = new Model\Entity\Country();
+                    $entity->setDbAdapter($sm->get('\MonarcCore\Model\Db'));
+                    $entity->setLanguage($this->getDefaultLanguage($sm));
+                    return $entity;
+                },
                 '\MonarcCore\Model\Entity\Measure' => function($sm){
                     $entity = new Model\Entity\Measure();
                     $entity->setDbAdapter($sm->get('\MonarcCore\Model\Db'));
@@ -193,6 +199,11 @@ class Module
                 },
                 '\MonarcCore\Model\Table\AnrTable' => function($sm){
                     $table = new Model\Table\AnrTable($sm->get('\MonarcCore\Model\Db'));
+                    $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
+                    return $table;
+                },
+                '\MonarcCore\Model\Table\CountryTable' => function($sm){
+                    $table = new Model\Table\CountryTable($sm->get('\MonarcCore\Model\Db'));
                     $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
                     return $table;
                 },

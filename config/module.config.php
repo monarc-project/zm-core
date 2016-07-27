@@ -92,6 +92,7 @@ return array(
             'MonarcCore\Service\AssetService'           => 'MonarcCore\Service\AssetServiceFactory',
             'MonarcCore\Service\AuthenticationService'  => 'MonarcCore\Service\AuthenticationServiceFactory',
             'MonarcCore\Service\ConfigService'          => 'MonarcCore\Service\ConfigServiceFactory',
+            'MonarcCore\Service\CountryService'         => 'MonarcCore\Service\CountryServiceFactory',
             'MonarcCore\Service\GuideService'           => 'MonarcCore\Service\GuideServiceFactory',
             'MonarcCore\Service\GuideItemService'       => 'MonarcCore\Service\GuideItemServiceFactory',
             'MonarcCore\Service\HistoricalService'      => 'MonarcCore\Service\HistoricalServiceFactory',
