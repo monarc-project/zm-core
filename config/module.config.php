@@ -161,4 +161,20 @@ return array(
         'name' => 'Cases',
         'mail' => 'info@cases.lu',
     ],
+
+    'defaultLanguageIndex' => 1,
+    'languages' => array(
+        'fr' => array(
+            'index' => 1,
+            'label' => 'Français'
+        ),
+        'en' => array(
+            'index' => 2,
+            'label' => 'English'
+        ),
+        'de' => array(
+            'index' => 3,
+            'label' => 'Deutsch'
+        ),
+    ),
 );
