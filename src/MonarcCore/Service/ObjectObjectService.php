@@ -28,34 +28,41 @@ class ObjectObjectService extends AbstractService
             throw new \Exception("You cannot add yourself as a component", 412);
         }
 
+        /** @var ObjectTable $objectTable */
+        $objectTable = $this->objectTable;
+
         // Ensure that we're not trying to add a specific item if the father is generic
-        $father = $this->objectTable->get($data['father']);
-        $child = $this->objectTable->get($data['child']);
+        $father = $objectTable->get($data['father']);
+        $child = $objectTable->get($data['child']);
 
         if ($father['mode'] == self::IS_GENERIC && $child['mode'] == self::IS_SPECIFIC) {
             throw new \Exception("You cannot add a specific object to a generic parent", 412);
         }
 
+        /** @var ObjectObject $entity */
         $class = $this->get('entity');
         $entity = new $class();
-
         $entity->exchangeArray($data);
 
         $fatherValue = $entity->get('father');
         if (!empty($fatherValue)) {
-            $fatherEntity = $this->get('objectTable')->getEntity($fatherValue);
+            $fatherEntity = $objectTable->getEntity($fatherValue);
             $entity->setFather($fatherEntity);
         }
 
         $childValue = $entity->get('child');
         if (!empty($childValue)) {
-            $childEntity = $this->get('objectTable')->getEntity($childValue);
+            $childEntity = $objectTable->getEntity($childValue);
             $entity->setChild($childEntity);
         }
 
-        $previous = (isset($data['previous'])) ? $data['previous'] : null;
-        $position = $this->managePositionCreation('father', $data['father'], (int) $data['implicitPosition'], $previous);
-        $entity->setPosition($position);
+        if (array_key_exists('implicitPosition', $data)) {
+            $previous = (isset($data['previous'])) ? $data['previous'] : null;
+            $position = $this->managePositionCreation('father', $data['father'], (int) $data['implicitPosition'], $previous);
+            $entity->setPosition($position);
+        } else if (array_key_exists('position', $data)) {
+            $entity->setPosition((int) $data['position']);
+        }
 
         return $this->get('table')->save($entity);
     }

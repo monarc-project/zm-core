@@ -4,6 +4,7 @@ use MonarcCore\Model\Entity\Object;
 use MonarcCore\Model\Entity\ObjectRisk;
 use MonarcCore\Model\Table\AmvTable;
 use MonarcCore\Model\Table\ObjectRiskTable;
+use MonarcCore\Model\Table\ObjectTable;
 
 /**
  * Object Service
@@ -435,16 +436,28 @@ class ObjectService extends AbstractService
     }
 
     /**
-     * Attach object to Anr
+     * Attach Object To Anr
      *
      * @param $object
      * @param $anrId
      * @param null $parent
+     * @return null
+     * @throws \Exception
      */
-    public function attachObjectToAnr($object, $anrId, $parent = null)
+    public function attachObjectToAnr($object, $anrId, $parent = null, $objectObjectPosition = null)
     {
+        //object
+        /** @var ObjectTable $table */
+        $table = $this->get('table');
+
         if (!is_object($object)) {
-            $object = $this->get('table')->getEntity($object);
+            $object = $table->getEntity($object);
+        }
+
+        //verify object not exist to anr
+        $existingObjectsToAnr = $table->getEntityByFields(array('source' => $object->id, 'anr' => $anrId, 'type' => self::ANR));
+        if (count($existingObjectsToAnr)) {
+            throw new \Exception('This object already exist to anr', 412);
         }
 
         $anrObject = clone $object;
@@ -453,25 +466,32 @@ class ObjectService extends AbstractService
         $anrObject->anr = $anrId;
         $anrObject->source = $this->get('table')->getEntity($object->id);
 
-        $id = $this->get('table')->save($anrObject);
+        $id = $table->save($anrObject);
 
+        //parent
+        /** @var ObjectObjectService $objectObjectService */
+        $objectObjectService = $this->get('objectObjectService');
         if ($parent) {
             $data = [
                 'anr' => $anrId,
                 'father' => $parent,
                 'child' => $id,
             ];
-            $this->get('objectObjectService')->create($data);
+
+            if ($objectObjectPosition) {
+                $data['position'] = $objectObjectPosition;
+            }
+
+            $objectObjectService->create($data);
         }
 
-        //retrieve children
-        /** @var ObjectObjectService $objectObjectService */
-        $children = $this->get('objectObjectService')->getChildren($object->id);
+        //children
+        $children = $objectObjectService->getChildren($object->id);
         foreach ($children as $child) {
 
-            $childObject = $this->get('table')->getEntity($child->child->id);
+            $childEntity = $table->getEntity($child->child->id);
 
-            $this->attachObjectToAnr($childObject, $anrId, $id);
+            $this->attachObjectToAnr($childEntity, $anrId, $id, $child->position);
 
         }
 
