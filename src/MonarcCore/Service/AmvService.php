@@ -85,6 +85,7 @@ class AmvService extends AbstractService
     public function update($id, $data){
 
         $entity = $this->get('table')->getEntity($id);
+        $entity->setDbAdapter($this->get('table')->getDb());
 
         //clone current entity for retrieve difference with new
         $oldEntity = clone $entity;
