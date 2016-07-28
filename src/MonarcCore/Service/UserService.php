@@ -178,7 +178,7 @@ class UserService extends AbstractService
         $user['role'] = array();
         if(!empty($roles)){
             foreach($roles as $r){
-                $user['role'][$r->get('role')] = $r->get('role');
+                $user['role'][] = $r->get('role');
             }
         }
         return $user;
