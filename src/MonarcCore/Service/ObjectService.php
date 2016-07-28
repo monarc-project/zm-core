@@ -4,6 +4,7 @@ use MonarcCore\Model\Entity\Object;
 use MonarcCore\Model\Entity\ObjectRisk;
 use MonarcCore\Model\Table\AmvTable;
 use MonarcCore\Model\Table\ObjectRiskTable;
+use MonarcCore\Model\Table\ObjectTable;
 
 /**
  * Object Service
@@ -435,16 +436,22 @@ class ObjectService extends AbstractService
     }
 
     /**
-     * Attach object to Anr
+     * Attach Object To Anr
      *
      * @param $object
      * @param $anrId
      * @param null $parent
+     * @return null
+     * @throws \Exception
      */
     public function attachObjectToAnr($object, $anrId, $parent = null)
     {
+        //object
+        /** @var ObjectTable $table */
+        $table = $this->get('table');
+
         if (!is_object($object)) {
-            $object = $this->get('table')->getEntity($object);
+            $object = $table->getEntity($object);
         }
 
         $anrObject = clone $object;
@@ -453,23 +460,26 @@ class ObjectService extends AbstractService
         $anrObject->anr = $anrId;
         $anrObject->source = $this->get('table')->getEntity($object->id);
 
-        $id = $this->get('table')->save($anrObject);
+        $id = $table->save($anrObject);
 
+        //parent
+        /** @var ObjectObjectService $objectObjectService */
+        $objectObjectService = $this->get('objectObjectService');
         if ($parent) {
             $data = [
                 'anr' => $anrId,
                 'father' => $parent,
                 'child' => $id,
             ];
-            $this->get('objectObjectService')->create($data);
+
+            $objectObjectService->create($data);
         }
 
-        //retrieve children
-        /** @var ObjectObjectService $objectObjectService */
-        $children = $this->get('objectObjectService')->getChildren($object->id);
+        //children
+        $children = $objectObjectService->getChildren($object->id);
         foreach ($children as $child) {
 
-            $childObject = $this->get('table')->getEntity($child->child->id);
+            $childObject = $table->getEntity($child->child->id);
 
             $this->attachObjectToAnr($childObject, $anrId, $id);
 

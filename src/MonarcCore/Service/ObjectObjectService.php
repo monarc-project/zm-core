@@ -38,7 +38,6 @@ class ObjectObjectService extends AbstractService
 
         $class = $this->get('entity');
         $entity = new $class();
-
         $entity->exchangeArray($data);
 
         $fatherValue = $entity->get('father');
@@ -53,9 +52,11 @@ class ObjectObjectService extends AbstractService
             $entity->setChild($childEntity);
         }
 
-        $previous = (isset($data['previous'])) ? $data['previous'] : null;
-        $position = $this->managePositionCreation('father', $data['father'], (int) $data['implicitPosition'], $previous);
-        $entity->setPosition($position);
+        if (array_key_exists('position', $data)) {
+            $previous = (isset($data['previous'])) ? $data['previous'] : null;
+            $position = $this->managePositionCreation('father', $data['father'], (int)$data['implicitPosition'], $previous);
+            $entity->setPosition($position);
+        }
 
         return $this->get('table')->save($entity);
     }
