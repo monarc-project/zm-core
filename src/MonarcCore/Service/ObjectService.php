@@ -444,7 +444,7 @@ class ObjectService extends AbstractService
      * @return null
      * @throws \Exception
      */
-    public function attachObjectToAnr($object, $anrId, $parent = null)
+    public function attachObjectToAnr($object, $anrId, $parent = null, $objectObjectPosition = null)
     {
         //object
         /** @var ObjectTable $table */
@@ -452,6 +452,12 @@ class ObjectService extends AbstractService
 
         if (!is_object($object)) {
             $object = $table->getEntity($object);
+        }
+
+        //verify object not exist to anr
+        $existingObjectsToAnr = $table->getEntityByFields(array('source' => $object->id, 'anr' => $anrId, 'type' => self::ANR));
+        if (count($existingObjectsToAnr)) {
+            throw new \Exception('This object already exist to anr', 412);
         }
 
         $anrObject = clone $object;
@@ -472,6 +478,10 @@ class ObjectService extends AbstractService
                 'child' => $id,
             ];
 
+            if ($objectObjectPosition) {
+                $data['position'] = $objectObjectPosition;
+            }
+
             $objectObjectService->create($data);
         }
 
@@ -479,9 +489,9 @@ class ObjectService extends AbstractService
         $children = $objectObjectService->getChildren($object->id);
         foreach ($children as $child) {
 
-            $childObject = $table->getEntity($child->child->id);
+            $childEntity = $table->getEntity($child->child->id);
 
-            $this->attachObjectToAnr($childObject, $anrId, $id);
+            $this->attachObjectToAnr($childEntity, $anrId, $id, $child->position);
 
         }
 
