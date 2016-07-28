@@ -84,7 +84,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
         }
         $options = $filter->getValues();
         foreach($options as $k => $v){
-            if (!is_null($v)) {
+            if (!is_null($v) && $this->__isset($k)) {
                 $this->set($k, $v);
             }
         }
