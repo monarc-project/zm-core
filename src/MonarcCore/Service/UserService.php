@@ -58,7 +58,7 @@ class UserService extends AbstractService
         $data['status'] = 1;
 
         if(empty($data['language'])){
-            $data['language'] = $this->get('table')->getConnectedUser()['language'];
+            $data['language'] = $this->getLanguage();
         }
 
         $user->exchangeArray($data);
