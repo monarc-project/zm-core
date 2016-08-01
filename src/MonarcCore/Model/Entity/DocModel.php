@@ -102,7 +102,7 @@ class DocModel extends AbstractEntity
             ));
             $this->inputFilter->add(array(
                 'name' => 'path',
-                'required' => true,
+                'required' => !$this->get('id'),
                 'allow_empty' => false,
                 'filters' => array(
                     array(
@@ -134,6 +134,8 @@ class DocModel extends AbstractEntity
                         'options' => array(
                             'adapter' => $this->getDbAdapter(),
                             'category' => $this->get('category'),
+                            'id' => $this->get('id'),
+
                         ),
                     ),
                 ),

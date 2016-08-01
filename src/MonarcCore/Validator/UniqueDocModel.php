@@ -9,6 +9,7 @@ class UniqueDocModel extends AbstractValidator
 	protected $options = array(
 		'adapter' => null,
 		'category' => 0,
+		'id' => 0,
 	);
 
 	const ALREADYUSED = "ALREADYUSED";
