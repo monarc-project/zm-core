@@ -387,6 +387,17 @@ class Instance extends AbstractEntity
                 ));
             }
 
+            $fields = ['c', 'i', 'd'];
+            foreach($fields as $field) {
+                $this->inputFilter->add(array(
+                    'name' => $field,
+                    'required' => true,
+                    'allow_empty' => false,
+                    'filters' => array(),
+                    'validators' => array(),
+                ));
+            }
+
             $descriptions = ['description1', 'description2', 'description3', 'description4'];
             foreach($descriptions as $description) {
                 $this->inputFilter->add(array(
