@@ -58,7 +58,7 @@ class UserService extends AbstractService
         $data['status'] = 1;
 
         if(empty($data['language'])){
-            $data['language'] = $this->get('table')->getConnectedUser()['language'];
+            $data['language'] = $this->getLanguage();
         }
 
         $user->exchangeArray($data);
@@ -156,7 +156,7 @@ class UserService extends AbstractService
 
         $userRoleTable = $this->get('roleTable');
         $userRoleTable->deleteByUser($user->id);
-        if (isset($data['role'])) {
+        if (!empty($data['role'])) {
             foreach ($data['role'] as $role) {
                 $roleData = [
                     'user' => $user,
@@ -168,6 +168,8 @@ class UserService extends AbstractService
 
                 $userRoleTable->save($userRoleEntity);
             }
+        }else{
+            throw new \Exception("You must select on or more roles", 422);
         }
     }
 
