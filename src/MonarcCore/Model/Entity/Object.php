@@ -166,27 +166,6 @@ class Object extends AbstractEntity
     /**
      * @var smallint
      *
-     * @ORM\Column(name="c", type="smallint", options={"unsigned":true, "default":0})
-     */
-    protected $c = '1';
-
-    /**
-     * @var smallint
-     *
-     * @ORM\Column(name="i", type="smallint", options={"unsigned":true, "default":0})
-     */
-    protected $i = '1';
-
-    /**
-     * @var smallint
-     *
-     * @ORM\Column(name="d", type="smallint", options={"unsigned":true, "default":0})
-     */
-    protected $d = '1';
-
-    /**
-     * @var smallint
-     *
      * @ORM\Column(name="position", type="smallint", options={"unsigned":true, "default":1})
      */
     protected $position = '1';

@@ -2,6 +2,7 @@
 namespace MonarcCore\Service;
 use MonarcCore\Model\Entity\Instance;
 use MonarcCore\Model\Table\InstanceTable;
+use MonarcCore\Model\Table\ScaleTable;
 
 
 /**
@@ -21,6 +22,7 @@ class InstanceService extends AbstractService
     protected $anrTable;
     protected $assetTable;
     protected $objectTable;
+    protected $scaleTable;
     protected $objectObjectService;
 
     const LEVEL_ROOT    = 1; //instance de racine d'un objet
@@ -28,41 +30,63 @@ class InstanceService extends AbstractService
     const LEVEL_INTER   = 3; //instance d'une noeud intermédiaire d'un objet
 
     /**
-     * Instantiate Object To Anr
+     * Instantiate object to anr
      *
      * @param $anrId
      * @param $objectId
      * @param $parentId
      * @param $position
+     * @param $impacts
+     * @throws \Exception
      */
-    public function instantiateObjectToAnr($anrId, $objectId, $parentId, $position) {
+    public function instantiateObjectToAnr($anrId, $objectId, $parentId, $position, $impacts) {
 
         if ($position == 0) {
             $position = 1;
         }
 
-        /** @var InstanceTable $table */
-        $table = $this->get('table');
-
+        //retrieve object proprerties
         $object = $this->get('objectTable')->getEntity($objectId);
-
-        $commonProperties = [
-            'name1', 'name2', 'name3', 'name4',
-            'label1', 'label2', 'label3', 'label4',
-            'c', 'i', 'd'
-        ];
-
         $data = [
             'object' => $objectId,
             'parent' => ($parentId) ? $parentId : null,
             'position' => $position,
             'anr' => $anrId,
         ];
-
+        $commonProperties = ['name1', 'name2', 'name3', 'name4', 'label1', 'label2', 'label3', 'label4'];
         foreach($commonProperties as $commonProperty) {
             $data[$commonProperty] = $object->$commonProperty;
         }
 
+        //set impacts
+        /** @var InstanceTable $table */
+        $table = $this->get('table');
+        if ($parentId) {
+            $parentEntity = $table->getEntity($parentId);
+        }
+        /** @var ScaleTable $scaleTable */
+        $scaleTable = $this->get('scaleTable');
+        $scale = $scaleTable->getEntityByFields(array('anr' => $anrId, 'type' => ScaleService::TYPE_IMPACT))[0];
+        foreach($impacts as $key => $impact) {
+            $data[$key] = $impact;
+            $data[$key . 'h'] = ($impact < 0) ? true : false;
+
+            if ($impact < 0) { //retrieve parent value
+                if ($parentId) {
+                    if ($parentEntity) {
+                        $data[$key] = $parentEntity->$key;
+                    } else {
+                        throw new \Exception('Parent not exist', 412);
+                    }
+                }
+            } else { //verify min and max
+                if (($impact < $scale->min) || ($impact > $scale->max)) {
+                    throw new \Exception('Impact must be between ' . $scale->min . ' and ' . $scale->max , 412);
+                }
+            }
+        }
+        
+        //asset
         if (isset($object->asset)) {
             $data['asset'] = $object->asset->id;
         }
@@ -106,7 +130,12 @@ class InstanceService extends AbstractService
         $id = $table->createInstanceToAnr($instance, $anrId, $parentId, $position);
 
         foreach($children as $child) {
-            $this->instantiateObjectToAnr($anrId, $child->child->id, $id, $child->position);
+            $impacts = [
+                'c' => '-1',
+                'i' => '-1',
+                'd' => '-1'
+            ];
+            $this->instantiateObjectToAnr($anrId, $child->child->id, $id, $child->position, $impacts);
         }
     }
 

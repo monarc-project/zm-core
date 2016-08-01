@@ -12,13 +12,16 @@ class ScaleService extends AbstractService
     protected $anrTable;
     protected $scaleTypeService;
     protected $dependencies = ['anr'];
+
+    const TYPE_IMPACT = 1;
+    const TYPE_THREAT = 2;
+    const TYPE_VULNERABILITY = 3;
+
     protected $types = [
-      1 => 'impact',
-      2 => 'threat',
-      3 => 'vulnerability',
+      self::TYPE_IMPACT => 'impact',
+      self::TYPE_THREAT => 'threat',
+      self::TYPE_VULNERABILITY => 'vulnerability',
     ];
-
-
 
     /**
      * @return array
