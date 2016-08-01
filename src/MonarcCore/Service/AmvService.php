@@ -253,7 +253,7 @@ class AmvService extends AbstractService
 
         if ((!$assetMode) && (!$threatMode) && (!$vulnerabilityMode)) {
             return true;
-        } else if (!$assetMode) {
+        } else if (is_null($assetMode)) {
             $this->errorMessage = 'Asset mode can\'t be null';
             return false;
         } else  if ($assetMode && $threatMode && $vulnerabilityMode) {
