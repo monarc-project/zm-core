@@ -211,6 +211,7 @@ abstract class AbstractService extends AbstractServiceFactory
     public function patch($id,$data){
 
         $entity = $this->get('table')->getEntity($id);
+        $entity->setLanguage($this->getLanguage());
         $entity->exchangeArray($data, true);
 
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];

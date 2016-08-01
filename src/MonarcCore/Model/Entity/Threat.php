@@ -428,7 +428,7 @@ class Threat extends AbstractEntity
             foreach($texts as $text) {
                 $this->inputFilter->add(array(
                     'name' => $text,
-                    'required' => ((strchr($text, (string) $this->getLanguage())) && (!$partial)) ? true : false,
+                    'required' => ((strstr($text, (string) $this->getLanguage())) && (!$partial)) ? true : false,
                     'allow_empty' => false,
                     'filters' => array(
                         array(
