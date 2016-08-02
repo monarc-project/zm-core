@@ -457,7 +457,7 @@ class ObjectService extends AbstractService
         //verify object not exist to anr
         $existingObjectsToAnr = $table->getEntityByFields(array('source' => $object->id, 'anr' => $anrId, 'type' => self::ANR));
         if (count($existingObjectsToAnr)) {
-            throw new \Exception('This object already exist to anr', 412);
+            throw new \Exception('This object already exists in the current risk analysis', 412);
         }
 
         $anrObject = clone $object;
