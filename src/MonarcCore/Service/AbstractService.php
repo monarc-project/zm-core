@@ -352,7 +352,6 @@ abstract class AbstractService extends AbstractServiceFactory
     protected function setDependencies(&$entity, $dependencies) {
 
         foreach($dependencies as $dependency) {
-
             $value = $entity->get($dependency);
 
             if (!empty($value)) {

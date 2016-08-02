@@ -387,7 +387,7 @@ class Instance extends AbstractEntity
                 ));
             }
 
-            $fields = ['c', 'i', 'd'];
+            $fields = ['c', 'i', 'd', 'asset', 'object'];
             foreach($fields as $field) {
                 $this->inputFilter->add(array(
                     'name' => $field,
