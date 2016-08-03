@@ -120,8 +120,17 @@ class InstanceService extends AbstractService
      * @throws \Exception
      */
     public function updateInstance($anrId, $id, $data){
-        $entity = $this->get('table')->getEntity($id);
-        $entity->setDbAdapter($this->get('table')->getDb());
+
+        /** @var InstanceTable $table */
+        $table = $this->get('table');
+
+        $entity = $table->getEntity($id);
+
+        if (!$entity) {
+            throw new \Exception('Instance not exist', 412);
+        }
+
+        $entity->setDbAdapter($table->getDb());
         $entity->setLanguage($this->getLanguage());
 
         if (empty($data)) {
@@ -142,8 +151,6 @@ class InstanceService extends AbstractService
         $this->setDependencies($entity, $dependencies);
 
         //retrieve children
-        /** @var InstanceTable $table */
-        $table = $this->get('table');
         $children = $table->getEntityByFields(['parent' => $id]);
 
         $id = $this->get('table')->save($entity);
@@ -172,15 +179,19 @@ class InstanceService extends AbstractService
                 $child['d'] = -1;
             }
 
-            $this->update($anrId, $child['id'], $child);
+            $this->updateInstance($anrId, $child['id'], $child);
         }
 
         //if source object is global, reverberate to other instance with the same source object
-        /*
-        if ($entity->object->scope == ObjectService::SCOPE_GLOBAL) {
+        /*if ($entity->object->scope == ObjectService::SCOPE_GLOBAL) {
             //retrieve instance with same object source
-        }
-        */
+            $brothers = $table->getEntityByFields(['object' => $entity->object->id]);
+            foreach($brothers as $brother) {
+                if ($brother->id != $id) {
+                    $this->updateInstance($anrId, $brother->id, $data);
+                }
+            }
+        }*/
 
         return $id;
     }
