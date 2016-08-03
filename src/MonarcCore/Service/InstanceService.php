@@ -119,7 +119,9 @@ class InstanceService extends AbstractService
      * @return mixed
      * @throws \Exception
      */
-    public function updateInstance($anrId, $id, $data){
+    public function updateInstance($anrId, $id, $data, $historic = []){
+
+        $historic[] = $id;
 
         /** @var InstanceTable $table */
         $table = $this->get('table');
@@ -179,20 +181,20 @@ class InstanceService extends AbstractService
                 $child['d'] = -1;
             }
 
-            $this->updateInstance($anrId, $child['id'], $child);
+            $this->updateInstance($anrId, $child['id'], $child, $historic);
         }
 
         //if source object is global, reverberate to other instance with the same source object
-        /*if ($entity->object->scope == ObjectService::SCOPE_GLOBAL) {
+        if ($entity->object->scope == ObjectService::SCOPE_GLOBAL) {
             //retrieve instance with same object source
             $brothers = $table->getEntityByFields(['object' => $entity->object->id]);
             foreach($brothers as $brother) {
-                if ($brother->id != $id) {
-                    $this->updateInstance($anrId, $brother->id, $data);
+                if (($brother->id != $id) && (!in_array($brother->id, $historic))) {
+                    $this->updateInstance($anrId, $brother->id, $data, $historic);
                 }
             }
-        }*/
-
+        }
+        
         return $id;
     }
 
