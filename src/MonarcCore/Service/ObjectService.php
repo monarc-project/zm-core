@@ -33,6 +33,9 @@ class ObjectService extends AbstractService
     const BDC = 'bdc';
     const ANR = 'anr';
 
+    const SCOPE_LOCAL = 1;
+    const SCOPE_GLOBAL = 2;
+
     protected $filterColumns = [
         'name1', 'name2', 'name3', 'name4',
         'label1', 'label2', 'label3', 'label4',

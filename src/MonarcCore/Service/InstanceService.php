@@ -99,18 +99,6 @@ class InstanceService extends AbstractService
         //level
         $this->updateLevels($parent, $children, $instance);
 
-        /**
-         * @todo update risks
-         */
-
-        /**
-         * @todo check consequences
-         */
-
-        /**
-         * @todo check documents
-         */
-
         $id = $table->createInstanceToAnr($instance, $anrId, $parentId, $position);
 
         foreach($children as $child) {
@@ -131,7 +119,7 @@ class InstanceService extends AbstractService
      * @return mixed
      * @throws \Exception
      */
-    public function update($anrId, $id, $data){
+    public function updateInstance($anrId, $id, $data){
         $entity = $this->get('table')->getEntity($id);
         $entity->setDbAdapter($this->get('table')->getDb());
         $entity->setLanguage($this->getLanguage());
@@ -157,18 +145,6 @@ class InstanceService extends AbstractService
         /** @var InstanceTable $table */
         $table = $this->get('table');
         $children = $table->getEntityByFields(['parent' => $id]);
-
-        /**
-         * @todo update risks
-         */
-
-        /**
-         * @todo check consequences
-         */
-
-        /**
-         * @todo check documents
-         */
 
         $id = $this->get('table')->save($entity);
 
@@ -198,6 +174,13 @@ class InstanceService extends AbstractService
 
             $this->update($anrId, $child['id'], $child);
         }
+
+        //if source object is global, reverberate to other instance with the same source object
+        /*
+        if ($entity->object->scope == ObjectService::SCOPE_GLOBAL) {
+            //retrieve instance with same object source
+        }
+        */
 
         return $id;
     }
