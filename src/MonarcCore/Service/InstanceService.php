@@ -41,10 +41,6 @@ class InstanceService extends AbstractService
      */
     public function instantiateObjectToAnr($anrId, $objectId, $parentId, $position, $impacts) {
 
-        if ($position == 0) {
-            $position = 1;
-        }
-
         //retrieve object proprerties
         $object = $this->get('objectTable')->getEntity($objectId);
         $data = [
@@ -194,7 +190,7 @@ class InstanceService extends AbstractService
                 }
             }
         }
-        
+
         return $id;
     }
 
