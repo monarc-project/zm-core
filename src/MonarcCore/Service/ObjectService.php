@@ -299,6 +299,10 @@ class ObjectService extends AbstractService
         unset($data['implicitPosition']);
         $data['type'] = $this->forceType;
 
+        if(empty($data['rolfTag'])){
+            unset($data['rolfTag']);
+        }
+
         //create object
         $object = $this->get('entity');
         $object->exchangeArray($data);
@@ -361,6 +365,9 @@ class ObjectService extends AbstractService
         $entity->setLanguage($this->getLanguage());
 
         $previous = (isset($data['previous'])) ? $data['previous'] : null;
+        if(empty($data['rolfTag'])){
+            unset($data['rolfTag']);
+        }
 
         if (isset($data['implicitPosition'])) {
             $data['position'] = $this->managePositionUpdate('category', $entity, $data['category'], $data['implicitPosition'], $previous);

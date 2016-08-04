@@ -521,7 +521,7 @@ class Object extends AbstractEntity
 
             $this->inputFilter->add(array(
                 'name' => 'rolfTag',
-                'required' => true,
+                'required' => false,
                 'allow_empty' => true,
                 'continue_if_empty' => true,
                 'filters' => array(),
