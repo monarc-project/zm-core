@@ -39,7 +39,6 @@ class ObjectService extends AbstractService
     protected $filterColumns = [
         'name1', 'name2', 'name3', 'name4',
         'label1', 'label2', 'label3', 'label4',
-        'description1', 'description2', 'description3', 'description4'
     ];
 
     protected $dependencies = ['asset', 'category', 'rolfTag'];
