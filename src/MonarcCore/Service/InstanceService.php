@@ -1,6 +1,7 @@
 <?php
 namespace MonarcCore\Service;
 use MonarcCore\Model\Entity\Instance;
+use MonarcCore\Model\Table\AmvTable;
 use MonarcCore\Model\Table\InstanceTable;
 use MonarcCore\Model\Table\ScaleTable;
 
@@ -13,16 +14,15 @@ use MonarcCore\Model\Table\ScaleTable;
  */
 class InstanceService extends AbstractService
 {
-    protected $dependencies = array('asset', 'object');
+    protected $dependencies = ['asset', 'object'];
+    protected $filterColumns = ['label1', 'label2', 'label3', 'label4'];
 
-    protected $filterColumns = array(
-        'label1', 'label2', 'label3', 'label4'
-    );
-
+    protected $amvTable;
     protected $anrTable;
     protected $assetTable;
     protected $objectTable;
     protected $scaleTable;
+    protected $instanceRiskService;
     protected $objectObjectService;
 
     const LEVEL_ROOT    = 1; //instance de racine d'un objet
@@ -41,7 +41,7 @@ class InstanceService extends AbstractService
      */
     public function instantiateObjectToAnr($anrId, $objectId, $parentId, $position, $impacts) {
 
-        //retrieve object proprerties
+        //retrieve object properties
         $object = $this->get('objectTable')->getEntity($objectId);
         $data = [
             'object' => $objectId,
@@ -96,6 +96,28 @@ class InstanceService extends AbstractService
         $this->updateLevels($parent, $children, $instance);
 
         $id = $table->createInstanceToAnr($instance, $anrId, $parentId, $position);
+
+        //instances risks
+        /** @var AmvTable $amvTable */
+        $amvTable = $this->get('amvTable');
+
+        $anrAmvs = $amvTable->findByAnrAndAsset($anrId, $object->asset->id);
+
+        foreach ($anrAmvs as $anrAmv) {
+
+            $data = [
+                'anr' => $anrId,
+                'amv' => $anrAmv->id,
+                'asset' => $anrAmv->asset->id,
+                'instance' => $id,
+                'threat' => $anrAmv->threat->id,
+                'vulnerability' => $anrAmv->vulnerability->id,
+            ];
+
+            /** @var InstanceRiskService $instanceRiskService */
+            $instanceRiskService = $this->get('instanceRiskService');
+            $instanceRiskService->create($data);
+        }
 
         foreach($children as $child) {
             $impacts = [

@@ -3,6 +3,12 @@ namespace MonarcCore\Model\Table;
 
 class AmvTable extends AbstractEntityTable {
 
+    /**
+     * Find by asset
+     *
+     * @param $asset
+     * @return array|bool
+     */
     public function findByAsset($asset)
     {
         return $this->getEntityByFields(['asset' => $asset]);
@@ -49,6 +55,23 @@ class AmvTable extends AbstractEntityTable {
         }
 
         return $amvs->getQuery()->getResult();
+    }
+
+    /**
+     * Find by anr
+     *
+     * @param $anrId
+     * @return bool
+     */
+    public function findByAnrAndAsset($anrId, $assetId) {
+        return $this->getRepository()->createQueryBuilder('amvs')
+            ->where('amvs.anr IS NULL')
+            ->orWhere("amvs.anr = :anr")
+            ->andWhere("amvs.asset = :asset")
+            ->setParameter(':anr', $anrId)
+            ->setParameter(':asset', $assetId)
+            ->getQuery()
+            ->getResult();
     }
 
 }

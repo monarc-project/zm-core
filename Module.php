@@ -142,6 +142,11 @@ class Module
                     $entity->setLanguage($this->getDefaultLanguage($sm));
                     return $entity;
                 },
+                '\MonarcCore\Model\Entity\InstanceRisk' => function($sm){
+                    $entity = new Model\Entity\InstanceRisk();
+                    $entity->setLanguage($this->getDefaultLanguage($sm));
+                    return $entity;
+                },
                 '\MonarcCore\Model\Entity\ObjectCategory' => function($sm){
                     $entity = new Model\Entity\ObjectCategory();
                     $entity->setLanguage($this->getDefaultLanguage($sm));
@@ -241,6 +246,11 @@ class Module
                 },
                 '\MonarcCore\Model\Table\InstanceTable' => function($sm){
                     $table = new Model\Table\InstanceTable($sm->get('\MonarcCore\Model\Db'));
+                    $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
+                    return $table;
+                },
+                '\MonarcCore\Model\Table\InstanceRiskTable' => function($sm){
+                    $table = new Model\Table\InstanceRiskTable($sm->get('\MonarcCore\Model\Db'));
                     $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
                     return $table;
                 },

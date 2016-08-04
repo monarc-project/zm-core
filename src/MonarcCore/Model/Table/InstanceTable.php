@@ -4,14 +4,14 @@ namespace MonarcCore\Model\Table;
 class InstanceTable extends AbstractEntityTable {
 
     /**
-     * Create instance to Anr
+     * Create instance to anr
      *
      * @param $instance
      * @param $anrId
      * @param $parentId
      * @param $position
-     * @return null
-     * @throws Exception
+     * @return mixed|null
+     * @throws \Exception
      */
     public function createInstanceToAnr($instance, $anrId, $parentId, $position) {
 
