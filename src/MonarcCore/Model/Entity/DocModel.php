@@ -117,7 +117,7 @@ class DocModel extends AbstractEntity
             ));
             $this->inputFilter->add(array(
                 'name' => 'category',
-                'required' => true,
+                'required' => !($this->get('id')>0),
                 'allow_empty' => false,
                 'filters' => array(
                     array('name' => 'ToInt',),
