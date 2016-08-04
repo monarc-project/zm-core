@@ -353,8 +353,7 @@ abstract class AbstractService extends AbstractServiceFactory
 
         foreach($dependencies as $dependency) {
             $value = $entity->get($dependency);
-
-            if (!empty($value)) {
+            if ((!empty($value)) && (!is_object($value))) {
                 $tableName = preg_replace("/[0-9]/", "", $dependency)  . 'Table';
                 $method = 'set' . ucfirst($dependency);
                 $dependencyEntity = $this->get($tableName)->getReference($value);

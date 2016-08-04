@@ -14,7 +14,7 @@ use MonarcCore\Model\Table\ScaleTable;
  */
 class InstanceService extends AbstractService
 {
-    protected $dependencies = ['asset', 'object'];
+    protected $dependencies = ['anr', 'asset', 'object'];
     protected $filterColumns = ['label1', 'label2', 'label3', 'label4'];
 
     protected $amvTable;
@@ -273,6 +273,63 @@ class InstanceService extends AbstractService
             $instance->setLevel(self::LEVEL_LEAF);
         } else {
             $instance->setLevel(self::LEVEL_INTER);
+        }
+    }
+
+    /**
+     * Patch
+     *
+     * @param $id
+     * @param $data
+     * @return mixed
+     */
+    public function patch($id,$data){
+
+        /** @var InstanceTable $table */
+        $table = $this->get('table');
+
+        $instance = $table->getEntity($id);
+        $instance->setLanguage($this->getLanguage());
+        $instance->exchangeArray($data, true);
+
+        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $this->setDependencies($instance, $dependencies);
+
+        if (array_key_exists('parent', $data)) {
+
+            $parent = $table->getEntity($data['parent']);
+            $instance->setParent($parent);
+
+            $root = $this->getRoot($instance);
+            $instance->setRoot($root);
+
+            $table->save($instance);
+
+            $this->changeRootForChildren($id, $root);
+        }
+
+
+    }
+
+    /**
+     * Change root for children
+     *
+     * @param $instanceId
+     * @param $root
+     */
+    public function changeRootForChildren($instanceId, $root) {
+
+        /** @var InstanceTable $table */
+        $table = $this->get('table');
+        $children = $table->getEntityByFields(['parent' => $instanceId]);
+
+        foreach($children as $child) {
+
+            $child->setRoot($root);
+
+            $table->save($child);
+
+            $this->changeRootForChildren($child->id, $root);
         }
     }
 }

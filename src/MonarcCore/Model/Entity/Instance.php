@@ -23,9 +23,12 @@ class Instance extends AbstractEntity
     protected $id;
 
     /**
-     * @var integer
+     * @var \MonarcCore\Model\Entity\Anr
      *
-     * @ORM\Column(name="anr_id", type="integer", nullable=true)
+     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Anr", cascade={"persist"})
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true)
+     * })
      */
     protected $anr;
 
@@ -391,7 +394,7 @@ class Instance extends AbstractEntity
             foreach($fields as $field) {
                 $this->inputFilter->add(array(
                     'name' => $field,
-                    'required' => true,
+                    'required' => (!$partial) ? true : false,
                     'allow_empty' => false,
                     'filters' => array(),
                     'validators' => array(),
