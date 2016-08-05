@@ -142,6 +142,11 @@ class Module
                     $entity->setLanguage($this->getDefaultLanguage($sm));
                     return $entity;
                 },
+                '\MonarcCore\Model\Entity\InstanceConsequence' => function($sm){
+                    $entity = new Model\Entity\InstanceConsequence();
+                    $entity->setLanguage($this->getDefaultLanguage($sm));
+                    return $entity;
+                },
                 '\MonarcCore\Model\Entity\InstanceRisk' => function($sm){
                     $entity = new Model\Entity\InstanceRisk();
                     $entity->setLanguage($this->getDefaultLanguage($sm));
@@ -251,6 +256,11 @@ class Module
                 },
                 '\MonarcCore\Model\Table\InstanceTable' => function($sm){
                     $table = new Model\Table\InstanceTable($sm->get('\MonarcCore\Model\Db'));
+                    $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
+                    return $table;
+                },
+                '\MonarcCore\Model\Table\InstanceConsequenceTable' => function($sm){
+                    $table = new Model\Table\InstanceConsequenceTable($sm->get('\MonarcCore\Model\Db'));
                     $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
                     return $table;
                 },

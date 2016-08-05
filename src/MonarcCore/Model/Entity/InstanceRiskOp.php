@@ -308,12 +308,6 @@ class InstanceRiskOp extends AbstractEntity
     protected $updatedAt;
 
     /**
-     * @var int
-     * Not mapped to a column - used to determine the actual entity position
-     */
-    protected $implicitPosition;
-
-    /**
      * @return int
      */
     public function getId()
