@@ -77,9 +77,8 @@ class InstanceService extends AbstractService
 
         //parent and root
         $parent = ($parentId) ? $table->getEntity($parentId) : null;
-        $root = ($parentId) ? $this->getRoot($instance) : null;
-
         $instance->setParent($parent);
+        $root = ($parentId) ? $this->getRoot($instance) : null;
         $instance->setRoot($root);
 
         //retrieve children
