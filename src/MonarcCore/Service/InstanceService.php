@@ -76,16 +76,11 @@ class InstanceService extends AbstractService
         $this->setDependencies($instance, $dependencies);
 
         //parent and root
-        if ($parentId) {
-            $parentEntity = $table->getEntity($parentId);
-            $instance->setParent($parentEntity);
+        $parent = ($parentId) ? $table->getEntity($parentId) : null;
+        $root = ($parentId) ? $this->getRoot($instance) : null;
 
-            $rootEntity = $this->getRoot($instance);
-            $instance->setRoot($rootEntity);
-        } else {
-            $instance->setParent(null);
-            $instance->setRoot(null);
-        }
+        $instance->setParent($parent);
+        $instance->setRoot($root);
 
         //retrieve children
         /** @var ObjectObjectService $objectObjectService */
