@@ -29,10 +29,16 @@ class ObjectRemoveCid extends AbstractMigration
     public function up()
     {
         $table = $this->table('objects');
-        $table->removeColumn('c')
-            ->removeColumn('i')
-            ->removeColumn('d')
-            ->update();
+        if($table->hasColumn('c')){
+            $table->removeColumn('c');
+        }
+        if($table->hasColumn('i')){
+            $table->removeColumn('i');
+        }
+        if($table->hasColumn('d')){
+            $table->removeColumn('d');
+        }
+        $table->update();
     }
     public function down()
     {
