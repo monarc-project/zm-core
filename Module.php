@@ -260,7 +260,7 @@ class Module
                     return $table;
                 },
                 '\MonarcCore\Model\Table\InstanceRiskOpTable' => function($sm){
-                    $table = new Model\Table\InstanceRiskOpTable()Table($sm->get('\MonarcCore\Model\Db'));
+                    $table = new Model\Table\InstanceRiskOpTable($sm->get('\MonarcCore\Model\Db'));
                     $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
                     return $table;
                 },
