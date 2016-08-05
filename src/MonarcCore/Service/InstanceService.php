@@ -221,7 +221,6 @@ class InstanceService extends AbstractService
         return $this->get('table')->findByAnr($anrId);
     }
 
-
     /**
      * Update impacts
      *
