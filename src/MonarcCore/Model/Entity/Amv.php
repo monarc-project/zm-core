@@ -290,7 +290,7 @@ class Amv extends AbstractEntity
                         'name' => 'Callback',//'\MonarcCore\Validator\UniqueAMV',
                         'options' => array(
                             'messages' => array(
-                                \Zend\Validator\Callback::INVALID_VALUE => 'This AMV is already used',
+                                \Zend\Validator\Callback::INVALID_VALUE => 'This AMV link is already used',
                             ),
                             'callback' => function($value, $context = array()){
                                 $adapter = $this->getDbAdapter();
