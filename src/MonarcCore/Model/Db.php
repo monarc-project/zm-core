@@ -119,6 +119,10 @@ class Db {
         return $this->entityManager->getConnection()->lastInsertId();
     }
 
+    public function quote($str, $paramType) {
+        return $this->entityManager->getConnection()->quote($str, $paramType);
+    }
+
     /**
      * @param EntityRepository $repository
      * @param int $page
