@@ -111,7 +111,9 @@ class ScaleService extends AbstractService
                 ]
             ];
             foreach ($scaleTypes as $scaleType) {
-                $this->get('scaleTypeService')->create($scaleType);
+                /** @var ScaleTypeService $scaleTypeService */
+                $scaleTypeService = $this->get('scaleTypeService');
+                $scaleTypeService->create($scaleType);
             }
         }
 

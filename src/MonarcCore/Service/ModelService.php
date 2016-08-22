@@ -38,7 +38,9 @@ class ModelService extends AbstractService
             'label3' => 'ANR',
             'label4' => 'ANR',
         ];
-        $anrId = $this->get('anrService')->create($dataAnr);
+        /** @var AnrService $anrService */
+        $anrService = $this->get('anrService');
+        $anrId = $anrService->create($dataAnr);
 
         $data['anr'] = $anrId;
 

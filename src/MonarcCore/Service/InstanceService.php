@@ -94,7 +94,6 @@ class InstanceService extends AbstractService
         //instances risks
         /** @var AmvTable $amvTable */
         $amvTable = $this->get('amvTable');
-
         $anrAmvs = $amvTable->findByAnrAndAsset($anrId, $object->asset->id);
 
         foreach ($anrAmvs as $anrAmv) {

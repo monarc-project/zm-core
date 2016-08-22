@@ -31,7 +31,9 @@ class AnrService extends AbstractService
             ['anr' => $anrId, 'type' => 3, 'min' => 0, 'max' => 3],
         ];
         foreach ($scales as $scale) {
-            $this->get('scaleService')->create($scale);
+            /** @var ScaleService $scaleService */
+            $scaleService = $this->get('scaleService');
+            $scaleService->create($scale);
         }
 
         return $anrId;
