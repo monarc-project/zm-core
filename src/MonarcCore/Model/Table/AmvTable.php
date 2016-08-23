@@ -56,22 +56,4 @@ class AmvTable extends AbstractEntityTable {
 
         return $amvs->getQuery()->getResult();
     }
-
-    /**
-     * Find by anr
-     *
-     * @param $anrId
-     * @return bool
-     */
-    public function findByAnrAndAsset($anrId, $assetId) {
-        return $this->getRepository()->createQueryBuilder('amvs')
-            ->where('amvs.anr IS NULL')
-            ->orWhere("amvs.anr = :anr")
-            ->andWhere("amvs.asset = :asset")
-            ->setParameter(':anr', $anrId)
-            ->setParameter(':asset', $assetId)
-            ->getQuery()
-            ->getResult();
-    }
-
 }

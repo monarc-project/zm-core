@@ -23,9 +23,12 @@ class Object extends AbstractEntity
     protected $id;
 
     /**
-     * @var integer
+     * @var \MonarcCore\Model\Entity\Anr
      *
-     * @ORM\Column(name="anr_id", type="integer", nullable=true)
+     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Anr", cascade={"persist"})
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true)
+     * })
      */
     protected $anr;
 

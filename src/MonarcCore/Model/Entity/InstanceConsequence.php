@@ -57,10 +57,10 @@ class InstanceConsequence extends AbstractEntity
      *
      * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\ScaleType", cascade={"persist"})
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="scale_impact_type", referencedColumnName="id", nullable=true)
+     *   @ORM\JoinColumn(name="scale_impact_type_id", referencedColumnName="id", nullable=true)
      * })
      */
-    protected $ScaleImpactType;
+    protected $scaleImpactType;
 
     /**
      * @var smallint

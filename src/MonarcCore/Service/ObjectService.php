@@ -27,6 +27,7 @@ class ObjectService extends AbstractService
     protected $amvTable;
     /** @var ObjectRiskTable */
     protected $objectRiskTable;
+    protected $objectRiskService;
     /** @var ObjectRisk */
     protected $riskEntity;
 
@@ -492,6 +493,28 @@ class ObjectService extends AbstractService
             }
 
             $objectObjectService->create($data);
+        }
+
+        //retrieve risks
+        /** @var AmvTable $amvTable */
+        $amvTable = $this->get('amvTable');
+        $amvs = $amvTable->findByAsset($object->asset->id);
+        foreach ($amvs as $amv) {
+            if (is_null($amv->anr)) {
+                $data = [
+                    'anr' => $anrId,
+                    'object' => $id,
+                    'specific' => 0,
+                    'amv' => $amv->id,
+                    'asset' => $amv->asset->id,
+                    'threat' => $amv->threat->id,
+                    'vulnerability' => $amv->vulnerability->id,
+                ];
+
+                /** @var ObjectRiskService $objectRiskService */
+                $objectRiskService = $this->get('objectRiskService');
+                $objectRiskService->create($data);
+            }
         }
 
         //children

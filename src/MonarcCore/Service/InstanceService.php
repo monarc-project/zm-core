@@ -1,6 +1,8 @@
 <?php
 namespace MonarcCore\Service;
+use DoctrineTest\InstantiatorTestAsset\ExceptionAsset;
 use MonarcCore\Model\Entity\Instance;
+use MonarcCore\Model\Entity\InstanceRiskOp;
 use MonarcCore\Model\Table\AmvTable;
 use MonarcCore\Model\Table\InstanceTable;
 use MonarcCore\Model\Table\ScaleTable;
@@ -23,6 +25,8 @@ class InstanceService extends AbstractService
     protected $objectTable;
     protected $scaleTable;
     protected $instanceRiskService;
+    protected $instanceRiskOpService;
+    protected $instanceConsequenceService;
     protected $objectObjectService;
 
     const LEVEL_ROOT    = 1; //instance de racine d'un objet
@@ -30,19 +34,25 @@ class InstanceService extends AbstractService
     const LEVEL_INTER   = 3; //instance d'une noeud intermédiaire d'un objet
 
     /**
-     * Instantiate object to anr
+     * Instantiate Object To Anr
      *
      * @param $anrId
      * @param $objectId
      * @param $parentId
      * @param $position
      * @param $impacts
+     * @return mixed|null
      * @throws \Exception
      */
     public function instantiateObjectToAnr($anrId, $objectId, $parentId, $position, $impacts) {
 
         //retrieve object properties
         $object = $this->get('objectTable')->getEntity($objectId);
+
+        if ((is_null($object->anr)) || ($object->anr->id != $anrId)) {
+            throw new \Exception('Object is not an object of this anr', 412);
+        }
+
         $data = [
             'object' => $objectId,
             'parent' => ($parentId) ? $parentId : null,
@@ -91,27 +101,22 @@ class InstanceService extends AbstractService
 
         $id = $table->createInstanceToAnr($instance, $anrId, $parentId, $position);
 
-        //instances risks
-        /** @var AmvTable $amvTable */
-        $amvTable = $this->get('amvTable');
-        $anrAmvs = $amvTable->findByAnrAndAsset($anrId, $object->asset->id);
+        //instances risk
+        /** @var InstanceRiskService $instanceRiskService */
+        $instanceRiskService = $this->get('instanceRiskService');
+        $instanceRiskService->createInstanceRisks($id, $anrId, $objectId);
 
-        foreach ($anrAmvs as $anrAmv) {
+        //instances risks op
+        /** @var InstanceRiskOpService $instanceRiskOpService */
+        $instanceRiskOpService = $this->get('instanceRiskOpService');
+        $instanceRiskOpService->createInstanceRisksOp($id, $anrId, $object);
 
-            $data = [
-                'anr' => $anrId,
-                'amv' => $anrAmv->id,
-                'asset' => $anrAmv->asset->id,
-                'instance' => $id,
-                'threat' => $anrAmv->threat->id,
-                'vulnerability' => $anrAmv->vulnerability->id,
-            ];
+        //instances consequences
+        /** @var InstanceConsequenceService $instanceConsequenceService */
+        $instanceConsequenceService = $this->get('instanceConsequenceService');
+        $instanceConsequenceService->createInstanceConsequences($id, $anrId, $object);
 
-            /** @var InstanceRiskService $instanceRiskService */
-            $instanceRiskService = $this->get('instanceRiskService');
-            $instanceRiskService->create($data);
-        }
-
+        //children
         foreach($children as $child) {
             $impacts = [
                 'c' => '-1',
@@ -120,6 +125,8 @@ class InstanceService extends AbstractService
             ];
             $this->instantiateObjectToAnr($anrId, $child->child->id, $id, $child->position, $impacts);
         }
+
+        return $id;
     }
 
     /**

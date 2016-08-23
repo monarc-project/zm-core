@@ -19,6 +19,10 @@ class AssetService extends AbstractService
         'code',
     ];
 
+    const ASSET_PRIMARY    = 1;
+    const ASSET_SECONDARY    = 2;
+    const ASSET_VIRTUAL    = 3;
+
     /**
      * Create
      *

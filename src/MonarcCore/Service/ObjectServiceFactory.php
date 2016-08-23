@@ -14,6 +14,7 @@ class ObjectServiceFactory extends AbstractServiceFactory
         'modelService'=> 'MonarcCore\Service\ModelService',
         'riskEntity' => '\MonarcCore\Model\Entity\ObjectRisk',
         'objectObjectService'=> 'MonarcCore\Service\ObjectObjectService',
+        'objectRiskService'=> 'MonarcCore\Service\ObjectRiskService',
     );
 
 }
