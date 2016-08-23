@@ -237,10 +237,7 @@ class ScaleComment extends AbstractEntity
                     'validators' => array(
 
                         array(
-                            'name' => 'InArray',
-                            'options' => array(
-                                'haystack' => [1, 2, 3, 4, 5, 6, 7, 8, 9],
-                            ),
+                            'name' => 'IsInt',
                         ),
                     ),
                 ));

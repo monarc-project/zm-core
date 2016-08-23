@@ -70,6 +70,9 @@ class ScaleTypeService extends AbstractService
         if (!isset($data['isSys'])) {
             $data['isSys'] = 0;
         }
+        if (!isset($data['isHidden'])) {
+            $data['isSys'] = 0;
+        }
         if (!isset($data['type'])) {
             $data['type'] = 9;
         }

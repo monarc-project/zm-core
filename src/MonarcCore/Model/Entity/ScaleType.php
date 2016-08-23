@@ -194,15 +194,22 @@ class ScaleType extends AbstractEntity
             foreach($texts as $text) {
                 $this->inputFilter->add(array(
                     'name' => $text,
-                    'required' => true,
-                    'allow_empty' => true,
-                    'filters' => array(),
+                    'required' => false,
+                    'allow_empty' => false,
+                    'filters' => array(
+                        array(
+                            'name' => '\MonarcCore\Filter\SpecAlnum',
+                            'options' => array(
+                                'allow_white_space' => true,
+                            )
+                        ),
+                    ),
                     'validators' => array(),
                 ));
             }
 
             $this->inputFilter->add(array(
-                'name' => 'scale',
+                'name' => 'anr',
                 'required' => true,
                 'allow_empty' => false,
                 'continue_if_empty' => false,
@@ -215,17 +222,14 @@ class ScaleType extends AbstractEntity
             ));
 
             $this->inputFilter->add(array(
-                'name' => 'isHidden',
+                'name' => 'scale',
                 'required' => true,
                 'allow_empty' => false,
                 'continue_if_empty' => false,
                 'filters' => array(),
                 'validators' => array(
                     array(
-                        'name' => 'InArray',
-                        'options' => array(
-                            'haystack' => [0, 1],
-                        ),
+                        'name' => 'IsInt',
                     ),
                 ),
             ));
