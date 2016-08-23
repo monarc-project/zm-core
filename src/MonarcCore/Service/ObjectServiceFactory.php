@@ -7,6 +7,7 @@ class ObjectServiceFactory extends AbstractServiceFactory
         'table'=> '\MonarcCore\Model\Table\ObjectTable',
         'entity'=> '\MonarcCore\Model\Entity\Object',
         'assetTable'=> '\MonarcCore\Model\Table\AssetTable',
+        'anrTable'=> '\MonarcCore\Model\Table\AnrTable',
         'amvTable'=> '\MonarcCore\Model\Table\AmvTable',
         'objectRiskTable' => '\MonarcCore\Model\Table\ObjectRiskTable',
         'categoryTable'=> '\MonarcCore\Model\Table\ObjectCategoryTable',

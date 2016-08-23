@@ -20,6 +20,7 @@ class ObjectService extends AbstractService
     // Must be 16, 24 or 32 characters
     const SALT = '__$$00_C4535_5M1L3_00$$__XMP0)XW';
 
+    protected $anrTable;
     protected $assetTable;
     protected $categoryTable;
     protected $rolfTagTable;
@@ -473,10 +474,12 @@ class ObjectService extends AbstractService
         $anrObject = clone $object;
         $anrObject->id = null;
         $anrObject->type = self::ANR;
-        $anrObject->anr = $anrId;
+        $anrObject->anr = $this->get('anrTable')->getEntity($anrId);
         $anrObject->source = $this->get('table')->getEntity($object->id);
 
         $id = $table->save($anrObject);
+
+
 
         //parent
         /** @var ObjectObjectService $objectObjectService */
