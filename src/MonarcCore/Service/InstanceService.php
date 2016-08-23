@@ -295,11 +295,10 @@ class InstanceService extends AbstractService
         $this->setDependencies($instance, $dependencies);
 
         if (array_key_exists('parent', $data)) {
-
             $parent = ($data['parent']) ? $table->getEntity($data['parent']) : null;
-            $root = ($data['parent']) ? $this->getRoot($instance) : null;
-
             $instance->setParent($parent);
+
+            $root = ($data['parent']) ? $this->getRoot($instance) : null;
             $instance->setRoot($root);
 
             $table->save($instance);
