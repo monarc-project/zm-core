@@ -111,6 +111,7 @@ class ObjectService extends AbstractService
 
         // Calculate the risks table
         $entity_arr['risks'] = $this->buildRisksTable($entity, $mode);
+        $entity_arr['oprisks'] = $this->getRisksOp($entity);
 
         return $entity_arr;
     }
@@ -208,6 +209,45 @@ class ObjectService extends AbstractService
         }
 
         return $output;
+    }
+
+    protected function getRisksOp($object) {
+        $riskOps = [];
+
+        if (isset($object->asset)) {
+            if ($object->asset->type == AssetService::ASSET_PRIMARY) {
+                if (!is_null($object->rolfTag)) {
+
+                    //retrieve rolf risks
+                    /** @var RolfTagTable $rolfTagTable */
+                    $rolfTagTable = $this->get('rolfTagTable');
+                    $rolfTag = $rolfTagTable->getEntity($object->rolfTag->id);
+
+                    $rolfRisks = $rolfTag->risks;
+
+                    foreach ($rolfRisks as $rolfRisk) {
+
+                        $riskOps[] = array(
+                            'description1' => $rolfRisk->label1,
+                            'description2' => $rolfRisk->label2,
+                            'description3' => $rolfRisk->label3,
+                            'description4' => $rolfRisk->label4,
+                            'prob' => '-',
+                            'r' => '-',
+                            'o' => '-',
+                            'l' => '-',
+                            'p' => '-',
+                            'risk' => '-',
+                            'comment' => '',
+                            't' => '',
+                            'target' => '-',
+                        );
+                    }
+                }
+            }
+        }
+
+        return $riskOps;
     }
 
     /**
