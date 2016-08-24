@@ -220,9 +220,15 @@ class ObjectService extends AbstractService
 
             $risks[] = array(
                 'id' => $objectRisk->id,
-                'threatDescription' => $amv->threat->label1,
+                'threatDescription1' => $amv->threat->label1,
+                'threatDescription2' => $amv->threat->label2,
+                'threatDescription3' => $amv->threat->label3,
+                'threatDescription4' => $amv->threat->label4,
                 'threatRate' => $objectRisk->threatRate,
-                'vulnDescription' => $amv->vulnerability->label1,
+                'vulnDescription1' => $amv->vulnerability->label1,
+                'vulnDescription2' => $amv->vulnerability->label2,
+                'vulnDescription3' => $amv->vulnerability->label3,
+                'vulnDescription4' => $amv->vulnerability->label4,
                 'vulnerabilityRate' => $objectRisk->vulnerabilityRate,
                 'c_risk' => $objectRisk->riskC,
                 'c_risk_enabled' => $amv->threat->c,
