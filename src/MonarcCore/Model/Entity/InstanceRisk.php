@@ -13,6 +13,12 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class InstanceRisk extends AbstractEntity
 {
+    const KIND_REDUCTION    = 1;
+    const KIND_REFUS        = 2;
+    const KIND_ACCEPTATION  = 3;
+    const KIND_PARTAGE      = 4;
+    const KIND_NOT_TREATED  = 5;
+
     /**
      * @var integer
      *

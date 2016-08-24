@@ -1,5 +1,6 @@
 <?php
 namespace MonarcCore\Service;
+use MonarcCore\Model\Table\InstanceRiskTable;
 use MonarcCore\Model\Table\ObjectRiskTable;
 
 /**
@@ -45,5 +46,19 @@ class InstanceRiskService extends AbstractService
 
             $this->create($data);
         }
+    }
+
+    /**
+     * Get Instance Risks
+     *
+     * @param $instanceId
+     * @param $anrId
+     * @return array|bool
+     */
+    public function getInstanceRisks($instanceId, $anrId) {
+
+        /** @var InstanceRiskTable $table */
+        $table = $this->get('table');
+        return $table->getEntityByFields(['anr' => $anrId, 'instance' => $instanceId]);
     }
 }

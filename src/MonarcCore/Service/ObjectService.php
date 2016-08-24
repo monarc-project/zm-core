@@ -218,7 +218,7 @@ class ObjectService extends AbstractService
             $amvTable = $this->get('amvTable');
             $amv = $amvTable->getEntity($objectRisk->amv->id);
 
-            $risks[] = array(
+            $risks[] = [
                 'id' => $objectRisk->id,
                 'threatDescription1' => $amv->threat->label1,
                 'threatDescription2' => $amv->threat->label2,
@@ -237,7 +237,7 @@ class ObjectService extends AbstractService
                 'd_risk' => $objectRisk->riskD,
                 'd_risk_enabled' => $amv->threat->d,
                 'comment' => $objectRisk->comment
-            );
+            ];
         }
 
         return $risks;
@@ -259,7 +259,7 @@ class ObjectService extends AbstractService
 
                     foreach ($rolfRisks as $rolfRisk) {
 
-                        $riskOps[] = array(
+                        $riskOps[] = [
                             'description1' => $rolfRisk->label1,
                             'description2' => $rolfRisk->label2,
                             'description3' => $rolfRisk->label3,
@@ -273,7 +273,7 @@ class ObjectService extends AbstractService
                             'comment' => '',
                             't' => '',
                             'target' => '-',
-                        );
+                        ];
                     }
                 }
             }

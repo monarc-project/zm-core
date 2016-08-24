@@ -13,6 +13,12 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class InstanceRiskOp extends AbstractEntity
 {
+    const KIND_REDUCTION    = 1;
+    const KIND_REFUS        = 2;
+    const KIND_ACCEPTATION  = 3;
+    const KIND_PARTAGE      = 4;
+    const KIND_NOT_TREATED  = 5;
+
     /**
      * @var integer
      *
@@ -205,6 +211,13 @@ class InstanceRiskOp extends AbstractEntity
     /**
      * @var smallint
      *
+     * @ORM\Column(name="net_p", type="smallint", options={"unsigned":false, "default":-1})
+     */
+    protected $netP = '-1';
+
+    /**
+     * @var smallint
+     *
      * @ORM\Column(name="cache_net_risk", type="smallint", options={"unsigned":false, "default":-1})
      */
     protected $cacheNetRisk = '-1';
@@ -243,6 +256,13 @@ class InstanceRiskOp extends AbstractEntity
      * @ORM\Column(name="targeted_f", type="smallint", options={"unsigned":false, "default":-1})
      */
     protected $targetedF = '-1';
+
+    /**
+     * @var smallint
+     *
+     * @ORM\Column(name="targeted_p", type="smallint", options={"unsigned":false, "default":-1})
+     */
+    protected $targetedP = '-1';
 
     /**
      * @var smallint

@@ -1,6 +1,7 @@
 <?php
 namespace MonarcCore\Service;
 
+use MonarcCore\Model\Table\InstanceRiskOpTable;
 use MonarcCore\Model\Table\RolfRiskTable;
 use MonarcCore\Model\Table\RolfTagTable;
 
@@ -54,5 +55,19 @@ class InstanceRiskOpService extends AbstractService
                 }
             }
         }
+    }
+
+    /**
+     * Get Instance Risks Op
+     *
+     * @param $instanceId
+     * @param $anrId
+     * @return array|bool
+     */
+    public function getInstanceRisksOp($instanceId, $anrId) {
+
+        /** @var InstanceRiskOpTable $table */
+        $table = $this->get('table');
+        return $table->getEntityByFields(['anr' => $anrId, 'instance' => $instanceId]);
     }
 }

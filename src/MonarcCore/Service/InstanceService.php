@@ -2,9 +2,11 @@
 namespace MonarcCore\Service;
 use DoctrineTest\InstantiatorTestAsset\ExceptionAsset;
 use MonarcCore\Model\Entity\Instance;
+use MonarcCore\Model\Entity\InstanceRisk;
 use MonarcCore\Model\Entity\InstanceRiskOp;
 use MonarcCore\Model\Table\AmvTable;
 use MonarcCore\Model\Table\InstanceTable;
+use MonarcCore\Model\Table\RolfRiskTable;
 use MonarcCore\Model\Table\ScaleTable;
 
 
@@ -23,6 +25,7 @@ class InstanceService extends AbstractService
     protected $anrTable;
     protected $assetTable;
     protected $objectTable;
+    protected $rolfRiskTable;
     protected $scaleTable;
     protected $instanceRiskService;
     protected $instanceRiskOpService;
@@ -127,6 +130,126 @@ class InstanceService extends AbstractService
         }
 
         return $id;
+    }
+
+    /**
+     * Get Entity
+     *
+     * @param $id
+     * @return array
+     */
+    public function getEntityByIdAndAnr($id, $anrId){
+
+        $instance = $this->get('table')->get($id);
+        $instance['risks'] = $this->getRisks($id, $anrId);
+        $instance['oprisks'] = $this->getRisksOp($id, $anrId);;
+
+        return $instance;
+    }
+
+    /**
+     * Get Risks
+     *
+     * @param $instanceId
+     * @param $anrId
+     * @return array
+     */
+    protected function getRisks($instanceId, $anrId) {
+
+        /** @var InstanceRiskService $instanceRiskService */
+        $instanceRiskService = $this->get('instanceRiskService');
+        $instanceRisks = $instanceRiskService->getInstanceRisks($instanceId, $anrId);
+
+        $risks = [];
+        foreach ($instanceRisks as $instanceRisk) {
+            /** @var AmvTable $amvTable */
+            $amvTable = $this->get('amvTable');
+            $amv = $amvTable->getEntity($instanceRisk->amv->id);
+
+            $risks[] = [
+                'id' => $instanceRisk->id,
+                'threatDescription1' => $amv->threat->label1,
+                'threatDescription2' => $amv->threat->label2,
+                'threatDescription3' => $amv->threat->label3,
+                'threatDescription4' => $amv->threat->label4,
+                'threatRate' => $instanceRisk->threatRate,
+                'vulnDescription1' => $amv->vulnerability->label1,
+                'vulnDescription2' => $amv->vulnerability->label2,
+                'vulnDescription3' => $amv->vulnerability->label3,
+                'vulnDescription4' => $amv->vulnerability->label4,
+                'vulnerabilityRate' => $instanceRisk->vulnerabilityRate,
+                'c_risk' => $instanceRisk->riskC,
+                'c_risk_enabled' => $amv->threat->c,
+                'i_risk' => $instanceRisk->riskI,
+                'i_risk_enabled' => $amv->threat->i,
+                'd_risk' => $instanceRisk->riskD,
+                'd_risk_enabled' => $amv->threat->d,
+                't' => ($instanceRisk->kindOfMeasure == InstanceRisk::KIND_NOT_TREATED) ? false : true,
+                'comment' => $instanceRisk->comment
+            ];
+        }
+
+        return $risks;
+    }
+
+    /**
+     * Get Risks Op
+     *
+     * @param $instanceId
+     * @param $anrId
+     * @return array
+     */
+    protected function getRisksOp($instanceId, $anrId) {
+
+        /** @var InstanceRiskOpServiceService $instanceRiskOpService */
+        $instanceRiskOpService = $this->get('instanceRiskOpService');
+        $instanceRisksOp = $instanceRiskOpService->getInstanceRisksOp($instanceId, $anrId);
+
+        $riskOps = [];
+        foreach ($instanceRisksOp as $instanceRiskOp) {
+
+            //retrieve rolf risks
+            /** @var RolfRiskTable $rolfRiskTable */
+            $rolfRiskTable = $this->get('rolfRiskTable');
+            $rolfRisk = $rolfRiskTable->getEntity($instanceRiskOp->rolfRisk->id);
+
+            $fields = ['r', 'o', 'l', 'f', 'p'];
+
+            $maxNet = -1;
+            $maxTarget = -1;
+            foreach ($fields as $field) {
+                $nameNet = 'net' . $field;
+                $nameTarget = 'net' . $field;
+                if ($instanceRiskOp->$nameNet > $maxNet) {
+                    $maxNet = $instanceRiskOp->$nameNet;
+                }
+                if ($instanceRiskOp->$nameTarget > $maxTarget) {
+                    $maxTarget = $instanceRiskOp->$nameTarget;
+                }
+            }
+
+            $risk = (($maxNet != -1) && ($instanceRiskOp->netProb != -1)) ? $instanceRiskOp->netProb * $maxNet : '';
+            $target = (($maxTarget != -1) && ($instanceRiskOp->netProb != -1)) ? $instanceRiskOp->netProb * $maxTarget : '';
+
+            $riskOps[] = [
+                'description1' => $rolfRisk->label1,
+                'description2' => $rolfRisk->label2,
+                'description3' => $rolfRisk->label3,
+                'description4' => $rolfRisk->label4,
+                'prob' => $instanceRiskOp->netProb,
+                'r' => $instanceRiskOp->netR,
+                'o' => $instanceRiskOp->netO,
+                'l' => $instanceRiskOp->netL,
+                'f' => $instanceRiskOp->netF,
+                'p' => $instanceRiskOp->netP,
+                'risk' => $risk,
+                'comment' => $instanceRiskOp->comment,
+                't' => ($instanceRiskOp->kindOfMeasure == InstanceRiskOp::KIND_NOT_TREATED) ? false : true,
+                'target' => $target,
+            ];
+        }
+
+        return $riskOps;
     }
 
     /**

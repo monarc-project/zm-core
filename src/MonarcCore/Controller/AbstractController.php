@@ -139,10 +139,19 @@ abstract class AbstractController extends AbstractRestfulController
 
         foreach($dependencies as $dependency) {
             if (!empty($entity[$dependency])) {
-                $entity[$dependency] = $entity[$dependency]->getJsonArray();
-                unset($entity[$dependency]['__initializer__']);
-                unset($entity[$dependency]['__cloner__']);
-                unset($entity[$dependency]['__isInitialized__']);
+                if (is_object($entity[$dependency])) {
+                    $entity[$dependency] = $entity[$dependency]->getJsonArray();
+                    unset($entity[$dependency]['__initializer__']);
+                    unset($entity[$dependency]['__cloner__']);
+                    unset($entity[$dependency]['__isInitialized__']);
+                } else if (is_array($entity[$dependency])) {
+                    foreach($entity[$dependency] as $key => $value) {
+                        $entity[$dependency][$key] = $entity[$dependency][$key]->getJsonArray();
+                        unset($entity[$dependency][$key]['__initializer__']);
+                        unset($entity[$dependency][$key]['__cloner__']);
+                        unset($entity[$dependency][$key]['__isInitialized__']);
+                    }
+                }
             }
         }
     }
