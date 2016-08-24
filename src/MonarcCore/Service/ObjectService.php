@@ -110,12 +110,14 @@ class ObjectService extends AbstractService
         $entity_arr['children'] = $objectObjectService->getRecursiveChildren($entity_arr['id']);
 
         // Calculate the risks table
-        $entity_arr['risks'] = $this->buildRisksTable($entity, $mode);
+        //$entity_arr['risks'] = $this->buildRisksTable($entity, $mode);
+        $entity_arr['risks'] = $this->getRisks($entity);
         $entity_arr['oprisks'] = $this->getRisksOp($entity);
 
         return $entity_arr;
     }
 
+    /*
     protected function buildRisksTable($entity, $mode) {
         $output = [];
 
@@ -126,9 +128,6 @@ class ObjectService extends AbstractService
             $amv_array = $amv->getJsonArray();
             $this->formatDependencies($amv_array, ['asset', 'threat', 'vulnerability']);
 
-            $c_impact = -1;
-            $i_impact = -1;
-            $d_impact = -1;
             $prob = null;
             $qualif = null;
             $c_risk = null;
@@ -138,9 +137,6 @@ class ObjectService extends AbstractService
             $risk_id = null;
 
             if ($mode == 'anr') {
-                $c_impact = $entity->getC();
-                $i_impact = $entity->getI();
-                $d_impact = $entity->getD();
 
                 // Fetch the risk assessment information from the DB for that AMV link
                 $risk = $this->objectRiskTable->getEntityByFields([ //'anr' => $entity->getAnr() ? $entity->getAnr()->getId() : null,
@@ -161,7 +157,7 @@ class ObjectService extends AbstractService
                 } else {
                     // We have NO risk data for this, create the line!
                     /** @var ObjectRisk $new_risk_entity */
-                    $new_risk_entity = new ObjectRisk();
+                    /*$new_risk_entity = new ObjectRisk();
                     $new_risk_entity->setAnr($entity->getAnr());
                     $new_risk_entity->setObject($entity);
                     $new_risk_entity->setAmv($amv);
@@ -191,9 +187,6 @@ class ObjectService extends AbstractService
 
             $output[] = array(
                 'id' => $risk_id,
-                'c_impact' => $c_impact,
-                'i_impact' => $i_impact,
-                'd_impact' => $d_impact,
                 'threatDescription' => $amv_array['threat']['label1'],
                 'threatRate' => $prob,
                 'vulnDescription' => $amv_array['vulnerability']['label1'],
@@ -209,6 +202,39 @@ class ObjectService extends AbstractService
         }
 
         return $output;
+    }
+    */
+
+    protected function getRisks($object) {
+        $risks = [];
+
+        /** @var ObjectRiskTable $objectRiskTable */
+        $objectRiskTable = $this->get('objectRiskTable');
+        $objectRisks = $objectRiskTable->getEntityByFields(['object' => $object->id]);
+
+        foreach ($objectRisks as $objectRisk) {
+
+            /** @var AmvTable $amvTable */
+            $amvTable = $this->get('amvTable');
+            $amv = $amvTable->getEntity($objectRisk->amv->id);
+
+            $risks[] = array(
+                'id' => $objectRisk->id,
+                'threatDescription' => $amv->threat->label1,
+                'threatRate' => $objectRisk->threatRate,
+                'vulnDescription' => $amv->vulnerability->label1,
+                'vulnerabilityRate' => $objectRisk->vulnerabilityRate,
+                'c_risk' => $objectRisk->riskC,
+                'c_risk_enabled' => $amv->threat->c,
+                'i_risk' => $objectRisk->riskI,
+                'i_risk_enabled' => $amv->threat->i,
+                'd_risk' => $objectRisk->riskD,
+                'd_risk_enabled' => $amv->threat->d,
+                'comment' => $objectRisk->comment
+            );
+        }
+
+        return $risks;
     }
 
     protected function getRisksOp($object) {

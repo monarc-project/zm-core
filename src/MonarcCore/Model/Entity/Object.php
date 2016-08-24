@@ -312,54 +312,6 @@ class Object extends AbstractEntity
     }
 
     /**
-     * @return smallint
-     */
-    public function getC()
-    {
-        return $this->c;
-    }
-
-    /**
-     * @param smallint $c
-     */
-    public function setC($c)
-    {
-        $this->c = $c;
-    }
-
-    /**
-     * @return smallint
-     */
-    public function getI()
-    {
-        return $this->i;
-    }
-
-    /**
-     * @param smallint $i
-     */
-    public function setI($i)
-    {
-        $this->i = $i;
-    }
-
-    /**
-     * @return smallint
-     */
-    public function getD()
-    {
-        return $this->d;
-    }
-
-    /**
-     * @param smallint $d
-     */
-    public function setD($d)
-    {
-        $this->d = $d;
-    }
-
-    /**
      * @return int
      */
     public function getAnr()
@@ -390,9 +342,6 @@ class Object extends AbstractEntity
     {
         $this->id = $id;
     }
-
-
-
 
     public function getInputFilter($partial = false){
         if (!$this->inputFilter) {
