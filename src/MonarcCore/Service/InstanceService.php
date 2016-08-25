@@ -172,6 +172,14 @@ class InstanceService extends AbstractService
             $amvTable = $this->get('amvTable');
             $amv = $amvTable->getEntity($instanceRisk->amv->id);
 
+            for($i =1; $i<=3; $i++) {
+                $name = 'measure' . $i;
+                ${$name} = $amv->$name->getJsonArray();
+                unset(${$name}['__initializer__']);
+                unset(${$name}['__cloner__']);
+                unset(${$name}['__isInitialized__']);
+            }
+
             $risks[] = [
                 'id' => $instanceRisk->id,
                 'threatDescription1' => $amv->threat->label1,
@@ -197,7 +205,10 @@ class InstanceService extends AbstractService
                 'd_risk_enabled' => $amv->threat->d,
                 't' => ($instanceRisk->kindOfMeasure == InstanceRisk::KIND_NOT_TREATED) ? false : true,
                 'target_risk' => $this->getTargetRisk($instance['c'], $instance['i'], $instance['d'], $instanceRisk->threatRate, $instanceRisk->vulnerabilityRate, $instanceRisk->reductionAmount),
-                'comment' => $instanceRisk->comment
+                'comment' => $instanceRisk->comment,
+                'measure1' => $measure1,
+                'measure2' => $measure2,
+                'measure3' => $measure3,
             ];
         }
 
