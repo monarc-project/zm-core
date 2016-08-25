@@ -3,7 +3,6 @@ namespace MonarcCore\Controller;
 
 use Zend\Mvc\Controller\AbstractRestfulController;
 use Zend\View\Model\JsonModel;
-use Zend\Http\Response;
 
 abstract class AbstractController extends AbstractRestfulController
 {

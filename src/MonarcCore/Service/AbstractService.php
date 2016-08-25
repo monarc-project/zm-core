@@ -488,8 +488,6 @@ abstract class AbstractService extends AbstractServiceFactory
         }
     }
 
-
-
     /**
      * Get root
      *
