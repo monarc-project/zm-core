@@ -9,6 +9,7 @@ class InstanceServiceFactory extends AbstractServiceFactory
         'anrTable' => 'MonarcCore\Model\Table\AnrTable',
         'amvTable' => 'MonarcCore\Model\Table\AmvTable',
         'assetTable' => 'MonarcCore\Model\Table\AssetTable',
+        'instanceTable' => 'MonarcCore\Model\Table\InstanceTable',
         'objectTable' => 'MonarcCore\Model\Table\ObjectTable',
         'rolfRiskTable' => 'MonarcCore\Model\Table\RolfRiskTable',
         'scaleTable' => 'MonarcCore\Model\Table\ScaleTable',

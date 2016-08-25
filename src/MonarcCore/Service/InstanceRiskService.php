@@ -77,9 +77,13 @@ class InstanceRiskService extends AbstractService
         $anrId = $data['anr'];
         unset($data['anr']);
 
-        $this->verifyRates($anrId, $data);
+        $this->verifyRates($anrId, $this->getEntity($id), $data);
 
-        return parent::patch($id,$data);
+        parent::patch($id,$data);
+
+        $this->updateRisks($id);
+
+        return $id;
     }
 
     /**
@@ -94,26 +98,31 @@ class InstanceRiskService extends AbstractService
         $anrId = $data['anr'];
         unset($data['anr']);
 
-        $this->verifyRates($anrId, $data);
+        $this->verifyRates($anrId, $this->getEntity($id), $data);
 
-        return parent::update($id, $data);
+        parent::update($id, $data);
+
+        $this->updateRisks($id);
+
+        return $id;
     }
 
     /**
      * Verify Rates
      *
      * @param $anrId
+     * @param $instanceRisk
      * @param $data
      * @throws \Exception
      */
-    protected function verifyRates($anrId, $data) {
+    protected function verifyRates($anrId, $instanceRisk, $data) {
 
         $errors = [];
 
         if (array_key_exists('threatRate', $data)) {
             /** @var ScaleTable $scaleTable */
             $scaleTable = $this->get('scaleTable');
-            $scale =  $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => ScaleService::TYPE_THREAT]);
+            $scale = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => ScaleService::TYPE_THREAT]);
 
             $scale = $scale[0];
 
@@ -127,7 +136,7 @@ class InstanceRiskService extends AbstractService
         if (array_key_exists('vulnerabilityRate', $data)) {
             /** @var ScaleTable $scaleTable */
             $scaleTable = $this->get('scaleTable');
-            $scale =  $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => ScaleService::TYPE_VULNERABILITY]);
+            $scale = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => ScaleService::TYPE_VULNERABILITY]);
 
             $scale = $scale[0];
 
@@ -138,8 +147,43 @@ class InstanceRiskService extends AbstractService
             }
         }
 
+        if (array_key_exists('reductionAmount', $data)) {
+            $reductionAmount = (int) $data['reductionAmount'];
+
+            $vulnerabilityRate = (array_key_exists('vulnerabilityRate', $data)) ? (int) $data['vulnerabilityRate'] : $instanceRisk['vulnerabilityRate'];
+
+            if (($reductionAmount < 0) || ($reductionAmount > $vulnerabilityRate)) {
+                $errors[] = 'Value for reduction amount is not valid';
+            }
+        }
+
         if (count($errors)) {
             throw new \Exception(implode(', ', $errors), 412);
         }
+    }
+
+    protected function updateRisks($instanceRiskId) {
+
+        //retrieve instance risk
+        /** @var InstanceTable $instanceTable */
+        $instanceRiskTable = $this->get('table');
+        $instanceRisk = $instanceRiskTable->getEntity($instanceRiskId);
+
+        //retrieve instance
+        /** @var InstanceTable $instanceTable */
+        $instanceTable = $this->get('instanceTable');
+        $instance = $instanceTable->getEntity($instanceRisk->instance->id);
+
+        $riskC = $this->getRiskC($instance->c, $instanceRisk->threatRate, $instanceRisk->vulnerabilityRate);
+        $riskI = $this->getRiskI($instance->i, $instanceRisk->threatRate, $instanceRisk->vulnerabilityRate);
+        $riskD = $this->getRiskD($instance->d, $instanceRisk->threatRate, $instanceRisk->vulnerabilityRate);
+
+        $instanceRisk->riskC = $riskC;
+        $instanceRisk->riskI = $riskI;
+        $instanceRisk->riskD = $riskD;
+        $instanceRisk->cacheMaxRisk = max([$riskC, $riskI, $riskD]);
+        $instanceRisk->cacheTargetedRisk = $this->getTargetRisk($instance->c, $instance->i, $instance->d, $instanceRisk->threatRate, $instanceRisk->vulnerabilityRate, $instanceRisk->reductionAmount);
+
+        $instanceRiskTable->save($instanceRisk);
     }
 }

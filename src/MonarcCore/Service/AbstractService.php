@@ -2,6 +2,7 @@
 namespace MonarcCore\Service;
 
 
+use MonarcCore\Model\Table\InstanceTable;
 use MonarcCore\Model\Table\ObjectObjectTable;
 
 abstract class AbstractService extends AbstractServiceFactory
@@ -500,5 +501,30 @@ abstract class AbstractService extends AbstractServiceFactory
         } else {
             return $entity;
         }
+    }
+
+    protected function getRiskC($c, $tRate, $vRate) {
+        $cRisks = (($c != -1) && ($tRate != -1) && ($vRate != -1)) ? $c * $tRate * $vRate : -1;
+
+        return $cRisks;
+    }
+
+    protected function getRiskI($i, $tRate, $vRate) {
+        $iRisks = (($i != -1) && ($tRate != -1) && ($vRate != -1)) ? $i * $tRate * $vRate : -1;
+
+        return $iRisks;
+    }
+
+    protected function getRiskD($d, $tRate, $vRate) {
+        $dRisks = (($d != -1) && ($tRate != -1) && ($vRate != -1)) ? $d * $tRate * $vRate : -1;
+
+        return $dRisks;
+    }
+
+    protected function getTargetRisk($c, $i, $d, $tRate, $vRate, $vRateReduc) {
+        $targetRisk = (($c != -1) && ($i != -1) && ($d != -1) && ($tRate != -1) && ($vRate != -1))
+            ? max([$c, $i, $d]) * $tRate * ($vRate - $vRateReduc) : -1;
+
+        return $targetRisk;
     }
 }

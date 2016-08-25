@@ -25,6 +25,7 @@ class InstanceService extends AbstractService
     protected $amvTable;
     protected $anrTable;
     protected $assetTable;
+    protected $instanceTable;
     protected $objectTable;
     protected $rolfRiskTable;
     protected $scaleTable;
@@ -171,15 +172,6 @@ class InstanceService extends AbstractService
             $amvTable = $this->get('amvTable');
             $amv = $amvTable->getEntity($instanceRisk->amv->id);
 
-            $cRisks = (($instance['c'] != -1) && ($instanceRisk->threatRate != -1) && ($instanceRisk->vulnerabilityRate != -1))
-                ? $instance['c'] * $instanceRisk->threatRate * $instanceRisk->vulnerabilityRate : '';
-
-            $iRisks = (($instance['i'] != -1) && ($instanceRisk->threatRate != -1) && ($instanceRisk->vulnerabilityRate != -1))
-                ? $instance['i'] * $instanceRisk->threatRate * $instanceRisk->vulnerabilityRate : '';
-
-            $dRisks = (($instance['d'] != -1) && ($instanceRisk->threatRate != -1) && ($instanceRisk->vulnerabilityRate != -1))
-                ? $instance['d'] * $instanceRisk->threatRate * $instanceRisk->vulnerabilityRate : '';
-
             $risks[] = [
                 'id' => $instanceRisk->id,
                 'threatDescription1' => $amv->threat->label1,
@@ -195,15 +187,16 @@ class InstanceService extends AbstractService
                 'kindOfMeasure' => $instanceRisk->kindOfMeasure,
                 'reductionAmount' => $instanceRisk->reductionAmount,
                 'c_impact' => $instance['c'],
-                'c_risk' => $cRisks,
+                'c_risk' => $this->getRiskC($instance['c'], $instanceRisk->threatRate, $instanceRisk->vulnerabilityRate),
                 'c_risk_enabled' => $amv->threat->c,
                 'i_impact' => $instance['i'],
-                'i_risk' => $iRisks,
+                'i_risk' => $this->getRiskC($instance['i'], $instanceRisk->threatRate, $instanceRisk->vulnerabilityRate),
                 'i_risk_enabled' => $amv->threat->i,
                 'd_impact' => $instance['d'],
-                'd_risk' => $dRisks,
+                'd_risk' => $this->getRiskC($instance['d'], $instanceRisk->threatRate, $instanceRisk->vulnerabilityRate),
                 'd_risk_enabled' => $amv->threat->d,
                 't' => ($instanceRisk->kindOfMeasure == InstanceRisk::KIND_NOT_TREATED) ? false : true,
+                'target_risk' => $this->getTargetRisk($instance['c'], $instance['i'], $instance['d'], $instanceRisk->threatRate, $instanceRisk->vulnerabilityRate, $instanceRisk->reductionAmount),
                 'comment' => $instanceRisk->comment
             ];
         }
