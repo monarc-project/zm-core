@@ -1,5 +1,6 @@
 <?php
 namespace MonarcCore\Service;
+use MonarcCore\Model\Table\InstanceConsequenceTable;
 use MonarcCore\Model\Table\ScaleTypeTable;
 
 /**
@@ -41,5 +42,19 @@ class InstanceConsequenceService extends AbstractService
 
             $this->create($data);
         }
+    }
+
+    /**
+     * Get Instance Consequences
+     *
+     * @param $instanceId
+     * @param $anrId
+     * @return array|bool
+     */
+    public function getInstanceConsequences($instanceId, $anrId) {
+
+        /** @var InstanceConsequenceTable $table */
+        $table = $this->get('table');
+        return $table->getEntityByFields(['anr' => $anrId, 'instance' => $instanceId]);
     }
 }

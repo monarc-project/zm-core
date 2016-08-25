@@ -8,6 +8,7 @@ use MonarcCore\Model\Table\AmvTable;
 use MonarcCore\Model\Table\InstanceTable;
 use MonarcCore\Model\Table\RolfRiskTable;
 use MonarcCore\Model\Table\ScaleTable;
+use MonarcCore\Model\Table\ScaleTypeTable;
 
 
 /**
@@ -27,6 +28,7 @@ class InstanceService extends AbstractService
     protected $objectTable;
     protected $rolfRiskTable;
     protected $scaleTable;
+    protected $scaleImpactTypeTable;
     protected $instanceRiskService;
     protected $instanceRiskOpService;
     protected $instanceConsequenceService;
@@ -141,8 +143,9 @@ class InstanceService extends AbstractService
     public function getEntityByIdAndAnr($id, $anrId){
 
         $instance = $this->get('table')->get($id);
-        $instance['risks'] = $this->getRisks($id, $anrId);
-        $instance['oprisks'] = $this->getRisksOp($id, $anrId);;
+        $instance['risks'] = $this->getRisks($instance, $anrId);
+        $instance['oprisks'] = $this->getRisksOp($instance, $anrId);
+        $instance['consequences'] = $this->getConsequences($instance, $anrId);
 
         return $instance;
     }
@@ -150,11 +153,16 @@ class InstanceService extends AbstractService
     /**
      * Get Risks
      *
-     * @param $instanceId
+     * @param $instance
      * @param $anrId
      * @return array
      */
-    protected function getRisks($instanceId, $anrId) {
+    protected function getRisks($instance, $anrId) {
+
+        $instanceId = $instance['id'];
+
+        $cImpact = $instance['c'];
+
 
         /** @var InstanceRiskService $instanceRiskService */
         $instanceRiskService = $this->get('instanceRiskService');
@@ -165,6 +173,15 @@ class InstanceService extends AbstractService
             /** @var AmvTable $amvTable */
             $amvTable = $this->get('amvTable');
             $amv = $amvTable->getEntity($instanceRisk->amv->id);
+
+            $cRisks = (($instance['c'] != -1) && ($instanceRisk->threatRate != -1) && ($instanceRisk->vulnerabilityRate != -1))
+                ? $instance['c'] * $instanceRisk->threatRate * $instanceRisk->vulnerabilityRate : '';
+
+            $iRisks = (($instance['i'] != -1) && ($instanceRisk->threatRate != -1) && ($instanceRisk->vulnerabilityRate != -1))
+                ? $instance['i'] * $instanceRisk->threatRate * $instanceRisk->vulnerabilityRate : '';
+
+            $dRisks = (($instance['d'] != -1) && ($instanceRisk->threatRate != -1) && ($instanceRisk->vulnerabilityRate != -1))
+                ? $instance['d'] * $instanceRisk->threatRate * $instanceRisk->vulnerabilityRate : '';
 
             $risks[] = [
                 'id' => $instanceRisk->id,
@@ -178,11 +195,14 @@ class InstanceService extends AbstractService
                 'vulnDescription3' => $amv->vulnerability->label3,
                 'vulnDescription4' => $amv->vulnerability->label4,
                 'vulnerabilityRate' => $instanceRisk->vulnerabilityRate,
-                'c_risk' => $instanceRisk->riskC,
+                'c_impact' => $instance['c'],
+                'c_risk' => $cRisks,
                 'c_risk_enabled' => $amv->threat->c,
-                'i_risk' => $instanceRisk->riskI,
+                'i_impact' => $instance['i'],
+                'i_risk' => $iRisks,
                 'i_risk_enabled' => $amv->threat->i,
-                'd_risk' => $instanceRisk->riskD,
+                'd_impact' => $instance['d'],
+                'd_risk' => $dRisks,
                 'd_risk_enabled' => $amv->threat->d,
                 't' => ($instanceRisk->kindOfMeasure == InstanceRisk::KIND_NOT_TREATED) ? false : true,
                 'comment' => $instanceRisk->comment
@@ -195,11 +215,13 @@ class InstanceService extends AbstractService
     /**
      * Get Risks Op
      *
-     * @param $instanceId
+     * @param $instance
      * @param $anrId
      * @return array
      */
-    protected function getRisksOp($instanceId, $anrId) {
+    protected function getRisksOp($instance, $anrId) {
+
+        $instanceId = $instance['id'];
 
         /** @var InstanceRiskOpServiceService $instanceRiskOpService */
         $instanceRiskOpService = $this->get('instanceRiskOpService');
@@ -250,6 +272,43 @@ class InstanceService extends AbstractService
         }
 
         return $riskOps;
+    }
+
+    /**
+     * Get Consequences
+     *
+     * @param $instance
+     * @param $anrId
+     * @return array
+     */
+    protected function getConsequences($instance, $anrId) {
+
+        $instanceId = $instance['id'];
+
+        /** @var InstanceConsequenceService $instanceConsequenceService */
+        $instanceConsequenceService = $this->get('instanceConsequenceService');
+        $instanceConsequences = $instanceConsequenceService->getInstanceConsequences($instanceId, $anrId);
+
+        $consequences = [];
+        foreach ($instanceConsequences as $instanceConsequence) {
+            /** @var ScaleTypeTable $scaleImpactTypeTable */
+            $scaleImpactTypeTable = $this->get('scaleImpactTypeTable');
+            $scaleImpactType = $scaleImpactTypeTable->getEntity($instanceConsequence->scaleImpactType->id);
+
+            $consequences[] = [
+                'id' => $instanceConsequence->id,
+                'scaleImpactTypeDescription1' => $scaleImpactType->label1,
+                'scaleImpactTypeDescription2' => $scaleImpactType->label2,
+                'scaleImpactTypeDescription3' => $scaleImpactType->label3,
+                'scaleImpactTypeDescription4' => $scaleImpactType->label4,
+                'c_risk' => $instanceConsequence->c,
+                'i_risk' => $instanceConsequence->i,
+                'd_risk' => $instanceConsequence->d,
+            ];
+        }
+
+        return $consequences;
+
     }
 
     /**
