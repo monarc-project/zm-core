@@ -161,9 +161,6 @@ class InstanceService extends AbstractService
 
         $instanceId = $instance['id'];
 
-        $cImpact = $instance['c'];
-
-
         /** @var InstanceRiskService $instanceRiskService */
         $instanceRiskService = $this->get('instanceRiskService');
         $instanceRisks = $instanceRiskService->getInstanceRisks($instanceId, $anrId);
@@ -195,6 +192,8 @@ class InstanceService extends AbstractService
                 'vulnDescription3' => $amv->vulnerability->label3,
                 'vulnDescription4' => $amv->vulnerability->label4,
                 'vulnerabilityRate' => $instanceRisk->vulnerabilityRate,
+                'kindOfMeasure' => $instanceRisk->kindOfMeasure,
+                'reductionAmount' => $instanceRisk->reductionAmount,
                 'c_impact' => $instance['c'],
                 'c_risk' => $cRisks,
                 'c_risk_enabled' => $amv->threat->c,
@@ -259,6 +258,7 @@ class InstanceService extends AbstractService
                 'description3' => $rolfRisk->label3,
                 'description4' => $rolfRisk->label4,
                 'prob' => $instanceRiskOp->netProb,
+                'kindOfMeasure' => $instanceRiskOp->kindOfMeasure,
                 'r' => $instanceRiskOp->netR,
                 'o' => $instanceRiskOp->netO,
                 'l' => $instanceRiskOp->netL,
