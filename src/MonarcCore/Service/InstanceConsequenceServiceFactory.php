@@ -9,6 +9,7 @@ class InstanceConsequenceServiceFactory extends AbstractServiceFactory
         'anrTable' => 'MonarcCore\Model\Table\AnrTable',
         'instanceTable' => 'MonarcCore\Model\Table\InstanceTable',
         'objectTable' => 'MonarcCore\Model\Table\ObjectTable',
+        'scaleTable' => 'MonarcCore\Model\Table\ScaleTable',
         'scaleImpactTypeTable' => 'MonarcCore\Model\Table\ScaleTypeTable',
     );
 }

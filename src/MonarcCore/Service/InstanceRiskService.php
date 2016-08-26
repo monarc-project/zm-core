@@ -107,61 +107,6 @@ class InstanceRiskService extends AbstractService
         return $id;
     }
 
-    /**
-     * Verify Rates
-     *
-     * @param $anrId
-     * @param $instanceRisk
-     * @param $data
-     * @throws \Exception
-     */
-    protected function verifyRates($anrId, $instanceRisk, $data) {
-
-        $errors = [];
-
-        if (array_key_exists('threatRate', $data)) {
-            /** @var ScaleTable $scaleTable */
-            $scaleTable = $this->get('scaleTable');
-            $scale = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => ScaleService::TYPE_THREAT]);
-
-            $scale = $scale[0];
-
-            $prob = (int) $data['threatRate'];
-
-            if (($prob < $scale->min) || ($prob > $scale->max)) {
-                $errors[] = 'Value for probability is not valid';
-            }
-        }
-
-        if (array_key_exists('vulnerabilityRate', $data)) {
-            /** @var ScaleTable $scaleTable */
-            $scaleTable = $this->get('scaleTable');
-            $scale = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => ScaleService::TYPE_VULNERABILITY]);
-
-            $scale = $scale[0];
-
-            $prob = (int) $data['vulnerabilityRate'];
-
-            if (($prob < $scale->min) || ($prob > $scale->max)) {
-                $errors[] = 'Value for qualification is not valid';
-            }
-        }
-
-        if (array_key_exists('reductionAmount', $data)) {
-            $reductionAmount = (int) $data['reductionAmount'];
-
-            $vulnerabilityRate = (array_key_exists('vulnerabilityRate', $data)) ? (int) $data['vulnerabilityRate'] : $instanceRisk['vulnerabilityRate'];
-
-            if (($reductionAmount < 0) || ($reductionAmount > $vulnerabilityRate)) {
-                $errors[] = 'Value for reduction amount is not valid';
-            }
-        }
-
-        if (count($errors)) {
-            throw new \Exception(implode(', ', $errors), 412);
-        }
-    }
-
     protected function updateRisks($instanceRiskId) {
 
         //retrieve instance risk
