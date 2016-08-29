@@ -4,6 +4,7 @@ use MonarcCore\Model\Entity\Object;
 use MonarcCore\Model\Entity\ObjectRisk;
 use MonarcCore\Model\Table\AmvTable;
 use MonarcCore\Model\Table\AssetTable;
+use MonarcCore\Model\Table\ObjectCategoryTable;
 use MonarcCore\Model\Table\ObjectRiskTable;
 use MonarcCore\Model\Table\ObjectTable;
 
@@ -90,9 +91,13 @@ class ObjectService extends AbstractService
 
         /** @var AssetTable $assetTable */
         $assetTable = $this->get('assetTable');
+        /** @var ObjectCategoryTable $categoryTable */
+        $categoryTable = $this->get('categoryTable');
 
         foreach($objects as $object) {
             $object['asset'] = $assetTable->get($object['asset']->getId());
+            $object['category'] = $categoryTable->get($object['category']->getId());
+
             $rootArray[$object['id']] = $object;
             $objectsArray[$object['id']] = $object;
         }
