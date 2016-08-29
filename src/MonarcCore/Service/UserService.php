@@ -141,7 +141,7 @@ class UserService extends AbstractService
                 $errors[] = $message;
             }
 
-            throw new \Exception(implode($errors, ', '), 422);
+            throw new \Exception("Password must " . implode($errors, ', ') . ".", 412);
         }
     }
 
