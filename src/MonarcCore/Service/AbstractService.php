@@ -172,6 +172,8 @@ abstract class AbstractService extends AbstractServiceFactory
         //$entity = $this->get('entity');
         $class = $this->get('entity');
         $entity = new $class();
+        $entity->setLanguage($this->getLanguage());
+        $entity->setDbAdapter($this->get('table')->getDb());
         $entity->exchangeArray($data);
 
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
