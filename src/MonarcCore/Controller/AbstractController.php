@@ -145,10 +145,14 @@ abstract class AbstractController extends AbstractRestfulController
                     unset($entity[$dependency]['__isInitialized__']);
                 } else if (is_array($entity[$dependency])) {
                     foreach($entity[$dependency] as $key => $value) {
-                        $entity[$dependency][$key] = $entity[$dependency][$key]->getJsonArray();
-                        unset($entity[$dependency][$key]['__initializer__']);
-                        unset($entity[$dependency][$key]['__cloner__']);
-                        unset($entity[$dependency][$key]['__isInitialized__']);
+                        if (is_a($entity[$dependency][$key], '\MonarcCore\Model\Model')) {
+                            $entity[$dependency][$key] = $entity[$dependency][$key]->getJsonArray();
+                            unset($entity[$dependency][$key]['__initializer__']);
+                            unset($entity[$dependency][$key]['__cloner__']);
+                            unset($entity[$dependency][$key]['__isInitialized__']);
+                        } else {
+                            $entity[$dependency][$key] = null;
+                        }
                     }
                 }
             }

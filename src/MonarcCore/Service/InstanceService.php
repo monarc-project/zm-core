@@ -174,10 +174,14 @@ class InstanceService extends AbstractService
 
             for($i =1; $i<=3; $i++) {
                 $name = 'measure' . $i;
-                ${$name} = $amv->$name->getJsonArray();
-                unset(${$name}['__initializer__']);
-                unset(${$name}['__cloner__']);
-                unset(${$name}['__isInitialized__']);
+                if ($amv->$name) {
+                    ${$name} = $amv->$name->getJsonArray();
+                    unset(${$name}['__initializer__']);
+                    unset(${$name}['__cloner__']);
+                    unset(${$name}['__isInitialized__']);
+                } else {
+                    ${$name} = null;
+                }
             }
 
             $risks[] = [
