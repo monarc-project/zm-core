@@ -9,9 +9,11 @@ class AuthenticationController extends AbstractController
 
 		$t = null;
 		$uid = null;
-		if ($this->getService()->authenticate($data, $t, $uid)) {
+		$language = null;
+
+		if ($this->getService()->authenticate($data, $t, $uid, $language)) {
 			$this->response->setStatusCode(200);
-			return new JsonModel(array('token' => $t, 'uid' => $uid));
+			return new JsonModel(array('token' => $t, 'uid' => $uid, 'language' => $language));
 		} else {
 			$this->response->setStatusCode(405);
 			return new JsonModel(array());

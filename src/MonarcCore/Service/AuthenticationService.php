@@ -8,7 +8,7 @@ class AuthenticationService extends AbstractService
     protected $storage;
     protected $adapter;
 
-    public function authenticate($data, &$token = null, &$uid = null)
+    public function authenticate($data, &$token = null, &$uid = null, &$language = null)
     {
         if(!empty($data['login']) && !empty($data['password'])){
             $res = $this->get('adapter')->setIdentity($data['login'])->setCredential($data['password'])->setUserTable($this->get('userTable'))->authenticate();
@@ -16,6 +16,7 @@ class AuthenticationService extends AbstractService
                 $user = $this->get('adapter')->getUser();
                 $token = uniqid('',true);
                 $uid = $user->get('id');
+                $language = $user->get('language');
                 $this->get('storage')->addItem($token,$user);
                 return true;
             }
