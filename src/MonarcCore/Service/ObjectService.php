@@ -3,6 +3,7 @@ namespace MonarcCore\Service;
 use MonarcCore\Model\Entity\Object;
 use MonarcCore\Model\Entity\ObjectRisk;
 use MonarcCore\Model\Table\AmvTable;
+use MonarcCore\Model\Table\AssetTable;
 use MonarcCore\Model\Table\ObjectRiskTable;
 use MonarcCore\Model\Table\ObjectTable;
 
@@ -86,7 +87,12 @@ class ObjectService extends AbstractService
 
         $objectsArray = [];
         $rootArray = [];
+
+        /** @var AssetTable $assetTable */
+        $assetTable = $this->get('assetTable');
+
         foreach($objects as $object) {
+            $object['asset'] = $assetTable->get($object['asset']->getId());
             $rootArray[$object['id']] = $object;
             $objectsArray[$object['id']] = $object;
         }
