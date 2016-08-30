@@ -150,14 +150,7 @@ class RolfTag extends AbstractEntity
             'name' => 'code',
             'required' => ($partial) ? false : true,
             'allow_empty' => false,
-            'filters' => array(
-                array(
-                    'name' => '\MonarcCore\Filter\SpecAlnum',
-                    'options' => array(
-                        'allow_white_space' => true,
-                    )
-                ),
-            ),
+            'filters' => array(),
             'validators' => $validatorsCode
         ));
 
