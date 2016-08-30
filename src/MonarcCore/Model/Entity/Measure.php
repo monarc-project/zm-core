@@ -155,11 +155,7 @@ class Measure extends AbstractEntity
                 'name' => 'code',
                 'required' => ($partial) ? false : true,
                 'allow_empty' => false,
-                'filters' => array(
-                    array(
-                        'name' => 'Alnum',
-                    ),
-                ),
+                'filters' => array(),
                 'validators' => $validatorsCode
             ));
 
