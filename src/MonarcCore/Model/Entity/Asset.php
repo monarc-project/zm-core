@@ -292,11 +292,7 @@ class Asset extends AbstractEntity
             'name' => 'code',
             'required' => ($partial) ? false : true,
             'allow_empty' => false,
-            'filters' => array(
-                array(
-                    'name' => '\MonarcCore\Filter\SpecAlnum',
-                ),
-            ),
+            'filters' => array(),
             'validators' => $validatorsCode
         ));
 
