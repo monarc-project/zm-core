@@ -41,28 +41,21 @@ class InstanceService extends AbstractService
      * Instantiate Object To Anr
      *
      * @param $anrId
-     * @param $objectId
-     * @param $parentId
-     * @param $position
-     * @param $impacts
+     * @param $data
      * @return mixed|null
      * @throws \Exception
      */
-    public function instantiateObjectToAnr($anrId, $objectId, $parentId, $position, $impacts) {
+    public function instantiateObjectToAnr($anrId, $data) {
 
         //retrieve object properties
-        $object = $this->get('objectTable')->getEntity($objectId);
+        $object = $this->get('objectTable')->getEntity($data['object']);
 
         if ((is_null($object->anr)) || ($object->anr->id != $anrId)) {
             throw new \Exception('Object is not an object of this anr', 412);
         }
 
-        $data = [
-            'object' => $objectId,
-            'parent' => ($parentId) ? $parentId : null,
-            'position' => $position,
-            'anr' => $anrId,
-        ];
+        $data['anr'] = $anrId;
+
         $commonProperties = ['name1', 'name2', 'name3', 'name4', 'label1', 'label2', 'label3', 'label4'];
         foreach($commonProperties as $commonProperty) {
             $data[$commonProperty] = $object->$commonProperty;
@@ -71,8 +64,9 @@ class InstanceService extends AbstractService
         //set impacts
         /** @var InstanceTable $table */
         $table = $this->get('table');
-        $parent = ($parentId) ? $table->getEntity($parentId) : null;
-        $this->updateImpacts($anrId, $impacts, $parent, $data);
+        $parent = ($data['parent']) ? $table->getEntity($data['parent']) : null;
+
+        $this->updateImpacts($anrId, $parent, $data);
         
         //asset
         if (isset($object->asset)) {
@@ -90,25 +84,20 @@ class InstanceService extends AbstractService
         $this->setDependencies($instance, $dependencies);
 
         //parent and root
-        $parent = ($parentId) ? $table->getEntity($parentId) : null;
+        $parent = ($data['parent']) ? $table->getEntity($data['parent']) : null;
         $instance->setParent($parent);
-        $root = ($parentId) ? $this->getRoot($instance) : null;
+        $root = ($data['parent']) ? $this->getRoot($instance) : null;
         $instance->setRoot($root);
 
-        //retrieve children
-        /** @var ObjectObjectService $objectObjectService */
-        $objectObjectService = $this->get('objectObjectService');
-        $children = $objectObjectService->getChildren($objectId);
-
         //level
-        $this->updateLevels($parent, $children, $instance);
+        $this->updateLevels($parent, $data['object'], $instance);
 
-        $id = $table->createInstanceToAnr($instance, $anrId, $parentId, $position);
+        $id = $table->createInstanceToAnr($anrId, $instance, $data['parent'], $data['position']);
 
         //instances risk
         /** @var InstanceRiskService $instanceRiskService */
         $instanceRiskService = $this->get('instanceRiskService');
-        $instanceRiskService->createInstanceRisks($id, $anrId, $objectId);
+        $instanceRiskService->createInstanceRisks($id, $anrId, $object);
 
         //instances risks op
         /** @var InstanceRiskOpService $instanceRiskOpService */
@@ -120,17 +109,296 @@ class InstanceService extends AbstractService
         $instanceConsequenceService = $this->get('instanceConsequenceService');
         $instanceConsequenceService->createInstanceConsequences($id, $anrId, $object);
 
-        //children
+        $this->createChildren($anrId, $id, $object);
+
+        return $id;
+    }
+
+
+    /**
+     * Update
+     *
+     * @param $id
+     * @param $data
+     * @return mixed
+     * @throws \Exception
+     */
+    public function updateInstance($anrId, $id, $data, $historic = []){
+
+        $historic[] = $id;
+
+        /** @var InstanceTable $table */
+        $table = $this->get('table');
+
+        $instance = $table->getEntity($id);
+
+        if (!$instance) {
+            throw new \Exception('Instance not exist', 412);
+        }
+
+        $instance->setDbAdapter($table->getDb());
+        $instance->setLanguage($this->getLanguage());
+
+        if (empty($data)) {
+            throw new \Exception('Data missing', 412);
+        }
+
+        $this->updateImpacts($anrId, $instance->parent, $data);
+
+        $instance->exchangeArray($data);
+
+        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $this->setDependencies($instance, $dependencies);
+
+        $id = $this->get('table')->save($instance);
+
+        $this->updateRisks($anrId, $id);
+
+        if ($instance->root) {
+            $this->updateChildrenRoot($id, $instance->root);
+        }
+
+        $this->updateChildrenImpacts($instance);
+
+        $this->updateBrothers($anrId, $instance, $data, $historic);
+
+        return $id;
+    }
+
+    /**
+     * Patch
+     *
+     * @param $id
+     * @param $data
+     * @return mixed
+     */
+    public function patchInstance($anrId, $id, $data, $historic = []){
+
+        //security
+        $this->filterPatchFields($data, ['ch', 'ih', 'dh']);
+
+        /** @var InstanceTable $table */
+        $table = $this->get('table');
+        $instance = $table->getEntity($id);
+
+        //parent values
+        if (array_key_exists('parent', $data)) {
+            $parent = ($data['parent']) ? $table->getEntity($data['parent']) : null;
+            $instance->setParent($parent);
+
+            $root = ($data['parent']) ? $this->getRoot($instance) : null;
+            $instance->setRoot($root);
+        }
+
+        $this->updateImpacts($anrId, $instance->parent, $data);
+
+        $instance->setLanguage($this->getLanguage());
+        $instance->exchangeArray($data, true);
+
+        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $this->setDependencies($instance, $dependencies);
+
+        $id = $table->save($instance);
+
+        $this->updateRisks($anrId, $id);
+
+        if ($instance->root) {
+            $this->updateChildrenRoot($id, $instance->root);
+        }
+
+        $this->updateChildrenImpacts($instance);
+
+        $this->updateBrothers($anrId, $instance, $data, $historic);
+
+        return $id;
+    }
+
+    /**
+     * Create Children
+     * 
+     * @param $anrId
+     * @param $parentId
+     * @param $object
+     */
+    protected function createChildren($anrId, $parentId, $object) {
+
+        /** @var ObjectObjectService $objectObjectService */
+        $objectObjectService = $this->get('objectObjectService');
+        $children = $objectObjectService->getChildren($object);
+
         foreach($children as $child) {
-            $impacts = [
+            $data = [
+                'object' => $child->child->id,
+                'parent' => $parentId,
+                'position' => $child->position,
                 'c' => '-1',
                 'i' => '-1',
                 'd' => '-1'
             ];
-            $this->instantiateObjectToAnr($anrId, $child->child->id, $id, $child->position, $impacts);
+            $this->instantiateObjectToAnr($anrId, $data);
+        }
+    }
+
+    /**
+     * Update level
+     *
+     * @param $parent
+     * @param $object
+     * @param $instance
+     */
+    protected function updateLevels($parent, $object, &$instance) {
+
+        //retrieve children
+        /** @var ObjectObjectService $objectObjectService */
+        $objectObjectService = $this->get('objectObjectService');
+        $children = $objectObjectService->getChildren($object);
+
+        if (!$parent) {
+            $instance->setLevel(Instance::LEVEL_ROOT);
+        } else if (!count($children)) {
+            $instance->setLevel(Instance::LEVEL_LEAF);
+        } else {
+            $instance->setLevel(Instance::LEVEL_INTER);
+        }
+    }
+
+    /**
+     * Update Children Root
+     *
+     * @param $instanceId
+     * @param $root
+     */
+    protected function updateChildrenRoot($instanceId, $root) {
+
+        /** @var InstanceTable $table */
+        $table = $this->get('table');
+        $children = $table->getEntityByFields(['parent' => $instanceId]);
+
+        foreach($children as $child) {
+            $child->setRoot($root);
+            $table->save($child);
+            $this->updateChildrenRoot($child->id, $root);
+        }
+    }
+
+    /**
+     * Update Impacts
+     *
+     * @param $anrId
+     * @param $parent
+     * @param $data
+     */
+    protected function updateImpacts($anrId, $parent, &$data) {
+
+        $this->verifyRates($anrId, $data);
+
+        //values
+        if (isset($data['c'])) {
+            $data['ch'] = ($data['c'] == -1) ? 1 : 0;
+        }
+        if (isset($data['i'])) {
+            $data['ih'] = ($data['i'] == -1) ? 1 : 0;
+        }
+        if (isset($data['d'])) {
+            $data['dh'] = ($data['d'] == -1) ? 1 : 0;
         }
 
-        return $id;
+        if (isset($data['c']) || isset($data['i']) || isset($data['d'])) {
+            if (((isset($data['c'])) && ($data['c'] == -1))
+                || ((isset($data['i'])) && ($data['i'] == -1))
+                || ((isset($data['d'])) && ($data['d'] == -1)))  {
+                if ($parent) {
+                    if ((isset($data['c'])) && ($data['c'] == -1)) {
+                        $data['c'] = (int) $parent->c;
+                    }
+
+                    if ((isset($data['i'])) && ($data['i'] == -1)) {
+                        $data['i'] = (int) $parent->i;
+                    }
+
+                    if ((isset($data['d'])) && ($data['d'] == -1)) {
+                        $data['d'] = (int) $parent->d;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Update children
+     *
+     * @param $instance
+     */
+    protected function updateChildrenImpacts($instance) {
+
+        /** @var InstanceTable $table */
+        $table = $this->get('table');
+        $children = $table->getEntityByFields(['parent' => $instance->id]);
+
+        foreach($children as $child) {
+
+            if ($child->ch) {
+                $child->c = $instance->c;
+            }
+
+            if ($child->ih) {
+                $child->i = $instance->i;
+            }
+
+            if ($child->dh) {
+                $child->d = $instance->d;
+            }
+
+            $table->save($child);
+
+            //update children
+            $childrenData = [
+                'c' => $child->c,
+                'i' => $child->i,
+                'd' => $child->d,
+            ];
+            $this->updateChildrenImpacts($child, $childrenData);
+        }
+    }
+
+    /**
+     * Update Brothers
+     *
+     * @param $anrId
+     * @param $instance
+     * @param $data
+     * @param $historic
+     */
+    protected function updateBrothers($anrId, $instance, $data, $historic) {
+        //if source object is global, reverberate to other instance with the same source object
+        if ($instance->object->scope == Object::SCOPE_GLOBAL) {
+            //retrieve instance with same object source
+            /** @var InstanceTable $table */
+            $table = $this->get('table');
+            $brothers = $table->getEntityByFields(['object' => $instance->object->id]);
+            foreach($brothers as $brother) {
+                if (($brother->id != $instance->id) && (!in_array($brother->id, $historic))) {
+                    $this->updateInstance($anrId, $brother->id, $data, $historic);
+                }
+            }
+        }
+    }
+
+    /**
+     * Update Risks
+     *
+     * @param $anrId
+     * @param $instanceId
+     */
+    protected function updateRisks($anrId, $instanceId) {
+        //instances risk
+        /** @var InstanceRiskService $instanceRiskService */
+        $instanceRiskService = $this->get('instanceRiskService');
+        $instanceRisks = $instanceRiskService->getInstanceRisks($instanceId, $anrId);
+
+        foreach($instanceRisks as $instanceRisk) {
+            $instanceRiskService->updateRisks($instanceRisk->id);
+        }
     }
 
     /**
@@ -314,95 +582,8 @@ class InstanceService extends AbstractService
         }
 
         return $consequences;
-
     }
 
-    /**
-     * Update
-     *
-     * @param $id
-     * @param $data
-     * @return mixed
-     * @throws \Exception
-     */
-    public function updateInstance($anrId, $id, $data, $historic = []){
-
-        $historic[] = $id;
-
-        /** @var InstanceTable $table */
-        $table = $this->get('table');
-
-        $entity = $table->getEntity($id);
-
-        if (!$entity) {
-            throw new \Exception('Instance not exist', 412);
-        }
-
-        $entity->setDbAdapter($table->getDb());
-        $entity->setLanguage($this->getLanguage());
-
-        if (empty($data)) {
-            throw new \Exception('Data missing', 412);
-        }
-
-        //impacts
-        $impacts = [
-            'c' => $data['c'],
-            'i' => $data['i'],
-            'd' => $data['d'],
-        ];
-        $this->updateImpacts($anrId, $impacts, $entity->parent, $data);
-
-        $entity->exchangeArray($data);
-
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($entity, $dependencies);
-
-        //retrieve children
-        $children = $table->getEntityByFields(['parent' => $id]);
-
-        $id = $this->get('table')->save($entity);
-
-        foreach($children as $child) {
-            $fields = [
-                'id', 'asset', 'object',
-                'name1', 'name2', 'name3', 'name4',
-                'label1', 'label2', 'label3', 'label4',
-                'c', 'i', 'd', 'ch', 'ih', 'dh'
-            ];
-
-            $child = $this->get('table')->get($child->id, $fields);
-
-            foreach ($this->dependencies as $dependency){
-                $child[$dependency] = $child[$dependency]->id;
-            }
-
-            if ($child['ch']) {
-                $child['c'] = -1;
-            }
-            if ($child['ih']) {
-                $child['i'] = -1;
-            }
-            if ($child['dh']) {
-                $child['d'] = -1;
-            }
-
-            $this->updateInstance($anrId, $child['id'], $child, $historic);
-        }
-
-        //if source object is global, reverberate to other instance with the same source object
-        if ($entity->object->scope == Object::SCOPE_GLOBAL) {
-            //retrieve instance with same object source
-            $brothers = $table->getEntityByFields(['object' => $entity->object->id]);
-            foreach($brothers as $brother) {
-                if (($brother->id != $id) && (!in_array($brother->id, $historic))) {
-                    $this->updateInstance($anrId, $brother->id, $data, $historic);
-                }
-            }
-        }
-
-        return $id;
-    }
 
     /**
      * Find By Anr
@@ -413,109 +594,5 @@ class InstanceService extends AbstractService
     public function findByAnr($anrId) {
 
         return $this->get('table')->findByAnr($anrId);
-    }
-
-    /**
-     * Update impacts
-     *
-     * @param $anrId
-     * @param $newImpacts
-     * @param $parent
-     * @param $data
-     * @throws \Exception
-     */
-    public function updateImpacts($anrId, $newImpacts, $parent, &$data) {
-        /** @var ScaleTable $scaleTable */
-        $scaleTable = $this->get('scaleTable');
-        $scale = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => Scale::TYPE_IMPACT])[0];
-        foreach($newImpacts as $key => $impact) {
-            $data[$key] = $impact;
-            $data[$key . 'h'] = ($impact < 0) ? true : false;
-
-            if ($impact < 0) { //retrieve parent value
-                if ($parent) {
-                    $data[$key] = $parent->$key;
-                } else {
-                    $data[$key] = -1;
-                }
-            } else { //verify min and max
-                if (($impact < $scale->min) || ($impact > $scale->max)) {
-                    throw new \Exception('Impact must be between ' . $scale->min . ' and ' . $scale->max , 412);
-                }
-            }
-        }
-    }
-
-    /**
-     * Update level
-     *
-     * @param $parent
-     * @param $children
-     * @param $instance
-     */
-    public function updateLevels($parent, $children, &$instance) {
-        if (!$parent) {
-            $instance->setLevel(Instance::LEVEL_ROOT);
-        } else if (!count($children)) {
-            $instance->setLevel(Instance::LEVEL_LEAF);
-        } else {
-            $instance->setLevel(Instance::LEVEL_INTER);
-        }
-    }
-
-    /**
-     * Patch
-     *
-     * @param $id
-     * @param $data
-     * @return mixed
-     */
-    public function patch($id,$data){
-
-        /** @var InstanceTable $table */
-        $table = $this->get('table');
-
-        $instance = $table->getEntity($id);
-        $instance->setLanguage($this->getLanguage());
-        $instance->exchangeArray($data, true);
-
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($instance, $dependencies);
-
-        if (array_key_exists('parent', $data)) {
-            $parent = ($data['parent']) ? $table->getEntity($data['parent']) : null;
-            $instance->setParent($parent);
-
-            $root = ($data['parent']) ? $this->getRoot($instance) : null;
-            $instance->setRoot($root);
-
-            $table->save($instance);
-
-            $this->changeRootForChildren($id, $root);
-        }
-
-
-    }
-
-    /**
-     * Change root for children
-     *
-     * @param $instanceId
-     * @param $root
-     */
-    public function changeRootForChildren($instanceId, $root) {
-
-        /** @var InstanceTable $table */
-        $table = $this->get('table');
-        $children = $table->getEntityByFields(['parent' => $instanceId]);
-
-        foreach($children as $child) {
-
-            $child->setRoot($root);
-
-            $table->save($child);
-
-            $this->changeRootForChildren($child->id, $root);
-        }
     }
 }
