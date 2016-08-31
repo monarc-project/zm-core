@@ -13,6 +13,11 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Instance extends AbstractEntity
 {
+
+    const LEVEL_ROOT    = 1; //instance de racine d'un objet
+    const LEVEL_LEAF    = 2; //instance d'une feuille d'un objet
+    const LEVEL_INTER   = 3; //instance d'une noeud intermédiaire d'un objet
+
     /**
      * @var integer
      *

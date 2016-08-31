@@ -12,6 +12,10 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Scale extends AbstractEntity
 {
+    const TYPE_IMPACT = 1;
+    const TYPE_THREAT = 2;
+    const TYPE_VULNERABILITY = 3;
+
     /**
      * @var integer
      *

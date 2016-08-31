@@ -1,5 +1,6 @@
 <?php
 namespace MonarcCore\Service;
+use MonarcCore\Model\Entity\Scale;
 
 /**
  * Scale Service
@@ -13,14 +14,10 @@ class ScaleService extends AbstractService
     protected $scaleTypeService;
     protected $dependencies = ['anr'];
 
-    const TYPE_IMPACT = 1;
-    const TYPE_THREAT = 2;
-    const TYPE_VULNERABILITY = 3;
-
     protected $types = [
-      self::TYPE_IMPACT => 'impact',
-      self::TYPE_THREAT => 'threat',
-      self::TYPE_VULNERABILITY => 'vulnerability',
+        Scale::TYPE_IMPACT => 'impact',
+        Scale::TYPE_THREAT => 'threat',
+        Scale::TYPE_VULNERABILITY => 'vulnerability',
     ];
 
     /**

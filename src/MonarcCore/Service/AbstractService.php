@@ -2,6 +2,7 @@
 namespace MonarcCore\Service;
 
 
+use MonarcCore\Model\Entity\Scale;
 use MonarcCore\Model\Table\InstanceTable;
 use MonarcCore\Model\Table\ObjectObjectTable;
 
@@ -14,12 +15,6 @@ abstract class AbstractService extends AbstractServiceFactory
     protected $entity;
     protected $label;
     protected $language;
-
-    const IS_GENERIC = 0;
-    const IS_SPECIFIC = 1;
-
-    const BACK_OFFICE = 'back';
-    const FRONT_OFFICE = 'front';
 
     /**
      * @return null
@@ -556,7 +551,7 @@ abstract class AbstractService extends AbstractServiceFactory
         if (array_key_exists('threatRate', $data)) {
             /** @var ScaleTable $scaleTable */
             $scaleTable = $this->get('scaleTable');
-            $scale = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => ScaleService::TYPE_THREAT]);
+            $scale = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => Scale::TYPE_THREAT]);
 
             $scale = $scale[0];
 
@@ -570,7 +565,7 @@ abstract class AbstractService extends AbstractServiceFactory
         if (array_key_exists('vulnerabilityRate', $data)) {
             /** @var ScaleTable $scaleTable */
             $scaleTable = $this->get('scaleTable');
-            $scale = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => ScaleService::TYPE_VULNERABILITY]);
+            $scale = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => Scale::TYPE_VULNERABILITY]);
 
             $scale = $scale[0];
 
@@ -594,7 +589,7 @@ abstract class AbstractService extends AbstractServiceFactory
         if (array_key_exists('c', $data) || array_key_exists('d', $data) || array_key_exists('i', $data)) {
             /** @var ScaleTable $scaleTable */
             $scaleTable = $this->get('scaleTable');
-            $scale = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => ScaleService::TYPE_IMPACT]);
+            $scale = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => Scale::TYPE_IMPACT]);
 
             $scale = $scale[0];
 

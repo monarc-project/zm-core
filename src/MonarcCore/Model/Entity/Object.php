@@ -13,6 +13,16 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Object extends AbstractEntity
 {
+
+    // Must be 16, 24 or 32 characters
+    const SALT = '__$$00_C4535_5M1L3_00$$__XMP0)XW';
+
+    const BDC = 'bdc';
+    const ANR = 'anr';
+
+    const SCOPE_LOCAL = 1;
+    const SCOPE_GLOBAL = 2;
+
     /**
      * @var integer
      *

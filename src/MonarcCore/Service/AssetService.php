@@ -1,5 +1,6 @@
 <?php
 namespace MonarcCore\Service;
+use MonarcCore\Model\Entity\Asset;
 
 /**
  * Asset Service
@@ -18,10 +19,6 @@ class AssetService extends AbstractService
         'description1', 'description2', 'description3', 'description4',
         'code',
     ];
-
-    const ASSET_PRIMARY    = 1;
-    const ASSET_SECONDARY    = 2;
-    const ASSET_VIRTUAL    = 3;
 
     /**
      * Create
@@ -74,7 +71,7 @@ class AssetService extends AbstractService
             throw new \Exception('Integrity AMV links violation', 412);
         }
 
-        if ($entity->mode == self::IS_SPECIFIC) {
+        if ($entity->mode == Asset::IS_SPECIFIC) {
             $associateObjects = $this->get('objectService')->getGenericByAsset($entity);
             if (count($associateObjects)) {
                 throw new \Exception('Integrity AMV links violation', 412);

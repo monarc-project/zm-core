@@ -13,6 +13,11 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Asset extends AbstractEntity
 {
+
+    const ASSET_PRIMARY    = 1;
+    const ASSET_SECONDARY  = 2;
+    const ASSET_VIRTUAL    = 3;
+
     /**
      * @var integer
      *

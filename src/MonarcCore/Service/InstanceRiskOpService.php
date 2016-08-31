@@ -1,6 +1,7 @@
 <?php
 namespace MonarcCore\Service;
 
+use MonarcCore\Model\Entity\Asset;
 use MonarcCore\Model\Table\InstanceRiskOpTable;
 use MonarcCore\Model\Table\RolfRiskTable;
 use MonarcCore\Model\Table\RolfTagTable;
@@ -31,7 +32,7 @@ class InstanceRiskOpService extends AbstractService
     public function createInstanceRisksOp($instanceId, $anrId, $object) {
 
         if (isset($object->asset)) {
-            if ($object->asset->type == AssetService::ASSET_PRIMARY) {
+            if ($object->asset->type == Asset::ASSET_PRIMARY) {
                 if (!is_null($object->rolfTag)) {
 
                     //retrieve rolf risks

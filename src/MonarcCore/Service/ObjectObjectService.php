@@ -14,9 +14,6 @@ class ObjectObjectService extends AbstractService
     protected $objectTable;
     protected $dependencies = ['child'];
 
-    const IS_GENERIC = 0;
-    const IS_SPECIFIC = 1;
-
     /**
      * Create
      *
@@ -35,7 +32,7 @@ class ObjectObjectService extends AbstractService
         $father = $objectTable->get($data['father']);
         $child = $objectTable->get($data['child']);
 
-        if ($father['mode'] == self::IS_GENERIC && $child['mode'] == self::IS_SPECIFIC) {
+        if ($father['mode'] == ObjectObject::IS_GENERIC && $child['mode'] == ObjectObject::IS_SPECIFIC) {
             throw new \Exception("You cannot add a specific object to a generic parent", 412);
         }
 

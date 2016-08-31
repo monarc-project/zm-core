@@ -4,6 +4,8 @@ use DoctrineTest\InstantiatorTestAsset\ExceptionAsset;
 use MonarcCore\Model\Entity\Instance;
 use MonarcCore\Model\Entity\InstanceRisk;
 use MonarcCore\Model\Entity\InstanceRiskOp;
+use MonarcCore\Model\Entity\Object;
+use MonarcCore\Model\Entity\Scale;
 use MonarcCore\Model\Table\AmvTable;
 use MonarcCore\Model\Table\InstanceTable;
 use MonarcCore\Model\Table\RolfRiskTable;
@@ -34,10 +36,6 @@ class InstanceService extends AbstractService
     protected $instanceRiskOpService;
     protected $instanceConsequenceService;
     protected $objectObjectService;
-
-    const LEVEL_ROOT    = 1; //instance de racine d'un objet
-    const LEVEL_LEAF    = 2; //instance d'une feuille d'un objet
-    const LEVEL_INTER   = 3; //instance d'une noeud intermédiaire d'un objet
 
     /**
      * Instantiate Object To Anr
@@ -393,7 +391,7 @@ class InstanceService extends AbstractService
         }
 
         //if source object is global, reverberate to other instance with the same source object
-        if ($entity->object->scope == ObjectService::SCOPE_GLOBAL) {
+        if ($entity->object->scope == Object::SCOPE_GLOBAL) {
             //retrieve instance with same object source
             $brothers = $table->getEntityByFields(['object' => $entity->object->id]);
             foreach($brothers as $brother) {
@@ -429,7 +427,7 @@ class InstanceService extends AbstractService
     public function updateImpacts($anrId, $newImpacts, $parent, &$data) {
         /** @var ScaleTable $scaleTable */
         $scaleTable = $this->get('scaleTable');
-        $scale = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => ScaleService::TYPE_IMPACT])[0];
+        $scale = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => Scale::TYPE_IMPACT])[0];
         foreach($newImpacts as $key => $impact) {
             $data[$key] = $impact;
             $data[$key . 'h'] = ($impact < 0) ? true : false;
@@ -457,11 +455,11 @@ class InstanceService extends AbstractService
      */
     public function updateLevels($parent, $children, &$instance) {
         if (!$parent) {
-            $instance->setLevel(self::LEVEL_ROOT);
+            $instance->setLevel(Instance::LEVEL_ROOT);
         } else if (!count($children)) {
-            $instance->setLevel(self::LEVEL_LEAF);
+            $instance->setLevel(Instance::LEVEL_LEAF);
         } else {
-            $instance->setLevel(self::LEVEL_INTER);
+            $instance->setLevel(Instance::LEVEL_INTER);
         }
     }
 

@@ -1,5 +1,6 @@
 <?php
 namespace MonarcCore\Service;
+use MonarcCore\Model\Entity\Asset;
 use MonarcCore\Model\Entity\Object;
 use MonarcCore\Model\Entity\ObjectRisk;
 use MonarcCore\Model\Table\AmvTable;
@@ -19,9 +20,6 @@ class ObjectService extends AbstractService
     protected $objectObjectService;
     protected $modelService;
 
-    // Must be 16, 24 or 32 characters
-    const SALT = '__$$00_C4535_5M1L3_00$$__XMP0)XW';
-
     protected $anrTable;
     protected $assetTable;
     protected $categoryTable;
@@ -33,12 +31,6 @@ class ObjectService extends AbstractService
     protected $objectRiskService;
     /** @var ObjectRisk */
     protected $riskEntity;
-
-    const BDC = 'bdc';
-    const ANR = 'anr';
-
-    const SCOPE_LOCAL = 1;
-    const SCOPE_GLOBAL = 2;
 
     protected $filterColumns = [
         'name1', 'name2', 'name3', 'name4',
@@ -258,7 +250,7 @@ class ObjectService extends AbstractService
         $riskOps = [];
 
         if (isset($object->asset)) {
-            if ($object->asset->type == AssetService::ASSET_PRIMARY) {
+            if ($object->asset->type == Asset::ASSET_PRIMARY) {
                 if (!is_null($object->rolfTag)) {
 
                     //retrieve rolf risks
@@ -368,7 +360,7 @@ class ObjectService extends AbstractService
      * @param $data
      * @throws \Exception
      */
-    public function create($data, $context = self::BACK_OFFICE) {
+    public function create($data, $context = Object::BACK_OFFICE) {
 
         //position
         $previous = (isset($data['previous'])) ? $data['previous'] : null;
@@ -401,16 +393,16 @@ class ObjectService extends AbstractService
         }
 
         //security
-        if ($object->mode == self::IS_GENERIC && $object->asset->mode == self::IS_SPECIFIC) {
+        if ($object->mode == Object::IS_GENERIC && $object->asset->mode == Object::IS_SPECIFIC) {
             throw new \Exception("You can't have a generic object based on a specific asset", 412);
         }
         if (isset($data['modelId'])) {
             $this->get('modelService')->canAcceptObject($data['modelId'], $object, $context);
         }
 
-        if ($context == self::BACK_OFFICE) {
+        if ($context == Object::BACK_OFFICE) {
             //create object type bdc
-            $object->type = self::BDC;
+            $object->type = Object::BDC;
             $id = $this->get('table')->save($object);
 
             //attach object to anr
@@ -549,14 +541,14 @@ class ObjectService extends AbstractService
         }
 
         //verify object not exist to anr
-        $existingObjectsToAnr = $table->getEntityByFields(array('source' => $object->id, 'anr' => $anrId, 'type' => self::ANR));
+        $existingObjectsToAnr = $table->getEntityByFields(array('source' => $object->id, 'anr' => $anrId, 'type' => Object::ANR));
         if (count($existingObjectsToAnr)) {
             throw new \Exception('This object already exists in the current risk analysis', 412);
         }
 
         $anrObject = clone $object;
         $anrObject->id = null;
-        $anrObject->type = self::ANR;
+        $anrObject->type = Object::ANR;
         $anrObject->anr = $this->get('anrTable')->getEntity($anrId);
         $anrObject->source = $this->get('table')->getEntity($object->id);
 
@@ -675,10 +667,10 @@ class ObjectService extends AbstractService
     }
 
     protected function encrypt($data) {
-        return mcrypt_encrypt(MCRYPT_RIJNDAEL_256, self::SALT, $data, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND));
+        return mcrypt_encrypt(MCRYPT_RIJNDAEL_256, Object::SALT, $data, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND));
     }
 
     protected function decrypt($data) {
-        return mcrypt_decrypt(MCRYPT_RIJNDAEL_256, self::SALT, $data, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND));
+        return mcrypt_decrypt(MCRYPT_RIJNDAEL_256, Object::SALT, $data, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND));
     }
 }

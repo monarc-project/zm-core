@@ -1,5 +1,6 @@
 <?php
 namespace MonarcCore\Service;
+use MonarcCore\Model\Entity\AbstractEntity;
 
 /**
  * Amv Service
@@ -413,7 +414,7 @@ class AmvService extends AbstractService
             $entity->setLanguage($this->getLanguage());
             $entity->get('models')->initialize();
 
-            if ($entity->mode == $serviceName::IS_SPECIFIC) { //petite sécurité pour pas construire de la daube
+            if ($entity->mode == AbstractEntity::IS_SPECIFIC) { //petite sécurité pour pas construire de la daube
 
                 foreach($entity->get('models') as $model){
                     $entity->get('models')->removeElement($model);
