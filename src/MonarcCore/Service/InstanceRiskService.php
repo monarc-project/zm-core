@@ -112,7 +112,7 @@ class InstanceRiskService extends AbstractService
      *
      * @param $instanceRiskId
      */
-    protected function updateRisks($instanceRiskId) {
+    public function updateRisks($instanceRiskId) {
 
         //retrieve instance risk
         /** @var InstanceTable $instanceTable */

@@ -13,7 +13,7 @@ class InstanceTable extends AbstractEntityTable {
      * @return mixed|null
      * @throws \Exception
      */
-    public function createInstanceToAnr($instance, $anrId, $parentId, $position) {
+    public function createInstanceToAnr($anrId, $instance, $parentId, $position) {
 
         $this->getDb()->beginTransaction();
 
