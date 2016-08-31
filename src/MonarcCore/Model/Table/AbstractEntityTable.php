@@ -186,15 +186,21 @@ abstract class AbstractEntityTable
             $sign .= '=';
         }
 
-        return $this->getRepository()->createQueryBuilder('t')
+        $return = $this->getRepository()->createQueryBuilder('t')
             ->update()
-            ->set('t.position', 't.position' . $positionDirection)
-            ->where('t.' . $field . ' = :parentid')
-            ->andWhere('t.position ' . $sign . ' :position')
-            ->setParameter(':parentid', $parentId)
+            ->set('t.position', 't.position' . $positionDirection);
+        if(empty($parentId)){
+            $return = $return->where('t.' . $field . ' IS NULL');
+        }else{
+            $return = $return->where('t.' . $field . ' = :parentid')
+            ->setParameter(':parentid', $parentId);
+            
+        }
+        $return = $return->andWhere('t.position ' . $sign . ' :position')
             ->setParameter(':position', $position)
             ->getQuery()
             ->getResult();
+        return $return;
     }
 
     /**
@@ -207,10 +213,14 @@ abstract class AbstractEntityTable
     public function maxPositionByParent($field, $parentId)
     {
         $maxPosition = $this->getRepository()->createQueryBuilder('t')
-            ->select(array('max(t.position)'))
-            ->where('t.' . $field . ' = :parentid')
-            ->setParameter(':parentid', $parentId)
-            ->getQuery()
+            ->select(array('max(t.position)'));
+        if(empty($parentId)){
+            $maxPosition = $maxPosition->where('t.' . $field . ' IS NULL');
+        }else{
+            $maxPosition = $maxPosition->where('t.' . $field . ' = :parentid')
+            ->setParameter(':parentid', $parentId);
+        }
+        $maxPosition = $maxPosition->getQuery()
             ->getResult();
 
         return $maxPosition[0][1];
