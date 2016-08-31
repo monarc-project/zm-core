@@ -77,7 +77,7 @@ class InstanceRiskService extends AbstractService
         $anrId = $data['anr'];
         unset($data['anr']);
 
-        $this->verifyRates($anrId, $this->getEntity($id), $data);
+        $this->verifyRates($anrId, $data, $this->getEntity($id));
 
         parent::patch($id,$data);
 
@@ -98,7 +98,7 @@ class InstanceRiskService extends AbstractService
         $anrId = $data['anr'];
         unset($data['anr']);
 
-        $this->verifyRates($anrId, $this->getEntity($id), $data);
+        $this->verifyRates($anrId, $data, $this->getEntity($id));
 
         parent::update($id, $data);
 
@@ -107,6 +107,11 @@ class InstanceRiskService extends AbstractService
         return $id;
     }
 
+    /**
+     * Update Risks
+     *
+     * @param $instanceRiskId
+     */
     protected function updateRisks($instanceRiskId) {
 
         //retrieve instance risk

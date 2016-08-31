@@ -544,7 +544,7 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param $data
      * @throws \Exception
      */
-    protected function verifyRates($anrId, $instanceRisk, $data) {
+    protected function verifyRates($anrId, $data, $instanceRisk = null) {
 
         $errors = [];
 
@@ -576,13 +576,15 @@ abstract class AbstractService extends AbstractServiceFactory
             }
         }
 
-        if (array_key_exists('reductionAmount', $data)) {
-            $reductionAmount = (int) $data['reductionAmount'];
+        if ($instanceRisk) {
+            if (array_key_exists('reductionAmount', $data)) {
+                $reductionAmount = (int)$data['reductionAmount'];
 
-            $vulnerabilityRate = (array_key_exists('vulnerabilityRate', $data)) ? (int) $data['vulnerabilityRate'] : $instanceRisk['vulnerabilityRate'];
+                $vulnerabilityRate = (array_key_exists('vulnerabilityRate', $data)) ? (int)$data['vulnerabilityRate'] : $instanceRisk['vulnerabilityRate'];
 
-            if (($reductionAmount < 0) || ($reductionAmount > $vulnerabilityRate)) {
-                $errors[] = 'Value for reduction amount is not valid';
+                if (($reductionAmount < 0) || ($reductionAmount > $vulnerabilityRate)) {
+                    $errors[] = 'Value for reduction amount is not valid';
+                }
             }
         }
 

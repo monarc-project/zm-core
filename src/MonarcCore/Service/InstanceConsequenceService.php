@@ -109,7 +109,7 @@ class InstanceConsequenceService extends AbstractService
         $anrId = $data['anr'];
         unset($data['anr']);
 
-        $this->verifyRates($anrId, $this->getEntity($id), $data);
+        $this->verifyRates($anrId, $data, $this->getEntity($id));
 
         if (array_key_exists('c', $data)) {
             if (($data['c'] == -1) || ($data['i'] == -1) || ($data['d'] == -1))  {

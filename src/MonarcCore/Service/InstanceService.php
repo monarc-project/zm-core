@@ -470,31 +470,47 @@ class InstanceService extends AbstractService
      * @param $data
      * @return mixed
      */
-    public function patch($id,$data){
+    public function patchInstance($anrId, $id, $data){
+
+        //security
+        $this->filterPatchFields($data, ['ch', 'ih', 'dh']);
+
+        //verify value
+        $this->verifyRates($anrId, $data);
 
         /** @var InstanceTable $table */
         $table = $this->get('table');
 
         $instance = $table->getEntity($id);
-        $instance->setLanguage($this->getLanguage());
-        $instance->exchangeArray($data, true);
 
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($instance, $dependencies);
-
+        //parent values
         if (array_key_exists('parent', $data)) {
             $parent = ($data['parent']) ? $table->getEntity($data['parent']) : null;
             $instance->setParent($parent);
 
             $root = ($data['parent']) ? $this->getRoot($instance) : null;
             $instance->setRoot($root);
-
-            $table->save($instance);
-
-            $this->changeRootForChildren($id, $root);
         }
 
+        $this->updateCid($instance, $data);
 
+        $instance->setLanguage($this->getLanguage());
+        $instance->exchangeArray($data, true);
+
+        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $this->setDependencies($instance, $dependencies);
+
+        $id = $table->save($instance);
+
+        //update root children
+        if ($instance->root) {
+            $this->changeRootForChildren($id, $instance->root);
+        }
+
+        //update cid children
+        $this->updateChildren($instance);
+
+        return $id;
     }
 
     /**
@@ -510,12 +526,88 @@ class InstanceService extends AbstractService
         $children = $table->getEntityByFields(['parent' => $instanceId]);
 
         foreach($children as $child) {
-
             $child->setRoot($root);
+            $table->save($child);
+            $this->changeRootForChildren($child->id, $root);
+        }
+    }
+
+    /**
+     * Update CID
+     *
+     * @param $instance
+     * @param $data
+     */
+    protected function updateCid($instance, &$data) {
+        //values
+        if (isset($data['c'])) {
+            $data['ch'] = ($data['c'] == -1) ? 1 : 0;
+        }
+        if (isset($data['i'])) {
+            $data['ih'] = ($data['i'] == -1) ? 1 : 0;
+        }
+        if (isset($data['d'])) {
+            $data['dh'] = ($data['d'] == -1) ? 1 : 0;
+        }
+
+        if (isset($data['c']) || isset($data['i']) || isset($data['d'])) {
+            if (((isset($data['c'])) && ($data['c'] == -1))
+                || ((isset($data['i'])) && ($data['i'] == -1))
+                || ((isset($data['d'])) && ($data['d'] == -1)))  {
+                if ($instance->getparent()) {
+                    $parent = $this->getEntity($instance->getparent());
+
+                    if ((isset($data['c'])) && ($data['c'] == -1)) {
+                        $data['c'] = (int) $parent['c'];
+                    }
+
+                    if ((isset($data['i'])) && ($data['i'] == -1)) {
+                        $data['i'] = (int) $parent['i'];
+                    }
+
+                    if ((isset($data['d'])) && ($data['d'] == -1)) {
+                        $data['d'] = (int) $parent['d'];
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Update children
+     *
+     * @param $instance
+     */
+    protected function updateChildren($instance) {
+
+
+        /** @var InstanceTable $table */
+        $table = $this->get('table');
+        $children = $table->getEntityByFields(['parent' => $instance->id]);
+
+        foreach($children as $child) {
+
+            if ($child->ch) {
+                $child->c = $instance->c;
+            }
+
+            if ($child->ih) {
+                $child->i = $instance->i;
+            }
+
+            if ($child->dh) {
+                $child->d = $instance->d;
+            }
 
             $table->save($child);
 
-            $this->changeRootForChildren($child->id, $root);
+            //update children
+            $childrenData = [
+                'c' => $child->c,
+                'i' => $child->i,
+                'd' => $child->d,
+            ];
+            $this->updateChildren($child, $childrenData);
         }
     }
 }
