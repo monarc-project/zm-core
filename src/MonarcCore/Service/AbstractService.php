@@ -384,9 +384,14 @@ abstract class AbstractService extends AbstractServiceFactory
                 $position = $maxPosition + 1;
                 break;
             case 3:
-                $previousObject = $this->get('table')->getEntity($previous);
-                $this->get('table')->changePositionsByParent($field, $parentId, $previousObject->position + 1, 'up', 'after');
-                $position = $previousObject->position + 1;
+                if(empty($previous)){ // dans le cas où le "$previous" n'est pas renseigné
+                    $maxPosition = $this->get('table')->maxPositionByParent($field, $parentId);
+                    $position = $maxPosition + 1;
+                }else{
+                    $previousObject = $this->get('table')->getEntity($previous);
+                    $this->get('table')->changePositionsByParent($field, $parentId, $previousObject->position + 1, 'up', 'after');
+                    $position = $previousObject->position + 1;
+                }
                 break;
         }
 
