@@ -12,6 +12,25 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class ScaleType extends AbstractEntity
 {
+    const SCALE_TYPE_C = 1;
+    const SCALE_TYPE_I = 2;
+    const SCALE_TYPE_D = 3;
+    const SCALE_TYPE_R = 4;
+    const SCALE_TYPE_O = 5;
+    const SCALE_TYPE_L = 6;
+    const SCALE_TYPE_F = 7;
+    const SCALE_TYPE_P = 8;
+
+    static function getSclaeTypeRolfp() {
+        return [
+            self::SCALE_TYPE_R,
+            self::SCALE_TYPE_O,
+            self::SCALE_TYPE_L,
+            self::SCALE_TYPE_F,
+            self::SCALE_TYPE_P,
+        ];
+    }
+
     /**
      * @var integer
      *

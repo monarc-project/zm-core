@@ -34,7 +34,7 @@ class InstanceService extends AbstractService
     protected $scaleImpactTypeTable;
     protected $instanceRiskService;
     protected $instanceRiskOpService;
-    protected $instanceConsequenceService;
+    protected $instanceConsequenceTable;
     protected $objectObjectService;
 
     /**
@@ -559,9 +559,9 @@ class InstanceService extends AbstractService
 
         $instanceId = $instance['id'];
 
-        /** @var InstanceConsequenceService $instanceConsequenceService */
-        $instanceConsequenceService = $this->get('instanceConsequenceService');
-        $instanceConsequences = $instanceConsequenceService->getInstanceConsequences($instanceId, $anrId);
+        /** @var InstanceConsequenceTable $table */
+        $table = $this->get('instanceConsequenceTable');
+        $instanceConsequences = $table->getEntityByFields(['anr' => $anrId, 'instance' => $instanceId]);
 
         $consequences = [];
         foreach ($instanceConsequences as $instanceConsequence) {

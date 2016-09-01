@@ -143,17 +143,6 @@ class RolfRisk extends AbstractEntity
     }
 
     /**
-     * Set rolf category
-     *
-     * @param key
-     * @param RolfCategory $rolfCategory
-     */
-    public function setCategory($id, RolfCategory $rolfCategory)
-    {
-        $this->categories[$id] = $rolfCategory;
-    }
-
-    /**
      * Set rolf tag
      *
      * @param key
@@ -230,7 +219,6 @@ class RolfRisk extends AbstractEntity
 
     public function __construct()
     {
-        $this->rolfCategories = new ArrayCollection();
         $this->rolfTags = new ArrayCollection();
     }
 }

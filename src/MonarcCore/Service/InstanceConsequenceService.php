@@ -1,5 +1,6 @@
 <?php
 namespace MonarcCore\Service;
+use MonarcCore\Model\Entity\ScaleType;
 use MonarcCore\Model\Table\InstanceConsequenceTable;
 use MonarcCore\Model\Table\InstanceTable;
 use MonarcCore\Model\Table\ScaleTypeTable;
@@ -19,6 +20,7 @@ class InstanceConsequenceService extends AbstractService
     protected $objectTable;
     protected $scaleTable;
     protected $scaleImpactTypeTable;
+    protected $instanceService;
 
     /**
      * Create Instance Consequences
@@ -47,20 +49,6 @@ class InstanceConsequenceService extends AbstractService
     }
 
     /**
-     * Get Instance Consequences
-     *
-     * @param $instanceId
-     * @param $anrId
-     * @return array|bool
-     */
-    public function getInstanceConsequences($instanceId, $anrId) {
-
-        /** @var InstanceConsequenceTable $table */
-        $table = $this->get('table');
-        return $table->getEntityByFields(['anr' => $anrId, 'instance' => $instanceId]);
-    }
-
-    /**
      * Patch
      *
      * @param $id
@@ -76,6 +64,8 @@ class InstanceConsequenceService extends AbstractService
             $data = $this->updateConsequences($id, $data);
 
             parent::patch($id,$data);
+
+            $this->updateInstanceImpacts($id);
         }
 
         return $id;
@@ -94,6 +84,8 @@ class InstanceConsequenceService extends AbstractService
         $data = $this->updateConsequences($id, $data);
 
         parent::update($id,$data);
+
+        $this->updateInstanceImpacts($id);
     }
 
     /**
@@ -119,5 +111,41 @@ class InstanceConsequenceService extends AbstractService
         }
 
         return $data;
+    }
+
+    /**
+     * Update Instance Impacts
+     *
+     * @param $instanceConsequencesId
+     */
+    protected function updateInstanceImpacts($instanceConsequencesId) {
+
+        $rolfpTypes = ScaleType::getSclaeTypeRolfp();
+
+        /** @var InstanceConsequenceTable $table */
+        $table = $this->get('table');
+        $instanceCurrentConsequence = $table->getEntity($instanceConsequencesId);
+
+        $instanceC = [];
+        $instanceI = [];
+        $instanceD = [];
+        $instanceConsequences = $table->getEntityByFields(['instance' => $instanceCurrentConsequence->instance->id]);
+        foreach ($instanceConsequences as $instanceConsequence) {
+            if (in_array($instanceConsequence->scaleImpactType->type, $rolfpTypes)) {
+                $instanceC[] = (int) $instanceConsequence->c;
+                $instanceI[] = (int) $instanceConsequence->i;
+                $instanceD[] = (int) $instanceConsequence->D;
+            }
+        }
+
+        $data = [
+            'c' => max($instanceC),
+            'i' => max($instanceI),
+            'd' => max($instanceD)
+        ];
+
+        /** @var InstanceService $instanceService */
+        $instanceService = $this->get('instanceService');
+        $instanceService->patchInstance($instanceCurrentConsequence->anr->id, $instanceCurrentConsequence->instance->id, $data);
     }
 }
