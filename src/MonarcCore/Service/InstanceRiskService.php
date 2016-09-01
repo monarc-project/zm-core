@@ -47,8 +47,11 @@ class InstanceRiskService extends AbstractService
                 'vulnerability' => $objectRisk->vulnerability->id,
             ];
 
-            $this->create($data);
+            $instanceRiskId = $this->create($data);
+
+            $this->updateRisks($instanceRiskId);
         }
+
     }
 
     /**

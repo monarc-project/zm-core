@@ -215,7 +215,7 @@ class InstanceService extends AbstractService
 
     /**
      * Create Children
-     * 
+     *
      * @param $anrId
      * @param $parentId
      * @param $object
@@ -465,16 +465,16 @@ class InstanceService extends AbstractService
                 'kindOfMeasure' => $instanceRisk->kindOfMeasure,
                 'reductionAmount' => $instanceRisk->reductionAmount,
                 'c_impact' => $instance['c'],
-                'c_risk' => $this->getRiskC($instance['c'], $instanceRisk->threatRate, $instanceRisk->vulnerabilityRate),
+                'c_risk' => $instanceRisk->riskC,
                 'c_risk_enabled' => $amv->threat->c,
                 'i_impact' => $instance['i'],
-                'i_risk' => $this->getRiskC($instance['i'], $instanceRisk->threatRate, $instanceRisk->vulnerabilityRate),
+                'i_risk' => $instanceRisk->riskI,
                 'i_risk_enabled' => $amv->threat->i,
                 'd_impact' => $instance['d'],
-                'd_risk' => $this->getRiskC($instance['d'], $instanceRisk->threatRate, $instanceRisk->vulnerabilityRate),
+                'd_risk' => $instanceRisk->riskD,
                 'd_risk_enabled' => $amv->threat->d,
                 't' => ($instanceRisk->kindOfMeasure == InstanceRisk::KIND_NOT_TREATED) ? false : true,
-                'target_risk' => $this->getTargetRisk($instance['c'], $instance['i'], $instance['d'], $instanceRisk->threatRate, $instanceRisk->vulnerabilityRate, $instanceRisk->reductionAmount),
+                'target_risk' => $instanceRisk->cacheTargetedRisk,
                 'comment' => $instanceRisk->comment,
                 'measure1' => $measure1,
                 'measure2' => $measure2,
