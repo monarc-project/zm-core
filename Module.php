@@ -168,12 +168,6 @@ class Module
                     $entity->setLanguage($this->getDefaultLanguage($sm));
                     return $entity;
                 },
-                '\MonarcCore\Model\Entity\RolfCategory' => function($sm){
-                    $entity = new Model\Entity\RolfCategory();
-                    $entity->setDbAdapter($sm->get('\MonarcCore\Model\Db'));
-                    $entity->setLanguage($this->getDefaultLanguage($sm));
-                    return $entity;
-                },
                 '\MonarcCore\Model\Entity\RolfTag' => function($sm){
                     $entity = new Model\Entity\RolfTag();
                     $entity->setDbAdapter($sm->get('\MonarcCore\Model\Db'));
@@ -319,11 +313,6 @@ class Module
                     $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
                     return $table;
                 },
-                '\MonarcCore\Model\Table\RolfCategoryTable' => function($sm){
-                    $table = new Model\Table\RolfCategoryTable($sm->get('\MonarcCore\Model\Db'));
-                    $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
-                    return $table;
-                },
                 '\MonarcCore\Model\Table\RolfTagTable' => function($sm){
                     $table = new Model\Table\RolfTagTable($sm->get('\MonarcCore\Model\Db'));
                     $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
@@ -412,6 +401,7 @@ class Module
             'factories' => array(
                 '\MonarcCore\Controller\Index' => '\MonarcCore\Controller\IndexControllerFactory',
                 '\MonarcCore\Controller\Authentication' => '\MonarcCore\Controller\AuthenticationControllerFactory',
+                '\MonarcCore\Controller\ApiModels' => '\MonarcCore\Controller\ApiModelsControllerFactory',
             ),
         );
     }
