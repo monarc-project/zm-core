@@ -412,6 +412,7 @@ class Module
             'factories' => array(
                 '\MonarcCore\Controller\Index' => '\MonarcCore\Controller\IndexControllerFactory',
                 '\MonarcCore\Controller\Authentication' => '\MonarcCore\Controller\AuthenticationControllerFactory',
+                '\MonarcCore\Controller\ApiModels' => '\MonarcCore\Controller\ApiModelsControllerFactory',
             ),
         );
     }
