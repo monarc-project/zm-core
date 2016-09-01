@@ -23,17 +23,6 @@ class RolfRisk extends AbstractEntity
     protected $id;
 
     /**
-     * @var \MonarcCore\Model\Entity\RolfCategory
-     *
-     * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\RolfCategory", inversedBy="rolf_categories", cascade={"persist"})
-     * @ORM\JoinTable(name="rolf_risks_categories",
-     *  joinColumns={@ORM\JoinColumn(name="rolf_risk_id", referencedColumnName="id")},
-     *  inverseJoinColumns={@ORM\JoinColumn(name="rolf_category_id", referencedColumnName="id")}
-     * )
-     */
-    protected $categories;
-
-    /**
      * @var \MonarcCore\Model\Entity\RolfTag
      *
      * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\RolfTag", inversedBy="rolf_tags", cascade={"persist"})

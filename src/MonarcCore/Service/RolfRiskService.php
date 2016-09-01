@@ -21,15 +21,6 @@ class RolfRiskService extends AbstractService
         $filterAnd = [];
         $filterJoin = [];
 
-        if (!is_null($category)) {
-            $filterJoin[] = [
-                'as' => 'c',
-                'rel' => 'categories'
-            ];
-
-            $filterAnd['c.id'] = $category;
-        }
-
         if (!is_null($tag)) {
             $filterJoin[] = [
                 'as' => 'g',
@@ -105,32 +96,13 @@ class RolfRiskService extends AbstractService
         $entity->setDbAdapter($this->get('table')->getDb());
         $entity->setLanguage($this->getLanguage());
         $entity->exchangeArray($data);
-        $entity->get('categories')->initialize();
         $entity->get('tags')->initialize();
-
-        foreach($entity->get('categories') as $rolfCategory){
-            if (in_array($rolfCategory->get('id'), $rolfCategories)){
-                unset($rolfCategories[array_search($rolfCategory->get('id'), $rolfCategories)]);
-            } else {
-                $entity->get('categories')->removeElement($rolfCategory);
-            }
-        }
 
         foreach($entity->get('tags') as $rolfTag){
             if (in_array($rolfTag->get('id'), $rolfTags)){
                 unset($rolfTags[array_search($rolfTag->get('id'), $rolfTags)]);
             } else {
                 $entity->get('tags')->removeElement($rolfTag);
-            }
-        }
-
-        if (!empty($rolfCategories)){
-            $rolfCategoryTable = $this->get('rolfCategoryTable');
-            foreach ($rolfCategories as $key => $rolfCategoryId) {
-                if(!empty($rolfCategoryId)){
-                    $rolfCategory = $rolfCategoryTable->getEntity($rolfCategoryId);
-                    $entity->setCategory($key, $rolfCategory);
-                }
             }
         }
 

@@ -76,8 +76,6 @@ class InstanceConsequenceService extends AbstractService
             $data = $this->updateConsequences($id, $data);
 
             parent::patch($id,$data);
-
-            $this->updateChildren($id, ['ch' => $data['ch'], 'ih' => $data['ih'],'dh' => $data['dh']]);
         }
 
         return $id;
@@ -96,8 +94,6 @@ class InstanceConsequenceService extends AbstractService
         $data = $this->updateConsequences($id, $data);
 
         parent::update($id,$data);
-
-        $this->updateChildren($id, ['ch' => $data['ch'], 'ih' => $data['ih'],'dh' => $data['dh']]);
     }
 
     /**
@@ -111,123 +107,17 @@ class InstanceConsequenceService extends AbstractService
 
         $this->verifyRates($anrId, $data, $this->getEntity($id));
 
-        if (array_key_exists('c', $data)) {
-            if (($data['c'] == -1) || ($data['i'] == -1) || ($data['d'] == -1))  {
-                $parentConsequences = $this->getParentConsequences($id);
-
-                if ($data['c'] == -1) {
-                    $data['ch'] = ($parentConsequences) ? (int) $parentConsequences['c'] : -1;
-                } else {
-                    $data['ch'] = (int) $data['c'];
-                }
-
-                if ($data['i'] == -1) {
-                    $data['ih'] = ($parentConsequences) ? (int) $parentConsequences['i'] : -1;
-                } else {
-                    $data['ih'] = (int) $data['i'];
-                }
-
-                if ($data['d'] == -1) {
-                    $data['dh'] = ($parentConsequences) ? (int) $parentConsequences['d'] : -1;
-                } else {
-                    $data['dh'] = (int) $data['d'];
-                }
-            }
+        //values
+        if (isset($data['c'])) {
+            $data['ch'] = ($data['c'] == -1) ? 1 : 0;
+        }
+        if (isset($data['i'])) {
+            $data['ih'] = ($data['i'] == -1) ? 1 : 0;
+        }
+        if (isset($data['d'])) {
+            $data['dh'] = ($data['d'] == -1) ? 1 : 0;
         }
 
         return $data;
-    }
-
-    /**
-     * Get Parent Consequences
-     *
-     * @param $instanceConsequenceId
-     * @return array|bool
-     */
-    protected function getParentConsequences($instanceConsequenceId) {
-
-        //retrieve instance consequences
-        /** @var InstanceConsequenceTable $table */
-        $table = $this->get('table');
-        $instanceConsequence = $table->getEntity($instanceConsequenceId);
-
-        //retrieve instance
-        /** @var InstanceTable $instanceTable */
-        $instanceTable = $this->get('instanceTable');
-        $instance = $instanceTable->getEntity($instanceConsequence->instance->id);
-
-        if (is_null($instance->parent)) {
-            return false;
-        } else {
-            //retrieve instance consequences for the parent
-            $parentInstanceConsequence = $table->getEntityByFields([
-                'anr' => $instanceConsequence->anr->id,
-                'instance' => $instance->parent->id,
-                'scaleImpactType' => $instanceConsequence->scaleImpactType->id
-            ]);
-
-            if ($parentInstanceConsequence[0]->c == -1) {
-                return [
-                    'c' => $parentInstanceConsequence[0]->ch,
-                    'i' => $parentInstanceConsequence[0]->ih,
-                    'd' => $parentInstanceConsequence[0]->dh,
-                ];
-            } else {
-                return [
-                    'c' => $parentInstanceConsequence[0]->c,
-                    'i' => $parentInstanceConsequence[0]->i,
-                    'd' => $parentInstanceConsequence[0]->d,
-                ];
-            }
-        }
-    }
-
-    /**
-     * Update children
-     *
-     * @param $instanceConsequenceId
-     * @param $data
-     */
-    protected function updateChildren($instanceConsequenceId, $data) {
-
-        //retrieve instance consequence
-        /** @var InstanceConsequenceTable $table */
-        $table = $this->get('table');
-        $instanceConsequence = $table->getEntity($instanceConsequenceId);
-
-        //retrieve children instance
-        /** @var InstanceTable $instanceTable */
-        $instanceTable = $this->get('instanceTable');
-        $instancesChildren = $instanceTable->getEntityByFields(['parent' => $instanceConsequence->instance->id]);
-
-        foreach($instancesChildren as $instance) {
-
-            //retrieve instance consequences for the child
-            $childInstanceConsequence = $table->getEntityByFields([
-                'anr' => $instanceConsequence->anr->id,
-                'instance' => $instance->id,
-                'scaleImpactType' => $instanceConsequence->scaleImpactType->id
-            ]);
-
-            if ($childInstanceConsequence[0]->c == -1) {
-                $childInstanceConsequence[0]->ch = $data['ch'];
-            }
-            if ($childInstanceConsequence[0]->i == -1) {
-                $childInstanceConsequence[0]->ih = $data['ih'];
-            }
-            if ($childInstanceConsequence[0]->d == -1) {
-                $childInstanceConsequence[0]->dh = $data['dh'];
-            }
-
-            $table->save($childInstanceConsequence[0]);
-
-            //update children
-            $childrenData = [
-                'ch' => $childInstanceConsequence[0]->ch,
-                'ih' => $childInstanceConsequence[0]->ih,
-                'dh' => $childInstanceConsequence[0]->dh
-            ];
-            $this->updateChildren($childInstanceConsequence[0]->id, $childrenData);
-        }
     }
 }
