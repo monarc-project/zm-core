@@ -450,6 +450,21 @@ class ObjectService extends AbstractService
             $data['position'] = $this->managePositionUpdate('category', $entity, $data['category'], $data['implicitPosition'], $previous);
         }
 
+        if(isset($data['mode']) && $data['mode'] != $entity->get('mode')){
+            /* on test:
+            - que l'on a pas de parents GENERIC quand on passe de GENERIC à SPECIFIC
+            - que l'on a pas de fils SPECIFIC quand on passe de SPECIFIC à GENERIC
+            */
+            if(!$this->checkModeIntegrity($entity->get('id'),$entity->get('mode'))){
+                if($entity->get('mode')==Object::IS_GENERIC){
+                    throw new \Exception('Entity parent with generic mode is defined.');
+                }else{
+                    throw new \Exception('Entity child with specific mode is defined.');
+                }
+                return false;
+            }
+        }
+
         $entity->exchangeArray($data);
 
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
@@ -458,6 +473,34 @@ class ObjectService extends AbstractService
         //add and remove parent is manage in service objects-components
 
         return $this->get('table')->save($entity);
+    }
+
+    protected function checkModeIntegrity($id, $mode){
+        $objectObjectService = $this->get('objectObjectService');
+        switch ($mode) {
+            case Object::IS_GENERIC:
+                $objects = $objectObjectService->getRecursiveParents($id);
+                $field = 'parents';
+                break;
+            case Object::IS_SPECIFIC:
+                $objects = $objectObjectService->getRecursiveChildren($id);
+                $field = 'children';
+                break;
+            default:
+                return false;
+                break;
+        }
+        return $this->checkModeIntegrityRecursive($objects,$mode,$field);
+    }
+    private function checkModeIntegrityRecursive($objects = array(), $mode, $field){
+        foreach($objects as $p){
+            if($p['mode'] == $mode){
+                return false;
+            }elseif(!empty($p[$field]) && !$this->checkModeIntegrityRecursive($p[$field],$mode, $field)){
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

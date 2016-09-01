@@ -98,6 +98,26 @@ class ObjectObjectService extends AbstractService
         return $array_children;
     }
 
+    public function getRecursiveParents($parent_id){
+        /** @var ObjectObjectTable $table */
+        $table = $this->get('table');
+
+        $parents = $table->getEntityByFields(array('child' => $parent_id), array('position' => 'ASC'));
+        $array_parents = [];
+
+        foreach ($parents as $parent) {
+            /** @var ObjectObject $parent */
+            $parent_array = $parent->getJsonArray();
+
+            $object_parent = $this->get('objectTable')->get($parent_array['father']);
+            $object_parent['parents'] = $this->getRecursiveParents($parent_array['father']);
+            $object_parent['component_link_id'] = $parent_array['id'];
+            $array_parents[] = $object_parent;
+        }
+
+        return $array_parents;
+    }
+
     public function moveObject($id, $direction) {
         $entity = $this->get('table')->getEntity($id);
 
