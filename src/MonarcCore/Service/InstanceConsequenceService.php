@@ -61,6 +61,15 @@ class InstanceConsequenceService extends AbstractService
         $this->filterPatchFields($data, ['instance', 'object', 'scaleImpactType', 'ch', 'ih', 'dh']);
 
         if (count($data)) {
+
+            if (isset($data['isHidden'])) {
+                if ($data['isHidden']) {
+                    $data['c'] = -1;
+                    $data['i'] = -1;
+                    $data['d'] = -1;
+                }
+            }
+
             $data = $this->updateConsequences($id, $data);
 
             parent::patch($id,$data);
