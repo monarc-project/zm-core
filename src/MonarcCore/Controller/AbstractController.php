@@ -101,6 +101,19 @@ abstract class AbstractController extends AbstractRestfulController
     }
 
     /**
+     * Delete list
+     *
+     * @param mixed $data
+     * @return JsonModel
+     */
+    public function deleteList($data)
+    {
+        $this->getService()->deleteList($data);
+
+        return new JsonModel(array('status' => 'ok'));
+    }
+
+    /**
      * Update
      *
      * @param mixed $id

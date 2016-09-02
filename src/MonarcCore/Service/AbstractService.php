@@ -230,6 +230,15 @@ abstract class AbstractService extends AbstractServiceFactory
     }
 
     /**
+     * Detele list
+     *
+     * @param $data
+     */
+    public function deleteList($data){
+        $this->get('table')->deleteList($data);
+    }
+
+    /**
      * Compare Entities
      *
      * @param $newEntity
