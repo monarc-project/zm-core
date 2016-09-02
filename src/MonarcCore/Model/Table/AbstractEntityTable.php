@@ -170,16 +170,14 @@ abstract class AbstractEntityTable
     public function deleteList($data){
         $c = $this->getClass();
         if(class_exists($c) && is_array($data)){
-            foreach($data as $id){
-                $id  = (int) $id;
-
-                $entity = new $c();
-                $entity->set('id',$id);
-                $entity = $this->getDb()->fetch($entity);
-
-                $this->getDb()->delete($entity);
+            $entity = new $c();
+            $entities = $this->getDb()->fetchByIds($entity,$data);
+            if(!empty($entities)){
+                $this->getDb()->deleteAll($entities);
+                return true;
+            }else{
+                return false;
             }
-            return true;
         }else{
             return false;
         }

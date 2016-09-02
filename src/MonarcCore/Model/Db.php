@@ -92,6 +92,21 @@ class Db {
 
         return $qb->getQuery()->getResult();
     }
+
+    public function fetchByIds($entity,$ids = array()){
+        return $this->entityManager->getRepository(get_class($entity))->findById($ids);
+    }
+    public function deleteAll($entities = array()){
+         try {
+            foreach($entities as $entity){
+                $this->entityManager->remove($entity);
+            }
+            $this->entityManager->flush();
+        } catch (ForeignKeyConstraintViolationException $e) {
+            throw new \Exception('Foreign key violation', '400');
+        }
+    }
+
     public function delete($entity)
     {
         try {
