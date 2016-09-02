@@ -84,7 +84,7 @@ class InstanceService extends AbstractService
         $this->setDependencies($instance, $dependencies);
 
         //parent and root
-        $parent = ($data['parent']) ? $table->getEntity($data['parent']) : null;
+        // on fait un getEntity juste au dessus : $parent = ($data['parent']) ? $table->getEntity($data['parent']) : null;
         $instance->setParent($parent);
         $root = ($data['parent']) ? $this->getRoot($instance) : null;
         $instance->setRoot($root);
@@ -92,7 +92,7 @@ class InstanceService extends AbstractService
         //level
         $this->updateLevels($parent, $data['object'], $instance);
 
-        $id = $table->createInstanceToAnr($anrId, $instance, $data['parent'], $data['position']);
+        $id = $table->createInstanceToAnr($anrId, $instance, $parent);
 
         //instances risk
         /** @var InstanceRiskService $instanceRiskService */
