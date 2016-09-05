@@ -60,12 +60,12 @@ abstract class AbstractEntityTable
         }
     }
 
-    public function fetchAllFiltered($fields = array(), $page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null, $filterJoin = null)
+    public function fetchAllFiltered($fields = array(), $page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null, $filterJoin = null, $filterLeft = null)
     {
         $class = $this->getClass();
 
         if (class_exists($class)) {
-            $all = $this->getDb()->fetchAllFiltered(new $class(), $page, $limit, $order, $filter, $filterAnd, $filterJoin);
+            $all = $this->getDb()->fetchAllFiltered(new $class(), $page, $limit, $order, $filter, $filterAnd, $filterJoin, $filterLeft);
             $return = array();
             foreach ($all as $a) {
                 $return[] = $a->getJsonArray($fields);
@@ -86,11 +86,11 @@ abstract class AbstractEntityTable
         }
     }
 
-    public function countFiltered($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
+    public function countFiltered($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null, $filterJoin = null, $filterLeft = null)
     {
         $c = $this->getClass();
         if (class_exists($c)) {
-            return $this->getDb()->countFiltered(new $c(), $limit, $order, $filter, $filterAnd);
+            return $this->getDb()->countFiltered(new $c(), $limit, $order, $filter, $filterAnd, $filterJoin, $filterLeft);
         } else {
             return false;
         }
