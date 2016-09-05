@@ -22,6 +22,13 @@ class Anr extends AbstractEntity
     protected $id;
 
     /**
+     * @var \MonarcCore\Model\Entity\Object
+     *
+     * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Object", mappedBy="anrs")
+     */
+    protected $objects;
+
+    /**
      * @var integer
      *
      * @ORM\Column(name="snapshot_id", type="integer", nullable=true)

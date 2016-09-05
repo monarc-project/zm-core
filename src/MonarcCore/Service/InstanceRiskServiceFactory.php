@@ -10,7 +10,7 @@ class InstanceRiskServiceFactory extends AbstractServiceFactory
         'anrTable' => 'MonarcCore\Model\Table\AnrTable',
         'assetTable' => 'MonarcCore\Model\Table\AssetTable',
         'instanceTable' => 'MonarcCore\Model\Table\InstanceTable',
-        'objectRiskTable' => 'MonarcCore\Model\Table\ObjectRiskTable',
+        'objectTable' => 'MonarcCore\Model\Table\ObjectTable',
         'scaleTable' => 'MonarcCore\Model\Table\ScaleTable',
         'threatTable' => 'MonarcCore\Model\Table\ThreatTable',
         'vulnerabilityTable' => 'MonarcCore\Model\Table\VulnerabilityTable',
