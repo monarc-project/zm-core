@@ -273,11 +273,6 @@ class Module
                     $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
                     return $table;
                 },
-                '\MonarcCore\Model\Table\ObjectRiskTable' => function($sm){
-                    $table = new Model\Table\ObjectRiskTable($sm->get('\MonarcCore\Model\Db'));
-                    $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
-                    return $table;
-                },
                 '\MonarcCore\Model\Table\ObjectObjectTable' => function($sm){
                     $table = new Model\Table\ObjectObjectTable($sm->get('\MonarcCore\Model\Db'));
                     $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
@@ -381,6 +376,7 @@ class Module
                     if(!empty($request) && method_exists($request, 'getHeader')){
                         $token = $request->getHeader('token');
                         if(!empty($token)){
+                            $success = false;
                             $dd = $sm->get('\MonarcCore\Storage\Authentication')->getItem($token->getFieldValue(),$success);
                             if($success){
                                 $uc->setConnectedUser($dd->get('user'));
@@ -399,9 +395,15 @@ class Module
             'invokables' => array(
             ),
             'factories' => array(
-                '\MonarcCore\Controller\Index' => '\MonarcCore\Controller\IndexControllerFactory',
-                '\MonarcCore\Controller\Authentication' => '\MonarcCore\Controller\AuthenticationControllerFactory',
-                '\MonarcCore\Controller\ApiModels' => '\MonarcCore\Controller\ApiModelsControllerFactory',
+                '\MonarcCore\Controller\Index'                          => '\MonarcCore\Controller\IndexControllerFactory',
+                '\MonarcCore\Controller\Authentication'                 => '\MonarcCore\Controller\AuthenticationControllerFactory',
+                '\MonarcCore\Controller\ApiModels'                      => '\MonarcCore\Controller\ApiModelsControllerFactory',
+                '\MonarcCore\Controller\ApiAnr'                         => '\MonarcCore\Controller\ApiAnrControllerFactory',
+                '\MonarcCore\Controller\ApiAnrInstances'                => '\MonarcCore\Controller\ApiAnrInstancesControllerFactory',
+                '\MonarcCore\Controller\ApiAnrInstancesConsequences'    => '\MonarcCore\Controller\ApiAnrInstancesConsequencesControllerFactory',
+                '\MonarcCore\Controller\ApiAnrInstancesRisks'           => '\MonarcCore\Controller\ApiAnrInstancesRisksControllerFactory',
+                '\MonarcCore\Controller\ApiAnrInstancesRisksOp'         => '\MonarcCore\Controller\ApiAnrInstancesRisksOpControllerFactory',
+                '\MonarcCore\Controller\ApiAnrLibrary'                  => '\MonarcCore\Controller\ApiAnrLibraryControllerFactory',
             ),
         );
     }

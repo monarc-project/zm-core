@@ -2,11 +2,10 @@
 namespace MonarcCore\Service;
 use MonarcCore\Model\Entity\Asset;
 use MonarcCore\Model\Entity\Object;
-use MonarcCore\Model\Entity\ObjectRisk;
 use MonarcCore\Model\Table\AmvTable;
+use MonarcCore\Model\Table\AnrTable;
 use MonarcCore\Model\Table\AssetTable;
 use MonarcCore\Model\Table\ObjectCategoryTable;
-use MonarcCore\Model\Table\ObjectRiskTable;
 use MonarcCore\Model\Table\ObjectTable;
 
 /**
@@ -24,13 +23,7 @@ class ObjectService extends AbstractService
     protected $assetTable;
     protected $categoryTable;
     protected $rolfTagTable;
-    /** @var AmvTable */
     protected $amvTable;
-    /** @var ObjectRiskTable */
-    protected $objectRiskTable;
-    protected $objectRiskService;
-    /** @var ObjectRisk */
-    protected $riskEntity;
 
     protected $filterColumns = [
         'name1', 'name2', 'name3', 'name4',
@@ -38,8 +31,6 @@ class ObjectService extends AbstractService
     ];
 
     protected $dependencies = ['asset', 'category', 'rolfTag'];
-
-    protected $forceType = 'bdc';
 
     /**
      * Get List
@@ -64,7 +55,6 @@ class ObjectService extends AbstractService
 
             $filterAnd['category'] = $child;
         }
-        $filterAnd['type'] = $this->forceType;
         $filterAnd['model'] = null;
 
 
@@ -106,7 +96,7 @@ class ObjectService extends AbstractService
         return $newRoot;
     }
 
-    public function getEntity($id, $mode = 'bdc') {
+    public function getCompleteEntity($id) {
         /** @var Object $entity */
         $entity = $this->get('table')->getEntity($id);
         $entity_arr = $entity->getJsonArray();
@@ -212,38 +202,39 @@ class ObjectService extends AbstractService
     }
     */
 
+    /**
+     * Get Risks
+     * 
+     * @param $object
+     * @return array
+     */
     protected function getRisks($object) {
-        $risks = [];
 
-        /** @var ObjectRiskTable $objectRiskTable */
-        $objectRiskTable = $this->get('objectRiskTable');
-        $objectRisks = $objectRiskTable->getEntityByFields(['object' => $object->id]);
+        /** @var AmvTable $amvTable */
+        $amvTable = $this->get('amvTable');
+        $amvs = $amvTable->getEntityByFields(['asset' =>$object->asset->id ]);
 
-        foreach ($objectRisks as $objectRisk) {
-
-            /** @var AmvTable $amvTable */
-            $amvTable = $this->get('amvTable');
-            $amv = $amvTable->getEntity($objectRisk->amv->id);
+        foreach ($amvs as $amv) {
 
             $risks[] = [
-                'id' => $objectRisk->id,
+                'id' => $amv->id,
                 'threatDescription1' => $amv->threat->label1,
                 'threatDescription2' => $amv->threat->label2,
                 'threatDescription3' => $amv->threat->label3,
                 'threatDescription4' => $amv->threat->label4,
-                'threatRate' => $objectRisk->threatRate,
+                'threatRate' => '-',
                 'vulnDescription1' => $amv->vulnerability->label1,
                 'vulnDescription2' => $amv->vulnerability->label2,
                 'vulnDescription3' => $amv->vulnerability->label3,
                 'vulnDescription4' => $amv->vulnerability->label4,
-                'vulnerabilityRate' => $objectRisk->vulnerabilityRate,
-                'c_risk' => $objectRisk->riskC,
+                'vulnerabilityRate' => '-',
+                'c_risk' => '-',
                 'c_risk_enabled' => $amv->threat->c,
-                'i_risk' => $objectRisk->riskI,
+                'i_risk' => '-',
                 'i_risk_enabled' => $amv->threat->i,
-                'd_risk' => $objectRisk->riskD,
+                'd_risk' => '-',
                 'd_risk_enabled' => $amv->threat->d,
-                'comment' => $objectRisk->comment
+                'comment' => ''
             ];
         }
 
@@ -303,7 +294,6 @@ class ObjectService extends AbstractService
         $filterAnd = [];
         if ((!is_null($asset)) && ($asset != 0)) $filterAnd['asset'] = $asset;
         if ((!is_null($category)) && ($category != 0)) $filterAnd['category'] = $category;
-        $filterAnd['type'] = $this->forceType;
 
         return parent::getFilteredCount($page, $limit, $order, $filter, $filterAnd);
     }
@@ -378,7 +368,6 @@ class ObjectService extends AbstractService
         $position = $this->managePositionCreation('category', $data['category'], (int) $data['implicitPosition'], $previous);
         $data['position'] = $position;
         unset($data['implicitPosition']);
-        $data['type'] = $this->forceType;
 
         if(empty($data['rolfTag'])){
             unset($data['rolfTag']);
@@ -406,7 +395,6 @@ class ObjectService extends AbstractService
 
         if ($context == Object::BACK_OFFICE) {
             //create object type bdc
-            $object->type = Object::BDC;
             $id = $this->get('table')->save($object);
 
             //attach object to anr
@@ -439,7 +427,7 @@ class ObjectService extends AbstractService
     public function update($id, $data){
 
         $entity = $this->get('table')->getEntity($id);
-        if(!$entity || $entity->get('type') != $this->forceType){
+        if(!$entity){
             throw new \Exception('Entity `id` not found.');
             return false;
         }
@@ -516,7 +504,7 @@ class ObjectService extends AbstractService
     public function delete($id) {
 
         $entity = $this->getEntity($id);
-        if(!$entity || $entity['type'] != $this->forceType){
+        if(!$entity){
             throw new \Exception('Entity `id` not found.');
         }
 
@@ -539,7 +527,7 @@ class ObjectService extends AbstractService
 
         $entity = $this->getEntity($data['id']);
 
-        if(!$entity || $entity['type'] != $this->forceType){
+        if(!$entity){
             throw new \Exception('Entity `id` not found.');
         }
 
@@ -587,20 +575,16 @@ class ObjectService extends AbstractService
             $object = $table->getEntity($object);
         }
 
-        //verify object not exist to anr
-        $existingObjectsToAnr = $table->getEntityByFields(array('source' => $object->id, 'anr' => $anrId, 'type' => Object::ANR));
-        if (count($existingObjectsToAnr)) {
-            throw new \Exception('This object already exists in the current risk analysis', 412);
-        }
+        //retrieve anr
+        /** @var AnrTable $anrTable */
+        $anrTable = $this->get('anrTable');
+        $anr = $anrTable->getEntity($anrId);
 
-        $anrObject = clone $object;
-        $anrObject->id = null;
-        $anrObject->type = Object::ANR;
-        $anrObject->anr = $this->get('anrTable')->getEntity($anrId);
-        $anrObject->source = $this->get('table')->getEntity($object->id);
+        //add anr to object
+        $object->addAnr($anr);
 
-        $id = $table->save($anrObject);
-
+        //save object
+        $id = $table->save($object);
 
 
         //parent
@@ -620,27 +604,6 @@ class ObjectService extends AbstractService
             $objectObjectService->create($data);
         }
 
-        //retrieve risks
-        /** @var AmvTable $amvTable */
-        $amvTable = $this->get('amvTable');
-        $amvs = $amvTable->findByAsset($object->asset->id);
-        foreach ($amvs as $amv) {
-            if (is_null($amv->anr)) {
-                $data = [
-                    'anr' => $anrId,
-                    'object' => $id,
-                    'specific' => 0,
-                    'amv' => $amv->id,
-                    'asset' => $amv->asset->id,
-                    'threat' => $amv->threat->id,
-                    'vulnerability' => $amv->vulnerability->id,
-                ];
-
-                /** @var ObjectRiskService $objectRiskService */
-                $objectRiskService = $this->get('objectRiskService');
-                $objectRiskService->create($data);
-            }
-        }
 
         //children
         $children = $objectObjectService->getChildren($object->id);
@@ -663,39 +626,30 @@ class ObjectService extends AbstractService
      */
     public function getCategoriesLibraryByAnr($anrId) {
 
-        $objects =  $this->get('table')->findByAnr($anrId);
+        /** @var ObjectCategoryTable $categoriesTable */
+        $categoriesTable = $this->get('categoryTable');
+        $objectsCategories =  $categoriesTable->getEntityByFields(['anr' => $anrId]);
 
-        //retrieve objects categories
-        $objectsCategoriesIds = [];
-        foreach ($objects as $object) {
-            $objectsCategoriesIds[$object['categoryId']] = $object['categoryId'];
-        }
+        foreach ($objectsCategories as $key => $objectCategory) {
 
-        if ($objectsCategoriesIds) {
+            //retrieve objects
+            /** @var ObjectTable $objectTable */
+            $objectTable = $this->get('table');
+            $categoryObjects = $objectTable->getEntityByFields(['category' => $objectCategory->id]);
 
-            $rootCategories = $this->get('categoryTable')->getRootCategories($objectsCategoriesIds);
+            $objectsCategories[$key] = $objectCategory->getJsonArray();
 
-            foreach ($rootCategories as $key => $rootCategory) {
-                if (!is_null($rootCategory['rootId'])) {
-                    $rootCategories[$key] = $rootCategory['rootId'];
-                } else {
-                    unset($rootCategories[$key]);
-                }
-            }
+            foreach($categoryObjects as $categoryObject) {
 
-            $categories = $this->get('categoryTable')->getByRootsOrIds($rootCategories, array_merge($objectsCategoriesIds, $rootCategories));
-            foreach ($categories as $key => $category) {
-                foreach ($objects as $object) {
-                    if ($object['categoryId'] == $category['id']) {
-                        $categories[$key]['objects'][] = $object;
+                foreach ($categoryObject->anrs as $anr) {
+                    if ($anr->id == $anrId) {
+                        $objectsCategories[$key]['objects'][] = $categoryObject->getJsonArray();
                     }
                 }
             }
-
-            return $categories;
-        } else {
-            return [];
         }
+
+        return $objectsCategories;
     }
 
     public function export($data) {
@@ -705,7 +659,7 @@ class ObjectService extends AbstractService
 
         $entity = $this->getEntity($data['id']);
 
-        if (!$entity || $entity['type'] != $this->forceType) {
+        if (!$entity) {
             throw new \Exception('Entity `id` not found.');
         }
 

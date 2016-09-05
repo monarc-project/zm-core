@@ -17,9 +17,6 @@ class Object extends AbstractEntity
     // Must be 16, 24 or 32 characters
     const SALT = '__$$00_C4535_5M1L3_00$$__XMP0)XW';
 
-    const BDC = 'bdc';
-    const ANR = 'anr';
-
     const SCOPE_LOCAL = 1;
     const SCOPE_GLOBAL = 2;
 
@@ -35,12 +32,13 @@ class Object extends AbstractEntity
     /**
      * @var \MonarcCore\Model\Entity\Anr
      *
-     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Anr", cascade={"persist"})
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true)
-     * })
+     * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Anr", inversedBy="anrs", cascade={"persist"})
+     * @ORM\JoinTable(name="anrs_objects",
+     *  joinColumns={@ORM\JoinColumn(name="object_id", referencedColumnName="id")},
+     *  inverseJoinColumns={@ORM\JoinColumn(name="anr_id", referencedColumnName="id")}
+     * )
      */
-    protected $anr;
+    protected $anrs;
 
     /**
      * @var \MonarcCore\Model\Entity\Model
@@ -73,16 +71,6 @@ class Object extends AbstractEntity
     protected $asset;
 
     /**
-     * @var \MonarcCore\Model\Entity\Object
-     *
-     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Object", cascade={"persist"})
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="source_bdc_object_id", referencedColumnName="id", nullable=true)
-     * })
-     */
-    protected $source;
-
-    /**
      * @var \MonarcCore\Model\Entity\RolfTag
      *
      * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\RolfTag", cascade={"persist"})
@@ -91,13 +79,6 @@ class Object extends AbstractEntity
      * })
      */
     protected $rolfTag;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="type", type="string", length=255, nullable=true)
-     */
-    protected $type = 'anr';
 
     /**
      * @var smallint
@@ -330,20 +311,34 @@ class Object extends AbstractEntity
     }
 
     /**
-     * @param int $anr
+     * @return \Doctrine\Common\Collections\Collection
      */
-    public function setAnr($anr)
+    public function getAnrs()
     {
-        $this->anr = $anr;
+        return $this->anrs;
     }
 
+
     /**
-     * @return int
+     * Add Anr
+     *
+     * @param Anr $anr
+     * @throws \Exception
      */
-    public function getId()
+    public function addAnr(Anr $anr)
     {
-        return $this->id;
+        $currentAnrs = $this->anrs;
+
+        foreach ($currentAnrs as $currentAnr) {
+            if ($currentAnr->id == $anr->id) {
+                throw new \Exception('This object already exists in the current risk analysis', 412);
+            }
+        }
+
+        $this->anrs[] = $anr;
     }
+
+
 
     /**
      * @param int $id

@@ -15,6 +15,14 @@ class InstanceTable extends AbstractEntityTable {
      */
     public function createInstanceToAnr($anrId, $instance, $parentId, $position) {
 
+        if (!$position) {
+            $filters =  ($parentId) ? ['anr' => $anrId, 'parent' => $parentId] : ['anr' => $anrId];
+            $brothers = $this->getEntityByFields($filters);
+            $position = count($brothers) + 1;
+        }
+
+        $instance->position = $position;
+
         $this->getDb()->beginTransaction();
 
         try {

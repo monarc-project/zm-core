@@ -54,19 +54,6 @@ return array(
                     ),
                 ),
             ),
-
-            'monarc_api_models' => array(
-                'type' => 'segment',
-                'options' => array(
-                    'route' => '/api/models[/:id]',
-                    'constraints' => array(
-                        'id' => '[0-9]+',
-                    ),
-                    'defaults' => array(
-                        'controller' => 'MonarcCore\Controller\ApiModels',
-                    ),
-                ),
-            ),
         ),
     ),
 
@@ -86,7 +73,6 @@ return array(
             'MonarcCore\Model\Entity\GuideItem'             => 'MonarcCore\Model\Entity\GuideItem',
             'MonarcCore\Model\Entity\Historical'            => 'MonarcCore\Model\Entity\Historical',
             'MonarcCore\Model\Entity\ObjectObject'          => 'MonarcCore\Model\Entity\ObjectObject',
-            'MonarcCore\Model\Entity\ObjectRisk'            => 'MonarcCore\Model\Entity\ObjectRisk',
             'MonarcCore\Model\Entity\PasswordToken'         => 'MonarcCore\Model\Entity\PasswordToken',
             'MonarcCore\Model\Entity\Role'                  => 'MonarcCore\Model\Entity\Role',
             'MonarcCore\Model\Entity\Scale'                 => 'MonarcCore\Model\Entity\Scale',
@@ -120,7 +106,6 @@ return array(
             'MonarcCore\Service\ModelService'               => 'MonarcCore\Service\ModelServiceFactory',
             'MonarcCore\Service\ObjectService'              => 'MonarcCore\Service\ObjectServiceFactory',
             'MonarcCore\Service\ObjectCategoryService'      => 'MonarcCore\Service\ObjectCategoryServiceFactory',
-            'MonarcCore\Service\ObjectRiskService'          => 'MonarcCore\Service\ObjectRiskServiceFactory',
             'MonarcCore\Service\ObjectObjectService'        => 'MonarcCore\Service\ObjectObjectServiceFactory',
             'MonarcCore\Service\PasswordService'            => 'MonarcCore\Service\PasswordServiceFactory',
             'MonarcCore\Service\RolfRiskService'            => 'MonarcCore\Service\RolfRiskServiceFactory',

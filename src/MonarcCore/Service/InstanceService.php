@@ -7,6 +7,7 @@ use MonarcCore\Model\Entity\InstanceRiskOp;
 use MonarcCore\Model\Entity\Object;
 use MonarcCore\Model\Entity\Scale;
 use MonarcCore\Model\Table\AmvTable;
+use MonarcCore\Model\Table\InstanceConsequenceTable;
 use MonarcCore\Model\Table\InstanceTable;
 use MonarcCore\Model\Table\RolfRiskTable;
 use MonarcCore\Model\Table\ScaleTable;
@@ -36,6 +37,7 @@ class InstanceService extends AbstractService
     protected $instanceRiskOpService;
     protected $instanceConsequenceTable;
     protected $objectObjectService;
+    protected $instanceConsequenceEntity;
 
     /**
      * Instantiate Object To Anr
@@ -50,7 +52,14 @@ class InstanceService extends AbstractService
         //retrieve object properties
         $object = $this->get('objectTable')->getEntity($data['object']);
 
-        if ((is_null($object->anr)) || ($object->anr->id != $anrId)) {
+        $authorized = false;
+        foreach($object->anrs as $anr) {
+            if ($anr->id == $anrId) {
+                $authorized = true;
+            }
+        }
+
+        if (!$authorized) {
             throw new \Exception('Object is not an object of this anr', 412);
         }
 
@@ -92,7 +101,7 @@ class InstanceService extends AbstractService
         //level
         $this->updateLevels($parent, $data['object'], $instance);
 
-        $id = $table->createInstanceToAnr($anrId, $instance, $parent);
+        $id = $table->createInstanceToAnr($anrId, $instance, $parent, null);
 
         //instances risk
         /** @var InstanceRiskService $instanceRiskService */
@@ -105,9 +114,7 @@ class InstanceService extends AbstractService
         $instanceRiskOpService->createInstanceRisksOp($id, $anrId, $object);
 
         //instances consequences
-        /** @var InstanceConsequenceService $instanceConsequenceService */
-        $instanceConsequenceService = $this->get('instanceConsequenceService');
-        $instanceConsequenceService->createInstanceConsequences($id, $anrId, $object);
+        $this->createInstanceConsequences($id, $anrId, $object);
 
         $this->createChildren($anrId, $id, $object);
 
@@ -594,5 +601,40 @@ class InstanceService extends AbstractService
     public function findByAnr($anrId) {
 
         return $this->get('table')->findByAnr($anrId);
+    }
+
+    /**
+     * Create Instance Consequences
+     *
+     * @param $instanceId
+     * @param $anrId
+     * @param $object
+     */
+    public function createInstanceConsequences($instanceId, $anrId, $object) {
+
+        //retrieve scale impact types
+        /** @var ScaleTypeTable $scaleImpactTypeTable */
+        $scaleImpactTypeTable = $this->get('scaleImpactTypeTable');
+        $scalesImpactTypes = $scaleImpactTypeTable->getEntityByFields(['anr' => $anrId, 'isHidden' => 0]);
+
+        /** @var InstanceConsequenceTable $instanceConsequenceTable */
+        $instanceConsequenceTable = $this->get('instanceConsequenceTable');
+
+        foreach($scalesImpactTypes as $scalesImpactType) {
+            $data = [
+                'anr' => $this->get('anrTable')->getEntity($anrId),
+                'instance' => $this->get('instanceTable')->getEntity($instanceId),
+                'object' => $object,
+                'scaleImpactType' => $scalesImpactType,
+            ];
+
+
+            $class = $this->get('instanceConsequenceEntity');
+            $instanceConsequenceEntity = new $class();
+
+            $instanceConsequenceEntity->exchangeArray($data);
+
+            $instanceConsequenceTable->save($instanceConsequenceEntity);
+        }
     }
 }

@@ -1,8 +1,9 @@
 <?php
 namespace MonarcCore\Service;
 
+use MonarcCore\Model\Table\AmvTable;
 use MonarcCore\Model\Table\InstanceRiskTable;
-use MonarcCore\Model\Table\ObjectRiskTable;
+use MonarcCore\Model\Table\ObjectTable;
 use MonarcCore\Model\Table\ScaleTable;
 
 /**
@@ -19,7 +20,7 @@ class InstanceRiskService extends AbstractService
     protected $amvTable;
     protected $assetTable;
     protected $instanceTable;
-    protected $objectRiskTable;
+    protected $objectTable;
     protected $scaleTable;
     protected $threatTable;
     protected $vulnerabilityTable;
@@ -29,22 +30,22 @@ class InstanceRiskService extends AbstractService
      *
      * @param $instanceId
      * @param $anrId
-     * @param $objectId
+     * @param $object
      */
-    public function createInstanceRisks($instanceId, $anrId, $objectId) {
+    public function createInstanceRisks($instanceId, $anrId, $object) {
 
-        /** @var ObjectRiskTable $objectRiskTable */
-        $objectRiskTable = $this->get('objectRiskTable');
-        $objectRisks = $objectRiskTable->getByAnrAndObject($anrId, $objectId);
+        /** @var AmvTable $amvTable */
+        $amvTable = $this->get('amvTable');
+        $amvs = $amvTable->getEntityByFields(['asset' => $object->asset->id]);
 
-        foreach ($objectRisks as $objectRisk) {
+        foreach ($amvs as $amv) {
             $data = [
                 'anr' => $anrId,
-                'amv' => $objectRisk->amv->id,
-                'asset' => $objectRisk->asset->id,
+                'amv' => $amv->id,
+                'asset' => $amv->asset->id,
                 'instance' => $instanceId,
-                'threat' => $objectRisk->threat->id,
-                'vulnerability' => $objectRisk->vulnerability->id,
+                'threat' => $amv->threat->id,
+                'vulnerability' => $amv->vulnerability->id,
             ];
 
             $instanceRiskId = $this->create($data);
