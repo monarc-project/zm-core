@@ -227,60 +227,62 @@ class ScaleType extends AbstractEntity
                 ));
             }
 
-            $this->inputFilter->add(array(
-                'name' => 'anr',
-                'required' => true,
-                'allow_empty' => false,
-                'continue_if_empty' => false,
-                'filters' => array(),
-                'validators' => array(
-                    array(
-                        'name' => 'IsInt',
-                    ),
-                ),
-            ));
-
-            $this->inputFilter->add(array(
-                'name' => 'scale',
-                'required' => true,
-                'allow_empty' => false,
-                'continue_if_empty' => false,
-                'filters' => array(),
-                'validators' => array(
-                    array(
-                        'name' => 'IsInt',
-                    ),
-                ),
-            ));
-
-            $this->inputFilter->add(array(
-                'name' => 'implicitPosition',
-                'required' => true,
-                'allow_empty' => false,
-                'continue_if_empty' => false,
-                'filters' => array(),
-                'validators' => array(
-                    array(
-                        'name' => 'InArray',
-                        'options' => array(
-                            'haystack' => [0, 1],
+            if (!$partial) {
+                $this->inputFilter->add(array(
+                    'name' => 'anr',
+                    'required' => true,
+                    'allow_empty' => false,
+                    'continue_if_empty' => false,
+                    'filters' => array(),
+                    'validators' => array(
+                        array(
+                            'name' => 'IsInt',
                         ),
                     ),
-                ),
-            ));
+                ));
 
-            $this->inputFilter->add(array(
-                'name' => 'previous',
-                'required' => false,
-                'allow_empty' => true,
-                'continue_if_empty' => true,
-                'filters' => array(),
-                'validators' => array(
-                    array(
-                        'name' => 'IsInt',
+                $this->inputFilter->add(array(
+                    'name' => 'scale',
+                    'required' => true,
+                    'allow_empty' => false,
+                    'continue_if_empty' => false,
+                    'filters' => array(),
+                    'validators' => array(
+                        array(
+                            'name' => 'IsInt',
+                        ),
                     ),
-                ),
-            ));
+                ));
+
+                $this->inputFilter->add(array(
+                    'name' => 'implicitPosition',
+                    'required' => true,
+                    'allow_empty' => false,
+                    'continue_if_empty' => false,
+                    'filters' => array(),
+                    'validators' => array(
+                        array(
+                            'name' => 'InArray',
+                            'options' => array(
+                                'haystack' => [0, 1],
+                            ),
+                        ),
+                    ),
+                ));
+
+                $this->inputFilter->add(array(
+                    'name' => 'previous',
+                    'required' => false,
+                    'allow_empty' => true,
+                    'continue_if_empty' => true,
+                    'filters' => array(),
+                    'validators' => array(
+                        array(
+                            'name' => 'IsInt',
+                        ),
+                    ),
+                ));
+            }
 
         }
         return $this->inputFilter;
