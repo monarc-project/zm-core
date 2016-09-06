@@ -49,6 +49,15 @@ class InstanceRiskOpService extends AbstractService
                             'instance' => $instanceId,
                             'object' => $object->id,
                             'rolfRisk' => $rolfRisk->id,
+                            'riskCacheCode' => $rolfRisk->code,
+                            'riskCacheLabel1' => $rolfRisk->label1,
+                            'riskCacheLabel2' => $rolfRisk->label2,
+                            'riskCacheLabel3' => $rolfRisk->label3,
+                            'riskCacheLabel4' => $rolfRisk->label4,
+                            'riskCacheDescription1' => $rolfRisk->description1,
+                            'riskCacheDescription2' => $rolfRisk->description2,
+                            'riskCacheDescription3' => $rolfRisk->description3,
+                            'riskCacheDescription4' => $rolfRisk->description4,
                         ];
 
                         $this->create($data);
