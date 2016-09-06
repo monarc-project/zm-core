@@ -415,11 +415,20 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param $newParentId
      * @param $implicitPosition
      * @param null $previous
+     * @param string $verb
      * @return int
+     * @throws \Exception
      */
-    protected function managePositionUpdate($field, $entity, $newParentId, $implicitPosition, $previous = null) {
+    protected function managePositionUpdate($field, $entity, $newParentId, $implicitPosition, $previous = null, $verb = 'post') {
+
+        if ($implicitPosition == 3) {
+            if (!$previous) {
+                throw new \Exception('Field previous missing', 412);
+            }
+        }
 
         $position = 1;
+        $table = $this->get('table');
 
         if ($entity->$field) {
             $entityParentId = $entity->$field->id;
@@ -427,44 +436,79 @@ abstract class AbstractService extends AbstractServiceFactory
             if ($newParentId == $entityParentId) {
                 switch ($implicitPosition) {
                     case 1:
-                        $this->get('table')->changePositionsByParent($field, $entityParentId, $entity->position, 'up', 'before');
+                        $table->changePositionsByParent($field, $entityParentId, $entity->position, 'up', 'before');
                         $position = 1;
                         break;
                     case 2:
-                        $this->get('table')->changePositionsByParent($field, $entityParentId, $entity->position, 'down', 'after');
+                        $table->changePositionsByParent($field, $entityParentId, $entity->position, 'down', 'after');
                         $maxPosition = $this->get('table')->maxPositionByParent($field, $entityParentId);
                         $position = $maxPosition + 1;
                         break;
                     case 3:
-                        $previousObject = $this->get('table')->getEntity($previous);
+                        $previousObject = $table->getEntity($previous);
                         if ($entity->position < $previousObject->position) {
-                            $this->get('table')->changePositionsByParent($field, $entityParentId, $entity->position, 'down', 'after');
-                            $this->get('table')->changePositionsByParent($field, $entityParentId, $previousObject->position, 'up', 'after');
+                            $table->changePositionsByParent($field, $entityParentId, $entity->position, 'down', 'after');
+                            $table->changePositionsByParent($field, $entityParentId, $previousObject->position, 'up', 'after');
                             $position = $previousObject->position;
                         } else {
-                            $this->get('table')->changePositionsByParent($field, $entityParentId, $previousObject->position, 'up', 'after', true);
-                            $this->get('table')->changePositionsByParent($field, $entityParentId, $entity->position, 'down', 'after', true);
+                            $table->changePositionsByParent($field, $entityParentId, $previousObject->position, 'up', 'after', true);
+                            $table->changePositionsByParent($field, $entityParentId, $entity->position, 'down', 'after', true);
                             $position = $previousObject->position + 1;
                         }
                         break;
                 }
             } else {
-                $this->get('table')->changePositionsByParent($field, $entityParentId, $entity->position, 'down', 'after');
+                $table->changePositionsByParent($field, $entityParentId, $entity->position, 'down', 'after');
                 switch ($implicitPosition) {
                     case 1:
-                        $this->get('table')->changePositionsByParent($field, $newParentId, 1, 'up', 'after');
+                        $table->changePositionsByParent($field, $newParentId, 1, 'up', 'after');
                         $position = 1;
                         break;
                     case 2:
-                        $maxPosition = $this->get('table')->maxPositionByParent($field, $newParentId);
+                        $maxPosition = $table->maxPositionByParent($field, $newParentId);
                         $position = $maxPosition + 1;
                         break;
                     case 3:
-                        $previousObject = $this->get('table')->getEntity($previous);
-                        $this->get('table')->changePositionsByParent($field, $newParentId, $previousObject->position, 'up', 'after', true);
+                        $previousObject = $table->getEntity($previous);
+                        $table->changePositionsByParent($field, $newParentId, $previousObject->position, 'up', 'after', true);
                         $position = $previousObject->position + 1;
                         break;
                 }
+            }
+        } else {
+            switch ($implicitPosition) {
+                case 1:
+                    $table->changePositionsByParent($field, null, 1, 'up', 'after');
+                    $position = 1;
+                    break;
+                case 2:
+                    if ($verb == 'post') {
+                        $maxPosition = $table->maxPositionByParent($field, null);
+                        $position = $maxPosition + 1;
+                    } else if ($verb != 'delete') {
+                        $maxPosition = $table->maxPositionByParent($field, null);
+                        $this->get('table')->changePositionsByParent($field, null, $entity->position, 'down', 'after');
+                        $position = $maxPosition;
+                    }
+                    break;
+                case 3:
+                    if ($verb == 'post') {
+                        $previousObject = $table->getEntity($previous);
+                        $table->changePositionsByParent($field, null, $previousObject->position, 'up', 'after', true);
+                        $position = $previousObject->position + 1;
+                    } else if ($verb != 'delete') {
+                        $previousObject = $table->getEntity($previous);
+                        if ($entity->position < $previousObject->position) {
+                            $table->changePositionsByParent($field, null, $entity->position, 'down', 'after');
+                            $table->changePositionsByParent($field, null, $previousObject->position, 'up', 'after');
+                            $position = $previousObject->position;
+                        } else {
+                            $table->changePositionsByParent($field, null, $previousObject->position, 'up', 'after', true);
+                            $table->changePositionsByParent($field, null, $entity->position, 'down', 'after', true);
+                            $position = $previousObject->position + 1;
+                        }
+                    }
+                    break;
             }
         }
 

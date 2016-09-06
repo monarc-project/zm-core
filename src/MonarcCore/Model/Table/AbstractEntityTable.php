@@ -212,6 +212,7 @@ abstract class AbstractEntityTable
             ->setParameter(':parentid', $parentId);
             
         }
+
         $return = $return->andWhere('t.position ' . $sign . ' :position')
             ->setParameter(':position', $position)
             ->getQuery()
