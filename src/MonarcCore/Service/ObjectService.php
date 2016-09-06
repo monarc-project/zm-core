@@ -77,8 +77,12 @@ class ObjectService extends AbstractService
         $categoryTable = $this->get('categoryTable');
 
         foreach($objects as $object) {
-            $object['asset'] = $assetTable->get($object['asset']->getId());
-            $object['category'] = $categoryTable->get($object['category']->getId());
+            if(!empty($object['asset'])){
+                $object['asset'] = $assetTable->get($object['asset']->getId());
+            }
+            if(!empty($object['category'])){
+                $object['category'] = $categoryTable->get($object['category']->getId());
+            }
 
             $rootArray[$object['id']] = $object;
             $objectsArray[$object['id']] = $object;

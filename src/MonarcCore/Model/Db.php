@@ -48,10 +48,10 @@ class Db {
      * @param array|null $filterAnd
      * @return array
      */
-    public function fetchAllFiltered($entity, $page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null, $filterJoin = null) {
+    public function fetchAllFiltered($entity, $page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null, $filterJoin = null, $filterLeft = null) {
         $repository = $this->entityManager->getRepository(get_class($entity));
 
-        $qb = $this->buildFilteredQuery($repository, $page, $limit, $order, $filter, $filterAnd, $filterJoin);
+        $qb = $this->buildFilteredQuery($repository, $page, $limit, $order, $filter, $filterAnd, $filterJoin, $filterLeft);
 
         return $qb->getQuery()->getResult();
     }
@@ -61,9 +61,9 @@ class Db {
         return $repository->createQueryBuilder('u')->select('count(u.id)')->getQuery()->getSingleScalarResult();
     }
 
-    public function countFiltered($entity, $limit = 25, $order = null, $filter = null, $filterAnd = null, $filterJoin = null) {
+    public function countFiltered($entity, $limit = 25, $order = null, $filter = null, $filterAnd = null, $filterJoin = null, $filterLeft = null) {
         $repository = $this->entityManager->getRepository(get_class($entity));
-        $qb = $this->buildFilteredQuery($repository, 1, $limit, $order, $filter, $filterAnd, $filterJoin);
+        $qb = $this->buildFilteredQuery($repository, 1, 0, $order, $filter, $filterAnd, $filterJoin, $filterLeft);
         $qb->select('count(t.id)');
 
         return $qb->getQuery()->getSingleScalarResult();
@@ -148,7 +148,7 @@ class Db {
      * @param null $filterJoin
      * @return QueryBuilder
      */
-    private function buildFilteredQuery($repository, $page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null, $filterJoin = null)
+    private function buildFilteredQuery($repository, $page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null, $filterJoin = null, $filterLeft = null)
     {
         $qb = $repository->createQueryBuilder('t');
 
@@ -158,18 +158,57 @@ class Db {
                     throw new \Exception('Cannot use "t" as a table alias');
                 }
 
-                $qb->join('t.' . $join['rel'], $join['as']);
+                $qb->innerJoin('t.' . $join['rel'], $join['as']);
                 $qb->addSelect($join['as']);
             }
         }
 
-        if ((($filter != null) || ($filterAnd != null)) && is_array($filter))  {
-            $isFirst = true;
+        if (!is_null($filterLeft) && is_array($filterLeft)) {
+            foreach ($filterLeft as $left) {
+                if ($left['as'] == 't') {
+                    throw new \Exception('Cannot use "t" as a table alias');
+                }
 
-            $searchIndex = 1;
+                $qb->leftJoin('t.' . $left['rel'], $left['as']);
+                $qb->addSelect($left['as']);
+            }
+        }
 
-            // Add filter in WHERE xx LIKE %y% OR zz LIKE %y% ...
+        $isFirst = true;
+        $searchIndex = 1;
+
+        // Add filter in WHERE xx LIKE %y% OR zz LIKE %y% ...
+        if (!empty($filter) && is_array($filter))  {
             foreach ($filter as $colName => $value) {
+
+                $fullColName = $colName;
+                if (strpos($fullColName, '.') === false) {
+                    $fullColName = 't.' . $fullColName;
+                }
+
+                if (!empty($value)) {
+
+                    $where = (is_int($value)) ? "$fullColName = ?$searchIndex" : "$fullColName LIKE ?$searchIndex";
+                    $parameterValue = (is_int($value)) ? $value : '%' . $value . '%';
+
+                    if ($isFirst) {
+                        $qb->where($where);
+                        $qb->setParameter($searchIndex, $parameterValue);
+                        $isFirst = false;
+                    } else {
+                        $qb->orWhere($where);
+                        $qb->setParameter($searchIndex, $parameterValue);
+                    }
+
+                    ++$searchIndex;
+                }
+
+            }
+        }
+
+        // Add filter in WHERE xx LIKE %y% AND zz LIKE %y% ...
+        if (!empty($filterAnd)) {
+            foreach ($filterAnd as $colName => $value) {
 
                 $fullColName = $colName;
                 if (strpos($fullColName, '.') === false) {
@@ -178,68 +217,39 @@ class Db {
 
                 if ($value !== '') {
 
-                    $where = (is_int($value)) ? "$fullColName = :filter_$searchIndex" : "$fullColName LIKE :filter_$searchIndex";
-                    $parameterValue = (is_int($value)) ? $value : '%' . $value . '%';
+                    if (is_array($value)) {
+                        $where = "$fullColName IN (?$searchIndex)";
+                        $parameterValue = $value;
+                    } else if (is_int($value)) {
+                        $where = "$fullColName = ?$searchIndex";
+                        $parameterValue = $value;
+                    } else if (is_null($value)) {
+                        $where = "$fullColName IS NULL";
+                        $parameterValue = null;
+                    } else {
+                        $where = "$fullColName LIKE ?$searchIndex";
+                        $parameterValue = '%' . $value . '%';
+                    }
 
                     if ($isFirst) {
                         $qb->where($where);
-                        $qb->setParameter(":filter_$searchIndex", $parameterValue);
+
+                        if (!is_null($parameterValue)) {
+                            $qb->setParameter($searchIndex, $parameterValue);
+                        }
+
                         $isFirst = false;
                     } else {
-                        $qb->orWhere($where);
-                        $qb->setParameter(":filter_$searchIndex", $parameterValue);
+                        $qb->andWhere($where);
+
+                        if (!is_null($parameterValue)) {
+                            $qb->setParameter($searchIndex, $parameterValue);
+                        }
                     }
 
                     ++$searchIndex;
                 }
 
-            }
-
-            // Add filter in WHERE xx LIKE %y% AND zz LIKE %y% ...
-            if (!is_null($filterAnd)) {
-                foreach ($filterAnd as $colName => $value) {
-
-                    $fullColName = $colName;
-                    if (strpos($fullColName, '.') === false) {
-                        $fullColName = 't.' . $fullColName;
-                    }
-
-                    if ($value !== '') {
-
-                        if (is_array($value)) {
-                            $where = "$fullColName IN (:filter_$searchIndex)";
-                            $parameterValue = $value;
-                        } else if (is_int($value)) {
-                            $where = "$fullColName = :filter_$searchIndex";
-                            $parameterValue = $value;
-                        } else if (is_null($value)) {
-                            $where = "$fullColName IS NULL";
-                            $parameterValue = null;
-                        } else {
-                            $where = "$fullColName LIKE :filter_$searchIndex";
-                            $parameterValue = '%' . $value . '%';
-                        }
-
-                        if ($isFirst) {
-                            $qb->where($where);
-
-                            if (!is_null($parameterValue)) {
-                                $qb->setParameter(":filter_$searchIndex", $parameterValue);
-                            }
-
-                            $isFirst = false;
-                        } else {
-                            $qb->andWhere($where);
-
-                            if (!is_null($parameterValue)) {
-                                $qb->setParameter(":filter_$searchIndex", $parameterValue);
-                            }
-                        }
-
-                        ++$searchIndex;
-                    }
-
-                }
             }
         }
 
