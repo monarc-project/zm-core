@@ -215,8 +215,9 @@ abstract class AbstractEntityTable
 
         $return = $return->andWhere('t.position ' . $sign . ' :position')
             ->setParameter(':position', $position)
-            ->getQuery()
-            ->getResult();
+            ->getQuery();
+
+        $return->getResult();
         return $return;
     }
 

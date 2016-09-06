@@ -437,7 +437,7 @@ abstract class AbstractService extends AbstractServiceFactory
                 switch ($implicitPosition) {
                     case 1:
                         $table->changePositionsByParent($field, $entityParentId, $entity->position, 'up', 'before');
-                        $position = 1;
+                        $position = 0;
                         break;
                     case 2:
                         $table->changePositionsByParent($field, $entityParentId, $entity->position, 'down', 'after');
@@ -462,11 +462,18 @@ abstract class AbstractService extends AbstractServiceFactory
                 switch ($implicitPosition) {
                     case 1:
                         $table->changePositionsByParent($field, $newParentId, 1, 'up', 'after');
-                        $position = 1;
+                        $position = 0;
                         break;
                     case 2:
-                        $maxPosition = $table->maxPositionByParent($field, $newParentId);
-                        $position = $maxPosition + 1;
+                        if ($verb == 'post') {
+                            $maxPosition = $table->maxPositionByParent($field, $newParentId);
+                            $position = $maxPosition + 1;
+                        } else if ($verb != 'delete') {
+                            $maxPosition = $table->maxPositionByParent($field, $newParentId);
+                            $this->get('table')->changePositionsByParent($field, $newParentId, $entity->position, 'down', 'after');
+                            $position = $maxPosition;
+                        }
+
                         break;
                     case 3:
                         $previousObject = $table->getEntity($previous);
@@ -476,10 +483,11 @@ abstract class AbstractService extends AbstractServiceFactory
                 }
             }
         } else {
+
             switch ($implicitPosition) {
                 case 1:
-                    $table->changePositionsByParent($field, null, 1, 'up', 'after');
-                    $position = 1;
+                    $table->changePositionsByParent($field, null, $entity->position, 'up', 'before');
+                    $position = 0;
                     break;
                 case 2:
                     if ($verb == 'post') {
