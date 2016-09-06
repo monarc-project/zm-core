@@ -175,9 +175,12 @@ class InstanceService extends AbstractService
     /**
      * Patch
      *
+     * @param $anrId
      * @param $id
      * @param $data
-     * @return mixed
+     * @param array $historic
+     * @return mixed|null
+     * @throws \Exception
      */
     public function patchInstance($anrId, $id, $data, $historic = []){
 
@@ -188,22 +191,54 @@ class InstanceService extends AbstractService
         $table = $this->get('table');
         $instance = $table->getEntity($id);
 
-        //parent values
-        if (isset($data['parent'])) {
-            $parent = ($data['parent']) ? $table->getEntity($data['parent']) : null;
-            $instance->setParent($parent);
-
-            $root = ($data['parent']) ? $this->getRoot($instance) : null;
-            $instance->setRoot($root);
+        if (!$instance) {
+            throw new \Exception('Instance not exist', 412);
         }
 
-        $this->updateImpacts($anrId, $instance->parent, $data);
+        //parent values
+        if (isset($data['parent'])) {
+            if ($data['parent']) {
+                $parent = ($data['parent']) ? $table->getEntity($data['parent']) : null;
+                $instance->setParent($parent);
+
+                $root = ($data['parent']) ? $this->getRoot($instance) : null;
+                $instance->setRoot($root);
+            } else {
+                $parent = null;
+            }
+        }
+
+        if (isset($data['position'])) {
+
+            $parent = (isset($data['parent']) && $data['parent']) ? $data['parent'] : null;
+
+            if ($data['position']) {
+                $implicitPosition = 3;
+                $previousInstancePosition = ($data['position'] > $instance->position) ? $data['position'] : $data['position'] - 1;
+                $fields = ['anr' => $anrId, 'position' => $previousInstancePosition];
+                if ($parent) {
+                    $fields['parent'] = $parent;
+                }
+                $previous = $table->getEntityByFields($fields)[0];
+            } else {
+                $implicitPosition = 1;
+                $previous = null;
+            }
+
+            $this->managePositionUpdate('parent', $instance, $parent, $implicitPosition, $previous, 'update');
+        }
+
+        $this->updateImpacts($anrId, $parent, $data);
 
         $instance->setLanguage($this->getLanguage());
         $instance->exchangeArray($data, true);
 
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($instance, $dependencies);
+
+        if (!$instance->parent) {
+            $instance->parent = null;
+        }
 
         $id = $table->save($instance);
 
