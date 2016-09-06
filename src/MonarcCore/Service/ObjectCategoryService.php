@@ -11,13 +11,23 @@ class ObjectCategoryService extends AbstractService
 {
     protected $filterColumns = ['label1', 'label2', 'label3', 'label4'];
 
+    /**
+     * Get List Specific
+     * 
+     * @param int $page
+     * @param int $limit
+     * @param null $order
+     * @param null $filter
+     * @param int $parentId
+     * @return mixed
+     */
     public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $parentId = 0){
         if ($parentId <= 0) {
-            return $this->getList($page, $limit, $order, $filter);
+            $objects = $this->getList($page, $limit, $order, $filter);
         } else {
             $filterAnd = ['parent' => $parentId];
 
-            return $this->get('table')->fetchAllFiltered(
+            $objects = $this->get('table')->fetchAllFiltered(
                 array_keys($this->get('entity')->getJsonArray()),
                 $page,
                 $limit,
@@ -25,6 +35,44 @@ class ObjectCategoryService extends AbstractService
                 $this->parseFrontendFilter($filter, $this->filterColumns),
                 $filterAnd
             );
+        }
+
+
+        $currentObjectsListId = [];
+        foreach($objects as $object) {
+            $currentObjectsListId[] = $object['id'];
+        }
+
+        //retrieve parent
+        foreach($objects as $object) {
+            $this->addParent($objects, $object, $currentObjectsListId);
+        }
+
+        return $objects;
+    }
+
+    /**
+     * Add parent
+     *
+     * @param $objects
+     * @param $object
+     * @param $currentObjectsListId
+     */
+    protected function addParent(&$objects, $object, &$currentObjectsListId) {
+        if ($object['parent']) {
+            if (!in_array($object['parent']->id, $currentObjectsListId)) {
+
+                $parent = $object['parent']->getJsonArray();
+                unset($parent['__initializer__']);
+                unset($parent['__cloner__']);
+                unset($parent['__isInitialized__']);
+
+                $objects[] = $parent;
+
+                $currentObjectsListId[] = $object['parent']->id;
+
+                $this->addParent($objects, $parent, $currentObjectsListId);
+            }
         }
     }
 
