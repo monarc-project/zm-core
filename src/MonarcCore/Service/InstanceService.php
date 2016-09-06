@@ -189,7 +189,7 @@ class InstanceService extends AbstractService
         $instance = $table->getEntity($id);
 
         //parent values
-        if (array_key_exists('parent', $data)) {
+        if (isset($data['parent'])) {
             $parent = ($data['parent']) ? $table->getEntity($data['parent']) : null;
             $instance->setParent($parent);
 

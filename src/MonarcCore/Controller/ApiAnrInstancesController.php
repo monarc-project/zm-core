@@ -103,7 +103,7 @@ class ApiAnrInstancesController extends AbstractController
         $required = ['object', 'parent', 'position'];
         $missing = [];
         foreach ($required as $field) {
-            if (!array_key_exists($field, $data)) {
+            if (!isset($data[$field])) {
                 $missing[] = $field . ' missing';
             }
         }

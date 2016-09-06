@@ -562,7 +562,7 @@ abstract class AbstractService extends AbstractServiceFactory
 
         $errors = [];
 
-        if (array_key_exists('threatRate', $data)) {
+        if (isset($data['threatRate'])) {
             /** @var ScaleTable $scaleTable */
             $scaleTable = $this->get('scaleTable');
             $scale = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => Scale::TYPE_THREAT]);
@@ -576,7 +576,7 @@ abstract class AbstractService extends AbstractServiceFactory
             }
         }
 
-        if (array_key_exists('vulnerabilityRate', $data)) {
+        if (isset($data['vulnerabilityRate'])) {
             /** @var ScaleTable $scaleTable */
             $scaleTable = $this->get('scaleTable');
             $scale = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => Scale::TYPE_VULNERABILITY]);
@@ -591,10 +591,10 @@ abstract class AbstractService extends AbstractServiceFactory
         }
 
         if ($instanceRisk) {
-            if (array_key_exists('reductionAmount', $data)) {
+            if (isset($data['reductionAmount'])) {
                 $reductionAmount = (int)$data['reductionAmount'];
 
-                $vulnerabilityRate = (array_key_exists('vulnerabilityRate', $data)) ? (int)$data['vulnerabilityRate'] : $instanceRisk['vulnerabilityRate'];
+                $vulnerabilityRate = (isset($data['vulnerabilityRate'])) ? (int)$data['vulnerabilityRate'] : $instanceRisk['vulnerabilityRate'];
 
                 if (($reductionAmount < 0) || ($reductionAmount > $vulnerabilityRate)) {
                     $errors[] = 'Value for reduction amount is not valid';
@@ -602,7 +602,7 @@ abstract class AbstractService extends AbstractServiceFactory
             }
         }
 
-        if (array_key_exists('c', $data) || array_key_exists('d', $data) || array_key_exists('i', $data)) {
+        if (isset($data['c']) || isset($data['i']) || isset($data['d'])) {
             /** @var ScaleTable $scaleTable */
             $scaleTable = $this->get('scaleTable');
             $scale = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => Scale::TYPE_IMPACT]);
@@ -612,8 +612,8 @@ abstract class AbstractService extends AbstractServiceFactory
             $fields = ['c', 'i', 'd'];
 
             foreach ($fields as $field) {
-                if (array_key_exists($field, $data)) {
-                    $value = (int)$data['c'];
+                if (isset($data[$field])) {
+                    $value = (int) $data['c'];
 
                     if ($value != -1) {
                         if (($value < $scale->min) || ($value > $scale->max)) {
