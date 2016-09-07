@@ -82,7 +82,7 @@ class Db {
         $qb = $repository->createQueryBuilder('u');
 
         foreach ($fields as $key => $value) {
-            if ($value != 'null') {
+            if ($value !== 'null') {
                 $qb->andWhere("u.$key = :$key");
                 $qb->setParameter($key, $value);
             } else {
@@ -93,7 +93,6 @@ class Db {
         foreach ($orderBy as $field => $way) {
             $qb->orderBy("u.$field", $way);
         }
-
         return $qb->getQuery()->getResult();
     }
 

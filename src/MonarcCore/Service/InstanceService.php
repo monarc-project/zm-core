@@ -222,18 +222,7 @@ class InstanceService extends AbstractService
             throw new \Exception('Instance not exist', 412);
         }
 
-        //parent values
-        if (isset($data['parent'])) {
-            if ($data['parent']) {
-                $parent = ($data['parent']) ? $table->getEntity($data['parent']) : null;
-                $instance->setParent($parent);
 
-                $root = ($data['parent']) ? $this->getRoot($instance) : null;
-                $instance->setRoot($root);
-            } else {
-                $parent = null;
-            }
-        }
 
         if (isset($data['position'])) {
             if (($data['position'] != $instance->position) || ($data['parent'] != $instance->parent)) {
@@ -251,6 +240,22 @@ class InstanceService extends AbstractService
                 }
 
                 $this->managePosition('parent', $instance, $parent, $implicitPosition, $previous, 'update');
+            }
+        }
+
+        //parent values
+        if (isset($data['parent'])) {
+            if ($data['parent']) {
+                $parent = ($data['parent']) ? $table->getEntity($data['parent']) : null;
+                $instance->setParent($parent);
+
+                $root = ($data['parent']) ? $this->getRoot($instance) : null;
+                $instance->setRoot($root);
+            } else {
+                $parent = null;
+                $instance->setParent($parent);
+                $root = null;
+                $instance->setRoot($root);
             }
         }
 

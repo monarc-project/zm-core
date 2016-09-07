@@ -434,7 +434,11 @@ abstract class AbstractService extends AbstractServiceFactory
                 $position = $this->modifyPositionDifferentParent($implicitPosition, $field, $entity->$field->id, $entity->position, $previous, $verb, $newParentId);
             }
         } else {
-            $position = $this->modifyPositionSameParent($implicitPosition, $field, null, $entity->position, $previous, $verb);
+            if ($newParentId == null) {
+                $position = $this->modifyPositionSameParent($implicitPosition, $field, null, $entity->position, $previous, $verb);
+            } else {
+                $position = $this->modifyPositionDifferentParent($implicitPosition, $field, null, $entity->position, $previous, $verb, $newParentId);
+            }
         }
 
         return $position;
@@ -534,7 +538,7 @@ abstract class AbstractService extends AbstractServiceFactory
                 break;
             case 3:
                 $previousObject = $this->get('table')->getEntity($previous);
-                $table->changePositionsByParent($field, $newParentId, $previousObject->position, 'up', 'after', true);
+                $this->get('table')->changePositionsByParent($field, $newParentId, $previousObject->position, 'up', 'after', true);
                 $position = $previousObject->position + 1;
                 break;
         }
