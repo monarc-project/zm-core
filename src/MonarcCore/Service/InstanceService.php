@@ -182,6 +182,8 @@ class InstanceService extends AbstractService
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($instance, $dependencies);
 
+        $instance->parent = ($instance->parent) ? $table->getEntity($instance->parent) : null;
+
         $id = $this->get('table')->save($instance);
 
         $this->updateRisks($anrId, $id);
@@ -261,9 +263,7 @@ class InstanceService extends AbstractService
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($instance, $dependencies);
 
-        if (!$instance->parent) {
-            $instance->parent = null;
-        }
+        $instance->parent = ($instance->parent) ? $table->getEntity($instance->parent) : null;
 
         $id = $table->save($instance);
 

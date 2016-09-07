@@ -447,7 +447,7 @@ class ObjectService extends AbstractService
         }
 
         if (isset($data['implicitPosition'])) {
-            $data['position'] = $this->managePosition('category', $entity, $data['category'], $data['implicitPosition'], $previous);
+            $data['position'] = $this->managePosition('category', $entity, $data['category'], $data['implicitPosition'], $previous, 'update');
         }
 
         if(isset($data['mode']) && $data['mode'] != $entity->get('mode')){
