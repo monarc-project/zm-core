@@ -427,100 +427,115 @@ abstract class AbstractService extends AbstractServiceFactory
             }
         }
 
-        $position = 1;
-        $table = $this->get('table');
-
         if ($entity->$field) {
-            $entityParentId = $entity->$field->id;
-
-            if ($newParentId == $entityParentId) {
-                switch ($implicitPosition) {
-                    case 1:
-                        $table->changePositionsByParent($field, $entityParentId, $entity->position, 'up', 'before');
-                        $position = 0;
-                        break;
-                    case 2:
-                        $table->changePositionsByParent($field, $entityParentId, $entity->position, 'down', 'after');
-                        $maxPosition = $this->get('table')->maxPositionByParent($field, $entityParentId);
-                        $position = $maxPosition + 1;
-                        break;
-                    case 3:
-                        $previousObject = $table->getEntity($previous);
-                        if ($entity->position < $previousObject->position) {
-                            $table->changePositionsByParent($field, $entityParentId, $entity->position, 'down', 'after');
-                            $table->changePositionsByParent($field, $entityParentId, $previousObject->position, 'up', 'after');
-                            $position = $previousObject->position;
-                        } else {
-                            $table->changePositionsByParent($field, $entityParentId, $previousObject->position, 'up', 'after', true);
-                            $table->changePositionsByParent($field, $entityParentId, $entity->position, 'down', 'after', true);
-                            $position = $previousObject->position + 1;
-                        }
-                        break;
-                }
+            if ($newParentId == $entity->$field->id) {
+                $position = $this->modifyPositionSameParent($implicitPosition, $field, $entity->$field->id, $entity->position, $previous, $verb);
             } else {
-                $table->changePositionsByParent($field, $entityParentId, $entity->position, 'down', 'after');
-                switch ($implicitPosition) {
-                    case 1:
-                        $table->changePositionsByParent($field, $newParentId, 1, 'up', 'after');
-                        $position = 0;
-                        break;
-                    case 2:
-                        if ($verb == 'post') {
-                            $maxPosition = $table->maxPositionByParent($field, $newParentId);
-                            $position = $maxPosition + 1;
-                        } else if ($verb != 'delete') {
-                            $maxPosition = $table->maxPositionByParent($field, $newParentId);
-                            $this->get('table')->changePositionsByParent($field, $newParentId, $entity->position, 'down', 'after');
-                            $position = $maxPosition;
-                        }
-
-                        break;
-                    case 3:
-                        $previousObject = $table->getEntity($previous);
-                        $table->changePositionsByParent($field, $newParentId, $previousObject->position, 'up', 'after', true);
-                        $position = $previousObject->position + 1;
-                        break;
-                }
+                $position = $this->modifyPositionDifferentParent($implicitPosition, $field, $entity->$field->id, $entity->position, $previous, $verb, $newParentId);
             }
         } else {
-
-            switch ($implicitPosition) {
-                case 1:
-                    $table->changePositionsByParent($field, null, $entity->position, 'up', 'before');
-                    $position = 0;
-                    break;
-                case 2:
-                    if ($verb == 'post') {
-                        $maxPosition = $table->maxPositionByParent($field, null);
-                        $position = $maxPosition + 1;
-                    } else if ($verb != 'delete') {
-                        $maxPosition = $table->maxPositionByParent($field, null);
-                        $this->get('table')->changePositionsByParent($field, null, $entity->position, 'down', 'after');
-                        $position = $maxPosition;
-                    }
-                    break;
-                case 3:
-                    if ($verb == 'post') {
-                        $previousObject = $table->getEntity($previous);
-                        $table->changePositionsByParent($field, null, $previousObject->position, 'up', 'after', true);
-                        $position = $previousObject->position + 1;
-                    } else if ($verb != 'delete') {
-                        $previousObject = $table->getEntity($previous);
-                        if ($entity->position < $previousObject->position) {
-                            $table->changePositionsByParent($field, null, $entity->position, 'down', 'after');
-                            $table->changePositionsByParent($field, null, $previousObject->position, 'up', 'after');
-                            $position = $previousObject->position;
-                        } else {
-                            $table->changePositionsByParent($field, null, $previousObject->position, 'up', 'after', true);
-                            $table->changePositionsByParent($field, null, $entity->position, 'down', 'after', true);
-                            $position = $previousObject->position + 1;
-                        }
-                    }
-                    break;
-            }
+            $position = $this->modifyPositionSameParent($implicitPosition, $field, null, $entity->position, $previous, $verb);
         }
 
         return $position;
+    }
+
+    /**
+     * Modify Position Same Parent
+     *
+     * @param $implicitPosition
+     * @param $field
+     * @param $entityParentId
+     * @param $entityPosition
+     * @param $previous
+     * @param $verb
+     * @return int
+     */
+    protected function modifyPositionSameParent($implicitPosition, $field, $entityParentId, $entityPosition, $previous, $verb) {
+        switch ($implicitPosition) {
+            case 1:
+                $this->get('table')->changePositionsByParent($field, $entityParentId, $entityPosition, 'up', 'before');
+                $position = 0;
+                break;
+            case 2:
+                $maxPosition = $this->get('table')->maxPositionByParent($field, $entityParentId);
+                if ($verb == 'post') {
+                    $position = $maxPosition + 1;
+                } else if ($verb != 'delete') {
+                    $this->get('table')->changePositionsByParent($field, $entityParentId, $entityPosition, 'down', 'after', true);
+                    $position = $maxPosition;
+                }
+                break;
+            case 3:
+                $previousObject = $this->get('table')->getEntity($previous);
+                if ($verb == 'post') {
+                    $this->get('table')->changePositionsByParent($field, $entityParentId, $previousObject->position, 'up', 'after', true);
+                    $position = $previousObject->position + 1;
+                } else if ($verb != 'delete') {
+                    if ($entityPosition < $previousObject->position) {
+                        $this->get('table')->changePositionsByParent($field, $entityParentId, $entityPosition, 'down', 'after');
+                        $this->get('table')->changePositionsByParent($field, $entityParentId, $previousObject->position, 'up', 'after');
+                        $position = $previousObject->position;
+                    } else {
+                        $this->get('table')->changePositionsByParent($field, $entityParentId, $previousObject->position, 'up', 'after', true);
+                        $this->get('table')->changePositionsByParent($field, $entityParentId, $entityPosition, 'down', 'after', true);
+                        $position = $previousObject->position + 1;
+                    }
+                }
+                break;
+            default:
+                if ($verb == 'delete') {
+                    $this->get('table')->changePositionsByParent($field, $entityParentId, $entityPosition, 'down', 'after');
+                    $position = $entityPosition;
+                }
+                break;
+        }
+
+        return $position;
+    }
+
+    /**
+     * Modify Position Different Parent
+     *
+     * @param $implicitPosition
+     * @param $field
+     * @param $entityParentId
+     * @param $entityPosition
+     * @param $previous
+     * @param $verb
+     * @param $newParentId
+     * @return int
+     */
+    protected function modifyPositionDifferentParent($implicitPosition, $field, $entityParentId, $entityPosition,  $previous, $verb, $newParentId) {
+        $this->get('table')->changePositionsByParent($field, $entityParentId, $entityPosition, 'down', 'after');
+        switch ($implicitPosition) {
+            case 1:
+                $this->get('table')->changePositionsByParent($field, $newParentId, 0, 'up', 'after');
+                if ($verb != 'delete') {
+                    $this->get('table')->changePositionsByParent($field, $entityParentId, $entityPosition, 'down', 'after');
+                }
+                $position = 0;
+                break;
+            case 2:
+                if ($verb == 'post') {
+                    $maxPosition = $this->get('table')->maxPositionByParent($field, $newParentId);
+                    $position = $maxPosition + 1;
+                } else if ($verb != 'delete') {
+                    $maxPosition = $this->get('table')->maxPositionByParent($field, $newParentId);
+                    $this->get('table')->changePositionsByParent($field, $newParentId, $entityPosition, 'down', 'after');
+                    $position = $maxPosition;
+                }
+
+                break;
+            case 3:
+                $previousObject = $this->get('table')->getEntity($previous);
+                $table->changePositionsByParent($field, $newParentId, $previousObject->position, 'up', 'after', true);
+                $position = $previousObject->position + 1;
+                break;
+        }
+
+        return $position;
+
     }
 
     protected function manageRelativePositionUpdate($field, $entity, $direction) {

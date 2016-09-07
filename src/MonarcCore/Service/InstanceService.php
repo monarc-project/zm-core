@@ -150,6 +150,28 @@ class InstanceService extends AbstractService
             throw new \Exception('Data missing', 412);
         }
 
+        if (isset($data['position'])) {
+            if (($data['position'] != $instance->position) || ($data['parent'] != $instance->parent)) {
+
+                $parent = (isset($data['parent']) && $data['parent']) ? $data['parent'] : null;
+
+                if ($data['position']) {
+                    $implicitPosition = 3;
+                    $previousInstancePosition = ($data['position'] > $instance->position) ? $data['position'] : $data['position'] - 1;
+                    $fields = ['anr' => $anrId, 'position' => $previousInstancePosition];
+                    if ($parent) {
+                        $fields['parent'] = $parent;
+                    }
+                    $previous = $table->getEntityByFields($fields)[0];
+                } else {
+                    $implicitPosition = 1;
+                    $previous = null;
+                }
+
+                $this->managePositionUpdate('parent', $instance, $parent, $implicitPosition, $previous, 'update');
+            }
+        }
+
         $this->updateImpacts($anrId, $instance->parent, $data);
 
         $instance->exchangeArray($data);
@@ -256,6 +278,22 @@ class InstanceService extends AbstractService
         $this->updateBrothers($anrId, $instance, $data, $historic);
 
         return $id;
+    }
+
+    /**
+     * Delete
+     *
+     * @param $id
+     */
+    public function delete($id) {
+
+        /** @var InstanceTable $table */
+        $table = $this->get('table');
+        $instance = $table->getEntity($id);
+
+        $this->managePositionUpdate('parent', $instance, $instance->parent, null, null, 'delete');
+
+        $this->get('table')->delete($id);
     }
 
     /**
