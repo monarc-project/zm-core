@@ -226,7 +226,7 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param $id
      */
     public function delete($id) {
-        $this->get('table')->delete($id);
+        return $this->get('table')->delete($id);
     }
 
     /**
@@ -235,7 +235,7 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param $data
      */
     public function deleteList($data){
-        $this->get('table')->deleteList($data);
+        return $this->get('table')->deleteList($data);
     }
 
     /**

@@ -95,9 +95,11 @@ abstract class AbstractController extends AbstractRestfulController
      */
     public function delete($id)
     {
-        $this->getService()->delete($id);
-
-        return new JsonModel(array('status' => 'ok'));
+        if($this->getService()->delete($id)){
+            return new JsonModel(array('status' => 'ok'));
+        }else{
+            return new JsonModel(array('status' => 'ko')); // Todo: peux être retourner un message d'erreur
+        }
     }
 
     /**
@@ -108,9 +110,11 @@ abstract class AbstractController extends AbstractRestfulController
      */
     public function deleteList($data)
     {
-        $this->getService()->deleteList($data);
-
-        return new JsonModel(array('status' => 'ok'));
+        if($this->getService()->deleteList($data)){
+            return new JsonModel(array('status' => 'ok'));
+        }else{
+            return new JsonModel(array('status' => 'ko')); // Todo: peux être retourner un message d'erreur
+        }
     }
 
     /**
