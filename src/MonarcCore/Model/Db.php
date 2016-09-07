@@ -82,8 +82,12 @@ class Db {
         $qb = $repository->createQueryBuilder('u');
 
         foreach ($fields as $key => $value) {
-            $qb->andWhere("u.$key = :$key");
-            $qb->setParameter($key, $value);
+            if ($value != 'null') {
+                $qb->andWhere("u.$key = :$key");
+                $qb->setParameter($key, $value);
+            } else {
+                $qb->andWhere($qb->expr()->isNull("u.$key"));
+            }
         }
 
         foreach ($orderBy as $field => $way) {

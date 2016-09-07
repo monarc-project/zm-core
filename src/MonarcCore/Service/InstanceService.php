@@ -74,6 +74,7 @@ class InstanceService extends AbstractService
         /** @var InstanceTable $table */
         $table = $this->get('table');
         $parent = ($data['parent']) ? $table->getEntity($data['parent']) : null;
+        $parentId = ($data['parent']) ? ($data['parent']) : null;
 
         $this->updateImpacts($anrId, $parent, $data);
         
@@ -100,6 +101,11 @@ class InstanceService extends AbstractService
 
         //level
         $this->updateLevels($parent, $data['object'], $instance);
+
+        //manage position
+        $fields = ['anr' => $anrId, 'position' => $data['position'], 'parent' => ($parentId) ? $parentId : 'null'];
+        $previousInstance = $table->getEntityByFields($fields)[0];
+        $this->managePositionUpdate('parent', $instance, $parentId, 3, $previousInstance, 'post');
 
         $id = $table->createInstanceToAnr($anrId, $instance, $parent, $instance->position);
 
@@ -158,10 +164,7 @@ class InstanceService extends AbstractService
                 if ($data['position']) {
                     $implicitPosition = 3;
                     $previousInstancePosition = ($data['position'] > $instance->position) ? $data['position'] : $data['position'] - 1;
-                    $fields = ['anr' => $anrId, 'position' => $previousInstancePosition];
-                    if ($parent) {
-                        $fields['parent'] = $parent;
-                    }
+                    $fields = ['anr' => $anrId, 'position' => $previousInstancePosition, 'parent' => ($parent) ? $parent : 'null'];
                     $previous = $table->getEntityByFields($fields)[0];
                 } else {
                     $implicitPosition = 1;
@@ -238,10 +241,7 @@ class InstanceService extends AbstractService
                 if ($data['position']) {
                     $implicitPosition = 3;
                     $previousInstancePosition = ($data['position'] > $instance->position) ? $data['position'] : $data['position'] - 1;
-                    $fields = ['anr' => $anrId, 'position' => $previousInstancePosition];
-                    if ($parent) {
-                        $fields['parent'] = $parent;
-                    }
+                    $fields = ['anr' => $anrId, 'position' => $previousInstancePosition, 'parent' => ($parent) ? $parent : 'null'];
                     $previous = $table->getEntityByFields($fields)[0];
                 } else {
                     $implicitPosition = 1;

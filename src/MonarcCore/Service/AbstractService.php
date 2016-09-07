@@ -469,8 +469,8 @@ abstract class AbstractService extends AbstractServiceFactory
             case 3:
                 $previousObject = $this->get('table')->getEntity($previous);
                 if ($verb == 'post') {
-                    $this->get('table')->changePositionsByParent($field, $entityParentId, $previousObject->position, 'up', 'after', true);
-                    $position = $previousObject->position + 1;
+                    $this->get('table')->changePositionsByParent($field, $entityParentId, $previousObject->position, 'up', 'after');
+                    $position = $previousObject->position;
                 } else if ($verb != 'delete') {
                     if ($entityPosition < $previousObject->position) {
                         $this->get('table')->changePositionsByParent($field, $entityParentId, $entityPosition, 'down', 'after');
