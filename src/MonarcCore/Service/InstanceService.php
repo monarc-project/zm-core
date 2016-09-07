@@ -74,6 +74,7 @@ class InstanceService extends AbstractService
         /** @var InstanceTable $table */
         $table = $this->get('table');
         $parent = ($data['parent']) ? $table->getEntity($data['parent']) : null;
+        $parentId = ($data['parent']) ? ($data['parent']) : null;
 
         $this->updateImpacts($anrId, $parent, $data);
         
@@ -100,6 +101,11 @@ class InstanceService extends AbstractService
 
         //level
         $this->updateLevels($parent, $data['object'], $instance);
+
+        //manage position
+        $fields = ['anr' => $anrId, 'position' => $data['position'], 'parent' => ($parentId) ? $parentId : 'null'];
+        $previousInstance = $table->getEntityByFields($fields)[0];
+        $this->managePosition('parent', $instance, $parentId, 3, $previousInstance, 'post');
 
         $id = $table->createInstanceToAnr($anrId, $instance, $parent, $instance->position);
 
@@ -150,12 +156,33 @@ class InstanceService extends AbstractService
             throw new \Exception('Data missing', 412);
         }
 
+        if (isset($data['position'])) {
+            if (($data['position'] != $instance->position) || ($data['parent'] != $instance->parent)) {
+
+                $parent = (isset($data['parent']) && $data['parent']) ? $data['parent'] : null;
+
+                if ($data['position']) {
+                    $implicitPosition = 3;
+                    $previousInstancePosition = ($data['position'] > $instance->position) ? $data['position'] : $data['position'] - 1;
+                    $fields = ['anr' => $anrId, 'position' => $previousInstancePosition, 'parent' => ($parent) ? $parent : 'null'];
+                    $previous = $table->getEntityByFields($fields)[0];
+                } else {
+                    $implicitPosition = 1;
+                    $previous = null;
+                }
+
+                $this->managePosition('parent', $instance, $parent, $implicitPosition, $previous, 'update');
+            }
+        }
+
         $this->updateImpacts($anrId, $instance->parent, $data);
 
         $instance->exchangeArray($data);
 
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($instance, $dependencies);
+
+        $instance->parent = ($instance->parent) ? $table->getEntity($instance->parent) : null;
 
         $id = $this->get('table')->save($instance);
 
@@ -216,17 +243,14 @@ class InstanceService extends AbstractService
                 if ($data['position']) {
                     $implicitPosition = 3;
                     $previousInstancePosition = ($data['position'] > $instance->position) ? $data['position'] : $data['position'] - 1;
-                    $fields = ['anr' => $anrId, 'position' => $previousInstancePosition];
-                    if ($parent) {
-                        $fields['parent'] = $parent;
-                    }
+                    $fields = ['anr' => $anrId, 'position' => $previousInstancePosition, 'parent' => ($parent) ? $parent : 'null'];
                     $previous = $table->getEntityByFields($fields)[0];
                 } else {
                     $implicitPosition = 1;
                     $previous = null;
                 }
 
-                $this->managePositionUpdate('parent', $instance, $parent, $implicitPosition, $previous, 'update');
+                $this->managePosition('parent', $instance, $parent, $implicitPosition, $previous, 'update');
             }
         }
 
@@ -239,9 +263,7 @@ class InstanceService extends AbstractService
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($instance, $dependencies);
 
-        if (!$instance->parent) {
-            $instance->parent = null;
-        }
+        $instance->parent = ($instance->parent) ? $table->getEntity($instance->parent) : null;
 
         $id = $table->save($instance);
 
@@ -256,6 +278,22 @@ class InstanceService extends AbstractService
         $this->updateBrothers($anrId, $instance, $data, $historic);
 
         return $id;
+    }
+
+    /**
+     * Delete
+     *
+     * @param $id
+     */
+    public function delete($id) {
+
+        /** @var InstanceTable $table */
+        $table = $this->get('table');
+        $instance = $table->getEntity($id);
+
+        $this->managePosition('parent', $instance, $instance->parent, null, null, 'delete');
+
+        $this->get('table')->delete($id);
     }
 
     /**

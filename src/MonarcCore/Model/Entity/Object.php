@@ -160,9 +160,9 @@ class Object extends AbstractEntity
     /**
      * @var smallint
      *
-     * @ORM\Column(name="position", type="smallint", options={"unsigned":true, "default":1})
+     * @ORM\Column(name="position", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $position = '1';
+    protected $position = '0';
 
     /**
      * @var string

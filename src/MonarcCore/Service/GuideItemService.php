@@ -53,7 +53,7 @@ class GuideItemService extends AbstractService
         $entity = $this->get('table')->getEntity($id);
 
         if (isset($data['implicitPosition'])) {
-            $data['position'] = $this->managePositionUpdate('guide', $entity, $guide, $data['implicitPosition'], $previous);
+            $data['position'] = $this->managePosition('guide', $entity, $guide, $data['implicitPosition'], $previous);
         }
 
         $entity = $this->get('table')->getEntity($id);

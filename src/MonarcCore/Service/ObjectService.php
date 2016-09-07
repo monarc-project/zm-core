@@ -356,6 +356,9 @@ class ObjectService extends AbstractService
      */
     public function create($data, $context = Object::BACK_OFFICE) {
 
+        //create object
+        $object = $this->get('entity');
+
         //position
         $previous = (isset($data['previous'])) ? $data['previous'] : null;
         if (!isset($data['implicitPosition'])) {
@@ -365,21 +368,26 @@ class ObjectService extends AbstractService
                 throw  new \Exception('previous is missing', 412);
             }
         }
-        $position = $this->managePositionCreation('category', $data['category'], (int) $data['implicitPosition'], $previous);
-        $data['position'] = $position;
-        unset($data['implicitPosition']);
+        if ($previous) {
+            $previousInstance = $this->get('table')->getEntity($previous);
+        } else {
+            $previousInstance = null;
+        }
 
         if(empty($data['rolfTag'])){
             unset($data['rolfTag']);
         }
 
-        //create object
-        $object = $this->get('entity');
         $object->exchangeArray($data);
 
         //object dependencies
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($object, $dependencies);
+
+        $position = $this->managePosition('category', $object, (int) $data['category'], (int) $data['implicitPosition'], $previousInstance, 'post');
+        $object->position = $position;
+        unset($data['implicitPosition']);
+
 
         if (isset($data['source'])) {
             $object->source = $this->get('table')->getEntity($data['source']);
@@ -439,7 +447,7 @@ class ObjectService extends AbstractService
         }
 
         if (isset($data['implicitPosition'])) {
-            $data['position'] = $this->managePositionUpdate('category', $entity, $data['category'], $data['implicitPosition'], $previous);
+            $data['position'] = $this->managePosition('category', $entity, $data['category'], $data['implicitPosition'], $previous, 'update');
         }
 
         if(isset($data['mode']) && $data['mode'] != $entity->get('mode')){
