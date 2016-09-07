@@ -381,7 +381,7 @@ abstract class AbstractService extends AbstractServiceFactory
      * @return int
      */
     protected function managePositionCreation($field, $parentId, $implicitPosition, $previous = null) {
-        $position = 1;
+        $position = O;
 
         switch ($implicitPosition) {
             case 1:
@@ -419,7 +419,7 @@ abstract class AbstractService extends AbstractServiceFactory
      * @return int
      * @throws \Exception
      */
-    protected function managePositionUpdate($field, $entity, $newParentId, $implicitPosition, $previous = null, $verb = 'post') {
+    protected function managePosition($field, $entity, $newParentId, $implicitPosition, $previous = null, $verb = 'update') {
 
         if ($implicitPosition == 3) {
             if (!$previous) {
@@ -429,6 +429,7 @@ abstract class AbstractService extends AbstractServiceFactory
 
         if ($entity->$field) {
             if ($newParentId == $entity->$field->id) {
+                var_dump('a');
                 $position = $this->modifyPositionSameParent($implicitPosition, $field, $entity->$field->id, $entity->position, $previous, $verb);
             } else {
                 $position = $this->modifyPositionDifferentParent($implicitPosition, $field, $entity->$field->id, $entity->position, $previous, $verb, $newParentId);
@@ -454,7 +455,8 @@ abstract class AbstractService extends AbstractServiceFactory
     protected function modifyPositionSameParent($implicitPosition, $field, $entityParentId, $entityPosition, $previous, $verb) {
         switch ($implicitPosition) {
             case 1:
-                $this->get('table')->changePositionsByParent($field, $entityParentId, $entityPosition, 'up', 'before');
+                var_dump($entityParentId);
+                $this->get('table')->changePositionsByParent($field, $entityParentId, $entityPosition, 'up', 'after');
                 $position = 0;
                 break;
             case 2:

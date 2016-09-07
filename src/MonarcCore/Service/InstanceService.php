@@ -105,7 +105,7 @@ class InstanceService extends AbstractService
         //manage position
         $fields = ['anr' => $anrId, 'position' => $data['position'], 'parent' => ($parentId) ? $parentId : 'null'];
         $previousInstance = $table->getEntityByFields($fields)[0];
-        $this->managePositionUpdate('parent', $instance, $parentId, 3, $previousInstance, 'post');
+        $this->managePosition('parent', $instance, $parentId, 3, $previousInstance, 'post');
 
         $id = $table->createInstanceToAnr($anrId, $instance, $parent, $instance->position);
 
@@ -171,7 +171,7 @@ class InstanceService extends AbstractService
                     $previous = null;
                 }
 
-                $this->managePositionUpdate('parent', $instance, $parent, $implicitPosition, $previous, 'update');
+                $this->managePosition('parent', $instance, $parent, $implicitPosition, $previous, 'update');
             }
         }
 
@@ -248,7 +248,7 @@ class InstanceService extends AbstractService
                     $previous = null;
                 }
 
-                $this->managePositionUpdate('parent', $instance, $parent, $implicitPosition, $previous, 'update');
+                $this->managePosition('parent', $instance, $parent, $implicitPosition, $previous, 'update');
             }
         }
 
@@ -291,7 +291,7 @@ class InstanceService extends AbstractService
         $table = $this->get('table');
         $instance = $table->getEntity($id);
 
-        $this->managePositionUpdate('parent', $instance, $instance->parent, null, null, 'delete');
+        $this->managePosition('parent', $instance, $instance->parent, null, null, 'delete');
 
         $this->get('table')->delete($id);
     }
