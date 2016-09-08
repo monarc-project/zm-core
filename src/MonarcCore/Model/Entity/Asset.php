@@ -16,7 +16,6 @@ class Asset extends AbstractEntity
 
     const ASSET_PRIMARY    = 1;
     const ASSET_SECONDARY  = 2;
-    const ASSET_VIRTUAL    = 3;
 
     /**
      * @var integer
@@ -117,9 +116,9 @@ class Asset extends AbstractEntity
     /**
      * @var smallint
      *
-     * @ORM\Column(name="type", type="smallint", options={"unsigned":true, "default":3})
+     * @ORM\Column(name="type", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $type = '3';
+    protected $type = '1';
 
     /**
      * @var string
@@ -299,6 +298,23 @@ class Asset extends AbstractEntity
             'allow_empty' => false,
             'filters' => array(),
             'validators' => $validatorsCode
+        ));
+
+        $this->inputFilter->add(array(
+            'name' => 'type',
+            'required' => false,
+            'allow_empty' => false,
+            'filters' => array(
+                array('name' => 'ToInt'),
+            ),
+            'validators' => array(
+                array(
+                    'name' => 'InArray',
+                    'options' => array(
+                        'haystack' => array(self::ASSET_PRIMARY, self::ASSET_SECONDARY),
+                    ),
+                ),
+            ),
         ));
 
         return $this->inputFilter;
