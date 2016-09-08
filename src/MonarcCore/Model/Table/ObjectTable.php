@@ -55,9 +55,7 @@ class ObjectTable extends AbstractEntityTable {
         $objects =  $this->getRepository()->createQueryBuilder('o')
             ->select(array('o.id'))
             ->where('o.asset = :assetId')
-            ->andWhere('o.type = :type')
             ->setParameter(':assetId', $assetId)
-            ->setParameter(':type', 'anr')
             ->getQuery()
             ->getResult();
 
@@ -76,10 +74,8 @@ class ObjectTable extends AbstractEntityTable {
 
         $objects =  $this->getRepository()->createQueryBuilder('o')
             ->select(array('o.id'))
-            ->where('o.type = :type')
             ->andWhere('o.anr = :anr')
             ->andWhere('o.source = :source')
-            ->setParameter(':type', $type)
             ->setParameter(':anr', $anrId)
             ->setParameter(':source', $sourceId)
             ->getQuery()
