@@ -177,9 +177,9 @@ class GuideItem extends AbstractEntity
 
             $this->inputFilter->add(array(
                 'name' => 'implicitPosition',
-                'required' => true,
-                'allow_empty' => false,
-                'continue_if_empty' => false,
+                'required' => false,
+                'allow_empty' => true,
+                'continue_if_empty' => true,
                 'filters' => array(),
                 'validators' => array(
                     array(
