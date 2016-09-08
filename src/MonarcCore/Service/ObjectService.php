@@ -594,7 +594,6 @@ class ObjectService extends AbstractService
         //save object
         $id = $table->save($object);
 
-
         //parent
         /** @var ObjectObjectService $objectObjectService */
         $objectObjectService = $this->get('objectObjectService');

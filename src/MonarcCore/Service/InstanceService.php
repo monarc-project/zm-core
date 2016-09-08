@@ -47,7 +47,7 @@ class InstanceService extends AbstractService
      * @return mixed|null
      * @throws \Exception
      */
-    public function instantiateObjectToAnr($anrId, $data) {
+    public function instantiateObjectToAnr($anrId, $data, $managePosition = true) {
 
         //retrieve object properties
         $object = $this->get('objectTable')->getEntity($data['object']);
@@ -103,9 +103,23 @@ class InstanceService extends AbstractService
         $this->updateLevels($parent, $data['object'], $instance);
 
         //manage position
-        $fields = ['anr' => $anrId, 'position' => $data['position'], 'parent' => ($parentId) ? $parentId : 'null'];
-        $previousInstance = $table->getEntityByFields($fields)[0];
-        $this->managePosition('parent', $instance, $parentId, 3, $previousInstance, 'post');
+        if ($managePosition) {
+            if ($data['position']) {
+                $fields = ['anr' => $anrId, 'position' => $data['position'], 'parent' => ($parentId) ? $parentId : 'null'];
+                $previousInstance = $table->getEntityByFields($fields);
+                if ($previousInstance) {
+                    $previousInstance = $previousInstance[0];
+                    $implicitPosition = 3;
+                } else {
+                    $previousInstance = null;
+                    $implicitPosition = 2;
+                }
+            } else {
+                $previousInstance = null;
+                $implicitPosition = 1;
+            }
+            $this->managePosition('parent', $instance, $parentId, $implicitPosition, $previousInstance, 'post');
+        }
 
         $id = $table->createInstanceToAnr($anrId, $instance, $parent, $instance->position);
 
@@ -323,7 +337,7 @@ class InstanceService extends AbstractService
                 'i' => '-1',
                 'd' => '-1'
             ];
-            $this->instantiateObjectToAnr($anrId, $data);
+            $this->instantiateObjectToAnr($anrId, $data, false);
         }
     }
 

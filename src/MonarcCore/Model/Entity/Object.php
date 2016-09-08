@@ -329,10 +329,15 @@ class Object extends AbstractEntity
     {
         $currentAnrs = $this->anrs;
 
+        $errors = false;
         foreach ($currentAnrs as $currentAnr) {
             if ($currentAnr->id == $anr->id) {
-                throw new \Exception('This object already exists in the current risk analysis', 412);
+                $errors = true;
             }
+        }
+
+        if  ($errors) {
+            throw new \Exception('This object already exists in the current risk analysis', 412);
         }
 
         $this->anrs[] = $anr;
