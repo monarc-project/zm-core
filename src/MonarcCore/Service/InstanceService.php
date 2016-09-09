@@ -237,17 +237,22 @@ class InstanceService extends AbstractService
         }
 
 
-
         if (isset($data['position'])) {
             if (($data['position'] != $instance->position) || ($data['parent'] != $instance->parent)) {
 
                 $parent = (isset($data['parent']) && $data['parent']) ? $data['parent'] : null;
 
                 if ($data['position']) {
-                    $implicitPosition = 3;
                     $previousInstancePosition = ($data['position'] > $instance->position) ? $data['position'] : $data['position'] - 1;
                     $fields = ['anr' => $anrId, 'position' => $previousInstancePosition, 'parent' => ($parent) ? $parent : 'null'];
-                    $previous = $table->getEntityByFields($fields)[0];
+                    $previous = $table->getEntityByFields($fields);
+                    if ($previous) {
+                        $implicitPosition = 3;
+                        $previous = $previous[0];
+                    } else {
+                        $implicitPosition = 2;
+                        $previous = null;
+                    }
                 } else {
                     $implicitPosition = 1;
                     $previous = null;
