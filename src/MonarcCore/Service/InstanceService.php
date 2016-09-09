@@ -664,7 +664,7 @@ class InstanceService extends AbstractService
 
         /** @var InstanceConsequenceTable $table */
         $table = $this->get('instanceConsequenceTable');
-        $instanceConsequences = $table->getEntityByFields(['anr' => $anrId, 'instance' => $instanceId, 'isHidden' => 0]);
+        $instanceConsequences = $table->getEntityByFields(['anr' => $anrId, 'instance' => $instanceId]);
 
         $consequences = [];
         foreach ($instanceConsequences as $instanceConsequence) {
@@ -681,6 +681,7 @@ class InstanceService extends AbstractService
                 'c_risk' => $instanceConsequence->c,
                 'i_risk' => $instanceConsequence->i,
                 'd_risk' => $instanceConsequence->d,
+                'is_hidden' => $instanceConsequence->isHidden,
             ];
         }
 
