@@ -257,7 +257,6 @@ class InstanceService extends AbstractService
                     $implicitPosition = 1;
                     $previous = null;
                 }
-
                 $this->managePosition('parent', $instance, $parent, $implicitPosition, $previous, 'update');
             }
         }
