@@ -309,16 +309,6 @@ class ObjectService extends AbstractService
     }
 
     /**
-     * Get anr by asset
-     *
-     * @param $asset
-     * @return mixed
-     */
-    public function getAnrByAsset($asset) {
-        return $this->get('table')->getAnrByAssetId($asset->getId());
-    }
-
-    /**
      * Recursive child
      *
      * @param $hierarchy
