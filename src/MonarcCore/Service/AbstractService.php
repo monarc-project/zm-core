@@ -516,8 +516,8 @@ abstract class AbstractService extends AbstractServiceFactory
      * @return int
      */
     protected function modifyPositionDifferentParent($implicitPosition, $field, $entityParentId, $entityPosition,  $previous, $verb, $newParentId) {
-
         $this->get('table')->changePositionsByParent($field, $entityParentId, $entityPosition, 'down', 'after', true);
+
         switch ($implicitPosition) {
             case 1:
                 $this->get('table')->changePositionsByParent($field, $newParentId, 0, 'up', 'after');
@@ -529,14 +529,14 @@ abstract class AbstractService extends AbstractServiceFactory
                     $position = $maxPosition + 1;
                 } else if ($verb != 'delete') {
                     $maxPosition = $this->get('table')->maxPositionByParent($field, $newParentId);
-                    $this->get('table')->changePositionsByParent($field, $newParentId, $entityPosition, 'down', 'after');
-                    $position = $maxPosition;
+                    //$this->get('table')->changePositionsByParent($field, $newParentId, $entityPosition, 'down', 'after');
+                    $position = $maxPosition + 1;
                 }
 
                 break;
             case 3:
                 $previousObject = $this->get('table')->getEntity($previous);
-                $this->get('table')->changePositionsByParent($field, $newParentId, $previousObject->position, 'up', 'after');
+                $this->get('table')->changePositionsByParent($field, $newParentId, $previousObject->position, 'up', 'after', true);
                 $position = $previousObject->position + 1;
                 break;
         }
