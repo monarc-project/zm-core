@@ -26,9 +26,6 @@ class InstanceTable extends AbstractEntityTable {
         $this->getDb()->beginTransaction();
 
         try {
-            //modify position of instances after position
-            $this->shiftPositionFromPosition($anrId, $parentId, $position);
-
             //create instance
             $id = $this->save($instance);
 
@@ -39,28 +36,6 @@ class InstanceTable extends AbstractEntityTable {
             $this->getDb()->rollBack();
             throw $e;
         }
-    }
-
-    /**
-     * Shift Position From Position
-     *
-     * @param $anrId
-     * @param $parentId
-     * @param $position
-     */
-    public function shiftPositionFromPosition($anrId, $parentId, $position) {
-
-        $this->getRepository()->createQueryBuilder('i')
-            ->update()
-            ->set('i.position', 'i.position + 1')
-            ->where('i.anr = :anrId')
-            ->andWhere('i.parent = :parentId')
-            ->andWhere('i.position >= :position')
-            ->setParameter(':anrId', $anrId)
-            ->setParameter(':parentId', $parentId)
-            ->setParameter(':position', $position)
-            ->getQuery()
-            ->getResult();
     }
 
     /**
