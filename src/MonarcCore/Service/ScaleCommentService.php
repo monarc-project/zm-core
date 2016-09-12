@@ -11,9 +11,9 @@ class ScaleCommentService extends AbstractService
 {
     protected $scaleTable;
     protected $scaleService;
-    protected $scaleTypeService;
-    protected $scaleTypeImpactTable;
-    protected $dependencies = ['scale', 'scaleTypeImpact'];
+    protected $scaleImpactTypeService;
+    protected $scaleImpactTypeTable;
+    protected $dependencies = ['scale', 'scaleImpactType'];
 
     public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null){
         $comments = $this->get('table')->fetchAllFiltered(
@@ -48,7 +48,7 @@ class ScaleCommentService extends AbstractService
             $scale = $this->get('scaleTable')->getEntity($data['scale']);
             $entity->setScale($scale);
             if ($scale->type !=1) {
-                unset($data['scaleTypeImpact']);
+                unset($data['scaleImpactType']);
             }
         }
         $entity->exchangeArray($data);
@@ -73,7 +73,7 @@ class ScaleCommentService extends AbstractService
             $scale = $this->get('scaleTable')->getEntity($data['scale']);
             $entity->setScale($scale);
             if ($scale->type !=1) {
-                unset($data['scaleTypeImpact']);
+                unset($data['scaleImpactType']);
             }
         }
         $entity->exchangeArray($data);

@@ -10,7 +10,7 @@ class InstanceConsequenceServiceFactory extends AbstractServiceFactory
         'instanceTable' => 'MonarcCore\Model\Table\InstanceTable',
         'objectTable' => 'MonarcCore\Model\Table\ObjectTable',
         'scaleTable' => 'MonarcCore\Model\Table\ScaleTable',
-        'scaleImpactTypeTable' => 'MonarcCore\Model\Table\ScaleTypeTable',
+        'scaleImpactTypeTable' => 'MonarcCore\Model\Table\ScaleImpactTypeTable',
         'instanceService' => 'MonarcCore\Service\InstanceService',
     );
 }

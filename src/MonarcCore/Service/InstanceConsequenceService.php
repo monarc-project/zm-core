@@ -1,9 +1,9 @@
 <?php
 namespace MonarcCore\Service;
-use MonarcCore\Model\Entity\ScaleType;
+use MonarcCore\Model\Entity\ScaleImpactType;
 use MonarcCore\Model\Table\InstanceConsequenceTable;
 use MonarcCore\Model\Table\InstanceTable;
-use MonarcCore\Model\Table\ScaleTypeTable;
+use MonarcCore\Model\Table\ScaleImpactTypeTable;
 
 /**
  * Instance Consequence Service
@@ -103,7 +103,7 @@ class InstanceConsequenceService extends AbstractService
      */
     protected function updateInstanceImpacts($instanceConsequencesId) {
 
-        $rolfpTypes = ScaleType::getSclaeTypeRolfp();
+        $rolfpTypes = ScaleImpactType::getScaleImpactTypeRolfp();
 
         /** @var InstanceConsequenceTable $table */
         $table = $this->get('table');

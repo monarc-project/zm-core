@@ -6,7 +6,7 @@ use Zend\View\Model\JsonModel;
 
 class ApiScalesCommentsController extends AbstractController
 {
-    protected $dependencies = ['scale', 'scaleTypeImpact'];
+    protected $dependencies = ['scale', 'scaleImpactType'];
     protected $name = 'comments';
 
     /**

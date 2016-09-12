@@ -11,7 +11,7 @@ use MonarcCore\Model\Entity\Scale;
 class ScaleService extends AbstractService
 {
     protected $anrTable;
-    protected $scaleTypeService;
+    protected $scaleImpactTypeService;
     protected $dependencies = ['anr'];
 
     protected $types = [
@@ -73,7 +73,7 @@ class ScaleService extends AbstractService
 
         //scale type
         if ($entity->type == 1) {
-            $scaleTypes = [
+            $scaleImpactTypes = [
                 [
                     'anr' => $data['anr'], 'scale' => $scaleId, 'type' => 1, 'isSys' => 1, 'isHidden' => 0,
                     'implicitPosition' => 1, 'label1' => 'Confidentialité', 'label2' => '', 'label3' => '', 'label4' => '',
@@ -107,10 +107,10 @@ class ScaleService extends AbstractService
                     'implicitPosition' => 1, 'label1' => 'Personne', 'label2' => '', 'label3' => '', 'label4' => '',
                 ]
             ];
-            foreach ($scaleTypes as $scaleType) {
-                /** @var ScaleTypeService $scaleTypeService */
-                $scaleTypeService = $this->get('scaleTypeService');
-                $scaleTypeService->create($scaleType);
+            foreach ($scaleImpactTypes as $scaleImpactType) {
+                /** @var ScaleImpactTypeService $scaleImpactTypeService */
+                $scaleImpactTypeService = $this->get('scaleImpactTypeService');
+                $scaleImpactTypeService->create($scaleImpactType);
             }
         }
 

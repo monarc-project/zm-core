@@ -77,7 +77,7 @@ return array(
             'MonarcCore\Model\Entity\Role'                  => 'MonarcCore\Model\Entity\Role',
             'MonarcCore\Model\Entity\Scale'                 => 'MonarcCore\Model\Entity\Scale',
             'MonarcCore\Model\Entity\ScaleComment'          => 'MonarcCore\Model\Entity\ScaleComment',
-            'MonarcCore\Model\Entity\ScaleType'             => 'MonarcCore\Model\Entity\ScaleType',
+            'MonarcCore\Model\Entity\ScaleImpactType'       => 'MonarcCore\Model\Entity\ScaleImpactType',
             'MonarcCore\Model\Entity\UserRole'              => 'MonarcCore\Model\Entity\UserRole',
             'MonarcCore\Service\Mime\Part'                  => 'Zend\Mime\Part',
             'MonarcCore\Service\Mime\Message'               => 'Zend\Mime\Message',
@@ -113,7 +113,7 @@ return array(
             'MonarcCore\Service\RoleService'                => 'MonarcCore\Service\RoleServiceFactory',
             'MonarcCore\Service\ScaleService'               => 'MonarcCore\Service\ScaleServiceFactory',
             'MonarcCore\Service\ScaleCommentService'        => 'MonarcCore\Service\ScaleCommentServiceFactory',
-            'MonarcCore\Service\ScaleTypeService'           => 'MonarcCore\Service\ScaleTypeServiceFactory',
+            'MonarcCore\Service\ScaleImpactTypeService'     => 'MonarcCore\Service\ScaleImpactTypeServiceFactory',
             'MonarcCore\Service\ThemeService'               => 'MonarcCore\Service\ThemeServiceFactory',
             'MonarcCore\Service\ThreatService'              => 'MonarcCore\Service\ThreatServiceFactory',
             'MonarcCore\Service\UserRoleService'            => 'MonarcCore\Service\UserRoleServiceFactory',
@@ -125,7 +125,7 @@ return array(
         ),
         'shared' => array(
             'MonarcCore\Model\Entity\Scale' => false,
-            'MonarcCore\Model\Entity\ScaleType' => false,
+            'MonarcCore\Model\Entity\ScaleImpactType' => false,
         ),
         'initializers' =>
         [

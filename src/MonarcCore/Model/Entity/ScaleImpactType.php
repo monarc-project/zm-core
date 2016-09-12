@@ -10,7 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Table(name="scales_impact_types")
  * @ORM\Entity
  */
-class ScaleType extends AbstractEntity
+class ScaleImpactType extends AbstractEntity
 {
     const SCALE_TYPE_C = 1;
     const SCALE_TYPE_I = 2;
@@ -21,7 +21,7 @@ class ScaleType extends AbstractEntity
     const SCALE_TYPE_F = 7;
     const SCALE_TYPE_P = 8;
 
-    static function getSclaeTypeRolfp() {
+    static function getScaleImpactTypeRolfp() {
         return [
             self::SCALE_TYPE_R,
             self::SCALE_TYPE_O,
@@ -186,7 +186,7 @@ class ScaleType extends AbstractEntity
 
     /**
      * @param Anr $anr
-     * @return ScaleType
+     * @return ScaleImpactType
      */
     public function setAnr($anr)
     {
@@ -196,7 +196,7 @@ class ScaleType extends AbstractEntity
 
     /**
      * @param Scale $scale
-     * @return ScaleType
+     * @return ScaleImpactType
      */
     public function setScale($scale)
     {

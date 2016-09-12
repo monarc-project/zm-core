@@ -53,9 +53,9 @@ class InstanceConsequence extends AbstractEntity
     protected $object;
 
     /**
-     * @var \MonarcCore\Model\Entity\ScaleType
+     * @var \MonarcCore\Model\Entity\ScaleImpactType
      *
-     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\ScaleType", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\ScaleImpactType", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="scale_impact_type_id", referencedColumnName="id", nullable=true)
      * })
@@ -219,26 +219,37 @@ class InstanceConsequence extends AbstractEntity
     }
 
     /**
-     * @return ScaleType
+     * @return ScaleImpactType
      */
     public function getScaleImpactType()
     {
-        return $this->ScaleImpactType;
+        return $this->scaleImpactType;
     }
 
     /**
-     * @param ScaleType $ScaleImpactType
+     * @param ScaleImpactType $scaleImpactType
      * @return InstanceConsequence
      */
-    public function setScaleImpactType($ScaleImpactType)
+    public function setScaleImpactType($scaleImpactType)
     {
-        $this->ScaleImpactType = $ScaleImpactType;
+        $this->scaleImpactType = $scaleImpactType;
         return $this;
     }
 
     public function getInputFilter($partial = false){
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);
+
+            $fields = ['anr', 'instance', 'object', 'scaleImpactType'];
+            foreach ($fields as $field) {
+                $this->inputFilter->add(array(
+                    'name' => $field,
+                    'required' => true,
+                    'allow_empty' => false,
+                    'filters' => array(),
+                    'validators' => array(),
+                ));
+            }
         }
         return $this->inputFilter;
     }

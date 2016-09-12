@@ -11,7 +11,7 @@ use MonarcCore\Model\Table\InstanceConsequenceTable;
 use MonarcCore\Model\Table\InstanceTable;
 use MonarcCore\Model\Table\RolfRiskTable;
 use MonarcCore\Model\Table\ScaleTable;
-use MonarcCore\Model\Table\ScaleTypeTable;
+use MonarcCore\Model\Table\ScaleImpactTypeTable;
 
 
 /**
@@ -677,7 +677,7 @@ class InstanceService extends AbstractService
 
         $consequences = [];
         foreach ($instanceConsequences as $instanceConsequence) {
-            /** @var ScaleTypeTable $scaleImpactTypeTable */
+            /** @var ScaleImpactTypeTable $scaleImpactTypeTable */
             $scaleImpactTypeTable = $this->get('scaleImpactTypeTable');
             $scaleImpactType = $scaleImpactTypeTable->getEntity($instanceConsequence->scaleImpactType->id);
 
@@ -719,7 +719,7 @@ class InstanceService extends AbstractService
     public function createInstanceConsequences($instanceId, $anrId, $object) {
 
         //retrieve scale impact types
-        /** @var ScaleTypeTable $scaleImpactTypeTable */
+        /** @var ScaleImpactTypeTable $scaleImpactTypeTable */
         $scaleImpactTypeTable = $this->get('scaleImpactTypeTable');
         $scalesImpactTypes = $scaleImpactTypeTable->getEntityByFields(['anr' => $anrId, 'isHidden' => 0]);
 

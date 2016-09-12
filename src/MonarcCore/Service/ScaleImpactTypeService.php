@@ -1,16 +1,20 @@
 <?php
 namespace MonarcCore\Service;
+use MonarcCore\Model\Table\InstanceTable;
 
 /**
  * Scale Type Service
  *
- * Class ScaleTypeService
+ * Class ScaleImpactTypeService
  * @package MonarcCore\Service
  */
-class ScaleTypeService extends AbstractService
+class ScaleImpactTypeService extends AbstractService
 {
     protected $anrTable;
     protected $scaleTable;
+    protected $instanceTable;
+    protected $instanceConsequenceService;
+
     protected $dependencies = ['anr', 'scale'];
     protected $types = [
         1 => 'C',
@@ -62,6 +66,8 @@ class ScaleTypeService extends AbstractService
      */
     public function create($data) {
 
+        $anrId = $data['anr'];
+
         $previous = (isset($data['previous'])) ? $data['previous'] : null;
         $parent = (isset($data['scale'])) ? $data['scale'] : null;
         $position = $this->managePositionCreation('scale', $parent, (int) $data['implicitPosition'], $previous);
@@ -86,7 +92,28 @@ class ScaleTypeService extends AbstractService
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
 
-        return $this->get('table')->save($entity);
+        $id = $this->get('table')->save($entity);
+
+        //retrieve all instances for current anr
+        /** @var InstanceTable $instanceTable */
+        $instanceTable = $this->get('instanceTable');
+        $instances = $instanceTable->getEntityByFields(['anr' => $anrId]);
+
+        foreach ($instances as $instance) {
+
+            //create instances consequences
+            $dataConsequences = [
+                'anr' => $anrId,
+                'instance' => $instance->id,
+                'object' => $instance->object->id,
+                'scaleImpactType' => $id,
+            ];
+            /** @var InstanceConsequenceService $instanceConsequenceService */
+            $instanceConsequenceService = $this->get('instanceConsequenceService');
+            $instanceConsequenceService->create($dataConsequences);
+        }
+
+        return $id;
     }
 
     /**
