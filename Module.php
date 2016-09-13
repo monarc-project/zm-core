@@ -2,6 +2,7 @@
 namespace MonarcCore;
 
 //use Zend\Mvc\ModuleRouteListener;
+use MonarcCore\Model\Table\ScaleImpactTypeTable;
 use Zend\Di\ServiceLocator;
 use Zend\Mvc\MvcEvent;
 use \Zend\Mvc\Controller\ControllerManager;
@@ -324,8 +325,8 @@ class Module
                     $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
                     return $table;
                 },
-                '\MonarcCore\Model\Table\ScaleTypeTable' => function($sm){
-                    $table = new Model\Table\ScaleTypeTable($sm->get('\MonarcCore\Model\Db'));
+                '\MonarcCore\Model\Table\ScaleImpactTypeTable' => function($sm){
+                    $table = new Model\Table\ScaleImpactTypeTable($sm->get('\MonarcCore\Model\Db'));
                     $table->setConnectedUser($sm->get('\MonarcCore\Service\ConnectedUserService')->getConnectedUser());
                     return $table;
                 },

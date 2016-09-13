@@ -309,16 +309,6 @@ class ObjectService extends AbstractService
     }
 
     /**
-     * Get anr by asset
-     *
-     * @param $asset
-     * @return mixed
-     */
-    public function getAnrByAsset($asset) {
-        return $this->get('table')->getAnrByAssetId($asset->getId());
-    }
-
-    /**
      * Recursive child
      *
      * @param $hierarchy
@@ -633,30 +623,60 @@ class ObjectService extends AbstractService
      */
     public function getCategoriesLibraryByAnr($anrId) {
 
-        /** @var ObjectCategoryTable $categoriesTable */
-        $categoriesTable = $this->get('categoryTable');
-        $objectsCategories =  $categoriesTable->getEntityByFields(['anr' => $anrId]);
+        //retrieve anr objects
+        /** @var ObjectTable $objectTable */
+        $objectTable = $this->get('table');
+        $objects = $objectTable->fetchAll();
 
-        foreach ($objectsCategories as $key => $objectCategory) {
-
-            //retrieve objects
-            /** @var ObjectTable $objectTable */
-            $objectTable = $this->get('table');
-            $categoryObjects = $objectTable->getEntityByFields(['category' => $objectCategory->id]);
-
-            $objectsCategories[$key] = $objectCategory->getJsonArray();
-
-            foreach($categoryObjects as $categoryObject) {
-
-                foreach ($categoryObject->anrs as $anr) {
+        $anrObjects = [];
+        $anrObjectsCategories = [];
+        foreach($objects as $object) {
+            if ($object['anrs']) {
+                foreach($object['anrs'] as $anr) {
                     if ($anr->id == $anrId) {
-                        $objectsCategories[$key]['objects'][] = $categoryObject->getJsonArray();
+                        $anrObjects[] = $object;
+                        $anrObjectsCategories[$object['category']->id] = $object['category'];
+                        break;
                     }
                 }
             }
         }
 
-        return $objectsCategories;
+        $parents = [];
+        foreach($anrObjectsCategories as $category) {
+            $this->getRecursiveParents($category, $parents);
+        }
+
+        $anrObjectsCategories = $anrObjectsCategories + $parents;
+
+        foreach($anrObjectsCategories as $key => $anrObjectsCategory) {
+            $anrObjectsCategories[$key] = $anrObjectsCategory->getJsonArray();
+        }
+
+        foreach($anrObjects as $anrObject) {
+            $anrObjectsCategories[$anrObject['category']->id]['objects'][] = $anrObject;
+        }
+
+        return $anrObjectsCategories;
+    }
+
+    /**
+     * Get Recursive Parents
+     *
+     * @param $category
+     * @param $array
+     */
+    public function getRecursiveParents($category, &$array ){
+
+        if ($category->parent) {
+            /** @var ObjectCategoryTable $table */
+            $table = $this->get('categoryTable');
+            $parent = $table->getEntity($category->parent->id);
+
+            $array[$parent->id] = $parent;
+
+            $this->getRecursiveParents($parent, $array);
+        }
     }
 
     public function export($data) {

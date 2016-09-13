@@ -11,7 +11,7 @@ use MonarcCore\Model\Table\InstanceConsequenceTable;
 use MonarcCore\Model\Table\InstanceTable;
 use MonarcCore\Model\Table\RolfRiskTable;
 use MonarcCore\Model\Table\ScaleTable;
-use MonarcCore\Model\Table\ScaleTypeTable;
+use MonarcCore\Model\Table\ScaleImpactTypeTable;
 
 
 /**
@@ -118,6 +118,7 @@ class InstanceService extends AbstractService
                 $previousInstance = null;
                 $implicitPosition = 1;
             }
+
             $this->managePosition('parent', $instance, $parentId, $implicitPosition, $previousInstance, 'post');
         }
 
@@ -237,27 +238,36 @@ class InstanceService extends AbstractService
         }
 
 
-
         if (isset($data['position'])) {
             if (($data['position'] != $instance->position) || ($data['parent'] != $instance->parent)) {
 
                 $parent = (isset($data['parent']) && $data['parent']) ? $data['parent'] : null;
 
                 if ($data['position']) {
-                    $implicitPosition = 3;
-                    $previousInstancePosition = ($data['position'] > $instance->position) ? $data['position'] : $data['position'] - 1;
+                    if (($data['parent'] == $instance->parent) && ($data['position'] > $instance->position)) {
+                        $previousInstancePosition = $data['position'];
+                    } else {
+                        $previousInstancePosition = $data['position'] - 1;
+                    }
                     $fields = ['anr' => $anrId, 'position' => $previousInstancePosition, 'parent' => ($parent) ? $parent : 'null'];
-                    $previous = $table->getEntityByFields($fields)[0];
+                    $previous = $table->getEntityByFields($fields);
+                    if ($previous) {
+                        $implicitPosition = 3;
+                        $previous = $previous[0];
+                    } else {
+                        $implicitPosition = 2;
+                        $previous = null;
+                    }
                 } else {
                     $implicitPosition = 1;
                     $previous = null;
                 }
-
                 $this->managePosition('parent', $instance, $parent, $implicitPosition, $previous, 'update');
             }
         }
 
         //parent values
+        $parent = null;
         if (isset($data['parent'])) {
             if ($data['parent']) {
                 $parent = ($data['parent']) ? $table->getEntity($data['parent']) : null;
@@ -663,11 +673,11 @@ class InstanceService extends AbstractService
 
         /** @var InstanceConsequenceTable $table */
         $table = $this->get('instanceConsequenceTable');
-        $instanceConsequences = $table->getEntityByFields(['anr' => $anrId, 'instance' => $instanceId, 'isHidden' => 0]);
+        $instanceConsequences = $table->getEntityByFields(['anr' => $anrId, 'instance' => $instanceId]);
 
         $consequences = [];
         foreach ($instanceConsequences as $instanceConsequence) {
-            /** @var ScaleTypeTable $scaleImpactTypeTable */
+            /** @var ScaleImpactTypeTable $scaleImpactTypeTable */
             $scaleImpactTypeTable = $this->get('scaleImpactTypeTable');
             $scaleImpactType = $scaleImpactTypeTable->getEntity($instanceConsequence->scaleImpactType->id);
 
@@ -680,6 +690,7 @@ class InstanceService extends AbstractService
                 'c_risk' => $instanceConsequence->c,
                 'i_risk' => $instanceConsequence->i,
                 'd_risk' => $instanceConsequence->d,
+                'is_hidden' => $instanceConsequence->isHidden,
             ];
         }
 
@@ -708,7 +719,7 @@ class InstanceService extends AbstractService
     public function createInstanceConsequences($instanceId, $anrId, $object) {
 
         //retrieve scale impact types
-        /** @var ScaleTypeTable $scaleImpactTypeTable */
+        /** @var ScaleImpactTypeTable $scaleImpactTypeTable */
         $scaleImpactTypeTable = $this->get('scaleImpactTypeTable');
         $scalesImpactTypes = $scaleImpactTypeTable->getEntityByFields(['anr' => $anrId, 'isHidden' => 0]);
 

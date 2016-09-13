@@ -39,14 +39,14 @@ class ScaleComment extends AbstractEntity
     protected $scale;
 
     /**
-     * @var \MonarcCore\Model\Entity\ScaleType
+     * @var \MonarcCore\Model\Entity\ScaleImpactType
      *
-     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\ScaleType", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\ScaleImpactType", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="scale_type_impact_id", referencedColumnName="id", nullable=true)
      * })
      */
-    protected $scaleTypeImpact;
+    protected $scaleImpactType;
 
     /**
      * @var integer
@@ -139,7 +139,7 @@ class ScaleComment extends AbstractEntity
 
     /**
      * @param Scale $scale
-     * @return ScaleType
+     * @return ScaleImpactType
      */
     public function setScale($scale)
     {
@@ -148,23 +148,20 @@ class ScaleComment extends AbstractEntity
     }
 
     /**
-     * @return ScaleType
+     * @return ScaleImpactType
      */
-    public function getScaleTypeImpact()
+    public function getScaleImpactType()
     {
-        return $this->scaleTypeImpact;
+        return $this->scaleImpactType;
     }
 
     /**
-     * @param ScaleType $scaleTypeImpact
-     * @return ScaleComment
+     * @param ScaleImpactType $scaleImpactType
      */
-    public function setScaleTypeImpact($scaleTypeImpact)
+    public function setScaleImpactType($scaleImpactType)
     {
-        $this->scaleTypeImpact = $scaleTypeImpact;
-        return $this;
+        $this->scaleImpactType = $scaleImpactType;
     }
-
 
     /**
      * Get Val Values
@@ -229,7 +226,7 @@ class ScaleComment extends AbstractEntity
 
             if ($this->getScale()->type == 1) {
                 $this->inputFilter->add(array(
-                    'name' => 'scaleTypeImpact',
+                    'name' => 'scaleImpactType',
                     'required' => true,
                     'allow_empty' => false,
                     'continue_if_empty' => false,

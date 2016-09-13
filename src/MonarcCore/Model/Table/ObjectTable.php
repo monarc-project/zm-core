@@ -42,45 +42,4 @@ class ObjectTable extends AbstractEntityTable {
 
         return $objects;
     }
-
-    /**
-     *
-     * Get anr by asset id
-     *
-     * @param $assetId
-     * @return array
-     */
-    public function getAnrByAssetId($assetId) {
-
-        $objects =  $this->getRepository()->createQueryBuilder('o')
-            ->select(array('o.id'))
-            ->where('o.asset = :assetId')
-            ->setParameter(':assetId', $assetId)
-            ->getQuery()
-            ->getResult();
-
-        return $objects;
-    }
-
-    /**
-     * Find by type, source and anr
-     *
-     * @param $type
-     * @param $sourceId
-     * @param $anrId
-     * @return array
-     */
-    public function findByTypeSourceAnr($type, $sourceId, $anrId) {
-
-        $objects =  $this->getRepository()->createQueryBuilder('o')
-            ->select(array('o.id'))
-            ->andWhere('o.anr = :anr')
-            ->andWhere('o.source = :source')
-            ->setParameter(':anr', $anrId)
-            ->setParameter(':source', $sourceId)
-            ->getQuery()
-            ->getResult();
-
-        return $objects;
-    }
 }

@@ -1,6 +1,5 @@
 <?php
 namespace MonarcCore\Service;
-use MonarcCore\Model\Table\AnrTable;
 
 /**
  * Object Category Service
@@ -11,10 +10,6 @@ use MonarcCore\Model\Table\AnrTable;
 class ObjectCategoryService extends AbstractService
 {
     protected $filterColumns = ['label1', 'label2', 'label3', 'label4'];
-
-    protected $dependencies = ['anr'];
-
-    protected $anrTable;
 
     /**
      * Get List Specific
@@ -137,15 +132,6 @@ class ObjectCategoryService extends AbstractService
 
         if (isset($data['implicitPosition'])) {
             $data['position'] = $this->managePosition('parent', $entity, $parent, $data['implicitPosition'], $previous, 'update');
-        }
-
-        if (isset($data['anr'])) {
-            if ($data['anr']) {
-                /** @var AnrTable $anrTable */
-                $anrTable = $this->get('anrTable');
-                $anr = $anrTable->getEntity($data['anr']);
-                $data['anr'] = $anr;
-            }
         }
 
         $entity->exchangeArray($data);

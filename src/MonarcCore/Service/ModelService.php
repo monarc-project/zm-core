@@ -4,6 +4,7 @@ namespace MonarcCore\Service;
 use MonarcCore\Model\Entity\Object;
 use MonarcCore\Model\Table\ModelTable;
 use MonarcCore\Model\Entity\Model;
+use MonarcCore\Model\Table\ObjectTable;
 
 /**
  * Model Service
@@ -103,13 +104,25 @@ class ModelService extends AbstractService
                 } else {
                     if ($object->mode == Model::IS_SPECIFIC) { //aïe, l'objet est spécifique, il faut qu'on sache s'il l'est pour moi
                         //la difficulté c'est que selon le type de l'objet (bdc / anr) on va devoir piocher l'info de manière un peu différente
-                        if ($object->type == Object::BDC) { //dans ce cas on vérifie que l'objet a des réplicats pour ce modèle
+                        $objectType = 'bdc';
+                        foreach($object->anrs as $anr) {
+                            if ($anr->id == $model->anr->id) {
+                                $objectType = 'anr';
+                            }
+                        }
+                        if ($objectType == 'bdc') { //dans ce cas on vérifie que l'objet a des réplicats pour ce modèle
                             if ($context == Model::BACK_OFFICE) {
                                 $authorized = true;
                             } else {
                                 if (!is_null($object->id)) {
-                                    if (count($this->get('objectTable')->findByTypeSourceAnr(Object::ANR, $object->id, $model->anr->id))) {
-                                        $authorized = true;
+                                    $authorized = false;
+                                    $objectsSource = $this->get('objectTable')->getEntityByFields(['source' => $object->id]);
+                                    foreach($objectsSource as $source) {
+                                        foreach($source->anrs as $anr) {
+                                            if ($anr->id == $model->anr->id) {
+                                                $authorized = true;
+                                            }
+                                        }
                                     }
                                 }
                             }

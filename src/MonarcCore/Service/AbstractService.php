@@ -516,13 +516,11 @@ abstract class AbstractService extends AbstractServiceFactory
      * @return int
      */
     protected function modifyPositionDifferentParent($implicitPosition, $field, $entityParentId, $entityPosition,  $previous, $verb, $newParentId) {
-        $this->get('table')->changePositionsByParent($field, $entityParentId, $entityPosition, 'down', 'after');
+        $this->get('table')->changePositionsByParent($field, $entityParentId, $entityPosition, 'down', 'after', true);
+
         switch ($implicitPosition) {
             case 1:
                 $this->get('table')->changePositionsByParent($field, $newParentId, 0, 'up', 'after');
-                if ($verb != 'delete') {
-                    $this->get('table')->changePositionsByParent($field, $entityParentId, $entityPosition, 'down', 'after');
-                }
                 $position = 0;
                 break;
             case 2:
@@ -531,8 +529,8 @@ abstract class AbstractService extends AbstractServiceFactory
                     $position = $maxPosition + 1;
                 } else if ($verb != 'delete') {
                     $maxPosition = $this->get('table')->maxPositionByParent($field, $newParentId);
-                    $this->get('table')->changePositionsByParent($field, $newParentId, $entityPosition, 'down', 'after');
-                    $position = $maxPosition;
+                    //$this->get('table')->changePositionsByParent($field, $newParentId, $entityPosition, 'down', 'after');
+                    $position = $maxPosition + 1;
                 }
 
                 break;
