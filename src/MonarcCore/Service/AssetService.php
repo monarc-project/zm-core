@@ -92,7 +92,7 @@ class AssetService extends AbstractService
         }
 
         if (!$amvService->checkModelsInstantiation($entity, $models)) {
-            throw new \Exception('Asset exist in another model', 412);
+            throw new \Exception('This type of asset is used in a model that is no longer part of the list', 412);
         }
 
         foreach($entity->get('models') as $model){

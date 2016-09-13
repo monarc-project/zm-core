@@ -1,7 +1,9 @@
 <?php
 namespace MonarcCore\Service;
+
 use MonarcCore\Model\Entity\AbstractEntity;
-use MonarcCore\Model\Table\ObjectTable;
+use MonarcCore\Model\Table\InstanceTable;
+use MonarcCore\Model\Table\ModelTable;
 
 /**
  * Amv Service
@@ -12,9 +14,9 @@ use MonarcCore\Model\Table\ObjectTable;
 class AmvService extends AbstractService
 {
     protected $assetTable;
+    protected $instanceTable;
     protected $measureTable;
     protected $modelTable;
-    protected $objectTable;
     protected $threatTable;
     protected $vulnerabilityTable;
 
@@ -520,17 +522,29 @@ class AmvService extends AbstractService
      * @param $newModelsIds
      * @return bool
      */
-    public function checkModelsInstantiation($asset, $newModelsIds){
+    public function checkModelsInstantiation($asset, $newModelsIds)
+    {
         $modelsIds = array_combine($newModelsIds, $newModelsIds);//clefs = valeurs
-        /** @var ObjectTable $objectTable */
-        $objectTable = $this->get('objectTable');
-        $objects = $objectTable->getEntityByFields(['asset' => $asset->id]);
-        if(!empty($objects)){
-            foreach($objects as $object){
-                if (! isset($modelsIds[$object->id])) {
-                    return false;
-                    //en gros si y'a une instance de cet asset dans un modèle
-                    // et que ce modèle n'est pas dans la liste de ceux sélectionnés par l'utilisateur, ça va pas
+
+        /** @var InstanceTable $instanceTable */
+        $instanceTable = $this->get('instanceTable');
+        $instances = $instanceTable->getEntityByFields(['asset' => $asset->id]);
+
+        if (!empty($instances)) {
+            $anrs = [];
+            foreach ($instances as $instance) {
+                $anrs[$instance->anr->id] = $instance->anr->id;
+            }
+
+            foreach ($anrs as $anrId) {
+                /** @var ModelTable $modelTable */
+                $modelTable = $this->get('modelTable');
+                $models = $modelTable->getEntityByFields(['anr' => $anrId]);
+                foreach ($models as $model) {
+                    if (!isset($modelsIds[$model->id])) {
+                        return false;
+                        //ne pas supprimer à un asset un modele specifique, si celui-ci est lié à l’asset via une instance dans une anr (via l’objet)
+                    }
                 }
             }
         }
