@@ -59,6 +59,14 @@ abstract class AbstractEntityTable
             return false;
         }
     }
+    public function fetchAllObject(){
+        $c = $this->getClass();
+        if (class_exists($c)) {
+            return $this->getDb()->fetchAll(new $c());
+        }else{
+            return false;
+        }
+    }
 
     public function fetchAllFiltered($fields = array(), $page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null, $filterJoin = null, $filterLeft = null)
     {

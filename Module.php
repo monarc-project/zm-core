@@ -13,46 +13,42 @@ class Module
 
     public function onBootstrap(MvcEvent $e)
     {
-        $eventManager = $e->getApplication()->getEventManager();
-        //$moduleRouteListener = new ModuleRouteListener();
-        //$moduleRouteListener->attach($eventManager);
+        if(!$e->getRequest() instanceof \Zend\Console\Request){
+            $eventManager = $e->getApplication()->getEventManager();
+            //$moduleRouteListener = new ModuleRouteListener();
+            //$moduleRouteListener->attach($eventManager);
 
-        $sm  = $e->getApplication()->getServiceManager();
-        $serv = $sm->get('\MonarcCore\Service\AuthenticationService');
-        $eventManager->attach(MvcEvent::EVENT_ROUTE, function($e) use ($serv) {
-            $match = $e->getRouteMatch();
+            $sm  = $e->getApplication()->getServiceManager();
+            $serv = $sm->get('\MonarcCore\Service\AuthenticationService');
+            $eventManager->attach(MvcEvent::EVENT_ROUTE, function($e) use ($serv) {
+                $match = $e->getRouteMatch();
 
-            // No route match, this is a 404
-            if (!$match instanceof RouteMatch) {
-                return;
-            }
-
-            $config = $e->getApplication()->getServiceManager()->get('Config');
-            $permissions = $config['permissions'];
-
-            // Route is whitelisted
-            $name = $match->getMatchedRouteName();
-            if (in_array($name, $permissions)) {
-                return;
-            }
-
-            $request = $e->getRequest();
-            if($request instanceof \Zend\Console\Request){
-                return;
-            }
-
-            $token = $request->getHeader('token');
-            if(!empty($token)){
-                if($serv->checkConnect(array('token'=>$token->getFieldValue()))){
+                // No route match, this is a 404
+                if (!$match instanceof RouteMatch) {
                     return;
                 }
-            }
 
-            return $e->getResponse()->setStatusCode(401);
-        },-100);
+                // Route is whitelisted
+                $config = $e->getApplication()->getServiceManager()->get('Config');
+                $permissions = $config['permissions'];
+                $name = $match->getMatchedRouteName();
+                if (in_array($name, $permissions)) {
+                    return;
+                }
 
-        $eventManager->attach(MvcEvent::EVENT_DISPATCH_ERROR, array($this, 'onDispatchError'), 0);
-        $eventManager->attach(MvcEvent::EVENT_RENDER_ERROR, array($this, 'onRenderError'), 0);
+                $token = $request->getHeader('token');
+                if(!empty($token)){
+                    if($serv->checkConnect(array('token'=>$token->getFieldValue()))){
+                        return;
+                    }
+                }
+
+                return $e->getResponse()->setStatusCode(401);
+            },-100);
+
+            $eventManager->attach(MvcEvent::EVENT_DISPATCH_ERROR, array($this, 'onDispatchError'), 0);
+            $eventManager->attach(MvcEvent::EVENT_RENDER_ERROR, array($this, 'onRenderError'), 0);
+        }
     }
 
     public function getConfig()

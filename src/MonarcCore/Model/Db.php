@@ -16,6 +16,11 @@ class Db {
     {
         $this->entityManager = $entityManager;
     }
+
+    public function getEntityManager(){
+        return $this->entityManager;
+    }
+
     public function fetchAll($entity)
     {
         $repository = $this->entityManager->getRepository(get_class($entity));

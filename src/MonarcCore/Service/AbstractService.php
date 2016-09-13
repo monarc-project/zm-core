@@ -381,7 +381,7 @@ abstract class AbstractService extends AbstractServiceFactory
      * @return int
      */
     protected function managePositionCreation($field, $parentId, $implicitPosition, $previous = null) {
-        $position = O;
+        $position = 0;
 
         switch ($implicitPosition) {
             case 1:
