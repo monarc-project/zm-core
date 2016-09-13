@@ -37,7 +37,7 @@ class Module
                     return;
                 }
 
-                $token = $request->getHeader('token');
+                $token = $e->getRequest()->getHeader('token');
                 if(!empty($token)){
                     if($serv->checkConnect(array('token'=>$token->getFieldValue()))){
                         return;
