@@ -166,7 +166,26 @@ class ModelService extends AbstractService
         parent::update($id, $data);
     }
 
+    /**
+     * Reset Current Default
+     */
     protected function resetCurrentDefault() {
         $this->get('table')->resetCurrentDefault();
+    }
+
+    /**
+     * Unset Specific Models
+     *
+     * @param $data
+     */
+    public function unsetSpecificModels(&$data) {
+        /** @var ModelTable $modelTable */
+        $modelTable = $this->get('table');
+        foreach($data['models'] as $key => $modelId) {
+            $model = $modelTable->getEntity($modelId);
+            if (!$model->isGeneric) {
+                unset($data['models'][$key]);
+            }
+        }
     }
 }

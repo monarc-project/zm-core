@@ -1,6 +1,7 @@
 <?php
 namespace MonarcCore\Service;
 use MonarcCore\Model\Entity\AbstractEntity;
+use MonarcCore\Model\Table\ObjectTable;
 
 /**
  * Amv Service
@@ -13,11 +14,11 @@ class AmvService extends AbstractService
     protected $assetTable;
     protected $measureTable;
     protected $modelTable;
+    protected $objectTable;
     protected $threatTable;
     protected $vulnerabilityTable;
 
     protected $modelService;
-    protected $objectService;
     protected $historicalService;
 
     protected $errorMessage;
@@ -336,7 +337,14 @@ class AmvService extends AbstractService
      * Complies Requirement
      *
      * @param $amv
+     * @param null $asset
+     * @param null $assetModels
+     * @param null $threat
+     * @param null $threatModels
+     * @param null $vulnerability
+     * @param null $vulnerabilityModels
      * @return bool
+     * @throws \Exception
      */
     public function compliesRequirement($amv, $asset = null, $assetModels = null, $threat = null, $threatModels = null, $vulnerability = null, $vulnerabilityModels = null) {
 
@@ -494,7 +502,7 @@ class AmvService extends AbstractService
                 }
                 if (!empty($amvAssets)) {
                     foreach ($amvAssets as $amvAsset) {
-                        if (!$this->checkModelsInstanciation($amvAsset, $models)) {
+                        if (!$this->checkModelsInstantiation($amvAsset, $models)) {
                             return false;
                         }
                     }
@@ -506,19 +514,23 @@ class AmvService extends AbstractService
     }
 
     /**
-     * Check Models Instanciation
+     * Check Models Instantiation
      *
-     * @param $entity
+     * @param $asset
      * @param $newModelsIds
      * @return bool
      */
-    public function checkModelsInstanciation($entity, $newModelsIds){
+    public function checkModelsInstantiation($asset, $newModelsIds){
         $modelsIds = array_combine($newModelsIds, $newModelsIds);//clefs = valeurs
-        $instances = $this->get('objectService')->getAnrByAsset($entity);
-        if(!empty($instances)){
-            foreach($instances as $instance){
-                if (! isset($modelsIds[$instance['id']])) {
-                    return false;//en gros si y'a une instance de cet asset dans un modèle et que ce modèle n'est pas dans la liste de ceux sélectionnés par l'utilisateur, ça va pas
+        /** @var ObjectTable $objectTable */
+        $objectTable = $this->get('objectTable');
+        $objects = $objectTable->getEntityByFields(['asset' => $asset->id]);
+        if(!empty($objects)){
+            foreach($objects as $object){
+                if (! isset($modelsIds[$object->id])) {
+                    return false;
+                    //en gros si y'a une instance de cet asset dans un modèle
+                    // et que ce modèle n'est pas dans la liste de ceux sélectionnés par l'utilisateur, ça va pas
                 }
             }
         }

@@ -12,6 +12,7 @@ class AssetService extends AbstractService
 {
     protected $modelTable;
     protected $amvService;
+    protected $modelService;
     protected $objectService;
 
     protected $filterColumns = [
@@ -56,18 +57,30 @@ class AssetService extends AbstractService
      */
     public function update($id,$data){
 
+        $entity = $this->get('table')->getEntity($id);
+        $entity->setDbAdapter($this->get('table')->getDb());
+        $entity->setLanguage($this->getLanguage());
+
+        if (($entity->mode == Asset::IS_SPECIFIC) && ($data['mode'] == Asset::IS_GENERIC)) {
+            if (isset($data['models'])) {
+                //delete specific model
+                /** @var ModelService $modelService */
+                $modelService = $this->get('modelService');
+                $modelService->unsetSpecificModels($data);
+            }
+        }
+
         $models = isset($data['models']) ? $data['models'] : array();
         $follow = isset($data['follow']) ? $data['follow'] : null;
         unset($data['models']);
         unset($data['follow']);
 
-        $entity = $this->get('table')->getEntity($id);
-        $entity->setDbAdapter($this->get('table')->getDb());
-        $entity->setLanguage($this->getLanguage());
         $entity->exchangeArray($data);
         $entity->get('models')->initialize();
 
-        if (!$this->get('amvService')->checkAMVIntegrityLevel($models, $entity, null, null, $follow)) {
+        /** @var AmvService $amvService */
+        $amvService  = $this->get('amvService');
+        if (!$amvService->checkAMVIntegrityLevel($models, $entity, null, null, $follow)) {
             throw new \Exception('Integrity AMV links violation', 412);
         }
 
@@ -78,7 +91,7 @@ class AssetService extends AbstractService
             }
         }
 
-        if (!$this->get('amvService')->checkModelsInstanciation($entity, $models)) {
+        if (!$amvService->checkModelsInstantiation($entity, $models)) {
             throw new \Exception('Asset exist in another model', 412);
         }
 
@@ -100,7 +113,7 @@ class AssetService extends AbstractService
             }
 
             if ($follow) {
-                $this->get('amvService')->enforceAMVtoFollow($models, null, null, $entity);
+                $amvService->enforceAMVtoFollow($models, null, null, $entity);
             }
         }
 

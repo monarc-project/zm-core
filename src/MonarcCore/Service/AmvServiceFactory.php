@@ -9,10 +9,10 @@ class AmvServiceFactory extends AbstractServiceFactory
         'assetTable' => '\MonarcCore\Model\Table\AssetTable',
         'measureTable' => '\MonarcCore\Model\Table\MeasureTable',
         'modelTable' => '\MonarcCore\Model\Table\ModelTable',
+        'objectTable'=> 'MonarcCore\Model\Table\ObjectTable',
         'threatTable' => '\MonarcCore\Model\Table\ThreatTable',
         'vulnerabilityTable' => '\MonarcCore\Model\Table\VulnerabilityTable',
         'modelService'=> 'MonarcCore\Service\ModelService',
-        'objectService'=> 'MonarcCore\Service\ObjectService',
         'historicalService'=> 'MonarcCore\Service\HistoricalService',
     );
 }
