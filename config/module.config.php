@@ -133,13 +133,6 @@ return array(
         ]
     ),
 
-    'console' => array(
-        'router' => array(
-            'routes' => array(
-            ),
-        ),
-    ),
-
     'monarc' => array(
         'ttl' => 20, // timeout
         'salt' => '', // salt privé pour chiffrement pwd

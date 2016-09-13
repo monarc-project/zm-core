@@ -59,7 +59,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
 
     public function getLanguage()
     {
-        return $this->language;
+        return empty($this->language)?1:$this->language;
     }
 
     public function setLanguage($language)
