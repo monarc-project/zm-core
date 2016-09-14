@@ -214,6 +214,7 @@ class ObjectService extends AbstractService
         $amvTable = $this->get('amvTable');
         $amvs = $amvTable->getEntityByFields(['asset' =>$object->asset->id ]);
 
+        $risks = [];
         foreach ($amvs as $amv) {
 
             $risks[] = [
