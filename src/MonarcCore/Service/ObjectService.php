@@ -448,11 +448,10 @@ class ObjectService extends AbstractService
             */
             if(!$this->checkModeIntegrity($entity->get('id'),$entity->get('mode'))){
                 if($entity->get('mode')==Object::IS_GENERIC){
-                    throw new \Exception('Entity parent with generic mode is defined.');
+                    throw new \Exception('You cannot set this object to specific mode because one of its parents is in generic mode.', 412);
                 }else{
-                    throw new \Exception('Entity child with specific mode is defined.');
+                    throw new \Exception('You cannot set this object to generic mode because one of its children is in specific mode.', 412);
                 }
-                return false;
             }
         }
 
