@@ -13,12 +13,8 @@
                     {"name": "Benjamin Ganivet", "email": "benjamin@netlor.fr"},
                     {"name": "Thomas Metois", "email": "thomas@netlor.fr"}
                 ],
-                "dist": {
-                    "url": "https://rhea.netlor.fr/monarc/zm_core/archive/master.zip",
-                    "type": "zip"
-                },
                 "source": {
-                    "url": "https://rhea.netlor.fr:3000/monarc/zm_core.git",
+                    "url": "https://github.com/CASES-LU/zm-core",
                     "type": "git",
                     "reference": "master"
                 },
