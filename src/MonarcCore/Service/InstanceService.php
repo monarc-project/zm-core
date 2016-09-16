@@ -227,7 +227,7 @@ class InstanceService extends AbstractService
     public function patchInstance($anrId, $id, $data, $historic = []){
 
         //security
-        $this->filterPatchFields($data, ['ch', 'ih', 'dh']);
+        $this->filterPatchFields($data, ['anr', 'asset', 'object', 'ch', 'ih', 'dh']);
 
         /** @var InstanceTable $table */
         $table = $this->get('table');

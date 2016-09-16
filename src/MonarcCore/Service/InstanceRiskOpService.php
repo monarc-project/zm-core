@@ -80,4 +80,19 @@ class InstanceRiskOpService extends AbstractService
         $table = $this->get('table');
         return $table->getEntityByFields(['anr' => $anrId, 'instance' => $instanceId]);
     }
+
+    /**
+     * Patch
+     *
+     * @param $id
+     * @param $data
+     * @return mixed
+     */
+    public function patch($id,$data)
+    {
+        //security
+        $this->filterPatchFields($data, ['anr']);
+
+        parent::patch($id, $data);
+    }
 }

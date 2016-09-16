@@ -79,7 +79,9 @@ class InstanceRiskService extends AbstractService
     public function patch($id,$data){
 
         $anrId = $data['anr'];
-        unset($data['anr']);
+
+        //security
+        $this->filterPatchFields($data, ['anr', 'amv', 'asset', 'threat', 'vulnerability']);
 
         $this->verifyRates($anrId, $data, $this->getEntity($id));
 

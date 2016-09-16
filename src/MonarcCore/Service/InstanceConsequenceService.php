@@ -32,7 +32,7 @@ class InstanceConsequenceService extends AbstractService
     public function patch($id,$data){
 
         //security
-        $this->filterPatchFields($data, ['instance', 'object', 'scaleImpactType', 'ch', 'ih', 'dh']);
+        $this->filterPatchFields($data, ['anr', 'instance', 'object', 'scaleImpactType', 'ch', 'ih', 'dh']);
 
         if (count($data)) {
 

@@ -163,4 +163,19 @@ class ScaleImpactTypeService extends AbstractService
 
         $this->get('table')->delete($id);
     }
+
+    /**
+     * Patch
+     *
+     * @param $id
+     * @param $data
+     * @return mixed
+     */
+    public function patch($id,$data)
+    {
+        //security
+        $this->filterPatchFields($data, ['anr', 'scale']);
+
+        parent::patch($id, $data);
+    }
 }

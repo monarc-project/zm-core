@@ -246,6 +246,21 @@ class ModelService extends AbstractService
     }
 
     /**
+     * Patch
+     *
+     * @param $id
+     * @param $data
+     * @return mixed
+     */
+    public function patch($id,$data)
+    {
+        //security
+        $this->filterPatchFields($data, ['anr']);
+
+        parent::patch($id, $data);
+    }
+
+    /**
      * Reset Current Default
      */
     protected function resetCurrentDefault() {

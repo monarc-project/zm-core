@@ -119,4 +119,19 @@ class AssetService extends AbstractService
 
         return $this->get('table')->save($entity);
     }
+
+    /**
+     * Patch
+     *
+     * @param $id
+     * @param $data
+     * @return mixed
+     */
+    public function patch($id,$data)
+    {
+        //security
+        $this->filterPatchFields($data, ['anr']);
+
+        parent::patch($id, $data);
+    }
 }

@@ -112,6 +112,21 @@ class AmvService extends AbstractService
         );
     }
 
+    /**
+     * Patch
+     *
+     * @param $id
+     * @param $data
+     * @return mixed
+     */
+    public function patch($id,$data)
+    {
+        //security
+        $this->filterPatchFields($data, ['anr']);
+
+        parent::patch($id, $data);
+    }
+
     public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null){
         $filterJoin = array(
             array(

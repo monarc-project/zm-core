@@ -116,4 +116,19 @@ class ScaleService extends AbstractService
 
         return $scaleId;
     }
+
+    /**
+     * Patch
+     *
+     * @param $id
+     * @param $data
+     * @return mixed
+     */
+    public function patch($id,$data)
+    {
+        //security
+        $this->filterPatchFields($data, ['anr']);
+
+        parent::patch($id, $data);
+    }
 }

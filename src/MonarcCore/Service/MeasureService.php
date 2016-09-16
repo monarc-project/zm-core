@@ -13,4 +13,19 @@ class MeasureService extends AbstractService
         'description1', 'description2', 'description3', 'description4',
         'code', 'status'
     );
+
+    /**
+     * Patch
+     *
+     * @param $id
+     * @param $data
+     * @return mixed
+     */
+    public function patch($id,$data)
+    {
+        //security
+        $this->filterPatchFields($data, ['anr']);
+
+        parent::patch($id, $data);
+    }
 }
