@@ -1,6 +1,7 @@
 <?php
 
 namespace MonarcCore\Controller;
+use MonarcCore\Service\ModelService;
 use Zend\View\Model\JsonModel;
 
 /**
@@ -46,6 +47,22 @@ class ApiModelsController extends AbstractController
             'count' => $service->getFilteredCount($page, $limit, $order, $filter),
             $this->name => $entities
         ));
+    }
+
+
+    /**
+     * Get
+     *
+     * @param mixed $id
+     * @return JsonModel
+     */
+    public function get($id)
+    {
+        /** @var ModelService $modelService */
+        $modelService = $this->getService();
+        $entity = $modelService->getModelWithAnr($id);
+
+        return new JsonModel($entity);
     }
 }
 

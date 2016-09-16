@@ -2,6 +2,8 @@
 namespace MonarcCore\Service;
 
 use MonarcCore\Model\Entity\Object;
+use MonarcCore\Model\Table\InstanceRiskOpTable;
+use MonarcCore\Model\Table\InstanceRiskTable;
 use MonarcCore\Model\Table\ModelTable;
 use MonarcCore\Model\Entity\Model;
 use MonarcCore\Model\Table\ObjectTable;
@@ -17,7 +19,10 @@ class ModelService extends AbstractService
     protected $dependencies = ['anr'];
     protected $anrService;
     protected $anrTable;
+    protected $instanceRiskTable;
+    protected $instanceRiskOpTable;
     protected $objectTable;
+
     protected $filterColumns = array(
         'label1', 'label2', 'label3', 'label4',
         'description1', 'description2', 'description3', 'description4',
@@ -59,6 +64,80 @@ class ModelService extends AbstractService
         }
 
         return $this->get('table')->save($entity);
+    }
+
+    /**
+     * Get Entity
+     *
+     * @param $id
+     * @return array
+     */
+    public function getModelWithAnr($id){
+
+        $model = $this->get('table')->get($id);
+
+        $anrId = $model['anr']->id;
+
+        $anrModel = $model['anr']->getJsonArray();
+        unset($anrModel['__initializer__']);
+        unset($anrModel['__cloner__']);
+        unset($anrModel['__isInitialized__']);
+
+        /** @var InstanceRiskTable $instanceRiskTable */
+        $instanceRiskTable= $this->get('instanceRiskTable');
+        $anrRisks = $instanceRiskTable->getEntityByFields(['anr' => $anrId]);
+
+        if ($anrRisks) {
+            $risksDepencendies = ['asset', 'threat', 'vulnerability'];
+            foreach ($anrRisks as $anrRisk) {
+                $anrRiskArray = $anrRisk->getJsonArray();
+                foreach($risksDepencendies as $risksDepencendy) {
+                    $dependencyArray = $anrRiskArray[$risksDepencendy]->getJsonArray();
+                    unset($dependencyArray['__initializer__']);
+                    unset($dependencyArray['__cloner__']);
+                    unset($dependencyArray['__isInitialized__']);
+                    $anrRiskArray[$risksDepencendy] = $dependencyArray;
+                }
+                unset($anrRiskArray['id']);
+                unset($anrRiskArray['anr']);
+                unset($anrRiskArray['amv']);
+                unset($anrRiskArray['instance']);
+                $anrModel['risks'][$anrRisk->threat->id] = $anrRiskArray;
+            }
+
+            $anrModel['risks'] = array_values($anrModel['risks']);
+        }
+
+        /** @var InstanceRiskOpTable $instanceRiskOpTable */
+        $instanceRiskOpTable= $this->get('instanceRiskOpTable');
+        $anrRisksOp = $instanceRiskOpTable->getEntityByFields(['anr' => $anrId]);
+
+        if ($anrRisksOp) {
+
+            $risksOpDepencendies = ['rolfRisk'];
+            foreach ($anrRisksOp as $anrRiskOp) {
+                $anrRiskOpArray = $anrRiskOp->getJsonArray();
+                foreach($risksOpDepencendies as $risksOpDepencendy) {
+                    $dependencyArray = $anrRiskOpArray[$risksOpDepencendy]->getJsonArray();
+                    unset($dependencyArray['__initializer__']);
+                    unset($dependencyArray['__cloner__']);
+                    unset($dependencyArray['__isInitialized__']);
+                    $anrRiskOpArray[$risksOpDepencendy] = $dependencyArray;
+                }
+                unset($anrRiskOpArray['id']);
+                unset($anrRiskOpArray['anr']);
+                unset($anrRiskOpArray['instance']);
+                unset($anrRiskOpArray['object']);
+                $anrModel['risksop'][$anrRisk->rolfRisk->id] = $anrRiskOpArray;
+            }
+
+            $anrModel['risksop'] = array_values($anrModel['risksop']);
+
+        }
+
+        $model['anr'] = $anrModel;
+
+        return $model;
     }
 
     /**
