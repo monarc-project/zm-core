@@ -187,6 +187,7 @@ abstract class AbstractService extends AbstractServiceFactory
      * @throws \Exception
      */
     public function update($id,$data){
+
         $entity = $this->get('table')->getEntity($id);
         if (!$entity) {
             throw new \Exception('Entity not exist', 412);

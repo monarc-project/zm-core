@@ -132,4 +132,5 @@ class ScaleService extends AbstractService
 
         parent::patch($id, $data);
     }
+
 }

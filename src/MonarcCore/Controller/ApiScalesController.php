@@ -2,6 +2,7 @@
 
 namespace MonarcCore\Controller;
 
+use MonarcCore\Service\ScaleService;
 use Zend\View\Model\JsonModel;
 
 class ApiScalesController extends AbstractController
@@ -31,22 +32,6 @@ class ApiScalesController extends AbstractController
             'count' => $this->getService()->getFilteredCount($page, $limit, $order, $filter, ['anr' => $anrId]),
             $this->name => $scales
         ));
-    }
-
-    /**
-     * Update
-     *
-     * @param mixed $type
-     * @param mixed $data
-     * @return JsonModel
-     */
-    public function update($type, $data)
-    {
-        $anrId = (int) $this->params()->fromRoute('anrId');
-
-        $this->getService()->updateByAnrAndType($anrId, $type, $data);
-
-        return new JsonModel(array('status' => 'ok'));
     }
 
     public function get($id)
