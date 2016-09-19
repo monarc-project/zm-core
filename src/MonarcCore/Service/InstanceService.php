@@ -167,7 +167,7 @@ class InstanceService extends AbstractService
 
 
         //security
-        $this->filterPostFields($data $instance);
+        $this->filterPostFields($data, $instance);
 
         $instance->setDbAdapter($table->getDb());
         $instance->setLanguage($this->getLanguage());
