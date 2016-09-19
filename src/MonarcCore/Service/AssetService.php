@@ -10,6 +10,7 @@ use MonarcCore\Model\Entity\Asset;
  */
 class AssetService extends AbstractService
 {
+    protected $anrTable;
     protected $modelTable;
     protected $amvService;
     protected $modelService;
@@ -20,6 +21,8 @@ class AssetService extends AbstractService
         'description1', 'description2', 'description3', 'description4',
         'code',
     ];
+
+    protected $dependencies = ['anr', 'models'];
 
     /**
      * Create
@@ -32,16 +35,8 @@ class AssetService extends AbstractService
         $entity = $this->get('entity');
         $entity->exchangeArray($data);
 
-        $models = $entity->get('models');
-        if (!empty($models)) {
-            $modelTable = $this->get('modelTable');
-            foreach ($models as $key => $modelId) {
-                if (!empty($modelId)) {
-                    $model = $modelTable->getEntity($modelId);
-                    $entity->setModel($key, $model);
-                }
-            }
-        }
+        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $this->setDependencies($entity, $dependencies);
 
         return $this->get('table')->save($entity);
     }
@@ -56,6 +51,8 @@ class AssetService extends AbstractService
      * @throws \Exception
      */
     public function update($id,$data){
+
+        $this->filterPatchFields($data, ['anr']);
 
         $entity = $this->get('table')->getEntity($id);
         $entity->setDbAdapter($this->get('table')->getDb());
