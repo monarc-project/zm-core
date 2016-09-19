@@ -135,6 +135,10 @@ class ScaleImpactTypeService extends AbstractService
         $data['type'] = 9;
 
         $entity = $this->get('table')->getEntity($id);
+
+        //security
+        $this->filterPostFields($data, $entity);
+
         $entity->exchangeArray($data);
 
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
