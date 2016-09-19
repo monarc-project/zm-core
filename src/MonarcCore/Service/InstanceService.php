@@ -646,6 +646,7 @@ class InstanceService extends AbstractService
             $target = (($maxTarget != -1) && ($instanceRiskOp->netProb != -1)) ? $instanceRiskOp->netProb * $maxTarget : '';
 
             $riskOps[] = [
+                'id' => $instanceRiskOp->id,
                 'description1' => $rolfRisk->label1,
                 'description2' => $rolfRisk->label2,
                 'description3' => $rolfRisk->label3,
