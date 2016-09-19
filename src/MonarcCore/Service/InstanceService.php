@@ -237,14 +237,16 @@ class InstanceService extends AbstractService
             throw new \Exception('Instance not exist', 412);
         }
 
+        $instanceParent = ($instance->parent) ? $instance->parent->id : null;
+
 
         if (isset($data['position'])) {
-            if (($data['position'] != $instance->position) || ($data['parent'] != $instance->parent)) {
+            if (($data['position'] != $instance->position) || ($data['parent'] != $instanceParent)) {
 
                 $parent = (isset($data['parent']) && $data['parent']) ? $data['parent'] : null;
 
                 if ($data['position']) {
-                    if (($data['parent'] == $instance->parent) && ($data['position'] > $instance->position)) {
+                    if (($data['parent'] == $instanceParent) && ($data['position'] > $instance->position)) {
                         $previousInstancePosition = $data['position'];
                     } else {
                         $previousInstancePosition = $data['position'] - 1;
