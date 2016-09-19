@@ -28,6 +28,7 @@ class AmvService extends AbstractService
 
     protected $filterColumns = ['status'];
     protected $dependencies = ['anr', 'asset', 'threat', 'vulnerability', 'measure1', 'measure2', 'measure3'];
+    protected $forbiddenFields = ['anr'];
 
     /**
      * Get List
@@ -124,7 +125,7 @@ class AmvService extends AbstractService
     public function patch($id,$data)
     {
         //security
-        $this->filterPatchFields($data, ['anr']);
+        $this->filterPatchFields($data);
 
         parent::patch($id, $data);
     }
@@ -263,7 +264,7 @@ class AmvService extends AbstractService
      */
     public function update($id, $data){
 
-        $this->filterPatchFields($data, ['anr']);
+        $this->filterPatchFields($data);
 
         if (empty($data)) {
             throw new \Exception('Data missing', 412);

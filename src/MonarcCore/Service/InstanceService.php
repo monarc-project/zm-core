@@ -38,6 +38,7 @@ class InstanceService extends AbstractService
     protected $instanceConsequenceTable;
     protected $objectObjectService;
     protected $instanceConsequenceEntity;
+    protected $forbiddenFields = ['anr', 'asset', 'object', 'ch', 'dh', 'ih'];
 
     /**
      * Instantiate Object To Anr
@@ -164,6 +165,10 @@ class InstanceService extends AbstractService
             throw new \Exception('Instance not exist', 412);
         }
 
+
+        //security
+        $this->filterPostFields($data $instance);
+
         $instance->setDbAdapter($table->getDb());
         $instance->setLanguage($this->getLanguage());
 
@@ -227,7 +232,7 @@ class InstanceService extends AbstractService
     public function patchInstance($anrId, $id, $data, $historic = []){
 
         //security
-        $this->filterPatchFields($data, ['anr', 'asset', 'object', 'ch', 'ih', 'dh']);
+        $this->filterPatchFields($data);
 
         /** @var InstanceTable $table */
         $table = $this->get('table');

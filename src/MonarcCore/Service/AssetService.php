@@ -23,6 +23,7 @@ class AssetService extends AbstractService
     ];
 
     protected $dependencies = ['anr', 'models'];
+    protected $forbiddenFields = ['anr'];
 
     /**
      * Create
@@ -52,7 +53,7 @@ class AssetService extends AbstractService
      */
     public function update($id,$data){
 
-        $this->filterPatchFields($data, ['anr']);
+        $this->filterPatchFields($data);
 
         $entity = $this->get('table')->getEntity($id);
         $entity->setDbAdapter($this->get('table')->getDb());
@@ -127,7 +128,7 @@ class AssetService extends AbstractService
     public function patch($id,$data)
     {
         //security
-        $this->filterPatchFields($data, ['anr']);
+        $this->filterPatchFields($data);
 
         parent::patch($id, $data);
     }

@@ -14,6 +14,7 @@ class ScaleCommentService extends AbstractService
     protected $scaleImpactTypeService;
     protected $scaleImpactTypeTable;
     protected $dependencies = ['scale', 'scaleImpactType'];
+    protected $forbiddenFields = ['anr', 'scale'];
 
     public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null){
         $comments = $this->get('table')->fetchAllFiltered(
@@ -94,7 +95,7 @@ class ScaleCommentService extends AbstractService
     public function patch($id,$data)
     {
         //security
-        $this->filterPatchFields($data, ['anr', 'scale']);
+        $this->filterPatchFields($data);
 
         parent::patch($id, $data);
     }

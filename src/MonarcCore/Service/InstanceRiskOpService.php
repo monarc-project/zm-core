@@ -21,6 +21,7 @@ class InstanceRiskOpService extends AbstractService
     protected $objectTable;
     protected $rolfRiskTable;
     protected $rolfTagTable;
+    protected $forbiddenFields = ['anr', 'instance', 'object'];
 
     /**
      * Create Instance Risks Op
@@ -91,7 +92,7 @@ class InstanceRiskOpService extends AbstractService
     public function patch($id,$data)
     {
         //security
-        $this->filterPatchFields($data, ['anr']);
+        $this->filterPatchFields($data);
 
         parent::patch($id, $data);
     }

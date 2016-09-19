@@ -22,6 +22,7 @@ class ModelService extends AbstractService
     protected $instanceRiskTable;
     protected $instanceRiskOpTable;
     protected $objectTable;
+    protected $forbiddenFields = ['anr'];
 
     protected $filterColumns = array(
         'label1', 'label2', 'label3', 'label4',
@@ -259,7 +260,7 @@ class ModelService extends AbstractService
     public function patch($id,$data)
     {
         //security
-        $this->filterPatchFields($data, ['anr']);
+        $this->filterPatchFields($data);
 
         parent::patch($id, $data);
     }

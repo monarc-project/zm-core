@@ -16,6 +16,7 @@ class ScaleImpactTypeService extends AbstractService
     protected $instanceConsequenceService;
 
     protected $dependencies = ['anr', 'scale'];
+    protected $forbiddenFields = ['anr', 'scale'];
     protected $types = [
         1 => 'C',
         2 => 'I',
@@ -174,7 +175,7 @@ class ScaleImpactTypeService extends AbstractService
     public function patch($id,$data)
     {
         //security
-        $this->filterPatchFields($data, ['anr', 'scale']);
+        $this->filterPatchFields($data);
 
         parent::patch($id, $data);
     }

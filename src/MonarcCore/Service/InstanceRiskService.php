@@ -24,6 +24,7 @@ class InstanceRiskService extends AbstractService
     protected $scaleTable;
     protected $threatTable;
     protected $vulnerabilityTable;
+    protected $forbiddenFields = ['anr', 'amv', 'asset', 'threat', 'vulnerability'];
 
     /**
      * Create Instance Risk
@@ -81,7 +82,7 @@ class InstanceRiskService extends AbstractService
         $anrId = $data['anr'];
 
         //security
-        $this->filterPatchFields($data, ['anr', 'amv', 'asset', 'threat', 'vulnerability']);
+        $this->filterPatchFields($data);
 
         $this->verifyRates($anrId, $data, $this->getEntity($id));
 
@@ -103,7 +104,7 @@ class InstanceRiskService extends AbstractService
     public function update($id,$data){
         $anrId = $data['anr'];
 
-        $this->filterPatchFields($data, ['anr', 'amv', 'asset', 'threat', 'vulnerability']);
+        $this->filterPatchFields($data);
 
         $this->verifyRates($anrId, $data, $this->getEntity($id));
 

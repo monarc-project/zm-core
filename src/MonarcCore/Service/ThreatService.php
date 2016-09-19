@@ -21,6 +21,7 @@ class ThreatService extends AbstractService
         'code',
     ];
     protected $dependencies = ['anr', 'theme', 'models'];
+    protected $forbiddenFields = ['anr'];
 
     /**
      * Create
@@ -56,7 +57,7 @@ class ThreatService extends AbstractService
      */
     public function update($id,$data){
 
-        $this->filterPatchFields($data, ['anr']);
+        $this->filterPatchFields($data);
 
         $entity = $this->get('table')->getEntity($id);
         $entity->setDbAdapter($this->get('table')->getDb());
@@ -118,7 +119,7 @@ class ThreatService extends AbstractService
     public function patch($id,$data)
     {
         //security
-        $this->filterPatchFields($data, ['anr']);
+        $this->filterPatchFields($data);
 
         parent::patch($id, $data);
     }

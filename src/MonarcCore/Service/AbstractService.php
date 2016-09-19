@@ -15,6 +15,7 @@ abstract class AbstractService extends AbstractServiceFactory
     protected $entity;
     protected $label;
     protected $language;
+    protected $forbiddenFields = [];
 
     /**
      * @return null
@@ -187,6 +188,12 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     public function update($id,$data){
         $entity = $this->get('table')->getEntity($id);
+        if (!$entity) {
+            throw new \Exception('Entity not exist', 412);
+        }
+
+        $this->filterPostFields($data, $entity);
+
         $entity->setDbAdapter($this->get('table')->getDb());
         $entity->setLanguage($this->getLanguage());
 
@@ -615,11 +622,25 @@ abstract class AbstractService extends AbstractServiceFactory
         return $targetRisk;
     }
 
-    protected function filterPatchFields(&$data, $forbiddenFields) {
+    protected function filterPatchFields(&$data) {
         if (is_array($data)) {
             foreach (array_keys($data) as $key) {
-                if (in_array($key, $forbiddenFields)) {
+                if (in_array($key, $this->forbiddenFields)) {
                     unset($data[$key]);
+                }
+            }
+        }
+    }
+
+    protected function filterPostFields(&$data, $entity) {
+        if (is_array($data)) {
+            foreach (array_keys($data) as $key) {
+                if (in_array($key, $this->forbiddenFields)) {
+                    if (is_object($entity->$key)) {
+                        $data[$key] = ($entity->$key) ? $entity->$key->id : null;
+                    } else {
+                        $data[$key] = $entity->$key;
+                    }
                 }
             }
         }

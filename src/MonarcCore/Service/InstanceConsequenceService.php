@@ -21,6 +21,7 @@ class InstanceConsequenceService extends AbstractService
     protected $scaleTable;
     protected $scaleImpactTypeTable;
     protected $instanceService;
+    protected $forbiddenFields = ['anr', 'instance', 'object', 'scaleImpactType', 'ch', 'ih', 'dh'];
 
     /**
      * Patch
@@ -32,7 +33,7 @@ class InstanceConsequenceService extends AbstractService
     public function patch($id,$data){
 
         //security
-        $this->filterPatchFields($data, ['anr', 'instance', 'object', 'scaleImpactType', 'ch', 'ih', 'dh']);
+        $this->filterPatchFields($data);
 
         if (count($data)) {
 
@@ -64,11 +65,34 @@ class InstanceConsequenceService extends AbstractService
      */
     public function update($id,$data){
 
-        $data = $this->updateConsequences($id, $data);
+        if (empty($data)) {
+            throw new \Exception('Data missing', 412);
+        }
 
-        parent::update($id,$data);
+        $anrId = $data['anr'];
+        $data = $this->updateConsequences($id, $data);
+        $data['anr'] = $anrId;
+
+        $entity = $this->get('table')->getEntity($id);
+
+        $this->filterPostFields($data, ['anr', 'instance', 'object', 'scaleImpactType', 'ch', 'ih', 'dh'], $entity);
+
+        $entity->setDbAdapter($this->get('table')->getDb());
+        $entity->setLanguage($this->getLanguage());
+
+
+        $entity->exchangeArray($data);
+
+        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $this->setDependencies($entity, $dependencies);
+
+
+
+        $id = $this->get('table')->save($entity);
 
         $this->updateInstanceImpacts($id);
+
+        return $id;
     }
 
     /**

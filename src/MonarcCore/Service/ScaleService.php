@@ -13,6 +13,7 @@ class ScaleService extends AbstractService
     protected $anrTable;
     protected $scaleImpactTypeService;
     protected $dependencies = ['anr'];
+    protected $forbiddenFields = ['anr'];
 
     protected $types = [
         Scale::TYPE_IMPACT => 'impact',
@@ -127,7 +128,7 @@ class ScaleService extends AbstractService
     public function patch($id,$data)
     {
         //security
-        $this->filterPatchFields($data, ['anr']);
+        $this->filterPatchFields($data);
 
         parent::patch($id, $data);
     }

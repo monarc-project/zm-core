@@ -13,6 +13,7 @@ class MeasureService extends AbstractService
         'description1', 'description2', 'description3', 'description4',
         'code', 'status'
     );
+    protected $forbiddenFields = ['anr'];
 
     /**
      * Patch
@@ -24,7 +25,7 @@ class MeasureService extends AbstractService
     public function patch($id,$data)
     {
         //security
-        $this->filterPatchFields($data, ['anr']);
+        $this->filterPatchFields($data);
 
         parent::patch($id, $data);
     }
