@@ -40,10 +40,14 @@ class ModelService extends AbstractService
 
         //anr
         $dataAnr = [
-            'label1' => 'ANR',
-            'label2' => 'ANR',
-            'label3' => 'ANR',
-            'label4' => 'ANR',
+            'label1'        => $data['label1'],
+            'label2'        => $data['label2'],
+            'label3'        => $data['label3'],
+            'label4'        => $data['label4'],
+            'description1'  => $data['description1'],
+            'description2'  => $data['description2'],
+            'description3'  => $data['description3'],
+            'description4'  => $data['description4'],
         ];
         /** @var AnrService $anrService */
         $anrService = $this->get('anrService');
