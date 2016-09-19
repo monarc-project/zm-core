@@ -10,6 +10,7 @@ use MonarcCore\Model\Entity\Threat;
  */
 class ThreatService extends AbstractService
 {
+    protected $anrTable;
     protected $modelTable;
     protected $themeTable;
     protected $amvService;
@@ -19,7 +20,7 @@ class ThreatService extends AbstractService
         'description1', 'description2', 'description3', 'description4',
         'code',
     ];
-    protected $dependencies = ['theme'];
+    protected $dependencies = ['anr', 'theme', 'models'];
 
     /**
      * Create
@@ -32,16 +33,8 @@ class ThreatService extends AbstractService
         $entity = $this->get('entity');
         $entity->exchangeArray($data);
 
-        $models = $entity->get('models');
-        if (!empty($models)) {
-            $modelTable = $this->get('modelTable');
-            foreach ($models as $key => $modelId) {
-                if (!empty($modelId)) {
-                    $model = $modelTable->getEntity($modelId);
-                    $entity->setModel($key, $model);
-                }
-            }
-        }
+        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $this->setDependencies($entity, $dependencies);
 
         $themeId = $entity->get('theme');
         if (!empty($themeId)) {
@@ -62,6 +55,8 @@ class ThreatService extends AbstractService
      * @throws \Exception
      */
     public function update($id,$data){
+
+        $this->filterPatchFields($data, ['anr']);
 
         $entity = $this->get('table')->getEntity($id);
         $entity->setDbAdapter($this->get('table')->getDb());
@@ -90,14 +85,6 @@ class ThreatService extends AbstractService
 
         if (($follow) && (!$this->get('amvService')->ensureAssetsIntegrityIfEnforced($models, null, $entity, null))) {
             throw new \Exception('Assets Integrity', 412);
-        }
-
-        foreach($entity->get('models') as $model){
-            if (in_array($model->get('id'), $models)){
-                unset($models[array_search($model->get('id'), $models)]);
-            } else {
-                $entity->get('models')->removeElement($model);
-            }
         }
 
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
