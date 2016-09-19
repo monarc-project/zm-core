@@ -6,6 +6,7 @@ class AmvServiceFactory extends AbstractServiceFactory
     protected $ressources = array(
         'table' => 'MonarcCore\Model\Table\AmvTable',
         'entity' => 'MonarcCore\Model\Entity\Amv',
+        'anrTable' => '\MonarcCore\Model\Table\AnrTable',
         'assetTable' => '\MonarcCore\Model\Table\AssetTable',
         'instanceTable'=> 'MonarcCore\Model\Table\InstanceTable',
         'measureTable' => '\MonarcCore\Model\Table\MeasureTable',

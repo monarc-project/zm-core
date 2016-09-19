@@ -13,6 +13,7 @@ use MonarcCore\Model\Table\ModelTable;
  */
 class AmvService extends AbstractService
 {
+    protected $anrTable;
     protected $assetTable;
     protected $instanceTable;
     protected $measureTable;
@@ -26,6 +27,7 @@ class AmvService extends AbstractService
     protected $errorMessage;
 
     protected $filterColumns = ['status'];
+    protected $dependencies = ['anr', 'asset', 'threat', 'vulnerability', 'measure1', 'measure2', 'measure3'];
 
     /**
      * Get List
@@ -261,6 +263,12 @@ class AmvService extends AbstractService
      */
     public function update($id, $data){
 
+        $this->filterPatchFields($data, ['anr']);
+
+        if (empty($data)) {
+            throw new \Exception('Data missing', 412);
+        }
+
         $entity = $this->get('table')->getEntity($id);
         $entity->setDbAdapter($this->get('table')->getDb());
 
@@ -289,16 +297,7 @@ class AmvService extends AbstractService
 
         $newEntity = clone $entity;
 
-        foreach($this->dependencies as $dependency) {
-            $fieldValue = isset($data[$dependency]) ? $data[$dependency] : array();
-
-            if (!empty($fieldValue)) {
-                $tableName = preg_replace("/[0-9]/", "", $dependency)  . 'Table';
-                $method = 'set' . ucfirst($dependency);
-                $dependencyEntity = $this->get($tableName)->getEntity($fieldValue);
-                $entity->$method($dependencyEntity);
-            }
-        }
+        $this->setDependencies($entity, $this->dependencies);
 
         $authorized = $this->compliesRequirement($entity);
 

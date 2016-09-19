@@ -128,7 +128,7 @@ class ModelService extends AbstractService
                 unset($anrRiskOpArray['anr']);
                 unset($anrRiskOpArray['instance']);
                 unset($anrRiskOpArray['object']);
-                $anrModel['risksop'][$anrRisk->rolfRisk->id] = $anrRiskOpArray;
+                $anrModel['risksop'][$anrRiskOp->rolfRisk->id] = $anrRiskOpArray;
             }
 
             $anrModel['risksop'] = array_values($anrModel['risksop']);
