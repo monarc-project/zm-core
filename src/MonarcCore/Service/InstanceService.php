@@ -691,6 +691,7 @@ class InstanceService extends AbstractService
 
             $consequences[] = [
                 'id' => $instanceConsequence->id,
+                'scaleImpactType' => $scaleImpactType->type,
                 'scaleImpactTypeDescription1' => $scaleImpactType->label1,
                 'scaleImpactTypeDescription2' => $scaleImpactType->label2,
                 'scaleImpactTypeDescription3' => $scaleImpactType->label3,
