@@ -33,6 +33,7 @@ class InstanceService extends AbstractService
     protected $rolfRiskTable;
     protected $scaleTable;
     protected $scaleImpactTypeTable;
+    protected $instanceConsequenceService;
     protected $instanceRiskService;
     protected $instanceRiskOpService;
     protected $instanceConsequenceTable;
@@ -165,7 +166,6 @@ class InstanceService extends AbstractService
             throw new \Exception('Instance not exist', 412);
         }
 
-
         //security
         $this->filterPostFields($data, $instance);
 
@@ -192,6 +192,22 @@ class InstanceService extends AbstractService
                 }
 
                 $this->managePosition('parent', $instance, $parent, $implicitPosition, $previous, 'update');
+            }
+        }
+
+        if (isset($data['consequences'])) {
+            foreach($data['consequences'] as $consequence) {
+                $dataConsequences = [
+                    'anr' => $anrId,
+                    'c' => (int) $consequence['c_risk'],
+                    'i' => (int) $consequence['i_risk'],
+                    'd' => (int) $consequence['d_risk'],
+                    'isHidden' => (int) $consequence['is_hidden'],
+                ];
+
+                /** @var InstanceConsequenceService $instanceConsequenceService */
+                $instanceConsequenceService = $this->get('instanceConsequenceService');
+                $instanceConsequenceService->patch($consequence['id'], $dataConsequences);
             }
         }
 

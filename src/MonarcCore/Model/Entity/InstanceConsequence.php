@@ -240,11 +240,19 @@ class InstanceConsequence extends AbstractEntity
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);
 
-            $fields = ['anr', 'instance', 'object', 'scaleImpactType'];
+            $this->inputFilter->add(array(
+                'name' => 'anr',
+                'required' => true,
+                'allow_empty' => false,
+                'filters' => array(),
+                'validators' => array(),
+            ));
+
+            $fields = ['instance', 'object', 'scaleImpactType'];
             foreach ($fields as $field) {
                 $this->inputFilter->add(array(
                     'name' => $field,
-                    'required' => true,
+                    'required' => ($partial) ? false : true,
                     'allow_empty' => false,
                     'filters' => array(),
                     'validators' => array(),

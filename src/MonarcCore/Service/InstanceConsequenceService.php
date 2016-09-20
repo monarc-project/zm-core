@@ -20,7 +20,6 @@ class InstanceConsequenceService extends AbstractService
     protected $objectTable;
     protected $scaleTable;
     protected $scaleImpactTypeTable;
-    protected $instanceService;
     protected $forbiddenFields = ['anr', 'instance', 'object', 'scaleImpactType', 'ch', 'ih', 'dh'];
 
     /**
@@ -32,8 +31,7 @@ class InstanceConsequenceService extends AbstractService
      */
     public function patch($id,$data){
 
-        //security
-        $this->filterPatchFields($data);
+        $anrId = $data['anr'];
 
         if (count($data)) {
 
@@ -47,9 +45,12 @@ class InstanceConsequenceService extends AbstractService
 
             $data = $this->updateConsequences($id, $data);
 
+            $data['anr'] = $anrId;
+
             parent::patch($id,$data);
 
-            $this->updateInstanceImpacts($id);
+            //remplacer par un evenement
+            //$this->updateInstanceImpacts($id);
         }
 
         return $id;
@@ -86,11 +87,10 @@ class InstanceConsequenceService extends AbstractService
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
 
-
-
         $id = $this->get('table')->save($entity);
 
-        $this->updateInstanceImpacts($id);
+        //remplacer par un evenement
+        //$this->updateInstanceImpacts($id);
 
         return $id;
     }
@@ -151,7 +151,7 @@ class InstanceConsequenceService extends AbstractService
             'd' => max($instanceD)
         ];
 
-        /** @var InstanceService $instanceService */
+
         $instanceService = $this->get('instanceService');
         $instanceService->patchInstance($instanceCurrentConsequence->anr->id, $instanceCurrentConsequence->instance->id, $data);
     }
