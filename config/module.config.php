@@ -108,6 +108,7 @@ return array(
             'MonarcCore\Service\ObjectCategoryService'      => 'MonarcCore\Service\ObjectCategoryServiceFactory',
             'MonarcCore\Service\ObjectObjectService'        => 'MonarcCore\Service\ObjectObjectServiceFactory',
             'MonarcCore\Service\PasswordService'            => 'MonarcCore\Service\PasswordServiceFactory',
+            'MonarcCore\Service\RolfCategoryService'        => 'MonarcCore\Service\RolfCategoryServiceFactory',
             'MonarcCore\Service\RolfRiskService'            => 'MonarcCore\Service\RolfRiskServiceFactory',
             'MonarcCore\Service\RolfTagService'             => 'MonarcCore\Service\RolfTagServiceFactory',
             'MonarcCore\Service\RoleService'                => 'MonarcCore\Service\RoleServiceFactory',
