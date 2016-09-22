@@ -85,7 +85,7 @@ class RolfRiskService extends AbstractService
     public function update($id,$data){
 
         $rolfCategories = isset($data['categories']) ? $data['categories'] : array();
-        unset($data['tags']);
+        unset($data['categories']);
         $rolfTags = isset($data['tags']) ? $data['tags'] : array();
         unset($data['tags']);
 
@@ -93,6 +93,7 @@ class RolfRiskService extends AbstractService
         $entity->setDbAdapter($this->get('table')->getDb());
         $entity->setLanguage($this->getLanguage());
         $entity->exchangeArray($data);
+
         $entity->get('categories')->initialize();
         $entity->get('tags')->initialize();
 

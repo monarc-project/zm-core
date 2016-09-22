@@ -21,6 +21,7 @@ class RolfRisk extends AbstractEntity
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     protected $id;
+
     /**
      * @var \MonarcCore\Model\Entity\RolfCategory
      *
