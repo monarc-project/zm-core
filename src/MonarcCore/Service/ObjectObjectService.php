@@ -195,7 +195,7 @@ class ObjectObjectService extends AbstractService
         $table = $this->get('table');
         $objectObject = $table->getEntity($id);
 
-        if ($objectObject) {
+        if (!$objectObject) {
             throw new \Exception('Entity not exist', 412);
         }
 
@@ -204,7 +204,16 @@ class ObjectObjectService extends AbstractService
         $instanceTable = $this->get('instanceTable');
         $childInstances =  $instanceTable->getEntityByFields(['object' => $objectObject->child->id]);
         $fatherInstances =  $instanceTable->getEntityByFields(['object' => $objectObject->father->id]);
-        
+
+        foreach($childInstances as $childInstance) {
+            foreach($fatherInstances as $fatherInstance) {
+                if ($childInstance->parent->id == $fatherInstance->id){
+                    $childInstance->parent = null;
+                    $childInstance->root = null;
+                    $instanceTable->save($childInstance);
+                }
+            }
+        }
 
         parent::delete($id);
     }
