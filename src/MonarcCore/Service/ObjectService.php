@@ -425,6 +425,8 @@ class ObjectService extends AbstractService
      */
     public function update($id, $data){
 
+        unset($data['anrs']);
+
         $entity = $this->get('table')->getEntity($id);
         if(!$entity){
             throw new \Exception('Entity `id` not found.');

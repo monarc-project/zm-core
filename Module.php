@@ -3,6 +3,7 @@ namespace MonarcCore;
 
 //use Zend\Mvc\ModuleRouteListener;
 use MonarcCore\Model\Table\ScaleImpactTypeTable;
+use MonarcCore\Service\InstanceService;
 use Zend\Di\ServiceLocator;
 use Zend\Mvc\MvcEvent;
 use \Zend\Mvc\Controller\ControllerManager;
@@ -49,7 +50,19 @@ class Module
 
             $eventManager->attach(MvcEvent::EVENT_DISPATCH_ERROR, array($this, 'onDispatchError'), 0);
             $eventManager->attach(MvcEvent::EVENT_RENDER_ERROR, array($this, 'onRenderError'), 0);
+
+
+            $sharedEventManager = $eventManager->getSharedManager();
+            $sharedEventManager->attach('addcomponent', 'createinstance', function($e) use($sm) {
+                $params = $e->getParams();
+                /** @var InstanceService $instanceService */
+                $instanceService = $sm->get('MonarcCore\Service\InstanceService');
+                $result = $instanceService->instantiateObjectToAnr($params['anrId'], $params['data']);
+                return $result;
+            }, 100);
         }
+
+
     }
 
     public function getConfig()

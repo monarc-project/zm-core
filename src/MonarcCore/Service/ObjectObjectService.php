@@ -1,7 +1,10 @@
 <?php
 namespace MonarcCore\Service;
 use MonarcCore\Model\Entity\ObjectObject;
+use MonarcCore\Model\Table\AnrTable;
+use MonarcCore\Model\Table\InstanceTable;
 use MonarcCore\Model\Table\ObjectObjectTable;
+use Zend\EventManager\EventManager;
 
 /**
  * Object Object Service
@@ -11,7 +14,9 @@ use MonarcCore\Model\Table\ObjectObjectTable;
  */
 class ObjectObjectService extends AbstractService
 {
+    protected $anrTable;
     protected $objectTable;
+    protected $instanceTable;
     protected $dependencies = ['child'];
 
     /**
@@ -29,10 +34,10 @@ class ObjectObjectService extends AbstractService
         $objectTable = $this->objectTable;
 
         // Ensure that we're not trying to add a specific item if the father is generic
-        $father = $objectTable->get($data['father']);
-        $child = $objectTable->get($data['child']);
+        $father = $objectTable->getEntity($data['father']);
+        $child = $objectTable->getEntity($data['child']);
 
-        if ($father['mode'] == ObjectObject::IS_GENERIC && $child['mode'] == ObjectObject::IS_SPECIFIC) {
+        if ($father->mode == ObjectObject::IS_GENERIC && $child->mode == ObjectObject::IS_SPECIFIC) {
             throw new \Exception("You cannot add a specific object to a generic parent", 412);
         }
 
@@ -61,7 +66,56 @@ class ObjectObjectService extends AbstractService
             $entity->setPosition((int) $data['position']);
         }
 
-        return $this->get('table')->save($entity);
+        $id = $this->get('table')->save($entity);
+
+        //link to anr
+        $parentAnrs = [];
+        $childAnrs = [];
+        foreach ($father->anrs as $anr) {
+            $parentAnrs[] = $anr->id;
+        }
+        foreach ($child->anrs as $anr) {
+            $childAnrs[] = $anr->id;
+        }
+
+        /** @var AnrTable $anrTable */
+        $anrTable = $this->get('anrTable');
+        foreach($parentAnrs as $anrId) {
+            if (!in_array($anrId, $childAnrs)) {
+                $child->addAnr($anrTable->getEntity($anrId));
+            }
+        }
+        $objectTable->save($child);
+
+        //create instance
+        /** @var InstanceTable $instanceTable */
+        $instanceTable = $this->get('instanceTable');
+        $instancesParent = $instanceTable->getEntityByFields(['object' => $father->id]);
+
+        foreach($instancesParent as $instanceParent) {
+            $anrId = $instanceParent->anr->id;
+
+            $data = [
+                'object' => $child->id,
+                'parent' => $instanceParent->id,
+                'root' => ($instanceParent->root) ? $instanceParent->root->id : $instanceParent->id,
+                'position' => 0,
+                'c' => -1,
+                'i' => -1,
+                'd' => -1,
+            ];
+
+
+            //if father instance exist, create instance for child
+            $eventManager = new EventManager();
+            $eventManager->setIdentifiers('addcomponent');
+
+            $sharedEventManager = $eventManager->getSharedManager();
+            $eventManager->setSharedManager($sharedEventManager);
+            $eventManager->trigger('createinstance', null, compact(['anrId', 'data']));
+        }
+
+        return $id;
     }
 
     /**
@@ -127,5 +181,31 @@ class ObjectObjectService extends AbstractService
         }
 
         $this->manageRelativePositionUpdate('father', $entity, $direction);
+    }
+
+    /**
+     * Delete
+     *
+     * @param $id
+     * @throws \Exception
+     */
+    public function delete($id) {
+
+        /** @var ObjectObjectTable $table */
+        $table = $this->get('table');
+        $objectObject = $table->getEntity($id);
+
+        if ($objectObject) {
+            throw new \Exception('Entity not exist', 412);
+        }
+
+        //delete instance instance
+        /** @var InstanceTable $instanceTable */
+        $instanceTable = $this->get('instanceTable');
+        $childInstances =  $instanceTable->getEntityByFields(['object' => $objectObject->child->id]);
+        $fatherInstances =  $instanceTable->getEntityByFields(['object' => $objectObject->father->id]);
+        
+
+        parent::delete($id);
     }
 }
