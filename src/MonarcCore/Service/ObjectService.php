@@ -552,6 +552,10 @@ class ObjectService extends AbstractService
         }
 
         $entity['implicitPosition'] = isset($data['implicitPosition']) ? $data['implicitPosition'] : 2;
+        $entity['name1'] = $entity['name1'].' (copy)';
+        $entity['name2'] = $entity['name2'].' (copy)';
+        $entity['name3'] = $entity['name3'].' (copy)';
+        $entity['name4'] = $entity['name4'].' (copy)';
 
         return $this->create($entity);
     }
