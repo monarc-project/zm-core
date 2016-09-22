@@ -105,7 +105,6 @@ class ObjectObjectService extends AbstractService
                 'd' => -1,
             ];
 
-
             //if father instance exist, create instance for child
             $eventManager = new EventManager();
             $eventManager->setIdentifiers('addcomponent');

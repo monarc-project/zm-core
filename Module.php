@@ -53,11 +53,20 @@ class Module
 
 
             $sharedEventManager = $eventManager->getSharedManager();
+
             $sharedEventManager->attach('addcomponent', 'createinstance', function($e) use($sm) {
                 $params = $e->getParams();
                 /** @var InstanceService $instanceService */
                 $instanceService = $sm->get('MonarcCore\Service\InstanceService');
                 $result = $instanceService->instantiateObjectToAnr($params['anrId'], $params['data']);
+                return $result;
+            }, 100);
+
+            $sharedEventManager->attach('instance', 'patch', function($e) use($sm) {
+                $params = $e->getParams();
+                /** @var InstanceService $instanceService */
+                $instanceService = $sm->get('MonarcCore\Service\InstanceService');
+                $result = $instanceService->patchInstance($params['anrId'], $params['instanceId'], $params['data']);
                 return $result;
             }, 100);
         }

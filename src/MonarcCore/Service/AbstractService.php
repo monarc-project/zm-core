@@ -633,10 +633,11 @@ abstract class AbstractService extends AbstractServiceFactory
         }
     }
 
-    protected function filterPostFields(&$data, $entity) {
+    protected function filterPostFields(&$data, $entity, $forbiddenFields = false) {
+        $forbiddenFields = (!$forbiddenFields) ? $this->forbiddenFields : $forbiddenFields;
         if (is_array($data)) {
             foreach (array_keys($data) as $key) {
-                if (in_array($key, $this->forbiddenFields)) {
+                if (in_array($key, $forbiddenFields)) {
                     if (is_object($entity->$key)) {
                         $data[$key] = ($entity->$key) ? $entity->$key->id : null;
                     } else {

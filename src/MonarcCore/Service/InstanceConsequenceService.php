@@ -4,6 +4,7 @@ use MonarcCore\Model\Entity\ScaleImpactType;
 use MonarcCore\Model\Table\InstanceConsequenceTable;
 use MonarcCore\Model\Table\InstanceTable;
 use MonarcCore\Model\Table\ScaleImpactTypeTable;
+use Zend\EventManager\EventManager;
 
 /**
  * Instance Consequence Service
@@ -65,7 +66,6 @@ class InstanceConsequenceService extends AbstractService
      * @throws \Exception
      */
     public function update($id,$data){
-
         if (empty($data)) {
             throw new \Exception('Data missing', 412);
         }
@@ -74,13 +74,14 @@ class InstanceConsequenceService extends AbstractService
         $data = $this->updateConsequences($id, $data);
         $data['anr'] = $anrId;
 
-        $entity = $this->get('table')->getEntity($id);
+        /** @var InstanceConsequenceTable $table */
+        $table = $this->get('table');
+        $entity = $table->getEntity($id);
 
-        $this->filterPostFields($data, ['anr', 'instance', 'object', 'scaleImpactType', 'ch', 'ih', 'dh'], $entity);
+        $this->filterPostFields($data, $entity, ['anr', 'instance', 'object', 'scaleImpactType', 'ch', 'ih', 'dh']);
 
         $entity->setDbAdapter($this->get('table')->getDb());
         $entity->setLanguage($this->getLanguage());
-
 
         $entity->exchangeArray($data);
 
@@ -89,8 +90,8 @@ class InstanceConsequenceService extends AbstractService
 
         $id = $this->get('table')->save($entity);
 
-        //remplacer par un evenement
-        //$this->updateInstanceImpacts($id);
+
+        $this->updateInstanceImpacts($id);
 
         return $id;
     }
@@ -145,14 +146,22 @@ class InstanceConsequenceService extends AbstractService
             }
         }
 
+
+
+        $anrId = $instanceCurrentConsequence->anr->id;
+        $instanceId = $instanceCurrentConsequence->instance->id;
         $data = [
             'c' => max($instanceC),
             'i' => max($instanceI),
             'd' => max($instanceD)
         ];
 
+        //if father instance exist, create instance for child
+        $eventManager = new EventManager();
+        $eventManager->setIdentifiers('instance');
 
-        $instanceService = $this->get('instanceService');
-        $instanceService->patchInstance($instanceCurrentConsequence->anr->id, $instanceCurrentConsequence->instance->id, $data);
+        $sharedEventManager = $eventManager->getSharedManager();
+        $eventManager->setSharedManager($sharedEventManager);
+        $eventManager->trigger('patch', null, compact(['anrId', 'instanceId', 'data']));
     }
 }
