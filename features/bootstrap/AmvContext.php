@@ -24,7 +24,7 @@ class AmvContext  extends \Behat\MinkExtension\Context\MinkContext implements \B
      */
     public static function initializeZendFramework() {
         if(self::$zendApp === null) {
-            $path = __DIR__ . '/../../config/application.config.php';
+            $path = __DIR__ . '/../../../../config/application.config.php';
             self::$zendApp = Zend\Mvc\Application::init(require $path);
         }
     }
