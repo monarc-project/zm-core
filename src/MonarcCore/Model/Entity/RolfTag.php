@@ -120,14 +120,7 @@ class RolfTag extends AbstractEntity
                     'name' => $text,
                     'required' => ((strchr($text, (string) $this->getLanguage())) && (!$partial)) ? true : false,
                     'allow_empty' => false,
-                    'filters' => array(
-                        array(
-                            'name' => '\MonarcCore\Filter\SpecAlnum',
-                            'options' => array(
-                                'allow_white_space' => true,
-                            )
-                        ),
-                    ),
+                    'filters' => array(),
                     'validators' => array(),
                 ));
             }

@@ -451,14 +451,7 @@ class Threat extends AbstractEntity
                     'name' => $text,
                     'required' => ((strstr($text, (string) $this->getLanguage())) && (!$partial)) ? true : false,
                     'allow_empty' => false,
-                    'filters' => array(
-                        array(
-                            'name' => '\MonarcCore\Filter\SpecAlnum',
-                            'options' => array(
-                                'allow_white_space' => true,
-                            )
-                        ),
-                    ),
+                    'filters' => array(),
                     'validators' => array(),
                 ));
             }
@@ -469,14 +462,7 @@ class Threat extends AbstractEntity
                     'name' => $description,
                     'required' => false,
                     'allow_empty' => true,
-                    'filters' => array(
-                        array(
-                            'name' => '\MonarcCore\Filter\SpecAlnum',
-                            'options' => array(
-                                'allow_white_space' => true,
-                            )
-                        ),
-                    ),
+                    'filters' => array(),
                     'validators' => array(),
                 ));
             }
