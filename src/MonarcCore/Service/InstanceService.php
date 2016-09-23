@@ -232,7 +232,7 @@ class InstanceService extends AbstractService
         $this->updateChildrenImpacts($instance);
 
         $this->updateBrothers($anrId, $instance, $data, $historic);
-        
+
         $this->objectImpacts($instance);
 
         return $id;
