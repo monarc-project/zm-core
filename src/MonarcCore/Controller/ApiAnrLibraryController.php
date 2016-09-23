@@ -72,7 +72,18 @@ class ApiAnrLibraryController extends AbstractController
 
     public function delete($id)
     {
-        return $this->methodNotAllowed();
+        $anrId = $this->params()->fromRoute('anrid');
+
+        /** @var ObjectService $service */
+        $service = $this->getService();
+        $service->detachObjectToAnr($id, $anrId);
+
+        return new JsonModel(
+            array(
+                'status' => 'ok'
+            )
+        );
+
     }
 }
 

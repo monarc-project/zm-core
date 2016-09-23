@@ -343,8 +343,6 @@ class Object extends AbstractEntity
         $this->anrs[] = $anr;
     }
 
-
-
     /**
      * @param int $id
      */

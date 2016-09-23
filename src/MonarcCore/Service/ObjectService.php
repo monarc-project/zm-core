@@ -7,6 +7,7 @@ use MonarcCore\Model\Table\AnrTable;
 use MonarcCore\Model\Table\AssetTable;
 use MonarcCore\Model\Table\InstanceTable;
 use MonarcCore\Model\Table\ObjectCategoryTable;
+use MonarcCore\Model\Table\ObjectObjectTable;
 use MonarcCore\Model\Table\ObjectTable;
 
 /**
@@ -24,6 +25,7 @@ class ObjectService extends AbstractService
     protected $assetTable;
     protected $categoryTable;
     protected $instanceTable;
+    protected $objectObjectTable;
     protected $rolfTagTable;
     protected $amvTable;
 
@@ -670,6 +672,45 @@ class ObjectService extends AbstractService
         }
 
         return $id;
+    }
+
+    /**
+     * Detach Object To Anr
+     *
+     * @param $objectId
+     * @param $anrId
+     * @throws \Exception
+     */
+    public function detachObjectToAnr($objectId, $anrId) {
+
+        //verify object is not a composant
+        /** @var ObjectObjectTable $objectObjectTable */
+        $objectObjectTable = $this->get('objectObjectTable');
+        $liaisons = $objectObjectTable->getEntityByFields(['child' => $objectId]);
+        if (count($liaisons)) {
+            throw new \Exception("You can't detach this object because an other use it. Clean dependencies before detach it.", 412);
+        }
+
+        //delete instance
+        /** @var InstanceTable $instanceTable */
+        $instanceTable = $this->get('instanceTable');
+        $instances = $instanceTable->getEntityByFields(['object' => $objectId]);
+        foreach($instances as $instance) {
+            $instanceTable->delete($instance->id);
+        }
+
+        //detach object
+        /** @var ObjectTable $table */
+        $table = $this->get('table');
+        $object = $table->getEntity($objectId);
+        $anrs = [];
+        foreach($object->anrs as $anr) {
+            if ($anr->id != $anrId) {
+                $anrs[] = $anr;
+            }
+        }
+        $object->anrs = $anrs;
+        $table->save($object);
     }
 
     /**
