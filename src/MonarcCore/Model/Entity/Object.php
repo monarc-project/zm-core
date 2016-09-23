@@ -450,7 +450,7 @@ class Object extends AbstractEntity
 
             $this->inputFilter->add(array(
                 'name' => 'asset',
-                'required' => true,
+                'required' => (!$partial) ? true : false,
                 'allow_empty' => true,
                 'continue_if_empty' => true,
                 'filters' => array(),
@@ -463,7 +463,7 @@ class Object extends AbstractEntity
 
             $this->inputFilter->add(array(
                 'name' => 'category',
-                'required' => true,
+                'required' => (!$partial) ? true : false,
                 'allow_empty' => true,
                 'continue_if_empty' => true,
                 'filters' => array(),
@@ -505,7 +505,7 @@ class Object extends AbstractEntity
 
             $this->inputFilter->add(array(
                 'name' => 'mode',
-                'required' => true,
+                'required' => (!$partial) ? true : false,
                 'allow_empty' => false,
                 'continue_if_empty' => false,
                 'filters' => array(),

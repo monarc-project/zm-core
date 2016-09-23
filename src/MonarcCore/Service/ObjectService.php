@@ -466,30 +466,56 @@ class ObjectService extends AbstractService
 
         $this->get('table')->save($entity);
 
-        //impact on instances
+        $this->instancesImpacts($entity);
+
+        return $id;
+    }
+
+    /**
+     * Patch
+     *
+     * @param $id
+     * @param $data
+     * @return mixed
+     */
+    public function patch($id,$data){
+
+        $entity = $this->get('table')->getEntity($id);
+        $entity->setLanguage($this->getLanguage());
+        $entity->exchangeArray($data, true);
+
+        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $this->setDependencies($entity, $dependencies);
+
+        $this->get('table')->save($entity);
+
+        $this->instancesImpacts($entity);
+
+        return $id;
+    }
+
+    protected function instancesImpacts($object) {
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('instanceTable');
-        $instances = $instanceTable->getEntityByFields(['object' => $id]);
+        $instances = $instanceTable->getEntityByFields(['object' => $object]);
         foreach($instances as $instance) {
             $modifyInstance = false;
             for($i=1; $i<=4; $i++) {
                 $name = 'name' . $i;
-                if ($instance->$name != $entity->$name) {
+                if ($instance->$name != $object->$name) {
                     $modifyInstance = true;
-                    $instance->$name = $entity->$name;
+                    $instance->$name = $object->$name;
                 }
                 $label = 'label' . $i;
-                if ($instance->$label != $entity->$label) {
+                if ($instance->$label != $object->$label) {
                     $modifyInstance = true;
-                    $instance->$label = $entity->$label;
+                    $instance->$label = $object->$label;
                 }
             }
             if ($modifyInstance) {
                 $instanceTable->save($instance);
             }
         }
-
-        return $id;
     }
 
     protected function checkModeIntegrity($id, $mode){
