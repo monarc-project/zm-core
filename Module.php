@@ -4,6 +4,7 @@ namespace MonarcCore;
 //use Zend\Mvc\ModuleRouteListener;
 use MonarcCore\Model\Table\ScaleImpactTypeTable;
 use MonarcCore\Service\InstanceService;
+use MonarcCore\Service\ObjectService;
 use Zend\Di\ServiceLocator;
 use Zend\Mvc\MvcEvent;
 use \Zend\Mvc\Controller\ControllerManager;
@@ -67,6 +68,14 @@ class Module
                 /** @var InstanceService $instanceService */
                 $instanceService = $sm->get('MonarcCore\Service\InstanceService');
                 $result = $instanceService->patchInstance($params['anrId'], $params['instanceId'], $params['data']);
+                return $result;
+            }, 100);
+
+            $sharedEventManager->attach('object', 'patch', function($e) use($sm) {
+                $params = $e->getParams();
+                /** @var ObjectService $objectService */
+                $objectService = $sm->get('MonarcCore\Service\ObjectService');
+                $result = $objectService->patch($params['objectId'], $params['data']);
                 return $result;
             }, 100);
         }

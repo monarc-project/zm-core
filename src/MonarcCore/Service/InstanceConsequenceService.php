@@ -50,8 +50,7 @@ class InstanceConsequenceService extends AbstractService
 
             parent::patch($id,$data);
 
-            //remplacer par un evenement
-            //$this->updateInstanceImpacts($id);
+            $this->updateInstanceImpacts($id);
         }
 
         return $id;

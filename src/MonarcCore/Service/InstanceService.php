@@ -12,6 +12,7 @@ use MonarcCore\Model\Table\InstanceTable;
 use MonarcCore\Model\Table\RolfRiskTable;
 use MonarcCore\Model\Table\ScaleTable;
 use MonarcCore\Model\Table\ScaleImpactTypeTable;
+use Zend\EventManager\EventManager;
 
 
 /**
@@ -231,6 +232,8 @@ class InstanceService extends AbstractService
         $this->updateChildrenImpacts($instance);
 
         $this->updateBrothers($anrId, $instance, $data, $historic);
+        
+        $this->objectImpacts($instance);
 
         return $id;
     }
@@ -329,6 +332,8 @@ class InstanceService extends AbstractService
 
         $this->updateBrothers($anrId, $instance, $data, $historic);
 
+        $this->objectImpacts($instance);
+
         return $id;
     }
 
@@ -346,6 +351,32 @@ class InstanceService extends AbstractService
         $this->managePosition('parent', $instance, $instance->parent, null, null, 'delete');
 
         $this->get('table')->delete($id);
+    }
+
+    /**
+     * Object Impacts
+     *
+     * @param $instance
+     */
+    protected function objectImpacts($instance) {
+        $objectId = $instance->object->id;
+        $data = [
+            'name1' => $instance->name1,
+            'name2' => $instance->name2,
+            'name3' => $instance->name3,
+            'name4' => $instance->name4,
+            'label1' => $instance->label1,
+            'label2' => $instance->label2,
+            'label3' => $instance->label3,
+            'label4' => $instance->label4,
+        ];
+
+        $eventManager = new EventManager();
+        $eventManager->setIdentifiers('object');
+
+        $sharedEventManager = $eventManager->getSharedManager();
+        $eventManager->setSharedManager($sharedEventManager);
+        $eventManager->trigger('patch', null, compact(['objectId', 'data']));
     }
 
     /**
