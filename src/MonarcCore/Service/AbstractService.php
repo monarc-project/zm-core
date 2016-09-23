@@ -528,6 +528,7 @@ abstract class AbstractService extends AbstractServiceFactory
     protected function modifyPositionDifferentParent($implicitPosition, $field, $entityParentId, $entityPosition,  $previous, $verb, $newParentId) {
         $this->get('table')->changePositionsByParent($field, $entityParentId, $entityPosition, 'down', 'after', true);
 
+        $position = 0;
         switch ($implicitPosition) {
             case 1:
                 $this->get('table')->changePositionsByParent($field, $newParentId, 0, 'up', 'after');

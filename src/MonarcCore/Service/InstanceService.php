@@ -341,12 +341,17 @@ class InstanceService extends AbstractService
      * Delete
      *
      * @param $id
+     * @throws \Exception
      */
     public function delete($id) {
 
         /** @var InstanceTable $table */
         $table = $this->get('table');
         $instance = $table->getEntity($id);
+
+        if (!$instance) {
+            throw new \Exception('Entity not exist', 412);
+        }
 
         $this->managePosition('parent', $instance, $instance->parent, null, null, 'delete');
 
