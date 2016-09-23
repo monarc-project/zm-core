@@ -63,7 +63,9 @@ class ObjectService extends AbstractService
 
 
         //retrieve all objects
-        $objects = $this->get('table')->fetchAllFiltered(
+        /** @var ObjectTable $objectTable */
+        $objectTable = $this->get('table');
+        $objects = $objectTable->fetchAllFiltered(
             array_keys($this->get('entity')->getJsonArray()),
             $page,
             $limit,
