@@ -767,7 +767,18 @@ class InstanceService extends AbstractService
      */
     public function findByAnr($anrId) {
 
-        return $this->get('table')->findByAnr($anrId);
+        /** @var InstanceTable $instanceTable */
+        $instanceTable = $this->get('table');
+        $instances = $instanceTable->getEntityByFields(['anr' => $anrId]);
+
+        foreach($instances as $key => $instance) {
+            $instanceArray = $instance->getJsonArray();
+            $instanceArray['scope'] = $instance->object->scope;
+
+            $instances[$key] = $instanceArray;
+        }
+
+        return $instances;
     }
 
     /**

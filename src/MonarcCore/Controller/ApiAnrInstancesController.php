@@ -24,7 +24,7 @@ class ApiAnrInstancesController extends AbstractController
         $service = $this->getService();
         $instances = $service->findByAnr($anrId);
 
-        $fields = ['id', 'level',
+        $fields = ['id', 'level', 'scope',
             'c', 'i', 'd', 'ch', 'ih', 'dh',
             'name1', 'name2', 'name3', 'name4',
             'label1', 'label2', 'label3', 'label4',
