@@ -5,6 +5,7 @@ use MonarcCore\Model\Entity\Object;
 use MonarcCore\Model\Table\AmvTable;
 use MonarcCore\Model\Table\AnrTable;
 use MonarcCore\Model\Table\AssetTable;
+use MonarcCore\Model\Table\InstanceTable;
 use MonarcCore\Model\Table\ObjectCategoryTable;
 use MonarcCore\Model\Table\ObjectTable;
 
@@ -22,6 +23,7 @@ class ObjectService extends AbstractService
     protected $anrTable;
     protected $assetTable;
     protected $categoryTable;
+    protected $instanceTable;
     protected $rolfTagTable;
     protected $amvTable;
 
@@ -462,9 +464,32 @@ class ObjectService extends AbstractService
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
 
-        //add and remove parent is manage in service objects-components
+        $this->get('table')->save($entity);
 
-        return $this->get('table')->save($entity);
+        //impact on instances
+        /** @var InstanceTable $instanceTable */
+        $instanceTable = $this->get('instanceTable');
+        $instances = $instanceTable->getEntityByFields(['object' => $id]);
+        foreach($instances as $instance) {
+            $modifyInstance = false;
+            for($i=1; $i<=4; $i++) {
+                $name = 'name' . $i;
+                if ($instance->$name != $entity->$name) {
+                    $modifyInstance = true;
+                    $instance->$name = $entity->$name;
+                }
+                $label = 'label' . $i;
+                if ($instance->$label != $entity->$label) {
+                    $modifyInstance = true;
+                    $instance->$label = $entity->$label;
+                }
+            }
+            if ($modifyInstance) {
+                $instanceTable->save($instance);
+            }
+        }
+
+        return $id;
     }
 
     protected function checkModeIntegrity($id, $mode){
