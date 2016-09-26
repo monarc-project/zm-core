@@ -213,6 +213,24 @@ class Object extends AbstractEntity
     protected $implicitPosition;
 
     /**
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * @param int $id
+     * @return Object
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
+        return $this;
+    }
+
+    /**
      * @return ObjectCategory
      */
     public function getCategory()
@@ -343,26 +361,40 @@ class Object extends AbstractEntity
         $this->anrs[] = $anr;
     }
 
-    /**
-     * @param int $id
-     */
-    public function setId($id)
-    {
-        $this->id = $id;
-    }
-
     public function getInputFilter($partial = false){
+
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);
 
-            $texts = [
-                'name1', 'name2', 'name3', 'name4',
-                'label1', 'label2', 'label3', 'label4',
-            ];
-            foreach($texts as $text) {
+            $names = ['name1', 'name2', 'name3', 'name4'];
+            foreach($names as $name) {
+                $validatorsName = [];
+                if (!$partial) {
+                    $validatorsName = array(
+                        array(
+                            'name' => '\MonarcCore\Validator\UniqueName',
+                            'options' => array(
+                                'entity' => $this,
+                                'field' => $name
+                            ),
+                        ),
+                    );
+                }
+
                 $this->inputFilter->add(array(
-                    'name' => $text,
-                    'required' => ((strchr($text, (string) $this->getLanguage())) && (!$partial)) ? true : false,
+                    'name' => $name,
+                    'required' => ((strchr($name, (string) $this->getLanguage())) && (!$partial)) ? true : false,
+                    'allow_empty' => false,
+                    'filters' => array(),
+                    'validators' => $validatorsName,
+                ));
+            }
+
+            $labels = ['label1', 'label2', 'label3', 'label4'];
+            foreach($labels as $label) {
+                $this->inputFilter->add(array(
+                    'name' => $label,
+                    'required' => ((strchr($label, (string) $this->getLanguage())) && (!$partial)) ? true : false,
                     'allow_empty' => false,
                     'filters' => array(),
                     'validators' => array(),

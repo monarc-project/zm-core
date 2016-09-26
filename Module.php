@@ -162,6 +162,7 @@ class Module
                 },
                 '\MonarcCore\Model\Entity\Object' => function($sm){
                     $entity = new Model\Entity\Object();
+                    $entity->setDbAdapter($sm->get('\MonarcCore\Model\Db'));
                     $entity->setLanguage($this->getDefaultLanguage($sm));
                     return $entity;
                 },
