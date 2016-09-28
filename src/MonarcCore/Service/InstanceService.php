@@ -769,7 +769,7 @@ class InstanceService extends AbstractService
 
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('table');
-        $instances = $instanceTable->getEntityByFields(['anr' => $anrId]);
+        $instances = $instanceTable->getEntityByFields(['anr' => $anrId], ['position' => 'ASC']);
 
         foreach($instances as $key => $instance) {
             $instanceArray = $instance->getJsonArray();
