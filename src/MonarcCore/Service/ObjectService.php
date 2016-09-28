@@ -1,8 +1,10 @@
 <?php
 namespace MonarcCore\Service;
+
 use MonarcCore\Model\Entity\Asset;
 use MonarcCore\Model\Entity\Object;
 use MonarcCore\Model\Table\AmvTable;
+use MonarcCore\Model\Table\AnrObjectCategoryTable;
 use MonarcCore\Model\Table\AnrTable;
 use MonarcCore\Model\Table\AssetTable;
 use MonarcCore\Model\Table\InstanceTable;
@@ -21,7 +23,10 @@ class ObjectService extends AbstractService
     protected $objectObjectService;
     protected $modelService;
 
+    protected $anrObjectCategoryEntity;
+
     protected $anrTable;
+    protected $anrObjectCategoryTable;
     protected $assetTable;
     protected $categoryTable;
     protected $instanceTable;
@@ -102,111 +107,28 @@ class ObjectService extends AbstractService
         return $newRoot;
     }
 
+    /**
+     * get Complete Entity
+     * @param $id
+     * @return mixed
+     */
     public function getCompleteEntity($id) {
-        /** @var Object $entity */
-        $entity = $this->get('table')->getEntity($id);
-        $entity_arr = $entity->getJsonArray();
+        /** @var Object $object */
+        $object = $this->get('table')->getEntity($id);
+        $object_arr = $object->getJsonArray();
 
         // Retrieve children recursively
         /** @var ObjectObjectService $objectObjectService */
         $objectObjectService = $this->get('objectObjectService');
-        $entity_arr['children'] = $objectObjectService->getRecursiveChildren($entity_arr['id']);
+        $object_arr['children'] = $objectObjectService->getRecursiveChildren($object_arr['id']);
 
         // Calculate the risks table
-        //$entity_arr['risks'] = $this->buildRisksTable($entity, $mode);
-        $entity_arr['risks'] = $this->getRisks($entity);
-        $entity_arr['oprisks'] = $this->getRisksOp($entity);
+        //$object_arr['risks'] = $this->buildRisksTable($object, $mode);
+        $object_arr['risks'] = $this->getRisks($object);
+        $object_arr['oprisks'] = $this->getRisksOp($object);
 
-        return $entity_arr;
+        return $object_arr;
     }
-
-    /*
-    protected function buildRisksTable($entity, $mode) {
-        $output = [];
-
-        // First, get all the AMV links for this object's asset
-        $amvs = $this->amvTable->findByAsset($entity->getAsset()->getId());
-
-        foreach ($amvs as $amv) {
-            $amv_array = $amv->getJsonArray();
-            $this->formatDependencies($amv_array, ['asset', 'threat', 'vulnerability']);
-
-            $prob = null;
-            $qualif = null;
-            $c_risk = null;
-            $i_risk = null;
-            $d_risk = null;
-            $comment = null;
-            $risk_id = null;
-
-            if ($mode == 'anr') {
-
-                // Fetch the risk assessment information from the DB for that AMV link
-                $risk = $this->objectRiskTable->getEntityByFields([ //'anr' => $entity->getAnr() ? $entity->getAnr()->getId() : null,
-                    'object' => $entity->getId(),
-                    'amv' => $amv_array['id'],
-                    'asset' => $amv_array['asset']['id'],
-                    'threat' => $amv_array['threat']['id'],
-                    'vulnerability' => $amv_array['vulnerability']['id']
-                ]);
-
-                if (count($risk) == 1) {
-                    // If we have some info, display them here. Otherwise, we'll only display a placeholder.
-                    $risk = $risk[0];
-                    $risk_id = $risk->getId();
-                    $prob = (string) $risk->getThreatRate();
-                    $qualif = (string) $risk->getVulnerabilityRate();
-                    $comment = $risk->getComment();
-                } else {
-                    // We have NO risk data for this, create the line!
-                    /** @var ObjectRisk $new_risk_entity */
-                    /*$new_risk_entity = new ObjectRisk();
-                    $new_risk_entity->setAnr($entity->getAnr());
-                    $new_risk_entity->setObject($entity);
-                    $new_risk_entity->setAmv($amv);
-                    $new_risk_entity->setAsset($amv->getAsset());
-                    $new_risk_entity->setThreat($amv->getThreat());
-                    $new_risk_entity->setVulnerability($amv->getVulnerability());
-
-                    $risk_id = $this->get('objectRiskTable')->save($new_risk_entity);
-
-                    $prob = "0";
-                    $qualif = "0";
-                    $comment = '';
-                }
-
-                if ($prob > 0 && $qualif > 0) {
-                    if ($amv_array['threat']['c']) {
-                        $c_risk = $c_impact * $prob * $qualif;
-                    }
-                    if ($amv_array['threat']['i']) {
-                        $i_risk = $c_impact * $prob * $qualif;
-                    }
-                    if ($amv_array['threat']['d']) {
-                        $d_risk = $c_impact * $prob * $qualif;
-                    }
-                }
-            }
-
-            $output[] = array(
-                'id' => $risk_id,
-                'threatDescription' => $amv_array['threat']['label1'],
-                'threatRate' => $prob,
-                'vulnDescription' => $amv_array['vulnerability']['label1'],
-                'vulnerabilityRate' => $qualif,
-                'c_risk' => $c_risk,
-                'c_risk_enabled' => $amv_array['threat']['c'],
-                'i_risk' => $i_risk,
-                'i_risk_enabled' => $amv_array['threat']['i'],
-                'd_risk' => $d_risk,
-                'd_risk_enabled' => $amv_array['threat']['d'],
-                'comment' => $comment
-            );
-        }
-
-        return $output;
-    }
-    */
 
     /**
      * Get Risks
@@ -433,12 +355,17 @@ class ObjectService extends AbstractService
 
         unset($data['anrs']);
 
-        $entity = $this->get('table')->getEntity($id);
-        if(!$entity){
+        if (empty($data)) {
+            throw new \Exception('Data missing', 412);
+        }
+
+        $object = $this->get('table')->getEntity($id);
+        if(!$object){
             throw new \Exception('Entity `id` not found.');
             return false;
         }
-        $entity->setLanguage($this->getLanguage());
+        $object->setDbAdapter($this->get('table')->getDb());
+        $object->setLanguage($this->getLanguage());
 
         $previous = (isset($data['previous'])) ? $data['previous'] : null;
         if(empty($data['rolfTag'])){
@@ -446,16 +373,16 @@ class ObjectService extends AbstractService
         }
 
         if (isset($data['implicitPosition'])) {
-            $data['position'] = $this->managePosition('category', $entity, $data['category'], $data['implicitPosition'], $previous, 'update');
+            $data['position'] = $this->managePosition('category', $object, $data['category'], $data['implicitPosition'], $previous, 'update');
         }
 
-        if(isset($data['mode']) && $data['mode'] != $entity->get('mode')){
+        if(isset($data['mode']) && $data['mode'] != $object->get('mode')){
             /* on test:
             - que l'on a pas de parents GENERIC quand on passe de GENERIC à SPECIFIC
             - que l'on a pas de fils SPECIFIC quand on passe de SPECIFIC à GENERIC
             */
-            if(!$this->checkModeIntegrity($entity->get('id'),$entity->get('mode'))){
-                if($entity->get('mode')==Object::IS_GENERIC){
+            if(!$this->checkModeIntegrity($object->get('id'), $object->get('mode'))){
+                if($object->get('mode')==Object::IS_GENERIC){
                     throw new \Exception('You cannot set this object to specific mode because one of its parents is in generic mode.', 412);
                 }else{
                     throw new \Exception('You cannot set this object to generic mode because one of its children is in specific mode.', 412);
@@ -463,14 +390,64 @@ class ObjectService extends AbstractService
             }
         }
 
-        $entity->exchangeArray($data);
+        $currentRootCategory = ($object->category->root) ? $object->category->root : $object->category;
+
+        $object->exchangeArray($data);
 
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($entity, $dependencies);
+        $this->setDependencies($object, $dependencies);
 
-        $this->get('table')->save($entity);
+        $objectRootCategory = ($object->category->root) ? $object->category->root : $object->category;
 
-        $this->instancesImpacts($entity);
+        if ($currentRootCategory->id != $objectRootCategory->id) {
+
+            //retrieve anrs for object
+            foreach($object->anrs as $anr) {
+
+                //retrieve number anr objects with the same root category than current object
+                $nbObjectsSameOldRootCategory = 0;
+                foreach($anr->objects as $anrObject) {
+                    $anrObjectCategory = ($anrObject->category->root) ? $anrObject->category->root : $anrObject->category;
+                    if (($anrObjectCategory->id == $objectRootCategory->id) && ($anrObject->id != $object->id)) {
+                        $nbObjectsSameOldRootCategory++;
+                    }
+                }
+                if (!$nbObjectsSameOldRootCategory) {
+                    /** @var AnrObjectCategoryTable $anrObjectCategoryTable */
+                    $anrObjectCategoryTable = $this->get('anrObjectCategoryTable');
+                    $anrObjectCategories = $anrObjectCategoryTable->getEntityByFields(['anr' => $anr->id, 'category' => $currentRootCategory->id]);
+                    foreach($anrObjectCategories as $anrObjectCategory) {
+                        $anrObjectCategoryTable->delete($anrObjectCategory->id);
+                        $this->managePosition('anr', $anrObjectCategory, $anr->id, null, null, 'delete', $anrObjectCategoryTable);
+                    }
+                }
+
+                //retrieve number anr objects with the same category than current object
+                $nbObjectsSameNewRootCategory = 0;
+                foreach($anr->objects as $anrObject) {
+                    $anrObjectCategory = ($anrObject->category->root) ? $anrObject->category->root : $anrObject->category;
+                    if (($anrObjectCategory->id == $objectRootCategory->id) && ($anrObject->id != $object->id)) {
+                        $nbObjectsSameNewRootCategory++;
+                    }
+                }if (!$nbObjectsSameNewRootCategory) {
+                    /** @var AnrObjectCategoryTable $anrObjectCategoryTable */
+                    $anrObjectCategoryTable = $this->get('anrObjectCategoryTable');
+
+                    $class = $this->get('anrObjectCategoryEntity');
+                    $anrObjectCategory = new $class();
+                    $anrObjectCategory->anr = $anr;
+                    $anrObjectCategory->category = $objectRootCategory;
+                    $anrObjectCategory->position = $this->managePosition('anr', $anrObjectCategory, $anr->id, 2, null, 'post', $anrObjectCategoryTable);
+
+
+                    $anrObjectCategoryTable->save($anrObjectCategory);
+                }
+            }
+        }
+
+        $this->get('table')->save($object);
+
+        $this->instancesImpacts($object);
 
         return $id;
     }
@@ -484,16 +461,16 @@ class ObjectService extends AbstractService
      */
     public function patch($id,$data){
 
-        $entity = $this->get('table')->getEntity($id);
-        $entity->setLanguage($this->getLanguage());
-        $entity->exchangeArray($data, true);
+        $object = $this->get('table')->getEntity($id);
+        $object->setLanguage($this->getLanguage());
+        $object->exchangeArray($data, true);
 
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($entity, $dependencies);
+        $this->setDependencies($object, $dependencies);
 
-        $this->get('table')->save($entity);
+        $this->get('table')->save($object);
 
-        $this->instancesImpacts($entity);
+        $this->instancesImpacts($object);
 
         return $id;
     }
@@ -634,10 +611,17 @@ class ObjectService extends AbstractService
             $object = $table->getEntity($object);
         }
 
+        if (!$object) {
+            throw new \Exception('Object not exist', 412);
+        }
+
         //retrieve anr
         /** @var AnrTable $anrTable */
         $anrTable = $this->get('anrTable');
         $anr = $anrTable->getEntity($anrId);
+        if (!$anr) {
+            throw new \Exception('Risk analysis not exist', 412);
+        }
 
         //add anr to object
         $object->addAnr($anr);
@@ -645,32 +629,26 @@ class ObjectService extends AbstractService
         //save object
         $id = $table->save($object);
 
-        //parent
-        /** @var ObjectObjectService $objectObjectService */
-        $objectObjectService = $this->get('objectObjectService');
-        if ($parent) {
-            $data = [
-                'anr' => $anrId,
-                'father' => $parent,
-                'child' => $id,
-            ];
+        /** @var AnrObjectCategoryTable $anrObjectCategoryTable */
+        $anrObjectCategoryTable = $this->get('anrObjectCategoryTable');
+        $anrObjectCategories = $anrObjectCategoryTable->getEntityByFields(['anr' => $anrId, 'category' => $object->category->id]);
 
-            if ($objectObjectPosition) {
-                $data['position'] = $objectObjectPosition;
-            }
-
-            $objectObjectService->create($data);
+        if (!count($anrObjectCategories)) {
+            $class = $this->get('anrObjectCategoryEntity');
+            $anrObjectCategory = new $class();
+            $anrObjectCategory->anr = $anr;
+            $anrObjectCategory->category = ($object->category->root) ? $object->category->root : $object->category;
+            $anrObjectCategory->position = $this->managePosition('anr', $anrObjectCategory, $anrId, 2, null, 'post', $anrObjectCategoryTable);
+            $anrObjectCategoryTable->save($anrObjectCategory);
         }
 
-
         //children
+        /** @var ObjectObjectService $objectObjectService */
+        $objectObjectService = $this->get('objectObjectService');
         $children = $objectObjectService->getChildren($object->id);
         foreach ($children as $child) {
-
-            $childEntity = $table->getEntity($child->child->id);
-
-            $this->attachObjectToAnr($childEntity, $anrId, $id, $child->position);
-
+            $childObject = $table->getEntity($child->child->id);
+            $this->attachObjectToAnr($childObject, $anrId, $id, $child->position);
         }
 
         return $id;
@@ -685,12 +663,53 @@ class ObjectService extends AbstractService
      */
     public function detachObjectToAnr($objectId, $anrId) {
 
+        //retrieve object
+        /** @var ObjectTable $table */
+        $table = $this->get('table');
+        $object = $table->getEntity($objectId);
+        if (!$object) {
+            throw new \Exception('Object not exist', 412);
+        }
+
         //verify object is not a composant
         /** @var ObjectObjectTable $objectObjectTable */
         $objectObjectTable = $this->get('objectObjectTable');
-        $liaisons = $objectObjectTable->getEntityByFields(['child' => $objectId]);
+        $liaisons = $objectObjectTable->getEntityByFields(['anr' => $anrId, 'child' => $objectId]);
         if (count($liaisons)) {
             throw new \Exception("You can't detach this object because an other use it. Clean dependencies before detach it.", 412);
+        }
+
+        //retrieve anr
+        /** @var AnrTable $anrTable */
+        $anrTable = $this->get('anrTable');
+        $anr = $anrTable->getEntity($anrId);
+        if (!$anr) {
+            throw new \Exception('Risk analysis not exist', 412);
+        }
+
+        //retrieve number anr objects with the same root category than current objet
+        $nbObjectsSameRootCategory = 0;
+        $objectRootCategory = ($object->category->root) ? $object->category->root : $object->category;
+        foreach($anr->objects as $anrObject) {
+
+            $anrObjectRootCategory = ($anrObject->category->root) ? $anrObject->category->root : $anrObject->category;
+
+            if (($anrObjectRootCategory->id == $objectRootCategory->id) && ($anrObject->id != $object->id)) {
+                $nbObjectsSameRootCategory++;
+            }
+        }
+
+        //if the last object of the category in the anr, delete category from anr
+        if (!$nbObjectsSameRootCategory) {
+            //anrs objects categories
+            /** @var AnrObjectCategoryTable $anrObjectCategoryTable */
+            $anrObjectCategoryTable = $this->get('anrObjectCategoryTable');
+            $anrObjectCategories = $anrObjectCategoryTable->getEntityByFields(['anr' => $anrId, 'category' => $objectRootCategory->id]);
+
+            foreach( $anrObjectCategories as $anrObjectCategory) {
+                $this->managePosition('anr', $anrObjectCategory, $anrId, null, null, 'delete', $anrObjectCategoryTable);
+                $anrObjectCategoryTable->delete($anrObjectCategory->id);
+            }
         }
 
         //delete instance
@@ -723,10 +742,12 @@ class ObjectService extends AbstractService
      */
     public function getCategoriesLibraryByAnr($anrId) {
 
-        //retrieve anr objects
+        //retrieve objects
+        $anrObjects = [];
         /** @var ObjectTable $objectTable */
         $objectTable = $this->get('table');
         $objects = $objectTable->fetchAll();
+
 
         $anrObjects = [];
         $anrObjectsCategories = [];
@@ -741,7 +762,25 @@ class ObjectService extends AbstractService
                 }
             }
         }
+/*
+        foreach($objects as $object) {
+            if ($object['anrs']) {
+                foreach($object['anrs'] as $anr) {
+                    if ($anr->id == $anrId) {
+                        $anrObjects[] = $object;
+                    }
+                }
+            }
+        }
 
+        //retrieve categories
+        $anrObjectsCategories = [];
+        $anrObjectCategoryTable = $this->get('anrObjectCategoryTable');
+        $anrObjectCategories = $anrObjectCategoryTable->getEntityByFields(['anr' => $anrId]);
+        foreach($anrObjectCategories as $anrObjectCategory) {
+            $anrObjectsCategories[$anrObjectCategory->category->id] = $anrObjectCategory->category;
+        }
+*/
         $parents = [];
         foreach($anrObjectsCategories as $category) {
             $this->getRecursiveParents($category, $parents);

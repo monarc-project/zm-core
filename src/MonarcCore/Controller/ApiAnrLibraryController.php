@@ -9,21 +9,23 @@ class ApiAnrLibraryController extends AbstractController
 {
     protected $name = 'categories';
 
-    protected $dependencies = ['anr'];
+    protected $dependencies = ['anr', 'parent'];
 
     public function getList()
     {
         $anrId = $this->params()->fromRoute('anrid');
 
-        $objectsCategories = $this->getService()->getCategoriesLibraryByAnr($anrId);
+        /** @var ObjectService $service */
+        $service = $this->getService();
+        $objectsCategories = $service->getCategoriesLibraryByAnr($anrId);
 
         $this->formatDependencies($objectsCategories, $this->dependencies);
 
         $fields = ['id', 'label1', 'label2', 'label3', 'label4', 'position', 'objects'];
-        $recursiveArray = $this->recursiveArray($objectsCategories, null, 0, $fields);
+        $objectsCategories = $this->recursiveArray($objectsCategories, null, 0, $fields);
 
         return new JsonModel(array(
-            $this->name => $recursiveArray
+            $this->name => $objectsCategories
         ));
 
     }

@@ -164,6 +164,37 @@ class ObjectCategory extends AbstractEntity
         return $this;
     }
 
+    /**
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getAnrs()
+    {
+        return $this->anrs;
+    }
+
+
+    /**
+     * Add Anr
+     *
+     * @param Anr $anr
+     * @throws \Exception
+     */
+    public function addAnr(Anr $anr)
+    {
+        $currentAnrs = $this->anrs;
+
+        $alreadyUsed = false;
+        foreach ($currentAnrs as $currentAnr) {
+            if ($currentAnr->id == $anr->id) {
+                $alreadyUsed = true;
+            }
+        }
+
+        if (!$alreadyUsed) {
+            $this->anrs[] = $anr;
+        }
+    }
+
     public function getInputFilter($partial = false){
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);

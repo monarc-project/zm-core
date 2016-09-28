@@ -354,11 +354,9 @@ class Object extends AbstractEntity
             }
         }
 
-        if  ($errors) {
-            throw new \Exception('This object already exists in the current risk analysis', 412);
+        if  (!$errors) {
+            $this->anrs[] = $anr;
         }
-
-        $this->anrs[] = $anr;
     }
 
     public function getInputFilter($partial = false){
@@ -375,6 +373,7 @@ class Object extends AbstractEntity
                             'name' => '\MonarcCore\Validator\UniqueName',
                             'options' => array(
                                 'entity' => $this,
+                                'adapter' => $this->getDbAdapter(),
                                 'field' => $name
                             ),
                         ),

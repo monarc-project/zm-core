@@ -69,6 +69,7 @@ return array(
         ),*/
         'invokables' => array(
             'MonarcCore\Model\Entity\Anr'                   => 'MonarcCore\Model\Entity\Anr',
+            'MonarcCore\Model\Entity\AnrObjectCategory'     => 'MonarcCore\Model\Entity\AnrObjectCategory',
             'MonarcCore\Model\Entity\Guide'                 => 'MonarcCore\Model\Entity\Guide',
             'MonarcCore\Model\Entity\GuideItem'             => 'MonarcCore\Model\Entity\GuideItem',
             'MonarcCore\Model\Entity\Historical'            => 'MonarcCore\Model\Entity\Historical',
