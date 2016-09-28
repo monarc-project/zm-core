@@ -1,5 +1,6 @@
 <?php
 namespace MonarcCore\Service;
+use MonarcCore\Model\Table\AnrObjectCategoryTable;
 
 /**
  * Object Category Service
@@ -9,6 +10,8 @@ namespace MonarcCore\Service;
  */
 class ObjectCategoryService extends AbstractService
 {
+    protected $anrObjectCategoryTable;
+
     protected $filterColumns = ['label1', 'label2', 'label3', 'label4'];
 
     /**
@@ -190,5 +193,35 @@ class ObjectCategoryService extends AbstractService
             ->getResult();
 
         $this->get('table')->delete($id);
+    }
+
+    public function patchLibraryCategory($categoryId, $data) {
+
+        $anrId = $data['anr'];
+
+        if (!isset($data['position'])) {
+            throw new \Exception('Position missing', 412);
+        }
+
+        /** @var AnrObjectCategoryTable $anrObjectCategoryTable */
+        $anrObjectCategoryTable = $this->get('anrObjectCategoryTable');
+        $anrObjectCategory = $anrObjectCategoryTable->getEntityByFields(['anr' => $anrId, 'category' => $categoryId])[0];
+
+        if ($data['position'] != $anrObjectCategory->position) {
+
+            $previousAnrObjectCategoryPosition = ($data['position'] > $anrObjectCategory->position) ? $data['position'] : $data['position'] - 1;
+            $previousAnrObjectCategory = $anrObjectCategoryTable->getEntityByFields(['anr' => $anrId, 'position' => $previousAnrObjectCategoryPosition]);
+            if ($previousAnrObjectCategory) {
+                $implicitPosition = 3;
+                $previous = $previousAnrObjectCategory[0];
+            } else {
+                $implicitPosition = 1;
+                $previous = null;
+            }
+
+            $anrObjectCategory->position = $this->managePosition('anr', $anrObjectCategory, $anrId, $implicitPosition, $previous, 'update', $anrObjectCategoryTable);
+
+            return $this->get('table')->save($anrObjectCategory);
+        }
     }
 }
