@@ -742,10 +742,11 @@ class ObjectService extends AbstractService
      */
     public function getCategoriesLibraryByAnr($anrId) {
 
+
         //retrieve objects
         $anrObjects = [];
         /** @var ObjectTable $objectTable */
-        $objectTable = $this->get('table');
+        /*$objectTable = $this->get('table');
         $objects = $objectTable->fetchAll();
 
 
@@ -762,25 +763,7 @@ class ObjectService extends AbstractService
                 }
             }
         }
-/*
-        foreach($objects as $object) {
-            if ($object['anrs']) {
-                foreach($object['anrs'] as $anr) {
-                    if ($anr->id == $anrId) {
-                        $anrObjects[] = $object;
-                    }
-                }
-            }
-        }
 
-        //retrieve categories
-        $anrObjectsCategories = [];
-        $anrObjectCategoryTable = $this->get('anrObjectCategoryTable');
-        $anrObjectCategories = $anrObjectCategoryTable->getEntityByFields(['anr' => $anrId]);
-        foreach($anrObjectCategories as $anrObjectCategory) {
-            $anrObjectsCategories[$anrObjectCategory->category->id] = $anrObjectCategory->category;
-        }
-*/
         $parents = [];
         foreach($anrObjectsCategories as $category) {
             $this->getRecursiveParents($category, $parents);
@@ -794,6 +777,61 @@ class ObjectService extends AbstractService
 
         foreach($anrObjects as $anrObject) {
             $anrObjectsCategories[$anrObject['category']->id]['objects'][] = $anrObject;
+        }
+
+        return $anrObjectsCategories;*/
+
+
+
+        //retrieve objects
+        $anrObjects = [];
+        $objectsCategories = [];
+        /** @var ObjectTable $objectTable */
+        $objectTable = $this->get('table');
+        $objects = $objectTable->fetchAll();
+        foreach($objects as $object) {
+            if ($object['anrs']) {
+                foreach($object['anrs'] as $anr) {
+                    if ($anr->id == $anrId) {
+                        $anrObjects[] = $object;
+                        $objectsCategories[$object['category']->id] = $object['category'];
+                        break;
+                    }
+                }
+            }
+        }
+
+        $parents = [];
+        foreach($objectsCategories as $category) {
+            $this->getRecursiveParents($category, $parents);
+        }
+
+        $objectsCategories = $objectsCategories + $parents;
+
+        foreach ($objectsCategories as $key => $objectsCategory) {
+            $objectsCategories[$key] = $objectsCategory->getJsonArray();
+        }
+
+        foreach($anrObjects as $anrObject) {
+            $objectsCategories[$anrObject['category']->id]['objects'][] = $anrObject;
+        }
+
+        //retrieve categories
+        $anrObjectsCategories = [];
+        $anrObjectCategoryTable = $this->get('anrObjectCategoryTable');
+        $anrObjectCategories = $anrObjectCategoryTable->getEntityByFields(['anr' => $anrId], ['position' => 'ASC']);
+        foreach($anrObjectCategories as $anrObjectCategory) {
+            $anrObjectsCategories[$anrObjectCategory->id] = $this->getChildren($anrObjectCategory->category->getJsonArray(), $objectsCategories);
+
+        }
+
+
+        foreach($anrObjectsCategories as $key => $anrObjectCategory) {
+            foreach ($anrObjects as $anrObject) {
+                if ($anrObjectCategory['id'] == $anrObject['category']->id) {
+                    $anrObjectsCategories[$key]['objects'][] = $anrObject;
+                }
+            }
         }
 
         return $anrObjectsCategories;
@@ -816,6 +854,33 @@ class ObjectService extends AbstractService
 
             $this->getRecursiveParents($parent, $array);
         }
+    }
+
+    /**
+     * Get Children
+     *
+     * @param $parentObjectCategory
+     * @param $objectsCategories
+     * @return mixed
+     */
+    public function getChildren($parentObjectCategory, &$objectsCategories) {
+
+        $currentObjectCategory = $parentObjectCategory;
+        unset($objectsCategories[$parentObjectCategory['id']]);
+
+        foreach($objectsCategories as $objectsCategory) {
+            if ($objectsCategory['parent']) {
+                if ($objectsCategory['parent']->id == $parentObjectCategory['id']) {
+                    $objectsCategory = $this->getChildren($objectsCategory, $objectsCategories);
+                    unset($objectsCategory['__initializer__']);
+                    unset($objectsCategory['__cloner__']);
+                    unset($objectsCategory['__isInitialized__']);
+                    $currentObjectCategory['child'][] = $objectsCategory;
+                }
+            }
+        }
+
+        return $currentObjectCategory;
     }
 
     public function export($data) {
