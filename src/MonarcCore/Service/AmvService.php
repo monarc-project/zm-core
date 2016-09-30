@@ -248,7 +248,24 @@ class AmvService extends AbstractService
         }
         $this->label = $label;
 
-        $this->historizeCreate('amv', $newEntity);
+        //details
+        $fields = [
+            'anr' => 'label1',
+            'asset' => 'label1',
+            'threat' => 'label1',
+            'vulnerability' => 'label1',
+            'measure1' => 'description1',
+            'measure2' => 'description1',
+            'measure3' => 'description1'
+        ];
+        $details = [];
+        foreach ($fields as $key => $field) {
+            if (($entity[$key])) {
+                $details[] = $key . ' => ' . $entity[$key]->$field;
+            }
+        }
+
+        $this->historizeCreate('amv', $newEntity, $details);
 
         return $id;
     }
@@ -342,7 +359,24 @@ class AmvService extends AbstractService
             }
             $this->label = $label;
 
-            $this->historizeDelete('amv', $entity);
+            //details
+            $fields = [
+                'anr' => 'label1',
+                'asset' => 'label1',
+                'threat' => 'label1',
+                'vulnerability' => 'label1',
+                'measure1' => 'description1',
+                'measure2' => 'description1',
+                'measure3' => 'description1'
+            ];
+            $details = [];
+            foreach ($fields as $key => $field) {
+                if (($entity[$key])) {
+                    $details[] = $key . ' => ' . $entity[$key]->$field;
+                }
+            }
+
+            $this->historizeDelete('amv', $entity, $details);
 
             $this->get('table')->delete($id);
         }

@@ -299,8 +299,9 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param $type
      * @param $entity
      */
-    public function historizeCreate($type, $entity) {
-        $this->historize($entity, $type, 'create', '');
+    public function historizeCreate($type, $entity, $details) {
+
+        $this->historize($entity, $type, 'create', 'creation : ' . implode(', ', $details));
     }
 
     /**
@@ -309,8 +310,9 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param $type
      * @param $entity
      */
-    public function historizeDelete($type, $entity) {
-        $this->historize($entity, $type, 'delete', '');
+    public function historizeDelete($type, $entity, $details) {
+
+        $this->historize($entity, $type, 'delete', 'delete : ' . implode(', ', $details));
     }
 
     /**
