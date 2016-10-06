@@ -201,6 +201,7 @@ abstract class AbstractService extends AbstractServiceFactory
         if (empty($data)) {
             throw new \Exception('Data missing', 412);
         }
+
         $entity->exchangeArray($data);
 
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
@@ -681,7 +682,7 @@ abstract class AbstractService extends AbstractServiceFactory
 
             $prob = (int) $data['threatRate'];
 
-            if (($prob < $scale->min) || ($prob > $scale->max)) {
+            if (($prob != -1) && (($prob < $scale->min) || ($prob > $scale->max))) {
                 $errors[] = 'Value for probability is not valid';
             }
         }
@@ -695,7 +696,7 @@ abstract class AbstractService extends AbstractServiceFactory
 
             $prob = (int) $data['vulnerabilityRate'];
 
-            if (($prob < $scale->min) || ($prob > $scale->max)) {
+            if (($prob != -1) && (($prob < $scale->min) || ($prob > $scale->max))) {
                 $errors[] = 'Value for qualification is not valid';
             }
         }
@@ -705,8 +706,7 @@ abstract class AbstractService extends AbstractServiceFactory
                 $reductionAmount = (int)$data['reductionAmount'];
 
                 $vulnerabilityRate = (isset($data['vulnerabilityRate'])) ? (int)$data['vulnerabilityRate'] : $instanceRisk['vulnerabilityRate'];
-
-                if (($reductionAmount < 0) || ($reductionAmount > $vulnerabilityRate)) {
+                if (($vulnerabilityRate != -1) && (($reductionAmount < 0) || ($reductionAmount > $vulnerabilityRate))) {
                     $errors[] = 'Value for reduction amount is not valid';
                 }
             }

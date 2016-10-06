@@ -627,6 +627,11 @@ class InstanceService extends AbstractService
 
             $risks[] = [
                 'id' => $instanceRisk->id,
+                'instance' => $instanceRisk->instance->id,
+                'amv' => $amv->id,
+                'asset' => $amv->asset->id,
+                'threat' => $amv->threat->id,
+                'vulnerability' => $amv->vulnerability->id,
                 'threatDescription1' => $amv->threat->label1,
                 'threatDescription2' => $amv->threat->label2,
                 'threatDescription3' => $amv->threat->label3,
