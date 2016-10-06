@@ -104,8 +104,6 @@ class InstanceRiskService extends AbstractService
     public function update($id,$data){
         $anrId = $data['anr'];
 
-        $this->filterPatchFields($data);
-
         $this->verifyRates($anrId, $data, $this->getEntity($id));
 
         parent::update($id, $data);
