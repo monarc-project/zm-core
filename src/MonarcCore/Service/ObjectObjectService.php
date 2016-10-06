@@ -210,7 +210,7 @@ class ObjectObjectService extends AbstractService
                     if ($childInstance->parent->id == $fatherInstance->id) {
                         $childInstance->parent = null;
                         $childInstance->root = null;
-                        $instanceTable->save($childInstance);
+                        $instanceTable->delete($childInstance->id);
                     }
                 }
             }
