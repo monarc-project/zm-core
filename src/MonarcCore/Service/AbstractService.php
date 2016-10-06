@@ -369,17 +369,23 @@ abstract class AbstractService extends AbstractServiceFactory
      *
      * @param $entity
      * @param $dependencies
+     * @throws \Exception
      */
     protected function setDependencies(&$entity, $dependencies) {
 
         foreach($dependencies as $dependency) {
             $value = $entity->get($dependency);
-            if ((!empty($value)) && (!is_object($value))) {
-                $tableName = preg_replace("/[0-9]/", "", $dependency)  . 'Table';
+            if (!is_null($value)) {
+                $tableName = preg_replace("/[0-9]/", "", $dependency) . 'Table';
                 $method = 'set' . ucfirst($dependency);
                 $dependencyEntity = $this->get($tableName)->getReference($value);
+
+                if (!$dependencyEntity->id) {
+                    throw new \Exception('Entity not exist', 412);
+                }
                 $entity->$method($dependencyEntity);
             }
+
         }
     }
 

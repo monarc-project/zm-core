@@ -39,7 +39,7 @@ class ObjectService extends AbstractService
         'label1', 'label2', 'label3', 'label4',
     ];
 
-    protected $dependencies = ['asset', 'category', 'rolfTag'];
+    protected $dependencies = ['anr', 'asset', 'category', 'rolfTag'];
 
     /**
      * Get List
@@ -295,6 +295,17 @@ class ObjectService extends AbstractService
 
         if(empty($data['rolfTag'])){
             unset($data['rolfTag']);
+        }
+
+        if (isset($data['anr']) && strlen($data['anr'])) {
+            /** @var AnrTable $anrTable */
+            $anrTable = $this->get('anrTable');
+            $anr = $anrTable->getEntity($data['anr']);
+
+            if (!$anr) {
+                throw new \Exception('Risk analysis not exist', 412);
+            }
+            $object->setAnr($anr);
         }
 
         $object->exchangeArray($data);

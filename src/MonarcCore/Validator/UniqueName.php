@@ -32,9 +32,14 @@ class UniqueName extends AbstractValidator
 		if (empty($this->options['entity'])) {
 			return false;
 		} else {
-		    $entity = $this->options['entity'];
-            $method = 'findOneBy' . ucfirst($this->options['field']);
-            $res = $entity->getDbAdapter()->getRepository(get_class($entity))->$method($value);
+
+            $entity = $this->options['entity'];
+            $fields = [
+                $this->options['field'] => $value,
+                'anr' => ($entity->anr) ? $entity->anr->id : null,
+            ];
+            $res = $entity->getDbAdapter()->getRepository(get_class($entity))->findOneBy($fields);
+
 			if(!empty($res) && $entity->getId() != $res->get('id')){
 				$this->error(self::ALREADYUSED);
 				return false;

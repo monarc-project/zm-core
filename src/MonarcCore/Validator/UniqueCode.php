@@ -24,9 +24,6 @@ class UniqueCode extends AbstractValidator
 		if(empty($this->options['entity'])){
 			return false;
 		}else{
-            //$res = $this->options['entity']->getDbAdapter()->getRepository(get_class($this->options['entity']))->findOneByCode($value);
-
-
             $fields = [
                 'code' => $value,
                 'anr' => ($this->options['entity']->anr) ? $this->options['entity']->anr->id : null,

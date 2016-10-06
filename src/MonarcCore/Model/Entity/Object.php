@@ -32,6 +32,16 @@ class Object extends AbstractEntity
     /**
      * @var \MonarcCore\Model\Entity\Anr
      *
+     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Anr", cascade={"persist"})
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true)
+     * })
+     */
+    protected $anr;
+
+    /**
+     * @var \MonarcCore\Model\Entity\Anr
+     *
      * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Anr", inversedBy="anrs", cascade={"persist"})
      * @ORM\JoinTable(name="anrs_objects",
      *  joinColumns={@ORM\JoinColumn(name="object_id", referencedColumnName="id")},
@@ -231,6 +241,24 @@ class Object extends AbstractEntity
     }
 
     /**
+     * @return Anr
+     */
+    public function getAnr()
+    {
+        return $this->anr;
+    }
+
+    /**
+     * @param Anr $anr
+     * @return Asset
+     */
+    public function setAnr($anr)
+    {
+        $this->anr = $anr;
+        return $this;
+    }
+
+    /**
      * @return ObjectCategory
      */
     public function getCategory()
@@ -318,14 +346,6 @@ class Object extends AbstractEntity
     {
         $this->model = $model;
         return $this;
-    }
-
-    /**
-     * @return int
-     */
-    public function getAnr()
-    {
-        return $this->anr;
     }
 
     /**
