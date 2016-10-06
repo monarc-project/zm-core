@@ -260,8 +260,8 @@ class AmvService extends AbstractService
         ];
         $details = [];
         foreach ($fields as $key => $field) {
-            if (($entity[$key])) {
-                $details[] = $key . ' => ' . $entity[$key]->$field;
+            if (!empty($newEntity[$key])) {
+                $details[] = $key . ' => ' . $newEntity[$key]->$field;
             }
         }
 

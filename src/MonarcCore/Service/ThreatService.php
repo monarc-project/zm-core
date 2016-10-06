@@ -20,7 +20,7 @@ class ThreatService extends AbstractService
         'description1', 'description2', 'description3', 'description4',
         'code',
     ];
-    protected $dependencies = ['anr', 'theme', 'models'];
+    protected $dependencies = ['anr', 'theme', 'model'];
     protected $forbiddenFields = ['anr'];
 
     /**
