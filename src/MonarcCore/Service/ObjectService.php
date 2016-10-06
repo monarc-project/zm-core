@@ -640,10 +640,16 @@ class ObjectService extends AbstractService
         //save object
         $id = $table->save($object);
 
+        //retrieve root category
+        /** @var ObjectCategoryTable $objectCategoryTable */
+        $objectCategoryTable = $this->get('categoryTable');
+        $objectCategory = $objectCategoryTable->getEntity($object->category->id);
+        $objectRootCategoryId = ($objectCategory->root) ? $objectCategory->root->id : $objectCategory->id;
+
+        //add root category to anr
         /** @var AnrObjectCategoryTable $anrObjectCategoryTable */
         $anrObjectCategoryTable = $this->get('anrObjectCategoryTable');
-        $anrObjectCategories = $anrObjectCategoryTable->getEntityByFields(['anr' => $anrId, 'category' => $object->category->id]);
-
+        $anrObjectCategories = $anrObjectCategoryTable->getEntityByFields(['anr' => $anrId, 'category' => $objectRootCategoryId]);
         if (!count($anrObjectCategories)) {
             $class = $this->get('anrObjectCategoryEntity');
             $anrObjectCategory = new $class();
@@ -752,47 +758,6 @@ class ObjectService extends AbstractService
      * @return mixed
      */
     public function getCategoriesLibraryByAnr($anrId) {
-
-
-        //retrieve objects
-        $anrObjects = [];
-        /** @var ObjectTable $objectTable */
-        /*$objectTable = $this->get('table');
-        $objects = $objectTable->fetchAll();
-
-
-        $anrObjects = [];
-        $anrObjectsCategories = [];
-        foreach($objects as $object) {
-            if ($object['anrs']) {
-                foreach($object['anrs'] as $anr) {
-                    if ($anr->id == $anrId) {
-                        $anrObjects[] = $object;
-                        $anrObjectsCategories[$object['category']->id] = $object['category'];
-                        break;
-                    }
-                }
-            }
-        }
-
-        $parents = [];
-        foreach($anrObjectsCategories as $category) {
-            $this->getRecursiveParents($category, $parents);
-        }
-
-        $anrObjectsCategories = $anrObjectsCategories + $parents;
-
-        foreach($anrObjectsCategories as $key => $anrObjectsCategory) {
-            $anrObjectsCategories[$key] = $anrObjectsCategory->getJsonArray();
-        }
-
-        foreach($anrObjects as $anrObject) {
-            $anrObjectsCategories[$anrObject['category']->id]['objects'][] = $anrObject;
-        }
-
-        return $anrObjectsCategories;*/
-
-
 
         //retrieve objects
         $anrObjects = [];
