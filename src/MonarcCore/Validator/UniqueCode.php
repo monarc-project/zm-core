@@ -7,7 +7,7 @@ use Zend\Validator\AbstractValidator;
 class UniqueCode extends AbstractValidator
 {
 	protected $options = array(
-        'entity' => null
+        'entity' => null,
 	);
 
 	const ALREADYUSED = "ALREADYUSED";
@@ -24,7 +24,14 @@ class UniqueCode extends AbstractValidator
 		if(empty($this->options['entity'])){
 			return false;
 		}else{
-            $res = $this->options['entity']->getDbAdapter()->getRepository(get_class($this->options['entity']))->findOneByCode($value);
+            //$res = $this->options['entity']->getDbAdapter()->getRepository(get_class($this->options['entity']))->findOneByCode($value);
+
+
+            $fields = [
+                'code' => $value,
+                'anr' => ($this->options['entity']->anr) ? $this->options['entity']->anr->id : null,
+            ];
+            $res = $this->options['entity']->getDbAdapter()->getRepository(get_class($this->options['entity']))->findOneBy($fields);
 			if(!empty($res) && $this->options['entity']->getId() != $res->get('id')){
 				$this->error(self::ALREADYUSED);
 				return false;

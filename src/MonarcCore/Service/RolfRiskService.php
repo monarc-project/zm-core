@@ -75,6 +75,7 @@ class RolfRiskService extends AbstractService
         }
         return $this->get('table')->save($entity);
     }
+
     /**
      * Update
      *

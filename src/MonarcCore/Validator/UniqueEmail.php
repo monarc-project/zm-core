@@ -21,6 +21,7 @@ class UniqueEmail extends AbstractValidator
     }
 
 	public function isValid($value){
+
 		if(empty($this->options['adapter'])){
 			return false;
 		}else{

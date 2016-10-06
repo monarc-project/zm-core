@@ -47,7 +47,7 @@ class DeleteInterviews extends AbstractMigration
             ->addIndex(array('anr_id'))
             ->create();
         $table->changeColumn('id', 'integer',array('identity'=>true,'signed'=>false))->update();
-        
+
         $table = $this->table('interviews');
         $table
             ->addForeignKey('anr_id', 'anrs', 'id', array('delete' => 'CASCADE','update' => 'RESTRICT'))

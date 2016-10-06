@@ -32,6 +32,16 @@ class ThreatService extends AbstractService
     public function create($data) {
 
         $entity = $this->get('entity');
+        if (isset($data['anr']) && strlen($data['anr'])) {
+            /** @var AnrTable $anrTable */
+            $anrTable = $this->get('anrTable');
+            $anr = $anrTable->getEntity($data['anr']);
+
+            if (!$anr) {
+                throw new \Exception('Risk analysis not exist', 412);
+            }
+            $entity->setAnr($anr);
+        }
         $entity->exchangeArray($data);
 
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
