@@ -181,18 +181,31 @@ class InstanceService extends AbstractService
             if (($data['position'] != $instance->position) || ($data['parent'] != $instance->parent)) {
 
                 $parent = (isset($data['parent']) && $data['parent']) ? $data['parent'] : null;
+                $parentId = ($parent) ? $parent['id'] : 'null';
 
                 if ($data['position']) {
-                    $implicitPosition = 3;
                     $previousInstancePosition = ($data['position'] > $instance->position) ? $data['position'] : $data['position'] - 1;
-                    $fields = ['anr' => $anrId, 'position' => $previousInstancePosition, 'parent' => ($parent) ? $parent : 'null'];
-                    $previous = $table->getEntityByFields($fields)[0];
+                    $fields = [
+                        'anr' => $anrId,
+                        'position' => $previousInstancePosition,
+                        'parent' => $parentId
+                    ];
+
+                    $entities = $table->getEntityByFields($fields);
+
+                    if ($entities) {
+                        $implicitPosition = 3;
+                        $previous = $entities[0];
+                    } else {
+                        $implicitPosition = 1;
+                        $previous = null;
+                    }
                 } else {
                     $implicitPosition = 1;
                     $previous = null;
                 }
 
-                $this->managePosition('parent', $instance, $parent, $implicitPosition, $previous, 'update');
+                $this->managePosition('parent', $instance, $parentId, $implicitPosition, $previous, 'update');
             }
         }
 
@@ -263,7 +276,6 @@ class InstanceService extends AbstractService
 
         $instanceParent = ($instance->parent) ? $instance->parent->id : null;
 
-
         if (isset($data['position'])) {
             if (($data['position'] != $instance->position) || ($data['parent'] != $instanceParent)) {
 
@@ -308,7 +320,6 @@ class InstanceService extends AbstractService
                 $instance->setRoot($root);
             }
         }
-
 
         $this->updateImpacts($anrId, $parent, $data);
 

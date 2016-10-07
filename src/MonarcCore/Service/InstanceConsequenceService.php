@@ -146,13 +146,13 @@ class InstanceConsequenceService extends AbstractService
         }
 
 
-
         $anrId = $instanceCurrentConsequence->anr->id;
         $instanceId = $instanceCurrentConsequence->instance->id;
         $data = [
             'c' => max($instanceC),
             'i' => max($instanceI),
-            'd' => max($instanceD)
+            'd' => max($instanceD),
+            'anr' => $anrId
         ];
 
         //if father instance exist, create instance for child
