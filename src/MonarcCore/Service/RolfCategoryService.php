@@ -15,11 +15,12 @@ class RolfCategoryService extends AbstractService
 
     /**
      * Create
-     *
      * @param $data
+     * @param bool $last
+     * @return mixed
      * @throws \Exception
      */
-    public function create($data) {
+    public function create($data, $last = true) {
 
         //$entity = $this->get('entity');
         $class = $this->get('entity');

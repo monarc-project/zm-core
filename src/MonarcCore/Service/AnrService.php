@@ -15,9 +15,10 @@ class AnrService extends AbstractService
      * Create
      *
      * @param $data
-     * @throws \Exception
+     * @param bool $last
+     * @return mixed
      */
-    public function create($data)
+    public function create($data, $last = true)
     {
         //anr
         $entity = $this->get('entity');

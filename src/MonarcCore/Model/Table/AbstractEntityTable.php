@@ -140,7 +140,7 @@ abstract class AbstractEntityTable
         }
     }
 
-    public function save(\MonarcCore\Model\Entity\AbstractEntity $entity)
+    public function save(\MonarcCore\Model\Entity\AbstractEntity $entity, $last = true)
     {
         if(!empty($this->connectedUser) && isset($this->connectedUser['firstname']) && isset($this->connectedUser['lastname'])){
             $id = $entity->get('id');
@@ -153,7 +153,7 @@ abstract class AbstractEntityTable
             }
         }
 
-        $id = $this->getDb()->save($entity);
+        $id = $this->getDb()->save($entity, $last);
 
         return $id;
     }

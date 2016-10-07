@@ -268,12 +268,13 @@ class ObjectService extends AbstractService
     }
 
     /**
-     * Create
-     *
      * @param $data
+     * @param bool $last
+     * @param string $context
+     * @return mixed
      * @throws \Exception
      */
-    public function create($data, $context = Object::BACK_OFFICE) {
+    public function create($data, $last = true, $context = Object::BACK_OFFICE) {
 
         //create object
         $object = $this->get('entity');

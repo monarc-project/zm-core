@@ -44,13 +44,15 @@ class RolfRiskService extends AbstractService
             $filterJoin
         );
     }
+
     /**
      * Create
      *
      * @param $data
-     * @throws \Exception
+     * @param bool $last
+     * @return mixed
      */
-    public function create($data) {
+    public function create($data, $last = true) {
         $entity = $this->get('entity');
         $entity->exchangeArray($data);
         $rolfCategories = $entity->get('categories');

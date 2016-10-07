@@ -45,14 +45,14 @@ class UserService extends AbstractService
     }
 
 
-
     /**
      * Create
      *
      * @param $data
-     * @throws \Exception
+     * @param bool $last
+     * @return mixed
      */
-    public function create($data)
+    public function create($data, $last = true)
     {
         $user = $this->get('entity');
         $data['status'] = 1;

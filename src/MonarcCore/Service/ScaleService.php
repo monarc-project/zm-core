@@ -55,9 +55,10 @@ class ScaleService extends AbstractService
      * Create
      *
      * @param $data
-     * @throws \Exception
+     * @param bool $last
+     * @return mixed
      */
-    public function create($data) {
+    public function create($data, $last = true) {
 
         //scale
         //$entity = $this->get('entity');
