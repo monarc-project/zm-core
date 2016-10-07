@@ -8,6 +8,7 @@ use MonarcCore\Model\Table\AnrObjectCategoryTable;
 use MonarcCore\Model\Table\AnrTable;
 use MonarcCore\Model\Table\AssetTable;
 use MonarcCore\Model\Table\InstanceTable;
+use MonarcCore\Model\Table\ModelTable;
 use MonarcCore\Model\Table\ObjectCategoryTable;
 use MonarcCore\Model\Table\ObjectObjectTable;
 use MonarcCore\Model\Table\ObjectTable;
@@ -30,6 +31,7 @@ class ObjectService extends AbstractService
     protected $assetTable;
     protected $categoryTable;
     protected $instanceTable;
+    protected $modelTable;
     protected $objectObjectTable;
     protected $rolfTagTable;
     protected $amvTable;
@@ -53,7 +55,7 @@ class ObjectService extends AbstractService
      * @param $lock
      * @return array
      */
-    public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $lock = null){
+    public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $anr = null, $lock = null){
 
         $filterAnd = [];
         if ((!is_null($asset)) && ($asset != 0)) $filterAnd['asset'] = $asset;
@@ -66,18 +68,7 @@ class ObjectService extends AbstractService
         }
         $filterAnd['model'] = null;
 
-
-        //retrieve all objects
-        /** @var ObjectTable $objectTable */
-        $objectTable = $this->get('table');
-        $objects = $objectTable->fetchAllFiltered(
-            array_keys($this->get('entity')->getJsonArray()),
-            $page,
-            $limit,
-            $this->parseFrontendOrder($order),
-            $this->parseFrontendFilter($filter, $this->filterColumns),
-            $filterAnd
-        );
+        $objects = $this->getAnrObjects($page, $limit, $order, $filter, $filterAnd, $anr);
 
         $objectsArray = [];
         $rootArray = [];
@@ -105,6 +96,64 @@ class ObjectService extends AbstractService
         }
 
         return $newRoot;
+    }
+
+    /**
+     * Get Anr Objects
+     *
+     * @param $page
+     * @param $limit
+     * @param $order
+     * @param $filter
+     * @param $filterAnd
+     * @param $anr
+     * @return array|bool
+     */
+    public function getAnrObjects($page, $limit, $order, $filter, $filterAnd, $anr) {
+
+        //retrieve all generic objects
+        $filterAnd['mode'] = Object::IS_GENERIC;
+        /** @var ObjectTable $objectTable */
+        $objectTable = $this->get('table');
+        $objects = $objectTable->fetchAllFiltered(
+            array_keys($this->get('entity')->getJsonArray()),
+            $page,
+            $limit,
+            $this->parseFrontendOrder($order),
+            $this->parseFrontendFilter($filter, $this->filterColumns),
+            $filterAnd
+        );
+
+        //retrieve objects specific
+        if ($anr) {
+            /** @var ModelTable $modelTable */
+            $modelTable = $this->get('modelTable');
+            $models = $modelTable->getEntityByFields(['anr' => $anr]);
+
+            /** @var AssetTable $assetTable */
+            $assetTable = $this->get('assetTable');
+            $assets = $assetTable->fetchAll();
+            $assetsIds = [];
+            foreach($models as $model) {
+                foreach($assets as $asset) {
+                    foreach($asset['models'] as $assetModel) {
+                        if($model->id == $assetModel->id) {
+                            $assetsIds[$asset['id']] = $asset['id'];
+                        }
+                    }
+                }
+            }
+
+            $specificsObjects = $objectTable->getByAssets($assetsIds);
+        }
+
+        foreach($specificsObjects as $key => $object) {
+            $specificsObjects[$key] = $object->getJsonArray();
+        }
+
+        $objects = array_merge($objects, $specificsObjects);
+
+        return $objects;
     }
 
     /**
@@ -218,13 +267,17 @@ class ObjectService extends AbstractService
      * @param null $filter
      * @return mixed
      */
-    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null){
+    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $anr = null){
 
         $filterAnd = [];
         if ((!is_null($asset)) && ($asset != 0)) $filterAnd['asset'] = $asset;
         if ((!is_null($category)) && ($category != 0)) $filterAnd['category'] = $category;
 
-        return parent::getFilteredCount($page, $limit, $order, $filter, $filterAnd);
+        $result = $this->getAnrObjects($page, 0, $order, $filter, $filterAnd, $anr);
+
+        return count($result);
+
+        //return parent::getFilteredCount($page, $limit, $order, $filter, $filterAnd);
     }
 
     /**

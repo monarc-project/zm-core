@@ -42,4 +42,21 @@ class ObjectTable extends AbstractEntityTable {
 
         return $objects;
     }
+
+    /**
+     * Get By Assets
+     *
+     * @param $assetsIds
+     * @return array
+     */
+    public function getByAssets($assetsIds) {
+
+        $qb = $this->getRepository()->createQueryBuilder('o');
+
+        return $qb
+            ->select()
+            ->where($qb->expr()->in('o.asset', $assetsIds))
+            ->getQuery()
+            ->getResult();
+    }
 }
