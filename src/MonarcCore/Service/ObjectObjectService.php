@@ -33,6 +33,13 @@ class ObjectObjectService extends AbstractService
             throw new \Exception("You cannot add yourself as a component", 412);
         }
 
+        $recursiveParentsListId = [];
+        $this->getRecursiveParentsListId($data['father'], $recursiveParentsListId);
+
+        if (in_array($data['child'], $recursiveParentsListId)) {
+            throw new \Exception("You cannot create a cyclic dependency", 412);
+        }
+
         /** @var ObjectTable $objectTable */
         $objectTable = $this->objectTable;
 
@@ -172,6 +179,19 @@ class ObjectObjectService extends AbstractService
         }
 
         return $array_parents;
+    }
+
+    public function getRecursiveParentsListId($parentId, &$array){
+
+        /** @var ObjectObjectTable $table */
+        $table = $this->get('table');
+
+        $parents = $table->getEntityByFields(array('child' => $parentId), array('position' => 'ASC'));
+
+        foreach ($parents as $parent) {
+            $array[] = $parent->father->id;
+            $this->getRecursiveParents($parent->father->id, $array);
+        }
     }
 
     public function moveObject($id, $direction) {
