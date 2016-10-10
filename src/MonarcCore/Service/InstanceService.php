@@ -694,11 +694,6 @@ class InstanceService extends AbstractService
         $riskOps = [];
         foreach ($instanceRisksOp as $instanceRiskOp) {
 
-            //retrieve rolf risks
-            /** @var RolfRiskTable $rolfRiskTable */
-            $rolfRiskTable = $this->get('rolfRiskTable');
-            $rolfRisk = $rolfRiskTable->getEntity($instanceRiskOp->rolfRisk->id);
-
             $fields = ['r', 'o', 'l', 'f', 'p'];
 
             $maxNet = -1;
@@ -719,10 +714,10 @@ class InstanceService extends AbstractService
 
             $riskOps[] = [
                 'id' => $instanceRiskOp->id,
-                'description1' => $rolfRisk->label1,
-                'description2' => $rolfRisk->label2,
-                'description3' => $rolfRisk->label3,
-                'description4' => $rolfRisk->label4,
+                'description1' => $instanceRiskOp->riskCacheLabel1,
+                'description2' => $instanceRiskOp->riskCacheLabel2,
+                'description3' => $instanceRiskOp->riskCacheLabel3,
+                'description4' => $instanceRiskOp->riskCacheLabel4,
                 'prob' => $instanceRiskOp->netProb,
                 'kindOfMeasure' => $instanceRiskOp->kindOfMeasure,
                 'r' => $instanceRiskOp->netR,

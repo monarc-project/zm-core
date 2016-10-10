@@ -303,7 +303,7 @@ class ModelService extends AbstractService
                 $hasSpecificsObjects = true;
             }
         }
-        
+
         if (
             ((!$model->isGeneric) && ($data['isRegulator']) && ($hasGenericsObjects))
             ||
