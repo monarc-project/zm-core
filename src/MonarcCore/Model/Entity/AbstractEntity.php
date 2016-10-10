@@ -33,19 +33,19 @@ abstract class AbstractEntity implements InputFilterAwareInterface
     public function getJsonArray($fields = array())
     {
         if (empty($fields)) {
-            return get_object_vars($this);
+            $array = get_object_vars($this);
+            unset($array['inputFilter']);
+            unset($array['language']);
+            unset($array['dbadapter']);
+            unset($array['parameters']);
+            return $array;
         } else {
-            $output = array();
-            foreach ($fields as $field) {
-                $output[$field] = $this->get($field);
-            }
-
-            return $output;
+            return array_intersect_key(get_object_vars($this), array_flip($fields));
         }
     }
 
     public function setDbAdapter($dbadapter){
-        if ($dbadapter == null) {
+        if ($dbadapter == null) {   
             throw new \Exception("Trying to call setDbAdapter with a null adapter");
         }
 
@@ -102,7 +102,8 @@ abstract class AbstractEntity implements InputFilterAwareInterface
 
     public function toArray()
     {
-      return get_object_vars($this);
+        return $this->getJsonArray();
+        //return get_object_vars($this);
     }
 
     public function getInputFilter($partial = false){
