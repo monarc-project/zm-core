@@ -270,7 +270,7 @@ class ModelService extends AbstractService
 
     /**
      * Verify before update
-     * 
+     *
      * @param $model
      * @param $data
      * @throws \Exception
@@ -303,20 +303,18 @@ class ModelService extends AbstractService
                 $hasSpecificsObjects = true;
             }
         }
-
-        if ((!$model->isGeneric) && ($data['isRegulator']) && ($hasGenericsObjects)) {
-            throw new \Exception('You cannot change it to regulated if it has generic objects', 412);
+        
+        if (
+            ((!$model->isGeneric) && ($data['isRegulator']) && ($hasGenericsObjects))
+            ||
+            (($model->isGeneric) && ($data['isRegulator']) && ($hasGenericsObjects))
+            ||
+            ((!$model->isGeneric) && ($data['isGeneric']) && ($hasSpecificsObjects))
+            ||
+            (($model->isRegulator) && ($data['isGeneric']) && ($hasSpecificsObjects))
+        ){
+            throw new \Exception('You can not make this change. The level of integrity between the model and its objects would corrupt', 412);
         }
-        if (($model->isGeneric) && ($data['isRegulator']) && ($hasGenericsObjects)) {
-            throw new \Exception('You cannot change it to regulated if it has generic objects', 412);
-        }
-        if ((!$model->isGeneric) && ($data['isGeneric']) && ($hasSpecificsObjects)) {
-            throw new \Exception('You cannot change it to generic if it has specific objects', 412);
-        }
-        if (($model->isRegulator) && ($data['isGeneric']) && ($hasSpecificsObjects)) {
-            throw new \Exception('You cannot change it to generic if it has specific objects', 412);
-        }
-
     }
 
     /**
