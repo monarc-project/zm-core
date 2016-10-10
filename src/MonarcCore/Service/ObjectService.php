@@ -686,6 +686,15 @@ class ObjectService extends AbstractService
             throw new \Exception('Object not exist', 412);
         }
 
+        //retrieve model
+        /** @var ModelTable $modelTable */
+        $modelTable = $this->get('modelTable');
+        $model = $modelTable->getEntityByFields(['anr' => $anrId])[0];
+
+        if (($model->isGeneric) && ($object->mode == Object::IS_SPECIFIC)) {
+            throw new \Exception('You cannot add a specific object to and generic model');
+        }
+
         //retrieve anr
         /** @var AnrTable $anrTable */
         $anrTable = $this->get('anrTable');
