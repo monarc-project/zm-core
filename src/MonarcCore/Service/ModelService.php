@@ -238,17 +238,83 @@ class ModelService extends AbstractService
      * @throws \Exception
      */
     public function update($id, $data){
-        if (isset($data['isRegulator']) && isset($data['isGeneric']) &&
-            $data['isRegulator'] && $data['isGeneric']) {
-            throw new \Exception("A regulator model may not be generic", 412);
+
+        $model = $this->get('table')->getEntity($id);
+        if (!$model) {
+            throw new \Exception('Entity not exist', 412);
         }
+
+        $this->verifyBeforeUpdate($model, $data);
 
         // If we're the new default model, remove the previous one (if any)
         if ($data['isDefault']) {
             $this->resetCurrentDefault();
         }
 
-        parent::update($id, $data);
+        $this->filterPostFields($data, $model);
+
+        $model->setDbAdapter($this->get('table')->getDb());
+        $model->setLanguage($this->getLanguage());
+
+        if (empty($data)) {
+            throw new \Exception('Data missing', 412);
+        }
+
+        $model->exchangeArray($data);
+
+        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $this->setDependencies($model, $dependencies);
+
+        return $this->get('table')->save($model);
+    }
+
+    /**
+     * Verify before update
+     *
+     * @param $model
+     * @param $data
+     * @throws \Exception
+     */
+    public function verifyBeforeUpdate($model, $data) {
+
+        if (isset($data['isRegulator']) && isset($data['isGeneric']) &&
+            $data['isRegulator'] && $data['isGeneric']) {
+            throw new \Exception("A regulator model may not be generic", 412);
+        }
+
+        //retrieve assets
+        $assetsIds = [];
+        foreach($model->assets as $asset) {
+            $assetsIds[] = $asset->id;
+        }
+
+        //retrieves objects associated to assets
+        /** @var ObjectTable $objectTable */
+        $objectTable = $this->get('objectTable');
+        $objects = $objectTable->getByAssets($assetsIds);
+
+        $hasSpecificsObjects = false;
+        $hasGenericsObjects = false;
+        foreach ($objects as $object) {
+            if ($object->mode == Object::IS_GENERIC) {
+                $hasGenericsObjects = true;
+            }
+            if ($object->mode == Object::IS_SPECIFIC) {
+                $hasSpecificsObjects = true;
+            }
+        }
+
+        if (
+            ((!$model->isGeneric) && ($data['isRegulator']) && ($hasGenericsObjects))
+            ||
+            (($model->isGeneric) && ($data['isRegulator']) && ($hasGenericsObjects))
+            ||
+            ((!$model->isGeneric) && ($data['isGeneric']) && ($hasSpecificsObjects))
+            ||
+            (($model->isRegulator) && ($data['isGeneric']) && ($hasSpecificsObjects))
+        ){
+            throw new \Exception('You can not make this change. The level of integrity between the model and its objects would corrupt', 412);
+        }
     }
 
     /**

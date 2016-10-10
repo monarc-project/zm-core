@@ -12,6 +12,7 @@ class ThreatService extends AbstractService
 {
     protected $anrTable;
     protected $modelTable;
+    protected $modelService;
     protected $themeTable;
     protected $amvService;
 

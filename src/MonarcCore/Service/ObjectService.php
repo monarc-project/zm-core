@@ -145,13 +145,13 @@ class ObjectService extends AbstractService
             }
 
             $specificsObjects = $objectTable->getByAssets($assetsIds);
-        }
 
-        foreach($specificsObjects as $key => $object) {
-            $specificsObjects[$key] = $object->getJsonArray();
-        }
+            foreach($specificsObjects as $key => $object) {
+                $specificsObjects[$key] = $object->getJsonArray();
+            }
 
-        $objects = array_merge($objects, $specificsObjects);
+            $objects = array_merge($objects, $specificsObjects);
+        }
 
         return $objects;
     }
@@ -161,7 +161,8 @@ class ObjectService extends AbstractService
      * @param $id
      * @return mixed
      */
-    public function getCompleteEntity($id) {
+    public function getCompleteEntity($id, $context = Object::FRONT_OFFICE) {
+
         /** @var Object $object */
         $object = $this->get('table')->getEntity($id);
         $object_arr = $object->getJsonArray();
@@ -170,6 +171,11 @@ class ObjectService extends AbstractService
         /** @var ObjectObjectService $objectObjectService */
         $objectObjectService = $this->get('objectObjectService');
         $object_arr['children'] = $objectObjectService->getRecursiveChildren($object_arr['id']);
+
+        // Retrieve parent recursively
+        if ($context == Object::BACK_OFFICE) {
+            $object_arr['parents'] = $objectObjectService->getRecursiveParents($object_arr['id']);
+        }
 
         // Calculate the risks table
         //$object_arr['risks'] = $this->buildRisksTable($object, $mode);
@@ -678,6 +684,15 @@ class ObjectService extends AbstractService
 
         if (!$object) {
             throw new \Exception('Object not exist', 412);
+        }
+
+        //retrieve model
+        /** @var ModelTable $modelTable */
+        $modelTable = $this->get('modelTable');
+        $model = $modelTable->getEntityByFields(['anr' => $anrId])[0];
+
+        if (($model->isGeneric) && ($object->mode == Object::IS_SPECIFIC)) {
+            throw new \Exception('You cannot add a specific object to and generic model');
         }
 
         //retrieve anr
