@@ -169,6 +169,13 @@ class InstanceRiskOp extends AbstractEntity
     /**
      * @var smallint
      *
+     * @ORM\Column(name="brut_p", type="smallint", options={"unsigned":false, "default":-1})
+     */
+    protected $brutP = '-1';
+
+    /**
+     * @var smallint
+     *
      * @ORM\Column(name="cache_brut_risk", type="smallint", options={"unsigned":false, "default":-1})
      */
     protected $cacheBrutRisk = '-1';
