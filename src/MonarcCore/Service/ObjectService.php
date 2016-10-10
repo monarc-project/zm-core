@@ -177,7 +177,6 @@ class ObjectService extends AbstractService
             $object_arr['parents'] = $objectObjectService->getRecursiveParents($object_arr['id']);
         }
 
-
         // Calculate the risks table
         //$object_arr['risks'] = $this->buildRisksTable($object, $mode);
         $object_arr['risks'] = $this->getRisks($object);

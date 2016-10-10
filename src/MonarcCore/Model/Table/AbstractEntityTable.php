@@ -122,6 +122,10 @@ abstract class AbstractEntityTable
             $entity->setDbAdapter($this->getDb());
             $entity->set('id',$id);
             $entity = $this->getDb()->fetch($entity);
+
+            if (!$entity) {
+                throw new \Exception('Entity not exist', 412);
+            }
             return $entity;
         }else{
             return false;
