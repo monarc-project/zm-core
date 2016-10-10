@@ -145,13 +145,13 @@ class ObjectService extends AbstractService
             }
 
             $specificsObjects = $objectTable->getByAssets($assetsIds);
-        }
 
-        foreach($specificsObjects as $key => $object) {
-            $specificsObjects[$key] = $object->getJsonArray();
-        }
+            foreach($specificsObjects as $key => $object) {
+                $specificsObjects[$key] = $object->getJsonArray();
+            }
 
-        $objects = array_merge($objects, $specificsObjects);
+            $objects = array_merge($objects, $specificsObjects);
+        }
 
         return $objects;
     }
