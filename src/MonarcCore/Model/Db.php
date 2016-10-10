@@ -133,6 +133,7 @@ class Db {
 
         return $entity->id;
     }
+
     public function flush()
     {
         $this->entityManager->flush();

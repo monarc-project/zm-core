@@ -3,6 +3,7 @@ namespace MonarcCore\Service;
 
 
 use MonarcCore\Model\Entity\Scale;
+use MonarcCore\Model\Table\AnrTable;
 use MonarcCore\Model\Table\InstanceTable;
 use MonarcCore\Model\Table\ObjectObjectTable;
 
@@ -162,9 +163,10 @@ abstract class AbstractService extends AbstractServiceFactory
      * Create
      *
      * @param $data
-     * @throws \Exception
+     * @param bool $last
+     * @return mixed
      */
-    public function create($data) {
+    public function create($data, $last = true) {
 
         //$entity = $this->get('entity');
         $class = $this->get('entity');
@@ -176,7 +178,8 @@ abstract class AbstractService extends AbstractServiceFactory
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
 
-        return $this->get('table')->save($entity);
+        $table = $this->get('table');
+        return $table->save($entity, $last);
     }
 
     /**
@@ -352,7 +355,7 @@ abstract class AbstractService extends AbstractServiceFactory
         ];
 
         $historicalService = $this->get('historicalService');
-        $historicalService->create($data);
+        $historicalService->create($data, $last = true);
     }
 
     /**

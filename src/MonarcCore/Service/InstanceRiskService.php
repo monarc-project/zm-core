@@ -39,7 +39,12 @@ class InstanceRiskService extends AbstractService
         $amvTable = $this->get('amvTable');
         $amvs = $amvTable->getEntityByFields(['asset' => $object->asset->id]);
 
+        $nbAmvs = count($amvs);
+        $i = 1;
         foreach ($amvs as $amv) {
+
+            $lastAmv = ($nbAmvs == $i) ? true : false;
+
             $data = [
                 'anr' => $anrId,
                 'amv' => $amv->id,
@@ -49,11 +54,15 @@ class InstanceRiskService extends AbstractService
                 'vulnerability' => $amv->vulnerability->id,
             ];
 
-            $instanceRiskId = $this->create($data);
+            $instanceRiskLastId = $this->create($data, $lastAmv);
 
-            $this->updateRisks($instanceRiskId);
+            $i++;
         }
 
+        for($i = $instanceRiskLastId - $nbAmvs + 1; $i <= $instanceRiskLastId; $i++) {
+            $lastRisk = ($i == $instanceRiskLastId) ? true : false;
+            $this->updateRisks($i, $lastRisk);
+        }
     }
 
     /**
@@ -118,10 +127,10 @@ class InstanceRiskService extends AbstractService
      *
      * @param $instanceRiskId
      */
-    public function updateRisks($instanceRiskId) {
+    public function updateRisks($instanceRiskId, $last = true) {
 
         //retrieve instance risk
-        /** @var InstanceTable $instanceTable */
+        /** @var InstanceRiskTable $instanceRiskTable */
         $instanceRiskTable = $this->get('table');
         $instanceRisk = $instanceRiskTable->getEntity($instanceRiskId);
 
@@ -140,6 +149,6 @@ class InstanceRiskService extends AbstractService
         $instanceRisk->cacheMaxRisk = max([$riskC, $riskI, $riskD]);
         $instanceRisk->cacheTargetedRisk = $this->getTargetRisk($instance->c, $instance->i, $instance->d, $instanceRisk->threatRate, $instanceRisk->vulnerabilityRate, $instanceRisk->reductionAmount);
 
-        $instanceRiskTable->save($instanceRisk);
+        $instanceRiskTable->save($instanceRisk, $last);
     }
 }

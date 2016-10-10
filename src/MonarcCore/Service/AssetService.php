@@ -30,9 +30,11 @@ class AssetService extends AbstractService
      * Create
      *
      * @param $data
+     * @param bool $last
+     * @return mixed
      * @throws \Exception
      */
-    public function create($data) {
+    public function create($data, $last = true) {
 
         $entity = $this->get('entity');
         if (isset($data['anr']) && strlen($data['anr'])) {
