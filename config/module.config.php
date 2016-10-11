@@ -24,19 +24,6 @@ return array(
                     'MonarcCore\Model\Entity' => 'Monarc_cli_driver',
                 ),
             ),
-
-
-            'Monarc_cli_fo_driver' => array(
-                'class' => 'Doctrine\ORM\Mapping\Driver\AnnotationDriver',
-                'cache' => 'array',
-                'paths' => array(__DIR__ . '/../src/MonarcCore/Model/Entity'),
-            ),
-            'orm_cli_fo' => array(
-                'class' => 'Doctrine\ORM\Mapping\Driver\DriverChain',
-                'drivers' => array(
-                    'MonarcCore\Model\Entity' => 'Monarc_cli_fo_driver',
-                ),
-            ),
         ),
     ),
     // END DOCTRINE CONF
