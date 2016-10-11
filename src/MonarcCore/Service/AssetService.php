@@ -23,7 +23,7 @@ class AssetService extends AbstractService
         'code',
     ];
 
-    protected $dependencies = ['anr', 'model'];
+    protected $dependencies = ['anr', 'model[s]()'];
     protected $forbiddenFields = ['anr'];
 
     /**

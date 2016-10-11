@@ -136,18 +136,18 @@ class InstanceConsequenceService extends AbstractService
         $instanceC = [];
         $instanceI = [];
         $instanceD = [];
-        $instanceConsequences = $table->getEntityByFields(['instance' => $instanceCurrentConsequence->instance->id]);
+        $instanceConsequences = $table->getEntityByFields(['instance' => $instanceCurrentConsequence->get('instance')->get('id')]);
         foreach ($instanceConsequences as $instanceConsequence) {
             if (in_array($instanceConsequence->scaleImpactType->type, $rolfpTypes)) {
-                $instanceC[] = (int) $instanceConsequence->c;
-                $instanceI[] = (int) $instanceConsequence->i;
-                $instanceD[] = (int) $instanceConsequence->D;
+                $instanceC[] = (int) $instanceConsequence->get('c');
+                $instanceI[] = (int) $instanceConsequence->get('i');
+                $instanceD[] = (int) $instanceConsequence->get('D');
             }
         }
 
 
-        $anrId = $instanceCurrentConsequence->anr->id;
-        $instanceId = $instanceCurrentConsequence->instance->id;
+        $anrId = $instanceCurrentConsequence->get('anr')->get('id');
+        $instanceId = $instanceCurrentConsequence->get('instance')->get('id');
         $data = [
             'c' => max($instanceC),
             'i' => max($instanceI),
