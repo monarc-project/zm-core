@@ -181,7 +181,7 @@ class InstanceService extends AbstractService
             if (($data['position'] != $instance->position) || ($data['parent'] != $instance->parent)) {
 
                 $parent = (isset($data['parent']) && $data['parent']) ? $data['parent'] : null;
-                $parentId = ($parent) ? $parent['id'] : 'null';
+                $parentId = ($parent) ? $parent['id'] : null;
 
                 if ($data['position']) {
                     $previousInstancePosition = ($data['position'] > $instance->position) ? $data['position'] : $data['position'] - 1;
@@ -213,10 +213,10 @@ class InstanceService extends AbstractService
             foreach($data['consequences'] as $consequence) {
                 $dataConsequences = [
                     'anr' => $anrId,
-                    'c' => (int) $consequence['c_risk'],
-                    'i' => (int) $consequence['i_risk'],
-                    'd' => (int) $consequence['d_risk'],
-                    'isHidden' => (int) $consequence['is_hidden'],
+                    'c' => intval($consequence['c_risk']),
+                    'i' => intval($consequence['i_risk']),
+                    'd' => intval($consequence['d_risk']),
+                    'isHidden' => intval($consequence['is_hidden']),
                 ];
 
                 /** @var InstanceConsequenceService $instanceConsequenceService */

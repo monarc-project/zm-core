@@ -266,13 +266,24 @@ abstract class AbstractService extends AbstractServiceFactory
      * @return array
      */
     public function compareEntities($newEntity, $oldEntity){
+        $deps = array();
+        foreach($this->dependencies as $dep){
+            $propertyname = $dep;
+            $matching = [];
+            if(preg_match("/(\[([a-z0-9]*)\])\(([a-z0-9]*)\)$/", $dep, $matching) != false){//si c'est 0 c'est pas bon non plus
+                $propertyname = str_replace($matching[0], $matching[2], $dep);
+                $dep = str_replace($matching[0], $matching[3], $dep);
+            }
+            $deps[$propertyname] = $propertyname;
+        }
+
 
         $exceptions = ['creator', 'created_at', 'updater', 'updated_at', 'inputFilter', 'dbadapter', 'parameters', 'language'];
 
         $diff = [];
         foreach ($newEntity->getArrayCopy() as $key => $value) {
             if (!in_array($key, $exceptions)) {
-                if (in_array($key, $this->dependencies) && is_object($oldEntity->get($key))) {
+                if (isset($deps[$key]) && is_object($oldEntity->get($key))) {
                     if (($oldEntity->get($key)) && (!is_object($value))) {
                         if ($oldEntity->get($key)->get('id') != $value) {
                             $diff[] = $key . ': ' . $oldEntity->get($key)->get('id') . ' => ' . $value;
@@ -360,7 +371,7 @@ abstract class AbstractService extends AbstractServiceFactory
 
     /**
      * Format dependencies
-     * 
+     *
      * @param $entity
      * @param $dependencies
      */
@@ -386,15 +397,36 @@ abstract class AbstractService extends AbstractServiceFactory
     protected function setDependencies(&$entity, $dependencies) {
 
         foreach($dependencies as $dependency) {
-            $value = $entity->get($dependency);
-            if ((!empty($value)) && (!is_object($value))) {
-                $tableName = preg_replace("/[0-9]/", "", $dependency)  . 'Table';
-                $method = 'set' . ucfirst($dependency);
-                $dependencyEntity = $this->get($tableName)->getReference($value);
-                if (!$dependencyEntity) {
-                    throw new \Exception('Entity not exist', 412);
+             // = preg_replace("/[0-9]/", "", $dependency);
+            $deptable = $propertyname = $dependency;
+            $matching = [];
+            if(preg_match("/(\[([a-z0-9]*)\])\(([a-z0-9]*)\)$/", $deptable, $matching) != false){//si c'est 0 c'est pas bon non plus
+                $propertyname = str_replace($matching[0], $matching[2], $deptable);
+                $deptable = str_replace($matching[0], $matching[3], $deptable);
+            }
+
+            $value = $entity->get($propertyname);
+            if (!is_null($value) && !empty($value)) {
+                $tableName =  $deptable . 'Table';
+                $method = 'set' . ucfirst($propertyname);
+                if(! is_array($value)){
+                    $dep = $this->get($tableName)->getReference($value);
+                    if (!$dep->id) {
+                        throw new \Exception('Entity not exist', 412);
+                    }
+                    $entity->$method($dep);
                 }
-                $entity->$method($dependencyEntity);
+                else{
+                    $a_dep = [];
+                    foreach($value as $v){
+                        $dep = $this->get($tableName)->getReference($v);
+                        if (!$dep->id) {
+                            throw new \Exception('Entity not exist', 412);
+                        }
+                        $a_dep[] = $dep;
+                    }
+                    $entity->$method($a_dep);
+                }
             }
         }
     }
@@ -691,7 +723,7 @@ abstract class AbstractService extends AbstractServiceFactory
 
             $prob = (int) $data['threatRate'];
 
-            if (($prob != -1) && (($prob < $scale->min) || ($prob > $scale->max))) {
+            if (($prob != -1) && (($prob < $scale->get('min')) || ($prob > $scale->get('max')))) {
                 $errors[] = 'Value for probability is not valid';
             }
         }
@@ -705,7 +737,7 @@ abstract class AbstractService extends AbstractServiceFactory
 
             $prob = (int) $data['vulnerabilityRate'];
 
-            if (($prob != -1) && (($prob < $scale->min) || ($prob > $scale->max))) {
+            if (($prob != -1) && (($prob < $scale->get('min')) || ($prob > $scale->get('max')))) {
                 $errors[] = 'Value for qualification is not valid';
             }
         }
@@ -735,7 +767,7 @@ abstract class AbstractService extends AbstractServiceFactory
                     $value = (int) $data['c'];
 
                     if ($value != -1) {
-                        if (($value < $scale->min) || ($value > $scale->max)) {
+                        if (($value < $scale->get('min')) || ($value > $scale->get('max'))) {
                             $errors[] = 'Value for ' . $field . ' is not valid';
                         }
                     }
