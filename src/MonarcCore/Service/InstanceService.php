@@ -220,6 +220,7 @@ class InstanceService extends AbstractService
                 ];
 
                 /** @var InstanceConsequenceService $instanceConsequenceService */
+
                 $instanceConsequenceService = $this->get('instanceConsequenceService');
                 $instanceConsequenceService->patch($consequence['id'], $dataConsequences);
             }
@@ -227,12 +228,25 @@ class InstanceService extends AbstractService
 
         $this->updateImpacts($anrId, $instance->parent, $data);
 
+
         $instance->exchangeArray($data);
 
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($instance, $dependencies);
 
-        $instance->parent = ($instance->parent) ? $table->getEntity($instance->parent) : null;
+        if ($instance->parent) {
+            $parentId = (is_object($instance->parent)) ? $instance->parent->id : $instance->parent['id'];
+            $instance->parent = $table->getEntity($parentId);
+        } else {
+            $instance->parent = null;
+        }
+        if ($instance->root) {
+            $rootId = (is_object($instance->root)) ? $instance->root->id : $instance->root['id'];
+            $instance->root = $table->getEntity($rootId);
+        } else {
+            $instance->root = null;
+        }
+
 
         $id = $this->get('table')->save($instance);
 
@@ -273,7 +287,6 @@ class InstanceService extends AbstractService
         if (!$instance) {
             throw new \Exception('Instance not exist', 412);
         }
-
         $instanceParent = ($instance->parent) ? $instance->parent->id : null;
 
         if (isset($data['position'])) {
@@ -341,8 +354,13 @@ class InstanceService extends AbstractService
 
         $this->updateChildrenImpacts($instance);
 
-        $this->updateBrothers($anrId, $instance, $data, $historic);
+        $data['asset'] = $instance->asset->id;
+        $data['object'] = $instance->object->id;
+        $data['name1'] = $instance->name1;
+        $data['label1'] = $instance->label1;
 
+        $this->updateBrothers($anrId, $instance, $data, $historic);
+        
         $this->objectImpacts($instance);
 
         return $id;

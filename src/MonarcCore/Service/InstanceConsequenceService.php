@@ -30,7 +30,7 @@ class InstanceConsequenceService extends AbstractService
      * @param $data
      * @return mixed
      */
-    public function patch($id,$data){
+    public function patch($id, $data){
 
         $anrId = $data['anr'];
 
@@ -144,7 +144,6 @@ class InstanceConsequenceService extends AbstractService
                 $instanceD[] = (int) $instanceConsequence->D;
             }
         }
-
 
         $anrId = $instanceCurrentConsequence->anr->id;
         $instanceId = $instanceCurrentConsequence->instance->id;
