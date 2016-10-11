@@ -55,8 +55,6 @@ class Module
                 return $result;
             }, 100);
         }
-
-
     }
 
     public function getConfig()

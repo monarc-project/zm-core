@@ -30,7 +30,7 @@ class InstanceConsequenceService extends AbstractService
      * @param $data
      * @return mixed
      */
-    public function patch($id,$data){
+    public function patch($id, $data){
 
         $anrId = $data['anr'];
 
@@ -145,9 +145,9 @@ class InstanceConsequenceService extends AbstractService
             }
         }
 
+        $anrId = $instanceCurrentConsequence->anr->id;
+        $instanceId = $instanceCurrentConsequence->instance->id;
 
-        $anrId = $instanceCurrentConsequence->get('anr')->get('id');
-        $instanceId = $instanceCurrentConsequence->get('instance')->get('id');
         $data = [
             'c' => max($instanceC),
             'i' => max($instanceI),

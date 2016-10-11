@@ -406,7 +406,7 @@ abstract class AbstractService extends AbstractServiceFactory
             }
 
             $value = $entity->get($propertyname);
-            if (!is_null($value) && !empty($value)) {
+            if (!is_null($value) && !empty($value) && (!is_object($value))) {
                 $tableName =  $deptable . 'Table';
                 $method = 'set' . ucfirst($propertyname);
                 if(! is_array($value)){
