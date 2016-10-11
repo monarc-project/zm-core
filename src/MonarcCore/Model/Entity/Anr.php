@@ -29,20 +29,6 @@ class Anr extends AbstractEntity
     protected $objects;
 
     /**
-     * @var integer
-     *
-     * @ORM\Column(name="snapshot_id", type="integer", nullable=true)
-     */
-    protected $snapshot;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="snapshot_ref_id", type="integer", nullable=true)
-     */
-    protected $snapshotRef;
-
-    /**
      * @var string
      *
      * @ORM\Column(name="label1", type="string", length=255, nullable=true)
