@@ -31,11 +31,29 @@ class Module
 
             $sharedEventManager = $eventManager->getSharedManager();
 
-            $sharedEventManager->attach('addcomponent', 'createinstance', array($this,'attachcreateinstance'), 100);
+            $sharedEventManager->attach('addcomponent', 'createinstance', function($e) use ($sm){
+                $params = $e->getParams();
+                /** @var InstanceService $instanceService */
+                $instanceService = $sm->get('MonarcCore\Service\InstanceService');
+                $result = $instanceService->instantiateObjectToAnr($params['anrId'], $params['data']);
+                return $result;
+            }, 100);
 
-            $sharedEventManager->attach('instance', 'patch', array($this,'attachinstancepatch'), 100);
+            $sharedEventManager->attach('instance', 'patch', function($e) use ($sm){
+                $params = $e->getParams();
+                /** @var InstanceService $instanceService */
+                $instanceService = $sm->get('MonarcCore\Service\InstanceService');
+                $result = $instanceService->patchInstance($params['anrId'], $params['instanceId'], $params['data']);
+                return $result;
+            }, 100);
 
-            $sharedEventManager->attach('object', 'patch', array($this,'attachobjectpatch'), 100);
+            $sharedEventManager->attach('object', 'patch', function($e) use ($sm){
+                $params = $e->getParams();
+                /** @var ObjectService $objectService */
+                $objectService = $sm->get('MonarcCore\Service\ObjectService');
+                $result = $objectService->patch($params['objectId'], $params['data']);
+                return $result;
+            }, 100);
         }
 
 
@@ -193,32 +211,5 @@ class Module
         }
 
         return $e->getResponse()->setStatusCode(401);
-    }
-
-   public function attachcreateinstance($e){
-        $sm  = $e->getApplication()->getServiceManager();
-        $params = $e->getParams();
-        /** @var InstanceService $instanceService */
-        $instanceService = $sm->get('MonarcCore\Service\InstanceService');
-        $result = $instanceService->instantiateObjectToAnr($params['anrId'], $params['data']);
-        return $result;
-    }
-
-    public function attachinstancepatch ($e){
-        $sm  = $e->getApplication()->getServiceManager();
-        $params = $e->getParams();
-        /** @var InstanceService $instanceService */
-        $instanceService = $sm->get('MonarcCore\Service\InstanceService');
-        $result = $instanceService->patchInstance($params['anrId'], $params['instanceId'], $params['data']);
-        return $result;
-    }
-
-    public function attachobjectpatch ($e){
-        $sm  = $e->getApplication()->getServiceManager();
-        $params = $e->getParams();
-        /** @var ObjectService $objectService */
-        $objectService = $sm->get('MonarcCore\Service\ObjectService');
-        $result = $objectService->patch($params['objectId'], $params['data']);
-        return $result;
     }
 }
