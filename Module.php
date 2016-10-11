@@ -6,6 +6,7 @@ use MonarcCore\Model\Table\ScaleImpactTypeTable;
 use MonarcCore\Service\InstanceService;
 use MonarcCore\Service\ObjectService;
 use Zend\Di\ServiceLocator;
+use Zend\EventManager\Event;
 use Zend\Mvc\MvcEvent;
 use \Zend\Mvc\Controller\ControllerManager;
 use Zend\View\Model\JsonModel;
@@ -31,11 +32,34 @@ class Module
 
             $sharedEventManager = $eventManager->getSharedManager();
 
+            $sharedEventManager->attach('addcomponent', 'createinstance', function($e) use($sm) {
+                $params = $e->getParams();
+                /** @var InstanceService $instanceService */
+                $instanceService = $sm->get('MonarcCore\Service\InstanceService');
+                $result = $instanceService->instantiateObjectToAnr($params['anrId'], $params['data']);
+                return $result;
+            }, 100);
+
+            $sharedEventManager->attach('instance', 'patch', function($e) use($sm) {
+                $params = $e->getParams();
+                /** @var InstanceService $instanceService */
+                $instanceService = $sm->get('MonarcCore\Service\InstanceService');
+                $result = $instanceService->patchInstance($params['anrId'], $params['instanceId'], $params['data']);
+                return $result;
+            }, 100);
+
+            $sharedEventManager->attach('object', 'patch', function($e) use($sm) {
+                $params = $e->getParams();
+                /** @var ObjectService $objectService */
+                $objectService = $sm->get('MonarcCore\Service\ObjectService');
+                $result = $objectService->patch($params['objectId'], $params['data']);
+                return $result;
+            }, 100);
+/*
             $sharedEventManager->attach('addcomponent', 'createinstance', array($this,'attachcreateinstance'), 100);
-
             $sharedEventManager->attach('instance', 'patch', array($this,'attachinstancepatch'), 100);
-
             $sharedEventManager->attach('object', 'patch', array($this,'attachobjectpatch'), 100);
+*/
         }
     }
 
@@ -202,7 +226,7 @@ class Module
         return $result;
     }
 
-    public function attachinstancepatch ($e){
+    public function attachinstancepatch (Event $e){
         $sm  = $e->getApplication()->getServiceManager();
         $params = $e->getParams();
         /** @var InstanceService $instanceService */
