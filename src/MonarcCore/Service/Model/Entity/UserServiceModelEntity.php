@@ -5,6 +5,10 @@ use Zend\ServiceManager\ServiceLocatorInterface;
 
 class UserServiceModelEntity extends AbstractServiceModelEntity
 {
+	protected $ressources = [
+    	'setDbAdapter' => '\MonarcCli\Model\Db',
+    ];
+
 	public function createService(ServiceLocatorInterface $serviceLocator){
 		$instance = parent::createService($serviceLocator);
 		$conf = $serviceLocator->get('Config');
