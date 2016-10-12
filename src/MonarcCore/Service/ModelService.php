@@ -20,6 +20,7 @@ class ModelService extends AbstractService
     protected $anrService;
     protected $anrTable;
     protected $instanceRiskTable;
+    protected $instanceService;
     protected $instanceRiskOpTable;
     protected $objectTable;
     protected $forbiddenFields = ['anr'];
@@ -80,6 +81,7 @@ class ModelService extends AbstractService
      */
     public function getModelWithAnr($id){
 
+
         $model = $this->get('table')->get($id);
 
         $anrId = $model['anr']->id;
@@ -89,30 +91,9 @@ class ModelService extends AbstractService
         unset($anrModel['__cloner__']);
         unset($anrModel['__isInitialized__']);
 
-        /** @var InstanceRiskTable $instanceRiskTable */
-        $instanceRiskTable= $this->get('instanceRiskTable');
-        $anrRisks = $instanceRiskTable->getEntityByFields(['anr' => $anrId]);
-
-        if ($anrRisks) {
-            $risksDepencendies = ['asset', 'threat', 'vulnerability'];
-            foreach ($anrRisks as $anrRisk) {
-                $anrRiskArray = $anrRisk->getJsonArray();
-                foreach($risksDepencendies as $risksDepencendy) {
-                    $dependencyArray = $anrRiskArray[$risksDepencendy]->getJsonArray();
-                    unset($dependencyArray['__initializer__']);
-                    unset($dependencyArray['__cloner__']);
-                    unset($dependencyArray['__isInitialized__']);
-                    $anrRiskArray[$risksDepencendy] = $dependencyArray;
-                }
-                unset($anrRiskArray['id']);
-                unset($anrRiskArray['anr']);
-                unset($anrRiskArray['amv']);
-                unset($anrRiskArray['instance']);
-                $anrModel['risks'][$anrRisk->threat->id] = $anrRiskArray;
-            }
-
-            $anrModel['risks'] = array_values($anrModel['risks']);
-        }
+        /** @var InstanceService $instanceService */
+        $instanceService = $this->get('instanceService');
+        $anrModel['risks'] = $instanceService->getRisks($anrId);
 
         /** @var InstanceRiskOpTable $instanceRiskOpTable */
         $instanceRiskOpTable= $this->get('instanceRiskOpTable');

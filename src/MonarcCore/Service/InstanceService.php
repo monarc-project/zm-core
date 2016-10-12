@@ -631,7 +631,7 @@ class InstanceService extends AbstractService
     public function getEntityByIdAndAnr($id, $anrId){
 
         $instance = $this->get('table')->get($id);
-        $instance['risks'] = $this->getRisks($instance, $anrId);
+        $instance['risks'] = $this->getRisks($anrId, $instance);
         $instance['oprisks'] = $this->getRisksOp($instance, $anrId);
         $instance['consequences'] = $this->getConsequences($instance, $anrId);
 
@@ -645,75 +645,33 @@ class InstanceService extends AbstractService
      * @param $anrId
      * @return array
      */
-    protected function getRisks($instance, $anrId) {
-
-        $instanceId = $instance['id'];
+    public function getRisks($anrId, $instance = null) {
 
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('table');
-        $instance = $instanceTable->getEntity($instanceId);
 
-        if ($instance->object->asset->type == Asset::ASSET_PRIMARY) {
-            //retrieve descendants
-            $instances = $instanceTable->getDescendantsObjects($instanceId);
-            $instances[] = $instance;
+        if ($instance) {
+            $instanceId = $instance['id'];
 
-            //verify and retrieve duplicate global
-            $globalInstancesIds = [];
-            $duplicateGlobalObject = [];
-            foreach($instances as $instance2) {
-                if ($instance2->object->scope == Object::SCOPE_GLOBAL) {
-                    if (in_array($instance2->object->id, $globalInstancesIds)) {
-                        $duplicateGlobalObject[] = $instance2->object->id;
-                    } else {
-                        $globalInstancesIds[] = $instance2->object->id;
-                    }
+            $instance = $instanceTable->getEntity($instanceId);
 
-                }
+            if ($instance->object->asset->type == Asset::ASSET_PRIMARY) {
+                //retrieve descendants
+                $instances = $instanceTable->getDescendantsObjects($instanceId);
+                $instances[] = $instance;
+
+                $instancesRisks = $this->getInstancesRisks($anrId, $instances);
+
+            } else {
+                /** @var InstanceRiskService $instanceRiskService */
+                $instanceRiskService = $this->get('instanceRiskService');
+                $instancesRisks = $instanceRiskService->getInstanceRisks($instanceId, $anrId);
             }
-
-            //retrieve instance associated to duplicate global object
-            $specialInstances = [];
-            foreach($instances as $instance2) {
-                if (in_array($instance2->object->id, $duplicateGlobalObject)) {
-                    $specialInstances[] = $instance2->id;
-                } else {
-                    $instancesIds[] = $instance2->id;
-                }
-            }
-
-            //retrieve risks instances
-            /** @var InstanceRiskService $instanceRiskService */
-            $instanceRiskService = $this->get('instanceRiskService');
-            $instancesRisks = $instanceRiskService->getInstancesRisks($instancesIds, $anrId);
-
-            //retrieve risks special instances
-            /** @var InstanceRiskService $instanceRiskService */
-            $instanceRiskService = $this->get('instanceRiskService');
-            $specialInstancesRisks = $instanceRiskService->getInstancesRisks($specialInstances, $anrId);
-
-            //if there are several times the same risk, keep the highest
-            $specialInstancesUniquesRisks = [];
-            foreach($specialInstancesRisks as $risk) {
-                if (
-                    (isset($specialInstancesUniquesRisks[$risk->amv->id]))
-                    &&
-                    ($risk->cacheMaxRisk > $specialInstancesUniquesRisks[$risk->amv->id]->cacheMaxRisk)
-                ){
-                    $specialInstancesUniquesRisks[$risk->amv->id] = $risk;
-                } else {
-                    $specialInstancesUniquesRisks[$risk->amv->id] = $risk;
-                }
-            }
-
-            $instancesRisks = $instancesRisks + $specialInstancesUniquesRisks;
-
         } else {
-            /** @var InstanceRiskService $instanceRiskService */
-            $instanceRiskService = $this->get('instanceRiskService');
-            $instancesRisks = $instanceRiskService->getInstanceRisks($instanceId, $anrId);
-        }
+            $instances = $instanceTable->getEntityByFields(['anr' => $anrId]);
 
+            $instancesRisks = $this->getInstancesRisks($anrId, $instances);
+        }
 
         $risks = [];
         foreach ($instancesRisks as $instanceRisk) {
@@ -752,13 +710,13 @@ class InstanceService extends AbstractService
                 'vulnerabilityRate' => $instanceRisk->vulnerabilityRate,
                 'kindOfMeasure' => $instanceRisk->kindOfMeasure,
                 'reductionAmount' => $instanceRisk->reductionAmount,
-                'c_impact' => $instance->c,
+                'c_impact' => ($instance) ? $instance->c : null,
                 'c_risk' => $instanceRisk->riskC,
                 'c_risk_enabled' => $amv->threat->c,
-                'i_impact' => $instance->i,
+                'i_impact' => ($instance) ? $instance->i : null,
                 'i_risk' => $instanceRisk->riskI,
                 'i_risk_enabled' => $amv->threat->i,
-                'd_impact' => $instance->d,
+                'd_impact' => ($instance) ? $instance->d : null,
                 'd_risk' => $instanceRisk->riskD,
                 'd_risk_enabled' => $amv->threat->d,
                 't' => ($instanceRisk->kindOfMeasure == InstanceRisk::KIND_NOT_TREATED) ? false : true,
@@ -771,6 +729,61 @@ class InstanceService extends AbstractService
         }
 
         return $risks;
+    }
+
+    protected function getInstancesRisks($anrId, $instances) {
+
+        //verify and retrieve duplicate global
+        $globalInstancesIds = [];
+        $duplicateGlobalObject = [];
+        foreach ($instances as $instance2) {
+            if ($instance2->object->scope == Object::SCOPE_GLOBAL) {
+                if (in_array($instance2->object->id, $globalInstancesIds)) {
+                    $duplicateGlobalObject[] = $instance2->object->id;
+                } else {
+                    $globalInstancesIds[] = $instance2->object->id;
+                }
+
+            }
+        }
+
+        //retrieve instance associated to duplicate global object
+        $specialInstances = [];
+        foreach ($instances as $instance2) {
+            if (in_array($instance2->object->id, $duplicateGlobalObject)) {
+                $specialInstances[] = $instance2->id;
+            } else {
+                $instancesIds[] = $instance2->id;
+            }
+        }
+
+        //retrieve risks instances
+        /** @var InstanceRiskService $instanceRiskService */
+        $instanceRiskService = $this->get('instanceRiskService');
+        $instancesRisks = $instanceRiskService->getInstancesRisks($instancesIds, $anrId);
+
+        //retrieve risks special instances
+        /** @var InstanceRiskService $instanceRiskService */
+        $instanceRiskService = $this->get('instanceRiskService');
+        $specialInstancesRisks = $instanceRiskService->getInstancesRisks($specialInstances, $anrId);
+
+        //if there are several times the same risk, keep the highest
+        $specialInstancesUniquesRisks = [];
+        foreach ($specialInstancesRisks as $risk) {
+            if (
+                (isset($specialInstancesUniquesRisks[$risk->amv->id]))
+                &&
+                ($risk->cacheMaxRisk > $specialInstancesUniquesRisks[$risk->amv->id]->cacheMaxRisk)
+            ) {
+                $specialInstancesUniquesRisks[$risk->amv->id] = $risk;
+            } else {
+                $specialInstancesUniquesRisks[$risk->amv->id] = $risk;
+            }
+        }
+
+        $instancesRisks = $instancesRisks + $specialInstancesUniquesRisks;
+
+        return $instancesRisks;
     }
 
     /**
