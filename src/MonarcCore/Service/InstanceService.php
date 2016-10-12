@@ -81,7 +81,7 @@ class InstanceService extends AbstractService
         $parentId = ($data['parent']) ? ($data['parent']) : null;
 
         $this->updateImpacts($anrId, $parent, $data);
-        
+
         //asset
         if (isset($object->asset)) {
             $data['asset'] = $object->asset->id;
@@ -377,7 +377,7 @@ class InstanceService extends AbstractService
         $data['label1'] = $instance->label1;
 
         $this->updateBrothers($anrId, $instance, $data, $historic);
-        
+
         $this->objectImpacts($instance);
 
         return $id;
@@ -770,7 +770,7 @@ class InstanceService extends AbstractService
         } else {
             $instances = $instanceTable->getEntityByFields(['anr' => $anrId]);
         }
-
+        $instancesIds = [];
         foreach ($instances as $instance2) {
             $instancesIds[] = $instance2->id;
         }
@@ -864,7 +864,7 @@ class InstanceService extends AbstractService
         }
 
         //retrieve instance associated to duplicate global object
-        $specialInstances = [];
+        $specialInstances = $instancesIds = [];
         foreach ($instances as $instance2) {
             if (in_array($instance2->object->id, $duplicateGlobalObject)) {
                 $specialInstances[] = $instance2->id;
