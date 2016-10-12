@@ -1,6 +1,7 @@
 <?php
 namespace MonarcCore\Service;
 use MonarcCore\Model\Entity\Threat;
+use MonarcCore\Model\Table\InstanceRiskTable;
 
 /**
  * Threat Service
@@ -11,6 +12,8 @@ use MonarcCore\Model\Entity\Threat;
 class ThreatService extends AbstractService
 {
     protected $anrTable;
+    protected $instanceRiskService;
+    protected $instanceRiskTable;
     protected $modelTable;
     protected $modelService;
     protected $themeTable;
@@ -76,6 +79,8 @@ class ThreatService extends AbstractService
         $entity->setDbAdapter($this->get('table')->getDb());
         $entity->setLanguage($this->getLanguage());
 
+        $needUpdateRisks = (($entity->c != $data['c']) || ($entity->i != $data['i']) || ($entity->d != $data['d'])) ? true : false;
+
         if (($entity->mode == Threat::IS_SPECIFIC) && ($data['mode'] == Threat::IS_GENERIC)) {
             if (isset($data['models'])) {
                 //delete specific model
@@ -115,13 +120,28 @@ class ThreatService extends AbstractService
                 }
             }
 
-
             if ($follow) {
                 $this->get('amvService')->enforceAMVtoFollow($models, null, null, $entity);
             }
         }
 
-        return $this->get('table')->save($entity);
+        //$id = $this->get('table')->save($entity);
+
+        if ($needUpdateRisks) {
+
+            //retrieve instances risks
+            /** @var InstanceRiskTable $instanceRiskTable */
+            $instanceRiskTable = $this->get('instanceRiskTable');
+            $instancesRisks = $instanceRiskTable->getEntityByFields(['threat' => $id]);
+
+            /** @var InstanceRiskService $instanceRiskService */
+            $instanceRiskService = $this->get('instanceRiskService');
+            foreach($instancesRisks as $instanceRisk) {
+                $instanceRiskService->updateRisks($instanceRisk);
+            }
+        }
+
+        return $id;
     }
 
     /**

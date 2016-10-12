@@ -1,6 +1,7 @@
 <?php
 namespace MonarcCore\Service;
 
+use MonarcCore\Model\Entity\InstanceRisk;
 use MonarcCore\Model\Table\AmvTable;
 use MonarcCore\Model\Table\InstanceRiskTable;
 use MonarcCore\Model\Table\ObjectTable;
@@ -139,14 +140,18 @@ class InstanceRiskService extends AbstractService
     /**
      * Update Risks
      *
-     * @param $instanceRiskId
+     * @param $instanceRisk
+     * @param bool $last
      */
-    public function updateRisks($instanceRiskId, $last = true) {
+    public function updateRisks($instanceRisk, $last = true) {
 
-        //retrieve instance risk
         /** @var InstanceRiskTable $instanceRiskTable */
         $instanceRiskTable = $this->get('table');
-        $instanceRisk = $instanceRiskTable->getEntity($instanceRiskId);
+
+        if (!$instanceRisk instanceof InstanceRisk) {
+            //retrieve instance risk
+            $instanceRisk = $instanceRiskTable->getEntity($instanceRisk);
+        }
 
         //retrieve instance
         /** @var InstanceTable $instanceTable */
@@ -160,7 +165,19 @@ class InstanceRiskService extends AbstractService
         $instanceRisk->riskC = $riskC;
         $instanceRisk->riskI = $riskI;
         $instanceRisk->riskD = $riskD;
-        $instanceRisk->cacheMaxRisk = max([$riskC, $riskI, $riskD]);
+
+        $risks = [];
+        if ($instanceRisk->threat->c) {
+            $risks[] = $riskC;
+        }
+        if ($instanceRisk->threat->i) {
+            $risks[] = $riskI;
+        }
+        if ($instanceRisk->threat->d) {
+            $risks[] = $riskD;
+        }
+
+        $instanceRisk->cacheMaxRisk = (count($risks)) ? max($risks) : -1;
         $instanceRisk->cacheTargetedRisk = $this->getTargetRisk($instance->c, $instance->i, $instance->d, $instanceRisk->threatRate, $instanceRisk->vulnerabilityRate, $instanceRisk->reductionAmount);
 
         $instanceRiskTable->save($instanceRisk, $last);
