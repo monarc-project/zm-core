@@ -277,22 +277,24 @@ abstract class AbstractService extends AbstractServiceFactory
             $deps[$propertyname] = $propertyname;
         }
 
-
         $exceptions = ['creator', 'created_at', 'updater', 'updated_at', 'inputFilter', 'dbadapter', 'parameters', 'language'];
 
         $diff = [];
-        foreach ($newEntity->getArrayCopy() as $key => $value) {
+        foreach ($newEntity->getJsonArray() as $key => $value) {
             if (!in_array($key, $exceptions)) {
-                if (isset($deps[$key]) && is_object($oldEntity->get($key))) {
-                    if (($oldEntity->get($key)) && (!is_object($value))) {
-                        if ($oldEntity->get($key)->get('id') != $value) {
-                            $diff[] = $key . ': ' . $oldEntity->get($key)->get('id') . ' => ' . $value;
-                        }
+                if (isset($deps[$key])) {
+                    $oldValue = $oldEntity->get($key);
+                    if(!empty($oldValue) && is_object($oldValue)){
+                        $oldValue = $oldValue->get('id');
                     }
-                } else {
-                    if (($oldEntity->get($key) != null) && ($oldEntity->get($key) != $value)) {
-                        $diff[] = $key . ': ' . $oldEntity->get($key) . ' => ' . $value;
+                    if(!empty($value) && is_object($value)){
+                        $value = $value->get('id');
                     }
+                    if($oldValue != $value){
+                        $diff[] = $key . ': ' . $oldValue . ' => ' . $value;
+                    }
+                } elseif ($oldEntity->get($key) != $value) {
+                    $diff[] = $key . ': ' . $oldEntity->get($key) . ' => ' . $value;
                 }
             }
         }

@@ -315,8 +315,6 @@ class AmvService extends AbstractService
 
         $entity->exchangeArray($data);
 
-        $newEntity = clone $entity;
-
         $this->setDependencies($entity, $this->dependencies);
 
         $authorized = $this->compliesRequirement($entity);
@@ -326,7 +324,7 @@ class AmvService extends AbstractService
         }
 
         //historisation
-        $this->historizeUpdate('amv', $newEntity, $oldEntity);
+        $this->historizeUpdate('amv', $entity, $oldEntity);
 
         return $this->get('table')->save($entity);
     }
