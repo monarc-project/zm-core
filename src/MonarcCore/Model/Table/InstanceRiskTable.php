@@ -7,6 +7,10 @@ class InstanceRiskTable extends AbstractEntityTable {
 
         $qb = $this->getRepository()->createQueryBuilder('ir');
 
+        if(empty($instancesIds)){
+            $instancesIds[] = 0;
+        }
+
         return $qb
             ->select()
             ->where($qb->expr()->in('ir.instance', $instancesIds))
