@@ -651,13 +651,11 @@ class InstanceService extends AbstractService
         $instanceTable = $this->get('table');
 
         if ($instance) {
-            $instanceId = $instance['id'];
-
-            $instance = $instanceTable->getEntity($instanceId);
+            $instance = $instanceTable->getEntity($instance['id']);
 
             if ($instance->object->asset->type == Asset::ASSET_PRIMARY) {
                 //retrieve descendants
-                $instances = $instanceTable->getDescendantsObjects($instanceId);
+                $instances = $instanceTable->getDescendantsObjects($instance['id']);
                 $instances[] = $instance;
 
                 $instancesRisks = $this->getInstancesRisks($anrId, $instances);
@@ -665,12 +663,25 @@ class InstanceService extends AbstractService
             } else {
                 /** @var InstanceRiskService $instanceRiskService */
                 $instanceRiskService = $this->get('instanceRiskService');
-                $instancesRisks = $instanceRiskService->getInstanceRisks($instanceId, $anrId);
+                $instancesRisks = $instanceRiskService->getInstanceRisks($instance['id'], $anrId);
             }
         } else {
             $instances = $instanceTable->getEntityByFields(['anr' => $anrId]);
 
             $instancesRisks = $this->getInstancesRisks($anrId, $instances);
+        }
+
+        //order by max risk
+        $tmpInstancesRisks = [];
+        $tmpInstancesMaxRisks = [];
+        foreach($instancesRisks as $instancesRisk) {
+            $tmpInstancesRisks[$instancesRisk->id] = $instancesRisk;
+            $tmpInstancesMaxRisks[$instancesRisk->id] = $instancesRisk->cacheMaxRisk;
+        }
+        arsort($tmpInstancesMaxRisks);
+        $instancesRisks = [];
+        foreach($tmpInstancesMaxRisks as $id => $tmpInstancesMaxRisk) {
+            $instancesRisks[] = $tmpInstancesRisks[$id];
         }
 
         $risks = [];
@@ -721,6 +732,7 @@ class InstanceService extends AbstractService
                 'd_risk_enabled' => $amv->threat->d,
                 't' => ($instanceRisk->kindOfMeasure == InstanceRisk::KIND_NOT_TREATED) ? false : true,
                 'target_risk' => $instanceRisk->cacheTargetedRisk,
+                'max_risk' => $instanceRisk->cacheMaxRisk,
                 'comment' => $instanceRisk->comment,
                 'measure1' => $measure1,
                 'measure2' => $measure2,
