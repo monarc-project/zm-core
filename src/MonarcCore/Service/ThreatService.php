@@ -59,6 +59,8 @@ class ThreatService extends AbstractService
             $entity->setTheme($theme);
         }
 
+        $entity->status = 1;
+
         return $this->get('table')->save($entity);
     }
 

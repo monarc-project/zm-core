@@ -108,7 +108,7 @@ class Asset extends AbstractEntity
      *
      * @ORM\Column(name="status", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $status = '1';
+    protected $status = 1;
 
     /**
      * @var smallint
