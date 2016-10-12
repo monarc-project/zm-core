@@ -378,7 +378,6 @@ class ObjectService extends AbstractService
         $object->position = $position;
         unset($data['implicitPosition']);
 
-
         if (isset($data['source'])) {
             $object->source = $this->get('table')->getEntity($data['source']);
         }
@@ -389,6 +388,10 @@ class ObjectService extends AbstractService
         }
         if (isset($data['modelId'])) {
             $this->get('modelService')->canAcceptObject($data['modelId'], $object, $context);
+        }
+
+        if (($object->asset->type == Asset::ASSET_PRIMARY) && ($object->scope == Object::SCOPE_GLOBAL)) {
+            throw new \Exception('You cannot create a object global and primary', 412);
         }
 
         if ($context == Object::BACK_OFFICE) {
