@@ -69,6 +69,8 @@ abstract class AbstractEntity implements InputFilterAwareInterface
 
     public function exchangeArray(array $options, $partial = false)
     {
+        $keys = array_values(array_flip($options));
+        $keys = array_combine($keys,$keys);
         $filter = $this->getInputFilter($partial)
             ->setData($options)
             ->setValidationGroup(InputFilterInterface::VALIDATE_ALL);
@@ -92,7 +94,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
         $options = $filter->getValues();
 
         foreach($options as $k => $v){
-            if ($this->__isset($k)) {
+            if ($this->__isset($k) && isset($keys[$k])) {
                 $this->set($k, $v);
             }
         }
