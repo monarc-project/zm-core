@@ -94,33 +94,7 @@ class ModelService extends AbstractService
         /** @var InstanceService $instanceService */
         $instanceService = $this->get('instanceService');
         $anrModel['risks'] = $instanceService->getRisks($anrId);
-
-        /** @var InstanceRiskOpTable $instanceRiskOpTable */
-        $instanceRiskOpTable= $this->get('instanceRiskOpTable');
-        $anrRisksOp = $instanceRiskOpTable->getEntityByFields(['anr' => $anrId]);
-
-        if ($anrRisksOp) {
-
-            $risksOpDepencendies = ['rolfRisk'];
-            foreach ($anrRisksOp as $anrRiskOp) {
-                $anrRiskOpArray = $anrRiskOp->getJsonArray();
-                foreach($risksOpDepencendies as $risksOpDepencendy) {
-                    $dependencyArray = $anrRiskOpArray[$risksOpDepencendy]->getJsonArray();
-                    unset($dependencyArray['__initializer__']);
-                    unset($dependencyArray['__cloner__']);
-                    unset($dependencyArray['__isInitialized__']);
-                    $anrRiskOpArray[$risksOpDepencendy] = $dependencyArray;
-                }
-                unset($anrRiskOpArray['id']);
-                unset($anrRiskOpArray['anr']);
-                unset($anrRiskOpArray['instance']);
-                unset($anrRiskOpArray['object']);
-                $anrModel['risksop'][$anrRiskOp->rolfRisk->id] = $anrRiskOpArray;
-            }
-
-            $anrModel['risksop'] = array_values($anrModel['risksop']);
-
-        }
+        $anrModel['risksop'] = $instanceService->getRisksOp($anrId);
 
         $model['anr'] = $anrModel;
 

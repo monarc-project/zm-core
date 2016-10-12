@@ -632,8 +632,8 @@ class InstanceService extends AbstractService
 
         $instance = $this->get('table')->get($id);
         $instance['risks'] = $this->getRisks($anrId, $instance);
-        $instance['oprisks'] = $this->getRisksOp($instance, $anrId);
-        $instance['consequences'] = $this->getConsequences($instance, $anrId);
+        $instance['oprisks'] = $this->getRisksOp($anrId, $instance);
+        $instance['consequences'] = $this->getConsequences($anrId, $instance);
 
         return $instance;
     }
@@ -651,11 +651,12 @@ class InstanceService extends AbstractService
         $instanceTable = $this->get('table');
 
         if ($instance) {
-            $instance = $instanceTable->getEntity($instance['id']);
+            $instanceId = $instance['id'];
+            $instance = $instanceTable->getEntity($instanceId);
 
             if ($instance->object->asset->type == Asset::ASSET_PRIMARY) {
                 //retrieve descendants
-                $instances = $instanceTable->getDescendantsObjects($instance['id']);
+                $instances = $instanceTable->getDescendantsObjects($instanceId);
                 $instances[] = $instance;
 
                 $instancesRisks = $this->getInstancesRisks($anrId, $instances);
@@ -663,7 +664,7 @@ class InstanceService extends AbstractService
             } else {
                 /** @var InstanceRiskService $instanceRiskService */
                 $instanceRiskService = $this->get('instanceRiskService');
-                $instancesRisks = $instanceRiskService->getInstanceRisks($instance['id'], $anrId);
+                $instancesRisks = $instanceRiskService->getInstanceRisks($instanceId, $anrId);
             }
         } else {
             $instances = $instanceTable->getEntityByFields(['anr' => $anrId]);
@@ -707,13 +708,17 @@ class InstanceService extends AbstractService
                 'instance' => $instanceRisk->instance->id,
                 'amv' => $amv->id,
                 'asset' => $amv->asset->id,
+                'assetDescription1' => $amv->asset->label1,
+                'assetDescription2' => $amv->asset->label2,
+                'assetDescription3' => $amv->asset->label3,
+                'assetDescription4' => $amv->asset->label4,
                 'threat' => $amv->threat->id,
-                'vulnerability' => $amv->vulnerability->id,
                 'threatDescription1' => $amv->threat->label1,
                 'threatDescription2' => $amv->threat->label2,
                 'threatDescription3' => $amv->threat->label3,
                 'threatDescription4' => $amv->threat->label4,
                 'threatRate' => $instanceRisk->threatRate,
+                'vulnerability' => $amv->vulnerability->id,
                 'vulnDescription1' => $amv->vulnerability->label1,
                 'vulnDescription2' => $amv->vulnerability->label2,
                 'vulnDescription3' => $amv->vulnerability->label3,
@@ -742,6 +747,103 @@ class InstanceService extends AbstractService
 
         return $risks;
     }
+
+    /**
+     * Get Risks Op
+     *
+     * @param $instance
+     * @param $anrId
+     * @return array
+     */
+    public function getRisksOp($anrId, $instance = null) {
+
+        /** @var InstanceTable $instanceTable */
+        $instanceTable = $this->get('table');
+
+        if ($instance) {
+            $instanceId = $instance['id'];
+            $instance = $instanceTable->getEntity($instanceId);
+
+            //retrieve descendants
+            $instances = $instanceTable->getDescendantsObjects($instanceId);
+            $instances[] = $instance;
+        } else {
+            $instances = $instanceTable->getEntityByFields(['anr' => $anrId]);
+        }
+
+        foreach ($instances as $instance2) {
+            $instancesIds[] = $instance2->id;
+        }
+
+        //retrieve risks instances
+        /** @var InstanceRiskService $instanceRiskService */
+        $instanceRiskService = $this->get('instanceRiskService');
+        $instancesRisksOp = $instanceRiskService->getInstancesRisks($instancesIds, $anrId);
+
+        //order by net risk
+        $tmpInstancesRisksOp = [];
+        $tmpInstancesMaxRisksOp = [];
+        foreach($instancesRisksOp as $instancesRiskOp) {
+            $tmpInstancesRisksOp[$instancesRiskOp->id] = $instancesRiskOp;
+            $tmpInstancesMaxRisksOp[$instancesRiskOp->id] = $instancesRiskOp->cacheNetRisk;
+        }
+        arsort($tmpInstancesMaxRisksOp);
+        $instancesRisksOp = [];
+        foreach($tmpInstancesMaxRisksOp as $id => $tmpInstancesMaxRiskOp) {
+            $instancesRisksOp[] = $tmpInstancesRisksOp[$id];
+        }
+
+        $riskOps = [];
+        foreach ($instancesRisksOp as $instanceRiskOp) {
+
+            $fields = ['r', 'o', 'l', 'f', 'p'];
+
+            $maxNet = -1;
+            $maxTarget = -1;
+            foreach ($fields as $field) {
+                $nameNet = 'net' . $field;
+                $nameTarget = 'net' . $field;
+                if ($instanceRiskOp->$nameNet > $maxNet) {
+                    $maxNet = $instanceRiskOp->$nameNet;
+                }
+                if ($instanceRiskOp->$nameTarget > $maxTarget) {
+                    $maxTarget = $instanceRiskOp->$nameTarget;
+                }
+            }
+
+            $risk = (($maxNet != -1) && ($instanceRiskOp->netProb != -1)) ? $instanceRiskOp->netProb * $maxNet : '';
+            $target = (($maxTarget != -1) && ($instanceRiskOp->netProb != -1)) ? $instanceRiskOp->netProb * $maxTarget : '';
+
+            $riskOps[] = [
+                'id' => $instanceRiskOp->id,
+                'description1' => $instanceRiskOp->riskCacheLabel1,
+                'description2' => $instanceRiskOp->riskCacheLabel2,
+                'description3' => $instanceRiskOp->riskCacheLabel3,
+                'description4' => $instanceRiskOp->riskCacheLabel4,
+                'prob' => $instanceRiskOp->netProb,
+                'kindOfMeasure' => $instanceRiskOp->kindOfMeasure,
+                'r' => $instanceRiskOp->netR,
+                'o' => $instanceRiskOp->netO,
+                'l' => $instanceRiskOp->netL,
+                'f' => $instanceRiskOp->netF,
+                'p' => $instanceRiskOp->netP,
+                'brut_prob' => $instanceRiskOp->brutProb,
+                'brut_r' => $instanceRiskOp->brutR,
+                'brut_o' => $instanceRiskOp->brutO,
+                'brut_l' => $instanceRiskOp->brutL,
+                'brut_f' => $instanceRiskOp->brutF,
+                'brut_p' => $instanceRiskOp->brutP,
+                'risk' => $risk,
+                'comment' => $instanceRiskOp->comment,
+                't' => ($instanceRiskOp->kindOfMeasure == InstanceRiskOp::KIND_NOT_TREATED) ? false : true,
+                'target' => $target,
+            ];
+        }
+
+        return $riskOps;
+    }
+
+
 
     protected function getInstancesRisks($anrId, $instances) {
 
@@ -799,78 +901,13 @@ class InstanceService extends AbstractService
     }
 
     /**
-     * Get Risks Op
-     *
-     * @param $instance
-     * @param $anrId
-     * @return array
-     */
-    protected function getRisksOp($instance, $anrId) {
-
-        $instanceId = $instance['id'];
-
-        /** @var InstanceRiskOpServiceService $instanceRiskOpService */
-        $instanceRiskOpService = $this->get('instanceRiskOpService');
-        $instanceRisksOp = $instanceRiskOpService->getInstanceRisksOp($instanceId, $anrId);
-
-        $riskOps = [];
-        foreach ($instanceRisksOp as $instanceRiskOp) {
-
-            $fields = ['r', 'o', 'l', 'f', 'p'];
-
-            $maxNet = -1;
-            $maxTarget = -1;
-            foreach ($fields as $field) {
-                $nameNet = 'net' . $field;
-                $nameTarget = 'net' . $field;
-                if ($instanceRiskOp->$nameNet > $maxNet) {
-                    $maxNet = $instanceRiskOp->$nameNet;
-                }
-                if ($instanceRiskOp->$nameTarget > $maxTarget) {
-                    $maxTarget = $instanceRiskOp->$nameTarget;
-                }
-            }
-
-            $risk = (($maxNet != -1) && ($instanceRiskOp->netProb != -1)) ? $instanceRiskOp->netProb * $maxNet : '';
-            $target = (($maxTarget != -1) && ($instanceRiskOp->netProb != -1)) ? $instanceRiskOp->netProb * $maxTarget : '';
-
-            $riskOps[] = [
-                'id' => $instanceRiskOp->id,
-                'description1' => $instanceRiskOp->riskCacheLabel1,
-                'description2' => $instanceRiskOp->riskCacheLabel2,
-                'description3' => $instanceRiskOp->riskCacheLabel3,
-                'description4' => $instanceRiskOp->riskCacheLabel4,
-                'prob' => $instanceRiskOp->netProb,
-                'kindOfMeasure' => $instanceRiskOp->kindOfMeasure,
-                'r' => $instanceRiskOp->netR,
-                'o' => $instanceRiskOp->netO,
-                'l' => $instanceRiskOp->netL,
-                'f' => $instanceRiskOp->netF,
-                'p' => $instanceRiskOp->netP,
-                'brut_prob' => $instanceRiskOp->brutProb,
-                'brut_r' => $instanceRiskOp->brutR,
-                'brut_o' => $instanceRiskOp->brutO,
-                'brut_l' => $instanceRiskOp->brutL,
-                'brut_f' => $instanceRiskOp->brutF,
-                'brut_p' => $instanceRiskOp->brutP,
-                'risk' => $risk,
-                'comment' => $instanceRiskOp->comment,
-                't' => ($instanceRiskOp->kindOfMeasure == InstanceRiskOp::KIND_NOT_TREATED) ? false : true,
-                'target' => $target,
-            ];
-        }
-
-        return $riskOps;
-    }
-
-    /**
      * Get Consequences
      *
      * @param $instance
      * @param $anrId
      * @return array
      */
-    protected function getConsequences($instance, $anrId) {
+    protected function getConsequences($anrId, $instance) {
 
         $instanceId = $instance['id'];
 
