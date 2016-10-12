@@ -53,7 +53,9 @@ class ScaleImpactTypeService extends AbstractService
         $types = $this->getTypes();
 
         foreach ($scales as $key => $scale) {
-            $scales[$key]['type'] = $types[$scale['type']];
+            if(isset($scale['type'])){
+                $scales[$key]['type'] = $types[$scale['type']];
+            }
         }
 
         return $scales;

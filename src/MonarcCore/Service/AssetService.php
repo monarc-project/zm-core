@@ -52,6 +52,8 @@ class AssetService extends AbstractService
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
 
+        $entity->status = 1;
+
         return $this->get('table')->save($entity);
     }
 
