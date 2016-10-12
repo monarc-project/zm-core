@@ -545,7 +545,9 @@ class AmvService extends AbstractService
                     $entity = $this->get('assetTable')->getEntity($assetId);
                     $entity->setDbAdapter($this->get('assetTable')->getDb());
                     $entity->setLanguage($this->getLanguage());
-                    $entity->get('models')->initialize();
+                    if ($entity->get('models')) {
+                        $entity->get('models')->initialize();
+                    }
 
                     $amvAssets[] = $entity;
                 }
@@ -645,7 +647,9 @@ class AmvService extends AbstractService
             $entity = $this->get($tableName)->getEntity($entitiesId);
             $entity->setDbAdapter($this->get($tableName)->getDb());
             $entity->setLanguage($this->getLanguage());
-            $entity->get('models')->initialize();
+            if ($entity->get('models')) {
+                $entity->get('models')->initialize();
+            }
 
             if ($entity->mode == AbstractEntity::IS_SPECIFIC) { //petite sécurité pour pas construire de la daube
 

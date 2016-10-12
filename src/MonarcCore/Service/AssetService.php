@@ -87,7 +87,9 @@ class AssetService extends AbstractService
         unset($data['follow']);
 
         $entity->exchangeArray($data);
-        $entity->get('models')->initialize();
+        if ($entity->get('models')) {
+            $entity->get('models')->initialize();
+        }
 
         /** @var AmvService $amvService */
         $amvService  = $this->get('amvService');

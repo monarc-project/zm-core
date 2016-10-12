@@ -91,7 +91,9 @@ class ThreatService extends AbstractService
         unset($data['follow']);
 
         $entity->exchangeArray($data);
-        $entity->get('models')->initialize();
+        if ($entity->get('models')) {
+            $entity->get('models')->initialize();
+        }
 
         if (!$this->get('amvService')->checkAMVIntegrityLevel($models, null, $entity, null, $follow)) {
             throw new \Exception('Integrity AMV links violation', 412);

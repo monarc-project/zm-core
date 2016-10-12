@@ -6,7 +6,7 @@ class InstanceRiskOpTable extends AbstractEntityTable {
     public function getInstancesRisksOp($anrId, $instancesIds) {
 
         $qb = $this->getRepository()->createQueryBuilder('iro');
-        
+
         if(empty($instancesIds)){
             $instancesIds[] = 0;
         }
