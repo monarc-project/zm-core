@@ -80,6 +80,20 @@ class InstanceRiskService extends AbstractService
     }
 
     /**
+     * Get Instances Risks
+     *
+     * @param $instancesIds
+     * @param $anrId
+     * @return array
+     */
+    public function getInstancesRisks($instancesIds, $anrId) {
+
+        /** @var InstanceRiskTable $table */
+        $table = $this->get('table');
+        return $table->getInstancesRisks($anrId, $instancesIds);
+    }
+
+    /**
      * Patch
      *
      * @param $id

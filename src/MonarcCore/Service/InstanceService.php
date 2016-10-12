@@ -1,6 +1,7 @@
 <?php
 namespace MonarcCore\Service;
 use DoctrineTest\InstantiatorTestAsset\ExceptionAsset;
+use MonarcCore\Model\Entity\Asset;
 use MonarcCore\Model\Entity\Instance;
 use MonarcCore\Model\Entity\InstanceRisk;
 use MonarcCore\Model\Entity\InstanceRiskOp;
@@ -143,6 +144,22 @@ class InstanceService extends AbstractService
         $this->createChildren($anrId, $id, $object);
 
         return $id;
+    }
+
+    protected function getRecursiveChild(&$childList, $id) {
+        $childs = $this->getRepository()->createQueryBuilder('t')
+            ->select(array('t.id'))
+            ->where('t.parent = :parent')
+            ->setParameter(':parent', $id)
+            ->getQuery()
+            ->getResult();
+
+        if (count($childs)) {
+            foreach ($childs as $child) {
+                $childList[] = $child['id'];
+                $this->getRecursiveChild($childList, $child['id']);
+            }
+        }
     }
 
 
@@ -632,12 +649,74 @@ class InstanceService extends AbstractService
 
         $instanceId = $instance['id'];
 
-        /** @var InstanceRiskService $instanceRiskService */
-        $instanceRiskService = $this->get('instanceRiskService');
-        $instanceRisks = $instanceRiskService->getInstanceRisks($instanceId, $anrId);
+        /** @var InstanceTable $instanceTable */
+        $instanceTable = $this->get('table');
+        $instance = $instanceTable->getEntity($instanceId);
+
+        if ($instance->object->asset->type == Asset::ASSET_PRIMARY) {
+            //retrieve descendants
+            $instances = $instanceTable->getDescendantsObjects($instanceId);
+            $instances[] = $instance;
+
+            //verify and retrieve duplicate global
+            $globalInstancesIds = [];
+            $duplicateGlobalObject = [];
+            foreach($instances as $instance2) {
+                if ($instance2->object->scope == Object::SCOPE_GLOBAL) {
+                    if (in_array($instance2->object->id, $globalInstancesIds)) {
+                        $duplicateGlobalObject[] = $instance2->object->id;
+                    } else {
+                        $globalInstancesIds[] = $instance2->object->id;
+                    }
+
+                }
+            }
+
+            //retrieve instance associated to duplicate global object
+            $specialInstances = [];
+            foreach($instances as $instance2) {
+                if (in_array($instance2->object->id, $duplicateGlobalObject)) {
+                    $specialInstances[] = $instance2->id;
+                } else {
+                    $instancesIds[] = $instance2->id;
+                }
+            }
+
+            //retrieve risks instances
+            /** @var InstanceRiskService $instanceRiskService */
+            $instanceRiskService = $this->get('instanceRiskService');
+            $instancesRisks = $instanceRiskService->getInstancesRisks($instancesIds, $anrId);
+
+            //retrieve risks special instances
+            /** @var InstanceRiskService $instanceRiskService */
+            $instanceRiskService = $this->get('instanceRiskService');
+            $specialInstancesRisks = $instanceRiskService->getInstancesRisks($specialInstances, $anrId);
+
+            //if there are several times the same risk, keep the highest
+            $specialInstancesUniquesRisks = [];
+            foreach($specialInstancesRisks as $risk) {
+                if (
+                    (isset($specialInstancesUniquesRisks[$risk->amv->id]))
+                    &&
+                    ($risk->cacheMaxRisk > $specialInstancesUniquesRisks[$risk->amv->id]->cacheMaxRisk)
+                ){
+                    $specialInstancesUniquesRisks[$risk->amv->id] = $risk;
+                } else {
+                    $specialInstancesUniquesRisks[$risk->amv->id] = $risk;
+                }
+            }
+
+            $instancesRisks = $instancesRisks + $specialInstancesUniquesRisks;
+
+        } else {
+            /** @var InstanceRiskService $instanceRiskService */
+            $instanceRiskService = $this->get('instanceRiskService');
+            $instancesRisks = $instanceRiskService->getInstanceRisks($instanceId, $anrId);
+        }
+
 
         $risks = [];
-        foreach ($instanceRisks as $instanceRisk) {
+        foreach ($instancesRisks as $instanceRisk) {
             /** @var AmvTable $amvTable */
             $amvTable = $this->get('amvTable');
             $amv = $amvTable->getEntity($instanceRisk->amv->id);
@@ -673,13 +752,13 @@ class InstanceService extends AbstractService
                 'vulnerabilityRate' => $instanceRisk->vulnerabilityRate,
                 'kindOfMeasure' => $instanceRisk->kindOfMeasure,
                 'reductionAmount' => $instanceRisk->reductionAmount,
-                'c_impact' => $instance['c'],
+                'c_impact' => $instance->c,
                 'c_risk' => $instanceRisk->riskC,
                 'c_risk_enabled' => $amv->threat->c,
-                'i_impact' => $instance['i'],
+                'i_impact' => $instance->i,
                 'i_risk' => $instanceRisk->riskI,
                 'i_risk_enabled' => $amv->threat->i,
-                'd_impact' => $instance['d'],
+                'd_impact' => $instance->d,
                 'd_risk' => $instanceRisk->riskD,
                 'd_risk_enabled' => $amv->threat->d,
                 't' => ($instanceRisk->kindOfMeasure == InstanceRisk::KIND_NOT_TREATED) ? false : true,

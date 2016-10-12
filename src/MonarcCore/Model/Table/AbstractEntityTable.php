@@ -259,4 +259,68 @@ abstract class AbstractEntityTable
     public function getReference($id){
         return $this->getDb()->getReference($this->getClass(),$id);
     }
+
+
+
+    /**
+     * Get Descendants
+     * @param $id
+     * @return array
+     */
+    public function getDescendants($id) {
+
+        $childList = [];
+
+        $this->getRecursiveChild($childList, $id);
+
+        return $childList;
+    }
+
+    /**
+     * Get Recursive Child
+     *
+     * @param $childList
+     * @param $id
+     */
+    protected function getRecursiveChild(&$childList, $id) {
+        $children = $this->getRepository()->createQueryBuilder('t')
+            ->select(array('t.id'))
+            ->where('t.parent = :parent')
+            ->setParameter(':parent', $id)
+            ->getQuery()
+            ->getResult();
+
+        if (count($children)) {
+            foreach ($children as $child) {
+                $childList[] = $child['id'];
+                $this->getRecursiveChild($childList, $child['id']);
+            }
+        }
+    }
+
+
+    public function getDescendantsObjects($id) {
+
+        $childList = [];
+
+        $this->getRecursiveChildObjects($childList, $id);
+
+        return $childList;
+    }
+
+    protected function getRecursiveChildObjects(&$childList, $id) {
+
+        $children = $this->getRepository()->createQueryBuilder('t')
+            ->select()
+            ->where('t.parent = :parent')
+            ->setParameter(':parent', $id)
+            ->getQuery()
+            ->getResult();
+
+        foreach ($children as $child) {
+            $childList[] = $child;
+            $this->getRecursiveChildObjects($childList, $child->id);
+        }
+
+    }
 }
