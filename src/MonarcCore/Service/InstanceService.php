@@ -847,6 +847,8 @@ class InstanceService extends AbstractService
 
     protected function getInstancesRisks($anrId, $instances) {
 
+        $instancesIds = [];
+
         //verify and retrieve duplicate global
         $globalInstancesIds = [];
         $duplicateGlobalObject = [];
