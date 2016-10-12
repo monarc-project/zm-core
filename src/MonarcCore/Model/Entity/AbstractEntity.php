@@ -45,7 +45,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
     }
 
     public function setDbAdapter($dbadapter){
-        if ($dbadapter == null) {   
+        if ($dbadapter == null) {
             throw new \Exception("Trying to call setDbAdapter with a null adapter");
         }
 
@@ -69,7 +69,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
 
     public function exchangeArray(array $options, $partial = false)
     {
-        $keys = array_values(array_flip($options));
+        $keys = array_keys($options);
         $keys = array_combine($keys,$keys);
         $filter = $this->getInputFilter($partial)
             ->setData($options)
