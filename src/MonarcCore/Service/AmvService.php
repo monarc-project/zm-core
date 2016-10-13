@@ -475,6 +475,9 @@ class AmvService extends AbstractService
             $this->errorMessage = 'Asset mode can\'t be null';
             return false;
         } else  if ($assetMode && $threatMode && $vulnerabilityMode) {
+            if(empty($assetModelsIds) && empty($threatModelsIds) && empty($vulnerabilityModelsIds)){
+                return true;
+            }
             foreach ($assetModelsIds as $modelId) {
                 if ((in_array($modelId, $threatModelsIds)) && (in_array($modelId, $vulnerabilityModelsIds))) {
                     return true;
