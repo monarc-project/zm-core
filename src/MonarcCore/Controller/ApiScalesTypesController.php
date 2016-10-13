@@ -2,6 +2,7 @@
 
 namespace MonarcCore\Controller;
 
+use MonarcCore\Service\ScaleImpactTypeService;
 use Zend\View\Model\JsonModel;
 
 class ApiScalesTypesController extends AbstractController
@@ -20,7 +21,9 @@ class ApiScalesTypesController extends AbstractController
         $filter = $this->params()->fromQuery('filter');
         $anrId = (int) $this->params()->fromRoute('anrId');
 
-        $types = $this->getService()->getList(0, 0, $order, $filter, ['anr' => $anrId]);
+        /** @var ScaleImpactTypeService $service */
+        $service = $this->getService();
+        $types = $service->getList(0, 0, $order, $filter, ['anr' => $anrId]);
 
         return new JsonModel(array(
             'count' => count($types),

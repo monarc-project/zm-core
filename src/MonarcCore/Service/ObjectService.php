@@ -112,7 +112,9 @@ class ObjectService extends AbstractService
     public function getAnrObjects($page, $limit, $order, $filter, $filterAnd, $anr) {
 
         //retrieve all generic objects
-        $filterAnd['mode'] = Object::IS_GENERIC;
+        if ($anr) {
+            $filterAnd['mode'] = Object::IS_GENERIC;
+        }
         /** @var ObjectTable $objectTable */
         $objectTable = $this->get('table');
         $objects = $objectTable->fetchAllFiltered(
