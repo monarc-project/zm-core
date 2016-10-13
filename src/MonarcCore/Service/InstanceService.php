@@ -658,10 +658,8 @@ class InstanceService extends AbstractService
             ->getQuery()->getResult();
         $anr = $instance['anr']->getJsonArray();
 
-        $i = 0;
         foreach($result as $r){
-            $i++;
-            $asc = $this->get('table')->getAscendance($r,$i);
+            $asc = $this->get('table')->getAscendance($r);
             $names = array(
                 'name1' => $anr['label1'],//." > ".$r->get('name1'),
                 'name2' => $anr['label2'],//." > ".$r->get('name2'),
