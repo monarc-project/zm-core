@@ -658,7 +658,7 @@ class InstanceService extends AbstractService
             ->getQuery()->getResult();
         $anr = $instance['anr']->getJsonArray();
 
-$i = 0;
+        $i = 0;
         foreach($result as $r){
             $i++;
             $asc = $this->get('table')->getAscendance($r,$i);
@@ -818,9 +818,9 @@ $i = 0;
         }
 
         //retrieve risks instances
-        /** @var InstanceRiskService $instanceRiskService */
-        $instanceRiskService = $this->get('instanceRiskService');
-        $instancesRisksOp = $instanceRiskService->getInstancesRisks($instancesIds, $anrId);
+        /** @var InstanceRiskOpService $instanceRiskServiceOp */
+        $instanceRiskOpService = $this->get('instanceRiskOpService');
+        $instancesRisksOp = $instanceRiskOpService->getInstancesRisksOp($instancesIds, $anrId);
 
         //order by net risk
         $tmpInstancesRisksOp = [];
