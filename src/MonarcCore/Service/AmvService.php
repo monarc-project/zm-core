@@ -398,7 +398,13 @@ class AmvService extends AbstractService
     public function compliesRequirement($amv, $asset = null, $assetModels = null, $threat = null, $threatModels = null, $vulnerability = null, $vulnerabilityModels = null) {
 
         //asset
-        $assetMode = (is_null($asset)) ? $amv->getAsset()->mode : $asset->mode;
+        $asset = (is_null($asset)) ? $amv->getAsset() : $asset;
+        if($asset->get('type') == 1){
+            throw new \Exception('Asset can\'t be primary', 412);
+        }
+
+
+        $assetMode = $asset->mode;
         $assetModels = (is_null($assetModels)) ? $amv->getAsset()->getModels() : $assetModels;
         $assetModelsIds = [];
         $assetModelsIsRegulator = [];
