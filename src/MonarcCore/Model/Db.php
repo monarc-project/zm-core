@@ -127,6 +127,7 @@ class Db {
     public function save($entity, $last = true)
     {
         $this->entityManager->persist($entity);
+
         if ($last) {
             $this->entityManager->flush();
         }

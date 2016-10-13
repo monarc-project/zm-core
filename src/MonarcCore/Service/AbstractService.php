@@ -178,7 +178,9 @@ abstract class AbstractService extends AbstractServiceFactory
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
 
+        /** @var AnrTable $table */
         $table = $this->get('table');
+
         return $table->save($entity, $last);
     }
 

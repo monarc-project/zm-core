@@ -1020,7 +1020,12 @@ class InstanceService extends AbstractService
         /** @var InstanceConsequenceTable $instanceConsequenceTable */
         $instanceConsequenceTable = $this->get('instanceConsequenceTable');
 
+        $nbConsequences = count($scalesImpactTypes);
+        $i = 1;
         foreach($scalesImpactTypes as $scalesImpactType) {
+
+            $lastConsequence = ($nbConsequences == $i) ? true : false;
+
             $data = [
                 'anr' => $this->get('anrTable')->getEntity($anrId),
                 'instance' => $this->get('instanceTable')->getEntity($instanceId),
@@ -1028,13 +1033,14 @@ class InstanceService extends AbstractService
                 'scaleImpactType' => $scalesImpactType,
             ];
 
-
             $class = $this->get('instanceConsequenceEntity');
             $instanceConsequenceEntity = new $class();
 
             $instanceConsequenceEntity->exchangeArray($data);
 
-            $instanceConsequenceTable->save($instanceConsequenceEntity);
+            $instanceConsequenceTable->save($instanceConsequenceEntity,  $lastConsequence);
+
+            $i++;
         }
     }
 }
