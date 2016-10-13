@@ -112,7 +112,9 @@ class ObjectService extends AbstractService
     public function getAnrObjects($page, $limit, $order, $filter, $filterAnd, $anr) {
 
         //retrieve all generic objects
-        $filterAnd['mode'] = Object::IS_GENERIC;
+        if ($anr) {
+            $filterAnd['mode'] = Object::MODE_GENERIC;
+        }
         /** @var ObjectTable $objectTable */
         $objectTable = $this->get('table');
         $objects = $objectTable->fetchAllFiltered(
@@ -383,7 +385,7 @@ class ObjectService extends AbstractService
         }
 
         //security
-        if ($object->mode == Object::IS_GENERIC && $object->asset->mode == Object::IS_SPECIFIC) {
+        if ($object->mode == Object::MODE_GENERIC && $object->asset->mode == Object::MODE_SPECIFIC) {
             throw new \Exception("You can't have a generic object based on a specific asset", 412);
         }
         if (isset($data['modelId'])) {
@@ -456,7 +458,7 @@ class ObjectService extends AbstractService
             - que l'on a pas de fils SPECIFIC quand on passe de SPECIFIC à GENERIC
             */
             if(!$this->checkModeIntegrity($object->get('id'), $object->get('mode'))){
-                if($object->get('mode')==Object::IS_GENERIC){
+                if($object->get('mode')==Object::MODE_GENERIC){
                     throw new \Exception('You cannot set this object to specific mode because one of its parents is in generic mode.', 412);
                 }else{
                     throw new \Exception('You cannot set this object to generic mode because one of its children is in specific mode.', 412);
@@ -576,11 +578,11 @@ class ObjectService extends AbstractService
     protected function checkModeIntegrity($id, $mode){
         $objectObjectService = $this->get('objectObjectService');
         switch ($mode) {
-            case Object::IS_GENERIC:
+            case Object::MODE_GENERIC:
                 $objects = $objectObjectService->getRecursiveParents($id);
                 $field = 'parents';
                 break;
-            case Object::IS_SPECIFIC:
+            case Object::MODE_SPECIFIC:
                 $objects = $objectObjectService->getRecursiveChildren($id);
                 $field = 'children';
                 break;
@@ -694,7 +696,7 @@ class ObjectService extends AbstractService
         $modelTable = $this->get('modelTable');
         $model = $modelTable->getEntityByFields(['anr' => $anrId])[0];
 
-        if (($model->isGeneric) && ($object->mode == Object::IS_SPECIFIC)) {
+        if (($model->isGeneric) && ($object->mode == Object::MODE_SPECIFIC)) {
             throw new \Exception('You cannot add a specific object to and generic model');
         }
 

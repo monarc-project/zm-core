@@ -47,7 +47,7 @@ class ObjectObjectService extends AbstractService
         $father = $objectTable->getEntity($data['father']);
         $child = $objectTable->getEntity($data['child']);
 
-        if ($father->mode == ObjectObject::IS_GENERIC && $child->mode == ObjectObject::IS_SPECIFIC) {
+        if ($father->mode == ObjectObject::MODE_GENERIC && $child->mode == ObjectObject::MODE_SPECIFIC) {
             throw new \Exception("You cannot add a specific object to a generic parent", 412);
         }
 
