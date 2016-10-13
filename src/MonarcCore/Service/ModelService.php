@@ -126,23 +126,23 @@ class ModelService extends AbstractService
         $authorized = false;
 
         if ($model->isGeneric) {
-            if ($object->mode == Model::IS_GENERIC) {
+            if ($object->mode == Model::MODE_GENERIC) {
                 $authorized = true;
             }
         } else {
             if ($model->isRegulator) { //model is specific and regulated
-                if ($asset->mode == Model::IS_SPECIFIC) {
+                if ($asset->mode == Model::MODE_SPECIFIC) {
                     if (count($asset->models)) {
                         $authorized = true;
                     }
                 }
             } else { //can receive generic or specifi to himself
-                if ($asset->mode == Model::IS_SPECIFIC) {
+                if ($asset->mode == Model::MODE_SPECIFIC) {
                     if (count($asset->models)) {
                         $authorized = true;
                     }
                 } else {
-                    if ($object->mode == Model::IS_SPECIFIC) { //aïe, l'objet est spécifique, il faut qu'on sache s'il l'est pour moi
+                    if ($object->mode == Model::MODE_SPECIFIC) { //aïe, l'objet est spécifique, il faut qu'on sache s'il l'est pour moi
                         //la difficulté c'est que selon le type de l'objet (bdc / anr) on va devoir piocher l'info de manière un peu différente
                         $objectType = 'bdc';
                         foreach($object->anrs as $anr) {
@@ -251,10 +251,10 @@ class ModelService extends AbstractService
         $hasSpecificsObjects = false;
         $hasGenericsObjects = false;
         foreach ($objects as $object) {
-            if ($object->mode == Object::IS_GENERIC) {
+            if ($object->mode == Object::MODE_GENERIC) {
                 $hasGenericsObjects = true;
             }
-            if ($object->mode == Object::IS_SPECIFIC) {
+            if ($object->mode == Object::MODE_SPECIFIC) {
                 $hasSpecificsObjects = true;
             }
         }

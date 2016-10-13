@@ -74,7 +74,7 @@ class AssetService extends AbstractService
         $entity->setDbAdapter($this->get('table')->getDb());
         $entity->setLanguage($this->getLanguage());
 
-        if (($entity->mode == Asset::IS_SPECIFIC) && ($data['mode'] == Asset::IS_GENERIC)) {
+        if (($entity->mode == Asset::MODE_SPECIFIC) && ($data['mode'] == Asset::MODE_GENERIC)) {
             if (isset($data['models'])) {
                 //delete specific model
                 /** @var ModelService $modelService */
@@ -99,7 +99,7 @@ class AssetService extends AbstractService
             throw new \Exception('Integrity AMV links violation', 412);
         }
 
-        if ($entity->mode == Asset::IS_SPECIFIC) {
+        if ($entity->mode == Asset::MODE_SPECIFIC) {
             $associateObjects = $this->get('objectService')->getGenericByAsset($entity);
             if (count($associateObjects)) {
                 throw new \Exception('Integrity AMV links violation', 412);

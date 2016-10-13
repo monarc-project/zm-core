@@ -651,7 +651,7 @@ class AmvService extends AbstractService
                 $entity->get('models')->initialize();
             }
 
-            if ($entity->mode == AbstractEntity::IS_SPECIFIC) { //petite sécurité pour pas construire de la daube
+            if ($entity->mode == AbstractEntity::MODE_SPECIFIC) { //petite sécurité pour pas construire de la daube
 
                 foreach($entity->get('models') as $model){
                     $entity->get('models')->removeElement($model);
