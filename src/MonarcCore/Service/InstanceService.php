@@ -816,9 +816,9 @@ class InstanceService extends AbstractService
         }
 
         //retrieve risks instances
-        /** @var InstanceRiskService $instanceRiskService */
-        $instanceRiskService = $this->get('instanceRiskService');
-        $instancesRisksOp = $instanceRiskService->getInstancesRisks($instancesIds, $anrId);
+        /** @var InstanceRiskOpService $instanceRiskServiceOp */
+        $instanceRiskOpService = $this->get('instanceRiskOpService');
+        $instancesRisksOp = $instanceRiskOpService->getInstancesRisksOp($instancesIds, $anrId);
 
         //order by net risk
         $tmpInstancesRisksOp = [];
