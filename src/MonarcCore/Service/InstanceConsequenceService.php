@@ -163,4 +163,20 @@ class InstanceConsequenceService extends AbstractService
         $eventManager->setSharedManager($sharedEventManager);
         $eventManager->trigger('patch', null, compact(['anrId', 'instanceId', 'data']));
     }
+
+    /**
+     * Patch by Scale Impact Type
+     *
+     * @param $scaleImpactTypeId
+     * @param $data
+     */
+    public function patchByScaleImpactType($scaleImpactTypeId, $data) {
+        /** @var InstanceConsequenceTable $instanceConsequenceTable */
+        $instanceConsequenceTable = $this->get('table');
+        $instancesConsequences = $instanceConsequenceTable->getEntityByFields(['scaleImpactType' => $scaleImpactTypeId]);
+
+        foreach($instancesConsequences as $instanceConsequence) {
+            $this->patch($instanceConsequence->id, $data);
+        }
+    }
 }

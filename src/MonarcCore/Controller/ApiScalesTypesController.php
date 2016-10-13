@@ -30,5 +30,26 @@ class ApiScalesTypesController extends AbstractController
             $this->name => $types
         ));
     }
+
+
+    /**
+     * Patch
+     *
+     * @param mixed $id
+     * @param mixed $data
+     * @return JsonModel
+     */
+    public function patch($id, $data)
+    {
+        $anrId = (int) $this->params()->fromRoute('anrId');
+
+        $data['anr'] = $anrId;
+
+        /** @var ScaleImpactTypeService $service */
+        $service = $this->getService();
+        $service->patch($id, $data);
+
+        return new JsonModel(array('status' => 'ok'));
+    }
 }
 

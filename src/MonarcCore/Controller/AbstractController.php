@@ -131,7 +131,6 @@ abstract class AbstractController extends AbstractRestfulController
         return new JsonModel(array('status' => 'ok'));
     }
 
-
     /**
      * Patch
      *
