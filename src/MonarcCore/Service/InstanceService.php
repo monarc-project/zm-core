@@ -632,12 +632,52 @@ class InstanceService extends AbstractService
      */
     public function getEntityByIdAndAnr($id, $anrId){
 
-        $instance = $this->get('table')->get($id);
+        $instance = $this->get('table')->get($id); // pourquoi on n'a pas de contrôle sur $instance['anr']->id == $anrId ?
         $instance['risks'] = $this->getRisks($anrId, $instance);
         $instance['oprisks'] = $this->getRisksOp($anrId, $instance);
         $instance['consequences'] = $this->getConsequences($anrId, $instance);
+        $instance['assets'] = $this->getAssets($instance);
 
         return $instance;
+    }
+
+    /**
+     * Get Similar Assets to ANR
+     *
+     * @param $instance
+     * @return array
+     */
+    public function getAssets($instance){
+        $instances = array();
+        $result = $this->get('table')->getRepository()
+            ->createQueryBuilder('t')
+            ->where("t.anr = ?1")
+            ->andWhere("t.object = ?2")
+            ->setParameter(1,$instance['anr']->id)
+            ->setParameter(2,$instance['object']->id)
+            ->getQuery()->getResult();
+        $anr = $instance['anr']->getJsonArray();
+
+$i = 0;
+        foreach($result as $r){
+            $i++;
+            $asc = $this->get('table')->getAscendance($r,$i);
+            $names = array(
+                'name1' => $anr['label1'],//." > ".$r->get('name1'),
+                'name2' => $anr['label2'],//." > ".$r->get('name2'),
+                'name3' => $anr['label3'],//." > ".$r->get('name3'),
+                'name4' => $anr['label4'],//." > ".$r->get('name4'),
+            );
+            foreach($asc as $a){
+                $names['name1'] .= ' > '.$a['name1'];
+                $names['name2'] .= ' > '.$a['name2'];
+                $names['name3'] .= ' > '.$a['name3'];
+                $names['name4'] .= ' > '.$a['name4'];
+            }
+            $names['id'] = $r->get('id');
+            $instances[] = $names;
+        }
+        return $instances;
     }
 
     /**
