@@ -353,6 +353,8 @@ class InstanceService extends AbstractService
 
         $this->updateImpacts($anrId, $parent, $data);
 
+        $this->updateLevels($parent, $instance->object->id, $instance);
+
         $instance->setLanguage($this->getLanguage());
         $instance->exchangeArray($data, true);
 
@@ -464,15 +466,15 @@ class InstanceService extends AbstractService
      * Update level
      *
      * @param $parent
-     * @param $object
+     * @param $objectId
      * @param $instance
      */
-    protected function updateLevels($parent, $object, &$instance) {
+    protected function updateLevels($parent, $objectId, &$instance) {
 
         //retrieve children
         /** @var ObjectObjectService $objectObjectService */
         $objectObjectService = $this->get('objectObjectService');
-        $children = $objectObjectService->getChildren($object);
+        $children = $objectObjectService->getChildren($objectId);
 
         if (!$parent) {
             $instance->setLevel(Instance::LEVEL_ROOT);
