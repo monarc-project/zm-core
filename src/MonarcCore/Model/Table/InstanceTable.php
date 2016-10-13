@@ -61,7 +61,7 @@ class InstanceTable extends AbstractEntityTable {
             ->getResult();
     }
 
-    public function getAscendance($instance,$i){
+    public function getAscendance($instance){
         $root = $instance->get('root');
         $idRoot = null;
         $arbo = array();
