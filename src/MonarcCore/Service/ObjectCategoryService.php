@@ -15,6 +15,50 @@ class ObjectCategoryService extends AbstractService
     protected $filterColumns = ['label1', 'label2', 'label3', 'label4'];
 
     /**
+     * Get Entity
+     *
+     * @param $id
+     * @return array
+     */
+    public function getEntity($id){
+        $entity = $this->get('table')->get($id);
+
+        $entity['previous'] = null;
+        if($entity['position'] == 1){
+            $entity['implicitPosition'] = 1;
+        }else{
+            $pos = $this->get('table')->getRepository()->createQueryBuilder('t')->select('count(t.id)');
+            if(empty($entity['parent'])){
+                $pos = $pos->where('t.parent IS NULL');
+            }else{
+                $pos = $pos->where('t.parent = :parent')
+                    ->setParameter(':parent', $entity['parent']->id);
+            }
+                
+            $pos = $pos->getQuery()->getSingleScalarResult();
+            if($entity['position'] >= $pos){
+                $entity['implicitPosition'] = 2;
+            }else{
+                $entity['implicitPosition'] = 3;
+                // Autre chose ?te
+                $prev = $this->get('table')->getRepository()->createQueryBuilder('t')->select('t.id');
+                if(empty($entity['parent'])){
+                    $prev = $prev->where('t.parent IS NULL');
+                }else{
+                    $prev = $prev->where('t.parent = :parent')
+                        ->setParameter(':parent', $entity['parent']->id);
+                }
+                $prev = $prev->andWhere('t.position = :pos')
+                    ->setParameter(':pos',$entity['position']-1)
+                    ->getQuery()->getSingleScalarResult();
+                $entity['previous'] = $prev;
+            }
+        }
+
+        return $entity;
+    }
+
+    /**
      * Get List Specific
      *
      * @param int $page
