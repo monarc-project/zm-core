@@ -60,4 +60,40 @@ class InstanceTable extends AbstractEntityTable {
             ->getQuery()
             ->getResult();
     }
+
+    public function getAscendance($instance,$i){
+        $root = $instance->get('root');
+        $idRoot = null;
+        $arbo = array();
+        if(!empty($root)){
+            $idRoot = $root->get('id');
+        }
+        if(!empty($idRoot)){
+            $idAnr = $instance->get('anr')->get('id');
+            $result = $this->getRepository()->createQueryBuilder('i')
+                ->where('i.anr = :anrId')
+                ->andWhere('i.root = :rootid')
+                ->setParameter(':anrId', empty($idAnr)?null:$idAnr)
+                ->setParameter(':rootid', $idRoot)
+                ->getQuery()
+                ->getResult();
+            $family = array();
+            foreach($result as $r){
+                $family[$r->get('id')][$r->get('root')->get('id')] = $r->get('root')->getJsonArray();
+            }
+            $temp = array();
+            $temp[] = $instance->getJsonArray();
+            while(count($temp)){
+                $cur = array_shift($temp);
+                if(isset($family[$cur['id']])){
+                    foreach($family[$cur['id']] as $id => $parent){
+                        $arbo[$id] = $parent;
+                        $temp[] = $parent;
+                    }
+                }
+            }
+        }
+        $arbo[] = $instance->getJsonArray();
+        return $arbo;
+    }
 }
