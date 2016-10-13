@@ -87,13 +87,13 @@ class InstanceService extends AbstractService
             $data['asset'] = $object->asset->id;
         }
 
-        //create object
+        //create instance
         $class = $this->get('entity');
         $instance = new $class();
         $instance->setLanguage($this->getLanguage());
         $instance->exchangeArray($data);
 
-        //entity dependencies
+        //instance dependencies
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($instance, $dependencies);
 
