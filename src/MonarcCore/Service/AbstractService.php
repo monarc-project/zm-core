@@ -19,6 +19,8 @@ abstract class AbstractService extends AbstractServiceFactory
     protected $forbiddenFields = [];
     protected $dependencies = [];
 
+    protected $monarcConf = array();
+
     /**
      * @return null
      */
@@ -58,6 +60,24 @@ abstract class AbstractService extends AbstractServiceFactory
     public function setLanguage($language)
     {
         $this->language = $language;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getMonarcConf()
+    {
+        return $this->monarcConf;
+    }
+
+    /**
+     * @param mixed $language
+     * @return mixed
+     */
+    public function setMonarcConf($conf)
+    {
+        $this->monarcConf = $conf;
+        return $this->monarcConf;
     }
 
     /**
@@ -779,6 +799,36 @@ abstract class AbstractService extends AbstractServiceFactory
 
         if (count($errors)) {
             throw new \Exception(implode(', ', $errors), 412);
+        }
+    }
+
+    protected function encrypt($data, $key) {
+        return mcrypt_encrypt(MCRYPT_RIJNDAEL_256, $key, $data, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND));
+    }
+
+    protected function decrypt($data, $key) {
+        return mcrypt_decrypt(MCRYPT_RIJNDAEL_256, $key, $data, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND));
+    }
+
+    /**
+     * Return Git version
+     *
+     * @param $type (major|full)
+     * @return version
+     */
+    protected function getVersion($type = 'major'){
+        switch(strtolower($type)){
+            default:
+            case 'major':
+                if(!empty($this->monarcConf['version'])){
+                    return implode('.',array_slice(explode('.', $this->monarcConf['version']),0,2));
+                }else{
+                    return null;
+                }
+                break;
+            case 'full':
+                return isset($this->monarcConf['version'])?$this->monarcConf['version']:null;
+                break;
         }
     }
 }

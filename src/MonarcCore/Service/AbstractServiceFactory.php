@@ -27,6 +27,8 @@ abstract class AbstractServiceFactory implements FactoryInterface
             }
 
             $instance->setLanguage($this->getDefaultLanguage($serviceLocator));
+            $conf = $serviceLocator->get('Config');
+            $instance->setMonarcConf(isset($conf['monarc'])?$conf['monarc']:array());
 
             return $instance;
         }else{
