@@ -1,5 +1,6 @@
 <?php
 namespace MonarcCore\Service;
+use MonarcCore\Model\Entity\Object;
 use MonarcCore\Model\Entity\ObjectObject;
 use MonarcCore\Model\Table\AnrTable;
 use MonarcCore\Model\Table\InstanceTable;
@@ -27,10 +28,21 @@ class ObjectObjectService extends AbstractService
      * @return mixed
      * @throws \Exception
      */
-    public function create($data, $last = true) {
+    public function create($data, $last = true, $context = Object::BACK_OFFICE) {
 
         if ($data['father'] == $data['child']) {
             throw new \Exception("You cannot add yourself as a component", 412);
+        }
+
+        /** @var ObjectObjectTable $objectObjectTable */
+        $objectObjectTable = $this->get('table');
+
+        //verify child not already existing
+        if ($context == Object::BACK_OFFICE) {
+            $objectsObjects = $objectObjectTable->getEntityByFields(['anr' => 'null', 'father' => $data['father'], 'child' => $data['child']]);
+            if (count($objectsObjects)) {
+                throw new \Exception('This component already exist for this object', 412);
+            }
         }
 
         $recursiveParentsListId = [];
@@ -41,7 +53,7 @@ class ObjectObjectService extends AbstractService
         }
 
         /** @var ObjectTable $objectTable */
-        $objectTable = $this->objectTable;
+        $objectTable = $this->get('objectTable');
 
         // Ensure that we're not trying to add a specific item if the father is generic
         $father = $objectTable->getEntity($data['father']);
@@ -76,7 +88,7 @@ class ObjectObjectService extends AbstractService
             $entity->setPosition((int) $data['position']);
         }
 
-        $id = $this->get('table')->save($entity);
+        $id = $objectObjectTable->save($entity);
 
         //link to anr
         $parentAnrs = [];
@@ -129,7 +141,7 @@ class ObjectObjectService extends AbstractService
 
             if ($previousInstance) {
                 $data['previous'] = $previousInstance;
-            } 
+            }
 
             //if father instance exist, create instance for child
             $eventManager = new EventManager();
