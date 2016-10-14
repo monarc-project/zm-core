@@ -117,7 +117,7 @@ class ApiAnrInstancesController extends AbstractController
 
         /** @var InstanceService $service */
         $service = $this->getService();
-        $id = $service->instantiateObjectToAnr($anrId, $data);
+        $id = $service->instantiateObjectToAnr($anrId, $data, true, false);
 
         return new JsonModel(
             array(

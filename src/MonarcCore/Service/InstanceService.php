@@ -51,7 +51,7 @@ class InstanceService extends AbstractService
      * @return mixed|null
      * @throws \Exception
      */
-    public function instantiateObjectToAnr($anrId, $data, $managePosition = true) {
+    public function instantiateObjectToAnr($anrId, $data, $managePosition = true, $root = false) {
 
         //retrieve object properties
         $object = $this->get('objectTable')->getEntity($data['object']);
@@ -104,7 +104,7 @@ class InstanceService extends AbstractService
         $instance->setRoot($root);
 
         //level
-        $this->updateLevels($parent, $data['object'], $instance);
+        $this->updateInstanceLevels($root, $data['object'], $instance);
 
         //manage position
         if ($managePosition) {
@@ -353,8 +353,6 @@ class InstanceService extends AbstractService
 
         $this->updateImpacts($anrId, $parent, $data);
 
-        $this->updateLevels($parent, $instance->object->id, $instance);
-
         $instance->setLanguage($this->getLanguage());
         $instance->exchangeArray($data, true);
 
@@ -465,23 +463,25 @@ class InstanceService extends AbstractService
     /**
      * Update level
      *
-     * @param $parent
+     * @param $root
      * @param $objectId
      * @param $instance
      */
-    protected function updateLevels($parent, $objectId, &$instance) {
+    protected function updateInstanceLevels($root, $objectId, &$instance) {
 
-        //retrieve children
-        /** @var ObjectObjectService $objectObjectService */
-        $objectObjectService = $this->get('objectObjectService');
-        $children = $objectObjectService->getChildren($objectId);
-
-        if (!$parent) {
+        if ($root) {
             $instance->setLevel(Instance::LEVEL_ROOT);
-        } else if (!count($children)) {
-            $instance->setLevel(Instance::LEVEL_LEAF);
         } else {
-            $instance->setLevel(Instance::LEVEL_INTER);
+            //retrieve children
+            /** @var ObjectObjectService $objectObjectService */
+            $objectObjectService = $this->get('objectObjectService');
+            $children = $objectObjectService->getChildren($objectId);
+
+            if (!count($children)) {
+                $instance->setLevel(Instance::LEVEL_LEAF);
+            } else {
+                $instance->setLevel(Instance::LEVEL_INTER);
+            }
         }
     }
 
