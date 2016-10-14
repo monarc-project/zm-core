@@ -933,7 +933,10 @@ class ObjectService extends AbstractService
         return $currentObjectCategory;
     }
 
-    public function export($data) {
+    public function export(&$data) {
+        if (empty($data['id'])) {
+            throw new \Exception('Asset to export is required',412);
+        }
         if (empty($data['password'])) {
             throw new \Exception('You must type in a password', 412);
         }
@@ -944,15 +947,30 @@ class ObjectService extends AbstractService
             throw new \Exception('Entity `id` not found.');
         }
 
+        $objectObj = array(
+            'id' => 'id',
+            'name1' => 'name1',
+            'name2' => 'name2',
+            'name3' => 'name3',
+            'name4' => 'name4',
+            'label1' => 'label1',
+            'label2' => 'label2',
+            'label3' => 'label3',
+            'label4' => 'label4',
+            'status' => 'status',
+            'mode' => 'mode',
+            'type' => 'type',
+            'code' => 'code',
+        );
+        $return = array(
+            'type' => 'object',
+            'asset' => $entity->getJsonArray($objectObj),
+            'version' => $this->getVersion(),
+        );
+
+        // 'version' => $this->getVersion(),
+
         $output = json_encode($entity);
-        return $this->encrypt($output);
-    }
-
-    protected function encrypt($data) {
-        return mcrypt_encrypt(MCRYPT_RIJNDAEL_256, Object::SALT, $data, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND));
-    }
-
-    protected function decrypt($data) {
-        return mcrypt_decrypt(MCRYPT_RIJNDAEL_256, Object::SALT, $data, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND));
+        return $this->encrypt($output,$data['password']);
     }
 }
