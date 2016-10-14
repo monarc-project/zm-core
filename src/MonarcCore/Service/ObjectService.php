@@ -754,7 +754,7 @@ class ObjectService extends AbstractService
      */
     public function detachObjectToAnr($objectId, $anrId) {
 
-        //retrieve object
+        //verify object exist
         /** @var ObjectTable $table */
         $table = $this->get('table');
         $object = $table->getEntity($objectId);
@@ -762,15 +762,7 @@ class ObjectService extends AbstractService
             throw new \Exception('Object not exist', 412);
         }
 
-        //verify object is not a composant
-        /** @var ObjectObjectTable $objectObjectTable */
-        $objectObjectTable = $this->get('objectObjectTable');
-        $liaisons = $objectObjectTable->getEntityByFields(['anr' => $anrId, 'child' => $objectId]);
-        if (count($liaisons)) {
-            throw new \Exception("You can't detach this object because an other use it. Clean dependencies before detach it.", 412);
-        }
-
-        //retrieve anr
+        //verify anr exist
         /** @var AnrTable $anrTable */
         $anrTable = $this->get('anrTable');
         $anr = $anrTable->getEntity($anrId);
@@ -778,13 +770,19 @@ class ObjectService extends AbstractService
             throw new \Exception('Risk analysis not exist', 412);
         }
 
+        //verify object is not a component
+        /** @var ObjectObjectTable $objectObjectTable */
+        $objectObjectTable = $this->get('objectObjectTable');
+        $liaisons = $objectObjectTable->getEntityByFields(['anr' => $anrId, 'child' => $objectId]);
+        if (count($liaisons)) {
+            throw new \Exception("You can't detach this object because an other use it. Clean dependencies before detach it.", 412);
+        }
+
         //retrieve number anr objects with the same root category than current objet
         $nbObjectsSameRootCategory = 0;
         $objectRootCategory = ($object->category->root) ? $object->category->root : $object->category;
         foreach($anr->objects as $anrObject) {
-
             $anrObjectRootCategory = ($anrObject->category->root) ? $anrObject->category->root : $anrObject->category;
-
             if (($anrObjectRootCategory->id == $objectRootCategory->id) && ($anrObject->id != $object->id)) {
                 $nbObjectsSameRootCategory++;
             }
@@ -796,17 +794,16 @@ class ObjectService extends AbstractService
             /** @var AnrObjectCategoryTable $anrObjectCategoryTable */
             $anrObjectCategoryTable = $this->get('anrObjectCategoryTable');
             $anrObjectCategories = $anrObjectCategoryTable->getEntityByFields(['anr' => $anrId, 'category' => $objectRootCategory->id]);
-
             foreach( $anrObjectCategories as $anrObjectCategory) {
                 $this->managePosition('anr', $anrObjectCategory, $anrId, null, null, 'delete', $anrObjectCategoryTable);
                 $anrObjectCategoryTable->delete($anrObjectCategory->id);
             }
         }
 
-        //delete instance
+        //delete instance from anr
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('instanceTable');
-        $instances = $instanceTable->getEntityByFields(['object' => $objectId]);
+        $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $objectId]);
         foreach($instances as $instance) {
             $instanceTable->delete($instance->id);
         }

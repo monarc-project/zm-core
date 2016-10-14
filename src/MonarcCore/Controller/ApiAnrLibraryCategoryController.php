@@ -2,6 +2,7 @@
 
 namespace MonarcCore\Controller;
 
+use MonarcCore\Service\ObjectCategoryService;
 use MonarcCore\Service\ObjectService;
 use Zend\View\Model\JsonModel;
 
@@ -42,7 +43,9 @@ class ApiAnrLibraryCategoryController extends AbstractController
 
         $data['anr'] = $anrId;
 
-        $this->getService()->patchLibraryCategory($id, $data);
+        /** @var ObjectCategoryService $service */
+        $service = $this->getService();
+        $service->patchLibraryCategory($id, $data);
 
         return new JsonModel(array('status' => 'ok'));
     }

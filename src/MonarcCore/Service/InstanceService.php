@@ -51,7 +51,7 @@ class InstanceService extends AbstractService
      * @return mixed|null
      * @throws \Exception
      */
-    public function instantiateObjectToAnr($anrId, $data, $managePosition = true, $root = false) {
+    public function instantiateObjectToAnr($anrId, $data, $managePosition = true, $rootLevel = false) {
 
         //retrieve object properties
         $object = $this->get('objectTable')->getEntity($data['object']);
@@ -104,7 +104,7 @@ class InstanceService extends AbstractService
         $instance->setRoot($root);
 
         //level
-        $this->updateInstanceLevels($root, $data['object'], $instance);
+        $this->updateInstanceLevels($rootLevel, $data['object'], $instance);
 
         //manage position
         if ($managePosition) {
@@ -467,7 +467,7 @@ class InstanceService extends AbstractService
      * @param $objectId
      * @param $instance
      */
-    protected function updateInstanceLevels($root, $objectId, &$instance) {
+    protected function updateInstanceLevels($rootLevel, $objectId, &$instance) {
 
         if ($root) {
             $instance->setLevel(Instance::LEVEL_ROOT);
