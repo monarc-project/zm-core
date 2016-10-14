@@ -95,6 +95,7 @@ class ObjectObjectService extends AbstractService
                 $child->addAnr($anrTable->getEntity($anrId));
             }
         }
+
         $objectTable->save($child);
 
         //create instance
