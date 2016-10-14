@@ -752,7 +752,7 @@ class ObjectService extends AbstractService
      * @param $anrId
      * @throws \Exception
      */
-    public function detachObjectToAnr($objectId, $anrId) {
+    public function detachObjectToAnr($objectId, $anrId, $context = Object::BACK_OFFICE) {
 
         //verify object exist
         /** @var ObjectTable $table */
@@ -770,12 +770,31 @@ class ObjectService extends AbstractService
             throw new \Exception('Risk analysis not exist', 412);
         }
 
-        //verify object is not a component
+        //if object is not a component, delete link and instances children for anr
         /** @var ObjectObjectTable $objectObjectTable */
         $objectObjectTable = $this->get('objectObjectTable');
-        $liaisons = $objectObjectTable->getEntityByFields(['anr' => $anrId, 'child' => $objectId]);
-        if (count($liaisons)) {
-            throw new \Exception("You can't detach this object because an other use it. Clean dependencies before detach it.", 412);
+        $links = $objectObjectTable->getEntityByFields(['anr' => ($context == Object::BACK_OFFICE) ? 'null' : $anrId, 'child' => $objectId]);
+        /** @var InstanceTable $instanceTable */
+        $instanceTable = $this->get('instanceTable');
+        foreach($links as $link) {
+
+            //retrieve instance with link father object
+            $fatherInstancesIds = [];
+            $fatherInstances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $link->father->id]);
+            foreach($fatherInstances as $fatherInstance) {
+                $fatherInstancesIds[] = $fatherInstance->id;
+            }
+
+            //retrieve instance with link child object and delete instance child if parent id is concern by link
+            $childInstances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $link->child->id]);
+            foreach($childInstances as $childInstance) {
+                if (in_array($childInstance->parent->id, $fatherInstancesIds)) {
+                    $instanceTable->delete($childInstance->id);
+                }
+            }
+
+            //delete link
+            $objectObjectTable->delete($link->id);
         }
 
         //retrieve number anr objects with the same root category than current objet
@@ -801,8 +820,6 @@ class ObjectService extends AbstractService
         }
 
         //delete instance from anr
-        /** @var InstanceTable $instanceTable */
-        $instanceTable = $this->get('instanceTable');
         $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $objectId]);
         foreach($instances as $instance) {
             $instanceTable->delete($instance->id);
