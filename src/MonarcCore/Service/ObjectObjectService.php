@@ -106,15 +106,30 @@ class ObjectObjectService extends AbstractService
         foreach($instancesParent as $instanceParent) {
             $anrId = $instanceParent->anr->id;
 
+            $previousInstance = false;
+            if ($data['implicitPosition'] == 3) {
+                $previousObject = $data['previous'];
+
+                $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $previousObject]);
+
+                foreach($instances as $instance) {
+                    $previousInstance = $instance->id;
+                }
+            }
+
             $data = [
                 'object' => $child->id,
                 'parent' => $instanceParent->id,
                 'root' => ($instanceParent->root) ? $instanceParent->root->id : $instanceParent->id,
-                'position' => 0,
+                'implicitPosition' => $data['implicitPosition'],
                 'c' => -1,
                 'i' => -1,
                 'd' => -1,
             ];
+
+            if ($previousInstance) {
+                $data['previous'] = $previousInstance;
+            } 
 
             //if father instance exist, create instance for child
             $eventManager = new EventManager();

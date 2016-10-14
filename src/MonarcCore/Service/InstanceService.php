@@ -108,22 +108,31 @@ class InstanceService extends AbstractService
 
         //manage position
         if ($managePosition) {
-            if ($data['position']) {
-                $fields = ['anr' => $anrId, 'position' => $data['position'], 'parent' => ($parentId) ? $parentId : 'null'];
-                $previousInstance = $table->getEntityByFields($fields);
-                if ($previousInstance) {
-                    $previousInstance = $previousInstance[0];
-                    $implicitPosition = 3;
+            if ($data['implicitPosition']) {
+
+                $previousInstance = (isset($data['previous'])) ? $data['previous'] : null;
+
+                $this->managePosition('parent', $instance, $parentId, $data['implicitPosition'], $previousInstance, 'post');
+            }
+            else {
+                if ($data['position']) {
+                    $fields = ['anr' => $anrId, 'position' => $data['position'], 'parent' => ($parentId) ? $parentId : 'null'];
+                    $previousInstance = $table->getEntityByFields($fields);
+                    if ($previousInstance) {
+                        $previousInstance = $previousInstance[0];
+                        $implicitPosition = 3;
+                    } else {
+                        $previousInstance = null;
+                        $implicitPosition = 2;
+                    }
+
                 } else {
                     $previousInstance = null;
-                    $implicitPosition = 2;
+                    $implicitPosition = 1;
                 }
-            } else {
-                $previousInstance = null;
-                $implicitPosition = 1;
-            }
 
-            $this->managePosition('parent', $instance, $parentId, $implicitPosition, $previousInstance, 'post');
+                $this->managePosition('parent', $instance, $parentId, $implicitPosition, $previousInstance, 'post');
+            }
         }
 
         $id = $table->createInstanceToAnr($anrId, $instance, $parent, $instance->position);
@@ -463,13 +472,13 @@ class InstanceService extends AbstractService
     /**
      * Update level
      *
-     * @param $root
+     * @param $rootLevel
      * @param $objectId
      * @param $instance
      */
     protected function updateInstanceLevels($rootLevel, $objectId, &$instance) {
 
-        if ($root) {
+        if ($rootLevel) {
             $instance->setLevel(Instance::LEVEL_ROOT);
         } else {
             //retrieve children
