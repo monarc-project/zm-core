@@ -15,7 +15,7 @@ class AssetService extends AbstractService
     protected $modelTable;
     protected $amvService;
     protected $modelService;
-    protected $objectService;
+    protected $objectTable;
 
     protected $filterColumns = [
         'label1', 'label2', 'label3', 'label4',
@@ -100,7 +100,7 @@ class AssetService extends AbstractService
         }
 
         if ($entity->mode == Asset::MODE_SPECIFIC) {
-            $associateObjects = $this->get('objectService')->getGenericByAsset($entity);
+            $associateObjects = $this->get('objectTable')->getGenericByAssetId($entity->getId());
             if (count($associateObjects)) {
                 throw new \Exception('Integrity AMV links violation', 412);
             }
@@ -157,20 +157,30 @@ class AssetService extends AbstractService
      * @return array
      */
     public function exportAsset(&$data){
-
         if (empty($data['id'])) {
             throw new \Exception('Asset to export is required',412);
         }
         if (empty($data['password'])) {
             throw new \Exception('You must type in a password', 412);
         }
+        $filename = "";
+        $return = $this->generateExportArray($data['id'],$filename);
+        $data['filename'] = $filename;
 
-        $entity = $this->get('table')->getEntity($data['id']);
+        return base64_encode($this->encrypt(json_encode($return),$data['password']));
+    }
+
+    public function generateExportArray($id, &$filename = ""){
+        if (empty($id)) {
+            throw new \Exception('Asset to export is required',412);
+        }
+
+        $entity = $this->get('table')->getEntity($id);
         if (empty($entity)) {
             throw new \Exception('Asset not found',412);
         }
 
-        $data['filename'] = preg_replace("/[^a-z0-9\._-]+/i", '', $entity->get('code'));
+        $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $entity->get('code'));
 
         $assetObj = array(
             'id' => 'id',
@@ -328,7 +338,6 @@ class AssetService extends AbstractService
         }
 
         $return['amvs'] = $data_amvs;
-
-        return $this->encrypt(json_encode($return),$data['password']);
+        return $return;
     }
 }
