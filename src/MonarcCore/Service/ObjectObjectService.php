@@ -82,6 +82,9 @@ class ObjectObjectService extends AbstractService
 
         if (array_key_exists('implicitPosition', $data)) {
             $previous = (isset($data['previous'])) ? $data['previous'] : null;
+
+            $previous = 38;
+
             $position = $this->managePositionCreation('father', $data['father'], (int) $data['implicitPosition'], $previous);
             $entity->setPosition($position);
         } else if (array_key_exists('position', $data)) {
@@ -123,13 +126,12 @@ class ObjectObjectService extends AbstractService
                 $previousObject = $data['previous'];
 
                 $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $previousObject]);
-
                 foreach($instances as $instance) {
                     $previousInstance = $instance->id;
                 }
             }
 
-            $data = [
+            $dataInstance = [
                 'object' => $child->id,
                 'parent' => $instanceParent->id,
                 'root' => ($instanceParent->root) ? $instanceParent->root->id : $instanceParent->id,
@@ -140,7 +142,7 @@ class ObjectObjectService extends AbstractService
             ];
 
             if ($previousInstance) {
-                $data['previous'] = $previousInstance;
+                $dataInstance['previous'] = $previousInstance;
             }
 
             //if father instance exist, create instance for child
@@ -149,7 +151,7 @@ class ObjectObjectService extends AbstractService
 
             $sharedEventManager = $eventManager->getSharedManager();
             $eventManager->setSharedManager($sharedEventManager);
-            $eventManager->trigger('createinstance', null, compact(['anrId', 'data']));
+            $eventManager->trigger('createinstance', null, compact(['anrId', 'dataInstance']));
         }
 
         return $id;
