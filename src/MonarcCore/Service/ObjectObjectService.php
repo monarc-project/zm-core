@@ -82,7 +82,6 @@ class ObjectObjectService extends AbstractService
 
         if (array_key_exists('implicitPosition', $data)) {
             $previous = (isset($data['previous'])) ? $data['previous'] : null;
-            $previousObject = $objectObjectTable->get($previous)['child'];
 
             $position = $this->managePositionCreation('father', $data['father'], (int) $data['implicitPosition'], $previous);
             $entity->setPosition($position);
@@ -122,7 +121,7 @@ class ObjectObjectService extends AbstractService
 
             $previousInstance = false;
             if ($data['implicitPosition'] == 3) {
-
+                $previousObject = $objectObjectTable->get($previous)['child'];
                 $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $previousObject->id]);
                 foreach($instances as $instance) {
                     $previousInstance = $instance->id;
