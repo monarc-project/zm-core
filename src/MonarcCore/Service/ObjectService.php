@@ -45,7 +45,7 @@ class ObjectService extends AbstractService
     protected $dependencies = ['anr', 'asset', 'category', 'rolfTag'];
 
     /**
-     * Get List
+     * Get List Specific
      *
      * @param int $page
      * @param int $limit
@@ -53,8 +53,10 @@ class ObjectService extends AbstractService
      * @param null $filter
      * @param null $asset
      * @param null $category
-     * @param $lock
+     * @param null $anr
+     * @param null $lock
      * @return array
+     * @throws \Exception
      */
     public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $anr = null, $lock = null){
 
@@ -112,10 +114,17 @@ class ObjectService extends AbstractService
      */
     public function getAnrObjects($page, $limit, $order, $filter, $filterAnd, $anr) {
 
-        //retrieve all generic objects
+        //retrieve all generic objects if model is not regulator
         if ($anr) {
-            $filterAnd['mode'] = Object::MODE_GENERIC;
+            /** @var ModelTable $modelTable */
+            $modelTable = $this->get('modelTable');
+            $model = $modelTable->getEntityByFields(['anr' => $anr])[0];
+
+            if (!$model->isRegulator) {
+                $filterAnd['mode'] = Object::MODE_GENERIC;
+            }
         }
+
         /** @var ObjectTable $objectTable */
         $objectTable = $this->get('table');
         $objects = $objectTable->fetchAllFiltered(
@@ -129,20 +138,14 @@ class ObjectService extends AbstractService
 
         //retrieve objects specific
         if ($anr) {
-            /** @var ModelTable $modelTable */
-            $modelTable = $this->get('modelTable');
-            $models = $modelTable->getEntityByFields(['anr' => $anr]);
-
             /** @var AssetTable $assetTable */
             $assetTable = $this->get('assetTable');
             $assets = $assetTable->fetchAll();
             $assetsIds = [];
-            foreach($models as $model) {
-                foreach($assets as $asset) {
-                    foreach($asset['models'] as $assetModel) {
-                        if($model->id == $assetModel->id) {
-                            $assetsIds[$asset['id']] = $asset['id'];
-                        }
+            foreach($assets as $asset) {
+                foreach($asset['models'] as $assetModel) {
+                    if($model->id == $assetModel->id) {
+                        $assetsIds[$asset['id']] = $asset['id'];
                     }
                 }
             }
