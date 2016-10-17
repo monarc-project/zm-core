@@ -35,7 +35,7 @@ class Module
                 $params = $e->getParams();
                 /** @var InstanceService $instanceService */
                 $instanceService = $sm->get('MonarcCore\Service\InstanceService');
-                $result = $instanceService->instantiateObjectToAnr($params['anrId'], $params['data']);
+                $result = $instanceService->instantiateObjectToAnr($params['anrId'], $params['dataInstance']);
                 return $result;
             }, 100);
 

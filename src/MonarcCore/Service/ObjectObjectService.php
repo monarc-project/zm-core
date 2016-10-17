@@ -1,5 +1,6 @@
 <?php
 namespace MonarcCore\Service;
+use MonarcCore\Model\Entity\Object;
 use MonarcCore\Model\Entity\ObjectObject;
 use MonarcCore\Model\Table\AnrTable;
 use MonarcCore\Model\Table\InstanceTable;
@@ -27,10 +28,21 @@ class ObjectObjectService extends AbstractService
      * @return mixed
      * @throws \Exception
      */
-    public function create($data, $last = true) {
+    public function create($data, $last = true, $context = Object::BACK_OFFICE) {
 
         if ($data['father'] == $data['child']) {
             throw new \Exception("You cannot add yourself as a component", 412);
+        }
+
+        /** @var ObjectObjectTable $objectObjectTable */
+        $objectObjectTable = $this->get('table');
+
+        //verify child not already existing
+        if ($context == Object::BACK_OFFICE) {
+            $objectsObjects = $objectObjectTable->getEntityByFields(['anr' => 'null', 'father' => $data['father'], 'child' => $data['child']]);
+            if (count($objectsObjects)) {
+                throw new \Exception('This component already exist for this object', 412);
+            }
         }
 
         $recursiveParentsListId = [];
@@ -41,7 +53,7 @@ class ObjectObjectService extends AbstractService
         }
 
         /** @var ObjectTable $objectTable */
-        $objectTable = $this->objectTable;
+        $objectTable = $this->get('objectTable');
 
         // Ensure that we're not trying to add a specific item if the father is generic
         $father = $objectTable->getEntity($data['father']);
@@ -70,13 +82,15 @@ class ObjectObjectService extends AbstractService
 
         if (array_key_exists('implicitPosition', $data)) {
             $previous = (isset($data['previous'])) ? $data['previous'] : null;
+            $previousObject = $objectObjectTable->get($previous)['child'];
+
             $position = $this->managePositionCreation('father', $data['father'], (int) $data['implicitPosition'], $previous);
             $entity->setPosition($position);
         } else if (array_key_exists('position', $data)) {
             $entity->setPosition((int) $data['position']);
         }
 
-        $id = $this->get('table')->save($entity);
+        $id = $objectObjectTable->save($entity);
 
         //link to anr
         $parentAnrs = [];
@@ -106,15 +120,28 @@ class ObjectObjectService extends AbstractService
         foreach($instancesParent as $instanceParent) {
             $anrId = $instanceParent->anr->id;
 
-            $data = [
+            $previousInstance = false;
+            if ($data['implicitPosition'] == 3) {
+
+                $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $previousObject->id]);
+                foreach($instances as $instance) {
+                    $previousInstance = $instance->id;
+                }
+            }
+
+            $dataInstance = [
                 'object' => $child->id,
                 'parent' => $instanceParent->id,
                 'root' => ($instanceParent->root) ? $instanceParent->root->id : $instanceParent->id,
-                'position' => 0,
+                'implicitPosition' => $data['implicitPosition'],
                 'c' => -1,
                 'i' => -1,
                 'd' => -1,
             ];
+
+            if ($previousInstance) {
+                $dataInstance['previous'] = $previousInstance;
+            }
 
             //if father instance exist, create instance for child
             $eventManager = new EventManager();
@@ -122,7 +149,7 @@ class ObjectObjectService extends AbstractService
 
             $sharedEventManager = $eventManager->getSharedManager();
             $eventManager->setSharedManager($sharedEventManager);
-            $eventManager->trigger('createinstance', null, compact(['anrId', 'data']));
+            $eventManager->trigger('createinstance', null, compact(['anrId', 'dataInstance']));
         }
 
         return $id;
