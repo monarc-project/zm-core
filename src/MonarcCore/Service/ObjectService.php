@@ -53,12 +53,12 @@ class ObjectService extends AbstractService
      * @param null $filter
      * @param null $asset
      * @param null $category
-     * @param null $anr
+     * @param null $model
      * @param null $lock
      * @return array
      * @throws \Exception
      */
-    public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $anr = null, $lock = null){
+    public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $model = null, $lock = null){
 
         $filterAnd = [];
         if ((!is_null($asset)) && ($asset != 0)) $filterAnd['asset'] = $asset;
@@ -71,7 +71,7 @@ class ObjectService extends AbstractService
         }
         $filterAnd['model'] = null;
 
-        $objects = $this->getAnrObjects($page, $limit, $order, $filter, $filterAnd, $anr);
+        $objects = $this->getAnrObjects($page, $limit, $order, $filter, $filterAnd, $model);
 
         $objectsArray = [];
         $rootArray = [];
@@ -109,16 +109,16 @@ class ObjectService extends AbstractService
      * @param $order
      * @param $filter
      * @param $filterAnd
-     * @param $anr
+     * @param $model
      * @return array|bool
      */
-    public function getAnrObjects($page, $limit, $order, $filter, $filterAnd, $anr) {
+    public function getAnrObjects($page, $limit, $order, $filter, $filterAnd, $model) {
 
         //retrieve all generic objects if model is not regulator
-        if ($anr) {
+        if ($model) {
             /** @var ModelTable $modelTable */
             $modelTable = $this->get('modelTable');
-            $model = $modelTable->getEntityByFields(['anr' => $anr])[0];
+            $model = $modelTable->getEntity($model);
 
             if (!$model->isRegulator) {
                 $filterAnd['mode'] = Object::MODE_GENERIC;
@@ -137,7 +137,7 @@ class ObjectService extends AbstractService
         );
 
         //retrieve objects specific
-        if ($anr) {
+        if ($model) {
             /** @var AssetTable $assetTable */
             $assetTable = $this->get('assetTable');
             $assets = $assetTable->fetchAll();
@@ -277,15 +277,18 @@ class ObjectService extends AbstractService
      * @param int $limit
      * @param null $order
      * @param null $filter
-     * @return mixed
+     * @param null $asset
+     * @param null $category
+     * @param null $model
+     * @return int
      */
-    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $anr = null){
+    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $model = null){
 
         $filterAnd = [];
         if ((!is_null($asset)) && ($asset != 0)) $filterAnd['asset'] = $asset;
         if ((!is_null($category)) && ($category != 0)) $filterAnd['category'] = $category;
 
-        $result = $this->getAnrObjects($page, 0, $order, $filter, $filterAnd, $anr);
+        $result = $this->getAnrObjects($page, 0, $order, $filter, $filterAnd, $model);
 
         return count($result);
 
