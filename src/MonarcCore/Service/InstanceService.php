@@ -108,8 +108,7 @@ class InstanceService extends AbstractService
 
         //manage position
         if ($managePosition) {
-            if ($data['implicitPosition']) {
-
+            if (isset($data['implicitPosition'])) {
                 $previousInstance = (isset($data['previous'])) ? $data['previous'] : null;
 
                 $this->managePosition('parent', $instance, $parentId, $data['implicitPosition'], $previousInstance, 'post');
