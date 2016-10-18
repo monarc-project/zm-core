@@ -336,7 +336,7 @@ abstract class AbstractService extends AbstractServiceFactory
         $diff = $this->compareEntities($entity, $oldEntity);
 
         if (count($diff)) {
-            $this->historize($entity, $type, 'update', implode(', ', $diff));
+            $this->historize($entity, $type, 'update', implode(' / ', $diff));
         }
     }
 
@@ -348,7 +348,7 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     public function historizeCreate($type, $entity, $details) {
 
-        $this->historize($entity, $type, 'create', 'creation : ' . implode(', ', $details));
+        $this->historize($entity, $type, 'create', implode(' / ', $details));
     }
 
     /**
@@ -359,7 +359,7 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     public function historizeDelete($type, $entity, $details) {
 
-        $this->historize($entity, $type, 'delete', 'delete : ' . implode(', ', $details));
+        $this->historize($entity, $type, 'delete', implode(' / ', $details));
     }
 
     /**

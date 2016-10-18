@@ -233,32 +233,29 @@ class AmvService extends AbstractService
         $newEntity = $this->getEntity($id);
 
         //virtual name for historisation
-        $label = [];
-        for($i =1; $i<=4; $i++) {
-            $name = [];
-            $lab = 'label' . $i;
-            if ($newEntity['asset']->$lab) {
-                $name[] = $newEntity['asset']->$lab;
-            }
-            if ($newEntity['threat']->$lab) {
-                $name[] = $newEntity['threat']->$lab;
-            }
-            if ($newEntity['vulnerability']->$lab) {
-                $name[] = $newEntity['vulnerability']->$lab;
-            }
-            $label[] = implode('-', $name);
+        $name = [];
+        $lab = 'code';
+        if ($newEntity['asset']->$lab) {
+            $name[] = $newEntity['asset']->$lab;
         }
-        $this->label = $label;
+        if ($newEntity['threat']->$lab) {
+            $name[] = $newEntity['threat']->$lab;
+        }
+        if ($newEntity['vulnerability']->$lab) {
+            $name[] = $newEntity['vulnerability']->$lab;
+        }
+        $name = implode(' - ', $name);
+        $this->label = [$name,$name,$name,$name];
 
         //details
         $fields = [
-            'anr' => 'label1',
-            'asset' => 'label1',
-            'threat' => 'label1',
-            'vulnerability' => 'label1',
-            'measure1' => 'description1',
-            'measure2' => 'description1',
-            'measure3' => 'description1'
+            'anr' => 'code',
+            'asset' => 'code',
+            'threat' => 'code',
+            'vulnerability' => 'code',
+            'measure1' => 'code',
+            'measure2' => 'code',
+            'measure3' => 'code'
         ];
         $details = [];
         foreach ($fields as $key => $field) {
@@ -296,22 +293,18 @@ class AmvService extends AbstractService
         $oldEntity = clone $entity;
 
         //virtual name for historisation
-        $label = [];
-        for($i =1; $i<=4; $i++) {
-            $name = [];
-            $lab = 'label' . $i;
-            if ($entity->asset->$lab) {
-                $name[] = $entity->asset->$lab;
-            }
-            if ($entity->threat->$lab) {
-                $name[] = $entity->threat->$lab;
-            }
-            if ($entity->vulnerability->$lab) {
-                $name[] = $entity->vulnerability->$lab;
-            }
-            $label[] = implode('-', $name);
+        $name = [];
+        if ($entity->get('asset')->get('code')) {
+            $name[] = $entity->get('asset')->get('code');
         }
-        $this->label = $label;
+        if ($entity->get('threat')->get('code')) {
+            $name[] = $entity->get('threat')->get('code');
+        }
+        if ($entity->get('vulnerability')->get('code')) {
+            $name[] = $entity->get('vulnerability')->get('code');
+        }
+        $name = implode(' - ', $name);
+        $this->label = [$name,$name,$name,$name];
 
         $entity->exchangeArray($data);
 
@@ -330,6 +323,56 @@ class AmvService extends AbstractService
     }
 
     /**
+     * Compare Entities
+     *
+     * @param $newEntity
+     * @param $oldEntity
+     * @return array
+     */
+    public function compareEntities($newEntity, $oldEntity){
+        $deps = array();
+        foreach($this->dependencies as $dep){
+            $propertyname = $dep;
+            $matching = [];
+            if(preg_match("/(\[([a-z0-9]*)\])\(([a-z0-9]*)\)$/", $dep, $matching) != false){//si c'est 0 c'est pas bon non plus
+                $propertyname = str_replace($matching[0], $matching[2], $dep);
+                $dep = str_replace($matching[0], $matching[3], $dep);
+            }
+            $deps[$propertyname] = $propertyname;
+        }
+
+        $exceptions = ['creator', 'created_at', 'updater', 'updated_at', 'inputFilter', 'dbadapter', 'parameters', 'language'];
+
+        $diff = [];
+        foreach ($newEntity->getJsonArray() as $key => $value) {
+            if (!in_array($key, $exceptions)) {
+                if (isset($deps[$key])) {
+                    $oldValue = $oldEntity->get($key);
+                    if(!empty($oldValue) && is_object($oldValue)){
+                        $oldValue = $oldValue->get('code');
+                    }
+                    if(!empty($value) && is_object($value)){
+                        $value = $value->get('code');
+                    }
+                    if($oldValue != $value){
+                        if(empty($oldValue)){
+                            $oldValue = '-';
+                        }
+                        if(empty($value)){
+                            $value = '-';
+                        }
+                        $diff[] = $key . ': ' . $oldValue . ' => ' . $value;
+                    }
+                } elseif ($oldEntity->get($key) != $value) {
+                    $diff[] = $key . ': ' . $oldEntity->get($key) . ' => ' . $value;
+                }
+            }
+        }
+
+        return $diff;
+    }
+
+    /**
      * Delete
      *
      * @param $id
@@ -342,32 +385,28 @@ class AmvService extends AbstractService
         if ($entity) {
 
             //virtual name for historisation
-            $label = [];
-            for ($i = 1; $i <= 4; $i++) {
-                $name = [];
-                $lab = 'label' . $i;
-                if ($entity['asset']->$lab) {
-                    $name[] = $entity['asset']->$lab;
-                }
-                if ($entity['threat']->$lab) {
-                    $name[] = $entity['threat']->$lab;
-                }
-                if ($entity['vulnerability']->$lab) {
-                    $name[] = $entity['vulnerability']->$lab;
-                }
-                $label[] = implode('-', $name);
+            $name = [];
+            if ($entity->get('asset')->get('code')) {
+                $name[] = $entity->get('asset')->get('code');
             }
-            $this->label = $label;
+            if ($entity->get('threat')->get('code')) {
+                $name[] = $entity->get('threat')->get('code');
+            }
+            if ($entity->get('vulnerability')->get('code')) {
+                $name[] = $entity->get('vulnerability')->get('code');
+            }
+            $name = implode(' - ', $name);
+            $this->label = [$name,$name,$name,$name];
 
             //details
             $fields = [
-                'anr' => 'label1',
-                'asset' => 'label1',
-                'threat' => 'label1',
-                'vulnerability' => 'label1',
-                'measure1' => 'description1',
-                'measure2' => 'description1',
-                'measure3' => 'description1'
+                'anr' => 'code',
+                'asset' => 'code',
+                'threat' => 'code',
+                'vulnerability' => 'code',
+                'measure1' => 'code',
+                'measure2' => 'code',
+                'measure3' => 'code'
             ];
             $details = [];
             foreach ($fields as $key => $field) {
