@@ -200,7 +200,7 @@ abstract class AbstractService extends AbstractServiceFactory
 
         /** @var AnrTable $table */
         $table = $this->get('table');
-        
+
         return $table->save($entity, $last);
     }
 
