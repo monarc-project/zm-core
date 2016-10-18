@@ -115,11 +115,13 @@ class Db {
         }
     }
 
-    public function delete($entity)
+    public function delete($entity, $last = true)
     {
         try {
             $this->entityManager->remove($entity);
-            $this->entityManager->flush();
+            if ($last) {
+                $this->entityManager->flush();
+            }
         } catch (ForeignKeyConstraintViolationException $e) {
             throw new \Exception('Foreign key violation', '400');
         }

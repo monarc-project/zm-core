@@ -784,6 +784,7 @@ class ObjectService extends AbstractService
 
         //verify object exist
         /** @var ObjectTable $table */
+        /*
         $table = $this->get('table');
         $object = $table->getEntity($objectId);
         if (!$object) {
@@ -792,6 +793,7 @@ class ObjectService extends AbstractService
 
         //verify anr exist
         /** @var AnrTable $anrTable */
+        /*
         $anrTable = $this->get('anrTable');
         $anr = $anrTable->getEntity($anrId);
         if (!$anr) {
@@ -800,9 +802,11 @@ class ObjectService extends AbstractService
 
         //if object is not a component, delete link and instances children for anr
         /** @var ObjectObjectTable $objectObjectTable */
+        /*
         $objectObjectTable = $this->get('objectObjectTable');
         $links = $objectObjectTable->getEntityByFields(['anr' => ($context == Object::BACK_OFFICE) ? 'null' : $anrId, 'child' => $objectId]);
         /** @var InstanceTable $instanceTable */
+        /*
         $instanceTable = $this->get('instanceTable');
         foreach($links as $link) {
 
@@ -839,6 +843,7 @@ class ObjectService extends AbstractService
         if (!$nbObjectsSameRootCategory) {
             //anrs objects categories
             /** @var AnrObjectCategoryTable $anrObjectCategoryTable */
+        /*
             $anrObjectCategoryTable = $this->get('anrObjectCategoryTable');
             $anrObjectCategories = $anrObjectCategoryTable->getEntityByFields(['anr' => $anrId, 'category' => $objectRootCategory->id]);
             foreach( $anrObjectCategories as $anrObjectCategory) {
@@ -846,15 +851,21 @@ class ObjectService extends AbstractService
                 $anrObjectCategoryTable->delete($anrObjectCategory->id);
             }
         }
-
+*/
         //delete instance from anr
+        /** @var InstanceTable $instanceTable */
+        $instanceTable = $this->get('instanceTable');
         $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $objectId]);
+        $i = 1;
         foreach($instances as $instance) {
-            $instanceTable->delete($instance->id);
+            $last = ($i == count($instances)) ? true : false;
+            $instanceTable->delete($instance->id, $last);
+            $i++;
         }
 
         //detach object
         /** @var ObjectTable $table */
+        /*
         $table = $this->get('table');
         $object = $table->getEntity($objectId);
         $anrs = [];
@@ -865,6 +876,7 @@ class ObjectService extends AbstractService
         }
         $object->anrs = $anrs;
         $table->save($object);
+        */
     }
 
     /**
