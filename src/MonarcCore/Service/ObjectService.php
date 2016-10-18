@@ -184,11 +184,11 @@ class ObjectService extends AbstractService
     }
 
     /**
-     * get Complete Entity
      * @param $id
+     * @param string $context
      * @return mixed
      */
-    public function getCompleteEntity($id, $context = Object::FRONT_OFFICE) {
+    public function getCompleteEntity($id, $context = Object::CONTEXT_BDC, $anr = null) {
 
         /** @var Object $object */
         $object = $this->get('table')->getEntity($id);
@@ -199,15 +199,62 @@ class ObjectService extends AbstractService
         $objectObjectService = $this->get('objectObjectService');
         $object_arr['children'] = $objectObjectService->getRecursiveChildren($object_arr['id']);
 
-        // Retrieve parent recursively
-        if ($context == Object::BACK_OFFICE) {
-            $object_arr['parents'] = $objectObjectService->getRecursiveParents($object_arr['id']);
-        }
-
         // Calculate the risks table
         //$object_arr['risks'] = $this->buildRisksTable($object, $mode);
         $object_arr['risks'] = $this->getRisks($object);
         $object_arr['oprisks'] = $this->getRisksOp($object);
+
+        // Retrieve parent recursively
+        if ($context == Object::CONTEXT_ANR) {
+            $object_arr['parents'] = $objectObjectService->getRecursiveParents($object_arr['id']);
+            if (!$anr) {
+                throw new \Exception('Anr missing', 412);
+            }
+
+            /** @var InstanceTable $instanceTable */
+            $instanceTable = $this->get('instanceTable');
+            $instances  = $instanceTable->getEntityByFields(['anr' => $anr, 'object' => $id]);
+
+            $instances_arr = [];
+            foreach($instances as $instance) {
+                $instances_arr[] = [
+                    'id' => $instance->id,
+                    'name1' => $instance->name1,
+                    'name2' => $instance->name2,
+                    'name3' => $instance->name3,
+                    'name4' => $instance->name4,
+                    'label1' => $instance->label1,
+                    'label2' => $instance->label2,
+                    'label3' => $instance->label3,
+                    'label4' => $instance->label4,
+                ];
+            }
+
+            $object_arr['replicas'] = $instances_arr;
+        } else {
+
+            $anrsIds = [];
+            foreach($object->anrs as $anr) {
+                $anrsIds[] = $anr->id;
+            }
+
+            /** @var ModelTable $modelTable */
+            $modelTable = $this->get('modelTable');
+            $models = $modelTable->getByAnrs($anrsIds);
+
+            $models_arr = [];
+            foreach($models as $model) {
+                $models_arr[] = [
+                    'id' => $model->id,
+                    'label1' => $model->label1,
+                    'label2' => $model->label2,
+                    'label3' => $model->label3,
+                    'label4' => $model->label4,
+                ];
+            }
+
+            $object_arr['replicas'] = $models_arr;
+        }
 
         return $object_arr;
     }
