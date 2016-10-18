@@ -42,6 +42,7 @@ return array(
                     ),
                 ),
             ),
+
             'auth' => array(
                 'type'    => 'segment',
                 'options' => array(
@@ -54,8 +55,6 @@ return array(
                     ),
                 ),
             ),
-
-
 
             'monarc_api_anr' => array(
                 'type' => 'segment',
@@ -70,28 +69,15 @@ return array(
                 ),
             ),
 
-            'monarc_api_anr_library' => array(
+            'monarc_api_anr_instances_consequences' => array(
                 'type' => 'segment',
                 'options' => array(
-                    'route' => '/api/anr/:anrid/library[/:id]',
+                    'route' => '/api/anr/:anrid/instances-consequences[/:id]',
                     'constraints' => array(
                         'id' => '[0-9]+',
                     ),
                     'defaults' => array(
-                        'controller' => 'MonarcCore\Controller\ApiAnrLibrary',
-                    ),
-                ),
-            ),
-
-            'monarc_api_anr_library_category' => array(
-                'type' => 'segment',
-                'options' => array(
-                    'route' => '/api/anr/:anrid/library-category[/:id]',
-                    'constraints' => array(
-                        'id' => '[0-9]+',
-                    ),
-                    'defaults' => array(
-                        'controller' => 'MonarcCore\Controller\ApiAnrLibraryCategory',
+                        'controller' => 'MonarcCore\Controller\ApiAnrInstancesConsequences',
                     ),
                 ),
             ),
@@ -122,19 +108,6 @@ return array(
                 ),
             ),
 
-            'monarc_api_anr_instances_consequences' => array(
-                'type' => 'segment',
-                'options' => array(
-                    'route' => '/api/anr/:anrid/instances-consequences[/:id]',
-                    'constraints' => array(
-                        'id' => '[0-9]+',
-                    ),
-                    'defaults' => array(
-                        'controller' => 'MonarcCore\Controller\ApiAnrInstancesConsequences',
-                    ),
-                ),
-            ),
-
             'monarc_api_anr_instances_risksop' => array(
                 'type' => 'segment',
                 'options' => array(
@@ -144,6 +117,99 @@ return array(
                     ),
                     'defaults' => array(
                         'controller' => 'MonarcCore\Controller\ApiAnrInstancesRisksOp',
+                    ),
+                ),
+            ),
+
+            'monarc_api_anr_library_category' => array(
+                'type' => 'segment',
+                'options' => array(
+                    'route' => '/api/anr/:anrid/library-category[/:id]',
+                    'constraints' => array(
+                        'id' => '[0-9]+',
+                    ),
+                    'defaults' => array(
+                        'controller' => 'MonarcCore\Controller\ApiAnrLibraryCategory',
+                    ),
+                ),
+            ),
+
+            'monarc_api_anr_library' => array(
+                'type' => 'segment',
+                'options' => array(
+                    'route' => '/api/anr/:anrid/library[/:id]',
+                    'constraints' => array(
+                        'id' => '[0-9]+',
+                    ),
+                    'defaults' => array(
+                        'controller' => 'MonarcCore\Controller\ApiAnrLibrary',
+                    ),
+                ),
+            ),
+
+            'monarc_api_anr_objects' => array(
+                'type' => 'segment',
+                'options' => array(
+                    'route' => '/api/anr/:anrid/objects[/:id]',
+                    'constraints' => array(
+                        'id' => '[0-9]+',
+                    ),
+                    'defaults' => array(
+                        'controller' => 'MonarcCore\Controller\ApiAnrObject',
+                    ),
+                ),
+            ),
+
+            'monarc_api_models' => array(
+                'type' => 'segment',
+                'options' => array(
+                    'route' => '/api/models[/:id]',
+                    'constraints' => array(
+                        'id' => '[0-9]+',
+                    ),
+                    'defaults' => array(
+                        'controller' => 'MonarcCore\Controller\ApiModels',
+                    ),
+                ),
+            ),
+
+            'monarc_api_scales' => array(
+                'type' => 'segment',
+                'options' => array(
+                    'route' => '/api/anr/:anrId/scales[/:id]',
+                    'constraints' => array(
+                        'id' => '[0-9]+',
+                    ),
+                    'defaults' => array(
+                        'controller' => 'MonarcCore\Controller\ApiScales',
+                    ),
+                ),
+            ),
+
+            'monarc_api_scales_comments' => array(
+                'type' => 'segment',
+                'options' => array(
+                    'route' => '/api/anr/:anrId/scales/:scaleId/comments[/:id]',
+                    'constraints' => array(
+                        'anrId' => '[0-9]+',
+                        'scaleId' => '[0-9]+',
+                        'id' => '[0-9]+',
+                    ),
+                    'defaults' => array(
+                        'controller' => 'MonarcCore\Controller\ApiScalesComments',
+                    ),
+                ),
+            ),
+
+            'monarc_api_scales_types' => array(
+                'type' => 'segment',
+                'options' => array(
+                    'route' => '/api/anr/:anrId/scales-types[/:id]',
+                    'constraints' => array(
+                        'id' => '[0-9]+',
+                    ),
+                    'defaults' => array(
+                        'controller' => 'MonarcCore\Controller\ApiScalesTypes',
                     ),
                 ),
             ),

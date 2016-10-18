@@ -1,7 +1,6 @@
 <?php
-namespace MonarcCore\Controller;
 
-use MonarcCore\Controller\AbstractControllerFactory;
+namespace MonarcCore\Controller;
 
 class ApiModelsControllerFactory extends AbstractControllerFactory
 {
