@@ -149,14 +149,16 @@ class Db {
     }
 
     /**
-     * @param EntityRepository $repository
+     * @param $repository
      * @param int $page
      * @param int $limit
      * @param null $order
      * @param null $filter
      * @param null $filterAnd
      * @param null $filterJoin
-     * @return QueryBuilder
+     * @param null $filterLeft
+     * @return mixed
+     * @throws \Exception
      */
     private function buildFilteredQuery($repository, $page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null, $filterJoin = null, $filterLeft = null)
     {

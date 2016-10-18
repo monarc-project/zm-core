@@ -54,6 +54,99 @@ return array(
                     ),
                 ),
             ),
+
+
+
+            'monarc_api_anr' => array(
+                'type' => 'segment',
+                'options' => array(
+                    'route' => '/api/anr[/:id]',
+                    'constraints' => array(
+                        'id' => '[0-9]+',
+                    ),
+                    'defaults' => array(
+                        'controller' => 'MonarcCore\Controller\ApiAnr',
+                    ),
+                ),
+            ),
+
+            'monarc_api_anr_library' => array(
+                'type' => 'segment',
+                'options' => array(
+                    'route' => '/api/anr/:anrid/library[/:id]',
+                    'constraints' => array(
+                        'id' => '[0-9]+',
+                    ),
+                    'defaults' => array(
+                        'controller' => 'MonarcCore\Controller\ApiAnrLibrary',
+                    ),
+                ),
+            ),
+
+            'monarc_api_anr_library_category' => array(
+                'type' => 'segment',
+                'options' => array(
+                    'route' => '/api/anr/:anrid/library-category[/:id]',
+                    'constraints' => array(
+                        'id' => '[0-9]+',
+                    ),
+                    'defaults' => array(
+                        'controller' => 'MonarcCore\Controller\ApiAnrLibraryCategory',
+                    ),
+                ),
+            ),
+
+            'monarc_api_anr_instances' => array(
+                'type' => 'segment',
+                'options' => array(
+                    'route' => '/api/anr/:anrid/instances[/:id]',
+                    'constraints' => array(
+                        'id' => '[0-9]+',
+                    ),
+                    'defaults' => array(
+                        'controller' => 'MonarcCore\Controller\ApiAnrInstances',
+                    ),
+                ),
+            ),
+
+            'monarc_api_anr_instances_risks' => array(
+                'type' => 'segment',
+                'options' => array(
+                    'route' => '/api/anr/:anrid/instances-risks[/:id]',
+                    'constraints' => array(
+                        'id' => '[0-9]+',
+                    ),
+                    'defaults' => array(
+                        'controller' => 'MonarcCore\Controller\ApiAnrInstancesRisks',
+                    ),
+                ),
+            ),
+
+            'monarc_api_anr_instances_consequences' => array(
+                'type' => 'segment',
+                'options' => array(
+                    'route' => '/api/anr/:anrid/instances-consequences[/:id]',
+                    'constraints' => array(
+                        'id' => '[0-9]+',
+                    ),
+                    'defaults' => array(
+                        'controller' => 'MonarcCore\Controller\ApiAnrInstancesConsequences',
+                    ),
+                ),
+            ),
+
+            'monarc_api_anr_instances_risksop' => array(
+                'type' => 'segment',
+                'options' => array(
+                    'route' => '/api/anr/:anrid/instances-oprisks[/:id]',
+                    'constraints' => array(
+                        'id' => '[0-9]+',
+                    ),
+                    'defaults' => array(
+                        'controller' => 'MonarcCore\Controller\ApiAnrInstancesRisksOp',
+                    ),
+                ),
+            ),
         ),
     ),
 

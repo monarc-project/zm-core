@@ -54,11 +54,12 @@ class ObjectService extends AbstractService
      * @param null $asset
      * @param null $category
      * @param null $model
+     * @param null $anr
      * @param null $lock
      * @return array
      * @throws \Exception
      */
-    public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $model = null, $lock = null){
+    public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $model = null, $anr = null, $lock = null){
 
         $filterAnd = [];
         if ((!is_null($asset)) && ($asset != 0)) $filterAnd['asset'] = $asset;
@@ -71,7 +72,7 @@ class ObjectService extends AbstractService
         }
         $filterAnd['model'] = null;
 
-        $objects = $this->getAnrObjects($page, $limit, $order, $filter, $filterAnd, $model);
+        $objects = $this->getAnrObjects($page, $limit, $order, $filter, $filterAnd, $model, $anr);
 
         $objectsArray = [];
         $rootArray = [];
@@ -110,9 +111,10 @@ class ObjectService extends AbstractService
      * @param $filter
      * @param $filterAnd
      * @param $model
+     * @param $anr
      * @return array|bool
      */
-    public function getAnrObjects($page, $limit, $order, $filter, $filterAnd, $model) {
+    public function getAnrObjects($page, $limit, $order, $filter, $filterAnd, $model, $anr) {
 
         //retrieve all generic objects if model is not regulator
         if ($model) {
@@ -159,7 +161,26 @@ class ObjectService extends AbstractService
             $objects = array_merge($objects, $specificsObjects);
         }
 
-        return $objects;
+        if ($anr) {
+            $anrObjects = [];
+            foreach ($objects as $object) {
+                $inAnr = false;
+                foreach ($object['anrs'] as $anrObject) {
+                    if ($anrObject->id == $anr) {
+                        $inAnr = true;
+                    }
+                }
+
+                if ($inAnr) {
+                    $anrObjects[] = $object;
+                }
+            }
+
+            return $anrObjects;
+        } else {
+            return $objects;
+        }
+
     }
 
     /**
@@ -282,13 +303,13 @@ class ObjectService extends AbstractService
      * @param null $model
      * @return int
      */
-    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $model = null){
+    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $model = null, $anr = null){
 
         $filterAnd = [];
         if ((!is_null($asset)) && ($asset != 0)) $filterAnd['asset'] = $asset;
         if ((!is_null($category)) && ($category != 0)) $filterAnd['category'] = $category;
 
-        $result = $this->getAnrObjects($page, 0, $order, $filter, $filterAnd, $model);
+        $result = $this->getAnrObjects($page, 0, $order, $filter, $filterAnd, $model, $anr);
 
         return count($result);
 
