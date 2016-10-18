@@ -119,9 +119,9 @@ class InstanceRisk extends AbstractEntity
     /**
      * @var smallint
      *
-     * @ORM\Column(name="kind_of_measure", type="smallint", options={"unsigned":true, "default":0})
+     * @ORM\Column(name="kind_of_measure", type="smallint", options={"unsigned":true, "default":5})
      */
-    protected $kindOfMeasure = '0';
+    protected $kindOfMeasure = 5;
 
     /**
      * @var smallint

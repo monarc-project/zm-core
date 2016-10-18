@@ -162,7 +162,7 @@ abstract class AbstractEntityTable
         return $id;
     }
 
-    public function delete($id)
+    public function delete($id, $last = true)
     {
         $c = $this->getClass();
         if(class_exists($c)){
@@ -171,8 +171,7 @@ abstract class AbstractEntityTable
             $entity = new $c();
             $entity->set('id',$id);
             $entity = $this->getDb()->fetch($entity);
-
-            $this->getDb()->delete($entity);
+            $this->getDb()->delete($entity, $last);
             return true;
         }else{
             return false;

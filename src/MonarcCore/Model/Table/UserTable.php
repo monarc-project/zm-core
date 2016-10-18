@@ -87,9 +87,10 @@ class UserTable extends AbstractEntityTable {
      * Delete
      *
      * @param $id
+     * @param bool $last
      * @throws \Exception
      */
-    public function delete($id)
+    public function delete($id, $last = true)
     {
         if ($this->getConnectedUser()['id'] == $id) {
             throw new \Exception("You can't delete yourself", 412);
@@ -102,7 +103,7 @@ class UserTable extends AbstractEntityTable {
             $this->getUserRoleTable()->deleteByUser($id);
             $this->getUserTokenTable()->deleteByUser($id);
             $this->getPasswordTokenTable()->deleteByUser($id);
-            parent::delete($id);
+            parent::delete($id, $last);
 
             $this->getDb()->commit();
         } catch (Exception $e) {

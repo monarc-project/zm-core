@@ -19,6 +19,8 @@ return array(
     'MonarcCore\Controller\ApiAnrLibraryCategoryControllerFactory'          => __DIR__ . '/src/MonarcCore/Controller/ApiAnrLibraryCategoryControllerFactory.php',
     'MonarcCore\Controller\ApiAnrLibraryController'                         => __DIR__ . '/src/MonarcCore/Controller/ApiAnrLibraryController.php',
     'MonarcCore\Controller\ApiAnrLibraryControllerFactory'                  => __DIR__ . '/src/MonarcCore/Controller/ApiAnrLibraryControllerFactory.php',
+    'MonarcCore\Controller\ApiAnrObjectController'                          => __DIR__ . '/src/MonarcCore/Controller/ApiAnrObjectController.php',
+    'MonarcCore\Controller\ApiAnrObjectControllerFactory'                   => __DIR__ . '/src/MonarcCore/Controller/ApiAnrObjectControllerFactory.php',
     'MonarcCore\Controller\ApiModelsController'                             => __DIR__ . '/src/MonarcCore/Controller/ApiModelsController.php',
     'MonarcCore\Controller\ApiModelsControllerFactory'                      => __DIR__ . '/src/MonarcCore/Controller/ApiModelsControllerFactory.php',
     'MonarcCore\Controller\ApiScalesCommentsController'                     => __DIR__ . '/src/MonarcCore/Controller/ApiScalesCommentsController.php',

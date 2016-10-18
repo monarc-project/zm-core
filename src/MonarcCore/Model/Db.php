@@ -115,11 +115,13 @@ class Db {
         }
     }
 
-    public function delete($entity)
+    public function delete($entity, $last = true)
     {
         try {
             $this->entityManager->remove($entity);
-            $this->entityManager->flush();
+            if ($last) {
+                $this->entityManager->flush();
+            }
         } catch (ForeignKeyConstraintViolationException $e) {
             throw new \Exception('Foreign key violation', '400');
         }
@@ -149,14 +151,16 @@ class Db {
     }
 
     /**
-     * @param EntityRepository $repository
+     * @param $repository
      * @param int $page
      * @param int $limit
      * @param null $order
      * @param null $filter
      * @param null $filterAnd
      * @param null $filterJoin
-     * @return QueryBuilder
+     * @param null $filterLeft
+     * @return mixed
+     * @throws \Exception
      */
     private function buildFilteredQuery($repository, $page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null, $filterJoin = null, $filterLeft = null)
     {

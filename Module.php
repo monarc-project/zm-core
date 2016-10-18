@@ -112,6 +112,7 @@ class Module
                 '\MonarcCore\Controller\ApiAnrInstancesRisksOp'         => '\MonarcCore\Controller\ApiAnrInstancesRisksOpControllerFactory',
                 '\MonarcCore\Controller\ApiAnrLibrary'                  => '\MonarcCore\Controller\ApiAnrLibraryControllerFactory',
                 '\MonarcCore\Controller\ApiAnrLibraryCategory'          => '\MonarcCore\Controller\ApiAnrLibraryCategoryControllerFactory',
+                '\MonarcCore\Controller\ApiAnrObject'                   => '\MonarcCore\Controller\ApiAnrObjectControllerFactory',
                 '\MonarcCore\Controller\ApiScales'                      => '\MonarcCore\Controller\ApiScalesControllerFactory',
                 '\MonarcCore\Controller\ApiScalesTypes'                 => '\MonarcCore\Controller\ApiScalesTypesControllerFactory',
                 '\MonarcCore\Controller\ApiScalesComments'              => '\MonarcCore\Controller\ApiScalesCommentsControllerFactory',

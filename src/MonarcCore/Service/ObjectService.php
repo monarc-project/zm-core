@@ -54,11 +54,12 @@ class ObjectService extends AbstractService
      * @param null $asset
      * @param null $category
      * @param null $model
+     * @param null $anr
      * @param null $lock
      * @return array
      * @throws \Exception
      */
-    public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $model = null, $lock = null){
+    public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $model = null, $anr = null, $lock = null){
 
         $filterAnd = [];
         if ((!is_null($asset)) && ($asset != 0)) $filterAnd['asset'] = $asset;
@@ -71,7 +72,7 @@ class ObjectService extends AbstractService
         }
         $filterAnd['model'] = null;
 
-        $objects = $this->getAnrObjects($page, $limit, $order, $filter, $filterAnd, $model);
+        $objects = $this->getAnrObjects($page, $limit, $order, $filter, $filterAnd, $model, $anr);
 
         $objectsArray = [];
         $rootArray = [];
@@ -110,9 +111,10 @@ class ObjectService extends AbstractService
      * @param $filter
      * @param $filterAnd
      * @param $model
+     * @param $anr
      * @return array|bool
      */
-    public function getAnrObjects($page, $limit, $order, $filter, $filterAnd, $model) {
+    public function getAnrObjects($page, $limit, $order, $filter, $filterAnd, $model, $anr) {
 
         //retrieve all generic objects if model is not regulator
         if ($model) {
@@ -159,15 +161,34 @@ class ObjectService extends AbstractService
             $objects = array_merge($objects, $specificsObjects);
         }
 
-        return $objects;
+        if ($anr) {
+            $anrObjects = [];
+            foreach ($objects as $object) {
+                $inAnr = false;
+                foreach ($object['anrs'] as $anrObject) {
+                    if ($anrObject->id == $anr) {
+                        $inAnr = true;
+                    }
+                }
+
+                if ($inAnr) {
+                    $anrObjects[] = $object;
+                }
+            }
+
+            return $anrObjects;
+        } else {
+            return $objects;
+        }
+
     }
 
     /**
-     * get Complete Entity
      * @param $id
+     * @param string $context
      * @return mixed
      */
-    public function getCompleteEntity($id, $context = Object::FRONT_OFFICE) {
+    public function getCompleteEntity($id, $context = Object::CONTEXT_BDC, $anr = null) {
 
         /** @var Object $object */
         $object = $this->get('table')->getEntity($id);
@@ -178,15 +199,62 @@ class ObjectService extends AbstractService
         $objectObjectService = $this->get('objectObjectService');
         $object_arr['children'] = $objectObjectService->getRecursiveChildren($object_arr['id']);
 
-        // Retrieve parent recursively
-        if ($context == Object::BACK_OFFICE) {
-            $object_arr['parents'] = $objectObjectService->getRecursiveParents($object_arr['id']);
-        }
-
         // Calculate the risks table
         //$object_arr['risks'] = $this->buildRisksTable($object, $mode);
         $object_arr['risks'] = $this->getRisks($object);
         $object_arr['oprisks'] = $this->getRisksOp($object);
+
+        // Retrieve parent recursively
+        if ($context == Object::CONTEXT_ANR) {
+            $object_arr['parents'] = $objectObjectService->getRecursiveParents($object_arr['id']);
+            if (!$anr) {
+                throw new \Exception('Anr missing', 412);
+            }
+
+            /** @var InstanceTable $instanceTable */
+            $instanceTable = $this->get('instanceTable');
+            $instances  = $instanceTable->getEntityByFields(['anr' => $anr, 'object' => $id]);
+
+            $instances_arr = [];
+            foreach($instances as $instance) {
+                $instances_arr[] = [
+                    'id' => $instance->id,
+                    'name1' => $instance->name1,
+                    'name2' => $instance->name2,
+                    'name3' => $instance->name3,
+                    'name4' => $instance->name4,
+                    'label1' => $instance->label1,
+                    'label2' => $instance->label2,
+                    'label3' => $instance->label3,
+                    'label4' => $instance->label4,
+                ];
+            }
+
+            $object_arr['replicas'] = $instances_arr;
+        } else {
+
+            $anrsIds = [];
+            foreach($object->anrs as $anr) {
+                $anrsIds[] = $anr->id;
+            }
+
+            /** @var ModelTable $modelTable */
+            $modelTable = $this->get('modelTable');
+            $models = $modelTable->getByAnrs($anrsIds);
+
+            $models_arr = [];
+            foreach($models as $model) {
+                $models_arr[] = [
+                    'id' => $model->id,
+                    'label1' => $model->label1,
+                    'label2' => $model->label2,
+                    'label3' => $model->label3,
+                    'label4' => $model->label4,
+                ];
+            }
+
+            $object_arr['replicas'] = $models_arr;
+        }
 
         return $object_arr;
     }
@@ -282,13 +350,13 @@ class ObjectService extends AbstractService
      * @param null $model
      * @return int
      */
-    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $model = null){
+    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $model = null, $anr = null){
 
         $filterAnd = [];
         if ((!is_null($asset)) && ($asset != 0)) $filterAnd['asset'] = $asset;
         if ((!is_null($category)) && ($category != 0)) $filterAnd['category'] = $category;
 
-        $result = $this->getAnrObjects($page, 0, $order, $filter, $filterAnd, $model);
+        $result = $this->getAnrObjects($page, 0, $order, $filter, $filterAnd, $model, $anr);
 
         return count($result);
 
@@ -827,9 +895,14 @@ class ObjectService extends AbstractService
         }
 
         //delete instance from anr
+        /** @var InstanceTable $instanceTable */
+        $instanceTable = $this->get('instanceTable');
         $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $objectId]);
+        $i = 1;
         foreach($instances as $instance) {
-            $instanceTable->delete($instance->id);
+            $last = ($i == count($instances)) ? true : false;
+            $instanceTable->delete($instance->id, $last);
+            $i++;
         }
 
         //detach object

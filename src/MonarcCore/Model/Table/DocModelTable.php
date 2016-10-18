@@ -3,7 +3,7 @@ namespace MonarcCore\Model\Table;
 
 class DocModelTable extends AbstractEntityTable {
 
-	public function delete($id)
+	public function delete($id, $last = true)
     {
         $c = $this->getClass();
         if(class_exists($c)){
@@ -17,7 +17,7 @@ class DocModelTable extends AbstractEntityTable {
             	unlink($entity->get('path'));
             }
 
-            $this->getDb()->delete($entity);
+            $this->getDb()->delete($entity, $last);
             return true;
         }else{
             return false;
