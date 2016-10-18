@@ -784,7 +784,7 @@ class InstanceService extends AbstractService
                 'd_impact' => ($instance) ? $instance->d : null,
                 'd_risk' => $instanceRisk->riskD,
                 'd_risk_enabled' => $amv->threat->d,
-                't' => ($instanceRisk->kindOfMeasure == InstanceRisk::KIND_NOT_TREATED) ? false : true,
+                't' => ((!$instanceRisk->kindOfMeasure) || ($instanceRisk->kindOfMeasure == InstanceRisk::KIND_NOT_TREATED)) ? false : true,
                 'target_risk' => $instanceRisk->cacheTargetedRisk,
                 'max_risk' => $instanceRisk->cacheMaxRisk,
                 'comment' => $instanceRisk->comment,
