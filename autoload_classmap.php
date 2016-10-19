@@ -23,6 +23,8 @@ return array(
     'MonarcCore\Controller\ApiAnrObjectControllerFactory'                   => __DIR__ . '/src/MonarcCore/Controller/ApiAnrObjectControllerFactory.php',
     'MonarcCore\Controller\ApiModelsController'                             => __DIR__ . '/src/MonarcCore/Controller/ApiModelsController.php',
     'MonarcCore\Controller\ApiModelsControllerFactory'                      => __DIR__ . '/src/MonarcCore/Controller/ApiModelsControllerFactory.php',
+    'MonarcCore\Controller\ApiModelsDuplicationController'                  => __DIR__ . '/src/MonarcCore/Controller/ApiModelsDuplicationController.php',
+    'MonarcCore\Controller\ApiModelsDuplicationControllerFactory'           => __DIR__ . '/src/MonarcCore/Controller/ApiModelsDuplicationControllerFactory.php',
     'MonarcCore\Controller\ApiScalesCommentsController'                     => __DIR__ . '/src/MonarcCore/Controller/ApiScalesCommentsController.php',
     'MonarcCore\Controller\ApiScalesCommentsControllerFactory'              => __DIR__ . '/src/MonarcCore/Controller/ApiScalesCommentsControllerFactory.php',
     'MonarcCore\Controller\ApiScalesController'                             => __DIR__ . '/src/MonarcCore/Controller/ApiScalesController.php',
