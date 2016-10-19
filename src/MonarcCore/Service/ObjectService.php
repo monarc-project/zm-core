@@ -186,6 +186,7 @@ class ObjectService extends AbstractService
     /**
      * @param $id
      * @param string $context
+     * @param integer $anr
      * @return mixed
      */
     public function getCompleteEntity($id, $context = Object::CONTEXT_BDC, $anr = null) {
@@ -206,6 +207,20 @@ class ObjectService extends AbstractService
 
         // Retrieve parent recursively
         if ($context == Object::CONTEXT_ANR) {
+            //Check if the object is linked to the $anr
+            $found = false;
+            foreach($object->anrs as $a){
+                if($a->id == $anr){
+                    $found = true;
+                    break;
+                }
+            }
+
+            if(!$found){
+                throw new \Exception('This object is not bound to the ANR', 412);
+            }
+
+            $anrObjectTable = $this->get('anrObjectTable');
             $object_arr['parents'] = $objectObjectService->getRecursiveParents($object_arr['id']);
             if (!$anr) {
                 throw new \Exception('Anr missing', 412);
@@ -261,7 +276,7 @@ class ObjectService extends AbstractService
 
     /**
      * Get Risks
-     * 
+     *
      * @param $object
      * @return array
      */
@@ -450,6 +465,10 @@ class ObjectService extends AbstractService
         //object dependencies
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($object, $dependencies);
+
+        if(empty($data['category'])){
+            $data['category'] = null;
+        }
 
         $position = $this->managePosition('category', $object, (int) $data['category'], (int) $data['implicitPosition'], $previousInstance, 'post');
         $object->position = $position;

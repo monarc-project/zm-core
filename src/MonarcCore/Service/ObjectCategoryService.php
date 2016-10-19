@@ -160,6 +160,7 @@ class ObjectCategoryService extends AbstractService
             $entity->setRoot(null);
         }
 
+        $this->get('table')->save($entity);
         return $entity->getJsonArray();
 
     }

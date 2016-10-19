@@ -510,9 +510,10 @@ class Object extends AbstractEntity
                 ),
             ));
 
+            // Dans certains cas, la catégorie n'est pas fourni. On n'empêche pas le save mais du coup l'objet n'est pas attaché à une categorie
             $this->inputFilter->add(array(
                 'name' => 'category',
-                'required' => (!$partial) ? true : false,
+                'required' => false,
                 'allow_empty' => true,
                 'continue_if_empty' => true,
                 'filters' => array(),
