@@ -209,9 +209,11 @@ class ObjectService extends AbstractService
         if ($context == Object::CONTEXT_ANR) {
             //Check if the object is linked to the $anr
             $found = false;
+            $anrObject = null;
             foreach($object->anrs as $a){
                 if($a->id == $anr){
                     $found = true;
+                    $anrObject = $a;
                     break;
                 }
             }
@@ -232,17 +234,22 @@ class ObjectService extends AbstractService
 
             $instances_arr = [];
             foreach($instances as $instance) {
-                $instances_arr[] = [
-                    'id' => $instance->id,
-                    'name1' => $instance->name1,
-                    'name2' => $instance->name2,
-                    'name3' => $instance->name3,
-                    'name4' => $instance->name4,
-                    'label1' => $instance->label1,
-                    'label2' => $instance->label2,
-                    'label3' => $instance->label3,
-                    'label4' => $instance->label4,
-                ];
+                $asc = $this->get('instanceTable')->getAscendance($instance);
+
+                $names = array(
+                    'name1' => $anrObject->label1,
+                    'name2' => $anrObject->label2,
+                    'name3' => $anrObject->label3,
+                    'name4' => $anrObject->label4,
+                );
+                foreach($asc as $a){
+                    $names['name1'] .= ' > '.$a['name1'];
+                    $names['name2'] .= ' > '.$a['name2'];
+                    $names['name3'] .= ' > '.$a['name3'];
+                    $names['name4'] .= ' > '.$a['name4'];
+                }
+                $names['id'] = $instance->get('id');
+                $instances_arr[] = $names;
             }
 
             $object_arr['replicas'] = $instances_arr;
