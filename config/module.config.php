@@ -173,6 +173,19 @@ return array(
                 ),
             ),
 
+            'monarc_api_models_duplication' => array(
+                'type' => 'segment',
+                'options' => array(
+                    'route' => '/api/models-duplication[/:id]',
+                    'constraints' => array(
+                        'id' => '[0-9]+',
+                    ),
+                    'defaults' => array(
+                        'controller' => 'MonarcCore\Controller\ApiModelsDuplication',
+                    ),
+                ),
+            ),
+
             'monarc_api_scales' => array(
                 'type' => 'segment',
                 'options' => array(

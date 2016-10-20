@@ -473,6 +473,10 @@ class ObjectService extends AbstractService
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($object, $dependencies);
 
+        if(empty($data['category'])){
+            $data['category'] = null;
+        }
+
         $position = $this->managePosition('category', $object, (int) $data['category'], (int) $data['implicitPosition'], $previousInstance, 'post');
         $object->position = $position;
         unset($data['implicitPosition']);
