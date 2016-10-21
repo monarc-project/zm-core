@@ -22,13 +22,6 @@ class RolfTag extends AbstractEntity
     protected $id;
 
     /**
-     * @var \MonarcCore\Model\Entity\RolfRisk
-     *
-     * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\RolfRisk", mappedBy="tags")
-     */
-    protected $risks;
-
-    /**
      * @var string
      *
      * @ORM\Column(name="code", type="string", length=255, nullable=true)
