@@ -127,6 +127,44 @@ class Measure extends AbstractEntity
         return $this->anr;
     }
 
+
+
+    /**
+     * @return Model
+     */
+    public function getModels()
+    {
+        return $this->models;
+    }
+
+    /**
+     * @return Model
+     */
+    public function getModel($id)
+    {
+        return $this->models[$id];
+    }
+
+    /**
+     * @param Model $models
+     * @return Asset
+     */
+    public function setModels($models)
+    {
+        $this->models = $models;
+        return $this;
+    }
+
+    /**
+     * Add model
+     *
+     * @param Model $model
+     */
+    public function addModel(Model $model)
+    {
+        $this->models[] = $model;
+    }
+
     /**
      * @param int $anr
      * @return Measure
