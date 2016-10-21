@@ -646,7 +646,7 @@ class InstanceService extends AbstractService
         $instance['risks'] = $this->getRisks($anrId, $instance);
         $instance['oprisks'] = $this->getRisksOp($anrId, $instance);
         $instance['consequences'] = $this->getConsequences($anrId, $instance);
-        $instance['assets'] = $this->getAssets($instance);
+        $instance['instances'] = $this->getOtherInstances($instance);
 
         return $instance;
     }
@@ -657,7 +657,7 @@ class InstanceService extends AbstractService
      * @param $instance
      * @return array
      */
-    public function getAssets($instance){
+    public function getOtherInstances($instance){
         $instances = array();
         $result = $this->get('table')->getRepository()
             ->createQueryBuilder('t')
