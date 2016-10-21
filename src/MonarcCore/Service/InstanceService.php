@@ -181,6 +181,8 @@ class InstanceService extends AbstractService
      */
     public function updateInstance($anrId, $id, $data, $historic = []){
 
+        $time = microtime(true);
+
         $historic[] = $id;
 
         /** @var InstanceTable $table */
@@ -232,7 +234,10 @@ class InstanceService extends AbstractService
         }
 
         if (isset($data['consequences'])) {
+            $i = 1;
             foreach($data['consequences'] as $consequence) {
+                $patchInstance = ($i == count($data['consequences'])) ? true : false;
+
                 $dataConsequences = [
                     'anr' => $anrId,
                     'c' => intval($consequence['c_risk']),
@@ -243,11 +248,14 @@ class InstanceService extends AbstractService
 
                 /** @var InstanceConsequenceService $instanceConsequenceService */
                 $instanceConsequenceService = $this->get('instanceConsequenceService');
-                $instanceConsequenceService->patch($consequence['id'], $dataConsequences);
+                $instanceConsequenceService->patchConsequence($consequence['id'], $dataConsequences, $patchInstance);
+
+                $i++;
             }
         }
 
         $this->updateImpacts($anrId, $instance->parent, $data);
+
 
         $forbiddenFields = $this->forbiddenFields;
         $forbiddenFields[] = 'c';

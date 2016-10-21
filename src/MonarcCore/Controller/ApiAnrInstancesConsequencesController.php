@@ -34,7 +34,7 @@ class ApiAnrInstancesConsequencesController extends AbstractController
     {
         $data['anr'] = (int) $this->params()->fromRoute('anrid');
 
-        $this->getService()->patch($id, $data);
+        $this->getService()->patchConsequence($id, $data);
 
         return new JsonModel(array('status' => 'ok'));
     }
