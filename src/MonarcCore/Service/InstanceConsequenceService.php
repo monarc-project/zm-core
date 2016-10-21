@@ -155,6 +155,7 @@ class InstanceConsequenceService extends AbstractService
             'anr' => $anrId
         ];
 
+
         //if father instance exist, create instance for child
         $eventManager = new EventManager();
         $eventManager->setIdentifiers('instance');

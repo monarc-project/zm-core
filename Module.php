@@ -43,7 +43,7 @@ class Module
                 $params = $e->getParams();
                 /** @var InstanceService $instanceService */
                 $instanceService = $sm->get('MonarcCore\Service\InstanceService');
-                $result = $instanceService->patchInstance($params['anrId'], $params['instanceId'], $params['data']);
+                $result = $instanceService->patchInstance($params['anrId'], $params['instanceId'], $params['data'], [], true);
                 return $result;
             }, 100);
 

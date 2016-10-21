@@ -192,9 +192,6 @@ class InstanceService extends AbstractService
             throw new \Exception('Instance not exist', 412);
         }
 
-        //security
-        $this->filterPostFields($data, $instance);
-
         $instance->setDbAdapter($table->getDb());
         $instance->setLanguage($this->getLanguage());
 
@@ -245,7 +242,6 @@ class InstanceService extends AbstractService
                 ];
 
                 /** @var InstanceConsequenceService $instanceConsequenceService */
-
                 $instanceConsequenceService = $this->get('instanceConsequenceService');
                 $instanceConsequenceService->patch($consequence['id'], $dataConsequences);
             }
@@ -253,6 +249,13 @@ class InstanceService extends AbstractService
 
         $this->updateImpacts($anrId, $instance->parent, $data);
 
+        $forbiddenFields = $this->forbiddenFields;
+        $forbiddenFields[] = 'c';
+        $forbiddenFields[] = 'i';
+        $forbiddenFields[] = 'd';
+
+        //security
+        $this->filterPostFields($data, $instance, $forbiddenFields);
 
         $instance->exchangeArray($data);
 
@@ -271,7 +274,6 @@ class InstanceService extends AbstractService
         } else {
             $instance->root = null;
         }
-
 
         $id = $this->get('table')->save($instance);
 
@@ -300,7 +302,7 @@ class InstanceService extends AbstractService
      * @return mixed|null
      * @throws \Exception
      */
-    public function patchInstance($anrId, $id, $data, $historic = []){
+    public function patchInstance($anrId, $id, $data, $historic = [], $modifyCid = false){
 
         //security
         $this->filterPatchFields($data);
