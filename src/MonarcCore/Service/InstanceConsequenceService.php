@@ -21,7 +21,7 @@ class InstanceConsequenceService extends AbstractService
     protected $objectTable;
     protected $scaleTable;
     protected $scaleImpactTypeTable;
-    protected $forbiddenFields = ['anr', 'instance', 'object', 'scaleImpactType', 'ch', 'ih', 'dh'];
+    protected $forbiddenFields = ['anr', 'instance', 'object', 'scaleImpactType'];
 
     /**
      * Patch
@@ -105,17 +105,6 @@ class InstanceConsequenceService extends AbstractService
         unset($data['anr']);
 
         $this->verifyRates($anrId, $data, $this->getEntity($id));
-
-        //values
-        if (isset($data['c'])) {
-            $data['ch'] = ($data['c'] == -1) ? 1 : 0;
-        }
-        if (isset($data['i'])) {
-            $data['ih'] = ($data['i'] == -1) ? 1 : 0;
-        }
-        if (isset($data['d'])) {
-            $data['dh'] = ($data['d'] == -1) ? 1 : 0;
-        }
 
         return $data;
     }

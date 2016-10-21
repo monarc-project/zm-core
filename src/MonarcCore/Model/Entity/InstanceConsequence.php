@@ -79,44 +79,23 @@ class InstanceConsequence extends AbstractEntity
     /**
      * @var smallint
      *
-     * @ORM\Column(name="c", type="smallint", options={"unsigned":true, "default":1})
+     * @ORM\Column(name="c", type="smallint", options={"unsigned":true, "default":-1})
      */
-    protected $c = '1';
+    protected $c = -1;
 
     /**
      * @var smallint
      *
-     * @ORM\Column(name="i", type="smallint", options={"unsigned":true, "default":1})
+     * @ORM\Column(name="i", type="smallint", options={"unsigned":true, "default":-1})
      */
-    protected $i = '1';
+    protected $i = -1;
 
     /**
      * @var smallint
      *
-     * @ORM\Column(name="d", type="smallint", options={"unsigned":true, "default":1})
+     * @ORM\Column(name="d", type="smallint", options={"unsigned":true, "default":-1})
      */
-    protected $d = '1';
-
-    /**
-     * @var smallint
-     *
-     * @ORM\Column(name="ch", type="smallint", options={"unsigned":true, "default":0})
-     */
-    protected $ch = '0';
-
-    /**
-     * @var smallint
-     *
-     * @ORM\Column(name="ih", type="smallint", options={"unsigned":true, "default":0})
-     */
-    protected $ih = '0';
-
-    /**
-     * @var smallint
-     *
-     * @ORM\Column(name="dh", type="smallint", options={"unsigned":true, "default":0})
-     */
-    protected $dh = '0';
+    protected $d = -1;
 
     /**
      * @var string
