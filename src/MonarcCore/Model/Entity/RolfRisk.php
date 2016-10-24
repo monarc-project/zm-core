@@ -23,6 +23,16 @@ class RolfRisk extends AbstractEntity
     protected $id;
 
     /**
+     * @var \MonarcCore\Model\Entity\Anr
+     *
+     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Anr", cascade={"persist"})
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true)
+     * })
+     */
+    protected $anr;
+
+    /**
      * @var \MonarcCore\Model\Entity\RolfCategory
      *
      * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\RolfCategory", inversedBy="rolf_categories", cascade={"persist"})
@@ -150,6 +160,24 @@ class RolfRisk extends AbstractEntity
     public function setId($id)
     {
         $this->id = $id;
+        return $this;
+    }
+
+    /**
+     * @return Anr
+     */
+    public function getAnr()
+    {
+        return $this->anr;
+    }
+
+    /**
+     * @param Anr $anr
+     * @return RolfRisk
+     */
+    public function setAnr($anr)
+    {
+        $this->anr = $anr;
         return $this;
     }
 
