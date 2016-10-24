@@ -2,7 +2,7 @@
 
 use Phinx\Migration\AbstractMigration;
 
-class ChangeIndex extends AbstractMigration
+class AddIndex extends AbstractMigration
 {
     /**
      * Change Method.
@@ -30,24 +30,7 @@ class ChangeIndex extends AbstractMigration
         $tables = ['rolf_categories', 'rolf_tags', 'rolf_risks'];
 
         foreach($tables as $tableName) {
-            $foreignKeys = [$tableName . '_ibfk_1', 'anr_id_3', 'anr_id_2', 'anr_id'];
-            foreach ($foreignKeys as $key) {
-                $table = $this->table($tableName);
-                if ($table->hasForeignKey($key)) {
-                    $table->dropForeignKey($key);
-                }
-                $table->update();
-            }
 
-            $indexes = ['anr_id_3', 'anr_id_2', 'anr_id'];
-            foreach ($indexes as $index) {
-                $table = $this->table($tableName);
-                if ($table->hasIndex($index)) {
-                    $table->removeIndex($index);
-                }
-                $table->update();
-            }
-            
             $table = $this->table($tableName);
             $table
                 ->addIndex(array('anr_id', 'code'), array('unique' => true))
