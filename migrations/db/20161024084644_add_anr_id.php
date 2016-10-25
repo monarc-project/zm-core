@@ -57,11 +57,6 @@ class AddAnrId extends AbstractMigration
         $table->addForeignKey('anr_id', 'anrs', 'id', array('delete' => 'CASCADE','update' => 'RESTRICT'))
             ->update();
 
-        //objects
-        $table = $this->table('objects');
-        $table->changeColumn('anr_id', 'integer', array('null' => true, 'signed' => false, 'after' => 'id'))
-            ->update();
-
         //objects categories
         $table = $this->table('objects_categories');
         $table->addColumn('anr_id', 'integer', array('null' => true, 'signed' => false, 'after' => 'id'))

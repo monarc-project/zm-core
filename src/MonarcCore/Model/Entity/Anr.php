@@ -24,7 +24,7 @@ class Anr extends AbstractEntity
     /**
      * @var \MonarcCore\Model\Entity\Object
      *
-     * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Object", mappedBy="anrs")
+     * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Object", mappedBy="anrs", cascade={"persist"})
      */
     protected $objects;
 
@@ -284,5 +284,22 @@ class Anr extends AbstractEntity
         return $this;
     }
 
+    /**
+     * @return Object
+     */
+    public function getObjects()
+    {
+        return $this->objects;
+    }
+
+    /**
+     * @param Object $objects
+     * @return Anr
+     */
+    public function setObjects($objects)
+    {
+        $this->objects = $objects;
+        return $this;
+    }
 }
 

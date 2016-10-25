@@ -349,13 +349,22 @@ class Object extends AbstractEntity
     }
 
     /**
-     * @return \Doctrine\Common\Collections\Collection
+     * @return Anr
      */
     public function getAnrs()
     {
         return $this->anrs;
     }
 
+    /**
+     * @param Anr $anrs
+     * @return Object
+     */
+    public function setAnrs($anrs)
+    {
+        $this->anrs = $anrs;
+        return $this;
+    }
 
     /**
      * Add Anr
@@ -368,14 +377,16 @@ class Object extends AbstractEntity
         $currentAnrs = $this->anrs;
 
         $errors = false;
-        foreach ($currentAnrs as $currentAnr) {
-            if ($currentAnr->id == $anr->id) {
-                $errors = true;
+        if ($currentAnrs) {
+            foreach ($currentAnrs as $currentAnr) {
+                if ($currentAnr->id == $anr->id) {
+                    $errors = true;
+                }
             }
-        }
 
-        if  (!$errors) {
-            $this->anrs[] = $anr;
+            if (!$errors) {
+                $this->anrs[] = $anr;
+            }
         }
     }
 
