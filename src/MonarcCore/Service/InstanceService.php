@@ -814,7 +814,6 @@ class InstanceService extends AbstractService
      * @return array
      */
     public function getRisksOp($anrId, $instance = null) {
-
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('table');
 
@@ -853,48 +852,33 @@ class InstanceService extends AbstractService
 
         $riskOps = [];
         foreach ($instancesRisksOp as $instanceRiskOp) {
-
-            $fields = ['r', 'o', 'l', 'f', 'p'];
-
-            $maxNet = -1;
-            $maxTarget = -1;
-            foreach ($fields as $field) {
-                $nameNet = 'net' . $field;
-                $nameTarget = 'net' . $field;
-                if ($instanceRiskOp->$nameNet > $maxNet) {
-                    $maxNet = $instanceRiskOp->$nameNet;
-                }
-                if ($instanceRiskOp->$nameTarget > $maxTarget) {
-                    $maxTarget = $instanceRiskOp->$nameTarget;
-                }
-            }
-
-            $risk = (($maxNet != -1) && ($instanceRiskOp->netProb != -1)) ? $instanceRiskOp->netProb * $maxNet : '';
-            $target = (($maxTarget != -1) && ($instanceRiskOp->netProb != -1)) ? $instanceRiskOp->netProb * $maxTarget : '';
-
             $riskOps[] = [
                 'id' => $instanceRiskOp->id,
                 'description1' => $instanceRiskOp->riskCacheLabel1,
                 'description2' => $instanceRiskOp->riskCacheLabel2,
                 'description3' => $instanceRiskOp->riskCacheLabel3,
                 'description4' => $instanceRiskOp->riskCacheLabel4,
-                'prob' => $instanceRiskOp->netProb,
+
+                'netProb' => $instanceRiskOp->netProb,
+                'netR' => $instanceRiskOp->netR,
+                'netO' => $instanceRiskOp->netO,
+                'netL' => $instanceRiskOp->netL,
+                'netF' => $instanceRiskOp->netF,
+                'netP' => $instanceRiskOp->netP,
+                'cacheNetRisk' => $instanceRiskOp->cacheNetRisk,
+
+                'brutProb' => $instanceRiskOp->brutProb,
+                'brutR' => $instanceRiskOp->brutR,
+                'brutO' => $instanceRiskOp->brutO,
+                'brutL' => $instanceRiskOp->brutL,
+                'brutF' => $instanceRiskOp->brutF,
+                'brutP' => $instanceRiskOp->brutP,
+                'cacheBrutRisk' => $instanceRiskOp->cacheBrutRisk,
+
                 'kindOfMeasure' => $instanceRiskOp->kindOfMeasure,
-                'r' => $instanceRiskOp->netR,
-                'o' => $instanceRiskOp->netO,
-                'l' => $instanceRiskOp->netL,
-                'f' => $instanceRiskOp->netF,
-                'p' => $instanceRiskOp->netP,
-                'brut_prob' => $instanceRiskOp->brutProb,
-                'brut_r' => $instanceRiskOp->brutR,
-                'brut_o' => $instanceRiskOp->brutO,
-                'brut_l' => $instanceRiskOp->brutL,
-                'brut_f' => $instanceRiskOp->brutF,
-                'brut_p' => $instanceRiskOp->brutP,
-                'risk' => $risk,
                 'comment' => $instanceRiskOp->comment,
                 't' => ($instanceRiskOp->kindOfMeasure == InstanceRiskOp::KIND_NOT_TREATED) ? false : true,
-                'target' => $target,
+                'cacheTargetedRisk' => $instanceRiskOp->cacheTargetedRisk,
             ];
         }
 
