@@ -550,6 +550,15 @@ class ObjectService extends AbstractService
             unset($data['rolfTag']);
         }
 
+        if(isset($data['scope']) && $data['scope'] != $object->scope){
+            throw new \Exception('You cannot change the scope of an existing object.', 412);
+        }
+
+        if(isset($data['asset']) && $data['asset'] != $object->asset->id){
+            throw new \Exception('You cannot change the asset type of an existing object.', 412);
+        }
+
+
         if (isset($data['implicitPosition'])) {
             $data['position'] = $this->managePosition('category', $object, $data['category'], $data['implicitPosition'], $previous, 'update');
         }
