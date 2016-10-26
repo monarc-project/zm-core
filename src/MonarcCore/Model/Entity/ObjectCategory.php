@@ -22,6 +22,16 @@ class ObjectCategory extends AbstractEntity
     protected $id;
 
     /**
+     * @var \MonarcCore\Model\Entity\Anr
+     *
+     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Anr", cascade={"persist"})
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true)
+     * })
+     */
+    protected $anr;
+
+    /**
      * @var \MonarcCore\Model\Entity\ObjectCategory
      *
      * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\ObjectCategory", cascade={"persist"})
@@ -125,6 +135,24 @@ class ObjectCategory extends AbstractEntity
     public function setId($id)
     {
         $this->id = $id;
+        return $this;
+    }
+
+    /**
+     * @return Anr
+     */
+    public function getAnr()
+    {
+        return $this->anr;
+    }
+
+    /**
+     * @param Anr $anr
+     * @return ObjectCategory
+     */
+    public function setAnr($anr)
+    {
+        $this->anr = $anr;
         return $this;
     }
 

@@ -40,9 +40,8 @@ class Object extends AbstractEntity
     protected $anr;
 
     /**
-     * @var \MonarcCore\Model\Entity\Anr
-     *
-     * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Anr", inversedBy="anrs", cascade={"persist"})
+     * @var \Doctrine\Common\Collections\Collection
+     * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Anr", inversedBy="objects", cascade={"persist"})
      * @ORM\JoinTable(name="anrs_objects",
      *  joinColumns={@ORM\JoinColumn(name="object_id", referencedColumnName="id")},
      *  inverseJoinColumns={@ORM\JoinColumn(name="anr_id", referencedColumnName="id")}
@@ -349,13 +348,22 @@ class Object extends AbstractEntity
     }
 
     /**
-     * @return \Doctrine\Common\Collections\Collection
+     * @return Anr
      */
     public function getAnrs()
     {
         return $this->anrs;
     }
 
+    /**
+     * @param Anr $anrs
+     * @return Object
+     */
+    public function setAnrs($anrs)
+    {
+        $this->anrs = $anrs;
+        return $this;
+    }
 
     /**
      * Add Anr
@@ -368,13 +376,15 @@ class Object extends AbstractEntity
         $currentAnrs = $this->anrs;
 
         $errors = false;
-        foreach ($currentAnrs as $currentAnr) {
-            if ($currentAnr->id == $anr->id) {
-                $errors = true;
+        if ($currentAnrs) {
+            foreach ($currentAnrs as $currentAnr) {
+                if ($currentAnr->id == $anr->id) {
+                    $errors = true;
+                }
             }
         }
 
-        if  (!$errors) {
+        if (!$errors) {
             $this->anrs[] = $anr;
         }
     }

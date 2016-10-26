@@ -332,26 +332,27 @@ class ObjectService extends AbstractService
                     /** @var RolfTagTable $rolfTagTable */
                     $rolfTagTable = $this->get('rolfTagTable');
                     $rolfTag = $rolfTagTable->getEntity($object->rolfTag->id);
-
                     $rolfRisks = $rolfTag->risks;
 
-                    foreach ($rolfRisks as $rolfRisk) {
 
-                        $riskOps[] = [
-                            'description1' => $rolfRisk->label1,
-                            'description2' => $rolfRisk->label2,
-                            'description3' => $rolfRisk->label3,
-                            'description4' => $rolfRisk->label4,
-                            'prob' => '-',
-                            'r' => '-',
-                            'o' => '-',
-                            'l' => '-',
-                            'p' => '-',
-                            'risk' => '-',
-                            'comment' => '',
-                            't' => '',
-                            'target' => '-',
-                        ];
+                    if(!empty($rolfRisks)){
+                        foreach ($rolfRisks as $rolfRisk) {
+                            $riskOps[] = [
+                                'description1' => $rolfRisk->label1,
+                                'description2' => $rolfRisk->label2,
+                                'description3' => $rolfRisk->label3,
+                                'description4' => $rolfRisk->label4,
+                                'prob' => '-',
+                                'r' => '-',
+                                'o' => '-',
+                                'l' => '-',
+                                'p' => '-',
+                                'risk' => '-',
+                                'comment' => '',
+                                't' => '',
+                                'target' => '-',
+                            ];
+                        }
                     }
                 }
             }
