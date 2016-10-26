@@ -40,9 +40,8 @@ class Object extends AbstractEntity
     protected $anr;
 
     /**
-     * @var \MonarcCore\Model\Entity\Anr
-     *
-     * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Anr", inversedBy="anrs", cascade={"persist"})
+     * @var \Doctrine\Common\Collections\Collection
+     * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Anr", inversedBy="objects", cascade={"persist"})
      * @ORM\JoinTable(name="anrs_objects",
      *  joinColumns={@ORM\JoinColumn(name="object_id", referencedColumnName="id")},
      *  inverseJoinColumns={@ORM\JoinColumn(name="anr_id", referencedColumnName="id")}
@@ -383,10 +382,10 @@ class Object extends AbstractEntity
                     $errors = true;
                 }
             }
+        }
 
-            if (!$errors) {
-                $this->anrs[] = $anr;
-            }
+        if (!$errors) {
+            $this->anrs[] = $anr;
         }
     }
 
