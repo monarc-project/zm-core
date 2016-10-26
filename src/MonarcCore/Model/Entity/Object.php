@@ -382,10 +382,10 @@ class Object extends AbstractEntity
                     $errors = true;
                 }
             }
+        }
 
-            if (!$errors) {
-                $this->anrs[] = $anr;
-            }
+        if (!$errors) {
+            $this->anrs[] = $anr;
         }
     }
 
