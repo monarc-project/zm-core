@@ -9,11 +9,12 @@ namespace MonarcCore\Service;
  */
 class ScaleCommentService extends AbstractService
 {
+    protected $anrTable;
     protected $scaleTable;
     protected $scaleService;
     protected $scaleImpactTypeService;
     protected $scaleImpactTypeTable;
-    protected $dependencies = ['scale', 'scaleImpactType'];
+    protected $dependencies = ['anr', 'scale', 'scaleImpactType'];
     protected $forbiddenFields = ['anr', 'scale'];
 
     public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null){
