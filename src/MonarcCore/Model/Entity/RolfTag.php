@@ -94,6 +94,14 @@ class RolfTag extends AbstractEntity
      */
     protected $updatedAt;
 
+
+    /**
+     * @var \MonarcCore\Model\Entity\RolfRisk
+     *
+     * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\RolfRisk", mappedBy="tags", cascade={"persist"})
+     */
+    protected $risks;
+
     /**
      * @return int
      */
