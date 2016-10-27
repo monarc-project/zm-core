@@ -43,7 +43,7 @@ class Module
                 $params = $e->getParams();
                 /** @var InstanceService $instanceService */
                 $instanceService = $sm->get('MonarcCore\Service\InstanceService');
-                $result = $instanceService->patchInstance($params['anrId'], $params['instanceId'], $params['data']);
+                $result = $instanceService->patchInstance($params['anrId'], $params['instanceId'], $params['data'], [], true);
                 return $result;
             }, 100);
 
@@ -104,7 +104,6 @@ class Module
             'factories' => array(
                 '\MonarcCore\Controller\Index'                          => '\MonarcCore\Controller\IndexControllerFactory',
                 '\MonarcCore\Controller\Authentication'                 => '\MonarcCore\Controller\AuthenticationControllerFactory',
-                '\MonarcCore\Controller\ApiModels'                      => '\MonarcCore\Controller\ApiModelsControllerFactory',
                 '\MonarcCore\Controller\ApiAnr'                         => '\MonarcCore\Controller\ApiAnrControllerFactory',
                 '\MonarcCore\Controller\ApiAnrInstances'                => '\MonarcCore\Controller\ApiAnrInstancesControllerFactory',
                 '\MonarcCore\Controller\ApiAnrInstancesConsequences'    => '\MonarcCore\Controller\ApiAnrInstancesConsequencesControllerFactory',
@@ -113,6 +112,8 @@ class Module
                 '\MonarcCore\Controller\ApiAnrLibrary'                  => '\MonarcCore\Controller\ApiAnrLibraryControllerFactory',
                 '\MonarcCore\Controller\ApiAnrLibraryCategory'          => '\MonarcCore\Controller\ApiAnrLibraryCategoryControllerFactory',
                 '\MonarcCore\Controller\ApiAnrObject'                   => '\MonarcCore\Controller\ApiAnrObjectControllerFactory',
+                '\MonarcCore\Controller\ApiModels'                      => '\MonarcCore\Controller\ApiModelsControllerFactory',
+                '\MonarcCore\Controller\ApiModelsDuplication'           => '\MonarcCore\Controller\ApiModelsDuplicationControllerFactory',
                 '\MonarcCore\Controller\ApiScales'                      => '\MonarcCore\Controller\ApiScalesControllerFactory',
                 '\MonarcCore\Controller\ApiScalesTypes'                 => '\MonarcCore\Controller\ApiScalesTypesControllerFactory',
                 '\MonarcCore\Controller\ApiScalesComments'              => '\MonarcCore\Controller\ApiScalesCommentsControllerFactory',

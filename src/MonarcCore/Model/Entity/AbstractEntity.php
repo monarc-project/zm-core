@@ -28,6 +28,9 @@ abstract class AbstractEntity implements InputFilterAwareInterface
     const CONTEXT_BDC = 'bdc';
     const CONTEXT_ANR = 'anr';
 
+    const SOURCE_COMMON = 'common';
+    const SOURCE_CLIENT = 'cli';
+
     public function getArrayCopy()
     {
         return get_object_vars($this);

@@ -309,4 +309,29 @@ class ModelService extends AbstractService
             }
         }
     }
+
+    /**
+     * Duplicate
+     *
+     * @param $modelId
+     * @return mixed|null
+     */
+    public function duplicate($modelId) {
+        //retrieve model
+        /** @var ModelTable $modelTable */
+        $modelTable = $this->get('table');
+        $model = $modelTable->getEntity($modelId);
+
+        //duplicate model
+        $newModel = clone $model;
+        $newModel->setId(null);
+        $id = $modelTable->save($newModel);
+
+        //duplicate anr
+        /** @var AnrService $anrService */
+        $anrService = $this->get('anrService');
+        $anrService->duplicate($newModel->anr);
+
+        return $id;
+    }
 }

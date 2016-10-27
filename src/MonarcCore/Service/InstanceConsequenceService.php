@@ -21,7 +21,7 @@ class InstanceConsequenceService extends AbstractService
     protected $objectTable;
     protected $scaleTable;
     protected $scaleImpactTypeTable;
-    protected $forbiddenFields = ['anr', 'instance', 'object', 'scaleImpactType', 'ch', 'ih', 'dh'];
+    protected $forbiddenFields = ['anr', 'instance', 'object', 'scaleImpactType'];
 
     /**
      * Patch
@@ -30,7 +30,7 @@ class InstanceConsequenceService extends AbstractService
      * @param $data
      * @return mixed
      */
-    public function patch($id, $data){
+    public function patchConsequence($id, $data, $patchInstance = true){
 
         $anrId = $data['anr'];
 
@@ -50,7 +50,7 @@ class InstanceConsequenceService extends AbstractService
 
             parent::patch($id,$data);
 
-            $this->updateInstanceImpacts($id);
+            $this->updateInstanceImpacts($id, $patchInstance);
         }
 
         return $id;
@@ -106,17 +106,6 @@ class InstanceConsequenceService extends AbstractService
 
         $this->verifyRates($anrId, $data, $this->getEntity($id));
 
-        //values
-        if (isset($data['c'])) {
-            $data['ch'] = ($data['c'] == -1) ? 1 : 0;
-        }
-        if (isset($data['i'])) {
-            $data['ih'] = ($data['i'] == -1) ? 1 : 0;
-        }
-        if (isset($data['d'])) {
-            $data['dh'] = ($data['d'] == -1) ? 1 : 0;
-        }
-
         return $data;
     }
 
@@ -125,7 +114,7 @@ class InstanceConsequenceService extends AbstractService
      *
      * @param $instanceConsequencesId
      */
-    protected function updateInstanceImpacts($instanceConsequencesId) {
+    protected function updateInstanceImpacts($instanceConsequencesId, $patchInstance = true) {
 
         $rolfpTypes = ScaleImpactType::getScaleImpactTypeRolfp();
 
@@ -145,23 +134,25 @@ class InstanceConsequenceService extends AbstractService
             }
         }
 
-        $anrId = $instanceCurrentConsequence->anr->id;
-        $instanceId = $instanceCurrentConsequence->instance->id;
+        if ($patchInstance) {
+            $anrId = $instanceCurrentConsequence->anr->id;
+            $instanceId = $instanceCurrentConsequence->instance->id;
 
-        $data = [
-            'c' => max($instanceC),
-            'i' => max($instanceI),
-            'd' => max($instanceD),
-            'anr' => $anrId
-        ];
+            $data = [
+                'c' => max($instanceC),
+                'i' => max($instanceI),
+                'd' => max($instanceD),
+                'anr' => $anrId
+            ];
 
-        //if father instance exist, create instance for child
-        $eventManager = new EventManager();
-        $eventManager->setIdentifiers('instance');
+            //if father instance exist, create instance for child
+            $eventManager = new EventManager();
+            $eventManager->setIdentifiers('instance');
 
-        $sharedEventManager = $eventManager->getSharedManager();
-        $eventManager->setSharedManager($sharedEventManager);
-        $eventManager->trigger('patch', null, compact(['anrId', 'instanceId', 'data']));
+            $sharedEventManager = $eventManager->getSharedManager();
+            $eventManager->setSharedManager($sharedEventManager);
+            $eventManager->trigger('patch', null, compact(['anrId', 'instanceId', 'data']));
+        }
     }
 
     /**
@@ -176,7 +167,7 @@ class InstanceConsequenceService extends AbstractService
         $instancesConsequences = $instanceConsequenceTable->getEntityByFields(['scaleImpactType' => $scaleImpactTypeId]);
 
         foreach($instancesConsequences as $instanceConsequence) {
-            $this->patch($instanceConsequence->id, $data);
+            $this->patchConsequence($instanceConsequence->id, $data);
         }
     }
 }

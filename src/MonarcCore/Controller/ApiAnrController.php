@@ -16,7 +16,6 @@ class ApiAnrController extends AbstractController
         return $this->methodNotAllowed();
     }
 
-
     public function create($data)
     {
         return $this->methodNotAllowed();

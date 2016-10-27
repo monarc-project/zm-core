@@ -209,9 +209,11 @@ class ObjectService extends AbstractService
         if ($context == Object::CONTEXT_ANR) {
             //Check if the object is linked to the $anr
             $found = false;
+            $anrObject = null;
             foreach($object->anrs as $a){
                 if($a->id == $anr){
                     $found = true;
+                    $anrObject = $a;
                     break;
                 }
             }
@@ -232,17 +234,22 @@ class ObjectService extends AbstractService
 
             $instances_arr = [];
             foreach($instances as $instance) {
-                $instances_arr[] = [
-                    'id' => $instance->id,
-                    'name1' => $instance->name1,
-                    'name2' => $instance->name2,
-                    'name3' => $instance->name3,
-                    'name4' => $instance->name4,
-                    'label1' => $instance->label1,
-                    'label2' => $instance->label2,
-                    'label3' => $instance->label3,
-                    'label4' => $instance->label4,
-                ];
+                $asc = $this->get('instanceTable')->getAscendance($instance);
+
+                $names = array(
+                    'name1' => $anrObject->label1,
+                    'name2' => $anrObject->label2,
+                    'name3' => $anrObject->label3,
+                    'name4' => $anrObject->label4,
+                );
+                foreach($asc as $a){
+                    $names['name1'] .= ' > '.$a['name1'];
+                    $names['name2'] .= ' > '.$a['name2'];
+                    $names['name3'] .= ' > '.$a['name3'];
+                    $names['name4'] .= ' > '.$a['name4'];
+                }
+                $names['id'] = $instance->get('id');
+                $instances_arr[] = $names;
             }
 
             $object_arr['replicas'] = $instances_arr;
@@ -325,26 +332,27 @@ class ObjectService extends AbstractService
                     /** @var RolfTagTable $rolfTagTable */
                     $rolfTagTable = $this->get('rolfTagTable');
                     $rolfTag = $rolfTagTable->getEntity($object->rolfTag->id);
-
                     $rolfRisks = $rolfTag->risks;
 
-                    foreach ($rolfRisks as $rolfRisk) {
 
-                        $riskOps[] = [
-                            'description1' => $rolfRisk->label1,
-                            'description2' => $rolfRisk->label2,
-                            'description3' => $rolfRisk->label3,
-                            'description4' => $rolfRisk->label4,
-                            'prob' => '-',
-                            'r' => '-',
-                            'o' => '-',
-                            'l' => '-',
-                            'p' => '-',
-                            'risk' => '-',
-                            'comment' => '',
-                            't' => '',
-                            'target' => '-',
-                        ];
+                    if(!empty($rolfRisks)){
+                        foreach ($rolfRisks as $rolfRisk) {
+                            $riskOps[] = [
+                                'description1' => $rolfRisk->label1,
+                                'description2' => $rolfRisk->label2,
+                                'description3' => $rolfRisk->label3,
+                                'description4' => $rolfRisk->label4,
+                                'prob' => '-',
+                                'r' => '-',
+                                'o' => '-',
+                                'l' => '-',
+                                'p' => '-',
+                                'risk' => '-',
+                                'comment' => '',
+                                't' => '',
+                                'target' => '-',
+                            ];
+                        }
                     }
                 }
             }
@@ -559,6 +567,15 @@ class ObjectService extends AbstractService
             unset($data['rolfTag']);
             $setRolfTagNull = true;
         }
+
+        if(isset($data['scope']) && $data['scope'] != $object->scope){
+            throw new \Exception('You cannot change the scope of an existing object.', 412);
+        }
+
+        if(isset($data['asset']) && $data['asset'] != $object->asset->id){
+            throw new \Exception('You cannot change the asset type of an existing object.', 412);
+        }
+
 
         if (isset($data['implicitPosition'])) {
             $data['position'] = $this->managePosition('category', $object, $data['category'], $data['implicitPosition'], $previous, 'update');

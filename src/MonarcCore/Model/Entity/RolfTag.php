@@ -22,11 +22,14 @@ class RolfTag extends AbstractEntity
     protected $id;
 
     /**
-     * @var \MonarcCore\Model\Entity\RolfRisk
+     * @var \MonarcCore\Model\Entity\Anr
      *
-     * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\RolfRisk", mappedBy="tags")
+     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Anr", cascade={"persist"})
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true)
+     * })
      */
-    protected $risks;
+    protected $anr;
 
     /**
      * @var string
@@ -91,6 +94,14 @@ class RolfTag extends AbstractEntity
      */
     protected $updatedAt;
 
+
+    /**
+     * @var \MonarcCore\Model\Entity\RolfRisk
+     *
+     * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\RolfRisk", mappedBy="tags", cascade={"persist"})
+     */
+    protected $risks;
+
     /**
      * @return int
      */
@@ -106,6 +117,24 @@ class RolfTag extends AbstractEntity
     public function setId($id)
     {
         $this->id = $id;
+        return $this;
+    }
+
+    /**
+     * @return Anr
+     */
+    public function getAnr()
+    {
+        return $this->anr;
+    }
+
+    /**
+     * @param Anr $anr
+     * @return RolfTag
+     */
+    public function setAnr($anr)
+    {
+        $this->anr = $anr;
         return $this;
     }
 

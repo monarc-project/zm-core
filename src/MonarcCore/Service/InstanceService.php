@@ -181,6 +181,8 @@ class InstanceService extends AbstractService
      */
     public function updateInstance($anrId, $id, $data, $historic = []){
 
+        $time = microtime(true);
+
         $historic[] = $id;
 
         /** @var InstanceTable $table */
@@ -191,9 +193,6 @@ class InstanceService extends AbstractService
         if (!$instance) {
             throw new \Exception('Instance not exist', 412);
         }
-
-        //security
-        $this->filterPostFields($data, $instance);
 
         $instance->setDbAdapter($table->getDb());
         $instance->setLanguage($this->getLanguage());
@@ -235,7 +234,10 @@ class InstanceService extends AbstractService
         }
 
         if (isset($data['consequences'])) {
+            $i = 1;
             foreach($data['consequences'] as $consequence) {
+                $patchInstance = ($i == count($data['consequences'])) ? true : false;
+
                 $dataConsequences = [
                     'anr' => $anrId,
                     'c' => intval($consequence['c_risk']),
@@ -245,14 +247,23 @@ class InstanceService extends AbstractService
                 ];
 
                 /** @var InstanceConsequenceService $instanceConsequenceService */
-
                 $instanceConsequenceService = $this->get('instanceConsequenceService');
-                $instanceConsequenceService->patch($consequence['id'], $dataConsequences);
+                $instanceConsequenceService->patchConsequence($consequence['id'], $dataConsequences, $patchInstance);
+
+                $i++;
             }
         }
 
         $this->updateImpacts($anrId, $instance->parent, $data);
 
+
+        $forbiddenFields = $this->forbiddenFields;
+        $forbiddenFields[] = 'c';
+        $forbiddenFields[] = 'i';
+        $forbiddenFields[] = 'd';
+
+        //security
+        $this->filterPostFields($data, $instance, $forbiddenFields);
 
         $instance->exchangeArray($data);
 
@@ -271,7 +282,6 @@ class InstanceService extends AbstractService
         } else {
             $instance->root = null;
         }
-
 
         $id = $this->get('table')->save($instance);
 
@@ -300,7 +310,7 @@ class InstanceService extends AbstractService
      * @return mixed|null
      * @throws \Exception
      */
-    public function patchInstance($anrId, $id, $data, $historic = []){
+    public function patchInstance($anrId, $id, $data, $historic = [], $modifyCid = false){
 
         //security
         $this->filterPatchFields($data);
@@ -399,19 +409,16 @@ class InstanceService extends AbstractService
      */
     public function delete($id) {
 
+
         /** @var InstanceTable $table */
         $table = $this->get('table');
         $instance = $table->getEntity($id);
-
-        if (!$instance) {
-            throw new \Exception('Instance not exist', 412);
-        }
 
         if ($instance->level != Instance::LEVEL_ROOT) {
             throw new \Exception('This is not a root instance', 412);
         }
 
-        $this->managePosition('parent', $instance, $instance->parent, null, null, 'delete');
+        $this->managePosition('parent', $instance, $instance->parent->id, null, null, 'delete');
 
         $this->get('table')->delete($id);
     }
@@ -644,7 +651,7 @@ class InstanceService extends AbstractService
         $instance['risks'] = $this->getRisks($anrId, $instance);
         $instance['oprisks'] = $this->getRisksOp($anrId, $instance);
         $instance['consequences'] = $this->getConsequences($anrId, $instance);
-        $instance['assets'] = $this->getAssets($instance);
+        $instance['instances'] = $this->getOtherInstances($instance);
 
         return $instance;
     }
@@ -655,7 +662,7 @@ class InstanceService extends AbstractService
      * @param $instance
      * @return array
      */
-    public function getAssets($instance){
+    public function getOtherInstances($instance){
         $instances = array();
         $result = $this->get('table')->getRepository()
             ->createQueryBuilder('t')
@@ -804,7 +811,6 @@ class InstanceService extends AbstractService
      * @return array
      */
     public function getRisksOp($anrId, $instance = null) {
-
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('table');
 
@@ -843,48 +849,33 @@ class InstanceService extends AbstractService
 
         $riskOps = [];
         foreach ($instancesRisksOp as $instanceRiskOp) {
-
-            $fields = ['r', 'o', 'l', 'f', 'p'];
-
-            $maxNet = -1;
-            $maxTarget = -1;
-            foreach ($fields as $field) {
-                $nameNet = 'net' . $field;
-                $nameTarget = 'net' . $field;
-                if ($instanceRiskOp->$nameNet > $maxNet) {
-                    $maxNet = $instanceRiskOp->$nameNet;
-                }
-                if ($instanceRiskOp->$nameTarget > $maxTarget) {
-                    $maxTarget = $instanceRiskOp->$nameTarget;
-                }
-            }
-
-            $risk = (($maxNet != -1) && ($instanceRiskOp->netProb != -1)) ? $instanceRiskOp->netProb * $maxNet : '';
-            $target = (($maxTarget != -1) && ($instanceRiskOp->netProb != -1)) ? $instanceRiskOp->netProb * $maxTarget : '';
-
             $riskOps[] = [
                 'id' => $instanceRiskOp->id,
                 'description1' => $instanceRiskOp->riskCacheLabel1,
                 'description2' => $instanceRiskOp->riskCacheLabel2,
                 'description3' => $instanceRiskOp->riskCacheLabel3,
                 'description4' => $instanceRiskOp->riskCacheLabel4,
-                'prob' => $instanceRiskOp->netProb,
+
+                'netProb' => $instanceRiskOp->netProb,
+                'netR' => $instanceRiskOp->netR,
+                'netO' => $instanceRiskOp->netO,
+                'netL' => $instanceRiskOp->netL,
+                'netF' => $instanceRiskOp->netF,
+                'netP' => $instanceRiskOp->netP,
+                'cacheNetRisk' => $instanceRiskOp->cacheNetRisk,
+
+                'brutProb' => $instanceRiskOp->brutProb,
+                'brutR' => $instanceRiskOp->brutR,
+                'brutO' => $instanceRiskOp->brutO,
+                'brutL' => $instanceRiskOp->brutL,
+                'brutF' => $instanceRiskOp->brutF,
+                'brutP' => $instanceRiskOp->brutP,
+                'cacheBrutRisk' => $instanceRiskOp->cacheBrutRisk,
+
                 'kindOfMeasure' => $instanceRiskOp->kindOfMeasure,
-                'r' => $instanceRiskOp->netR,
-                'o' => $instanceRiskOp->netO,
-                'l' => $instanceRiskOp->netL,
-                'f' => $instanceRiskOp->netF,
-                'p' => $instanceRiskOp->netP,
-                'brut_prob' => $instanceRiskOp->brutProb,
-                'brut_r' => $instanceRiskOp->brutR,
-                'brut_o' => $instanceRiskOp->brutO,
-                'brut_l' => $instanceRiskOp->brutL,
-                'brut_f' => $instanceRiskOp->brutF,
-                'brut_p' => $instanceRiskOp->brutP,
-                'risk' => $risk,
                 'comment' => $instanceRiskOp->comment,
                 't' => ($instanceRiskOp->kindOfMeasure == InstanceRiskOp::KIND_NOT_TREATED) ? false : true,
-                'target' => $target,
+                'cacheTargetedRisk' => $instanceRiskOp->cacheTargetedRisk,
             ];
         }
 

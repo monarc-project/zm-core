@@ -22,9 +22,12 @@ class Theme extends AbstractEntity
     protected $id;
 
     /**
-     * @var integer
+     * @var \MonarcCore\Model\Entity\Anr
      *
-     * @ORM\Column(name="anr_id", type="integer", nullable=true)
+     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Anr", cascade={"persist"})
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true)
+     * })
      */
     protected $anr;
 
@@ -99,6 +102,24 @@ class Theme extends AbstractEntity
     public function setId($id)
     {
         $this->id = $id;
+        return $this;
+    }
+
+    /**
+     * @return Anr
+     */
+    public function getAnr()
+    {
+        return $this->anr;
+    }
+
+    /**
+     * @param Anr $anr
+     * @return Theme
+     */
+    public function setAnr($anr)
+    {
+        $this->anr = $anr;
         return $this;
     }
 

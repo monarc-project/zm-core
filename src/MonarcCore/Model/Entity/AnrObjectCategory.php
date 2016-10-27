@@ -95,6 +95,42 @@ class AnrObjectCategory extends AbstractEntity
         return $this;
     }
 
+    /**
+     * @return Anr
+     */
+    public function getAnr()
+    {
+        return $this->anr;
+    }
+
+    /**
+     * @param Anr $anr
+     * @return AnrObjectCategory
+     */
+    public function setAnr($anr)
+    {
+        $this->anr = $anr;
+        return $this;
+    }
+
+    /**
+     * @return ObjectCategory
+     */
+    public function getCategory()
+    {
+        return $this->category;
+    }
+
+    /**
+     * @param ObjectCategory $category
+     * @return AnrObjectCategory
+     */
+    public function setCategory($category)
+    {
+        $this->category = $category;
+        return $this;
+    }
+
     public function getInputFilter($partial = false){
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);

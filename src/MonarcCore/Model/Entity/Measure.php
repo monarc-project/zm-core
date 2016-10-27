@@ -22,9 +22,12 @@ class Measure extends AbstractEntity
     protected $id;
 
     /**
-     * @var integer
+     * @var \MonarcCore\Model\Entity\Anr
      *
-     * @ORM\Column(name="anr_id", type="integer", nullable=true)
+     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Anr", cascade={"persist"})
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true)
+     * })
      */
     protected $anr;
 
@@ -113,6 +116,62 @@ class Measure extends AbstractEntity
     public function setId($id)
     {
         $this->id = $id;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getAnr()
+    {
+        return $this->anr;
+    }
+
+
+
+    /**
+     * @return Model
+     */
+    public function getModels()
+    {
+        return $this->models;
+    }
+
+    /**
+     * @return Model
+     */
+    public function getModel($id)
+    {
+        return $this->models[$id];
+    }
+
+    /**
+     * @param Model $models
+     * @return Asset
+     */
+    public function setModels($models)
+    {
+        $this->models = $models;
+        return $this;
+    }
+
+    /**
+     * Add model
+     *
+     * @param Model $model
+     */
+    public function addModel(Model $model)
+    {
+        $this->models[] = $model;
+    }
+
+    /**
+     * @param int $anr
+     * @return Measure
+     */
+    public function setAnr($anr)
+    {
+        $this->anr = $anr;
         return $this;
     }
 
