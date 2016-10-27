@@ -30,7 +30,7 @@ class InstanceConsequenceService extends AbstractService
      * @param $data
      * @return mixed
      */
-    public function patchConsequence($id, $data, $patchInstance = true){
+    public function patchConsequence($id, $data, $patchInstance = true, $local = true){
 
         $anrId = $data['anr'];
 
@@ -41,6 +41,18 @@ class InstanceConsequenceService extends AbstractService
                     $data['c'] = -1;
                     $data['i'] = -1;
                     $data['d'] = -1;
+                    if ($local) {
+                        $data['locallyTouched'] = 1;
+                    }
+                } else {
+                    if ($local) {
+                        $data['locallyTouched'] = 0;
+                    } else {
+                        $entity = $this->get('table')->getEntity($id);
+                        if ($entity->locallyTouched) {
+                            $data['isHidden'] = 1;
+                        }
+                    }
                 }
             }
 
@@ -167,7 +179,7 @@ class InstanceConsequenceService extends AbstractService
         $instancesConsequences = $instanceConsequenceTable->getEntityByFields(['scaleImpactType' => $scaleImpactTypeId]);
 
         foreach($instancesConsequences as $instanceConsequence) {
-            $this->patchConsequence($instanceConsequence->id, $data);
+            $this->patchConsequence($instanceConsequence->id, $data, true, false);
         }
     }
 }

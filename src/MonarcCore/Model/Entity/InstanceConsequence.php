@@ -74,7 +74,7 @@ class InstanceConsequence extends AbstractEntity
      *
      * @ORM\Column(name="locally_touched", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $localyTouched = '0';
+    protected $locallyTouched = '0';
 
     /**
      * @var smallint

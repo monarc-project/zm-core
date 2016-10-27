@@ -1014,7 +1014,8 @@ class InstanceService extends AbstractService
         //retrieve scale impact types
         /** @var ScaleImpactTypeTable $scaleImpactTypeTable */
         $scaleImpactTypeTable = $this->get('scaleImpactTypeTable');
-        $scalesImpactTypes = $scaleImpactTypeTable->getEntityByFields(['anr' => $anrId, 'isHidden' => 0]);
+        //$scalesImpactTypes = $scaleImpactTypeTable->getEntityByFields(['anr' => $anrId, 'isHidden' => 0]);
+        $scalesImpactTypes = $scaleImpactTypeTable->getEntityByFields(['anr' => $anrId]);
 
         /** @var InstanceConsequenceTable $instanceConsequenceTable */
         $instanceConsequenceTable = $this->get('instanceConsequenceTable');
@@ -1030,8 +1031,9 @@ class InstanceService extends AbstractService
                 'instance' => $this->get('instanceTable')->getEntity($instanceId),
                 'object' => $object,
                 'scaleImpactType' => $scalesImpactType,
+                'isHidden' => $scalesImpactType->isHidden,
             ];
-
+            
             $class = $this->get('instanceConsequenceEntity');
             $instanceConsequenceEntity = new $class();
 

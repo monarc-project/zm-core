@@ -185,19 +185,17 @@ class ScaleImpactTypeService extends AbstractService
         $this->filterPatchFields($data);
 
         if (isset($data['isHidden'])) {
-            if ($data['isHidden']) {
+            $instancesConsequencesData = [
+                'c' => -1,
+                'i' => -1,
+                'd' => -1,
+                'anr' => $data['anr'],
+                'isHidden' => $data['isHidden'],
+            ];
 
-                $instancesConsequencesData = [
-                    'c' => -1,
-                    'i' => -1,
-                    'd' => -1,
-                    'anr' => $data['anr'],
-                ];
-
-                /** @var InstanceConsequenceService $instanceConsequenceService */
-                $instanceConsequenceService = $this->get('instanceConsequenceService');
-                $instanceConsequenceService->patchByScaleImpactType($id, $instancesConsequencesData);
-            }
+            /** @var InstanceConsequenceService $instanceConsequenceService */
+            $instanceConsequenceService = $this->get('instanceConsequenceService');
+            $instanceConsequenceService->patchByScaleImpactType($id, $instancesConsequencesData);
         }
 
         parent::patch($id, $data);
