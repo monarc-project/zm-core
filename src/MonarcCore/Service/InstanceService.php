@@ -414,15 +414,11 @@ class InstanceService extends AbstractService
         $table = $this->get('table');
         $instance = $table->getEntity($id);
 
-        if (!$instance) {
-            throw new \Exception('Instance not exist', 412);
-        }
-
         if ($instance->level != Instance::LEVEL_ROOT) {
             throw new \Exception('This is not a root instance', 412);
         }
 
-        $this->managePosition('parent', $instance, $instance->parent, null, null, 'delete');
+        $this->managePosition('parent', $instance, $instance->parent->id, null, null, 'delete');
 
         $this->get('table')->delete($id);
     }
