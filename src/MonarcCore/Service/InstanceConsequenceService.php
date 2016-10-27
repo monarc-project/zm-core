@@ -36,6 +36,8 @@ class InstanceConsequenceService extends AbstractService
 
         if (count($data)) {
 
+            $entity = $this->get('table')->getEntity($id);
+
             if (isset($data['isHidden'])) {
                 if ($data['isHidden']) {
                     $data['c'] = -1;
@@ -48,11 +50,16 @@ class InstanceConsequenceService extends AbstractService
                     if ($local) {
                         $data['locallyTouched'] = 0;
                     } else {
-                        $entity = $this->get('table')->getEntity($id);
                         if ($entity->locallyTouched) {
                             $data['isHidden'] = 1;
                         }
                     }
+                }
+            } else {
+                if ($entity->isHidden) {
+                    $data['c'] = -1;
+                    $data['i'] = -1;
+                    $data['d'] = -1;
                 }
             }
 

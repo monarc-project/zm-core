@@ -1033,7 +1033,7 @@ class InstanceService extends AbstractService
                 'scaleImpactType' => $scalesImpactType,
                 'isHidden' => $scalesImpactType->isHidden,
             ];
-            
+
             $class = $this->get('instanceConsequenceEntity');
             $instanceConsequenceEntity = new $class();
 
