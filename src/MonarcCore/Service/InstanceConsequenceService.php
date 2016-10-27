@@ -63,6 +63,7 @@ class InstanceConsequenceService extends AbstractService
                 }
             }
 
+
             $data = $this->updateConsequences($id, $data);
 
             $data['anr'] = $anrId;
@@ -185,8 +186,11 @@ class InstanceConsequenceService extends AbstractService
         $instanceConsequenceTable = $this->get('table');
         $instancesConsequences = $instanceConsequenceTable->getEntityByFields(['scaleImpactType' => $scaleImpactTypeId]);
 
+        $i = 1;
         foreach($instancesConsequences as $instanceConsequence) {
-            $this->patchConsequence($instanceConsequence->id, $data, true, false);
+            $last = ($i == count($instancesConsequences)) ? true : false;
+            $this->patchConsequence($instanceConsequence->id, $data, $last, false);
+            $i++;
         }
     }
 }
