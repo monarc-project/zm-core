@@ -445,8 +445,10 @@ class ObjectService extends AbstractService
             $previousInstance = null;
         }
 
+        $setRolfTagNull = false;
         if(empty($data['rolfTag'])){
             unset($data['rolfTag']);
+            $setRolfTagNull = true;
         }
 
         if (isset($data['anr']) && strlen($data['anr'])) {
@@ -460,11 +462,25 @@ class ObjectService extends AbstractService
             $object->setAnr($anr);
         }
 
+        // Si asset secondaire, pas de rolfTag
+        if(!empty($data['asset']) && !empty($data['rolfTag'])){
+            $assetTable = $this->get('assetTable');
+            $asset = $assetTable->get($data['asset']);
+            if(!empty($asset['type']) && $asset['type'] != \MonarcCore\Model\Entity\Asset::ASSET_PRIMARY){
+                unset($data['rolfTag']);
+                $setRolfTagNull = true;
+            }
+        }
+
         $object->exchangeArray($data);
 
         //object dependencies
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($object, $dependencies);
+
+        if($setRolfTagNull){
+            $object->set('rolfTag',null);
+        }
 
         if(empty($data['category'])){
             $data['category'] = null;
@@ -538,8 +554,10 @@ class ObjectService extends AbstractService
         $object->setLanguage($this->getLanguage());
 
         $previous = (isset($data['previous'])) ? $data['previous'] : null;
+        $setRolfTagNull = false;
         if(empty($data['rolfTag'])){
             unset($data['rolfTag']);
+            $setRolfTagNull = true;
         }
 
         if (isset($data['implicitPosition'])) {
@@ -562,10 +580,24 @@ class ObjectService extends AbstractService
 
         $currentRootCategory = ($object->category->root) ? $object->category->root : $object->category;
 
+        // Si asset secondaire, pas de rolfTag
+        if(!empty($data['asset']) && !empty($data['rolfTag'])){
+            $assetTable = $this->get('assetTable');
+            $asset = $assetTable->get($data['asset']);
+            if(!empty($asset['type']) && $asset['type'] != \MonarcCore\Model\Entity\Asset::ASSET_PRIMARY){
+                unset($data['rolfTag']);
+                $setRolfTagNull = true;
+            }
+        }
+
         $object->exchangeArray($data);
 
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($object, $dependencies);
+
+        if($setRolfTagNull){
+            $object->set('rolfTag',null);
+        }
 
         $objectRootCategory = ($object->category->root) ? $object->category->root : $object->category;
 
