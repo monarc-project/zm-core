@@ -972,7 +972,8 @@ class InstanceService extends AbstractService
                 'c_risk' => $instanceConsequence->c,
                 'i_risk' => $instanceConsequence->i,
                 'd_risk' => $instanceConsequence->d,
-                'is_hidden' => $instanceConsequence->isHidden,
+                'isHidden' => $instanceConsequence->isHidden,
+                'locallyTouched' => $instanceConsequence->locallyTouched,
             ];
         }
 

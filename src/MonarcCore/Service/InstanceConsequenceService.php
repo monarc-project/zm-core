@@ -63,7 +63,6 @@ class InstanceConsequenceService extends AbstractService
                 }
             }
 
-
             $data = $this->updateConsequences($id, $data);
 
             $data['anr'] = $anrId;
