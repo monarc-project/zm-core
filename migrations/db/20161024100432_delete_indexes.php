@@ -27,7 +27,7 @@ class DeleteIndexes extends AbstractMigration
      */
     public function change()
     {
-        $this->query('ALTER TABLE monarc_common.rolf_categories DROP FOREIGN KEY rolf_categories_ibfk_1');
+        //$this->query('ALTER TABLE monarc_common.rolf_categories DROP FOREIGN KEY rolf_categories_ibfk_1');
         $this->query('ALTER TABLE monarc_common.rolf_risks DROP FOREIGN KEY rolf_risks_ibfk_1');
         $this->query('ALTER TABLE monarc_common.rolf_tags DROP FOREIGN KEY rolf_tags_ibfk_1');
 

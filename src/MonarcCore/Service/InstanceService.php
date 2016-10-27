@@ -409,6 +409,7 @@ class InstanceService extends AbstractService
      */
     public function delete($id) {
 
+
         /** @var InstanceTable $table */
         $table = $this->get('table');
         $instance = $table->getEntity($id);

@@ -48,6 +48,7 @@ class AddAnrId extends AbstractMigration
             ->update();
 
         //rolf categories
+        /*
         $table = $this->table('rolf_categories');
         $table->addColumn('anr_id', 'integer', array('null' => true, 'signed' => false, 'after' => 'id'))
             ->addIndex(array('anr_id'))
@@ -56,6 +57,7 @@ class AddAnrId extends AbstractMigration
         $table = $this->table('rolf_categories');
         $table->addForeignKey('anr_id', 'anrs', 'id', array('delete' => 'CASCADE','update' => 'RESTRICT'))
             ->update();
+        */
 
         //objects categories
         $table = $this->table('objects_categories');
