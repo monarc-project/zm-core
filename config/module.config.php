@@ -298,12 +298,12 @@ return array(
             'MonarcCore\Service\UserRoleService'            => 'MonarcCore\Service\UserRoleServiceFactory',
             'MonarcCore\Service\UserService'                => 'MonarcCore\Service\UserServiceFactory',
             'MonarcCore\Service\VulnerabilityService'       => 'MonarcCore\Service\VulnerabilityServiceFactory',
-            'MonarcCore\Service\DocModelService'            => 'MonarcCore\Service\DocModelServiceFactory',
+            'MonarcCore\Service\DeliveriesModelsService'            => 'MonarcCore\Service\DeliveriesModelsServiceFactory',
             'MonarcCore\Service\ModelObjectService'         => 'MonarcCore\Service\ModelObjectServiceFactory',
             'MonarcCore\Service\UserProfileService'         => 'MonarcCore\Service\UserProfileServiceFactory',
 
             // Entities
-            '\MonarcCore\Model\Entity\DocModel' => '\MonarcCore\Service\Model\Entity\DocModelServiceModelEntity',
+            '\MonarcCore\Model\Entity\DeliveriesModels' => '\MonarcCore\Service\Model\Entity\DeliveriesModelsServiceModelEntity',
             '\MonarcCore\Model\Entity\Asset' => '\MonarcCore\Service\Model\Entity\AssetServiceModelEntity',
             '\MonarcCore\Model\Entity\City' => '\MonarcCore\Service\Model\Entity\CityServiceModelEntity',
             '\MonarcCore\Model\Entity\Country' => '\MonarcCore\Service\Model\Entity\CountryServiceModelEntity',
@@ -356,7 +356,7 @@ return array(
             '\MonarcCore\Model\Table\PasswordTokenTable' => '\MonarcCore\Service\Model\Table\PasswordTokenServiceModelTable',
             '\MonarcCore\Model\Table\UserTokenTable' => '\MonarcCore\Service\Model\Table\UserTokenServiceModelTable',
             '\MonarcCore\Model\Table\UserRoleTable' => '\MonarcCore\Service\Model\Table\UserRoleServiceModelTable',
-            '\MonarcCore\Model\Table\DocModelTable' => '\MonarcCore\Service\Model\Table\DocModelServiceModelTable',
+            '\MonarcCore\Model\Table\DeliveriesModelsTable' => '\MonarcCore\Service\Model\Table\DeliveriesModelsServiceModelTable',
 
             /* Security */
             '\MonarcCore\Service\SecurityService' => '\MonarcCore\Service\SecurityServiceFactory',

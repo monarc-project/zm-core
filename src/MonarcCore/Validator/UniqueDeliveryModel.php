@@ -4,7 +4,7 @@ namespace MonarcCore\Validator;
 
 use Zend\Validator\AbstractValidator;
 
-class UniqueDocModel extends AbstractValidator
+class UniqueDeliveryModel extends AbstractValidator
 {
 	protected $options = array(
 		'adapter' => null,
@@ -25,7 +25,7 @@ class UniqueDocModel extends AbstractValidator
 		if(empty($this->options['adapter'])){
 			return false;
 		}else{
-			$res = $this->options['adapter']->getRepository('\MonarcCore\Model\Entity\DocModel')->findOneByCategory($value);
+			$res = $this->options['adapter']->getRepository('\MonarcCore\Model\Entity\DeliveriesModels')->findOneByCategory($value);
 			if(!empty($res) && $this->options['id'] != $res->get('id')){
 				$this->error(self::ALREADYUSED);
 				return false;
