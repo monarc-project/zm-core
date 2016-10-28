@@ -298,7 +298,7 @@ return array(
             'MonarcCore\Service\UserRoleService'            => 'MonarcCore\Service\UserRoleServiceFactory',
             'MonarcCore\Service\UserService'                => 'MonarcCore\Service\UserServiceFactory',
             'MonarcCore\Service\VulnerabilityService'       => 'MonarcCore\Service\VulnerabilityServiceFactory',
-            'MonarcCore\Service\DeliveriesModelsService'            => 'MonarcCore\Service\DeliveriesModelsServiceFactory',
+            'MonarcCore\Service\DeliveriesModelsService'    => 'MonarcCore\Service\DeliveriesModelsServiceFactory',
             'MonarcCore\Service\ModelObjectService'         => 'MonarcCore\Service\ModelObjectServiceFactory',
             'MonarcCore\Service\UserProfileService'         => 'MonarcCore\Service\UserProfileServiceFactory',
 
