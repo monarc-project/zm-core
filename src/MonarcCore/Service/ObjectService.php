@@ -204,6 +204,7 @@ class ObjectService extends AbstractService
         //$object_arr['risks'] = $this->buildRisksTable($object, $mode);
         $object_arr['risks'] = $this->getRisks($object);
         $object_arr['oprisks'] = $this->getRisksOp($object);
+        $object_arr['parents'] = $this->getDirectParents($object_arr['id']);
 
         // Retrieve parent recursively
         if ($context == Object::CONTEXT_ANR) {
@@ -223,7 +224,6 @@ class ObjectService extends AbstractService
             }
 
             $anrObjectTable = $this->get('anrObjectTable');
-            $object_arr['parents'] = $objectObjectService->getRecursiveParents($object_arr['id']);
             if (!$anr) {
                 throw new \Exception('Anr missing', 412);
             }
@@ -840,7 +840,7 @@ class ObjectService extends AbstractService
         $model = $modelTable->getEntityByFields(['anr' => $anrId])[0];
 
         if (($model->isGeneric) && ($object->mode == Object::MODE_SPECIFIC)) {
-            throw new \Exception('You cannot add a specific object to and generic model');
+            throw new \Exception('You cannot add a specific object to a generic model', 412);
         }
 
         //retrieve anr
@@ -1066,6 +1066,10 @@ class ObjectService extends AbstractService
 
             $this->getRecursiveParents($parent, $array);
         }
+    }
+
+    public function getDirectParents($object_id){
+        return $this->get('objectObjectTable')->getDirectParentsInfos($object_id);
     }
 
     /**
