@@ -204,6 +204,7 @@ class ObjectService extends AbstractService
         //$object_arr['risks'] = $this->buildRisksTable($object, $mode);
         $object_arr['risks'] = $this->getRisks($object);
         $object_arr['oprisks'] = $this->getRisksOp($object);
+        $object_arr['parents'] = $this->getDirectParents($object_arr['id']);
 
         // Retrieve parent recursively
         if ($context == Object::CONTEXT_ANR) {
@@ -223,7 +224,6 @@ class ObjectService extends AbstractService
             }
 
             $anrObjectTable = $this->get('anrObjectTable');
-            $object_arr['parents'] = $this->getDirectParents($object_arr['id']);
             if (!$anr) {
                 throw new \Exception('Anr missing', 412);
             }
