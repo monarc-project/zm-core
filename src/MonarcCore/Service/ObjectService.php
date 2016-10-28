@@ -840,7 +840,7 @@ class ObjectService extends AbstractService
         $model = $modelTable->getEntityByFields(['anr' => $anrId])[0];
 
         if (($model->isGeneric) && ($object->mode == Object::MODE_SPECIFIC)) {
-            throw new \Exception('You cannot add a specific object to and generic model');
+            throw new \Exception('You cannot add a specific object to a generic model', 412);
         }
 
         //retrieve anr
