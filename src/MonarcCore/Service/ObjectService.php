@@ -223,7 +223,7 @@ class ObjectService extends AbstractService
             }
 
             $anrObjectTable = $this->get('anrObjectTable');
-            $object_arr['parents'] = $objectObjectService->getRecursiveParents($object_arr['id']);
+            $object_arr['parents'] = $this->getDirectParents($object_arr['id']);
             if (!$anr) {
                 throw new \Exception('Anr missing', 412);
             }
@@ -1066,6 +1066,10 @@ class ObjectService extends AbstractService
 
             $this->getRecursiveParents($parent, $array);
         }
+    }
+
+    public function getDirectParents($object_id){
+        return $this->get('objectObjectTable')->getDirectParentsInfos($object_id);
     }
 
     /**
