@@ -7,10 +7,10 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Amv
  *
- * @ORM\Table(name="doc_models")
+ * @ORM\Table(name="deliveries_models")
  * @ORM\Entity
  */
-class DocModel extends AbstractEntity
+class DeliveriesModels extends AbstractEntity
 {
     /**
      * @var integer
@@ -30,9 +30,30 @@ class DocModel extends AbstractEntity
     /**
      * @var string
      *
-     * @ORM\Column(name="description", type="text", nullable=true)
+     * @ORM\Column(name="description1", type="text", nullable=true)
      */
-    protected $description;
+    protected $description1;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="description2", type="text", nullable=true)
+     */
+    protected $description2;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="description3", type="text", nullable=true)
+     */
+    protected $description3;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="description4", type="text", nullable=true)
+     */
+    protected $description4;
 
     /**
      * @var string
@@ -75,6 +96,16 @@ class DocModel extends AbstractEntity
      * @ORM\Column(name="updated_at", type="datetime", nullable=true)
      */
     protected $updatedAt;
+
+    /**
+     * @var \MonarcCore\Model\Entity\Anr
+     *
+     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Anr", cascade={"persist"})
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true)
+     * })
+     */
+    protected $anr;
 
     const MODEL_CONTEXT_VALIDATION = 1; // Document model for Context validation
     const MODEL_ASSETS_AND_MODELS_VALIDATION = 2; // Document model for Assets and models validation
@@ -130,7 +161,7 @@ class DocModel extends AbstractEntity
                         ),
                     ),
                     array(
-                        'name' => '\MonarcCore\Validator\UniqueDocModel',
+                        'name' => '\MonarcCore\Validator\UniqueDeliveryModel',
                         'options' => array(
                             'adapter' => $this->getDbAdapter(),
                             'category' => $this->get('category'),

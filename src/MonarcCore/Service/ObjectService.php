@@ -627,8 +627,9 @@ class ObjectService extends AbstractService
                 $nbObjectsSameOldRootCategory = 0;
                 foreach($anr->objects as $anrObject) {
                     $anrObjectCategory = ($anrObject->category->root) ? $anrObject->category->root : $anrObject->category;
-                    if (($anrObjectCategory->id == $objectRootCategory->id) && ($anrObject->id != $object->id)) {
+                    if (($anrObjectCategory->id == $currentRootCategory->id) && ($anrObject->id != $object->id)) {
                         $nbObjectsSameOldRootCategory++;
+                        break; // no need to go further
                     }
                 }
                 if (!$nbObjectsSameOldRootCategory) {
@@ -647,8 +648,10 @@ class ObjectService extends AbstractService
                     $anrObjectCategory = ($anrObject->category->root) ? $anrObject->category->root : $anrObject->category;
                     if (($anrObjectCategory->id == $objectRootCategory->id) && ($anrObject->id != $object->id)) {
                         $nbObjectsSameNewRootCategory++;
+                        break; // no need to go further
                     }
-                }if (!$nbObjectsSameNewRootCategory) {
+                }
+                if (!$nbObjectsSameNewRootCategory) {
                     /** @var AnrObjectCategoryTable $anrObjectCategoryTable */
                     $anrObjectCategoryTable = $this->get('anrObjectCategoryTable');
 

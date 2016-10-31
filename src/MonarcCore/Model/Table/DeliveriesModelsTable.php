@@ -1,7 +1,7 @@
 <?php
 namespace MonarcCore\Model\Table;
 
-class DocModelTable extends AbstractEntityTable {
+class DeliveriesModelsTable extends AbstractEntityTable {
 
 	public function delete($id, $last = true)
     {

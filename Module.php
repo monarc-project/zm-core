@@ -134,7 +134,7 @@ class Module
         return array(
             'invokables' => array(
                 '\MonarcCore\Validator\UniqueEmail' => '\MonarcCore\Validator\UniqueEmail',
-                '\MonarcCore\Validator\UniqueDocModel' => '\MonarcCore\Validator\UniqueDocModel',
+                '\MonarcCore\Validator\UniqueDeliveryModel' => '\MonarcCore\Validator\UniqueDeliveryModel',
             ),
         );
     }
