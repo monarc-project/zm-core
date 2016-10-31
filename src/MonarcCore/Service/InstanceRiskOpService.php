@@ -17,15 +17,17 @@ class InstanceRiskOpService extends AbstractService
     protected $dependencies = ['anr', 'instance', 'object', 'rolfRisk'];
 
     protected $anrTable;
+    protected $modelTable;
     protected $instanceTable;
     protected $objectTable;
     protected $rolfRiskTable;
     protected $rolfTagTable;
+    protected $scaleTable;
     protected $forbiddenFields = ['anr', 'instance', 'object'];
 
     /**
      * Create Instance Risks Op
-     * 
+     *
      * @param $instanceId
      * @param $anrId
      * @param $object
@@ -115,5 +117,48 @@ class InstanceRiskOpService extends AbstractService
         $this->filterPatchFields($data);
 
         parent::patch($id, $data);
+    }
+
+    public function update($id, $data){
+        $risk = $this->get('table')->getEntity($id);
+        if (!$risk) {
+            throw new \Exception('Entity not exist', 412);
+        }
+        $this->verifyRates($risk->getAnr()->getId(), $data, $risk);
+
+        $risk->setDbAdapter($this->get('table')->getDb());
+        $risk->setLanguage($this->getLanguage());
+
+        if (empty($data)) {
+            throw new \Exception('Data missing', 412);
+        }
+
+        $risk->exchangeArray($data);
+
+        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $this->setDependencies($risk, $dependencies);
+
+        //Calculate risk values
+        $datatype = ['brut', 'net', 'targeted'];
+        $impacts = ['r', 'o', 'l', 'f', 'p'];
+
+        foreach($datatype as $type){
+            $max = -1;
+            $prob = $type.'Prob';
+            if($risk->$prob != -1){
+                foreach($impacts as $i){
+                    $icol = $type.strtoupper($i);
+                    if($risk->$icol > -1 && ( $risk->$prob * $risk->$icol > $max)){
+                        $max = $risk->$prob * $risk->$icol;
+                    }
+                }
+            }
+
+            $cache = 'cache'.ucfirst($type).'Risk';
+            $risk->$cache = $max;
+        }
+
+        $this->get('table')->save($risk);
+        return $risk->getJsonArray();
     }
 }
