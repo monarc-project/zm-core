@@ -82,7 +82,6 @@ abstract class AbstractEntity implements InputFilterAwareInterface
             ->setValidationGroup(InputFilterInterface::VALIDATE_ALL);
 
         $isValid = $filter->isValid();
-
         if(!$isValid){
             $field_errors = array();
 
@@ -93,7 +92,6 @@ abstract class AbstractEntity implements InputFilterAwareInterface
                     }
                 }
             }
-
             throw new \Exception(implode(", ", $field_errors), '412');
         }
 

@@ -325,12 +325,16 @@ class ModelService extends AbstractService
         //duplicate model
         $newModel = clone $model;
         $newModel->setId(null);
-        $id = $modelTable->save($newModel);
 
         //duplicate anr
         /** @var AnrService $anrService */
         $anrService = $this->get('anrService');
-        $anrService->duplicate($newModel->anr);
+        $newAnr = $anrService->duplicate($newModel->anr);
+
+        $newModel->setAnr($newAnr);
+
+
+        $id = $modelTable->save($newModel);
 
         return $id;
     }

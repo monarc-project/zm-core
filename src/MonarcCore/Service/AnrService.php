@@ -154,5 +154,7 @@ class AnrService extends AbstractService
 
             $n++;
         }
+
+        return $newAnr;
     }
 }

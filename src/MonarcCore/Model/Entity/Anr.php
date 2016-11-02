@@ -24,7 +24,7 @@ class Anr extends AbstractEntity
     /**
      * @var \MonarcCore\Model\Entity\Object
      *
-     * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Object", mappedBy="anrs", cascade={"persist"})
+     * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Object", mappedBy="anrs", cascade={"REMOVE"})
      */
     protected $objects;
 

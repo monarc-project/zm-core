@@ -32,7 +32,7 @@ class Instance extends AbstractEntity
      *
      * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Anr", cascade={"persist"})
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true)
+     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
      * })
      */
     protected $anr;
@@ -371,7 +371,9 @@ class Instance extends AbstractEntity
     }
 
     public function getInputFilter($partial = false){
-        if (!$this->inputFilter) {
+
+        //if (!$this->inputFilter) {
+
             parent::getInputFilter($partial);
 
             $texts = [
@@ -409,7 +411,7 @@ class Instance extends AbstractEntity
                     'validators' => array(),
                 ));
             }
-        }
+        //}
         return $this->inputFilter;
     }
 

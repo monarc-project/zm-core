@@ -26,7 +26,7 @@ class ScaleComment extends AbstractEntity
      *
      * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Anr", cascade={"persist"})
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true)
+     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
      * })
      */
     protected $anr;
@@ -36,7 +36,7 @@ class ScaleComment extends AbstractEntity
      *
      * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Scale", cascade={"persist"})
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="scale_id", referencedColumnName="id", nullable=true)
+     *   @ORM\JoinColumn(name="scale_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
      * })
      */
     protected $scale;
@@ -46,7 +46,7 @@ class ScaleComment extends AbstractEntity
      *
      * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\ScaleImpactType", cascade={"persist"})
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="scale_type_impact_id", referencedColumnName="id", nullable=true)
+     *   @ORM\JoinColumn(name="scale_type_impact_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
      * })
      */
     protected $scaleImpactType;

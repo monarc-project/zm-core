@@ -80,7 +80,7 @@ class InstanceService extends AbstractService
         $parent = ($data['parent']) ? $table->getEntity($data['parent']) : null;
         $parentId = ($data['parent']) ? ($data['parent']) : null;
 
-        $this->updateImpacts($anrId, $parent, $data);
+        $this->updateImpactsInherited($anrId, $parent, $data);
 
         //asset
         if (isset($object->asset)) {
@@ -179,15 +179,13 @@ class InstanceService extends AbstractService
      * @return mixed
      * @throws \Exception
      */
-    public function updateInstance($anrId, $id, $data, $historic = []){
-
-        $time = microtime(true);
+    public function updateInstance($anrId, $id, $data, &$historic = []){
 
         $historic[] = $id;
+        $initialData = $data;
 
         /** @var InstanceTable $table */
         $table = $this->get('table');
-
         $instance = $table->getEntity($id);
 
         if (!$instance) {
@@ -201,74 +199,14 @@ class InstanceService extends AbstractService
             throw new \Exception('Data missing', 412);
         }
 
-        if (isset($data['position'])) {
-            if (($data['position'] != $instance->position) || ($data['parent'] != $instance->parent)) {
+        $this->updatePosition($anrId, $instance, $data);
 
-                $parent = (isset($data['parent']) && $data['parent']) ? $data['parent'] : null;
-                $parentId = ($parent) ? $parent['id'] : null;
+        $this->updateConsequences($anrId, $data);
 
-                if ($data['position']) {
-                    $previousInstancePosition = ($data['position'] > $instance->position) ? $data['position'] : $data['position'] - 1;
-                    $fields = [
-                        'anr' => $anrId,
-                        'position' => $previousInstancePosition,
-                        'parent' => $parentId
-                    ];
-
-                    $entities = $table->getEntityByFields($fields);
-
-                    if ($entities) {
-                        $implicitPosition = 3;
-                        $previous = $entities[0];
-                    } else {
-                        $implicitPosition = 1;
-                        $previous = null;
-                    }
-                } else {
-                    $implicitPosition = 1;
-                    $previous = null;
-                }
-
-                $this->managePosition('parent', $instance, $parentId, $implicitPosition, $previous, 'update');
-            }
-        }
-
-        if (isset($data['consequences'])) {
-            $i = 1;
-            foreach($data['consequences'] as $consequence) {
-                $patchInstance = ($i == count($data['consequences'])) ? true : false;
-
-                $dataConsequences = [
-                    'anr' => $anrId,
-                    'c' => intval($consequence['c_risk']),
-                    'i' => intval($consequence['i_risk']),
-                    'd' => intval($consequence['d_risk']),
-                    'isHidden' => intval($consequence['isHidden']),
-                ];
-
-                /** @var InstanceConsequenceService $instanceConsequenceService */
-                $instanceConsequenceService = $this->get('instanceConsequenceService');
-                $instanceConsequenceService->patchConsequence($consequence['id'], $dataConsequences, $patchInstance);
-
-                $i++;
-            }
-        }
-
-        $this->updateImpacts($anrId, $instance->parent, $data);
-
-
-        $forbiddenFields = $this->forbiddenFields;
-        $forbiddenFields[] = 'c';
-        $forbiddenFields[] = 'i';
-        $forbiddenFields[] = 'd';
-
-        //security
-        $this->filterPostFields($data, $instance, $forbiddenFields);
-
+        $this->filterPostFields($data, $instance, $this->forbiddenFields + ['c', 'i', 'd']);
         $instance->exchangeArray($data);
 
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($instance, $dependencies);
+        $this->setDependencies($instance, $this->dependencies);
 
         if ($instance->parent) {
             $parentId = (is_object($instance->parent)) ? $instance->parent->id : $instance->parent['id'];
@@ -293,9 +231,11 @@ class InstanceService extends AbstractService
 
         $this->updateChildrenImpacts($instance);
 
-        $this->updateBrothers($anrId, $instance, $data, $historic);
+        $this->updateBrothers($anrId, $instance, $initialData, $historic);
 
-        $this->objectImpacts($instance);
+        if (count($historic) == 1) {
+            $this->objectImpacts($instance);
+        }
 
         return $id;
     }
@@ -324,33 +264,7 @@ class InstanceService extends AbstractService
         }
         $instanceParent = ($instance->parent) ? $instance->parent->id : null;
 
-        if (isset($data['position'])) {
-            if (($data['position'] != $instance->position) || ($data['parent'] != $instanceParent)) {
-
-                $parent = (isset($data['parent']) && $data['parent']) ? $data['parent'] : null;
-
-                if ($data['position']) {
-                    if (($data['parent'] == $instanceParent) && ($data['position'] > $instance->position)) {
-                        $previousInstancePosition = $data['position'];
-                    } else {
-                        $previousInstancePosition = $data['position'] - 1;
-                    }
-                    $fields = ['anr' => $anrId, 'position' => $previousInstancePosition, 'parent' => ($parent) ? $parent : 'null'];
-                    $previous = $table->getEntityByFields($fields);
-                    if ($previous) {
-                        $implicitPosition = 3;
-                        $previous = $previous[0];
-                    } else {
-                        $implicitPosition = 2;
-                        $previous = null;
-                    }
-                } else {
-                    $implicitPosition = 1;
-                    $previous = null;
-                }
-                $this->managePosition('parent', $instance, $parent, $implicitPosition, $previous, 'update');
-            }
-        }
+        $this->patchPosition($anrId, $instance, $instanceParent, $data);
 
         //parent values
         $parent = null;
@@ -369,13 +283,10 @@ class InstanceService extends AbstractService
             }
         }
 
-        $this->updateImpacts($anrId, $parent, $data);
-
         $instance->setLanguage($this->getLanguage());
         $instance->exchangeArray($data, true);
 
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($instance, $dependencies);
+        $this->setDependencies($instance, $this->dependencies);
 
         $instance->parent = ($instance->parent) ? $table->getEntity($instance->parent) : null;
 
@@ -418,7 +329,7 @@ class InstanceService extends AbstractService
             throw new \Exception('This is not a root instance', 412);
         }
 
-        $this->managePosition('parent', $instance, $instance->parent->id, null, null, 'delete');
+        $this->managePosition('parent', $instance, $instance->parent->id?$instance->parent->id:null, null, null, 'delete');
 
         $this->get('table')->delete($id);
     }
@@ -526,7 +437,7 @@ class InstanceService extends AbstractService
      * @param $parent
      * @param $data
      */
-    protected function updateImpacts($anrId, $parent, &$data) {
+    protected function updateImpactsInherited($anrId, $parent, &$data) {
 
         $this->verifyRates($anrId, $data);
 
@@ -607,17 +518,70 @@ class InstanceService extends AbstractService
      * @param $data
      * @param $historic
      */
-    protected function updateBrothers($anrId, $instance, $data, $historic) {
+    protected function updateBrothers($anrId, $instance, $data, &$historic) {
+        $fieldsToDelete = ['parent', 'createdAt', 'creator', 'risks', 'oprisks', 'instances'];
         //if source object is global, reverberate to other instance with the same source object
         if ($instance->object->scope == Object::SCOPE_GLOBAL) {
             //retrieve instance with same object source
             /** @var InstanceTable $table */
             $table = $this->get('table');
             $brothers = $table->getEntityByFields(['object' => $instance->object->id]);
-            foreach($brothers as $brother) {
+            foreach ($brothers as $brother) {
                 if (($brother->id != $instance->id) && (!in_array($brother->id, $historic))) {
+                    foreach($fieldsToDelete as $fieldToDelete) {
+                        if (isset($data[$fieldToDelete])) {
+                            unset($data[$fieldToDelete]);
+                        }
+                    }
+                    $data['id'] = $brother->id;
+
+
+                    if (isset($data['consequences'])) {
+
+                        //retrieve instance consequence id for the brother isnatnce id ans scale impact type
+                        /** @var InstanceConsequenceTable $instanceConsequenceTable */
+                        $instanceConsequenceTable = $this->get('instanceConsequenceTable');
+                        $instanceConsequences = $instanceConsequenceTable->getEntityByFields(['instance' => $brother->id]);
+                        foreach($instanceConsequences as $instanceConsequence) {
+                            foreach($data['consequences'] as $key => $dataConsequence) {
+                                if ($dataConsequence['scaleImpactType'] == $instanceConsequence->scaleImpactType->type) {
+                                    $data['consequences'][$key]['id'] = $instanceConsequence->id;
+                                }
+                            }
+                        }
+                    }
+
                     $this->updateInstance($anrId, $brother->id, $data, $historic);
                 }
+            }
+        }
+    }
+
+    /**
+     * Update Consequences
+     *
+     * @param $anrId
+     * @param $data
+     */
+    public function updateConsequences($anrId, $data) {
+        if (isset($data['consequences'])) {
+            $i = 1;
+            foreach($data['consequences'] as $consequence) {
+                $patchInstance = ($i == count($data['consequences'])) ? true : false;
+
+                $dataConsequences = [
+                    'anr' => $anrId,
+                    'c' => intval($consequence['c_risk']),
+                    'i' => intval($consequence['i_risk']),
+                    'd' => intval($consequence['d_risk']),
+                    'isHidden' => intval($consequence['isHidden']),
+                ];
+
+                /** @var InstanceConsequenceService $instanceConsequenceService */
+                $instanceConsequenceService = $this->get('instanceConsequenceService');
+                $instanceConsequenceService->patchConsequence($consequence['id'], $dataConsequences, $patchInstance);
+
+                $i++;
             }
         }
     }
@@ -636,6 +600,87 @@ class InstanceService extends AbstractService
 
         foreach($instanceRisks as $instanceRisk) {
             $instanceRiskService->updateRisks($instanceRisk->id);
+        }
+    }
+
+    /**
+     * Update Position
+     *
+     * @param $anrId
+     * @param $instance
+     * @param $data
+     */
+    public function updatePosition($anrId, $instance, $data) {
+        if (isset($data['position'])) {
+            if (($data['position'] != $instance->position) || ($data['parent'] != $instance->parent)) {
+
+                $parent = (isset($data['parent']) && $data['parent']) ? $data['parent'] : null;
+                $parentId = ($parent) ? $parent['id'] : null;
+
+                if ($data['position']) {
+                    $previousInstancePosition = ($data['position'] > $instance->position) ? $data['position'] : $data['position'] - 1;
+                    $fields = [
+                        'anr' => $anrId,
+                        'position' => $previousInstancePosition,
+                        'parent' => $parentId
+                    ];
+
+                    /** @var InstanceTable $table */
+                    $table = $this->get('table');
+                    $entities = $table->getEntityByFields($fields);
+
+                    if ($entities) {
+                        $implicitPosition = 3;
+                        $previous = $entities[0];
+                    } else {
+                        $implicitPosition = 1;
+                        $previous = null;
+                    }
+                } else {
+                    $implicitPosition = 1;
+                    $previous = null;
+                }
+
+                $this->managePosition('parent', $instance, $parentId, $implicitPosition, $previous, 'update');
+            }
+        }
+    }
+
+    /**
+     * Patch Position
+     *
+     * @param $anrId
+     * @param $instance
+     * @param $instanceParent
+     * @param $data
+     */
+    public function patchPosition($anrId, $instance, $instanceParent, $data) {
+        if (isset($data['position'])) {
+            if (($data['position'] != $instance->position) || ($data['parent'] != $instanceParent)) {
+
+                $parent = (isset($data['parent']) && $data['parent']) ? $data['parent'] : null;
+
+                if ($data['position']) {
+                    if (($data['parent'] == $instanceParent) && ($data['position'] > $instance->position)) {
+                        $previousInstancePosition = $data['position'];
+                    } else {
+                        $previousInstancePosition = $data['position'] - 1;
+                    }
+                    $fields = ['anr' => $anrId, 'position' => $previousInstancePosition, 'parent' => ($parent) ? $parent : 'null'];
+                    $previous = $this->get('table')->getEntityByFields($fields);
+                    if ($previous) {
+                        $implicitPosition = 3;
+                        $previous = $previous[0];
+                    } else {
+                        $implicitPosition = 2;
+                        $previous = null;
+                    }
+                } else {
+                    $implicitPosition = 1;
+                    $previous = null;
+                }
+                $this->managePosition('parent', $instance, $parent, $implicitPosition, $previous, 'update');
+            }
         }
     }
 
@@ -768,16 +813,24 @@ class InstanceService extends AbstractService
                 'assetDescription3' => $amv->asset->label3,
                 'assetDescription4' => $amv->asset->label4,
                 'threat' => $amv->threat->id,
-                'threatDescription1' => $amv->threat->label1,
-                'threatDescription2' => $amv->threat->label2,
-                'threatDescription3' => $amv->threat->label3,
-                'threatDescription4' => $amv->threat->label4,
+                'threatLabel1' => $amv->threat->label1,
+                'threatLabel2' => $amv->threat->label2,
+                'threatLabel3' => $amv->threat->label3,
+                'threatLabel4' => $amv->threat->label4,
+                'threatDescription1' => $amv->threat->description1,
+                'threatDescription2' => $amv->threat->description2,
+                'threatDescription3' => $amv->threat->description3,
+                'threatDescription4' => $amv->threat->description4,
                 'threatRate' => $instanceRisk->threatRate,
                 'vulnerability' => $amv->vulnerability->id,
-                'vulnDescription1' => $amv->vulnerability->label1,
-                'vulnDescription2' => $amv->vulnerability->label2,
-                'vulnDescription3' => $amv->vulnerability->label3,
-                'vulnDescription4' => $amv->vulnerability->label4,
+                'vulnLabel1' => $amv->vulnerability->label1,
+                'vulnLabel2' => $amv->vulnerability->label2,
+                'vulnLabel3' => $amv->vulnerability->label3,
+                'vulnLabel4' => $amv->vulnerability->label4,
+                'vulnDescription1' => $amv->vulnerability->description1,
+                'vulnDescription2' => $amv->vulnerability->description2,
+                'vulnDescription3' => $amv->vulnerability->description3,
+                'vulnDescription4' => $amv->vulnerability->description4,
                 'vulnerabilityRate' => $instanceRisk->vulnerabilityRate,
                 'kindOfMeasure' => $instanceRisk->kindOfMeasure,
                 'reductionAmount' => $instanceRisk->reductionAmount,
@@ -851,10 +904,15 @@ class InstanceService extends AbstractService
         foreach ($instancesRisksOp as $instanceRiskOp) {
             $riskOps[] = [
                 'id' => $instanceRiskOp->id,
-                'description1' => $instanceRiskOp->riskCacheLabel1,
-                'description2' => $instanceRiskOp->riskCacheLabel2,
-                'description3' => $instanceRiskOp->riskCacheLabel3,
-                'description4' => $instanceRiskOp->riskCacheLabel4,
+                'label1' => $instanceRiskOp->riskCacheLabel1,
+                'label2' => $instanceRiskOp->riskCacheLabel2,
+                'label3' => $instanceRiskOp->riskCacheLabel3,
+                'label4' => $instanceRiskOp->riskCacheLabel4,
+
+                'description1' => $instanceRiskOp->riskCacheDescription1,
+                'description2' => $instanceRiskOp->riskCacheDescription2,
+                'description3' => $instanceRiskOp->riskCacheDescription3,
+                'description4' => $instanceRiskOp->riskCacheDescription4,
 
                 'netProb' => $instanceRiskOp->netProb,
                 'netR' => $instanceRiskOp->netR,
