@@ -80,7 +80,7 @@ class InstanceService extends AbstractService
         $parent = ($data['parent']) ? $table->getEntity($data['parent']) : null;
         $parentId = ($data['parent']) ? ($data['parent']) : null;
 
-        $this->updateImpacts($anrId, $parent, $data);
+        $this->updateImpactsInherited($anrId, $parent, $data);
 
         //asset
         if (isset($object->asset)) {
@@ -519,7 +519,7 @@ class InstanceService extends AbstractService
      * @param $historic
      */
     protected function updateBrothers($anrId, $instance, $data, &$historic) {
-        $fieldsToDelete = ['parent', 'createdAt', 'creator', 'risks', 'oprisks', 'consequences', 'instances'];
+        $fieldsToDelete = ['parent', 'createdAt', 'creator', 'risks', 'oprisks', 'instances'];
         //if source object is global, reverberate to other instance with the same source object
         if ($instance->object->scope == Object::SCOPE_GLOBAL) {
             //retrieve instance with same object source
@@ -534,6 +534,23 @@ class InstanceService extends AbstractService
                         }
                     }
                     $data['id'] = $brother->id;
+
+
+                    if (isset($data['consequences'])) {
+
+                        //retrieve instance consequence id for the brother isnatnce id ans scale impact type
+                        /** @var InstanceConsequenceTable $instanceConsequenceTable */
+                        $instanceConsequenceTable = $this->get('instanceConsequenceTable');
+                        $instanceConsequences = $instanceConsequenceTable->getEntityByFields(['instance' => $brother->id]);
+                        foreach($instanceConsequences as $instanceConsequence) {
+                            foreach($data['consequences'] as $key => $dataConsequence) {
+                                if ($dataConsequence['scaleImpactType'] == $instanceConsequence->scaleImpactType->type) {
+                                    $data['consequences'][$key]['id'] = $instanceConsequence->id;
+                                }
+                            }
+                        }
+                    }
+
                     $this->updateInstance($anrId, $brother->id, $data, $historic);
                 }
             }

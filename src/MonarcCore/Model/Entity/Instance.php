@@ -371,7 +371,9 @@ class Instance extends AbstractEntity
     }
 
     public function getInputFilter($partial = false){
-        if (!$this->inputFilter) {
+
+        //if (!$this->inputFilter) {
+
             parent::getInputFilter($partial);
 
             $texts = [
@@ -409,7 +411,7 @@ class Instance extends AbstractEntity
                     'validators' => array(),
                 ));
             }
-        }
+        //}
         return $this->inputFilter;
     }
 
