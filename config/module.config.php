@@ -160,6 +160,20 @@ return array(
                 ),
             ),
 
+            'monarc_api_anr_objects_parents' => array(
+                'type' => 'segment',
+                'options' => array(
+                    'route' => '/api/anr/:anrid/objects/:id/parents',
+                    'constraints' => array(
+                        'id' => '[0-9]+',
+                    ),
+                    'defaults' => array(
+                        'controller'    => 'MonarcCore\Controller\ApiAnrObject',
+                        'action'        => 'parents'
+                    ),
+                ),
+            ),
+
             'monarc_api_models' => array(
                 'type' => 'segment',
                 'options' => array(
@@ -301,6 +315,7 @@ return array(
             'MonarcCore\Service\DeliveriesModelsService'    => 'MonarcCore\Service\DeliveriesModelsServiceFactory',
             'MonarcCore\Service\ModelObjectService'         => 'MonarcCore\Service\ModelObjectServiceFactory',
             'MonarcCore\Service\UserProfileService'         => 'MonarcCore\Service\UserProfileServiceFactory',
+            'MonarcCore\Service\AnrObjectService'           => 'MonarcCore\Service\AnrObjectServiceFactory',
 
             // Entities
             '\MonarcCore\Model\Entity\DeliveriesModels' => '\MonarcCore\Service\Model\Entity\DeliveriesModelsServiceModelEntity',
