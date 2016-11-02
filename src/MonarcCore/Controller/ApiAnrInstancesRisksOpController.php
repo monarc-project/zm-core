@@ -29,7 +29,7 @@ class ApiAnrInstancesRisksOpController extends AbstractController
         unset($risk['object']);
         unset($risk['rolfRisk']);
 
-        return new JsonModel(['riskOp' => $risk]);
+        return new JsonModel($risk);
     }
 }
 
