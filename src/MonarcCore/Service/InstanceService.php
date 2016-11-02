@@ -243,7 +243,7 @@ class InstanceService extends AbstractService
                     'c' => intval($consequence['c_risk']),
                     'i' => intval($consequence['i_risk']),
                     'd' => intval($consequence['d_risk']),
-                    'isHidden' => intval($consequence['is_hidden']),
+                    'isHidden' => intval($consequence['isHidden']),
                 ];
 
                 /** @var InstanceConsequenceService $instanceConsequenceService */
