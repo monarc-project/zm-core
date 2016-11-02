@@ -69,7 +69,9 @@ class InstanceConsequenceService extends AbstractService
 
             parent::patch($id,$data);
 
-            $this->updateInstanceImpacts($id, $patchInstance);
+            if ($patchInstance) {
+                $this->updateInstanceImpacts($id);
+            }
         }
 
         return $id;
@@ -108,7 +110,6 @@ class InstanceConsequenceService extends AbstractService
 
         $id = $this->get('table')->save($entity);
 
-
         $this->updateInstanceImpacts($id);
 
         return $id;
@@ -133,7 +134,7 @@ class InstanceConsequenceService extends AbstractService
      *
      * @param $instanceConsequencesId
      */
-    protected function updateInstanceImpacts($instanceConsequencesId, $patchInstance = true) {
+    protected function updateInstanceImpacts($instanceConsequencesId) {
 
         $rolfpTypes = ScaleImpactType::getScaleImpactTypeRolfp();
 
@@ -153,25 +154,23 @@ class InstanceConsequenceService extends AbstractService
             }
         }
 
-        if ($patchInstance) {
-            $anrId = $instanceCurrentConsequence->anr->id;
-            $instanceId = $instanceCurrentConsequence->instance->id;
+        $anrId = $instanceCurrentConsequence->anr->id;
+        $instanceId = $instanceCurrentConsequence->instance->id;
 
-            $data = [
-                'c' => max($instanceC),
-                'i' => max($instanceI),
-                'd' => max($instanceD),
-                'anr' => $anrId
-            ];
+        $data = [
+            'c' => max($instanceC),
+            'i' => max($instanceI),
+            'd' => max($instanceD),
+            'anr' => $anrId
+        ];
 
-            //if father instance exist, create instance for child
-            $eventManager = new EventManager();
-            $eventManager->setIdentifiers('instance');
+        //if father instance exist, create instance for child
+        $eventManager = new EventManager();
+        $eventManager->setIdentifiers('instance');
 
-            $sharedEventManager = $eventManager->getSharedManager();
-            $eventManager->setSharedManager($sharedEventManager);
-            $eventManager->trigger('patch', null, compact(['anrId', 'instanceId', 'data']));
-        }
+        $sharedEventManager = $eventManager->getSharedManager();
+        $eventManager->setSharedManager($sharedEventManager);
+        $eventManager->trigger('patch', null, compact(['anrId', 'instanceId', 'data']));
     }
 
     /**
