@@ -875,6 +875,13 @@ class InstanceService extends AbstractService
                 'kindOfMeasure' => $instanceRiskOp->kindOfMeasure,
                 'comment' => $instanceRiskOp->comment,
                 't' => ($instanceRiskOp->kindOfMeasure == InstanceRiskOp::KIND_NOT_TREATED) ? false : true,
+
+                'targetedProb' => $instanceRiskOp->targetedProb,
+                'targetedR' => $instanceRiskOp->targetedR,
+                'targetedO' => $instanceRiskOp->targetedO,
+                'targetedL' => $instanceRiskOp->targetedL,
+                'targetedF' => $instanceRiskOp->targetedF,
+                'targetedP' => $instanceRiskOp->targetedP,
                 'cacheTargetedRisk' => $instanceRiskOp->cacheTargetedRisk,
             ];
         }

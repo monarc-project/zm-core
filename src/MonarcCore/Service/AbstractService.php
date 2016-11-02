@@ -177,7 +177,6 @@ abstract class AbstractService extends AbstractServiceFactory
      * @return array
      */
     public function getEntity($id){
-
         return $this->get('table')->get($id);
     }
 
@@ -738,18 +737,21 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     protected function verifyRates($anrId, $data, $instanceRisk = null) {
 
+        //TODO : ensure that this method is never called inside a loop
         $errors = [];
+
+        $scaleThreat = $scaleVul = $scaleImpact = null;
 
         if (isset($data['threatRate'])) {
             /** @var ScaleTable $scaleTable */
             $scaleTable = $this->get('scaleTable');
-            $scale = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => Scale::TYPE_THREAT]);
+            $scaleThreat = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => Scale::TYPE_THREAT]);
 
-            $scale = $scale[0];
+            $scaleThreat = $scaleThreat[0];
 
             $prob = (int) $data['threatRate'];
 
-            if (($prob != -1) && (($prob < $scale->get('min')) || ($prob > $scale->get('max')))) {
+            if (($prob != -1) && (($prob < $scaleThreat->get('min')) || ($prob > $scaleThreat->get('max')))) {
                 $errors[] = 'Value for probability is not valid';
             }
         }
@@ -757,13 +759,13 @@ abstract class AbstractService extends AbstractServiceFactory
         if (isset($data['vulnerabilityRate'])) {
             /** @var ScaleTable $scaleTable */
             $scaleTable = $this->get('scaleTable');
-            $scale = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => Scale::TYPE_VULNERABILITY]);
+            $scaleVul = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => Scale::TYPE_VULNERABILITY]);
 
-            $scale = $scale[0];
+            $scaleVul = $scaleVul[0];
 
             $prob = (int) $data['vulnerabilityRate'];
 
-            if (($prob != -1) && (($prob < $scale->get('min')) || ($prob > $scale->get('max')))) {
+            if (($prob != -1) && (($prob < $scaleVul->get('min')) || ($prob > $scaleVul->get('max')))) {
                 $errors[] = 'Value for qualification is not valid';
             }
         }
@@ -779,21 +781,44 @@ abstract class AbstractService extends AbstractServiceFactory
             }
         }
 
-        if (isset($data['c']) || isset($data['i']) || isset($data['d'])) {
+        if (isset($data['c']) || isset($data['i']) || isset($data['d'])
+         || isset($data['brutR']) || isset($data['brutO']) || isset($data['brutL']) || isset($data['brutF']) || isset($data['brutP'])
+         || isset($data['netR']) || isset($data['netO']) || isset($data['netL']) || isset($data['netF']) || isset($data['netP'])
+         || isset($data['targetedR']) || isset($data['targetedO']) || isset($data['targetedL']) || isset($data['targetedF']) || isset($data['targetedP']) ) {
             /** @var ScaleTable $scaleTable */
             $scaleTable = $this->get('scaleTable');
-            $scale = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => Scale::TYPE_IMPACT]);
+            $scaleImpact = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => Scale::TYPE_IMPACT]);
 
-            $scale = $scale[0];
+            $scaleImpact = $scaleImpact[0];
 
-            $fields = ['c', 'i', 'd'];
+            $fields = ['c', 'i', 'd', 'brutR', 'brutO', 'brutL', 'brutF', 'brutP', 'netR', 'netO', 'netL', 'netF', 'netP', 'targetedR', 'targetedO', 'targetedL', 'targetedF', 'targetedP'];
 
             foreach ($fields as $field) {
                 if (isset($data[$field])) {
-                    $value = (int) $data['c'];
+                    $value = (int) $data[$field];
+                    if ($value != -1) {
+                        if (($value < $scaleImpact->get('min')) || ($value > $scaleImpact->get('max'))) {
+                            $errors[] = 'Value for ' . $field . ' is not valid';
+                        }
+                    }
+                }
+            }
+        }
+
+        if (isset($data['brutProb']) || isset($data['netProb']) || isset($data['targetedProb'])){
+            if( is_null($scaleThreat)){
+                $scaleThreat = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => Scale::TYPE_THREAT]);
+                $scaleThreat = $scaleThreat[0];
+            }
+
+            $fields = ['brutProb', 'netProb', 'targetedProb'];
+
+            foreach($fields as $field){
+                if (isset($data[$field])) {
+                    $value = (int) $data[$field];
 
                     if ($value != -1) {
-                        if (($value < $scale->get('min')) || ($value > $scale->get('max'))) {
+                        if (($value < $scaleThreat->get('min')) || ($value > $scaleThreat->get('max'))) {
                             $errors[] = 'Value for ' . $field . ' is not valid';
                         }
                     }
