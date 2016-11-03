@@ -85,7 +85,7 @@ class InstanceConsequenceService extends AbstractService
      * @return mixed
      * @throws \Exception
      */
-    public function update($id,$data){
+    public function update($id, $data){
         if (empty($data)) {
             throw new \Exception('Data missing', 412);
         }

@@ -120,12 +120,13 @@ class InstanceRiskOpService extends AbstractService
     }
 
     public function update($id, $data){
+
         $risk = $this->get('table')->getEntity($id);
+
         if (!$risk) {
             throw new \Exception('Entity not exist', 412);
         }
         $this->verifyRates($risk->getAnr()->getId(), $data, $risk);
-
         $risk->setDbAdapter($this->get('table')->getDb());
         $risk->setLanguage($this->getLanguage());
 

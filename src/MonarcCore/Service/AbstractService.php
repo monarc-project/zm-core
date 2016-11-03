@@ -807,6 +807,8 @@ abstract class AbstractService extends AbstractServiceFactory
 
         if (isset($data['brutProb']) || isset($data['netProb']) || isset($data['targetedProb'])){
             if( is_null($scaleThreat)){
+                /** @var ScaleTable $scaleTable */
+                $scaleTable = $this->get('scaleTable');
                 $scaleThreat = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => Scale::TYPE_THREAT]);
                 $scaleThreat = $scaleThreat[0];
             }

@@ -48,5 +48,25 @@ class ApiScalesController extends AbstractController
     {
         return $this->methodNotAllowed();
     }
+
+    /**
+     * Update
+     *
+     * @param mixed $id
+     * @param mixed $data
+     * @return JsonModel
+     */
+    public function update($id, $data)
+    {
+
+        $anrId = (int) $this->params()->fromRoute('anrId');
+
+        if ($anrId) {
+            $data['anr'] = $anrId;
+        }
+        $this->getService()->update($id, $data);
+
+        return new JsonModel(array('status' => 'ok'));
+    }
 }
 
