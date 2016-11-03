@@ -22,12 +22,6 @@ class DeliveriesModelsService extends AbstractService
      * @return mixed
      */
     public function create($data, $last = true) {
-        if(isset($data['description'])){
-            $data['description'.$this->getLanguage()] = $data['description'];
-            unset($data['description']);
-        }
-
-        //$entity = $this->get('entity');
         $class = $this->get('entity');
         $entity = new $class();
         $entity->setLanguage($this->getLanguage());
@@ -52,11 +46,6 @@ class DeliveriesModelsService extends AbstractService
      * @throws \Exception
      */
     public function update($id,$data){
-        if(isset($data['description'])){
-            $data['description'.$this->getLanguage()] = $data['description'];
-            unset($data['description']);
-        }
-
         $entity = $this->get('table')->getEntity($id);
         if (!$entity) {
             throw new \Exception('Entity not exist', 412);
