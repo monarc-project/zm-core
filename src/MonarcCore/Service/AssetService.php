@@ -161,8 +161,11 @@ class AssetService extends AbstractService
             throw new \Exception('Asset to export is required',412);
         }
         if (empty($data['password'])) {
-            throw new \Exception('You must type in a password', 412);
+            $password = md5('');
+        } else {
+            $password = $data['password'];
         }
+
         $filename = "";
         $return = $this->generateExportArray($data['id'],$filename);
         $data['filename'] = $filename;
