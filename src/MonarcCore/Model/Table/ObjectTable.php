@@ -62,4 +62,16 @@ class ObjectTable extends AbstractEntityTable {
             ->getQuery()
             ->getResult();
     }
+
+    public function checkInAnr($anrid, $id){
+        $stmt = $this->getDb()->getEntityManager()->getConnection()->prepare(
+            'SELECT id
+             FROM   anrs_objects
+             WHERE  anr_id = :anrid
+             AND    object_id = :oid'
+        );
+        $stmt->execute([':anrid' => $anrid, ':oid' => $id]);
+
+        return $stmt->rowCount() > 0;
+    }
 }

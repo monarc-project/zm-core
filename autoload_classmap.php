@@ -110,6 +110,8 @@ return array(
     'MonarcCore\Service\AbstractServiceFactory'                             => __DIR__ . '/src/MonarcCore/Service/AbstractServiceFactory.php',
     'MonarcCore\Service\AmvService'                                         => __DIR__ . '/src/MonarcCore/Service/AmvService.php',
     'MonarcCore\Service\AmvServiceFactory'                                  => __DIR__ . '/src/MonarcCore/Service/AmvServiceFactory.php',
+    'MonarcCore\Service\AnrObjectService'                                   => __DIR__ . '/src/MonarcCore/Service/AnrObjectService.php',
+    'MonarcCore\Service\AnrObjectServiceFactory'                            => __DIR__ . '/src/MonarcCore/Service/AnrObjectServiceFactory.php',
     'MonarcCore\Service\AnrService'                                         => __DIR__ . '/src/MonarcCore/Service/AnrService.php',
     'MonarcCore\Service\AnrServiceFactory'                                  => __DIR__ . '/src/MonarcCore/Service/AnrServiceFactory.php',
     'MonarcCore\Service\AssetService'                                       => __DIR__ . '/src/MonarcCore/Service/AssetService.php',
