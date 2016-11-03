@@ -86,10 +86,15 @@ abstract class AbstractEntity implements InputFilterAwareInterface
             $field_errors = array();
 
             foreach ($filter->getInvalidInput() as $field => $error) {
-                foreach ($error->getMessages() as $message) {
+                /*foreach ($error->getMessages() as $message) {
                     if (!empty($field)) {
                         $field_errors[] = $message . " (field '$field')";
                     }
+                }*/
+                if (!empty($field)) {
+                    $field = strtr($field, ['1' => '', '2' => '','3' => '', '4' => '']);
+                    $field_errors[] = ucfirst($field) . ' is required';
+                    //break;
                 }
             }
             throw new \Exception(implode(", ", $field_errors), '412');
