@@ -22,12 +22,6 @@ class DeliveriesModelsService extends AbstractService
      * @return mixed
      */
     public function create($data, $last = true) {
-        if(isset($data['description'])){
-            $data['description'.$this->getLanguage()] = $data['description'];
-            unset($data['description']);
-        }
-
-        //$entity = $this->get('entity');
         $class = $this->get('entity');
         $entity = new $class();
         $entity->setLanguage($this->getLanguage());
