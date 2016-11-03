@@ -1107,14 +1107,16 @@ class ObjectService extends AbstractService
             throw new \Exception('Asset to export is required',412);
         }
         if (empty($data['password'])) {
-            throw new \Exception('You must type in a password', 412);
+            $password = md5('');
+        } else {
+            $password = $data['password'];
         }
 
         $filename = "";
         $return = $this->generateExportArray($data['id'],$filename);
         $data['filename'] = $filename;
 
-        return base64_encode($this->encrypt(json_encode($return),$data['password']));
+        return base64_encode($this->encrypt(json_encode($return),$password));
     }
 
     public function generateExportArray($id, &$filename = ""){
