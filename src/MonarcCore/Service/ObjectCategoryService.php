@@ -181,7 +181,7 @@ class ObjectCategoryService extends AbstractService
         $parent = (isset($data['parent'])) ? $data['parent'] : null;
 
         if (isset($data['implicitPosition'])) {
-            $data['position'] = $this->managePosition('parent', $entity, $parent, $data['implicitPosition'], $previous, 'update');
+            $data['position'] = $this->managePosition('parent', $entity, $parent, $data['implicitPosition'], $previous, 'update', false, 1);
         }
 
         $entity->exchangeArray($data);

@@ -208,7 +208,7 @@ return array(
                         'id' => '[0-9]+',
                     ),
                     'defaults' => array(
-                        'controller' => 'MonarcCore\Controller\ApiScales',
+                        'controller' => 'MonarcCore\Controller\ApiAnrScales',
                     ),
                 ),
             ),
@@ -223,7 +223,7 @@ return array(
                         'id' => '[0-9]+',
                     ),
                     'defaults' => array(
-                        'controller' => 'MonarcCore\Controller\ApiScalesComments',
+                        'controller' => 'MonarcCore\Controller\ApiAnrScalesComments',
                     ),
                 ),
             ),
@@ -236,7 +236,7 @@ return array(
                         'id' => '[0-9]+',
                     ),
                     'defaults' => array(
-                        'controller' => 'MonarcCore\Controller\ApiScalesTypes',
+                        'controller' => 'MonarcCore\Controller\ApiAnrScalesTypes',
                     ),
                 ),
             ),
