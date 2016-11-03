@@ -94,7 +94,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
                 if (!empty($field)) {
                     $field = strtr($field, ['1' => '', '2' => '','3' => '', '4' => '']);
                     $field_errors[] = ucfirst($field) . ' is required';
-                    //break;
+                    break;
                 }
             }
             throw new \Exception(implode(", ", $field_errors), '412');
