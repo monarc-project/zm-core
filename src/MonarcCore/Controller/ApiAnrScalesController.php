@@ -5,7 +5,7 @@ namespace MonarcCore\Controller;
 use MonarcCore\Service\ScaleService;
 use Zend\View\Model\JsonModel;
 
-class ApiScalesController extends AbstractController
+class ApiAnrScalesController extends AbstractController
 {
     protected $dependencies = ['anr'];
     protected $name = 'scales';

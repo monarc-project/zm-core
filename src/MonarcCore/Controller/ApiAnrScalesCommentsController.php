@@ -4,7 +4,7 @@ namespace MonarcCore\Controller;
 
 use Zend\View\Model\JsonModel;
 
-class ApiScalesCommentsController extends AbstractController
+class ApiAnrScalesCommentsController extends AbstractController
 {
     protected $dependencies = ['scale', 'scaleImpactType'];
     protected $name = 'comments';

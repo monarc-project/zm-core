@@ -4,7 +4,7 @@ namespace MonarcCore\Controller;
 
 use MonarcCore\Controller\AbstractControllerFactory;
 
-class ApiScalesControllerFactory extends AbstractControllerFactory
+class ApiAnrScalesControllerFactory extends AbstractControllerFactory
 {
     protected $serviceName = '\MonarcCore\Service\ScaleService';
 }
