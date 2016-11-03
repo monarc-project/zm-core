@@ -92,9 +92,9 @@ class Amv extends AbstractEntity
     protected $measure3;
 
     /**
-     * @var boolean
+     * @var smallint
      *
-     * @ORM\Column(name="position", type="boolean", options={"unsigned":true, "default":1})
+     * @ORM\Column(name="position", type="smallint", options={"unsigned":true, "default":1})
      */
     protected $position = '1';
 

@@ -386,15 +386,17 @@ class AmvService extends AbstractService
 
             //virtual name for historisation
             $name = [];
-            if ($entity->get('asset')->get('code')) {
-                $name[] = $entity->get('asset')->get('code');
+
+            if ($entity['asset']->get('code')) {
+                $name[] = $entity['asset']->get('code');
             }
-            if ($entity->get('threat')->get('code')) {
-                $name[] = $entity->get('threat')->get('code');
+            if ($entity['threat']->get('code')) {
+                $name[] = $entity['threat']->get('code');
             }
-            if ($entity->get('vulnerability')->get('code')) {
-                $name[] = $entity->get('vulnerability')->get('code');
+            if ($entity['vulnerability']->get('code')) {
+                $name[] = $entity['vulnerability']->get('code');
             }
+
             $name = implode(' - ', $name);
             $this->label = [$name,$name,$name,$name];
 
@@ -414,6 +416,8 @@ class AmvService extends AbstractService
                     $details[] = $key . ' => ' . $entity[$key]->$field;
                 }
             }
+
+            $this->get('table')->changePositions($entity['position'], 'down', 'after');
 
             $this->historizeDelete('amv', $entity, $details);
 

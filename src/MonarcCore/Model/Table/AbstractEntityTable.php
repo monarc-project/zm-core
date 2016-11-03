@@ -233,6 +233,34 @@ abstract class AbstractEntityTable
     }
 
     /**
+     * Change positions
+     *
+     * @param $position
+     * @param string $direction
+     * @param string $referential
+     * @param bool $strict
+     * @return \Doctrine\ORM\Query
+     */
+    public function changePositions($position, $direction = 'up', $referential = 'after', $strict = false)
+    {
+        $positionDirection = ($direction == 'up') ? '+1' : '-1';
+        $sign = ($referential == 'after') ? '>' : '<';
+        if (!$strict) {
+            $sign .= '=';
+        }
+
+        $return = $this->getRepository()->createQueryBuilder('t')
+            ->update()
+            ->set('t.position', 't.position' . $positionDirection)
+            ->andWhere('t.position ' . $sign . ' :position')
+            ->setParameter(':position', $position)
+            ->getQuery();
+
+        $return->getResult();
+        return $return;
+    }
+
+    /**
      * Max Position By Parent
      *
      * @param $field
