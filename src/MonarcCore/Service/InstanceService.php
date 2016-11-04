@@ -782,24 +782,34 @@ class InstanceService extends AbstractService
             $instancesRisks = $this->getInstancesRisks($anrId, $instances);
         }
 
-        //order by max risk
-        $tmpInstancesRisks = [];
-        $tmpInstancesMaxRisks = [];
-        foreach($instancesRisks as $instancesRisk) {
-            $tmpInstancesRisks[$instancesRisk->id] = $instancesRisk;
-            $tmpInstancesMaxRisks[$instancesRisk->id] = $instancesRisk->cacheMaxRisk;
+        // Order by AMV link position, then max risk
+        /** @var AmvTable $amvTable */
+        $amvTable = $this->get('amvTable');
+        $amvs = [];
+
+        // Cache the AMVs data
+        foreach ($instancesRisks as $ir) {
+            if (!isset($amvs[$ir->amv->id])) {
+                $amv = $amvTable->getEntity($ir->amv->id);
+                $amvs[$ir->amv->id] = $amv;
+            }
         }
-        arsort($tmpInstancesMaxRisks);
-        $instancesRisks = [];
-        foreach($tmpInstancesMaxRisks as $id => $tmpInstancesMaxRisk) {
-            $instancesRisks[] = $tmpInstancesRisks[$id];
-        }
+
+        // Sort by AMV position, then max cached risk
+        usort($instancesRisks, function ($a, $b) use ($amvs) {
+            $amv_a = $amvs[$a->amv->id];
+            $amv_b = $amvs[$b->amv->id];
+
+            if ($amv_a->position == $amv_b->position) {
+                return $a->cacheMaxRisk - $b->cacheMaxRisk;
+            } else {
+                return $amv_a->position - $amv_b->position;
+            }
+        });
 
         $risks = [];
         foreach ($instancesRisks as $instanceRisk) {
-            /** @var AmvTable $amvTable */
-            $amvTable = $this->get('amvTable');
-            $amv = $amvTable->getEntity($instanceRisk->amv->id);
+            $amv = $amvs[$instanceRisk->amv->id];
 
             for($i =1; $i<=3; $i++) {
                 $name = 'measure' . $i;
