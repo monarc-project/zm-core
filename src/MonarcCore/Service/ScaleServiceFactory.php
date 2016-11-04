@@ -16,5 +16,6 @@ class ScaleServiceFactory extends AbstractServiceFactory
         'instanceRiskService' => 'MonarcCore\Service\InstanceRiskService',
         'scaleImpactTypeTable' => 'MonarcCore\Model\Table\ScaleImpactTypeTable',
         'scaleImpactTypeService' => 'MonarcCore\Service\ScaleImpactTypeService',
+        'commentTable' => 'MonarcCore\Model\Table\ScaleCommentTable',
     );
 }

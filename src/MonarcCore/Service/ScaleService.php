@@ -1,9 +1,11 @@
 <?php
 namespace MonarcCore\Service;
 use MonarcCore\Model\Entity\Scale;
+use MonarcCore\Model\Entity\ScaleComment;
 use MonarcCore\Model\Table\InstanceConsequenceTable;
 use MonarcCore\Model\Table\InstanceRiskOpTable;
 use MonarcCore\Model\Table\InstanceRiskTable;
+use MonarcCore\Model\Table\ScaleCommentTable;
 use MonarcCore\Model\Table\ScaleImpactTypeTable;
 
 /**
@@ -24,6 +26,8 @@ class ScaleService extends AbstractService
     protected $instanceRiskTable;
     protected $scaleImpactTypeService;
     protected $scaleImpactTypeTable;
+    /** @var ScaleCommentTable */
+    protected $commentTable;
     protected $dependencies = ['anr'];
     protected $forbiddenFields = ['anr'];
 
@@ -367,6 +371,18 @@ class ScaleService extends AbstractService
                     }
                 }
             }
+
+
+            // Delete comments for this scale that are out of the range
+            /** @var ScaleComment[] $comments */
+            $comments = $this->commentTable->getByScaleAndOutOfRange($scale->id, $scale->min, $scale->max);
+
+            if (count($comments) > 0) {
+                foreach ($comments as $c) {
+                    $this->commentTable->delete($c['id']);
+                }
+            }
+
         }
 
         return $result;
