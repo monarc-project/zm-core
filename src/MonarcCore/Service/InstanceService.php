@@ -932,7 +932,7 @@ class InstanceService extends AbstractService
 
                 'kindOfMeasure' => $instanceRiskOp->kindOfMeasure,
                 'comment' => $instanceRiskOp->comment,
-                't' => ($instanceRiskOp->kindOfMeasure == InstanceRiskOp::KIND_NOT_TREATED) ? false : true,
+                't' => (($instanceRiskOp->kindOfMeasure == InstanceRiskOp::KIND_NOT_TREATED) || (!$instanceRiskOp->kindOfMeasure)) ? false : true,
 
                 'targetedProb' => $instanceRiskOp->targetedProb,
                 'targetedR' => $instanceRiskOp->targetedR,
