@@ -534,7 +534,9 @@ class InstanceService extends AbstractService
                         }
                     }
                     $data['id'] = $brother->id;
-
+                    $data['c'] = $brother->c;
+                    $data['i'] = $brother->i;
+                    $data['d'] = $brother->d;
 
                     if (isset($data['consequences'])) {
 
