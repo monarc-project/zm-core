@@ -283,6 +283,16 @@ class InstanceService extends AbstractService
             }
         }
 
+        if ($data['c'] != -1) {
+            $data['ch'] = 0;
+        }
+        if ($data['d'] != -1) {
+            $data['dh'] = 0;
+        }
+        if ($data['i'] != -1) {
+            $data['ih'] = 0;
+        }
+
         $instance->setLanguage($this->getLanguage());
         $instance->exchangeArray($data, true);
 
