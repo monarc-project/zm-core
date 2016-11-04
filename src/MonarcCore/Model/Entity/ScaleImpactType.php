@@ -257,7 +257,7 @@ class ScaleImpactType extends AbstractEntity
                         array(
                             'name' => 'InArray',
                             'options' => array(
-                                'haystack' => [0, 1],
+                                'haystack' => [1, 2, 3],
                             ),
                         ),
                     ),

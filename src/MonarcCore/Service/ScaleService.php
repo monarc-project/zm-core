@@ -147,35 +147,35 @@ class ScaleService extends AbstractService
             $scaleImpactTypes = [
                 [
                     'anr' => $data['anr'], 'scale' => $scaleId, 'type' => 1, 'isSys' => 1, 'isHidden' => 0,
-                    'implicitPosition' => 1, 'label1' => $langs[$outLang[1]]['C'], 'label2' => $langs[$outLang[2]]['C'], 'label3' => $langs[$outLang[3]]['C'], 'label4' => $langs[$outLang[4]]['C'],
+                    'implicitPosition' => 2, 'label1' => $langs[$outLang[1]]['C'], 'label2' => $langs[$outLang[2]]['C'], 'label3' => $langs[$outLang[3]]['C'], 'label4' => $langs[$outLang[4]]['C'],
                 ],
                 [
                     'anr' => $data['anr'], 'scale' => $scaleId, 'type' => 2, 'isSys' => 1, 'isHidden' => 0,
-                    'implicitPosition' => 1, 'label1' => $langs[$outLang[1]]['I'], 'label2' => $langs[$outLang[2]]['I'], 'label3' => $langs[$outLang[3]]['I'], 'label4' => $langs[$outLang[4]]['I'],
+                    'implicitPosition' => 2, 'label1' => $langs[$outLang[1]]['I'], 'label2' => $langs[$outLang[2]]['I'], 'label3' => $langs[$outLang[3]]['I'], 'label4' => $langs[$outLang[4]]['I'],
                 ],
                 [
                     'anr' => $data['anr'], 'scale' => $scaleId, 'type' => 3, 'isSys' => 1, 'isHidden' => 0,
-                    'implicitPosition' => 1, 'label1' => $langs[$outLang[1]]['D'], 'label2' => $langs[$outLang[2]]['D'], 'label3' => $langs[$outLang[3]]['D'], 'label4' => $langs[$outLang[4]]['D'],
+                    'implicitPosition' => 2, 'label1' => $langs[$outLang[1]]['D'], 'label2' => $langs[$outLang[2]]['D'], 'label3' => $langs[$outLang[3]]['D'], 'label4' => $langs[$outLang[4]]['D'],
                 ],
                 [
                     'anr' => $data['anr'], 'scale' => $scaleId, 'type' => 4, 'isSys' => 1, 'isHidden' => 0,
-                    'implicitPosition' => 1, 'label1' => $langs[$outLang[1]]['R'], 'label2' => $langs[$outLang[2]]['R'], 'label3' => $langs[$outLang[3]]['R'], 'label4' => $langs[$outLang[4]]['R'],
+                    'implicitPosition' => 2, 'label1' => $langs[$outLang[1]]['R'], 'label2' => $langs[$outLang[2]]['R'], 'label3' => $langs[$outLang[3]]['R'], 'label4' => $langs[$outLang[4]]['R'],
                 ],
                 [
                     'anr' => $data['anr'], 'scale' => $scaleId, 'type' => 5, 'isSys' => 1, 'isHidden' => 0,
-                    'implicitPosition' => 1, 'label1' => $langs[$outLang[1]]['O'], 'label2' => $langs[$outLang[2]]['O'], 'label3' => $langs[$outLang[3]]['O'], 'label4' => $langs[$outLang[4]]['O'],
+                    'implicitPosition' => 2, 'label1' => $langs[$outLang[1]]['O'], 'label2' => $langs[$outLang[2]]['O'], 'label3' => $langs[$outLang[3]]['O'], 'label4' => $langs[$outLang[4]]['O'],
                 ],
                 [
                     'anr' => $data['anr'], 'scale' => $scaleId, 'type' => 6, 'isSys' => 1, 'isHidden' => 0,
-                    'implicitPosition' => 1, 'label1' => $langs[$outLang[1]]['L'], 'label2' => $langs[$outLang[2]]['L'], 'label3' => $langs[$outLang[3]]['L'], 'label4' => $langs[$outLang[4]]['L'],
+                    'implicitPosition' => 2, 'label1' => $langs[$outLang[1]]['L'], 'label2' => $langs[$outLang[2]]['L'], 'label3' => $langs[$outLang[3]]['L'], 'label4' => $langs[$outLang[4]]['L'],
                 ],
                 [
                     'anr' => $data['anr'], 'scale' => $scaleId, 'type' => 7, 'isSys' => 1, 'isHidden' => 0,
-                    'implicitPosition' => 1, 'label1' => $langs[$outLang[1]]['F'], 'label2' => $langs[$outLang[2]]['F'], 'label3' => $langs[$outLang[3]]['F'], 'label4' => $langs[$outLang[4]]['F'],
+                    'implicitPosition' => 2, 'label1' => $langs[$outLang[1]]['F'], 'label2' => $langs[$outLang[2]]['F'], 'label3' => $langs[$outLang[3]]['F'], 'label4' => $langs[$outLang[4]]['F'],
                 ],
                 [
                     'anr' => $data['anr'], 'scale' => $scaleId, 'type' => 8, 'isSys' => 1, 'isHidden' => 0,
-                    'implicitPosition' => 1, 'label1' => $langs[$outLang[1]]['P'], 'label2' => $langs[$outLang[2]]['P'], 'label3' => $langs[$outLang[3]]['P'], 'label4' => $langs[$outLang[4]]['P'],
+                    'implicitPosition' => 2, 'label1' => $langs[$outLang[1]]['P'], 'label2' => $langs[$outLang[2]]['P'], 'label3' => $langs[$outLang[3]]['P'], 'label4' => $langs[$outLang[4]]['P'],
                 ]
             ];
             foreach ($scaleImpactTypes as $scaleImpactType) {
