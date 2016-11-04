@@ -68,6 +68,15 @@ return array(
                     ),
                 ),
             ),
+            'monarc_api_anr_export' => array(
+                'type' => 'segment',
+                'options' => array(
+                    'route' => '/api/anr-export',
+                    'defaults' => array(
+                        'controller' => 'MonarcCore\Controller\ApiAnrExport',
+                    ),
+                ),
+            ),
 
             'monarc_api_anr_instances_consequences' => array(
                 'type' => 'segment',
@@ -267,6 +276,7 @@ return array(
             'MonarcCore\Service\AmvService'                 => 'MonarcCore\Service\AmvServiceFactory',
             'MonarcCore\Service\AnrService'                 => 'MonarcCore\Service\AnrServiceFactory',
             'MonarcCore\Service\AssetService'               => 'MonarcCore\Service\AssetServiceFactory',
+            'MonarcCore\Service\AssetExportService'               => 'MonarcCore\Service\AssetExportServiceFactory',
             'MonarcCore\Service\AuthenticationService'      => 'MonarcCore\Service\AuthenticationServiceFactory',
             'MonarcCore\Service\CityService'                => 'MonarcCore\Service\CityServiceFactory',
             'MonarcCore\Service\ConfigService'              => 'MonarcCore\Service\ConfigServiceFactory',
@@ -283,6 +293,7 @@ return array(
             'MonarcCore\Service\MeasureService'             => 'MonarcCore\Service\MeasureServiceFactory',
             'MonarcCore\Service\ModelService'               => 'MonarcCore\Service\ModelServiceFactory',
             'MonarcCore\Service\ObjectService'              => 'MonarcCore\Service\ObjectServiceFactory',
+            'MonarcCore\Service\ObjectExportService'              => 'MonarcCore\Service\ObjectExportServiceFactory',
             'MonarcCore\Service\ObjectCategoryService'      => 'MonarcCore\Service\ObjectCategoryServiceFactory',
             'MonarcCore\Service\ObjectObjectService'        => 'MonarcCore\Service\ObjectObjectServiceFactory',
             'MonarcCore\Service\PasswordService'            => 'MonarcCore\Service\PasswordServiceFactory',
@@ -373,6 +384,28 @@ return array(
         [
             \MonarcCore\Service\Initializer\ObjectManagerInitializer::class
         ]
+    ),
+    'controllers' => array(
+        'invokables' => array(),
+        'factories' => array(
+            /* Controller */
+            '\MonarcCore\Controller\Index'                          => '\MonarcCore\Controller\IndexControllerFactory',
+            '\MonarcCore\Controller\Authentication'                 => '\MonarcCore\Controller\AuthenticationControllerFactory',
+            '\MonarcCore\Controller\ApiAnr'                         => '\MonarcCore\Controller\ApiAnrControllerFactory',
+            '\MonarcCore\Controller\ApiAnrExport'                   => '\MonarcCore\Controller\ApiAnrExportControllerFactory',
+            '\MonarcCore\Controller\ApiAnrInstances'                => '\MonarcCore\Controller\ApiAnrInstancesControllerFactory',
+            '\MonarcCore\Controller\ApiAnrInstancesConsequences'    => '\MonarcCore\Controller\ApiAnrInstancesConsequencesControllerFactory',
+            '\MonarcCore\Controller\ApiAnrInstancesRisks'           => '\MonarcCore\Controller\ApiAnrInstancesRisksControllerFactory',
+            '\MonarcCore\Controller\ApiAnrInstancesRisksOp'         => '\MonarcCore\Controller\ApiAnrInstancesRisksOpControllerFactory',
+            '\MonarcCore\Controller\ApiAnrLibrary'                  => '\MonarcCore\Controller\ApiAnrLibraryControllerFactory',
+            '\MonarcCore\Controller\ApiAnrLibraryCategory'          => '\MonarcCore\Controller\ApiAnrLibraryCategoryControllerFactory',
+            '\MonarcCore\Controller\ApiAnrObject'                   => '\MonarcCore\Controller\ApiAnrObjectControllerFactory',
+            '\MonarcCore\Controller\ApiModels'                      => '\MonarcCore\Controller\ApiModelsControllerFactory',
+            '\MonarcCore\Controller\ApiModelsDuplication'           => '\MonarcCore\Controller\ApiModelsDuplicationControllerFactory',
+            '\MonarcCore\Controller\ApiScales'                      => '\MonarcCore\Controller\ApiScalesControllerFactory',
+            '\MonarcCore\Controller\ApiScalesTypes'                 => '\MonarcCore\Controller\ApiScalesTypesControllerFactory',
+            '\MonarcCore\Controller\ApiScalesComments'              => '\MonarcCore\Controller\ApiScalesCommentsControllerFactory',
+        ),
     ),
 
     'monarc' => array(

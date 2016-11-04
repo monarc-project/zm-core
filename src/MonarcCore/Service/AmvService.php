@@ -21,7 +21,6 @@ class AmvService extends AbstractService
     protected $threatTable;
     protected $vulnerabilityTable;
 
-    protected $modelService;
     protected $historicalService;
 
     protected $errorMessage;
@@ -449,7 +448,7 @@ class AmvService extends AbstractService
         $assetModelsIsRegulator = [];
         foreach ($assetModels as $model) {
             if (!is_object($model)) {
-                $model = $this->get('modelService')->getEntity($model);
+                $model = $this->get('modelTable')->get($model);
                 $assetModelsIds[] = $model['id'];
                 $assetModelsIsRegulator[] = $model['isRegulator'];
             } else {
@@ -713,5 +712,120 @@ class AmvService extends AbstractService
                 $this->get($tableName)->save($entity);
             }
         }
+    }
+
+    public function generateExportArray($amv){
+        $amvObj = array(
+            'id' => 'v',
+            'threat' => 'o',
+            'vulnerability' => 'o',
+            'measure1' => 'o',
+            'measure2' => 'o',
+            'measure3' => 'o',
+            'status' => 'v',
+        );
+        $treatsObj = array(
+            'id' => 'id',
+            'theme' => 'theme',
+            'mode' => 'mode',
+            'code' => 'code',
+            'label1' => 'label1',
+            'label2' => 'label2',
+            'label3' => 'label3',
+            'label4' => 'label4',
+            'description1' => 'description1',
+            'description2' => 'description2',
+            'description3' => 'description3',
+            'description4' => 'description4',
+            'c' => 'c',
+            'i' => 'i',
+            'd' => 'd',
+            'status' => 'status',
+            'isAccidental' => 'isAccidental',
+            'isDeliberate' => 'isDeliberate',
+            'descAccidental1' => 'descAccidental1',
+            'descAccidental2' => 'descAccidental2',
+            'descAccidental3' => 'descAccidental3',
+            'descAccidental4' => 'descAccidental4',
+            'exAccidental1' => 'exAccidental1',
+            'exAccidental2' => 'exAccidental2',
+            'exAccidental3' => 'exAccidental3',
+            'exAccidental4' => 'exAccidental4',
+            'descDeliberate1' => 'descDeliberate1',
+            'descDeliberate2' => 'descDeliberate2',
+            'descDeliberate3' => 'descDeliberate3',
+            'descDeliberate4' => 'descDeliberate4',
+            'exDeliberate1' => 'exDeliberate1',
+            'exDeliberate2' => 'exDeliberate2',
+            'exDeliberate3' => 'exDeliberate3',
+            'exDeliberate4' => 'exDeliberate4',
+            'typeConsequences1' => 'typeConsequences1',
+            'typeConsequences2' => 'typeConsequences2',
+            'typeConsequences3' => 'typeConsequences3',
+            'typeConsequences4' => 'typeConsequences4',
+            'trend' => 'trend',
+            'comment' => 'comment',
+            'qualification' => 'qualification',
+        );
+        $vulsObj = array(
+            'id' => 'id',
+            'mode' => 'mode',
+            'code' => 'code',
+            'label1' => 'label1',
+            'label2' => 'label2',
+            'label3' => 'label3',
+            'label4' => 'label4',
+            'description1' => 'description1',
+            'description2' => 'description2',
+            'description3' => 'description3',
+            'description4' => 'description4',
+            'status' => 'status',
+        );
+        $themesObj = array(
+            'id' => 'id',
+            'label1' => 'label1',
+            'label2' => 'label2',
+            'label3' => 'label3',
+            'label4' => 'label4',
+        );
+
+        $amv = $threats = $vulns = $themes = array();
+
+        foreach($amvObj as $k => $v){
+            switch($v){
+                case 'v':
+                    $amv[$k] = $amv->get($k);
+                    break;
+                case 'o':
+                    $o = $amv->get($k);
+                    if(empty($o)){
+                        $amv[$k] = null;
+                    }else{
+                        $o = $amv->get($k)->getJsonArray();
+                        $amv[$k] = $o['id'];
+
+                        if($k == 'threat'){
+                            $threats[$o['id']] = $amv->get($k)->getJsonArray($treatsObj);
+                            if(!empty($threats[$o['id']]['theme'])){
+                                $threats[$o['id']]['theme'] = $threats[$o['id']]['theme']->getJsonArray($themesObj);
+
+                                $themes[$threats[$o['id']]['theme']['id']] = $threats[$o['id']]['theme'];
+
+                                $threats[$o['id']]['theme'] = $threats[$o['id']]['theme']['id'];
+                            }
+                        }elseif($k == 'vulnerability'){
+                            $vulns[$o['id']] = $amv->get($k)->getJsonArray($vulsObj);
+                        }
+                    }
+                    break;
+            }
+        }
+
+        return array(
+            $amv,
+            $threats,
+            $vulns,
+            $themes,
+        );
     }
 }

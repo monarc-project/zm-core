@@ -19,6 +19,7 @@ class ObjectServiceFactory extends AbstractServiceFactory
         'rolfTagTable'=> '\MonarcCore\Model\Table\RolfTagTable',
         'modelService'=> 'MonarcCore\Service\ModelService',
         'objectObjectService'=> 'MonarcCore\Service\ObjectObjectService',
+        'objectExportService' => 'MonarcCore\Service\ObjectExportService',
     );
 
 }

@@ -42,6 +42,8 @@ class InstanceService extends AbstractService
     protected $objectObjectService;
     protected $instanceConsequenceEntity;
     protected $forbiddenFields = ['anr', 'asset', 'object', 'ch', 'dh', 'ih'];
+    protected $objectExportService;
+    protected $amvService;
 
     /**
      * Instantiate Object To Anr
@@ -1092,5 +1094,344 @@ class InstanceService extends AbstractService
 
             $i++;
         }
+    }
+
+    public function export(&$data) {
+        if (empty($data['id'])) {
+            throw new \Exception('Instance to export is required',412);
+        }
+        if (empty($data['password'])) {
+            $data['password'] = '';
+        }
+
+        $filename = "";
+        $return = $this->generateExportArray($data['id'],$filename);
+        $data['filename'] = $filename;
+
+        return base64_encode($this->encrypt(json_encode($return),$data['password']));
+    }
+
+    public function generateExportArray($id, &$filename = "", $with_eval = false, &$with_scale = true){
+        if (empty($id)) {
+            throw new \Exception('Instance to export is required',412);
+        }
+        $entity = $this->get('table')->getEntity($id);
+
+        if (!$entity) {
+            throw new \Exception('Entity `id` not found.');
+        }
+
+        $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $entity->get('label'.$this->getLanguage()));
+
+        $objInstance = array(
+            'id' => 'id',
+            'name1' => 'name1',
+            'name2' => 'name2',
+            'name3' => 'name3',
+            'name4' => 'name4',
+            'label1' => 'label1',
+            'label2' => 'label2',
+            'label3' => 'label3',
+            'label4' => 'label4',
+            'disponibility' => 'disponibility',
+            'level' => 'level',
+            'assetType' => 'assetType',
+            'exportable' => 'exportable',
+            'position' => 'position',
+            'c' => 'c',
+            'i' => 'i',
+            'd' => 'd',
+            'ch' => 'ch',
+            'ih' => 'ih',
+            'dh' => 'dh',
+        );
+
+        $return = array(
+            'type' => 'instance',
+            'version' => $this->getVersion(),
+            'with_eval' => $with_eval,
+            'instance' => $entity->getJsonArray($objInstance),
+            'object' => $this->get('objectExportService')->generateExportArray($entity->get('object')->get('id')),
+            // 'asset' => $this->get('assetService')->generateExportArray($entity->get('asset')->get('id')), // l'asset sera porté par l'objet
+        );
+        $return['instance']['asset'] = $entity->get('asset')->get('id');
+        $return['instance']['object'] = $entity->get('object')->get('id');
+        $return['instance']['root'] = 0;
+        $return['instance']['parent'] = $entity->get('parent')?$entity->get('parent')->get('id'):0;
+
+        // Scales
+        if($with_eval && $with_scale){
+            $with_scale = false;
+            $return['scales'] = array();
+            $scaleTable = $this->get('scaleTable');
+            $scales = $scaleTable->getEntityByFields(['anr' => $entity->get('anr')->get('id')]);
+            $scalesArray = array(
+                'min'=>'min',
+                'max'=>'max',
+                'type'=>'type',
+            );
+            foreach ($scales as $s) {
+                $return['scales'][$s->type] = $s->getJsonArray($scalesArray);
+            }
+        }
+
+        // Instance risk
+        $return['risks'] = array();
+        $instanceRiskTable = $this->get('instanceRiskService')->get('table');
+        $instanceRiskResults = $instanceRiskTable->getRepository()
+            ->createQueryBuilder('t')
+            ->where("t.instance = :i")
+            ->setParameter(':i',$entity->get('id'));
+        $instanceRiskArray = array(
+            'id' => 'id',
+            'specific' => 'specific',
+            'mh' => 'mh',
+            'threatRate' => 'threatRate',
+            'vulnerabilityRate' => 'vulnerabilityRate',
+            'kindOfMeasure' => 'kindOfMeasure',
+            'reductionAmount' => 'reductionAmount',
+            'comment' => 'comment',
+            'commentAfter' => 'commentAfter',
+            'riskC' => 'riskC',
+            'riskI' => 'riskI',
+            'riskD' => 'riskD',
+            'cacheMaxRisk' => 'cacheMaxRisk',
+            'cacheTargetedRisk' => 'cacheTargetedRisk',
+        );
+
+        $treatsObj = array(
+            'id' => 'id',
+            'mode' => 'mode',
+            'code' => 'code',
+            'label1' => 'label1',
+            'label2' => 'label2',
+            'label3' => 'label3',
+            'label4' => 'label4',
+            'description1' => 'description1',
+            'description2' => 'description2',
+            'description3' => 'description3',
+            'description4' => 'description4',
+            'c' => 'c',
+            'i' => 'i',
+            'd' => 'd',
+            'status' => 'status',
+            'isAccidental' => 'isAccidental',
+            'isDeliberate' => 'isDeliberate',
+            'descAccidental1' => 'descAccidental1',
+            'descAccidental2' => 'descAccidental2',
+            'descAccidental3' => 'descAccidental3',
+            'descAccidental4' => 'descAccidental4',
+            'exAccidental1' => 'exAccidental1',
+            'exAccidental2' => 'exAccidental2',
+            'exAccidental3' => 'exAccidental3',
+            'exAccidental4' => 'exAccidental4',
+            'descDeliberate1' => 'descDeliberate1',
+            'descDeliberate2' => 'descDeliberate2',
+            'descDeliberate3' => 'descDeliberate3',
+            'descDeliberate4' => 'descDeliberate4',
+            'exDeliberate1' => 'exDeliberate1',
+            'exDeliberate2' => 'exDeliberate2',
+            'exDeliberate3' => 'exDeliberate3',
+            'exDeliberate4' => 'exDeliberate4',
+            'typeConsequences1' => 'typeConsequences1',
+            'typeConsequences2' => 'typeConsequences2',
+            'typeConsequences3' => 'typeConsequences3',
+            'typeConsequences4' => 'typeConsequences4',
+            'trend' => 'trend',
+            'comment' => 'comment',
+            'qualification' => 'qualification',
+        );
+        $vulsObj = array(
+            'id' => 'id',
+            'mode' => 'mode',
+            'code' => 'code',
+            'label1' => 'label1',
+            'label2' => 'label2',
+            'label3' => 'label3',
+            'label4' => 'label4',
+            'description1' => 'description1',
+            'description2' => 'description2',
+            'description3' => 'description3',
+            'description4' => 'description4',
+            'status' => 'status',
+        );
+        //TODO : traiter amv & asset & threat & vuln
+        foreach($instanceRiskResults as $ir){
+            if(!$with_eval){
+                $ir->set('vulnerabilityRate', '-1');
+                $ir->set('threatRate', '-1');
+                $ir->set('kindOfMeasure', 0);
+                $ir->set('reductionAmount', 0);
+                $ir->set('comment', '');
+                $ir->set('commentAfter', '');
+            }
+
+            $ir->set('mh',1);
+            $ir->set('riskC','-1');
+            $ir->set('riskI','-1');
+            $ir->set('riskD','-1');
+            $return['risks'][$ir->get('id')] = $ir->getJsonArray($instanceRiskArray);
+
+            $return['risks'][$ir->get('id')]['amv'] = $ir->get('amv')->get('id');
+            if(empty($return['amvs'][$ir->get('amv')->get('id')])){
+                list(
+                    $amv,
+                    $threats,
+                    $vulns,
+                    $themes) = $this->get('amvService')->generateExportArray($ir->get('amv'));
+                $return['amvs'][$ir->get('amv')->get('id')] = $amv;
+                if(empty($return['threats'])){
+                    $return['threats'] = $threats;
+                }else{
+                    $return['threats'] += $threats;
+                }
+                if(empty($return['vuls'])){
+                    $return['vuls'] = $vulns;
+                }else{
+                    $return['vuls'] += $vulns;
+                }
+            }
+
+            $threat = $ir->get('threat');
+            if(!empty($threat)){
+                if(empty($return['threats'][$$ir->get('threat')->get('id')])){
+                    $return['threats'][$ir->get('threat')->get('id')] = $ir->get('threat')->getJsonArray($treatsObj);
+                }
+                $return['risks'][$ir->get('id')]['threat'] = $ir->get('threat')->get('id');
+            }else{
+                $return['risks'][$ir->get('id')]['threat'] = null;
+            }
+            
+            $vulnerability = $ir->get('vulnerability');
+            if(!empty($vulnerability)){
+                if(empty($return['threats'][$$ir->get('threat')->get('id')])){
+                    $return['vuls'][$ir->get('vulnerability')->get('id')] = $ir->get('vulnerability')->getJsonArray($vulnerability);
+                }
+                $return['risks'][$ir->get('id')]['vulnerability'] = $ir->get('vulnerability')->get('id');
+            }else{
+                $return['risks'][$ir->get('id')]['vulnerability'] = null;
+            }
+        }
+
+        // Instance risk op
+        $return['risksop'] = array();
+        $instanceRiskOpTable = $this->get('instanceRiskOpService')->get('table');
+        $instanceRiskOpResults = $instanceRiskOpTable->getRepository()
+            ->createQueryBuilder('t')
+            ->where("t.instance = :i")
+            ->setParameter(':i',$entity->get('id'));
+        $instanceRiskOpArray = array(
+            'id' => 'id',
+            //'rolfRisk' => 'rolfRisk', // TODO doit-on garder cette donnée ?
+            'riskCacheLabel1' => 'riskCacheLabel1',
+            'riskCacheLabel2' => 'riskCacheLabel2',
+            'riskCacheLabel3' => 'riskCacheLabel3',
+            'riskCacheLabel4' => 'riskCacheLabel4',
+            'riskCacheDescription1' => 'riskCacheDescription1',
+            'riskCacheDescription2' => 'riskCacheDescription2',
+            'riskCacheDescription3' => 'riskCacheDescription3',
+            'riskCacheDescription4' => 'riskCacheDescription4',
+            'brutProb' => 'brutProb',
+            'brutR' => 'brutR',
+            'brutO' => 'brutO',
+            'brutL' => 'brutL',
+            'brutF' => 'brutF',
+            'netProb' => 'netProb',
+            'netR' => 'netR',
+            'netO' => 'netO',
+            'netL' => 'netL',
+            'netF' => 'netF',
+            'targetedProb' => 'targetedProb',
+            'targetedR' => 'targetedR',
+            'targetedO' => 'targetedO',
+            'targetedL' => 'targetedL',
+            'targetedF' => 'targetedF',
+            'cacheTargetedRisk' => 'cacheTargetedRisk',
+            'cacheNetRisk' => 'cacheNetRisk',
+            'cacheBrutRisk' => 'cacheBrutRisk',
+            'kindOfMeasure' => 'kindOfMeasure',
+            'comment' => 'comment',
+            'mitigation' => 'mitigation',
+            'specific' => 'specific',
+            'netP' => 'netP',
+            'targetedP' => 'targetedP',
+            'brutP' => 'brutP',
+        );
+        $toReset = array(
+            'brutProb' => 'brutProb',
+            'brutR' => 'brutR',
+            'brutO' => 'brutO',
+            'brutL' => 'brutL',
+            'brutF' => 'brutF',
+            'netProb' => 'netProb',
+            'netR' => 'netR',
+            'netO' => 'netO',
+            'netL' => 'netL',
+            'netF' => 'netF',
+            'targetedProb' => 'targetedProb',
+            'targetedR' => 'targetedR',
+            'targetedO' => 'targetedO',
+            'targetedL' => 'targetedL',
+            'targetedF' => 'targetedF',
+            'cacheTargetedRisk' => 'cacheTargetedRisk',
+            'cacheNetRisk' => 'cacheNetRisk',
+            'cacheBrutRisk' => 'cacheBrutRisk',
+        );
+        foreach ($instanceRiskOpResults as $iro) {
+            if(!$with_eval){
+                foreach($toReset as $r){
+                    $iro->set($r,'-1');
+                }
+                $iro->set('kindOfMeasure',0);
+                $iro->set('comment','');
+                $iro->set('mitigation','');
+            }
+            $return['risksop'][$iro->get('id')] = $iro->getJsonArray($instanceRiskOpArray);
+        }
+
+        // Instance consequence
+        if($with_eval){
+            $instanceConseqArray = array(
+                'id' => 'id',
+                'isHidden' => 'isHidden',
+                'locallyTouched' => 'locallyTouched',
+                'c' => 'c',
+                'i' => 'i',
+                'd' => 'd',
+            );
+            $scaleTypeArray = array(
+                'id' => 'id',
+                'label1' => 'label1',
+                'label2' => 'label2',
+                'label3' => 'label3',
+                'label4' => 'label4',
+                'isSys' => 'isSys',
+                'isHidden' => 'isHidden',
+                'position' => 'position',
+            );
+            $return['consequences'] = array();
+            $instanceConseqTable = $this->get('instanceConsequenceService')->get('table');
+            $instanceConseqResults = $instanceConseqTable->getRepository()
+                ->createQueryBuilder('t')
+                ->where("t.instance = :i")
+                ->setParameter(':i',$entity->get('id'));
+            foreach($instanceConseqResults as $ic){
+                $return['consequences'][$ic->get('id')] = $ic->getJsonArray($instanceConseqArray);
+                $return['consequences'][$ic->get('id')]['scaleImpactType'] = $ic->get('scaleImpactType')->getJsonArray($scaleTypeArray);
+                $return['consequences'][$ic->get('id')]['scaleImpactType']['scale'] = $ic->get('scaleImpactType')->get('scale')->get('id');
+            }
+        }
+
+        // TODO: gérer les fils
+        $instanceTableResults = $this->get('table')->getRepository()
+            ->createQueryBuilder('t')
+            ->where('t.parent = :p')
+            ->setParameter(':i',$entity->get('id'));
+        $return['children'] = array();
+        $f = '';
+        foreach($instanceTableResults as $i){
+            $return['children'][$i->get('id')] = $this->generateExportArray($i->get('id'),$f,$with_eval, $with_scale);
+        }
+        return $return;
     }
 }
