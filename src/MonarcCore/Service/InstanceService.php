@@ -674,6 +674,10 @@ class InstanceService extends AbstractService
         if (isset($data['position'])) {
             if (($data['position'] != $instance->position) || ($data['parent'] != $instanceParent)) {
 
+                if ($instance->level != Instance::LEVEL_ROOT) {
+                    throw new \Exception('You may only move a root-level instance', 412);
+                }
+
                 $parent = (isset($data['parent']) && $data['parent']) ? $data['parent'] : null;
 
                 if ($data['position']) {
@@ -788,24 +792,34 @@ class InstanceService extends AbstractService
             $instancesRisks = $this->getInstancesRisks($anrId, $instances);
         }
 
-        //order by max risk
-        $tmpInstancesRisks = [];
-        $tmpInstancesMaxRisks = [];
-        foreach($instancesRisks as $instancesRisk) {
-            $tmpInstancesRisks[$instancesRisk->id] = $instancesRisk;
-            $tmpInstancesMaxRisks[$instancesRisk->id] = $instancesRisk->cacheMaxRisk;
+        // Order by AMV link position, then max risk
+        /** @var AmvTable $amvTable */
+        $amvTable = $this->get('amvTable');
+        $amvs = [];
+
+        // Cache the AMVs data
+        foreach ($instancesRisks as $ir) {
+            if (!isset($amvs[$ir->amv->id])) {
+                $amv = $amvTable->getEntity($ir->amv->id);
+                $amvs[$ir->amv->id] = $amv;
+            }
         }
-        arsort($tmpInstancesMaxRisks);
-        $instancesRisks = [];
-        foreach($tmpInstancesMaxRisks as $id => $tmpInstancesMaxRisk) {
-            $instancesRisks[] = $tmpInstancesRisks[$id];
-        }
+
+        // Sort by AMV position, then max cached risk
+        usort($instancesRisks, function ($a, $b) use ($amvs) {
+            $amv_a = $amvs[$a->amv->id];
+            $amv_b = $amvs[$b->amv->id];
+
+            if ($amv_a->position == $amv_b->position) {
+                return $a->cacheMaxRisk - $b->cacheMaxRisk;
+            } else {
+                return $amv_a->position - $amv_b->position;
+            }
+        });
 
         $risks = [];
         foreach ($instancesRisks as $instanceRisk) {
-            /** @var AmvTable $amvTable */
-            $amvTable = $this->get('amvTable');
-            $amv = $amvTable->getEntity($instanceRisk->amv->id);
+            $amv = $amvs[$instanceRisk->amv->id];
 
             for($i =1; $i<=3; $i++) {
                 $name = 'measure' . $i;
@@ -1047,19 +1061,21 @@ class InstanceService extends AbstractService
             $scaleImpactTypeTable = $this->get('scaleImpactTypeTable');
             $scaleImpactType = $scaleImpactTypeTable->getEntity($instanceConsequence->scaleImpactType->id);
 
-            $consequences[] = [
-                'id' => $instanceConsequence->id,
-                'scaleImpactType' => $scaleImpactType->type,
-                'scaleImpactTypeDescription1' => $scaleImpactType->label1,
-                'scaleImpactTypeDescription2' => $scaleImpactType->label2,
-                'scaleImpactTypeDescription3' => $scaleImpactType->label3,
-                'scaleImpactTypeDescription4' => $scaleImpactType->label4,
-                'c_risk' => $instanceConsequence->c,
-                'i_risk' => $instanceConsequence->i,
-                'd_risk' => $instanceConsequence->d,
-                'isHidden' => $instanceConsequence->isHidden,
-                'locallyTouched' => $instanceConsequence->locallyTouched,
-            ];
+            if (!$scaleImpactType->isHidden || $instanceConsequence->locallyTouched) {
+                $consequences[] = [
+                    'id' => $instanceConsequence->id,
+                    'scaleImpactType' => $scaleImpactType->type,
+                    'scaleImpactTypeDescription1' => $scaleImpactType->label1,
+                    'scaleImpactTypeDescription2' => $scaleImpactType->label2,
+                    'scaleImpactTypeDescription3' => $scaleImpactType->label3,
+                    'scaleImpactTypeDescription4' => $scaleImpactType->label4,
+                    'c_risk' => $instanceConsequence->c,
+                    'i_risk' => $instanceConsequence->i,
+                    'd_risk' => $instanceConsequence->d,
+                    'isHidden' => $instanceConsequence->isHidden,
+                    'locallyTouched' => $instanceConsequence->locallyTouched,
+                ];
+            }
         }
 
         return $consequences;
