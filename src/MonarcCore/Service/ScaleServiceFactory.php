@@ -4,6 +4,7 @@ namespace MonarcCore\Service;
 class ScaleServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = array(
+        'config' => 'MonarcCore\Service\ConfigService',
         'table' => 'MonarcCore\Model\Table\ScaleTable',
         'entity' => 'MonarcCore\Model\Entity\Scale',
         'anrTable' => 'MonarcCore\Model\Table\AnrTable',
@@ -15,5 +16,6 @@ class ScaleServiceFactory extends AbstractServiceFactory
         'instanceRiskService' => 'MonarcCore\Service\InstanceRiskService',
         'scaleImpactTypeTable' => 'MonarcCore\Model\Table\ScaleImpactTypeTable',
         'scaleImpactTypeService' => 'MonarcCore\Service\ScaleImpactTypeService',
+        'commentTable' => 'MonarcCore\Model\Table\ScaleCommentTable',
     );
 }

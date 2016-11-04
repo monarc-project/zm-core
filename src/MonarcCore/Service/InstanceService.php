@@ -319,8 +319,6 @@ class InstanceService extends AbstractService
      * @throws \Exception
      */
     public function delete($id) {
-
-
         /** @var InstanceTable $table */
         $table = $this->get('table');
         $instance = $table->getEntity($id);
@@ -329,7 +327,13 @@ class InstanceService extends AbstractService
             throw new \Exception('This is not a root instance', 412);
         }
 
-        $this->managePosition('parent', $instance, $instance->parent->id?$instance->parent->id:null, null, null, 'delete');
+        $parent_id = null;
+
+        if ($instance->parent != null && $instance->parent->id) {
+            $parent_id = $instance->parent->id;
+        }
+
+        $this->managePosition('parent', $instance, $parent_id, null, null, 'delete');
 
         $this->get('table')->delete($id);
     }
