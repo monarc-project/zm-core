@@ -417,9 +417,9 @@ return array(
             '\MonarcCore\Controller\ApiAnrObject'                   => '\MonarcCore\Controller\ApiAnrObjectControllerFactory',
             '\MonarcCore\Controller\ApiModels'                      => '\MonarcCore\Controller\ApiModelsControllerFactory',
             '\MonarcCore\Controller\ApiModelsDuplication'           => '\MonarcCore\Controller\ApiModelsDuplicationControllerFactory',
-            '\MonarcCore\Controller\ApiScales'                      => '\MonarcCore\Controller\ApiScalesControllerFactory',
-            '\MonarcCore\Controller\ApiScalesTypes'                 => '\MonarcCore\Controller\ApiScalesTypesControllerFactory',
-            '\MonarcCore\Controller\ApiScalesComments'              => '\MonarcCore\Controller\ApiScalesCommentsControllerFactory',
+            '\MonarcCore\Controller\ApiAnrScales'                   => '\MonarcCore\Controller\ApiAnrScalesControllerFactory',
+            '\MonarcCore\Controller\ApiAnrScalesTypes'              => '\MonarcCore\Controller\ApiAnrScalesTypesControllerFactory',
+            '\MonarcCore\Controller\ApiAnrScalesComments'           => '\MonarcCore\Controller\ApiAnrScalesCommentsControllerFactory',
         ),
     ),
 
