@@ -120,17 +120,18 @@ class DeliveriesModels extends AbstractEntity
 
             parent::getInputFilter($partial);
 
-            $this->inputFilter->add(array(
-                'name' => 'description',
-                'required' => false,
-                'allow_empty' => true,
-                'filters' => array(
-                    array(
-                        'name' => 'StringTrim',
-                    ),
-                ),
-                'validators' => array(),
-            ));
+
+            $descriptions = ['description1', 'description2', 'description3', 'description4'];
+            foreach($descriptions as $description) {
+                $this->inputFilter->add(array(
+                    'name' => $description,
+                    'required' => ((strchr($description, (string) $this->getLanguage())) && (!$partial)) ? true : false,
+                    'allow_empty' => false,
+                    'filters' => array(),
+                    'validators' => array(),
+                ));
+            }
+
             $this->inputFilter->add(array(
                 'name' => 'path',
                 'required' => !$this->get('id'),

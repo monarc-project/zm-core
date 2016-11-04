@@ -5,7 +5,7 @@ namespace MonarcCore\Controller;
 use MonarcCore\Service\ScaleService;
 use Zend\View\Model\JsonModel;
 
-class ApiScalesController extends AbstractController
+class ApiAnrScalesController extends AbstractController
 {
     protected $dependencies = ['anr'];
     protected $name = 'scales';
@@ -47,6 +47,26 @@ class ApiScalesController extends AbstractController
     public function delete($id)
     {
         return $this->methodNotAllowed();
+    }
+
+    /**
+     * Update
+     *
+     * @param mixed $id
+     * @param mixed $data
+     * @return JsonModel
+     */
+    public function update($id, $data)
+    {
+
+        $anrId = (int) $this->params()->fromRoute('anrId');
+
+        if ($anrId) {
+            $data['anr'] = $anrId;
+        }
+        $this->getService()->update($id, $data);
+
+        return new JsonModel(array('status' => 'ok'));
     }
 }
 

@@ -128,6 +128,7 @@ class InstanceRiskService extends AbstractService
      * @throws \Exception
      */
     public function update($id,$data){
+
         $anrId = $data['anr'];
 
         $this->verifyRates($anrId, $data, $this->getEntity($id));

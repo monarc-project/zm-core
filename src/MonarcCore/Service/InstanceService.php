@@ -82,7 +82,7 @@ class InstanceService extends AbstractService
         $parent = ($data['parent']) ? $table->getEntity($data['parent']) : null;
         $parentId = ($data['parent']) ? ($data['parent']) : null;
 
-        $this->updateImpacts($anrId, $parent, $data);
+        $this->updateImpactsInherited($anrId, $parent, $data);
 
         //asset
         if (isset($object->asset)) {
@@ -321,8 +321,6 @@ class InstanceService extends AbstractService
      * @throws \Exception
      */
     public function delete($id) {
-
-
         /** @var InstanceTable $table */
         $table = $this->get('table');
         $instance = $table->getEntity($id);
@@ -331,7 +329,13 @@ class InstanceService extends AbstractService
             throw new \Exception('This is not a root instance', 412);
         }
 
-        $this->managePosition('parent', $instance, $instance->parent->id?$instance->parent->id:null, null, null, 'delete');
+        $parent_id = null;
+
+        if ($instance->parent != null && $instance->parent->id) {
+            $parent_id = $instance->parent->id;
+        }
+
+        $this->managePosition('parent', $instance, $parent_id, null, null, 'delete');
 
         $this->get('table')->delete($id);
     }
@@ -521,7 +525,7 @@ class InstanceService extends AbstractService
      * @param $historic
      */
     protected function updateBrothers($anrId, $instance, $data, &$historic) {
-        $fieldsToDelete = ['parent', 'createdAt', 'creator', 'risks', 'oprisks', 'consequences', 'instances'];
+        $fieldsToDelete = ['parent', 'createdAt', 'creator', 'risks', 'oprisks', 'instances'];
         //if source object is global, reverberate to other instance with the same source object
         if ($instance->object->scope == Object::SCOPE_GLOBAL) {
             //retrieve instance with same object source
@@ -536,6 +540,25 @@ class InstanceService extends AbstractService
                         }
                     }
                     $data['id'] = $brother->id;
+                    $data['c'] = $brother->c;
+                    $data['i'] = $brother->i;
+                    $data['d'] = $brother->d;
+
+                    if (isset($data['consequences'])) {
+
+                        //retrieve instance consequence id for the brother isnatnce id ans scale impact type
+                        /** @var InstanceConsequenceTable $instanceConsequenceTable */
+                        $instanceConsequenceTable = $this->get('instanceConsequenceTable');
+                        $instanceConsequences = $instanceConsequenceTable->getEntityByFields(['instance' => $brother->id]);
+                        foreach($instanceConsequences as $instanceConsequence) {
+                            foreach($data['consequences'] as $key => $dataConsequence) {
+                                if ($dataConsequence['scaleImpactType'] == $instanceConsequence->scaleImpactType->type) {
+                                    $data['consequences'][$key]['id'] = $instanceConsequence->id;
+                                }
+                            }
+                        }
+                    }
+
                     $this->updateInstance($anrId, $brother->id, $data, $historic);
                 }
             }
@@ -642,6 +665,10 @@ class InstanceService extends AbstractService
     public function patchPosition($anrId, $instance, $instanceParent, $data) {
         if (isset($data['position'])) {
             if (($data['position'] != $instance->position) || ($data['parent'] != $instanceParent)) {
+
+                if ($instance->level != Instance::LEVEL_ROOT) {
+                    throw new \Exception('You may only move a root-level instance', 412);
+                }
 
                 $parent = (isset($data['parent']) && $data['parent']) ? $data['parent'] : null;
 
@@ -757,24 +784,34 @@ class InstanceService extends AbstractService
             $instancesRisks = $this->getInstancesRisks($anrId, $instances);
         }
 
-        //order by max risk
-        $tmpInstancesRisks = [];
-        $tmpInstancesMaxRisks = [];
-        foreach($instancesRisks as $instancesRisk) {
-            $tmpInstancesRisks[$instancesRisk->id] = $instancesRisk;
-            $tmpInstancesMaxRisks[$instancesRisk->id] = $instancesRisk->cacheMaxRisk;
+        // Order by AMV link position, then max risk
+        /** @var AmvTable $amvTable */
+        $amvTable = $this->get('amvTable');
+        $amvs = [];
+
+        // Cache the AMVs data
+        foreach ($instancesRisks as $ir) {
+            if (!isset($amvs[$ir->amv->id])) {
+                $amv = $amvTable->getEntity($ir->amv->id);
+                $amvs[$ir->amv->id] = $amv;
+            }
         }
-        arsort($tmpInstancesMaxRisks);
-        $instancesRisks = [];
-        foreach($tmpInstancesMaxRisks as $id => $tmpInstancesMaxRisk) {
-            $instancesRisks[] = $tmpInstancesRisks[$id];
-        }
+
+        // Sort by AMV position, then max cached risk
+        usort($instancesRisks, function ($a, $b) use ($amvs) {
+            $amv_a = $amvs[$a->amv->id];
+            $amv_b = $amvs[$b->amv->id];
+
+            if ($amv_a->position == $amv_b->position) {
+                return $a->cacheMaxRisk - $b->cacheMaxRisk;
+            } else {
+                return $amv_a->position - $amv_b->position;
+            }
+        });
 
         $risks = [];
         foreach ($instancesRisks as $instanceRisk) {
-            /** @var AmvTable $amvTable */
-            $amvTable = $this->get('amvTable');
-            $amv = $amvTable->getEntity($instanceRisk->amv->id);
+            $amv = $amvs[$instanceRisk->amv->id];
 
             for($i =1; $i<=3; $i++) {
                 $name = 'measure' . $i;
@@ -793,10 +830,14 @@ class InstanceService extends AbstractService
                 'instance' => $instanceRisk->instance->id,
                 'amv' => $amv->id,
                 'asset' => $amv->asset->id,
-                'assetDescription1' => $amv->asset->label1,
-                'assetDescription2' => $amv->asset->label2,
-                'assetDescription3' => $amv->asset->label3,
-                'assetDescription4' => $amv->asset->label4,
+                'assetLabel1' => $amv->asset->label1,
+                'assetLabel2' => $amv->asset->label2,
+                'assetLabel3' => $amv->asset->label3,
+                'assetLabel4' => $amv->asset->label4,
+                'assetDescription1' => $amv->asset->description1,
+                'assetDescription2' => $amv->asset->description2,
+                'assetDescription3' => $amv->asset->description3,
+                'assetDescription4' => $amv->asset->description4,
                 'threat' => $amv->threat->id,
                 'threatLabel1' => $amv->threat->label1,
                 'threatLabel2' => $amv->threat->label2,
@@ -819,13 +860,13 @@ class InstanceService extends AbstractService
                 'vulnerabilityRate' => $instanceRisk->vulnerabilityRate,
                 'kindOfMeasure' => $instanceRisk->kindOfMeasure,
                 'reductionAmount' => $instanceRisk->reductionAmount,
-                'c_impact' => ($instance) ? $instance->c : null,
+                'c_impact' => ($instanceRisk->instance) ? $instanceRisk->instance->c : null,
                 'c_risk' => $instanceRisk->riskC,
                 'c_risk_enabled' => $amv->threat->c,
-                'i_impact' => ($instance) ? $instance->i : null,
+                'i_impact' => ($instanceRisk->instance) ? $instanceRisk->instance->i : null,
                 'i_risk' => $instanceRisk->riskI,
                 'i_risk_enabled' => $amv->threat->i,
-                'd_impact' => ($instance) ? $instance->d : null,
+                'd_impact' => ($instanceRisk->instance) ? $instanceRisk->instance->d : null,
                 'd_risk' => $instanceRisk->riskD,
                 'd_risk_enabled' => $amv->threat->d,
                 't' => ((!$instanceRisk->kindOfMeasure) || ($instanceRisk->kindOfMeasure == InstanceRisk::KIND_NOT_TREATED)) ? false : true,
@@ -917,7 +958,7 @@ class InstanceService extends AbstractService
 
                 'kindOfMeasure' => $instanceRiskOp->kindOfMeasure,
                 'comment' => $instanceRiskOp->comment,
-                't' => ($instanceRiskOp->kindOfMeasure == InstanceRiskOp::KIND_NOT_TREATED) ? false : true,
+                't' => (($instanceRiskOp->kindOfMeasure == InstanceRiskOp::KIND_NOT_TREATED) || (!$instanceRiskOp->kindOfMeasure)) ? false : true,
 
                 'targetedProb' => $instanceRiskOp->targetedProb,
                 'targetedR' => $instanceRiskOp->targetedR,
@@ -1012,19 +1053,21 @@ class InstanceService extends AbstractService
             $scaleImpactTypeTable = $this->get('scaleImpactTypeTable');
             $scaleImpactType = $scaleImpactTypeTable->getEntity($instanceConsequence->scaleImpactType->id);
 
-            $consequences[] = [
-                'id' => $instanceConsequence->id,
-                'scaleImpactType' => $scaleImpactType->type,
-                'scaleImpactTypeDescription1' => $scaleImpactType->label1,
-                'scaleImpactTypeDescription2' => $scaleImpactType->label2,
-                'scaleImpactTypeDescription3' => $scaleImpactType->label3,
-                'scaleImpactTypeDescription4' => $scaleImpactType->label4,
-                'c_risk' => $instanceConsequence->c,
-                'i_risk' => $instanceConsequence->i,
-                'd_risk' => $instanceConsequence->d,
-                'isHidden' => $instanceConsequence->isHidden,
-                'locallyTouched' => $instanceConsequence->locallyTouched,
-            ];
+            if (!$scaleImpactType->isHidden || $instanceConsequence->locallyTouched) {
+                $consequences[] = [
+                    'id' => $instanceConsequence->id,
+                    'scaleImpactType' => $scaleImpactType->type,
+                    'scaleImpactTypeDescription1' => $scaleImpactType->label1,
+                    'scaleImpactTypeDescription2' => $scaleImpactType->label2,
+                    'scaleImpactTypeDescription3' => $scaleImpactType->label3,
+                    'scaleImpactTypeDescription4' => $scaleImpactType->label4,
+                    'c_risk' => $instanceConsequence->c,
+                    'i_risk' => $instanceConsequence->i,
+                    'd_risk' => $instanceConsequence->d,
+                    'isHidden' => $instanceConsequence->isHidden,
+                    'locallyTouched' => $instanceConsequence->locallyTouched,
+                ];
+            }
         }
 
         return $consequences;

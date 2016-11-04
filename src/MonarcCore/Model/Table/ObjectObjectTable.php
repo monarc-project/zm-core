@@ -29,4 +29,20 @@ class ObjectObjectTable extends AbstractEntityTable {
                     ->getQuery()
                     ->getResult();
     }
+
+    public function getDirectParentsInAnr($anrid, $id){
+        $stmt = $this->getDb()->getEntityManager()->getConnection()->prepare(
+         'SELECT         o.id, oo.id as linkid, o.label1, o.label2, o.label3, o.label4, o.name1, o.name2, o.name3, o.name4
+          FROM           objects_objects oo
+          INNER JOIN objects o
+          ON                 oo.father_id = o.id
+          INNER JOIN anrs_objects ao
+          ON                 ao.object_id = o.id
+          WHERE          ao.anr_id = :anrid
+          AND                oo.child_id = :oid'
+        );
+
+        $stmt->execute([':anrid' => $anrid, ':oid' => $id]);
+        return $stmt->fetchAll();
+    }
 }

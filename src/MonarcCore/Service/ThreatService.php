@@ -127,7 +127,7 @@ class ThreatService extends AbstractService
             }
         }
 
-        //$id = $this->get('table')->save($entity);
+        $id = $this->get('table')->save($entity);
 
         if ($needUpdateRisks) {
 
@@ -138,8 +138,13 @@ class ThreatService extends AbstractService
 
             /** @var InstanceRiskService $instanceRiskService */
             $instanceRiskService = $this->get('instanceRiskService');
+            $i = 1;
             foreach($instancesRisks as $instanceRisk) {
-                $instanceRiskService->updateRisks($instanceRisk);
+                $last = ($i == count($instancesRisks)) ? true : false;
+
+                $instanceRiskService->updateRisks($instanceRisk, $last);
+
+                $i++;
             }
         }
 

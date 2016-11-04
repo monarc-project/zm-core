@@ -266,6 +266,8 @@ class ObjectObjectService extends AbstractService
             }
         }
 
+        $this->get('table')->changePositions($objectObject->position, 'down', 'after');
+
         parent::delete($id);
     }
 }

@@ -76,7 +76,7 @@ class DeleteObjectsRisks extends AbstractMigration
             ->addColumn('mh', 'integer', array('default' => '1', 'limit' => MysqlAdapter::INT_TINY))
             ->addColumn('threat_rate', 'integer', array('default' => '-1', 'limit' => 11))
             ->addColumn('vulnerability_rate', 'integer', array('default' => '-1', 'limit' => 11))
-            ->addColumn('kind_of_measure', 'integer', array('null' => true, 'limit' => MysqlAdapter::INT_TINY))
+            ->addColumn('kind_of_measure', 'integer', array('null' => true, 'default' => '5', 'limit' => MysqlAdapter::INT_TINY))
             ->addColumn('reduction_amount', 'integer', array('null' => true, 'default' => '0', 'limit' => 11))
             ->addColumn('comment', 'text', array('null' => true, 'limit' => MysqlAdapter::TEXT_LONG))
             ->addColumn('risk_c', 'integer', array('null' => true, 'default' => '-1', 'limit' => 11))

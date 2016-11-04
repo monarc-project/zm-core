@@ -155,6 +155,8 @@ class AnrService extends AbstractService
 
             $n++;
         }
+
+        return $newAnr;
     }
 
     public function exportAnr(&$data){
