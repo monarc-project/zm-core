@@ -664,6 +664,10 @@ class InstanceService extends AbstractService
         if (isset($data['position'])) {
             if (($data['position'] != $instance->position) || ($data['parent'] != $instanceParent)) {
 
+                if ($instance->level != Instance::LEVEL_ROOT) {
+                    throw new \Exception('You may only move a root-level instance', 412);
+                }
+
                 $parent = (isset($data['parent']) && $data['parent']) ? $data['parent'] : null;
 
                 if ($data['position']) {
