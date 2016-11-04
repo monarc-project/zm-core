@@ -1037,19 +1037,21 @@ class InstanceService extends AbstractService
             $scaleImpactTypeTable = $this->get('scaleImpactTypeTable');
             $scaleImpactType = $scaleImpactTypeTable->getEntity($instanceConsequence->scaleImpactType->id);
 
-            $consequences[] = [
-                'id' => $instanceConsequence->id,
-                'scaleImpactType' => $scaleImpactType->type,
-                'scaleImpactTypeDescription1' => $scaleImpactType->label1,
-                'scaleImpactTypeDescription2' => $scaleImpactType->label2,
-                'scaleImpactTypeDescription3' => $scaleImpactType->label3,
-                'scaleImpactTypeDescription4' => $scaleImpactType->label4,
-                'c_risk' => $instanceConsequence->c,
-                'i_risk' => $instanceConsequence->i,
-                'd_risk' => $instanceConsequence->d,
-                'isHidden' => $instanceConsequence->isHidden,
-                'locallyTouched' => $instanceConsequence->locallyTouched,
-            ];
+            if (!$scaleImpactType->isHidden || $instanceConsequence->locallyTouched) {
+                $consequences[] = [
+                    'id' => $instanceConsequence->id,
+                    'scaleImpactType' => $scaleImpactType->type,
+                    'scaleImpactTypeDescription1' => $scaleImpactType->label1,
+                    'scaleImpactTypeDescription2' => $scaleImpactType->label2,
+                    'scaleImpactTypeDescription3' => $scaleImpactType->label3,
+                    'scaleImpactTypeDescription4' => $scaleImpactType->label4,
+                    'c_risk' => $instanceConsequence->c,
+                    'i_risk' => $instanceConsequence->i,
+                    'd_risk' => $instanceConsequence->d,
+                    'isHidden' => $instanceConsequence->isHidden,
+                    'locallyTouched' => $instanceConsequence->locallyTouched,
+                ];
+            }
         }
 
         return $consequences;
