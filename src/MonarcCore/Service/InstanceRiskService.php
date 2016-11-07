@@ -170,18 +170,22 @@ class InstanceRiskService extends AbstractService
         $instanceRisk->riskD = $riskD;
 
         $risks = [];
+        $impacts = [];
         if ($instanceRisk->threat->c) {
             $risks[] = $riskC;
+            $impacts[] = $instance->c;
         }
         if ($instanceRisk->threat->i) {
             $risks[] = $riskI;
+            $impacts[] = $instance->i;
         }
         if ($instanceRisk->threat->d) {
             $risks[] = $riskD;
+            $impacts[] = $instance->d;
         }
 
         $instanceRisk->cacheMaxRisk = (count($risks)) ? max($risks) : -1;
-        $instanceRisk->cacheTargetedRisk = $this->getTargetRisk($instance->c, $instance->i, $instance->d, $instanceRisk->threatRate, $instanceRisk->vulnerabilityRate, $instanceRisk->reductionAmount);
+        $instanceRisk->cacheTargetedRisk = $this->getTargetRisk($impacts, $instanceRisk->threatRate, $instanceRisk->vulnerabilityRate, $instanceRisk->reductionAmount);
 
         $instanceRiskTable->save($instanceRisk, $last);
     }
