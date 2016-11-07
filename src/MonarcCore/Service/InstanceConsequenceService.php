@@ -150,7 +150,7 @@ class InstanceConsequenceService extends AbstractService
             if (in_array($instanceConsequence->scaleImpactType->type, $rolfpTypes)) {
                 $instanceC[] = (int) $instanceConsequence->get('c');
                 $instanceI[] = (int) $instanceConsequence->get('i');
-                $instanceD[] = (int) $instanceConsequence->get('D');
+                $instanceD[] = (int) $instanceConsequence->get('d');
             }
         }
 
@@ -184,11 +184,20 @@ class InstanceConsequenceService extends AbstractService
         $instanceConsequenceTable = $this->get('table');
         $instancesConsequences = $instanceConsequenceTable->getEntityByFields(['scaleImpactType' => $scaleImpactTypeId]);
 
+        $consequencesIds = [];
+
         $i = 1;
         foreach($instancesConsequences as $instanceConsequence) {
             $last = ($i == count($instancesConsequences)) ? true : false;
             $this->patchConsequence($instanceConsequence->id, $data, $last, false);
+            $consequencesIds[$instanceConsequence->id] = $instanceConsequence->id;
             $i++;
+        }
+
+        if(!empty($consequencesIds)){
+            foreach($consequencesIds as $idc){
+                $this->updateInstanceImpacts($idc);
+            }
         }
     }
 }
