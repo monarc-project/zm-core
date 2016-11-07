@@ -285,13 +285,13 @@ class InstanceService extends AbstractService
             }
         }
 
-        if ($data['c'] != -1) {
+        if (isset($data['c']) && $data['c'] != -1) {
             $data['ch'] = 0;
         }
-        if ($data['d'] != -1) {
+        if (isset($data['d']) && $data['d'] != -1) {
             $data['dh'] = 0;
         }
-        if ($data['i'] != -1) {
+        if (isset($data['i']) && $data['i'] != -1) {
             $data['ih'] = 0;
         }
 
