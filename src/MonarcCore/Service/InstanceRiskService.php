@@ -2,8 +2,10 @@
 namespace MonarcCore\Service;
 
 use MonarcCore\Model\Entity\InstanceRisk;
+use MonarcCore\Model\Entity\Object;
 use MonarcCore\Model\Table\AmvTable;
 use MonarcCore\Model\Table\InstanceRiskTable;
+use MonarcCore\Model\Table\InstanceTable;
 use MonarcCore\Model\Table\ObjectTable;
 use MonarcCore\Model\Table\ScaleTable;
 
@@ -101,10 +103,13 @@ class InstanceRiskService extends AbstractService
      *
      * @param $id
      * @param $data
+     * @param bool $manageGlobal
      * @return mixed
+     * @throws \Exception
      */
-    public function patch($id,$data){
+    public function patch($id, $data, $manageGlobal = true){
 
+        $initialData = $data;
         $anrId = $data['anr'];
 
         //security
@@ -112,7 +117,51 @@ class InstanceRiskService extends AbstractService
 
         $this->verifyRates($anrId, $data, $this->getEntity($id));
 
-        parent::patch($id,$data);
+        $entity = $this->get('table')->getEntity($id);
+        if (!$entity) {
+            throw new \Exception('Entity not exist', 412);
+        }
+
+        /** @var InstanceRiskTable $instanceRiskTable */
+        $instanceRiskTable = $this->get('table');
+
+        //if object is global, impact modifications to brothers
+        if ($manageGlobal) {
+            $object = $entity->instance->object;
+            if ($object->scope == Object::SCOPE_GLOBAL) {
+
+                //retrieve brothers instances
+                /** @var InstanceTable $instanceTable */
+                $instanceTable = $this->get('instanceTable');
+                $instances = $instanceTable->getEntityByFields(['anr' => $entity->anr->id, 'object' => $object->id]);
+
+                foreach($instances as $instance) {
+                    if ($instance != $entity->instance) {
+                        $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $instance->id, 'amv' => $entity->amv->id]);
+                        foreach($instancesRisks as $instanceRisk) {
+                            $initialData['id'] = $instanceRisk->id;
+                            $initialData['instance'] = $instance->id;
+                            $this->patch($instanceRisk->id, $initialData, false);
+                        }
+                    }
+                }
+            }
+        }
+
+        $entity->setLanguage($this->getLanguage());
+
+        foreach ($this->dependencies as $dependency) {
+            if (!isset($data[$dependency])) {
+                $data[$dependency] = $entity->$dependency->id;
+            }
+        }
+
+        $entity->exchangeArray($data, true);
+
+        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $this->setDependencies($entity, $dependencies);
+
+        $instanceRiskTable->save($entity);
 
         $this->updateRisks($id);
 
@@ -124,16 +173,63 @@ class InstanceRiskService extends AbstractService
      *
      * @param $id
      * @param $data
+     * @param bool $manageGlobal
      * @return mixed
      * @throws \Exception
      */
-    public function update($id,$data){
+    public function update($id, $data, $manageGlobal = true){
 
+        $initialData = $data;
         $anrId = $data['anr'];
 
         $this->verifyRates($anrId, $data, $this->getEntity($id));
 
-        parent::update($id, $data);
+        $entity = $this->get('table')->getEntity($id);
+        if (!$entity) {
+            throw new \Exception('Entity not exist', 412);
+        }
+
+        /** @var InstanceRiskTable $instanceRiskTable */
+        $instanceRiskTable = $this->get('table');
+
+        //if object is global, impact modifications to brothers
+        if ($manageGlobal) {
+            $object = $entity->instance->object;
+            if ($object->scope == Object::SCOPE_GLOBAL) {
+
+                //retrieve brothers instances
+                /** @var InstanceTable $instanceTable */
+                $instanceTable = $this->get('instanceTable');
+                $instances = $instanceTable->getEntityByFields(['anr' => $entity->anr->id, 'object' => $object->id]);
+
+                foreach($instances as $instance) {
+                    if ($instance != $entity->instance) {
+                        $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $instance->id, 'amv' => $entity->amv->id]);
+                        foreach($instancesRisks as $instanceRisk) {
+                            $initialData['id'] = $instanceRisk->id;
+                            $initialData['instance'] = $instance->id;
+                            $this->update($instanceRisk->id, $initialData, false);
+                        }
+                    }
+                }
+            }
+        }
+
+        $this->filterPostFields($data, $entity);
+
+        $entity->setDbAdapter($this->get('table')->getDb());
+        $entity->setLanguage($this->getLanguage());
+
+        if (empty($data)) {
+            throw new \Exception('Data missing', 412);
+        }
+
+        $entity->exchangeArray($data);
+
+        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $this->setDependencies($entity, $dependencies);
+
+        $instanceRiskTable->save($entity);
 
         $this->updateRisks($id);
 
@@ -170,18 +266,22 @@ class InstanceRiskService extends AbstractService
         $instanceRisk->riskD = $riskD;
 
         $risks = [];
+        $impacts = [];
         if ($instanceRisk->threat->c) {
             $risks[] = $riskC;
+            $impacts[] = $instance->c;
         }
         if ($instanceRisk->threat->i) {
             $risks[] = $riskI;
+            $impacts[] = $instance->i;
         }
         if ($instanceRisk->threat->d) {
             $risks[] = $riskD;
+            $impacts[] = $instance->d;
         }
 
         $instanceRisk->cacheMaxRisk = (count($risks)) ? max($risks) : -1;
-        $instanceRisk->cacheTargetedRisk = $this->getTargetRisk($instance->c, $instance->i, $instance->d, $instanceRisk->threatRate, $instanceRisk->vulnerabilityRate, $instanceRisk->reductionAmount);
+        $instanceRisk->cacheTargetedRisk = $this->getTargetRisk($impacts, $instanceRisk->threatRate, $instanceRisk->vulnerabilityRate, $instanceRisk->reductionAmount);
 
         $instanceRiskTable->save($instanceRisk, $last);
     }

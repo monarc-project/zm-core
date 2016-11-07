@@ -243,10 +243,15 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param $id
      * @param $data
      * @return mixed
+     * @throws \Exception
      */
     public function patch($id, $data){
 
         $entity = $this->get('table')->getEntity($id);
+        if (!$entity) {
+            throw new \Exception('Entity not exist', 412);
+        }
+
         $entity->setLanguage($this->getLanguage());
 
         foreach ($this->dependencies as $dependency) {
@@ -694,9 +699,9 @@ abstract class AbstractService extends AbstractServiceFactory
         return $dRisks;
     }
 
-    protected function getTargetRisk($c, $i, $d, $tRate, $vRate, $vRateReduc) {
-        $targetRisk = ((max([$c, $i, $d]) != -1) && ($tRate != -1) && ($vRate != -1))
-            ? max([$c, $i, $d]) * $tRate * ($vRate - $vRateReduc) : -1;
+    protected function getTargetRisk($impacts, $tRate, $vRate, $vRateReduc) {
+        $targetRisk = ((max($impacts) != -1) && ($tRate != -1) && ($vRate != -1))
+            ? max($impacts) * $tRate * ($vRate - $vRateReduc) : -1;
 
         return $targetRisk;
     }
