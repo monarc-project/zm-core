@@ -102,21 +102,6 @@ class Module
             'invokables' => array(
             ),
             'factories' => array(
-                '\MonarcCore\Controller\Index'                          => '\MonarcCore\Controller\IndexControllerFactory',
-                '\MonarcCore\Controller\Authentication'                 => '\MonarcCore\Controller\AuthenticationControllerFactory',
-                '\MonarcCore\Controller\ApiAnr'                         => '\MonarcCore\Controller\ApiAnrControllerFactory',
-                '\MonarcCore\Controller\ApiAnrInstances'                => '\MonarcCore\Controller\ApiAnrInstancesControllerFactory',
-                '\MonarcCore\Controller\ApiAnrInstancesConsequences'    => '\MonarcCore\Controller\ApiAnrInstancesConsequencesControllerFactory',
-                '\MonarcCore\Controller\ApiAnrInstancesRisks'           => '\MonarcCore\Controller\ApiAnrInstancesRisksControllerFactory',
-                '\MonarcCore\Controller\ApiAnrInstancesRisksOp'         => '\MonarcCore\Controller\ApiAnrInstancesRisksOpControllerFactory',
-                '\MonarcCore\Controller\ApiAnrLibrary'                  => '\MonarcCore\Controller\ApiAnrLibraryControllerFactory',
-                '\MonarcCore\Controller\ApiAnrLibraryCategory'          => '\MonarcCore\Controller\ApiAnrLibraryCategoryControllerFactory',
-                '\MonarcCore\Controller\ApiAnrObject'                   => '\MonarcCore\Controller\ApiAnrObjectControllerFactory',
-                '\MonarcCore\Controller\ApiModels'                      => '\MonarcCore\Controller\ApiModelsControllerFactory',
-                '\MonarcCore\Controller\ApiModelsDuplication'           => '\MonarcCore\Controller\ApiModelsDuplicationControllerFactory',
-                '\MonarcCore\Controller\ApiAnrScales'                   => '\MonarcCore\Controller\ApiAnrScalesControllerFactory',
-                '\MonarcCore\Controller\ApiAnrScalesTypes'              => '\MonarcCore\Controller\ApiAnrScalesTypesControllerFactory',
-                '\MonarcCore\Controller\ApiAnrScalesComments'           => '\MonarcCore\Controller\ApiAnrScalesCommentsControllerFactory',
             ),
         );
     }

@@ -23,6 +23,7 @@ class AnrService extends AbstractService
     protected $scaleTable;
     protected $scaleImpactTypeTable;
     protected $scaleCommentTable;
+    protected $instanceService;
 
     /**
      * Create
@@ -156,5 +157,67 @@ class AnrService extends AbstractService
         }
 
         return $newAnr;
+    }
+
+    public function exportAnr(&$data){
+        if (empty($data['id'])) {
+            throw new \Exception('Anr to export is required',412);
+        }
+        if (empty($data['password'])) {
+            $data['password'] = '';
+        }
+        $filename = "";
+
+        $with_eval = isset($data['assessments']) && $data['assessments'];
+
+        $return = $this->generateExportArray($data['id'],$filename,$with_eval);
+        $data['filename'] = $filename;
+
+        return base64_encode($this->encrypt(json_encode($return),$data['password']));
+    }
+
+    public function generateExportArray($id, &$filename = "", $with_eval = false){
+        if (empty($id)) {
+            throw new \Exception('Anr to export is required',412);
+        }
+        $entity = $this->get('table')->getEntity($id);
+
+        if (!$entity) {
+            throw new \Exception('Entity `id` not found.');
+        }
+
+        $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $entity->get('label'.$this->getLanguage()));
+
+        $return = array(
+            'type' => 'anr',
+            'version' => $this->getVersion(),
+            'instances' => array(),
+            'with_eval' => $with_eval,
+        );
+
+        $instanceService = $this->get('instanceService');
+        $table = $this->get('instanceTable');
+        $instances = $table->getEntityByFields(['anr' => $entity->get('id')]);
+        $f = '';
+        $with_scale = false;
+        foreach($instances as $i){
+            $return['instances'][$i->id] = $instanceService->generateExportArray($i->id,$f,$with_eval,$with_scale);
+        }
+
+        if($with_eval){
+            // scales
+            $return['scales'] = array();
+            $scaleTable = $this->get('scaleTable');
+            $scales = $scaleTable->getEntityByFields(['anr' => $entity->get('id')]);
+            $scalesArray = array(
+                'min'=>'min',
+                'max'=>'max',
+                'type'=>'type',
+            );
+            foreach ($scales as $s) {
+                $return['scales'][$s->type] = $s->getJsonArray($scalesArray);
+            }
+        }
+        return $return;
     }
 }

@@ -217,7 +217,11 @@ class ObjectCategoryService extends AbstractService
 
         $entity = $this->getEntity($id);
 
-        $objectParentId = $entity['parent']->id;
+        if ($entity['parent']) {
+            $objectParentId = $entity['parent']->id;
+        } else {
+            $objectParentId = null;
+        }
         $position = $entity['position'];
 
         $this->get('table')->changePositionsByParent('parent', $objectParentId, $position, 'down', 'after');

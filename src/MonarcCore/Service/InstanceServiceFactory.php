@@ -20,5 +20,7 @@ class InstanceServiceFactory extends AbstractServiceFactory
         'instanceRiskService' => 'MonarcCore\Service\InstanceRiskService',
         'instanceRiskOpService' => 'MonarcCore\Service\InstanceRiskOpService',
         'objectObjectService' => 'MonarcCore\Service\ObjectObjectService',
+        'objectExportService' => 'MonarcCore\Service\ObjectExportService',
+        'amvService' =>  'MonarcCore\Service\AmvService',
     );
 }

@@ -16,6 +16,7 @@ class AssetService extends AbstractService
     protected $amvService;
     protected $modelService;
     protected $objectTable;
+    protected $assetExportService;
 
     protected $filterColumns = [
         'label1', 'label2', 'label3', 'label4',
@@ -161,13 +162,10 @@ class AssetService extends AbstractService
             throw new \Exception('Asset to export is required',412);
         }
         if (empty($data['password'])) {
-            $password = md5('');
-        } else {
-            $password = $data['password'];
+            $data['password'] = '';
         }
-
         $filename = "";
-        $return = $this->generateExportArray($data['id'],$filename);
+        $return = $this->get('assetExportService')->generateExportArray($data['id'],$filename);
         $data['filename'] = $filename;
 
         return base64_encode($this->encrypt(json_encode($return),$data['password']));
