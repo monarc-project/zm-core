@@ -865,22 +865,26 @@ class ObjectService extends AbstractService
         $id = $table->save($object);
 
         //retrieve root category
-        /** @var ObjectCategoryTable $objectCategoryTable */
-        $objectCategoryTable = $this->get('categoryTable');
-        $objectCategory = $objectCategoryTable->getEntity($object->category->id);
-        $objectRootCategoryId = ($objectCategory->root) ? $objectCategory->root->id : $objectCategory->id;
+        if ($object->category && $object->category->id) {
+            /** @var ObjectCategoryTable $objectCategoryTable */
+            $objectCategoryTable = $this->get('categoryTable');
+            $objectCategory = $objectCategoryTable->getEntity($object->category->id);
+            $objectRootCategoryId = ($objectCategory->root) ? $objectCategory->root->id : $objectCategory->id;
 
-        //add root category to anr
-        /** @var AnrObjectCategoryTable $anrObjectCategoryTable */
-        $anrObjectCategoryTable = $this->get('anrObjectCategoryTable');
-        $anrObjectCategories = $anrObjectCategoryTable->getEntityByFields(['anr' => $anrId, 'category' => $objectRootCategoryId]);
-        if (!count($anrObjectCategories)) {
-            $class = $this->get('anrObjectCategoryEntity');
-            $anrObjectCategory = new $class();
-            $anrObjectCategory->anr = $anr;
-            $anrObjectCategory->category = ($object->category->root) ? $object->category->root : $object->category;
-            $anrObjectCategory->position = $this->managePosition('anr', $anrObjectCategory, $anrId, 2, null, 'post', $anrObjectCategoryTable);
-            $anrObjectCategoryTable->save($anrObjectCategory);
+            //add root category to anr
+            /** @var AnrObjectCategoryTable $anrObjectCategoryTable */
+            $anrObjectCategoryTable = $this->get('anrObjectCategoryTable');
+            $anrObjectCategories = $anrObjectCategoryTable->getEntityByFields(['anr' => $anrId, 'category' => $objectRootCategoryId]);
+            if (!count($anrObjectCategories)) {
+                $class = $this->get('anrObjectCategoryEntity');
+                $anrObjectCategory = new $class();
+                $anrObjectCategory->anr = $anr;
+                $anrObjectCategory->category = ($object->category->root) ? $object->category->root : $object->category;
+                $anrObjectCategory->position = $this->managePosition('anr', $anrObjectCategory, $anrId, 2, null, 'post', $anrObjectCategoryTable);
+                $anrObjectCategoryTable->save($anrObjectCategory);
+            }
+        } else {
+            $objectRootCategoryId = null;
         }
 
         //children
@@ -949,16 +953,20 @@ class ObjectService extends AbstractService
 
         //retrieve number anr objects with the same root category than current objet
         $nbObjectsSameRootCategory = 0;
-        $objectRootCategory = ($object->category->root) ? $object->category->root : $object->category;
-        foreach($anr->objects as $anrObject) {
-            $anrObjectRootCategory = ($anrObject->category->root) ? $anrObject->category->root : $anrObject->category;
-            if (($anrObjectRootCategory->id == $objectRootCategory->id) && ($anrObject->id != $object->id)) {
-                $nbObjectsSameRootCategory++;
+        if ($object->category) {
+            $objectRootCategory = ($object->category->root) ? $object->category->root : $object->category;
+            foreach ($anr->objects as $anrObject) {
+                $anrObjectRootCategory = ($anrObject->category->root) ? $anrObject->category->root : $anrObject->category;
+                if (($anrObjectRootCategory->id == $objectRootCategory->id) && ($anrObject->id != $object->id)) {
+                    $nbObjectsSameRootCategory++;
+                }
             }
+        } else {
+            $objectRootCategory = null;
         }
 
         //if the last object of the category in the anr, delete category from anr
-        if (!$nbObjectsSameRootCategory) {
+        if (!$nbObjectsSameRootCategory && $objectRootCategory) {
             //anrs objects categories
             /** @var AnrObjectCategoryTable $anrObjectCategoryTable */
             $anrObjectCategoryTable = $this->get('anrObjectCategoryTable');
