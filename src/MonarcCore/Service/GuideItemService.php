@@ -57,7 +57,6 @@ class GuideItemService extends AbstractService
             $data['position'] = $this->managePosition('guide', $entity, $guide, $data['implicitPosition'], $previous);
         }
 
-        $entity = $this->get('table')->getEntity($id);
         $entity->exchangeArray($data);
 
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
