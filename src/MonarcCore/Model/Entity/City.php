@@ -7,7 +7,9 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * City
  *
- * @ORM\Table(name="cities")
+ * @ORM\Table(name="cities", indexes={
+ *      @ORM\Index(name="country_id", columns={"country_id"})
+ * })
  * @ORM\Entity
  */
 class City extends AbstractEntity

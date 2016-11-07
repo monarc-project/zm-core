@@ -7,7 +7,10 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Anr Object Category
  *
- * @ORM\Table(name="anrs_objects_categories")
+ * @ORM\Table(name="anrs_objects_categories", indexes={
+ *      @ORM\Index(name="anr", columns={"anr_id"}),
+ *      @ORM\Index(name="category", columns={"object_category_id"})
+ * })
  * @ORM\Entity
  */
 class AnrObjectCategory extends AbstractEntity

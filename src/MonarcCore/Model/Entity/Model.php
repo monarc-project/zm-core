@@ -8,7 +8,9 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Model
  *
- * @ORM\Table(name="models")
+ * @ORM\Table(name="models", indexes={
+ *      @ORM\Index(name="anr", columns={"anr_id"})
+ * })
  * @ORM\Entity
  */
 class Model extends AbstractEntity

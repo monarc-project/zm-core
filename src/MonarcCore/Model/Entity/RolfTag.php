@@ -7,7 +7,9 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Thme
  *
- * @ORM\Table(name="rolf_tags")
+ * @ORM\Table(name="rolf_tags", indexes={
+ *      @ORM\Index(name="anr", columns={"anr_id"})
+ * })
  * @ORM\Entity
  */
 class RolfTag extends AbstractEntity

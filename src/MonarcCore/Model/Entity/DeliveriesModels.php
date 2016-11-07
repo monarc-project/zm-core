@@ -7,7 +7,9 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Amv
  *
- * @ORM\Table(name="deliveries_models")
+ * @ORM\Table(name="deliveries_models", indexes={
+ *      @ORM\Index(name="anr_id", columns={"anr_id"})
+ * })
  * @ORM\Entity
  */
 class DeliveriesModels extends AbstractEntity

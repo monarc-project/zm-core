@@ -8,7 +8,11 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Guide
  *
- * @ORM\Table(name="guides_items")
+ * @ORM\Table(name="guides_items", indexes={
+ *      @ORM\Index(name="anr", columns={"anr_id"}),
+ *      @ORM\Index(name="guide_id", columns={"guide_id"}),
+ *      @ORM\Index(name="position", columns={"position"})
+ * })
  * @ORM\Entity
  */
 class GuideItem extends AbstractEntity

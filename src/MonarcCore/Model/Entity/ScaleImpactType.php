@@ -7,7 +7,11 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Scale Type
  *
- * @ORM\Table(name="scales_impact_types")
+ * @ORM\Table(name="scales_impact_types", indexes={
+ *      @ORM\Index(name="anr", columns={"anr_id"}),
+ *      @ORM\Index(name="scale_id", columns={"scale_id"}),
+ *      @ORM\Index(name="type", columns={"type"})
+ * })
  * @ORM\Entity
  */
 class ScaleImpactType extends AbstractEntity
