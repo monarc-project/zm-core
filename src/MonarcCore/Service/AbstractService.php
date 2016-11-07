@@ -243,10 +243,15 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param $id
      * @param $data
      * @return mixed
+     * @throws \Exception
      */
     public function patch($id, $data){
 
         $entity = $this->get('table')->getEntity($id);
+        if (!$entity) {
+            throw new \Exception('Entity not exist', 412);
+        }
+
         $entity->setLanguage($this->getLanguage());
 
         foreach ($this->dependencies as $dependency) {
