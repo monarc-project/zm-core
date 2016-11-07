@@ -126,6 +126,11 @@ class AmvService extends AbstractService
         //security
         $this->filterPatchFields($data);
 
+        $entity = $this->get('table')->getEntity($id);
+
+        $previous = (isset($data['previous'])) ? $data['previous'] : null;
+        $data['position'] = $this->managePosition('asset', $entity, $data['asset'], $data['implicitPosition'], $previous, 'update', false, 1);
+
         parent::patch($id, $data);
     }
 
@@ -226,6 +231,9 @@ class AmvService extends AbstractService
             throw new \Exception($this->errorMessage);
         }
 
+        $previousInstance = (isset($data['previous'])) ? $data['previous'] : null;
+        $entity->position = $this->managePosition('asset', $entity, $entity->asset->id, $data['implicitPosition'], $previousInstance, 'post', false, 1);
+
         $id = $this->get('table')->save($entity);
 
         //historisation
@@ -262,6 +270,7 @@ class AmvService extends AbstractService
                 $details[] = $key . ' => ' . $newEntity[$key]->$field;
             }
         }
+
 
         $this->historizeCreate('amv', $newEntity, $details);
 
@@ -304,6 +313,9 @@ class AmvService extends AbstractService
         }
         $name = implode(' - ', $name);
         $this->label = [$name,$name,$name,$name];
+
+        $previous = (isset($data['previous'])) ? $data['previous'] : null;
+        $data['position'] = $this->managePosition('asset', $entity, $data['asset'], $data['implicitPosition'], $previous, 'update', false, 1);
 
         $entity->exchangeArray($data);
 
@@ -379,21 +391,21 @@ class AmvService extends AbstractService
     public function delete($id) {
 
         //historisation
-        $entity = $this->getEntity($id);
+        $entity = $this->get('table')->getEntity($id);
 
         if ($entity) {
 
             //virtual name for historisation
             $name = [];
 
-            if ($entity['asset']->get('code')) {
-                $name[] = $entity['asset']->get('code');
+            if ($entity->get('asset')->get('code')) {
+                $name[] = $entity->get('asset')->get('code');
             }
-            if ($entity['threat']->get('code')) {
-                $name[] = $entity['threat']->get('code');
+            if ($entity->get('threat')->get('code')) {
+                $name[] = $entity->get('threat')->get('code');
             }
-            if ($entity['vulnerability']->get('code')) {
-                $name[] = $entity['vulnerability']->get('code');
+            if ($entity->get('vulnerability')->get('code')) {
+                $name[] = $entity->get('vulnerability')->get('code');
             }
 
             $name = implode(' - ', $name);
@@ -411,12 +423,12 @@ class AmvService extends AbstractService
             ];
             $details = [];
             foreach ($fields as $key => $field) {
-                if (($entity[$key])) {
-                    $details[] = $key . ' => ' . $entity[$key]->$field;
+                if ($entity->$key) {
+                    $details[] = $key . ' => ' . $entity->$key->$field;
                 }
             }
 
-            $this->get('table')->changePositions($entity['position'], 'down', 'after');
+            $this->managePosition('asset', $entity, $entity->get('asset')->get('id'), null, null, 'delete');
 
             $this->historizeDelete('amv', $entity, $details);
 

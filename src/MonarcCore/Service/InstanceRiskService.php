@@ -38,34 +38,62 @@ class InstanceRiskService extends AbstractService
      */
     public function createInstanceRisks($instanceId, $anrId, $object) {
 
-        /** @var AmvTable $amvTable */
-        $amvTable = $this->get('amvTable');
-        $amvs = $amvTable->getEntityByFields(['asset' => $object->asset->id]);
+        if ($object->scope == Object::SCOPE_GLOBAL) {
 
-        $nbAmvs = count($amvs);
-        $i = 1;
-        foreach ($amvs as $amv) {
+            /** @var InstanceTable $instanceTable */
+            $instanceTable = $this->get('instanceTable');
+            $currentInstance = $instanceTable->getEntity($instanceId);
 
-            $lastAmv = ($nbAmvs == $i) ? true : false;
+            /** @var InstanceRiskTable $instanceRiskTable */
+            $instanceRiskTable = $this->get('table');
 
-            $data = [
-                'anr' => $anrId,
-                'amv' => $amv->id,
-                'asset' => $amv->asset->id,
-                'instance' => $instanceId,
-                'threat' => $amv->threat->id,
-                'vulnerability' => $amv->vulnerability->id,
-            ];
+            //retrieve brothers instances
+            /** @var InstanceTable $instanceTable */
+            $instanceTable = $this->get('instanceTable');
+            $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $object->id]);
+            foreach($instances as $instance) {
+                if ($instance->id != $instanceId) {
+                    $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $instance->id]);
+                    foreach($instancesRisks as $instanceRisk) {
+                        $newInstanceRisk = clone $instanceRisk;
+                        $newInstanceRisk->setId(null);
+                        $newInstanceRisk->setInstance($currentInstance);
+                        $instanceRiskTable->save($newInstanceRisk);
+                    }
+                }
+                break;
+            }
+        } else {
 
-            $instanceRiskLastId = $this->create($data, $lastAmv);
+            /** @var AmvTable $amvTable */
+            $amvTable = $this->get('amvTable');
+            $amvs = $amvTable->getEntityByFields(['asset' => $object->asset->id]);
 
-            $i++;
-        }
+            $nbAmvs = count($amvs);
+            $i = 1;
+            foreach ($amvs as $amv) {
 
-        if ($nbAmvs) {
-            for ($i = $instanceRiskLastId - $nbAmvs + 1; $i <= $instanceRiskLastId; $i++) {
-                $lastRisk = ($i == $instanceRiskLastId) ? true : false;
-                $this->updateRisks($i, $lastRisk);
+                $lastAmv = ($nbAmvs == $i) ? true : false;
+
+                $data = [
+                    'anr' => $anrId,
+                    'amv' => $amv->id,
+                    'asset' => $amv->asset->id,
+                    'instance' => $instanceId,
+                    'threat' => $amv->threat->id,
+                    'vulnerability' => $amv->vulnerability->id,
+                ];
+
+                $instanceRiskLastId = $this->create($data, $lastAmv);
+
+                $i++;
+            }
+
+            if ($nbAmvs) {
+                for ($i = $instanceRiskLastId - $nbAmvs + 1; $i <= $instanceRiskLastId; $i++) {
+                    $lastRisk = ($i == $instanceRiskLastId) ? true : false;
+                    $this->updateRisks($i, $lastRisk);
+                }
             }
         }
     }
