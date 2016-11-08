@@ -22,7 +22,7 @@ class AnrObjectService extends AbstractService{
 	public function getParents($anrid, $id){
 		$object = $this->get('table')->getEntity($id);
 		if (!$object) {
-      throw new \Exception('Entity not exist', 412);
+      throw new \Exception('Entity does not exist', 412);
     }
 
 		//on doit vérifier que l'objet auquel on tente d'accéder est bien rattaché à anrid

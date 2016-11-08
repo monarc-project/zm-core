@@ -124,7 +124,7 @@ abstract class AbstractEntityTable
             $entity = $this->getDb()->fetch($entity);
 
             if (!$entity) {
-                throw new \Exception('Entity not exist', 412);
+                throw new \Exception('Entity does not exist', 412);
             }
             return $entity;
         }else{

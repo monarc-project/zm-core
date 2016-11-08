@@ -548,7 +548,7 @@ class AmvService extends AbstractService
         } else {
             foreach ($assetModelsIsRegulator as $modelIsRegulator) {
                 if ($modelIsRegulator) {
-                    $this->errorMessage = 'All asset models must\'nt be regulator';
+                    $this->errorMessage = 'All asset models must not be regulator';
                     return false;
                 }
             }

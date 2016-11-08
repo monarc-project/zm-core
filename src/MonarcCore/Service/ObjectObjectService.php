@@ -245,7 +245,7 @@ class ObjectObjectService extends AbstractService
         $objectObject = $table->getEntity($id);
 
         if (!$objectObject) {
-            throw new \Exception('Entity not exist', 412);
+            throw new \Exception('Entity does not exist', 412);
         }
 
         //delete instance instance

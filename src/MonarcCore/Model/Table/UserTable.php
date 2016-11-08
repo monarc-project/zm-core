@@ -77,7 +77,7 @@ class UserTable extends AbstractEntityTable {
             ->getResult();
 
         if (! count($users)) {
-            throw new \Exception('Entity not exist', 422);
+            throw new \Exception('Entity does not exist', 422);
         } else {
             return $users[0];
         }
