@@ -40,6 +40,7 @@ class GuideService extends AbstractService
         $guides = parent::getList($page, $limit, $order, $filter);
 
         foreach($guides as $key => $guide) {
+            $guides[$key]['type_id'] = $guides[$key]['type'];
             $guides[$key]['type'] = $this->types[$guide['type']];
         }
 
