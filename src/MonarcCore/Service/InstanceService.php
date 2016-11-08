@@ -287,14 +287,14 @@ class InstanceService extends AbstractService
             }
         }
         
-        if (isset($data['c']) && $data['c'] != -1) {
-            $data['ch'] = 0;
+        if (isset($data['c'])) {
+            $data['ch'] = ($data['c'] == -1) ? 1 : 0;
         }
-        if (isset($data['d']) && $data['d'] != -1) {
-            $data['dh'] = 0;
+        if (isset($data['d'])) {
+            $data['dh'] = ($data['d'] == -1) ? 1 : 0;
         }
-        if (isset($data['i']) && $data['i'] != -1) {
-            $data['ih'] = 0;
+        if (isset($data['i'])) {
+            $data['ih'] = ($data['i'] == -1) ? 1 : 0;
         }
 
         $instance->setLanguage($this->getLanguage());
