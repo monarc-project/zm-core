@@ -99,6 +99,23 @@ class InstanceRiskService extends AbstractService
     }
 
     /**
+     * Delete Instance Risk
+     *
+     * @param $instanceId
+     * @param $anrId
+     */
+    public function deleteInstanceRisks($instanceId, $anrId){
+        $risks = $this->getInstanceRisks($instanceId, $anrId);
+        $table = $this->get('table');
+        $nb = count($risks);
+        $i = 1;
+        foreach($risks as $r){
+            $table->delete($r->id,($i == $nb));
+            $i++;
+        }
+    }
+
+    /**
      * Get Instance Risks
      *
      * @param $instanceId

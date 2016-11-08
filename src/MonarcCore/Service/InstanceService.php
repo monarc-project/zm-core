@@ -349,6 +349,9 @@ class InstanceService extends AbstractService
 
         $this->managePosition('parent', $instance, $parent_id, null, null, 'delete');
 
+        $this->get('instanceRiskService')->deleteInstanceRisks($id,$instance->anr->id);
+        $this->get('instanceRiskOpService')->deleteInstanceRisksOp($id,$instance->anr->id);
+
         $this->get('table')->delete($id);
     }
 
