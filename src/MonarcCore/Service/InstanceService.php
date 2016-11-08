@@ -181,7 +181,7 @@ class InstanceService extends AbstractService
      * @return mixed
      * @throws \Exception
      */
-    public function updateInstance($anrId, $id, $data, &$historic = []){
+    public function updateInstance($anrId, $id, $data, &$historic = [], $managePosition = false){
 
         $historic[] = $id;
         $initialData = $data;
@@ -201,7 +201,9 @@ class InstanceService extends AbstractService
             throw new \Exception('Data missing', 412);
         }
 
-        $this->updatePosition($anrId, $instance, $data);
+        if ($managePosition) {
+            $this->updatePosition($anrId, $instance, $data);
+        }
 
         $this->updateConsequences($anrId, $data);
 
@@ -285,13 +287,13 @@ class InstanceService extends AbstractService
             }
         }
 
-        if ($data['c'] != -1) {
+        if ((isset($data['c'])) && ($data['c'] != -1)) {
             $data['ch'] = 0;
         }
-        if ($data['d'] != -1) {
+        if ((isset($data['d'])) && ($data['d'] != -1)) {
             $data['dh'] = 0;
         }
-        if ($data['i'] != -1) {
+        if ((isset($data['i'])) && ($data['i'] != -1)) {
             $data['ih'] = 0;
         }
 
@@ -569,7 +571,7 @@ class InstanceService extends AbstractService
                         }
                     }
 
-                    $this->updateInstance($anrId, $brother->id, $data, $historic);
+                    $this->updateInstance($anrId, $brother->id, $data, $historic, false);
                 }
             }
         }
@@ -630,7 +632,7 @@ class InstanceService extends AbstractService
      */
     public function updatePosition($anrId, $instance, $data) {
         if (isset($data['position'])) {
-            if (($data['position'] != $instance->position) || ($data['parent'] != $instance->parent)) {
+            if ((isset($data['position']) && ($data['position'] != $instance->position)) || (isset($data['parent']) && ($data['parent'] != $instance->parent))) {
 
                 $parent = (isset($data['parent']) && $data['parent']) ? $data['parent'] : null;
                 $parentId = ($parent) ? $parent['id'] : null;
