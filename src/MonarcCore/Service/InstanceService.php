@@ -286,14 +286,14 @@ class InstanceService extends AbstractService
                 $instance->setRoot($root);
             }
         }
-
-        if ((isset($data['c'])) && ($data['c'] != -1)) {
+        
+        if (isset($data['c']) && $data['c'] != -1) {
             $data['ch'] = 0;
         }
-        if ((isset($data['d'])) && ($data['d'] != -1)) {
+        if (isset($data['d']) && $data['d'] != -1) {
             $data['dh'] = 0;
         }
-        if ((isset($data['i'])) && ($data['i'] != -1)) {
+        if (isset($data['i']) && $data['i'] != -1) {
             $data['ih'] = 0;
         }
 
