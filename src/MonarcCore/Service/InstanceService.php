@@ -191,7 +191,7 @@ class InstanceService extends AbstractService
         $instance = $table->getEntity($id);
 
         if (!$instance) {
-            throw new \Exception('Instance not exist', 412);
+            throw new \Exception('Instance does not exist', 412);
         }
 
         $instance->setDbAdapter($table->getDb());
@@ -264,7 +264,7 @@ class InstanceService extends AbstractService
         $instance = $table->getEntity($id);
 
         if (!$instance) {
-            throw new \Exception('Instance not exist', 412);
+            throw new \Exception('Instance does not exist', 412);
         }
         $instanceParent = ($instance->parent) ? $instance->parent->id : null;
 
