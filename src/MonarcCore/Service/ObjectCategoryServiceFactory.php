@@ -7,6 +7,7 @@ class ObjectCategoryServiceFactory extends AbstractServiceFactory
         'table'=> '\MonarcCore\Model\Table\ObjectCategoryTable',
         'entity'=> '\MonarcCore\Model\Entity\ObjectCategory',
         'anrObjectCategoryTable'=> '\MonarcCore\Model\Table\AnrObjectCategoryTable',
+        'objectTable' => '\MonarcCore\Model\Table\ObjectTable',
     );
 
 }

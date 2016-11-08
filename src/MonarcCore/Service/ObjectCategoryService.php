@@ -11,6 +11,7 @@ use MonarcCore\Model\Table\AnrObjectCategoryTable;
 class ObjectCategoryService extends AbstractService
 {
     protected $anrObjectCategoryTable;
+    protected $objectTable;
 
     protected $filterColumns = ['label1', 'label2', 'label3', 'label4'];
 
@@ -215,7 +216,7 @@ class ObjectCategoryService extends AbstractService
      */
     public function delete($id) {
 
-        $entity = $this->getEntity($id);
+        $entity = $this->get('table')->get($id);
 
         if ($entity['parent']) {
             $objectParentId = $entity['parent']->id;
@@ -226,23 +227,22 @@ class ObjectCategoryService extends AbstractService
 
         $this->get('table')->changePositionsByParent('parent', $objectParentId, $position, 'down', 'after');
 
-        $this->get('table')->getRepository()->createQueryBuilder('t')
-            ->update()
-            ->set('t.parent', ':parentset')
-            ->where('t.parent = :parentwhere')
-            ->setParameter(':parentset', null)
-            ->setParameter(':parentwhere', $id)
-            ->getQuery()
-            ->getResult();
+        // On supprime en cascade les fils
+        $children = $this->get('table')->getRepository()->createQueryBuilder('t')
+            ->where('t.parent = :parent')
+            ->setParameter(':parent',$id)
+            ->getQuery()->getResult();
+        foreach($children as $c){
+            $this->delete($c->id);
+        }
 
-        $this->get('table')->getRepository()->createQueryBuilder('t')
+        $this->get('objectTable')->getRepository()->createQueryBuilder('t')
             ->update()
-            ->set('t.root', ':rootset')
-            ->where('t.root = :rootwhere')
-            ->setParameter(':rootset', null)
-            ->setParameter(':rootwhere', $id)
-            ->getQuery()
-            ->getResult();
+            ->set('t.category', ':categ')
+            ->setParameter(':categ',null)
+            ->where('t.category = :c')
+            ->setParameter(':c',$id)
+            ->getQuery()->getResult();
 
         $this->get('table')->delete($id);
     }
