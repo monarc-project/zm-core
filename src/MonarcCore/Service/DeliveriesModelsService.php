@@ -48,7 +48,7 @@ class DeliveriesModelsService extends AbstractService
     public function update($id,$data){
         $entity = $this->get('table')->getEntity($id);
         if (!$entity) {
-            throw new \Exception('Entity not exist', 412);
+            throw new \Exception('Entity does not exist', 412);
         }
 
         $this->filterPostFields($data, $entity);

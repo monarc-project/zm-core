@@ -147,7 +147,7 @@ class InstanceRiskService extends AbstractService
 
         $entity = $this->get('table')->getEntity($id);
         if (!$entity) {
-            throw new \Exception('Entity not exist', 412);
+            throw new \Exception('Entity does not exist', 412);
         }
 
         /** @var InstanceRiskTable $instanceRiskTable */
@@ -214,7 +214,7 @@ class InstanceRiskService extends AbstractService
 
         $entity = $this->get('table')->getEntity($id);
         if (!$entity) {
-            throw new \Exception('Entity not exist', 412);
+            throw new \Exception('Entity does not exist', 412);
         }
 
         /** @var InstanceRiskTable $instanceRiskTable */

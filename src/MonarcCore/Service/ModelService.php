@@ -196,7 +196,7 @@ class ModelService extends AbstractService
 
         $model = $this->get('table')->getEntity($id);
         if (!$model) {
-            throw new \Exception('Entity not exist', 412);
+            throw new \Exception('Entity does not exist', 412);
         }
 
         $this->verifyBeforeUpdate($model, $data);

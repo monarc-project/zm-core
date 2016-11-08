@@ -217,7 +217,7 @@ abstract class AbstractService extends AbstractServiceFactory
 
         $entity = $this->get('table')->getEntity($id);
         if (!$entity) {
-            throw new \Exception('Entity not exist', 412);
+            throw new \Exception('Entity does not exist', 412);
         }
 
         $this->filterPostFields($data, $entity);
@@ -249,7 +249,7 @@ abstract class AbstractService extends AbstractServiceFactory
 
         $entity = $this->get('table')->getEntity($id);
         if (!$entity) {
-            throw new \Exception('Entity not exist', 412);
+            throw new \Exception('Entity does not exist', 412);
         }
 
         $entity->setLanguage($this->getLanguage());
@@ -442,7 +442,7 @@ abstract class AbstractService extends AbstractServiceFactory
                 if(! is_array($value)){
                     $dep = $this->get($tableName)->getReference($value);
                     if (!$dep->id) {
-                        throw new \Exception('Entity not exist', 412);
+                        throw new \Exception('Entity does not exist', 412);
                     }
                     $entity->$method($dep);
                 }
@@ -451,7 +451,7 @@ abstract class AbstractService extends AbstractServiceFactory
                     foreach($value as $v){
                         $dep = $this->get($tableName)->getReference($v);
                         if (!$dep->id) {
-                            throw new \Exception('Entity not exist', 412);
+                            throw new \Exception('Entity does not exist', 412);
                         }
                         $a_dep[] = $dep;
                     }

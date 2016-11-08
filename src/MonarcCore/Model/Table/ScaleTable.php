@@ -23,7 +23,7 @@ class ScaleTable extends AbstractEntityTable {
             ->getResult();
 
         if (! count($scales)) {
-           throw new \Exception('Entity not exist', 422);
+           throw new \Exception('Entity does not exist', 422);
         } else {
             return $scales[0];
         }
