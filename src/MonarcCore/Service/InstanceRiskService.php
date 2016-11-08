@@ -38,7 +38,11 @@ class InstanceRiskService extends AbstractService
      */
     public function createInstanceRisks($instanceId, $anrId, $object) {
 
-        if ($object->scope == Object::SCOPE_GLOBAL) {
+        //retrieve brothers instances
+        /** @var InstanceTable $instanceTable */
+        $instanceTable = $this->get('instanceTable');
+        $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $object->id]);
+        if ($object->scope == Object::SCOPE_GLOBAL && count($instances) > 1) {
 
             /** @var InstanceTable $instanceTable */
             $instanceTable = $this->get('instanceTable');
@@ -47,10 +51,6 @@ class InstanceRiskService extends AbstractService
             /** @var InstanceRiskTable $instanceRiskTable */
             $instanceRiskTable = $this->get('table');
 
-            //retrieve brothers instances
-            /** @var InstanceTable $instanceTable */
-            $instanceTable = $this->get('instanceTable');
-            $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $object->id]);
             foreach($instances as $instance) {
                 if ($instance->id != $instanceId) {
                     $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $instance->id]);
