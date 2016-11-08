@@ -469,7 +469,7 @@ class ObjectService extends AbstractService
             $anr = $anrTable->getEntity($data['anr']);
 
             if (!$anr) {
-                throw new \Exception('Risk analysis not exist', 412);
+                throw new \Exception('This risk analysis does not exist', 412);
             }
             $object->setAnr($anr);
         }
@@ -515,7 +515,7 @@ class ObjectService extends AbstractService
         }
 
         if (($object->asset->type == Asset::ASSET_PRIMARY) && ($object->scope == Object::SCOPE_GLOBAL)) {
-            throw new \Exception('You cannot create a object global and primary', 412);
+            throw new \Exception('You cannot create an object that is both global and primary', 412);
         }
 
         if ($context == Object::BACK_OFFICE) {
@@ -838,7 +838,7 @@ class ObjectService extends AbstractService
         }
 
         if (!$object) {
-            throw new \Exception('Object not exist', 412);
+            throw new \Exception('Object does not exist', 412);
         }
 
         //retrieve model
@@ -855,7 +855,7 @@ class ObjectService extends AbstractService
         $anrTable = $this->get('anrTable');
         $anr = $anrTable->getEntity($anrId);
         if (!$anr) {
-            throw new \Exception('Risk analysis not exist', 412);
+            throw new \Exception('This risk analysis does not exist', 412);
         }
 
         //add anr to object
@@ -913,7 +913,7 @@ class ObjectService extends AbstractService
         $table = $this->get('table');
         $object = $table->getEntity($objectId);
         if (!$object) {
-            throw new \Exception('Object not exist', 412);
+            throw new \Exception('Object does not exist', 412);
         }
 
         //verify anr exist
@@ -921,7 +921,7 @@ class ObjectService extends AbstractService
         $anrTable = $this->get('anrTable');
         $anr = $anrTable->getEntity($anrId);
         if (!$anr) {
-            throw new \Exception('Risk analysis not exist', 412);
+            throw new \Exception('This risk analysis does not exist', 412);
         }
 
         //if object is not a component, delete link and instances children for anr
