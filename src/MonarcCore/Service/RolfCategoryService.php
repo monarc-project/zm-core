@@ -33,7 +33,7 @@ class RolfCategoryService extends AbstractService
             $anr = $anrTable->getEntity($data['anr']);
 
             if (!$anr) {
-                throw new \Exception('Risk analysis not exist', 412);
+                throw new \Exception('This risk analysis does not exist', 412);
             }
             $entity->setAnr($anr);
         }
