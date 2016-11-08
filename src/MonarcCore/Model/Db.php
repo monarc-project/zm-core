@@ -274,7 +274,7 @@ class Db {
 
         // Add limit and offset
         if ($limit > 0) {
-            $qb->setFirstResult(($page - 1) * $limit);
+            $qb->setFirstResult((($page<1?1:$page) - 1) * $limit);
             $qb->setMaxResults($limit);
         }
 
