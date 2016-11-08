@@ -38,7 +38,12 @@ class InstanceRiskOpService extends AbstractService
             if ($object->asset->type == Asset::ASSET_PRIMARY) {
                 if (!is_null($object->rolfTag)) {
 
-                    if ($object->scope == Object::SCOPE_GLOBAL) {
+                    //retrieve brothers instances
+                    /** @var InstanceTable $instanceTable */
+                    $instanceTable = $this->get('instanceTable');
+                    $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $object->id]);
+
+                    if ($object->scope == Object::SCOPE_GLOBAL && count($instances) > 1) {
 
                         /** @var InstanceTable $instanceTable */
                         $instanceTable = $this->get('instanceTable');
@@ -46,11 +51,6 @@ class InstanceRiskOpService extends AbstractService
 
                         /** @var InstanceRiskOpTable $instanceRiskOpTable */
                         $instanceRiskOpTable = $this->get('table');
-
-                        //retrieve brothers instances
-                        /** @var InstanceTable $instanceTable */
-                        $instanceTable = $this->get('instanceTable');
-                        $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $object->id]);
                         foreach($instances as $instance) {
                             if ($instance->id != $instanceId) {
                                 $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['instance' => $instance->id]);
