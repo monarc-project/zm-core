@@ -216,7 +216,7 @@ class ObjectCategoryService extends AbstractService
      */
     public function delete($id) {
 
-        $entity = $this->get('table')->get($id);
+        $entity = $this->get('table')->getEntity($id);
 
         if ($entity['parent']) {
             $objectParentId = $entity['parent']->id;
