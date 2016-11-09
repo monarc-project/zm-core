@@ -315,7 +315,11 @@ class AmvService extends AbstractService
         $this->label = [$name,$name,$name,$name];
 
         $previous = (isset($data['previous'])) ? $data['previous'] : null;
-        $data['position'] = $this->managePosition('asset', $entity, $data['asset'], $data['implicitPosition'], $previous, 'update', false, 1);
+        if (isset($data['implicitPosition'])) {
+            $data['position'] = $this->managePosition('asset', $entity, $data['asset'], $data['implicitPosition'], $previous, 'update', false, 1);
+        } else {
+            unset($data['position']);
+        }
 
         $entity->exchangeArray($data);
 
