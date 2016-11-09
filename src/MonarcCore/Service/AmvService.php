@@ -465,15 +465,19 @@ class AmvService extends AbstractService
         $assetMode = $asset->mode;
         $assetModels = (is_null($assetModels)) ? $amv->getAsset()->getModels() : $assetModels;
         $assetModelsIds = [];
-        $assetModelsIsRegulator = [];
+        $assetModelsIsRegulator = false;
         foreach ($assetModels as $model) {
             if (!is_object($model)) {
                 $model = $this->get('modelTable')->get($model);
                 $assetModelsIds[] = $model['id'];
-                $assetModelsIsRegulator[] = $model['isRegulator'];
+                if($model['isRegulator']){
+                    $assetModelsIsRegulator = true;    
+                }
             } else {
                 $assetModelsIds[] = $model->id;
-                $assetModelsIsRegulator[] = $model->isRegulator;
+                if($model->isRegulator){
+                    $assetModelsIsRegulator = true;    
+                }
             }
         }
 
@@ -517,47 +521,57 @@ class AmvService extends AbstractService
      * @throws \Exception
      */
     public function compliesControl($assetMode, $threatMode, $vulnerabilityMode, $assetModelsIds, $threatModelsIds, $vulnerabilityModelsIds, $assetModelsIsRegulator) {
-
-        if (!is_array($assetModelsIds)) {
-            $assetModelsIds = [$assetModelsIds];
-        }
-        if (!is_array($threatModelsIds)) {
-            $threatModelsIds = [$threatModelsIds];
-        }
-        if (!is_array($vulnerabilityModelsIds)) {
-            $vulnerabilityModelsIds = [$vulnerabilityModelsIds];
-        }
-        if (!is_array($assetModelsIsRegulator)) {
-            $assetModelsIsRegulator = [$assetModelsIsRegulator];
-        }
-
         $this->errorMessage = '';
 
-        if ((!$assetMode) && (!$threatMode) && (!$vulnerabilityMode)) {
+        if (!$assetMode && !$threatMode && !$vulnerabilityMode) { // 0 0 0
             return true;
-        } else if (is_null($assetMode)) {
-            $this->errorMessage = 'Asset mode can\'t be null';
+        }elseif(!$assetMode && ($threatMode || $vulnerabilityMode)){ // 0 0 1 || 0 1 0 || 0 1 1
+            $this->errorMessage = 'The tuple asset / threat / vulnerability is invalid';
             return false;
-        } else  if ($assetMode && $threatMode && $vulnerabilityMode) {
-            if(empty($assetModelsIds) && empty($threatModelsIds) && empty($vulnerabilityModelsIds)){
-                return true;
+        }elseif($assetMode && (!$threatMode || !$vulnerabilityMode)){ // 1 0 0 || 1 0 1 || 1 1 0
+            if(!$assetModelsIsRegulator){ // & si et seulement s'il n'y a aucun modèle régulateur pour l'asset
+                if(!$threatMode && !$vulnerabilityMode){ // 1 0 0
+                    return true;
+                }else{ // & on doit tester les modèles
+                }
+            }else{
+                $this->errorMessage = 'Asset\'s model must not be regulator';
+                return false;
             }
-            foreach ($assetModelsIds as $modelId) {
-                if ((in_array($modelId, $threatModelsIds)) && (in_array($modelId, $vulnerabilityModelsIds))) {
+        }elseif($assetMode && $threatMode && $vulnerabilityMode){ // 1 1 1 & on doit tester les modèles
+        }else{
+            $this->errorMessage = 'Missing datas';
+            return false;
+        }
+
+        // On test les modèles
+        if (empty($assetModelsIds)){
+            $assetModelsIds = [];
+        }elseif(!is_array($assetModelsIds)) {
+            $assetModelsIds = [$assetModelsIds];
+        }
+        if (empty($threatModelsIds)){
+            $threatModelsIds = [];
+        }elseif(!is_array($threatModelsIds)) {
+            $threatModelsIds = [$threatModelsIds];
+        }
+        if (empty($vulnerabilityModelsIds)){
+            $vulnerabilityModelsIds = [];
+        }elseif(!is_array($vulnerabilityModelsIds)) {
+            $vulnerabilityModelsIds = [$vulnerabilityModelsIds];
+        }
+        $diff1 = array_diff($assetModelsIds,$threatModelsIds);
+        if(empty($diff1)){
+            $diff2 = array_diff($assetModelsIds,$vulnerabilityModelsIds);
+            if(empty($diff2)){
+                $diff3 = array_diff($threatModelsIds,$vulnerabilityModelsIds);
+                if(empty($diff3)){
                     return true;
                 }
             }
-            $this->errorMessage = 'One model must be common to asset, threat and vulnerability';
-            return false;
-        } else {
-            foreach ($assetModelsIsRegulator as $modelIsRegulator) {
-                if ($modelIsRegulator) {
-                    $this->errorMessage = 'All asset models must not be regulator';
-                    return false;
-                }
-            }
-            return true;
         }
+        $this->errorMessage = 'All models must be common to asset, threat and vulnerability';
+        return false;
     }
 
     /**
