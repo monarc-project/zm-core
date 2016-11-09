@@ -56,8 +56,11 @@ class AmvContext  extends \Behat\MinkExtension\Context\MinkContext implements \B
     public function iShouldTestCompliesWithAmodeAndTmodeAndVmodeAndAmodelAndTmodelAndVmodelAndIsregulatorAndTheResultIsTrue($arg1, $arg2, $arg3, $arg4, $arg5, $arg6, $arg7)
     {
         $service = $this->service;
+        if(empty($arg4)) $arg4 = '';
+        if(empty($arg5)) $arg5 = '';
+        if(empty($arg6)) $arg6 = '';
 
-        $result = $service->compliesControl($arg1, $arg2, $arg3, $arg4, $arg5, $arg6, $arg7);
+        $result = $service->compliesControl($arg1, $arg2, $arg3, explode(',',$arg4), explode(',',$arg5), explode(',',$arg6), $arg7);
 
         PHPUnit_Framework_Assert::assertTrue($result);
     }
@@ -68,8 +71,11 @@ class AmvContext  extends \Behat\MinkExtension\Context\MinkContext implements \B
     public function iShouldTestCompliesWithAmodeAndTmodeAndVmodeAndAmodelAndTmodelAndVmodelAndIsregulatorAndTheResultIsFalse($arg1, $arg2, $arg3, $arg4, $arg5, $arg6, $arg7)
     {
         $service = $this->service;
+        if(empty($arg4)) $arg4 = '';
+        if(empty($arg5)) $arg5 = '';
+        if(empty($arg6)) $arg6 = '';
 
-        $result = $service->compliesControl($arg1, $arg2, $arg3, $arg4, $arg5, $arg6, $arg7);
+        $result = $service->compliesControl($arg1, $arg2, $arg3, explode(',',$arg4), explode(',',$arg5), explode(',',$arg6), $arg7);
 
         PHPUnit_Framework_Assert::assertFalse($result);
     }
