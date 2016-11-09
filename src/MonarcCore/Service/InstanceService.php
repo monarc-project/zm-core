@@ -707,6 +707,7 @@ class InstanceService extends AbstractService
                     $previous = null;
                 }
                 $this->managePosition('parent', $instance, $parent, $implicitPosition, $previous, 'update');
+                $this->updateRisks($anrId, $instance->id);
             }
         }
     }
