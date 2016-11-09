@@ -707,6 +707,7 @@ class InstanceService extends AbstractService
                     $previous = null;
                 }
                 $this->managePosition('parent', $instance, $parent, $implicitPosition, $previous, 'update');
+                $this->updateRisks($anrId, $instance->id);
             }
         }
     }
@@ -1068,7 +1069,7 @@ class InstanceService extends AbstractService
             $scaleImpactTypeTable = $this->get('scaleImpactTypeTable');
             $scaleImpactType = $scaleImpactTypeTable->getEntity($instanceConsequence->scaleImpactType->id);
 
-            if (!$scaleImpactType->isHidden || $instanceConsequence->locallyTouched) {
+            if (!$scaleImpactType->isHidden) {
                 $consequences[] = [
                     'id' => $instanceConsequence->id,
                     'scaleImpactType' => $scaleImpactType->type,
