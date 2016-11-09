@@ -23,6 +23,8 @@ return array(
     'MonarcCore\Controller\ApiAnrLibraryControllerFactory'                  => __DIR__ . '/src/MonarcCore/Controller/ApiAnrLibraryControllerFactory.php',
     'MonarcCore\Controller\ApiAnrObjectController'                          => __DIR__ . '/src/MonarcCore/Controller/ApiAnrObjectController.php',
     'MonarcCore\Controller\ApiAnrObjectControllerFactory'                   => __DIR__ . '/src/MonarcCore/Controller/ApiAnrObjectControllerFactory.php',
+    'MonarcCore\Controller\ApiAnrRisksController'                           => __DIR__ . '/src/MonarcCore/Controller/ApiAnrRisksController.php',
+    'MonarcCore\Controller\ApiAnrRisksControllerFactory'                    => __DIR__ . '/src/MonarcCore/Controller/ApiAnrRisksControllerFactory.php',
     'MonarcCore\Controller\ApiAnrScalesCommentsController'                  => __DIR__ . '/src/MonarcCore/Controller/ApiAnrScalesCommentsController.php',
     'MonarcCore\Controller\ApiAnrScalesCommentsControllerFactory'           => __DIR__ . '/src/MonarcCore/Controller/ApiAnrScalesCommentsControllerFactory.php',
     'MonarcCore\Controller\ApiAnrScalesController'                          => __DIR__ . '/src/MonarcCore/Controller/ApiAnrScalesController.php',

@@ -91,6 +91,16 @@ return array(
                 ),
             ),
 
+            'monarc_api_anr_risks' => array(
+                'type' => 'segment',
+                'options' => array(
+                    'route' => '/api/anr/:anrid/risks[/:id]',
+                    'defaults' => array(
+                        'controller' => 'MonarcCore\Controller\ApiAnrRisks',
+                    ),
+                ),
+            ),
+
             'monarc_api_anr_instances' => array(
                 'type' => 'segment',
                 'options' => array(
@@ -407,6 +417,7 @@ return array(
             '\MonarcCore\Controller\Index'                          => '\MonarcCore\Controller\IndexControllerFactory',
             '\MonarcCore\Controller\Authentication'                 => '\MonarcCore\Controller\AuthenticationControllerFactory',
             '\MonarcCore\Controller\ApiAnr'                         => '\MonarcCore\Controller\ApiAnrControllerFactory',
+            '\MonarcCore\Controller\ApiAnrRisks'                    => '\MonarcCore\Controller\ApiAnrRisksControllerFactory',
             '\MonarcCore\Controller\ApiAnrExport'                   => '\MonarcCore\Controller\ApiAnrExportControllerFactory',
             '\MonarcCore\Controller\ApiAnrInstances'                => '\MonarcCore\Controller\ApiAnrInstancesControllerFactory',
             '\MonarcCore\Controller\ApiAnrInstancesConsequences'    => '\MonarcCore\Controller\ApiAnrInstancesConsequencesControllerFactory',
