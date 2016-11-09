@@ -324,7 +324,11 @@ class ModelService extends AbstractService
 
         //duplicate model
         $newModel = clone $model;
-        $newModel->setId(null);
+        $newModel->set('id',null);
+        $suffix = ' (copié le '.date('m/d/Y à H:i').')';
+        for($i=1;$i<=4;$i++){
+            $newModel->set('label'.$i,$newModel->get('label'.$i).$suffix);
+        }
 
         //duplicate anr
         /** @var AnrService $anrService */

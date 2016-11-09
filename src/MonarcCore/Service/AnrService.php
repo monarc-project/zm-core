@@ -64,6 +64,11 @@ class AnrService extends AbstractService
         //duplicate anr
         $newAnr = clone $anr;
         $newAnr->setId(null);
+        $suffix = ' (copié le '.date('m/d/Y à H:i').')';
+        for($i=1;$i<=4;$i++){
+            $newAnr->set('label'.$i,$newAnr->get('label'.$i).$suffix);
+        }
+
         /** @var AnrTable $anrTable */
         $anrTable = $this->get('table');
         $anrTable->save($newAnr);
@@ -84,78 +89,87 @@ class AnrService extends AbstractService
         }
 
         //duplicate object categories, instances, instances consequences, instances risks, instances risks op
-        $array = ['anrObjectCategory', 'instance', 'instanceConsequence', 'instanceRisk', 'instanceRiskOp'];
+        $clones = [];
+        $array = ['scale', 'scaleImpactType', 'scaleComment', 'anrObjectCategory', 'instance', 'instanceConsequence', 'instanceRisk', 'instanceRiskOp'];
         foreach ($array as $value) {
-            $k = 1;
             $table = $this->get($value . 'Table');
-            $entities = $table->getEntityByFields(['anr' => $anr->id]);
+            $order = [];
+            switch($value){
+                case 'instance':
+                    $order['level'] = 'ASC';
+                    break;
+            }
+            $entities = $table->getEntityByFields(['anr' => $anr->id],$order);
             foreach ($entities as $entity) {
-                $last = ($k == count($entities)) ? true : false;
-
                 $newEntity = clone $entity;
+                $newEntity->set('id',null);
                 $newEntity->setAnr($newAnr);
 
-                $table->save($newEntity, $last);
+                switch($value){
+                    case 'instance':
+                        if(!empty($entity->root->id) && !empty($clones['instance'][$entity->root->id])){
+                            $newEntity->set('root',$clones['instance'][$entity->root->id]);
+                        }else{
+                            $newEntity->set('root',null);
+                        }
+                        if(!empty($entity->parent->id) && !empty($clones['instance'][$entity->parent->id])){
+                            $newEntity->set('parent',$clones['instance'][$entity->parent->id]);
+                        }else{
+                            $newEntity->set('parent',null);
+                        }
+                        break;
+                    case 'instanceConsequence':
+                        if(!empty($entity->instance->id) && !empty($clones['instance'][$entity->instance->id])){
+                            $newEntity->set('instance',$clones['instance'][$entity->instance->id]);
+                        }else{
+                            $newEntity->set('instance',null);
+                        }
+                        if(!empty($entity->scaleImpactType->id) && !empty($clones['scaleImpactType'][$entity->scaleImpactType->id])){
+                            $newEntity->set('scaleImpactType',$clones['scaleImpactType'][$entity->scaleImpactType->id]);
+                        }else{
+                            $newEntity->set('scaleImpactType',null);
+                        }
+                        break;
+                    case 'instanceRisk':
+                        if(!empty($entity->instance->id) && !empty($clones['instance'][$entity->instance->id])){
+                            $newEntity->set('instance',$clones['instance'][$entity->instance->id]);
+                        }else{
+                            $newEntity->set('instance',null);
+                        }
+                        break;
+                    case 'instanceRiskOp':
+                        if(!empty($entity->instance->id) && !empty($clones['instance'][$entity->instance->id])){
+                            $newEntity->set('instance',$clones['instance'][$entity->instance->id]);
+                        }else{
+                            $newEntity->set('instance',null);
+                        }
+                        break;
+                    case 'scaleImpactType':
+                        if(!empty($entity->scale->id) && !empty($clones['scale'][$entity->scale->id])){
+                            $newEntity->set('scale',$clones['scale'][$entity->scale->id]);
+                        }else{
+                            $newEntity->set('scale',null);
+                        }
+                        break;
+                    case 'scaleComment':
+                        if(!empty($entity->scale->id) && !empty($clones['scale'][$entity->scale->id])){
+                            $newEntity->set('scale',$clones['scale'][$entity->scale->id]);
+                        }else{
+                            $newEntity->set('scale',null);
+                        }
+                        if(!empty($entity->ScaleImpactType->id) && !empty($clones['ScaleImpactType'][$entity->ScaleImpactType->id])){
+                            $newEntity->set('ScaleImpactType',$clones['ScaleImpactType'][$entity->ScaleImpactType->id]);
+                        }else{
+                            $newEntity->set('ScaleImpactType',null);
+                        }
+                        break;
+                }
 
-                $k++;
+                $table->save($newEntity);
+
+                $clones[$value][$entity->get('id')] = $newEntity;
             }
         }
-
-        //duplicate scales
-        $l = 1;
-        $scaleTable = $this->get('scaleTable');
-        $scales = $scaleTable->getEntityByFields(['anr' => $anr->id]);
-        $scalesNewIds = [];
-        foreach ($scales as $scale) {
-            $last = ($l == count($scales)) ? true : false;
-
-            $newScale = clone $scale;
-            $newScale->setAnr($newAnr);
-
-            $scaleTable->save($newScale, $last);
-
-            $scalesNewIds[$scale->id] = $newScale;
-
-            $l++;
-        }
-
-        //duplicate scales impact types
-        $m = 1;
-        $scaleImpactTypeTable = $this->get('scaleImpactTypeTable');
-        $scalesImpactTypes = $scaleImpactTypeTable->getEntityByFields(['anr' => $anr->id]);
-        $scalesImpactTypesNewIds = [];
-        foreach ($scalesImpactTypes as $scaleImpactType) {
-            $last = ($m == count($scalesImpactTypes)) ? true : false;
-
-            $newScaleImpactType = clone $scaleImpactType;
-            $newScaleImpactType->setAnr($newAnr);
-            $newScaleImpactType->setScale($scalesNewIds[$scaleImpactType->scale->id]);
-
-            $scaleImpactTypeTable->save($newScaleImpactType, $last);
-
-            $scalesImpactTypesNewIds[$scaleImpactType->id] = $newScaleImpactType;
-
-            $m++;
-        }
-
-        //duplicate scales comments
-        $n = 1;
-        /** @var ScaleCommentTable $scaleCommentTable */
-        $scaleCommentTable = $this->get('scaleCommentTable');
-        $scalesComments = $scaleCommentTable->getEntityByFields(['anr' => $anr->id]);
-        foreach ($scalesComments as $scaleComment) {
-            $last = ($n == count($scalesComments)) ? true : false;
-
-            $newScaleComment = clone $scaleComment;
-            $newScaleComment->setAnr($newAnr);
-            $newScaleComment->setScale($scalesNewIds[$scaleComment->scale->id]);
-            $newScaleComment->setScaleImpactType($scalesImpactTypesNewIds[$scaleComment->scaleImpactType->id]);
-
-            $scaleCommentTable->save($newScaleComment, $last);
-
-            $n++;
-        }
-
         return $newAnr;
     }
 
