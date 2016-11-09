@@ -721,7 +721,6 @@ class InstanceService extends AbstractService
     public function getEntityByIdAndAnr($id, $anrId){
 
         $instance = $this->get('table')->get($id); // pourquoi on n'a pas de contrôle sur $instance['anr']->id == $anrId ?
-        $instance['risks'] = $this->getRisks($anrId, $instance);
         $instance['oprisks'] = $this->getRisksOp($anrId, $instance);
         $instance['consequences'] = $this->getConsequences($anrId, $instance);
         $instance['instances'] = $this->getOtherInstances($instance);

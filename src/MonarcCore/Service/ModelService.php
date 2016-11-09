@@ -93,7 +93,6 @@ class ModelService extends AbstractService
 
         /** @var InstanceService $instanceService */
         $instanceService = $this->get('instanceService');
-        $anrModel['risks'] = $instanceService->getRisks($anrId);
         $anrModel['risksop'] = $instanceService->getRisksOp($anrId);
 
         $model['anr'] = $anrModel;

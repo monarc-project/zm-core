@@ -13,7 +13,7 @@ class ApiAnrRisksController extends AbstractController
 {
 	public function get($id){
         $anrId = (int) $this->params()->fromRoute('anrid');
-        return new JsonModel($this->getService()->getRisks($anrId, $id));
+        return new JsonModel($this->getService()->getRisks($anrId, ['id' => $id]));
 	}
 
 	public function getList(){
