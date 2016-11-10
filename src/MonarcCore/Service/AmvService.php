@@ -823,20 +823,20 @@ class AmvService extends AbstractService
             'label4' => 'label4',
         );
 
-        $amv = $threats = $vulns = $themes = array();
+        $amvs = $threats = $vulns = $themes = array();
 
         foreach($amvObj as $k => $v){
             switch($v){
                 case 'v':
-                    $amv[$k] = $amv->get($k);
+                    $amvs[$k] = $amv->get($k);
                     break;
                 case 'o':
                     $o = $amv->get($k);
                     if(empty($o)){
-                        $amv[$k] = null;
+                        $amvs[$k] = null;
                     }else{
                         $o = $amv->get($k)->getJsonArray();
-                        $amv[$k] = $o['id'];
+                        $amvs[$k] = $o['id'];
 
                         if($k == 'threat'){
                             $threats[$o['id']] = $amv->get($k)->getJsonArray($treatsObj);
@@ -856,7 +856,7 @@ class AmvService extends AbstractService
         }
 
         return array(
-            $amv,
+            $amvs,
             $threats,
             $vulns,
             $themes,
