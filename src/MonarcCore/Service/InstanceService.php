@@ -974,6 +974,32 @@ class InstanceService extends AbstractService
         return false;
     }
 
+    public function getCsvRisks($anrId, $instance = null, $params = []) {
+        $risks = $this->getRisks($anrId, $instance, $params);
+
+        $output = '';
+        if (count($risks) > 0) {
+            // Fill in the header
+            $output .= implode(',', array_keys($risks[0])) . "\n";
+
+            // Fill in the lines then
+            foreach ($risks as $risk) {
+                for ($i = 1; $i <= 3; ++$i) {
+                    if ($risk['measure' . $i]) {
+                        $risk['measure' . $i] = $risk['measure' . $i]['code'];
+                    }
+                }
+
+                $array_values = array_values($risk);
+                $output .= '"';
+                $output .= implode('","', str_replace('"', '\"', $array_values));
+                $output .= "\"\r\n";
+            }
+        }
+
+        return $output;
+    }
+
     /**
      * Get Risks Op
      *

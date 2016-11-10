@@ -15,14 +15,24 @@ class ApiAnrRisksController extends AbstractController
         $anrId = (int) $this->params()->fromRoute('anrid');
         $params = $this->parseParams();
 
-        return new JsonModel($this->getService()->getRisks($anrId, ['id' => $id], $params));
+        if ($this->params()->fromQuery('csv', false)) {
+            header('Content-Type: text/csv');
+            die($this->getService()->getCsvRisks($anrId, ['id' => $id], $params));
+        } else {
+            return new JsonModel($this->getService()->getRisks($anrId, ['id' => $id], $params));
+        }
 	}
 
 	public function getList(){
         $anrId = (int) $this->params()->fromRoute('anrid');
         $params = $this->parseParams();
 
-		return new JsonModel($this->getService()->getRisks($anrId, null, $params));
+        if ($this->params()->fromQuery('csv', false)) {
+            header('Content-Type: text/csv');
+            die($this->getService()->getCsvRisks($anrId, null, $params));
+        } else {
+            return new JsonModel($this->getService()->getRisks($anrId, null, $params));
+        }
 	}
 	public function create($data){
         $this->methodNotAllowed();
