@@ -772,7 +772,7 @@ class InstanceService extends AbstractService
      * @param $anrId
      * @return array
      */
-    public function getRisks($anrId, $instance = null) {
+    public function getRisks($anrId, $instance = null, $params = []) {
 
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('table');
@@ -812,20 +812,61 @@ class InstanceService extends AbstractService
             }
         }
 
-        // Sort by AMV position, then max cached risk
-        usort($instancesRisks, function ($a, $b) use ($amvs) {
+        // Sort by passed parameter
+        $order = isset($params['order']) ? $params['order'] : 'maxRisk';
+        $dir = isset($params['order_direction']) ? $params['order_direction'] : 'desc';
+
+        usort($instancesRisks, function ($a, $b) use ($amvs, $order, $dir) {
             $amv_a = $amvs[$a->amv->id];
             $amv_b = $amvs[$b->amv->id];
 
-            if ($amv_a->position == $amv_b->position) {
-                return $a->cacheMaxRisk - $b->cacheMaxRisk;
-            } else {
-                return $amv_a->position - $amv_b->position;
+            switch ($order) {
+                case 'instance':
+                    return ($dir == 'desc' ? ($b->instance->id - $a->instance->id) : ($a->instance->id - $b->instance->id));
+
+                case 'auditOrder':
+                    return ($dir == 'desc' ? ($amv_b->position - $amv_a->position) : ($amv_a->position - $amv_b->position));
+
+                case 'c_impact':
+                    return ($dir == 'desc' ? ($b->instance->c - $a->instance->c) : ($a->instance->c - $b->instance->c));
+
+                case 'i_impact':
+                    return ($dir == 'desc' ? ($b->instance->i - $a->instance->i) : ($a->instance->i - $b->instance->i));
+
+                case 'd_impact':
+                    return ($dir == 'desc' ? ($b->instance->d - $a->instance->d) : ($a->instance->d - $b->instance->d));
+
+                case 'threat':
+                    return ($dir == 'desc' ? ($b->threat->id - $a->threat->id) : ($a->threat->id - $b->threat->id));
+
+                case 'threatRate':
+                    return ($dir == 'desc' ? ($b->threatRate - $a->threatRate) : ($a->threatRate - $b->threatRate));
+
+                case 'vulnerability':
+                    return ($dir == 'desc' ? ($b->vulnerability->id - $a->vulnerability->id) : ($a->vulnerability->id - $b->vulnerability->id));
+
+                case 'vulnerabilityRate':
+                    return ($dir == 'desc' ? ($b->vulnerabilityRate - $a->vulnerabilityRate) : ($a->vulnerabilityRate - $b->vulnerabilityRate));
+
+                case 'targetRisk':
+                    return ($dir == 'desc' ? ($b->cacheTargetedRisk - $a->cacheTargetedRisk) : ($a->cacheTargetedRisk - $b->cacheTargetedRisk));
+
+                case 'maxRisk':
+                    default;
+                    return ($dir == 'desc' ? ($b->cacheMaxRisk - $a->cacheMaxRisk) : ($a->cacheMaxRisk - $b->cacheMaxRisk));
             }
         });
 
         $risks = [];
         foreach ($instancesRisks as $instanceRisk) {
+            // Process filters
+            if (isset($params['kindOfMeasure'])) {
+                if ($instanceRisk->kindOfMeasure != $params['kindOfMeasure']) {
+                    continue;
+                }
+            }
+
+            // Get AMV
             $amv = $amvs[$instanceRisk->amv->id];
 
             for($i =1; $i<=3; $i++) {
@@ -840,6 +881,32 @@ class InstanceService extends AbstractService
                 }
             }
 
+            // More filters
+            if (isset($params['thresholds'])) {
+                $ths = explode('-', $params['thresholds']);
+                $min = $ths[0];
+                $max = $ths[1];
+
+                if (($amv->threat->c && ($instanceRisk->riskC < $min || $instanceRisk->riskC > $max)) ||
+                    ($amv->threat->i && ($instanceRisk->riskI < $min || $instanceRisk->riskI > $max)) ||
+                    ($amv->threat->d && ($instanceRisk->riskD < $min || $instanceRisk->riskD > $max))
+                ) {
+                    continue;
+                }
+            }
+
+            if (isset($params['keywords'])) {
+                if (!$this->findInFields($amv->asset, $params['keywords'], ['label1', 'label2', 'label3', 'label4'])
+                    && !$this->findInFields($amv->threat, $params['keywords'], ['label1', 'label2', 'label3', 'label4'])
+                    && !$this->findInFields($amv->vulnerability, $params['keywords'], ['label1', 'label2', 'label3', 'label4'])
+                    && !$this->findInFields($amv->measure1, $params['keywords'], ['label1', 'label2', 'label3', 'label4'])
+                    && !$this->findInFields($amv->measure2, $params['keywords'], ['label1', 'label2', 'label3', 'label4'])
+                    && !$this->findInFields($amv->measure3, $params['keywords'], ['label1', 'label2', 'label3', 'label4'])) {
+                    continue;
+                }
+            }
+
+            // Add the risk if we got through here
             $risks[] = [
                 'id' => $instanceRisk->id,
                 'instance' => $instanceRisk->instance->id,
@@ -895,6 +962,16 @@ class InstanceService extends AbstractService
         }
 
         return $risks;
+    }
+
+    protected function findInFields($obj, $search, $fields = []) {
+        foreach ($fields as $field) {
+            if (stripos((is_object($obj) ? $obj->{$field} : $obj[$field]), $search) !== false) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

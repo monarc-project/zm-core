@@ -13,12 +13,16 @@ class ApiAnrRisksController extends AbstractController
 {
 	public function get($id){
         $anrId = (int) $this->params()->fromRoute('anrid');
-        return new JsonModel($this->getService()->getRisks($anrId, ['id' => $id]));
+        $params = $this->parseParams();
+
+        return new JsonModel($this->getService()->getRisks($anrId, ['id' => $id], $params));
 	}
 
 	public function getList(){
         $anrId = (int) $this->params()->fromRoute('anrid');
-		return new JsonModel($this->getService()->getRisks($anrId));
+        $params = $this->parseParams();
+
+		return new JsonModel($this->getService()->getRisks($anrId, null, $params));
 	}
 	public function create($data){
         $this->methodNotAllowed();
@@ -35,4 +39,20 @@ class ApiAnrRisksController extends AbstractController
 	public function patch($id, $data){
 		$this->methodNotAllowed();
 	}
+
+	protected function parseParams() {
+        $keywords = $this->params()->fromQuery("keywords");
+        $kindOfMeasure = $this->params()->fromQuery("kindOfMeasure");
+        $order = $this->params()->fromQuery("order", "maxRisk");
+        $order_direction = $this->params()->fromQuery("order_direction", "desc");
+        $thresholds = $this->params()->fromQuery("thresholds");
+
+        return [
+            'keywords' => $keywords,
+            'kindOfMeasure' => $kindOfMeasure,
+            'order' => $order,
+            'order_direction' => $order_direction,
+            'thresholds' => $thresholds
+        ];
+    }
 }
