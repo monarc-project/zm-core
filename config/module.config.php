@@ -114,6 +114,20 @@ return array(
                 ),
             ),
 
+            'monarc_api_anr_instances_export' => array(
+                'type' => 'segment',
+                'options' => array(
+                    'route' => '/api/anr/:anrid/objects/:id/export',
+                    'constraints' => array(
+                        'id' => '[0-9]+',
+                    ),
+                    'defaults' => array(
+                        'controller'    => 'MonarcCore\Controller\ApiAnrInstances',
+                        'action'        => 'export'
+                    ),
+                ),
+            ),
+
             'monarc_api_anr_instances_risks' => array(
                 'type' => 'segment',
                 'options' => array(
