@@ -816,44 +816,59 @@ class InstanceService extends AbstractService
         $order = isset($params['order']) ? $params['order'] : 'maxRisk';
         $dir = isset($params['order_direction']) ? $params['order_direction'] : 'desc';
 
+        function sortAmvNameFallback($existingvalue, $a, $b, $dir) {
+            if ($existingvalue == 0) {
+                // order by a, m, v name1
+                if ($a->asset->name1 != $b->asset->name1) {
+                    return ($dir == 'asc' ? strcmp($b->asset->label1, $a->asset->label1) : strcmp($a->asset->name1, $b->asset->label1));
+                } else if ($a->threat->label1 != $b->threat->label1) {
+                    return ($dir == 'asc' ? strcmp($b->threat->label1, $a->threat->label1) : strcmp($a->threat->label1, $b->threat->label1));
+                } else {
+                    return ($dir == 'asc' ? strcmp($b->vulnerability->label1, $a->vulnerability->label1) : strcmp($a->vulnerability->label1, $b->vulnerability->label1));
+                }
+            } else {
+                return $existingvalue;
+            }
+        }
+
         usort($instancesRisks, function ($a, $b) use ($amvs, $order, $dir) {
             $amv_a = $amvs[$a->amv->id];
             $amv_b = $amvs[$b->amv->id];
 
             switch ($order) {
                 case 'instance':
-                    return ($dir == 'desc' ? ($b->instance->id - $a->instance->id) : ($a->instance->id - $b->instance->id));
+                    return sortAmvNameFallback(($dir == 'desc' ? ($b->instance->id - $a->instance->id) : ($a->instance->id - $b->instance->id)), $a, $b, $dir);
 
                 case 'auditOrder':
-                    return ($dir == 'desc' ? ($amv_b->position - $amv_a->position) : ($amv_a->position - $amv_b->position));
+                    return sortAmvNameFallback(($dir == 'desc' ? ($amv_b->position - $amv_a->position) : ($amv_a->position - $amv_b->position)), $a, $b, $dir);
 
                 case 'c_impact':
-                    return ($dir == 'desc' ? ($b->instance->c - $a->instance->c) : ($a->instance->c - $b->instance->c));
+                    return sortAmvNameFallback(($dir == 'desc' ? ($b->instance->c - $a->instance->c) : ($a->instance->c - $b->instance->c)), $a, $b, $dir);
 
                 case 'i_impact':
-                    return ($dir == 'desc' ? ($b->instance->i - $a->instance->i) : ($a->instance->i - $b->instance->i));
+                    return sortAmvNameFallback(($dir == 'desc' ? ($b->instance->i - $a->instance->i) : ($a->instance->i - $b->instance->i)), $a, $b, $dir);
 
                 case 'd_impact':
-                    return ($dir == 'desc' ? ($b->instance->d - $a->instance->d) : ($a->instance->d - $b->instance->d));
+                    return sortAmvNameFallback(($dir == 'desc' ? ($b->instance->d - $a->instance->d) : ($a->instance->d - $b->instance->d)), $a, $b, $dir);
 
                 case 'threat':
-                    return ($dir == 'desc' ? ($b->threat->id - $a->threat->id) : ($a->threat->id - $b->threat->id));
+                    return sortAmvNameFallback(($dir == 'desc' ? ($b->threat->id - $a->threat->id) : ($a->threat->id - $b->threat->id)), $a, $b, $dir);
 
                 case 'threatRate':
-                    return ($dir == 'desc' ? ($b->threatRate - $a->threatRate) : ($a->threatRate - $b->threatRate));
+                    return sortAmvNameFallback(($dir == 'desc' ? ($b->threatRate - $a->threatRate) : ($a->threatRate - $b->threatRate)), $a, $b, $dir);
 
                 case 'vulnerability':
-                    return ($dir == 'desc' ? ($b->vulnerability->id - $a->vulnerability->id) : ($a->vulnerability->id - $b->vulnerability->id));
+                    return sortAmvNameFallback(($dir == 'desc' ? ($b->vulnerability->id - $a->vulnerability->id) : ($a->vulnerability->id - $b->vulnerability->id)), $a, $b, $dir);
 
                 case 'vulnerabilityRate':
-                    return ($dir == 'desc' ? ($b->vulnerabilityRate - $a->vulnerabilityRate) : ($a->vulnerabilityRate - $b->vulnerabilityRate));
+                    return sortAmvNameFallback(($dir == 'desc' ? ($b->vulnerabilityRate - $a->vulnerabilityRate) : ($a->vulnerabilityRate - $b->vulnerabilityRate)), $a, $b, $dir);
 
                 case 'targetRisk':
-                    return ($dir == 'desc' ? ($b->cacheTargetedRisk - $a->cacheTargetedRisk) : ($a->cacheTargetedRisk - $b->cacheTargetedRisk));
+                    return sortAmvNameFallback(($dir == 'desc' ? ($b->cacheTargetedRisk - $a->cacheTargetedRisk) : ($a->cacheTargetedRisk - $b->cacheTargetedRisk)), $a, $b, $dir);
 
                 case 'maxRisk':
                     default;
-                    return ($dir == 'desc' ? ($b->cacheMaxRisk - $a->cacheMaxRisk) : ($a->cacheMaxRisk - $b->cacheMaxRisk));
+                    return sortAmvNameFallback(($dir == 'desc' ? ($b->cacheMaxRisk - $a->cacheMaxRisk) : ($a->cacheMaxRisk - $b->cacheMaxRisk)), $a, $b, $dir);
             }
         });
 
@@ -885,10 +900,12 @@ class InstanceService extends AbstractService
             if (isset($params['thresholds'])) {
                 $min = $params['thresholds'];
 
-                if (($amv->threat->c && $instanceRisk->riskC < $min) ||
-                    ($amv->threat->i && $instanceRisk->riskI < $min) ||
-                    ($amv->threat->d && $instanceRisk->riskD < $min)
-                ) {
+                $cid = [];
+                if ($amv->threat->c) $cid[] = $instanceRisk->riskC;
+                if ($amv->threat->i) $cid[] = $instanceRisk->riskI;
+                if ($amv->threat->d) $cid[] = $instanceRisk->riskD;
+
+                if ($min > 0 && max($cid) < $min && count($cid) > 0) {
                     continue;
                 }
             }
