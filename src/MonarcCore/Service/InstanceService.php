@@ -883,13 +883,11 @@ class InstanceService extends AbstractService
 
             // More filters
             if (isset($params['thresholds'])) {
-                $ths = explode('-', $params['thresholds']);
-                $min = $ths[0];
-                $max = $ths[1];
+                $min = $params['thresholds'];
 
-                if (($amv->threat->c && ($instanceRisk->riskC < $min || $instanceRisk->riskC > $max)) ||
-                    ($amv->threat->i && ($instanceRisk->riskI < $min || $instanceRisk->riskI > $max)) ||
-                    ($amv->threat->d && ($instanceRisk->riskD < $min || $instanceRisk->riskD > $max))
+                if (($amv->threat->c && $instanceRisk->riskC < $min) ||
+                    ($amv->threat->i && $instanceRisk->riskI < $min) ||
+                    ($amv->threat->d && $instanceRisk->riskD < $min)
                 ) {
                     continue;
                 }
