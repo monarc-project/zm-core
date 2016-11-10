@@ -88,6 +88,25 @@ class ApiAnrInstancesController extends AbstractController
         return new JsonModel($entity);
     }
 
+    public function exportAction()
+    {
+        /** @var InstanceService $service */
+        $service = $this->getService();
+
+        $id = $this->params()->fromRoute('id');
+        $data = ['id' => $id];
+
+        $response = $this->getResponse();
+        $response->setContent($service->export($data));
+
+        $headers = $response->getHeaders();
+        $headers->clearHeaders()
+            ->addHeaderLine('Content-Type', 'text/plain; charset=utf-8')
+            ->addHeaderLine('Content-Disposition', 'attachment; filename="' . (empty($data['filename'])?$data['id']:$data['filename']) . '.bin"');
+
+        return $this->response;
+    }
+
     /**
      * Create
      *
