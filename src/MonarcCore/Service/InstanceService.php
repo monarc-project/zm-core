@@ -497,6 +497,10 @@ class InstanceService extends AbstractService
                     if ((isset($data['d'])) && ($data['d'] == -1)) {
                         $data['d'] = (int) $parent->d;
                     }
+                } else {
+                    $data['c'] = -1;
+                    $data['i'] = -1;
+                    $data['d'] = -1;
                 }
             }
         }
@@ -716,7 +720,42 @@ class InstanceService extends AbstractService
                 }
                 $this->managePosition('parent', $instance, $parent, $implicitPosition, $previous, 'update');
                 $this->updateRisks($anrId, $instance->id);
+                $this->refreshImpactsInherited($anrId, $parent, $instance);
             }
+        }
+    }
+
+    protected function refreshImpactsInherited($anrId, $parentId, $instance) {
+        if ($parentId > 0) {
+            $parent = $this->getEntityByIdAndAnr($parentId, $anrId);
+        } else {
+            $parent = null;
+        }
+
+        if ($instance->ch || $instance->ih || $instance->dh) {
+            if ($parent) {
+                if ($instance->ch) {
+                    $instance->c = $parent['c'];
+                }
+                if ($instance->ih) {
+                    $instance->i = $parent['i'];
+                }
+                if ($instance->dh) {
+                    $instance->d = $parent['d'];
+                }
+            } else {
+                if ($instance->ch) {
+                    $instance->c = -1;
+                }
+                if ($instance->ih) {
+                    $instance->i = -1;
+                }
+                if ($instance->dh) {
+                    $instance->d = -1;
+                }
+            }
+
+            $this->get('table')->save($instance);
         }
     }
 
