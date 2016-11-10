@@ -232,8 +232,24 @@ class Db {
                 if ($value !== '') {
 
                     if (is_array($value)) {
-                        $where = "$fullColName IN (?$searchIndex)";
-                        $parameterValue = $value;
+                        if(!empty($value['op']) && isset($value['value'])){
+                            if(is_array($value['value'])){
+                                $where = "$fullColName ".$value['op']." (?$searchIndex)";
+                                $parameterValue = $value['value'];    
+                            }elseif(is_int($value['value'])){
+                                $where = "$fullColName ".$value['op']." ?$searchIndex";
+                                $parameterValue = $value;
+                            }elseif(is_null($value['value'])){ // IS || IS NOT
+                                $where = "$fullColName ".$value['op']." NULL";
+                                $parameterValue = null;
+                            }else{ // LIKE || NOT LIKE
+                                $where = "$fullColName ".$value['op']." ?$searchIndex";
+                                $parameterValue = '%'.$value['value'].'%';
+                            }
+                        }else{
+                            $where = "$fullColName IN (?$searchIndex)";
+                            $parameterValue = $value;
+                        }
                     } else if (is_int($value)) {
                         $where = "$fullColName = ?$searchIndex";
                         $parameterValue = $value;
