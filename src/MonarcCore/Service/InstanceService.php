@@ -205,7 +205,7 @@ class InstanceService extends AbstractService
             $this->updatePosition($anrId, $instance, $data);
         }
 
-        $this->updateConsequences($anrId, $data);
+        $dataConsequences = $data['consequences'];
 
         $this->filterPostFields($data, $instance, $this->forbiddenFields + ['c', 'i', 'd']);
         $instance->exchangeArray($data);
@@ -226,6 +226,8 @@ class InstanceService extends AbstractService
         }
 
         $id = $this->get('table')->save($instance);
+
+        $this->updateConsequences($anrId, ['consequences'=>$dataConsequences]);
 
         $this->updateRisks($anrId, $id);
 
@@ -257,6 +259,10 @@ class InstanceService extends AbstractService
     public function patchInstance($anrId, $id, $data, $historic = [], $modifyCid = false){
 
         //security
+        if($modifyCid){ // on provient du trigger
+            $this->forbiddenFields = ['anr', 'asset', 'object'];
+        }
+
         $this->filterPatchFields($data);
 
         /** @var InstanceTable $table */
@@ -287,14 +293,16 @@ class InstanceService extends AbstractService
             }
         }
         
-        if (isset($data['c'])) {
-            $data['ch'] = ($data['c'] == -1) ? 1 : 0;
-        }
-        if (isset($data['d'])) {
-            $data['dh'] = ($data['d'] == -1) ? 1 : 0;
-        }
-        if (isset($data['i'])) {
-            $data['ih'] = ($data['i'] == -1) ? 1 : 0;
+        if(!$modifyCid){ // on ne provient pas du trigger
+            if (isset($data['c'])) {
+                $data['ch'] = ($data['c'] == -1) ? 1 : 0;
+            }
+            if (isset($data['d'])) {
+                $data['dh'] = ($data['d'] == -1) ? 1 : 0;
+            }
+            if (isset($data['i'])) {
+                $data['ih'] = ($data['i'] == -1) ? 1 : 0;
+            }
         }
 
         $instance->setLanguage($this->getLanguage());

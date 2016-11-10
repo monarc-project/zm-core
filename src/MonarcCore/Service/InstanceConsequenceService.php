@@ -67,6 +67,8 @@ class InstanceConsequenceService extends AbstractService
 
             $data['anr'] = $anrId;
 
+            $this->verifyRates($anrId, $data, $this->getEntity($id));
+
             parent::patch($id,$data);
 
             if ($patchInstance) {
@@ -161,8 +163,20 @@ class InstanceConsequenceService extends AbstractService
             'c' => max($instanceC),
             'i' => max($instanceI),
             'd' => max($instanceD),
-            'anr' => $anrId
         ];
+
+
+        $parent = $instanceCurrentConsequence->get('instance')->get('parent');
+        foreach($data as $k => $v){
+            $data[$k.'h'] = ($v == -1)?1:0;
+            if($data[$k.'h']){ // hérité: on prend la valeur du parent
+                if(!empty($parent)){
+                    $data[$k] = $parent->get($k);
+                }
+            }
+        }
+
+        $data['anr'] = $anrId;
 
         //if father instance exist, create instance for child
         $eventManager = new EventManager();
