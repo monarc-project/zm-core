@@ -120,14 +120,46 @@ class ObjectService extends AbstractService
      */
     public function getAnrObjects($page, $limit, $order, $filter, $filterAnd, $model, $anr) {
 
-        //retrieve all generic objects if model is not regulator
-        if ($model) {
+        if($model){
             /** @var ModelTable $modelTable */
             $modelTable = $this->get('modelTable');
             $model = $modelTable->getEntity($model);
-
-            if (!$model->isRegulator) {
+            if($model->get('isGeneric')){ // le modèle est générique, on récupère les modèles génériques
                 $filterAnd['mode'] = Object::MODE_GENERIC;
+            }else{
+                $filterAnd['asset'] = array();
+
+                $assets = $model->get('assets');
+                foreach($assets as $a){ // on récupère tous les assets associés au modèle et on ne prend que les spécifiques
+                    if($a->get('mode') == Object::MODE_SPECIFIC){
+                        $filterAnd['asset'][$a->get('id')] = $a->get('id');
+                    }
+                }
+                if(!$model->get('isRegulator')){ // si le modèle n'est pas régulateur
+                    $assets = $this->get('assetTable')->getEntityByFields(['mode'=>Object::MODE_GENERIC]); // on récupère tous les assets génériques
+                    foreach($assets as $a){
+                        $filterAnd['asset'][$a->get('id')] = $a->get('id');
+                    }
+                }
+            }
+            $objects = $model->get('anr')->get('objects');
+            if(!empty($objects)){ // on enlève tout les objets déjà liés
+                $filterAnd['id'] = ['op'=>'NOT IN','value'=>[]];
+                foreach($objects as $o){
+                    $filterAnd['id']['value'][$o->get('id')] = $o->get('id');
+                }
+                if(empty($filterAnd['id']['value'])){
+                    unset($filterAnd['id']);
+                }
+            }
+        }elseif($anr){
+            /** @var AnrTable $anrTable */
+            $anrTable = $this->get('anrTable');
+            $anrObj = $anrTable->getEntity($anr);
+            $filterAnd['id'] = [];
+            $objects = $anrObj->get('objects');
+            foreach($objects as $o){ // on en prend que les objets déjà liés (composants)
+                $filterAnd['id'][$o->get('id')] = $o->get('id');
             }
         }
 
@@ -141,50 +173,7 @@ class ObjectService extends AbstractService
             $this->parseFrontendFilter($filter, $this->filterColumns),
             $filterAnd
         );
-
-        //retrieve objects specific
-        if ($model) {
-            /** @var AssetTable $assetTable */
-            $assetTable = $this->get('assetTable');
-            $assets = $assetTable->fetchAll();
-            $assetsIds = [];
-            foreach($assets as $asset) {
-                foreach($asset['models'] as $assetModel) {
-                    if($model->id == $assetModel->id) {
-                        $assetsIds[$asset['id']] = $asset['id'];
-                    }
-                }
-            }
-
-            $specificsObjects = $objectTable->getByAssets($assetsIds);
-
-            foreach($specificsObjects as $key => $object) {
-                $specificsObjects[$key] = $object->getJsonArray();
-            }
-
-            $objects = array_merge($objects, $specificsObjects);
-        }
-
-        if ($anr) {
-            $anrObjects = [];
-            foreach ($objects as $object) {
-                $inAnr = false;
-                foreach ($object['anrs'] as $anrObject) {
-                    if ($anrObject->id == $anr) {
-                        $inAnr = true;
-                    }
-                }
-
-                if ($inAnr) {
-                    $anrObjects[] = $object;
-                }
-            }
-
-            return $anrObjects;
-        } else {
-            return $objects;
-        }
-
+        return $objects;
     }
 
     /**

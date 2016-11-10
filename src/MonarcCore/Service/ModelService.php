@@ -23,6 +23,7 @@ class ModelService extends AbstractService
     protected $instanceService;
     protected $instanceRiskOpTable;
     protected $objectTable;
+    protected $amvTable;
     protected $forbiddenFields = ['anr'];
 
     protected $filterColumns = array(
@@ -231,45 +232,47 @@ class ModelService extends AbstractService
      * @throws \Exception
      */
     public function verifyBeforeUpdate($model, $data) {
-
         if (isset($data['isRegulator']) && isset($data['isGeneric']) &&
             $data['isRegulator'] && $data['isGeneric']) {
             throw new \Exception("A regulator model may not be generic", 412);
         }
 
-        //retrieve assets
-        $assetsIds = [];
-        foreach($model->assets as $asset) {
-            $assetsIds[] = $asset->id;
-        }
+        $modeObject = null;
 
-        //retrieves objects associated to assets
-        /** @var ObjectTable $objectTable */
-        $objectTable = $this->get('objectTable');
-        $objects = $objectTable->getByAssets($assetsIds);
-
-        $hasSpecificsObjects = false;
-        $hasGenericsObjects = false;
-        foreach ($objects as $object) {
-            if ($object->mode == Object::MODE_GENERIC) {
-                $hasGenericsObjects = true;
+        if(isset($data['isRegulator']) && $data['isRegulator'] && !$model->isRegulator){ // change to regulator
+            //retrieve assets
+            $assetsIds = [];
+            foreach($model->assets as $asset) {
+                $assetsIds[] = $asset->id;
             }
-            if ($object->mode == Object::MODE_SPECIFIC) {
-                $hasSpecificsObjects = true;
+            if(!empty($assetsIds)){
+                $amvs = $this->get('amvTable')->getEntityByFields(['asset'=>$assetsIds]);
+                foreach($amvs as $amv){
+                    if($amv->get('asset')->get('mode') == Object::MODE_SPECIFIC && $amv->get('threat')->get('mode') == Object::MODE_GENERIC && $amv->get('vulnerability')->get('mode') == Object::MODE_GENERIC){
+                        throw new \Exception('You can not make this change. The level of integrity between the model and its objects would corrupt', 412);
+                        return false;
+                    }
+                }
+            }
+
+            $modeObject = Object::MODE_GENERIC;
+        }elseif(isset($data['isGeneric']) && $data['isGeneric'] && !$model->isGeneric){ // change to generic
+            $modeObject = Object::MODE_SPECIFIC;
+        }
+
+        if(!is_null($modeObject)){
+            $objects = $model->get('anr')->get('objects');
+            if(!empty($objects)){
+                foreach($objects as $o){
+                    if($o->get('mode') == $modeObject){
+                        throw new \Exception('You can not make this change. The level of integrity between the model and its objects would corrupt', 412);
+                        return false;
+                    }
+                }
             }
         }
 
-        if (
-            ((!$model->isGeneric) && ($data['isRegulator']) && ($hasGenericsObjects))
-            ||
-            (($model->isGeneric) && ($data['isRegulator']) && ($hasGenericsObjects))
-            ||
-            ((!$model->isGeneric) && ($data['isGeneric']) && ($hasSpecificsObjects))
-            ||
-            (($model->isRegulator) && ($data['isGeneric']) && ($hasSpecificsObjects))
-        ){
-            throw new \Exception('You can not make this change. The level of integrity between the model and its objects would corrupt', 412);
-        }
+        return true;
     }
 
     /**

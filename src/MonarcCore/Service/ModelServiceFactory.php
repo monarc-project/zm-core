@@ -12,5 +12,6 @@ class ModelServiceFactory extends AbstractServiceFactory
         'instanceRiskTable' => 'MonarcCore\Model\Table\InstanceRiskTable',
         'instanceRiskOpTable' => 'MonarcCore\Model\Table\InstanceRiskOpTable',
         'objectTable' => 'MonarcCore\Model\Table\ObjectTable',
+        'amvTable' => 'MonarcCore\Model\Table\AmvTable',
     );
 }
