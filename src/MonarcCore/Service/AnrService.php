@@ -157,10 +157,10 @@ class AnrService extends AbstractService
                         }else{
                             $newEntity->set('scale',null);
                         }
-                        if(!empty($entity->ScaleImpactType->id) && !empty($clones['ScaleImpactType'][$entity->ScaleImpactType->id])){
-                            $newEntity->set('ScaleImpactType',$clones['ScaleImpactType'][$entity->ScaleImpactType->id]);
+                        if(!empty($entity->scaleImpactType->id) && !empty($clones['scaleImpactType'][$entity->scaleImpactType->id])){
+                            $newEntity->set('scaleImpactType',$clones['scaleImpactType'][$entity->scaleImpactType->id]);
                         }else{
-                            $newEntity->set('ScaleImpactType',null);
+                            $newEntity->set('scaleImpactType',null);
                         }
                         break;
                 }
