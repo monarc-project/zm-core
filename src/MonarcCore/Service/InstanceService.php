@@ -964,7 +964,7 @@ class InstanceService extends AbstractService
                     && !$this->findInFields($amv->measure1, $params['keywords'], ['label1', 'label2', 'label3', 'label4'])
                     && !$this->findInFields($amv->measure2, $params['keywords'], ['label1', 'label2', 'label3', 'label4'])
                     && !$this->findInFields($amv->measure3, $params['keywords'], ['label1', 'label2', 'label3', 'label4'])
-                    && !$this->findInFields($amv->instance, $params['keywords'], ['label1', 'label2', 'label3', 'label4'])
+                    && !$this->findInFields($instanceRisk->instance, $params['keywords'], ['name1', 'name2', 'name3', 'name4'])
                     && stripos($instanceRisk->comment, $params['keywords']) === false) {
                     continue;
                 }
