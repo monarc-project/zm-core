@@ -957,7 +957,7 @@ class InstanceService extends AbstractService
                 }
             }
 
-            if (isset($params['keywords'])) {
+            if (isset($params['keywords']) && !empty($params['keywords'])) {
                 if (!$this->findInFields($amv->asset, $params['keywords'], ['label1', 'label2', 'label3', 'label4'])
                     && !$this->findInFields($amv->threat, $params['keywords'], ['label1', 'label2', 'label3', 'label4'])
                     && !$this->findInFields($amv->vulnerability, $params['keywords'], ['label1', 'label2', 'label3', 'label4'])
