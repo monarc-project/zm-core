@@ -84,12 +84,8 @@ class ThreatService extends AbstractService
         $needUpdateRisks = (($entity->c != $data['c']) || ($entity->i != $data['i']) || ($entity->d != $data['d'])) ? true : false;
 
         if (($entity->mode == Threat::MODE_SPECIFIC) && ($data['mode'] == Threat::MODE_GENERIC)) {
-            if (isset($data['models'])) {
-                //delete specific model
-                /** @var ModelService $modelService */
-                $modelService = $this->get('modelService');
-                $modelService->unsetSpecificModels($data);
-            }
+            //delete models
+            unset($data['models']);
         }
 
         $models = isset($data['models']) ? $data['models'] : array();
@@ -125,6 +121,8 @@ class ThreatService extends AbstractService
             if ($follow) {
                 $this->get('amvService')->enforceAMVtoFollow($models, null, null, $entity);
             }
+        }else{
+            $entity->setModels([]);
         }
 
         $id = $this->get('table')->save($entity);

@@ -76,12 +76,8 @@ class AssetService extends AbstractService
         $entity->setLanguage($this->getLanguage());
 
         if (($entity->mode == Asset::MODE_SPECIFIC) && ($data['mode'] == Asset::MODE_GENERIC)) {
-            if (isset($data['models'])) {
-                //delete specific model
-                /** @var ModelService $modelService */
-                $modelService = $this->get('modelService');
-                $modelService->unsetSpecificModels($data);
-            }
+            //delete models
+            unset($data['models']);
         }
 
         $models = isset($data['models']) ? $data['models'] : array();
@@ -131,6 +127,8 @@ class AssetService extends AbstractService
             if ($follow) {
                 $amvService->enforceAMVtoFollow($models, null, null, $entity);
             }
+        }else{
+            $entity->setModels([]);
         }
 
         return $this->get('table')->save($entity);
