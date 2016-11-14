@@ -81,20 +81,12 @@ class ModelService extends AbstractService
      * @return array
      */
     public function getModelWithAnr($id){
-
-
         $model = $this->get('table')->get($id);
-
-        $anrId = $model['anr']->id;
 
         $anrModel = $model['anr']->getJsonArray();
         unset($anrModel['__initializer__']);
         unset($anrModel['__cloner__']);
         unset($anrModel['__isInitialized__']);
-
-        /** @var InstanceService $instanceService */
-        $instanceService = $this->get('instanceService');
-        $anrModel['risksop'] = $instanceService->getRisksOp($anrId);
 
         $model['anr'] = $anrModel;
 

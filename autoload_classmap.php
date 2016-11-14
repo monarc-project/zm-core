@@ -25,6 +25,8 @@ return array(
     'MonarcCore\Controller\ApiAnrObjectControllerFactory'                   => __DIR__ . '/src/MonarcCore/Controller/ApiAnrObjectControllerFactory.php',
     'MonarcCore\Controller\ApiAnrRisksController'                           => __DIR__ . '/src/MonarcCore/Controller/ApiAnrRisksController.php',
     'MonarcCore\Controller\ApiAnrRisksControllerFactory'                    => __DIR__ . '/src/MonarcCore/Controller/ApiAnrRisksControllerFactory.php',
+    'MonarcCore\Controller\ApiAnrRisksOpController'                         => __DIR__ . '/src/MonarcCore/Controller/ApiAnrRisksOpController.php',
+    'MonarcCore\Controller\ApiAnrRisksOpControllerFactory'                  => __DIR__ . '/src/MonarcCore/Controller/ApiAnrRisksOpControllerFactory.php',
     'MonarcCore\Controller\ApiAnrScalesCommentsController'                  => __DIR__ . '/src/MonarcCore/Controller/ApiAnrScalesCommentsController.php',
     'MonarcCore\Controller\ApiAnrScalesCommentsControllerFactory'           => __DIR__ . '/src/MonarcCore/Controller/ApiAnrScalesCommentsControllerFactory.php',
     'MonarcCore\Controller\ApiAnrScalesController'                          => __DIR__ . '/src/MonarcCore/Controller/ApiAnrScalesController.php',
