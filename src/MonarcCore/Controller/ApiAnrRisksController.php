@@ -19,7 +19,11 @@ class ApiAnrRisksController extends AbstractController
             header('Content-Type: text/csv');
             die($this->getService()->getCsvRisks($anrId, ['id' => $id], $params));
         } else {
-            return new JsonModel($this->getService()->getRisks($anrId, ['id' => $id], $params));
+            $risks = $this->getService()->getRisks($anrId, ['id' => $id], $params);
+            return new JsonModel([
+                'count' => count($risks),
+                'risks' => array_slice($risks, ($params['page'] - 1) * $params['limit'], $params['limit'])
+            ]);
         }
 	}
 
@@ -31,7 +35,11 @@ class ApiAnrRisksController extends AbstractController
             header('Content-Type: text/csv');
             die($this->getService()->getCsvRisks($anrId, null, $params));
         } else {
-            return new JsonModel($this->getService()->getRisks($anrId, null, $params));
+            $risks = $this->getService()->getRisks($anrId, null, $params);
+            return new JsonModel([
+                'count' => count($risks),
+                'risks' => array_slice($risks, ($params['page'] - 1) * $params['limit'], $params['limit'])
+            ]);
         }
 	}
 	public function create($data){
@@ -56,13 +64,17 @@ class ApiAnrRisksController extends AbstractController
         $order = $this->params()->fromQuery("order", "maxRisk");
         $order_direction = $this->params()->fromQuery("order_direction", "desc");
         $thresholds = $this->params()->fromQuery("thresholds");
+        $page = $this->params()->fromQuery("page", 1);
+        $limit = $this->params()->fromQuery("limit", 50);
 
         return [
             'keywords' => $keywords,
             'kindOfMeasure' => $kindOfMeasure,
             'order' => $order,
             'order_direction' => $order_direction,
-            'thresholds' => $thresholds
+            'thresholds' => $thresholds,
+            'page' => $page,
+            'limit' => $limit
         ];
     }
 }
