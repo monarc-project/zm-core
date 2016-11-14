@@ -957,14 +957,14 @@ class InstanceService extends AbstractService
                 }
             }
 
-            if (isset($params['keywords'])) {
+            if (isset($params['keywords']) && !empty($params['keywords'])) {
                 if (!$this->findInFields($amv->asset, $params['keywords'], ['label1', 'label2', 'label3', 'label4'])
                     && !$this->findInFields($amv->threat, $params['keywords'], ['label1', 'label2', 'label3', 'label4'])
                     && !$this->findInFields($amv->vulnerability, $params['keywords'], ['label1', 'label2', 'label3', 'label4'])
                     && !$this->findInFields($amv->measure1, $params['keywords'], ['label1', 'label2', 'label3', 'label4'])
                     && !$this->findInFields($amv->measure2, $params['keywords'], ['label1', 'label2', 'label3', 'label4'])
                     && !$this->findInFields($amv->measure3, $params['keywords'], ['label1', 'label2', 'label3', 'label4'])
-                    && !$this->findInFields($amv->instance, $params['keywords'], ['label1', 'label2', 'label3', 'label4'])
+                    && !$this->findInFields($instanceRisk->instance, $params['keywords'], ['name1', 'name2', 'name3', 'name4'])
                     && stripos($instanceRisk->comment, $params['keywords']) === false) {
                     continue;
                 }
