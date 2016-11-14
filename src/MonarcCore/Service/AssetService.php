@@ -107,28 +107,24 @@ class AssetService extends AbstractService
             throw new \Exception('This type of asset is used in a model that is no longer part of the list', 412);
         }
 
-        foreach($entity->get('models') as $model){
-            if (in_array($model->get('id'), $models)){
-                unset($models[array_search($model->get('id'), $models)]);
-            } else {
-                $entity->get('models')->removeElement($model);
-            }
-        }
-
-        if (!empty($models)){
-            $modelTable = $this->get('modelTable');
-            foreach ($models as $key => $modelId) {
-                if(!empty($modelId)){
-                    $model = $modelTable->getEntity($modelId);
-                    $entity->setModel($key, $model);
+        switch($entity->get('mode')){
+            case Asset::MODE_SPECIFIC:
+                if(empty($models)){
+                    $entity->set('models',[]);
+                }else{
+                    $modelsObj = [];
+                    foreach($models as $mid){
+                        $modelsObj[] = $this->get('modelTable')->getEntity($mid);
+                    }
+                    $entity->set('models',$modelsObj);
                 }
-            }
-
-            if ($follow) {
-                $amvService->enforceAMVtoFollow($models, null, null, $entity);
-            }
-        }else{
-            $entity->setModels([]);
+                if ($follow) {
+                    $amvService->enforceAMVtoFollow($entity->get('models'), $entity, null, null);
+                }
+                break;
+            case Asset::MODE_GENERIC:
+                $entity->set('models',[]);
+                break;
         }
 
         return $this->get('table')->save($entity);

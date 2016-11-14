@@ -109,20 +109,24 @@ class ThreatService extends AbstractService
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
 
-        if (!empty($models)){
-            $modelTable = $this->get('modelTable');
-            foreach ($models as $key => $modelId) {
-                if(!empty($modelId)){
-                    $model = $modelTable->getEntity($modelId);
-                    $entity->setModel($key, $model);
+        switch($entity->get('mode')){
+            case Threat::MODE_SPECIFIC:
+                if(empty($models)){
+                    $entity->set('models',[]);
+                }else{
+                    $modelsObj = [];
+                    foreach($models as $mid){
+                        $modelsObj[] = $this->get('modelTable')->getEntity($mid);
+                    }
+                    $entity->set('models',$modelsObj);
                 }
-            }
-
-            if ($follow) {
-                $this->get('amvService')->enforceAMVtoFollow($models, null, null, $entity);
-            }
-        }else{
-            $entity->setModels([]);
+                if ($follow) {
+                    $this->get('amvService')->enforceAMVtoFollow($entity->get('models'), null, $entity, null);
+                }
+                break;
+            case Threat::MODE_GENERIC:
+                $entity->set('models',[]);
+                break;
         }
 
         $id = $this->get('table')->save($entity);

@@ -694,16 +694,25 @@ class AmvService extends AbstractService
     {
         $amvs = $this->get('table')->findByAMV($asset, $threat, $vulnerability);
 
-        if (!count($amvs)) {
+        if (count($amvs) > 0) {
 
             $amvAssetsIds = array();
             $amvThreatsIds = array();
             $amvVulnerabilitiesIds = array();
 
             foreach ($amvs as $amv) {
-                if (is_null($asset)) $amvAssetsIds[$amv['assetId']] = $amv['assetId'];
-                if (is_null($threat)) $amvThreatsIds[$amv['threatId']] = $amv['threatId'];
-                if (is_null($vulnerability)) $amvVulnerabilitiesIds[$amv['vulnerabilityId']] = $amv['vulnerabilityId'];
+                $amvAssetsIds[$amv['assetId']] = $amv['assetId'];
+                $amvThreatsIds[$amv['threatId']] = $amv['threatId'];
+                $amvVulnerabilitiesIds[$amv['vulnerabilityId']] = $amv['vulnerabilityId'];
+            }
+            if (!is_null($asset)){
+                unset($amvAssetsIds[$asset->get('id')]);
+            }
+            if (!is_null($threat)){
+                unset($amvThreatsIds[$threat->get('id')]);
+            }
+            if (!is_null($vulnerability)){
+                unset($amvVulnerabilitiesIds[$vulnerability->get('id')]);
             }
 
             if (count($amvAssetsIds)) $this->enforceToFollow($amvAssetsIds, $models, 'asset');
@@ -722,26 +731,11 @@ class AmvService extends AbstractService
     public function enforceToFollow($entitiesIds, $models, $type) {
 
         $tableName = $type . 'Table';
-        $serviceName = ucfirst($type) . 'Service';
 
         foreach($entitiesIds as $entitiesId) {
             $entity = $this->get($tableName)->getEntity($entitiesId);
-            $entity->setDbAdapter($this->get($tableName)->getDb());
-            $entity->setLanguage($this->getLanguage());
-            if ($entity->get('models')) {
-                $entity->get('models')->initialize();
-            }
-
             if ($entity->mode == AbstractEntity::MODE_SPECIFIC) { //petite sécurité pour pas construire de la daube
-
-                foreach($entity->get('models') as $model){
-                    $entity->get('models')->removeElement($model);
-                }
-
-                foreach($models as $modelId) {
-                    $model = $this->get('modelTable')->getEntity($modelId);
-                    $entity->setModel($modelId, $model);
-                }
+                $entity->set('models',$models);
 
                 $this->get($tableName)->save($entity);
             }
