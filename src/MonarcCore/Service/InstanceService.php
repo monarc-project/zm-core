@@ -1070,23 +1070,21 @@ class InstanceService extends AbstractService
      * @param $anrId
      * @return array
      */
-    public function getRisksOp($anrId, $instance = null) {
+    public function getRisksOp($anrId, $instance = null,$params = array()) {
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('table');
 
+        $instances = [];
         if ($instance) {
-            $instanceId = $instance['id'];
-            $instance = $instanceTable->getEntity($instanceId);
-
-            //retrieve descendants
-            $instances = $instanceTable->getDescendantsObjects($instanceId);
-            $instances[] = $instance;
+            $instances[] = $instanceTable->getEntity($instance['id']);
         } else {
             $instances = $instanceTable->getEntityByFields(['anr' => $anrId]);
         }
         $instancesIds = [];
-        foreach ($instances as $instance2) {
-            $instancesIds[] = $instance2->id;
+        foreach ($instances as $i) {
+            if($i->get('asset')->get('type') == Asset::ASSET_PRIMARY){
+                $instancesIds[] = $i->id;
+            }
         }
 
         //retrieve risks instances
