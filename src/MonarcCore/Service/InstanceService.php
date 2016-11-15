@@ -1070,7 +1070,7 @@ class InstanceService extends AbstractService
      * @param $anrId
      * @return array
      */
-    public function getRisksOp($anrId, $instance = null) {
+    public function getRisksOp($anrId, $instance = null, $params = []) {
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('table');
 
@@ -1152,6 +1152,26 @@ class InstanceService extends AbstractService
         }
 
         return $riskOps;
+    }
+
+    public function getCsvRisksOp($anrId, $instance = null, $params = []) {
+        $risks = $this->getRisksOp($anrId, $instance, $params);
+
+        $output = '';
+        if (count($risks) > 0) {
+            // Fill in the header
+            $output .= implode(',', array_keys($risks[0])) . "\n";
+
+            // Fill in the lines then
+            foreach ($risks as $risk) {
+                $array_values = array_values($risk);
+                $output .= '"';
+                $output .= implode('","', str_replace('"', '\"', $array_values));
+                $output .= "\"\r\n";
+            }
+        }
+
+        return $output;
     }
 
 
