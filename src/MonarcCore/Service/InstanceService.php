@@ -552,7 +552,7 @@ class InstanceService extends AbstractService
      * @param $historic
      */
     protected function updateBrothers($anrId, $instance, $data, &$historic) {
-        $fieldsToDelete = ['parent', 'createdAt', 'creator', 'risks', 'oprisks', 'instances'];
+        $fieldsToDelete = ['parent', 'createdAt', 'creator', 'risks', 'oprisks', 'instances', 'position'];
         //if source object is global, reverberate to other instance with the same source object
         if ($instance->object->scope == Object::SCOPE_GLOBAL) {
             //retrieve instance with same object source
