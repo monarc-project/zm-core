@@ -60,16 +60,58 @@ class DeliveriesModels extends AbstractEntity
     /**
      * @var string
      *
-     * @ORM\Column(name="path", type="text", length=255, nullable=true)
+     * @ORM\Column(name="path1", type="text", length=255, nullable=true)
      */
-    protected $path;
+    protected $path1;
 
     /**
      * @var resource
      *
-     * @ORM\Column(name="content", type="blob", nullable=true)
+     * @ORM\Column(name="content1", type="blob", nullable=true)
      */
-    protected $content;
+    protected $content1;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="path2", type="text", length=255, nullable=true)
+     */
+    protected $path2;
+
+    /**
+     * @var resource
+     *
+     * @ORM\Column(name="content2", type="blob", nullable=true)
+     */
+    protected $content2;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="path3", type="text", length=255, nullable=true)
+     */
+    protected $path3;
+
+    /**
+     * @var resource
+     *
+     * @ORM\Column(name="content3", type="blob", nullable=true)
+     */
+    protected $content3;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="path4", type="text", length=255, nullable=true)
+     */
+    protected $path4;
+
+    /**
+     * @var resource
+     *
+     * @ORM\Column(name="content4", type="blob", nullable=true)
+     */
+    protected $content4;
 
     /**
      * @var string
@@ -135,21 +177,6 @@ class DeliveriesModels extends AbstractEntity
             }
 
             $this->inputFilter->add(array(
-                'name' => 'path',
-                'required' => !$this->get('id'),
-                'allow_empty' => false,
-                'filters' => array(
-                    array(
-                        'name' => 'Zend\Filter\File\RenameUpload',
-                        'options' => array(
-                            'randomize' => true,
-                            'target' => $dirFile.$this->path['name'],
-                        ),
-                    ),
-                ),
-                'validators' => array(),
-            ));
-            $this->inputFilter->add(array(
                 'name' => 'category',
                 'required' => !($this->get('id')>0),
                 'allow_empty' => false,
@@ -181,14 +208,18 @@ class DeliveriesModels extends AbstractEntity
     public function exchangeArray(array $options, $partial = false)
     {
         parent::exchangeArray($options);
-        if(!empty($this->path['tmp_name']) && file_exists($this->path['tmp_name'])){
-            $info = pathinfo($this->path['tmp_name']);
-            $targetFile = $info['dirname'] . DIRECTORY_SEPARATOR.uniqid().'_'.$this->path['name'];
-            rename($this->path['tmp_name'], $targetFile);
 
-            $this->path = $targetFile;
-            $this->content = file_get_contents($this->path);
+        for ($i = 1; $i <= 4; ++$i) {
+            if (!empty($this->{'path'.$i}['tmp_name']) && file_exists($this->{'path'.$i}['tmp_name'])) {
+                $info = pathinfo($this->{'path'.$i}['tmp_name']);
+                $targetFile = $info['dirname'] . DIRECTORY_SEPARATOR . uniqid() . '_' . $this->{'path'.$i}['name'];
+                rename($this->{'path'.$i}['tmp_name'], $targetFile);
+
+                $this->{'path'.$i} = $targetFile;
+                $this->content = file_get_contents($this->{'path' . $i});
+            }
         }
+
         return $this;
     }
 
