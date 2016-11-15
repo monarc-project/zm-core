@@ -319,6 +319,8 @@ class ModelService extends AbstractService
         //duplicate model
         $newModel = clone $model;
         $newModel->set('id',null);
+        $newModel->set('isDefault', false);
+
         $suffix = ' (copié le '.date('m/d/Y à H:i').')';
         for($i=1;$i<=4;$i++){
             $newModel->set('label'.$i,$newModel->get('label'.$i).$suffix);
