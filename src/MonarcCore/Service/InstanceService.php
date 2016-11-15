@@ -1107,6 +1107,29 @@ class InstanceService extends AbstractService
 
         $riskOps = [];
         foreach ($instancesRisksOp as $instanceRiskOp) {
+            // Process filters
+            if (isset($params['kindOfMeasure'])) {
+                if ($instanceRiskOp->kindOfMeasure != $params['kindOfMeasure']) {
+                    continue;
+                }
+            }
+
+            if (isset($params['thresholds'])) {
+                $min = $params['thresholds'];
+
+                if ($instanceRiskOp->cacheNetRisk < $min) {
+                    continue;
+                }
+            }
+
+            if (isset($params['keywords']) && !empty($params['keywords'])) {
+                if (!$this->findInFields($instanceRiskOp, $params['keywords'], ['riskCacheLabel1', 'riskCacheLabel2', 'riskCacheLabel3', 'riskCacheLabel4',
+                    'riskCacheDescription1', 'riskCacheDescription2', 'riskCacheDescription3', 'riskCacheDescription4', 'comment'])) {
+                    continue;
+                }
+            }
+
+            // Add risk
             $riskOps[] = [
                 'id' => $instanceRiskOp->id,
                 'label1' => $instanceRiskOp->riskCacheLabel1,
