@@ -205,7 +205,7 @@ class InstanceService extends AbstractService
             $this->updatePosition($anrId, $instance, $data);
         }
 
-        $dataConsequences = $data['consequences'];
+        $dataConsequences = (isset($data['consequences'])) ? $data['consequences'] : null;
 
         $this->filterPostFields($data, $instance, $this->forbiddenFields + ['c', 'i', 'd']);
         $instance->exchangeArray($data);
@@ -227,7 +227,9 @@ class InstanceService extends AbstractService
 
         $id = $this->get('table')->save($instance);
 
-        $this->updateConsequences($anrId, ['consequences'=>$dataConsequences]);
+        if ($dataConsequences) {
+            $this->updateConsequences($anrId, ['consequences' => $dataConsequences]);
+        }
 
         $this->updateRisks($anrId, $id);
 
