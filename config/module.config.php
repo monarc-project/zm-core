@@ -95,6 +95,10 @@ return array(
                 'type' => 'segment',
                 'options' => array(
                     'route' => '/api/anr/:anrid/risks[/:id]',
+                    'constraints' => array(
+                        'anrid' => '[0-9]+',
+                        'id' => '[0-9]+',
+                    ),
                     'defaults' => array(
                         'controller' => 'MonarcCore\Controller\ApiAnrRisks',
                     ),
@@ -297,17 +301,7 @@ return array(
             'MonarcCore\Service\AbstractFactory',
         ),*/
         'invokables' => array(
-            'MonarcCore\Model\Entity\Anr'                   => 'MonarcCore\Model\Entity\Anr',
-            'MonarcCore\Model\Entity\AnrObjectCategory'     => 'MonarcCore\Model\Entity\AnrObjectCategory',
-            'MonarcCore\Model\Entity\Guide'                 => 'MonarcCore\Model\Entity\Guide',
-            'MonarcCore\Model\Entity\GuideItem'             => 'MonarcCore\Model\Entity\GuideItem',
-            'MonarcCore\Model\Entity\Historical'            => 'MonarcCore\Model\Entity\Historical',
-            'MonarcCore\Model\Entity\ObjectObject'          => 'MonarcCore\Model\Entity\ObjectObject',
             'MonarcCore\Model\Entity\PasswordToken'         => 'MonarcCore\Model\Entity\PasswordToken',
-            'MonarcCore\Model\Entity\Role'                  => 'MonarcCore\Model\Entity\Role',
-            'MonarcCore\Model\Entity\Scale'                 => 'MonarcCore\Model\Entity\Scale',
-            'MonarcCore\Model\Entity\ScaleComment'          => 'MonarcCore\Model\Entity\ScaleComment',
-            'MonarcCore\Model\Entity\ScaleImpactType'       => 'MonarcCore\Model\Entity\ScaleImpactType',
             'MonarcCore\Model\Entity\UserRole'              => 'MonarcCore\Model\Entity\UserRole',
             'MonarcCore\Service\Mime\Part'                  => 'Zend\Mime\Part',
             'MonarcCore\Service\Mime\Message'               => 'Zend\Mime\Message',
@@ -383,6 +377,16 @@ return array(
             '\MonarcCore\Model\Entity\User' => '\MonarcCore\Service\Model\Entity\UserServiceModelEntity',
             '\MonarcCore\Model\Entity\Vulnerability' => '\MonarcCore\Service\Model\Entity\VulnerabilityServiceModelEntity',
             '\MonarcCore\Model\Entity\Amv' => '\MonarcCore\Service\Model\Entity\AmvServiceModelEntity',
+            '\MonarcCore\Model\Entity\GuideItem' => '\MonarcCore\Service\Model\Entity\GuideItemServiceModelEntity',
+            '\MonarcCore\Model\Entity\Anr' => '\MonarcCore\Service\Model\Entity\AnrServiceModelEntity',
+            '\MonarcCore\Model\Entity\AnrObjectCategory' => '\MonarcCore\Service\Model\Entity\AnrObjectCategoryServiceModelEntity',
+            '\MonarcCore\Model\Entity\Guide' => '\MonarcCore\Service\Model\Entity\GuideServiceModelEntity',
+            '\MonarcCore\Model\Entity\Historical' => '\MonarcCore\Service\Model\Entity\HistoricalServiceModelEntity',
+            '\MonarcCore\Model\Entity\ObjectObject' => '\MonarcCore\Service\Model\Entity\ObjectObjectServiceModelEntity',
+            '\MonarcCore\Model\Entity\Role' => '\MonarcCore\Service\Model\Entity\RoleServiceModelEntity',
+            '\MonarcCore\Model\Entity\Scale' => '\MonarcCore\Service\Model\Entity\ScaleServiceModelEntity',
+            '\MonarcCore\Model\Entity\ScaleComment' => '\MonarcCore\Service\Model\Entity\ScaleCommentServiceModelEntity',
+            '\MonarcCore\Model\Entity\ScaleImpactType' => '\MonarcCore\Service\Model\Entity\ScaleImpactTypeServiceModelEntity',
 
             // Tables
             '\MonarcCore\Model\Table\UserTable' => '\MonarcCore\Service\Model\Table\UserServiceModelTable',
