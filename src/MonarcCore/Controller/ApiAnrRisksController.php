@@ -22,7 +22,7 @@ class ApiAnrRisksController extends AbstractController
             $risks = $this->getService()->getRisks($anrId, ['id' => $id], $params);
             return new JsonModel([
                 'count' => count($risks),
-                'risks' => array_slice($risks, ($params['page'] - 1) * $params['limit'], $params['limit'])
+                'risks' => $params['limit'] > 0 ? array_slice($risks, ($params['page'] - 1) * $params['limit'], $params['limit']) : $risks
             ]);
         }
 	}
