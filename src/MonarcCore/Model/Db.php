@@ -300,4 +300,8 @@ class Db {
     public function getReference($entityName, $id){
         return $this->entityManager->getReference($entityName, $id);
     }
+
+    public function getClassMetadata($entityName){
+        return $this->entityManager->getClassMetadata($entityName);
+    }
 }

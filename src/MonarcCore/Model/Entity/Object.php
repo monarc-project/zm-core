@@ -394,6 +394,12 @@ class Object extends AbstractEntity
         }
     }
 
+    protected $parameters = array(
+        'implicitPosition' => array(
+            'field' => 'objectCategory',
+        ),
+    );
+
     public function getInputFilter($partial = false){
 
         if (!$this->inputFilter) {

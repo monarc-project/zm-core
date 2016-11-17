@@ -285,6 +285,13 @@ class Amv extends AbstractEntity
         return $this;
     }
 
+    protected $parameters = array(
+        'implicitPosition' => array(
+            'field' => 'asset',
+            'root' => null,
+        ),
+    );
+
     public function getInputFilter($partial = false){
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);

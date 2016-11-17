@@ -140,5 +140,11 @@ class AnrObjectCategory extends AbstractEntity
         }
         return $this->inputFilter;
     }
+
+    protected $parameters = array(
+        'implicitPosition' => array(
+            'field' => 'anr',
+        ),
+    );
 }
 

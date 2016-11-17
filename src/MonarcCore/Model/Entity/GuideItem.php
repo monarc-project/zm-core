@@ -142,6 +142,12 @@ class GuideItem extends AbstractEntity
         return $this;
     }
 
+    protected $parameters = array(
+        'implicitPosition' => array(
+            'field' => 'guide',
+        ),
+    );
+
     public function getInputFilter($partial = false){
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);

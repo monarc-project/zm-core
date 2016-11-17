@@ -208,6 +208,12 @@ class ScaleImpactType extends AbstractEntity
         return $this;
     }
 
+    protected $parameters = array(
+        'implicitPosition' => array(
+            'field' => 'scale',
+        ),
+    );
+
     public function getInputFilter($partial = false){
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);

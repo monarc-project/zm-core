@@ -76,11 +76,22 @@ class InstanceService extends AbstractService
             $data[$commonProperty] = $object->$commonProperty;
         }
 
+
+        if(isset($data['parent']) && empty($data['parent'])){
+            $data['parent'] = null;
+        }else{
+            $parent = $this->get('table')->getEntity($data['parent']);
+            if(!$parent){
+                $data['parent'] = null;
+                unset($parent);
+            }
+        }
+
         //set impacts
         /** @var InstanceTable $table */
-        $table = $this->get('table');
-        $parent = ($data['parent']) ? $table->getEntity($data['parent']) : null;
-        $parentId = ($data['parent']) ? ($data['parent']) : null;
+        //$table = $this->get('table');
+        //$parent = ($data['parent']) ? $table->getEntity($data['parent']) : null;
+        //$parentId = ($data['parent']) ? ($data['parent']) : null;
 
         $this->updateImpactsInherited($anrId, $parent, $data);
 
@@ -88,55 +99,76 @@ class InstanceService extends AbstractService
         if (isset($object->asset)) {
             $data['asset'] = $object->asset->id;
         }
+        //manage position
+        if (!$managePosition) {
+            unset($data['implicitPosition']);
+            unset($data['previous']);
+        }elseif(isset($data['position'])){
+            $data['position']++;
+            if($data['position'] <= 1){
+                $data['implicitPosition'] = 1;
+            }else{
+                $return = $this->get('table')->getRepository()->createQueryBuilder('t')
+                    ->select('COUNT(t.id)');
+                if(isset($parent)){
+                    $return = $return->where('t.parent = :parent')
+                        ->setParameter(':parent',$parent->get('id'));
+                }else{
+                    $return = $return->where('t.parent IS NULL');
+                }
+                if($data['anr']){
+                    $return = $return->where('t.anr = :anr')
+                        ->setParameter(':anr',$data['anr']);
+                }else{
+                    $return = $return->where('t.anr IS NULL');
+                }
+                $return = $return->getQuery()->getSingleScalarResult();
+                if($data['position'] == $return+1){
+                    $data['implicitPosition'] = 2;
+                }else{
+                    $return = $this->get('table')->getRepository()->createQueryBuilder('t')
+                        ->select('t.id');
+                    if(isset($parent)){
+                        $return = $return->where('t.parent = :parent')
+                            ->setParameter(':parent',$parent->get('id'));
+                    }else{
+                        $return = $return->where('t.parent IS NULL');
+                    }
+                    if($data['anr']){
+                        $return = $return->where('t.anr = :anr')
+                            ->setParameter(':anr',$data['anr']);
+                    }else{
+                        $return = $return->where('t.anr IS NULL');
+                    }
+                    $return = $return->andWhere('t.position = :pos')
+                        ->setParameter(':pos',$data['position']-1)
+                        ->setMaxResults(1)
+                        ->getQuery()->getSingleScalarResult();
+                    if($return){
+                        $data['implicitPosition'] = 3;
+                        $data['previous'] = $return;
+                    }else{
+                        $data['implicitPosition'] = 2;
+                    }
+                }
+            }
+            unset($data['position']);
+        }
 
         //create instance
-        $class = $this->get('entity');
-        $instance = new $class();
-        $instance->setLanguage($this->getLanguage());
+        $instance = $this->get('entity');
+        //$instance = new $class();
+        //$instance->setLanguage($this->getLanguage());
         $instance->exchangeArray($data);
 
         //instance dependencies
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($instance, $dependencies);
 
-        //parent and root
-        // on fait un getEntity juste au dessus : $parent = ($data['parent']) ? $table->getEntity($data['parent']) : null;
-        $instance->setParent($parent);
-        $root = ($data['parent']) ? $this->getRoot($instance) : null;
-        $instance->setRoot($root);
-
         //level
         $this->updateInstanceLevels($rootLevel, $data['object'], $instance);
 
-        //manage position
-        if ($managePosition) {
-            if (isset($data['implicitPosition'])) {
-                $previousInstance = (isset($data['previous'])) ? $data['previous'] : null;
-
-                $this->managePosition('parent', $instance, $parentId, $data['implicitPosition'], $previousInstance, 'post');
-            }
-            else {
-                if ($data['position']) {
-                    $fields = ['anr' => $anrId, 'position' => $data['position'], 'parent' => ($parentId) ? $parentId : 'null'];
-                    $previousInstance = $table->getEntityByFields($fields);
-                    if ($previousInstance) {
-                        $previousInstance = $previousInstance[0];
-                        $implicitPosition = 3;
-                    } else {
-                        $previousInstance = null;
-                        $implicitPosition = 2;
-                    }
-
-                } else {
-                    $previousInstance = null;
-                    $implicitPosition = 1;
-                }
-
-                $this->managePosition('parent', $instance, $parentId, $implicitPosition, $previousInstance, 'post');
-            }
-        }
-
-        $id = $table->createInstanceToAnr($anrId, $instance, $parent, $instance->position);
+        $id = $this->get('table')->save($instance);
 
         //instances risk
         /** @var InstanceRiskService $instanceRiskService */
@@ -157,7 +189,7 @@ class InstanceService extends AbstractService
     }
 
     protected function getRecursiveChild(&$childList, $id) {
-        $childs = $this->getRepository()->createQueryBuilder('t')
+        $childs = $this->get('table')->getRepository()->createQueryBuilder('t')
             ->select(array('t.id'))
             ->where('t.parent = :parent')
             ->setParameter(':parent', $id)
@@ -201,8 +233,71 @@ class InstanceService extends AbstractService
             throw new \Exception('Data missing', 412);
         }
 
-        if ($managePosition) {
-            $this->updatePosition($anrId, $instance, $data);
+        if(isset($data['parent']) && empty($data['parent'])){
+            $data['parent'] = null;
+        }else{
+            $parent = $this->get('table')->getEntity($data['parent']);
+            if(!$parent){
+                $data['parent'] = null;
+                unset($parent);
+            }
+        }
+
+        if (!$managePosition) {
+            unset($data['implicitPosition']);
+            unset($data['previous']);
+        }elseif(isset($data['position'])){
+            $data['position']++;
+            if($data['position'] <= 1){
+                $data['implicitPosition'] = 1;
+            }else{
+                $return = $this->get('table')->getRepository()->createQueryBuilder('t')
+                    ->select('COUNT(t.id)');
+                if(isset($parent)){
+                    $return = $return->where('t.parent = :parent')
+                        ->setParameter(':parent',$parent->get('id'));
+                }else{
+                    $return = $return->where('t.parent IS NULL');
+                }
+                $anr = $instance->get('anr');
+                if($anr){
+                    $return = $return->where('t.anr = :anr')
+                        ->setParameter(':anr',is_object($anr)?$anr->get('id'):$anr);
+                }else{
+                    $return = $return->where('t.anr IS NULL');
+                }
+                $return = $return->getQuery()->getSingleScalarResult();
+                if($data['position'] == $return){
+                    $data['implicitPosition'] = 2;
+                }else{
+                    $return = $this->get('table')->getRepository()->createQueryBuilder('t')
+                        ->select('t.id');
+                    if(isset($parent)){
+                        $return = $return->where('t.parent = :parent')
+                            ->setParameter(':parent',$parent->get('id'));
+                    }else{
+                        $return = $return->where('t.parent IS NULL');
+                    }
+                    $anr = $instance->get('anr');
+                    if($anr){
+                        $return = $return->where('t.anr = :anr')
+                            ->setParameter(':anr',is_object($anr)?$anr->get('id'):$anr);
+                    }else{
+                        $return = $return->where('t.anr IS NULL');
+                    }
+                    $return = $return->andWhere('t.position = :pos')
+                        ->setParameter(':pos',$data['position']-1)
+                        ->setMaxResults(1)
+                        ->getQuery()->getSingleScalarResult();
+                    if($return){
+                        $data['implicitPosition'] = 3;
+                        $data['previous'] = $return;
+                    }else{
+                        $data['implicitPosition'] = 2;
+                    }
+                }
+            }
+            unset($data['position']);
         }
 
         $dataConsequences = $data['consequences'];
@@ -212,18 +307,18 @@ class InstanceService extends AbstractService
 
         $this->setDependencies($instance, $this->dependencies);
 
-        if ($instance->parent) {
-            $parentId = (is_object($instance->parent)) ? $instance->parent->id : $instance->parent['id'];
-            $instance->parent = $table->getEntity($parentId);
-        } else {
-            $instance->parent = null;
-        }
-        if ($instance->root) {
-            $rootId = (is_object($instance->root)) ? $instance->root->id : $instance->root['id'];
-            $instance->root = $table->getEntity($rootId);
-        } else {
-            $instance->root = null;
-        }
+        //if ($instance->parent) {
+        //    $parentId = (is_object($instance->parent)) ? $instance->parent->id : $instance->parent['id'];
+        //    $instance->parent = $table->getEntity($parentId);
+        //} else {
+        //    $instance->parent = null;
+        //}
+        //if ($instance->root) {
+        //    $rootId = (is_object($instance->root)) ? $instance->root->id : $instance->root['id'];
+        //    $instance->root = $table->getEntity($rootId);
+        //} else {
+        //    $instance->root = null;
+        //}
 
         $id = $this->get('table')->save($instance);
 
@@ -231,9 +326,9 @@ class InstanceService extends AbstractService
 
         $this->updateRisks($anrId, $id);
 
-        if ($instance->root) {
-            $this->updateChildrenRoot($id, $instance->root);
-        }
+        //if ($instance->root) {
+        //    $this->updateChildrenRoot($id, $instance->root);
+        //}
 
         $this->updateChildrenImpacts($instance);
 
@@ -272,25 +367,69 @@ class InstanceService extends AbstractService
         if (!$instance) {
             throw new \Exception('Instance does not exist', 412);
         }
-        $instanceParent = ($instance->parent) ? $instance->parent->id : null;
 
-        $this->patchPosition($anrId, $instance, $instanceParent, $data);
-
-        //parent values
-        $parent = null;
-        if (isset($data['parent'])) {
-            if ($data['parent']) {
-                $parent = ($data['parent']) ? $table->getEntity($data['parent']) : null;
-                $instance->setParent($parent);
-
-                $root = ($data['parent']) ? $this->getRoot($instance) : null;
-                $instance->setRoot($root);
-            } else {
-                $parent = null;
-                $instance->setParent($parent);
-                $root = null;
-                $instance->setRoot($root);
+        if(isset($data['parent']) && empty($data['parent'])){
+            $data['parent'] = null;
+        }else{
+            $parent = $this->get('table')->getEntity($data['parent']);
+            if(!$parent){
+                $data['parent'] = null;
+                unset($parent);
             }
+        }
+
+        if(isset($data['position'])){
+            $data['position']++; // TODO: to delete
+            if($data['position'] <= 1){
+                $data['implicitPosition'] = 1;
+            }else{
+                $return = $this->get('table')->getRepository()->createQueryBuilder('t')
+                    ->select('COUNT(t.id)');
+                if(isset($parent)){
+                    $return = $return->where('t.parent = :parent')
+                        ->setParameter(':parent',$parent->get('id'));
+                }else{
+                    $return = $return->where('t.parent IS NULL');
+                }
+                $anr = $instance->get('anr');
+                if($anr){
+                    $return = $return->where('t.anr = :anr')
+                        ->setParameter(':anr',is_object($anr)?$anr->get('id'):$anr);
+                }else{
+                    $return = $return->where('t.anr IS NULL');
+                }
+                $return = $return->getQuery()->getSingleScalarResult();
+                if($data['position'] == $return){
+                    $data['implicitPosition'] = 2;
+                }else{
+                    $return = $this->get('table')->getRepository()->createQueryBuilder('t')
+                        ->select('t.id');
+                    if(isset($parent)){
+                        $return = $return->where('t.parent = :parent')
+                            ->setParameter(':parent',$parent->get('id'));
+                    }else{
+                        $return = $return->where('t.parent IS NULL');
+                    }
+                    $anr = $instance->get('anr');
+                    if($anr){
+                        $return = $return->where('t.anr = :anr')
+                            ->setParameter(':anr',is_object($anr)?$anr->get('id'):$anr);
+                    }else{
+                        $return = $return->where('t.anr IS NULL');
+                    }
+                    $return = $return->andWhere('t.position = :pos')
+                        ->setParameter(':pos',$data['position']-1)
+                        ->setMaxResults(1)
+                        ->getQuery()->getSingleScalarResult();
+                    if($return){
+                        $data['implicitPosition'] = 3;
+                        $data['previous'] = $return;
+                    }else{
+                        $data['implicitPosition'] = 2;
+                    }
+                }
+            }
+            unset($data['position']);
         }
         
         if(!$modifyCid){ // on ne provient pas du trigger
@@ -306,19 +445,23 @@ class InstanceService extends AbstractService
         }
 
         $instance->setLanguage($this->getLanguage());
+        $instance->setDbAdapter($this->get('table')->getDb());
         $instance->exchangeArray($data, true);
 
         $this->setDependencies($instance, $this->dependencies);
 
-        $instance->parent = ($instance->parent) ? $table->getEntity($instance->parent) : null;
+        //$instance->parent = ($instance->parent) ? $table->getEntity($instance->parent) : null;
 
         $id = $table->save($instance);
 
+        $parentId = ($instance->parent)?$instance->parent->id:null;
+        $this->refreshImpactsInherited($anrId, $parentId, $instance);
+
         $this->updateRisks($anrId, $id);
 
-        if ($instance->root) {
-            $this->updateChildrenRoot($id, $instance->root);
-        }
+        //if ($instance->root) {
+        //    $this->updateChildrenRoot($id, $instance->root);
+        //}
 
         $this->updateChildrenImpacts($instance);
 
@@ -326,6 +469,10 @@ class InstanceService extends AbstractService
         $data['object'] = $instance->object->id;
         $data['name1'] = $instance->name1;
         $data['label1'] = $instance->label1;
+
+        unset($data['implicitPosition']);
+        unset($data['previous']);
+        unset($data['position']);
 
         $this->updateBrothers($anrId, $instance, $data, $historic);
 
@@ -354,8 +501,6 @@ class InstanceService extends AbstractService
         if ($instance->parent != null && $instance->parent->id) {
             $parent_id = $instance->parent->id;
         }
-
-        $this->managePosition('parent', $instance, $parent_id, null, null, 'delete');
 
         $this->get('instanceRiskService')->deleteInstanceRisks($id,$instance->anr->id);
         $this->get('instanceRiskOpService')->deleteInstanceRisksOp($id,$instance->anr->id);
@@ -635,93 +780,6 @@ class InstanceService extends AbstractService
 
         foreach($instanceRisks as $instanceRisk) {
             $instanceRiskService->updateRisks($instanceRisk->id);
-        }
-    }
-
-    /**
-     * Update Position
-     *
-     * @param $anrId
-     * @param $instance
-     * @param $data
-     */
-    public function updatePosition($anrId, $instance, $data) {
-        if (isset($data['position'])) {
-            if ((isset($data['position']) && ($data['position'] != $instance->position)) || (isset($data['parent']) && ($data['parent'] != $instance->parent))) {
-
-                $parent = (isset($data['parent']) && $data['parent']) ? $data['parent'] : null;
-                $parentId = ($parent) ? $parent['id'] : null;
-
-                if ($data['position']) {
-                    $previousInstancePosition = ($data['position'] > $instance->position) ? $data['position'] : $data['position'] - 1;
-                    $fields = [
-                        'anr' => $anrId,
-                        'position' => $previousInstancePosition,
-                        'parent' => $parentId
-                    ];
-
-                    /** @var InstanceTable $table */
-                    $table = $this->get('table');
-                    $entities = $table->getEntityByFields($fields);
-
-                    if ($entities) {
-                        $implicitPosition = 3;
-                        $previous = $entities[0];
-                    } else {
-                        $implicitPosition = 1;
-                        $previous = null;
-                    }
-                } else {
-                    $implicitPosition = 1;
-                    $previous = null;
-                }
-
-                $this->managePosition('parent', $instance, $parentId, $implicitPosition, $previous, 'update');
-            }
-        }
-    }
-
-    /**
-     * Patch Position
-     *
-     * @param $anrId
-     * @param $instance
-     * @param $instanceParent
-     * @param $data
-     */
-    public function patchPosition($anrId, $instance, $instanceParent, $data) {
-        if (isset($data['position'])) {
-            if (($data['position'] != $instance->position) || ($data['parent'] != $instanceParent)) {
-
-                if ($instance->level != Instance::LEVEL_ROOT) {
-                    throw new \Exception('You may only move a root-level instance', 412);
-                }
-
-                $parent = (isset($data['parent']) && $data['parent']) ? $data['parent'] : null;
-
-                if ($data['position']) {
-                    if (($data['parent'] == $instanceParent) && ($data['position'] > $instance->position)) {
-                        $previousInstancePosition = $data['position'];
-                    } else {
-                        $previousInstancePosition = $data['position'] - 1;
-                    }
-                    $fields = ['anr' => $anrId, 'position' => $previousInstancePosition, 'parent' => ($parent) ? $parent : 'null'];
-                    $previous = $this->get('table')->getEntityByFields($fields);
-                    if ($previous) {
-                        $implicitPosition = 3;
-                        $previous = $previous[0];
-                    } else {
-                        $implicitPosition = 2;
-                        $previous = null;
-                    }
-                } else {
-                    $implicitPosition = 1;
-                    $previous = null;
-                }
-                $this->managePosition('parent', $instance, $parent, $implicitPosition, $previous, 'update');
-                $this->updateRisks($anrId, $instance->id);
-                $this->refreshImpactsInherited($anrId, $parent, $instance);
-            }
         }
     }
 

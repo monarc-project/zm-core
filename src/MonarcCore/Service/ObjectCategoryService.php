@@ -136,16 +136,6 @@ class ObjectCategoryService extends AbstractService
 
         $entity = $this->get('entity');
 
-        $previous = (isset($data['previous'])) ? $data['previous'] : null;
-        $parent = (isset($data['parent'])) ? $data['parent'] : null;
-
-        if (empty($data['implicitPosition'])) {
-            throw new \Exception("You must select a position for your category", 412);
-        }
-
-        $position = $this->managePositionCreation('parent', $parent, (int) $data['implicitPosition'], $previous);
-        $data['position'] = $position;
-
         $entity->exchangeArray($data);
 
         //parent and root
@@ -177,13 +167,6 @@ class ObjectCategoryService extends AbstractService
 
         $entity = $this->get('table')->getEntity($id);
         $entity->setLanguage($this->getLanguage());
-
-        $previous = (isset($data['previous'])) ? $data['previous'] : null;
-        $parent = (isset($data['parent'])) ? $data['parent'] : null;
-
-        if (isset($data['implicitPosition'])) {
-            $data['position'] = $this->managePosition('parent', $entity, $parent, $data['implicitPosition'], $previous, 'update', false, 1);
-        }
 
         $entity->exchangeArray($data);
 
@@ -217,15 +200,6 @@ class ObjectCategoryService extends AbstractService
     public function delete($id) {
 
         $entity = $this->get('table')->getEntity($id);
-
-        if ($entity->get('parent')) {
-            $objectParentId = $entity->get('parent')->get('id');
-        } else {
-            $objectParentId = null;
-        }
-        $position = $entity->get('position');
-
-        $this->get('table')->changePositionsByParent('parent', $objectParentId, $position, 'down', 'after');
 
         // On supprime en cascade les fils
         $children = $this->get('table')->getRepository()->createQueryBuilder('t')
@@ -264,14 +238,14 @@ class ObjectCategoryService extends AbstractService
             $previousAnrObjectCategoryPosition = ($data['position'] > $anrObjectCategory->position) ? $data['position'] : $data['position'] - 1;
             $previousAnrObjectCategory = $anrObjectCategoryTable->getEntityByFields(['anr' => $anrId, 'position' => $previousAnrObjectCategoryPosition]);
             if ($previousAnrObjectCategory) {
-                $implicitPosition = 3;
-                $previous = $previousAnrObjectCategory[0];
+                $data['implicitPosition'] = 3;
+                $data['previous'] = $previousAnrObjectCategory[0];
             } else {
-                $implicitPosition = 1;
-                $previous = null;
+                $data['implicitPosition'] = 1;
+                $data['previous'] = null;
             }
 
-            $anrObjectCategory->position = $this->managePosition('anr', $anrObjectCategory, $anrId, $implicitPosition, $previous, 'update', $anrObjectCategoryTable);
+            $anrObjectCategory->exchangeArray($data);
 
             return $this->get('table')->save($anrObjectCategory);
         }

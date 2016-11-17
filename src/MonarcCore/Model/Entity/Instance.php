@@ -376,6 +376,13 @@ class Instance extends AbstractEntity
         return $this;
     }
 
+    protected $parameters = array(
+        'implicitPosition' => array(
+            'field' => 'parent',
+            'root' => 'root',
+        ),
+    );
+
     public function getInputFilter($partial = false){
 
         //if (!$this->inputFilter) {

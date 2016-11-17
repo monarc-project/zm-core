@@ -21,16 +21,9 @@ class GuideItemService extends AbstractService
      * @return mixed
      */
     public function create($data, $last = true) {
-
         $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
 
         $entity = $this->get('entity');
-
-        $previous = (isset($data['previous'])) ? $data['previous'] : null;
-        $guide = (isset($data['guide'])) ? $data['guide'] : null;
-
-        $position = $this->managePositionCreation('guide', $guide, (int) $data['implicitPosition'], $previous);
-        $data['position'] = $position;
 
         $entity->exchangeArray($data);
 
@@ -47,16 +40,7 @@ class GuideItemService extends AbstractService
      * @return mixed
      */
     public function update($id,$data){
-
-        $previous = (isset($data['previous'])) ? $data['previous'] : null;
-        $guide = (isset($data['guide'])) ? $data['guide'] : null;
-
         $entity = $this->get('table')->getEntity($id);
-
-        if (isset($data['implicitPosition'])) {
-            $data['position'] = $this->managePosition('guide', $entity, $guide, $data['implicitPosition'], $previous);
-        }
-
         $entity->exchangeArray($data);
 
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
@@ -74,11 +58,6 @@ class GuideItemService extends AbstractService
     public function delete($id) {
 
         $entity = $this->getEntity($id);
-
-        $entityGuideId = $entity['guide']->id;
-        $position = $entity['position'];
-
-        $this->get('table')->changePositionsByParent('guide', $entityGuideId, $position, 'down', 'after');
 
         $this->get('table')->delete($id);
     }

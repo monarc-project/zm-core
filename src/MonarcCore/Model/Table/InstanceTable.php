@@ -2,42 +2,6 @@
 namespace MonarcCore\Model\Table;
 
 class InstanceTable extends AbstractEntityTable {
-
-    /**
-     * Create instance to anr
-     *
-     * @param $instance
-     * @param $anrId
-     * @param $parentId
-     * @param $position
-     * @return mixed|null
-     * @throws \Exception
-     */
-    public function createInstanceToAnr($anrId, $instance, $parentId, $position) {
-
-        if (is_null($position)) {
-            $filters =  ($parentId) ? ['anr' => $anrId, 'parent' => $parentId] : ['anr' => $anrId];
-            $brothers = $this->getEntityByFields($filters);
-            $position = count($brothers) + 1;
-        }
-
-        $instance->position = $position;
-
-        $this->getDb()->beginTransaction();
-
-        try {
-            //create instance
-            $id = $this->save($instance);
-
-            $this->getDb()->commit();
-
-            return $id;
-        } catch (Exception $e) {
-            $this->getDb()->rollBack();
-            throw $e;
-        }
-    }
-
     /**
      * Find By Anr
      *
@@ -95,5 +59,74 @@ class InstanceTable extends AbstractEntityTable {
         }
         $arbo[] = $instance->getJsonArray();
         return $arbo;
+    }
+
+    protected function buildWhereForPositionCreate($params,$queryBuilder,\MonarcCore\Model\Entity\AbstractEntity $entity, $newOrOld = 'new'){
+        $queryBuilder = parent::buildWhereForPositionCreate($params,$queryBuilder, $entity,$newOrOld);
+        $anr = $entity->get('anr');
+        if($anr){
+            $queryBuilder = $queryBuilder->andWhere('t.anr = :anr')
+                ->setParameter(':anr',is_object($anr)?$anr->get('id'):$anr);
+        }else{
+            $queryBuilder = $queryBuilder->andWhere('t.anr IS NULL');
+        }
+        return $queryBuilder;
+    }
+
+    protected function manageDeletePosition(\MonarcCore\Model\Entity\AbstractEntity $entity,$params = array()){
+        $return = $this->getRepository()->createQueryBuilder('t')
+            ->update()
+            ->set('t.position', 't.position - 1');
+        $hasWhere = false;
+        if(!empty($params['field'])){
+            $hasWhere = true;
+            if(is_null($entity->get($params['field']))){
+                $return = $return->where('t.'.$params['field'].' IS NULL');
+            }else{
+                $return = $return->where('t.' . $params['field'] . ' = :'.$params['field'])
+                    ->setParameter(':'.$params['field'], $entity->get($params['field']));
+            }
+        }
+
+        $anr = $entity->get('anr');
+        if($anr){
+            $return = $return->andWhere('t.anr = :anr')
+                ->setParameter(':anr',is_object($anr)?$anr->get('id'):$anr);
+        }else{
+            $return = $return->andWhere('t.anr IS NULL');
+        }
+
+        if($hasWhere){
+            $return = $return->andWhere('t.position >= :pos');
+        }else{
+            $return = $return->where('t.position >= :pos');
+        }
+        $return = $return->setParameter(':pos', $entity->get('position'));
+        $return->getQuery()->getResult();
+    }
+
+    protected function countPositionMax(\MonarcCore\Model\Entity\AbstractEntity $entity,$params = array()){
+        $return = $this->getRepository()->createQueryBuilder('t')
+            ->select('COUNT(t.id)');
+        if(!empty($params['field'])){
+            if(isset($params['newField'][$params['field']])){
+                if(is_null($params['newField'][$params['field']])){
+                    $return = $return->where('t.'.$params['field'].' IS NULL');
+                }else{
+                    $return = $return->where('t.' . $params['field'] . ' = :'.$params['field'])
+                        ->setParameter(':'.$params['field'], $params['newField'][$params['field']]);
+                }
+            }
+        }
+        $anr = $entity->get('anr');
+        if($anr){
+            $return = $return->andWhere('t.anr = :anr')
+                ->setParameter(':anr',is_object($anr)?$anr->get('id'):$anr);
+        }else{
+            $return = $return->andWhere('t.anr IS NULL');
+        }
+        
+        $id = $entity->get('id');
+        return $return->getQuery()->getSingleScalarResult()+($id?0:1);
     }
 }

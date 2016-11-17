@@ -179,6 +179,10 @@ class ObjectObject extends AbstractEntity
         return $this;
     }
 
-
+    protected $parameters = array(
+        'implicitPosition' => array(
+            'field' => 'father',
+        ),
+    );
 }
 

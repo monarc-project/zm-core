@@ -63,6 +63,12 @@ class ObjectObjectService extends AbstractService
             throw new \Exception("You cannot add a specific object to a generic parent", 412);
         }
 
+        if (!empty($data['implicitPosition'])) {
+             unset($data['position']);
+        } else if (!empty($data['position'])) {
+            unset($data['implicitPosition']);
+        }
+
         /** @var ObjectObject $entity */
         $class = $this->get('entity');
         $entity = new $class();
@@ -78,15 +84,6 @@ class ObjectObjectService extends AbstractService
         if (!empty($childValue)) {
             $childEntity = $objectTable->getEntity($childValue);
             $entity->setChild($childEntity);
-        }
-
-        if (array_key_exists('implicitPosition', $data)) {
-            $previous = (isset($data['previous'])) ? $data['previous'] : null;
-
-            $position = $this->managePositionCreation('father', $data['father'], (int) $data['implicitPosition'], $previous);
-            $entity->setPosition($position);
-        } else if (array_key_exists('position', $data)) {
-            $entity->setPosition((int) $data['position']);
         }
 
         $id = $objectObjectTable->save($entity);
@@ -265,8 +262,6 @@ class ObjectObjectService extends AbstractService
                 }
             }
         }
-
-        $this->get('table')->changePositions($objectObject->position, 'down', 'after');
 
         parent::delete($id);
     }

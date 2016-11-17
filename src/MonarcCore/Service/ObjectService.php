@@ -431,21 +431,6 @@ class ObjectService extends AbstractService
         //create object
         $object = $this->get('entity');
 
-        //position
-        $previous = (isset($data['previous'])) ? $data['previous'] : null;
-        if (!isset($data['implicitPosition'])) {
-            throw  new \Exception('implicitPosition is missing', 412);
-        } else  if ($data['implicitPosition'] == 3) {
-            if (!$previous) {
-                throw  new \Exception('previous is missing', 412);
-            }
-        }
-        if ($previous) {
-            $previousInstance = $this->get('table')->getEntity($previous);
-        } else {
-            $previousInstance = null;
-        }
-
         $setRolfTagNull = false;
         if(empty($data['rolfTag'])){
             unset($data['rolfTag']);
@@ -486,10 +471,6 @@ class ObjectService extends AbstractService
         if(empty($data['category'])){
             $data['category'] = null;
         }
-
-        $position = $this->managePosition('category', $object, (int) $data['category'], (int) $data['implicitPosition'], $previousInstance, 'post');
-        $object->position = $position;
-        unset($data['implicitPosition']);
 
         if (isset($data['source'])) {
             $object->source = $this->get('table')->getEntity($data['source']);
@@ -569,11 +550,6 @@ class ObjectService extends AbstractService
             throw new \Exception('You cannot change the asset type of an existing object.', 412);
         }
 
-
-        if (isset($data['implicitPosition'])) {
-            $data['position'] = $this->managePosition('category', $object, $data['category'], $data['implicitPosition'], $previous, 'update');
-        }
-
         if(isset($data['mode']) && $data['mode'] != $object->get('mode')){
             /* on test:
             - que l'on a pas de parents GENERIC quand on passe de GENERIC à SPECIFIC
@@ -631,7 +607,6 @@ class ObjectService extends AbstractService
                     $anrObjectCategories = $anrObjectCategoryTable->getEntityByFields(['anr' => $anr->id, 'category' => $currentRootCategory->id]);
                     foreach($anrObjectCategories as $anrObjectCategory) {
                         $anrObjectCategoryTable->delete($anrObjectCategory->id);
-                        $this->managePosition('anr', $anrObjectCategory, $anr->id, null, null, 'delete', $anrObjectCategoryTable);
                     }
                 }
 
@@ -650,10 +625,12 @@ class ObjectService extends AbstractService
 
                     $class = $this->get('anrObjectCategoryEntity');
                     $anrObjectCategory = new $class();
-                    $anrObjectCategory->anr = $anr;
-                    $anrObjectCategory->category = $objectRootCategory;
-                    $anrObjectCategory->position = $this->managePosition('anr', $anrObjectCategory, $anr->id, 2, null, 'post', $anrObjectCategoryTable);
 
+                    $anrObjectCategory->exchangeArray([
+                        'anr' => $anr,
+                        'category' => $objectRootCategory,
+                        'implicitPosition' => 2,
+                    ]);
 
                     $anrObjectCategoryTable->save($anrObjectCategory);
                 }
@@ -754,11 +731,6 @@ class ObjectService extends AbstractService
         if(!$entity){
             throw new \Exception('Entity `id` not found.');
         }
-
-        $objectCategoryId = $entity['category']->id;
-        $position = $entity['position'];
-
-        $this->get('table')->changePositionsByParent('category', $objectCategoryId, $position, 'down', 'after');
 
         $this->get('table')->delete($id);
     }
@@ -899,9 +871,11 @@ class ObjectService extends AbstractService
             if (!count($anrObjectCategories)) {
                 $class = $this->get('anrObjectCategoryEntity');
                 $anrObjectCategory = new $class();
-                $anrObjectCategory->anr = $anr;
-                $anrObjectCategory->category = ($object->category->root) ? $object->category->root : $object->category;
-                $anrObjectCategory->position = $this->managePosition('anr', $anrObjectCategory, $anrId, 2, null, 'post', $anrObjectCategoryTable);
+                $anrObjectCategory->exchangeArray([
+                    'anr' => $anr,
+                    'category' => (($object->category->root) ? $object->category->root : $object->category),
+                    'implicitPosition' => 2,
+                ]);
                 $anrObjectCategoryTable->save($anrObjectCategory);
             }
         } else {
@@ -993,7 +967,6 @@ class ObjectService extends AbstractService
             $anrObjectCategoryTable = $this->get('anrObjectCategoryTable');
             $anrObjectCategories = $anrObjectCategoryTable->getEntityByFields(['anr' => $anrId, 'category' => $objectRootCategory->id]);
             foreach( $anrObjectCategories as $anrObjectCategory) {
-                $this->managePosition('anr', $anrObjectCategory, $anrId, null, null, 'delete', $anrObjectCategoryTable);
                 $anrObjectCategoryTable->delete($anrObjectCategory->id);
             }
         }

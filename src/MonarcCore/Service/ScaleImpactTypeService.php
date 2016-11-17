@@ -72,11 +72,6 @@ class ScaleImpactTypeService extends AbstractService
 
         $anrId = $data['anr'];
 
-        $previous = (isset($data['previous'])) ? $data['previous'] : null;
-        $parent = (isset($data['scale'])) ? $data['scale'] : null;
-        $position = $this->managePositionCreation('scale', $parent, (int) $data['implicitPosition'], $previous);
-
-        $data['position'] = $position;
         if (!isset($data['isSys'])) {
             $data['isSys'] = 0;
         }
@@ -129,11 +124,6 @@ class ScaleImpactTypeService extends AbstractService
      */
     public function update($id,$data){
 
-        $previous = (isset($data['previous'])) ? $data['previous'] : null;
-        $parent = (isset($data['scale'])) ? $data['scale'] : null;
-        $position = $this->managePositionCreation('scale', $parent, (int) $data['implicitPosition'], $previous);
-
-        $data['position'] = $position;
         $data['isSys'] = 0;
         $data['type'] = 9;
 
@@ -163,11 +153,6 @@ class ScaleImpactTypeService extends AbstractService
         if ($entity['isSys']) {
             throw new \Exception('Not Authorized', '401');
         }
-
-        $parentId = $entity['scale']->id;
-        $position = $entity['position'];
-
-        $this->get('table')->changePositionsByParent('scale', $parentId, $position, 'down', 'after');
 
         $this->get('table')->delete($id);
     }

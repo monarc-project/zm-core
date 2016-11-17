@@ -125,11 +125,9 @@ class AmvService extends AbstractService
     {
         //security
         $this->filterPatchFields($data);
+        $entity->exchangeArray($data);
 
         $entity = $this->get('table')->getEntity($id);
-
-        $previous = (isset($data['previous'])) ? $data['previous'] : null;
-        $data['position'] = $this->managePosition('asset', $entity, $data['asset'], $data['implicitPosition'], $previous, 'update', false, 1);
 
         parent::patch($id, $data);
     }
@@ -231,9 +229,6 @@ class AmvService extends AbstractService
             throw new \Exception($this->errorMessage);
         }
 
-        $previousInstance = (isset($data['previous'])) ? $data['previous'] : null;
-        $entity->position = $this->managePosition('asset', $entity, $entity->asset->id, $data['implicitPosition'], $previousInstance, 'post', false, 1);
-
         $id = $this->get('table')->save($entity);
 
         //historisation
@@ -313,13 +308,6 @@ class AmvService extends AbstractService
         }
         $name = implode(' - ', $name);
         $this->label = [$name,$name,$name,$name];
-
-        $previous = (isset($data['previous'])) ? $data['previous'] : null;
-        if (isset($data['implicitPosition'])) {
-            $data['position'] = $this->managePosition('asset', $entity, $data['asset'], $data['implicitPosition'], $previous, 'update', false, 1);
-        } else {
-            unset($data['position']);
-        }
 
         $entity->exchangeArray($data);
 
@@ -431,8 +419,6 @@ class AmvService extends AbstractService
                     $details[] = $key . ' => ' . $entity->$key->$field;
                 }
             }
-
-            $this->managePosition('asset', $entity, $entity->get('asset')->get('id'), null, null, 'delete');
 
             $this->historizeDelete('amv', $entity, $details);
 

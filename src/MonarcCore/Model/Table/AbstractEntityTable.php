@@ -33,6 +33,10 @@ abstract class AbstractEntityTable
         return $this->getDb()->getRepository($this->getClass());
     }
 
+    public function getClassMetadata(){
+        return $this->getDb()->getClassMetadata($this->getClass());
+    }
+
     public function getClass(){
         return $this->class;
     }
@@ -144,7 +148,7 @@ abstract class AbstractEntityTable
         }
     }
 
-    public function save(\MonarcCore\Model\Entity\AbstractEntity $entity, $last = true)
+    public function save(\MonarcCore\Model\Entity\AbstractEntity &$entity, $last = true)
     {
         if(!empty($this->connectedUser) && isset($this->connectedUser['firstname']) && isset($this->connectedUser['lastname'])){
             $id = $entity->get('id');
@@ -156,10 +160,205 @@ abstract class AbstractEntityTable
                 $entity->set('updatedAt',new \DateTime());
             }
         }
+        $params = $entity->get('parameters');
+        if(!empty($params['implicitPosition']['value'])){
+            $this->manageSavePosition($entity,$params['implicitPosition']);
+
+            // Unset cache data, if new save on object
+            unset($params['implicitPosition']['value']);
+            unset($params['implicitPosition']['previous']);
+            unset($params['implicitPosition']['oldField']);
+            unset($params['implicitPosition']['oldPosition']);
+            unset($params['implicitPosition']['newField']);
+            unset($params['implicitPosition']['newPosition']);
+            $entity->set('parameters',$params);
+
+            $this->updatePositionReferences($entity,$params['implicitPosition']);
+        }
 
         $id = $this->getDb()->save($entity, $last);
 
         return $id;
+    }
+
+    protected function updatePositionReferences(\MonarcCore\Model\Entity\AbstractEntity &$entity,$params = array()){
+        if(!empty($params['field'])){
+            $v = $entity->get($params['field']);
+            if(!empty($v) && !is_object($v)){
+                try{
+                    $class = $this->getClassMetadata()->getAssociationTargetClass($params['field']);
+                    if(!empty($class)){
+                        $dep = $this->getDb()->getReference($class,$entity->get($params['field']));
+                        $entity->set($params['field'],$dep);
+                    }
+                }catch(\Doctrine\Common\Proxy\Exception\InvalidArgumentException $e){
+                }
+            }
+        }
+        if(!empty($params['root'])){
+            $v = $entity->get($params['root']);
+            if(!empty($v) && !is_object($v)){
+                try{
+                    $class = $this->getClassMetadata()->getAssociationTargetClass($params['root']);
+                    if(!empty($class)){
+                        $dep = $this->getDb()->getReference($class,$entity->get($params['root']));
+                        $entity->set($params['root'],$dep);
+                    }
+                }catch(\Doctrine\Common\Proxy\Exception\InvalidArgumentException $e){
+                }
+            }
+        }
+    }
+
+    protected function manageSavePosition(\MonarcCore\Model\Entity\AbstractEntity &$entity,$params = array()){
+        $id = $entity->get('id');
+        if(empty($id)){ // create
+            switch ($params['value']) {
+                case 1: // start
+                    $params['newPosition'] = 1;
+                case 3: // after element
+                    $entity->set('position',$params['newPosition']);
+                    $return = $this->getRepository()->createQueryBuilder('t')
+                        ->update()
+                        ->set('t.position', 't.position + 1');
+                    
+                    $return = $this->buildWhereForPositionCreate($params,$return,$entity);
+                    $return->getQuery()->getResult();
+                    break;
+                case 2: // end
+                default:
+                    $entity->set('position',$this->countPositionMax($entity,$params));
+                    break;
+            }
+            $this->updateEntityRoot($entity,$params);
+        }else{ // update
+            $changeParents = false;
+            if(!empty($params['field'])){
+                if(isset($params['oldField'][$params['field']]) && isset($params['newField'][$params['field']]) && $params['oldField'][$params['field']] != $params['newField'][$params['field']]){
+                    $changeParents = true;
+                }
+            }
+
+            if(!$changeParents && $params['oldPosition'] != $params['newPosition'] && $params['value'] != 1 && $params['value'] != 3){ // start & after
+                // pas de changement de parents & end
+                $params['newPosition'] = $this->countPositionMax($entity,$params);
+            }
+            if($changeParents || $params['oldPosition'] != $params['newPosition']){
+                // update old brothers position
+                $return = $this->getRepository()->createQueryBuilder('t')
+                    ->update()
+                    ->set('t.position', 't.position - 1');
+                
+                $return = $this->buildWhereForPositionCreate($params,$return,$entity,'old');
+                $return->getQuery()->getResult();
+                // update new brothers position
+                switch ($params['value']) {
+                    case 1: // start
+                        $params['newPosition'] = 1;
+                    case 3: // after element
+                        $entity->set('position',$params['newPosition']);
+                        $return = $this->getRepository()->createQueryBuilder('t')
+                            ->update()
+                            ->set('t.position', 't.position + 1');
+                        
+                        $return = $this->buildWhereForPositionCreate($params,$return,$entity);
+                        $return->getQuery()->getResult();
+                        break;
+                    case 2: // end
+                    default:
+                        $entity->set('position',$params['newPosition']); // pas de +1 car on a déjà le max d'élément
+                        break;
+                }
+                $this->updateEntityRoot($entity,$params);
+            }
+        }
+        return $entity;
+    }
+
+    protected function countPositionMax(\MonarcCore\Model\Entity\AbstractEntity $entity,$params = array()){
+        $return = $this->getRepository()->createQueryBuilder('t')
+            ->select('COUNT(t.id)');
+        if(!empty($params['field'])){
+            if(isset($params['newField'][$params['field']])){
+                if(is_null($params['newField'][$params['field']])){
+                    $return = $return->where('t.'.$params['field'].' IS NULL');
+                }else{
+                    $return = $return->where('t.' . $params['field'] . ' = :'.$params['field'])
+                        ->setParameter(':'.$params['field'], $params['newField'][$params['field']]);
+                }
+            }
+        }
+        $id = $entity->get('id');
+        return $return->getQuery()->getSingleScalarResult()+($id?0:1);
+    }
+
+    protected function updateEntityRoot(\MonarcCore\Model\Entity\AbstractEntity &$entity,$params = array(), $root = null){
+        if(!empty($params['root'])){
+            if(!empty($params['field'])){
+                $initRoot = $entity->get($params['root']);
+                if(empty($root)){
+                    $po = $entity->get($params['field']);
+                    $entity->set($params['root'],null);
+                    if(!empty($po)){
+                        $parent = $this->getEntity(is_object($po)?$po->get('id'):$po);
+                        if($parent){
+                            $o = $parent->get($params['root']);
+                            $ro = empty($o)?$parent->get('id'):(is_object($o)?$o->get('id'):$o);
+                            $entity->set($params['root'],$ro);
+                        }
+                    }
+                }else{
+                    $entity->set($params['root'],$root);
+                }
+                if($initRoot != $entity->get($params['root']) && !empty($params['field']) && $entity->get('id')){
+                    $entities = $this->getEntityByFields([$params['field']=>$entity->get('id')]);
+                    if(empty($root)){
+                        $nr = $entity->get($params['root']);
+                        $nr = empty($nr)?$entity->get('id'):$nr;
+                    }else{
+                        $nr = $root;
+                    }
+                    foreach($entities as $ent){
+                        $this->updateEntityRoot($ent,$params,$nr);
+                        $this->save($ent,false);
+                    }
+                }
+            }
+        }
+    }
+
+    protected function buildWhereForPositionCreate($params,$queryBuilder,\MonarcCore\Model\Entity\AbstractEntity $entity, $newOrOld = 'new'){
+        $hasWhere = false;
+        if(!empty($params['field'])){
+            if(isset($params[$newOrOld.'Field'][$params['field']])){
+                $hasWhere = true;
+                if(is_null($params[$newOrOld.'Field'][$params['field']])){
+                    $queryBuilder = $queryBuilder->where('t.'.$params['field'].' IS NULL');
+                }else{
+                    $queryBuilder = $queryBuilder->where('t.' . $params['field'] . ' = :'.$params['field'])
+                        ->setParameter(':'.$params['field'], $params[$newOrOld.'Field'][$params['field']]);
+                }
+            }
+        }
+        if(!empty($params[$newOrOld.'Position'])){
+            if($hasWhere){
+                $queryBuilder = $queryBuilder->andWhere('t.position >'.($newOrOld=='new'?'=':'').' :pos');
+            }else{
+                $queryBuilder = $queryBuilder->where('t.position >'.($newOrOld=='new'?'=':'').' :pos');
+            }
+            $queryBuilder = $queryBuilder->setParameter(':pos', $params[$newOrOld.'Position']);
+            $hasWhere = true;
+        }
+        $id = $entity->get('id');
+        if($id){
+            if($hasWhere){
+                $queryBuilder = $queryBuilder->andWhere('t.id != :id');
+            }else{
+                $queryBuilder = $queryBuilder->where('t.id != :id');
+            }
+            $queryBuilder = $queryBuilder->setParameter(':id', $id);
+        }
+        return $queryBuilder;
     }
 
     public function delete($id, $last = true)
@@ -171,11 +370,40 @@ abstract class AbstractEntityTable
             $entity = new $c();
             $entity->set('id',$id);
             $entity = $this->getDb()->fetch($entity);
+
+            $params = $entity->get('parameters');
+            if(!empty($params['implicitPosition'])){
+                $this->manageDeletePosition($entity,$params['implicitPosition']);
+            }
+
             $this->getDb()->delete($entity, $last);
             return true;
         }else{
             return false;
         }
+    }
+
+    protected function manageDeletePosition(\MonarcCore\Model\Entity\AbstractEntity $entity,$params = array()){
+        $return = $this->getRepository()->createQueryBuilder('t')
+            ->update()
+            ->set('t.position', 't.position - 1');
+        $hasWhere = false;
+        if(!empty($params['field'])){
+            $hasWhere = true;
+            if(is_null($entity->get($params['field']))){
+                $return = $return->where('t.'.$params['field'].' IS NULL');
+            }else{
+                $return = $return->where('t.' . $params['field'] . ' = :'.$params['field'])
+                    ->setParameter(':'.$params['field'], $entity->get($params['field']));
+            }
+        }
+        if($hasWhere){
+            $return = $return->andWhere('t.position >= :pos');
+        }else{
+            $return = $return->where('t.position >= :pos');
+        }
+        $return = $return->setParameter(':pos', $entity->get('position'));
+        $return->getQuery()->getResult();
     }
 
     public function deleteList($data){
@@ -184,6 +412,13 @@ abstract class AbstractEntityTable
             $entity = new $c();
             $entities = $this->getDb()->fetchByIds($entity,$data);
             if(!empty($entities)){
+                $params = $entity->get('parameters');
+                if(!empty($params['implicitPosition'])){
+                    // C'est un peu bourrin
+                    foreach($entities as $e){
+                        $this->manageDeletePosition($e,$params['implicitPosition']);
+                    }
+                }
                 $this->getDb()->deleteAll($entities);
                 return true;
             }else{
