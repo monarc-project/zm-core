@@ -79,7 +79,7 @@ class InstanceService extends AbstractService
 
         if(isset($data['parent']) && empty($data['parent'])){
             $data['parent'] = null;
-        }else{
+        }elseif(!empty($data['parent'])){
             $parent = $this->get('table')->getEntity($data['parent']);
             if(!$parent){
                 $data['parent'] = null;
@@ -117,10 +117,10 @@ class InstanceService extends AbstractService
                     $return = $return->where('t.parent IS NULL');
                 }
                 if($data['anr']){
-                    $return = $return->where('t.anr = :anr')
+                    $return = $return->andWhere('t.anr = :anr')
                         ->setParameter(':anr',$data['anr']);
                 }else{
-                    $return = $return->where('t.anr IS NULL');
+                    $return = $return->andWhere('t.anr IS NULL');
                 }
                 $return = $return->getQuery()->getSingleScalarResult();
                 if($data['position'] == $return+1){
@@ -135,10 +135,10 @@ class InstanceService extends AbstractService
                         $return = $return->where('t.parent IS NULL');
                     }
                     if($data['anr']){
-                        $return = $return->where('t.anr = :anr')
+                        $return = $return->andWhere('t.anr = :anr')
                             ->setParameter(':anr',$data['anr']);
                     }else{
-                        $return = $return->where('t.anr IS NULL');
+                        $return = $return->andWhere('t.anr IS NULL');
                     }
                     $return = $return->andWhere('t.position = :pos')
                         ->setParameter(':pos',$data['position']-1)
@@ -235,7 +235,7 @@ class InstanceService extends AbstractService
 
         if(isset($data['parent']) && empty($data['parent'])){
             $data['parent'] = null;
-        }else{
+        }elseif(!empty($data['parent'])){
             $parent = $this->get('table')->getEntity($data['parent']);
             if(!$parent){
                 $data['parent'] = null;
@@ -261,10 +261,10 @@ class InstanceService extends AbstractService
                 }
                 $anr = $instance->get('anr');
                 if($anr){
-                    $return = $return->where('t.anr = :anr')
+                    $return = $return->andWhere('t.anr = :anr')
                         ->setParameter(':anr',is_object($anr)?$anr->get('id'):$anr);
                 }else{
-                    $return = $return->where('t.anr IS NULL');
+                    $return = $return->andWhere('t.anr IS NULL');
                 }
                 $return = $return->getQuery()->getSingleScalarResult();
                 if($data['position'] == $return){
@@ -280,10 +280,10 @@ class InstanceService extends AbstractService
                     }
                     $anr = $instance->get('anr');
                     if($anr){
-                        $return = $return->where('t.anr = :anr')
+                        $return = $return->andWhere('t.anr = :anr')
                             ->setParameter(':anr',is_object($anr)?$anr->get('id'):$anr);
                     }else{
-                        $return = $return->where('t.anr IS NULL');
+                        $return = $return->andWhere('t.anr IS NULL');
                     }
                     $return = $return->andWhere('t.position = :pos')
                         ->setParameter(':pos',$data['position']-1)
@@ -372,7 +372,7 @@ class InstanceService extends AbstractService
 
         if(isset($data['parent']) && empty($data['parent'])){
             $data['parent'] = null;
-        }else{
+        }elseif(!empty($data['parent'])){
             $parent = $this->get('table')->getEntity($data['parent']);
             if(!$parent){
                 $data['parent'] = null;
@@ -395,10 +395,10 @@ class InstanceService extends AbstractService
                 }
                 $anr = $instance->get('anr');
                 if($anr){
-                    $return = $return->where('t.anr = :anr')
+                    $return = $return->andWhere('t.anr = :anr')
                         ->setParameter(':anr',is_object($anr)?$anr->get('id'):$anr);
                 }else{
-                    $return = $return->where('t.anr IS NULL');
+                    $return = $return->andWhere('t.anr IS NULL');
                 }
                 $return = $return->getQuery()->getSingleScalarResult();
                 if($data['position'] == $return){
@@ -414,10 +414,10 @@ class InstanceService extends AbstractService
                     }
                     $anr = $instance->get('anr');
                     if($anr){
-                        $return = $return->where('t.anr = :anr')
+                        $return = $return->andWhere('t.anr = :anr')
                             ->setParameter(':anr',is_object($anr)?$anr->get('id'):$anr);
                     }else{
-                        $return = $return->where('t.anr IS NULL');
+                        $return = $return->andWhere('t.anr IS NULL');
                     }
                     $return = $return->andWhere('t.position = :pos')
                         ->setParameter(':pos',$data['position']-1)
