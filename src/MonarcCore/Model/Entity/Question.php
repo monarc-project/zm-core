@@ -140,7 +140,7 @@ class Question extends AbstractEntity
 
             $this->inputFilter->add(array(
                 'name' => 'multichoice',
-                'required' => true,
+                'required' => false,
                 'allow_empty' => true,
                 'continue_if_empty' => true,
                 'filters' => array(),

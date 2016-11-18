@@ -150,9 +150,9 @@ class QuestionChoice extends AbstractEntity
                     'validators' => array(),
                 ));
             }
-
+/*
             $this->inputFilter->add(array(
-                'name' => 'guide',
+                'name' => 'question',
                 'required' => true,
                 'allow_empty' => false,
                 'filters' => array(),
@@ -162,22 +162,7 @@ class QuestionChoice extends AbstractEntity
                     ),
                 ),
             ));
-
-            $this->inputFilter->add(array(
-                'name' => 'implicitPosition',
-                'required' => false,
-                'allow_empty' => true,
-                'continue_if_empty' => true,
-                'filters' => array(),
-                'validators' => array(
-                    array(
-                        'name' => 'InArray',
-                        'options' => array(
-                            'haystack' => [1, 2, 3],
-                        ),
-                    ),
-                ),
-            ));
+*/
         }
         return $this->inputFilter;
     }

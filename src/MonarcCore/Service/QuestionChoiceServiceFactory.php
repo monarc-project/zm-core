@@ -1,11 +1,11 @@
 <?php
 namespace MonarcCore\Service;
 
-class GuideItemServiceFactory extends AbstractServiceFactory
+class QuestionChoiceServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = array(
         'table' => 'MonarcCore\Model\Table\QuestionChoiceTable',
         'entity' => 'MonarcCore\Model\Entity\QuestionChoice',
-        'guideTable' => 'MonarcCore\Model\Table\QuestionTable',
+        'questionTable' => 'MonarcCore\Model\Table\QuestionTable',
     );
 }
