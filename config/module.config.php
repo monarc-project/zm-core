@@ -301,6 +301,8 @@ return array(
             'MonarcCore\Service\AbstractFactory',
         ),*/
         'invokables' => array(
+            'MonarcCore\Model\Entity\Question'              => 'MonarcCore\Model\Entity\Question',
+            'MonarcCore\Model\Entity\QuestionChoice'        => 'MonarcCore\Model\Entity\QuestionChoice',
             'MonarcCore\Model\Entity\PasswordToken'         => 'MonarcCore\Model\Entity\PasswordToken',
             'MonarcCore\Model\Entity\UserRole'              => 'MonarcCore\Model\Entity\UserRole',
             'MonarcCore\Service\Mime\Part'                  => 'Zend\Mime\Part',
@@ -323,6 +325,8 @@ return array(
             'MonarcCore\Service\CityService'                => 'MonarcCore\Service\CityServiceFactory',
             'MonarcCore\Service\ConfigService'              => 'MonarcCore\Service\ConfigServiceFactory',
             'MonarcCore\Service\CountryService'             => 'MonarcCore\Service\CountryServiceFactory',
+            'MonarcCore\Service\QuestionService'            => 'MonarcCore\Service\QuestionServiceFactory',
+            'MonarcCore\Service\QuestionChoiceService'      => 'MonarcCore\Service\QuestionChoiceServiceFactory',
             'MonarcCore\Service\GuideService'               => 'MonarcCore\Service\GuideServiceFactory',
             'MonarcCore\Service\GuideItemService'           => 'MonarcCore\Service\GuideItemServiceFactory',
             'MonarcCore\Service\HistoricalService'          => 'MonarcCore\Service\HistoricalServiceFactory',
@@ -395,6 +399,8 @@ return array(
             '\MonarcCore\Model\Table\AnrObjectCategoryTable' => '\MonarcCore\Service\Model\Table\AnrObjectCategoryServiceModelTable',
             '\MonarcCore\Model\Table\CityTable' => '\MonarcCore\Service\Model\Table\CityServiceModelTable',
             '\MonarcCore\Model\Table\CountryTable' => '\MonarcCore\Service\Model\Table\CountryServiceModelTable',
+            '\MonarcCore\Model\Table\QuestionTable' => '\MonarcCore\Service\Model\Table\QuestionServiceModelTable',
+            '\MonarcCore\Model\Table\QuestionChoiceTable' => '\MonarcCore\Service\Model\Table\QuestionChoiceServiceModelTable',
             '\MonarcCore\Model\Table\GuideTable' => '\MonarcCore\Service\Model\Table\GuideServiceModelTable',
             '\MonarcCore\Model\Table\GuideItemTable' => '\MonarcCore\Service\Model\Table\GuideItemServiceModelTable',
             '\MonarcCore\Model\Table\MeasureTable' => '\MonarcCore\Service\Model\Table\MeasureServiceModelTable',
