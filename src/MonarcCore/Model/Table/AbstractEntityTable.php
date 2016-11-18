@@ -15,9 +15,11 @@ abstract class AbstractEntityTable
             $this->class = $class;
         } else {
             $thisClassName = get_class($this);
-            $classParts = explode('\\', $thisClassName);
+            $classParts = array_filter(explode('\\', $thisClassName));
+            $firstClassPart = reset($classParts);
             $lastClassPart = end($classParts);
-            $this->class = '\MonarcCore\Model\Entity\\' . substr($lastClassPart, 0, -5);
+
+            $this->class = '\\'.$firstClassPart.'\\Model\\Entity\\' . substr($lastClassPart, 0, -5);
         }
     }
     public function getDb()
