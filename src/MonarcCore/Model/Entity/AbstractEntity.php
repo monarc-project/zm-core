@@ -12,7 +12,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
     use \MonarcCore\Model\GetAndSet;
 
     protected $inputFilter;
-    protected $language;
+    protected $user_language;
     protected $dbadapter;
     protected $parameters = array();
     /*
@@ -48,7 +48,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
         if (empty($fields)) {
             $array = get_object_vars($this);
             unset($array['inputFilter']);
-            unset($array['language']);
+            unset($array['user_language']);
             unset($array['dbadapter']);
             unset($array['parameters']);
             return $array;
@@ -72,12 +72,12 @@ abstract class AbstractEntity implements InputFilterAwareInterface
 
     public function getLanguage()
     {
-        return empty($this->language)?1:$this->language;
+        return empty($this->user_language)?1:$this->user_language;
     }
 
     public function setLanguage($language)
     {
-        $this->language = $language;
+        $this->user_language = $language;
     }
 
     public function exchangeArray(array $options, $partial = false)
