@@ -526,21 +526,26 @@ class AmvService extends AbstractService
                     }
                     $toTest = [];
                     if($vulnerabilityMode){ // 1 0 1
-                        if (empty($vulnerabilityModelsIds)){
+                        $toTest = $vulnerabilityModelsIds;
+                        if (empty($toTest)){
                             $toTest = [];
-                        }elseif(!is_array($vulnerabilityModelsIds)) {
-                            $toTest = [$vulnerabilityModelsIds];
+                        }elseif(!is_array($toTest)) {
+                            $toTest = [$toTest];
                         }
                     }else{ // 1 1 0
-                        if (empty($threatModelsIds)){
+                        $toTest = $threatModelsIds;
+                        if (empty($toTest)){
                             $toTest = [];
-                        }elseif(!is_array($threatModelsIds)) {
-                            $toTest = [$threatModelsIds];
+                        }elseif(!is_array($toTest)) {
+                            $toTest = [$toTest];
                         }
                     }
-                    $diff = array_diff($assetModelsIds,$toTest);
-                    if(empty($diff)){
-                        return true;
+                    $diff1 = array_diff($assetModelsIds,$toTest);
+                    if(empty($diff2)){
+                        $diff2 = array_diff($toTest,$assetModelsIds);
+                        if(empty($diff2)){
+                            return true;
+                        }
                     }
                     $this->errorMessage = 'All models must be common to asset and '.$vulnerabilityMode?'vulnerability':'threat';
                     return false;
