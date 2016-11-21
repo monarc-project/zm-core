@@ -41,4 +41,72 @@ class QuestionService extends AbstractService
         return $data;
     }
 
+    /**
+     * Create
+     *
+     * @param $data
+     * @param bool $last
+     * @return mixed
+     */
+    public function create($data, $last = true) {
+
+        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+
+        $entity = $this->get('entity');
+
+        $previous = (isset($data['previous'])) ? $data['previous'] : null;
+
+        $position = $this->managePositionCreation(null, null, (int) $data['implicitPosition'], $previous);
+        $data['position'] = $position;
+
+        $entity->exchangeArray($data);
+
+        $this->setDependencies($entity, $dependencies);
+
+        return $this->get('table')->save($entity);
+    }
+
+    /**
+     * Update
+     *
+     * @param $id
+     * @param $data
+     * @return mixed
+     */
+    public function update($id,$data){
+
+        $previous = (isset($data['previous'])) ? $data['previous'] : null;
+
+        $entity = $this->get('table')->getEntity($id);
+
+        if (isset($data['implicitPosition'])) {
+            $data['position'] = $this->managePosition(null, $entity, null, $data['implicitPosition'], $previous);
+        }
+
+        $entity->exchangeArray($data);
+
+        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $this->setDependencies($entity, $dependencies);
+
+
+        return $this->get('table')->save($entity);
+    }
+
+    /**
+     * Delete
+     *
+     * @param $id
+     */
+    public function delete($id) {
+
+        $entity = $this->getEntity($id);
+
+        $entityQuestionId = $entity['question']->id;
+        $position = $entity['position'];
+
+        $this->get('table')->changePositionsByParent(null, $entityQuestionId, $position, 'down', 'after');
+
+        $this->get('table')->delete($id);
+    }
+
 }
