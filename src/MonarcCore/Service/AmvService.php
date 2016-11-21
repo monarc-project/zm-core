@@ -519,45 +519,68 @@ class AmvService extends AbstractService
                 if(!$threatMode && !$vulnerabilityMode){ // 1 0 0
                     return true;
                 }else{ // & on doit tester les modèles
+                    if (empty($assetModelsIds)){
+                        $assetModelsIds = [];
+                    }elseif(!is_array($assetModelsIds)) {
+                        $assetModelsIds = [$assetModelsIds];
+                    }
+                    $toTest = [];
+                    if($vulnerabilityMode){ // 1 0 1
+                        if (empty($vulnerabilityModelsIds)){
+                            $toTest = [];
+                        }elseif(!is_array($vulnerabilityModelsIds)) {
+                            $toTest = [$vulnerabilityModelsIds];
+                        }
+                    }else{ // 1 1 0
+                        if (empty($threatModelsIds)){
+                            $toTest = [];
+                        }elseif(!is_array($threatModelsIds)) {
+                            $toTest = [$threatModelsIds];
+                        }
+                    }
+                    $diff = array_diff($assetModelsIds,$toTest);
+                    if(empty($diff)){
+                        return true;
+                    }
+                    $this->errorMessage = 'All models must be common to asset and '.$vulnerabilityMode?'vulnerability':'threat';
+                    return false;
                 }
             }else{
                 $this->errorMessage = 'Asset\'s model must not be regulator';
                 return false;
             }
         }elseif($assetMode && $threatMode && $vulnerabilityMode){ // 1 1 1 & on doit tester les modèles
+            if (empty($assetModelsIds)){
+                $assetModelsIds = [];
+            }elseif(!is_array($assetModelsIds)) {
+                $assetModelsIds = [$assetModelsIds];
+            }
+            if (empty($threatModelsIds)){
+                $threatModelsIds = [];
+            }elseif(!is_array($threatModelsIds)) {
+                $threatModelsIds = [$threatModelsIds];
+            }
+            if (empty($vulnerabilityModelsIds)){
+                $vulnerabilityModelsIds = [];
+            }elseif(!is_array($vulnerabilityModelsIds)) {
+                $vulnerabilityModelsIds = [$vulnerabilityModelsIds];
+            }
+            $diff1 = array_diff($assetModelsIds,$threatModelsIds);
+            if(empty($diff1)){
+                $diff2 = array_diff($assetModelsIds,$vulnerabilityModelsIds);
+                if(empty($diff2)){
+                    $diff3 = array_diff($threatModelsIds,$vulnerabilityModelsIds);
+                    if(empty($diff3)){
+                        return true;
+                    }
+                }
+            }
+            $this->errorMessage = 'All models must be common to asset, threat and vulnerability';
+            return false;
         }else{
             $this->errorMessage = 'Missing datas';
             return false;
         }
-
-        // On test les modèles
-        if (empty($assetModelsIds)){
-            $assetModelsIds = [];
-        }elseif(!is_array($assetModelsIds)) {
-            $assetModelsIds = [$assetModelsIds];
-        }
-        if (empty($threatModelsIds)){
-            $threatModelsIds = [];
-        }elseif(!is_array($threatModelsIds)) {
-            $threatModelsIds = [$threatModelsIds];
-        }
-        if (empty($vulnerabilityModelsIds)){
-            $vulnerabilityModelsIds = [];
-        }elseif(!is_array($vulnerabilityModelsIds)) {
-            $vulnerabilityModelsIds = [$vulnerabilityModelsIds];
-        }
-        $diff1 = array_diff($assetModelsIds,$threatModelsIds);
-        if(empty($diff1)){
-            $diff2 = array_diff($assetModelsIds,$vulnerabilityModelsIds);
-            if(empty($diff2)){
-                $diff3 = array_diff($threatModelsIds,$vulnerabilityModelsIds);
-                if(empty($diff3)){
-                    return true;
-                }
-            }
-        }
-        $this->errorMessage = 'All models must be common to asset, threat and vulnerability';
-        return false;
     }
 
     /**
