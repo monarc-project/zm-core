@@ -288,18 +288,17 @@ class AssetService extends AbstractService
             'label3' => 'label3',
             'label4' => 'label4',
         );
+        $measuresObj = array(
+            'id' => 'id',
+            'code' => 'code',
+            'description1' => 'description1',
+            'description2' => 'description2',
+            'description3' => 'description3',
+            'description4' => 'description4',
+            'status' => 'status',
+        );
 
         foreach($amvResults as $amv){
-            $t_ids[$amv->get('threat')->get('id')] = $amv->get('threat')->get('id');
-            $v_ids[$amv->get('vulnerability')->get('id')] = $amv->get('vulnerability')->get('id');
-
-            for($i = 1; $i <= 3; $i++){
-                $measure = $amv->get('measure'.$i);
-                if(!empty($measure)){
-                    $m_ids[$measure->get('id')] = $measure->get('id');    
-                }
-            }
-
             $data_amvs[$amv->get('id')] = array();
             foreach($amvObj as $k => $v){
                 switch($v){
@@ -314,17 +313,25 @@ class AssetService extends AbstractService
                             $o = $amv->get($k)->getJsonArray();
                             $data_amvs[$amv->get('id')][$k] = $o['id'];
 
-                            if($k == 'threat'){
-                                $return['threats'][$o['id']] = $amv->get($k)->getJsonArray($treatsObj);
-                                if(!empty($return['threats'][$o['id']]['theme'])){
-                                    $return['threats'][$o['id']]['theme'] = $return['threats'][$o['id']]['theme']->getJsonArray($themesObj);
+                            switch($k){
+                                case 'threat':
+                                    $return['threats'][$o['id']] = $amv->get($k)->getJsonArray($treatsObj);
+                                    if(!empty($return['threats'][$o['id']]['theme'])){
+                                        $return['threats'][$o['id']]['theme'] = $return['threats'][$o['id']]['theme']->getJsonArray($themesObj);
 
-                                    $return['themes'][$return['threats'][$o['id']]['theme']['id']] = $return['threats'][$o['id']]['theme'];
+                                        $return['themes'][$return['threats'][$o['id']]['theme']['id']] = $return['threats'][$o['id']]['theme'];
 
-                                    $return['threats'][$o['id']]['theme'] = $return['threats'][$o['id']]['theme']['id'];
-                                }
-                            }elseif($k == 'vulnerability'){
-                                $return['vuls'][$o['id']] = $amv->get($k)->getJsonArray($vulsObj);
+                                        $return['threats'][$o['id']]['theme'] = $return['threats'][$o['id']]['theme']['id'];
+                                    }
+                                    break;
+                                case 'vulnerability':
+                                    $return['vuls'][$o['id']] = $amv->get($k)->getJsonArray($vulsObj);
+                                    break;
+                                case 'measure1':
+                                case 'measure2':
+                                case 'measure3':
+                                    $return['measures'][$o['id']] = $amv->get($k)->getJsonArray($measuresObj);
+                                    break;
                             }
                         }
                         break;
