@@ -50,6 +50,7 @@ return array(
     'MonarcCore\Model\Entity\AnrObjectCategory'                             => __DIR__ . '/src/MonarcCore/Model/Entity/AnrObjectCategory.php',
     'MonarcCore\Model\Entity\AnrSuperClass'                                 => __DIR__ . '/src/MonarcCore/Model/Entity/AnrSuperClass.php',
     'MonarcCore\Model\Entity\Asset'                                         => __DIR__ . '/src/MonarcCore/Model/Entity/Asset.php',
+    'MonarcCore\Model\Entity\AssetSuperClass'                               => __DIR__ . '/src/MonarcCore/Model/Entity/AssetSuperClass.php',
     'MonarcCore\Model\Entity\City'                                          => __DIR__ . '/src/MonarcCore/Model/Entity/City.php',
     'MonarcCore\Model\Entity\Country'                                       => __DIR__ . '/src/MonarcCore/Model/Entity/Country.php',
     'MonarcCore\Model\Entity\DeliveriesModels'                              => __DIR__ . '/src/MonarcCore/Model/Entity/DeliveriesModels.php',
