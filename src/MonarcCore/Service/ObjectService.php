@@ -1,6 +1,7 @@
 <?php
 namespace MonarcCore\Service;
 
+use MonarcCore\Model\Entity\AbstractEntity;
 use MonarcCore\Model\Entity\Asset;
 use MonarcCore\Model\Entity\Object;
 use MonarcCore\Model\Table\AmvTable;
@@ -38,6 +39,12 @@ class ObjectService extends AbstractService
     protected $amvTable;
     protected $objectExportService;
 
+    protected $cliTable;
+    protected $anrCliTable;
+    protected $assetCliTable;
+    protected $categoryCliTable;
+    protected $cliEntity;
+
     protected $filterColumns = [
         'name1', 'name2', 'name3', 'name4',
         'label1', 'label2', 'label3', 'label4',
@@ -60,13 +67,18 @@ class ObjectService extends AbstractService
      * @return array
      * @throws \Exception
      */
-    public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $model = null, $anr = null, $lock = null){
+    public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $model = null, $anr = null, $lock = null, $context = AbstractEntity::BACK_OFFICE){
+
+        /** @var AssetTable $assetTable */
+        $assetTable = ($context == AbstractEntity::BACK_OFFICE) ? $this->get('assetTable') : $this->get('assetCliTable');
+        /** @var ObjectCategoryTable $categoryTable */
+        $categoryTable = ($context == AbstractEntity::BACK_OFFICE) ? $this->get('categoryTable') : $this->get('categoryCliTable');
 
         $filterAnd = [];
         if ((!is_null($asset)) && ($asset != 0)) $filterAnd['asset'] = $asset;
         if ((!is_null($category)) && ($category != 0)) {
             if ($category > 0) {
-                $child = ($lock == 'true') ? [] : $this->get('categoryTable')->getDescendants($category);
+                $child = ($lock == 'true') ? [] : $categoryTable->getDescendants($category);
                 $child[] = $category;
             } else if ($category == -1) {
                 $child = null;
@@ -76,15 +88,10 @@ class ObjectService extends AbstractService
         }
         $filterAnd['model'] = null;
 
-        $objects = $this->getAnrObjects($page, $limit, $order, $filter, $filterAnd, $model, $anr);
+        $objects = $this->getAnrObjects($page, $limit, $order, $filter, $filterAnd, $model, $anr, $context);
 
         $objectsArray = [];
         $rootArray = [];
-
-        /** @var AssetTable $assetTable */
-        $assetTable = $this->get('assetTable');
-        /** @var ObjectCategoryTable $categoryTable */
-        $categoryTable = $this->get('categoryTable');
 
         foreach($objects as $object) {
             if(!empty($object['asset'])){
@@ -118,7 +125,7 @@ class ObjectService extends AbstractService
      * @param $anr
      * @return array|bool
      */
-    public function getAnrObjects($page, $limit, $order, $filter, $filterAnd, $model, $anr) {
+    public function getAnrObjects($page, $limit, $order, $filter, $filterAnd, $model, $anr, $context = AbstractEntity::BACK_OFFICE) {
 
         if($model){
             /** @var ModelTable $modelTable */
@@ -154,7 +161,8 @@ class ObjectService extends AbstractService
             }
         }elseif($anr){
             /** @var AnrTable $anrTable */
-            $anrTable = $this->get('anrTable');
+            $anrTable = ($context == AbstractEntity::BACK_OFFICE) ? $this->get('anrTable') : $this->get('anrCliTable');
+
             $anrObj = $anrTable->getEntity($anr);
             $filterAnd['id'] = [];
             $objects = $anrObj->get('objects');
@@ -164,7 +172,8 @@ class ObjectService extends AbstractService
         }
 
         /** @var ObjectTable $objectTable */
-        $objectTable = $this->get('table');
+        $objectTable = ($context == AbstractEntity::BACK_OFFICE) ? $this->get('table') : $this->get('cliTable');
+
         $objects = $objectTable->fetchAllFiltered(
             array_keys($this->get('entity')->getJsonArray()),
             $page,

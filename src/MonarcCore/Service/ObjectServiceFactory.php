@@ -20,6 +20,12 @@ class ObjectServiceFactory extends AbstractServiceFactory
         'modelService'=> 'MonarcCore\Service\ModelService',
         'objectObjectService'=> 'MonarcCore\Service\ObjectObjectService',
         'objectExportService' => 'MonarcCore\Service\ObjectExportService',
+
+        'cliTable'=> '\MonarcFO\Model\Table\ObjectTable',
+        'cliEntity'=> '\MonarcFO\Model\Entity\Object',
+        'anrCliTable'=> '\MonarcFO\Model\Table\AnrTable',
+        'assetCliTable'=> '\MonarcFO\Model\Table\AssetTable',
+        'categoryCliTable'=> '\MonarcFO\Model\Table\ObjectCategoryTable',
     );
 
 }
