@@ -1,6 +1,7 @@
 <?php
 namespace MonarcCore\Controller;
 
+use MonarcCore\Model\Entity\AbstractEntity;
 use Zend\Mvc\Controller\AbstractRestfulController;
 use Zend\View\Model\JsonModel;
 

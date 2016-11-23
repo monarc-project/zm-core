@@ -39,12 +39,6 @@ class ObjectService extends AbstractService
     protected $amvTable;
     protected $objectExportService;
 
-    protected $cliTable;
-    protected $anrCliTable;
-    protected $assetCliTable;
-    protected $categoryCliTable;
-    protected $cliEntity;
-
     protected $filterColumns = [
         'name1', 'name2', 'name3', 'name4',
         'label1', 'label2', 'label3', 'label4',
@@ -67,12 +61,12 @@ class ObjectService extends AbstractService
      * @return array
      * @throws \Exception
      */
-    public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $model = null, $anr = null, $lock = null, $context = AbstractEntity::BACK_OFFICE){
+    public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $model = null, $anr = null, $lock = null){
 
         /** @var AssetTable $assetTable */
-        $assetTable = ($context == AbstractEntity::BACK_OFFICE) ? $this->get('assetTable') : $this->get('assetCliTable');
+        $assetTable = $this->get('assetTable');
         /** @var ObjectCategoryTable $categoryTable */
-        $categoryTable = ($context == AbstractEntity::BACK_OFFICE) ? $this->get('categoryTable') : $this->get('categoryCliTable');
+        $categoryTable = $this->get('categoryTable');
 
         $filterAnd = [];
         if ((!is_null($asset)) && ($asset != 0)) $filterAnd['asset'] = $asset;
@@ -88,7 +82,7 @@ class ObjectService extends AbstractService
         }
         $filterAnd['model'] = null;
 
-        $objects = $this->getAnrObjects($page, $limit, $order, $filter, $filterAnd, $model, $anr, $context);
+        $objects = $this->getAnrObjects($page, $limit, $order, $filter, $filterAnd, $model, $anr);
 
         $objectsArray = [];
         $rootArray = [];
@@ -125,7 +119,7 @@ class ObjectService extends AbstractService
      * @param $anr
      * @return array|bool
      */
-    public function getAnrObjects($page, $limit, $order, $filter, $filterAnd, $model, $anr, $context = AbstractEntity::BACK_OFFICE) {
+    public function getAnrObjects($page, $limit, $order, $filter, $filterAnd, $model, $anr) {
 
         if($model){
             /** @var ModelTable $modelTable */
@@ -161,7 +155,7 @@ class ObjectService extends AbstractService
             }
         }elseif($anr){
             /** @var AnrTable $anrTable */
-            $anrTable = ($context == AbstractEntity::BACK_OFFICE) ? $this->get('anrTable') : $this->get('anrCliTable');
+            $anrTable = $this->get('anrTable');
 
             $anrObj = $anrTable->getEntity($anr);
             $filterAnd['id'] = [];
@@ -172,7 +166,7 @@ class ObjectService extends AbstractService
         }
 
         /** @var ObjectTable $objectTable */
-        $objectTable = ($context == AbstractEntity::BACK_OFFICE) ? $this->get('table') : $this->get('cliTable');
+        $objectTable = $this->get('table');
 
         $objects = $objectTable->fetchAllFiltered(
             array_keys($this->get('entity')->getJsonArray()),
@@ -182,6 +176,7 @@ class ObjectService extends AbstractService
             $this->parseFrontendFilter($filter, $this->filterColumns),
             $filterAnd
         );
+
         return $objects;
     }
 
@@ -191,25 +186,26 @@ class ObjectService extends AbstractService
      * @param integer $anr
      * @return mixed
      */
-    public function getCompleteEntity($id, $context = Object::CONTEXT_BDC, $anr = null) {
+    public function getCompleteEntity($id, $anrContext = Object::CONTEXT_BDC, $anr = null) {
 
+        $table = $this->get('table');
         /** @var Object $object */
-        $object = $this->get('table')->getEntity($id);
+        $object = $table->getEntity($id);
         $object_arr = $object->getJsonArray();
 
         // Retrieve children recursively
         /** @var ObjectObjectService $objectObjectService */
         $objectObjectService = $this->get('objectObjectService');
-        $object_arr['children'] = $objectObjectService->getRecursiveChildren($object_arr['id']);
+        $object_arr['children'] = $objectObjectService->getRecursiveChildren($object_arr['id'], null);
 
         // Calculate the risks table
         //$object_arr['risks'] = $this->buildRisksTable($object, $mode);
-        $object_arr['risks'] = $this->getRisks($object);
-        $object_arr['oprisks'] = $this->getRisksOp($object);
-        $object_arr['parents'] = $this->getDirectParents($object_arr['id']);
+        $object_arr['risks'] = $this->getRisks($object, $context);
+        $object_arr['oprisks'] = $this->getRisksOp($object, $context);
+        $object_arr['parents'] = $this->getDirectParents($object_arr['id'], $context);
 
         // Retrieve parent recursively
-        if ($context == Object::CONTEXT_ANR) {
+        if ($anrContext == Object::CONTEXT_ANR) {
             //Check if the object is linked to the $anr
             $found = false;
             $anrObject = null;
@@ -225,7 +221,6 @@ class ObjectService extends AbstractService
                 throw new \Exception('This object is not bound to the ANR', 412);
             }
 
-            $anrObjectTable = $this->get('anrObjectTable');
             if (!$anr) {
                 throw new \Exception('Anr missing', 412);
             }
@@ -236,7 +231,7 @@ class ObjectService extends AbstractService
 
             $instances_arr = [];
             foreach($instances as $instance) {
-                $asc = $this->get('instanceTable')->getAscendance($instance);
+                $asc = $instanceTable->getAscendance($instance);
 
                 $names = array(
                     'name1' => $anrObject->label1,
@@ -336,7 +331,6 @@ class ObjectService extends AbstractService
                     $rolfTag = $rolfTagTable->getEntity($object->rolfTag->id);
                     $rolfRisks = $rolfTag->risks;
 
-
                     if(!empty($rolfRisks)){
                         foreach ($rolfRisks as $rolfRisk) {
                             $riskOps[] = [
@@ -375,13 +369,13 @@ class ObjectService extends AbstractService
      * @param null $model
      * @return int
      */
-    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $model = null, $anr = null){
+    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $model = null, $anr = null, $context = Object::BACK_OFFICE){
 
         $filterAnd = [];
         if ((!is_null($asset)) && ($asset != 0)) $filterAnd['asset'] = $asset;
         if ((!is_null($category)) && ($category != 0)) $filterAnd['category'] = $category;
 
-        $result = $this->getAnrObjects($page, 0, $order, $filter, $filterAnd, $model, $anr);
+        $result = $this->getAnrObjects($page, 0, $order, $filter, $filterAnd, $model, $anr, $context);
 
         return count($result);
 
@@ -435,7 +429,7 @@ class ObjectService extends AbstractService
      * @return mixed
      * @throws \Exception
      */
-    public function create($data, $last = true, $context = Object::BACK_OFFICE) {
+    public function create($data, $last = true, $context = AbstractEntity::BACK_OFFICE) {
 
         //create object
         $object = $this->get('entity');
@@ -512,6 +506,8 @@ class ObjectService extends AbstractService
 
                 $this->attachObjectToAnr($object, $model['anr']->id);
             }
+        } else if ($anr) {
+            $this->attachObjectToAnr($object, $anr);
         } else {
             //create object type anr
             $id = $this->get('table')->save($object);
@@ -736,12 +732,14 @@ class ObjectService extends AbstractService
      */
     public function delete($id) {
 
-        $entity = $this->getEntity($id);
+        /** @var ObjectTable $table */
+        $table = $this->get('table');
+        $entity = $table->get($id);
         if(!$entity){
             throw new \Exception('Entity `id` not found.');
         }
 
-        $this->get('table')->delete($id);
+        $table->delete($id);
     }
 
     /**
@@ -1125,7 +1123,9 @@ class ObjectService extends AbstractService
     }
 
     public function getDirectParents($object_id){
-        return $this->get('objectObjectTable')->getDirectParentsInfos($object_id);
+        /** @var ObjectObjectTable $objectObjectTable */
+        $objectObjectTable = $this->get('objectObjectTable');
+        return $objectObjectTable->getDirectParentsInfos($object_id);
     }
 
     /**

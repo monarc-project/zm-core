@@ -1,5 +1,6 @@
 <?php
 namespace MonarcCore\Service;
+use MonarcCore\Model\Entity\AbstractEntity;
 use MonarcCore\Model\Entity\Object;
 use MonarcCore\Model\Entity\ObjectObject;
 use MonarcCore\Model\Table\AnrTable;
@@ -18,6 +19,10 @@ class ObjectObjectService extends AbstractService
     protected $anrTable;
     protected $objectTable;
     protected $instanceTable;
+
+    protected $cliTable;
+    protected $objectCliTable;
+
     protected $dependencies = ['child'];
 
     /**
@@ -175,6 +180,8 @@ class ObjectObjectService extends AbstractService
         foreach ($children as $child) {
             /** @var ObjectObject $child */
             $child_array = $child->getJsonArray();
+
+            $objectTable = $this->get('objectTable');
 
             $object_child = $this->get('objectTable')->get($child_array['child']);
             $object_child['children'] = $this->getRecursiveChildren($child_array['child']);
