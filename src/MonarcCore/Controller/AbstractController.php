@@ -153,23 +153,35 @@ abstract class AbstractController extends AbstractRestfulController
      * @param $dependencies
      */
     public function formatDependencies(&$entity, $dependencies) {
-
         foreach($dependencies as $dependency) {
             if (!empty($entity[$dependency])) {
                 if (is_object($entity[$dependency])) {
-                    $entity[$dependency] = $entity[$dependency]->getJsonArray();
-                    unset($entity[$dependency]['__initializer__']);
-                    unset($entity[$dependency]['__cloner__']);
-                    unset($entity[$dependency]['__isInitialized__']);
+                    if (is_a($entity[$dependency], '\MonarcCore\Model\Entity\AbstractEntity')) {
+                        $entity[$dependency] = $entity[$dependency]->getJsonArray();
+                        unset($entity[$dependency]['__initializer__']);
+                        unset($entity[$dependency]['__cloner__']);
+                        unset($entity[$dependency]['__isInitialized__']);
+                    }elseif(get_class($entity[$dependency]) == 'Doctrine\ORM\PersistentCollection'){
+                        $entity[$dependency]->initialize();
+                        if($entity[$dependency]->count()){
+                            $$dependency = $entity[$dependency]->getSnapshot();
+                            $entity[$dependency] = [];
+                            foreach($$dependency as $d){
+                                if(is_a($d, '\MonarcCore\Model\Entity\AbstractEntity')){
+                                    $entity[$dependency][] = $d->getJsonArray();
+                                }else{
+                                    $entity[$dependency][] = $d;
+                                }
+                            }
+                        }
+                    }
                 } else if (is_array($entity[$dependency])) {
                     foreach($entity[$dependency] as $key => $value) {
-                        if (is_a($entity[$dependency][$key], '\MonarcCore\Model\Model')) {
+                        if (is_a($entity[$dependency][$key], '\MonarcCore\Model\Entity\AbstractEntity')) {
                             $entity[$dependency][$key] = $entity[$dependency][$key]->getJsonArray();
                             unset($entity[$dependency][$key]['__initializer__']);
                             unset($entity[$dependency][$key]['__cloner__']);
                             unset($entity[$dependency][$key]['__isInitialized__']);
-                        } else {
-                            $entity[$dependency][$key] = null;
                         }
                     }
                 }

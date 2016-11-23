@@ -16,9 +16,9 @@ use Doctrine\ORM\Mapping as ORM;
  *      @ORM\Index(name="measure2", columns={"measure2_id"}),
  *      @ORM\Index(name="measure3", columns={"measure3_id"})
  * })
- * @ORM\Entity
+ * @ORM\MappedSuperclass
  */
-class Amv extends AmvSuperclass
+class AmvSuperclass extends AbstractEntity
 {
     /**
      * @var integer
