@@ -32,4 +32,14 @@ class AnrObjectService extends AbstractService{
 
 		return $this->get('objectObjectTable')->getDirectParentsInAnr($anrid, $id);
 	}
+
+    /**
+     * @param $id
+     * @param string $context
+     * @param integer $anr
+     * @return mixed
+     */
+    public function getCompleteEntity($id, $context = Object::CONTEXT_BDC, $anr = null) {
+        return $this->get('objectService')->getCompleteEntity($id, $context, $anr);
+    }
 }
