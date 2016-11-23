@@ -26,7 +26,7 @@ class MeasureSuperClass extends AbstractEntity
     /**
      * @var \MonarcCore\Model\Entity\Anr
      *
-     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\AnrSuperClass", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Anr", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true)
      * })
