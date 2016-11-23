@@ -200,9 +200,9 @@ class ObjectService extends AbstractService
 
         // Calculate the risks table
         //$object_arr['risks'] = $this->buildRisksTable($object, $mode);
-        $object_arr['risks'] = $this->getRisks($object, $context);
-        $object_arr['oprisks'] = $this->getRisksOp($object, $context);
-        $object_arr['parents'] = $this->getDirectParents($object_arr['id'], $context);
+        $object_arr['risks'] = $this->getRisks($object);
+        $object_arr['oprisks'] = $this->getRisksOp($object);
+        $object_arr['parents'] = $this->getDirectParents($object_arr['id']);
 
         // Retrieve parent recursively
         if ($anrContext == Object::CONTEXT_ANR) {
