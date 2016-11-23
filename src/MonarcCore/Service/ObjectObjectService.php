@@ -20,9 +20,6 @@ class ObjectObjectService extends AbstractService
     protected $objectTable;
     protected $instanceTable;
 
-    protected $cliTable;
-    protected $objectCliTable;
-
     protected $dependencies = ['child'];
 
     /**

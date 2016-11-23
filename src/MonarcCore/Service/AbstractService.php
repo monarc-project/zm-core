@@ -14,8 +14,6 @@ abstract class AbstractService extends AbstractServiceFactory
     protected $serviceFactory;
     protected $table;
     protected $entity;
-    protected $cliTable;
-    protected $cliEntity;
     protected $label;
     protected $language;
     protected $forbiddenFields = [];
