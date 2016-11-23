@@ -504,10 +504,10 @@ class ObjectService extends AbstractService
                     throw new \Exception('No anr associated to this model', 412);
                 }
 
-                $this->attachObjectToAnr($object, $model['anr']->id);
+                $id = $this->attachObjectToAnr($object, $model['anr']->id);
             }
         } else if ($anr) {
-            $this->attachObjectToAnr($object, $anr);
+            $id = $this->attachObjectToAnr($object, $anr, null, null, $context);
         } else {
             //create object type anr
             $id = $this->get('table')->save($object);
@@ -795,7 +795,7 @@ class ObjectService extends AbstractService
      * @return null
      * @throws \Exception
      */
-    public function attachObjectToAnr($object, $anrId, $parent = null, $objectObjectPosition = null)
+    public function attachObjectToAnr($object, $anrId, $parent = null, $objectObjectPosition = null, $context = AbstractEntity::BACK_OFFICE)
     {
         //object
         /** @var ObjectTable $table */
@@ -809,42 +809,44 @@ class ObjectService extends AbstractService
             throw new \Exception('Object does not exist', 412);
         }
 
-        //retrieve model
-        /** @var ModelTable $modelTable */
-        $modelTable = $this->get('modelTable');
-        $model = $modelTable->getEntityByFields(['anr' => $anrId])[0];
+        if ($context == AbstractEntity::BACK_OFFICE) {
+            //retrieve model
+            /** @var ModelTable $modelTable */
+            $modelTable = $this->get('modelTable');
+            $model = $modelTable->getEntityByFields(['anr' => $anrId])[0];
 
-        /*
-            4 cas d'erreur:
-            - model generique & objet specifique
-            - model regulateur & objet generique
-            - model regulateur & objet specifique & asset generique
-            - model specifique ou regulateur & objet specifique non lié au model
-        */
+            /*
+                4 cas d'erreur:
+                - model generique & objet specifique
+                - model regulateur & objet generique
+                - model regulateur & objet specifique & asset generique
+                - model specifique ou regulateur & objet specifique non lié au model
+            */
 
-        if($model){
-            if($model->get('isGeneric') && $object->get('mode') == Object::MODE_SPECIFIC){
-                throw new \Exception('You cannot add a specific object to a generic model', 412);
-            }else{
-                if($model->get('isRegulator')){
-                    if($object->get('mode') == Object::MODE_GENERIC){
-                        throw new \Exception('You cannot add a generic object to a regulator model', 412);
-                    }elseif($object->get('mode') == Object::MODE_SPECIFIC && $object->get('asset')->get('mode') == Object::MODE_GENERIC){
-                        throw new \Exception('You cannot add a specific object with generic asset to a regulator model', 412);
-                    }
-                }
-
-                if(!$model->get('isGeneric') && $object->get('asset')->get('mode') == Object::MODE_SPECIFIC){
-                    $models = $object->get('asset')->get('models');
-                    $found = false;
-                    foreach($models as $m){
-                        if($m->get('id') == $model->get('id')){
-                            $found = true;
-                            break;
+            if ($model) {
+                if ($model->get('isGeneric') && $object->get('mode') == Object::MODE_SPECIFIC) {
+                    throw new \Exception('You cannot add a specific object to a generic model', 412);
+                } else {
+                    if ($model->get('isRegulator')) {
+                        if ($object->get('mode') == Object::MODE_GENERIC) {
+                            throw new \Exception('You cannot add a generic object to a regulator model', 412);
+                        } elseif ($object->get('mode') == Object::MODE_SPECIFIC && $object->get('asset')->get('mode') == Object::MODE_GENERIC) {
+                            throw new \Exception('You cannot add a specific object with generic asset to a regulator model', 412);
                         }
                     }
-                    if(!$found){
-                        throw new \Exception('You cannot add an object with specific asset unrelated to a '.($model->get('isRegulator')?'regulator':'specific').' model', 412);
+
+                    if (!$model->get('isGeneric') && $object->get('asset')->get('mode') == Object::MODE_SPECIFIC) {
+                        $models = $object->get('asset')->get('models');
+                        $found = false;
+                        foreach ($models as $m) {
+                            if ($m->get('id') == $model->get('id')) {
+                                $found = true;
+                                break;
+                            }
+                        }
+                        if (!$found) {
+                            throw new \Exception('You cannot add an object with specific asset unrelated to a ' . ($model->get('isRegulator') ? 'regulator' : 'specific') . ' model', 412);
+                        }
                     }
                 }
             }
