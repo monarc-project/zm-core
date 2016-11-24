@@ -35,7 +35,7 @@ class ObjectCategoryService extends AbstractService
                 $pos = $pos->where('t.parent = :parent')
                     ->setParameter(':parent', $entity['parent']->id);
             }
-                
+
             $pos = $pos->getQuery()->getSingleScalarResult();
             if($entity['position'] >= $pos){
                 $entity['implicitPosition'] = 2;
@@ -135,6 +135,8 @@ class ObjectCategoryService extends AbstractService
     public function create($data, $last = true) {
 
         $entity = $this->get('entity');
+        $entity->setLanguage($this->getLanguage());
+        $entity->setDbAdapter($this->table->getDb());
 
         $entity->exchangeArray($data);
 
@@ -167,6 +169,7 @@ class ObjectCategoryService extends AbstractService
 
         $entity = $this->get('table')->getEntity($id);
         $entity->setLanguage($this->getLanguage());
+        $entity->setDbAdapter($this->table->getDb());
 
         $entity->exchangeArray($data);
 

@@ -223,7 +223,7 @@ abstract class AbstractEntityTable
                     $return = $this->getRepository()->createQueryBuilder('t')
                         ->update()
                         ->set('t.position', 't.position + 1');
-                    
+
                     $return = $this->buildWhereForPositionCreate($params,$return,$entity);
                     $return->getQuery()->getResult();
                     break;
@@ -250,7 +250,7 @@ abstract class AbstractEntityTable
                 $return = $this->getRepository()->createQueryBuilder('t')
                     ->update()
                     ->set('t.position', 't.position - 1');
-                
+
                 $return = $this->buildWhereForPositionCreate($params,$return,$entity,'old');
                 $return->getQuery()->getResult();
                 // update new brothers position
@@ -262,13 +262,13 @@ abstract class AbstractEntityTable
                         $return = $this->getRepository()->createQueryBuilder('t')
                             ->update()
                             ->set('t.position', 't.position + 1');
-                        
+
                         $return = $this->buildWhereForPositionCreate($params,$return,$entity);
                         $return->getQuery()->getResult();
                         break;
                     case 2: // end
                     default:
-                        $entity->set('position',$params['newPosition']); // pas de +1 car on a déjà le max d'élément
+                        $entity->set('position',$params['newPosition']+1);
                         break;
                 }
                 $this->updateEntityRoot($entity,$params);
@@ -281,7 +281,7 @@ abstract class AbstractEntityTable
         $return = $this->getRepository()->createQueryBuilder('t')
             ->select('COUNT(t.id)');
         if(!empty($params['field'])){
-            if(isset($params['newField'][$params['field']])){
+            if(array_key_exists($params['field'], $params['newField'])){// need array_key_exists instead of isset because the value of $params['newField'][$params['field']] may be null
                 if(is_null($params['newField'][$params['field']])){
                     $return = $return->where('t.'.$params['field'].' IS NULL');
                 }else{
@@ -312,7 +312,8 @@ abstract class AbstractEntityTable
                 }else{
                     $entity->set($params['root'],$root);
                 }
-                if($initRoot != $entity->get($params['root']) && !empty($params['field']) && $entity->get('id')){
+
+                if($initRoot->get('id') != $entity->get($params['root']) && !empty($params['field']) && $entity->get('id')){
                     $entities = $this->getEntityByFields([$params['field']=>$entity->get('id')]);
                     if(empty($root)){
                         $nr = $entity->get($params['root']);
@@ -458,7 +459,7 @@ abstract class AbstractEntityTable
         }else{
             $return = $return->where('t.' . $field . ' = :parentid')
             ->setParameter(':parentid', $parentId);
-            
+
         }
 
         $return = $return->andWhere('t.position ' . $sign . ' :position')
