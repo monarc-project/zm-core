@@ -434,6 +434,11 @@ class ObjectService extends AbstractService
         //create object
         $object = $this->get('entity');
 
+        //in FO, all objects are generics
+        if ($context = AbstractEntity::FRONT_OFFICE) {
+            $data['mode'] = Object::MODE_GENERIC;
+        }
+
         $setRolfTagNull = false;
         if(empty($data['rolfTag'])){
             unset($data['rolfTag']);
@@ -524,12 +529,17 @@ class ObjectService extends AbstractService
      * @return bool
      * @throws \Exception
      */
-    public function update($id, $data){
+    public function update($id, $data, $context = AbstractEntity::BACK_OFFICE){
 
         unset($data['anrs']);
 
         if (empty($data)) {
             throw new \Exception('Data missing', 412);
+        }
+
+        //in FO, all objects are generics
+        if ($context = AbstractEntity::FRONT_OFFICE) {
+            $data['mode'] = Object::MODE_GENERIC;
         }
 
         $object = $this->get('table')->getEntity($id);
@@ -656,7 +666,12 @@ class ObjectService extends AbstractService
      * @param $data
      * @return mixed
      */
-    public function patch($id,$data){
+    public function patch($id, $data, $context = AbstractEntity::FRONT_OFFICE){
+
+        //in FO, all objects are generics
+        if ($context = AbstractEntity::FRONT_OFFICE) {
+            $data['mode'] = Object::MODE_GENERIC;
+        }
 
         $object = $this->get('table')->getEntity($id);
         $object->setLanguage($this->getLanguage());
