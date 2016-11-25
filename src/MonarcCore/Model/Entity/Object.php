@@ -396,7 +396,7 @@ class Object extends AbstractEntity
 
     protected $parameters = array(
         'implicitPosition' => array(
-            'field' => 'objectCategory',
+            'field' => 'category',
         ),
     );
 
