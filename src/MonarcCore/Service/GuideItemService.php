@@ -24,6 +24,7 @@ class GuideItemService extends AbstractService
         $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
 
         $entity = $this->get('entity');
+        $entity->setDbAdapter($this->table->getDb());
 
         $entity->exchangeArray($data);
 
@@ -41,6 +42,7 @@ class GuideItemService extends AbstractService
      */
     public function update($id,$data){
         $entity = $this->get('table')->getEntity($id);
+        $entity->setDbAdapter($this->table->getDb());
         $entity->exchangeArray($data);
 
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];

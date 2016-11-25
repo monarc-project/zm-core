@@ -12,8 +12,12 @@ class ObjectCategoryService extends AbstractService
 {
     protected $anrObjectCategoryTable;
     protected $objectTable;
+    protected $rootTable;//required for autopositionning
+    protected $parentTable;//required for autopositionning
 
     protected $filterColumns = ['label1', 'label2', 'label3', 'label4'];
+
+    protected $dependencies = ['root', 'parent'];//required for autopositionning
 
     /**
      * Get Entity
@@ -137,21 +141,9 @@ class ObjectCategoryService extends AbstractService
         $entity = $this->get('entity');
         $entity->setLanguage($this->getLanguage());
         $entity->setDbAdapter($this->table->getDb());
-
         $entity->exchangeArray($data);
 
-        //parent and root
-        $parentValue = $entity->get('parent');
-        if (!empty($parentValue)) {
-            $parentEntity = $this->get('table')->getEntity($parentValue);
-            $entity->setParent($parentEntity);
-
-            $rootEntity = $this->getRoot($entity);
-            $entity->setRoot($rootEntity);
-        } else {
-            $entity->setParent(null);
-            $entity->setRoot(null);
-        }
+        $this->setDependencies($entity, $this->dependencies);
 
         $this->get('table')->save($entity);
         return $entity->getJsonArray();
@@ -170,26 +162,10 @@ class ObjectCategoryService extends AbstractService
         $entity = $this->get('table')->getEntity($id);
         $entity->setLanguage($this->getLanguage());
         $entity->setDbAdapter($this->table->getDb());
-
         $entity->exchangeArray($data);
 
-        //parent and root
-        $parentValue = $entity->get('parent');
-        if (!empty($parentValue)) {
-            $parentEntity = $this->get('table')->getEntity($parentValue);
-            $entity->setParent($parentEntity);
+        $this->setDependencies($entity, $this->dependencies);
 
-            $rootEntity = $this->getRoot($entity);
-            $entity->setRoot($rootEntity);
-        } else {
-            $entity->setParent(null);
-            $entity->setRoot(null);
-        }
-
-        if (empty($data['parent'])) {
-            $entity->setParent(null);
-            $entity->setRoot(null);
-        }
 
         $this->get('table')->save($entity);
         return $entity->getJsonArray();
