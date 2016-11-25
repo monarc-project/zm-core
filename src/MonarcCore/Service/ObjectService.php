@@ -445,6 +445,7 @@ class ObjectService extends AbstractService
             $setRolfTagNull = true;
         }
 
+        $anr = false;
         if (isset($data['anr']) && strlen($data['anr'])) {
             /** @var AnrTable $anrTable */
             $anrTable = $this->get('anrTable');
@@ -485,8 +486,10 @@ class ObjectService extends AbstractService
         }
 
         //security
-        if ($object->mode == Object::MODE_GENERIC && $object->asset->mode == Object::MODE_SPECIFIC) {
-            throw new \Exception("You can't have a generic object based on a specific asset", 412);
+        if ($context = AbstractEntity::BACK_OFFICE) {
+            if ($object->mode == Object::MODE_GENERIC && $object->asset->mode == Object::MODE_SPECIFIC) {
+                throw new \Exception("You can't have a generic object based on a specific asset", 412);
+            }
         }
         if (isset($data['modelId'])) {
             $this->get('modelService')->canAcceptObject($data['modelId'], $object, $context);
