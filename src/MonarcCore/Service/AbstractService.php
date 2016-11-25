@@ -447,11 +447,13 @@ abstract class AbstractService extends AbstractServiceFactory
                 else{
                     $a_dep = [];
                     foreach($value as $v){
-                        $dep = $this->get($tableName)->getReference($v);
-                        if (!$dep->id) {
-                            throw new \Exception('Entity does not exist', 412);
+                        if (!is_null($v) && !empty($v) && !is_object($v)) {
+                            $dep = $this->get($tableName)->getReference($v);
+                            if (!$dep->id) {
+                                throw new \Exception('Entity does not exist', 412);
+                            }
+                            $a_dep[] = $dep;
                         }
-                        $a_dep[] = $dep;
                     }
                     $entity->$method($a_dep);
                 }

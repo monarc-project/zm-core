@@ -38,6 +38,10 @@ abstract class AbstractEntity implements InputFilterAwareInterface
     const SOURCE_COMMON = 'common';
     const SOURCE_CLIENT = 'cli';
 
+    const IMP_POS_START = 1;
+    const IMP_POS_END = 2;
+    const IMP_POS_AFTER = 3;
+
     public function getArrayCopy()
     {
         return get_object_vars($this);
@@ -80,13 +84,14 @@ abstract class AbstractEntity implements InputFilterAwareInterface
         $this->user_language = $language;
     }
 
-    public function exchangeArray(array $options, $partial = false)
-    {
+    public function exchangeArray(array $options, $partial = false){
         $keys = array_keys($options);
         $keys = array_combine($keys,$keys);
+
         $filter = $this->getInputFilter($partial)
             ->setData($options)
             ->setValidationGroup(InputFilterInterface::VALIDATE_ALL);
+
 
         $isValid = $filter->isValid();
         if(!$isValid){
@@ -113,6 +118,35 @@ abstract class AbstractEntity implements InputFilterAwareInterface
 
         $options = $filter->getValues();
 
+        if(isset($options['implicitPosition'])){
+            if(isset($options['position'])){
+                unset($options['position']);//position should not be sent by HTTP requests
+            }
+            if(isset($this->parameters['implicitPosition']['root']) && isset($options[$this->parameters['implicitPosition']['root']])){
+                unset($options[$this->parameters['implicitPosition']['root']]);
+            }
+        }
+
+        //Abstract handling on recursive trees
+        $parent_before = $parent_after = null;
+        if(isset($this->parameters['implicitPosition']['field'])){
+            $parent_before = $this->get($this->parameters['implicitPosition']['field']);
+            if(is_object($parent_before)){
+                $parent_before = $parent_before->get('id');
+            }
+            $parent_after = array_key_exists($this->parameters['implicitPosition']['field'], $options) ? $options[$this->parameters['implicitPosition']['field']] : null;
+
+            $this->parameters['implicitPosition']['changes'] = [
+                'parent'   => ['before' => $parent_before, 'after' => $parent_after]
+            ];
+        }
+        //Absact handling of positions
+        if(isset($options['implicitPosition'])){
+            $this->calculatePosition($options['implicitPosition'], isset($options['previous']) ? $options['previous'] : null, $parent_before, $parent_after);
+            unset($options['implicitPosition']);
+            unset($options['previous']);
+        }
+
         foreach($options as $k => $v){
             if ($this->__isset($k) && isset($keys[$k])) {
                 $this->set($k, $v);
@@ -120,6 +154,57 @@ abstract class AbstractEntity implements InputFilterAwareInterface
         }
 
         return $this;
+    }
+
+    private function calculatePosition($mode = self::IMP_POS_END, $previous = null, $parent_before = null, $parent_after = null){
+        $fallback = false;
+        $initial_position = $this->get('position');
+
+        if($mode == self::IMP_POS_START){
+            $this->set('position', 1);//heading
+        }
+        else if($mode == self::IMP_POS_AFTER && !empty($previous)){
+            //Get the position of the previous element
+            $prec = $this->getDbAdapter()->getRepository(get_class($this))->createQueryBuilder('t')
+                        ->select()
+                        ->where('t.id = :previousid')
+                        ->setParameter(':previousid', $previous)
+                        ->getQuery()->getSingleResult();
+            if($prec){
+                //we need to be sure that the prec object has the same parent as the $parent_after
+                //don't forget that the root value is NULL
+                $prec_parent_id = is_null($prec->get($this->parameters['implicitPosition']['field'])) ? null : $prec->get($this->parameters['implicitPosition']['field'])->get('id');
+                if($parent_after == $prec_parent_id){
+                    $prec_position = $prec->get('position');
+                    $this->set('position', ( ! $this->id ||  $parent_before != $parent_after || $this->get('position') > $prec_position ) ? $prec_position + 1 : $prec_position);
+                }
+                else $fallback = true;//end
+            }
+            else $fallback = true;//end
+        }
+        else $fallback = true;//end
+
+        if($fallback){//$mode = end
+            $max = 0;
+            $qb = $this->getDbAdapter()->getRepository(get_class($this))->createQueryBuilder('t')
+                       ->select('MAX(t.position)')
+                       ->where( ! is_null($parent_after) ? 't.'.$this->parameters['implicitPosition']['field'].' = :parentid' : 't.'.$this->parameters['implicitPosition']['field'].' IS NULL');
+
+            if( ! is_null($parent_after) ){
+                $qb->setParameter(':parentid', $parent_after);
+            }
+            $max = $qb->getQuery()->getSingleScalarResult();
+
+            if( ! $this->id || $parent_before != $parent_after){
+                $this->set('position', $max + 1);
+            }
+            else{//internal movement
+                $this->set('position', $max);//in this case we're not adding something, no +1
+            }
+        }
+
+        //assign cache value for brothers & children (algorithm delegated to AbstractEntityTable ::save)
+        $this->parameters['implicitPosition']['changes']['position'] = ['before' => $initial_position, 'after' => $this->get('position')];
     }
 
     public function toArray()
@@ -145,6 +230,32 @@ abstract class AbstractEntity implements InputFilterAwareInterface
                         ));
                         break;
                     case 'position':
+                        $inputFilter->add(array(//TIPs - previous is not a real attribute of the entity
+                            'name' => 'previous',
+                            'required' => false,
+                            'allow_empty' => true,
+                            'continue_if_empty' => true,
+                            'filters' => [['name' => 'ToInt']],
+                            'validators' => array()
+                        ));
+                        $inputFilter->add(array(
+                            'name' => 'implicitPosition',
+                            'required' => false,
+                            'allow_empty' => true,
+                            'continue_if_empty' => true,
+                            'filters' => array(),
+                            'validators' => array(
+                                array(
+                                    'name' => 'InArray',
+                                    'options' => array(
+                                        'haystack' => [null,1, 2, 3], // null: 0 traitement / 1: start / 2: end / 3: after elem
+                                    ),
+                                    'default' => null,
+                                )
+                            )
+                        ));
+                        break;
+                    /* case 'position':
                         $inputFilter->add(array(
                             'name' => 'position',
                             'required' => false,
@@ -179,7 +290,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
                                             }else{
                                                 $this->parameters['implicitPosition']['value'] = $value;
                                                 $this->parameters['implicitPosition']['oldPosition'] = $this->get('position');
-                                                
+
                                                 $this->parameters['implicitPosition']['previous'] = null;
                                                 // field
                                                 if(!empty($this->parameters['implicitPosition']['field'])){
@@ -231,7 +342,34 @@ abstract class AbstractEntity implements InputFilterAwareInterface
                                                 if(!empty($res) && count($res) > 0){
                                                     $res = $res[0];
 
-                                                    $this->parameters['implicitPosition']['newPosition'] = $res->get('position') +1;
+                                                    $newParent = isset($context[$this->parameters['implicitPosition']['field']])
+                                                                    ?(is_object($context[$this->parameters['implicitPosition']['field']])
+                                                                        ?$context[$this->parameters['implicitPosition']['field']]->get('id')
+                                                                        :$context[$this->parameters['implicitPosition']['field']])
+                                                                    :null;
+
+                                                    $prevParent = $res->get($this->parameters['implicitPosition']['field']);
+
+                                                    if(!is_null($prevParent) && is_object($prevParent) ){
+                                                        $prevParent = $prevParent->id;
+                                                    }
+
+                                                    if($prevParent != $newParent){
+
+                                                        $this->parameters['implicitPosition']['value'] = 2; // on met à la fin par défaut
+                                                        return true;
+                                                    }
+
+                                                    if( $this->id
+                                                        && $this->get($this->parameters['implicitPosition']['field']) == $res->get($this->parameters['implicitPosition']['field'])
+                                                        && $this->position < $res->get('position') ) {
+
+                                                        $this->parameters['implicitPosition']['newPosition'] = $res->get('position');
+                                                    }
+                                                    else{
+                                                        $this->parameters['implicitPosition']['newPosition'] = $res->get('position')+1;
+                                                    }
+
                                                     $this->parameters['implicitPosition']['previous'] = $res->get('id');
 
                                                     // field
@@ -248,7 +386,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
                                     ),
                                 ),
                             ),
-                        ));
+                        )); */
                         break;
                     case 'updatedAt':
                     case 'updater':
@@ -278,5 +416,9 @@ abstract class AbstractEntity implements InputFilterAwareInterface
     public function setInputFilter(InputFilterInterface $inputFilter){
         $this->inputFilter = $inputFilter;
         return $this;
+    }
+
+    public function setParameter($k, $v){
+        $this->parameters[$k] = $v;
     }
 }
