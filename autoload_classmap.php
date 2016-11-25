@@ -69,6 +69,7 @@ return array(
     'MonarcCore\Model\Entity\ObjectCategory'                                => __DIR__ . '/src/MonarcCore/Model/Entity/ObjectCategory.php',
     'MonarcCore\Model\Entity\ObjectObject'                                  => __DIR__ . '/src/MonarcCore/Model/Entity/ObjectObject.php',
     'MonarcCore\Model\Entity\PasswordToken'                                 => __DIR__ . '/src/MonarcCore/Model/Entity/PasswordToken.php',
+    'MonarcCore\Model\Entity\PasswordTokenSuperClass'                       => __DIR__ . '/src/MonarcCore/Model/Entity/PasswordTokenSuperClass.php',
     'MonarcCore\Model\Entity\Question'                                      => __DIR__ . '/src/MonarcCore/Model/Entity/Question.php',
     'MonarcCore\Model\Entity\QuestionChoice'                                => __DIR__ . '/src/MonarcCore/Model/Entity/QuestionChoice.php',
     'MonarcCore\Model\Entity\RolfCategory'                                  => __DIR__ . '/src/MonarcCore/Model/Entity/RolfCategory.php',
