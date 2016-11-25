@@ -90,7 +90,7 @@ class InstanceService extends AbstractService
         //set impacts
         /** @var InstanceTable $table */
         //$table = $this->get('table');
-        //$parent = ($data['parent']) ? $table->getEntity($data['parent']) : null;
+        $parent = ($data['parent']) ? $table->getEntity($data['parent']) : null;
         //$parentId = ($data['parent']) ? ($data['parent']) : null;
 
         $this->updateImpactsInherited($anrId, $parent, $data);
