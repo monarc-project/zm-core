@@ -27,13 +27,13 @@ class ForeignKeysModels extends AbstractMigration
      */
     public function change()
     {
-        $this->query('ALTER TABLE monarc_common.assets_models DROP FOREIGN KEY assets_models_ibfk_1');
+        /*$this->query('ALTER TABLE monarc_common.assets_models DROP FOREIGN KEY assets_models_ibfk_1');
         $this->query('ALTER TABLE monarc_common.assets_models DROP FOREIGN KEY assets_models_ibfk_2');
         $this->query('ALTER TABLE monarc_common.threats_models DROP FOREIGN KEY threats_models_ibfk_1');
         $this->query('ALTER TABLE monarc_common.threats_models DROP FOREIGN KEY threats_models_ibfk_2');
         $this->query('ALTER TABLE monarc_common.vulnerabilities_models DROP FOREIGN KEY vulnerabilities_models_ibfk_1');
         $this->query('ALTER TABLE monarc_common.vulnerabilities_models DROP FOREIGN KEY vulnerabilities_models_ibfk_2');
-
+*/
         $table = $this->table('assets_models');
         $table
             ->addForeignKey('asset_id', 'assets', 'id', array('delete' => 'CASCADE','update' => 'RESTRICT'))

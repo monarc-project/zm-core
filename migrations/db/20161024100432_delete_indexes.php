@@ -28,8 +28,8 @@ class DeleteIndexes extends AbstractMigration
     public function change()
     {
         //$this->query('ALTER TABLE monarc_common.rolf_categories DROP FOREIGN KEY rolf_categories_ibfk_1');
-        $this->query('ALTER TABLE monarc_common.rolf_risks DROP FOREIGN KEY rolf_risks_ibfk_1');
-        $this->query('ALTER TABLE monarc_common.rolf_tags DROP FOREIGN KEY rolf_tags_ibfk_1');
+        //$this->query('ALTER TABLE monarc_common.rolf_risks DROP FOREIGN KEY rolf_risks_ibfk_1');
+        //$this->query('ALTER TABLE monarc_common.rolf_tags DROP FOREIGN KEY rolf_tags_ibfk_1');
 
         //rolf categories
         $table = $this->table('rolf_categories');
@@ -48,11 +48,18 @@ class DeleteIndexes extends AbstractMigration
 
         //rolf risks
         $table = $this->table('rolf_risks');
+        $exists = $table->hasForeignKey('anr_id');
+        if ($exists) {
+            $table->dropForeignKey('anr_id');
+        }
+
+        $table = $this->table('rolf_risks');
         $exists = $table->hasIndex('anr_id');
         if ($exists) {
             $table->removeIndexByName('anr_id');
             $table->removeIndex(array('anr_id'));
         }
+
 
         $table = $this->table('rolf_risks');
         $exists = $table->hasIndex('anr_id_3');
@@ -61,7 +68,18 @@ class DeleteIndexes extends AbstractMigration
             $table->removeIndex(array('anr_id_3'));
         }
 
+        $table = $this->table('rolf_risks');
+        $table
+            ->addForeignKey('anr_id', 'anrs', 'id', array('delete' => 'CASCADE','update' => 'RESTRICT'))
+            ->update();
+
         //rolf tags
+        $table = $this->table('rolf_tags');
+        $exists = $table->hasForeignKey('anr_id');
+        if ($exists) {
+            $table->dropForeignKey('anr_id');
+        }
+
         $table = $this->table('rolf_tags');
         $exists = $table->hasIndex('anr_id');
         if ($exists) {
@@ -82,6 +100,11 @@ class DeleteIndexes extends AbstractMigration
             $table->removeIndexByName('anr_id_3');
             $table->removeIndex(array('anr_id_3'));
         }
+
+        $table = $this->table('rolf_tags');
+        $table
+            ->addForeignKey('anr_id', 'anrs', 'id', array('delete' => 'CASCADE','update' => 'RESTRICT'))
+            ->update();
     }
 
 }
