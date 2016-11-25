@@ -252,7 +252,7 @@ abstract class AbstractEntityTable
                 }
             }
         }
-        else if(!empty($changes['parent'])){//this is somewhat like we was new but we need to redistribute brothers
+        else if(!empty($changes['parent']) && $changes['parent']['before'] != $changes['parent']['after']){//this is somewhat like we was new but we need to redistribute brothers
             $params = [
                 ':position' => ! empty($changes['position']['before']) ? $changes['position']['before'] : $entity->get('position'),
                 ':id'       => $entity->get('id')
@@ -299,6 +299,7 @@ abstract class AbstractEntityTable
             else{
                 $params[':parentid'] = $entity->get($entity->parameters['implicitPosition']['field'])->get('id');
             }
+
             $bros = $this->getRepository()->createQueryBuilder('bro')
                          ->select()
                          ->where( $parentWhere )

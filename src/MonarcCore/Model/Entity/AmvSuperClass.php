@@ -288,7 +288,6 @@ class AmvSuperclass extends AbstractEntity
     protected $parameters = array(
         'implicitPosition' => array(
             'field' => 'asset',
-            'root' => null,
         ),
     );
 

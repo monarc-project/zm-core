@@ -159,7 +159,7 @@ class InstanceService extends AbstractService
         $instance = $this->get('entity');
         //$instance = new $class();
         //$instance->setLanguage($this->getLanguage());
-        $instance->exchangeArray($data);
+        $instance->exchangeArray($data, false);
 
         //instance dependencies
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
@@ -433,7 +433,7 @@ class InstanceService extends AbstractService
             }
             unset($data['position']);
         }
-        
+
         if(!$modifyCid){ // on ne provient pas du trigger
             if (isset($data['c'])) {
                 $data['ch'] = ($data['c'] == -1) ? 1 : 0;
@@ -1626,7 +1626,7 @@ class InstanceService extends AbstractService
             }else{
                 $return['risks'][$ir->get('id')]['threat'] = null;
             }
-            
+
             $vulnerability = $ir->get('vulnerability');
             if(!empty($vulnerability)){
                 if(empty($return['threats'][$$ir->get('threat')->get('id')])){

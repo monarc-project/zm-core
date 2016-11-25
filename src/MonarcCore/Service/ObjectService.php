@@ -895,6 +895,7 @@ class ObjectService extends AbstractService
             if (!count($anrObjectCategories)) {
                 $class = $this->get('anrObjectCategoryEntity');
                 $anrObjectCategory = new $class();
+                $anrObjectCategory->setDbAdapter($anrObjectCategoryTable->getDb());
                 $anrObjectCategory->exchangeArray([
                     'anr' => $anr,
                     'category' => (($object->category->root) ? $object->category->root : $object->category),

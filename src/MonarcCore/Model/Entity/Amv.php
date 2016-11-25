@@ -288,7 +288,6 @@ class Amv extends AmvSuperclass
     protected $parameters = array(
         'implicitPosition' => array(
             'field' => 'asset',
-            'root' => null,
         ),
     );
 

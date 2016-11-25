@@ -14,6 +14,7 @@ class ObjectCategoryService extends AbstractService
     protected $objectTable;
     protected $rootTable;//required for autopositionning
     protected $parentTable;//required for autopositionning
+    protected $anrTable;//required for autopositionning of anrobjectcategories
 
     protected $filterColumns = ['label1', 'label2', 'label3', 'label4'];
 
@@ -204,29 +205,25 @@ class ObjectCategoryService extends AbstractService
 
         $anrId = $data['anr'];
 
-        if (!isset($data['position'])) {
-            throw new \Exception('Position missing', 412);
-        }
-
         /** @var AnrObjectCategoryTable $anrObjectCategoryTable */
         $anrObjectCategoryTable = $this->get('anrObjectCategoryTable');
         $anrObjectCategory = $anrObjectCategoryTable->getEntityByFields(['anr' => $anrId, 'category' => $categoryId])[0];
+        $anrObjectCategory->setDbAdapter($anrObjectCategoryTable->getDb());
 
-        if ($data['position'] != $anrObjectCategory->position) {
+        //Specific handle of previous data
+        if(isset($data['previous'])){//we get a position but we need an id
+            $id = $anrObjectCategoryTable->getRepository()->createQueryBuilder('t')
+                                         ->select('t.id')
+                                         ->where('t.anr = :anrid')
+                                         ->andWhere('t.position = :pos')
+                                         ->setParameters([':anrid' => $anrId, ':pos' => $data['previous']])
+                                         ->getQuery()->getSingleScalarResult();
 
-            $previousAnrObjectCategoryPosition = ($data['position'] > $anrObjectCategory->position) ? $data['position'] : $data['position'] - 1;
-            $previousAnrObjectCategory = $anrObjectCategoryTable->getEntityByFields(['anr' => $anrId, 'position' => $previousAnrObjectCategoryPosition]);
-            if ($previousAnrObjectCategory) {
-                $data['implicitPosition'] = 3;
-                $data['previous'] = $previousAnrObjectCategory[0];
-            } else {
-                $data['implicitPosition'] = 1;
-                $data['previous'] = null;
-            }
-
-            $anrObjectCategory->exchangeArray($data);
-
-            return $this->get('table')->save($anrObjectCategory);
+            $data['previous'] = $id ? $id : null;
         }
+
+        $anrObjectCategory->exchangeArray($data);
+        $this->setDependencies($anrObjectCategory, ['anr']);
+        return $anrObjectCategoryTable->save($anrObjectCategory);
     }
 }
