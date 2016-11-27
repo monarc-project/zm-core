@@ -165,6 +165,8 @@ abstract class AbstractEntity implements InputFilterAwareInterface
         $fallback = false;
         $initial_position = $this->get('position');
 
+        $isParentable = ! isset($this->parameters['isParentRelative']) || $this->parameters['isParentRelative'];
+
         if($mode == self::IMP_POS_START){
             $this->set('position', 1);//heading
         }
@@ -178,8 +180,12 @@ abstract class AbstractEntity implements InputFilterAwareInterface
             if($prec){
                 //we need to be sure that the prec object has the same parent as the $parent_after
                 //don't forget that the root value is NULL
-                $prec_parent_id = is_null($prec->get($this->parameters['implicitPosition']['field'])) ? null : $prec->get($this->parameters['implicitPosition']['field'])->get('id');
-                if($parent_after == $prec_parent_id){
+                $prec_parent_id = null;
+
+                if( $isParentable ){
+                    $prec_parent_id = is_null($prec->get($this->parameters['implicitPosition']['field'])) ? null : $prec->get($this->parameters['implicitPosition']['field'])->get('id');
+                }
+                if($parent_after == $prec_parent_id || ! $isParentable ){
                     $prec_position = $prec->get('position');
                     $this->set('position', ( ! $this->id ||  $parent_before != $parent_after || $this->get('position') > $prec_position ) ? $prec_position + 1 : $prec_position);
                 }
@@ -192,11 +198,14 @@ abstract class AbstractEntity implements InputFilterAwareInterface
         if($fallback){//$mode = end
             $max = 0;
             $qb = $this->getDbAdapter()->getRepository(get_class($this))->createQueryBuilder('t')
-                       ->select('MAX(t.position)')
-                       ->where( ! is_null($parent_after) ? 't.'.$this->parameters['implicitPosition']['field'].' = :parentid' : 't.'.$this->parameters['implicitPosition']['field'].' IS NULL');
+                       ->select('MAX(t.position)');
 
-            if( ! is_null($parent_after) ){
-                $qb->setParameter(':parentid', $parent_after);
+            if( $isParentable ){
+                $qb->where( ! is_null($parent_after) ? 't.'.$this->parameters['implicitPosition']['field'].' = :parentid' : 't.'.$this->parameters['implicitPosition']['field'].' IS NULL');
+
+                if( ! is_null($parent_after) ){
+                    $qb->setParameter(':parentid', $parent_after);
+                }
             }
             $max = $qb->getQuery()->getSingleScalarResult();
 

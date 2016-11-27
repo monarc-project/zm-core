@@ -216,6 +216,8 @@ abstract class AbstractEntityTable
     }
 
     protected function autopose($entity, $was_new, $changes = [], $force_new = false){
+        //objects could be sorted even if they haven't a parent field
+        $isParentable = ! isset($entity->parameters['isParentRelative']) || $entity->parameters['isParentRelative'];
         /*
         * MEMO :
         * Be sure that the corresponding service has its parent dependency declared
@@ -223,19 +225,23 @@ abstract class AbstractEntityTable
         * This required the injection of the parentTable in the factory of your Service
         */
         if($was_new || $force_new){
-            $parentfield = $entity->parameters['implicitPosition']['field'];
+            $parentfield = $isParentable ? $entity->parameters['implicitPosition']['field'] : null;
 
             $params = [
                 ':position' => $entity->get('position'),
                 ':id'       => $entity->get('id') === null ? '' : $entity->get('id') //specific to the TIPs below
                 ];
 
-            $parentWhere = 'bro.'.$entity->parameters['implicitPosition']['field'] . ' = :parentid';
-            if(is_null($entity->get($entity->parameters['implicitPosition']['field']))){
-                $parentWhere = 'bro.'.$entity->parameters['implicitPosition']['field'] . ' IS NULL';
-            }
-            else{
-                $params[':parentid'] = $entity->get($entity->parameters['implicitPosition']['field'])->get('id');
+            $parentWhere = "1 = 1";
+
+            if( $isParentable ){
+                $parentWhere = 'bro.'.$entity->parameters['implicitPosition']['field'] . ' = :parentid';
+                if(is_null($entity->get($entity->parameters['implicitPosition']['field']))){
+                    $parentWhere = 'bro.'.$entity->parameters['implicitPosition']['field'] . ' IS NULL';
+                }
+                else{
+                    $params[':parentid'] = $entity->get($entity->parameters['implicitPosition']['field'])->get('id');
+                }
             }
             $bros = $this->getRepository()->createQueryBuilder('bro')
                          ->select()
@@ -257,12 +263,17 @@ abstract class AbstractEntityTable
                 ':position' => ! empty($changes['position']['before']) ? $changes['position']['before'] : $entity->get('position'),
                 ':id'       => $entity->get('id')
                 ];
-            $parentWhere = 'bro.'.$entity->parameters['implicitPosition']['field'] . ' = :parentid';
-            if(is_null($changes['parent']['before'])) {
-                $parentWhere = 'bro.'.$entity->parameters['implicitPosition']['field'] . ' IS NULL';
-            }
-            else{
-                $params[':parentid'] = $changes['parent']['before'];
+
+            $parentWhere = "1 = 1";
+
+            if( $isParentable ){//by security - inverse never should happen in this case
+                $parentWhere = 'bro.'.$entity->parameters['implicitPosition']['field'] . ' = :parentid';
+                if(is_null($changes['parent']['before'])) {
+                    $parentWhere = 'bro.'.$entity->parameters['implicitPosition']['field'] . ' IS NULL';
+                }
+                else{
+                    $params[':parentid'] = $changes['parent']['before'];
+                }
             }
 
             $bros = $this->getRepository()->createQueryBuilder('bro')
@@ -292,12 +303,16 @@ abstract class AbstractEntityTable
                 ':id'       => $entity->get('id')
                 ];
 
-            $parentWhere = 'bro.'.$entity->parameters['implicitPosition']['field'] . ' = :parentid';
-            if(is_null($entity->get($entity->parameters['implicitPosition']['field']))){
-                $parentWhere = 'bro.'.$entity->parameters['implicitPosition']['field'] . ' IS NULL';
-            }
-            else{
-                $params[':parentid'] = $entity->get($entity->parameters['implicitPosition']['field'])->get('id');
+            $parentWhere = "1 = 1";
+
+            if( $isParentable ){
+                $parentWhere = 'bro.'.$entity->parameters['implicitPosition']['field'] . ' = :parentid';
+                if(is_null($entity->get($entity->parameters['implicitPosition']['field']))){
+                    $parentWhere = 'bro.'.$entity->parameters['implicitPosition']['field'] . ' IS NULL';
+                }
+                else{
+                    $params[':parentid'] = $entity->get($entity->parameters['implicitPosition']['field'])->get('id');
+                }
             }
 
             $bros = $this->getRepository()->createQueryBuilder('bro')
