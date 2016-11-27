@@ -53,6 +53,8 @@ class QuestionService extends AbstractService
 
         $entity = $this->get('entity');
 
+        $entity->setDbAdapter($this->get('table')->getDb());
+
         $entity->exchangeArray($data);
 
         $this->setDependencies($entity, $dependencies);
@@ -69,6 +71,7 @@ class QuestionService extends AbstractService
      */
     public function update($id,$data){
         $entity = $this->get('table')->getEntity($id);
+        $entity->setDbAdapter($this->get('table')->getDb());
 
         $entity->exchangeArray($data);
 

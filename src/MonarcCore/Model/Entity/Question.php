@@ -116,6 +116,10 @@ class Question extends AbstractEntity
         return $this;
     }
 
+    protected $parameters = array(
+        'isParentRelative' => false // for the autopositionner
+    );
+
 
     public function getInputFilter($partial = false){
         if (!$this->inputFilter) {
