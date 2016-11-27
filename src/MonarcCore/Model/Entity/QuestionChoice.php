@@ -133,11 +133,12 @@ class QuestionChoice extends AbstractEntity
         return $this;
     }
 
-    protected $parameters = array(
-        'implicitPosition' => array(
-            'field' => 'question',
-        ),
-    );
+    // Don't need this, the entity is really simple, position is handled manually
+    // protected $parameters = array(
+    //     'implicitPosition' => array(
+    //         'field' => 'question',
+    //     ),
+    // );
 
     public function getInputFilter($partial = false){
         if (!$this->inputFilter) {
@@ -156,6 +157,16 @@ class QuestionChoice extends AbstractEntity
                     'validators' => array(),
                 ));
             }
+
+            //For this class, the position is handle manually
+            $this->inputFilter->add(array(
+                'name' => 'position',
+                'required' => false,
+                'allow_empty' => true,
+                'continue_if_empty' => true,
+                'filters' => [['name' => 'ToInt']],
+                'validators' => array()
+            ));
 /*
             $this->inputFilter->add(array(
                 'name' => 'question',
