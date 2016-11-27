@@ -15,6 +15,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
     protected $user_language;
     protected $dbadapter;
     protected $parameters = array();
+    protected $squeezeAutoPositionning = false;
     /*
     paramaters: auto position
     'implicitPosition' => array(
@@ -129,7 +130,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
 
         //Abstract handling on recursive trees
         $parent_before = $parent_after = null;
-        if(isset($this->parameters['implicitPosition']['field'])){
+        if(! $this->squeezeAutoPositionning && isset($this->parameters['implicitPosition']['field'])){
             $parent_before = $this->get($this->parameters['implicitPosition']['field']);
             if(is_object($parent_before)){
                 $parent_before = $parent_before->get('id');
@@ -141,7 +142,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
             ];
         }
         //Absact handling of positions
-        if(isset($options['implicitPosition'])){
+        if( ! $this->squeezeAutoPositionning && isset($options['implicitPosition'])){
             $this->calculatePosition($options['implicitPosition'], isset($options['previous']) ? $options['previous'] : null, $parent_before, $parent_after);
             unset($options['implicitPosition']);
             unset($options['previous']);
@@ -154,6 +155,10 @@ abstract class AbstractEntity implements InputFilterAwareInterface
         }
 
         return $this;
+    }
+
+    public function squeezeAutoPositionning($bool = false){
+        $this->squeezeAutoPositionning = $bool;
     }
 
     private function calculatePosition($mode = self::IMP_POS_END, $previous = null, $parent_before = null, $parent_after = null){
