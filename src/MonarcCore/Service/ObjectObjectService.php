@@ -19,8 +19,10 @@ class ObjectObjectService extends AbstractService
     protected $anrTable;
     protected $objectTable;
     protected $instanceTable;
+    protected $childTable;
+    protected $fatherTable;
 
-    protected $dependencies = ['child'];
+    protected $dependencies = ['child', 'father'];
 
     /**
      * Create
@@ -74,19 +76,22 @@ class ObjectObjectService extends AbstractService
         /** @var ObjectObject $entity */
         $class = $this->get('entity');
         $entity = new $class();
+
+        $entity->setDbAdapter($this->get('table')->getDb());
         $entity->exchangeArray($data);
 
-        $fatherValue = $entity->get('father');
-        if (!empty($fatherValue)) {
-            $fatherEntity = $objectTable->getEntity($fatherValue);
-            $entity->setFather($fatherEntity);
-        }
+        $this->setDependencies($entity, $this->dependencies);
+        // $fatherValue = $entity->get('father');
+        // if (!empty($fatherValue)) {
+        //     $fatherEntity = $objectTable->getEntity($fatherValue);
+        //     $entity->setFather($fatherEntity);
+        // }
 
-        $childValue = $entity->get('child');
-        if (!empty($childValue)) {
-            $childEntity = $objectTable->getEntity($childValue);
-            $entity->setChild($childEntity);
-        }
+        // $childValue = $entity->get('child');
+        // if (!empty($childValue)) {
+        //     $childEntity = $objectTable->getEntity($childValue);
+        //     $entity->setChild($childEntity);
+        // }
 
         $id = $objectObjectTable->save($entity);
 

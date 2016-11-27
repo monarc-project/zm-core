@@ -9,6 +9,8 @@ class ObjectObjectServiceFactory extends AbstractServiceFactory
         'instanceTable'=> '\MonarcCore\Model\Table\InstanceTable',
         'objectTable'=> '\MonarcCore\Model\Table\ObjectTable',
         'entity'=> '\MonarcCore\Model\Entity\ObjectObject',
+        'childTable'=> '\MonarcCore\Model\Table\ObjectTable',
+        'fatherTable'=> '\MonarcCore\Model\Table\ObjectTable',
     );
 
 }
