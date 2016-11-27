@@ -571,11 +571,14 @@ class AmvService extends AbstractService
                 $vulnerabilityModelsIds = [$vulnerabilityModelsIds];
             }
             $diff1 = array_diff($assetModelsIds,$threatModelsIds);
-            if(empty($diff1)){
+            $diff15 = array_diff($threatModelsIds,$assetModelsIds);
+            if(empty($diff1) && empty($diff15)){
                 $diff2 = array_diff($assetModelsIds,$vulnerabilityModelsIds);
-                if(empty($diff2)){
+                $diff25 = array_diff($vulnerabilityModelsIds,$assetModelsIds);
+                if(empty($diff2) && empty($diff25)){
                     $diff3 = array_diff($threatModelsIds,$vulnerabilityModelsIds);
-                    if(empty($diff3)){
+                    $diff35 = array_diff($vulnerabilityModelsIds,$threatModelsIds);
+                    if(empty($diff3) && empty($diff35)){
                         return true;
                     }
                 }

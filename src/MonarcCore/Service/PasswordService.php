@@ -3,6 +3,7 @@ namespace MonarcCore\Service;
 
 use MonarcCore\Model\Entity\PasswordToken;
 use MonarcCore\Model\Entity\User;
+use MonarcFO\Model\Table\PasswordTokenTable;
 
 class PasswordService extends AbstractService
 {
@@ -19,7 +20,7 @@ class PasswordService extends AbstractService
      */
     public function passwordForgotten($email) {
 
-        $user = $this->get('userService')->getByEmail($email);
+        $user = $this->get('userTable')->getByEmail($email);
 
         if ($user) {
 
@@ -39,7 +40,9 @@ class PasswordService extends AbstractService
 
             $this->setDependencies($passwordTokenEntity, ['user']);
 
-            $this->get('passwordTokenTable')->save($passwordTokenEntity);
+            /** @var PasswordTokenTable $passwordTokenTable */
+            $passwordTokenTable = $this->get('passwordTokenTable');
+            $passwordTokenTable->save($passwordTokenEntity);
 
             //send mail
             $subject = 'Password forgotten';
@@ -53,7 +56,9 @@ class PasswordService extends AbstractService
                 <p>In case you have not made request for a new password, we kindly ask you to ignore this e-mail</p>
                 <p>Best regards,</p>";
 
-            $this->get('mailService')->send($email, $subject, $message);
+            /** @var MailService $mailService */
+            $mailService = $this->get('mailService');
+            $mailService->send($email, $subject, $message);
         }
     }
 

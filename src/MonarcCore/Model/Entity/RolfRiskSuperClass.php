@@ -184,23 +184,23 @@ class RolfRiskSuperclass extends AbstractEntity
     }
 
     /**
-     * Set rolf category
+     * Set Rolf Category
      *
-     * @param key
-     * @param RolfCategory $rolfCategory
+     * @param $id
+     * @param RolfCategorySuperclass $rolfCategory
      */
-    public function setCategory($id, RolfCategory $rolfCategory)
+    public function setCategory($id, RolfCategorySuperclass $rolfCategory)
     {
         $this->categories[$id] = $rolfCategory;
     }
 
     /**
-     * Set rolf tag
+     * Set Rolf Tag
      *
-     * @param key
-     * @param RolfTag $rolfTag
+     * @param $id
+     * @param RolfTagSuperclass $rolfTag
      */
-    public function setTag($id, RolfTag $rolfTag)
+    public function setTag($id, RolfTagSuperclass $rolfTag)
     {
         $this->tags[$id] = $rolfTag;
     }
