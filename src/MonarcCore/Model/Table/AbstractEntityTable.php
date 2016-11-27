@@ -173,7 +173,7 @@ abstract class AbstractEntityTable
 
             if(! $entity->id
                 || $params['implicitPosition']['changes']['parent']['before'] != $params['implicitPosition']['changes']['parent']['after']
-                || $params['implicitPosition']['changes']['position']['before'] != $params['implicitPosition']['changes']['position']['after']
+                || (isset($params['implicitPosition']['changes']['position']) && $params['implicitPosition']['changes']['position']['before'] != $params['implicitPosition']['changes']['position']['after'])
             ){
                 $this->autopose($entity, ! $entity->id, $params['implicitPosition']['changes']);
                 $clean_params = true;

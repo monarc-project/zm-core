@@ -467,6 +467,7 @@ class ObjectService extends AbstractService
             }
         }
 
+        $object->setDbAdapter($this->get('table')->getDb());
         $object->exchangeArray($data);
 
         //object dependencies
@@ -582,7 +583,7 @@ class ObjectService extends AbstractService
             }
         }
 
-        $currentRootCategory = ($object->category->root) ? $object->category->root : $object->category;
+        $currentRootCategory = ($object->category && $object->category->root) ? $object->category->root : $object->category;
 
         // Si asset secondaire, pas de rolfTag
         if(!empty($data['asset']) && !empty($data['rolfTag'])){
@@ -603,9 +604,9 @@ class ObjectService extends AbstractService
             $object->set('rolfTag',null);
         }
 
-        $objectRootCategory = ($object->category->root) ? $object->category->root : $object->category;
+        $objectRootCategory = ($object->category->root && $object->category->root) ? $object->category->root : $object->category;
 
-        if ($currentRootCategory->id != $objectRootCategory->id) {
+        if ($currentRootCategory && $objectRootCategory && $currentRootCategory->id != $objectRootCategory->id) {
 
             //retrieve anrs for object
             foreach($object->anrs as $anr) {
