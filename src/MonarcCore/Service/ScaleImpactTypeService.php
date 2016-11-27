@@ -85,6 +85,7 @@ class ScaleImpactTypeService extends AbstractService
         //$entity = $this->get('entity');
         $class = $this->get('entity');
         $entity = new $class();
+        $entity->setDbAdapter($this->get('table')->getDb());
 
         $entity->exchangeArray($data);
 
@@ -128,7 +129,7 @@ class ScaleImpactTypeService extends AbstractService
         $data['type'] = 9;
 
         $entity = $this->get('table')->getEntity($id);
-
+        $entity->setDbAdapter($this->get('table')->getDb());
         //security
         $this->filterPostFields($data, $entity);
 
