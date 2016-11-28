@@ -24,7 +24,7 @@ use Zend\EventManager\EventManager;
  */
 class InstanceService extends AbstractService
 {
-    protected $dependencies = ['anr', 'asset', 'object'];
+    protected $dependencies = ['anr', 'asset', 'object', '[parent](instance)', '[root](instance)'];
     protected $filterColumns = ['label1', 'label2', 'label3', 'label4'];
 
     protected $amvTable;
