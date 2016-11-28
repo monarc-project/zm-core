@@ -238,7 +238,7 @@ class Db {
                                 $parameterValue = $value['value'];    
                             }elseif(is_int($value['value'])){
                                 $where = "$fullColName ".$value['op']." ?$searchIndex";
-                                $parameterValue = $value;
+                                $parameterValue = $value['value'];
                             }elseif(is_null($value['value'])){ // IS || IS NOT
                                 $where = "$fullColName ".$value['op']." NULL";
                                 $parameterValue = null;
@@ -263,18 +263,12 @@ class Db {
 
                     if ($isFirst) {
                         $qb->where($where);
-
-                        if (!is_null($parameterValue)) {
-                            $qb->setParameter($searchIndex, $parameterValue);
-                        }
-
                         $isFirst = false;
                     } else {
                         $qb->andWhere($where);
-
-                        if (!is_null($parameterValue)) {
-                            $qb->setParameter($searchIndex, $parameterValue);
-                        }
+                    }
+                    if (!is_null($parameterValue)) {
+                        $qb->setParameter($searchIndex, $parameterValue);
                     }
 
                     ++$searchIndex;
