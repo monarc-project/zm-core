@@ -22,6 +22,10 @@ class QuestionService extends AbstractService
      */
     public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null){
 
+        if(empty($order)){
+            $order = 'position';
+        }
+
         $data = $this->get('table')->fetchAllFiltered(
             array_keys($this->get('entity')->getJsonArray()),
             $page,
