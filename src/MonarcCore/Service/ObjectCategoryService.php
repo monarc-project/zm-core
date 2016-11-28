@@ -74,22 +74,8 @@ class ObjectCategoryService extends AbstractService
      * @param int $parentId
      * @return mixed
      */
-    public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $parentId = 0){
-        if ($parentId <= 0) {
-            $objects = $this->getList($page, $limit, $order, $filter);
-        } else {
-            $filterAnd = ['parent' => $parentId];
-
-            $objects = $this->get('table')->fetchAllFiltered(
-                array_keys($this->get('entity')->getJsonArray()),
-                $page,
-                $limit,
-                $this->parseFrontendOrder($order),
-                $this->parseFrontendFilter($filter, $this->filterColumns),
-                $filterAnd
-            );
-        }
-
+    public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = []){
+        $objects = $this->getList($page, $limit, $order, $filter,$filterAnd);
 
         $currentObjectsListId = [];
         foreach($objects as $object) {
