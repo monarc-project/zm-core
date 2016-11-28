@@ -155,11 +155,19 @@ abstract class AbstractEntityTable
         if(!empty($this->connectedUser) && isset($this->connectedUser['firstname']) && isset($this->connectedUser['lastname'])){
             $id = $entity->get('id');
             if(empty($id)){
-                $entity->set('creator',trim($this->connectedUser['firstname']." ".$this->connectedUser['lastname']));
-                $entity->set('createdAt',new \DateTime());
+                if($entity->__isset('creator')){
+                    $entity->set('creator',trim($this->connectedUser['firstname']." ".$this->connectedUser['lastname']));
+                }
+                if($entity->__isset('createdAt')){
+                    $entity->set('createdAt',new \DateTime());
+                }
             }else{
-                $entity->set('updater',trim($this->connectedUser['firstname']." ".$this->connectedUser['lastname']));
-                $entity->set('updatedAt',new \DateTime());
+                if($entity->__isset('updater')){
+                    $entity->set('updater',trim($this->connectedUser['firstname']." ".$this->connectedUser['lastname']));
+                }
+                if($entity->__isset('updatedAt')){
+                    $entity->set('updatedAt',new \DateTime());
+                }
             }
         }
 
