@@ -72,6 +72,8 @@ return array(
     'MonarcCore\Model\Entity\PasswordTokenSuperClass'                       => __DIR__ . '/src/MonarcCore/Model/Entity/PasswordTokenSuperClass.php',
     'MonarcCore\Model\Entity\Question'                                      => __DIR__ . '/src/MonarcCore/Model/Entity/Question.php',
     'MonarcCore\Model\Entity\QuestionChoice'                                => __DIR__ . '/src/MonarcCore/Model/Entity/QuestionChoice.php',
+    'MonarcCore\Model\Entity\QuestionChoiceSuperclass'                      => __DIR__ . '/src/MonarcCore/Model/Entity/QuestionChoiceSuperClass.php',
+    'MonarcCore\Model\Entity\QuestionSuperclass'                            => __DIR__ . '/src/MonarcCore/Model/Entity/QuestionSuperclass.php',
     'MonarcCore\Model\Entity\RolfCategory'                                  => __DIR__ . '/src/MonarcCore/Model/Entity/RolfCategory.php',
     'MonarcCore\Model\Entity\RolfCategorySuperclass'                        => __DIR__ . '/src/MonarcCore/Model/Entity/RolfCategorySuperClass.php',
     'MonarcCore\Model\Entity\RolfRisk'                                      => __DIR__ . '/src/MonarcCore/Model/Entity/RolfRisk.php',
