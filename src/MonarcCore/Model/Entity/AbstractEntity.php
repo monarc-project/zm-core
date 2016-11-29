@@ -43,6 +43,31 @@ abstract class AbstractEntity implements InputFilterAwareInterface
     const IMP_POS_END = 2;
     const IMP_POS_AFTER = 3;
 
+
+    /**
+     * @param mixed $obj (extends AbstractEntity OR array)
+     */
+    public function __construct($obj = null){
+        if(!empty($obj)){
+            if(is_object($obj)){
+                if(is_subclass_of($obj,'\MonarcCore\Model\Entity\AbstractEntity') && method_exists($obj,'getJsonArray')){
+                    $obj = $obj->getJsonArray();
+                    foreach($obj as $k => $v){
+                        if($this->__isset($k)){
+                            $this->set($k,$v);
+                        }
+                    }
+                }
+            }elseif(is_array($obj)){
+                foreach($obj as $k => $v){
+                    if($this->__isset($k)){
+                        $this->set($k,$v);
+                    }
+                }
+            }
+        }
+    }
+
     public function getArrayCopy()
     {
         return get_object_vars($this);
