@@ -226,7 +226,9 @@ class DeliveriesModels extends AbstractEntity
     public function getJsonArray($fields = array())
     {
         $res = parent::getJsonArray($fields);
-        unset($res['content']);
+        for ($i = 1; $i <= 4; ++$i) {
+            unset($res['content'.$i]);
+        }
         return $res;
     }
 }
