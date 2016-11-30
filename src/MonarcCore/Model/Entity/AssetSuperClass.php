@@ -41,16 +41,6 @@ class AssetSuperClass extends AbstractEntity
     protected $anr;
 
     /**
-     * @var \Doctrine\Common\Collections\Collection
-     * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Model", inversedBy="assets", cascade={"persist"})
-     * @ORM\JoinTable(name="assets_models",
-     *  joinColumns={@ORM\JoinColumn(name="asset_id", referencedColumnName="id")},
-     *  inverseJoinColumns={@ORM\JoinColumn(name="model_id", referencedColumnName="id")}
-     * )
-     */
-    protected $models;
-
-    /**
      * @var string
      *
      * @ORM\Column(name="label1", type="string", length=255, nullable=true)
