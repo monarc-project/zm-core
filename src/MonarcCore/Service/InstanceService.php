@@ -120,8 +120,8 @@ class InstanceService extends AbstractService
                 }else{
                     $return = $return->andWhere('t.anr IS NULL');
                 }
-                $return = $return->getQuery()->getSingleScalarResult();
-                if($data['position'] == $return+1){
+                $max = $return->getQuery()->getSingleScalarResult();
+                if($data['position'] == $max+1){
                     $data['implicitPosition'] = 2;
                 }else{
                     $return = $this->get('table')->getRepository()->createQueryBuilder('t')
@@ -140,11 +140,11 @@ class InstanceService extends AbstractService
                     }
                     $return = $return->andWhere('t.position = :pos')
                         ->setParameter(':pos',$data['position']-1)
-                        ->setMaxResults(1)
-                        ->getQuery()->getSingleScalarResult();
-                    if($return){
+                        ->setMaxResults(1);
+                    $max = $return->getQuery()->getSingleScalarResult();
+                    if($max){
                         $data['implicitPosition'] = 3;
-                        $data['previous'] = $return;
+                        $data['previous'] = $max;
                     }else{
                         $data['implicitPosition'] = 2;
                     }
