@@ -127,7 +127,7 @@ class QuestionSuperclass extends AbstractEntity
 
             $this->inputFilter->add(array(
                 'name' => 'type',
-                'required' => true,
+                'required' => ($partial) ? false : true,
                 'allow_empty' => true,
                 'continue_if_empty' => true,
                 'filters' => array(),
@@ -144,7 +144,7 @@ class QuestionSuperclass extends AbstractEntity
 
             $this->inputFilter->add(array(
                 'name' => 'multichoice',
-                'required' => false,
+                'required' => ($partial) ? false : true,
                 'allow_empty' => true,
                 'continue_if_empty' => true,
                 'filters' => array(),
