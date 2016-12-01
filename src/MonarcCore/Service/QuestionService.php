@@ -10,6 +10,9 @@ namespace MonarcCore\Service;
 class QuestionService extends AbstractService
 {
     protected $choiceTable;
+    protected $anrTable;
+
+    protected $dependencies = ['anr'];
 
     /**
      * Get List
@@ -53,6 +56,7 @@ class QuestionService extends AbstractService
      * @return mixed
      */
     public function create($data, $last = true) {
+
         $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
 
         $entity = $this->get('entity');

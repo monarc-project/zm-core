@@ -10,8 +10,9 @@ namespace MonarcCore\Service;
 class QuestionChoiceService extends AbstractService
 {
     protected $questionTable;
+    protected $anrTable;
 
-    protected $dependencies = ['question'];
+    protected $dependencies = ['anr', 'question'];
 
     /**
      * Create
