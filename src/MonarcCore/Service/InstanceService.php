@@ -155,7 +155,7 @@ class InstanceService extends AbstractService
 
         //create instance
         $instance = $this->get('entity');
-        $instance->squeezeAutoPositionning(true);//delegate the position algorithm to the existing code
+        //$instance->squeezeAutoPositionning(true);//delegate the position algorithm to the existing code
         //$instance = new $class();
         //$instance->setLanguage($this->getLanguage());
         $instance->exchangeArray($data, false);
