@@ -338,4 +338,43 @@ class ModelService extends AbstractService
 
         return $id;
     }
+
+    /**
+     * Delete
+     *
+     * @param $id
+     */
+    public function delete($id) {
+        $model = $this->get('table')->getEntity($id);
+        $anr = $model->get('anr');
+        $model->set('anr',null);
+        $model->set('status',\MonarcCore\Model\Entity\AbstractEntity::STATUS_DELETED);
+        $this->get('table')->save($model);
+        
+        if($anr){
+            $this->get('anrTable')->delete($anr->get('id'));
+        }
+        return true;
+    }
+
+    /**
+     * Detele list
+     *
+     * @param $data
+     */
+    public function deleteList($data){
+        $anrIds = [];
+        foreach($data as $d){
+            $model = $this->get('table')->getEntity($d);
+            $anr = $model->get('anr');
+            $model->set('anr',null);
+            $model->set('status',\MonarcCore\Model\Entity\AbstractEntity::STATUS_DELETED);
+            $this->get('table')->save($model);
+
+            if($anr){
+                $this->get('anrTable')->delete($anr->get('id'));
+            }
+        }
+        return true;
+    }
 }

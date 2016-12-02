@@ -294,7 +294,7 @@ class Model extends AbstractEntity
                     array(
                         'name' => 'InArray',
                         'options' => array(
-                            'haystack' => array(self::STATUS_INACTIVE, self::STATUS_ACTIVE),
+                            'haystack' => array(self::STATUS_INACTIVE, self::STATUS_ACTIVE, self::STATUS_DELETED),
                         ),
                     ),
                 ),

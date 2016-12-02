@@ -26,6 +26,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
 
     const STATUS_INACTIVE = 0;
     const STATUS_ACTIVE = 1;
+    const STATUS_DELETED = 3;
 
     const MODE_GENERIC = 0;
     const MODE_SPECIFIC = 1;
