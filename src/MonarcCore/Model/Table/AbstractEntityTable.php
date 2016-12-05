@@ -566,7 +566,7 @@ abstract class AbstractEntityTable
     }
 
     //optimized method to avoid recursive call with multiple SQL queries
-    protected function initTree($entity, $order_by = null){
+    public function initTree($entity, $order_by = null){
         $rootField = isset($entity->parameters['implicitPosition']['root']) ? $entity->parameters['implicitPosition']['root'] : 'root';
         $parentField = isset($entity->parameters['implicitPosition']['field']) ? $entity->parameters['implicitPosition']['field'] : 'parent';
 
