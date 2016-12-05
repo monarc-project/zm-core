@@ -99,7 +99,7 @@ abstract class AbstractController extends AbstractRestfulController
         if($this->getService()->delete($id)){
             return new JsonModel(array('status' => 'ok'));
         }else{
-            return new JsonModel(array('status' => 'ok')); // Todo: peux être retourner un message d'erreur
+            return new JsonModel(array('status' => 'ko')); // Todo: peux être retourner un message d'erreur
         }
     }
 

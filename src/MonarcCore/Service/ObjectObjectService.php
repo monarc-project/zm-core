@@ -98,11 +98,15 @@ class ObjectObjectService extends AbstractService
         //link to anr
         $parentAnrs = [];
         $childAnrs = [];
-        foreach ($father->anrs as $anr) {
-            $parentAnrs[] = $anr->id;
+        if($father->anrs){
+            foreach ($father->anrs as $anr) {
+                $parentAnrs[] = $anr->id;
+            }
         }
-        foreach ($child->anrs as $anr) {
-            $childAnrs[] = $anr->id;
+        if($child->anrs){
+            foreach ($child->anrs as $anr) {
+                $childAnrs[] = $anr->id;
+            }
         }
 
         /** @var AnrTable $anrTable */

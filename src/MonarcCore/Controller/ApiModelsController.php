@@ -27,15 +27,27 @@ class ApiModelsController extends AbstractController
         $order = $this->params()->fromQuery('order');
         $filter = $this->params()->fromQuery('filter');
         $isGeneric = $this->params()->fromQuery('isGeneric');
+        $status = strval($this->params()->fromQuery('status',\MonarcCore\Model\Entity\AbstractEntity::STATUS_ACTIVE));
 
         $service = $this->getService();
+        switch($status){
+            case strval(\MonarcCore\Model\Entity\AbstractEntity::STATUS_INACTIVE):
+                $filterAnd = ['status' => \MonarcCore\Model\Entity\AbstractEntity::STATUS_INACTIVE];
+                break;
+            default:
+            case strval(\MonarcCore\Model\Entity\AbstractEntity::STATUS_ACTIVE):
+                $filterAnd = ['status' => \MonarcCore\Model\Entity\AbstractEntity::STATUS_ACTIVE];
+                break;
+            case 'all':
+                $filterAnd = ['status' => ['op'=> 'IN', 'value' => [\MonarcCore\Model\Entity\AbstractEntity::STATUS_INACTIVE,\MonarcCore\Model\Entity\AbstractEntity::STATUS_ACTIVE]]];
+                break;
+        }
+        
 
-        if (is_null($isGeneric)) {
-            $entities = $service->getList($page, $limit, $order, $filter);
+        if (!is_null($isGeneric)) {
+            $filterAnd['isGeneric'] = $isGeneric;
         }
-        else {
-            $entities = $service->getList($page, $limit, $order, $filter, array('isGeneric' => $isGeneric));
-        }
+        $entities = $service->getList($page, $limit, $order, $filter,$filterAnd);
 
         if (count($this->dependencies)) {
             foreach ($entities as $key => $entity) {
@@ -44,7 +56,7 @@ class ApiModelsController extends AbstractController
         }
 
         return new JsonModel(array(
-            'count' => $service->getFilteredCount($page, $limit, $order, $filter),
+            'count' => $service->getFilteredCount($page, $limit, $order, $filter,$filterAnd),
             $this->name => $entities
         ));
     }
