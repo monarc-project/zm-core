@@ -328,4 +328,8 @@ abstract class AbstractEntity implements InputFilterAwareInterface
     public function setParameter($k, $v){
         $this->parameters[$k] = $v;
     }
+
+    public function initParametersChanges(){
+        unset($this->parameters['implicitPosition']['changes']);
+    }
 }
