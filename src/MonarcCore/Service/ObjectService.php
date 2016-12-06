@@ -1038,34 +1038,24 @@ class ObjectService extends AbstractService
 
         /** @var ObjectTable $objectTable */
         $objectTable = $this->get('table');
-        $objects = $objectTable->fetchAll();
+        $objects = $objectTable->getEntityByFields(['anrs'=>$anrId]);
+        //$objects = $objectTable->fetchAll();
 
         foreach ($objects as $object) {
-            if ($object['anrs']) {
-                foreach($object['anrs'] as $anr) {
-                    if ($anr->id == $anrId) {
-                        // This object belongs to this ANR
-                        $anrObjects[] = $object;
-
-                        // If we have the object's category, cache it, otherwise setup a virtual container for
-                        // objects whom category was deleted.
-                        if ($object['category'] && !isset($objectsCategories[$object['category']->id])) {
-                            $objectsCategories[$object['category']->id] = $object['category'];
-                        } else if (!isset($objectsCategories[-1])) {
-                            // Setup a virtual container category
-                            $objectsCategories[-1] = [
-                                'id' => -1,
-                                'parent' => null,
-                                'objects' => [],
-                                'label1' => 'Sans catégorie',
-                                'label2' => 'Uncategorized',
-                                'label3' => 'Keine Kategorie',
-                                'label4' => ''
-                            ];
-                        }
-                        break;
-                    }
-                }
+            $anrObjects[] = $object->getJsonArray();
+            if ($object->get('category') && !isset($objectsCategories[$object->get('category')->get('id')])) {
+                $objectsCategories[$object->get('category')->get('id')] = $object->get('category');
+            } else if (!isset($objectsCategories[-1])) {
+                // Setup a virtual container category
+                $objectsCategories[-1] = [
+                    'id' => -1,
+                    'parent' => null,
+                    'objects' => [],
+                    'label1' => 'Sans catégorie',
+                    'label2' => 'Uncategorized',
+                    'label3' => 'Keine Kategorie',
+                    'label4' => ''
+                ];
             }
         }
 
