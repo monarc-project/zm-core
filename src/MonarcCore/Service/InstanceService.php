@@ -1370,16 +1370,37 @@ class InstanceService extends AbstractService
 
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('table');
-        $instances = $instanceTable->getEntityByFields(['anr' => $anrId], ['position' => 'ASC']);
+        $allInstances = $instanceTable->getEntityByFields(['anr' => $anrId], ['parent' => 'DESC', 'position' => 'DESC']);
 
-        foreach($instances as $key => $instance) {
+        $instances = $temp = [];
+        foreach($allInstances as $key => $instance) {
             $instanceArray = $instance->getJsonArray();
             $instanceArray['scope'] = $instance->object->scope;
+            $instanceArray['child'] = [];
+            $instanceArray['parent'] = is_null($instance->get('parent')) ? 0 : $instance->get('parent')->get('id');
 
-            $instances[$key] = $instanceArray;
+            $instances[$instanceArray['parent']][$instanceArray['id']] = $instanceArray;
+            if(is_null($instance->get('parent'))){
+                $temp[] = $instanceArray;
+            }
         }
+        unset($allInstances);
 
-        return $instances;
+        if( ! empty($instances) && !empty($temp)){
+            while(!empty($temp)){
+                $current = array_shift($temp);
+                if(!empty($instances[$current['id']])){
+                    foreach($instances[$current['id']] as &$fam){
+                        $instances[$current['parent']][$current['id']]['child'][$fam['id']] = &$fam;
+                        array_unshift($temp, $fam);
+                    }
+                    if(isset($instances[$current['parent']][$current['id']]['child'])){
+                        $instances[$current['parent']][$current['id']]['child'] = array_values($instances[$current['parent']][$current['id']]['child']);
+                    }
+                }
+            }
+        }
+        return isset($instances[0])?array_reverse($instances[0]):[];
     }
 
     /**

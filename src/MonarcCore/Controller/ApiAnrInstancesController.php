@@ -23,16 +23,8 @@ class ApiAnrInstancesController extends AbstractController
         /** @var InstanceService $service */
         $service = $this->getService();
         $instances = $service->findByAnr($anrId);
-
-        $fields = ['id', 'level', 'scope',
-            'c', 'i', 'd', 'ch', 'ih', 'dh',
-            'name1', 'name2', 'name3', 'name4',
-            'label1', 'label2', 'label3', 'label4',
-            'description1', 'description2', 'description3', 'description4'];
-        $recursiveArray = $this->recursiveArray($instances, null, 0, $fields);
-
         return new JsonModel(array(
-            $this->name => $recursiveArray
+            $this->name => $instances
         ));
     }
 
