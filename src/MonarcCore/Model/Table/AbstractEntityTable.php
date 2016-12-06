@@ -576,7 +576,7 @@ abstract class AbstractEntityTable
         $qb = $this->getRepository()->createQueryBuilder('t');
 
         $qb->select()
-           ->where('t.root = :ref')
+           ->where('t.'.$rootField.' = :ref')
            ->setParameter(':ref', $ref);
 
         if(!is_null($order_by)){
