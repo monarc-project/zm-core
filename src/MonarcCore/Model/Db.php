@@ -90,7 +90,7 @@ class Db {
 
         foreach ($fields as $key => $value) {
             $db = 'u.'.$key;
-            if($metadata->hasAssociation($key)){
+            if($metadata->hasAssociation($key) && !$metadata->isSingleValuedAssociation($key)){
                 $qb->innerJoin($db,$key);
                 $db = $key.'.id';
             }
