@@ -74,8 +74,7 @@ class ObjectObjectService extends AbstractService
         }
 
         /** @var ObjectObject $entity */
-        $class = $this->get('entity');
-        $entity = new $class();
+        $entity = $this->get('entity');
 
         $entity->setDbAdapter($this->get('table')->getDb());
         $entity->exchangeArray($data);

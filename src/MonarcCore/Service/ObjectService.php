@@ -435,7 +435,7 @@ class ObjectService extends AbstractService
         $object = $this->get('entity');
 
         //in FO, all objects are generics
-        if ($context = AbstractEntity::FRONT_OFFICE) {
+        if ($context == AbstractEntity::FRONT_OFFICE) {
             $data['mode'] = Object::MODE_GENERIC;
         }
 
@@ -487,7 +487,7 @@ class ObjectService extends AbstractService
         }
 
         //security
-        if ($context = AbstractEntity::BACK_OFFICE) {
+        if ($context == AbstractEntity::BACK_OFFICE) {
             if ($object->mode == Object::MODE_GENERIC && $object->asset->mode == Object::MODE_SPECIFIC) {
                 throw new \Exception("You can't have a generic object based on a specific asset", 412);
             }
@@ -542,7 +542,7 @@ class ObjectService extends AbstractService
         }
 
         //in FO, all objects are generics
-        if ($context = AbstractEntity::FRONT_OFFICE) {
+        if ($context == AbstractEntity::FRONT_OFFICE) {
             $data['mode'] = Object::MODE_GENERIC;
         }
 
@@ -673,7 +673,7 @@ class ObjectService extends AbstractService
     public function patch($id, $data, $context = AbstractEntity::FRONT_OFFICE){
 
         //in FO, all objects are generics
-        if ($context = AbstractEntity::FRONT_OFFICE) {
+        if ($context == AbstractEntity::FRONT_OFFICE) {
             $data['mode'] = Object::MODE_GENERIC;
         }
 
