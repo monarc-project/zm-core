@@ -1098,7 +1098,7 @@ class ObjectService extends AbstractService
 
         // If we created our virtual category, inject it at first position. We won't need to fill it again in the next
         // loop as we already have the objects and we don't have any sub-categories or nested levels.
-        if (isset($objectsCategories[-1])) {
+        if (isset($objectsCategories[-1]) && (!empty($objectsCategories[-1]['objects']) || !empty($objectsCategories[-1]['child']))) {
             $anrObjectsCategories[-1] = $objectsCategories[-1];
         }
 
