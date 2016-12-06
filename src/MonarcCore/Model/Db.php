@@ -86,12 +86,19 @@ class Db {
         $repository = $this->entityManager->getRepository(get_class($entity));
         $qb = $repository->createQueryBuilder('u');
 
+        $metadata = $this->getClassMetadata(get_class($entity));
+
         foreach ($fields as $key => $value) {
+            $db = 'u.'.$key;
+            if($metadata->hasAssociation($key)){
+                $qb->innerJoin($db,$key);
+                $db = $key.'.id';
+            }
             if ($value !== 'null' && !is_null($value)) {
-                $qb->andWhere("u.$key = :$key");
+                $qb->andWhere("$db = :$key");
                 $qb->setParameter($key, $value);
             } else {
-                $qb->andWhere($qb->expr()->isNull("u.$key"));
+                $qb->andWhere($qb->expr()->isNull("$db"));
             }
         }
 
