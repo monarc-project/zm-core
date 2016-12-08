@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * User Token
  *
- * @ORM\Table(name="users_tokens", indexes={
+ * @ORM\Table(name="user_tokens", indexes={
  *      @ORM\Index(name="user_id", columns={"user_id"})
  * })
  * @ORM\MappedSuperclass
