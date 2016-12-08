@@ -439,13 +439,13 @@ abstract class AbstractService extends AbstractServiceFactory
             if (!is_null($value) && !empty($value) && !is_object($value)) {
                 if($metadata->hasAssociation($propertyname)){
                     $class = $metadata->getAssociationTargetClass($propertyname);
-                    if(! is_array($value)){
-                        $dep = $db->getReference($class,$id);
+                    if(! is_array($value) || isset($value['id'])){
+                        $dep = $db->getReference($class,isset($value['id'])?$value['id']:$value);
                         if (!$dep->id) {
                             throw new \Exception('Entity does not exist', 412);
                         }
                         $entity->set($propertyname,$dep);
-                    }else{
+                    }elseif(!array_key_exists('id', $value)){
                         $a_dep = [];
                         foreach($value as $v){
                             if (!is_null($v) && !empty($v) && !is_object($v)) {
@@ -461,14 +461,13 @@ abstract class AbstractService extends AbstractServiceFactory
                 }else{ // DEPRECATED
                     $tableName =  $deptable . 'Table';
                     $method = 'set' . ucfirst($propertyname);
-                    if(! is_array($value)){
-                        $dep = $this->get($tableName)->getReference($value);
+                    if(! is_array($value) || isset($value['id'])){
+                        $dep = $this->get($tableName)->getReference(isset($value['id'])?$value['id']:$value);
                         if (!$dep->id) {
                             throw new \Exception('Entity does not exist', 412);
                         }
                         $entity->$method($dep);
-                    }
-                    else{
+                    }elseif(!array_key_exists('id', $value)){
                         $a_dep = [];
                         foreach($value as $v){
                             if (!is_null($v) && !empty($v) && !is_object($v)) {
