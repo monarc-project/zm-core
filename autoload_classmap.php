@@ -90,6 +90,7 @@ return array(
     'MonarcCore\Model\Entity\User'                                          => __DIR__ . '/src/MonarcCore/Model/Entity/User.php',
     'MonarcCore\Model\Entity\UserRole'                                      => __DIR__ . '/src/MonarcCore/Model/Entity/UserRole.php',
     'MonarcCore\Model\Entity\UserToken'                                     => __DIR__ . '/src/MonarcCore/Model/Entity/UserToken.php',
+    'MonarcCore\Model\Entity\UserTokenSuperClass'                           => __DIR__ . '/src/MonarcCore/Model/Entity/UserTokenSuperClass.php',
     'MonarcCore\Model\Entity\Vulnerability'                                 => __DIR__ . '/src/MonarcCore/Model/Entity/Vulnerability.php',
     'MonarcCore\Model\Entity\VulnerabilitySuperclass'                       => __DIR__ . '/src/MonarcCore/Model/Entity/VulnerabilitySuperClass.php',
     'MonarcCore\Model\GetAndSet'                                            => __DIR__ . '/src/MonarcCore/Model/GetAndSet.php',
