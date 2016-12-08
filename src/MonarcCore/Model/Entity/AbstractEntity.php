@@ -82,6 +82,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
             unset($array['user_language']);
             unset($array['dbadapter']);
             unset($array['parameters']);
+            unset($array['squeezeAutoPositionning']);
             return $array;
         } else {
             return array_intersect_key(get_object_vars($this), array_flip($fields));
@@ -302,6 +303,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
                     case 'inputFilter':
                     case 'dbadapter':
                     case 'parameters':
+                    case 'squeezeAutoPositionning':
                         break;
                     default:
                         $inputFilter->add(array(
