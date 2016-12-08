@@ -423,9 +423,7 @@ abstract class AbstractService extends AbstractServiceFactory
      * @throws \Exception
      */
     protected function setDependencies(&$entity, $dependencies) {
-
-
-
+        
         foreach($dependencies as $dependency) {
              // = preg_replace("/[0-9]/", "", $dependency);
             $deptable = $propertyname = $dependency;
@@ -448,8 +446,11 @@ abstract class AbstractService extends AbstractServiceFactory
                 }
                 else{
                     $a_dep = [];
-                    foreach($value as $v){
+                    foreach($value as $key => $v){
                         if (!is_null($v) && !empty($v) && !is_object($v)) {
+                            if (is_array($v)) {
+                                throw new \Exception(ucfirst($dependency) . ' must be a id');
+                            }
                             $dep = $this->get($tableName)->getReference($v);
                             if (!$dep->id) {
                                 throw new \Exception('Entity does not exist', 412);
