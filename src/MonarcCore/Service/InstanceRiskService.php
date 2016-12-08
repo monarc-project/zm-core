@@ -21,12 +21,15 @@ class InstanceRiskService extends AbstractService
 
     protected $anrTable;
     protected $amvTable;
-    protected $assetTable;
     protected $instanceTable;
+    
+    // only for setDependencies (deprecated)
+    protected $assetTable;
     protected $objectTable;
     protected $scaleTable;
     protected $threatTable;
     protected $vulnerabilityTable;
+
     protected $forbiddenFields = ['anr', 'amv', 'asset', 'threat', 'vulnerability'];
 
     /**

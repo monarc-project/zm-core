@@ -28,23 +28,31 @@ class InstanceService extends AbstractService
     protected $dependencies = ['anr', 'asset', 'object', '[parent](instance)', '[root](instance)'];
     protected $filterColumns = ['label1', 'label2', 'label3', 'label4'];
 
-    protected $amvTable;
+    // Tables & Entities
     protected $anrTable;
-    protected $assetTable;
-    protected $instanceTable;
+    protected $amvTable;
     protected $objectTable;
-    protected $rolfRiskTable;
     protected $scaleTable;
     protected $scaleImpactTypeTable;
+    protected $instanceConsequenceTable;
+    protected $instanceConsequenceEntity;
+
+    // Services
     protected $instanceConsequenceService;
     protected $instanceRiskService;
     protected $instanceRiskOpService;
-    protected $instanceConsequenceTable;
     protected $objectObjectService;
-    protected $instanceConsequenceEntity;
-    protected $forbiddenFields = ['anr', 'asset', 'object', 'ch', 'dh', 'ih'];
+    
+    // Useless (Deprecated)
+    protected $instanceTable;
+    protected $assetTable;
+    protected $rolfRiskTable;
+
+    // Export (Services)
     protected $objectExportService;
     protected $amvService;
+
+    protected $forbiddenFields = ['anr', 'asset', 'object', 'ch', 'dh', 'ih'];
 
     /**
      * Instantiate Object To Anr
@@ -241,7 +249,7 @@ class InstanceService extends AbstractService
         if(isset($data['parent']) && empty($data['parent'])){
             $data['parent'] = null;
         }elseif(!empty($data['parent'])){
-            $parent = $this->get('table')->getEntity($data['parent']);
+            $parent = $this->get('table')->getEntity(isset($data['parent']['id'])?$data['parent']['id']:$data['parent']);
             if(!$parent){
                 $data['parent'] = null;
                 unset($parent);
@@ -328,7 +336,7 @@ class InstanceService extends AbstractService
         $id = $this->get('table')->save($instance);
 
         if ($dataConsequences) {
-            $this->updateConsequences($anrId, ['consequences' => $dataConsequences]);
+            $this->updateConsequences($anrId, ['consequences' => $dataConsequences], true);
         }
 
         $this->updateRisks($anrId, $id);
@@ -750,7 +758,7 @@ class InstanceService extends AbstractService
      * @param $anrId
      * @param $data
      */
-    public function updateConsequences($anrId, $data) {
+    public function updateConsequences($anrId, $data, $fromInstance = false) {
         if (isset($data['consequences'])) {
             $i = 1;
             foreach($data['consequences'] as $consequence) {
@@ -766,7 +774,7 @@ class InstanceService extends AbstractService
 
                 /** @var InstanceConsequenceService $instanceConsequenceService */
                 $instanceConsequenceService = $this->get('instanceConsequenceService');
-                $instanceConsequenceService->patchConsequence($consequence['id'], $dataConsequences, $patchInstance);
+                $instanceConsequenceService->patchConsequence($consequence['id'], $dataConsequences, $patchInstance, $fromInstance);
 
                 $i++;
             }

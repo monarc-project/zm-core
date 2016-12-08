@@ -30,7 +30,7 @@ class InstanceConsequenceService extends AbstractService
      * @param $data
      * @return mixed
      */
-    public function patchConsequence($id, $data, $patchInstance = true, $local = true){
+    public function patchConsequence($id, $data, $patchInstance = true, $local = true, $fromInstance = false){
 
         $anrId = $data['anr'];
 
@@ -72,7 +72,7 @@ class InstanceConsequenceService extends AbstractService
             parent::patch($id,$data);
 
             if ($patchInstance) {
-                $this->updateInstanceImpacts($id);
+                $this->updateInstanceImpacts($id, $fromInstance);
             }
         }
 
@@ -136,7 +136,7 @@ class InstanceConsequenceService extends AbstractService
      *
      * @param $instanceConsequencesId
      */
-    protected function updateInstanceImpacts($instanceConsequencesId) {
+    protected function updateInstanceImpacts($instanceConsequencesId, $fromInstance = false) {
 
         $rolfpTypes = ScaleImpactType::getScaleImpactTypeRolfp();
 
@@ -178,13 +178,19 @@ class InstanceConsequenceService extends AbstractService
 
         $data['anr'] = $anrId;
 
-        //if father instance exist, create instance for child
-        $eventManager = new EventManager();
-        $eventManager->setIdentifiers('instance');
-
-        $sharedEventManager = $eventManager->getSharedManager();
-        $eventManager->setSharedManager($sharedEventManager);
-        $eventManager->trigger('patch', null, compact(['anrId', 'instanceId', 'data']));
+        if( ! $fromInstance ){
+            //if father instance exist, create instance for child
+            $eventManager = new EventManager();
+            $eventManager->setIdentifiers('instance');
+            $sharedEventManager = $eventManager->getSharedManager();
+            $eventManager->setSharedManager($sharedEventManager);
+            $eventManager->trigger('patch', null, compact(['anrId', 'instanceId', 'data']));
+        }
+        else{
+            $instance = $instanceCurrentConsequence->get('instance')->initialize();
+            $instance->exchangeArray($data);
+            $this->get('instanceTable')->save($instance);
+        }
     }
 
     /**
