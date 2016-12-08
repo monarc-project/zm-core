@@ -92,6 +92,7 @@ class UserTable extends AbstractEntityTable {
      */
     public function delete($id, $last = true)
     {
+
         if ($this->getConnectedUser()['id'] == $id) {
             throw new \Exception("You can't delete yourself", 412);
         }
