@@ -3,6 +3,7 @@ namespace MonarcCore\Service;
 use DoctrineTest\InstantiatorTestAsset\ExceptionAsset;
 use MonarcCore\Model\Entity\Asset;
 use MonarcCore\Model\Entity\Instance;
+use MonarcCore\Model\Entity\InstanceConsequence;
 use MonarcCore\Model\Entity\InstanceRisk;
 use MonarcCore\Model\Entity\InstanceRiskOp;
 use MonarcCore\Model\Entity\Object;
@@ -1412,38 +1413,86 @@ class InstanceService extends AbstractService
      */
     public function createInstanceConsequences($instanceId, $anrId, $object) {
 
-        //retrieve scale impact types
-        /** @var ScaleImpactTypeTable $scaleImpactTypeTable */
-        $scaleImpactTypeTable = $this->get('scaleImpactTypeTable');
-        //$scalesImpactTypes = $scaleImpactTypeTable->getEntityByFields(['anr' => $anrId, 'isHidden' => 0]);
-        $scalesImpactTypes = $scaleImpactTypeTable->getEntityByFields(['anr' => $anrId]);
-
-        /** @var InstanceConsequenceTable $instanceConsequenceTable */
-        $instanceConsequenceTable = $this->get('instanceConsequenceTable');
-
-        $nbConsequences = count($scalesImpactTypes);
-        $i = 1;
-        foreach($scalesImpactTypes as $scalesImpactType) {
-
-            $lastConsequence = ($nbConsequences == $i) ? true : false;
-
-            $data = [
-                'anr' => $this->get('anrTable')->getEntity($anrId),
-                'instance' => $this->get('instanceTable')->getEntity($instanceId),
-                'object' => $object,
-                'scaleImpactType' => $scalesImpactType,
-                'isHidden' => $scalesImpactType->isHidden,
-            ];
-
-            $class = $this->get('instanceConsequenceEntity');
-            $instanceConsequenceEntity = new $class();
-
-            $instanceConsequenceEntity->exchangeArray($data);
-
-            $instanceConsequenceTable->save($instanceConsequenceEntity,  $lastConsequence);
-
-            $i++;
+        if ($object->scope == Object::SCOPE_GLOBAL) {
+            /** @var InstanceTable $instanceTable */
+            $instanceTable = $this->get('instanceTable');
+            $brothers = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $object->id]);
         }
+
+        if (($object->scope == Object::SCOPE_GLOBAL) && (count($brothers) > 1)) {
+            foreach ($brothers as $brother) {
+                if ($brother->id != $instanceId) {
+                    $refInstance = $brother;
+                    break;
+                }
+            }
+
+            /** @var InstanceConsequenceTable $instanceConsequenceTable */
+            $instanceConsequenceTable = $this->get('instanceConsequenceTable');
+            $instancesConsequences = $instanceConsequenceTable->getEntityByFields(['anr' => $anrId, 'instance' => $refInstance->id]);
+
+            $i = 1;
+            foreach ($instancesConsequences as $instanceConsequence) {
+
+                $lastConsequence = (count($instancesConsequences) == $i) ? true : false;
+
+                $data = [
+                    'anr' => $this->get('anrTable')->getEntity($anrId),
+                    'instance' => $this->get('instanceTable')->getEntity($instanceId),
+                    'object' => $object,
+                    'scaleImpactType' => $instanceConsequence->scaleImpactType,
+                    'isHidden' => $instanceConsequence->isHidden,
+                    'locallyTouched' => $instanceConsequence->locallyTouched,
+                    'c' => $instanceConsequence->c,
+                    'i' => $instanceConsequence->i,
+                    'd' => $instanceConsequence->d,
+                ];
+
+                $class = $this->get('instanceConsequenceEntity');
+                $instanceConsequenceEntity = new $class();
+
+                $instanceConsequenceEntity->exchangeArray($data);
+
+                $instanceConsequenceTable->save($instanceConsequenceEntity, $lastConsequence);
+
+                $i++;
+            }
+        } else {
+            //retrieve scale impact types
+            /** @var ScaleImpactTypeTable $scaleImpactTypeTable */
+            $scaleImpactTypeTable = $this->get('scaleImpactTypeTable');
+            //$scalesImpactTypes = $scaleImpactTypeTable->getEntityByFields(['anr' => $anrId, 'isHidden' => 0]);
+            $scalesImpactTypes = $scaleImpactTypeTable->getEntityByFields(['anr' => $anrId]);
+
+            /** @var InstanceConsequenceTable $instanceConsequenceTable */
+            $instanceConsequenceTable = $this->get('instanceConsequenceTable');
+
+            $nbConsequences = count($scalesImpactTypes);
+            $i = 1;
+            foreach ($scalesImpactTypes as $scalesImpactType) {
+
+                $lastConsequence = ($nbConsequences == $i) ? true : false;
+
+                $data = [
+                    'anr' => $this->get('anrTable')->getEntity($anrId),
+                    'instance' => $this->get('instanceTable')->getEntity($instanceId),
+                    'object' => $object,
+                    'scaleImpactType' => $scalesImpactType,
+                    'isHidden' => $scalesImpactType->isHidden,
+                ];
+
+                $class = $this->get('instanceConsequenceEntity');
+                $instanceConsequenceEntity = new $class();
+
+                $instanceConsequenceEntity->exchangeArray($data);
+
+                $instanceConsequenceTable->save($instanceConsequenceEntity, $lastConsequence);
+
+                $i++;
+            }
+        }
+
+        die;
     }
 
     public function export(&$data) {
