@@ -424,6 +424,8 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     protected function setDependencies(&$entity, $dependencies) {
 
+
+
         foreach($dependencies as $dependency) {
              // = preg_replace("/[0-9]/", "", $dependency);
             $deptable = $propertyname = $dependency;
