@@ -423,6 +423,8 @@ abstract class AbstractService extends AbstractServiceFactory
      * @throws \Exception
      */
     protected function setDependencies(&$entity, $dependencies) {
+        $metadata = $this->get('table')->getClassMetadata();
+        $db = $this->get('table')->getDb();
 
         foreach($dependencies as $dependency) {
              // = preg_replace("/[0-9]/", "", $dependency);
@@ -435,27 +437,50 @@ abstract class AbstractService extends AbstractServiceFactory
 
             $value = $entity->get($propertyname);
             if (!is_null($value) && !empty($value) && !is_object($value)) {
-                $tableName =  $deptable . 'Table';
-                $method = 'set' . ucfirst($propertyname);
-                if(! is_array($value)){
-                    $dep = $this->get($tableName)->getReference($value);
-                    if (!$dep->id) {
-                        throw new \Exception('Entity does not exist', 412);
-                    }
-                    $entity->$method($dep);
-                }
-                else{
-                    $a_dep = [];
-                    foreach($value as $v){
-                        if (!is_null($v) && !empty($v) && !is_object($v)) {
-                            $dep = $this->get($tableName)->getReference($v);
-                            if (!$dep->id) {
-                                throw new \Exception('Entity does not exist', 412);
-                            }
-                            $a_dep[] = $dep;
+                if($metadata->hasAssociation($propertyname)){
+                    $class = $metadata->getAssociationTargetClass($propertyname);
+                    if(! is_array($value)){
+                        $dep = $db->getReference($class,$id);
+                        if (!$dep->id) {
+                            throw new \Exception('Entity does not exist', 412);
                         }
+                        $entity->set($propertyname,$dep);
+                    }else{
+                        $a_dep = [];
+                        foreach($value as $v){
+                            if (!is_null($v) && !empty($v) && !is_object($v)) {
+                                $dep = $db->getReference($class,$v);
+                                if (!$dep->id) {
+                                    throw new \Exception('Entity does not exist', 412);
+                                }
+                                $a_dep[] = $dep;
+                            }
+                        }
+                        $entity->set($propertyname,$a_dep);
                     }
-                    $entity->$method($a_dep);
+                }else{ // DEPRECATED
+                    $tableName =  $deptable . 'Table';
+                    $method = 'set' . ucfirst($propertyname);
+                    if(! is_array($value)){
+                        $dep = $this->get($tableName)->getReference($value);
+                        if (!$dep->id) {
+                            throw new \Exception('Entity does not exist', 412);
+                        }
+                        $entity->$method($dep);
+                    }
+                    else{
+                        $a_dep = [];
+                        foreach($value as $v){
+                            if (!is_null($v) && !empty($v) && !is_object($v)) {
+                                $dep = $this->get($tableName)->getReference($v);
+                                if (!$dep->id) {
+                                    throw new \Exception('Entity does not exist', 412);
+                                }
+                                $a_dep[] = $dep;
+                            }
+                        }
+                        $entity->$method($a_dep);
+                    }
                 }
             }
         }
