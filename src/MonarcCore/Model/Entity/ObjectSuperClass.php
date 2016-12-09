@@ -560,9 +560,10 @@ class ObjectSuperClass extends AbstractEntity
         return $this->inputFilter;
     }
 
-    public function __construct()
+    public function __construct($obj = null)
     {
         $this->models = new ArrayCollection();
+        parent::__construct($obj);
     }
 }
 

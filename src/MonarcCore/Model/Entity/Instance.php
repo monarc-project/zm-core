@@ -422,9 +422,10 @@ class Instance extends AbstractEntity
         return $this->inputFilter;
     }
 
-    public function __construct()
+    public function __construct($obj = null)
     {
         $this->instances = new ArrayCollection();
+        parent::__construct($obj);
     }
 }
 

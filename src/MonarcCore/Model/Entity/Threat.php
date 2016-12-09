@@ -67,9 +67,10 @@ class Threat extends ThreatSuperClass
         $this->models->add($model);
     }
 
-    public function __construct()
+    public function __construct($obj = null)
     {
         $this->models = new ArrayCollection();
+        parent::__construct($obj);
     }
 }
 

@@ -264,10 +264,11 @@ class RolfRiskSuperclass extends AbstractEntity
         return $this->inputFilter;
     }
 
-    public function __construct()
+    public function __construct($obj = null)
     {
         $this->tags = new ArrayCollection();
         $this->categories = new ArrayCollection();
+        parent::__construct($obj);
     }
 }
 
