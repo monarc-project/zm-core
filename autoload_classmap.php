@@ -62,6 +62,7 @@ return array(
     'MonarcCore\Model\Entity\InstanceConsequence'                           => __DIR__ . '/src/MonarcCore/Model/Entity/InstanceConsequence.php',
     'MonarcCore\Model\Entity\InstanceRisk'                                  => __DIR__ . '/src/MonarcCore/Model/Entity/InstanceRisk.php',
     'MonarcCore\Model\Entity\InstanceRiskOp'                                => __DIR__ . '/src/MonarcCore/Model/Entity/InstanceRiskOp.php',
+    'MonarcCore\Model\Entity\InstanceSuperClass'                            => __DIR__ . '/src/MonarcCore/Model/Entity/InstanceSuperClass.php',
     'MonarcCore\Model\Entity\Measure'                                       => __DIR__ . '/src/MonarcCore/Model/Entity/Measure.php',
     'MonarcCore\Model\Entity\MeasureSuperClass'                             => __DIR__ . '/src/MonarcCore/Model/Entity/MeasureSuperClass.php',
     'MonarcCore\Model\Entity\Model'                                         => __DIR__ . '/src/MonarcCore/Model/Entity/Model.php',
