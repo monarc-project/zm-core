@@ -83,8 +83,10 @@ class ObjectCategoryService extends AbstractService
         }
 
         //retrieve parent
-        foreach($objects as $object) {
-            $this->addParent($objects, $object, $currentObjectsListId);
+        if(empty($filterAnd['id'])){
+            foreach($objects as $object) {
+                $this->addParent($objects, $object, $currentObjectsListId);
+            }
         }
 
         return $objects;
