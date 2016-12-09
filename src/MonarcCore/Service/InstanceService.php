@@ -1379,7 +1379,7 @@ class InstanceService extends AbstractService
 
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('table');
-        $allInstances = $instanceTable->getEntityByFields(['anr' => $anrId], ['parent' => 'DESC', 'position' => 'DESC']);
+        $allInstances = $instanceTable->getEntityByFields(['anr' => $anrId], ['parent' => 'DESC', 'position' => 'ASC']);
 
         $instances = $temp = [];
         foreach($allInstances as $key => $instance) {
@@ -1409,7 +1409,7 @@ class InstanceService extends AbstractService
                 }
             }
         }
-        return isset($instances[0])?array_reverse($instances[0]):[];
+        return isset($instances[0])?array_values($instances[0]):[];
     }
 
     /**
