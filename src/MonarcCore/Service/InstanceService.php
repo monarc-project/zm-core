@@ -1499,8 +1499,6 @@ class InstanceService extends AbstractService
                 $i++;
             }
         }
-
-        die;
     }
 
     public function export(&$data) {
