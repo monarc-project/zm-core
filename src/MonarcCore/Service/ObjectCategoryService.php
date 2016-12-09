@@ -18,7 +18,7 @@ class ObjectCategoryService extends AbstractService
 
     protected $filterColumns = ['label1', 'label2', 'label3', 'label4'];
 
-    protected $dependencies = ['root', 'parent'];//required for autopositionning
+    protected $dependencies = ['root', 'parent', 'anr'];//required for autopositionning
 
     /**
      * Get Entity
