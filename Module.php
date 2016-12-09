@@ -34,7 +34,11 @@ class Module
             $sharedEventManager->attach('addcomponent', 'createinstance', function($e) use ($sm){
                 $params = $e->getParams();
                 /** @var InstanceService $instanceService */
-                $instanceService = $sm->get('MonarcCore\Service\InstanceService');
+                if($sm->has('MonarcFO\Service\AnrInstanceService')){
+                    $instanceService = $sm->get('MonarcFO\Service\AnrInstanceService');
+                }else{
+                    $instanceService = $sm->get('MonarcCore\Service\InstanceService');
+                }
                 $result = $instanceService->instantiateObjectToAnr($params['anrId'], $params['dataInstance']);
                 return $result;
             }, 100);
@@ -42,7 +46,11 @@ class Module
             $sharedEventManager->attach('instance', 'patch', function($e) use ($sm){
                 $params = $e->getParams();
                 /** @var InstanceService $instanceService */
-                $instanceService = $sm->get('MonarcCore\Service\InstanceService');
+                if($sm->has('MonarcFO\Service\AnrInstanceService')){
+                    $instanceService = $sm->get('MonarcFO\Service\AnrInstanceService');
+                }else{
+                    $instanceService = $sm->get('MonarcCore\Service\InstanceService');
+                }
                 $result = $instanceService->patchInstance($params['anrId'], $params['instanceId'], $params['data'], [], true);
                 return $result;
             }, 100);
@@ -50,7 +58,11 @@ class Module
             $sharedEventManager->attach('object', 'patch', function($e) use ($sm){
                 $params = $e->getParams();
                 /** @var ObjectService $objectService */
-                $objectService = $sm->get('MonarcCore\Service\ObjectService');
+                if($sm->has('MonarcFO\Service\AnrObjectService')){
+                    $objectService = $sm->get('MonarcFO\Service\AnrObjectService');
+                }else{
+                    $objectService = $sm->get('MonarcCore\Service\ObjectService');
+                }
                 $result = $objectService->patch($params['objectId'], $params['data']);
                 return $result;
             }, 100);
