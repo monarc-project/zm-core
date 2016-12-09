@@ -359,7 +359,7 @@ class ObjectSuperClass extends AbstractEntity
      * @param Anr $anr
      * @throws \Exception
      */
-    public function addAnr(Anr $anr)
+    public function addAnr(AnrSuperClass $anr)
     {
         $currentAnrs = $this->anrs;
 
