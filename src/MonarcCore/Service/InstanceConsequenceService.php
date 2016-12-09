@@ -1,5 +1,6 @@
 <?php
 namespace MonarcCore\Service;
+use MonarcCore\Model\Entity\Object;
 use MonarcCore\Model\Entity\ScaleImpactType;
 use MonarcCore\Model\Table\InstanceConsequenceTable;
 use MonarcCore\Model\Table\InstanceTable;
@@ -35,7 +36,6 @@ class InstanceConsequenceService extends AbstractService
         $anrId = $data['anr'];
 
         if (count($data)) {
-
             $entity = $this->get('table')->getEntity($id);
 
             if (isset($data['isHidden'])) {
@@ -70,6 +70,8 @@ class InstanceConsequenceService extends AbstractService
             $this->verifyRates($anrId, $data, $this->getEntity($id));
 
             parent::patch($id,$data);
+
+            $this->updateBrothersConsequences($anrId, $id);
 
             if ($patchInstance) {
                 $this->updateInstanceImpacts($id, $fromInstance);
@@ -112,6 +114,8 @@ class InstanceConsequenceService extends AbstractService
 
         $id = $this->get('table')->save($entity);
 
+        $this->updateBrothersConsequences($anrId, $id);
+
         $this->updateInstanceImpacts($id);
 
         return $id;
@@ -129,6 +133,50 @@ class InstanceConsequenceService extends AbstractService
         $this->verifyRates($anrId, $data, $this->getEntity($id));
 
         return $data;
+    }
+
+    /**
+     * Update Brother Consequences
+     *
+     * @param $anrId
+     * @param $id
+     */
+    public function updateBrothersConsequences($anrId, $id) {
+
+        /** @var InstanceConsequenceTable $table */
+        $table = $this->get('table');
+        $instanceConsequence = $table->getEntity($id);
+
+        if ($instanceConsequence->object->scope == Object::SCOPE_GLOBAL) {
+            /** @var InstanceTable $instanceTable */
+            $instanceTable = $this->get('instanceTable');
+            $brothers = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $instanceConsequence->object->id]);
+
+            if (count($brothers) > 1) {
+                foreach ($brothers as $brother) {
+
+                    /** @var InstanceConsequenceTable $instanceConsequenceTable */
+                    $instanceConsequenceTable = $this->get('table');
+                    $brotherInstancesConsequences = $instanceConsequenceTable->getEntityByFields(['anr' => $anrId, 'instance' => $brother->id, 'scaleImpactType' => $instanceConsequence->scaleImpactType->id]);
+
+                    $i = 1;
+                    foreach ($brotherInstancesConsequences as $brotherInstanceConsequence) {
+
+                        $lastConsequence = (count($brotherInstancesConsequences) == $i) ? true : false;
+
+                        $brotherInstanceConsequence->isHidden = $instanceConsequence->isHidden;
+                        $brotherInstanceConsequence->locallyTouched = $instanceConsequence->locallyTouched;
+                        $brotherInstanceConsequence->c = $instanceConsequence->c;
+                        $brotherInstanceConsequence->i = $instanceConsequence->i;
+                        $brotherInstanceConsequence->d = $instanceConsequence->d;
+
+                        $instanceConsequenceTable->save($brotherInstanceConsequence, $lastConsequence);
+
+                        $i++;
+                    }
+                }
+            }
+        }
     }
 
     /**
