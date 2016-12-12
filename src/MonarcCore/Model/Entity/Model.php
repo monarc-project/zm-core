@@ -179,10 +179,11 @@ class Model extends AbstractEntity
      */
     protected $threats;
 
-    public function __construct()
+    public function __construct($obj = null)
     {
         $this->assets = new ArrayCollection();
         $this->threats = new ArrayCollection();
+        parent::__construct($obj);
     }
 
     /**
