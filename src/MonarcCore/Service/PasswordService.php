@@ -38,6 +38,7 @@ class PasswordService extends AbstractService
 
             $this->setDependencies($passwordTokenEntity, ['user']);
 
+
             /** @var PasswordTokenTable $passwordTokenTable */
             $passwordTokenTable = $this->get('table');
             $passwordTokenTable->save($passwordTokenEntity);

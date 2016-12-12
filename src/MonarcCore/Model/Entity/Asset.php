@@ -74,9 +74,10 @@ class Asset extends AssetSuperClass
         $this->models[$id] = $model;
     }
 
-    public function __construct()
+    public function __construct($obj = null)
     {
         $this->models = new ArrayCollection();
+        parent::__construct($obj);
     }
 }
 

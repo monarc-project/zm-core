@@ -80,7 +80,7 @@ class ObjectService extends AbstractService
 
             $filterAnd['category'] = $child;
         }
-        $filterAnd['model'] = null;
+        //$filterAnd['model'] = null;
 
         $objects = $this->getAnrObjects($page, $limit, $order, $filter, $filterAnd, $model, $anr);
 

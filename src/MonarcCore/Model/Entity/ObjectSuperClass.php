@@ -359,7 +359,7 @@ class ObjectSuperClass extends AbstractEntity
      * @param Anr $anr
      * @throws \Exception
      */
-    public function addAnr(Anr $anr)
+    public function addAnr(AnrSuperClass $anr)
     {
         $currentAnrs = $this->anrs;
 
@@ -560,9 +560,10 @@ class ObjectSuperClass extends AbstractEntity
         return $this->inputFilter;
     }
 
-    public function __construct()
+    public function __construct($obj = null)
     {
         $this->models = new ArrayCollection();
+        parent::__construct($obj);
     }
 }
 
