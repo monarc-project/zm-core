@@ -423,6 +423,7 @@ abstract class AbstractService extends AbstractServiceFactory
      * @throws \Exception
      */
     protected function setDependencies(&$entity, $dependencies) {
+
         $metadata = $this->get('table')->getClassMetadata();
         $db = $this->get('table')->getDb();
 

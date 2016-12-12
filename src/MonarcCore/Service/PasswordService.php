@@ -7,8 +7,6 @@ use MonarcFO\Model\Table\PasswordTokenTable;
 
 class PasswordService extends AbstractService
 {
-    protected $passwordTokenEntity;
-    protected $passwordTokenTable;
     protected $userTable;
     protected $userService;
     protected $mailService;
@@ -35,13 +33,14 @@ class PasswordService extends AbstractService
                 'dateEnd' => $date
             ];
 
-            $passwordTokenEntity = $this->get('passwordTokenEntity');
+            $passwordTokenEntity = $this->get('entity');
             $passwordTokenEntity->exchangeArray($passwordTokenData);
 
             $this->setDependencies($passwordTokenEntity, ['user']);
 
+
             /** @var PasswordTokenTable $passwordTokenTable */
-            $passwordTokenTable = $this->get('passwordTokenTable');
+            $passwordTokenTable = $this->get('table');
             $passwordTokenTable->save($passwordTokenEntity);
 
             //send mail
@@ -72,17 +71,17 @@ class PasswordService extends AbstractService
 
 
         $date = new \DateTime("now");
-        $passwordToken = $this->get('passwordTokenTable')->getByToken($token, $date);
+        $passwordToken = $this->get('table')->getByToken($token, $date);
 
         if ($passwordToken) {
             $this->get('userService')->patch($passwordToken['userId'], ['password' => $password]);
 
             //delete current token
-            $this->get('passwordTokenTable')->deleteToken($token);
+            $this->get('table')->deleteToken($token);
         }
 
         //delete old tokens
-        $this->get('passwordTokenTable')->deleteOld();
+        $this->get('table')->deleteOld();
     }
 
     /**
@@ -93,7 +92,7 @@ class PasswordService extends AbstractService
      */
     public function verifyToken($token) {
         $date = new \DateTime("now");
-        $passwordToken = $this->get('passwordTokenTable')->getByToken($token, $date);
+        $passwordToken = $this->get('table')->getByToken($token, $date);
 
         if ($passwordToken) {
             return true;
