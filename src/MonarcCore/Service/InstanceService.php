@@ -746,6 +746,8 @@ class InstanceService extends AbstractService
                         }
                     }
 
+                    unset($data['parent']);
+
                     $this->updateInstance($anrId, $brother->id, $data, $historic, false);
                 }
             }
