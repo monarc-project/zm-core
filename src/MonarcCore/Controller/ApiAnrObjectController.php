@@ -26,7 +26,6 @@ class ApiAnrObjectController extends AbstractController
         $category = (int) $this->params()->fromQuery('category');
         $model = (int) $this->params()->fromQuery('model');
         $lock = $this->params()->fromQuery('lock');
-        $anr = (int) $this->params()->fromRoute('anrid');
 
         /** @var ObjectService $service */
         $service = $this->getService();
