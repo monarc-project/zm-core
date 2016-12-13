@@ -14,7 +14,7 @@ class ObjectExportService extends AbstractService
 
     public function generateExportArray($id, &$filename = ""){
         if (empty($id)) {
-            throw new \Exception('Asset to export is required',412);
+            throw new \Exception('Object to export is required',412);
         }
         $entity = $this->get('table')->getEntity($id);
 
