@@ -95,8 +95,28 @@ class Db {
                 $db = $key.'.id';
             }
             if ($value !== 'null' && !is_null($value)) {
-                $qb->andWhere("$db = :$key");
-                $qb->setParameter($key, $value);
+                if(is_array($value)){
+                    if(!empty($value['op']) && array_key_exists('value', $value)){
+                        if(is_array($value['value'])){
+                            $qb->andWhere("$db ".$value['op']." (:$key)");
+                            $qb->setParameter($key, $value['value']);
+                        }elseif(is_int($value['value'])){
+                            $qb->andWhere("$db ".$value['op']." :$key");
+                            $qb->setParameter($key, $value['value']);
+                        }elseif(is_null($value['value'])){ // IS || IS NOT
+                            $qb->andWhere("$db ".$value['op']." NULL");
+                        }else{ // LIKE || NOT LIKE
+                            $qb->andWhere("$db ".$value['op']." :$key");
+                            $qb->setParameter($key, '%'.$value['value'].'%');
+                        }
+                    }else{
+                        $qb->andWhere("$db IN (:$key)");
+                        $qb->setParameter($key, $value);
+                    }
+                }else{
+                    $qb->andWhere("$db = :$key");
+                    $qb->setParameter($key, $value);
+                }
             } else {
                 $qb->andWhere($qb->expr()->isNull("$db"));
             }
@@ -239,10 +259,10 @@ class Db {
                 if ($value !== '') {
 
                     if (is_array($value)) {
-                        if(!empty($value['op']) && isset($value['value'])){
+                        if(!empty($value['op']) &&array_key_exists('value', $value)){
                             if(is_array($value['value'])){
                                 $where = "$fullColName ".$value['op']." (?$searchIndex)";
-                                $parameterValue = $value['value'];    
+                                $parameterValue = $value['value'];
                             }elseif(is_int($value['value'])){
                                 $where = "$fullColName ".$value['op']." ?$searchIndex";
                                 $parameterValue = $value['value'];
