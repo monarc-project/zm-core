@@ -15,11 +15,9 @@ abstract class AbstractService extends AbstractServiceFactory
     protected $table;
     protected $entity;
     protected $label;
-    protected $language;
     protected $forbiddenFields = [];
     protected $dependencies = [];
 
-    protected $monarcConf = array();
 
     /**
      * @return null
@@ -44,40 +42,6 @@ abstract class AbstractService extends AbstractServiceFactory
         } else {
             $this->serviceFactory = $serviceFactory;
         }
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getLanguage()
-    {
-        return $this->language;
-    }
-
-    /**
-     * @param mixed $language
-     */
-    public function setLanguage($language)
-    {
-        $this->language = $language;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getMonarcConf()
-    {
-        return $this->monarcConf;
-    }
-
-    /**
-     * @param mixed $language
-     * @return mixed
-     */
-    public function setMonarcConf($conf)
-    {
-        $this->monarcConf = $conf;
-        return $this->monarcConf;
     }
 
     /**

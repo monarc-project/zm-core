@@ -11,7 +11,7 @@ abstract class AbstractController extends AbstractRestfulController
 
     protected $dependencies = [];
 
-    public function __construct(\MonarcCore\Service\AbstractService $service)
+    public function __construct(\MonarcCore\Service\AbstractServiceFactory $service)
     {
         $this->service = $service;
     }

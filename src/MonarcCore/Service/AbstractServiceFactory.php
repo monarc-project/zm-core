@@ -7,6 +7,8 @@ use Zend\ServiceManager\ServiceLocatorInterface;
 abstract class AbstractServiceFactory implements FactoryInterface
 {
     protected $ressources;
+    protected $language;
+    protected $monarcConf = array();
 
     public function createService(ServiceLocatorInterface $serviceLocator){
 
@@ -48,4 +50,40 @@ abstract class AbstractServiceFactory implements FactoryInterface
 
         return $defaultLanguageIndex;
     }
+
+
+    /**
+     * @return mixed
+     */
+    public function getLanguage()
+    {
+        return $this->language;
+    }
+
+    /**
+     * @param mixed $language
+     */
+    public function setLanguage($language)
+    {
+        $this->language = $language;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getMonarcConf()
+    {
+        return $this->monarcConf;
+    }
+
+    /**
+     * @param mixed $language
+     * @return mixed
+     */
+    public function setMonarcConf($conf)
+    {
+        $this->monarcConf = $conf;
+        return $this->monarcConf;
+    }
+
 }
