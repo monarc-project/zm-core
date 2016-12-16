@@ -833,8 +833,17 @@ class AmvService extends AbstractService
             'label3' => 'label3',
             'label4' => 'label4',
         );
+        $measuresObj = array(
+            'id' => 'id',
+            'code' => 'code',
+            'status' => 'status',
+            'description1' => 'description1',
+            'description2' => 'description2',
+            'description3' => 'description3',
+            'description4' => 'description4',
+        );
 
-        $amvs = $threats = $vulns = $themes = array();
+        $amvs = $threats = $vulns = $themes = $measures = array();
 
         foreach($amvObj as $k => $v){
             switch($v){
@@ -848,18 +857,25 @@ class AmvService extends AbstractService
                     }else{
                         $o = $amv->get($k)->getJsonArray();
                         $amvs[$k] = $o['id'];
+                        switch($k){
+                            case 'threat':
+                                $threats[$o['id']] = $amv->get($k)->getJsonArray($treatsObj);
+                                if(!empty($threats[$o['id']]['theme'])){
+                                    $threats[$o['id']]['theme'] = $threats[$o['id']]['theme']->getJsonArray($themesObj);
 
-                        if($k == 'threat'){
-                            $threats[$o['id']] = $amv->get($k)->getJsonArray($treatsObj);
-                            if(!empty($threats[$o['id']]['theme'])){
-                                $threats[$o['id']]['theme'] = $threats[$o['id']]['theme']->getJsonArray($themesObj);
+                                    $themes[$threats[$o['id']]['theme']['id']] = $threats[$o['id']]['theme'];
 
-                                $themes[$threats[$o['id']]['theme']['id']] = $threats[$o['id']]['theme'];
-
-                                $threats[$o['id']]['theme'] = $threats[$o['id']]['theme']['id'];
-                            }
-                        }elseif($k == 'vulnerability'){
-                            $vulns[$o['id']] = $amv->get($k)->getJsonArray($vulsObj);
+                                    $threats[$o['id']]['theme'] = $threats[$o['id']]['theme']['id'];
+                                }
+                                break;
+                            case 'vulnerability':
+                                $vulns[$o['id']] = $amv->get($k)->getJsonArray($vulsObj);
+                                break;
+                            case 'measure1':
+                            case 'measure2':
+                            case 'measure3':
+                                $measures[$o['id']] = $amv->get($k)->getJsonArray($measuresObj);
+                                break;
                         }
                     }
                     break;
@@ -871,6 +887,7 @@ class AmvService extends AbstractService
             $threats,
             $vulns,
             $themes,
+            $measures,
         );
     }
 }

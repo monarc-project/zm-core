@@ -109,11 +109,11 @@ class ObjectExportService extends AbstractService
             array_key_exists('version', $data) && $data['version'] == $this->getVersion()){
 
             if(isset($data['object']['name'.$this->getLanguage()]) && isset($objectsCache[$data['object']['name'.$this->getLanguage()]])){
-                return $objectsCache[$data['object']['name'.$this->getLanguage()]];
+                return $objectsCache['objects'][$data['object']['name'.$this->getLanguage()]];
             }
 
             // import asset
-            $assetId = $this->get('assetService')->importFromArray($data['object']['asset'],$anr);
+            $assetId = $this->get('assetService')->importFromArray($data['object']['asset'],$anr,$objectsCache);
             if($assetId){
                 // import categories
                 $idCateg = $this->importFromArrayCategories($data['categories'],$data['object']['category'],$anr->get('id'));
@@ -194,7 +194,7 @@ class ObjectExportService extends AbstractService
                 $this->setDependencies($object,['anr', 'category', 'asset']);
                 $idObj = $this->get('table')->save($object);
 
-                $objectsCache[$data['object']['name'.$this->getLanguage()]] = $idObj;
+                $objectsCache['objects'][$data['object']['name'.$this->getLanguage()]] = $idObj;
 
                 //on s'occupe des enfants
                 if(!empty($data['children'])){

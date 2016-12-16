@@ -65,7 +65,8 @@ class AssetExportService extends AbstractService
                 $return['amvs'][$amv->get('id')],
                 $threats,
                 $vulns,
-                $themes) = $amvService->generateExportArray($amv);
+                $themes,
+                $measures) = $amvService->generateExportArray($amv);
             if(empty($return['threats'])){
                 $return['threats'] = $threats;
             }else{
@@ -80,6 +81,11 @@ class AssetExportService extends AbstractService
                 $return['vuls'] = $vulns;
             }else{
                 $return['vuls'] += $vulns;
+            }
+            if(empty($return['measures'])){
+                $return['measures'] = $measures;
+            }else{
+                $return['measures'] += $measures;
             }
         }
 

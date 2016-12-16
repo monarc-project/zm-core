@@ -37,6 +37,9 @@ class InstanceService extends AbstractService
     protected $scaleImpactTypeTable;
     protected $instanceConsequenceTable;
     protected $instanceConsequenceEntity;
+    protected $recommandationRiskTable; // Used for FO
+    protected $recommandationMeasureTable; // Used for FO
+    protected $recommandationTable; // Used for FO
 
     // Services
     protected $instanceConsequenceService;
@@ -1663,8 +1666,9 @@ class InstanceService extends AbstractService
             'description4' => 'description4',
             'status' => 'status',
         );
-        //TODO : traiter amv & asset & threat & vuln
+        $riskIds = [];
         foreach($instanceRiskResults as $ir){
+            $riskIds[$ir->get('id')] = $ir->get('id');
             if(!$with_eval){
                 $ir->set('vulnerabilityRate', '-1');
                 $ir->set('threatRate', '-1');
@@ -1686,7 +1690,8 @@ class InstanceService extends AbstractService
                     $amv,
                     $threats,
                     $vulns,
-                    $themes) = $this->get('amvService')->generateExportArray($ir->get('amv'));
+                    $themes,
+                    $measures) = $this->get('amvService')->generateExportArray($ir->get('amv')); // TODO: measuress
                 $return['amvs'][$ir->get('amv')->get('id')] = $amv;
                 if(empty($return['threats'])){
                     $return['threats'] = $threats;
@@ -1697,6 +1702,11 @@ class InstanceService extends AbstractService
                     $return['vuls'] = $vulns;
                 }else{
                     $return['vuls'] += $vulns;
+                }
+                if(empty($return['measures'])){
+                    $return['measures'] = $measures;
+                }else{
+                    $return['measures'] += $measures;
                 }
             }
 
@@ -1713,11 +1723,57 @@ class InstanceService extends AbstractService
             $vulnerability = $ir->get('vulnerability');
             if(!empty($vulnerability)){
                 if(empty($return['threats'][$ir->get('threat')->get('id')])){
-                    $return['vuls'][$ir->get('vulnerability')->get('id')] = $ir->get('vulnerability')->getJsonArray($vulnerability);
+                    $return['vuls'][$ir->get('vulnerability')->get('id')] = $ir->get('vulnerability')->getJsonArray($vulsObj);
                 }
                 $return['risks'][$ir->get('id')]['vulnerability'] = $ir->get('vulnerability')->get('id');
             }else{
                 $return['risks'][$ir->get('id')]['vulnerability'] = null;
+            }
+        }
+
+        // Recommandation
+        if($with_eval && !empty($riskIds) && $this->get('recommandationRiskTable')){
+            $recosObj = array(
+                'id' => 'id',
+                'code' => 'code',
+                'description' => 'description',
+                'position' => 'position',
+                'comment' => 'comment',
+                'responsable' => 'responsable',
+                'duedate' => 'duedate',
+                'counterTreated' => 'counterTreated',
+            );
+            $return['recos'] = $recoIds = [];
+            $recoRisk = $this->get('recommandationRiskTable')->getEntityByFields(['anr' => $anr->get('id'), 'instanceRisk' => $riskIds], ['position'=>'ASC']);
+            foreach($recoRisk as $rr){
+                if(!empty($rr)){
+                    $return['recos'][$rr->get('instanceRisk')->get('id')][$rr->get('recommandation')->get('id')] = $rr->get('recommandation')->getJsonArray($recosObj);
+                    $return['recos'][$rr->get('instanceRisk')->get('id')][$rr->get('recommandation')->get('id')]['commentAfter'] = $rr->get('commentAfter');
+                    $recoIds[$rr->get('recommandation')->get('id')] = $rr->get('recommandation')->get('id');
+                }
+            }
+
+            if(!empty($recoIds) && $this->get('recommandationMeasureTable')){
+                $measuresObj = array(
+                    'id' => 'id',
+                    'code' => 'code',
+                    'status' => 'status',
+                    'description1' => 'description1',
+                    'description2' => 'description2',
+                    'description3' => 'description3',
+                    'description4' => 'description4',
+                );
+                $links = $this->get('recommandationMeasureTable')->getEntityByFields(['anr' => $anr->get('id'), 'recommandation' => $recoIds]);
+                $data['recolinks'] = [];
+                if(!isset($return['measures'])){
+                    $return['measures'] = [];
+                }
+                foreach($links as $lk){
+                    if(!empty($lk)){
+                        $return['recolinks'][$lk->get('recommandation')->get('id')][$lk->get('measure')->get('id')] = $lk->get('measure')->get('id');
+                        $return['measures'][$lk->get('measure')->get('id')] = $lk->get('measure')->getJsonArray($measuresObj);
+                    }
+                }
             }
         }
 
@@ -1796,6 +1852,8 @@ class InstanceService extends AbstractService
             }
             $return['risksop'][$iro->get('id')] = $iro->getJsonArray($instanceRiskOpArray);
         }
+
+        // TODO: Recommandations liées aux RisksOp
 
         // Instance consequence
         if($with_eval){
