@@ -61,6 +61,7 @@ class ObjectCategoryService extends AbstractService
                     ->getQuery()->getSingleScalarResult();
                 $entity['previous'] = $prev;
             }
+            die;
         }
 
         return $entity;
