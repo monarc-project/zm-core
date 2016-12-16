@@ -1,7 +1,10 @@
 <?php
 namespace MonarcCore\Model\Table;
 
+use MonarcCore\Model\Entity\Anr;
+
 class InstanceTable extends AbstractEntityTable {
+
     /**
      * Find By Anr
      *

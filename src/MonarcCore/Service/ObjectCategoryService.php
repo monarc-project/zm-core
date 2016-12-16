@@ -1,5 +1,6 @@
 <?php
 namespace MonarcCore\Service;
+use MonarcCore\Model\Entity\AbstractEntity;
 use MonarcCore\Model\Table\AnrObjectCategoryTable;
 
 /**
@@ -40,6 +41,8 @@ class ObjectCategoryService extends AbstractService
                 $pos = $pos->where('t.parent = :parent')
                     ->setParameter(':parent', $entity['parent']->id);
             }
+
+            $pos->where('t.anr = :anr')->setParameter(':anr', $entity['anr']->id);
 
             $pos = $pos->getQuery()->getSingleScalarResult();
             if($entity['position'] >= $pos){

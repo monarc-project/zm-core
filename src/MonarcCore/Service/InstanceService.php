@@ -14,6 +14,7 @@ use MonarcCore\Model\Table\InstanceTable;
 use MonarcCore\Model\Table\RolfRiskTable;
 use MonarcCore\Model\Table\ScaleTable;
 use MonarcCore\Model\Table\ScaleImpactTypeTable;
+use MonarcFO\Model\Table\AnrTable;
 use Zend\EventManager\EventManager;
 
 
@@ -1840,5 +1841,30 @@ class InstanceService extends AbstractService
             $return['children'][$i->get('id')] = $this->generateExportArray($i->get('id'),$f,$with_eval, $with_scale);
         }
         return $return;
+    }
+
+
+    public function getDisplayedAscendance($instance, $simple = false, $anr_label = null, $ignore_last = false){
+
+        /** @var InstanceTable $table */
+        $table = $this->get('table');
+        $ascendance = $table->getAscendance($instance);
+
+        $label = '';
+        foreach($ascendance as $parent) {
+            if( ! $ignore_last){
+                if(!$simple){
+                    $label .= "<span class=\"superior\"> > </span>".$parent['name1'].' '.$label;
+                }
+                else {
+                    $label .= " > ".$parent['name1'].' '.$label;
+                }
+            }
+            else{
+                $ignore_last = false;//permet de passer $this mais de continuer ensuite
+            }
+        }
+
+        return $label;
     }
 }
