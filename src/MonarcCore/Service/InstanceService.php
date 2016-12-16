@@ -1701,7 +1701,7 @@ class InstanceService extends AbstractService
 
             $threat = $ir->get('threat');
             if(!empty($threat)){
-                if(empty($return['threats'][$$ir->get('threat')->get('id')])){
+                if(empty($return['threats'][$ir->get('threat')->get('id')])){
                     $return['threats'][$ir->get('threat')->get('id')] = $ir->get('threat')->getJsonArray($treatsObj);
                 }
                 $return['risks'][$ir->get('id')]['threat'] = $ir->get('threat')->get('id');
@@ -1711,7 +1711,7 @@ class InstanceService extends AbstractService
 
             $vulnerability = $ir->get('vulnerability');
             if(!empty($vulnerability)){
-                if(empty($return['threats'][$$ir->get('threat')->get('id')])){
+                if(empty($return['threats'][$ir->get('threat')->get('id')])){
                     $return['vuls'][$ir->get('vulnerability')->get('id')] = $ir->get('vulnerability')->getJsonArray($vulnerability);
                 }
                 $return['risks'][$ir->get('id')]['vulnerability'] = $ir->get('vulnerability')->get('id');
