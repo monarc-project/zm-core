@@ -32,6 +32,53 @@ class ModelService extends AbstractService
     );
 
     /**
+     * Get List
+     *
+     * @param int $page
+     * @param int $limit
+     * @param null $order
+     * @param null $filter
+     * @return mixed
+     */
+    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null){
+        $conf = $this->getMonarcConf();
+        $joinModel = -1;
+        if (isset($conf['cliModel'])) {
+            $filterAnd['isGeneric'] = 1;
+
+            if ($conf['cliModel'] != 'generic') {
+                $joinModel = $conf['cliModel'];
+            }
+        }
+
+        $models = $this->get('table')->fetchAllFiltered(
+            array_keys($this->get('entity')->getJsonArray()),
+            $page,
+            $limit,
+            $this->parseFrontendOrder($order),
+            $this->parseFrontendFilter($filter, $this->filterColumns),
+            $filterAnd
+        );
+
+        if ($joinModel > 0) {
+            $filterAnd['id'] = $joinModel;
+            $filterAnd['isGeneric'] = 0;
+
+            $models = array_merge($models, $this->get('table')->fetchAllFiltered(
+                array_keys($this->get('entity')->getJsonArray()),
+                $page,
+                $limit,
+                $this->parseFrontendOrder($order),
+                $this->parseFrontendFilter($filter, $this->filterColumns),
+                $filterAnd
+            ));
+        }
+
+        return $models;
+    }
+
+
+    /**
      * Create
      *
      * @param $data

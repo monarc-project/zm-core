@@ -898,7 +898,6 @@ class InstanceService extends AbstractService
      * @return array
      */
     public function getRisks($anrId, $instance = null, $params = []) {
-
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('table');
 
