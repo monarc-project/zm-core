@@ -13,7 +13,7 @@ class RolfRiskService extends AbstractService
     protected $filterColumns = array(
         'code', 'label1', 'label2', 'label3', 'label4', 'description1', 'description2', 'description3', 'description4'
     );
-    public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $category = null, $tag = null)
+    public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $category = null, $tag = null, $anr = null)
     {
         $filterAnd = [];
         $filterJoin = [];
@@ -32,6 +32,10 @@ class RolfRiskService extends AbstractService
                 'rel' => 'tags'
             ];
             $filterAnd['g.id'] = $tag;
+        }
+
+        if (!is_null($anr)) {
+            $filterAnd['anr'] = intval($anr);
         }
 
         return $this->get('table')->fetchAllFiltered(
