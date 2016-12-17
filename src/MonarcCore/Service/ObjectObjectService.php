@@ -179,7 +179,13 @@ class ObjectObjectService extends AbstractService
         /** @var ObjectObjectTable $table */
         $table = $this->get('table');
 
-        $children = $table->getEntityByFields(['father' => $fatherId, 'anr' => $anrId], ['position' => 'ASC']);
+        $filters = ['father' => $fatherId];
+
+        if (!is_null($anrId)) {
+            $filters['anr'] = $anrId;
+        }
+
+        $children = $table->getEntityByFields($filters, ['position' => 'ASC']);
         $array_children = [];
 
         foreach ($children as $child) {
