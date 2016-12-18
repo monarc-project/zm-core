@@ -252,7 +252,11 @@ class InstanceRiskService extends AbstractService
 
                 foreach($instances as $instance) {
                     if ($instance != $entity->instance) {
-                        $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $instance->id, 'amv' => $entity->amv->id]);
+                        if ($entity->specific == 0) {
+                            $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $instance->id, 'amv' => $entity->amv->id]);
+                        } else {
+                            $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $instance->id, 'specific' => 1, 'threat' => $entity->threat->id, 'vulnerability' => $entity->vulnerability->id]);
+                        }
                         foreach($instancesRisks as $instanceRisk) {
                             $initialData['id'] = $instanceRisk->id;
                             $initialData['instance'] = $instance->id;
