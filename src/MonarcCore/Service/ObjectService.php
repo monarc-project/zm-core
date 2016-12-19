@@ -797,10 +797,31 @@ class ObjectService extends AbstractService
         }
 
         $entity['implicitPosition'] = isset($data['implicitPosition']) ? $data['implicitPosition'] : 2;
-        $entity['name1'] = $entity['name1'].' (copy)';
-        $entity['name2'] = $entity['name2'].' (copy)';
-        $entity['name3'] = $entity['name3'].' (copy)';
-        $entity['name4'] = $entity['name4'].' (copy)';
+        $filter = [];
+        for($i=1;$i<=4;$i++){
+            if(!empty($entity['name'.$i])){
+                $filter['name'.$i] = $entity['name'.$i];
+            }
+        }
+        //$entity['name1'] = $entity['name1'].' (copy)';
+        //$entity['name2'] = $entity['name2'].' (copy)';
+        //$entity['name3'] = $entity['name3'].' (copy)';
+        //$entity['name4'] = $entity['name4'].' (copy)';
+        $exist = current($this->get('table')->getEntityByFields($filter));
+        $suff = 0;
+        while(!empty($exist)){
+            $suff++;
+            $filterB = $filter;
+            foreach($filterB as $k => $v){
+                $filterB[$k] = $v.' (copy #'.$suff.')';
+            }
+            $exist = current($this->get('table')->getEntityByFields($filterB));
+        }
+        if($suff > 0){
+            foreach($filter as $k => $v){
+                $entity[$k] = $v.' (copy #'.$suff.')';
+            }
+        }
 
         return $this->create($entity);
     }
