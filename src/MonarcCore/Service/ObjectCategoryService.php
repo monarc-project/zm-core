@@ -30,6 +30,7 @@ class ObjectCategoryService extends AbstractService
     public function getEntity($id){
         $entity = $this->get('table')->get($id);
 
+
         $entity['previous'] = null;
         if($entity['position'] == 1){
             $entity['implicitPosition'] = 1;
@@ -61,7 +62,6 @@ class ObjectCategoryService extends AbstractService
                     ->getQuery()->getSingleScalarResult();
                 $entity['previous'] = $prev;
             }
-            die;
         }
 
         return $entity;
