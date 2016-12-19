@@ -897,212 +897,250 @@ class InstanceService extends AbstractService
      * @param $anrId
      * @return array
      */
-    public function getRisks($anrId, $instance = null, $params = []) {
-        /** @var InstanceTable $instanceTable */
-        $instanceTable = $this->get('table');
-
-        if ($instance) {
-            $instanceId = $instance['id'];
-            $instance = $instanceTable->getEntity($instanceId);
-
-            if ($instance->object->asset->type == Asset::ASSET_PRIMARY) {
-                //retrieve descendants
-                $instances = $instanceTable->getDescendantsObjects($instanceId);
-                $instances[] = $instance;
-
-                $instancesRisks = $this->getInstancesRisks($anrId, $instances);
-
-            } else {
-                /** @var InstanceRiskService $instanceRiskService */
-                $instanceRiskService = $this->get('instanceRiskService');
-                $instancesRisks = $instanceRiskService->getInstanceRisks($instanceId, $anrId);
-            }
-        } else {
-            $instances = $instanceTable->getEntityByFields(['anr' => $anrId]);
-
-            $instancesRisks = $this->getInstancesRisks($anrId, $instances);
-        }
-
-        // Order by AMV link position, then max risk
-        /** @var AmvTable $amvTable */
-        $amvTable = $this->get('amvTable');
-        $amvs = [];
-
-        // Cache the AMVs data
-        foreach ($instancesRisks as $ir) {
-            if (!isset($amvs[$ir->amv->id])) {
-                $amv = $amvTable->getEntity($ir->amv->id);
-                $amvs[$ir->amv->id] = $amv;
-            }
-        }
-
-        // Sort by passed parameter
+    public function getRisks($anrId, $instanceId = null, $params = []) {
         $order = isset($params['order']) ? $params['order'] : 'maxRisk';
         $dir = isset($params['order_direction']) ? $params['order_direction'] : 'desc';
 
-        function sortAmvNameFallback($existingvalue, $a, $b, $dir) {
-            if ($existingvalue == 0) {
-                // order by a, m, v name1
-                if ($a->asset->name1 != $b->asset->name1) {
-                    return ($dir == 'asc' ? strcmp($b->asset->label1, $a->asset->label1) : strcmp($a->asset->name1, $b->asset->label1));
-                } else if ($a->threat->label1 != $b->threat->label1) {
-                    return ($dir == 'asc' ? strcmp($b->threat->label1, $a->threat->label1) : strcmp($a->threat->label1, $b->threat->label1));
-                } else {
-                    return ($dir == 'asc' ? strcmp($b->vulnerability->label1, $a->vulnerability->label1) : strcmp($a->vulnerability->label1, $b->vulnerability->label1));
-                }
-            } else {
-                return $existingvalue;
+        if(!empty($instanceId)){
+            $instance = $this->get('table')->getEntity($instanceId);
+            if($instance->get('anr')->get('id') != $anrId){
+                throw new \Exception('Anr ids differents', 412);
             }
         }
 
-        usort($instancesRisks, function ($a, $b) use ($amvs, $order, $dir) {
-            $amv_a = $amvs[$a->amv->id];
-            $amv_b = $amvs[$b->amv->id];
+        $query = $this->get('instanceRiskService')->get('table')->getRepository()->createQueryBuilder('ir')
+            ->select([
+                'ir', 'amv', 'threat', 'vulnerability', 'i', 'asset', 'o.scope', 'measure1', 'measure2', 'measure3',
+            ])
+            ->where('i.anr = :anrid')
+            ->setParameter(':anrid',$anrId);
 
-            switch ($order) {
-                case 'instance':
-                    return sortAmvNameFallback(($dir == 'desc' ? ($b->instance->id - $a->instance->id) : ($a->instance->id - $b->instance->id)), $a, $b, $dir);
-
-                case 'auditOrder':
-                    return sortAmvNameFallback(($dir == 'desc' ? ($amv_b->position - $amv_a->position) : ($amv_a->position - $amv_b->position)), $a, $b, $dir);
-
-                case 'c_impact':
-                    return sortAmvNameFallback(($dir == 'desc' ? ($b->instance->c - $a->instance->c) : ($a->instance->c - $b->instance->c)), $a, $b, $dir);
-
-                case 'i_impact':
-                    return sortAmvNameFallback(($dir == 'desc' ? ($b->instance->i - $a->instance->i) : ($a->instance->i - $b->instance->i)), $a, $b, $dir);
-
-                case 'd_impact':
-                    return sortAmvNameFallback(($dir == 'desc' ? ($b->instance->d - $a->instance->d) : ($a->instance->d - $b->instance->d)), $a, $b, $dir);
-
-                case 'threat':
-                    return sortAmvNameFallback(($dir == 'desc' ? ($b->threat->id - $a->threat->id) : ($a->threat->id - $b->threat->id)), $a, $b, $dir);
-
-                case 'threatRate':
-                    return sortAmvNameFallback(($dir == 'desc' ? ($b->threatRate - $a->threatRate) : ($a->threatRate - $b->threatRate)), $a, $b, $dir);
-
-                case 'vulnerability':
-                    return sortAmvNameFallback(($dir == 'desc' ? ($b->vulnerability->id - $a->vulnerability->id) : ($a->vulnerability->id - $b->vulnerability->id)), $a, $b, $dir);
-
-                case 'vulnerabilityRate':
-                    return sortAmvNameFallback(($dir == 'desc' ? ($b->vulnerabilityRate - $a->vulnerabilityRate) : ($a->vulnerabilityRate - $b->vulnerabilityRate)), $a, $b, $dir);
-
-                case 'targetRisk':
-                    return sortAmvNameFallback(($dir == 'desc' ? ($b->cacheTargetedRisk - $a->cacheTargetedRisk) : ($a->cacheTargetedRisk - $b->cacheTargetedRisk)), $a, $b, $dir);
-
-                case 'maxRisk':
-                    default;
-                    return sortAmvNameFallback(($dir == 'desc' ? ($b->cacheMaxRisk - $a->cacheMaxRisk) : ($a->cacheMaxRisk - $b->cacheMaxRisk)), $a, $b, $dir);
-            }
-        });
-
-        $risks = [];
-        foreach ($instancesRisks as $instanceRisk) {
-            // Process filters
-            if (isset($params['kindOfMeasure'])) {
-                if ($instanceRisk->kindOfMeasure != $params['kindOfMeasure']) {
-                    continue;
+        if(empty($instance)){
+            // On prend toutes les instances, on est sur l'anr
+        }elseif($instance->get('asset') && $instance->get('asset')->get('type') == \MonarcCore\Model\Entity\AssetSuperClass::ASSET_PRIMARY){
+            $instanceIds = [];
+            $instanceIds[$instance->get('id')] = $instance->get('id');
+            $this->get('table')->initTree($instance);
+            $temp = isset($instance->parameters['children']) ? $instance->parameters['children'] : [];
+            while( ! empty($temp) ){
+                $sub = array_shift($temp);
+                $instanceIds[$sub->get('id')] = $sub->get('id');
+                if(!empty($sub->parameters['children'])){
+                    foreach($sub->parameters['children'] as $subsub){
+                        array_unshift($temp, $subsub);
+                    }
                 }
             }
 
-            // Get AMV
-            $amv = $amvs[$instanceRisk->amv->id];
+            $query->andWhere('i.id IN (:ids)')
+                ->setParameter(':ids',$instanceIds);
+        }else{
+            $query->andWhere('i.id = :id')
+                ->setParameter(':id',$instance->get('id'));
+        }
 
-            for($i =1; $i<=3; $i++) {
-                $name = 'measure' . $i;
-                if ($amv->$name) {
-                    ${$name} = $amv->$name->getJsonArray();
-                    unset(${$name}['__initializer__']);
-                    unset(${$name}['__cloner__']);
-                    unset(${$name}['__isInitialized__']);
-                } else {
-                    ${$name} = null;
-                }
-            }
+        $query->innerJoin('ir.instance', 'i')
+            ->leftJoin('ir.amv', 'amv')
+            ->innerJoin('ir.threat', 'threat')
+            ->innerJoin('ir.vulnerability', 'vulnerability')
+            ->leftJoin('ir.asset', 'asset')
+            ->innerJoin('i.object', 'o')
+            ->leftJoin('amv.measure1', 'measure1')
+            ->leftJoin('amv.measure2', 'measure2')
+            ->leftJoin('amv.measure3', 'measure3')
+            ->andWhere('ir.cacheMaxRisk >= -1 '); // seuil
 
-            // More filters
-            if (isset($params['thresholds'])) {
-                $min = $params['thresholds'];
-
-                $cid = [];
-                if ($amv->threat->c) $cid[] = $instanceRisk->riskC;
-                if ($amv->threat->i) $cid[] = $instanceRisk->riskI;
-                if ($amv->threat->d) $cid[] = $instanceRisk->riskD;
-
-                if ($min > 0 && max($cid) < $min && count($cid) > 0) {
-                    continue;
-                }
-            }
-
-            if (isset($params['keywords']) && !empty($params['keywords'])) {
-                if (!$this->findInFields($amv->asset, $params['keywords'], ['label1', 'label2', 'label3', 'label4'])
-                    && !$this->findInFields($amv->threat, $params['keywords'], ['label1', 'label2', 'label3', 'label4'])
-                    && !$this->findInFields($amv->vulnerability, $params['keywords'], ['label1', 'label2', 'label3', 'label4'])
-                    && !$this->findInFields($amv->measure1, $params['keywords'], ['label1', 'label2', 'label3', 'label4'])
-                    && !$this->findInFields($amv->measure2, $params['keywords'], ['label1', 'label2', 'label3', 'label4'])
-                    && !$this->findInFields($amv->measure3, $params['keywords'], ['label1', 'label2', 'label3', 'label4'])
-                    && !$this->findInFields($instanceRisk->instance, $params['keywords'], ['name1', 'name2', 'name3', 'name4'])
-                    && stripos($instanceRisk->comment, $params['keywords']) === false) {
-                    continue;
-                }
-            }
-
-            // Add the risk if we got through here
-            $risks[] = [
-                'id' => $instanceRisk->id,
-                'instance' => $instanceRisk->instance->id,
-                'amv' => $amv->id,
-                'asset' => $amv->asset->id,
-                'assetLabel1' => $amv->asset->label1,
-                'assetLabel2' => $amv->asset->label2,
-                'assetLabel3' => $amv->asset->label3,
-                'assetLabel4' => $amv->asset->label4,
-                'assetDescription1' => $amv->asset->description1,
-                'assetDescription2' => $amv->asset->description2,
-                'assetDescription3' => $amv->asset->description3,
-                'assetDescription4' => $amv->asset->description4,
-                'threat' => $amv->threat->id,
-                'threatLabel1' => $amv->threat->label1,
-                'threatLabel2' => $amv->threat->label2,
-                'threatLabel3' => $amv->threat->label3,
-                'threatLabel4' => $amv->threat->label4,
-                'threatDescription1' => $amv->threat->description1,
-                'threatDescription2' => $amv->threat->description2,
-                'threatDescription3' => $amv->threat->description3,
-                'threatDescription4' => $amv->threat->description4,
-                'threatRate' => $instanceRisk->threatRate,
-                'vulnerability' => $amv->vulnerability->id,
-                'vulnLabel1' => $amv->vulnerability->label1,
-                'vulnLabel2' => $amv->vulnerability->label2,
-                'vulnLabel3' => $amv->vulnerability->label3,
-                'vulnLabel4' => $amv->vulnerability->label4,
-                'vulnDescription1' => $amv->vulnerability->description1,
-                'vulnDescription2' => $amv->vulnerability->description2,
-                'vulnDescription3' => $amv->vulnerability->description3,
-                'vulnDescription4' => $amv->vulnerability->description4,
-                'vulnerabilityRate' => $instanceRisk->vulnerabilityRate,
-                'kindOfMeasure' => $instanceRisk->kindOfMeasure,
-                'reductionAmount' => $instanceRisk->reductionAmount,
-                'c_impact' => ($instanceRisk->instance) ? $instanceRisk->instance->c : null,
-                'c_risk' => $instanceRisk->riskC,
-                'c_risk_enabled' => $amv->threat->c,
-                'i_impact' => ($instanceRisk->instance) ? $instanceRisk->instance->i : null,
-                'i_risk' => $instanceRisk->riskI,
-                'i_risk_enabled' => $amv->threat->i,
-                'd_impact' => ($instanceRisk->instance) ? $instanceRisk->instance->d : null,
-                'd_risk' => $instanceRisk->riskD,
-                'd_risk_enabled' => $amv->threat->d,
-                't' => ((!$instanceRisk->kindOfMeasure) || ($instanceRisk->kindOfMeasure == InstanceRisk::KIND_NOT_TREATED)) ? false : true,
-                'target_risk' => $instanceRisk->cacheTargetedRisk,
-                'max_risk' => $instanceRisk->cacheMaxRisk,
-                'comment' => $instanceRisk->comment,
-                'measure1' => $measure1,
-                'measure2' => $measure2,
-                'measure3' => $measure3,
+        if (isset($params['kindOfMeasure'])) {
+            $query->andWhere('ir.kindOfMeasure != :kom')
+                ->setParameter(':kom',$params['kindOfMeasure']);
+        }
+        if(!empty($params['keywords'])){
+            $filters = [
+                'asset.label1',
+                'asset.label2',
+                'asset.label3',
+                'asset.label4',
+                //'amv.label1',
+                //'amv.label2',
+                //'amv.label3',
+                //'amv.label4',
+                'threat.label1',
+                'threat.label2',
+                'threat.label3',
+                'threat.label4',
+                'vulnerability.label1',
+                'vulnerability.label2',
+                'vulnerability.label3',
+                'vulnerability.label4',
+                'measure1.code',
+                'measure1.description1',
+                'measure1.description2',
+                'measure1.description3',
+                'measure1.description4',
+                'measure2.code',
+                'measure2.description1',
+                'measure2.description2',
+                'measure2.description3',
+                'measure2.description4',
+                'measure3.code',
+                'measure3.description1',
+                'measure3.description2',
+                'measure3.description3',
+                'measure3.description4',
+                'i.name1',
+                'i.name2',
+                'i.name3',
+                'i.name4',
+                'ir.comment',
             ];
+            $orFilter = [];
+            foreach($filters as $f){
+                $k = str_replace('.', '', $f);
+                $orFilter[] = $f." LIKE :".$k;
+                $query->setParameter(":$k",'%'.$params['keywords'].'%');
+            }
+            $query->andWhere('('.implode(' OR ',$orFilter).')');
         }
 
-        return $risks;
+
+        // More filters
+        if (isset($params['thresholds']) && $params['thresholds'] > 0) {
+            $query->andWhere('((ir.riskC > 0 OR ir.riskI > 0 OR ir.riskD > 0) AND GREATEST(ir.riskC,ir.riskI,ir.riskD) >= :min)')
+                ->setParameter(':min',$params['thresholds']);
+        }
+
+        $params['order_direction'] = isset($params['order_direction']) && strtolower(trim($params['order_direction'])) != 'asc' ? 'DESC' : 'ASC';
+
+        switch($params['order']){
+            case 'instance':
+                $query->orderBy('i.name'.$this->getLanguage(),$params['order_direction']);
+            break;
+            case 'auditOrder':
+                $query->orderBy('amv.position',$params['order_direction']);
+                break;
+            case 'c_impact':
+                $query->orderBy('i.c',$params['order_direction']);
+                break;
+            case 'i_impact':
+                $query->orderBy('i.i',$params['order_direction']);
+                break;
+            case 'd_impact':
+                $query->orderBy('i.d',$params['order_direction']);
+                break;
+            case 'threat':
+                $query->orderBy('threat.label'.$this->getLanguage(),$params['order_direction']);
+                break;
+            case 'vulnerability':
+                $query->orderBy('vulnerability.label'.$this->getLanguage(),$params['order_direction']);
+                break;
+            case 'vulnerabilityRate':
+                $query->orderBy('ir.vulnerabilityRate',$params['order_direction']);
+                break;
+            case 'threatRate':
+                $query->orderBy('ir.threatRate',$params['order_direction']);
+                break;
+            case 'targetRisk':
+                $query->orderBy('ir.cacheTargetedRisk',$params['order_direction']);
+                break;
+            default:
+            case 'maxRisk':
+                $query->orderBy('ir.cacheMaxRisk',$params['order_direction']);
+                break;
+        }
+        if($params['order'] != 'instance'){
+            $query->addOrderBy('i.name'.$this->getLanguage(),'ASC');
+        }
+        $query->addOrderBy('threat.code','ASC')
+            ->addOrderBy('vulnerability.code','ASC');
+        $result = $query->getQuery()->getScalarResult();
+
+        $globalRisks = $return = [];
+
+        foreach($result as $r){
+            if(isset($globalRisks[$r['o_id']][$r['threat_id']][$r['vulnerability_id']]) &&
+                isset($return[$globalRisks[$r['o_id']][$r['threat_id']][$r['vulnerability_id']]]) &&
+                $return[$globalRisks[$r['o_id']][$r['threat_id']][$r['vulnerability_id']]]['max_risk'] < $r['ir_cacheMaxRisk']){
+                unset($return[$globalRisks[$r['o_id']][$r['threat_id']][$r['vulnerability_id']]]);
+                unset($globalRisks[$r['o_id']][$r['threat_id']][$r['vulnerability_id']]);
+            }
+            if(!isset($globalRisks[$r['o_id']][$r['threat_id']][$r['vulnerability_id']])){
+                $return[$r['ir_id']] = [
+                    'id' => $r['ir_id'],
+                    'instance' => $r['i_id'],
+                    'amv' => $r['amv_id'],
+                    'asset' => $r['asset_id'],
+                    'assetLabel1' => $r['asset_label1'],
+                    'assetLabel2' => $r['asset_label2'],
+                    'assetLabel3' => $r['asset_label3'],
+                    'assetLabel4' => $r['asset_label4'],
+                    'assetDescription1' => $r['asset_description1'],
+                    'assetDescription2' => $r['asset_description2'],
+                    'assetDescription3' => $r['asset_description3'],
+                    'assetDescription4' => $r['asset_description4'],
+                    'threat' => $r['threat_id'],
+                    'threatLabel1' => $r['threat_label1'],
+                    'threatLabel2' => $r['threat_label2'],
+                    'threatLabel3' => $r['threat_label3'],
+                    'threatLabel4' => $r['threat_label4'],
+                    'threatDescription1' => $r['threat_description1'],
+                    'threatDescription2' => $r['threat_description2'],
+                    'threatDescription3' => $r['threat_description3'],
+                    'threatDescription4' => $r['threat_description4'],
+                    'threatRate' => $r['ir_threatRate'],
+                    'vulnerability' => $r['vulnerability_id'],
+                    'vulnLabel1' => $r['vulnerability_label1'],
+                    'vulnLabel2' => $r['vulnerability_label2'],
+                    'vulnLabel3' => $r['vulnerability_label3'],
+                    'vulnLabel4' => $r['vulnerability_label4'],
+                    'vulnDescription1' => $r['vulnerability_description1'],
+                    'vulnDescription2' => $r['vulnerability_description2'],
+                    'vulnDescription3' => $r['vulnerability_description3'],
+                    'vulnDescription4' => $r['vulnerability_description4'],
+                    'vulnerabilityRate' => $r['ir_vulnerabilityRate'],
+                    'kindOfMeasure' => $r['ir_kindOfMeasure'],
+                    'specific' => $r['ir_specific'],
+                    'reductionAmount' => $r['ir_reductionAmount'],
+                    'c_impact' => $r['i_c'],
+                    'c_risk' => $r['ir_riskC'],
+                    'c_risk_enabled' => $r['threat_c'],
+                    'i_impact' => $r['i_i'],
+                    'i_risk' => $r['ir_riskI'],
+                    'i_risk_enabled' => $r['threat_i'],
+                    'd_impact' => $r['i_d'],
+                    'd_risk' => $r['ir_riskD'],
+                    'd_risk_enabled' => $r['threat_d'],
+                    't' => ((!$r['ir_kindOfMeasure']) || ($r['ir_kindOfMeasure'] == InstanceRisk::KIND_NOT_TREATED)) ? false : true,
+                    'target_risk' => $r['ir_cacheTargetedRisk'],
+                    'max_risk' => $r['ir_cacheMaxRisk'],
+                    'comment' => $r['ir_comment'],
+                    'measure1' => [
+                        'code' => $r['measure1_code'],
+                        'description1' => $r['measure1_description1'],
+                        'description2' => $r['measure1_description2'],
+                        'description3' => $r['measure1_description3'],
+                        'description4' => $r['measure1_description4'],
+                    ],
+                    'measure2' => [
+                        'code' => $r['measure2_code'],
+                        'description1' => $r['measure2_description1'],
+                        'description2' => $r['measure2_description2'],
+                        'description3' => $r['measure2_description3'],
+                        'description4' => $r['measure2_description4'],
+                    ],
+                    'measure3' => [
+                        'code' => $r['measure3_code'],
+                        'description1' => $r['measure3_description1'],
+                        'description2' => $r['measure3_description2'],
+                        'description3' => $r['measure3_description3'],
+                        'description4' => $r['measure3_description4'],
+                    ],
+                ];
+                if($r['scope'] == Object::SCOPE_GLOBAL){
+                    $globalRisks[$r['o_id']][$r['threat_id']][$r['vulnerability_id']] = $r['ir_id'];
+                }
+            }
+        }
+        return array_values($return);
     }
 
     protected function findInFields($obj, $search, $fields = []) {
