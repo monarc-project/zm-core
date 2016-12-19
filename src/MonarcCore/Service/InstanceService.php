@@ -914,7 +914,7 @@ class InstanceService extends AbstractService
 
         $query = $this->get('instanceRiskService')->get('table')->getRepository()->createQueryBuilder('ir')
             ->select([
-                'ir', 'amv', 'threat', 'vulnerability', 'i', 'asset', 'o.scope', 'measure1', 'measure2', 'measure3',
+                'ir', 'amv', 'threat', 'vulnerability', 'i', 'asset', 'o.scope', 'measure1', 'measure2', 'measure3', 'o.id'
             ])
             ->where('i.anr = :anrid')
             ->setParameter(':anrid',$anrId);
@@ -1061,13 +1061,13 @@ class InstanceService extends AbstractService
         $globalRisks = $return = [];
 
         foreach($result as $r){
-            if(isset($globalRisks[$r['o_id']][$r['threat_id']][$r['vulnerability_id']]) &&
-                isset($return[$globalRisks[$r['o_id']][$r['threat_id']][$r['vulnerability_id']]]) &&
-                $return[$globalRisks[$r['o_id']][$r['threat_id']][$r['vulnerability_id']]]['max_risk'] < $r['ir_cacheMaxRisk']){
-                unset($return[$globalRisks[$r['o_id']][$r['threat_id']][$r['vulnerability_id']]]);
-                unset($globalRisks[$r['o_id']][$r['threat_id']][$r['vulnerability_id']]);
+            if(isset($globalRisks[$r['id']][$r['threat_id']][$r['vulnerability_id']]) &&
+                isset($return[$globalRisks[$r['id']][$r['threat_id']][$r['vulnerability_id']]]) &&
+                $return[$globalRisks[$r['id']][$r['threat_id']][$r['vulnerability_id']]]['max_risk'] < $r['ir_cacheMaxRisk']){
+                unset($return[$globalRisks[$r['id']][$r['threat_id']][$r['vulnerability_id']]]);
+                unset($globalRisks[$r['id']][$r['threat_id']][$r['vulnerability_id']]);
             }
-            if(!isset($globalRisks[$r['o_id']][$r['threat_id']][$r['vulnerability_id']])){
+            if(!isset($globalRisks[$r['id']][$r['threat_id']][$r['vulnerability_id']])){
                 $return[$r['ir_id']] = [
                     'id' => $r['ir_id'],
                     'instance' => $r['i_id'],
@@ -1140,7 +1140,7 @@ class InstanceService extends AbstractService
                     ],
                 ];
                 if($r['scope'] == Object::SCOPE_GLOBAL){
-                    $globalRisks[$r['o_id']][$r['threat_id']][$r['vulnerability_id']] = $r['ir_id'];
+                    $globalRisks[$r['id']][$r['threat_id']][$r['vulnerability_id']] = $r['ir_id'];
                 }
             }
         }
