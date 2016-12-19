@@ -917,7 +917,7 @@ class InstanceService extends AbstractService
 
         if(empty($instance)){
             // On prend toutes les instances, on est sur l'anr
-        }elseif($instance->get('asset') && $instance->get('asset')->get('type') == \MonarcCore\Model\Entity\AssetSuperClass::ASSET_PRIMARY){
+        }elseif($instance->get('asset') && $instance->get('asset')->get('type') == \MonarcCore\Model\Entity\AssetSuperClass::TYPE_PRIMARY){
             $instanceIds = [];
             $instanceIds[$instance->get('id')] = $instance->get('id');
             $this->get('table')->initTree($instance);
@@ -1198,7 +1198,7 @@ class InstanceService extends AbstractService
         }
         $instancesIds = [];
         foreach ($instances as $i) {
-            if($i->get('asset')->get('type') == Asset::ASSET_PRIMARY){
+            if($i->get('asset')->get('type') == Asset::TYPE_PRIMARY){
                 $instancesIds[] = $i->id;
             }
         }
