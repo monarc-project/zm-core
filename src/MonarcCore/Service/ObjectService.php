@@ -322,7 +322,7 @@ class ObjectService extends AbstractService
         $riskOps = [];
 
         if (isset($object->asset)) {
-            if ($object->asset->type == Asset::ASSET_PRIMARY) {
+            if ($object->asset->type == Asset::TYPE_PRIMARY) {
                 if (!is_null($object->rolfTag)) {
 
                     //retrieve rolf risks
@@ -461,7 +461,7 @@ class ObjectService extends AbstractService
         if(!empty($data['asset']) && !empty($data['rolfTag'])){
             $assetTable = $this->get('assetTable');
             $asset = $assetTable->get($data['asset']);
-            if(!empty($asset['type']) && $asset['type'] != \MonarcCore\Model\Entity\Asset::ASSET_PRIMARY){
+            if(!empty($asset['type']) && $asset['type'] != \MonarcCore\Model\Entity\Asset::TYPE_PRIMARY){
                 unset($data['rolfTag']);
                 $setRolfTagNull = true;
             }
@@ -496,7 +496,7 @@ class ObjectService extends AbstractService
             $this->get('modelService')->canAcceptObject($data['modelId'], $object, $context);
         }
 
-        if (($object->asset->type == Asset::ASSET_PRIMARY) && ($object->scope == Object::SCOPE_GLOBAL)) {
+        if (($object->asset->type == Asset::TYPE_PRIMARY) && ($object->scope == Object::SCOPE_GLOBAL)) {
             throw new \Exception('You cannot create an object that is both global and primary', 412);
         }
 
@@ -589,7 +589,7 @@ class ObjectService extends AbstractService
         if(!empty($data['asset']) && !empty($data['rolfTag'])){
             $assetTable = $this->get('assetTable');
             $asset = $assetTable->get($data['asset']);
-            if(!empty($asset['type']) && $asset['type'] != \MonarcCore\Model\Entity\Asset::ASSET_PRIMARY){
+            if(!empty($asset['type']) && $asset['type'] != \MonarcCore\Model\Entity\Asset::TYPE_PRIMARY){
                 unset($data['rolfTag']);
                 $setRolfTagNull = true;
             }

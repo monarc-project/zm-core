@@ -31,6 +31,9 @@ abstract class AbstractEntity implements InputFilterAwareInterface
     const MODE_GENERIC = 0;
     const MODE_SPECIFIC = 1;
 
+    const TYPE_PRIMARY    = 1;
+    const TYPE_SECONDARY  = 2;
+
     const BACK_OFFICE = 'back';
     const FRONT_OFFICE = 'front';
 
