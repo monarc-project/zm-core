@@ -704,6 +704,10 @@ class InstanceService extends AbstractService
                 'd' => $child->d,
             ];
             $this->updateChildrenImpacts($child, $childrenData);
+
+            if ($child->anr) {
+                $this->updateRisks($child->anr->id, $child->id);
+            }
         }
     }
 
