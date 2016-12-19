@@ -17,10 +17,6 @@ use Zend\InputFilter\InputFilter;
  */
 class AssetSuperClass extends AbstractEntity
 {
-
-    const ASSET_PRIMARY    = 1;
-    const ASSET_SECONDARY  = 2;
-
     /**
      * @var integer
      *
@@ -265,7 +261,7 @@ class AssetSuperClass extends AbstractEntity
                 array(
                     'name' => 'InArray',
                     'options' => array(
-                        'haystack' => array(self::ASSET_PRIMARY, self::ASSET_SECONDARY),
+                        'haystack' => array(self::TYPE_PRIMARY, self::TYPE_SECONDARY),
                     ),
                 ),
             ),
