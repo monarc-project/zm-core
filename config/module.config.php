@@ -434,6 +434,8 @@ return array(
             '\MonarcCore\Storage\Authentication' => '\MonarcCore\Storage\AuthentificationFactory',
             '\MonarcCore\Adapter\Authentication' => '\MonarcCore\Adapter\AuthentificationFactory',
             '\MonarcCore\Service\ConnectedUserService' => '\MonarcCore\Service\ConnectedUserServiceFactory',
+            /* Translation */
+            '\MonarcCore\Service\TranslateService' => '\MonarcCore\Service\TranslateServiceFactory',
         ),
         'shared' => array(
             'MonarcCore\Model\Entity\Scale' => false,
