@@ -173,7 +173,7 @@ class ObjectObjectService extends AbstractService
         /** @var ObjectObjectTable $table */
         $table = $this->get('table');
 
-        return $table->getEntityByFields(array('father' => $objectId), array('position' => 'ASC'));
+        return $table->getEntityByFields(array('father' => $objectId), array('position' => 'DESC'));
     }
 
     public function getRecursiveChildren($fatherId, $anrId = null) {
