@@ -13,6 +13,7 @@ class RolfRiskService extends AbstractService
     protected $filterColumns = array(
         'code', 'label1', 'label2', 'label3', 'label4', 'description1', 'description2', 'description3', 'description4'
     );
+
     public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $category = null, $tag = null, $anr = null)
     {
         $filterAnd = [];
@@ -58,7 +59,12 @@ class RolfRiskService extends AbstractService
      */
     public function create($data, $last = true) {
         $entity = $this->get('entity');
+        if (is_numeric($data['anr'])) {
+            $data['anr'] = $this->get('anrTable')->getEntity($data['anr']);
+        }
+
         $entity->exchangeArray($data);
+
         $rolfCategories = $entity->get('categories');
         if (!empty($rolfCategories)) {
             $rolfCategoryTable = $this->get('rolfCategoryTable');
