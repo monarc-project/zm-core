@@ -79,6 +79,10 @@ class AssetService extends AbstractService
             //delete models
             unset($data['models']);
         }
+        $checkModels = false;
+        if ($entity->mode == Asset::MODE_SPECIFIC) {
+            $checkModels = true;
+        }
 
         $models = isset($data['models']) ? $data['models'] : array();
         $follow = isset($data['follow']) ? $data['follow'] : null;
@@ -103,7 +107,7 @@ class AssetService extends AbstractService
             }
         }
 
-        if (!$amvService->checkModelsInstantiation($entity, $models)) {
+        if ($checkModels && !$amvService->checkModelsInstantiation($entity, $models)) {
             throw new \Exception('This type of asset is used in a model that is no longer part of the list', 412);
         }
 
