@@ -11,6 +11,7 @@ class ObjectObjectServiceFactory extends AbstractServiceFactory
         'entity'=> '\MonarcCore\Model\Entity\ObjectObject',
         'childTable'=> '\MonarcCore\Model\Table\ObjectTable',
         'fatherTable'=> '\MonarcCore\Model\Table\ObjectTable',
+        'modelTable'=> '\MonarcCore\Model\Table\modelTable',
     );
 
 }

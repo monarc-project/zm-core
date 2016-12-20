@@ -21,6 +21,7 @@ class ObjectObjectService extends AbstractService
     protected $instanceTable;
     protected $childTable;
     protected $fatherTable;
+    protected $modelTable;
 
     protected $dependencies = ['[child](object)', '[father](object)'];
 
@@ -63,6 +64,23 @@ class ObjectObjectService extends AbstractService
         $father = $objectTable->getEntity($data['father']);
         $child = $objectTable->getEntity($data['child']);
         
+        // on doit déterminer si par voie de conséquence, cet objet ne va pas se retrouver dans un modèle dans lequel il n'a pas le droit d'être
+        if ($context == Object::BACK_OFFICE) {
+            $anrIds = [];
+            foreach($father->get('anrs') as $anr){
+                $anrIds[$anr->get('id')] = $anr->get('id');
+            }
+            if(!empty($anrIds)){
+                $models = $this->get('modelTable')->getEntityByFields(['anr'=>$anrIds]);
+                foreach($models as $m){
+                    $this->get('modelTable')->canAcceptObject($m->get('id'), $child, $context);
+                }
+            }
+        }else{
+            foreach($father->get('anrs') as $anr){
+                $this->get('modelTable')->canAcceptObject($anr->get('model'), $child, $context);
+            }
+        }
 
         if ($father->mode == ObjectObject::MODE_GENERIC && $child->mode == ObjectObject::MODE_SPECIFIC) {
             throw new \Exception("You cannot add a specific object to a generic parent", 412);

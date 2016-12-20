@@ -8,7 +8,7 @@ class ModelServiceFactory extends AbstractServiceFactory
         'entity' => 'MonarcCore\Model\Entity\Model',
         'anrService' => 'MonarcCore\Service\AnrService',
         'anrTable' => 'MonarcCore\Model\Table\AnrTable',
-        'instanceService' => 'MonarcCore\Service\instanceService',
+        //'instanceService' => 'MonarcCore\Service\instanceService',
         'instanceRiskTable' => 'MonarcCore\Model\Table\InstanceRiskTable',
         'instanceRiskOpTable' => 'MonarcCore\Model\Table\InstanceRiskOpTable',
         'objectTable' => 'MonarcCore\Model\Table\ObjectTable',
