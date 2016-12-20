@@ -1220,61 +1220,41 @@ class InstanceService extends AbstractService
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('table');
 
-        $instances = [];
+        $instancesIds = [];
         if ($instance) {
-            $instances[] = $instanceTable->getEntity($instance['id']);
+            $i = $instanceTable->getEntity($instance['id']);
+
+            // Il faut aussi récupérer les fils
+            $instanceTable->initTree($i);
+            $temp = [$i];
+            while(!empty($temp)){
+                $current = array_shift($temp);
+                if($current->get('asset')->get('type') == Asset::TYPE_PRIMARY){
+                    $instancesIds[] = $current->get('id');
+                }
+                $children = $current->getParameter('children');
+                if(!empty($children)){
+                    foreach($children as $c){
+                        array_unshift($temp, $c);
+                    }
+                }
+            }
         } else {
             $instances = $instanceTable->getEntityByFields(['anr' => $anrId]);
-        }
-        $instancesIds = [];
-        foreach ($instances as $i) {
-            if($i->get('asset')->get('type') == Asset::TYPE_PRIMARY){
-                $instancesIds[] = $i->id;
+            foreach ($instances as $i) {
+                if($i->get('asset')->get('type') == Asset::TYPE_PRIMARY){
+                    $instancesIds[] = $i->id;
+                }
             }
         }
 
         //retrieve risks instances
         /** @var InstanceRiskOpService $instanceRiskServiceOp */
         $instanceRiskOpService = $this->get('instanceRiskOpService');
-        $instancesRisksOp = $instanceRiskOpService->getInstancesRisksOp($instancesIds, $anrId);
-
-        //order by net risk
-        $tmpInstancesRisksOp = [];
-        $tmpInstancesMaxRisksOp = [];
-        foreach($instancesRisksOp as $instancesRiskOp) {
-            $tmpInstancesRisksOp[$instancesRiskOp->id] = $instancesRiskOp;
-            $tmpInstancesMaxRisksOp[$instancesRiskOp->id] = $instancesRiskOp->cacheNetRisk;
-        }
-        arsort($tmpInstancesMaxRisksOp);
-        $instancesRisksOp = [];
-        foreach($tmpInstancesMaxRisksOp as $id => $tmpInstancesMaxRiskOp) {
-            $instancesRisksOp[] = $tmpInstancesRisksOp[$id];
-        }
+        $instancesRisksOp = $instanceRiskOpService->getInstancesRisksOp($instancesIds, $anrId, $params);
 
         $riskOps = [];
         foreach ($instancesRisksOp as $instanceRiskOp) {
-            // Process filters
-            if (isset($params['kindOfMeasure'])) {
-                if ($instanceRiskOp->kindOfMeasure != $params['kindOfMeasure']) {
-                    continue;
-                }
-            }
-
-            if (isset($params['thresholds'])) {
-                $min = $params['thresholds'];
-
-                if ($instanceRiskOp->cacheNetRisk < $min) {
-                    continue;
-                }
-            }
-
-            if (isset($params['keywords']) && !empty($params['keywords'])) {
-                if (!$this->findInFields($instanceRiskOp, $params['keywords'], ['riskCacheLabel1', 'riskCacheLabel2', 'riskCacheLabel3', 'riskCacheLabel4',
-                    'riskCacheDescription1', 'riskCacheDescription2', 'riskCacheDescription3', 'riskCacheDescription4', 'comment'])) {
-                    continue;
-                }
-            }
-
             // Add risk
             $riskOps[] = [
                 'id' => $instanceRiskOp->id,

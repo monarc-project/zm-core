@@ -143,11 +143,11 @@ class InstanceRiskOpService extends AbstractService
      * @param $anrId
      * @return array
      */
-    public function getInstancesRisksOp($instancesIds, $anrId) {
+    public function getInstancesRisksOp($instancesIds, $anrId, $params = []) {
 
         /** @var InstanceRiskOpTable $table */
         $table = $this->get('table');
-        return $table->getInstancesRisksOp($anrId, $instancesIds);
+        return $table->getInstancesRisksOp($anrId, $instancesIds, $params);
     }
 
     /**
