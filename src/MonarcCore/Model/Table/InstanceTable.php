@@ -31,7 +31,7 @@ class InstanceTable extends AbstractEntityTable {
     public function getAscendance($instance){
         $root = $instance->get('root');
         $idRoot = null;
-        $arbo = array();
+        $arbo[] = $instance->getJsonArray();
         if(!empty($root)){
             $idRoot = $root->get('id');
         }
@@ -46,7 +46,7 @@ class InstanceTable extends AbstractEntityTable {
                 ->getResult();
             $family = array();
             foreach($result as $r){
-                $family[$r->get('id')][$r->get('root')->get('id')] = $r->get('root')->getJsonArray();
+                $family[$r->get('id')][$r->get('parent')->get('id')] = $r->get('parent')->getJsonArray();
             }
             $temp = array();
             $temp[] = $instance->getJsonArray();
@@ -60,7 +60,6 @@ class InstanceTable extends AbstractEntityTable {
                 }
             }
         }
-        $arbo[] = $instance->getJsonArray();
         return $arbo;
     }
 
