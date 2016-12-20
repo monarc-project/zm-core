@@ -12,6 +12,7 @@ class ObjectExportService extends AbstractService
 	protected $assetExportService;
 	protected $objectObjectService;
     protected $categoryTable;
+    protected $assetService;
 
     public function generateExportArray($id, &$filename = ""){
         if (empty($id)) {
@@ -113,7 +114,7 @@ class ObjectExportService extends AbstractService
             }
 
             // import asset
-            $assetId = $this->get('assetService')->importFromArray($data['object']['asset'],$anr,$objectsCache);
+            $assetId = $this->get('assetService')->importFromArray($data['asset'],$anr,$objectsCache);
             if($assetId){
                 // import categories
                 $idCateg = $this->importFromArrayCategories($data['categories'],$data['object']['category'],$anr->get('id'));
@@ -124,7 +125,7 @@ class ObjectExportService extends AbstractService
                  * Seul un objet SCOPE_GLOBAL (scope) pourra être dupliqué par défaut
                  * Sinon c'est automatiquement un test de fusion, en cas d'échec de fusion on part sur une "duplication" (création)
                  */
-                if($data['objet']['scope'] == \MonarcCore\Entity\ObjectSuperClass::SCOPE_GLOBAL &&
+                if($data['object']['scope'] == \MonarcCore\Model\Entity\ObjectSuperClass::SCOPE_GLOBAL &&
                     $modeImport == 'duplicate'){
                     // Cela sera traité après le "else"
                 }else{ // Fuusion
@@ -137,9 +138,9 @@ class ObjectExportService extends AbstractService
                      */
                     $object = current($this->get('table')->getEntityByFields([
                         'anr' => $anr->get('id'),
-                        'name'.$this->getLanguage() => $data['objet']['name'.$this->getLanguage()],
+                        'name'.$this->getLanguage() => $data['object']['name'.$this->getLanguage()],
                         // il faut que le scope soit le même sinon souci potentiel sur l'impact des valeurs dans les instances (ex : on passe de local à global, toutes les instances choperaient la valeur globale)
-                        'scope' => $data['objet']['scope'],
+                        'scope' => $data['object']['scope'],
                         // il faut bien sûr que le type d'actif soit identique sinon on mergerait des torchons et des serviettes, ça donne des torchettes et c'est pas cool
                         'asset' => $assetId,
                         'category' => $idCateg
@@ -148,7 +149,7 @@ class ObjectExportService extends AbstractService
                     // Sinon, on passera dans la création d'un nouvel "object"
                 }
 
-                $toExchange = $data['objet'];
+                $toExchange = $data['object'];
                 if(empty($object)){
                     $class = $this->get('table')->getClass();
                     $object = new $class();
@@ -156,13 +157,13 @@ class ObjectExportService extends AbstractService
                     $object->setLanguage($this->getLanguage());
                     // Si on passe ici, c'est qu'on est en mode "duplication", il faut donc vérifier qu'on n'est pas plusieurs fois le même "name"
                     $suffixe = 0;
-                    $current = $object = current($this->get('table')->getEntityByFields([
+                    $current = current($this->get('table')->getEntityByFields([
                         'anr' => $anr->get('id'),
                         'name'.$this->getLanguage() => $toExchange['name'.$this->getLanguage()]
                     ]));
                     while(!empty($current)){
                         $suffixe++;
-                        $current = $object = current($this->get('table')->getEntityByFields([
+                        $current = current($this->get('table')->getEntityByFields([
                             'anr' => $anr->get('id'),
                             'name'.$this->getLanguage() => $toExchange['name'.$this->getLanguage()].' - Imp. #'.$suffixe
                         ]));
@@ -192,6 +193,7 @@ class ObjectExportService extends AbstractService
                 $toExchange['category'] = $idCateg;
                 $object->exchangeArray($toExchange);
                 $this->setDependencies($object,['anr', 'category', 'asset']);
+                $object->addAnr($anr);
                 $idObj = $this->get('table')->save($object);
 
                 $objectsCache['objects'][$data['object']['name'.$this->getLanguage()]] = $idObj;
