@@ -46,6 +46,7 @@ class InstanceService extends AbstractService
     protected $instanceRiskService;
     protected $instanceRiskOpService;
     protected $objectObjectService;
+    protected $translateService;
     
     // Useless (Deprecated)
     protected $instanceTable;
@@ -1073,8 +1074,13 @@ class InstanceService extends AbstractService
                 $return[$r['ir_id']] = [
                     'id' => $r['ir_id'],
                     'instance' => $r['i_id'],
+                    'instanceName1' => $r['i_name1'],
+                    'instanceName2' => $r['i_name2'],
+                    'instanceName3' => $r['i_name3'],
+                    'instanceName4' => $r['i_name4'],
                     'amv' => $r['amv_id'],
                     'asset' => $r['asset_id'],
+                    'assetCode' => $r['asset_code'],
                     'assetLabel1' => $r['asset_label1'],
                     'assetLabel2' => $r['asset_label2'],
                     'assetLabel3' => $r['asset_label3'],
@@ -1084,6 +1090,7 @@ class InstanceService extends AbstractService
                     'assetDescription3' => $r['asset_description3'],
                     'assetDescription4' => $r['asset_description4'],
                     'threat' => $r['threat_id'],
+                    'threatCode' => $r['threat_code'],
                     'threatLabel1' => $r['threat_label1'],
                     'threatLabel2' => $r['threat_label2'],
                     'threatLabel3' => $r['threat_label3'],
@@ -1094,6 +1101,7 @@ class InstanceService extends AbstractService
                     'threatDescription4' => $r['threat_description4'],
                     'threatRate' => $r['ir_threatRate'],
                     'vulnerability' => $r['vulnerability_id'],
+                    'vulnerabilityCode' => $r['vulnerability_code'],
                     'vulnLabel1' => $r['vulnerability_label1'],
                     'vulnLabel2' => $r['vulnerability_label2'],
                     'vulnLabel3' => $r['vulnerability_label3'],
@@ -1162,20 +1170,38 @@ class InstanceService extends AbstractService
     public function getCsvRisks($anrId, $instance = null, $params = []) {
         $risks = $this->getRisks($anrId, $instance, $params);
 
+        $lang = $this->getLanguage();
+
+        $translate = $this->get('translateService');
+
         $output = '';
         if (count($risks) > 0) {
+            $fields = [
+                'instanceName'.$lang => $translate->translate('Instance', $lang),
+                'c_impact' => $translate->translate('Impact C', $lang),
+                'i_impact' => $translate->translate('Impact I', $lang),
+                'd_impact' => $translate->translate('Impact D', $lang),
+                'threatLabel'.$lang => $translate->translate('Threat', $lang),
+                'threatCode' => $translate->translate('Threat code', $lang),
+                'threatRate' => $translate->translate('Prob.', $lang),
+                'vulnerabilityLabel'.$lang => $translate->translate('Vulnerability', $lang),
+                'vulnerabilityCode' => $translate->translate('Vulnerability code', $lang),
+                'vulnerabilityRate' => $translate->translate('Qualif.', $lang),
+                'c_risk' => $translate->translate('Current risk C', $lang),
+                'i_risk' => $translate->translate('Current risk I', $lang),
+                'd_risk' => $translate->translate('Current risk D', $lang),
+                'target_risk' => $translate->translate('Target risk', $lang),
+            ];
+
             // Fill in the header
-            $output .= implode(',', array_keys($risks[0])) . "\n";
+            $output .= implode(',', array_values($fields)) . "\n";
 
             // Fill in the lines then
             foreach ($risks as $risk) {
-                for ($i = 1; $i <= 3; ++$i) {
-                    if ($risk['measure' . $i]) {
-                        $risk['measure' . $i] = $risk['measure' . $i]['code'];
-                    }
+                $array_values = [];
+                foreach($fields as $k => $v){
+                    $array_values[] = $risk[$k];
                 }
-
-                $array_values = array_values($risk);
                 $output .= '"';
                 $output .= implode('","', str_replace('"', '\"', $array_values));
                 $output .= "\"\r\n";

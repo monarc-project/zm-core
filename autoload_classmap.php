@@ -287,6 +287,8 @@ return array(
     'MonarcCore\Service\ThemeServiceFactory'                                => __DIR__ . '/src/MonarcCore/Service/ThemeServiceFactory.php',
     'MonarcCore\Service\ThreatService'                                      => __DIR__ . '/src/MonarcCore/Service/ThreatService.php',
     'MonarcCore\Service\ThreatServiceFactory'                               => __DIR__ . '/src/MonarcCore/Service/ThreatServiceFactory.php',
+    'MonarcCore\Service\TranslateService'                                   => __DIR__ . '/src/MonarcCore/Service/TranslateService.php',
+    'MonarcCore\Service\TranslateServiceFactory'                            => __DIR__ . '/src/MonarcCore/Service/TranslateServiceFactory.php',
     'MonarcCore\Service\UserProfileService'                                 => __DIR__ . '/src/MonarcCore/Service/UserProfileService.php',
     'MonarcCore\Service\UserProfileServiceFactory'                          => __DIR__ . '/src/MonarcCore/Service/UserProfileServiceFactory.php',
     'MonarcCore\Service\UserRoleService'                                    => __DIR__ . '/src/MonarcCore/Service/UserRoleService.php',

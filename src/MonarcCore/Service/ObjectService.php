@@ -493,7 +493,7 @@ class ObjectService extends AbstractService
             }
         }
         if (isset($data['modelId'])) {
-            $this->get('modelService')->canAcceptObject($data['modelId'], $object, $context);
+            $this->get('modelTable')->canAcceptObject($data['modelId'], $object, $context);
         }
 
         if (($object->asset->type == Asset::TYPE_PRIMARY) && ($object->scope == Object::SCOPE_GLOBAL)) {
