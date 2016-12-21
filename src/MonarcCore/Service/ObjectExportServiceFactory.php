@@ -9,6 +9,7 @@ class ObjectExportServiceFactory extends AbstractServiceFactory
         'assetExportService' => 'MonarcCore\Service\AssetExportService',
         'objectObjectService' => 'MonarcCore\Service\ObjectObjectService',
         'categoryTable' => '\MonarcCore\Model\Table\ObjectCategoryTable',
+        'anrObjectCategoryTable' => '\MonarcCore\Model\Table\AnrObjectCategoryTable',
     );
 
 }

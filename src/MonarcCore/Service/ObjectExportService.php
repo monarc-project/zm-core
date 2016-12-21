@@ -13,6 +13,7 @@ class ObjectExportService extends AbstractService
 	protected $objectObjectService;
     protected $categoryTable;
     protected $assetService;
+    protected $anrObjectCategoryTable;
 
     public function generateExportArray($id, &$filename = ""){
         if (empty($id)) {
@@ -240,6 +241,7 @@ class ObjectExportService extends AbstractService
                 'parent' => $idParent,
                 'label'.$this->getLanguage() => $data[$idCateg]['label'.$this->getLanguage()]
             ]));
+            $checkLink = null;
             if(empty($categ)){ // on crée une nouvelle catégorie
                 $class = $this->get('categoryTable')->getClass();
                 $categ = new $class();
@@ -254,12 +256,37 @@ class ObjectExportService extends AbstractService
                 // le "exchangeArray" permet de gérer la position de façon automatique & de mettre à jour le "root"
                 $categ->exchangeArray($toExchange);
                 $this->setDependencies($categ,['anr','parent']);
-                
+
                 $return = $this->get('categoryTable')->save($categ);
+                if(empty($idParent)){
+                    $checkLink = $return;
+                }
             }else{ // sinon on utilise l'éxistant
+                if(empty($categ->get('parent'))){
+                    $checkLink = $categ->get('id');
+                }
                 $return = $categ->get('id');
             }
 
+            if(!empty($checkLink)){
+                $link = current($this->get('anrObjectCategoryTable')->getEntityByFields([
+                    'anr' => $anrId,
+                    'category' => $checkLink,
+                ]));
+                if(empty($link)){
+                    $class = $this->get('anrObjectCategoryTable')->getClass();
+                    $link = new $class();
+                    $link->setDbAdapter($this->get('anrObjectCategoryTable')->getDb());
+                    $link->setLanguage($this->getLanguage());
+                    $link->exchangeArray([
+                        'anr' => $anrId,
+                        'category' => $checkLink,
+                        'implicitPosition' => 2
+                    ]);
+                    $this->setDependencies($link,['category', 'anr']);
+                    $this->get('anrObjectCategoryTable')->save($link);
+                }
+            }
         }
         return $return;
     }
