@@ -34,7 +34,6 @@ class ObjectObjectService extends AbstractService
      * @throws \Exception
      */
     public function create($data, $last = true, $context = Object::BACK_OFFICE) {
-
         if ($data['father'] == $data['child']) {
             throw new \Exception("You cannot add yourself as a component", 412);
         }
@@ -63,22 +62,12 @@ class ObjectObjectService extends AbstractService
         // Ensure that we're not trying to add a specific item if the father is generic
         $father = $objectTable->getEntity($data['father']);
         $child = $objectTable->getEntity($data['child']);
-        
+
         // on doit déterminer si par voie de conséquence, cet objet ne va pas se retrouver dans un modèle dans lequel il n'a pas le droit d'être
         if ($context == Object::BACK_OFFICE) {
-            $anrIds = [];
-            foreach($father->get('anrs') as $anr){
-                $anrIds[$anr->get('id')] = $anr->get('id');
-            }
-            if(!empty($anrIds)){
-                $models = $this->get('modelTable')->getEntityByFields(['anr'=>$anrIds]);
-                foreach($models as $m){
-                    $this->get('modelTable')->canAcceptObject($m->get('id'), $child, $context);
-                }
-            }
-        }else{
-            foreach($father->get('anrs') as $anr){
-                $this->get('modelTable')->canAcceptObject($anr->get('model'), $child, $context);
+            $models = $father->get('asset')->get('models');
+            foreach($models as $m){
+                $this->get('modelTable')->canAcceptObject($m->get('id'), $child, $context);
             }
         }
 

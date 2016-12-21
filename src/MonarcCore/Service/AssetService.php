@@ -16,6 +16,7 @@ class AssetService extends AbstractService
     protected $amvService;
     protected $modelService;
     protected $objectTable;
+    protected $objectObjectTable;
     protected $assetExportService;
 
     protected $filterColumns = [
@@ -79,10 +80,7 @@ class AssetService extends AbstractService
             //delete models
             unset($data['models']);
         }
-        $checkModels = false;
-        if ($entity->mode == Asset::MODE_SPECIFIC) {
-            $checkModels = true;
-        }
+
 
         $models = isset($data['models']) ? $data['models'] : array();
         $follow = isset($data['follow']) ? $data['follow'] : null;
@@ -107,9 +105,11 @@ class AssetService extends AbstractService
             }
         }
 
-        if ($checkModels && !$amvService->checkModelsInstantiation($entity, $models)) {
+        if (!$amvService->checkModelsInstantiation($entity, $models)) {
             throw new \Exception('This type of asset is used in a model that is no longer part of the list', 412);
         }
+
+
 
         switch($entity->get('mode')){
             case Asset::MODE_SPECIFIC:
@@ -131,6 +131,39 @@ class AssetService extends AbstractService
                 break;
         }
 
+        $objects = $this->get('objectTable')->getEntityByFields(['asset' => $entity->get('id')]);
+        if(!empty($objects)){
+            $oids = [];
+            foreach($objects as $o){
+                $oids[$o->id] = $o->id;
+            }
+            if(!empty($entity->models)){
+                //We need to check if the asset is compliant with reg/spec model when they are used as fathers
+                //not already used in models
+                $olinks = $this->get('objectObjectTable')->getEntityByFields(['father' => $oids]);
+                if(!empty($olinks)){
+                    foreach($olinks as $ol){
+                        foreach($entity->models as $m){
+                            $this->get('modelTable')->canAcceptObject($m->id, $ol->child);
+                        }
+                    }
+                }
+            }
+            //We need to check if the asset is compliant with reg/spec model when they are used as children
+            //of objects not already used in models. This code is pretty similar to the previous one
+
+            //we need the parents of theses objects
+            $olinks = $this->get('objectObjectTable')->getEntityByFields(['child' => $oids]);
+            if(!empty($olinks)){
+                foreach($olinks as $ol){
+                    if(!empty($ol->father->asset->models)){
+                        foreach($ol->father->asset->models as $m){
+                            $this->get('modelTable')->canAcceptObject($m->id, $ol->child, null, $entity);
+                        }
+                    }
+                }
+            }
+        }
         return $this->get('table')->save($entity);
     }
 

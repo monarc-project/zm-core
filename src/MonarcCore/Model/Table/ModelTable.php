@@ -44,72 +44,39 @@ class ModelTable extends AbstractEntityTable {
      * @param $context
      * @throws \Exception
      */
-    public function canAcceptObject($modelId, $object, $context)
+    public function canAcceptObject($modelId, $object, $context = null, $forceAsset = null)
     {
         //retrieve data
-        $data = $this->getEntity($modelId);
+        if(is_null($context) || $context == \MonarcCore\Model\Entity\AbstractEntity::BACK_OFFICE){
+            $model = $this->getEntity($modelId);
 
-        $asset = $object->asset;
+            $asset_mode = is_null($forceAsset) ? $object->get('asset')->get('mode') : $forceAsset->mode;
 
-        $authorized = false;
-
-        if ($model->isGeneric) {
-            if ($object->mode == \MonarcCore\Model\Entity\Model::MODE_GENERIC) {
-                $authorized = true;
-            }
-        } else {
-            if ($model->isRegulator) { //model is specific and regulated
-                if ($asset->mode == \MonarcCore\Model\Entity\Model::MODE_SPECIFIC) {
-                    if (count($asset->models)) {
-                        $authorized = true;
+            if ($model->get('isGeneric') && $object->get('mode') == \MonarcCore\Model\Entity\Object::MODE_SPECIFIC) {
+                throw new \Exception('You cannot add a specific object to a generic model', 412);
+            } else {
+                if ($model->get('isRegulator')) {
+                    if ($object->get('mode') == \MonarcCore\Model\Entity\Object::MODE_GENERIC) {
+                        throw new \Exception('You cannot add a generic object to a regulator model', 412);
+                    } elseif ($object->get('mode') == \MonarcCore\Model\Entity\Object::MODE_SPECIFIC && $asset_mode == \MonarcCore\Model\Entity\Object::MODE_GENERIC) {
+                        throw new \Exception('You cannot add a specific object with generic asset to a regulator model', 412);
                     }
                 }
-            } else { //can receive generic or specifi to himself
-                if ($asset->mode == \MonarcCore\Model\Entity\Model::MODE_SPECIFIC) {
-                    if (count($asset->models)) {
-                        $authorized = true;
-                    }
-                } else {
-                    if ($object->mode == \MonarcCore\Model\Entity\Model::MODE_SPECIFIC) { //aïe, l'objet est spécifique, il faut qu'on sache s'il l'est pour moi
-                        //la difficulté c'est que selon le type de l'objet (bdc / anr) on va devoir piocher l'info de manière un peu différente
-                        $objectType = 'bdc';
-                        foreach($object->anrs as $anr) {
-                            if ($anr->id == $model->anr->id) {
-                                $objectType = 'anr';
-                            }
-                        }
-                        if ($objectType == 'bdc') { //dans ce cas on vérifie que l'objet a des réplicats pour ce modèle
-                            if ($context == \MonarcCore\Model\Entity\Model::BACK_OFFICE) {
-                                $authorized = true;
-                            } else {
-                                if (!is_null($object->id)) {
-                                    $authorized = false;
-                                    $class = get_class($object);
-                                    $objectsSource = $object->getDb()->fetchByFields($class,['source' => $object->id]);
-                                    foreach($objectsSource as $source) {
-                                        foreach($source->anrs as $anr) {
-                                            if ($anr->id == $model->anr->id) {
-                                                $authorized = true;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        } else { //l'objet est de type anr
-                            if ($context == \MonarcCore\Model\Entity\Model::BACK_OFFICE) { //si on est en back on laisse passé
-                                $authorized = true;
-                            }
 
+                if (!$model->get('isGeneric') && $asset_mode == \MonarcCore\Model\Entity\Object::MODE_SPECIFIC) {
+                    $models = is_null($forceAsset) ? $object->get('asset')->get('models') : $forceAsset->models;
+                    $found = false;
+                    foreach ($models as $m) {
+                        if ($m->get('id') == $model->get('id')) {
+                            $found = true;
+                            break;
                         }
-                    } else {
-                        $authorized = true;
+                    }
+                    if (!$found) {
+                        throw new \Exception('You cannot add an object with specific asset unrelated to a ' . ($model->get('isRegulator') ? 'regulator' : 'specific') . ' model', 412);
                     }
                 }
             }
-        }
-
-        if (!$authorized) {
-            throw new \Exception('Bad mode for this object or models attached to asset incoherent with this object', 412);
         }
     }
 }
