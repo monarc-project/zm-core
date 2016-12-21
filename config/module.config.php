@@ -221,19 +221,6 @@ return array(
                 ),
             ),
 
-            'monarc_api_models' => array(
-                'type' => 'segment',
-                'options' => array(
-                    'route' => '/api/models[/:id]',
-                    'constraints' => array(
-                        'id' => '[0-9]+',
-                    ),
-                    'defaults' => array(
-                        'controller' => 'MonarcCore\Controller\ApiModels',
-                    ),
-                ),
-            ),
-
             'monarc_api_models_duplication' => array(
                 'type' => 'segment',
                 'options' => array(

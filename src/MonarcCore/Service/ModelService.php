@@ -24,6 +24,7 @@ class ModelService extends AbstractService
     protected $instanceRiskOpTable;
     protected $objectTable;
     protected $amvTable;
+    protected $clientTable; // only loaded by MonarcFO service factory
     protected $forbiddenFields = ['anr'];
 
     protected $filterColumns = array(
@@ -40,14 +41,15 @@ class ModelService extends AbstractService
      * @param null $filter
      * @return mixed
      */
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null){
-        $conf = $this->getMonarcConf();
+    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null, $scope = 'BO'){
         $joinModel = -1;
-        if (isset($conf['cliModel'])) {
-            $filterAnd['isGeneric'] = 1;
 
-            if ($conf['cliModel'] != 'generic') {
-                $joinModel = $conf['cliModel'];
+        if ($scope == 'FO') {
+            $filterAnd['isGeneric'] = 1;
+            $client = current($this->clientTable->fetchAll());
+
+            if ($client) {
+                $joinModel = $client['model_id'];
             }
         }
 
