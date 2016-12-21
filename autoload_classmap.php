@@ -70,6 +70,7 @@ return array(
     'MonarcCore\Model\Entity\ObjectCategory'                                => __DIR__ . '/src/MonarcCore/Model/Entity/ObjectCategory.php',
     'MonarcCore\Model\Entity\ObjectCategorySuperClass'                      => __DIR__ . '/src/MonarcCore/Model/Entity/ObjectCategorySuperClass.php',
     'MonarcCore\Model\Entity\ObjectObject'                                  => __DIR__ . '/src/MonarcCore/Model/Entity/ObjectObject.php',
+    'MonarcCore\Model\Entity\ObjectObjectSuperClass'                        => __DIR__ . '/src/MonarcCore/Model/Entity/ObjectObjectSuperClass.php',
     'MonarcCore\Model\Entity\ObjectSuperClass'                              => __DIR__ . '/src/MonarcCore/Model/Entity/ObjectSuperClass.php',
     'MonarcCore\Model\Entity\PasswordToken'                                 => __DIR__ . '/src/MonarcCore/Model/Entity/PasswordToken.php',
     'MonarcCore\Model\Entity\PasswordTokenSuperClass'                       => __DIR__ . '/src/MonarcCore/Model/Entity/PasswordTokenSuperClass.php',
