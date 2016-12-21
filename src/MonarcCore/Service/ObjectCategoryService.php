@@ -43,7 +43,10 @@ class ObjectCategoryService extends AbstractService
                     ->setParameter(':parent', $entity['parent']->id);
             }
 
-            $pos->andWhere('t.anr = :anr')->setParameter(':anr', $entity['anr']->id);
+            if ($entity['anr']) {
+                $pos->andWhere('t.anr = :anr')->setParameter(':anr', $entity['anr']->id);
+            }
+            
             $pos = $pos->getQuery()->getSingleScalarResult();
             if($entity['position'] >= $pos){
                 $entity['implicitPosition'] = 2;
