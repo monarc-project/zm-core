@@ -112,9 +112,9 @@ class ObjectExportService extends AbstractService
             if(isset($data['object']['name'.$this->getLanguage()]) && isset($objectsCache[$data['object']['name'.$this->getLanguage()]])){
                 return $objectsCache['objects'][$data['object']['name'.$this->getLanguage()]];
             }
-
             // import asset
             $assetId = $this->get('assetService')->importFromArray($data['asset'],$anr,$objectsCache);
+
             if($assetId){
                 // import categories
                 $idCateg = $this->importFromArrayCategories($data['categories'],$data['object']['category'],$anr->get('id'));
@@ -145,6 +145,8 @@ class ObjectExportService extends AbstractService
                         'asset' => $assetId,
                         'category' => $idCateg
                     ]));
+                    $object->setDbAdapter($this->get('table')->getDb());
+                    $object->setLanguage($this->getLanguage());
                     // Si il existe, c'est bien, on ne fera pas de "new"
                     // Sinon, on passera dans la création d'un nouvel "object"
                 }

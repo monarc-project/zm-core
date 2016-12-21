@@ -99,10 +99,7 @@ class ObjectService extends AbstractService
             $objectsArray[$object['id']] = $object;
         }
 
-        $newRoot = [];
-        foreach($rootArray as $value) {
-            $newRoot[] = $value;
-        }
+        $newRoot = array_values($rootArray);
 
         return $newRoot;
     }
