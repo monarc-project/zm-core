@@ -145,8 +145,10 @@ class ObjectExportService extends AbstractService
                         'asset' => $assetId,
                         'category' => $idCateg
                     ]));
-                    $object->setDbAdapter($this->get('table')->getDb());
-                    $object->setLanguage($this->getLanguage());
+                    if(!empty($object)){
+                        $object->setDbAdapter($this->get('table')->getDb());
+                        $object->setLanguage($this->getLanguage());
+                    }
                     // Si il existe, c'est bien, on ne fera pas de "new"
                     // Sinon, on passera dans la création d'un nouvel "object"
                 }
@@ -211,11 +213,12 @@ class ObjectExportService extends AbstractService
                             $oo->setDbAdapter($this->get('objectObjectService')->get('table')->getDb());
                             $oo->setLanguage($this->getLanguage());
                             $oo->exchangeArray([
+                                'anr' => $anr->get('id'),
                                 'father' => $idObj,
                                 'child' => $child,
                                 'implicitPosition' => 2
                             ]);
-                            $this->setDependencies($oo,['father', 'child']);
+                            $this->setDependencies($oo,['father', 'child', 'anr']);
                             $this->get('objectObjectService')->get('table')->save($oo);
                         }
                     }
