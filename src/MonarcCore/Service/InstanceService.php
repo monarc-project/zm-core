@@ -1184,7 +1184,7 @@ class InstanceService extends AbstractService
                 'threatLabel'.$lang => $translate->translate('Threat', $lang),
                 'threatCode' => $translate->translate('Threat code', $lang),
                 'threatRate' => $translate->translate('Prob.', $lang),
-                'vulnerabilityLabel'.$lang => $translate->translate('Vulnerability', $lang),
+                'vulnLabel'.$lang => $translate->translate('Vulnerability', $lang),
                 'vulnerabilityCode' => $translate->translate('Vulnerability code', $lang),
                 'vulnerabilityRate' => $translate->translate('Qualif.', $lang),
                 'c_risk' => $translate->translate('Current risk C', $lang),
