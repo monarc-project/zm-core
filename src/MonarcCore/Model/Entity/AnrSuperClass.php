@@ -87,30 +87,30 @@ class AnrSuperClass extends AbstractEntity
     /**
      * @var integer
      *
-     * @ORM\Column(name="seuil1", type="integer", options={"unsigned":true})
+     * @ORM\Column(name="seuil1", type="integer", options={"unsigned":true, "default":4})
      */
-    protected $seuil1;
+    protected $seuil1 = 4;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="seuil2", type="integer", options={"unsigned":true})
+     * @ORM\Column(name="seuil2", type="integer", options={"unsigned":true, "default":8})
      */
-    protected $seuil2;
+    protected $seuil2 = 8;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="seuil_rolf1", type="integer", options={"unsigned":true})
+     * @ORM\Column(name="seuil_rolf1", type="integer", options={"unsigned":true, "default":4})
      */
-    protected $seuilRolf1;
+    protected $seuilRolf1 = 4;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="seuil_rolf2", type="integer", options={"unsigned":true})
+     * @ORM\Column(name="seuil_rolf2", type="integer", options={"unsigned":true, "default":8})
      */
-    protected $seuilRolf2;
+    protected $seuilRolf2 = 8;
 
     /**
      * @var integer
