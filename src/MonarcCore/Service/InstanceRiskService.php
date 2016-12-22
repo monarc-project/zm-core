@@ -337,4 +337,23 @@ class InstanceRiskService extends AbstractService
 
         $instanceRiskTable->save($instanceRisk, $last);
     }
+
+    /**
+     * Update From Risk Table
+     *
+     * @param $id
+     * @param $data
+     */
+    public function updateFromRiskTable($id, $data) {
+
+        /** @var InstanceRiskTable $instanceRiskTable */
+        $instanceRiskTable = $this->get('table');
+        $instanceRisk = $instanceRiskTable->getEntity($id);
+
+        if($instanceRisk->threatRate != $data['threatRate']) {
+            $data['mh'] = 0;
+        }
+
+        $this->update($id, $data);
+    }
 }
