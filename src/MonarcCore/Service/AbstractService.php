@@ -219,13 +219,14 @@ abstract class AbstractService extends AbstractServiceFactory
         if (!$entity) {
             throw new \Exception('Entity does not exist', 412);
         }
-
+        
         if (!empty($data['anr'])) {
             if($entity->get('anr')->get('id') != $data['anr']){
                 throw new \Exception('Anr id error', 412);
             }
         }
 
+        $entity->setDbAdapter($this->get('table')->getDb());
         $entity->setLanguage($this->getLanguage());
 
         foreach ($this->dependencies as $dependency) {
