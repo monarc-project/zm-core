@@ -7,6 +7,7 @@ use MonarcCore\Model\Table\AnrTable;
 use MonarcCore\Model\Table\AssetTable;
 use MonarcCore\Model\Table\InstanceTable;
 use MonarcCore\Model\Table\ObjectObjectTable;
+use MonarcFO\Model\Table\UserAnrTable;
 
 abstract class AbstractService extends AbstractServiceFactory
 {
@@ -249,6 +250,43 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param $id
      */
     public function delete($id) {
+        return $this->get('table')->delete($id);
+    }
+
+
+    /**
+     * Delete From Anr
+     *
+     * @param $id
+     * @param null $anrId
+     * @return mixed
+     * @throws \Exception
+     */
+    public function deleteFromAnr($id, $anrId = null) {
+
+        if (!is_null($anrId)) {
+            $entity = $this->get('table')->getEntity($id);
+            if ($entity->anr->id != $anrId){
+                throw new \Exception('Not authorized', 412);
+            }
+
+            $connectedUser = $this->get('table')->getConnectedUser();
+
+            /** @var UserAnrTable $userAnrTable */
+            $userAnrTable = $this->get('userAnrTable');
+            $rights = $userAnrTable->getEntityByFields(['user' => $connectedUser['id'], 'anr' => $anrId]);
+            $rwd = 0;
+            foreach($rights as $right) {
+                if ($right->rwd == 1) {
+                    $rwd = 1;
+                }
+            }
+
+            if (!$rwd) {
+                throw new \Exception('Not authorized', 412);
+            }
+        }
+
         return $this->get('table')->delete($id);
     }
 

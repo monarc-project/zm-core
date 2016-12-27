@@ -525,7 +525,7 @@ class InstanceService extends AbstractService
         $this->get('instanceRiskService')->deleteInstanceRisks($id,$instance->anr->id);
         $this->get('instanceRiskOpService')->deleteInstanceRisksOp($id,$instance->anr->id);
 
-        $this->get('table')->delete($id);
+        $this->get('table')->delete($id, $anrId = null);
     }
 
     /**

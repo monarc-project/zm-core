@@ -20,6 +20,7 @@ class InstanceRiskService extends AbstractService
     protected $dependencies = ['anr', 'amv', 'asset', 'instance', 'threat', 'vulnerability'];
 
     protected $anrTable;
+    protected $userAnrTable;
     protected $amvTable;
     protected $instanceTable;
     
