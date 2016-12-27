@@ -14,6 +14,7 @@ use MonarcCore\Model\Table\ScaleCommentTable;
 class AnrObjectService extends AbstractService{
 	protected $objectObjectTable;
 	protected $objectService;
+	protected $userAnrTable;
 
 	public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $model = null, $anr = null, $lock = null){
 		return $this->get('objectService')->getListSpecific($page, $limit, $order, $filter, $asset, $category, $model, $anr, $lock);
