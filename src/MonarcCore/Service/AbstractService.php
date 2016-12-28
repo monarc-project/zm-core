@@ -187,6 +187,22 @@ abstract class AbstractService extends AbstractServiceFactory
             if($entity->get('anr')->get('id') != $data['anr']){
                 throw new \Exception('Anr id error', 412);
             }
+
+            $connectedUser = $this->get('table')->getConnectedUser();
+
+            /** @var UserAnrTable $userAnrTable */
+            $userAnrTable = $this->get('userAnrTable');
+            $rights = $userAnrTable->getEntityByFields(['user' => $connectedUser['id'], 'anr' => $anrId]);
+            $rwd = 0;
+            foreach($rights as $right) {
+                if ($right->rwd == 1) {
+                    $rwd = 1;
+                }
+            }
+
+            if (!$rwd) {
+                throw new \Exception('You are not authorized to do this action', 412);
+            }
         }
 
         $this->filterPostFields($data, $entity);
@@ -224,6 +240,22 @@ abstract class AbstractService extends AbstractServiceFactory
         if (!empty($data['anr'])) {
             if($entity->get('anr')->get('id') != $data['anr']){
                 throw new \Exception('Anr id error', 412);
+            }
+
+            $connectedUser = $this->get('table')->getConnectedUser();
+
+            /** @var UserAnrTable $userAnrTable */
+            $userAnrTable = $this->get('userAnrTable');
+            $rights = $userAnrTable->getEntityByFields(['user' => $connectedUser['id'], 'anr' => $anrId]);
+            $rwd = 0;
+            foreach($rights as $right) {
+                if ($right->rwd == 1) {
+                    $rwd = 1;
+                }
+            }
+
+            if (!$rwd) {
+                throw new \Exception('You are not authorized to do this action', 412);
             }
         }
 
@@ -267,7 +299,7 @@ abstract class AbstractService extends AbstractServiceFactory
         if (!is_null($anrId)) {
             $entity = $this->get('table')->getEntity($id);
             if ($entity->anr->id != $anrId){
-                throw new \Exception('Not authorized', 412);
+                throw new \Exception('Anr id error', 412);
             }
 
             $connectedUser = $this->get('table')->getConnectedUser();
@@ -283,7 +315,7 @@ abstract class AbstractService extends AbstractServiceFactory
             }
 
             if (!$rwd) {
-                throw new \Exception('Not authorized', 412);
+                throw new \Exception('You are not authorized to do this action', 412);
             }
         }
 
