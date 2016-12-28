@@ -23,7 +23,7 @@ class ObjectObjectService extends AbstractService
     protected $fatherTable;
     protected $modelTable;
 
-    protected $dependencies = ['[child](object)', '[father](object)'];
+    protected $dependencies = ['[child](object)', '[father](object)', '[anr](object)'];
 
     /**
      * Create
