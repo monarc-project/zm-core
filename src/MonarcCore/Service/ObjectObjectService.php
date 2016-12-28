@@ -17,6 +17,7 @@ use Zend\EventManager\EventManager;
 class ObjectObjectService extends AbstractService
 {
     protected $anrTable;
+    protected $userAnrTable;
     protected $objectTable;
     protected $instanceTable;
     protected $childTable;
