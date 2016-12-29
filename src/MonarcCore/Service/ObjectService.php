@@ -28,6 +28,7 @@ class ObjectService extends AbstractService
     protected $anrObjectCategoryEntity;
 
     protected $anrTable;
+    protected $userAnrTable;
     protected $anrObjectCategoryTable;
     protected $assetTable;
     protected $assetService;

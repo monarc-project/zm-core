@@ -50,6 +50,41 @@ class RolfRiskService extends AbstractService
         );
     }
 
+    public function getFilteredSpecificCount($page = 1, $limit = 25, $order = null, $filter = null, $category = null, $tag = null, $anr = null) {
+        $filterAnd = [];
+        $filterJoin = [];
+
+        if (!is_null($category)) {
+            $filterJoin[] = [
+                'as' => 'c',
+                'rel' => 'categories'
+            ];
+            $filterAnd['c.id'] = $category;
+        }
+
+        if (!is_null($tag)) {
+            $filterJoin[] = [
+                'as' => 'g',
+                'rel' => 'tags'
+            ];
+            $filterAnd['g.id'] = $tag;
+        }
+
+        if (!is_null($anr)) {
+            $filterAnd['anr'] = intval($anr);
+        }
+
+
+        return $this->get('table')->countFiltered(
+            $page,
+            $limit,
+            $this->parseFrontendOrder($order),
+            $this->parseFrontendFilter($filter, $this->filterColumns),
+            $filterAnd,
+            $filterJoin
+        );
+    }
+
     /**
      * Create
      *

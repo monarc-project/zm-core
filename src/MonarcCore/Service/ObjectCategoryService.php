@@ -16,6 +16,7 @@ class ObjectCategoryService extends AbstractService
     protected $rootTable;//required for autopositionning
     protected $parentTable;//required for autopositionning
     protected $anrTable;//required for autopositionning of anrobjectcategories
+    protected $userAnrTable;
 
     protected $filterColumns = ['label1', 'label2', 'label3', 'label4'];
 

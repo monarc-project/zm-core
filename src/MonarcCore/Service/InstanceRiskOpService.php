@@ -18,6 +18,7 @@ class InstanceRiskOpService extends AbstractService
     protected $dependencies = ['anr', 'instance', 'object', 'rolfRisk'];
 
     protected $anrTable;
+    protected $userAnrTable;
     protected $modelTable;
     protected $instanceTable;
     protected $objectTable;

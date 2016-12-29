@@ -46,7 +46,10 @@ class InstanceTable extends AbstractEntityTable {
                 ->getResult();
             $family = array();
             foreach($result as $r){
-                $family[$r->get('id')][$r->get('parent')->get('id')] = $r->get('parent')->getJsonArray();
+                $p = $r->get('parent');
+                if(!empty($p)){//Cyril - Fix Trello [#9KkvKj5M] - not sure it's enough, what if we want the anr itself (null)
+                    $family[$r->get('id')][$r->get('parent')->get('id')] = $r->get('parent')->getJsonArray();
+                }
             }
             $temp = array();
             $temp[] = $instance->getJsonArray();
@@ -127,7 +130,7 @@ class InstanceTable extends AbstractEntityTable {
         }else{
             $return = $return->andWhere('t.anr IS NULL');
         }
-        
+
         $id = $entity->get('id');
         return $return->getQuery()->getSingleScalarResult()+($id?0:1);
     }

@@ -17,13 +17,14 @@ use Zend\EventManager\EventManager;
 class ObjectObjectService extends AbstractService
 {
     protected $anrTable;
+    protected $userAnrTable;
     protected $objectTable;
     protected $instanceTable;
     protected $childTable;
     protected $fatherTable;
     protected $modelTable;
 
-    protected $dependencies = ['[child](object)', '[father](object)'];
+    protected $dependencies = ['[child](object)', '[father](object)', '[anr](object)'];
 
     /**
      * Create

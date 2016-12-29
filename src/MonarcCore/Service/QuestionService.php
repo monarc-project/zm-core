@@ -11,6 +11,7 @@ class QuestionService extends AbstractService
 {
     protected $choiceTable;
     protected $anrTable;
+    protected $userAnrTable;
 
     protected $dependencies = ['anr'];
 

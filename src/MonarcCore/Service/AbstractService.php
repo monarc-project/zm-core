@@ -4,8 +4,10 @@ namespace MonarcCore\Service;
 
 use MonarcCore\Model\Entity\Scale;
 use MonarcCore\Model\Table\AnrTable;
+use MonarcCore\Model\Table\AssetTable;
 use MonarcCore\Model\Table\InstanceTable;
 use MonarcCore\Model\Table\ObjectObjectTable;
+use MonarcFO\Model\Table\UserAnrTable;
 
 abstract class AbstractService extends AbstractServiceFactory
 {
@@ -181,6 +183,28 @@ abstract class AbstractService extends AbstractServiceFactory
             throw new \Exception('Entity does not exist', 412);
         }
 
+        if (!empty($data['anr'])) {
+            if($entity->get('anr')->get('id') != $data['anr']){
+                throw new \Exception('Anr id error', 412);
+            }
+
+            $connectedUser = $this->get('table')->getConnectedUser();
+
+            /** @var UserAnrTable $userAnrTable */
+            $userAnrTable = $this->get('userAnrTable');
+            $rights = $userAnrTable->getEntityByFields(['user' => $connectedUser['id'], 'anr' => $entity->anr->id]);
+            $rwd = 0;
+            foreach($rights as $right) {
+                if ($right->rwd == 1) {
+                    $rwd = 1;
+                }
+            }
+
+            if (!$rwd) {
+                throw new \Exception('You are not authorized to do this action', 412);
+            }
+        }
+
         $this->filterPostFields($data, $entity);
 
         $entity->setDbAdapter($this->get('table')->getDb());
@@ -212,7 +236,30 @@ abstract class AbstractService extends AbstractServiceFactory
         if (!$entity) {
             throw new \Exception('Entity does not exist', 412);
         }
+        
+        if (!empty($data['anr'])) {
+            if($entity->get('anr')->get('id') != $data['anr']){
+                throw new \Exception('Anr id error', 412);
+            }
 
+            $connectedUser = $this->get('table')->getConnectedUser();
+
+            /** @var UserAnrTable $userAnrTable */
+            $userAnrTable = $this->get('userAnrTable');
+            $rights = $userAnrTable->getEntityByFields(['user' => $connectedUser['id'], 'anr' => $entity->anr->id]);
+            $rwd = 0;
+            foreach($rights as $right) {
+                if ($right->rwd == 1) {
+                    $rwd = 1;
+                }
+            }
+
+            if (!$rwd) {
+                throw new \Exception('You are not authorized to do this action', 412);
+            }
+        }
+
+        $entity->setDbAdapter($this->get('table')->getDb());
         $entity->setLanguage($this->getLanguage());
 
         foreach ($this->dependencies as $dependency) {
@@ -236,6 +283,81 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     public function delete($id) {
         return $this->get('table')->delete($id);
+    }
+
+
+    /**
+     * Delete From Anr
+     *
+     * @param $id
+     * @param null $anrId
+     * @return mixed
+     * @throws \Exception
+     */
+    public function deleteFromAnr($id, $anrId = null) {
+
+        if (!is_null($anrId)) {
+            $entity = $this->get('table')->getEntity($id);
+            if ($entity->anr->id != $anrId){
+                throw new \Exception('Anr id error', 412);
+            }
+
+            $connectedUser = $this->get('table')->getConnectedUser();
+
+            /** @var UserAnrTable $userAnrTable */
+            $userAnrTable = $this->get('userAnrTable');
+            $rights = $userAnrTable->getEntityByFields(['user' => $connectedUser['id'], 'anr' => $anrId]);
+            $rwd = 0;
+            foreach($rights as $right) {
+                if ($right->rwd == 1) {
+                    $rwd = 1;
+                }
+            }
+
+            if (!$rwd) {
+                throw new \Exception('You are not authorized to do this action', 412);
+            }
+        }
+
+        return $this->get('table')->delete($id);
+    }
+
+    /**
+     * Delete List From Anr
+     *
+     * @param $data
+     * @param null $anrId
+     * @return mixed
+     * @throws \Exception
+     */
+    public function deleteListFromAnr($data, $anrId = null) {
+
+        if (!is_null($anrId)) {
+            foreach($data as $id) {
+                $entity = $this->get('table')->getEntity($id);
+                if ($entity->anr->id != $anrId) {
+                    throw new \Exception('Anr id error', 412);
+                }
+            }
+
+            $connectedUser = $this->get('table')->getConnectedUser();
+
+            /** @var UserAnrTable $userAnrTable */
+            $userAnrTable = $this->get('userAnrTable');
+            $rights = $userAnrTable->getEntityByFields(['user' => $connectedUser['id'], 'anr' => $anrId]);
+            $rwd = 0;
+            foreach($rights as $right) {
+                if ($right->rwd == 1) {
+                    $rwd = 1;
+                }
+            }
+
+            if (!$rwd) {
+                throw new \Exception('You are not authorized to do this action', 412);
+            }
+        }
+
+        return $this->get('table')->deleteList($data);
     }
 
     /**
@@ -407,6 +529,15 @@ abstract class AbstractService extends AbstractServiceFactory
                     $class = $metadata->getAssociationTargetClass($propertyname);
                     if(! is_array($value) || isset($value['id'])){
                         $dep = $db->getReference($class,isset($value['id'])?$value['id']:$value);
+
+                        if((isset($dep->anr)) && (isset($entity->anr))) {
+                            $depAnrId = $dep->anr->id;
+                            $entityAnrId = is_integer($entity->anr) ? $entity->anr : $entity->anr->id;
+                            if ($depAnrId != $entityAnrId) {
+                                throw new \Exception('You are not authorized to use this dependency', 412);
+                            }
+                        }
+
                         if (!$dep->id) {
                             throw new \Exception('Entity does not exist', 412);
                         }

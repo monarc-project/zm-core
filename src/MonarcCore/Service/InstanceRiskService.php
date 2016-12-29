@@ -20,6 +20,7 @@ class InstanceRiskService extends AbstractService
     protected $dependencies = ['anr', 'amv', 'asset', 'instance', 'threat', 'vulnerability'];
 
     protected $anrTable;
+    protected $userAnrTable;
     protected $amvTable;
     protected $instanceTable;
     
@@ -336,5 +337,24 @@ class InstanceRiskService extends AbstractService
         $instanceRisk->cacheTargetedRisk = $this->getTargetRisk($impacts, $instanceRisk->threatRate, $instanceRisk->vulnerabilityRate, $instanceRisk->reductionAmount);
 
         $instanceRiskTable->save($instanceRisk, $last);
+    }
+
+    /**
+     * Update From Risk Table
+     *
+     * @param $id
+     * @param $data
+     */
+    public function updateFromRiskTable($id, $data) {
+
+        /** @var InstanceRiskTable $instanceRiskTable */
+        $instanceRiskTable = $this->get('table');
+        $instanceRisk = $instanceRiskTable->getEntity($id);
+
+        if($instanceRisk->threatRate != $data['threatRate']) {
+            $data['mh'] = 0;
+        }
+
+        $this->update($id, $data);
     }
 }
