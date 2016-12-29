@@ -181,6 +181,8 @@ class RolfRiskService extends AbstractService
             }
         }
 
+        $this->setDependencies($entity, ['anr']);
+
         return $this->get('table')->save($entity);
     }
 }
