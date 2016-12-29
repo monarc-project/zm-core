@@ -192,7 +192,7 @@ abstract class AbstractService extends AbstractServiceFactory
 
             /** @var UserAnrTable $userAnrTable */
             $userAnrTable = $this->get('userAnrTable');
-            $rights = $userAnrTable->getEntityByFields(['user' => $connectedUser['id'], 'anr' => $anrId]);
+            $rights = $userAnrTable->getEntityByFields(['user' => $connectedUser['id'], 'anr' => $entity->anr->id]);
             $rwd = 0;
             foreach($rights as $right) {
                 if ($right->rwd == 1) {
@@ -320,6 +320,44 @@ abstract class AbstractService extends AbstractServiceFactory
         }
 
         return $this->get('table')->delete($id);
+    }
+
+    /**
+     * Delete List From Anr
+     *
+     * @param $data
+     * @param null $anrId
+     * @return mixed
+     * @throws \Exception
+     */
+    public function deleteListFromAnr($data, $anrId = null) {
+
+        if (!is_null($anrId)) {
+            foreach($data as $id) {
+                $entity = $this->get('table')->getEntity($id);
+                if ($entity->anr->id != $anrId) {
+                    throw new \Exception('Anr id error', 412);
+                }
+            }
+
+            $connectedUser = $this->get('table')->getConnectedUser();
+
+            /** @var UserAnrTable $userAnrTable */
+            $userAnrTable = $this->get('userAnrTable');
+            $rights = $userAnrTable->getEntityByFields(['user' => $connectedUser['id'], 'anr' => $anrId]);
+            $rwd = 0;
+            foreach($rights as $right) {
+                if ($right->rwd == 1) {
+                    $rwd = 1;
+                }
+            }
+
+            if (!$rwd) {
+                throw new \Exception('You are not authorized to do this action', 412);
+            }
+        }
+
+        return $this->get('table')->deleteList($data);
     }
 
     /**
@@ -491,6 +529,15 @@ abstract class AbstractService extends AbstractServiceFactory
                     $class = $metadata->getAssociationTargetClass($propertyname);
                     if(! is_array($value) || isset($value['id'])){
                         $dep = $db->getReference($class,isset($value['id'])?$value['id']:$value);
+
+                        if((isset($dep->anr)) && (isset($entity->anr))) {
+                            $depAnrId = $dep->anr->id;
+                            $entityAnrId = is_integer($entity->anr) ? $entity->anr : $entity->anr->id;
+                            if ($depAnrId != $entityAnrId) {
+                                throw new \Exception('You are not authorized to use this dependency', 412);
+                            }
+                        }
+
                         if (!$dep->id) {
                             throw new \Exception('Entity does not exist', 412);
                         }
