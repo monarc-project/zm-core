@@ -246,7 +246,7 @@ abstract class AbstractService extends AbstractServiceFactory
 
             /** @var UserAnrTable $userAnrTable */
             $userAnrTable = $this->get('userAnrTable');
-            $rights = $userAnrTable->getEntityByFields(['user' => $connectedUser['id'], 'anr' => $anrId]);
+            $rights = $userAnrTable->getEntityByFields(['user' => $connectedUser['id'], 'anr' => $entity->anr->id]);
             $rwd = 0;
             foreach($rights as $right) {
                 if ($right->rwd == 1) {
