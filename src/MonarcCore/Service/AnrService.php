@@ -40,10 +40,34 @@ class AnrService extends AbstractService
         $anrId = $this->get('table')->save($entity);
 
         //scales
+        for($i = 1; $i <= 3; $i++){
+            if(isset($data['scales'][$i]['min'])){
+                if(isset($data['scales'][$i]['max']) && $data['scales'][$i]['min'] > $data['scales'][$i]['max']){
+                    $data['scales'][$i]['min'] = 0;
+                }
+            }else{
+                $data['scales'][$i]['min'] = 0;
+            }
+        }
         $scales = [
-            ['anr' => $anrId, 'type' => 1, 'min' => 0, 'max' => 3],
-            ['anr' => $anrId, 'type' => 2, 'min' => 0, 'max' => 4],
-            ['anr' => $anrId, 'type' => 3, 'min' => 0, 'max' => 3],
+            [
+                'anr' => $anrId,
+                'type' => 1,
+                'min' => $data['scales'][1]['min'],
+                'max' => (isset($data['scales'][1]['max'])?$data['scales'][1]['max']:3),
+            ],
+            [
+                'anr' => $anrId,
+                'type' => 2,
+                'min' => $data['scales'][2]['min'],
+                'max' => (isset($data['scales'][2]['max'])?$data['scales'][2]['max']:4),
+            ],
+            [
+                'anr' => $anrId,
+                'type' => 3,
+                'min' => $data['scales'][3]['min'],
+                'max' => (isset($data['scales'][3]['max'])?$data['scales'][3]['max']:3),
+            ],
         ];
         foreach ($scales as $scale) {
             /** @var ScaleService $scaleService */
