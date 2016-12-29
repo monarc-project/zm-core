@@ -385,7 +385,7 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param $dependencies
      * @throws \Exception
      */
-    protected function setDependencies(&$entity, $dependencies) {
+    public function setDependencies(&$entity, $dependencies) {
         $db = $entity->getDbAdapter();
         if(empty($db)){
             $db = $this->get('table')->getDb();

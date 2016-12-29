@@ -59,7 +59,7 @@ class RolfRiskService extends AbstractService
      */
     public function create($data, $last = true) {
         $entity = $this->get('entity');
-        if (is_numeric($data['anr'])) {
+        if (isset($data['anr']) && is_numeric($data['anr'])) {
             $data['anr'] = $this->get('anrTable')->getEntity($data['anr']);
         }
 
