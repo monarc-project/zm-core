@@ -43,11 +43,9 @@ class ObjectObjectService extends AbstractService
         $objectObjectTable = $this->get('table');
 
         //verify child not already existing
-        if ($context == Object::BACK_OFFICE) {
-            $objectsObjects = $objectObjectTable->getEntityByFields(['anr' => 'null', 'father' => $data['father'], 'child' => $data['child']]);
-            if (count($objectsObjects)) {
-                throw new \Exception('This component already exist for this object', 412);
-            }
+        $objectsObjects = $objectObjectTable->getEntityByFields(['anr' => 'null', 'father' => $data['father'], 'child' => $data['child']]);
+        if (count($objectsObjects)) {
+            throw new \Exception('This component already exist for this object', 412);
         }
 
         $recursiveParentsListId = [];
