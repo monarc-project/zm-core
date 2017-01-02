@@ -236,7 +236,6 @@ abstract class AbstractService extends AbstractServiceFactory
         if (!$entity) {
             throw new \Exception('Entity does not exist', 412);
         }
-        
         if (!empty($data['anr'])) {
             if($entity->get('anr')->get('id') != $data['anr']){
                 throw new \Exception('Anr id error', 412);
@@ -246,16 +245,18 @@ abstract class AbstractService extends AbstractServiceFactory
 
             /** @var UserAnrTable $userAnrTable */
             $userAnrTable = $this->get('userAnrTable');
-            $rights = $userAnrTable->getEntityByFields(['user' => $connectedUser['id'], 'anr' => $entity->anr->id]);
-            $rwd = 0;
-            foreach($rights as $right) {
-                if ($right->rwd == 1) {
-                    $rwd = 1;
+            if ($userAnrTable) {
+                $rights = $userAnrTable->getEntityByFields(['user' => $connectedUser['id'], 'anr' => $entity->anr->id]);
+                $rwd = 0;
+                foreach ($rights as $right) {
+                    if ($right->rwd == 1) {
+                        $rwd = 1;
+                    }
                 }
-            }
 
-            if (!$rwd) {
-                throw new \Exception('You are not authorized to do this action', 412);
+                if (!$rwd) {
+                    throw new \Exception('You are not authorized to do this action', 412);
+                }
             }
         }
 
