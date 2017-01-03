@@ -26,7 +26,7 @@ class PasswordService extends AbstractService
             $date->add(new \DateInterval("P1D"));
 
             //generate token
-            $token = uniqid(bin2hex(openssl_random_pseudo_bytes(15)), true);
+            $token = uniqid(bin2hex(openssl_random_pseudo_bytes(rand(20,40))), true);
             $passwordTokenData = [
                 'user' => $user['id'],
                 'token' => $token,
