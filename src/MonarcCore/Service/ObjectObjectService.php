@@ -43,7 +43,7 @@ class ObjectObjectService extends AbstractService
         $objectObjectTable = $this->get('table');
 
         //verify child not already existing
-        $objectsObjects = $objectObjectTable->getEntityByFields(['anr' => 'null', 'father' => $data['father'], 'child' => $data['child']]);
+        $objectsObjects = $objectObjectTable->getEntityByFields(['anr' => (empty($data['anr'])?null:$data['anr']), 'father' => $data['father'], 'child' => $data['child']]);
         if (count($objectsObjects)) {
             throw new \Exception('This component already exist for this object', 412);
         }
