@@ -186,7 +186,7 @@ class InstanceConsequenceService extends AbstractService
      */
     protected function updateInstanceImpacts($instanceConsequencesId, $fromInstance = false) {
         $class = $this->get('scaleImpactTypeTable')->getClass();
-        $rolfpTypes = $class::getScaleImpactTypeRolfp();
+        $cidTypes = $class::getScaleImpactTypeCid();
 
         /** @var InstanceConsequenceTable $table */
         $table = $this->get('table');
@@ -197,7 +197,7 @@ class InstanceConsequenceService extends AbstractService
         $instanceD = [];
         $instanceConsequences = $table->getEntityByFields(['instance' => $instanceCurrentConsequence->get('instance')->get('id')]);
         foreach ($instanceConsequences as $instanceConsequence) {
-            if (in_array($instanceConsequence->scaleImpactType->type, $rolfpTypes)) {
+            if (!in_array($instanceConsequence->scaleImpactType->type, $cidTypes)) {
                 $instanceC[] = (int) $instanceConsequence->get('c');
                 $instanceI[] = (int) $instanceConsequence->get('i');
                 $instanceD[] = (int) $instanceConsequence->get('d');

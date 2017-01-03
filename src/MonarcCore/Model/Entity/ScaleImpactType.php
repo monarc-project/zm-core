@@ -35,6 +35,14 @@ class ScaleImpactType extends AbstractEntity
         ];
     }
 
+    static function getScaleImpactTypeCid() {
+        return [
+            self::SCALE_TYPE_C,
+            self::SCALE_TYPE_I,
+            self::SCALE_TYPE_D,
+        ];
+    }
+
     /**
      * @var integer
      *
