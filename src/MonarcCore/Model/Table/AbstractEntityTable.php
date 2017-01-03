@@ -356,6 +356,7 @@ abstract class AbstractEntityTable
                 $this->manageDeletePosition($entity,$params['implicitPosition']);
             }
 
+
             $this->getDb()->delete($entity, $last);
             return true;
         }else{

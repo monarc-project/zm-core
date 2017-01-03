@@ -508,6 +508,7 @@ class InstanceService extends AbstractService
      * @throws \Exception
      */
     public function delete($id) {
+
         /** @var InstanceTable $table */
         $table = $this->get('table');
         $instance = $table->getEntity($id);
@@ -525,7 +526,7 @@ class InstanceService extends AbstractService
         $this->get('instanceRiskService')->deleteInstanceRisks($id,$instance->anr->id);
         $this->get('instanceRiskOpService')->deleteInstanceRisksOp($id,$instance->anr->id);
 
-        $this->get('table')->delete($id, $anrId = null);
+        $table->delete($id);
     }
 
     /**

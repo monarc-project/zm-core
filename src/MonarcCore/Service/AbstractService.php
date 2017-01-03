@@ -320,7 +320,7 @@ abstract class AbstractService extends AbstractServiceFactory
             }
         }
 
-        return $this->get('table')->delete($id);
+        return $this->delete($id);
     }
 
     /**
