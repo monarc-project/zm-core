@@ -531,7 +531,7 @@ abstract class AbstractService extends AbstractServiceFactory
                     if(! is_array($value) || isset($value['id'])){
                         $dep = $db->getReference($class,isset($value['id'])?$value['id']:$value);
 
-                        if((isset($dep->anr)) && (isset($entity->anr))) {
+                        if(isset($dep->anr) && isset($entity->anr) && $dep->anr instanceof \MonarcCore\Model\Entity\AnrSuperClass) {
                             $depAnrId = $dep->anr->id;
                             $entityAnrId = is_integer($entity->anr) ? $entity->anr : $entity->anr->id;
                             if ($depAnrId != $entityAnrId) {
