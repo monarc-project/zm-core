@@ -15,6 +15,7 @@ class ObjectExportService extends AbstractService
     protected $assetService;
     protected $anrObjectCategoryTable;
     protected $rolfTagTable;
+    protected $rolfRiskTable;
 
     public function generateExportArray($id, &$filename = ""){
         if (empty($id)) {
@@ -148,9 +149,9 @@ class ObjectExportService extends AbstractService
                     if(empty($tag)){
                         $ct = $this->get('rolfTagTable')->getClass();
                         $tag = new $ct();
-                        $tag->setDbAdapter($this->get('rolfTagTable')->getDb());
-                        $tag->setLanguage($this->getLanguage());
                     }
+                    $tag->setDbAdapter($this->get('rolfTagTable')->getDb());
+                    $tag->setLanguage($this->getLanguage());
 
                     if(!empty($data['rolfTags'][$data['object']['rolfTag']]['risks'])){
                         $risks = [];
@@ -163,9 +164,9 @@ class ObjectExportService extends AbstractService
                                 if(empty($risk)){
                                     $cr = $this->get('rolfRiskTable')->getClass();
                                     $risk = new $cr();
-                                    $risk->setDbAdapter($this->get('rolfRiskTable')->getDb());
-                                    $risk->setLanguage($this->getLanguage());
                                 }
+                                $risk->setDbAdapter($this->get('rolfRiskTable')->getDb());
+                                $risk->setLanguage($this->getLanguage());
                                 $toExchange = $data['rolfRisks'][$k];
                                 unset($toExchange['id']);
                                 $toExchange['anr'] = $anr->get('id');
