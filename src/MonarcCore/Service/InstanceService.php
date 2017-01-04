@@ -1566,8 +1566,10 @@ class InstanceService extends AbstractService
         }
 
         $filename = "";
-        $return = $this->generateExportArray($data['id'],$filename);
+        $with_eval = isset($data['assessments']) && $data['assessments'];
+        $return = $this->generateExportArray($data['id'],$filename,$with_eval);
         $data['filename'] = $filename;
+
 
         return base64_encode($this->encrypt(json_encode($return),$data['password']));
     }
@@ -1794,7 +1796,7 @@ class InstanceService extends AbstractService
                 'counterTreated' => 'counterTreated',
             );
             $return['recos'] = $recoIds = [];
-            $recoRisk = $this->get('recommandationRiskTable')->getEntityByFields(['anr' => $anr->get('id'), 'instanceRisk' => $riskIds], ['position'=>'ASC']);
+            $recoRisk = $this->get('recommandationRiskTable')->getEntityByFields(['anr' => $entity->get('anr')->get('id'), 'instanceRisk' => $riskIds], ['id'=>'ASC']);
             foreach($recoRisk as $rr){
                 if(!empty($rr)){
                     $return['recos'][$rr->get('instanceRisk')->get('id')][$rr->get('recommandation')->get('id')] = $rr->get('recommandation')->getJsonArray($recosObj);
@@ -1813,7 +1815,7 @@ class InstanceService extends AbstractService
                     'description3' => 'description3',
                     'description4' => 'description4',
                 );
-                $links = $this->get('recommandationMeasureTable')->getEntityByFields(['anr' => $anr->get('id'), 'recommandation' => $recoIds]);
+                $links = $this->get('recommandationMeasureTable')->getEntityByFields(['anr' => $entity->get('anr')->get('id'), 'recommandation' => $recoIds]);
                 $data['recolinks'] = [];
                 if(!isset($return['measures'])){
                     $return['measures'] = [];
