@@ -117,7 +117,7 @@ class ObjectService extends AbstractService
      * @param $anr
      * @return array|bool
      */
-    public function getAnrObjects($page, $limit, $order, $filter, $filterAnd, $model, $anr) {
+    public function getAnrObjects($page, $limit, $order, $filter, $filterAnd, $model, $anr, $context = \MonarcCore\Model\Entity\AbstractEntity::BACK_OFFICE) {
 
         if($model){
             /** @var ModelTable $modelTable */
@@ -141,14 +141,16 @@ class ObjectService extends AbstractService
                     }
                 }
             }
-            $objects = $model->get('anr')->get('objects');
-            if(!empty($objects)){ // on enlève tout les objets déjà liés
-                $filterAnd['id'] = ['op'=>'NOT IN','value'=>[]];
-                foreach($objects as $o){
-                    $filterAnd['id']['value'][$o->get('id')] = $o->get('id');
-                }
-                if(empty($filterAnd['id']['value'])){
-                    unset($filterAnd['id']);
+            if($context != \MonarcCore\Model\Entity\AbstractEntity::FRONT_OFFICE){
+                $objects = $model->get('anr')->get('objects');
+                if(!empty($objects)){ // on enlève tout les objets déjà liés
+                    $filterAnd['id'] = ['op'=>'NOT IN','value'=>[]];
+                    foreach($objects as $o){
+                        $filterAnd['id']['value'][$o->get('id')] = $o->get('id');
+                    }
+                    if(empty($filterAnd['id']['value'])){
+                        unset($filterAnd['id']);
+                    }
                 }
             }
         }elseif($anr){

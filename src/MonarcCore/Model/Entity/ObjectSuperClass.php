@@ -535,9 +535,9 @@ class ObjectSuperClass extends AbstractEntity
                 'continue_if_empty' => true,
                 'filters' => array(),
                 'validators' => array(
-                    array(
+                    /*array(
                         'name' => 'IsInt',
-                    ),
+                    ),*/
                 ),
             ));
 

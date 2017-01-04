@@ -184,6 +184,8 @@ class ObjectExportService extends AbstractService
                     $tag->exchangeArray($toExchange);
                     $this->setDependencies($tag,['anr', 'risks']);
                     $data['object']['rolfTag'] = $this->get('rolfTagTable')->save($tag);
+                }else{
+                    $data['object']['rolfTag'] = null;
                 }
                 
                 /*
