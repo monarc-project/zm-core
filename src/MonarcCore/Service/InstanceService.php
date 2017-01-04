@@ -1642,7 +1642,7 @@ class InstanceService extends AbstractService
         $instanceRiskResults = $instanceRiskTable->getRepository()
             ->createQueryBuilder('t')
             ->where("t.instance = :i")
-            ->setParameter(':i',$entity->get('id'));
+            ->setParameter(':i',$entity->get('id'))->getQuery()->getResult();
         $instanceRiskArray = array(
             'id' => 'id',
             'specific' => 'specific',
@@ -1833,7 +1833,7 @@ class InstanceService extends AbstractService
         $instanceRiskOpResults = $instanceRiskOpTable->getRepository()
             ->createQueryBuilder('t')
             ->where("t.instance = :i")
-            ->setParameter(':i',$entity->get('id'));
+            ->setParameter(':i',$entity->get('id'))->getQuery()->getResult();
         $instanceRiskOpArray = array(
             'id' => 'id',
             //'rolfRisk' => 'rolfRisk', // TODO doit-on garder cette donnée ?
@@ -1930,7 +1930,7 @@ class InstanceService extends AbstractService
             $instanceConseqResults = $instanceConseqTable->getRepository()
                 ->createQueryBuilder('t')
                 ->where("t.instance = :i")
-                ->setParameter(':i',$entity->get('id'));
+                ->setParameter(':i',$entity->get('id'))->getQuery()->getResult();
             foreach($instanceConseqResults as $ic){
                 $return['consequences'][$ic->get('id')] = $ic->getJsonArray($instanceConseqArray);
                 $return['consequences'][$ic->get('id')]['scaleImpactType'] = $ic->get('scaleImpactType')->getJsonArray($scaleTypeArray);
@@ -1938,11 +1938,10 @@ class InstanceService extends AbstractService
             }
         }
 
-        // TODO: gérer les fils
         $instanceTableResults = $this->get('table')->getRepository()
             ->createQueryBuilder('t')
             ->where('t.parent = :p')
-            ->setParameter(':i',$entity->get('id'));
+            ->setParameter(':p',$entity->get('id'))->getQuery()->getResult();
         $return['children'] = array();
         $f = '';
         foreach($instanceTableResults as $i){
