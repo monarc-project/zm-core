@@ -14,6 +14,7 @@ class ObjectExportService extends AbstractService
     protected $categoryTable;
     protected $assetService;
     protected $anrObjectCategoryTable;
+    protected $rolfTagTable;
 
     public function generateExportArray($id, &$filename = ""){
         if (empty($id)) {
@@ -89,6 +90,24 @@ class ObjectExportService extends AbstractService
             $return['asset'] = $this->get('assetExportService')->generateExportArray($asset['id']);
         }
 
+        // Récupération des risques opérationnels
+        $rolfTag = $entity->get('rolfTag');
+        $return['object']['rolfTag'] = null;
+        if(!empty($rolfTag)){
+            $risks = $rolfTag->get('risks');
+            $rolfTag = $rolfTag->getJsonArray(['id','code','label1','label2','label3','label4']);
+            $return['object']['rolfTag'] = $rolfTag['id'];
+            $return['rolfTags'][$rolfTag['id']] = $rolfTag;
+            $return['rolfTags'][$rolfTag['id']]['risks'] = [];
+            if(!empty($risks)){
+                foreach($risks as $r){
+                    $r = $r->getJsonArray(['id','code','label1','label2','label3','label4','description1','description2','description3','description4']);
+                    $return['rolfTags'][$rolfTag['id']]['risks'][$r['id']] = $r['id'];
+                    $return['rolfRisks'][$r['id']] = $r;
+                }
+            }
+        }
+
         // Récupération children(s)
         $children = $this->get('objectObjectService')->getChildren($entity->get('id'));
         $return['children'] = null;
@@ -119,6 +138,52 @@ class ObjectExportService extends AbstractService
             if($assetId){
                 // import categories
                 $idCateg = $this->importFromArrayCategories($data['categories'],$data['object']['category'],$anr->get('id'));
+
+                // Import des RisksOp
+                if(!empty($data['object']['rolfTag']) && !empty($data['rolfTags'][$data['object']['rolfTag']])){
+                    $tag = current($this->get('rolfTagTable')->getEntityByFields([
+                        'anr' => $anr->get('id'),
+                        'code' => $data['rolfTags'][$data['object']['rolfTag']]['code'],
+                    ]));
+                    if(empty($tag)){
+                        $ct = $this->get('rolfTagTable')->getClass();
+                        $tag = new $ct();
+                        $tag->setDbAdapter($this->get('rolfTagTable')->getDb());
+                        $tag->setLanguage($this->getLanguage());
+                    }
+
+                    if(!empty($data['rolfTags'][$data['object']['rolfTag']]['risks'])){
+                        $risks = [];
+                        foreach ($data['rolfTags'][$data['object']['rolfTag']]['risks'] as $k){
+                            if(isset($data['rolfRisks'][$k])){
+                                $risk = current($this->get('rolfRiskTable')->getEntityByFields([
+                                    'anr' => $anr->get('id'),
+                                    'code' => $data['rolfRisks'][$k]['code'],
+                                ]));
+                                if(empty($risk)){
+                                    $cr = $this->get('rolfRiskTable')->getClass();
+                                    $risk = new $cr();
+                                    $risk->setDbAdapter($this->get('rolfRiskTable')->getDb());
+                                    $risk->setLanguage($this->getLanguage());
+                                }
+                                $toExchange = $data['rolfRisks'][$k];
+                                unset($toExchange['id']);
+                                $toExchange['anr'] = $anr->get('id');
+                                $risk->exchangeArray($toExchange);
+                                $this->setDependencies($risk,['anr']);
+                                $risks[] = $this->get('rolfRiskTable')->save($risk);
+                            }
+                        }
+                        $data['rolfTags'][$data['object']['rolfTag']]['risks'] = $risks;
+                    }
+
+                    $toExchange = $data['rolfTags'][$data['object']['rolfTag']];
+                    unset($toExchange['id']);
+                    $toExchange['anr'] = $anr->get('id');
+                    $tag->exchangeArray($toExchange);
+                    $this->setDependencies($tag,['anr', 'risks']);
+                    $data['object']['rolfTag'] = $this->get('rolfTagTable')->save($tag);
+                }
                 
                 /*
                  * INFO:
@@ -197,7 +262,7 @@ class ObjectExportService extends AbstractService
                 $toExchange['asset'] = $assetId;
                 $toExchange['category'] = $idCateg;
                 $object->exchangeArray($toExchange);
-                $this->setDependencies($object,['anr', 'category', 'asset']);
+                $this->setDependencies($object,['anr', 'category', 'asset', 'rolfTag']);
                 $object->addAnr($anr);
                 $idObj = $this->get('table')->save($object);
 
