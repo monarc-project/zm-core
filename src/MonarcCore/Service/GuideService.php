@@ -1,5 +1,6 @@
 <?php
 namespace MonarcCore\Service;
+use MonarcCore\Model\Table\GuideTable;
 
 /**
  * Guide Service
@@ -61,4 +62,25 @@ class GuideService extends AbstractService
 
         return $guide;
     }
+
+    /**
+     * Create
+     *
+     * @param $data
+     * @param bool $last
+     * @return mixed
+     */
+    public function create($data, $last = true) {
+
+        /** @var GuideTable $table */
+        $table = $this->get('table');
+        $currentGuide = $table->getEntityByFields(['type' => $data['type']]);
+
+        if (count($currentGuide)) {
+            throw new \Exception('Only one guide by category', 412);
+        }
+
+        parent::create($data, $last);
+    }
+
 }
