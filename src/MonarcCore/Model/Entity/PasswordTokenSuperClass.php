@@ -10,9 +10,8 @@ use Zend\InputFilter\InputFilter;
  * Password Token
  *
  * @ORM\Table(name="passwords_tokens", indexes={
- *      @ORM\Index(name="anr_id", columns={"anr_id","code"}),
- *      @ORM\Index(name="anr_id2", columns={"anr_id"})
- * })
+ *      @ORM\Index(name="user_id", columns={"user_id"})
+ * }), uniqueConstraints={@ORM\UniqueConstraint(name="token", columns={"token"})}
  * @ORM\MappedSuperclass
  */
 class PasswordTokenSuperClass extends AbstractEntity
