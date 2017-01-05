@@ -47,7 +47,7 @@ class InstanceService extends AbstractService
     protected $instanceRiskOpService;
     protected $objectObjectService;
     protected $translateService;
-    
+
     // Useless (Deprecated)
     protected $instanceTable;
     protected $assetTable;
@@ -153,7 +153,7 @@ class InstanceService extends AbstractService
                         $return = $return->andWhere('t.anr IS NULL');
                     }
                     $return = $return->andWhere('t.position = :pos')
-                        ->setParameter(':pos',$data['position'])
+                        ->setParameter(':pos',$data['position']-1)
                         ->setMaxResults(1);
                     $max = $return->getQuery()->getSingleScalarResult();
                     if($max){
@@ -304,7 +304,7 @@ class InstanceService extends AbstractService
                         $return = $return->andWhere('t.anr IS NULL');
                     }
                     $return = $return->andWhere('t.position = :pos')
-                        ->setParameter(':pos',$data['position']+($data['position']<$instance->get('position')?-1:0))
+                        ->setParameter(':pos',$data['position']-1)
                         ->setMaxResults(1)
                         ->getQuery()->getSingleScalarResult();
                     if($return){
@@ -438,7 +438,7 @@ class InstanceService extends AbstractService
                         $return = $return->andWhere('t.anr IS NULL');
                     }
                     $return = $return->andWhere('t.position = :pos')
-                        ->setParameter(':pos',$data['position']+($data['position']<$instance->get('position')?-1:0))
+                        ->setParameter(':pos',$data['position']-1)
                         ->setMaxResults(1)
                         ->getQuery()->getSingleScalarResult();
                     if($return){
@@ -1224,6 +1224,7 @@ class InstanceService extends AbstractService
         $instanceTable = $this->get('table');
 
         $instancesIds = [];
+        $instancesInfos = [];
         if ($instance) {
             $i = $instanceTable->getEntity($instance['id']);
 
@@ -1234,6 +1235,14 @@ class InstanceService extends AbstractService
                 $current = array_shift($temp);
                 if($current->get('asset')->get('type') == Asset::TYPE_PRIMARY){
                     $instancesIds[] = $current->get('id');
+                    $instancesInfos[$current->id] = [
+                        'id'    => $current->id,
+                        'scope' => $current->object->scope,
+                        'name1' => $current->name1,
+                        'name2' => $current->name2,
+                        'name3' => $current->name3,
+                        'name4' => $current->name4
+                    ];
                 }
                 $children = $current->getParameter('children');
                 if(!empty($children)){
@@ -1247,6 +1256,14 @@ class InstanceService extends AbstractService
             foreach ($instances as $i) {
                 if($i->get('asset')->get('type') == Asset::TYPE_PRIMARY){
                     $instancesIds[] = $i->id;
+                    $instancesInfos[$i->id] = [
+                        'id'    => $i->id,
+                        'scope' => $i->object->scope,
+                        'name1' => $i->name1,
+                        'name2' => $i->name2,
+                        'name3' => $i->name3,
+                        'name4' => $i->name4
+                    ];
                 }
             }
         }
@@ -1261,6 +1278,7 @@ class InstanceService extends AbstractService
             // Add risk
             $riskOps[] = [
                 'id' => $instanceRiskOp->id,
+                'instanceInfos' => isset($instancesInfos[$instanceRiskOp->instance->id]) ? $instancesInfos[$instanceRiskOp->instance->id] : [],
                 'label1' => $instanceRiskOp->riskCacheLabel1,
                 'label2' => $instanceRiskOp->riskCacheLabel2,
                 'label3' => $instanceRiskOp->riskCacheLabel3,
