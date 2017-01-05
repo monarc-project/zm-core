@@ -238,23 +238,33 @@ abstract class AbstractEntityTable
             $params = [
                 ':position' => $entity->get('position'),
                 ':id'       => $entity->get('id') === null ? '' : $entity->get('id') //specific to the TIPs below
-                ];
+            ];
 
-            $parentWhere = "1 = 1";
-
+            $bros = $this->getRepository()->createQueryBuilder('bro')
+                ->select()->where("1 = 1");
             if( $isParentable ){
                 $parentWhere = 'bro.'.$entity->parameters['implicitPosition']['field'] . ' = :parentid';
                 if(is_null($entity->get($entity->parameters['implicitPosition']['field']))){
-                    $parentWhere = 'bro.'.$entity->parameters['implicitPosition']['field'] . ' IS NULL';
+                    $bros->where('bro.'.$entity->parameters['implicitPosition']['field'] . ' IS NULL');
                 }
                 else{
+                    $bros->where('bro.'.$entity->parameters['implicitPosition']['field'] . ' = :parentid');
                     $params[':parentid'] = $entity->get($entity->parameters['implicitPosition']['field'])->get('id');
                 }
+
+                if(!empty($entity->parameters['implicitPosition']['subField'])){
+                    foreach($entity->parameters['implicitPosition']['subField'] as $k){
+                        $sub = is_null($entity->get($k)) ? null : (is_object($entity->get($k)) ? $entity->get($k)->get('id') : $entity->get($k));
+                        if(is_null($sub)){
+                            $bros->andWhere('bro.'.$k.' IS NULL');
+                        }else{
+                            $bros->andWhere('bro.'.$k.' = :'.$k);
+                            $params[':'.$k] = $sub;
+                        }
+                    }
+                }
             }
-            $bros = $this->getRepository()->createQueryBuilder('bro')
-                         ->select()
-                         ->where( $parentWhere )
-                         ->andWhere('bro.position >= :position')
+            $bros = $bros->andWhere('bro.position >= :position')
                          ->andWhere('bro.id != :id')
                          ->setParameters( $params )
                          ->getQuery()->getResult();
@@ -270,27 +280,35 @@ abstract class AbstractEntityTable
             $params = [
                 ':position' => ! empty($changes['position']['before']) ? $changes['position']['before'] : $entity->get('position'),
                 ':id'       => $entity->get('id')
-                ];
+            ];
 
-            $parentWhere = "1 = 1";
-
+            $bros = $this->getRepository()->createQueryBuilder('bro')
+                ->select()->where("1 = 1");
             if( $isParentable ){//by security - inverse never should happen in this case
-                $parentWhere = 'bro.'.$entity->parameters['implicitPosition']['field'] . ' = :parentid';
                 if(is_null($changes['parent']['before'])) {
-                    $parentWhere = 'bro.'.$entity->parameters['implicitPosition']['field'] . ' IS NULL';
-                }
-                else{
+                    $bros->where('bro.'.$entity->parameters['implicitPosition']['field'] . ' IS NULL');
+                }else{
+                    $bros->where('bro.'.$entity->parameters['implicitPosition']['field'] . ' = :parentid');
                     $params[':parentid'] = $changes['parent']['before'];
+                }
+
+                if(!empty($entity->parameters['implicitPosition']['subField'])){
+                    foreach($entity->parameters['implicitPosition']['subField'] as $k){
+                        $sub = is_null($entity->get($k)) ? null : (is_object($entity->get($k)) ? $entity->get($k)->get('id') : $entity->get($k));
+                        if(is_null($sub)){
+                            $bros->andWhere('bro.'.$k.' IS NULL');
+                        }else{
+                            $bros->andWhere('bro.'.$k.' = :'.$k);
+                            $params[':'.$k] = $sub;
+                        }
+                    }
                 }
             }
 
-            $bros = $this->getRepository()->createQueryBuilder('bro')
-                         ->select()
-                         ->where( $parentWhere )
-                         ->andWhere('bro.position >= :position')
-                         ->andWhere('bro.id != :id')
-                         ->setParameters( $params )
-                         ->getQuery()->getResult();
+            $bros = $bros->andWhere('bro.position >= :position')
+                ->andWhere('bro.id != :id')
+                ->setParameters( $params )
+                ->getQuery()->getResult();
 
             if(!empty($bros)){
                 foreach($bros as $bro){
@@ -309,28 +327,38 @@ abstract class AbstractEntityTable
                 ':apres'    => $apres,
                 ':avant'    => $avant,
                 ':id'       => $entity->get('id')
-                ];
+            ];
 
-            $parentWhere = "1 = 1";
-
+            $bros = $this->getRepository()->createQueryBuilder('bro')
+                ->select()->where("1 = 1");
             if( $isParentable ){
                 $parentWhere = 'bro.'.$entity->parameters['implicitPosition']['field'] . ' = :parentid';
                 if(is_null($entity->get($entity->parameters['implicitPosition']['field']))){
-                    $parentWhere = 'bro.'.$entity->parameters['implicitPosition']['field'] . ' IS NULL';
+                    $bros->where('bro.'.$entity->parameters['implicitPosition']['field'] . ' IS NULL');
                 }
                 else{
+                    $bros->where('bro.'.$entity->parameters['implicitPosition']['field'] . ' = :parentid');
                     $params[':parentid'] = $entity->get($entity->parameters['implicitPosition']['field'])->get('id');
+                }
+
+                if(!empty($entity->parameters['implicitPosition']['subField'])){
+                    foreach($entity->parameters['implicitPosition']['subField'] as $k){
+                        $sub = is_null($entity->get($k)) ? null : (is_object($entity->get($k)) ? $entity->get($k)->get('id') : $entity->get($k));
+                        if(is_null($sub)){
+                            $bros->andWhere('bro.'.$k.' IS NULL');
+                        }else{
+                            $bros->andWhere('bro.'.$k.' = :'.$k);
+                            $params[':'.$k] = $sub;
+                        }
+                    }
                 }
             }
 
-            $bros = $this->getRepository()->createQueryBuilder('bro')
-                         ->select()
-                         ->where( $parentWhere )
-                         ->andWhere('bro.position '.(($avant > $apres) ? '>=' : '<=').' :apres')
-                         ->andWhere('bro.position '.(($avant > $apres) ? '<' : '>').' :avant')
-                         ->andWhere('bro.id != :id')
-                         ->setParameters( $params )
-                         ->getQuery()->getResult();
+            $bros = $bros->andWhere('bro.position '.(($avant > $apres) ? '>=' : '<=').' :apres')
+                ->andWhere('bro.position '.(($avant > $apres) ? '<' : '>').' :avant')
+                ->andWhere('bro.id != :id')
+                ->setParameters( $params )
+                ->getQuery()->getResult();
 
             if(!empty($bros)){
                 foreach($bros as $bro){
@@ -376,6 +404,17 @@ abstract class AbstractEntityTable
             }else{
                 $return = $return->where('t.' . $params['field'] . ' = :'.$params['field'])
                     ->setParameter(':'.$params['field'], $entity->get($params['field']));
+            }
+            if(!empty($params['subField'])){
+                foreach($params['subField'] as $k){
+                    $sub = is_null($entity->get($k)) ? null : (is_object($entity->get($k)) ? $entity->get($k)->get('id') : $entity->get($k));
+                    if(is_null($sub)){
+                        $return->andWhere('t.'.$k.' IS NULL');
+                    }else{
+                        $return->andWhere('t.'.$k.' = :'.$k)
+                            ->setParameter(':'.$k,$sub);
+                    }
+                }
             }
         }
         if($hasWhere){

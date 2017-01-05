@@ -374,6 +374,9 @@ class InstanceSuperClass extends AbstractEntity
         'implicitPosition' => array(
             'field' => 'parent',
             'root' => 'root',
+            'subField' => [
+                'anr',
+            ],
         ),
     );
 

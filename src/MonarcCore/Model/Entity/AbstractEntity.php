@@ -21,6 +21,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
     'implicitPosition' => array(
         'field' => null, // pivots: string
         'root' => null, // root field (if exist else null or not defined)
+        'subField' => [ <field1>, <field2> ] // optionnal
     ),
     */
 
@@ -173,7 +174,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
         }
         //Absact handling of positions
         if( ! $this->squeezeAutoPositionning && isset($options['implicitPosition'])){
-            $this->calculatePosition($options['implicitPosition'], isset($options['previous']) ? $options['previous'] : null, $parent_before, $parent_after);
+            $this->calculatePosition($options['implicitPosition'], isset($options['previous']) ? $options['previous'] : null, $parent_before, $parent_after,$options);
             unset($options['implicitPosition']);
             unset($options['previous']);
         }
@@ -191,7 +192,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
         $this->squeezeAutoPositionning = $bool;
     }
 
-    private function calculatePosition($mode = self::IMP_POS_END, $previous = null, $parent_before = null, $parent_after = null){
+    private function calculatePosition($mode = self::IMP_POS_END, $previous = null, $parent_before = null, $parent_after = null, $options = []){
         $fallback = false;
         $initial_position = $this->get('position');
 
@@ -205,8 +206,19 @@ abstract class AbstractEntity implements InputFilterAwareInterface
             $prec = $this->getDbAdapter()->getRepository(get_class($this))->createQueryBuilder('t')
                         ->select()
                         ->where('t.id = :previousid')
-                        ->setParameter(':previousid', $previous)
-                        ->getQuery()->getSingleResult();
+                        ->setParameter(':previousid', $previous);
+            if(!empty($this->parameters['implicitPosition']['subField'])){
+                foreach($this->parameters['implicitPosition']['subField'] as $k){
+                    $sub = is_null($this->get($k)) ? null : (is_object($this->get($k)) ? $this->get($k)->get('id') : $this->get($k));
+                    if(is_null($sub)){
+                        $prec->andWhere('t.'.$k.' IS NULL');
+                    }else{
+                        $prec->andWhere('t.'.$k.' = :'.$k)
+                            ->setParameter(':'.$k,$sub);
+                    }
+                }
+            }
+            $prec = $prec->getQuery()->getSingleResult();
             if($prec){
                 //we need to be sure that the prec object has the same parent as the $parent_after
                 //don't forget that the root value is NULL
@@ -236,6 +248,23 @@ abstract class AbstractEntity implements InputFilterAwareInterface
                 if( ! is_null($parent_after) ){
                     $qb->setParameter(':parentid', $parent_after);
                 }
+
+                if(!empty($this->parameters['implicitPosition']['subField'])){
+                    foreach($this->parameters['implicitPosition']['subField'] as $k){
+                        $sub = $this->get($k);
+                        if(!empty($sub)){
+                            $sub = is_object($sub)?$sub->get('id'):$sub;
+                        }else{
+                            $sub = empty($options[$k]) || is_null($options[$k]) ? null : (is_object($options[$k]) ? $options[$k]->get('id') : $options[$k]);
+                        }
+                        if(is_null($sub)){
+                            $qb->andWhere('t.'.$k.' IS NULL');
+                        }else{
+                            $qb->andWhere('t.'.$k.' = :'.$k)
+                                ->setParameter(':'.$k,$sub);
+                        }
+                    }
+                }
             }
             $max = $qb->getQuery()->getSingleScalarResult();
 
@@ -246,7 +275,6 @@ abstract class AbstractEntity implements InputFilterAwareInterface
                 $this->set('position', $max);//in this case we're not adding something, no +1
             }
         }
-
         //assign cache value for brothers & children (algorithm delegated to AbstractEntityTable ::save)
         $this->parameters['implicitPosition']['changes']['position'] = ['before' => $initial_position, 'after' => $this->get('position')];
     }
