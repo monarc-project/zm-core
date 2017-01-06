@@ -193,7 +193,7 @@ class DeliveriesModels extends AbstractEntity
             for($i = 1; $i <= 4; $i++){
                 $this->inputFilter->add(array(
                     'name' => 'path'.$i,
-                    'required' => ($this->getLanguage() == $i && !$partial),
+                    'required' => ($this->getLanguage() == $i && !$partial && !$this->get('id')),
                     'allow_empty' => false,
                     'filters' => array(
                         array(
