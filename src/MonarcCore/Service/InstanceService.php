@@ -153,7 +153,7 @@ class InstanceService extends AbstractService
                         $return = $return->andWhere('t.anr IS NULL');
                     }
                     $return = $return->andWhere('t.position = :pos')
-                        ->setParameter(':pos',$data['position']-1)
+                        ->setParameter(':pos',$data['position'])
                         ->setMaxResults(1);
                     $max = $return->getQuery()->getSingleScalarResult();
                     if($max){
@@ -304,7 +304,7 @@ class InstanceService extends AbstractService
                         $return = $return->andWhere('t.anr IS NULL');
                     }
                     $return = $return->andWhere('t.position = :pos')
-                        ->setParameter(':pos',$data['position']-1)
+                        ->setParameter(':pos',$data['position']+($data['position']<$instance->get('position')?-1:0))
                         ->setMaxResults(1)
                         ->getQuery()->getSingleScalarResult();
                     if($return){
@@ -438,7 +438,7 @@ class InstanceService extends AbstractService
                         $return = $return->andWhere('t.anr IS NULL');
                     }
                     $return = $return->andWhere('t.position = :pos')
-                        ->setParameter(':pos',$data['position']-1)
+                        ->setParameter(':pos',$data['position']+($data['position']<$instance->get('position')?-1:0))
                         ->setMaxResults(1)
                         ->getQuery()->getSingleScalarResult();
                     if($return){
