@@ -155,7 +155,11 @@ class InstanceService extends AbstractService
                     $return = $return->andWhere('t.position = :pos')
                         ->setParameter(':pos',$data['position'])
                         ->setMaxResults(1);
-                    $max = $return->getQuery()->getSingleScalarResult();
+                    try{
+                        $max = $return->getQuery()->getSingleScalarResult();
+                    }catch(\Exception $e){
+                        $max = 0; // c'est moche
+                    }
                     if($max){
                         $data['implicitPosition'] = 3;
                         $data['previous'] = $max;
