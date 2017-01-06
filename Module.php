@@ -66,6 +66,21 @@ class Module
                 $result = $objectService->patch($params['objectId'], $params['data']);
                 return $result;
             }, 100);
+
+            if(file_exists('./data/cache/upgrade')){
+                // Clear caches
+                $appConf = file_exists('./config/application.config.php')?include './config/application.config.php':[];
+                $cacheDir = isset($appConf['module_listener_options']['cache_dir'])?$appConf['module_listener_options']['cache_dir']:"";
+                if(isset($appConf['module_listener_options']['config_cache_key']) && 
+                    file_exists($cacheDir."module-config-cache.".$appConf['module_listener_options']['config_cache_key'].".php")){
+                    unlink($cacheDir."module-config-cache.".$appConf['module_listener_options']['config_cache_key'].".php");
+                }
+                if(isset($appConf['module_listener_options']['module_map_cache_key']) && 
+                    file_exists($cacheDir."module-classmap-cache.".$appConf['module_listener_options']['module_map_cache_key'].".php")){
+                    unlink($cacheDir."module-classmap-cache.".$appConf['module_listener_options']['module_map_cache_key'].".php");
+                }
+                unlink('./data/cache/upgrade');
+            }
         }
     }
 
