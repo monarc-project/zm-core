@@ -164,18 +164,6 @@ class DeliveriesModels extends AbstractEntity
 
             parent::getInputFilter($partial);
 
-
-            $descriptions = ['description1', 'description2', 'description3', 'description4'];
-            foreach($descriptions as $description) {
-                $this->inputFilter->add(array(
-                    'name' => $description,
-                    'required' => ((strchr($description, (string) $this->getLanguage())) && (!$partial)) ? true : false,
-                    'allow_empty' => false,
-                    'filters' => array(),
-                    'validators' => array(),
-                ));
-            }
-
             $this->inputFilter->add(array(
                 'name' => 'category',
                 'required' => !($this->get('id')>0),
@@ -201,6 +189,32 @@ class DeliveriesModels extends AbstractEntity
                     ),
                 ),
             ));
+
+            for($i = 1; $i <= 4; $i++){
+                $this->inputFilter->add(array(
+                    'name' => 'path'.$i,
+                    'required' => ($this->getLanguage() == $i && !$partial),
+                    'allow_empty' => false,
+                    'filters' => array(
+                        array(
+                            'name' => 'Zend\Filter\File\RenameUpload',
+                            'options' => array(
+                                'randomize' => true,
+                                'target' => $dirFile.$this->{"path$i"}['name'],
+                            ),
+                        ),
+                    ),
+                    'validators' => array(),
+                ));
+
+                $this->inputFilter->add(array(
+                    'name' => "description$i",
+                    'required' => ($this->getLanguage() == $i && !$partial),
+                    'allow_empty' => false,
+                    'filters' => array(),
+                    'validators' => array(),
+                ));
+            }
         }
         return $this->inputFilter;
     }
@@ -216,7 +230,7 @@ class DeliveriesModels extends AbstractEntity
                 rename($this->{'path'.$i}['tmp_name'], $targetFile);
 
                 $this->{'path'.$i} = $targetFile;
-                $this->content = file_get_contents($this->{'path' . $i});
+                $this->{"content$i"} = file_get_contents($this->{'path' . $i});
             }
         }
 
