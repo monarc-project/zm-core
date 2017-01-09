@@ -51,10 +51,15 @@ class ScaleImpactTypeService extends AbstractService
         $scales = parent::getList($page, $limit, $order, $filter, $filterAnd);
 
         $types = $this->getTypes();
+        $revertTypes = array_flip($types);
 
         foreach ($scales as $key => $scale) {
             if(isset($scale['type'])){
-                $scales[$key]['type'] = $types[$scale['type']];
+                if(isset($types[$scale['type']])){
+                    $scales[$key]['type'] = $types[$scale['type']];
+                }elseif(isset($revertTypes[$scale['type']])){
+                    // on ne fait rien, mais le type n'est pas bon
+                }
             }
         }
 
