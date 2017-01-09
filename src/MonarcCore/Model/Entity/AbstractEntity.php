@@ -209,7 +209,12 @@ abstract class AbstractEntity implements InputFilterAwareInterface
                         ->setParameter(':previousid', $previous);
             if(!empty($this->parameters['implicitPosition']['subField'])){
                 foreach($this->parameters['implicitPosition']['subField'] as $k){
-                    $sub = is_null($this->get($k)) ? null : (is_object($this->get($k)) ? $this->get($k)->get('id') : $this->get($k));
+                    $sub = $this->get($k);
+                    if(!empty($sub)){
+                        $sub = is_object($sub)?$sub->get('id'):$sub;
+                    }else{
+                        $sub = empty($options[$k]) || is_null($options[$k]) ? null : (is_object($options[$k]) ? $options[$k]->get('id') : $options[$k]);
+                    }
                     if(is_null($sub)){
                         $prec->andWhere('t.'.$k.' IS NULL');
                     }else{
