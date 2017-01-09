@@ -24,6 +24,19 @@ return array(
                     'MonarcCore\Model\Entity' => 'Monarc_cli_driver',
                 ),
             ),
+
+
+            'Monarc_cli_fo_driver' => array(
+                'class' => 'Doctrine\ORM\Mapping\Driver\AnnotationDriver',
+                'cache' => 'array',
+                'paths' => array(__DIR__ . '/../src/MonarcCore/Model/Entity'),
+            ),
+            'orm_cli_fo' => array(
+                'class' => 'Doctrine\ORM\Mapping\Driver\DriverChain',
+                'drivers' => array(
+                    'MonarcCore\Model\Entity' => 'Monarc_cli_fo_driver',
+                ),
+            ),
         ),
     ),
     // END DOCTRINE CONF
@@ -131,7 +144,7 @@ return array(
             'monarc_api_anr_instances_export' => array(
                 'type' => 'segment',
                 'options' => array(
-                    'route' => '/api/anr/:anrid/objects/:id/export',
+                    'route' => '/api/anr/:anrid/instances/:id/export',
                     'constraints' => array(
                         'id' => '[0-9]+',
                     ),
