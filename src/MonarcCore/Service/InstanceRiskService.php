@@ -351,6 +351,9 @@ class InstanceRiskService extends AbstractService
         $instanceRiskTable = $this->get('table');
         $instanceRisk = $instanceRiskTable->getEntity($id);
 
+        //security
+        $data['specific'] = $instanceRisk->get('specific');
+
         if($instanceRisk->threatRate != $data['threatRate']) {
             $data['mh'] = 0;
         }
