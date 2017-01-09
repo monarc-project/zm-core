@@ -153,7 +153,7 @@ class InstanceService extends AbstractService
                         $return = $return->andWhere('t.anr IS NULL');
                     }
                     $return = $return->andWhere('t.position = :pos')
-                        ->setParameter(':pos',$data['position'])
+                        ->setParameter(':pos',$data['position']-1)
                         ->setMaxResults(1);
                     try{
                         $max = $return->getQuery()->getSingleScalarResult();
@@ -579,7 +579,8 @@ class InstanceService extends AbstractService
                 'position' => $child->position,
                 'c' => '-1',
                 'i' => '-1',
-                'd' => '-1'
+                'd' => '-1',
+                'anr' => $object->get('anr')->get('id'),
             ];
             $this->instantiateObjectToAnr($anrId, $data, false);
         }
