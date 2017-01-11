@@ -4,10 +4,12 @@ namespace MonarcCore\Service;
 use MonarcCore\Model\Entity\AbstractEntity;
 use MonarcCore\Model\Entity\Asset;
 use MonarcCore\Model\Entity\Object;
+use MonarcCore\Model\Entity\ObjectObject;
 use MonarcCore\Model\Table\AmvTable;
 use MonarcCore\Model\Table\AnrObjectCategoryTable;
 use MonarcCore\Model\Table\AnrTable;
 use MonarcCore\Model\Table\AssetTable;
+use MonarcCore\Model\Table\InstanceRiskOpTable;
 use MonarcCore\Model\Table\InstanceTable;
 use MonarcCore\Model\Table\ModelTable;
 use MonarcCore\Model\Table\ObjectCategoryTable;
@@ -34,6 +36,7 @@ class ObjectService extends AbstractService
     protected $assetService;
     protected $categoryTable;
     protected $instanceTable;
+    protected $instanceRiskOpTable;
     protected $modelTable;
     protected $objectObjectTable;
     protected $rolfTagTable;
@@ -432,7 +435,11 @@ class ObjectService extends AbstractService
     public function create($data, $last = true, $context = AbstractEntity::BACK_OFFICE) {
 
         //create object
-        $object = $this->get('entity');
+        $class = $this->get('entity');
+        $object = new $class();
+        $object->setLanguage($this->getLanguage());
+        $object->setDbAdapter($this->get('table')->getDb());
+
 
         //in FO, all objects are generics
         if ($context == AbstractEntity::FRONT_OFFICE) {
@@ -499,6 +506,7 @@ class ObjectService extends AbstractService
         if (($object->asset->type == Asset::TYPE_PRIMARY) && ($object->scope == Object::SCOPE_GLOBAL)) {
             throw new \Exception('You cannot create an object that is both global and primary', 412);
         }
+
 
         if ($context == Object::BACK_OFFICE) {
             //create object type bdc
@@ -595,7 +603,11 @@ class ObjectService extends AbstractService
             }
         }
 
-        $object->exchangeArray($data);
+        $rolfTagId = $object->rolfTag->id;
+
+        $object->exchangeArray($data, true);
+
+        $changeRolfTag = ($rolfTagId == $object->rolfTag) ? false : true;
 
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($object, $dependencies);
@@ -658,7 +670,7 @@ class ObjectService extends AbstractService
 
         $this->get('table')->save($object);
 
-        $this->instancesImpacts($object);
+        $this->instancesImpacts($object, $changeRolfTag);
 
         return $id;
     }
@@ -679,19 +691,24 @@ class ObjectService extends AbstractService
 
         $object = $this->get('table')->getEntity($id);
         $object->setLanguage($this->getLanguage());
+
+        $rolfTagId = $object->rolfTag->id;
+
         $object->exchangeArray($data, true);
+
+        $changeRolfTag = ($rolfTagId == $object->rolfTag) ? false : true;
 
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($object, $dependencies);
 
         $this->get('table')->save($object);
 
-        $this->instancesImpacts($object);
+        $this->instancesImpacts($object, $changeRolfTag);
 
         return $id;
     }
 
-    protected function instancesImpacts($object) {
+    protected function instancesImpacts($object, $changeRolfTag = false) {
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('instanceTable');
         $instances = $instanceTable->getEntityByFields(['object' => $object]);
@@ -711,6 +728,22 @@ class ObjectService extends AbstractService
             }
             if ($modifyInstance) {
                 $instanceTable->save($instance);
+            }
+            if ($changeRolfTag) {
+                //change instance risk op to specific
+                /** @var InstanceRiskOpTable $instanceRiskOpTable */
+                $instanceRiskOpTable = $this->get('instanceRiskOpTable');
+                $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['instance' => $instance->id]);
+
+                $i = 1;
+                foreach($instancesRisksOp as $instanceRiskOp) {
+                    $last = ($i == count($instancesRisksOp)) ? true : false;
+                    $instanceRiskOp->specific = 1;
+                    $instanceRiskOpTable->save($instanceRiskOp, $last);
+                    $i++;
+                }
+
+                //add new risk op to istance
             }
         }
     }
@@ -768,7 +801,7 @@ class ObjectService extends AbstractService
      * @return mixed
      * @throws \Exception
      */
-    public function duplicate($data) {
+    public function duplicate($data, $context = AbstractEntity::BACK_OFFICE) {
 
         $entity = $this->getEntity($data['id']);
 
@@ -777,7 +810,6 @@ class ObjectService extends AbstractService
         }
 
         $keysToRemove = ['id','position', 'creator', 'createdAt', 'updater', 'updatedAt', 'inputFilter', 'language', 'dbadapter', 'parameters'];
-
         foreach($keysToRemove as $key) {
             unset($entity[$key]);
         }
@@ -789,7 +821,6 @@ class ObjectService extends AbstractService
         }
 
         $keys = array_keys($entity);
-
         foreach($keys as $key) {
             if (is_null($entity[$key])) {
                 unset($entity[$key]);
@@ -823,7 +854,28 @@ class ObjectService extends AbstractService
             }
         }
 
-        return $this->create($entity);
+        $id = $this->create($entity, true, $context);
+
+        //children
+        /** @var ObjectObjectTable $objectObjectTable */
+        $objectObjectTable = $this->get('objectObjectTable');
+        $objectsObjects = $objectObjectTable->getEntityByFields(['father' => $data['id']]);
+        foreach($objectsObjects as $objectsObject) {
+            $data = [
+                'id' => $objectsObject->child->id,
+                'implicitPosition' => $data['implicitPosition'],
+            ];
+
+            $childId = $this->duplicate($data, $context);
+
+            $newObjectObject = clone $objectsObject;
+            $newObjectObject->setId(null);
+            $newObjectObject->setFather($this->get('table')->getEntity($id));
+            $newObjectObject->setChild($this->get('table')->getEntity($childId));
+            $objectObjectTable->save($newObjectObject);
+        }
+
+        return $id;
     }
 
     /**

@@ -14,6 +14,7 @@ class ObjectServiceFactory extends AbstractServiceFactory
         'amvTable'=> '\MonarcCore\Model\Table\AmvTable',
         'categoryTable'=> '\MonarcCore\Model\Table\ObjectCategoryTable',
         'instanceTable'=> '\MonarcCore\Model\Table\InstanceTable',
+        'instanceRiskOpTable'=> '\MonarcCore\Model\Table\InstanceRiskOpTable',
         'modelTable'=> '\MonarcCore\Model\Table\ModelTable',
         'objectObjectTable'=> '\MonarcCore\Model\Table\ObjectObjectTable',
         'rolfTagTable'=> '\MonarcCore\Model\Table\RolfTagTable',
