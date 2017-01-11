@@ -9,6 +9,7 @@ use MonarcCore\Model\Table\AmvTable;
 use MonarcCore\Model\Table\AnrObjectCategoryTable;
 use MonarcCore\Model\Table\AnrTable;
 use MonarcCore\Model\Table\AssetTable;
+use MonarcCore\Model\Table\InstanceRiskOpTable;
 use MonarcCore\Model\Table\InstanceTable;
 use MonarcCore\Model\Table\ModelTable;
 use MonarcCore\Model\Table\ObjectCategoryTable;
@@ -35,6 +36,7 @@ class ObjectService extends AbstractService
     protected $assetService;
     protected $categoryTable;
     protected $instanceTable;
+    protected $instanceRiskOpTable;
     protected $modelTable;
     protected $objectObjectTable;
     protected $rolfTagTable;
@@ -601,7 +603,11 @@ class ObjectService extends AbstractService
             }
         }
 
-        $object->exchangeArray($data);
+        $rolfTagId = $object->rolfTag->id;
+
+        $object->exchangeArray($data, true);
+
+        $changeRolfTag = ($rolfTagId == $object->rolfTag) ? false : true;
 
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($object, $dependencies);
@@ -664,7 +670,7 @@ class ObjectService extends AbstractService
 
         $this->get('table')->save($object);
 
-        $this->instancesImpacts($object);
+        $this->instancesImpacts($object, $changeRolfTag);
 
         return $id;
     }
@@ -685,19 +691,24 @@ class ObjectService extends AbstractService
 
         $object = $this->get('table')->getEntity($id);
         $object->setLanguage($this->getLanguage());
+
+        $rolfTagId = $object->rolfTag->id;
+
         $object->exchangeArray($data, true);
+
+        $changeRolfTag = ($rolfTagId == $object->rolfTag) ? false : true;
 
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($object, $dependencies);
 
         $this->get('table')->save($object);
 
-        $this->instancesImpacts($object);
+        $this->instancesImpacts($object, $changeRolfTag);
 
         return $id;
     }
 
-    protected function instancesImpacts($object) {
+    protected function instancesImpacts($object, $changeRolfTag = false) {
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('instanceTable');
         $instances = $instanceTable->getEntityByFields(['object' => $object]);
@@ -717,6 +728,22 @@ class ObjectService extends AbstractService
             }
             if ($modifyInstance) {
                 $instanceTable->save($instance);
+            }
+            if ($changeRolfTag) {
+                //change instance risk op to specific
+                /** @var InstanceRiskOpTable $instanceRiskOpTable */
+                $instanceRiskOpTable = $this->get('instanceRiskOpTable');
+                $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['instance' => $instance->id]);
+
+                $i = 1;
+                foreach($instancesRisksOp as $instanceRiskOp) {
+                    $last = ($i == count($instancesRisksOp)) ? true : false;
+                    $instanceRiskOp->specific = 1;
+                    $instanceRiskOpTable->save($instanceRiskOp, $last);
+                    $i++;
+                }
+
+                //add new risk op to istance
             }
         }
     }
