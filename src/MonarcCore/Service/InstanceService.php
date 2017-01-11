@@ -580,8 +580,10 @@ class InstanceService extends AbstractService
                 'c' => '-1',
                 'i' => '-1',
                 'd' => '-1',
-                'anr' => $object->get('anr')->get('id'),
             ];
+            if ($object->get('anr')) {
+                $data['anr'] = $object->get('anr')->get('id');
+            }
             $this->instantiateObjectToAnr($anrId, $data, false);
         }
     }
