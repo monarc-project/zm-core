@@ -43,6 +43,12 @@ class QuestionService extends AbstractService
         foreach ($data as &$d) {
             if ($d['type'] == 2) {
                 $d['choices'] = $this->get('choiceTable')->fetchAllFiltered([], 1, 0, null, null, ['question' => $d['id']]);
+
+                if(!empty($filterAnd['anr']) && !$d['multichoice']){
+                    $c = $this->get('choiceTable')->getClass();
+                    $empty = new $c();
+                    array_unshift($d['choices'],$empty->getJsonArray());
+                }
             }
         }
 
