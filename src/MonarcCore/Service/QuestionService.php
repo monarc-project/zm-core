@@ -70,6 +70,14 @@ class QuestionService extends AbstractService
 
         $entity->setDbAdapter($this->get('table')->getDb());
 
+        if(!empty($data['anr'])){
+            $data['mode'] = 1;
+            $data['implicitPosition'] = \MonarcCore\Model\Entity\AbstractEntity::IMP_POS_END;
+            $data['type'] = 1; // on force en textarea uniquement
+            $data['multichoice'] = 0;
+            unset($data['position']);
+        }
+
         $entity->exchangeArray($data);
 
         $this->setDependencies($entity, $dependencies);
@@ -88,6 +96,29 @@ class QuestionService extends AbstractService
         $entity = $this->get('table')->getEntity($id);
         $entity->setDbAdapter($this->get('table')->getDb());
 
+        if(!empty($data['anr'])){
+            if($data['anr'] == $entity->get('anr')->get('id')){
+                if($entity->get('mode')){
+                    unset(
+                        $data['type'],
+                        $data['position'],
+                        $data['multichoice']
+                    );
+                }else{
+                    // on ne met pas à jour la question
+                    unset(
+                        $data['label1'],
+                        $data['label2'],
+                        $data['label3'],
+                        $data['label4']
+                    );
+                }
+                unset($data['mode']);
+            }else{
+                throw new \Exception('Anr ids diffence', 412);
+            }
+        }
+
         $entity->exchangeArray($data);
 
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
@@ -105,6 +136,10 @@ class QuestionService extends AbstractService
     public function delete($id) {
 
         $entity = $this->getEntity($id);
+
+        if(!empty($entity['anr']) && isset($entity['mode']) && !$entity['mode']){
+            throw new \Exception('Delete question is not possible', 412);
+        }
 
         $this->get('table')->delete($id);
     }
