@@ -26,6 +26,7 @@ class ObjectService extends AbstractService
 {
     protected $objectObjectService;
     protected $modelService;
+    protected $instanceRiskOpService;
 
     protected $anrObjectCategoryEntity;
 
@@ -603,11 +604,11 @@ class ObjectService extends AbstractService
             }
         }
 
-        $rolfTagId = $object->rolfTag->id;
+        $rolfTagId = ($object->rolfTag) ? $object->rolfTag->id : null;
 
         $object->exchangeArray($data, true);
 
-        $changeRolfTag = ($rolfTagId == $object->rolfTag) ? false : true;
+        $newRolfTag = ($rolfTagId == $object->rolfTag) ? false : $object->rolfTag;
 
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($object, $dependencies);
@@ -670,7 +671,7 @@ class ObjectService extends AbstractService
 
         $this->get('table')->save($object);
 
-        $this->instancesImpacts($object, $changeRolfTag);
+        $this->instancesImpacts($object, $newRolfTag);
 
         return $id;
     }
@@ -692,23 +693,23 @@ class ObjectService extends AbstractService
         $object = $this->get('table')->getEntity($id);
         $object->setLanguage($this->getLanguage());
 
-        $rolfTagId = $object->rolfTag->id;
+        $rolfTagId = ($object->rolfTag) ? $object->rolfTag->id : null;
 
         $object->exchangeArray($data, true);
 
-        $changeRolfTag = ($rolfTagId == $object->rolfTag) ? false : true;
+        $newRolfTag = ($rolfTagId == $object->rolfTag) ? false : $object->rolfTag;
 
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($object, $dependencies);
 
         $this->get('table')->save($object);
 
-        $this->instancesImpacts($object, $changeRolfTag);
+        $this->instancesImpacts($object, $newRolfTag);
 
         return $id;
     }
 
-    protected function instancesImpacts($object, $changeRolfTag = false) {
+    protected function instancesImpacts($object, $newRolfTag = false) {
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('instanceTable');
         $instances = $instanceTable->getEntityByFields(['object' => $object]);
@@ -729,12 +730,12 @@ class ObjectService extends AbstractService
             if ($modifyInstance) {
                 $instanceTable->save($instance);
             }
-            if ($changeRolfTag) {
+            if ($newRolfTag) {
+
                 //change instance risk op to specific
                 /** @var InstanceRiskOpTable $instanceRiskOpTable */
                 $instanceRiskOpTable = $this->get('instanceRiskOpTable');
                 $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['instance' => $instance->id]);
-
                 $i = 1;
                 foreach($instancesRisksOp as $instanceRiskOp) {
                     $last = ($i == count($instancesRisksOp)) ? true : false;
@@ -743,7 +744,35 @@ class ObjectService extends AbstractService
                     $i++;
                 }
 
-                //add new risk op to istance
+                //add new risk op to instance
+                /** @var RolfTagTable $rolfTagTable */
+                $rolfTagTable = $this->get('rolfTagTable');
+                $rolfTag = $rolfTagTable->getEntity($newRolfTag);
+                $rolfRisks = $rolfTag->risks;
+                $nbRolfRisks = count($rolfRisks);
+                $i = 1;
+                foreach ($rolfRisks as $rolfRisk) {
+                    $lastRolfRisks = ($nbRolfRisks == $i) ? true : false;
+                    $data = [
+                        'anr' => $object->anr->id,
+                        'instance' => $instance->id,
+                        'object' => $object->id,
+                        'rolfRisk' => $rolfRisk->id,
+                        'riskCacheCode' => $rolfRisk->code,
+                        'riskCacheLabel1' => $rolfRisk->label1,
+                        'riskCacheLabel2' => $rolfRisk->label2,
+                        'riskCacheLabel3' => $rolfRisk->label3,
+                        'riskCacheLabel4' => $rolfRisk->label4,
+                        'riskCacheDescription1' => $rolfRisk->description1,
+                        'riskCacheDescription2' => $rolfRisk->description2,
+                        'riskCacheDescription3' => $rolfRisk->description3,
+                        'riskCacheDescription4' => $rolfRisk->description4,
+                    ];
+                    /** @var InstanceRiskOpService $instanceRiskOpService */
+                    $instanceRiskOpService = $this->get('instanceRiskOpService');
+                    $instanceRiskOpService->create($data, $lastRolfRisks);
+                    $i++;
+                }
             }
         }
     }
