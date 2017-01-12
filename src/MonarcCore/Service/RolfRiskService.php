@@ -15,7 +15,9 @@ class RolfRiskService extends AbstractService
     protected $rolfCategoryTable;
     protected $rolfTagTable;
     protected $objectTable;
+    protected $instanceTable;
     protected $instanceRiskOpTable;
+    protected $instanceRiskOpService;
 
     protected $filterColumns = array(
         'code', 'label1', 'label2', 'label3', 'label4', 'description1', 'description2', 'description3', 'description4'
@@ -229,7 +231,38 @@ class RolfRiskService extends AbstractService
             }
         }
         foreach($addedTags as $addedTag) {
-            
+            /** @var ObjectTable $objectTable */
+            $objectTable = $this->get('objectTable');
+            $objects = $objectTable->getEntityByFields(['rolfTag' => $addedTag]);
+            foreach($objects as $object) {
+                /** @var InstanceTable $instanceTable */
+                $instanceTable = $this->get('instanceTable');
+                $instances = $instanceTable->getEntityByFields(['object' => $object->id]);
+                $i = 1;
+                foreach ($instances as $instance) {
+                    $last = (count($instances) == $i) ? true : false;
+                    $data = [
+                        'anr' => $object->anr->id,
+                        'instance' => $instance->id,
+                        'object' => $object->id,
+                        'rolfRisk' => $entity->id,
+                        'riskCacheCode' => $entity->code,
+                        'riskCacheLabel1' => $entity->label1,
+                        'riskCacheLabel2' => $entity->label2,
+                        'riskCacheLabel3' => $entity->label3,
+                        'riskCacheLabel4' => $entity->label4,
+                        'riskCacheDescription1' => $entity->description1,
+                        'riskCacheDescription2' => $entity->description2,
+                        'riskCacheDescription3' => $entity->description3,
+                        'riskCacheDescription4' => $entity->description4,
+                    ];
+
+                    /** @var InstanceRiskOpService $instanceRiskOpService */
+                    $instanceRiskOpService = $this->get('instanceRiskOpService');
+                    $instanceRiskOpService->create($data, $last);
+                    $i++;
+                }
+            }
         }
 
         return $this->get('table')->save($entity);
