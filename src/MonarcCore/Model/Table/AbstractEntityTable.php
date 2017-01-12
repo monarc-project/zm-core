@@ -193,6 +193,8 @@ abstract class AbstractEntityTable
         }
 
         $id = $this->getDb()->save($entity, $last);
+        $entity->set('id',$id);
+        $entity->initParametersChanges();
 
         return $id;
     }
@@ -241,7 +243,7 @@ abstract class AbstractEntityTable
             ];
 
             $bros = $this->getRepository()->createQueryBuilder('bro')
-                ->select()->where("1 = 1");
+                ->update()->set("bro.position","bro.position + 1")->where("1 = 1");
             if( $isParentable ){
                 $parentWhere = 'bro.'.$entity->parameters['implicitPosition']['field'] . ' = :parentid';
                 if(is_null($entity->get($entity->parameters['implicitPosition']['field']))){
@@ -268,13 +270,12 @@ abstract class AbstractEntityTable
                          ->andWhere('bro.id != :id')
                          ->setParameters( $params )
                          ->getQuery()->getResult();
-
-            if(!empty($bros)){
-                foreach($bros as $bro){
-                    $bro->set('position', $bro->get('position') + 1);
-                    $this->save($bro);
-                }
-            }
+            // if(!empty($bros)){
+            //     foreach($bros as $bro){
+            //         $bro->set('position', $bro->get('position') + 1);
+            //         $this->save($bro);
+            //     }
+            // }
         }
         else if(!empty($changes['parent']) && $changes['parent']['before'] != $changes['parent']['after']){//this is somewhat like we was new but we need to redistribute brothers
             $params = [
@@ -283,7 +284,7 @@ abstract class AbstractEntityTable
             ];
 
             $bros = $this->getRepository()->createQueryBuilder('bro')
-                ->select()->where("1 = 1");
+                ->update()->set("bro.position","bro.position - 1")->where("1 = 1");
             if( $isParentable ){//by security - inverse never should happen in this case
                 if(is_null($changes['parent']['before'])) {
                     $bros->where('bro.'.$entity->parameters['implicitPosition']['field'] . ' IS NULL');
@@ -309,13 +310,12 @@ abstract class AbstractEntityTable
                 ->andWhere('bro.id != :id')
                 ->setParameters( $params )
                 ->getQuery()->getResult();
-
-            if(!empty($bros)){
-                foreach($bros as $bro){
-                    $bro->set('position', $bro->get('position') - 1);//get down old pals
-                    $this->save($bro);
-                }
-            }
+            // if(!empty($bros)){
+            //     foreach($bros as $bro){
+            //         $bro->set('position', $bro->get('position') - 1);//get down old pals
+            //         $this->save($bro);
+            //     }
+            // }
 
             $this->autopose($entity, $was_new, $changes, true);//TIPS : we simulate the new option to move new brothers up
         }
@@ -330,7 +330,7 @@ abstract class AbstractEntityTable
             ];
 
             $bros = $this->getRepository()->createQueryBuilder('bro')
-                ->select()->where("1 = 1");
+                ->update()->set("bro.position","bro.position ".($avant > $apres?"+":"-")." 1")->where("1 = 1");
             if( $isParentable ){
                 $parentWhere = 'bro.'.$entity->parameters['implicitPosition']['field'] . ' = :parentid';
                 if(is_null($entity->get($entity->parameters['implicitPosition']['field']))){
@@ -359,13 +359,12 @@ abstract class AbstractEntityTable
                 ->andWhere('bro.id != :id')
                 ->setParameters( $params )
                 ->getQuery()->getResult();
-
-            if(!empty($bros)){
-                foreach($bros as $bro){
-                    $bro->set('position', ($avant > $apres) ? $bro->get('position') + 1 : $bro->get('position') - 1 );
-                    $this->save($bro);
-                }
-            }
+            // if(!empty($bros)){
+            //     foreach($bros as $bro){
+            //         $bro->set('position', ($avant > $apres) ? $bro->get('position') + 1 : $bro->get('position') - 1 );
+            //         $this->save($bro);
+            //     }
+            // }
         }
     }
 

@@ -224,8 +224,9 @@ class ObjectCategorySuperClass extends AbstractEntity
 
     protected $parameters = array(
         'implicitPosition' => array(
-            'field' => 'parent',
-            'root' => 'root',
+            'field'     => 'parent',
+            'root'      => 'root',
+            'subField'  => ['anr']
         ),
     );
 
