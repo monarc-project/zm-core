@@ -127,7 +127,9 @@ class AmvService extends AbstractService
         $this->filterPatchFields($data);
 
         $entity = $this->get('table')->getEntity($id);
-        $entity->exchangeArray($data);
+        $entity->exchangeArray($data,true);
+
+        $this->setDependencies($entity, $this->dependencies);
 
         parent::patch($id, $data);
     }

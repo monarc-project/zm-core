@@ -348,6 +348,7 @@ class AmvSuperclass extends AbstractEntity
                                     }
                                     $res = $res->getQuery()
                                         ->getResult();
+                                    $context['id'] = empty($context['id'])?$this->get('id'):$context['id'];
                                     if(!empty($res) && $context['id'] != $res[0]['id']){
                                         return false;
                                     }
