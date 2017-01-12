@@ -61,6 +61,9 @@ class ObjectCategoryService extends AbstractService
                     $prev = $prev->where('t.parent = :parent')
                         ->setParameter(':parent', $entity['parent']->id);
                 }
+                if ($entity['anr']) {
+                    $prev->andWhere('t.anr = :anr')->setParameter(':anr', $entity['anr']->id);
+                }
                 $prev = $prev->andWhere('t.position = :pos')
                     ->setParameter(':pos',$entity['position']-1)
                     ->getQuery()->getSingleScalarResult();
