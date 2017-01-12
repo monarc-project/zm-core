@@ -1,5 +1,9 @@
 <?php
 namespace MonarcCore\Service;
+use MonarcCore\Model\Table\InstanceRiskOpTable;
+use MonarcCore\Model\Table\InstanceTable;
+use MonarcCore\Model\Table\ObjectTable;
+
 /**
  * Rolf Risk Service
  *
@@ -10,6 +14,9 @@ class RolfRiskService extends AbstractService
 {
     protected $rolfCategoryTable;
     protected $rolfTagTable;
+    protected $objectTable;
+    protected $instanceRiskOpTable;
+
     protected $filterColumns = array(
         'code', 'label1', 'label2', 'label3', 'label4', 'description1', 'description2', 'description3', 'description4'
     );
@@ -142,6 +149,11 @@ class RolfRiskService extends AbstractService
         $entity->setLanguage($this->getLanguage());
         $entity->exchangeArray($data);
 
+        $currentTagId = [];
+        foreach($entity->tags as $tag) {
+            $currentTagId[] = $tag->id;
+        }
+
         $entity->get('categories')->initialize();
         $entity->get('tags')->initialize();
 
@@ -182,6 +194,43 @@ class RolfRiskService extends AbstractService
         }
 
         $this->setDependencies($entity, ['anr']);
+
+        $newTagId = [];
+        foreach($entity->tags as $tag) {
+            $newTagId[] = $tag->id;
+        }
+
+        $deletedTags = [];
+        foreach($currentTagId as $tagId) {
+            if (!in_array($tagId, $newTagId)) {
+                $deletedTags[] = $tagId;
+            }
+        }
+
+        $addedTags = [];
+        foreach($newTagId as $tagId) {
+            if (!in_array($tagId, $currentTagId)) {
+                $addedTags[] = $tagId;
+            }
+        }
+
+        foreach ($deletedTags as $deletedTag) {
+            /** @var ObjectTable $objectTable */
+            $objectTable = $this->get('objectTable');
+            $objects = $objectTable->getEntityByFields(['rolfTag' => $deletedTag]);
+            foreach($objects as $object) {
+                /** @var InstanceRiskOpTable $instanceRiskOpTable */
+                $instanceRiskOpTable = $this->get('instanceRiskOpTable');
+                $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['object' => $object->id, 'rolfRisk' => $id]);
+                foreach ($instancesRisksOp as $instanceRiskOp) {
+                    $instanceRiskOp->specific = 1;
+                    $instanceRiskOpTable->save($instanceRiskOp);
+                }
+            }
+        }
+        foreach($addedTags as $addedTag) {
+            
+        }
 
         return $this->get('table')->save($entity);
     }
