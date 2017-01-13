@@ -1177,7 +1177,7 @@ class ObjectService extends AbstractService
             $anrObjectsCategories[$anrObjectCategory->id]['position'] = $anrObjectCategory->get('position'); // overwrite categ position from anr_categ position
             $anrObjectsCategories[$anrObjectCategory->id]['objects'] = [];
             if(!empty($objectsCategories[$anrObjectCategory->category->id])){
-                $anrObjectsCategories[$anrObjectCategory->id]['objects'] = $objectsCategories[$anrObjectCategory->category->id]; // add objects
+                $anrObjectsCategories[$anrObjectCategory->id]['objects'] = $objectsCategories[$anrObjectCategory->category->id]['objects']; // add objects
             }
         }
 
