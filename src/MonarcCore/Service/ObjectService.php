@@ -89,7 +89,7 @@ class ObjectService extends AbstractService
 
         $objects = $this->getAnrObjects($page, $limit, $order, $filter, $filterAnd, $model, $anr);
 
-        $objectsArray = [];
+        //$objectsArray = [];
         $rootArray = [];
 
         foreach($objects as $object) {
@@ -101,7 +101,7 @@ class ObjectService extends AbstractService
             }
 
             $rootArray[$object['id']] = $object;
-            $objectsArray[$object['id']] = $object;
+            //$objectsArray[$object['id']] = $object;
         }
 
         $newRoot = array_values($rootArray);
@@ -1120,50 +1120,48 @@ class ObjectService extends AbstractService
         //$objects = $objectTable->fetchAll();
 
         foreach ($objects as $object) {
-            $anrObjects[] = $object->getJsonArray();
-            if ($object->get('category') && !isset($objectsCategories[$object->get('category')->get('id')])) {
-                $objectsCategories[$object->get('category')->get('id')] = $object->get('category');
-            } else if (!isset($objectsCategories[-1])) {
-                // Setup a virtual container category
-                $objectsCategories[-1] = [
-                    'id' => -1,
-                    'parent' => null,
-                    'objects' => [],
-                    'label1' => 'Sans catégorie',
-                    'label2' => 'Uncategorized',
-                    'label3' => 'Keine Kategorie',
-                    'label4' => ''
-                ];
+            if ($object->get('category')) {
+                $anrObjects[$object->get('category')->get('id')][] = $object->getJsonArray();
+                if(!isset($objectsCategories[$object->get('category')->get('id')])){
+                    $objectsCategories[$object->get('category')->get('id')] = $object->get('category')->getJsonArray();
+                }
+            } else {
+                $anrObjects[-1][] = $object->getJsonArray();
+                if (!isset($objectsCategories[-1])){
+                    // Setup a virtual container category
+                    $objectsCategories[-1] = [
+                        'id' => -1,
+                        'parent' => null,
+                        'objects' => [],
+                        'label1' => 'Sans catégorie',
+                        'label2' => 'Uncategorized',
+                        'label3' => 'Keine Kategorie',
+                        'label4' => '',
+                        'position' => -1,
+                    ];
+                }
             }
         }
+        unset($objects);
 
         // Recursively get the parent categories to fill the tree completely
         $parents = [];
         foreach($objectsCategories as $id => $category) {
             if ($id > 0) {
-                $this->getRecursiveParents($category, $parents);
+                $this->getRecursiveParents($category, $parents, true);
             }
         }
 
         // Concat both the current categories and their parents
         $objectsCategories = $objectsCategories + $parents;
 
-
-        foreach ($objectsCategories as $key => $objectsCategory) {
-            // Convert categories to arrays. Skip our virtual category which is already an array.
-            if ($key > 0) {
-                $objectsCategories[$key] = $objectsCategory->getJsonArray();
+        foreach($anrObjects as $idCateg => $anrObject) {
+            // add object to categories to field "objects"
+            if(isset($objectsCategories[$idCateg])){
+                $objectsCategories[$idCateg]['objects'] = $anrObject;
             }
         }
-
-        foreach($anrObjects as $anrObject) {
-            // If the object has a category, add it to the category's `objects` field, otherwise to the fallback's one.
-            if ($anrObject['category'] && $anrObject['category']->id > 0) {
-                $objectsCategories[$anrObject['category']->id]['objects'][] = $anrObject;
-            } else {
-                $objectsCategories[-1]['objects'][] = $anrObject;
-            }
-        }
+        unset($anrObjects);
 
         // Retrieve ANR's categories mapping as root categories can be sorted
         $anrObjectsCategories = [];
@@ -1172,25 +1170,47 @@ class ObjectService extends AbstractService
 
         foreach ($anrObjectCategories as $anrObjectCategory) {
             $anrObjectsCategories[$anrObjectCategory->id] = $this->getChildren($anrObjectCategory->category->getJsonArray(), $objectsCategories);
+            $anrObjectsCategories[$anrObjectCategory->id]['position'] = $anrObjectCategory->get('position'); // overwrite categ position from anr_categ position
+            $anrObjectsCategories[$anrObjectCategory->id]['objects'] = [];
+            if(!empty($objectsCategories[$anrObjectCategory->category->id])){
+                $anrObjectsCategories[$anrObjectCategory->id]['objects'] = $objectsCategories[$anrObjectCategory->category->id]; // add objects
+            }
         }
 
         // If we created our virtual category, inject it at first position. We won't need to fill it again in the next
         // loop as we already have the objects and we don't have any sub-categories or nested levels.
         if (isset($objectsCategories[-1]) && (!empty($objectsCategories[-1]['objects']) || !empty($objectsCategories[-1]['child']))) {
+            $objectsCategories[-1]['position'] = count($anrObjectsCategories)+1; // on met cette "catégorie" à la fin
             $anrObjectsCategories[-1] = $objectsCategories[-1];
+        }else{
+            unset($anrObjectsCategories[-1]);
         }
+        unset($objectsCategories);
 
-        foreach($anrObjectsCategories as $key => $anrObjectCategory) {
-            foreach ($anrObjects as $anrObject) {
-                if ($anrObject['category']) {
-                    if ($anrObjectCategory['id'] == $anrObject['category']->id) {
-                        $anrObjectsCategories[$key]['objects'][] = $anrObject;
-                    }
-                }
+        // Order categories by position
+        usort($anrObjectsCategories, function ($a, $b) { return $this->sortCategories($a, $b); });
+        foreach ($anrObjectsCategories as &$cat) {
+            if (isset($cat['child']) && is_array($cat['child'])) {
+                usort($cat['child'], function ($a, $b) {
+                    return $this->sortCategories($a, $b);
+                });
             }
         }
 
         return $anrObjectsCategories;
+    }
+
+    protected function sortCategories($a, $b) {
+        if (isset($a['position']) && isset($b['position'])) {
+            //echo "all set for " . $a['label1'] . ' and ' . $b['label1'];
+            return ($a['position'] - $b['position']);
+        } else if (isset($a['position']) && !isset($b['position'])) {
+            return -1;
+        } else if (isset($b['position']) && !isset($a['position'])) {
+            return 1;
+        } else {
+            return 0;
+        }
     }
 
     /**
@@ -1199,16 +1219,20 @@ class ObjectService extends AbstractService
      * @param $category
      * @param $array
      */
-    public function getRecursiveParents($category, &$array ){
+    public function getRecursiveParents($category, &$array ,$objectToArray = false){
 
         if ($category && $category->parent) {
             /** @var ObjectCategoryTable $table */
             $table = $this->get('categoryTable');
             $parent = $table->getEntity($category->parent->id);
 
-            $array[$parent->id] = $parent;
+            if($objectToArray){
+                $array[$parent->id] = $parent->getJsonArray();
+            }else{
+                $array[$parent->id] = $parent;
+            }
 
-            $this->getRecursiveParents($parent, $array);
+            $this->getRecursiveParents($parent, $array,$objectToArray);
         }
     }
 
