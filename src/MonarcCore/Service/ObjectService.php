@@ -1165,7 +1165,6 @@ class ObjectService extends AbstractService
                 $objectsCategories[$idCateg]['objects'] = $anrObject;
             }
         }
-        unset($anrObjects);
 
         // Retrieve ANR's categories mapping as root categories can be sorted
         $anrObjectsCategories = [];
@@ -1176,10 +1175,11 @@ class ObjectService extends AbstractService
             $anrObjectsCategories[$anrObjectCategory->id] = $this->getChildren($anrObjectCategory->category->getJsonArray(), $objectsCategories);
             $anrObjectsCategories[$anrObjectCategory->id]['position'] = $anrObjectCategory->get('position'); // overwrite categ position from anr_categ position
             $anrObjectsCategories[$anrObjectCategory->id]['objects'] = [];
-            if(!empty($objectsCategories[$anrObjectCategory->category->id])){
-                $anrObjectsCategories[$anrObjectCategory->id]['objects'] = $objectsCategories[$anrObjectCategory->category->id]['objects']; // add objects
+            if(!empty($anrObjects[$anrObjectCategory->category->id])){
+                $anrObjectsCategories[$anrObjectCategory->id]['objects'] = $anrObjects[$anrObjectCategory->category->id]; // add objects
             }
         }
+        unset($anrObjects);
 
         // If we created our virtual category, inject it at first position. We won't need to fill it again in the next
         // loop as we already have the objects and we don't have any sub-categories or nested levels.
@@ -1224,11 +1224,14 @@ class ObjectService extends AbstractService
      * @param $array
      */
     public function getRecursiveParents($category, &$array ,$objectToArray = false){
+        if(is_object($category)){
+            $category = $category->getJsonArray();
+        }
 
-        if ($category && $category->parent) {
+        if ($category && $category['parent']) {
             /** @var ObjectCategoryTable $table */
             $table = $this->get('categoryTable');
-            $parent = $table->getEntity($category->parent->id);
+            $parent = $table->getEntity($category['parent']->id);
 
             if($objectToArray){
                 $array[$parent->id] = $parent->getJsonArray();
