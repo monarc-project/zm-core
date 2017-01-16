@@ -67,7 +67,7 @@ class InstanceService extends AbstractService
      * @return mixed|null
      * @throws \Exception
      */
-    public function instantiateObjectToAnr($anrId, $data, $managePosition = true, $rootLevel = false) {
+    public function instantiateObjectToAnr($anrId, $data, $managePosition = true, $rootLevel = false, $mode = Instance::MODE_CREA_NODE) {
 
         //retrieve object properties
         $object = $this->get('objectTable')->getEntity($data['object']);
@@ -188,7 +188,7 @@ class InstanceService extends AbstractService
         $this->setDependencies($instance, $dependencies);
 
         //level
-        $this->updateInstanceLevels($rootLevel, $data['object'], $instance);
+        $this->updateInstanceLevels($rootLevel, $data['object'], $instance, $mode);
 
         $id = $this->get('table')->save($instance);
 
@@ -589,15 +589,16 @@ class InstanceService extends AbstractService
     }
 
     /**
-     * Update level
+     * Update Level
      *
      * @param $rootLevel
      * @param $objectId
      * @param $instance
+     * @param $mode
      */
-    protected function updateInstanceLevels($rootLevel, $objectId, &$instance) {
+    protected function updateInstanceLevels($rootLevel, $objectId, &$instance, $mode) {
 
-        if ($rootLevel) {
+        if (($rootLevel) || ($mode == Instance::MODE_CREA_ROOT)) {
             $instance->setLevel(Instance::LEVEL_ROOT);
         } else {
             //retrieve children
