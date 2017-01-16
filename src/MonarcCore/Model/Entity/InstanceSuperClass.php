@@ -24,6 +24,9 @@ class InstanceSuperClass extends AbstractEntity
     const LEVEL_LEAF    = 2; //instance d'une feuille d'un objet
     const LEVEL_INTER   = 3; //instance d'une noeud intermédiaire d'un objet
 
+    const MODE_CREA_ROOT		= 1;//Mode de création d'une instance qui permet d'instancier directement une racine
+    const MODE_CREA_NODE		= 2;//Mode de création d'une instance à partir d'un nouveau composant d'objet
+
     /**
      * @var integer
      *

@@ -2,6 +2,7 @@
 
 namespace MonarcCore\Controller;
 
+use MonarcCore\Model\Entity\Instance;
 use MonarcCore\Service\InstanceService;
 use Zend\View\Model\JsonModel;
 
@@ -128,7 +129,7 @@ class ApiAnrInstancesController extends AbstractController
 
         /** @var InstanceService $service */
         $service = $this->getService();
-        $id = $service->instantiateObjectToAnr($anrId, $data, true, true);
+        $id = $service->instantiateObjectToAnr($anrId, $data, true, true, Instance::MODE_CREA_ROOT);
 
         return new JsonModel(
             array(
