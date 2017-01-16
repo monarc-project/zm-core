@@ -657,7 +657,7 @@ class ObjectService extends AbstractService
                     /** @var AnrObjectCategoryTable $anrObjectCategoryTable */
                     $anrObjectCategoryTable = $this->get('anrObjectCategoryTable');
 
-                    $class = $this->get('anrObjectCategoryEntity')->getClass();
+                    $class = $this->get('anrObjectCategoryEntity');
                     $anrObjectCategory = new $class();
                     $anrObjectCategory->setDbAdapter($anrObjectCategoryTable->getDb());
 
