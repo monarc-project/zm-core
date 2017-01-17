@@ -358,6 +358,6 @@ class InstanceRiskService extends AbstractService
             $data['mh'] = 0;
         }
 
-        $this->update($id, $data);
+        return $this->update($id, $data);
     }
 }
