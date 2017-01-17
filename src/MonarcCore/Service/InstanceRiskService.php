@@ -48,8 +48,6 @@ class InstanceRiskService extends AbstractService
         $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $object->id]);
         if ($object->scope == Object::SCOPE_GLOBAL && count($instances) > 1) {
 
-            /** @var InstanceTable $instanceTable */
-            $instanceTable = $this->get('instanceTable');
             $currentInstance = $instanceTable->getEntity($instanceId);
 
             /** @var InstanceRiskTable $instanceRiskTable */
