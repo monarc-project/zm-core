@@ -6,6 +6,7 @@ use Zend\View\Model\JsonModel;
 
 class ApiAnrInstancesRisksController extends AbstractController
 {
+    protected $dependencies = ['anr','amv', 'asset', 'threat', 'vulnerability', 'instance'];
     protected $name = 'instances-risks';
 
     public function getList()
@@ -51,9 +52,17 @@ class ApiAnrInstancesRisksController extends AbstractController
     {
         $data['anr'] = (int) $this->params()->fromRoute('anrid');
 
-        $this->getService()->update($id, $data);
+        $id = $this->getService()->update($id, $data);
 
-        return new JsonModel(array('status' => 'ok'));
+        $entity = $this->getService()->getEntity($id);
+
+        if (count($this->dependencies)) {
+            foreach($this->dependencies as $d){
+                unset($entity[$d]);
+            }
+        }
+
+        return new JsonModel($entity);
     }
 }
 
