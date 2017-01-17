@@ -924,43 +924,25 @@ class InstanceService extends AbstractService
             }
         }
 
+        $l = $this->getLanguage();
         $arraySelect = [
             'o.id as oid',
             'ir.id as id',
             'i.id as instanceid',
             'amv.id as amvid',
             'asset.id as assetid',
-            'asset.label1 as assetLabel1',
-            'asset.label2 as assetLabel2',
-            'asset.label3 as assetLabel3',
-            'asset.label4 as assetLabel4',
-            'asset.description1 as assetDescription1',
-            'asset.description2 as assetDescription2',
-            'asset.description3 as assetDescription3',
-            'asset.description4 as assetDescription4',
+            'asset.label'.$l.' as assetLabel'.$l.'',
+            'asset.description'.$l.' as assetDescription'.$l.'',
             'threat.id as threatid',
             'threat.code as threatCode',
-            'threat.label1 as threatLabel1',
-            'threat.label2 as threatLabel2',
-            'threat.label3 as threatLabel3',
-            'threat.label4 as threatLabel4',
-            'threat.description1 as threatDescription1',
-            'threat.description2 as threatDescription2',
-            'threat.description3 as threatDescription3',
-            'threat.description4 as threatDescription4',
+            'threat.label'.$l.' as threatLabel'.$l.'',
+            'threat.description'.$l.' as threatDescription'.$l.'',
             'ir.threatRate as threatRate',
             'vulnerability.id as vulnerabilityid',
             'vulnerability.code as vulnCode',
-            'vulnerability.label1 as vulnLabel1',
-            'vulnerability.label2 as vulnLabel2',
-            'vulnerability.label3 as vulnLabel3',
-            'vulnerability.label4 as vulnLabel4',
-            'vulnerability.description1 as vulnDescription1',
-            'vulnerability.description2 as vulnDescription2',
-            'vulnerability.description3 as vulnDescription3',
-            'vulnerability.description4 as vulnDescription4',
+            'vulnerability.label'.$l.' as vulnLabel'.$l.'',
+            'vulnerability.description'.$l.' as vulnDescription'.$l.'',
             'ir.vulnerabilityRate as vulnerabilityRate',
-            'ir.kindOfMeasure as kindOfMeasure',
             'ir.specific as specific',
             'ir.reductionAmount as reductionAmount',
             'i.c as c_impact',
@@ -976,21 +958,9 @@ class InstanceService extends AbstractService
             'ir.cacheMaxRisk as max_risk',
             'ir.comment as comment',
             'ir.kindOfMeasure as ir_kindOfMeasure',
-            'measure1.code as measure1_code',
-            'measure1.description1 as measure1_description1',
-            'measure1.description2 as measure1_description2',
-            'measure1.description3 as measure1_description3',
-            'measure1.description4 as measure1_description4',
-            'measure2.code as measure2_code',
-            'measure2.description1 as measure2_description1',
-            'measure2.description2 as measure2_description2',
-            'measure2.description3 as measure2_description3',
-            'measure2.description4 as measure2_description4',
-            'measure3.code as measure3_code',
-            'measure3.description1 as measure3_description1',
-            'measure3.description2 as measure3_description2',
-            'measure3.description3 as measure3_description3',
-            'measure3.description4 as measure3_description4',
+            'CONCAT(measure1.code, \' - \', measure1.description'.$l.') as measure1la',
+            'CONCAT(measure2.code, \' - \', measure2.description'.$l.') as measure2la',
+            'CONCAT(measure3.code, \' - \', measure3.description'.$l.') as measure3la',
             'o.scope as scope',
         ];
 
@@ -1040,41 +1010,17 @@ class InstanceService extends AbstractService
         }
         if(!empty($params['keywords'])){
             $filters = [
-                'asset.label1',
-                'asset.label2',
-                'asset.label3',
-                'asset.label4',
-                //'amv.label1',
-                //'amv.label2',
-                //'amv.label3',
-                //'amv.label4',
-                'threat.label1',
-                'threat.label2',
-                'threat.label3',
-                'threat.label4',
-                'vulnerability.label1',
-                'vulnerability.label2',
-                'vulnerability.label3',
-                'vulnerability.label4',
+                'asset.label'.$l.'',
+                //'amv.label'.$l.'',
+                'threat.label'.$l.'',
+                'vulnerability.label'.$l.'',
                 'measure1.code',
-                'measure1.description1',
-                'measure1.description2',
-                'measure1.description3',
-                'measure1.description4',
+                'measure1.description'.$l.'',
                 'measure2.code',
-                'measure2.description1',
-                'measure2.description2',
-                'measure2.description3',
-                'measure2.description4',
+                'measure2.description'.$l.'',
                 'measure3.code',
-                'measure3.description1',
-                'measure3.description2',
-                'measure3.description3',
-                'measure3.description4',
-                'i.name1',
-                'i.name2',
-                'i.name3',
-                'i.name4',
+                'measure3.description'.$l.'',
+                'i.name'.$l.'',
                 'ir.comment',
             ];
             $orFilter = [];
@@ -1145,12 +1091,16 @@ class InstanceService extends AbstractService
             'assetid',
             'threatid',
             'vulnerabilityid',
+            'measure1la',
+            'measure2la',
+            'measure3la',
         ];
 
         foreach($result as $r){
             if(isset($globalRisks[$r['oid']][$r['threatid']][$r['vulnerabilityid']]) &&
                 isset($return[$globalRisks[$r['oid']][$r['threatid']][$r['vulnerabilityid']]]) &&
                 $return[$globalRisks[$r['oid']][$r['threatid']][$r['vulnerabilityid']]]['max_risk'] < $r['max_risk']){
+
                 unset($return[$globalRisks[$r['oid']][$r['threatid']][$r['vulnerabilityid']]]);
                 unset($globalRisks[$r['oid']][$r['threatid']][$r['vulnerabilityid']]);
             }
@@ -1162,38 +1112,12 @@ class InstanceService extends AbstractService
                     $return[$r['id']][substr($c, 0,-2)] = $return[$r['id']][$c];
                     unset($return[$r['id']][$c]);
                 }
-
-                $return[$r['id']]['measure1'] = [
-                    'code' => $r['measure1_code'],
-                    'description1' => $r['measure1_description1'],
-                    'description2' => $r['measure1_description2'],
-                    'description3' => $r['measure1_description3'],
-                    'description4' => $r['measure1_description4'],
-                ];
-                $return[$r['id']]['measure2'] = [
-                    'code' => $r['measure2_code'],
-                    'description1' => $r['measure2_description1'],
-                    'description2' => $r['measure2_description2'],
-                    'description3' => $r['measure2_description3'],
-                    'description4' => $r['measure2_description4'],
-                ];
-                $return[$r['id']]['measure3'] = [
-                    'code' => $r['measure3_code'],
-                    'description1' => $r['measure3_description1'],
-                    'description2' => $r['measure3_description2'],
-                    'description3' => $r['measure3_description3'],
-                    'description4' => $r['measure3_description4'],
-                ];
-                unset(
-                    $return[$r['id']]['measure1_code'], $return[$r['id']]['measure1_description1'], $return[$r['id']]['measure1_description2'], $return[$r['id']]['measure1_description3'], $return[$r['id']]['measure1_description4'],
-                    $return[$r['id']]['measure2_code'], $return[$r['id']]['measure2_description1'], $return[$r['id']]['measure2_description2'], $return[$r['id']]['measure2_description3'], $return[$r['id']]['measure2_description4'],
-                    $return[$r['id']]['measure3_code'], $return[$r['id']]['measure3_description1'], $return[$r['id']]['measure3_description2'], $return[$r['id']]['measure3_description3'], $return[$r['id']]['measure3_description4']
-                );
                 if($r['scope'] == Object::SCOPE_GLOBAL){
                     $globalRisks[$r['oid']][$r['threatid']][$r['vulnerabilityid']] = $r['id'];
                 }
             }
         }
+        unset($globalRisks);
         return array_values($return);
     }
 
