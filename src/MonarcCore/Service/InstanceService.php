@@ -924,10 +924,78 @@ class InstanceService extends AbstractService
             }
         }
 
+        $arraySelect = [
+            'o.id as oid',
+            'ir.id as id',
+            'i.id as instanceid',
+            'amv.id as amvid',
+            'asset.id as assetid',
+            'asset.label1 as assetLabel1',
+            'asset.label2 as assetLabel2',
+            'asset.label3 as assetLabel3',
+            'asset.label4 as assetLabel4',
+            'asset.description1 as assetDescription1',
+            'asset.description2 as assetDescription2',
+            'asset.description3 as assetDescription3',
+            'asset.description4 as assetDescription4',
+            'threat.id as threatid',
+            'threat.code as threatCode',
+            'threat.label1 as threatLabel1',
+            'threat.label2 as threatLabel2',
+            'threat.label3 as threatLabel3',
+            'threat.label4 as threatLabel4',
+            'threat.description1 as threatDescription1',
+            'threat.description2 as threatDescription2',
+            'threat.description3 as threatDescription3',
+            'threat.description4 as threatDescription4',
+            'ir.threatRate as threatRate',
+            'vulnerability.id as vulnerabilityid',
+            'vulnerability.code as vulnCode',
+            'vulnerability.label1 as vulnLabel1',
+            'vulnerability.label2 as vulnLabel2',
+            'vulnerability.label3 as vulnLabel3',
+            'vulnerability.label4 as vulnLabel4',
+            'vulnerability.description1 as vulnDescription1',
+            'vulnerability.description2 as vulnDescription2',
+            'vulnerability.description3 as vulnDescription3',
+            'vulnerability.description4 as vulnDescription4',
+            'ir.vulnerabilityRate as vulnerabilityRate',
+            'ir.kindOfMeasure as kindOfMeasure',
+            'ir.specific as specific',
+            'ir.reductionAmount as reductionAmount',
+            'i.c as c_impact',
+            'ir.riskC as c_risk',
+            'threat.c as c_risk_enabled',
+            'i.i as i_impact',
+            'ir.riskI as i_risk',
+            'threat.i as i_risk_enabled',
+            'i.d as d_impact',
+            'ir.riskD as d_risk',
+            'threat.d as d_risk_enabled',
+            'ir.cacheTargetedRisk as target_risk',
+            'ir.cacheMaxRisk as max_risk',
+            'ir.comment as comment',
+            'ir.kindOfMeasure as ir_kindOfMeasure',
+            'measure1.code as measure1_code',
+            'measure1.description1 as measure1_description1',
+            'measure1.description2 as measure1_description2',
+            'measure1.description3 as measure1_description3',
+            'measure1.description4 as measure1_description4',
+            'measure2.code as measure2_code',
+            'measure2.description1 as measure2_description1',
+            'measure2.description2 as measure2_description2',
+            'measure2.description3 as measure2_description3',
+            'measure2.description4 as measure2_description4',
+            'measure3.code as measure3_code',
+            'measure3.description1 as measure3_description1',
+            'measure3.description2 as measure3_description2',
+            'measure3.description3 as measure3_description3',
+            'measure3.description4 as measure3_description4',
+            'o.scope as scope',
+        ];
+
         $query = $this->get('instanceRiskService')->get('table')->getRepository()->createQueryBuilder('ir')
-            ->select([
-                'ir', 'amv', 'threat', 'vulnerability', 'i', 'asset', 'o.scope', 'measure1', 'measure2', 'measure3', 'o.id'
-            ])
+            ->select($arraySelect)
             ->where('i.anr = :anrid')
             ->setParameter(':anrid',$anrId);
 
@@ -1071,95 +1139,58 @@ class InstanceService extends AbstractService
         $result = $query->getQuery()->getScalarResult();
 
         $globalRisks = $return = [];
+        $changes = [
+            'instanceid',
+            'amvid',
+            'assetid',
+            'threatid',
+            'vulnerabilityid',
+        ];
 
         foreach($result as $r){
-            if(isset($globalRisks[$r['id']][$r['threat_id']][$r['vulnerability_id']]) &&
-                isset($return[$globalRisks[$r['id']][$r['threat_id']][$r['vulnerability_id']]]) &&
-                $return[$globalRisks[$r['id']][$r['threat_id']][$r['vulnerability_id']]]['max_risk'] < $r['ir_cacheMaxRisk']){
-                unset($return[$globalRisks[$r['id']][$r['threat_id']][$r['vulnerability_id']]]);
-                unset($globalRisks[$r['id']][$r['threat_id']][$r['vulnerability_id']]);
+            if(isset($globalRisks[$r['oid']][$r['threatid']][$r['vulnerabilityid']]) &&
+                isset($return[$globalRisks[$r['oid']][$r['threatid']][$r['vulnerabilityid']]]) &&
+                $return[$globalRisks[$r['oid']][$r['threatid']][$r['vulnerabilityid']]]['max_risk'] < $r['max_risk']){
+                unset($return[$globalRisks[$r['oid']][$r['threatid']][$r['vulnerabilityid']]]);
+                unset($globalRisks[$r['oid']][$r['threatid']][$r['vulnerabilityid']]);
             }
-            if(!isset($globalRisks[$r['id']][$r['threat_id']][$r['vulnerability_id']])){
-                $return[$r['ir_id']] = [
-                    'id' => $r['ir_id'],
-                    'instance' => $r['i_id'],
-                    'instanceName1' => $r['i_name1'],
-                    'instanceName2' => $r['i_name2'],
-                    'instanceName3' => $r['i_name3'],
-                    'instanceName4' => $r['i_name4'],
-                    'amv' => $r['amv_id'],
-                    'asset' => $r['asset_id'],
-                    'assetCode' => $r['asset_code'],
-                    'assetLabel1' => $r['asset_label1'],
-                    'assetLabel2' => $r['asset_label2'],
-                    'assetLabel3' => $r['asset_label3'],
-                    'assetLabel4' => $r['asset_label4'],
-                    'assetDescription1' => $r['asset_description1'],
-                    'assetDescription2' => $r['asset_description2'],
-                    'assetDescription3' => $r['asset_description3'],
-                    'assetDescription4' => $r['asset_description4'],
-                    'threat' => $r['threat_id'],
-                    'threatCode' => $r['threat_code'],
-                    'threatLabel1' => $r['threat_label1'],
-                    'threatLabel2' => $r['threat_label2'],
-                    'threatLabel3' => $r['threat_label3'],
-                    'threatLabel4' => $r['threat_label4'],
-                    'threatDescription1' => $r['threat_description1'],
-                    'threatDescription2' => $r['threat_description2'],
-                    'threatDescription3' => $r['threat_description3'],
-                    'threatDescription4' => $r['threat_description4'],
-                    'threatRate' => $r['ir_threatRate'],
-                    'vulnerability' => $r['vulnerability_id'],
-                    'vulnerabilityCode' => $r['vulnerability_code'],
-                    'vulnLabel1' => $r['vulnerability_label1'],
-                    'vulnLabel2' => $r['vulnerability_label2'],
-                    'vulnLabel3' => $r['vulnerability_label3'],
-                    'vulnLabel4' => $r['vulnerability_label4'],
-                    'vulnDescription1' => $r['vulnerability_description1'],
-                    'vulnDescription2' => $r['vulnerability_description2'],
-                    'vulnDescription3' => $r['vulnerability_description3'],
-                    'vulnDescription4' => $r['vulnerability_description4'],
-                    'vulnerabilityRate' => $r['ir_vulnerabilityRate'],
-                    'kindOfMeasure' => $r['ir_kindOfMeasure'],
-                    'specific' => $r['ir_specific'],
-                    'reductionAmount' => $r['ir_reductionAmount'],
-                    'c_impact' => $r['i_c'],
-                    'c_risk' => $r['ir_riskC'],
-                    'c_risk_enabled' => $r['threat_c'],
-                    'i_impact' => $r['i_i'],
-                    'i_risk' => $r['ir_riskI'],
-                    'i_risk_enabled' => $r['threat_i'],
-                    'd_impact' => $r['i_d'],
-                    'd_risk' => $r['ir_riskD'],
-                    'd_risk_enabled' => $r['threat_d'],
-                    't' => ((!$r['ir_kindOfMeasure']) || ($r['ir_kindOfMeasure'] == InstanceRisk::KIND_NOT_TREATED)) ? false : true,
-                    'target_risk' => $r['ir_cacheTargetedRisk'],
-                    'max_risk' => $r['ir_cacheMaxRisk'],
-                    'comment' => $r['ir_comment'],
-                    'measure1' => [
-                        'code' => $r['measure1_code'],
-                        'description1' => $r['measure1_description1'],
-                        'description2' => $r['measure1_description2'],
-                        'description3' => $r['measure1_description3'],
-                        'description4' => $r['measure1_description4'],
-                    ],
-                    'measure2' => [
-                        'code' => $r['measure2_code'],
-                        'description1' => $r['measure2_description1'],
-                        'description2' => $r['measure2_description2'],
-                        'description3' => $r['measure2_description3'],
-                        'description4' => $r['measure2_description4'],
-                    ],
-                    'measure3' => [
-                        'code' => $r['measure3_code'],
-                        'description1' => $r['measure3_description1'],
-                        'description2' => $r['measure3_description2'],
-                        'description3' => $r['measure3_description3'],
-                        'description4' => $r['measure3_description4'],
-                    ],
+            if(!isset($globalRisks[$r['oid']][$r['threatid']][$r['vulnerabilityid']])){
+                $return[$r['id']] = $r;
+                $return[$r['id']]['t'] = !((!$r['ir_kindOfMeasure']) || ($r['ir_kindOfMeasure'] == InstanceRisk::KIND_NOT_TREATED));
+                unset($return[$r['id']]['ir_kindOfMeasure']);
+                foreach($changes as $c){
+                    $return[$r['id']][substr($c, 0,-2)] = $return[$r['id']][$c];
+                    unset($return[$r['id']][$c]);
+                }
+
+                $return[$r['id']]['measure1'] = [
+                    'code' => $r['measure1_code'],
+                    'description1' => $r['measure1_description1'],
+                    'description2' => $r['measure1_description2'],
+                    'description3' => $r['measure1_description3'],
+                    'description4' => $r['measure1_description4'],
                 ];
+                $return[$r['id']]['measure2'] = [
+                    'code' => $r['measure2_code'],
+                    'description1' => $r['measure2_description1'],
+                    'description2' => $r['measure2_description2'],
+                    'description3' => $r['measure2_description3'],
+                    'description4' => $r['measure2_description4'],
+                ];
+                $return[$r['id']]['measure3'] = [
+                    'code' => $r['measure3_code'],
+                    'description1' => $r['measure3_description1'],
+                    'description2' => $r['measure3_description2'],
+                    'description3' => $r['measure3_description3'],
+                    'description4' => $r['measure3_description4'],
+                ];
+                unset(
+                    $return[$r['id']]['measure1_code'], $return[$r['id']]['measure1_description1'], $return[$r['id']]['measure1_description2'], $return[$r['id']]['measure1_description3'], $return[$r['id']]['measure1_description4'],
+                    $return[$r['id']]['measure2_code'], $return[$r['id']]['measure2_description1'], $return[$r['id']]['measure2_description2'], $return[$r['id']]['measure2_description3'], $return[$r['id']]['measure2_description4'],
+                    $return[$r['id']]['measure3_code'], $return[$r['id']]['measure3_description1'], $return[$r['id']]['measure3_description2'], $return[$r['id']]['measure3_description3'], $return[$r['id']]['measure3_description4']
+                );
                 if($r['scope'] == Object::SCOPE_GLOBAL){
-                    $globalRisks[$r['id']][$r['threat_id']][$r['vulnerability_id']] = $r['ir_id'];
+                    $globalRisks[$r['oid']][$r['threatid']][$r['vulnerabilityid']] = $r['id'];
                 }
             }
         }
