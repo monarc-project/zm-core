@@ -81,7 +81,7 @@ class ObjectCategoryService extends AbstractService
      * @param int $limit
      * @param null $order
      * @param null $filter
-     * @param int $parentId
+     * @param array $filterAnd
      * @return mixed
      */
     public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = []){
@@ -184,8 +184,11 @@ class ObjectCategoryService extends AbstractService
             ->where('t.parent = :parent')
             ->setParameter(':parent',$id)
             ->getQuery()->getResult();
+        $i = 1;
+        $nbChildren = count($children);
         foreach($children as $c){
-            $this->delete($c->id);
+            $this->delete($c->id, ($i == $nbChildren));
+            $i++;
         }
 
         $this->get('objectTable')->getRepository()->createQueryBuilder('t')

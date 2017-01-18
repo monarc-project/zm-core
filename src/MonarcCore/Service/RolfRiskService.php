@@ -224,9 +224,12 @@ class RolfRiskService extends AbstractService
                 /** @var InstanceRiskOpTable $instanceRiskOpTable */
                 $instanceRiskOpTable = $this->get('instanceRiskOpTable');
                 $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['object' => $object->id, 'rolfRisk' => $id]);
+                $i = 1;
+                $nbInstancesRisksOp = count($instancesRisksOp);
                 foreach ($instancesRisksOp as $instanceRiskOp) {
                     $instanceRiskOp->specific = 1;
-                    $instanceRiskOpTable->save($instanceRiskOp);
+                    $instanceRiskOpTable->save($instanceRiskOp, ($i == $nbInstancesRisksOp));
+                    $i++;
                 }
             }
         }
@@ -239,8 +242,8 @@ class RolfRiskService extends AbstractService
                 $instanceTable = $this->get('instanceTable');
                 $instances = $instanceTable->getEntityByFields(['object' => $object->id]);
                 $i = 1;
+                $nbInstances = count($instances);
                 foreach ($instances as $instance) {
-                    $last = (count($instances) == $i) ? true : false;
                     $data = [
                         'anr' => $object->anr->id,
                         'instance' => $instance->id,
@@ -259,7 +262,7 @@ class RolfRiskService extends AbstractService
 
                     /** @var InstanceRiskOpService $instanceRiskOpService */
                     $instanceRiskOpService = $this->get('instanceRiskOpService');
-                    $instanceRiskOpService->create($data, $last);
+                    $instanceRiskOpService->create($data, ($i == $nbInstances));
                     $i++;
                 }
             }

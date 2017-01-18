@@ -74,9 +74,6 @@ class InstanceRiskService extends AbstractService
             $nbAmvs = count($amvs);
             $i = 1;
             foreach ($amvs as $amv) {
-
-                $lastAmv = ($nbAmvs == $i) ? true : false;
-
                 $data = [
                     'anr' => $anrId,
                     'amv' => $amv->id,
@@ -85,9 +82,7 @@ class InstanceRiskService extends AbstractService
                     'threat' => $amv->threat->id,
                     'vulnerability' => $amv->vulnerability->id,
                 ];
-
-                $instanceRiskLastId = $this->create($data, $lastAmv);
-
+                $instanceRiskLastId = $this->create($data, ($nbAmvs == $i));
                 $i++;
             }
 

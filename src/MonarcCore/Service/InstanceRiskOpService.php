@@ -76,10 +76,8 @@ class InstanceRiskOpService extends AbstractService
 
                         $nbRolfRisks = count($rolfRisks);
                         $i = 1;
+                        $nbRolfRisks = count($rolfRisks);
                         foreach ($rolfRisks as $rolfRisk) {
-
-                            $lastRolfRisks = ($nbRolfRisks == $i) ? true : false;
-
                             $data = [
                                 'anr' => $anrId,
                                 'instance' => $instanceId,
@@ -95,9 +93,7 @@ class InstanceRiskOpService extends AbstractService
                                 'riskCacheDescription3' => $rolfRisk->description3,
                                 'riskCacheDescription4' => $rolfRisk->description4,
                             ];
-
-                            $this->create($data, $lastRolfRisks);
-
+                            $this->create($data, ($i == $nbRolfRisks));
                             $i++;
                         }
                     }

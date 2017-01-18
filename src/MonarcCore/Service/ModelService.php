@@ -182,10 +182,11 @@ class ModelService extends AbstractService
     }
 
     /**
-     * Verify before update
+     * Verify Before Update
      *
      * @param $model
      * @param $data
+     * @return bool
      * @throws \Exception
      */
     public function verifyBeforeUpdate($model, $data) {
@@ -324,18 +325,22 @@ class ModelService extends AbstractService
     }
 
     /**
-     * Detele list
+     * Delete List
      *
      * @param $data
+     * @return bool
      */
     public function deleteList($data){
         $anrIds = [];
+        $nbData = count($data);
+        $i = 1;
         foreach($data as $d){
             $model = $this->get('table')->getEntity($d);
             $anr = $model->get('anr');
             $model->set('anr',null);
             $model->set('status',\MonarcCore\Model\Entity\AbstractEntity::STATUS_DELETED);
-            $this->get('table')->save($model);
+            $this->get('table')->save($model, ($i == $nbData));
+            $i++;
 
             if($anr){
                 $this->get('anrTable')->delete($anr->get('id'));

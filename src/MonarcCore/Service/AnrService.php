@@ -69,10 +69,13 @@ class AnrService extends AbstractService
                 'max' => (isset($data['scales'][3]['max'])?$data['scales'][3]['max']:3),
             ],
         ];
+        $i = 1;
+        $nbScales = count($scales);
         foreach ($scales as $scale) {
             /** @var ScaleService $scaleService */
             $scaleService = $this->get('scaleService');
-            $scaleService->create($scale);
+            $scaleService->create($scale, ($i == $nbScales));
+            $i++;
         }
 
         return $anrId;
@@ -99,16 +102,14 @@ class AnrService extends AbstractService
 
         //duplicate objects
         $i = 1;
+        $nbObjects = count($newAnr->objects);
         foreach ($newAnr->objects as $object) {
-            $last = ($i == count($newAnr->objects)) ? true : false;
-
             //add anr to object
             $object->addAnr($newAnr);
 
             /** @var ObjectTable $objectTable */
             $objectTable = $this->get('objectTable');
-            $objectTable->save($object, $last);
-
+            $objectTable->save($object, ($i == $nbObjects));
             $i++;
         }
 

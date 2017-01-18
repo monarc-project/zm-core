@@ -76,6 +76,7 @@ class InstanceService extends AbstractService
         foreach($object->anrs as $anr) {
             if ($anr->id == $anrId) {
                 $authorized = true;
+                break;
             }
         }
 
@@ -1477,9 +1478,8 @@ class InstanceService extends AbstractService
             $instancesConsequences = $instanceConsequenceTable->getEntityByFields(['anr' => $anrId, 'instance' => $refInstance->id]);
 
             $i = 1;
+            $nbInstancesConsequences = count($instancesConsequences);
             foreach ($instancesConsequences as $instanceConsequence) {
-
-                $lastConsequence = (count($instancesConsequences) == $i) ? true : false;
 
                 $data = [
                     'anr' => $this->get('anrTable')->getEntity($anrId),
@@ -1498,7 +1498,7 @@ class InstanceService extends AbstractService
 
                 $instanceConsequenceEntity->exchangeArray($data);
 
-                $instanceConsequenceTable->save($instanceConsequenceEntity, $lastConsequence);
+                $instanceConsequenceTable->save($instanceConsequenceEntity, ($i == $nbInstancesConsequences));
 
                 $i++;
             }
@@ -1512,12 +1512,9 @@ class InstanceService extends AbstractService
             /** @var InstanceConsequenceTable $instanceConsequenceTable */
             $instanceConsequenceTable = $this->get('instanceConsequenceTable');
 
-            $nbConsequences = count($scalesImpactTypes);
             $i = 1;
+            $nbScalesImpactTypes = count($scalesImpactTypes);
             foreach ($scalesImpactTypes as $scalesImpactType) {
-
-                $lastConsequence = ($nbConsequences == $i) ? true : false;
-
                 $data = [
                     'anr' => $this->get('anrTable')->getEntity($anrId),
                     'instance' => $this->get('instanceTable')->getEntity($instanceId),
@@ -1525,14 +1522,10 @@ class InstanceService extends AbstractService
                     'scaleImpactType' => $scalesImpactType,
                     'isHidden' => $scalesImpactType->isHidden,
                 ];
-
                 $class = $this->get('instanceConsequenceEntity');
                 $instanceConsequenceEntity = new $class();
-
                 $instanceConsequenceEntity->exchangeArray($data);
-
-                $instanceConsequenceTable->save($instanceConsequenceEntity, $lastConsequence);
-
+                $instanceConsequenceTable->save($instanceConsequenceEntity, ($i == $nbScalesImpactTypes));
                 $i++;
             }
         }
