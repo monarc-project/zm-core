@@ -1710,8 +1710,9 @@ class InstanceService extends AbstractService
             $ir->set('riskD','-1');
             $return['risks'][$ir->get('id')] = $ir->getJsonArray($instanceRiskArray);
 
-            $return['risks'][$ir->get('id')]['amv'] = $ir->get('amv')->get('id');
-            if(empty($return['amvs'][$ir->get('amv')->get('id')])){
+            $irAmv = $ir->get('amv');
+            $return['risks'][$ir->get('id')]['amv'] = empty($irAmv)?null:$irAmv->get('id');
+            if(!empty($return['risks'][$ir->get('id')]['amv']) && empty($return['amvs'][$ir->get('amv')->get('id')])){
                 list(
                     $amv,
                     $threats,
@@ -1748,7 +1749,7 @@ class InstanceService extends AbstractService
 
             $vulnerability = $ir->get('vulnerability');
             if(!empty($vulnerability)){
-                if(empty($return['threats'][$ir->get('threat')->get('id')])){
+                if(empty($return['vuls'][$ir->get('vulnerability')->get('id')])){
                     $return['vuls'][$ir->get('vulnerability')->get('id')] = $ir->get('vulnerability')->getJsonArray($vulsObj);
                 }
                 $return['risks'][$ir->get('id')]['vulnerability'] = $ir->get('vulnerability')->get('id');
