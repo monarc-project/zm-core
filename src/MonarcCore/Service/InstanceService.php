@@ -1558,7 +1558,7 @@ class InstanceService extends AbstractService
             throw new \Exception('Entity `id` not found.');
         }
 
-        $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $entity->get('label'.$this->getLanguage()));
+        $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $entity->get('name'.$this->getLanguage()));
 
         $objInstance = array(
             'id' => 'id',
