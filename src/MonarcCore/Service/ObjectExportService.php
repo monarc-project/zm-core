@@ -110,7 +110,7 @@ class ObjectExportService extends AbstractService
         }
 
         // Récupération children(s)
-        $children = $this->get('objectObjectService')->getChildren($entity->get('id'));
+        $children = array_reverse($this->get('objectObjectService')->getChildren($entity->get('id'))); // Le tri de cette fonction est "position DESC"
         $return['children'] = null;
         if(!empty($children)){
             $return['children'] = array();
