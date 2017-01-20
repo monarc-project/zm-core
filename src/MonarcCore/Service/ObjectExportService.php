@@ -110,7 +110,7 @@ class ObjectExportService extends AbstractService
         }
 
         // Récupération children(s)
-        $children = $this->get('objectObjectService')->getChildren($entity->get('id'));
+        $children = array_reverse($this->get('objectObjectService')->getChildren($entity->get('id'))); // Le tri de cette fonction est "position DESC"
         $return['children'] = null;
         if(!empty($children)){
             $return['children'] = array();
@@ -130,7 +130,7 @@ class ObjectExportService extends AbstractService
         if(isset($data['type']) && $data['type'] == 'object' &&
             array_key_exists('version', $data) && $data['version'] == $this->getVersion()){
 
-            if(isset($data['object']['name'.$this->getLanguage()]) && isset($objectsCache[$data['object']['name'.$this->getLanguage()]])){
+            if(isset($data['object']['name'.$this->getLanguage()]) && isset($objectsCache['objects'][$data['object']['name'.$this->getLanguage()]])){
                 return $objectsCache['objects'][$data['object']['name'.$this->getLanguage()]];
             }
             // import asset
