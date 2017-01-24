@@ -689,6 +689,9 @@ class InstanceService extends AbstractService
 
         /** @var InstanceTable $table */
         $table = $this->get('table');
+        if(!$instance instanceof \MonarcCore\Model\Entity\InstanceSuperClass){
+            $instance = $this->get('table')->getEntity($instance);
+        }
         $children = $table->getEntityByFields(['parent' => $instance->id]);
 
         foreach($children as $child) {
@@ -813,8 +816,9 @@ class InstanceService extends AbstractService
         $instanceRiskService = $this->get('instanceRiskService');
         $instanceRisks = $instanceRiskService->getInstanceRisks($instanceId, $anrId);
 
-        foreach($instanceRisks as $instanceRisk) {
-            $instanceRiskService->updateRisks($instanceRisk->id);
+        $nb = count($instanceRisks);
+        foreach($instanceRisks as $i => $instanceRisk) {
+            $instanceRiskService->updateRisks($instanceRisk->id, $i+1 >= $nb);
         }
     }
 
