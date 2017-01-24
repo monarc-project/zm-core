@@ -918,9 +918,9 @@ class InstanceService extends AbstractService
      * @param $anrId
      * @return array
      */
-    public function getRisks($anrId, $instanceId = null, $params = []) {
-        $order = isset($params['order']) ? $params['order'] : 'maxRisk';
-        $dir = isset($params['order_direction']) ? $params['order_direction'] : 'desc';
+    public function getRisks($anrId, $instanceId = null, $params = [], $count = false)
+    {
+        $params['order'] = isset($params['order']) ? $params['order'] : 'maxRisk';
 
         if(!empty($instanceId)){
             $instance = $this->get('table')->getEntity($instanceId);
@@ -930,49 +930,81 @@ class InstanceService extends AbstractService
         }
 
         $l = $this->getLanguage();
-        $arraySelect = [
-            'o.id as oid',
-            'ir.id as id',
-            'i.id as instanceid',
-            'amv.id as amvid',
-            'asset.id as assetid',
-            'asset.label'.$l.' as assetLabel'.$l.'',
-            'asset.description'.$l.' as assetDescription'.$l.'',
-            'threat.id as threatid',
-            'threat.code as threatCode',
-            'threat.label'.$l.' as threatLabel'.$l.'',
-            'threat.description'.$l.' as threatDescription'.$l.'',
-            'ir.threatRate as threatRate',
-            'vulnerability.id as vulnerabilityid',
-            'vulnerability.code as vulnCode',
-            'vulnerability.label'.$l.' as vulnLabel'.$l.'',
-            'vulnerability.description'.$l.' as vulnDescription'.$l.'',
-            'ir.vulnerabilityRate as vulnerabilityRate',
-            'ir.specific as specific',
-            'ir.reductionAmount as reductionAmount',
-            'i.c as c_impact',
-            'ir.riskC as c_risk',
-            'threat.c as c_risk_enabled',
-            'i.i as i_impact',
-            'ir.riskI as i_risk',
-            'threat.i as i_risk_enabled',
-            'i.d as d_impact',
-            'ir.riskD as d_risk',
-            'threat.d as d_risk_enabled',
-            'ir.cacheTargetedRisk as target_risk',
-            'ir.cacheMaxRisk as max_risk',
-            'ir.comment as comment',
-            'ir.kindOfMeasure as ir_kindOfMeasure',
-            'CONCAT(measure1.code, \' - \', measure1.description'.$l.') as measure1la',
-            'CONCAT(measure2.code, \' - \', measure2.description'.$l.') as measure2la',
-            'CONCAT(measure3.code, \' - \', measure3.description'.$l.') as measure3la',
-            'o.scope as scope',
-        ];
+        if ($count) {
+            $arraySelect = ['COUNT(o.id) as nb'];
+        } else {
+            $arraySelect = [
+                'o.id as oid',
+                'ir.id as id',
+                'i.id as instance',
+                'a.id as amv',
+                'ass.id as asset',
+                'ass.label' . $l . ' as assetLabel' . $l . '',
+                'ass.description' . $l . ' as assetDescription' . $l . '',
+                't.id as threat',
+                't.code as threatCode',
+                't.label' . $l . ' as threatLabel' . $l . '',
+                't.description' . $l . ' as threatDescription' . $l . '',
+                'ir.threat_rate as threatRate',
+                'v.id as vulnerability',
+                'v.code as vulnCode',
+                'v.label' . $l . ' as vulnLabel' . $l . '',
+                'v.description' . $l . ' as vulnDescription' . $l . '',
+                'ir.vulnerability_rate as vulnerabilityRate',
+                'ir.`specific` as `specific`',
+                'ir.reduction_amount as reductionAmount',
+                'i.c as c_impact',
+                'ir.risk_c as c_risk',
+                't.c as c_risk_enabled',
+                'i.i as i_impact',
+                'ir.risk_i as i_risk',
+                't.i as i_risk_enabled',
+                'i.d as d_impact',
+                'ir.risk_d as d_risk',
+                't.d as d_risk_enabled',
+                'ir.cache_targeted_risk as target_risk',
+                'ir.cache_max_risk as max_risk',
+                'ir.comment as comment',
+                'CONCAT(m1.code, \' - \', m1.description' . $l . ') as measure1',
+                'CONCAT(m2.code, \' - \', m2.description' . $l . ') as measure2',
+                'CONCAT(m3.code, \' - \', m3.description' . $l . ') as measure3',
+                'o.scope as scope',
+                'ir.kind_of_measure as kindOfMeasure',
+                'IF(ir.kind_of_measure IS NULL OR ir.kind_of_measure = ' . InstanceRisk::KIND_NOT_TREATED . ', false, true) as t',
+            ];
+        }
 
-        $query = $this->get('instanceRiskService')->get('table')->getRepository()->createQueryBuilder('ir')
-            ->select($arraySelect)
-            ->where('i.anr = :anrid')
-            ->setParameter(':anrid',$anrId);
+        $sql = "
+            SELECT      " . implode(',', $arraySelect) . "
+            FROM        (
+                SELECT      id, threat_rate, vulnerability_rate, `specific`, reduction_amount, risk_c, risk_i, risk_d, cache_targeted_risk, cache_max_risk, comment, kind_of_measure, instance_id, amv_id, threat_id, vulnerability_id, asset_id
+                FROM        instances_risks
+                WHERE       anr_id = :anrid
+                AND         cache_max_risk >= -1
+                ORDER BY    cache_max_risk DESC) AS ir
+            INNER JOIN  instances i
+            ON          ir.instance_id = i.id
+            LEFT JOIN   amvs AS a
+            ON          ir.amv_id = a.id
+            INNER JOIN  threats AS t
+            ON          ir.threat_id = t.id
+            INNER JOIN  vulnerabilities AS v
+            ON          ir.vulnerability_id = v.id
+            LEFT JOIN   assets AS ass
+            ON          ir.asset_id = ass.id
+            INNER JOIN  objects AS o
+            ON          i.object_id = o.id
+            LEFT JOIN   measures as m1
+            ON          a.measure1_id = m1.id
+            LEFT JOIN   measures as m2
+            ON          a.measure2_id = m2.id
+            LEFT JOIN   measures as m3
+            ON          a.measure3_id = m3.id
+            WHERE       1 = 1 ";
+        $queryParams = [
+            ':anrid' => $anrId,
+        ];
+        $typeParams = [];
 
         if(empty($instance)){
             // On prend toutes les instances, on est sur l'anr
@@ -991,139 +1023,118 @@ class InstanceService extends AbstractService
                 }
             }
 
-            $query->andWhere('i.id IN (:ids)')
-                ->setParameter(':ids',$instanceIds);
+            $sql .= " AND i.id IN (:ids) ";
+            $queryParams[':ids'] = $instanceIds;
+            $typeParams[':ids'] = \Doctrine\DBAL\Connection::PARAM_INT_ARRAY;
         }else{
-            $query->andWhere('i.id = :id')
-                ->setParameter(':id',$instance->get('id'));
+            $sql .= " AND i.id = :id ";
+            $queryParams[':id'] = $instance->get('id');
         }
 
-        $query->innerJoin('ir.instance', 'i')
-            ->leftJoin('ir.amv', 'amv')
-            ->innerJoin('ir.threat', 'threat')
-            ->innerJoin('ir.vulnerability', 'vulnerability')
-            ->leftJoin('ir.asset', 'asset')
-            ->innerJoin('i.object', 'o')
-            ->leftJoin('amv.measure1', 'measure1')
-            ->leftJoin('amv.measure2', 'measure2')
-            ->leftJoin('amv.measure3', 'measure3')
-            ->andWhere('ir.cacheMaxRisk >= -1 '); // seuil
-
+        // FILTER: kind_of_measure ==
         if (isset($params['kindOfMeasure'])) {
-            $query->andWhere('ir.kindOfMeasure = :kom')
-                ->setParameter(':kom',$params['kindOfMeasure']);
+            if($params['kindOfMeasure'] == \MonarcCore\Model\Entity\InstanceRiskSuperClass::KIND_NOT_TREATED){
+                $sql .= " AND (ir.kind_of_measure IS NULL OR ir.kind_of_measure = :kom) ";
+                $queryParams[':kom'] = \MonarcCore\Model\Entity\InstanceRiskSuperClass::KIND_NOT_TREATED;
+            }else{
+                $sql .= " AND ir.kind_of_measure = :kom ";
+                $queryParams[':kom'] = $params['kindOfMeasure'];
+            }
         }
-        if(!empty($params['keywords'])){
+        // FILTER: Keywords
+        if (!empty($params['keywords'])) {
             $filters = [
-                'asset.label'.$l.'',
+                'ass.label' . $l . '',
                 //'amv.label'.$l.'',
-                'threat.label'.$l.'',
-                'vulnerability.label'.$l.'',
-                'measure1.code',
-                'measure1.description'.$l.'',
-                'measure2.code',
-                'measure2.description'.$l.'',
-                'measure3.code',
-                'measure3.description'.$l.'',
-                'i.name'.$l.'',
+                't.label' . $l . '',
+                'v.label' . $l . '',
+                'm1.code',
+                'm1.description' . $l . '',
+                'm2.code',
+                'm2.description' . $l . '',
+                'm3.code',
+                'm3.description' . $l . '',
+                'i.name' . $l . '',
                 'ir.comment',
             ];
             $orFilter = [];
-            foreach($filters as $f){
+            foreach ($filters as $f) {
                 $k = str_replace('.', '', $f);
-                $orFilter[] = $f." LIKE :".$k;
-                $query->setParameter(":$k",'%'.$params['keywords'].'%');
+                $orFilter[] = $f . " LIKE :" . $k;
+                $queryParams[":$k"] = '%' . $params['keywords'] . '%';
             }
-            $query->andWhere('('.implode(' OR ',$orFilter).')');
+            $sql .= " AND (" . implode(' OR ', $orFilter) . ") ";
         }
-
-
-        // More filters
+        // FILTER: cache_max_risk (min)
         if (isset($params['thresholds']) && $params['thresholds'] > 0) {
-            $query->andWhere('ir.cacheMaxRisk > :min')
-                ->setParameter(':min',$params['thresholds']);
+            $sql .= " AND ir.cache_max_risk > :min ";
+            $queryParams[':min'] = $params['thresholds'];
         }
 
-        $params['order_direction'] = isset($params['order_direction']) && strtolower(trim($params['order_direction'])) != 'asc' ? 'DESC' : 'ASC';
+        // GROUP BY if scope = GLOBAL
+        $sql .= " GROUP BY IF(o.scope = " . Object::SCOPE_GLOBAL . ",o.id,ir.id), ir.threat_id, ir.vulnerability_id ";
 
-        switch($params['order']){
+        // ORDER
+        $params['order_direction'] = isset($params['order_direction']) && strtolower(trim($params['order_direction'])) != 'asc' ? 'DESC' : 'ASC';
+        $sql .= " ORDER BY ";
+        switch ($params['order']) {
             case 'instance':
-                $query->orderBy('i.name'.$this->getLanguage(),$params['order_direction']);
-            break;
+                $sql .= " i.name$l ";
+                break;
             case 'auditOrder':
-                $query->orderBy('amv.position',$params['order_direction']);
+                $sql .= " a.position ";
                 break;
             case 'c_impact':
-                $query->orderBy('i.c',$params['order_direction']);
+                $sql .= " i.c ";
                 break;
             case 'i_impact':
-                $query->orderBy('i.i',$params['order_direction']);
+                $sql .= " i.i ";
                 break;
             case 'd_impact':
-                $query->orderBy('i.d',$params['order_direction']);
+                $sql .= " i.d ";
                 break;
             case 'threat':
-                $query->orderBy('threat.label'.$this->getLanguage(),$params['order_direction']);
+                $sql .= " t.label$l ";
                 break;
             case 'vulnerability':
-                $query->orderBy('vulnerability.label'.$this->getLanguage(),$params['order_direction']);
+                $sql .= " v.label$l ";
                 break;
             case 'vulnerabilityRate':
-                $query->orderBy('ir.vulnerabilityRate',$params['order_direction']);
+                $sql .= " ir.vulnerability_rate ";
                 break;
             case 'threatRate':
-                $query->orderBy('ir.threatRate',$params['order_direction']);
+                $sql .= " ir.threat_rate ";
                 break;
             case 'targetRisk':
-                $query->orderBy('ir.cacheTargetedRisk',$params['order_direction']);
+                $sql .= " ir.cache_targeted_risk ";
                 break;
             default:
             case 'maxRisk':
-                $query->orderBy('ir.cacheMaxRisk',$params['order_direction']);
+                $sql .= " ir.cache_max_risk ";
                 break;
         }
-        if($params['order'] != 'instance'){
-            $query->addOrderBy('i.name'.$this->getLanguage(),'ASC');
+        $sql .= " " . $params['order_direction'] . " ";
+        if ($params['order'] != 'instance') {
+            $sql .= " , i.name$l ASC ";
         }
-        $query->addOrderBy('threat.code','ASC')
-            ->addOrderBy('vulnerability.code','ASC');
-        $result = $query->getQuery()->getScalarResult();
+        $sql .= " , t.code ASC , v.code ASC ";
 
-        $globalRisks = $return = [];
-        $changes = [
-            'instanceid',
-            'amvid',
-            'assetid',
-            'threatid',
-            'vulnerabilityid',
-            'measure1la',
-            'measure2la',
-            'measure3la',
-        ];
-
-        foreach($result as $r){
-            if(isset($globalRisks[$r['oid']][$r['threatid']][$r['vulnerabilityid']]) &&
-                isset($return[$globalRisks[$r['oid']][$r['threatid']][$r['vulnerabilityid']]]) &&
-                $return[$globalRisks[$r['oid']][$r['threatid']][$r['vulnerabilityid']]]['max_risk'] < $r['max_risk']){
-
-                unset($return[$globalRisks[$r['oid']][$r['threatid']][$r['vulnerabilityid']]]);
-                unset($globalRisks[$r['oid']][$r['threatid']][$r['vulnerabilityid']]);
+        if ($count) {
+            $res = $this->get('anrTable')->getDb()->getEntityManager()->getConnection()
+                ->fetchAll($sql, $queryParams, $typeParams);
+            return count($res);
+        } else {
+            // LIMIT
+            if (!empty($params['limit']) && !empty($params['page']) && $params['limit'] > 0) {
+                $sql .= " LIMIT :l1, :l2 ";
+                $queryParams[':l1'] = intval(($params['page'] - 1) * $params['limit']);
+                $queryParams[':l2'] = intval($params['limit']);
+                $typeParams[':l1'] = \PDO::PARAM_INT;
+                $typeParams[':l2'] = \PDO::PARAM_INT;
             }
-            if(!isset($globalRisks[$r['oid']][$r['threatid']][$r['vulnerabilityid']])){
-                $return[$r['id']] = $r;
-                $return[$r['id']]['t'] = !((!$r['ir_kindOfMeasure']) || ($r['ir_kindOfMeasure'] == InstanceRisk::KIND_NOT_TREATED));
-                unset($return[$r['id']]['ir_kindOfMeasure']);
-                foreach($changes as $c){
-                    $return[$r['id']][substr($c, 0,-2)] = $return[$r['id']][$c];
-                    unset($return[$r['id']][$c]);
-                }
-                if($r['scope'] == Object::SCOPE_GLOBAL){
-                    $globalRisks[$r['oid']][$r['threatid']][$r['vulnerabilityid']] = $r['id'];
-                }
-            }
+            return $this->get('anrTable')->getDb()->getEntityManager()->getConnection()
+                ->fetchAll($sql, $queryParams, $typeParams);
         }
-        unset($globalRisks);
-        return array_values($return);
     }
 
     protected function findInFields($obj, $search, $fields = []) {
