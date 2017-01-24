@@ -160,18 +160,15 @@ class InstanceConsequenceService extends AbstractService
                     $brotherInstancesConsequences = $instanceConsequenceTable->getEntityByFields(['anr' => $anrId, 'instance' => $brother->id, 'scaleImpactType' => $instanceConsequence->scaleImpactType->id]);
 
                     $i = 1;
+                    $nbBrotherInstancesConsequences = count($brotherInstancesConsequences);
                     foreach ($brotherInstancesConsequences as $brotherInstanceConsequence) {
-
-                        $lastConsequence = (count($brotherInstancesConsequences) == $i) ? true : false;
-
                         $brotherInstanceConsequence->isHidden = $instanceConsequence->isHidden;
                         $brotherInstanceConsequence->locallyTouched = $instanceConsequence->locallyTouched;
                         $brotherInstanceConsequence->c = $instanceConsequence->c;
                         $brotherInstanceConsequence->i = $instanceConsequence->i;
                         $brotherInstanceConsequence->d = $instanceConsequence->d;
 
-                        $instanceConsequenceTable->save($brotherInstanceConsequence, $lastConsequence);
-
+                        $instanceConsequenceTable->save($brotherInstanceConsequence, ($i == $nbBrotherInstancesConsequences));
                         $i++;
                     }
                 }
@@ -255,9 +252,9 @@ class InstanceConsequenceService extends AbstractService
         $consequencesIds = [];
 
         $i = 1;
+        $nbInstancesConsequences = count($instancesConsequences);
         foreach($instancesConsequences as $instanceConsequence) {
-            $last = ($i == count($instancesConsequences)) ? true : false;
-            $this->patchConsequence($instanceConsequence->id, $data, $last, false);
+            $this->patchConsequence($instanceConsequence->id, $data, ($i == $nbInstancesConsequences), false);
             $consequencesIds[$instanceConsequence->id] = $instanceConsequence->id;
             $i++;
         }

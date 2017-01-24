@@ -80,7 +80,7 @@ class GuideService extends AbstractService
             throw new \Exception('Only one guide by category', 412);
         }
 
-        parent::create($data, $last);
+        return parent::create($data, $last);
     }
 
 }

@@ -124,14 +124,14 @@ class QuestionService extends AbstractService
         $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
 
-
         return $this->get('table')->save($entity);
     }
 
     /**
      * Delete
-     *
+     * 
      * @param $id
+     * @throws \Exception
      */
     public function delete($id) {
 

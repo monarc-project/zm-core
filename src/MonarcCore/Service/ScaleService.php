@@ -182,10 +182,13 @@ class ScaleService extends AbstractService
                     'implicitPosition' => 2, 'label1' => $langs[$outLang[1]]['P'], 'label2' => $langs[$outLang[2]]['P'], 'label3' => $langs[$outLang[3]]['P'], 'label4' => $langs[$outLang[4]]['P'],
                 ]
             ];
+            $i = 1;
+            $nbScaleImpactTypes = count($scaleImpactTypes);
             foreach ($scaleImpactTypes as $scaleImpactType) {
                 /** @var ScaleImpactTypeService $scaleImpactTypeService */
                 $scaleImpactTypeService = $this->get('scaleImpactTypeService');
-                $scaleImpactTypeService->create($scaleImpactType);
+                $scaleImpactTypeService->create($scaleImpactType, ($i == $nbScaleImpactTypes));
+                $i++;
             }
         }
 
@@ -377,9 +380,12 @@ class ScaleService extends AbstractService
             /** @var ScaleComment[] $comments */
             $comments = $this->commentTable->getByScaleAndOutOfRange($scale->id, $scale->min, $scale->max);
 
-            if (count($comments) > 0) {
+            $i = 1;
+            $nbComments = count($comments);
+            if ($nbComments > 0) {
                 foreach ($comments as $c) {
-                    $this->commentTable->delete($c['id']);
+                    $this->commentTable->delete($c['id'], ($i == $nbComments));
+                    $i++;
                 }
             }
 

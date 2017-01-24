@@ -76,6 +76,7 @@ class InstanceService extends AbstractService
         foreach($object->anrs as $anr) {
             if ($anr->id == $anrId) {
                 $authorized = true;
+                break;
             }
         }
 
@@ -928,10 +929,48 @@ class InstanceService extends AbstractService
             }
         }
 
+        $l = $this->getLanguage();
+        $arraySelect = [
+            'o.id as oid',
+            'ir.id as id',
+            'i.id as instanceid',
+            'amv.id as amvid',
+            'asset.id as assetid',
+            'asset.label'.$l.' as assetLabel'.$l.'',
+            'asset.description'.$l.' as assetDescription'.$l.'',
+            'threat.id as threatid',
+            'threat.code as threatCode',
+            'threat.label'.$l.' as threatLabel'.$l.'',
+            'threat.description'.$l.' as threatDescription'.$l.'',
+            'ir.threatRate as threatRate',
+            'vulnerability.id as vulnerabilityid',
+            'vulnerability.code as vulnCode',
+            'vulnerability.label'.$l.' as vulnLabel'.$l.'',
+            'vulnerability.description'.$l.' as vulnDescription'.$l.'',
+            'ir.vulnerabilityRate as vulnerabilityRate',
+            'ir.specific as specific',
+            'ir.reductionAmount as reductionAmount',
+            'i.c as c_impact',
+            'ir.riskC as c_risk',
+            'threat.c as c_risk_enabled',
+            'i.i as i_impact',
+            'ir.riskI as i_risk',
+            'threat.i as i_risk_enabled',
+            'i.d as d_impact',
+            'ir.riskD as d_risk',
+            'threat.d as d_risk_enabled',
+            'ir.cacheTargetedRisk as target_risk',
+            'ir.cacheMaxRisk as max_risk',
+            'ir.comment as comment',
+            'ir.kindOfMeasure as ir_kindOfMeasure',
+            'CONCAT(measure1.code, \' - \', measure1.description'.$l.') as measure1la',
+            'CONCAT(measure2.code, \' - \', measure2.description'.$l.') as measure2la',
+            'CONCAT(measure3.code, \' - \', measure3.description'.$l.') as measure3la',
+            'o.scope as scope',
+        ];
+
         $query = $this->get('instanceRiskService')->get('table')->getRepository()->createQueryBuilder('ir')
-            ->select([
-                'ir', 'amv', 'threat', 'vulnerability', 'i', 'asset', 'o.scope', 'measure1', 'measure2', 'measure3', 'o.id'
-            ])
+            ->select($arraySelect)
             ->where('i.anr = :anrid')
             ->setParameter(':anrid',$anrId);
 
@@ -976,41 +1015,17 @@ class InstanceService extends AbstractService
         }
         if(!empty($params['keywords'])){
             $filters = [
-                'asset.label1',
-                'asset.label2',
-                'asset.label3',
-                'asset.label4',
-                //'amv.label1',
-                //'amv.label2',
-                //'amv.label3',
-                //'amv.label4',
-                'threat.label1',
-                'threat.label2',
-                'threat.label3',
-                'threat.label4',
-                'vulnerability.label1',
-                'vulnerability.label2',
-                'vulnerability.label3',
-                'vulnerability.label4',
+                'asset.label'.$l.'',
+                //'amv.label'.$l.'',
+                'threat.label'.$l.'',
+                'vulnerability.label'.$l.'',
                 'measure1.code',
-                'measure1.description1',
-                'measure1.description2',
-                'measure1.description3',
-                'measure1.description4',
+                'measure1.description'.$l.'',
                 'measure2.code',
-                'measure2.description1',
-                'measure2.description2',
-                'measure2.description3',
-                'measure2.description4',
+                'measure2.description'.$l.'',
                 'measure3.code',
-                'measure3.description1',
-                'measure3.description2',
-                'measure3.description3',
-                'measure3.description4',
-                'i.name1',
-                'i.name2',
-                'i.name3',
-                'i.name4',
+                'measure3.description'.$l.'',
+                'i.name'.$l.'',
                 'ir.comment',
             ];
             $orFilter = [];
@@ -1075,98 +1090,39 @@ class InstanceService extends AbstractService
         $result = $query->getQuery()->getScalarResult();
 
         $globalRisks = $return = [];
+        $changes = [
+            'instanceid',
+            'amvid',
+            'assetid',
+            'threatid',
+            'vulnerabilityid',
+            'measure1la',
+            'measure2la',
+            'measure3la',
+        ];
 
         foreach($result as $r){
-            if(isset($globalRisks[$r['id']][$r['threat_id']][$r['vulnerability_id']]) &&
-                isset($return[$globalRisks[$r['id']][$r['threat_id']][$r['vulnerability_id']]]) &&
-                $return[$globalRisks[$r['id']][$r['threat_id']][$r['vulnerability_id']]]['max_risk'] < $r['ir_cacheMaxRisk']){
-                unset($return[$globalRisks[$r['id']][$r['threat_id']][$r['vulnerability_id']]]);
-                unset($globalRisks[$r['id']][$r['threat_id']][$r['vulnerability_id']]);
+            if(isset($globalRisks[$r['oid']][$r['threatid']][$r['vulnerabilityid']]) &&
+                isset($return[$globalRisks[$r['oid']][$r['threatid']][$r['vulnerabilityid']]]) &&
+                $return[$globalRisks[$r['oid']][$r['threatid']][$r['vulnerabilityid']]]['max_risk'] < $r['max_risk']){
+
+                unset($return[$globalRisks[$r['oid']][$r['threatid']][$r['vulnerabilityid']]]);
+                unset($globalRisks[$r['oid']][$r['threatid']][$r['vulnerabilityid']]);
             }
-            if(!isset($globalRisks[$r['id']][$r['threat_id']][$r['vulnerability_id']])){
-                $return[$r['ir_id']] = [
-                    'id' => $r['ir_id'],
-                    'instance' => $r['i_id'],
-                    'instanceName1' => $r['i_name1'],
-                    'instanceName2' => $r['i_name2'],
-                    'instanceName3' => $r['i_name3'],
-                    'instanceName4' => $r['i_name4'],
-                    'amv' => $r['amv_id'],
-                    'asset' => $r['asset_id'],
-                    'assetCode' => $r['asset_code'],
-                    'assetLabel1' => $r['asset_label1'],
-                    'assetLabel2' => $r['asset_label2'],
-                    'assetLabel3' => $r['asset_label3'],
-                    'assetLabel4' => $r['asset_label4'],
-                    'assetDescription1' => $r['asset_description1'],
-                    'assetDescription2' => $r['asset_description2'],
-                    'assetDescription3' => $r['asset_description3'],
-                    'assetDescription4' => $r['asset_description4'],
-                    'threat' => $r['threat_id'],
-                    'threatCode' => $r['threat_code'],
-                    'threatLabel1' => $r['threat_label1'],
-                    'threatLabel2' => $r['threat_label2'],
-                    'threatLabel3' => $r['threat_label3'],
-                    'threatLabel4' => $r['threat_label4'],
-                    'threatDescription1' => $r['threat_description1'],
-                    'threatDescription2' => $r['threat_description2'],
-                    'threatDescription3' => $r['threat_description3'],
-                    'threatDescription4' => $r['threat_description4'],
-                    'threatRate' => $r['ir_threatRate'],
-                    'vulnerability' => $r['vulnerability_id'],
-                    'vulnerabilityCode' => $r['vulnerability_code'],
-                    'vulnLabel1' => $r['vulnerability_label1'],
-                    'vulnLabel2' => $r['vulnerability_label2'],
-                    'vulnLabel3' => $r['vulnerability_label3'],
-                    'vulnLabel4' => $r['vulnerability_label4'],
-                    'vulnDescription1' => $r['vulnerability_description1'],
-                    'vulnDescription2' => $r['vulnerability_description2'],
-                    'vulnDescription3' => $r['vulnerability_description3'],
-                    'vulnDescription4' => $r['vulnerability_description4'],
-                    'vulnerabilityRate' => $r['ir_vulnerabilityRate'],
-                    'kindOfMeasure' => $r['ir_kindOfMeasure'],
-                    'specific' => $r['ir_specific'],
-                    'reductionAmount' => $r['ir_reductionAmount'],
-                    'c_impact' => $r['i_c'],
-                    'c_risk' => $r['ir_riskC'],
-                    'c_risk_enabled' => $r['threat_c'],
-                    'i_impact' => $r['i_i'],
-                    'i_risk' => $r['ir_riskI'],
-                    'i_risk_enabled' => $r['threat_i'],
-                    'd_impact' => $r['i_d'],
-                    'd_risk' => $r['ir_riskD'],
-                    'd_risk_enabled' => $r['threat_d'],
-                    't' => ((!$r['ir_kindOfMeasure']) || ($r['ir_kindOfMeasure'] == InstanceRisk::KIND_NOT_TREATED)) ? false : true,
-                    'target_risk' => $r['ir_cacheTargetedRisk'],
-                    'max_risk' => $r['ir_cacheMaxRisk'],
-                    'comment' => $r['ir_comment'],
-                    'measure1' => [
-                        'code' => $r['measure1_code'],
-                        'description1' => $r['measure1_description1'],
-                        'description2' => $r['measure1_description2'],
-                        'description3' => $r['measure1_description3'],
-                        'description4' => $r['measure1_description4'],
-                    ],
-                    'measure2' => [
-                        'code' => $r['measure2_code'],
-                        'description1' => $r['measure2_description1'],
-                        'description2' => $r['measure2_description2'],
-                        'description3' => $r['measure2_description3'],
-                        'description4' => $r['measure2_description4'],
-                    ],
-                    'measure3' => [
-                        'code' => $r['measure3_code'],
-                        'description1' => $r['measure3_description1'],
-                        'description2' => $r['measure3_description2'],
-                        'description3' => $r['measure3_description3'],
-                        'description4' => $r['measure3_description4'],
-                    ],
-                ];
+            if(!isset($globalRisks[$r['oid']][$r['threatid']][$r['vulnerabilityid']])){
+                $return[$r['id']] = $r;
+                $return[$r['id']]['t'] = !((!$r['ir_kindOfMeasure']) || ($r['ir_kindOfMeasure'] == InstanceRisk::KIND_NOT_TREATED));
+                unset($return[$r['id']]['ir_kindOfMeasure']);
+                foreach($changes as $c){
+                    $return[$r['id']][substr($c, 0,-2)] = $return[$r['id']][$c];
+                    unset($return[$r['id']][$c]);
+                }
                 if($r['scope'] == Object::SCOPE_GLOBAL){
-                    $globalRisks[$r['id']][$r['threat_id']][$r['vulnerability_id']] = $r['ir_id'];
+                    $globalRisks[$r['oid']][$r['threatid']][$r['vulnerabilityid']] = $r['id'];
                 }
             }
         }
+        unset($globalRisks);
         return array_values($return);
     }
 
@@ -1526,9 +1482,8 @@ class InstanceService extends AbstractService
             $instancesConsequences = $instanceConsequenceTable->getEntityByFields(['anr' => $anrId, 'instance' => $refInstance->id]);
 
             $i = 1;
+            $nbInstancesConsequences = count($instancesConsequences);
             foreach ($instancesConsequences as $instanceConsequence) {
-
-                $lastConsequence = (count($instancesConsequences) == $i) ? true : false;
 
                 $data = [
                     'anr' => $this->get('anrTable')->getEntity($anrId),
@@ -1547,7 +1502,7 @@ class InstanceService extends AbstractService
 
                 $instanceConsequenceEntity->exchangeArray($data);
 
-                $instanceConsequenceTable->save($instanceConsequenceEntity, $lastConsequence);
+                $instanceConsequenceTable->save($instanceConsequenceEntity, ($i == $nbInstancesConsequences));
 
                 $i++;
             }
@@ -1561,12 +1516,9 @@ class InstanceService extends AbstractService
             /** @var InstanceConsequenceTable $instanceConsequenceTable */
             $instanceConsequenceTable = $this->get('instanceConsequenceTable');
 
-            $nbConsequences = count($scalesImpactTypes);
             $i = 1;
+            $nbScalesImpactTypes = count($scalesImpactTypes);
             foreach ($scalesImpactTypes as $scalesImpactType) {
-
-                $lastConsequence = ($nbConsequences == $i) ? true : false;
-
                 $data = [
                     'anr' => $this->get('anrTable')->getEntity($anrId),
                     'instance' => $this->get('instanceTable')->getEntity($instanceId),
@@ -1574,14 +1526,10 @@ class InstanceService extends AbstractService
                     'scaleImpactType' => $scalesImpactType,
                     'isHidden' => $scalesImpactType->isHidden,
                 ];
-
                 $class = $this->get('instanceConsequenceEntity');
                 $instanceConsequenceEntity = new $class();
-
                 $instanceConsequenceEntity->exchangeArray($data);
-
-                $instanceConsequenceTable->save($instanceConsequenceEntity, $lastConsequence);
-
+                $instanceConsequenceTable->save($instanceConsequenceEntity, ($i == $nbScalesImpactTypes));
                 $i++;
             }
         }
@@ -1614,7 +1562,7 @@ class InstanceService extends AbstractService
             throw new \Exception('Entity `id` not found.');
         }
 
-        $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $entity->get('label'.$this->getLanguage()));
+        $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $entity->get('name'.$this->getLanguage()));
 
         $objInstance = array(
             'id' => 'id',
@@ -1766,8 +1714,9 @@ class InstanceService extends AbstractService
             $ir->set('riskD','-1');
             $return['risks'][$ir->get('id')] = $ir->getJsonArray($instanceRiskArray);
 
-            $return['risks'][$ir->get('id')]['amv'] = $ir->get('amv')->get('id');
-            if(empty($return['amvs'][$ir->get('amv')->get('id')])){
+            $irAmv = $ir->get('amv');
+            $return['risks'][$ir->get('id')]['amv'] = empty($irAmv)?null:$irAmv->get('id');
+            if(!empty($return['risks'][$ir->get('id')]['amv']) && empty($return['amvs'][$ir->get('amv')->get('id')])){
                 list(
                     $amv,
                     $threats,
@@ -1804,7 +1753,7 @@ class InstanceService extends AbstractService
 
             $vulnerability = $ir->get('vulnerability');
             if(!empty($vulnerability)){
-                if(empty($return['threats'][$ir->get('threat')->get('id')])){
+                if(empty($return['vuls'][$ir->get('vulnerability')->get('id')])){
                     $return['vuls'][$ir->get('vulnerability')->get('id')] = $ir->get('vulnerability')->getJsonArray($vulsObj);
                 }
                 $return['risks'][$ir->get('id')]['vulnerability'] = $ir->get('vulnerability')->get('id');

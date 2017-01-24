@@ -40,12 +40,12 @@ class AnrService extends AbstractService
         $anrId = $this->get('table')->save($entity);
 
         //scales
-        for($i = 1; $i <= 3; $i++){
-            if(isset($data['scales'][$i]['min'])){
-                if(isset($data['scales'][$i]['max']) && $data['scales'][$i]['min'] > $data['scales'][$i]['max']){
+        for ($i = 1; $i <= 3; $i++) {
+            if (isset($data['scales'][$i]['min'])) {
+                if (isset($data['scales'][$i]['max']) && $data['scales'][$i]['min'] > $data['scales'][$i]['max']) {
                     $data['scales'][$i]['min'] = 0;
                 }
-            }else{
+            } else {
                 $data['scales'][$i]['min'] = 0;
             }
         }
@@ -54,25 +54,28 @@ class AnrService extends AbstractService
                 'anr' => $anrId,
                 'type' => 1,
                 'min' => $data['scales'][1]['min'],
-                'max' => (isset($data['scales'][1]['max'])?$data['scales'][1]['max']:3),
+                'max' => (isset($data['scales'][1]['max']) ? $data['scales'][1]['max'] : 3),
             ],
             [
                 'anr' => $anrId,
                 'type' => 2,
                 'min' => $data['scales'][2]['min'],
-                'max' => (isset($data['scales'][2]['max'])?$data['scales'][2]['max']:4),
+                'max' => (isset($data['scales'][2]['max']) ? $data['scales'][2]['max'] : 4),
             ],
             [
                 'anr' => $anrId,
                 'type' => 3,
                 'min' => $data['scales'][3]['min'],
-                'max' => (isset($data['scales'][3]['max'])?$data['scales'][3]['max']:3),
+                'max' => (isset($data['scales'][3]['max']) ? $data['scales'][3]['max'] : 3),
             ],
         ];
+        $i = 1;
+        $nbScales = count($scales);
         foreach ($scales as $scale) {
             /** @var ScaleService $scaleService */
             $scaleService = $this->get('scaleService');
-            $scaleService->create($scale);
+            $scaleService->create($scale, ($i == $nbScales));
+            $i++;
         }
 
         return $anrId;
@@ -83,14 +86,15 @@ class AnrService extends AbstractService
      *
      * @param $anr
      */
-    public function duplicate($anr) {
+    public function duplicate($anr)
+    {
 
         //duplicate anr
         $newAnr = clone $anr;
         $newAnr->setId(null);
-        $suffix = ' (copié le '.date('m/d/Y à H:i').')';
-        for($i=1;$i<=4;$i++){
-            $newAnr->set('label'.$i,$newAnr->get('label'.$i).$suffix);
+        $suffix = ' (copié le ' . date('m/d/Y à H:i') . ')';
+        for ($i = 1; $i <= 4; $i++) {
+            $newAnr->set('label' . $i, $newAnr->get('label' . $i) . $suffix);
         }
 
         /** @var AnrTable $anrTable */
@@ -99,16 +103,14 @@ class AnrService extends AbstractService
 
         //duplicate objects
         $i = 1;
+        $nbObjects = count($newAnr->objects);
         foreach ($newAnr->objects as $object) {
-            $last = ($i == count($newAnr->objects)) ? true : false;
-
             //add anr to object
             $object->addAnr($newAnr);
 
             /** @var ObjectTable $objectTable */
             $objectTable = $this->get('objectTable');
-            $objectTable->save($object, $last);
-
+            $objectTable->save($object, ($i == $nbObjects));
             $i++;
         }
 
@@ -118,73 +120,73 @@ class AnrService extends AbstractService
         foreach ($array as $value) {
             $table = $this->get($value . 'Table');
             $order = [];
-            switch($value){
+            switch ($value) {
                 case 'instance':
                     $order['level'] = 'ASC';
                     break;
             }
-            $entities = $table->getEntityByFields(['anr' => $anr->id],$order);
+            $entities = $table->getEntityByFields(['anr' => $anr->id], $order);
             foreach ($entities as $entity) {
                 $newEntity = clone $entity;
-                $newEntity->set('id',null);
+                $newEntity->set('id', null);
                 $newEntity->setAnr($newAnr);
 
-                switch($value){
+                switch ($value) {
                     case 'instance':
-                        if(!empty($entity->root->id) && !empty($clones['instance'][$entity->root->id])){
-                            $newEntity->set('root',$clones['instance'][$entity->root->id]);
-                        }else{
-                            $newEntity->set('root',null);
+                        if (!empty($entity->root->id) && !empty($clones['instance'][$entity->root->id])) {
+                            $newEntity->set('root', $clones['instance'][$entity->root->id]);
+                        } else {
+                            $newEntity->set('root', null);
                         }
-                        if(!empty($entity->parent->id) && !empty($clones['instance'][$entity->parent->id])){
-                            $newEntity->set('parent',$clones['instance'][$entity->parent->id]);
-                        }else{
-                            $newEntity->set('parent',null);
+                        if (!empty($entity->parent->id) && !empty($clones['instance'][$entity->parent->id])) {
+                            $newEntity->set('parent', $clones['instance'][$entity->parent->id]);
+                        } else {
+                            $newEntity->set('parent', null);
                         }
                         break;
                     case 'instanceConsequence':
-                        if(!empty($entity->instance->id) && !empty($clones['instance'][$entity->instance->id])){
-                            $newEntity->set('instance',$clones['instance'][$entity->instance->id]);
-                        }else{
-                            $newEntity->set('instance',null);
+                        if (!empty($entity->instance->id) && !empty($clones['instance'][$entity->instance->id])) {
+                            $newEntity->set('instance', $clones['instance'][$entity->instance->id]);
+                        } else {
+                            $newEntity->set('instance', null);
                         }
-                        if(!empty($entity->scaleImpactType->id) && !empty($clones['scaleImpactType'][$entity->scaleImpactType->id])){
-                            $newEntity->set('scaleImpactType',$clones['scaleImpactType'][$entity->scaleImpactType->id]);
-                        }else{
-                            $newEntity->set('scaleImpactType',null);
+                        if (!empty($entity->scaleImpactType->id) && !empty($clones['scaleImpactType'][$entity->scaleImpactType->id])) {
+                            $newEntity->set('scaleImpactType', $clones['scaleImpactType'][$entity->scaleImpactType->id]);
+                        } else {
+                            $newEntity->set('scaleImpactType', null);
                         }
                         break;
                     case 'instanceRisk':
-                        if(!empty($entity->instance->id) && !empty($clones['instance'][$entity->instance->id])){
-                            $newEntity->set('instance',$clones['instance'][$entity->instance->id]);
-                        }else{
-                            $newEntity->set('instance',null);
+                        if (!empty($entity->instance->id) && !empty($clones['instance'][$entity->instance->id])) {
+                            $newEntity->set('instance', $clones['instance'][$entity->instance->id]);
+                        } else {
+                            $newEntity->set('instance', null);
                         }
                         break;
                     case 'instanceRiskOp':
-                        if(!empty($entity->instance->id) && !empty($clones['instance'][$entity->instance->id])){
-                            $newEntity->set('instance',$clones['instance'][$entity->instance->id]);
-                        }else{
-                            $newEntity->set('instance',null);
+                        if (!empty($entity->instance->id) && !empty($clones['instance'][$entity->instance->id])) {
+                            $newEntity->set('instance', $clones['instance'][$entity->instance->id]);
+                        } else {
+                            $newEntity->set('instance', null);
                         }
                         break;
                     case 'scaleImpactType':
-                        if(!empty($entity->scale->id) && !empty($clones['scale'][$entity->scale->id])){
-                            $newEntity->set('scale',$clones['scale'][$entity->scale->id]);
-                        }else{
-                            $newEntity->set('scale',null);
+                        if (!empty($entity->scale->id) && !empty($clones['scale'][$entity->scale->id])) {
+                            $newEntity->set('scale', $clones['scale'][$entity->scale->id]);
+                        } else {
+                            $newEntity->set('scale', null);
                         }
                         break;
                     case 'scaleComment':
-                        if(!empty($entity->scale->id) && !empty($clones['scale'][$entity->scale->id])){
-                            $newEntity->set('scale',$clones['scale'][$entity->scale->id]);
-                        }else{
-                            $newEntity->set('scale',null);
+                        if (!empty($entity->scale->id) && !empty($clones['scale'][$entity->scale->id])) {
+                            $newEntity->set('scale', $clones['scale'][$entity->scale->id]);
+                        } else {
+                            $newEntity->set('scale', null);
                         }
-                        if(!empty($entity->scaleImpactType->id) && !empty($clones['scaleImpactType'][$entity->scaleImpactType->id])){
-                            $newEntity->set('scaleImpactType',$clones['scaleImpactType'][$entity->scaleImpactType->id]);
-                        }else{
-                            $newEntity->set('scaleImpactType',null);
+                        if (!empty($entity->scaleImpactType->id) && !empty($clones['scaleImpactType'][$entity->scaleImpactType->id])) {
+                            $newEntity->set('scaleImpactType', $clones['scaleImpactType'][$entity->scaleImpactType->id]);
+                        } else {
+                            $newEntity->set('scaleImpactType', null);
                         }
                         break;
                 }
@@ -197,9 +199,17 @@ class AnrService extends AbstractService
         return $newAnr;
     }
 
-    public function exportAnr(&$data){
+    /**
+     * Export Anr
+     *
+     * @param $data
+     * @return string
+     * @throws \Exception
+     */
+    public function exportAnr(&$data)
+    {
         if (empty($data['id'])) {
-            throw new \Exception('Anr to export is required',412);
+            throw new \Exception('Anr to export is required', 412);
         }
         if (empty($data['password'])) {
             $data['password'] = '';
@@ -208,15 +218,25 @@ class AnrService extends AbstractService
 
         $with_eval = isset($data['assessments']) && $data['assessments'];
 
-        $return = $this->generateExportArray($data['id'],$filename,$with_eval);
+        $return = $this->generateExportArray($data['id'], $filename, $with_eval);
         $data['filename'] = $filename;
 
-        return base64_encode($this->encrypt(json_encode($return),$data['password']));
+        return base64_encode($this->encrypt(json_encode($return), $data['password']));
     }
 
-    public function generateExportArray($id, &$filename = "", $with_eval = false){
+    /**
+     * Generate Export Array
+     *
+     * @param $id
+     * @param string $filename
+     * @param bool $with_eval
+     * @return array
+     * @throws \Exception
+     */
+    public function generateExportArray($id, &$filename = "", $with_eval = false)
+    {
         if (empty($id)) {
-            throw new \Exception('Anr to export is required',412);
+            throw new \Exception('Anr to export is required', 412);
         }
         $entity = $this->get('table')->getEntity($id);
 
@@ -224,7 +244,7 @@ class AnrService extends AbstractService
             throw new \Exception('Entity `id` not found.');
         }
 
-        $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $entity->get('label'.$this->getLanguage()));
+        $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $entity->get('label' . $this->getLanguage()));
 
         $return = array(
             'type' => 'anr',
@@ -238,19 +258,19 @@ class AnrService extends AbstractService
         $instances = $table->getEntityByFields(['anr' => $entity->get('id')]);
         $f = '';
         $with_scale = false;
-        foreach($instances as $i){
-            $return['instances'][$i->id] = $instanceService->generateExportArray($i->id,$f,$with_eval,$with_scale);
+        foreach ($instances as $i) {
+            $return['instances'][$i->id] = $instanceService->generateExportArray($i->id, $f, $with_eval, $with_scale);
         }
 
-        if($with_eval){
+        if ($with_eval) {
             // scales
             $return['scales'] = array();
             $scaleTable = $this->get('scaleTable');
             $scales = $scaleTable->getEntityByFields(['anr' => $entity->get('id')]);
             $scalesArray = array(
-                'min'=>'min',
-                'max'=>'max',
-                'type'=>'type',
+                'min' => 'min',
+                'max' => 'max',
+                'type' => 'type',
             );
             foreach ($scales as $s) {
                 $return['scales'][$s->type] = $s->getJsonArray($scalesArray);

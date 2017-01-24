@@ -639,8 +639,11 @@ class ObjectService extends AbstractService
                     /** @var AnrObjectCategoryTable $anrObjectCategoryTable */
                     $anrObjectCategoryTable = $this->get('anrObjectCategoryTable');
                     $anrObjectCategories = $anrObjectCategoryTable->getEntityByFields(['anr' => $anr->id, 'category' => $currentRootCategory->id]);
+                    $i = 1;
+                    $nbAnrObjectCategories = count($anrObjectCategories);
                     foreach($anrObjectCategories as $anrObjectCategory) {
-                        $anrObjectCategoryTable->delete($anrObjectCategory->id);
+                        $anrObjectCategoryTable->delete($anrObjectCategory->id, ($i == $nbAnrObjectCategories));
+                        $i++;
                     }
                 }
 
@@ -740,10 +743,10 @@ class ObjectService extends AbstractService
                 $instanceRiskOpTable = $this->get('instanceRiskOpTable');
                 $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['instance' => $instance->id]);
                 $i = 1;
+                $nbInstancesRiskOp = count($instancesRisksOp);
                 foreach($instancesRisksOp as $instanceRiskOp) {
-                    $last = ($i == count($instancesRisksOp)) ? true : false;
                     $instanceRiskOp->specific = 1;
-                    $instanceRiskOpTable->save($instanceRiskOp, $last);
+                    $instanceRiskOpTable->save($instanceRiskOp, ($i == $nbInstancesRiskOp));
                     $i++;
                 }
 
@@ -756,7 +759,6 @@ class ObjectService extends AbstractService
                     $nbRolfRisks = count($rolfRisks);
                     $i = 1;
                     foreach ($rolfRisks as $rolfRisk) {
-                        $lastRolfRisks = ($nbRolfRisks == $i) ? true : false;
                         $data = [
                             'anr' => $object->anr->id,
                             'instance' => $instance->id,
@@ -774,7 +776,7 @@ class ObjectService extends AbstractService
                         ];
                         /** @var InstanceRiskOpService $instanceRiskOpService */
                         $instanceRiskOpService = $this->get('instanceRiskOpService');
-                        $instanceRiskOpService->create($data, $lastRolfRisks);
+                        $instanceRiskOpService->create($data, ($nbRolfRisks == $i));
                         $i++;
                     }
                 }
@@ -1078,8 +1080,11 @@ class ObjectService extends AbstractService
             /** @var AnrObjectCategoryTable $anrObjectCategoryTable */
             $anrObjectCategoryTable = $this->get('anrObjectCategoryTable');
             $anrObjectCategories = $anrObjectCategoryTable->getEntityByFields(['anr' => $anrId, 'category' => $objectRootCategory->id]);
-            foreach( $anrObjectCategories as $anrObjectCategory) {
-                $anrObjectCategoryTable->delete($anrObjectCategory->id);
+            $i =1;
+            $nbAnrObjectCategories = count($anrObjectCategories);
+            foreach($anrObjectCategories as $anrObjectCategory) {
+                $anrObjectCategoryTable->delete($anrObjectCategory->id, ($i == $nbAnrObjectCategories));
+                $i++;
             }
         }
 
@@ -1088,9 +1093,9 @@ class ObjectService extends AbstractService
         $instanceTable = $this->get('instanceTable');
         $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $objectId]);
         $i = 1;
+        $nbInstances = count($instances);
         foreach($instances as $instance) {
-            $last = ($i == count($instances)) ? true : false;
-            $instanceTable->delete($instance->id, $last);
+            $instanceTable->delete($instance->id, ($i == $nbInstances));
             $i++;
         }
 

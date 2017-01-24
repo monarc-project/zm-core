@@ -9,16 +9,25 @@ namespace MonarcCore\Service;
  */
 class AssetExportService extends AbstractService
 {
-	protected $amvService;
+    protected $amvService;
 
-    public function generateExportArray($id, &$filename = ""){
+    /**
+     * Generate Export Array
+     *
+     * @param $id
+     * @param string $filename
+     * @return array
+     * @throws \Exception
+     */
+    public function generateExportArray($id, &$filename = "")
+    {
         if (empty($id)) {
-            throw new \Exception('Asset to export is required',412);
+            throw new \Exception('Asset to export is required', 412);
         }
 
         $entity = $this->get('table')->getEntity($id);
         if (empty($entity)) {
-            throw new \Exception('Asset not found',412);
+            throw new \Exception('Asset not found', 412);
         }
 
         $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $entity->get('code'));
@@ -50,41 +59,41 @@ class AssetExportService extends AbstractService
         $amvResults = $amvTable->getRepository()
             ->createQueryBuilder('t')
             ->where("t.asset = :asset")
-            ->setParameter(':asset',$entity->get('id'));
+            ->setParameter(':asset', $entity->get('id'));
         $anrId = $entity->get('anr');
-        if(empty($anrId)){
+        if (empty($anrId)) {
             $amvResults = $amvResults->andWhere('t.anr IS NULL');
-        }else{
+        } else {
             $anrId = $anrId->get('id');
-            $amvResults = $amvResults->andWhere('t.anr = :anr')->setParameter(':anr',$anrId);
+            $amvResults = $amvResults->andWhere('t.anr = :anr')->setParameter(':anr', $anrId);
         }
         $amvResults = $amvResults->getQuery()->getResult();
 
-        foreach($amvResults as $amv){
+        foreach ($amvResults as $amv) {
             list(
                 $return['amvs'][$amv->get('id')],
                 $threats,
                 $vulns,
                 $themes,
                 $measures) = $amvService->generateExportArray($amv);
-            if(empty($return['threats'])){
+            if (empty($return['threats'])) {
                 $return['threats'] = $threats;
-            }else{
+            } else {
                 $return['threats'] += $threats;
             }
-            if(empty($return['themes'])){
+            if (empty($return['themes'])) {
                 $return['themes'] = $themes;
-            }else{
+            } else {
                 $return['themes'] += $themes;
             }
-            if(empty($return['vuls'])){
+            if (empty($return['vuls'])) {
                 $return['vuls'] = $vulns;
-            }else{
+            } else {
                 $return['vuls'] += $vulns;
             }
-            if(empty($return['measures'])){
+            if (empty($return['measures'])) {
                 $return['measures'] = $measures;
-            }else{
+            } else {
                 $return['measures'] += $measures;
             }
         }

@@ -48,8 +48,6 @@ class InstanceRiskService extends AbstractService
         $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $object->id]);
         if ($object->scope == Object::SCOPE_GLOBAL && count($instances) > 1) {
 
-            /** @var InstanceTable $instanceTable */
-            $instanceTable = $this->get('instanceTable');
             $currentInstance = $instanceTable->getEntity($instanceId);
 
             /** @var InstanceRiskTable $instanceRiskTable */
@@ -76,9 +74,6 @@ class InstanceRiskService extends AbstractService
             $nbAmvs = count($amvs);
             $i = 1;
             foreach ($amvs as $amv) {
-
-                $lastAmv = ($nbAmvs == $i) ? true : false;
-
                 $data = [
                     'anr' => $anrId,
                     'amv' => $amv->id,
@@ -87,9 +82,7 @@ class InstanceRiskService extends AbstractService
                     'threat' => $amv->threat->id,
                     'vulnerability' => $amv->vulnerability->id,
                 ];
-
-                $instanceRiskLastId = $this->create($data, $lastAmv);
-
+                $instanceRiskLastId = $this->create($data, ($nbAmvs == $i));
                 $i++;
             }
 

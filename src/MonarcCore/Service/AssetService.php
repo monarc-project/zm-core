@@ -1,5 +1,6 @@
 <?php
 namespace MonarcCore\Service;
+
 use MonarcCore\Model\Entity\Asset;
 use MonarcCore\Model\Table\AnrTable;
 
@@ -18,15 +19,13 @@ class AssetService extends AbstractService
     protected $objectTable;
     protected $objectObjectTable;
     protected $assetExportService;
-
+    protected $dependencies = ['anr', 'model[s]()'];
+    protected $forbiddenFields = ['anr'];
     protected $filterColumns = [
         'label1', 'label2', 'label3', 'label4',
         'description1', 'description2', 'description3', 'description4',
         'code',
     ];
-
-    protected $dependencies = ['anr', 'model[s]()'];
-    protected $forbiddenFields = ['anr'];
 
     /**
      * Create
@@ -36,7 +35,8 @@ class AssetService extends AbstractService
      * @return mixed
      * @throws \Exception
      */
-    public function create($data, $last = true) {
+    public function create($data, $last = true)
+    {
 
         $entity = $this->get('entity');
         if (isset($data['anr']) && strlen($data['anr'])) {
@@ -51,7 +51,7 @@ class AssetService extends AbstractService
         }
         $entity->exchangeArray($data);
 
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
 
         $entity->status = 1;
@@ -68,7 +68,8 @@ class AssetService extends AbstractService
      * @return mixed
      * @throws \Exception
      */
-    public function update($id,$data){
+    public function update($id, $data)
+    {
 
         $this->filterPatchFields($data);
 
@@ -93,7 +94,7 @@ class AssetService extends AbstractService
         }
 
         /** @var AmvService $amvService */
-        $amvService  = $this->get('amvService');
+        $amvService = $this->get('amvService');
         if (!$amvService->checkAMVIntegrityLevel($models, $entity, null, null, $follow)) {
             throw new \Exception('Integrity AMV links violation', 412);
         }
@@ -110,40 +111,39 @@ class AssetService extends AbstractService
         }
 
 
-
-        switch($entity->get('mode')){
+        switch ($entity->get('mode')) {
             case Asset::MODE_SPECIFIC:
-                if(empty($models)){
-                    $entity->set('models',[]);
-                }else{
+                if (empty($models)) {
+                    $entity->set('models', []);
+                } else {
                     $modelsObj = [];
-                    foreach($models as $mid){
+                    foreach ($models as $mid) {
                         $modelsObj[] = $this->get('modelTable')->getEntity($mid);
                     }
-                    $entity->set('models',$modelsObj);
+                    $entity->set('models', $modelsObj);
                 }
                 if ($follow) {
                     $amvService->enforceAMVtoFollow($entity->get('models'), $entity, null, null);
                 }
                 break;
             case Asset::MODE_GENERIC:
-                $entity->set('models',[]);
+                $entity->set('models', []);
                 break;
         }
 
         $objects = $this->get('objectTable')->getEntityByFields(['asset' => $entity->get('id')]);
-        if(!empty($objects)){
+        if (!empty($objects)) {
             $oids = [];
-            foreach($objects as $o){
+            foreach ($objects as $o) {
                 $oids[$o->id] = $o->id;
             }
-            if(!empty($entity->models)){
+            if (!empty($entity->models)) {
                 //We need to check if the asset is compliant with reg/spec model when they are used as fathers
                 //not already used in models
                 $olinks = $this->get('objectObjectTable')->getEntityByFields(['father' => $oids]);
-                if(!empty($olinks)){
-                    foreach($olinks as $ol){
-                        foreach($entity->models as $m){
+                if (!empty($olinks)) {
+                    foreach ($olinks as $ol) {
+                        foreach ($entity->models as $m) {
                             $this->get('modelTable')->canAcceptObject($m->id, $ol->child);
                         }
                     }
@@ -154,10 +154,10 @@ class AssetService extends AbstractService
 
             //we need the parents of theses objects
             $olinks = $this->get('objectObjectTable')->getEntityByFields(['child' => $oids]);
-            if(!empty($olinks)){
-                foreach($olinks as $ol){
-                    if(!empty($ol->father->asset->models)){
-                        foreach($ol->father->asset->models as $m){
+            if (!empty($olinks)) {
+                foreach ($olinks as $ol) {
+                    if (!empty($ol->father->asset->models)) {
+                        foreach ($ol->father->asset->models as $m) {
                             $this->get('modelTable')->canAcceptObject($m->id, $ol->child, null, $entity);
                         }
                     }
@@ -174,7 +174,7 @@ class AssetService extends AbstractService
      * @param $data
      * @return mixed
      */
-    public function patch($id,$data)
+    public function patch($id, $data)
     {
         //security
         $this->filterPatchFields($data);
@@ -188,28 +188,30 @@ class AssetService extends AbstractService
      * @param $id
      * @return array
      */
-    public function exportAsset(&$data){
+    public function exportAsset(&$data)
+    {
         if (empty($data['id'])) {
-            throw new \Exception('Asset to export is required',412);
+            throw new \Exception('Asset to export is required', 412);
         }
         if (empty($data['password'])) {
             $data['password'] = '';
         }
         $filename = "";
-        $return = $this->get('assetExportService')->generateExportArray($data['id'],$filename);
+        $return = $this->get('assetExportService')->generateExportArray($data['id'], $filename);
         $data['filename'] = $filename;
 
-        return base64_encode($this->encrypt(json_encode($return),$data['password']));
+        return base64_encode($this->encrypt(json_encode($return), $data['password']));
     }
 
-    public function generateExportArray($id, &$filename = ""){
+    public function generateExportArray($id, &$filename = "")
+    {
         if (empty($id)) {
-            throw new \Exception('Asset to export is required',412);
+            throw new \Exception('Asset to export is required', 412);
         }
 
         $entity = $this->get('table')->getEntity($id);
         if (empty($entity)) {
-            throw new \Exception('Asset not found',412);
+            throw new \Exception('Asset not found', 412);
         }
 
         $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $entity->get('code'));
@@ -240,13 +242,13 @@ class AssetService extends AbstractService
         $amvResults = $amvTable->getRepository()
             ->createQueryBuilder('t')
             ->where("t.asset = :asset")
-            ->setParameter(':asset',$entity->get('id'));
+            ->setParameter(':asset', $entity->get('id'));
         $anrId = $entity->get('anr');
-        if(empty($anrId)){
+        if (empty($anrId)) {
             $amvResults = $amvResults->andWhere('t.anr IS NULL');
-        }else{
+        } else {
             $anrId = $anrId->get('id');
-            $amvResults = $amvResults->andWhere('t.anr = :anr')->setParameter(':anr',$anrId);
+            $amvResults = $amvResults->andWhere('t.anr = :anr')->setParameter(':anr', $anrId);
         }
         $amvResults = $amvResults->getQuery()->getResult();
 
@@ -335,25 +337,25 @@ class AssetService extends AbstractService
             'status' => 'status',
         );
 
-        foreach($amvResults as $amv){
+        foreach ($amvResults as $amv) {
             $data_amvs[$amv->get('id')] = array();
-            foreach($amvObj as $k => $v){
-                switch($v){
+            foreach ($amvObj as $k => $v) {
+                switch ($v) {
                     case 'v':
                         $data_amvs[$amv->get('id')][$k] = $amv->get($k);
                         break;
                     case 'o':
                         $o = $amv->get($k);
-                        if(empty($o)){
+                        if (empty($o)) {
                             $data_amvs[$amv->get('id')][$k] = null;
-                        }else{
+                        } else {
                             $o = $amv->get($k)->getJsonArray();
                             $data_amvs[$amv->get('id')][$k] = $o['id'];
 
-                            switch($k){
+                            switch ($k) {
                                 case 'threat':
                                     $return['threats'][$o['id']] = $amv->get($k)->getJsonArray($treatsObj);
-                                    if(!empty($return['threats'][$o['id']]['theme'])){
+                                    if (!empty($return['threats'][$o['id']]['theme'])) {
                                         $return['threats'][$o['id']]['theme'] = $return['threats'][$o['id']]['theme']->getJsonArray($themesObj);
 
                                         $return['themes'][$return['threats'][$o['id']]['theme']['id']] = $return['threats'][$o['id']]['theme'];

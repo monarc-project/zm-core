@@ -63,4 +63,52 @@ class QuestionChoiceService extends AbstractService
         $this->get('table')->delete($id);
     }
 
+    /**
+     * Replace List
+     *
+     * @param $data
+     * @param $anrId
+     */
+    public function replaceList($data, $anrId) {
+
+        /** @var QuestionChoiceTable $table */
+        $table = $this->get('table');
+
+        // Remove existing choices
+        $questions = $table->fetchAllFiltered(['id'], 1, 0, null, null, ['question' => $data['questionId']]);
+        $i = 1;
+        $nbQuestions = count($questions);
+        foreach ($questions as $q) {
+            $table->delete($q['id'], ($i == $nbQuestions));
+            $i++;
+        }
+
+        /** @var QuestionTable $questionTable */
+        $questionTable = $this->get('questionTable');
+        $question = $questionTable->getEntity($data['questionId']);
+
+        /** @var AnrTable $anrTable */
+        $anrTable = $this->get('anrTable');
+        $anr = $anrTable->getEntity($anrId);
+
+        // Add new choices
+        $pos = 1;
+        $i = 1;
+        $nbChoices = $data['choice'];
+        foreach ($data['choice'] as $c) {
+            $c['position'] = $pos;
+            unset($c['question']);
+
+            /** @var QuestionChoice $choiceEntity */
+            $choiceEntity = new QuestionChoice();
+            $choiceEntity->setQuestion($question);
+            $choiceEntity->setAnr($anr);
+            $choiceEntity->squeezeAutoPositionning(true);
+            $choiceEntity->exchangeArray($c);
+            $table->save($choiceEntity, ($i == $nbChoices));
+            ++$pos;
+            $i++;
+        }
+    }
+
 }

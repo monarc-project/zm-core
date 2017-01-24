@@ -141,11 +141,9 @@ class ThreatService extends AbstractService
             /** @var InstanceRiskService $instanceRiskService */
             $instanceRiskService = $this->get('instanceRiskService');
             $i = 1;
+            $nbInstancesRisks = count($instancesRisks);
             foreach($instancesRisks as $instanceRisk) {
-                $last = ($i == count($instancesRisks)) ? true : false;
-
-                $instanceRiskService->updateRisks($instanceRisk, $last);
-
+                $instanceRiskService->updateRisks($instanceRisk, ($i == $nbInstancesRisks));
                 $i++;
             }
         }
