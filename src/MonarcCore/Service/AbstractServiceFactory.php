@@ -10,11 +10,17 @@ abstract class AbstractServiceFactory implements FactoryInterface
     protected $language;
     protected $monarcConf = array();
 
-    public function createService(ServiceLocatorInterface $serviceLocator){
+    /**
+     * Create Service
+     *
+     * @param ServiceLocatorInterface $serviceLocator
+     * @return bool
+     */
+    public function createService(ServiceLocatorInterface $serviceLocator)
+    {
+        $class = (property_exists($this, 'class')) ? $this->class : substr(get_class($this), 0, -7);
 
-        $class = substr(get_class($this),0,-7);
-
-        if(class_exists($class)){
+        if (class_exists($class)) {
             $ressources = $this->getRessources();
             if (empty($ressources)) {
                 $instance = new $class();
@@ -30,18 +36,30 @@ abstract class AbstractServiceFactory implements FactoryInterface
 
             $instance->setLanguage($this->getDefaultLanguage($serviceLocator));
             $conf = $serviceLocator->get('Config');
-            $instance->setMonarcConf(isset($conf['monarc'])?$conf['monarc']:array());
+            $instance->setMonarcConf(isset($conf['monarc']) ? $conf['monarc'] : array());
 
             return $instance;
-        }else{
+        } else {
             return false;
         }
     }
 
-    public function getRessources(){
+    /**
+     * Get Ressources
+     *
+     * @return mixed
+     */
+    public function getRessources()
+    {
         return $this->ressources;
     }
 
+    /**
+     * Get Default Language
+     *
+     * @param $sm
+     * @return mixed
+     */
     public function getDefaultLanguage($sm)
     {
         $config = $sm->get('Config');
@@ -53,6 +71,8 @@ abstract class AbstractServiceFactory implements FactoryInterface
 
 
     /**
+     * Get Language
+     *
      * @return mixed
      */
     public function getLanguage()
@@ -61,6 +81,8 @@ abstract class AbstractServiceFactory implements FactoryInterface
     }
 
     /**
+     * Set Language
+     *
      * @param mixed $language
      */
     public function setLanguage($language)
@@ -69,6 +91,8 @@ abstract class AbstractServiceFactory implements FactoryInterface
     }
 
     /**
+     * Get Monarc Conf
+     *
      * @return mixed
      */
     public function getMonarcConf()
@@ -77,13 +101,14 @@ abstract class AbstractServiceFactory implements FactoryInterface
     }
 
     /**
-     * @param mixed $language
-     * @return mixed
+     * Set Monarc Conf
+     *
+     * @param $conf
+     * @return array
      */
     public function setMonarcConf($conf)
     {
         $this->monarcConf = $conf;
         return $this->monarcConf;
     }
-
 }

@@ -4,8 +4,8 @@ namespace MonarcCore\Service;
 class AssetServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = array(
-        'table'=> 'MonarcCore\Model\Table\AssetTable',
-        'entity'=> 'MonarcCore\Model\Entity\Asset',
+        'table' => 'MonarcCore\Model\Table\AssetTable',
+        'entity' => 'MonarcCore\Model\Entity\Asset',
         'anrTable' => 'MonarcCore\Model\Table\AnrTable',
         'modelTable' => 'MonarcCore\Model\Table\ModelTable',
         'amvService' => 'MonarcCore\Service\AmvService',
@@ -15,4 +15,3 @@ class AssetServiceFactory extends AbstractServiceFactory
         'assetExportService' => 'MonarcCore\Service\AssetExportService',
     );
 }
-

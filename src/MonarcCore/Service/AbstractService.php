@@ -37,9 +37,9 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     public function __construct($serviceFactory = null)
     {
-        if (is_array($serviceFactory)){
-            foreach($serviceFactory as $k => $v){
-                $this->set($k,$v);
+        if (is_array($serviceFactory)) {
+            foreach ($serviceFactory as $k => $v) {
+                $this->set($k, $v);
             }
         } else {
             $this->serviceFactory = $serviceFactory;
@@ -53,7 +53,8 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param array $columns
      * @return array
      */
-    protected function parseFrontendFilter($filter, $columns = array()) {
+    protected function parseFrontendFilter($filter, $columns = array())
+    {
 
         $output = array();
         if (!is_null($filter)) {
@@ -73,14 +74,15 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param $order
      * @return array|null
      */
-    protected function parseFrontendOrder($order) {
-        if(strpos($order, '_') !== false){
+    protected function parseFrontendOrder($order)
+    {
+        if (strpos($order, '_') !== false) {
             $o = explode('_', $order);
             $order = "";
-            foreach($o as $n => $oo){
-                if($n <= 0){
+            foreach ($o as $n => $oo) {
+                if ($n <= 0) {
                     $order = $oo;
-                }else{
+                } else {
                     $order .= ucfirst($oo);
                 }
             }
@@ -102,7 +104,8 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param null $filter
      * @return int
      */
-    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null) {
+    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
+    {
 
         return $this->get('table')->countFiltered(
             $page,
@@ -122,7 +125,8 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param null $filter
      * @return mixed
      */
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null){
+    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
+    {
         return $this->get('table')->fetchAllFiltered(
             array_keys($this->get('entity')->getJsonArray()),
             $page,
@@ -139,7 +143,8 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param $id
      * @return array
      */
-    public function getEntity($id){
+    public function getEntity($id)
+    {
         return $this->get('table')->get($id);
     }
 
@@ -150,7 +155,8 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param bool $last
      * @return mixed
      */
-    public function create($data, $last = true) {
+    public function create($data, $last = true)
+    {
 
         //$entity = $this->get('entity');
         $class = $this->get('entity');
@@ -159,7 +165,7 @@ abstract class AbstractService extends AbstractServiceFactory
         $entity->setDbAdapter($this->get('table')->getDb());
         $entity->exchangeArray($data);
 
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
 
         /** @var AnrTable $table */
@@ -176,7 +182,8 @@ abstract class AbstractService extends AbstractServiceFactory
      * @return mixed
      * @throws \Exception
      */
-    public function update($id,$data){
+    public function update($id, $data)
+    {
 
         $entity = $this->get('table')->getEntity($id);
         if (!$entity) {
@@ -184,7 +191,7 @@ abstract class AbstractService extends AbstractServiceFactory
         }
 
         if (!empty($data['anr'])) {
-            if($entity->get('anr')->get('id') != $data['anr']){
+            if ($entity->get('anr')->get('id') != $data['anr']) {
                 throw new \Exception('Anr id error', 412);
             }
 
@@ -194,7 +201,7 @@ abstract class AbstractService extends AbstractServiceFactory
             $userAnrTable = $this->get('userAnrTable');
             $rights = $userAnrTable->getEntityByFields(['user' => $connectedUser['id'], 'anr' => $entity->anr->id]);
             $rwd = 0;
-            foreach($rights as $right) {
+            foreach ($rights as $right) {
                 if ($right->rwd == 1) {
                     $rwd = 1;
                 }
@@ -216,7 +223,7 @@ abstract class AbstractService extends AbstractServiceFactory
 
         $entity->exchangeArray($data);
 
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
 
         return $this->get('table')->save($entity);
@@ -230,14 +237,15 @@ abstract class AbstractService extends AbstractServiceFactory
      * @return mixed
      * @throws \Exception
      */
-    public function patch($id, $data){
+    public function patch($id, $data)
+    {
 
         $entity = $this->get('table')->getEntity($id);
         if (!$entity) {
             throw new \Exception('Entity does not exist', 412);
         }
         if (!empty($data['anr'])) {
-            if($entity->get('anr')->get('id') != $data['anr']){
+            if ($entity->get('anr')->get('id') != $data['anr']) {
                 throw new \Exception('Anr id error', 412);
             }
 
@@ -271,7 +279,7 @@ abstract class AbstractService extends AbstractServiceFactory
 
         $entity->exchangeArray($data, true);
 
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
 
         return $this->get('table')->save($entity);
@@ -282,10 +290,10 @@ abstract class AbstractService extends AbstractServiceFactory
      *
      * @param $id
      */
-    public function delete($id) {
+    public function delete($id)
+    {
         return $this->get('table')->delete($id);
     }
-
 
     /**
      * Delete From Anr
@@ -295,11 +303,12 @@ abstract class AbstractService extends AbstractServiceFactory
      * @return mixed
      * @throws \Exception
      */
-    public function deleteFromAnr($id, $anrId = null) {
+    public function deleteFromAnr($id, $anrId = null)
+    {
 
         if (!is_null($anrId)) {
             $entity = $this->get('table')->getEntity($id);
-            if ($entity->anr->id != $anrId){
+            if ($entity->anr->id != $anrId) {
                 throw new \Exception('Anr id error', 412);
             }
 
@@ -309,7 +318,7 @@ abstract class AbstractService extends AbstractServiceFactory
             $userAnrTable = $this->get('userAnrTable');
             $rights = $userAnrTable->getEntityByFields(['user' => $connectedUser['id'], 'anr' => $anrId]);
             $rwd = 0;
-            foreach($rights as $right) {
+            foreach ($rights as $right) {
                 if ($right->rwd == 1) {
                     $rwd = 1;
                 }
@@ -331,10 +340,11 @@ abstract class AbstractService extends AbstractServiceFactory
      * @return mixed
      * @throws \Exception
      */
-    public function deleteListFromAnr($data, $anrId = null) {
+    public function deleteListFromAnr($data, $anrId = null)
+    {
 
         if (!is_null($anrId)) {
-            foreach($data as $id) {
+            foreach ($data as $id) {
                 $entity = $this->get('table')->getEntity($id);
                 if ($entity->anr->id != $anrId) {
                     throw new \Exception('Anr id error', 412);
@@ -347,7 +357,7 @@ abstract class AbstractService extends AbstractServiceFactory
             $userAnrTable = $this->get('userAnrTable');
             $rights = $userAnrTable->getEntityByFields(['user' => $connectedUser['id'], 'anr' => $anrId]);
             $rwd = 0;
-            foreach($rights as $right) {
+            foreach ($rights as $right) {
                 if ($right->rwd == 1) {
                     $rwd = 1;
                 }
@@ -366,7 +376,8 @@ abstract class AbstractService extends AbstractServiceFactory
      *
      * @param $data
      */
-    public function deleteList($data){
+    public function deleteList($data)
+    {
         return $this->get('table')->deleteList($data);
     }
 
@@ -377,12 +388,13 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param $oldEntity
      * @return array
      */
-    public function compareEntities($newEntity, $oldEntity){
+    public function compareEntities($newEntity, $oldEntity)
+    {
         $deps = array();
-        foreach($this->dependencies as $dep){
+        foreach ($this->dependencies as $dep) {
             $propertyname = $dep;
             $matching = [];
-            if(preg_match("/(\[([a-z0-9]*)\])\(([a-z0-9]*)\)$/", $dep, $matching) != false){//si c'est 0 c'est pas bon non plus
+            if (preg_match("/(\[([a-z0-9]*)\])\(([a-z0-9]*)\)$/", $dep, $matching) != false) {//si c'est 0 c'est pas bon non plus
                 $propertyname = str_replace($matching[0], $matching[2], $dep);
                 $dep = str_replace($matching[0], $matching[3], $dep);
             }
@@ -396,13 +408,13 @@ abstract class AbstractService extends AbstractServiceFactory
             if (!in_array($key, $exceptions)) {
                 if (isset($deps[$key])) {
                     $oldValue = $oldEntity->get($key);
-                    if(!empty($oldValue) && is_object($oldValue)){
+                    if (!empty($oldValue) && is_object($oldValue)) {
                         $oldValue = $oldValue->get('id');
                     }
-                    if(!empty($value) && is_object($value)){
+                    if (!empty($value) && is_object($value)) {
                         $value = $value->get('id');
                     }
-                    if($oldValue != $value){
+                    if ($oldValue != $value) {
                         $diff[] = $key . ': ' . $oldValue . ' => ' . $value;
                     }
                 } elseif ($oldEntity->get($key) != $value) {
@@ -421,7 +433,8 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param $entity
      * @param $oldEntity
      */
-    public function historizeUpdate($type, $entity, $oldEntity) {
+    public function historizeUpdate($type, $entity, $oldEntity)
+    {
 
         $diff = $this->compareEntities($entity, $oldEntity);
 
@@ -436,7 +449,8 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param $type
      * @param $entity
      */
-    public function historizeCreate($type, $entity, $details) {
+    public function historizeCreate($type, $entity, $details)
+    {
 
         $this->historize($entity, $type, 'create', implode(' / ', $details));
     }
@@ -447,7 +461,8 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param $type
      * @param $entity
      */
-    public function historizeDelete($type, $entity, $details) {
+    public function historizeDelete($type, $entity, $details)
+    {
 
         $this->historize($entity, $type, 'delete', implode(' / ', $details));
     }
@@ -460,7 +475,8 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param $verb
      * @param $details
      */
-    public function historize($entity, $type, $verb, $details) {
+    public function historize($entity, $type, $verb, $details)
+    {
 
         $entityId = null;
         if (is_object($entity) && (property_exists($entity, 'id'))) {
@@ -489,9 +505,10 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param $entity
      * @param $dependencies
      */
-    protected function formatDependencies(&$entity, $dependencies) {
+    protected function formatDependencies(&$entity, $dependencies)
+    {
 
-        foreach($dependencies as $dependency) {
+        foreach ($dependencies as $dependency) {
             if (!empty($entity[$dependency])) {
                 $entity[$dependency] = $entity[$dependency]->getJsonArray();
                 unset($entity[$dependency]['__initializer__']);
@@ -508,30 +525,31 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param $dependencies
      * @throws \Exception
      */
-    public function setDependencies(&$entity, $dependencies) {
+    public function setDependencies(&$entity, $dependencies)
+    {
         $db = $entity->getDbAdapter();
-        if(empty($db)){
+        if (empty($db)) {
             $db = $this->get('table')->getDb();
         }
         $metadata = $db->getClassMetadata(get_class($entity));
 
-        foreach($dependencies as $dependency) {
-             // = preg_replace("/[0-9]/", "", $dependency);
+        foreach ($dependencies as $dependency) {
+            // = preg_replace("/[0-9]/", "", $dependency);
             $deptable = $propertyname = $dependency;
             $matching = [];
-            if(preg_match("/(\[([a-z0-9]*)\])\(([a-z0-9]*)\)$/", $deptable, $matching) != false){//si c'est 0 c'est pas bon non plus
+            if (preg_match("/(\[([a-z0-9]*)\])\(([a-z0-9]*)\)$/", $deptable, $matching) != false) {//si c'est 0 c'est pas bon non plus
                 $propertyname = str_replace($matching[0], $matching[2], $deptable);
                 $deptable = str_replace($matching[0], $matching[3], $deptable);
             }
 
             $value = $entity->get($propertyname);
             if (!is_null($value) && !empty($value) && !is_object($value)) {
-                if($metadata->hasAssociation($propertyname)){
+                if ($metadata->hasAssociation($propertyname)) {
                     $class = $metadata->getAssociationTargetClass($propertyname);
-                    if(! is_array($value) || isset($value['id'])){
-                        $dep = $db->getReference($class,isset($value['id'])?$value['id']:$value);
+                    if (!is_array($value) || isset($value['id'])) {
+                        $dep = $db->getReference($class, isset($value['id']) ? $value['id'] : $value);
 
-                        if(isset($dep->anr) && isset($entity->anr) && $dep->anr instanceof \MonarcCore\Model\Entity\AnrSuperClass) {
+                        if (isset($dep->anr) && isset($entity->anr) && $dep->anr instanceof \MonarcCore\Model\Entity\AnrSuperClass) {
                             $depAnrId = $dep->anr->id;
                             $entityAnrId = is_integer($entity->anr) ? $entity->anr : $entity->anr->id;
                             if ($depAnrId != $entityAnrId) {
@@ -542,32 +560,32 @@ abstract class AbstractService extends AbstractServiceFactory
                         if (!$dep->id) {
                             throw new \Exception('Entity does not exist', 412);
                         }
-                        $entity->set($propertyname,$dep);
-                    }elseif(!array_key_exists('id', $value)){
+                        $entity->set($propertyname, $dep);
+                    } elseif (!array_key_exists('id', $value)) {
                         $a_dep = [];
-                        foreach($value as $v){
+                        foreach ($value as $v) {
                             if (!is_null($v) && !empty($v) && !is_object($v)) {
-                                $dep = $db->getReference($class,$v);
+                                $dep = $db->getReference($class, $v);
                                 if (!$dep->id) {
                                     throw new \Exception('Entity does not exist', 412);
                                 }
                                 $a_dep[] = $dep;
                             }
                         }
-                        $entity->set($propertyname,$a_dep);
+                        $entity->set($propertyname, $a_dep);
                     }
-                }else{ // DEPRECATED
-                    $tableName =  $deptable . 'Table';
+                } else { // DEPRECATED
+                    $tableName = $deptable . 'Table';
                     $method = 'set' . ucfirst($propertyname);
-                    if(! is_array($value) || isset($value['id'])){
-                        $dep = $this->get($tableName)->getReference(isset($value['id'])?$value['id']:$value);
+                    if (!is_array($value) || isset($value['id'])) {
+                        $dep = $this->get($tableName)->getReference(isset($value['id']) ? $value['id'] : $value);
                         if (!$dep->id) {
                             throw new \Exception('Entity does not exist', 412);
                         }
                         $entity->$method($dep);
-                    }elseif(!array_key_exists('id', $value)){
+                    } elseif (!array_key_exists('id', $value)) {
                         $a_dep = [];
-                        foreach($value as $v){
+                        foreach ($value as $v) {
                             if (!is_null($v) && !empty($v) && !is_object($v)) {
                                 $dep = $this->get($tableName)->getReference($v);
                                 if (!$dep->id) {
@@ -592,7 +610,8 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param null $previous
      * @return int
      */
-    protected function managePositionCreation($field, $parentId, $implicitPosition, $previous = null) {
+    protected function managePositionCreation($field, $parentId, $implicitPosition, $previous = null)
+    {
         $position = 0;
 
         switch ($implicitPosition) {
@@ -605,10 +624,10 @@ abstract class AbstractService extends AbstractServiceFactory
                 $position = $maxPosition + 1;
                 break;
             case 3:
-                if(empty($previous)){ // dans le cas où le "$previous" n'est pas renseigné
+                if (empty($previous)) { // dans le cas où le "$previous" n'est pas renseigné
                     $maxPosition = $this->get('table')->maxPositionByParent($field, $parentId);
                     $position = $maxPosition + 1;
-                }else{
+                } else {
                     $previousObject = $this->get('table')->getEntity($previous);
                     $this->get('table')->changePositionsByParent($field, $parentId, $previousObject->position + 1, 'up', 'after');
                     $position = $previousObject->position + 1;
@@ -631,7 +650,8 @@ abstract class AbstractService extends AbstractServiceFactory
      * @return int
      * @throws \Exception
      */
-    protected function managePosition($field, $entity, $newParentId, $implicitPosition, $previous = null, $verb = 'update', $table = false, $initialPosition = 0) {
+    protected function managePosition($field, $entity, $newParentId, $implicitPosition, $previous = null, $verb = 'update', $table = false, $initialPosition = 0)
+    {
 
         $table = ($table) ? $table : $this->get('table');
 
@@ -669,7 +689,8 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param $verb
      * @return int
      */
-    protected function modifyPositionSameParent($implicitPosition, $field, $entityParentId, $entityPosition, $previous, $verb, $table, $initialPosition) {
+    protected function modifyPositionSameParent($implicitPosition, $field, $entityParentId, $entityPosition, $previous, $verb, $table, $initialPosition)
+    {
 
         switch ($implicitPosition) {
             case 1:
@@ -730,7 +751,8 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param $newParentId
      * @return int
      */
-    protected function modifyPositionDifferentParent($implicitPosition, $field, $entityParentId, $entityPosition,  $previous, $verb, $newParentId, $table) {
+    protected function modifyPositionDifferentParent($implicitPosition, $field, $entityParentId, $entityPosition, $previous, $verb, $newParentId, $table)
+    {
         $table->changePositionsByParent($field, $entityParentId, $entityPosition, 'down', 'after', true);
 
         $position = 1;
@@ -760,7 +782,8 @@ abstract class AbstractService extends AbstractServiceFactory
 
     }
 
-    protected function manageRelativePositionUpdate($field, $entity, $direction) {
+    protected function manageRelativePositionUpdate($field, $entity, $direction)
+    {
         /** @var ObjectObjectTable $table */
         $table = $this->get('table');
 
@@ -795,7 +818,8 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param $entity
      * @return mixed
      */
-    public function getRoot($entity) {
+    public function getRoot($entity)
+    {
         if (!is_null($entity->getParent())) {
             return $this->getRoot($entity->getParent());
         } else {
@@ -803,32 +827,37 @@ abstract class AbstractService extends AbstractServiceFactory
         }
     }
 
-    protected function getRiskC($c, $tRate, $vRate) {
+    protected function getRiskC($c, $tRate, $vRate)
+    {
         $cRisks = (($c != -1) && ($tRate != -1) && ($vRate != -1)) ? $c * $tRate * $vRate : -1;
 
         return $cRisks;
     }
 
-    protected function getRiskI($i, $tRate, $vRate) {
+    protected function getRiskI($i, $tRate, $vRate)
+    {
         $iRisks = (($i != -1) && ($tRate != -1) && ($vRate != -1)) ? $i * $tRate * $vRate : -1;
 
         return $iRisks;
     }
 
-    protected function getRiskD($d, $tRate, $vRate) {
+    protected function getRiskD($d, $tRate, $vRate)
+    {
         $dRisks = (($d != -1) && ($tRate != -1) && ($vRate != -1)) ? $d * $tRate * $vRate : -1;
 
         return $dRisks;
     }
 
-    protected function getTargetRisk($impacts, $tRate, $vRate, $vRateReduc) {
+    protected function getTargetRisk($impacts, $tRate, $vRate, $vRateReduc)
+    {
         $targetRisk = ((max($impacts) != -1) && ($tRate != -1) && ($vRate != -1))
             ? max($impacts) * $tRate * ($vRate - $vRateReduc) : -1;
 
         return $targetRisk;
     }
 
-    protected function filterPatchFields(&$data) {
+    protected function filterPatchFields(&$data)
+    {
         if (is_array($data)) {
             foreach (array_keys($data) as $key) {
                 if (in_array($key, $this->forbiddenFields)) {
@@ -838,7 +867,8 @@ abstract class AbstractService extends AbstractServiceFactory
         }
     }
 
-    protected function filterPostFields(&$data, $entity, $forbiddenFields = false) {
+    protected function filterPostFields(&$data, $entity, $forbiddenFields = false)
+    {
         $forbiddenFields = (!$forbiddenFields) ? $this->forbiddenFields : $forbiddenFields;
         if (is_array($data)) {
             foreach (array_keys($data) as $key) {
@@ -862,7 +892,8 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param $data
      * @throws \Exception
      */
-    protected function verifyRates($anrId, $data, $instanceRisk = null) {
+    protected function verifyRates($anrId, $data, $instanceRisk = null)
+    {
 
         //TODO : ensure that this method is never called inside a loop
         $errors = [];
@@ -876,7 +907,7 @@ abstract class AbstractService extends AbstractServiceFactory
 
             $scaleThreat = $scaleThreat[0];
 
-            $prob = (int) $data['threatRate'];
+            $prob = (int)$data['threatRate'];
 
             if (($prob != -1) && (($prob < $scaleThreat->get('min')) || ($prob > $scaleThreat->get('max')))) {
                 $errors[] = 'Value for probability is not valid';
@@ -890,7 +921,7 @@ abstract class AbstractService extends AbstractServiceFactory
 
             $scaleVul = $scaleVul[0];
 
-            $prob = (int) $data['vulnerabilityRate'];
+            $prob = (int)$data['vulnerabilityRate'];
 
             if (($prob != -1) && (($prob < $scaleVul->get('min')) || ($prob > $scaleVul->get('max')))) {
                 $errors[] = 'Value for qualification is not valid';
@@ -909,9 +940,10 @@ abstract class AbstractService extends AbstractServiceFactory
         }
 
         if (isset($data['c']) || isset($data['i']) || isset($data['d'])
-         || isset($data['brutR']) || isset($data['brutO']) || isset($data['brutL']) || isset($data['brutF']) || isset($data['brutP'])
-         || isset($data['netR']) || isset($data['netO']) || isset($data['netL']) || isset($data['netF']) || isset($data['netP'])
-         || isset($data['targetedR']) || isset($data['targetedO']) || isset($data['targetedL']) || isset($data['targetedF']) || isset($data['targetedP']) ) {
+            || isset($data['brutR']) || isset($data['brutO']) || isset($data['brutL']) || isset($data['brutF']) || isset($data['brutP'])
+            || isset($data['netR']) || isset($data['netO']) || isset($data['netL']) || isset($data['netF']) || isset($data['netP'])
+            || isset($data['targetedR']) || isset($data['targetedO']) || isset($data['targetedL']) || isset($data['targetedF']) || isset($data['targetedP'])
+        ) {
             /** @var ScaleTable $scaleTable */
             $scaleTable = $this->get('scaleTable');
             $scaleImpact = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => Scale::TYPE_IMPACT]);
@@ -922,7 +954,7 @@ abstract class AbstractService extends AbstractServiceFactory
 
             foreach ($fields as $field) {
                 if (isset($data[$field])) {
-                    $value = (int) $data[$field];
+                    $value = (int)$data[$field];
                     if ($value != -1) {
                         if (($value < $scaleImpact->get('min')) || ($value > $scaleImpact->get('max'))) {
                             $errors[] = 'Value for ' . $field . ' is not valid';
@@ -932,8 +964,8 @@ abstract class AbstractService extends AbstractServiceFactory
             }
         }
 
-        if (isset($data['brutProb']) || isset($data['netProb']) || isset($data['targetedProb'])){
-            if( is_null($scaleThreat)){
+        if (isset($data['brutProb']) || isset($data['netProb']) || isset($data['targetedProb'])) {
+            if (is_null($scaleThreat)) {
                 /** @var ScaleTable $scaleTable */
                 $scaleTable = $this->get('scaleTable');
                 $scaleThreat = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => Scale::TYPE_THREAT]);
@@ -942,9 +974,9 @@ abstract class AbstractService extends AbstractServiceFactory
 
             $fields = ['brutProb', 'netProb', 'targetedProb'];
 
-            foreach($fields as $field){
+            foreach ($fields as $field) {
                 if (isset($data[$field])) {
-                    $value = (int) $data[$field];
+                    $value = (int)$data[$field];
 
                     if ($value != -1) {
                         if (($value < $scaleThreat->get('min')) || ($value > $scaleThreat->get('max'))) {
@@ -960,11 +992,13 @@ abstract class AbstractService extends AbstractServiceFactory
         }
     }
 
-    protected function encrypt($data, $key) {
+    protected function encrypt($data, $key)
+    {
         return mcrypt_encrypt(MCRYPT_RIJNDAEL_256, md5($key), $data, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND));
     }
 
-    protected function decrypt($data, $key) {
+    protected function decrypt($data, $key)
+    {
         return mcrypt_decrypt(MCRYPT_RIJNDAEL_256, md5($key), $data, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND));
     }
 
@@ -974,18 +1008,19 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param $type (major|full)
      * @return version
      */
-    protected function getVersion($type = 'major'){
-        switch(strtolower($type)){
+    protected function getVersion($type = 'major')
+    {
+        switch (strtolower($type)) {
             default:
             case 'major':
-                if(!empty($this->monarcConf['version'])){
-                    return implode('.',array_slice(explode('.', $this->monarcConf['version']),0,2));
-                }else{
+                if (!empty($this->monarcConf['version'])) {
+                    return implode('.', array_slice(explode('.', $this->monarcConf['version']), 0, 2));
+                } else {
                     return null;
                 }
                 break;
             case 'full':
-                return isset($this->monarcConf['version'])?$this->monarcConf['version']:null;
+                return isset($this->monarcConf['version']) ? $this->monarcConf['version'] : null;
                 break;
         }
     }

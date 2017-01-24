@@ -20,11 +20,8 @@ class AmvService extends AbstractService
     protected $modelTable;
     protected $threatTable;
     protected $vulnerabilityTable;
-
     protected $historicalService;
-
     protected $errorMessage;
-
     protected $filterColumns = ['status'];
     protected $dependencies = ['anr', 'asset', 'threat', 'vulnerability', 'measure[1]()', 'measure[2]()', 'measure[3]()'];
     protected $forbiddenFields = ['anr'];
@@ -38,7 +35,8 @@ class AmvService extends AbstractService
      * @param null $filter
      * @return mixed
      */
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null){
+    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
+    {
         $filterJoin = array(
             array(
                 'as' => 'a',
@@ -121,20 +119,21 @@ class AmvService extends AbstractService
      * @param $data
      * @return mixed
      */
-    public function patch($id,$data)
+    public function patch($id, $data)
     {
         //security
         $this->filterPatchFields($data);
 
         $entity = $this->get('table')->getEntity($id);
-        $entity->exchangeArray($data,true);
+        $entity->exchangeArray($data, true);
 
         $this->setDependencies($entity, $this->dependencies);
 
         parent::patch($id, $data);
     }
 
-    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null){
+    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
+    {
         $filterJoin = array(
             array(
                 'as' => 'a',
@@ -217,12 +216,13 @@ class AmvService extends AbstractService
      * @return mixed
      * @throws \Exception
      */
-    public function create($data, $last = true) {
+    public function create($data, $last = true)
+    {
 
         $entity = $this->get('entity');
         $entity->exchangeArray($data);
 
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
 
         $authorized = $this->compliesRequirement($entity);
@@ -249,7 +249,7 @@ class AmvService extends AbstractService
             $name[] = $newEntity['vulnerability']->$lab;
         }
         $name = implode(' - ', $name);
-        $this->label = [$name,$name,$name,$name];
+        $this->label = [$name, $name, $name, $name];
 
         //details
         $fields = [
@@ -283,7 +283,8 @@ class AmvService extends AbstractService
      * @return mixed
      * @throws \Exception
      */
-    public function update($id, $data){
+    public function update($id, $data)
+    {
 
         $this->filterPatchFields($data);
 
@@ -309,7 +310,7 @@ class AmvService extends AbstractService
             $name[] = $entity->get('vulnerability')->get('code');
         }
         $name = implode(' - ', $name);
-        $this->label = [$name,$name,$name,$name];
+        $this->label = [$name, $name, $name, $name];
 
         $entity->exchangeArray($data);
 
@@ -334,12 +335,13 @@ class AmvService extends AbstractService
      * @param $oldEntity
      * @return array
      */
-    public function compareEntities($newEntity, $oldEntity){
+    public function compareEntities($newEntity, $oldEntity)
+    {
         $deps = array();
-        foreach($this->dependencies as $dep){
+        foreach ($this->dependencies as $dep) {
             $propertyname = $dep;
             $matching = [];
-            if(preg_match("/(\[([a-z0-9]*)\])\(([a-z0-9]*)\)$/", $dep, $matching) != false){//si c'est 0 c'est pas bon non plus
+            if (preg_match("/(\[([a-z0-9]*)\])\(([a-z0-9]*)\)$/", $dep, $matching) != false) {//si c'est 0 c'est pas bon non plus
                 $propertyname = str_replace($matching[0], $matching[2], $dep);
                 $dep = str_replace($matching[0], $matching[3], $dep);
             }
@@ -353,17 +355,17 @@ class AmvService extends AbstractService
             if (!in_array($key, $exceptions)) {
                 if (isset($deps[$key])) {
                     $oldValue = $oldEntity->get($key);
-                    if(!empty($oldValue) && is_object($oldValue)){
+                    if (!empty($oldValue) && is_object($oldValue)) {
                         $oldValue = $oldValue->get('code');
                     }
-                    if(!empty($value) && is_object($value)){
+                    if (!empty($value) && is_object($value)) {
                         $value = $value->get('code');
                     }
-                    if($oldValue != $value){
-                        if(empty($oldValue)){
+                    if ($oldValue != $value) {
+                        if (empty($oldValue)) {
                             $oldValue = '-';
                         }
-                        if(empty($value)){
+                        if (empty($value)) {
                             $value = '-';
                         }
                         $diff[] = $key . ': ' . $oldValue . ' => ' . $value;
@@ -382,7 +384,8 @@ class AmvService extends AbstractService
      *
      * @param $id
      */
-    public function delete($id) {
+    public function delete($id)
+    {
 
         //historisation
         $entity = $this->get('table')->getEntity($id);
@@ -403,7 +406,7 @@ class AmvService extends AbstractService
             }
 
             $name = implode(' - ', $name);
-            $this->label = [$name,$name,$name,$name];
+            $this->label = [$name, $name, $name, $name];
 
             //details
             $fields = [
@@ -441,11 +444,12 @@ class AmvService extends AbstractService
      * @return bool
      * @throws \Exception
      */
-    public function compliesRequirement($amv, $asset = null, $assetModels = null, $threat = null, $threatModels = null, $vulnerability = null, $vulnerabilityModels = null) {
+    public function compliesRequirement($amv, $asset = null, $assetModels = null, $threat = null, $threatModels = null, $vulnerability = null, $vulnerabilityModels = null)
+    {
 
         //asset
         $asset = (is_null($asset)) ? $amv->getAsset() : $asset;
-        if($asset->get('type') == 1){
+        if ($asset->get('type') == 1) {
             throw new \Exception('Asset can\'t be primary', 412);
         }
 
@@ -458,13 +462,13 @@ class AmvService extends AbstractService
             if (!is_object($model)) {
                 $model = $this->get('modelTable')->get($model);
                 $assetModelsIds[] = $model['id'];
-                if($model['isRegulator']){
-                    $assetModelsIsRegulator = true;    
+                if ($model['isRegulator']) {
+                    $assetModelsIsRegulator = true;
                 }
             } else {
                 $assetModelsIds[] = $model->id;
-                if($model->isRegulator){
-                    $assetModelsIsRegulator = true;    
+                if ($model->isRegulator) {
+                    $assetModelsIsRegulator = true;
                 }
             }
         }
@@ -508,86 +512,87 @@ class AmvService extends AbstractService
      * @return bool
      * @throws \Exception
      */
-    public function compliesControl($assetMode, $threatMode, $vulnerabilityMode, $assetModelsIds, $threatModelsIds, $vulnerabilityModelsIds, $assetModelsIsRegulator) {
+    public function compliesControl($assetMode, $threatMode, $vulnerabilityMode, $assetModelsIds, $threatModelsIds, $vulnerabilityModelsIds, $assetModelsIsRegulator)
+    {
         $this->errorMessage = '';
 
         if (!$assetMode && !$threatMode && !$vulnerabilityMode) { // 0 0 0
             return true;
-        }elseif(!$assetMode && ($threatMode || $vulnerabilityMode)){ // 0 0 1 || 0 1 0 || 0 1 1
+        } elseif (!$assetMode && ($threatMode || $vulnerabilityMode)) { // 0 0 1 || 0 1 0 || 0 1 1
             $this->errorMessage = 'The tuple asset / threat / vulnerability is invalid';
             return false;
-        }elseif($assetMode && (!$threatMode || !$vulnerabilityMode)){ // 1 0 0 || 1 0 1 || 1 1 0
-            if(!$assetModelsIsRegulator){ // & si et seulement s'il n'y a aucun modèle régulateur pour l'asset
-                if(!$threatMode && !$vulnerabilityMode){ // 1 0 0
+        } elseif ($assetMode && (!$threatMode || !$vulnerabilityMode)) { // 1 0 0 || 1 0 1 || 1 1 0
+            if (!$assetModelsIsRegulator) { // & si et seulement s'il n'y a aucun modèle régulateur pour l'asset
+                if (!$threatMode && !$vulnerabilityMode) { // 1 0 0
                     return true;
-                }else{ // & on doit tester les modèles
-                    if (empty($assetModelsIds)){
+                } else { // & on doit tester les modèles
+                    if (empty($assetModelsIds)) {
                         $assetModelsIds = [];
-                    }elseif(!is_array($assetModelsIds)) {
+                    } elseif (!is_array($assetModelsIds)) {
                         $assetModelsIds = [$assetModelsIds];
                     }
                     $toTest = [];
-                    if($vulnerabilityMode){ // 1 0 1
+                    if ($vulnerabilityMode) { // 1 0 1
                         $toTest = $vulnerabilityModelsIds;
-                        if (empty($toTest)){
+                        if (empty($toTest)) {
                             $toTest = [];
-                        }elseif(!is_array($toTest)) {
+                        } elseif (!is_array($toTest)) {
                             $toTest = [$toTest];
                         }
-                    }else{ // 1 1 0
+                    } else { // 1 1 0
                         $toTest = $threatModelsIds;
-                        if (empty($toTest)){
+                        if (empty($toTest)) {
                             $toTest = [];
-                        }elseif(!is_array($toTest)) {
+                        } elseif (!is_array($toTest)) {
                             $toTest = [$toTest];
                         }
                     }
-                    $diff1 = array_diff($assetModelsIds,$toTest);
-                    if(empty($diff2)){
-                        $diff2 = array_diff($toTest,$assetModelsIds);
-                        if(empty($diff2)){
+                    $diff1 = array_diff($assetModelsIds, $toTest);
+                    if (empty($diff2)) {
+                        $diff2 = array_diff($toTest, $assetModelsIds);
+                        if (empty($diff2)) {
                             return true;
                         }
                     }
-                    $this->errorMessage = 'All models must be common to asset and '.$vulnerabilityMode?'vulnerability':'threat';
+                    $this->errorMessage = 'All models must be common to asset and ' . $vulnerabilityMode ? 'vulnerability' : 'threat';
                     return false;
                 }
-            }else{
+            } else {
                 $this->errorMessage = 'Asset\'s model must not be regulator';
                 return false;
             }
-        }elseif($assetMode && $threatMode && $vulnerabilityMode){ // 1 1 1 & on doit tester les modèles
-            if (empty($assetModelsIds)){
+        } elseif ($assetMode && $threatMode && $vulnerabilityMode) { // 1 1 1 & on doit tester les modèles
+            if (empty($assetModelsIds)) {
                 $assetModelsIds = [];
-            }elseif(!is_array($assetModelsIds)) {
+            } elseif (!is_array($assetModelsIds)) {
                 $assetModelsIds = [$assetModelsIds];
             }
-            if (empty($threatModelsIds)){
+            if (empty($threatModelsIds)) {
                 $threatModelsIds = [];
-            }elseif(!is_array($threatModelsIds)) {
+            } elseif (!is_array($threatModelsIds)) {
                 $threatModelsIds = [$threatModelsIds];
             }
-            if (empty($vulnerabilityModelsIds)){
+            if (empty($vulnerabilityModelsIds)) {
                 $vulnerabilityModelsIds = [];
-            }elseif(!is_array($vulnerabilityModelsIds)) {
+            } elseif (!is_array($vulnerabilityModelsIds)) {
                 $vulnerabilityModelsIds = [$vulnerabilityModelsIds];
             }
-            $diff1 = array_diff($assetModelsIds,$threatModelsIds);
-            $diff15 = array_diff($threatModelsIds,$assetModelsIds);
-            if(empty($diff1) && empty($diff15)){
-                $diff2 = array_diff($assetModelsIds,$vulnerabilityModelsIds);
-                $diff25 = array_diff($vulnerabilityModelsIds,$assetModelsIds);
-                if(empty($diff2) && empty($diff25)){
-                    $diff3 = array_diff($threatModelsIds,$vulnerabilityModelsIds);
-                    $diff35 = array_diff($vulnerabilityModelsIds,$threatModelsIds);
-                    if(empty($diff3) && empty($diff35)){
+            $diff1 = array_diff($assetModelsIds, $threatModelsIds);
+            $diff15 = array_diff($threatModelsIds, $assetModelsIds);
+            if (empty($diff1) && empty($diff15)) {
+                $diff2 = array_diff($assetModelsIds, $vulnerabilityModelsIds);
+                $diff25 = array_diff($vulnerabilityModelsIds, $assetModelsIds);
+                if (empty($diff2) && empty($diff25)) {
+                    $diff3 = array_diff($threatModelsIds, $vulnerabilityModelsIds);
+                    $diff35 = array_diff($vulnerabilityModelsIds, $threatModelsIds);
+                    if (empty($diff3) && empty($diff35)) {
                         return true;
                     }
                 }
             }
             $this->errorMessage = 'All models must be common to asset, threat and vulnerability';
             return false;
-        }else{
+        } else {
             $this->errorMessage = 'Missing datas';
             return false;
         }
@@ -603,16 +608,17 @@ class AmvService extends AbstractService
      * @param bool $follow
      * @return bool
      */
-    public function checkAMVIntegrityLevel($models, $asset = null, $threat = null, $vulnerability = null, $follow = false) {
+    public function checkAMVIntegrityLevel($models, $asset = null, $threat = null, $vulnerability = null, $follow = false)
+    {
         $amvs = $this->get('table')->findByAMV($asset, $threat, $vulnerability);
 
-        foreach($amvs as $amv){
+        foreach ($amvs as $amv) {
 
             $amv = $this->get('table')->getEntity($amv['id']);
             $assetModels = ($asset || $follow) ? $models : null;
             $threatsModels = ($threat || $follow) ? $models : null;
             $vulnerabilityModels = ($vulnerability || $follow) ? $models : null;
-            if(!$this->compliesRequirement($amv, $asset, $assetModels, $threat, $threatsModels, $vulnerability, $vulnerabilityModels)){
+            if (!$this->compliesRequirement($amv, $asset, $assetModels, $threat, $threatsModels, $vulnerability, $vulnerabilityModels)) {
                 return false;
             }
         }
@@ -629,7 +635,8 @@ class AmvService extends AbstractService
      * @param null $vulnerability
      * @return bool
      */
-    public function ensureAssetsIntegrityIfEnforced($models, $asset = null, $threat = null, $vulnerability = null) {
+    public function ensureAssetsIntegrityIfEnforced($models, $asset = null, $threat = null, $vulnerability = null)
+    {
         $amvs = $this->get('table')->findByAMV($asset, $threat, $vulnerability);
 
         if (count($amvs)) {
@@ -724,13 +731,13 @@ class AmvService extends AbstractService
                 $amvThreatsIds[$amv['threatId']] = $amv['threatId'];
                 $amvVulnerabilitiesIds[$amv['vulnerabilityId']] = $amv['vulnerabilityId'];
             }
-            if (!is_null($asset)){
+            if (!is_null($asset)) {
                 unset($amvAssetsIds[$asset->get('id')]);
             }
-            if (!is_null($threat)){
+            if (!is_null($threat)) {
                 unset($amvThreatsIds[$threat->get('id')]);
             }
-            if (!is_null($vulnerability)){
+            if (!is_null($vulnerability)) {
                 unset($amvVulnerabilitiesIds[$vulnerability->get('id')]);
             }
 
@@ -747,21 +754,23 @@ class AmvService extends AbstractService
      * @param $models
      * @param $type
      */
-    public function enforceToFollow($entitiesIds, $models, $type) {
+    public function enforceToFollow($entitiesIds, $models, $type)
+    {
 
         $tableName = $type . 'Table';
 
-        foreach($entitiesIds as $entitiesId) {
+        foreach ($entitiesIds as $entitiesId) {
             $entity = $this->get($tableName)->getEntity($entitiesId);
             if ($entity->mode == AbstractEntity::MODE_SPECIFIC) { //petite sécurité pour pas construire de la daube
-                $entity->set('models',$models);
+                $entity->set('models', $models);
 
                 $this->get($tableName)->save($entity);
             }
         }
     }
 
-    public function generateExportArray($amv){
+    public function generateExportArray($amv)
+    {
         $amvObj = array(
             'id' => 'v',
             'threat' => 'o',
@@ -847,22 +856,22 @@ class AmvService extends AbstractService
 
         $amvs = $threats = $vulns = $themes = $measures = array();
 
-        foreach($amvObj as $k => $v){
-            switch($v){
+        foreach ($amvObj as $k => $v) {
+            switch ($v) {
                 case 'v':
                     $amvs[$k] = $amv->get($k);
                     break;
                 case 'o':
                     $o = $amv->get($k);
-                    if(empty($o)){
+                    if (empty($o)) {
                         $amvs[$k] = null;
-                    }else{
+                    } else {
                         $o = $amv->get($k)->getJsonArray();
                         $amvs[$k] = $o['id'];
-                        switch($k){
+                        switch ($k) {
                             case 'threat':
                                 $threats[$o['id']] = $amv->get($k)->getJsonArray($treatsObj);
-                                if(!empty($threats[$o['id']]['theme'])){
+                                if (!empty($threats[$o['id']]['theme'])) {
                                     $threats[$o['id']]['theme'] = $threats[$o['id']]['theme']->getJsonArray($themesObj);
 
                                     $themes[$threats[$o['id']]['theme']['id']] = $threats[$o['id']]['theme'];
