@@ -14,6 +14,7 @@ use MonarcCore\Validator\PasswordStrength;
 class UserService extends AbstractService
 {
     protected $roleTable;
+    protected $userRoleEntity;
     protected $userTokenTable;
     protected $passwordTokenTable;
     protected $mailService;
@@ -152,6 +153,7 @@ class UserService extends AbstractService
      */
     protected function manageRoles($user, $data)
     {
+
         $userRoleTable = $this->get('roleTable');
         $userRoleTable->deleteByUser($user->id);
         if (!empty($data['role'])) {
@@ -161,7 +163,11 @@ class UserService extends AbstractService
                     'role' => $role,
                 ];
 
-                $userRoleEntity = new UserRole();
+                $class = $this->get('userRoleEntity');
+
+                $userRoleEntity = new $class();
+                $userRoleEntity->setLanguage($this->getLanguage());
+                $userRoleEntity->setDbAdapter($this->get('table')->getDb());
                 $userRoleEntity->exchangeArray($roleData);
 
                 $userRoleTable->save($userRoleEntity);
