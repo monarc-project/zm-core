@@ -65,6 +65,7 @@ class InstanceService extends AbstractService
         //retrieve object properties
         $object = $this->get('objectTable')->getEntity($data['object']);
 
+        //verify if user is authorized to instantiate this object
         $authorized = false;
         foreach ($object->anrs as $anr) {
             if ($anr->id == $anrId) {
@@ -72,7 +73,6 @@ class InstanceService extends AbstractService
                 break;
             }
         }
-
         if (!$authorized) {
             throw new \Exception('Object is not an object of this anr', 412);
         }
@@ -83,7 +83,6 @@ class InstanceService extends AbstractService
         foreach ($commonProperties as $commonProperty) {
             $data[$commonProperty] = $object->$commonProperty;
         }
-
 
         if (isset($data['parent']) && empty($data['parent'])) {
             $data['parent'] = null;
@@ -212,6 +211,7 @@ class InstanceService extends AbstractService
      */
     protected function getRecursiveChild(&$childList, $id)
     {
+        //retrieve children
         $children = $this->get('table')->getRepository()->createQueryBuilder('t')
             ->select(['t.id'])
             ->where('t.parent = :parent')
@@ -222,6 +222,7 @@ class InstanceService extends AbstractService
         if (count($children)) {
             foreach ($children as $child) {
                 $childList[] = $child['id'];
+                //retrieve children of children
                 $this->getRecursiveChild($childList, $child['id']);
             }
         }
@@ -240,14 +241,13 @@ class InstanceService extends AbstractService
         $historic[] = $id;
         $initialData = $data;
 
+        //retrieve instance
         /** @var InstanceTable $table */
         $table = $this->get('table');
         $instance = $table->getEntity($id);
-
         if (!$instance) {
             throw new \Exception('Instance does not exist', 412);
         }
-
         $instance->setDbAdapter($table->getDb());
         $instance->setLanguage($this->getLanguage());
 
@@ -265,6 +265,7 @@ class InstanceService extends AbstractService
             }
         }
 
+        //manage position
         if (!$managePosition) {
             unset($data['implicitPosition']);
             unset($data['previous']);
@@ -384,10 +385,10 @@ class InstanceService extends AbstractService
 
         $this->filterPatchFields($data);
 
+        //retrieve instance
         /** @var InstanceTable $table */
         $table = $this->get('table');
         $instance = $table->getEntity($id);
-
         if (!$instance) {
             throw new \Exception('Instance does not exist', 412);
         }
@@ -402,6 +403,7 @@ class InstanceService extends AbstractService
             }
         }
 
+        //manage position
         if (isset($data['position'])) {
             $data['position']++; // TODO: to delete
             if ($data['position'] <= 1) {
@@ -517,14 +519,9 @@ class InstanceService extends AbstractService
         $table = $this->get('table');
         $instance = $table->getEntity($id);
 
+        //only root instance can be delete
         if ($instance->level != Instance::LEVEL_ROOT) {
             throw new \Exception('This is not a root instance', 412);
-        }
-
-        $parent_id = null;
-
-        if ($instance->parent != null && $instance->parent->id) {
-            $parent_id = $instance->parent->id;
         }
 
         $this->get('instanceRiskService')->deleteInstanceRisks($id, $instance->anr->id);
@@ -555,6 +552,7 @@ class InstanceService extends AbstractService
         $eventManager = new EventManager();
         $eventManager->setIdentifiers('object');
 
+        //update object by event
         $sharedEventManager = $eventManager->getSharedManager();
         $eventManager->setSharedManager($sharedEventManager);
         $eventManager->trigger('patch', null, compact(['objectId', 'data']));
@@ -569,10 +567,10 @@ class InstanceService extends AbstractService
      */
     protected function createChildren($anrId, $parentId, $object)
     {
+        //retrieve object children and create instance for each child
         /** @var ObjectObjectService $objectObjectService */
         $objectObjectService = $this->get('objectObjectService');
         $children = $objectObjectService->getChildren($object);
-
         foreach ($children as $child) {
             $data = [
                 'object' => $child->child->id,
@@ -626,7 +624,6 @@ class InstanceService extends AbstractService
         /** @var InstanceTable $table */
         $table = $this->get('table');
         $children = $table->getEntityByFields(['parent' => $instanceId]);
-
         foreach ($children as $child) {
             $child->setRoot($root);
             $table->save($child);
@@ -645,7 +642,7 @@ class InstanceService extends AbstractService
     {
         $this->verifyRates($anrId, $data);
 
-        //values
+        //for cid, if a value is received and it is different of -1, the inherited value (h) is equal to 0 else to 1
         if (isset($data['c'])) {
             $data['ch'] = ($data['c'] == -1) ? 1 : 0;
         }
@@ -656,6 +653,9 @@ class InstanceService extends AbstractService
             $data['dh'] = ($data['d'] == -1) ? 1 : 0;
         }
 
+        //for cid, if a value is received
+        //if this value equal -1
+        //retrieve parent value
         if (isset($data['c']) || isset($data['i']) || isset($data['d'])) {
             if (((isset($data['c'])) && ($data['c'] == -1))
                 || ((isset($data['i'])) && ($data['i'] == -1))
@@ -836,12 +836,10 @@ class InstanceService extends AbstractService
      */
     protected function refreshImpactsInherited($anrId, $parentId, $instance)
     {
-        if ($parentId > 0) {
-            $parent = $this->getEntityByIdAndAnr($parentId, $anrId);
-        } else {
-            $parent = null;
-        }
+        $parent = ($parentId > 0) ? $this->getEntityByIdAndAnr($parentId, $anrId) : null;
 
+        //for cid, if value is inherited, retrieve value of parent
+        //if there is no parent and value is inherited, value is equal to -1
         if ($instance->ch || $instance->ih || $instance->dh) {
             if ($parent) {
                 if ($instance->ch) {
