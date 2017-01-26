@@ -1,11 +1,8 @@
 <?php
 namespace MonarcCore\Service;
 
-
 use MonarcCore\Model\Entity\Scale;
 use MonarcCore\Model\Table\AnrTable;
-use MonarcCore\Model\Table\AssetTable;
-use MonarcCore\Model\Table\InstanceTable;
 use MonarcCore\Model\Table\ObjectObjectTable;
 use MonarcFO\Model\Table\UserAnrTable;
 
@@ -19,7 +16,6 @@ abstract class AbstractService extends AbstractServiceFactory
     protected $label;
     protected $forbiddenFields = [];
     protected $dependencies = [];
-
 
     /**
      * @return null
@@ -55,7 +51,6 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     protected function parseFrontendFilter($filter, $columns = array())
     {
-
         $output = array();
         if (!is_null($filter)) {
             if ($columns) {
@@ -97,7 +92,6 @@ abstract class AbstractService extends AbstractServiceFactory
         }
     }
 
-
     /**
      * Get Filtered Count
      *
@@ -106,7 +100,6 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
     {
-
         return $this->get('table')->countFiltered(
             $page,
             $limit,
@@ -157,8 +150,6 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     public function create($data, $last = true)
     {
-
-        //$entity = $this->get('entity');
         $class = $this->get('entity');
         $entity = new $class();
         $entity->setLanguage($this->getLanguage());
@@ -184,7 +175,6 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     public function update($id, $data)
     {
-
         $entity = $this->get('table')->getEntity($id);
         if (!$entity) {
             throw new \Exception('Entity does not exist', 412);
@@ -239,7 +229,6 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     public function patch($id, $data)
     {
-
         $entity = $this->get('table')->getEntity($id);
         if (!$entity) {
             throw new \Exception('Entity does not exist', 412);
@@ -305,7 +294,6 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     public function deleteFromAnr($id, $anrId = null)
     {
-
         if (!is_null($anrId)) {
             $entity = $this->get('table')->getEntity($id);
             if ($entity->anr->id != $anrId) {
@@ -342,7 +330,6 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     public function deleteListFromAnr($data, $anrId = null)
     {
-
         if (!is_null($anrId)) {
             foreach ($data as $id) {
                 $entity = $this->get('table')->getEntity($id);
@@ -435,7 +422,6 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     public function historizeUpdate($type, $entity, $oldEntity)
     {
-
         $diff = $this->compareEntities($entity, $oldEntity);
 
         if (count($diff)) {
@@ -451,7 +437,6 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     public function historizeCreate($type, $entity, $details)
     {
-
         $this->historize($entity, $type, 'create', implode(' / ', $details));
     }
 
@@ -463,7 +448,6 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     public function historizeDelete($type, $entity, $details)
     {
-
         $this->historize($entity, $type, 'delete', implode(' / ', $details));
     }
 
@@ -477,7 +461,6 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     public function historize($entity, $type, $verb, $details)
     {
-
         $entityId = null;
         if (is_object($entity) && (property_exists($entity, 'id'))) {
             $entityId = $entity->id;
@@ -507,7 +490,6 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     protected function formatDependencies(&$entity, $dependencies)
     {
-
         foreach ($dependencies as $dependency) {
             if (!empty($entity[$dependency])) {
                 $entity[$dependency] = $entity[$dependency]->getJsonArray();
@@ -602,186 +584,12 @@ abstract class AbstractService extends AbstractServiceFactory
     }
 
     /**
-     * Manage position
-     *
-     * @param $field
-     * @param $parentId
-     * @param $implicitPosition
-     * @param null $previous
-     * @return int
-     */
-    protected function managePositionCreation($field, $parentId, $implicitPosition, $previous = null)
-    {
-        $position = 0;
-
-        switch ($implicitPosition) {
-            case 1:
-                $this->get('table')->changePositionsByParent($field, $parentId, 1, 'up', 'after');
-                $position = 1;
-                break;
-            case 2:
-                $maxPosition = $this->get('table')->maxPositionByParent($field, $parentId);
-                $position = $maxPosition + 1;
-                break;
-            case 3:
-                if (empty($previous)) { // dans le cas où le "$previous" n'est pas renseigné
-                    $maxPosition = $this->get('table')->maxPositionByParent($field, $parentId);
-                    $position = $maxPosition + 1;
-                } else {
-                    $previousObject = $this->get('table')->getEntity($previous);
-                    $this->get('table')->changePositionsByParent($field, $parentId, $previousObject->position + 1, 'up', 'after');
-                    $position = $previousObject->position + 1;
-                }
-                break;
-        }
-
-        return $position;
-    }
-
-    /**
-     * Manage position update
+     * Manage Relative Position Update
      *
      * @param $field
      * @param $entity
-     * @param $newParentId
-     * @param $implicitPosition
-     * @param null $previous
-     * @param string $verb
-     * @return int
-     * @throws \Exception
+     * @param $direction
      */
-    protected function managePosition($field, $entity, $newParentId, $implicitPosition, $previous = null, $verb = 'update', $table = false, $initialPosition = 0)
-    {
-
-        $table = ($table) ? $table : $this->get('table');
-
-        if ($implicitPosition == 3) {
-            if (!$previous) {
-                throw new \Exception('Field previous missing', 412);
-            }
-        }
-
-        if ($entity->$field) {
-            if ($newParentId == $entity->$field->id) {
-                $position = $this->modifyPositionSameParent($implicitPosition, $field, $entity->$field->id, $entity->position, $previous, $verb, $table, $initialPosition);
-            } else {
-                $position = $this->modifyPositionDifferentParent($implicitPosition, $field, $entity->$field->id, $entity->position, $previous, $verb, $newParentId, $table, $initialPosition);
-            }
-        } else {
-            if ($newParentId == null) {
-                $position = $this->modifyPositionSameParent($implicitPosition, $field, null, $entity->position, $previous, $verb, $table, $initialPosition);
-            } else {
-                $position = $this->modifyPositionDifferentParent($implicitPosition, $field, null, $entity->position, $previous, $verb, $newParentId, $table, $initialPosition);
-            }
-        }
-
-        return $position;
-    }
-
-    /**
-     * Modify Position Same Parent
-     *
-     * @param $implicitPosition
-     * @param $field
-     * @param $entityParentId
-     * @param $entityPosition
-     * @param $previous
-     * @param $verb
-     * @return int
-     */
-    protected function modifyPositionSameParent($implicitPosition, $field, $entityParentId, $entityPosition, $previous, $verb, $table, $initialPosition)
-    {
-
-        switch ($implicitPosition) {
-            case 1:
-                if ($verb == 'post') {
-                    $table->changePositionsByParent($field, $entityParentId, $entityPosition, 'up', 'after');
-                } else if ($verb != 'delete') {
-                    $table->changePositionsByParent($field, $entityParentId, $entityPosition, 'down', 'after');
-                    $table->changePositionsByParent($field, $entityParentId, 0, 'up', 'after');
-                }
-                $position = $initialPosition;
-                break;
-            case 2:
-                $maxPosition = $table->maxPositionByParent($field, $entityParentId);
-                if ($verb == 'post') {
-                    $position = (is_null($maxPosition)) ? 0 : $maxPosition + 1;
-                } else if ($verb != 'delete') {
-                    $table->changePositionsByParent($field, $entityParentId, $entityPosition, 'down', 'after', true);
-                    $position = $maxPosition;
-                }
-                break;
-            case 3:
-                $previousObject = $table->getEntity($previous);
-                if ($verb == 'post') {
-                    $table->changePositionsByParent($field, $entityParentId, $previousObject->position, 'up', 'after');
-                    $position = $previousObject->position;
-                } else if ($verb != 'delete') {
-                    if ($entityPosition < $previousObject->position) {
-                        $table->changePositionsByParent($field, $entityParentId, $entityPosition, 'down', 'after');
-                        $table->changePositionsByParent($field, $entityParentId, $previousObject->position, 'up', 'after');
-                        $position = $previousObject->position;
-                    } else {
-                        $table->changePositionsByParent($field, $entityParentId, $previousObject->position, 'up', 'after', true);
-                        $table->changePositionsByParent($field, $entityParentId, $entityPosition, 'down', 'after', true);
-                        $position = $previousObject->position + 1;
-                    }
-                }
-                break;
-            default:
-                if ($verb == 'delete') {
-                    $table->changePositionsByParent($field, $entityParentId, $entityPosition, 'down', 'after');
-                    $position = $entityPosition;
-                }
-                break;
-        }
-
-        return $position;
-    }
-
-    /**
-     * Modify Position Different Parent
-     *
-     * @param $implicitPosition
-     * @param $field
-     * @param $entityParentId
-     * @param $entityPosition
-     * @param $previous
-     * @param $verb
-     * @param $newParentId
-     * @return int
-     */
-    protected function modifyPositionDifferentParent($implicitPosition, $field, $entityParentId, $entityPosition, $previous, $verb, $newParentId, $table)
-    {
-        $table->changePositionsByParent($field, $entityParentId, $entityPosition, 'down', 'after', true);
-
-        $position = 1;
-        switch ($implicitPosition) {
-            case 1:
-                $table->changePositionsByParent($field, $newParentId, 0, 'up', 'after');
-                $position = 1;
-                break;
-            case 2:
-                if ($verb == 'post') {
-                    $maxPosition = $table->maxPositionByParent($field, $newParentId);
-                    $position = $maxPosition + 1;
-                } else if ($verb != 'delete') {
-                    $maxPosition = $table->maxPositionByParent($field, $newParentId);
-                    //$table->changePositionsByParent($field, $newParentId, $entityPosition, 'down', 'after');
-                    $position = $maxPosition + 1;
-                }
-                break;
-            case 3:
-                $previousObject = $table->getEntity($previous);
-                $table->changePositionsByParent($field, $newParentId, $previousObject->position, 'up', 'after', true);
-                $position = $previousObject->position + 1;
-                break;
-        }
-
-        return $position;
-
-    }
-
     protected function manageRelativePositionUpdate($field, $entity, $direction)
     {
         /** @var ObjectObjectTable $table */
@@ -827,6 +635,14 @@ abstract class AbstractService extends AbstractServiceFactory
         }
     }
 
+    /**
+     * Get Risk C
+     *
+     * @param $c
+     * @param $tRate
+     * @param $vRate
+     * @return int
+     */
     protected function getRiskC($c, $tRate, $vRate)
     {
         $cRisks = (($c != -1) && ($tRate != -1) && ($vRate != -1)) ? $c * $tRate * $vRate : -1;
@@ -834,6 +650,14 @@ abstract class AbstractService extends AbstractServiceFactory
         return $cRisks;
     }
 
+    /**
+     * Get Risk I
+     *
+     * @param $i
+     * @param $tRate
+     * @param $vRate
+     * @return int
+     */
     protected function getRiskI($i, $tRate, $vRate)
     {
         $iRisks = (($i != -1) && ($tRate != -1) && ($vRate != -1)) ? $i * $tRate * $vRate : -1;
@@ -841,6 +665,14 @@ abstract class AbstractService extends AbstractServiceFactory
         return $iRisks;
     }
 
+    /**
+     * Get Risk D
+     *
+     * @param $d
+     * @param $tRate
+     * @param $vRate
+     * @return int
+     */
     protected function getRiskD($d, $tRate, $vRate)
     {
         $dRisks = (($d != -1) && ($tRate != -1) && ($vRate != -1)) ? $d * $tRate * $vRate : -1;
@@ -848,6 +680,15 @@ abstract class AbstractService extends AbstractServiceFactory
         return $dRisks;
     }
 
+    /**
+     * Get Target Risk
+     *
+     * @param $impacts
+     * @param $tRate
+     * @param $vRate
+     * @param $vRateReduc
+     * @return int|mixed
+     */
     protected function getTargetRisk($impacts, $tRate, $vRate, $vRateReduc)
     {
         $targetRisk = ((max($impacts) != -1) && ($tRate != -1) && ($vRate != -1))
@@ -856,6 +697,11 @@ abstract class AbstractService extends AbstractServiceFactory
         return $targetRisk;
     }
 
+    /**
+     * Filter Patch Fields
+     *
+     * @param $data
+     */
     protected function filterPatchFields(&$data)
     {
         if (is_array($data)) {
@@ -867,6 +713,13 @@ abstract class AbstractService extends AbstractServiceFactory
         }
     }
 
+    /**
+     * Filter Post Fields
+     *
+     * @param $data
+     * @param $entity
+     * @param bool $forbiddenFields
+     */
     protected function filterPostFields(&$data, $entity, $forbiddenFields = false)
     {
         $forbiddenFields = (!$forbiddenFields) ? $this->forbiddenFields : $forbiddenFields;
@@ -883,7 +736,6 @@ abstract class AbstractService extends AbstractServiceFactory
         }
     }
 
-
     /**
      * Verify Rates
      *
@@ -894,7 +746,6 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     protected function verifyRates($anrId, $data, $instanceRisk = null)
     {
-
         //TODO : ensure that this method is never called inside a loop
         $errors = [];
 
@@ -992,11 +843,25 @@ abstract class AbstractService extends AbstractServiceFactory
         }
     }
 
+    /**
+     * Encrypt
+     *
+     * @param $data
+     * @param $key
+     * @return string
+     */
     protected function encrypt($data, $key)
     {
         return mcrypt_encrypt(MCRYPT_RIJNDAEL_256, md5($key), $data, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND));
     }
 
+    /**
+     * Decrypt
+     *
+     * @param $data
+     * @param $key
+     * @return string
+     */
     protected function decrypt($data, $key)
     {
         return mcrypt_decrypt(MCRYPT_RIJNDAEL_256, md5($key), $data, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND));

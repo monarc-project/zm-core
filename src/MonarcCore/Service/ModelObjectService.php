@@ -1,9 +1,6 @@
 <?php
 namespace MonarcCore\Service;
 
-use MonarcCore\Model\Table\ModelTable;
-use MonarcCore\Model\Entity\Model;
-
 /**
  * Model Service
  *
@@ -22,7 +19,6 @@ class ModelObjectService extends AbstractService
         'label1', 'label2', 'label3', 'label4',
         'description1', 'description2', 'description3', 'description4',
     );
-
     protected $dependencies = ['asset', 'category', 'rolfTag', 'source', 'model'];
 
     /**
@@ -32,11 +28,11 @@ class ModelObjectService extends AbstractService
      * @param bool $last
      * @return mixed
      */
-    public function create($data, $last = true) {
-
-        if(!empty($data['id']) && !empty($data['model'])){
+    public function create($data, $last = true)
+    {
+        if (!empty($data['id']) && !empty($data['model'])) {
             $obj = $this->get('table')->getEntity($data['id']);
-            if(!$obj->get('model') && $obj->get('type') == 'bdc'){
+            if (!$obj->get('model') && $obj->get('type') == 'bdc') {
                 $model = $data['model'];
                 $obj->setDbAdapter($this->get('table')->getDb());
                 $data = $obj->getJsonArray(array(
@@ -82,7 +78,7 @@ class ModelObjectService extends AbstractService
         $entity = $this->get('entity');
         $entity->exchangeArray($data);
 
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
 
         return $this->get('table')->save($entity);
@@ -96,10 +92,11 @@ class ModelObjectService extends AbstractService
      * @return mixed
      * @throws \Exception
      */
-    public function update($id,$data){
+    public function update($id, $data)
+    {
         $entity = $this->get('table')->getEntity($id);
 
-        if(empty($data['model']) || $entity->get('model') != $data['model'] || $entity->get('type') != 'anr'){
+        if (empty($data['model']) || $entity->get('model') != $data['model'] || $entity->get('type') != 'anr') {
             throw new \Exception('Entity `id` not found.');
             return false;
         }
@@ -112,7 +109,7 @@ class ModelObjectService extends AbstractService
         }
         $entity->exchangeArray($data);
 
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
 
         return $this->get('table')->save($entity);
@@ -123,17 +120,11 @@ class ModelObjectService extends AbstractService
      * Delete
      *
      * @param $id
-     * @param $idm
      * @return bool
      * @throws \Exception
      */
-    public function delete($id/*,$idm*/) {
-        $entity = $this->get('table')->getEntity($id);
-
-        if($entity->get('model') != $idm || $entity->get('type') != 'anr'){
-            throw new \Exception('Entity `id` not found.');
-            return false;
-        }
+    public function delete($id)
+    {
         $this->get('table')->delete($id);
     }
 }

@@ -9,7 +9,7 @@ namespace MonarcCore\Service;
  */
 class CityService extends AbstractService
 {
-    protected $filterColumns = array(
+    protected $filterColumns = [
         'label'
-    );
+    ];
 }

@@ -9,7 +9,7 @@ namespace MonarcCore\Service;
  */
 class CountryService extends AbstractService
 {
-    protected $filterColumns = array(
+    protected $filterColumns = [
         'name'
-    );
+    ];
 }

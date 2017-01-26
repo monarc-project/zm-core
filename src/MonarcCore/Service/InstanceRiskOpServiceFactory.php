@@ -1,9 +1,15 @@
 <?php
 namespace MonarcCore\Service;
 
+/**
+ * Instance Risk Op Service Factory
+ *
+ * Class InstanceRiskOpServiceFactory
+ * @package MonarcCore\Service
+ */
 class InstanceRiskOpServiceFactory extends AbstractServiceFactory
 {
-    protected $ressources = array(
+    protected $ressources = [
         'table' => 'MonarcCore\Model\Table\InstanceRiskOpTable',
         'entity' => 'MonarcCore\Model\Entity\InstanceRiskOp',
         'anrTable' => 'MonarcCore\Model\Table\AnrTable',
@@ -13,5 +19,5 @@ class InstanceRiskOpServiceFactory extends AbstractServiceFactory
         'rolfRiskTable' => 'MonarcCore\Model\Table\RolfRiskTable',
         'rolfTagTable' => 'MonarcCore\Model\Table\RolfTagTable',
         'scaleTable' => 'MonarcCore\Model\Table\ScaleTable',
-    );
+    ];
 }

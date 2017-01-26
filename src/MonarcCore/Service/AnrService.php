@@ -3,7 +3,6 @@ namespace MonarcCore\Service;
 
 use MonarcCore\Model\Table\AnrTable;
 use MonarcCore\Model\Table\ObjectTable;
-use MonarcCore\Model\Table\ScaleCommentTable;
 
 /**
  * Anr Service
@@ -88,7 +87,6 @@ class AnrService extends AbstractService
      */
     public function duplicate($anr)
     {
-
         //duplicate anr
         $newAnr = clone $anr;
         $newAnr->setId(null);

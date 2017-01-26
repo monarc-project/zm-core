@@ -20,7 +20,8 @@ class RolfCategoryService extends AbstractService
      * @return mixed
      * @throws \Exception
      */
-    public function create($data, $last = true) {
+    public function create($data, $last = true)
+    {
 
         //$entity = $this->get('entity');
         $class = $this->get('entity');
@@ -39,7 +40,7 @@ class RolfCategoryService extends AbstractService
         }
         $entity->exchangeArray($data);
 
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
 
         return $this->get('table')->save($entity);

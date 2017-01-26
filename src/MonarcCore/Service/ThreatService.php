@@ -1,5 +1,6 @@
 <?php
 namespace MonarcCore\Service;
+
 use MonarcCore\Model\Entity\Threat;
 use MonarcCore\Model\Table\InstanceRiskTable;
 
@@ -35,7 +36,8 @@ class ThreatService extends AbstractService
      * @return mixed
      * @throws \Exception
      */
-    public function create($data, $last = true) {
+    public function create($data, $last = true)
+    {
 
         $entity = $this->get('entity');
         if (isset($data['anr']) && strlen($data['anr'])) {
@@ -50,7 +52,7 @@ class ThreatService extends AbstractService
         }
         $entity->exchangeArray($data);
 
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
 
         $themeId = $entity->get('theme');
@@ -73,7 +75,8 @@ class ThreatService extends AbstractService
      * @return mixed
      * @throws \Exception
      */
-    public function update($id,$data){
+    public function update($id, $data)
+    {
 
         $this->filterPatchFields($data);
 
@@ -106,26 +109,26 @@ class ThreatService extends AbstractService
             throw new \Exception('Assets Integrity', 412);
         }
 
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
 
-        switch($entity->get('mode')){
+        switch ($entity->get('mode')) {
             case Threat::MODE_SPECIFIC:
-                if(empty($models)){
-                    $entity->set('models',[]);
-                }else{
+                if (empty($models)) {
+                    $entity->set('models', []);
+                } else {
                     $modelsObj = [];
-                    foreach($models as $mid){
+                    foreach ($models as $mid) {
                         $modelsObj[] = $this->get('modelTable')->getEntity($mid);
                     }
-                    $entity->set('models',$modelsObj);
+                    $entity->set('models', $modelsObj);
                 }
                 if ($follow) {
                     $this->get('amvService')->enforceAMVtoFollow($entity->get('models'), null, $entity, null);
                 }
                 break;
             case Threat::MODE_GENERIC:
-                $entity->set('models',[]);
+                $entity->set('models', []);
                 break;
         }
 
@@ -142,7 +145,7 @@ class ThreatService extends AbstractService
             $instanceRiskService = $this->get('instanceRiskService');
             $i = 1;
             $nbInstancesRisks = count($instancesRisks);
-            foreach($instancesRisks as $instanceRisk) {
+            foreach ($instancesRisks as $instanceRisk) {
                 $instanceRiskService->updateRisks($instanceRisk, ($i == $nbInstancesRisks));
                 $i++;
             }
@@ -158,7 +161,7 @@ class ThreatService extends AbstractService
      * @param $data
      * @return mixed
      */
-    public function patch($id,$data)
+    public function patch($id, $data)
     {
         //security
         $this->filterPatchFields($data);

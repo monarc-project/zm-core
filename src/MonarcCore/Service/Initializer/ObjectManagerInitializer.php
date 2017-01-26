@@ -2,6 +2,7 @@
 
 
 namespace MonarcCore\Service\Initializer;
+
 use DoctrineModule\Persistence\ObjectManagerAwareInterface;
 use Zend\ServiceManager\InitializerInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
@@ -16,7 +17,7 @@ class ObjectManagerInitializer implements InitializerInterface
 {
     public function initialize($instance, ServiceLocatorInterface $serviceLocator)
     {
-        if($instance instanceof ObjectManagerAwareInterface) {
+        if ($instance instanceof ObjectManagerAwareInterface) {
             $instance->setObjectManager($serviceLocator->get('doctrine.entitymanager.orm_default'));
         }
     }

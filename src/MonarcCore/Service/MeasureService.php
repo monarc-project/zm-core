@@ -23,9 +23,8 @@ class MeasureService extends AbstractService
      * @return mixed
      * @throws \Exception
      */
-    public function create($data, $last = true) {
-
-        //$entity = $this->get('entity');
+    public function create($data, $last = true)
+    {
         $class = $this->get('entity');
         $entity = new $class();
         $entity->setLanguage($this->getLanguage());
@@ -42,12 +41,11 @@ class MeasureService extends AbstractService
         }
         $entity->exchangeArray($data);
 
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
 
         return $this->get('table')->save($entity);
     }
-
 
     /**
      * Patch
@@ -56,7 +54,7 @@ class MeasureService extends AbstractService
      * @param $data
      * @return mixed
      */
-    public function patch($id,$data)
+    public function patch($id, $data)
     {
         //security
         $this->filterPatchFields($data);
@@ -73,8 +71,8 @@ class MeasureService extends AbstractService
      * @param null $filter
      * @return mixed
      */
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null){
-
+    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
+    {
         $data = $this->get('table')->fetchAllFiltered(
             array_keys($this->get('entity')->getJsonArray()),
             $page,

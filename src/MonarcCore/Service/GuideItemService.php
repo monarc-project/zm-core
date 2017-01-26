@@ -10,7 +10,6 @@ namespace MonarcCore\Service;
 class GuideItemService extends AbstractService
 {
     protected $guideTable;
-
     protected $dependencies = ['guide'];
 
     /**
@@ -20,7 +19,8 @@ class GuideItemService extends AbstractService
      * @param bool $last
      * @return mixed
      */
-    public function create($data, $last = true) {
+    public function create($data, $last = true)
+    {
         $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
 
         $entity = $this->get('entity');
@@ -40,14 +40,14 @@ class GuideItemService extends AbstractService
      * @param $data
      * @return mixed
      */
-    public function update($id,$data){
+    public function update($id, $data)
+    {
         $entity = $this->get('table')->getEntity($id);
         $entity->setDbAdapter($this->table->getDb());
         $entity->exchangeArray($data);
 
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
-
 
         return $this->get('table')->save($entity);
     }
@@ -57,10 +57,8 @@ class GuideItemService extends AbstractService
      *
      * @param $id
      */
-    public function delete($id) {
-
-        $entity = $this->getEntity($id);
-
+    public function delete($id)
+    {
         $this->get('table')->delete($id);
     }
 

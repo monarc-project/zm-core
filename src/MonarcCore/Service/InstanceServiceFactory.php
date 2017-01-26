@@ -1,9 +1,15 @@
 <?php
 namespace MonarcCore\Service;
 
+/**
+ * Instance Service Factory
+ *
+ * Class InstanceServiceFactory
+ * @package MonarcCore\Service
+ */
 class InstanceServiceFactory extends AbstractServiceFactory
 {
-    protected $ressources = array(
+    protected $ressources = [
         'table' => 'MonarcCore\Model\Table\InstanceTable',
         'entity' => 'MonarcCore\Model\Entity\Instance',
         'instanceConsequenceEntity' => 'MonarcCore\Model\Entity\InstanceConsequence',
@@ -23,5 +29,5 @@ class InstanceServiceFactory extends AbstractServiceFactory
         'objectExportService' => 'MonarcCore\Service\ObjectExportService',
         'amvService' => 'MonarcCore\Service\AmvService',
         'translateService' => 'MonarcCore\Service\TranslateService',
-    );
+    ];
 }

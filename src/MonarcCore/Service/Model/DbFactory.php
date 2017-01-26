@@ -7,7 +7,8 @@ use Zend\ServiceManager\ServiceLocatorInterface;
 
 class DbFactory implements FactoryInterface
 {
-    public function createService(ServiceLocatorInterface $serviceLocator){
+    public function createService(ServiceLocatorInterface $serviceLocator)
+    {
         return new \MonarcCore\Model\Db($serviceLocator->get('doctrine.entitymanager.orm_default'));
     }
 }

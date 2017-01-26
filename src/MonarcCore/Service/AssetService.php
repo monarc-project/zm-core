@@ -59,7 +59,6 @@ class AssetService extends AbstractService
         return $this->get('table')->save($entity);
     }
 
-
     /**
      * Update
      *
@@ -70,7 +69,6 @@ class AssetService extends AbstractService
      */
     public function update($id, $data)
     {
-
         $this->filterPatchFields($data);
 
         $entity = $this->get('table')->getEntity($id);
@@ -81,7 +79,6 @@ class AssetService extends AbstractService
             //delete models
             unset($data['models']);
         }
-
 
         $models = isset($data['models']) ? $data['models'] : array();
         $follow = isset($data['follow']) ? $data['follow'] : null;
@@ -109,7 +106,6 @@ class AssetService extends AbstractService
         if (!$amvService->checkModelsInstantiation($entity, $models)) {
             throw new \Exception('This type of asset is used in a model that is no longer part of the list', 412);
         }
-
 
         switch ($entity->get('mode')) {
             case Asset::MODE_SPECIFIC:
@@ -164,6 +160,7 @@ class AssetService extends AbstractService
                 }
             }
         }
+
         return $this->get('table')->save($entity);
     }
 
@@ -185,8 +182,9 @@ class AssetService extends AbstractService
     /**
      * Export Asset
      *
-     * @param $id
-     * @return array
+     * @param $data
+     * @return string
+     * @throws \Exception
      */
     public function exportAsset(&$data)
     {
@@ -203,6 +201,14 @@ class AssetService extends AbstractService
         return base64_encode($this->encrypt(json_encode($return), $data['password']));
     }
 
+    /**
+     * Generate Export Array
+     *
+     * @param $id
+     * @param string $filename
+     * @return array
+     * @throws \Exception
+     */
     public function generateExportArray($id, &$filename = "")
     {
         if (empty($id)) {

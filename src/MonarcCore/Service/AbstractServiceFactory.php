@@ -69,7 +69,6 @@ abstract class AbstractServiceFactory implements FactoryInterface
         return $defaultLanguageIndex;
     }
 
-
     /**
      * Get Language
      *

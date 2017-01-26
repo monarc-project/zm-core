@@ -5,15 +5,17 @@ class SecurityService extends AbstractService
 {
     protected $config;
 
-    public function verifyPwd($pwd,$hash){
+    public function verifyPwd($pwd, $hash)
+    {
         $conf = $this->get('config');
-        $salt = isset($conf["monarc"]['salt'])?$conf["monarc"]['salt']:'';
-        return password_verify($salt.$pwd,$hash);
+        $salt = isset($conf["monarc"]['salt']) ? $conf["monarc"]['salt'] : '';
+        return password_verify($salt . $pwd, $hash);
     }
 
-    public function hashPwd($pwd){
+    public function hashPwd($pwd)
+    {
         $conf = $this->get('config');
-        $salt = isset($conf["monarc"]['salt'])?$conf["monarc"]['salt']:'';
-        return password_hash($salt.$pwd,PASSWORD_BCRYPT);
+        $salt = isset($conf["monarc"]['salt']) ? $conf["monarc"]['salt'] : '';
+        return password_hash($salt . $pwd, PASSWORD_BCRYPT);
     }
 }

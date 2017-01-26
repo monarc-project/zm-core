@@ -1,6 +1,12 @@
 <?php
 namespace MonarcCore\Service;
 
+/**
+ * Authentication Service
+ *
+ * Class AuthenticationService
+ * @package MonarcCore\Service
+ */
 class AuthenticationService extends AbstractService
 {
     protected $userTable;

@@ -1,5 +1,6 @@
 <?php
 namespace MonarcCore\Service;
+
 use MonarcCore\Model\Table\GuideTable;
 
 /**
@@ -10,7 +11,6 @@ use MonarcCore\Model\Table\GuideTable;
  */
 class GuideService extends AbstractService
 {
-
     protected $types = [
         1 => 'Risk analysis context',
         2 => 'Risk management context',
@@ -36,11 +36,11 @@ class GuideService extends AbstractService
      * @param array $options
      * @return mixed
      */
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $options = []){
-
+    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $options = [])
+    {
         $guides = parent::getList($page, $limit, $order, $filter);
 
-        foreach($guides as $key => $guide) {
+        foreach ($guides as $key => $guide) {
             $guides[$key]['type_id'] = $guides[$key]['type'];
             $guides[$key]['type'] = $this->types[$guide['type']];
         }
@@ -54,8 +54,8 @@ class GuideService extends AbstractService
      * @param $id
      * @return array
      */
-    public function getEntity($id){
-
+    public function getEntity($id)
+    {
         $guide = $this->get('table')->get($id);
 
         $guide['type'] = $this->types[$guide['type']];
@@ -69,9 +69,10 @@ class GuideService extends AbstractService
      * @param $data
      * @param bool $last
      * @return mixed
+     * @throws \Exception
      */
-    public function create($data, $last = true) {
-
+    public function create($data, $last = true)
+    {
         /** @var GuideTable $table */
         $table = $this->get('table');
         $currentGuide = $table->getEntityByFields(['type' => $data['type']]);
@@ -82,5 +83,4 @@ class GuideService extends AbstractService
 
         return parent::create($data, $last);
     }
-
 }

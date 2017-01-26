@@ -12,17 +12,19 @@ class TranslateService
         $this->languages = $languages;
     }
 
-    public function translate($message, $langueIndex = null){
-        if(!$this->translator){
+    public function translate($message, $langueIndex = null)
+    {
+        if (!$this->translator) {
             return $message;
-        }elseif(empty($langueIndex) || !isset($this->languages[$langueIndex])){
+        } elseif (empty($langueIndex) || !isset($this->languages[$langueIndex])) {
             return $this->translator->translate($message);
-        }else{
-            return $this->translator->translate($message,'monarc',$this->languages[$langueIndex]);
+        } else {
+            return $this->translator->translate($message, 'monarc', $this->languages[$langueIndex]);
         }
     }
 
-    public function getTranslator(){
+    public function getTranslator()
+    {
         return $this->translator;
     }
 }

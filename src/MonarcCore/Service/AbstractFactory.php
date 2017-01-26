@@ -1,16 +1,15 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: jerome
- * Date: 27/04/2016
- * Time: 10:00
- */
-
 namespace MonarcCore\Service;
 
 use Zend\ServiceManager\AbstractFactoryInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 
+/**
+ * Abstract Factory
+ *
+ * Class AbstractFactory
+ * @package MonarcCore\Service
+ */
 class AbstractFactory implements AbstractFactoryInterface
 {
     public function canCreateServiceWithName(ServiceLocatorInterface $serviceLocator, $name, $requestedName)
@@ -20,6 +19,5 @@ class AbstractFactory implements AbstractFactoryInterface
 
     public function createServiceWithName(ServiceLocatorInterface $serviceLocator, $name, $requestedName)
     {
-
     }
 }

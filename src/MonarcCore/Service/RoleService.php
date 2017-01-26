@@ -5,7 +5,8 @@ class RoleService extends AbstractService
 {
     protected $config;
 
-    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null) {
+    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
+    {
 
         $config = $this->config;
         $roles = $config['roles'];
@@ -19,7 +20,7 @@ class RoleService extends AbstractService
 
         $config = $this->config;
         $roles = $config['roles'];
-        foreach($roles as $role => $permissions) {
+        foreach ($roles as $role => $permissions) {
             $roleCollection[] = ['name' => $role];
         }
 

@@ -17,7 +17,8 @@ class ScaleCommentService extends AbstractService
     protected $dependencies = ['anr', 'scale', 'scaleImpactType'];
     protected $forbiddenFields = ['anr', 'scale'];
 
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null){
+    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
+    {
         $comments = $this->get('table')->fetchAllFiltered(
             array_keys($this->get('entity')->getJsonArray()),
             $page,
@@ -44,19 +45,20 @@ class ScaleCommentService extends AbstractService
      * @param bool $last
      * @return mixed
      */
-    public function create($data, $last = true) {
+    public function create($data, $last = true)
+    {
 
         $entity = $this->get('entity');
         if (isset($data['scale'])) {
             $scale = $this->get('scaleTable')->getEntity($data['scale']);
             $entity->setScale($scale);
-            if ($scale->type !=1) {
+            if ($scale->type != 1) {
                 unset($data['scaleImpactType']);
             }
         }
         $entity->exchangeArray($data);
 
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
 
         return $this->get('table')->save($entity);
@@ -69,19 +71,20 @@ class ScaleCommentService extends AbstractService
      * @param $data
      * @return mixed
      */
-    public function update($id,$data){
+    public function update($id, $data)
+    {
 
         $entity = $this->get('table')->getEntity($id);
         if (isset($data['scale'])) {
             $scale = $this->get('scaleTable')->getEntity($data['scale']);
             $entity->setScale($scale);
-            if ($scale->type !=1) {
+            if ($scale->type != 1) {
                 unset($data['scaleImpactType']);
             }
         }
         $entity->exchangeArray($data);
 
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
 
         return $this->get('table')->save($entity);
@@ -94,7 +97,7 @@ class ScaleCommentService extends AbstractService
      * @param $data
      * @return mixed
      */
-    public function patch($id,$data)
+    public function patch($id, $data)
     {
         //security
         $this->filterPatchFields($data);

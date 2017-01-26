@@ -9,10 +9,10 @@ namespace MonarcCore\Service;
  */
 class DeliveriesModelsService extends AbstractService
 {
-    protected $filterColumns = array(
-    	//'category',
+    protected $filterColumns = [
+        //'category',
         //'description',
-    );
+    ];
 
     /**
      * Create
@@ -21,14 +21,15 @@ class DeliveriesModelsService extends AbstractService
      * @param bool $last
      * @return mixed
      */
-    public function create($data, $last = true) {
+    public function create($data, $last = true)
+    {
         $class = $this->get('entity');
         $entity = new $class();
         $entity->setLanguage($this->getLanguage());
         $entity->setDbAdapter($this->get('table')->getDb());
         $entity->exchangeArray($data);
 
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
 
         /** @var AnrTable $table */
@@ -45,7 +46,8 @@ class DeliveriesModelsService extends AbstractService
      * @return mixed
      * @throws \Exception
      */
-    public function update($id,$data){
+    public function update($id, $data)
+    {
         $entity = $this->get('table')->getEntity($id);
         if (!$entity) {
             throw new \Exception('Entity does not exist', 412);
@@ -62,7 +64,7 @@ class DeliveriesModelsService extends AbstractService
 
         $entity->exchangeArray($data);
 
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
 
         return $this->get('table')->save($entity);
@@ -75,9 +77,10 @@ class DeliveriesModelsService extends AbstractService
      * @param $data
      * @return mixed
      */
-    public function patch($id, $data){
-        if(isset($data['description'])){
-            $data['description'.$this->getLanguage()] = $data['description'];
+    public function patch($id, $data)
+    {
+        if (isset($data['description'])) {
+            $data['description' . $this->getLanguage()] = $data['description'];
             unset($data['description']);
         }
 
@@ -92,10 +95,9 @@ class DeliveriesModelsService extends AbstractService
 
         $entity->exchangeArray($data, true);
 
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
 
         return $this->get('table')->save($entity);
     }
-
 }

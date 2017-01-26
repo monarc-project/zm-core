@@ -3,7 +3,7 @@ namespace MonarcCore\Service;
 
 class SecurityServiceFactory extends AbstractServiceFactory
 {
-	protected $ressources = array(
+    protected $ressources = array(
         'config' => 'config',
     );
 }

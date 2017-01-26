@@ -132,6 +132,16 @@ class AmvService extends AbstractService
         parent::patch($id, $data);
     }
 
+    /**
+     * Get Filtered Count
+     *
+     * @param int $page
+     * @param int $limit
+     * @param null $order
+     * @param null $filter
+     * @param null $filterAnd
+     * @return mixed
+     */
     public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
     {
         $filterJoin = array(
@@ -218,7 +228,6 @@ class AmvService extends AbstractService
      */
     public function create($data, $last = true)
     {
-
         $entity = $this->get('entity');
         $entity->exchangeArray($data);
 
@@ -268,7 +277,6 @@ class AmvService extends AbstractService
             }
         }
 
-
         $this->historizeCreate('amv', $newEntity, $details);
 
         return $id;
@@ -285,7 +293,6 @@ class AmvService extends AbstractService
      */
     public function update($id, $data)
     {
-
         $this->filterPatchFields($data);
 
         if (empty($data)) {
@@ -386,7 +393,6 @@ class AmvService extends AbstractService
      */
     public function delete($id)
     {
-
         //historisation
         $entity = $this->get('table')->getEntity($id);
 
@@ -446,13 +452,11 @@ class AmvService extends AbstractService
      */
     public function compliesRequirement($amv, $asset = null, $assetModels = null, $threat = null, $threatModels = null, $vulnerability = null, $vulnerabilityModels = null)
     {
-
         //asset
         $asset = (is_null($asset)) ? $amv->getAsset() : $asset;
         if ($asset->get('type') == 1) {
             throw new \Exception('Asset can\'t be primary', 412);
         }
-
 
         $assetMode = $asset->mode;
         $assetModels = (is_null($assetModels)) ? $amv->getAsset()->getModels() : $assetModels;
@@ -497,7 +501,6 @@ class AmvService extends AbstractService
 
         return $result;
     }
-
 
     /**
      * Complies control
@@ -698,8 +701,7 @@ class AmvService extends AbstractService
                 $models = $modelTable->getEntityByFields(['anr' => $anrId]);
                 foreach ($models as $model) {
                     if (!isset($modelsIds[$model->id])) {
-                        return false;
-                        //ne pas supprimer à un asset un modele specifique, si celui-ci est lié à l’asset via une instance dans une anr (via l’objet)
+                        return false; //don't remove to an asset of specific model if it is linked to asset by an instance in an anr (by object)
                     }
                 }
             }
@@ -756,7 +758,6 @@ class AmvService extends AbstractService
      */
     public function enforceToFollow($entitiesIds, $models, $type)
     {
-
         $tableName = $type . 'Table';
 
         foreach ($entitiesIds as $entitiesId) {
@@ -769,6 +770,12 @@ class AmvService extends AbstractService
         }
     }
 
+    /**
+     * Generate Export Array
+     *
+     * @param $amv
+     * @return array
+     */
     public function generateExportArray($amv)
     {
         $amvObj = array(
