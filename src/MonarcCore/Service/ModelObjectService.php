@@ -15,10 +15,10 @@ class ModelObjectService extends AbstractService
     protected $sourceTable;
     protected $modelTable;
 
-    protected $filterColumns = array(
+    protected $filterColumns = [
         'label1', 'label2', 'label3', 'label4',
         'description1', 'description2', 'description3', 'description4',
-    );
+    ];
     protected $dependencies = ['asset', 'category', 'rolfTag', 'source', 'model'];
 
     /**
@@ -35,7 +35,7 @@ class ModelObjectService extends AbstractService
             if (!$obj->get('model') && $obj->get('type') == 'bdc') {
                 $model = $data['model'];
                 $obj->setDbAdapter($this->get('table')->getDb());
-                $data = $obj->getJsonArray(array(
+                $data = $obj->getJsonArray([
                     'anr',
                     'category',
                     'asset',
@@ -61,7 +61,7 @@ class ModelObjectService extends AbstractService
                     'position',
                     'tokenImport',
                     'originalName',
-                ));
+                ]);
                 $data['category'] = $data['category']->get('id');
                 $data['asset'] = $data['asset']->get('id');
                 $data['rolfTag'] = $data['rolfTag']->get('id');

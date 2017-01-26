@@ -49,9 +49,9 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param array $columns
      * @return array
      */
-    protected function parseFrontendFilter($filter, $columns = array())
+    protected function parseFrontendFilter($filter, $columns = [])
     {
-        $output = array();
+        $output = [];
         if (!is_null($filter)) {
             if ($columns) {
                 foreach ($columns as $c) {
@@ -86,9 +86,9 @@ abstract class AbstractService extends AbstractServiceFactory
         if ($order == null) {
             return null;
         } else if (substr($order, 0, 1) == '-') {
-            return array(substr($order, 1), 'DESC');
+            return [substr($order, 1), 'DESC'];
         } else {
-            return array($order, 'ASC');
+            return [$order, 'ASC'];
         }
     }
 
@@ -377,7 +377,7 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     public function compareEntities($newEntity, $oldEntity)
     {
-        $deps = array();
+        $deps = [];
         foreach ($this->dependencies as $dep) {
             $propertyname = $dep;
             $matching = [];

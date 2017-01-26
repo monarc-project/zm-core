@@ -12,7 +12,6 @@ class QuestionChoiceService extends AbstractService
     protected $questionTable;
     protected $anrTable;
     protected $userAnrTable;
-
     protected $dependencies = ['anr', 'question'];
 
     /**
@@ -55,18 +54,6 @@ class QuestionChoiceService extends AbstractService
     }
 
     /**
-     * Delete
-     *
-     * @param $id
-     */
-    public function delete($id)
-    {
-        $entity = $this->getEntity($id);
-
-        $this->get('table')->delete($id);
-    }
-
-    /**
      * Replace List
      *
      * @param $data
@@ -74,7 +61,6 @@ class QuestionChoiceService extends AbstractService
      */
     public function replaceList($data, $anrId)
     {
-
         /** @var QuestionChoiceTable $table */
         $table = $this->get('table');
 
@@ -114,5 +100,4 @@ class QuestionChoiceService extends AbstractService
             $i++;
         }
     }
-
 }

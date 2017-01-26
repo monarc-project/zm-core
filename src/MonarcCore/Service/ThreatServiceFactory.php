@@ -1,9 +1,15 @@
 <?php
 namespace MonarcCore\Service;
 
+/**
+ * Threat Service Factory
+ *
+ * Class ThreatServiceFactory
+ * @package MonarcCore\Service
+ */
 class ThreatServiceFactory extends AbstractServiceFactory
 {
-    protected $ressources = array(
+    protected $ressources = [
         'table' => '\MonarcCore\Model\Table\ThreatTable',
         'entity' => '\MonarcCore\Model\Entity\Threat',
         'anrTable' => '\MonarcCore\Model\Table\AnrTable',
@@ -13,6 +19,5 @@ class ThreatServiceFactory extends AbstractServiceFactory
         'modelService' => 'MonarcCore\Service\ModelService',
         'themeTable' => '\MonarcCore\Model\Table\ThemeTable',
         'amvService' => 'MonarcCore\Service\AmvService',
-    );
+    ];
 }
-

@@ -1,9 +1,15 @@
 <?php
 namespace MonarcCore\Service;
 
+/**
+ * Scale Service Factory
+ *
+ * Class ScaleServiceFactory
+ * @package MonarcCore\Service
+ */
 class ScaleServiceFactory extends AbstractServiceFactory
 {
-    protected $ressources = array(
+    protected $ressources = [
         'config' => 'MonarcCore\Service\ConfigService',
         'table' => 'MonarcCore\Model\Table\ScaleTable',
         'entity' => 'MonarcCore\Model\Entity\Scale',
@@ -17,5 +23,5 @@ class ScaleServiceFactory extends AbstractServiceFactory
         'scaleImpactTypeTable' => 'MonarcCore\Model\Table\ScaleImpactTypeTable',
         'scaleImpactTypeService' => 'MonarcCore\Service\ScaleImpactTypeService',
         'commentTable' => 'MonarcCore\Model\Table\ScaleCommentTable',
-    );
+    ];
 }

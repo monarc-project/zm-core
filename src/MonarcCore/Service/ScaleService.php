@@ -31,7 +31,6 @@ class ScaleService extends AbstractService
     protected $commentTable;
     protected $dependencies = ['anr'];
     protected $forbiddenFields = ['anr'];
-
     protected $types = [
         Scale::TYPE_IMPACT => 'impact',
         Scale::TYPE_THREAT => 'threat',
@@ -396,5 +395,4 @@ class ScaleService extends AbstractService
 
         return $result;
     }
-
 }

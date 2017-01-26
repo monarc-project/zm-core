@@ -37,35 +37,35 @@ class AmvService extends AbstractService
      */
     public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
     {
-        $filterJoin = array(
-            array(
+        $filterJoin = [
+            [
                 'as' => 'a',
                 'rel' => 'asset',
-            ),
-            array(
+            ],
+            [
                 'as' => 'th',
                 'rel' => 'threat',
-            ),
-            array(
+            ],
+            [
                 'as' => 'v',
                 'rel' => 'vulnerability',
-            ),
-        );
-        $filterLeft = array(
-            array(
+            ],
+        ];
+        $filterLeft = [
+            [
                 'as' => 'm1',
                 'rel' => 'measure1',
-            ),
-            array(
+            ],
+            [
                 'as' => 'm2',
                 'rel' => 'measure2',
-            ),
-            array(
+            ],
+            [
                 'as' => 'm3',
                 'rel' => 'measure3',
-            ),
-        );
-        $filtersCol = array();
+            ],
+        ];
+        $filtersCol = [];
         $filtersCol[] = 'a.code';
         $filtersCol[] = 'a.label1';
         $filtersCol[] = 'a.label2';
@@ -144,35 +144,35 @@ class AmvService extends AbstractService
      */
     public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
     {
-        $filterJoin = array(
-            array(
+        $filterJoin = [
+            [
                 'as' => 'a',
                 'rel' => 'asset',
-            ),
-            array(
+            ],
+            [
                 'as' => 'th',
                 'rel' => 'threat',
-            ),
-            array(
+            ],
+            [
                 'as' => 'v',
                 'rel' => 'vulnerability',
-            ),
-        );
-        $filterLeft = array(
-            array(
+            ],
+        ];
+        $filterLeft = [
+            [
                 'as' => 'm1',
                 'rel' => 'measure1',
-            ),
-            array(
+            ],
+            [
                 'as' => 'm2',
                 'rel' => 'measure2',
-            ),
-            array(
+            ],
+            [
                 'as' => 'm3',
                 'rel' => 'measure3',
-            ),
-        );
-        $filtersCol = array();
+            ],
+        ];
+        $filtersCol = [];
         $filtersCol[] = 'a.code';
         $filtersCol[] = 'a.label1';
         $filtersCol[] = 'a.label2';
@@ -344,7 +344,7 @@ class AmvService extends AbstractService
      */
     public function compareEntities($newEntity, $oldEntity)
     {
-        $deps = array();
+        $deps = [];
         foreach ($this->dependencies as $dep) {
             $propertyname = $dep;
             $matching = [];
@@ -643,7 +643,7 @@ class AmvService extends AbstractService
         $amvs = $this->get('table')->findByAMV($asset, $threat, $vulnerability);
 
         if (count($amvs)) {
-            $amvAssetsIds = array();
+            $amvAssetsIds = [];
             foreach ($amvs as $amv) {
                 $amvAssetsIds[$amv['assetId']] = $amv['assetId'];
             }
@@ -724,9 +724,9 @@ class AmvService extends AbstractService
 
         if (count($amvs) > 0) {
 
-            $amvAssetsIds = array();
-            $amvThreatsIds = array();
-            $amvVulnerabilitiesIds = array();
+            $amvAssetsIds = [];
+            $amvThreatsIds = [];
+            $amvVulnerabilitiesIds = [];
 
             foreach ($amvs as $amv) {
                 $amvAssetsIds[$amv['assetId']] = $amv['assetId'];
@@ -778,7 +778,7 @@ class AmvService extends AbstractService
      */
     public function generateExportArray($amv)
     {
-        $amvObj = array(
+        $amvObj = [
             'id' => 'v',
             'threat' => 'o',
             'vulnerability' => 'o',
@@ -786,8 +786,8 @@ class AmvService extends AbstractService
             'measure2' => 'o',
             'measure3' => 'o',
             'status' => 'v',
-        );
-        $treatsObj = array(
+        ];
+        $treatsObj = [
             'id' => 'id',
             'theme' => 'theme',
             'mode' => 'mode',
@@ -829,8 +829,8 @@ class AmvService extends AbstractService
             'trend' => 'trend',
             'comment' => 'comment',
             'qualification' => 'qualification',
-        );
-        $vulsObj = array(
+        ];
+        $vulsObj = [
             'id' => 'id',
             'mode' => 'mode',
             'code' => 'code',
@@ -843,15 +843,15 @@ class AmvService extends AbstractService
             'description3' => 'description3',
             'description4' => 'description4',
             'status' => 'status',
-        );
-        $themesObj = array(
+        ];
+        $themesObj = [
             'id' => 'id',
             'label1' => 'label1',
             'label2' => 'label2',
             'label3' => 'label3',
             'label4' => 'label4',
-        );
-        $measuresObj = array(
+        ];
+        $measuresObj = [
             'id' => 'id',
             'code' => 'code',
             'status' => 'status',
@@ -859,9 +859,9 @@ class AmvService extends AbstractService
             'description2' => 'description2',
             'description3' => 'description3',
             'description4' => 'description4',
-        );
+        ];
 
-        $amvs = $threats = $vulns = $themes = $measures = array();
+        $amvs = $threats = $vulns = $themes = $measures = [];
 
         foreach ($amvObj as $k => $v) {
             switch ($v) {
@@ -880,9 +880,7 @@ class AmvService extends AbstractService
                                 $threats[$o['id']] = $amv->get($k)->getJsonArray($treatsObj);
                                 if (!empty($threats[$o['id']]['theme'])) {
                                     $threats[$o['id']]['theme'] = $threats[$o['id']]['theme']->getJsonArray($themesObj);
-
                                     $themes[$threats[$o['id']]['theme']['id']] = $threats[$o['id']]['theme'];
-
                                     $threats[$o['id']]['theme'] = $threats[$o['id']]['theme']['id'];
                                 }
                                 break;
@@ -900,12 +898,12 @@ class AmvService extends AbstractService
             }
         }
 
-        return array(
+        return [
             $amvs,
             $threats,
             $vulns,
             $themes,
             $measures,
-        );
+        ];
     }
 }

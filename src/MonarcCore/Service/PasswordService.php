@@ -1,10 +1,14 @@
 <?php
 namespace MonarcCore\Service;
 
-use MonarcCore\Model\Entity\PasswordToken;
-use MonarcCore\Model\Entity\User;
 use MonarcFO\Model\Table\PasswordTokenTable;
 
+/**
+ * Password Service
+ *
+ * Class PasswordService
+ * @package MonarcCore\Service
+ */
 class PasswordService extends AbstractService
 {
     protected $userTable;
@@ -18,7 +22,6 @@ class PasswordService extends AbstractService
      */
     public function passwordForgotten($email)
     {
-
         $user = $this->get('userTable')->getByEmail($email);
 
         if ($user) {
@@ -70,8 +73,6 @@ class PasswordService extends AbstractService
      */
     public function newPasswordByToken($token, $password)
     {
-
-
         $date = new \DateTime("now");
         $passwordToken = $this->get('table')->getByToken($token, $date);
 
@@ -114,7 +115,6 @@ class PasswordService extends AbstractService
      */
     public function changePassword($userId, $oldPassword, $newPassword)
     {
-
         $user = $this->get('userService')->getEntity($userId);
 
         if ($user) {

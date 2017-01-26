@@ -17,6 +17,16 @@ class ScaleCommentService extends AbstractService
     protected $dependencies = ['anr', 'scale', 'scaleImpactType'];
     protected $forbiddenFields = ['anr', 'scale'];
 
+    /**
+     * Get List
+     *
+     * @param int $page
+     * @param int $limit
+     * @param null $order
+     * @param null $filter
+     * @param null $filterAnd
+     * @return mixed
+     */
     public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
     {
         $comments = $this->get('table')->fetchAllFiltered(
@@ -47,7 +57,6 @@ class ScaleCommentService extends AbstractService
      */
     public function create($data, $last = true)
     {
-
         $entity = $this->get('entity');
         if (isset($data['scale'])) {
             $scale = $this->get('scaleTable')->getEntity($data['scale']);
@@ -73,7 +82,6 @@ class ScaleCommentService extends AbstractService
      */
     public function update($id, $data)
     {
-
         $entity = $this->get('table')->getEntity($id);
         if (isset($data['scale'])) {
             $scale = $this->get('scaleTable')->getEntity($data['scale']);

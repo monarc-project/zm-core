@@ -36,7 +36,7 @@ class ObjectExportService extends AbstractService
             throw new \Exception('Entity `id` not found.');
         }
 
-        $objectObj = array(
+        $objectObj = [
             'id' => 'id',
             'mode' => 'mode',
             'scope' => 'scope',
@@ -49,24 +49,24 @@ class ObjectExportService extends AbstractService
             'label3' => 'label3',
             'label4' => 'label4',
             'disponibility' => 'disponibility',
-        );
-        $return = array(
+        ];
+        $return = [
             'type' => 'object',
             'object' => $entity->getJsonArray($objectObj),
             'version' => $this->getVersion(),
-        );
+        ];
         $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $entity->get('name' . $this->getLanguage()));
 
         // Récupération catégories
         $categ = $entity->get('category');
         if (!empty($categ)) {
-            $categObj = array(
+            $categObj = [
                 'id' => 'id',
                 'label1' => 'label1',
                 'label2' => 'label2',
                 'label3' => 'label3',
                 'label4' => 'label4',
-            );
+            ];
 
             while (!empty($categ)) {
                 $categFormat = $categ->getJsonArray($categObj);
@@ -78,7 +78,7 @@ class ObjectExportService extends AbstractService
 
                 $parent = $categ->get('parent');
                 if (!empty($parent)) {
-                    $parentForm = $categ->get('parent')->getJsonArray(array('id' => 'id'));
+                    $parentForm = $categ->get('parent')->getJsonArray(['id' => 'id']);
                     $return['categories'][$categFormat['id']]['parent'] = $parentForm['id'];
                     $categ = $parent;
                 } else {
@@ -95,7 +95,7 @@ class ObjectExportService extends AbstractService
         $return['asset'] = null;
         $return['object']['asset'] = null;
         if (!empty($asset)) {
-            $asset = $asset->getJsonArray(array('id'));
+            $asset = $asset->getJsonArray(['id']);
             $return['object']['asset'] = $asset['id'];
             $return['asset'] = $this->get('assetExportService')->generateExportArray($asset['id']);
         }
@@ -122,7 +122,7 @@ class ObjectExportService extends AbstractService
         $children = array_reverse($this->get('objectObjectService')->getChildren($entity->get('id'))); // Le tri de cette fonction est "position DESC"
         $return['children'] = null;
         if (!empty($children)) {
-            $return['children'] = array();
+            $return['children'] = [];
             foreach ($children as $child) {
                 $return['children'][$child->get('child')->get('id')] = $this->generateExportArray($child->get('child')->get('id'));
             }
@@ -140,7 +140,7 @@ class ObjectExportService extends AbstractService
      * @param array $objectsCache
      * @return bool
      */
-    public function importFromArray($data, $anr, $modeImport = 'merge', &$objectsCache = array())
+    public function importFromArray($data, $anr, $modeImport = 'merge', &$objectsCache = [])
     {
         if (isset($data['type']) && $data['type'] == 'object' &&
             array_key_exists('version', $data) && $data['version'] == $this->getVersion()

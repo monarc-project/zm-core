@@ -19,7 +19,6 @@ class ThreatService extends AbstractService
     protected $modelService;
     protected $themeTable;
     protected $amvService;
-
     protected $filterColumns = [
         'label1', 'label2', 'label3', 'label4',
         'description1', 'description2', 'description3', 'description4',
@@ -38,7 +37,6 @@ class ThreatService extends AbstractService
      */
     public function create($data, $last = true)
     {
-
         $entity = $this->get('entity');
         if (isset($data['anr']) && strlen($data['anr'])) {
             /** @var AnrTable $anrTable */
@@ -66,7 +64,6 @@ class ThreatService extends AbstractService
         return $this->get('table')->save($entity);
     }
 
-
     /**
      * Update
      *
@@ -77,7 +74,6 @@ class ThreatService extends AbstractService
      */
     public function update($id, $data)
     {
-
         $this->filterPatchFields($data);
 
         $entity = $this->get('table')->getEntity($id);
@@ -91,7 +87,7 @@ class ThreatService extends AbstractService
             unset($data['models']);
         }
 
-        $models = isset($data['models']) ? $data['models'] : array();
+        $models = isset($data['models']) ? $data['models'] : [];
         $follow = isset($data['follow']) ? $data['follow'] : null;
         unset($data['models']);
         unset($data['follow']);

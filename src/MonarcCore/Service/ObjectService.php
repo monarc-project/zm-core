@@ -122,7 +122,7 @@ class ObjectService extends AbstractService
             if ($model->get('isGeneric')) { // le modèle est générique, on récupère les modèles génériques
                 $filterAnd['mode'] = Object::MODE_GENERIC;
             } else {
-                $filterAnd['asset'] = array();
+                $filterAnd['asset'] = [];
 
                 $assets = $model->get('assets');
                 foreach ($assets as $a) { // on récupère tous les assets associés au modèle et on ne prend que les spécifiques
@@ -232,12 +232,12 @@ class ObjectService extends AbstractService
             foreach ($instances as $instance) {
                 $asc = $instanceTable->getAscendance($instance);
 
-                $names = array(
+                $names = [
                     'name1' => $anrObject->label1,
                     'name2' => $anrObject->label2,
                     'name3' => $anrObject->label3,
                     'name4' => $anrObject->label4,
-                );
+                ];
                 foreach ($asc as $a) {
                     $names['name1'] .= ' > ' . $a['name1'];
                     $names['name2'] .= ' > ' . $a['name2'];
@@ -826,7 +826,7 @@ class ObjectService extends AbstractService
      * @param $field
      * @return bool
      */
-    private function checkModeIntegrityRecursive($objects = array(), $mode, $field)
+    private function checkModeIntegrityRecursive($objects = [], $mode, $field)
     {
         foreach ($objects as $p) {
             if ($p['mode'] == $mode) {
@@ -1329,7 +1329,7 @@ class ObjectService extends AbstractService
 
     /**
      * Export
-     * 
+     *
      * @param $data
      * @return string
      * @throws \Exception

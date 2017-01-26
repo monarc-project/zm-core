@@ -15,7 +15,6 @@ class ScaleImpactTypeService extends AbstractService
     protected $scaleTable;
     protected $instanceTable;
     protected $instanceConsequenceService;
-
     protected $dependencies = ['anr', 'scale'];
     protected $forbiddenFields = ['scale'];
     protected $types = [
@@ -77,7 +76,6 @@ class ScaleImpactTypeService extends AbstractService
      */
     public function create($data, $last = true)
     {
-
         $anrId = $data['anr'];
 
         if (!isset($data['isSys'])) {
@@ -134,7 +132,6 @@ class ScaleImpactTypeService extends AbstractService
      */
     public function update($id, $data)
     {
-
         $data['isSys'] = 0;
         $data['type'] = 9;
 
@@ -159,7 +156,6 @@ class ScaleImpactTypeService extends AbstractService
      */
     public function delete($id)
     {
-
         $entity = $this->getEntity($id);
 
         if ($entity['isSys']) {

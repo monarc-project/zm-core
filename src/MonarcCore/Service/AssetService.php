@@ -80,7 +80,7 @@ class AssetService extends AbstractService
             unset($data['models']);
         }
 
-        $models = isset($data['models']) ? $data['models'] : array();
+        $models = isset($data['models']) ? $data['models'] : [];
         $follow = isset($data['follow']) ? $data['follow'] : null;
         unset($data['models']);
         unset($data['follow']);
@@ -222,7 +222,7 @@ class AssetService extends AbstractService
 
         $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $entity->get('code'));
 
-        $assetObj = array(
+        $assetObj = [
             'id' => 'id',
             'label1' => 'label1',
             'label2' => 'label2',
@@ -236,12 +236,12 @@ class AssetService extends AbstractService
             'mode' => 'mode',
             'type' => 'type',
             'code' => 'code',
-        );
-        $return = array(
+        ];
+        $return = [
             'type' => 'asset',
             'asset' => $entity->getJsonArray($assetObj),
             'version' => $this->getVersion(),
-        );
+        ];
         $amvService = $this->get('amvService');
         $amvTable = $amvService->get('table');
 
@@ -258,9 +258,9 @@ class AssetService extends AbstractService
         }
         $amvResults = $amvResults->getQuery()->getResult();
 
-        $data_amvs = $data_threats = $data_vuls = $data_themes = $t_ids = $v_ids = $m_ids = $tt_ids = $threats = $vuls = $themes = array();
+        $data_amvs = $data_threats = $data_vuls = $data_themes = $t_ids = $v_ids = $m_ids = $tt_ids = $threats = $vuls = $themes = [];
 
-        $amvObj = array(
+        $amvObj = [
             'id' => 'v',
             'threat' => 'o',
             'vulnerability' => 'o',
@@ -268,8 +268,8 @@ class AssetService extends AbstractService
             'measure2' => 'o',
             'measure3' => 'o',
             'status' => 'v',
-        );
-        $treatsObj = array(
+        ];
+        $treatsObj = [
             'id' => 'id',
             'theme' => 'theme',
             'mode' => 'mode',
@@ -311,8 +311,8 @@ class AssetService extends AbstractService
             'trend' => 'trend',
             'comment' => 'comment',
             'qualification' => 'qualification',
-        );
-        $vulsObj = array(
+        ];
+        $vulsObj = [
             'id' => 'id',
             'mode' => 'mode',
             'code' => 'code',
@@ -325,15 +325,15 @@ class AssetService extends AbstractService
             'description3' => 'description3',
             'description4' => 'description4',
             'status' => 'status',
-        );
-        $themesObj = array(
+        ];
+        $themesObj = [
             'id' => 'id',
             'label1' => 'label1',
             'label2' => 'label2',
             'label3' => 'label3',
             'label4' => 'label4',
-        );
-        $measuresObj = array(
+        ];
+        $measuresObj = [
             'id' => 'id',
             'code' => 'code',
             'description1' => 'description1',
@@ -341,10 +341,10 @@ class AssetService extends AbstractService
             'description3' => 'description3',
             'description4' => 'description4',
             'status' => 'status',
-        );
+        ];
 
         foreach ($amvResults as $amv) {
-            $data_amvs[$amv->get('id')] = array();
+            $data_amvs[$amv->get('id')] = [];
             foreach ($amvObj as $k => $v) {
                 switch ($v) {
                     case 'v':

@@ -11,6 +11,13 @@ class UserProfileService extends AbstractService
 {
     protected $securityService;
 
+    /**
+     * Update
+     *
+     * @param $user
+     * @param $data
+     * @return array
+     */
     public function update($user, $data)
     {
         // unauthorized fields
@@ -22,12 +29,12 @@ class UserProfileService extends AbstractService
         $entity->setDbAdapter($this->get('table')->getDb());
         if (!empty($data['new'])) {
             if (!empty($data['confirm']) && !empty($data['old']) && $data['new'] == $data['old'] && $this->get('securityService')->verifyPwd($data['confirm'], $user->get('password'))) {
-                $entity->exchangeArray(array('password' => $data['new']));
+                $entity->exchangeArray(['password' => $data['new']]);
             }
         } else {
             $entity->exchangeArray($data);
         }
         $this->get('table')->save($entity);
-        return array('status' => 'ok');
+        return ['status' => 'ok'];
     }
 }

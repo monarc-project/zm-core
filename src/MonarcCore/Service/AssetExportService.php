@@ -32,7 +32,7 @@ class AssetExportService extends AbstractService
 
         $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $entity->get('code'));
 
-        $assetObj = array(
+        $assetObj = [
             'id' => 'id',
             'label1' => 'label1',
             'label2' => 'label2',
@@ -46,13 +46,13 @@ class AssetExportService extends AbstractService
             'mode' => 'mode',
             'type' => 'type',
             'code' => 'code',
-        );
-        $return = array(
+        ];
+        $return = [
             'type' => 'asset',
             'asset' => $entity->getJsonArray($assetObj),
             'version' => $this->getVersion(),
-            'amvs' => array(),
-        );
+            'amvs' => [],
+        ];
         $amvService = $this->get('amvService');
         $amvTable = $amvService->get('table');
 

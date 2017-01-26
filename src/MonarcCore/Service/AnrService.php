@@ -244,12 +244,12 @@ class AnrService extends AbstractService
 
         $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $entity->get('label' . $this->getLanguage()));
 
-        $return = array(
+        $return = [
             'type' => 'anr',
             'version' => $this->getVersion(),
-            'instances' => array(),
+            'instances' => [],
             'with_eval' => $with_eval,
-        );
+        ];
 
         $instanceService = $this->get('instanceService');
         $table = $this->get('instanceTable');
@@ -262,14 +262,14 @@ class AnrService extends AbstractService
 
         if ($with_eval) {
             // scales
-            $return['scales'] = array();
+            $return['scales'] = [];
             $scaleTable = $this->get('scaleTable');
             $scales = $scaleTable->getEntityByFields(['anr' => $entity->get('id')]);
-            $scalesArray = array(
+            $scalesArray = [
                 'min' => 'min',
                 'max' => 'max',
                 'type' => 'type',
-            );
+            ];
             foreach ($scales as $s) {
                 $return['scales'][$s->type] = $s->getJsonArray($scalesArray);
             }

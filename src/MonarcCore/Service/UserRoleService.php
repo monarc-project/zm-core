@@ -4,6 +4,12 @@ namespace MonarcCore\Service;
 use MonarcCore\Model\Table\UserRoleTable;
 use Zend\Http\Header\GenericHeader;
 
+/**
+ * User Role Service
+ *
+ * Class UserRoleService
+ * @package MonarcCore\Service
+ */
 class UserRoleService extends AbstractService
 {
     protected $userRoleTable;
@@ -26,40 +32,57 @@ class UserRoleService extends AbstractService
         $userRoleTable = $this->get('userRoleTable');
 
         return $userRoleTable->getRepository()->createQueryBuilder('t')
-            ->select(array('t.id', 't.role'))
+            ->select(['t.id', 't.role'])
             ->where('t.user = :id')
             ->setParameter(':id', $filter)
             ->getQuery()->getResult();
     }
 
+    /**
+     * Get Entity
+     *
+     * @param $id
+     * @return mixed
+     */
     public function getEntity($id)
     {
         return $this->get('userRoleTable')->get($id);
     }
 
+    /**
+     * Get By User Id
+     *
+     * @param $userId
+     * @return array
+     */
     public function getByUserId($userId)
     {
         /** @var UserRoleTable $userRoleTable */
         $userRoleTable = $this->get('userRoleTable');
 
         return $userRoleTable->getRepository()->createQueryBuilder('t')
-            ->select(array('t.id', 't.role'))
+            ->select(['t.id', 't.role'])
             ->where('t.user = :id')
             ->setParameter(':id', $userId)
             ->getQuery()->getResult();
     }
 
+    /**
+     * Get By User Token
+     *
+     * @param $token
+     * @return array
+     * @throws \Exception
+     */
     public function getByUserToken($token)
     {
-
         if ($token instanceof GenericHeader) {
             $token = $token->getFieldValue();
         }
 
         $userTokenTable = $this->get('userTokenTable');
-
         $userToken = $userTokenTable->getRepository()->createQueryBuilder('t')
-            ->select(array('t.id', 'IDENTITY(t.user) as userId', 't.token', 't.dateEnd'))
+            ->select(['t.id', 'IDENTITY(t.user) as userId', 't.token', 't.dateEnd'])
             ->where('t.token = :token')
             ->setParameter(':token', $token)
             ->getQuery()
@@ -73,5 +96,4 @@ class UserRoleService extends AbstractService
             throw new \Exception('No user');
         }
     }
-
 }

@@ -3,7 +3,6 @@ namespace MonarcCore\Service;
 
 use MonarcCore\Model\Entity\User;
 use MonarcCore\Model\Entity\UserRole;
-use MonarcCore\Model\Table\UserTable;
 use MonarcCore\Validator\PasswordStrength;
 
 /**
@@ -42,9 +41,8 @@ class UserService extends AbstractService
     {
 
         return $this->get('table')->countFiltered($page, $limit, $this->parseFrontendOrder($order),
-            $this->parseFrontendFilter($filter, array('firstname', 'lastname', 'email')));
+            $this->parseFrontendFilter($filter, ['firstname', 'lastname', 'email']));
     }
-
 
     /**
      * Create
@@ -90,7 +88,6 @@ class UserService extends AbstractService
         return parent::update($id, $data);
     }
 
-
     /**
      * Patch
      *
@@ -101,7 +98,6 @@ class UserService extends AbstractService
      */
     public function patch($id, $data)
     {
-
         if (isset($data['password'])) {
             $this->validatePassword($data);
         }
@@ -114,7 +110,6 @@ class UserService extends AbstractService
 
         return parent::patch($id, $data);
     }
-
 
     /**
      * Get By Email
@@ -135,7 +130,6 @@ class UserService extends AbstractService
      */
     protected function validatePassword($data)
     {
-
         $password = $data['password'];
 
         $passwordValidator = new PasswordStrength();
@@ -158,7 +152,6 @@ class UserService extends AbstractService
      */
     protected function manageRoles($user, $data)
     {
-
         $userRoleTable = $this->get('roleTable');
         $userRoleTable->deleteByUser($user->id);
         if (!empty($data['role'])) {
@@ -188,7 +181,7 @@ class UserService extends AbstractService
     {
         $user = $this->get('table')->get($id);
         $roles = $this->get('roleTable')->getRepository()->findByUser($user['id']);
-        $user['role'] = array();
+        $user['role'] = [];
         if (!empty($roles)) {
             foreach ($roles as $r) {
                 $user['role'][] = $r->get('role');

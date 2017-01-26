@@ -5,8 +5,20 @@ use Zend\ServiceManager\FactoryInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 use Zend\I18n\Translator\Translator;
 
+/**
+ * Translate Service Factory
+ *
+ * Class TranslateServiceFactory
+ * @package MonarcCore\Service
+ */
 class TranslateServiceFactory implements FactoryInterface
 {
+    /**
+     * Create Service
+     *
+     * @param ServiceLocatorInterface $serviceLocator
+     * @return bool|TranslateService
+     */
     public function createService(ServiceLocatorInterface $serviceLocator)
     {
         $baseDir = '';

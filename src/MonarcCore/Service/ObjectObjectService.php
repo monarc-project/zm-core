@@ -179,7 +179,7 @@ class ObjectObjectService extends AbstractService
         /** @var ObjectObjectTable $table */
         $table = $this->get('table');
 
-        return $table->getEntityByFields(array('father' => $objectId), array('position' => 'DESC'));
+        return $table->getEntityByFields(['father' => $objectId], ['position' => 'DESC']);
     }
 
     /**
@@ -227,7 +227,7 @@ class ObjectObjectService extends AbstractService
         /** @var ObjectObjectTable $table */
         $table = $this->get('table');
 
-        $parents = $table->getEntityByFields(array('child' => $parent_id), array('position' => 'ASC'));
+        $parents = $table->getEntityByFields(['child' => $parent_id], ['position' => 'ASC']);
         $array_parents = [];
 
         foreach ($parents as $parent) {
@@ -255,7 +255,7 @@ class ObjectObjectService extends AbstractService
         /** @var ObjectObjectTable $table */
         $table = $this->get('table');
 
-        $parents = $table->getEntityByFields(array('child' => $parentId), array('position' => 'ASC'));
+        $parents = $table->getEntityByFields(['child' => $parentId], ['position' => 'ASC']);
 
         foreach ($parents as $parent) {
             $array[] = $parent->father->id;

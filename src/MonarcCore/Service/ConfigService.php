@@ -21,9 +21,9 @@ class ConfigService extends AbstractService
         $languages = $this->config['languages'];
         $defaultLanguageIndex = $this->config['defaultLanguageIndex'];
 
-        $activeLanguages = isset($this->config['activeLanguages']) ? $this->config['activeLanguages'] : array();
+        $activeLanguages = isset($this->config['activeLanguages']) ? $this->config['activeLanguages'] : [];
 
-        $l = array();
+        $l = [];
         if (empty($activeLanguages)) {
             foreach ($languages as $k => $v) {
                 $l[$v['index']] = $v['label'];

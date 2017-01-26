@@ -19,11 +19,22 @@ class RolfRiskService extends AbstractService
     protected $instanceTable;
     protected $instanceRiskOpTable;
     protected $instanceRiskOpService;
-
-    protected $filterColumns = array(
+    protected $filterColumns = [
         'code', 'label1', 'label2', 'label3', 'label4', 'description1', 'description2', 'description3', 'description4'
-    );
+    ];
 
+    /**
+     * Get List Specific
+     *
+     * @param int $page
+     * @param int $limit
+     * @param null $order
+     * @param null $filter
+     * @param null $category
+     * @param null $tag
+     * @param null $anr
+     * @return mixed
+     */
     public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $category = null, $tag = null, $anr = null)
     {
         $filterAnd = [];
@@ -60,6 +71,18 @@ class RolfRiskService extends AbstractService
         );
     }
 
+    /**
+     * Get Filtered Specific Count
+     *
+     * @param int $page
+     * @param int $limit
+     * @param null $order
+     * @param null $filter
+     * @param null $category
+     * @param null $tag
+     * @param null $anr
+     * @return mixed
+     */
     public function getFilteredSpecificCount($page = 1, $limit = 25, $order = null, $filter = null, $category = null, $tag = null, $anr = null)
     {
         $filterAnd = [];
@@ -144,10 +167,9 @@ class RolfRiskService extends AbstractService
      */
     public function update($id, $data)
     {
-
-        $rolfCategories = isset($data['categories']) ? $data['categories'] : array();
+        $rolfCategories = isset($data['categories']) ? $data['categories'] : [];
         unset($data['categories']);
-        $rolfTags = isset($data['tags']) ? $data['tags'] : array();
+        $rolfTags = isset($data['tags']) ? $data['tags'] : [];
         unset($data['tags']);
 
         $entity = $this->get('table')->getEntity($id);

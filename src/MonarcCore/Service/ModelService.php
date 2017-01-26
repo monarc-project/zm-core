@@ -21,11 +21,9 @@ class ModelService extends AbstractService
     protected $amvTable;
     protected $clientTable; // only loaded by MonarcFO service factory
     protected $forbiddenFields = ['anr'];
-
-    protected $filterColumns = array(
-        'label1', 'label2', 'label3', 'label4',
-        'description1', 'description2', 'description3', 'description4',
-    );
+    protected $filterColumns = [
+        'label1', 'label2', 'label3', 'label4', 'description1', 'description2', 'description3', 'description4',
+    ];
 
     /**
      * Get List

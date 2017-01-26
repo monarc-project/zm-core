@@ -12,7 +12,6 @@ class QuestionService extends AbstractService
     protected $choiceTable;
     protected $anrTable;
     protected $userAnrTable;
-
     protected $dependencies = ['anr'];
 
     /**
@@ -26,7 +25,6 @@ class QuestionService extends AbstractService
      */
     public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
     {
-
         if (empty($order)) {
             $order = 'position';
         }
@@ -65,11 +63,9 @@ class QuestionService extends AbstractService
      */
     public function create($data, $last = true)
     {
-
         $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
 
         $entity = $this->get('entity');
-
         $entity->setDbAdapter($this->get('table')->getDb());
 
         if (!empty($data['anr'])) {
@@ -81,7 +77,6 @@ class QuestionService extends AbstractService
         }
 
         $entity->exchangeArray($data);
-
         $this->setDependencies($entity, $dependencies);
 
         return $this->get('table')->save($entity);
@@ -93,6 +88,7 @@ class QuestionService extends AbstractService
      * @param $id
      * @param $data
      * @return mixed
+     * @throws \Exception
      */
     public function update($id, $data)
     {
@@ -138,7 +134,6 @@ class QuestionService extends AbstractService
      */
     public function delete($id)
     {
-
         $entity = $this->getEntity($id);
 
         if (!empty($entity['anr']) && isset($entity['mode']) && !$entity['mode']) {
@@ -147,5 +142,4 @@ class QuestionService extends AbstractService
 
         $this->get('table')->delete($id);
     }
-
 }

@@ -9,9 +9,7 @@ namespace MonarcCore\Service;
  */
 class RolfCategoryService extends AbstractService
 {
-    protected $filterColumns = array(
-        'code', 'label1', 'label2', 'label3', 'label4',
-    );
+    protected $filterColumns = ['code', 'label1', 'label2', 'label3', 'label4'];
 
     /**
      * Create
@@ -22,8 +20,6 @@ class RolfCategoryService extends AbstractService
      */
     public function create($data, $last = true)
     {
-
-        //$entity = $this->get('entity');
         $class = $this->get('entity');
         $entity = new $class();
         $entity->setLanguage($this->getLanguage());

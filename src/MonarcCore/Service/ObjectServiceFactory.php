@@ -1,9 +1,15 @@
 <?php
 namespace MonarcCore\Service;
 
+/**
+ * Object Service Factory
+ *
+ * Class ObjectServiceFactory
+ * @package MonarcCore\Service
+ */
 class ObjectServiceFactory extends AbstractServiceFactory
 {
-    protected $ressources = array(
+    protected $ressources = [
         'table' => '\MonarcCore\Model\Table\ObjectTable',
         'entity' => '\MonarcCore\Model\Entity\Object',
         'anrObjectCategoryEntity' => 'MonarcCore\Model\Entity\AnrObjectCategory',
@@ -22,6 +28,5 @@ class ObjectServiceFactory extends AbstractServiceFactory
         'objectObjectService' => 'MonarcCore\Service\ObjectObjectService',
         'objectExportService' => 'MonarcCore\Service\ObjectExportService',
         'instanceRiskOpService' => 'MonarcCore\Service\InstanceRiskOpService',
-    );
-
+    ];
 }
