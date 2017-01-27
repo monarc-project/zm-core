@@ -97,7 +97,7 @@ class Db {
             if ($value !== 'null' && !is_null($value)) {
                 if(is_array($value)){
                     if(!empty($value['op']) && array_key_exists('value', $value)){
-                        if(is_array($value['value'])){
+                        if(is_array($value['value'])){ // IN || NOT IN
                             $qb->andWhere("$db ".$value['op']." (:$key)");
                             $qb->setParameter($key, $value['value']);
                         }elseif(is_int($value['value'])){
@@ -122,8 +122,14 @@ class Db {
             }
         }
 
+        $fistOrder = true;
         foreach ($orderBy as $field => $way) {
-            $qb->orderBy("u.$field", $way);
+            if($fistOrder){
+                $qb->orderBy("u.$field", $way);
+                $fistOrder = false;
+            }else{
+                $qb->addOrderBy("u.$field", $way);
+            }
         }
         return $qb->getQuery()->getResult();
     }
