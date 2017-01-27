@@ -23,6 +23,7 @@ class InstanceRiskService extends AbstractService
     protected $userAnrTable;
     protected $amvTable;
     protected $instanceTable;
+    protected $recommandationTable;
     
     // only for setDependencies (deprecated)
     protected $assetTable;
@@ -107,6 +108,8 @@ class InstanceRiskService extends AbstractService
         $nb = count($risks);
         $i = 1;
         foreach($risks as $r){
+            $r->set('kindOfMeasure',InstanceRisk::KIND_NOT_TREATED);
+            $this->updateRecoRisks($r);
             $table->delete($r->id,($i == $nb));
             $i++;
         }
@@ -206,6 +209,7 @@ class InstanceRiskService extends AbstractService
         $instanceRiskTable->save($entity);
 
         $this->updateRisks($id);
+        $this->updateRecoRisks($entity);
 
         return $id;
     }
@@ -278,6 +282,7 @@ class InstanceRiskService extends AbstractService
         $instanceRiskTable->save($entity);
 
         $this->updateRisks($id);
+        $this->updateRecoRisks($entity);
 
         return $id;
     }
@@ -330,6 +335,8 @@ class InstanceRiskService extends AbstractService
         $instanceRisk->cacheTargetedRisk = $this->getTargetRisk($impacts, $instanceRisk->threatRate, $instanceRisk->vulnerabilityRate, $instanceRisk->reductionAmount);
 
         $instanceRiskTable->save($instanceRisk, $last);
+
+        $this->updateRecoRisks($instanceRisk);
     }
 
     /**
@@ -352,5 +359,102 @@ class InstanceRiskService extends AbstractService
         }
 
         return $this->update($id, $data);
+    }
+
+    /**
+     * Delete
+     *
+     * @param $id
+     */
+    public function delete($id)
+    {
+        /** @var InstanceRiskTable $instanceRiskTable */
+        $instanceRiskTable = $this->get('table');
+        $instanceRisk = $instanceRiskTable->getEntity($id);
+        $this->updateRecoRisks($instanceRisk);
+        return parent::delete($id);
+    }
+
+    /**
+     * Update recommandation risk position
+     *
+     * @param $entity InstanceRisk
+     */
+    public function updateRecoRisks($entity){
+        if(!empty($this->get('recommandationTable'))){
+            switch($entity->get('kindOfMeasure')){
+                case InstanceRisk::KIND_REDUCTION:
+                case InstanceRisk::KIND_REFUS:
+                case InstanceRisk::KIND_ACCEPTATION:
+                case InstanceRisk::KIND_PARTAGE:
+                    $sql = "SELECT recommandation_id
+                            FROM recommandations_risks
+                            WHERE instance_risk_id = :id
+                            GROUP BY recommandation_id";
+                    $res = $this->get('table')->getDb()->getEntityManager()->getConnection()
+                        ->fetchAll($sql, [':id'=>$entity->get('id')]);
+                    $ids = [];
+                    foreach($res as $r){
+                        $ids[$r['recommandation_id']] = $r['recommandation_id'];
+                    }
+                    $recos = $this->get('recommandationTable')->getEntityByFields(['anr'=>$entity->get('anr')->get('id')],['position'=>'ASC','importance'=>'DESC','code'=>'ASC']);
+                    $i = 0;
+                    $hasSave = false;
+                    foreach($recos as &$r){
+                        if(($r->get('position') == null || $r->get('position') <= 0) && isset($ids[$r->get('id')])){
+                            $i++;
+                            $r->set('position',$i);
+                            $this->get('recommandationTable')->save($r,false);
+                            $hasSave = true;
+                        }elseif($i > 0 && $r->get('position') > 0){
+                            $r->set('position',$r->get('position')+$i);
+                            $this->get('recommandationTable')->save($r,false);
+                            $hasSave = true;
+                        }
+                    }
+                    if($hasSave && !empty($r)){
+                        $this->get('recommandationTable')->save($r);
+                    }
+                    break;
+                case InstanceRisk::KIND_NOT_TREATED:
+                default:
+                    $sql = "SELECT rr.recommandation_id
+                            FROM recommandations_risks rr
+                            LEFT JOIN instances_risks ir
+                            ON ir.id = rr.instance_risk_id
+                            LEFT JOIN instances_risks_op iro
+                            ON iro.id = rr.instance_risk_op_id
+                            WHERE '((ir.kind_of_measure IS NOT NULL OR ir.kind_of_measure < ".InstanceRisk::KIND_NOT_TREATED.")
+                                OR (iro.kind_of_measure IS NOT NULL OR iro.kind_of_measure < ".\MonarcCore\Model\Entity\InstanceRiskOp::KIND_NOT_TREATED."))'
+                            AND rr.anr_id = :anr
+                            AND rr.instance_risk_id != :id
+                            GROUP BY rr.recommandation_id";
+                    $res = $this->get('table')->getDb()->getEntityManager()->getConnection()
+                        ->fetchAll($sql, [':anr'=>$entity->get('anr')->get('id'), ':id'=>$entity->get('id')]);
+                    $ids = [];
+                    foreach($res as $r){
+                        $ids[$r['recommandation_id']] = $r['recommandation_id'];
+                    }
+                    $recos = $this->get('recommandationTable')->getEntityByFields(['anr'=>$entity->get('anr')->get('id'), 'position' => ['op'=>'IS NOT', 'value'=>null]],['position'=>'ASC']);
+                    $i = 0;
+                    $hasSave = false;
+                    foreach($recos as &$r){
+                        if($r->get('position') > 0 && !isset($ids[$r->get('id')])){
+                            $i++;
+                            $r->set('position',null);
+                            $this->get('recommandationTable')->save($r,false);
+                            $hasSave = true;
+                        }elseif($i > 0 && $r->get('position') > 0){
+                            $r->set('position',$r->get('position')-$i);
+                            $this->get('recommandationTable')->save($r,false);
+                            $hasSave = true;
+                        }
+                    }
+                    if($hasSave && !empty($r)){
+                        $this->get('recommandationTable')->save($r);
+                    }
+                    break;
+            }
+        }
     }
 }
