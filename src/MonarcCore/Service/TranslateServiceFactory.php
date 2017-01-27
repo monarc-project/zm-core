@@ -5,15 +5,28 @@ use Zend\ServiceManager\FactoryInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 use Zend\I18n\Translator\Translator;
 
+/**
+ * Translate Service Factory
+ *
+ * Class TranslateServiceFactory
+ * @package MonarcCore\Service
+ */
 class TranslateServiceFactory implements FactoryInterface
 {
-    public function createService(ServiceLocatorInterface $serviceLocator){
+    /**
+     * Create Service
+     *
+     * @param ServiceLocatorInterface $serviceLocator
+     * @return bool|TranslateService
+     */
+    public function createService(ServiceLocatorInterface $serviceLocator)
+    {
         $baseDir = '';
-        if(is_dir('node_modules/ng_client/po')){
+        if (is_dir('node_modules/ng_client/po')) {
             $baseDir = 'node_modules/ng_client/po/';
-        }elseif(is_dir('node_modules/ng_backoffice/po')){
+        } elseif (is_dir('node_modules/ng_backoffice/po')) {
             $baseDir = 'node_modules/ng_backoffice/po/';
-        }else{
+        } else {
             return false;
         }
         $transConf = [
@@ -26,23 +39,23 @@ class TranslateServiceFactory implements FactoryInterface
 
         $confLanguages = $config['languages'];
         $languages = [];
-        foreach($confLanguages as $k => $l){
+        foreach ($confLanguages as $k => $l) {
             $languages[$l['index']] = $k;
-            if(file_exists($baseDir.$k.'.mo')){
+            if (file_exists($baseDir . $k . '.mo')) {
                 $transConf['translation_files'][] = [
-                    'filename' => $baseDir.$k.'.mo',
+                    'filename' => $baseDir . $k . '.mo',
                     'type' => 'gettext',
                     'text_domain' => 'monarc',
                     'local' => $k,
                 ];
             }
-            if($l['index'] == $defaultLanguageIndex){
+            if ($l['index'] == $defaultLanguageIndex) {
                 $transConf['local'] = $k;
             }
         }
-        if(empty($transConf['translation_files'])){
+        if (empty($transConf['translation_files'])) {
             $translator = null;
-        }else{
+        } else {
             $translator = Translator::factory($transConf);
         }
 

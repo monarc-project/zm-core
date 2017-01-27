@@ -4,7 +4,6 @@ namespace MonarcCore\Service;
 use MonarcCore\Model\Entity\AbstractEntity;
 use MonarcCore\Model\Entity\Asset;
 use MonarcCore\Model\Entity\Object;
-use MonarcCore\Model\Entity\ObjectObject;
 use MonarcCore\Model\Table\AmvTable;
 use MonarcCore\Model\Table\AnrObjectCategoryTable;
 use MonarcCore\Model\Table\AnrTable;
@@ -27,9 +26,7 @@ class ObjectService extends AbstractService
     protected $objectObjectService;
     protected $modelService;
     protected $instanceRiskOpService;
-
     protected $anrObjectCategoryEntity;
-
     protected $anrTable;
     protected $userAnrTable;
     protected $anrObjectCategoryTable;
@@ -43,12 +40,7 @@ class ObjectService extends AbstractService
     protected $rolfTagTable;
     protected $amvTable;
     protected $objectExportService;
-
-    protected $filterColumns = [
-        'name1', 'name2', 'name3', 'name4',
-        'label1', 'label2', 'label3', 'label4',
-    ];
-
+    protected $filterColumns = ['name1', 'name2', 'name3', 'name4', 'label1', 'label2', 'label3', 'label4'];
     protected $dependencies = ['anr', 'asset', 'category', 'rolfTag'];
 
     /**
@@ -66,8 +58,8 @@ class ObjectService extends AbstractService
      * @return array
      * @throws \Exception
      */
-    public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $model = null, $anr = null, $lock = null){
-
+    public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $model = null, $anr = null, $lock = null)
+    {
         /** @var AssetTable $assetTable */
         $assetTable = $this->get('assetTable');
         /** @var ObjectCategoryTable $categoryTable */
@@ -92,11 +84,11 @@ class ObjectService extends AbstractService
         //$objectsArray = [];
         $rootArray = [];
 
-        foreach($objects as $object) {
-            if(!empty($object['asset'])){
+        foreach ($objects as $object) {
+            if (!empty($object['asset'])) {
                 $object['asset'] = $assetTable->get($object['asset']->getId());
             }
-            if(!empty($object['category'])){
+            if (!empty($object['category'])) {
                 $object['category'] = $categoryTable->get($object['category']->getId());
             }
 
@@ -121,50 +113,50 @@ class ObjectService extends AbstractService
      * @param $anr
      * @return array|bool
      */
-    public function getAnrObjects($page, $limit, $order, $filter, $filterAnd, $model, $anr, $context = \MonarcCore\Model\Entity\AbstractEntity::BACK_OFFICE) {
-
-        if($model){
+    public function getAnrObjects($page, $limit, $order, $filter, $filterAnd, $model, $anr, $context = \MonarcCore\Model\Entity\AbstractEntity::BACK_OFFICE)
+    {
+        if ($model) {
             /** @var ModelTable $modelTable */
             $modelTable = $this->get('modelTable');
             $model = $modelTable->getEntity($model);
-            if($model->get('isGeneric')){ // le modèle est générique, on récupère les modèles génériques
+            if ($model->get('isGeneric')) { // le modèle est générique, on récupère les modèles génériques
                 $filterAnd['mode'] = Object::MODE_GENERIC;
-            }else{
-                $filterAnd['asset'] = array();
+            } else {
+                $filterAnd['asset'] = [];
 
                 $assets = $model->get('assets');
-                foreach($assets as $a){ // on récupère tous les assets associés au modèle et on ne prend que les spécifiques
-                    if($a->get('mode') == Object::MODE_SPECIFIC){
+                foreach ($assets as $a) { // on récupère tous les assets associés au modèle et on ne prend que les spécifiques
+                    if ($a->get('mode') == Object::MODE_SPECIFIC) {
                         $filterAnd['asset'][$a->get('id')] = $a->get('id');
                     }
                 }
-                if(!$model->get('isRegulator')){ // si le modèle n'est pas régulateur
-                    $assets = $this->get('assetTable')->getEntityByFields(['mode'=>Object::MODE_GENERIC]); // on récupère tous les assets génériques
-                    foreach($assets as $a){
+                if (!$model->get('isRegulator')) { // si le modèle n'est pas régulateur
+                    $assets = $this->get('assetTable')->getEntityByFields(['mode' => Object::MODE_GENERIC]); // on récupère tous les assets génériques
+                    foreach ($assets as $a) {
                         $filterAnd['asset'][$a->get('id')] = $a->get('id');
                     }
                 }
             }
-            if($context != \MonarcCore\Model\Entity\AbstractEntity::FRONT_OFFICE){
+            if ($context != \MonarcCore\Model\Entity\AbstractEntity::FRONT_OFFICE) {
                 $objects = $model->get('anr')->get('objects');
-                if(!empty($objects)){ // on enlève tout les objets déjà liés
-                    $filterAnd['id'] = ['op'=>'NOT IN','value'=>[]];
-                    foreach($objects as $o){
+                if (!empty($objects)) { // on enlève tout les objets déjà liés
+                    $filterAnd['id'] = ['op' => 'NOT IN', 'value' => []];
+                    foreach ($objects as $o) {
                         $filterAnd['id']['value'][$o->get('id')] = $o->get('id');
                     }
-                    if(empty($filterAnd['id']['value'])){
+                    if (empty($filterAnd['id']['value'])) {
                         unset($filterAnd['id']);
                     }
                 }
             }
-        }elseif($anr){
+        } elseif ($anr) {
             /** @var AnrTable $anrTable */
             $anrTable = $this->get('anrTable');
 
             $anrObj = $anrTable->getEntity($anr);
             $filterAnd['id'] = [];
             $objects = $anrObj->get('objects');
-            foreach($objects as $o){ // on en prend que les objets déjà liés (composants)
+            foreach ($objects as $o) { // on en prend que les objets déjà liés (composants)
                 $filterAnd['id'][$o->get('id')] = $o->get('id');
             }
         }
@@ -185,13 +177,16 @@ class ObjectService extends AbstractService
     }
 
     /**
+     * Get Complete Entity
+     *
      * @param $id
-     * @param string $context
-     * @param integer $anr
+     * @param string $anrContext
+     * @param null $anr
      * @return mixed
+     * @throws \Exception
      */
-    public function getCompleteEntity($id, $anrContext = Object::CONTEXT_BDC, $anr = null) {
-
+    public function getCompleteEntity($id, $anrContext = Object::CONTEXT_BDC, $anr = null)
+    {
         $table = $this->get('table');
         /** @var Object $object */
         $object = $table->getEntity($id);
@@ -213,15 +208,15 @@ class ObjectService extends AbstractService
             //Check if the object is linked to the $anr
             $found = false;
             $anrObject = null;
-            foreach($object->anrs as $a){
-                if($a->id == $anr){
+            foreach ($object->anrs as $a) {
+                if ($a->id == $anr) {
                     $found = true;
                     $anrObject = $a;
                     break;
                 }
             }
 
-            if(!$found){
+            if (!$found) {
                 throw new \Exception('This object is not bound to the ANR', 412);
             }
 
@@ -231,23 +226,23 @@ class ObjectService extends AbstractService
 
             /** @var InstanceTable $instanceTable */
             $instanceTable = $this->get('instanceTable');
-            $instances  = $instanceTable->getEntityByFields(['anr' => $anr, 'object' => $id]);
+            $instances = $instanceTable->getEntityByFields(['anr' => $anr, 'object' => $id]);
 
             $instances_arr = [];
-            foreach($instances as $instance) {
+            foreach ($instances as $instance) {
                 $asc = $instanceTable->getAscendance($instance);
 
-                $names = array(
+                $names = [
                     'name1' => $anrObject->label1,
                     'name2' => $anrObject->label2,
                     'name3' => $anrObject->label3,
                     'name4' => $anrObject->label4,
-                );
-                foreach($asc as $a){
-                    $names['name1'] .= ' > '.$a['name1'];
-                    $names['name2'] .= ' > '.$a['name2'];
-                    $names['name3'] .= ' > '.$a['name3'];
-                    $names['name4'] .= ' > '.$a['name4'];
+                ];
+                foreach ($asc as $a) {
+                    $names['name1'] .= ' > ' . $a['name1'];
+                    $names['name2'] .= ' > ' . $a['name2'];
+                    $names['name3'] .= ' > ' . $a['name3'];
+                    $names['name4'] .= ' > ' . $a['name4'];
                 }
                 $names['id'] = $instance->get('id');
                 $instances_arr[] = $names;
@@ -257,7 +252,7 @@ class ObjectService extends AbstractService
         } else {
 
             $anrsIds = [];
-            foreach($object->anrs as $anr) {
+            foreach ($object->anrs as $anr) {
                 $anrsIds[] = $anr->id;
             }
 
@@ -266,7 +261,7 @@ class ObjectService extends AbstractService
             $models = $modelTable->getByAnrs($anrsIds);
 
             $models_arr = [];
-            foreach($models as $model) {
+            foreach ($models as $model) {
                 $models_arr[] = [
                     'id' => $model->id,
                     'label1' => $model->label1,
@@ -288,11 +283,11 @@ class ObjectService extends AbstractService
      * @param $object
      * @return array
      */
-    protected function getRisks($object) {
-
+    protected function getRisks($object)
+    {
         /** @var AmvTable $amvTable */
         $amvTable = $this->get('amvTable');
-        $amvs = $amvTable->getEntityByFields(['asset' =>$object->asset->id ], ['position' => 'asc']);
+        $amvs = $amvTable->getEntityByFields(['asset' => $object->asset->id], ['position' => 'asc']);
 
         $risks = [];
         foreach ($amvs as $amv) {
@@ -322,7 +317,14 @@ class ObjectService extends AbstractService
         return $risks;
     }
 
-    protected function getRisksOp($object) {
+    /**
+     * Get Risks Op
+     *
+     * @param $object
+     * @return array
+     */
+    protected function getRisksOp($object)
+    {
         $riskOps = [];
 
         if (isset($object->asset)) {
@@ -335,7 +337,7 @@ class ObjectService extends AbstractService
                     $rolfTag = $rolfTagTable->getEntity($object->rolfTag->id);
                     $rolfRisks = $rolfTag->risks;
 
-                    if(!empty($rolfRisks)){
+                    if (!empty($rolfRisks)) {
                         foreach ($rolfRisks as $rolfRisk) {
                             $riskOps[] = [
                                 'description1' => $rolfRisk->label1,
@@ -373,8 +375,8 @@ class ObjectService extends AbstractService
      * @param null $model
      * @return int
      */
-    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $model = null, $anr = null, $context = Object::BACK_OFFICE){
-
+    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $model = null, $anr = null, $context = Object::BACK_OFFICE)
+    {
         $filterAnd = [];
         if ((!is_null($asset)) && ($asset != 0)) $filterAnd['asset'] = $asset;
         if ((!is_null($category)) && ($category != 0)) $filterAnd['category'] = $category;
@@ -392,7 +394,8 @@ class ObjectService extends AbstractService
      * @param $asset
      * @return mixed
      */
-    public function getGenericByAsset($asset) {
+    public function getGenericByAsset($asset)
+    {
         return $this->get('table')->getGenericByAssetId($asset->getId());
     }
 
@@ -404,23 +407,22 @@ class ObjectService extends AbstractService
      * @param $childHierarchy
      * @return mixed
      */
-    public function recursiveChild($hierarchy, $parent, &$childHierarchy, $objectsArray) {
-
-        $childs = [];
-        foreach($childHierarchy as $key => $link) {
-            if ((int) $link['father'] == $parent) {
+    public function recursiveChild($hierarchy, $parent, &$childHierarchy, $objectsArray)
+    {
+        $children = [];
+        foreach ($childHierarchy as $key => $link) {
+            if ((int)$link['father'] == $parent) {
                 $recursiveChild = $this->recursiveChild($hierarchy, $link['child'], $childHierarchy, $objectsArray);
                 $recursiveChild['objectObjectId'] = $link['id'];
-                $childs[] = $recursiveChild;
+                $children[] = $recursiveChild;
                 unset($childHierarchy[$key]);
             }
         }
 
         $hierarchy = $objectsArray[$parent];
         $this->formatDependencies($hierarchy, $this->dependencies);
-        if ($childs) {
-            $hierarchy['childs'] = $childs;
-            $hierarchy['childs'] = $childs;
+        if ($children) {
+            $hierarchy['childs'] = $children;
         }
 
         return $hierarchy;
@@ -433,14 +435,13 @@ class ObjectService extends AbstractService
      * @return mixed
      * @throws \Exception
      */
-    public function create($data, $last = true, $context = AbstractEntity::BACK_OFFICE) {
-
+    public function create($data, $last = true, $context = AbstractEntity::BACK_OFFICE)
+    {
         //create object
         $class = $this->get('entity');
         $object = new $class();
         $object->setLanguage($this->getLanguage());
         $object->setDbAdapter($this->get('table')->getDb());
-
 
         //in FO, all objects are generics
         if ($context == AbstractEntity::FRONT_OFFICE) {
@@ -448,7 +449,7 @@ class ObjectService extends AbstractService
         }
 
         $setRolfTagNull = false;
-        if(empty($data['rolfTag'])){
+        if (empty($data['rolfTag'])) {
             unset($data['rolfTag']);
             $setRolfTagNull = true;
         }
@@ -466,10 +467,10 @@ class ObjectService extends AbstractService
         }
 
         // Si asset secondaire, pas de rolfTag
-        if(!empty($data['asset']) && !empty($data['rolfTag'])){
+        if (!empty($data['asset']) && !empty($data['rolfTag'])) {
             $assetTable = $this->get('assetTable');
             $asset = $assetTable->get($data['asset']);
-            if(!empty($asset['type']) && $asset['type'] != \MonarcCore\Model\Entity\Asset::TYPE_PRIMARY){
+            if (!empty($asset['type']) && $asset['type'] != \MonarcCore\Model\Entity\Asset::TYPE_PRIMARY) {
                 unset($data['rolfTag']);
                 $setRolfTagNull = true;
             }
@@ -479,14 +480,14 @@ class ObjectService extends AbstractService
         $object->exchangeArray($data);
 
         //object dependencies
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($object, $dependencies);
 
-        if($setRolfTagNull){
-            $object->set('rolfTag',null);
+        if ($setRolfTagNull) {
+            $object->set('rolfTag', null);
         }
 
-        if(empty($data['category'])){
+        if (empty($data['category'])) {
             $data['category'] = null;
         }
 
@@ -542,8 +543,8 @@ class ObjectService extends AbstractService
      * @return bool
      * @throws \Exception
      */
-    public function update($id, $data, $context = AbstractEntity::BACK_OFFICE){
-
+    public function update($id, $data, $context = AbstractEntity::BACK_OFFICE)
+    {
         unset($data['anrs']);
 
         if (empty($data)) {
@@ -556,7 +557,7 @@ class ObjectService extends AbstractService
         }
 
         $object = $this->get('table')->getEntity($id);
-        if(!$object){
+        if (!$object) {
             throw new \Exception('Entity `id` not found.');
             return false;
         }
@@ -565,28 +566,28 @@ class ObjectService extends AbstractService
 
         $previous = (isset($data['previous'])) ? $data['previous'] : null;
         $setRolfTagNull = false;
-        if(empty($data['rolfTag'])){
+        if (empty($data['rolfTag'])) {
             unset($data['rolfTag']);
             $setRolfTagNull = true;
         }
 
-        if(isset($data['scope']) && $data['scope'] != $object->scope){
+        if (isset($data['scope']) && $data['scope'] != $object->scope) {
             throw new \Exception('You cannot change the scope of an existing object.', 412);
         }
 
-        if(isset($data['asset']) && $data['asset'] != $object->asset->id){
+        if (isset($data['asset']) && $data['asset'] != $object->asset->id) {
             throw new \Exception('You cannot change the asset type of an existing object.', 412);
         }
 
-        if(isset($data['mode']) && $data['mode'] != $object->get('mode')){
+        if (isset($data['mode']) && $data['mode'] != $object->get('mode')) {
             /* on test:
             - que l'on a pas de parents GENERIC quand on passe de GENERIC à SPECIFIC
             - que l'on a pas de fils SPECIFIC quand on passe de SPECIFIC à GENERIC
             */
-            if(!$this->checkModeIntegrity($object->get('id'), $object->get('mode'))){
-                if($object->get('mode')==Object::MODE_GENERIC){
+            if (!$this->checkModeIntegrity($object->get('id'), $object->get('mode'))) {
+                if ($object->get('mode') == Object::MODE_GENERIC) {
                     throw new \Exception('You cannot set this object to specific mode because one of its parents is in generic mode.', 412);
-                }else{
+                } else {
                     throw new \Exception('You cannot set this object to generic mode because one of its children is in specific mode.', 412);
                 }
             }
@@ -595,10 +596,10 @@ class ObjectService extends AbstractService
         $currentRootCategory = ($object->category && $object->category->root) ? $object->category->root : $object->category;
 
         // Si asset secondaire, pas de rolfTag
-        if(!empty($data['asset']) && !empty($data['rolfTag'])){
+        if (!empty($data['asset']) && !empty($data['rolfTag'])) {
             $assetTable = $this->get('assetTable');
             $asset = $assetTable->get($data['asset']);
-            if(!empty($asset['type']) && $asset['type'] != \MonarcCore\Model\Entity\Asset::TYPE_PRIMARY){
+            if (!empty($asset['type']) && $asset['type'] != \MonarcCore\Model\Entity\Asset::TYPE_PRIMARY) {
                 unset($data['rolfTag']);
                 $setRolfTagNull = true;
             }
@@ -612,11 +613,11 @@ class ObjectService extends AbstractService
 
         $newRolfTag = ($rolfTagId == $newRolfTagId) ? false : $newRolfTagId;
 
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($object, $dependencies);
 
-        if($setRolfTagNull){
-            $object->set('rolfTag',null);
+        if ($setRolfTagNull) {
+            $object->set('rolfTag', null);
         }
 
         $objectRootCategory = ($object->category->root && $object->category->root) ? $object->category->root : $object->category;
@@ -624,11 +625,11 @@ class ObjectService extends AbstractService
         if ($currentRootCategory && $objectRootCategory && $currentRootCategory->id != $objectRootCategory->id) {
 
             //retrieve anrs for object
-            foreach($object->anrs as $anr) {
+            foreach ($object->anrs as $anr) {
 
                 //retrieve number anr objects with the same root category than current object
                 $nbObjectsSameOldRootCategory = 0;
-                foreach($anr->objects as $anrObject) {
+                foreach ($anr->objects as $anrObject) {
                     $anrObjectCategory = ($anrObject->category->root) ? $anrObject->category->root : $anrObject->category;
                     if (($anrObjectCategory->id == $currentRootCategory->id) && ($anrObject->id != $object->id)) {
                         $nbObjectsSameOldRootCategory++;
@@ -641,7 +642,7 @@ class ObjectService extends AbstractService
                     $anrObjectCategories = $anrObjectCategoryTable->getEntityByFields(['anr' => $anr->id, 'category' => $currentRootCategory->id]);
                     $i = 1;
                     $nbAnrObjectCategories = count($anrObjectCategories);
-                    foreach($anrObjectCategories as $anrObjectCategory) {
+                    foreach ($anrObjectCategories as $anrObjectCategory) {
                         $anrObjectCategoryTable->delete($anrObjectCategory->id, ($i == $nbAnrObjectCategories));
                         $i++;
                     }
@@ -649,7 +650,7 @@ class ObjectService extends AbstractService
 
                 //retrieve number anr objects with the same category than current object
                 $nbObjectsSameNewRootCategory = 0;
-                foreach($anr->objects as $anrObject) {
+                foreach ($anr->objects as $anrObject) {
                     $anrObjectCategory = ($anrObject->category->root) ? $anrObject->category->root : $anrObject->category;
                     if (($anrObjectCategory->id == $objectRootCategory->id) && ($anrObject->id != $object->id)) {
                         $nbObjectsSameNewRootCategory++;
@@ -689,8 +690,8 @@ class ObjectService extends AbstractService
      * @param $data
      * @return mixed
      */
-    public function patch($id, $data, $context = AbstractEntity::FRONT_OFFICE){
-
+    public function patch($id, $data, $context = AbstractEntity::FRONT_OFFICE)
+    {
         //in FO, all objects are generics
         if ($context == AbstractEntity::FRONT_OFFICE) {
             $data['mode'] = Object::MODE_GENERIC;
@@ -705,7 +706,7 @@ class ObjectService extends AbstractService
 
         $newRolfTag = ($rolfTagId == $object->rolfTag) ? false : $object->rolfTag;
 
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($object, $dependencies);
 
         $this->get('table')->save($object);
@@ -715,13 +716,20 @@ class ObjectService extends AbstractService
         return $id;
     }
 
-    protected function instancesImpacts($object, $newRolfTag = false) {
+    /**
+     * Instances Impacts
+     *
+     * @param $object
+     * @param bool $newRolfTag
+     */
+    protected function instancesImpacts($object, $newRolfTag = false)
+    {
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('instanceTable');
         $instances = $instanceTable->getEntityByFields(['object' => $object]);
-        foreach($instances as $instance) {
+        foreach ($instances as $instance) {
             $modifyInstance = false;
-            for($i=1; $i<=4; $i++) {
+            for ($i = 1; $i <= 4; $i++) {
                 $name = 'name' . $i;
                 if ($instance->$name != $object->$name) {
                     $modifyInstance = true;
@@ -744,7 +752,7 @@ class ObjectService extends AbstractService
                 $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['instance' => $instance->id]);
                 $i = 1;
                 $nbInstancesRiskOp = count($instancesRisksOp);
-                foreach($instancesRisksOp as $instanceRiskOp) {
+                foreach ($instancesRisksOp as $instanceRiskOp) {
                     $instanceRiskOp->specific = 1;
                     $instanceRiskOpTable->save($instanceRiskOp, ($i == $nbInstancesRiskOp));
                     $i++;
@@ -784,7 +792,15 @@ class ObjectService extends AbstractService
         }
     }
 
-    protected function checkModeIntegrity($id, $mode){
+    /**
+     * Check Mode Integrity
+     *
+     * @param $id
+     * @param $mode
+     * @return bool
+     */
+    protected function checkModeIntegrity($id, $mode)
+    {
         $objectObjectService = $this->get('objectObjectService');
         switch ($mode) {
             case Object::MODE_GENERIC:
@@ -799,13 +815,23 @@ class ObjectService extends AbstractService
                 return false;
                 break;
         }
-        return $this->checkModeIntegrityRecursive($objects,$mode,$field);
+        return $this->checkModeIntegrityRecursive($objects, $mode, $field);
     }
-    private function checkModeIntegrityRecursive($objects = array(), $mode, $field){
-        foreach($objects as $p){
-            if($p['mode'] == $mode){
+
+    /**
+     * Check Mode Integrity Recursive
+     *
+     * @param array $objects
+     * @param $mode
+     * @param $field
+     * @return bool
+     */
+    private function checkModeIntegrityRecursive($objects = [], $mode, $field)
+    {
+        foreach ($objects as $p) {
+            if ($p['mode'] == $mode) {
                 return false;
-            }elseif(!empty($p[$field]) && !$this->checkModeIntegrityRecursive($p[$field],$mode, $field)){
+            } elseif (!empty($p[$field]) && !$this->checkModeIntegrityRecursive($p[$field], $mode, $field)) {
                 return false;
             }
         }
@@ -818,12 +844,12 @@ class ObjectService extends AbstractService
      * @param $id
      * @throws \Exception
      */
-    public function delete($id) {
-
+    public function delete($id)
+    {
         /** @var ObjectTable $table */
         $table = $this->get('table');
         $entity = $table->get($id);
-        if(!$entity){
+        if (!$entity) {
             throw new \Exception('Entity `id` not found.');
         }
 
@@ -837,27 +863,27 @@ class ObjectService extends AbstractService
      * @return mixed
      * @throws \Exception
      */
-    public function duplicate($data, $context = AbstractEntity::BACK_OFFICE) {
-
+    public function duplicate($data, $context = AbstractEntity::BACK_OFFICE)
+    {
         $entity = $this->getEntity($data['id']);
 
-        if(!$entity){
+        if (!$entity) {
             throw new \Exception('Entity `id` not found.');
         }
 
-        $keysToRemove = ['id','position', 'creator', 'createdAt', 'updater', 'updatedAt', 'inputFilter', 'language', 'dbadapter', 'parameters'];
-        foreach($keysToRemove as $key) {
+        $keysToRemove = ['id', 'position', 'creator', 'createdAt', 'updater', 'updatedAt', 'inputFilter', 'language', 'dbadapter', 'parameters'];
+        foreach ($keysToRemove as $key) {
             unset($entity[$key]);
         }
 
-        foreach($this->dependencies as $dependency) {
+        foreach ($this->dependencies as $dependency) {
             if (is_object($entity[$dependency])) {
                 $entity[$dependency] = $entity[$dependency]->id;
             }
         }
 
         $keys = array_keys($entity);
-        foreach($keys as $key) {
+        foreach ($keys as $key) {
             if (is_null($entity[$key])) {
                 unset($entity[$key]);
             }
@@ -865,9 +891,9 @@ class ObjectService extends AbstractService
 
         $entity['implicitPosition'] = isset($data['implicitPosition']) ? $data['implicitPosition'] : 2;
         $filter = [];
-        for($i=1;$i<=4;$i++){
-            if(!empty($entity['name'.$i])){
-                $filter['name'.$i] = $entity['name'.$i];
+        for ($i = 1; $i <= 4; $i++) {
+            if (!empty($entity['name' . $i])) {
+                $filter['name' . $i] = $entity['name' . $i];
             }
         }
         //$entity['name1'] = $entity['name1'].' (copy)';
@@ -876,17 +902,17 @@ class ObjectService extends AbstractService
         //$entity['name4'] = $entity['name4'].' (copy)';
         $exist = current($this->get('table')->getEntityByFields($filter));
         $suff = 0;
-        while(!empty($exist)){
+        while (!empty($exist)) {
             $suff++;
             $filterB = $filter;
-            foreach($filterB as $k => $v){
-                $filterB[$k] = $v.' (copy #'.$suff.')';
+            foreach ($filterB as $k => $v) {
+                $filterB[$k] = $v . ' (copy #' . $suff . ')';
             }
             $exist = current($this->get('table')->getEntityByFields($filterB));
         }
-        if($suff > 0){
-            foreach($filter as $k => $v){
-                $entity[$k] = $v.' (copy #'.$suff.')';
+        if ($suff > 0) {
+            foreach ($filter as $k => $v) {
+                $entity[$k] = $v . ' (copy #' . $suff . ')';
             }
         }
 
@@ -896,7 +922,7 @@ class ObjectService extends AbstractService
         /** @var ObjectObjectTable $objectObjectTable */
         $objectObjectTable = $this->get('objectObjectTable');
         $objectsObjects = $objectObjectTable->getEntityByFields(['father' => $data['id']]);
-        foreach($objectsObjects as $objectsObject) {
+        foreach ($objectsObjects as $objectsObject) {
             $data = [
                 'id' => $objectsObject->child->id,
                 'implicitPosition' => $data['implicitPosition'],
@@ -1002,7 +1028,7 @@ class ObjectService extends AbstractService
         $children = $objectObjectService->getChildren($object->id);
         foreach ($children as $child) {
             $childObject = $table->getEntity($child->child->id);
-            $this->attachObjectToAnr($childObject, $anrId, $id, $child->position,$context);
+            $this->attachObjectToAnr($childObject, $anrId, $id, $child->position, $context);
         }
 
         return $id;
@@ -1015,8 +1041,8 @@ class ObjectService extends AbstractService
      * @param $anrId
      * @throws \Exception
      */
-    public function detachObjectToAnr($objectId, $anrId, $context = Object::BACK_OFFICE) {
-
+    public function detachObjectToAnr($objectId, $anrId, $context = Object::BACK_OFFICE)
+    {
         //verify object exist
         /** @var ObjectTable $table */
         $table = $this->get('table');
@@ -1039,18 +1065,18 @@ class ObjectService extends AbstractService
         $links = $objectObjectTable->getEntityByFields(['anr' => ($context == Object::BACK_OFFICE) ? 'null' : $anrId, 'child' => $objectId]);
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('instanceTable');
-        foreach($links as $link) {
+        foreach ($links as $link) {
 
             //retrieve instance with link father object
             $fatherInstancesIds = [];
             $fatherInstances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $link->father->id]);
-            foreach($fatherInstances as $fatherInstance) {
+            foreach ($fatherInstances as $fatherInstance) {
                 $fatherInstancesIds[] = $fatherInstance->id;
             }
 
             //retrieve instance with link child object and delete instance child if parent id is concern by link
             $childInstances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $link->child->id]);
-            foreach($childInstances as $childInstance) {
+            foreach ($childInstances as $childInstance) {
                 if (in_array($childInstance->parent->id, $fatherInstancesIds)) {
                     $instanceTable->delete($childInstance->id);
                 }
@@ -1080,9 +1106,9 @@ class ObjectService extends AbstractService
             /** @var AnrObjectCategoryTable $anrObjectCategoryTable */
             $anrObjectCategoryTable = $this->get('anrObjectCategoryTable');
             $anrObjectCategories = $anrObjectCategoryTable->getEntityByFields(['anr' => $anrId, 'category' => $objectRootCategory->id]);
-            $i =1;
+            $i = 1;
             $nbAnrObjectCategories = count($anrObjectCategories);
-            foreach($anrObjectCategories as $anrObjectCategory) {
+            foreach ($anrObjectCategories as $anrObjectCategory) {
                 $anrObjectCategoryTable->delete($anrObjectCategory->id, ($i == $nbAnrObjectCategories));
                 $i++;
             }
@@ -1094,7 +1120,7 @@ class ObjectService extends AbstractService
         $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $objectId]);
         $i = 1;
         $nbInstances = count($instances);
-        foreach($instances as $instance) {
+        foreach ($instances as $instance) {
             $instanceTable->delete($instance->id, ($i == $nbInstances));
             $i++;
         }
@@ -1104,7 +1130,7 @@ class ObjectService extends AbstractService
         $table = $this->get('table');
         $object = $table->getEntity($objectId);
         $anrs = [];
-        foreach($object->anrs as $anr) {
+        foreach ($object->anrs as $anr) {
             if ($anr->id != $anrId) {
                 $anrs[] = $anr;
             }
@@ -1119,25 +1145,26 @@ class ObjectService extends AbstractService
      * @param $anrId
      * @return mixed
      */
-    public function getCategoriesLibraryByAnr($anrId) {
+    public function getCategoriesLibraryByAnr($anrId)
+    {
         // Retrieve objects
         $anrObjects = [];
         $objectsCategories = [];
 
         /** @var ObjectTable $objectTable */
         $objectTable = $this->get('table');
-        $objects = $objectTable->getEntityByFields(['anrs'=>$anrId]);
+        $objects = $objectTable->getEntityByFields(['anrs' => $anrId]);
         //$objects = $objectTable->fetchAll();
 
         foreach ($objects as $object) {
             if ($object->get('category')) {
                 $anrObjects[$object->get('category')->get('id')][] = $object->getJsonArray();
-                if(!isset($objectsCategories[$object->get('category')->get('id')])){
+                if (!isset($objectsCategories[$object->get('category')->get('id')])) {
                     $objectsCategories[$object->get('category')->get('id')] = $object->get('category')->getJsonArray();
                 }
             } else {
                 $anrObjects[-1][] = $object->getJsonArray();
-                if (!isset($objectsCategories[-1])){
+                if (!isset($objectsCategories[-1])) {
                     // Setup a virtual container category
                     $objectsCategories[-1] = [
                         'id' => -1,
@@ -1156,7 +1183,7 @@ class ObjectService extends AbstractService
 
         // Recursively get the parent categories to fill the tree completely
         $parents = [];
-        foreach($objectsCategories as $id => $category) {
+        foreach ($objectsCategories as $id => $category) {
             if ($id > 0) {
                 $this->getRecursiveParents($category, $parents, true);
             }
@@ -1165,9 +1192,9 @@ class ObjectService extends AbstractService
         // Concat both the current categories and their parents
         $objectsCategories = $objectsCategories + $parents;
 
-        foreach($anrObjects as $idCateg => $anrObject) {
+        foreach ($anrObjects as $idCateg => $anrObject) {
             // add object to categories to field "objects"
-            if(isset($objectsCategories[$idCateg])){
+            if (isset($objectsCategories[$idCateg])) {
                 $objectsCategories[$idCateg]['objects'] = $anrObject;
             }
         }
@@ -1181,7 +1208,7 @@ class ObjectService extends AbstractService
             $anrObjectsCategories[$anrObjectCategory->id] = $this->getChildren($anrObjectCategory->category->getJsonArray(), $objectsCategories);
             $anrObjectsCategories[$anrObjectCategory->id]['position'] = $anrObjectCategory->get('position'); // overwrite categ position from anr_categ position
             $anrObjectsCategories[$anrObjectCategory->id]['objects'] = [];
-            if(!empty($anrObjects[$anrObjectCategory->category->id])){
+            if (!empty($anrObjects[$anrObjectCategory->category->id])) {
                 $anrObjectsCategories[$anrObjectCategory->id]['objects'] = $anrObjects[$anrObjectCategory->category->id]; // add objects
             }
         }
@@ -1190,15 +1217,17 @@ class ObjectService extends AbstractService
         // If we created our virtual category, inject it at first position. We won't need to fill it again in the next
         // loop as we already have the objects and we don't have any sub-categories or nested levels.
         if (isset($objectsCategories[-1]) && (!empty($objectsCategories[-1]['objects']) || !empty($objectsCategories[-1]['child']))) {
-            $objectsCategories[-1]['position'] = count($anrObjectsCategories)+1; // on met cette "catégorie" à la fin
+            $objectsCategories[-1]['position'] = count($anrObjectsCategories) + 1; // on met cette "catégorie" à la fin
             $anrObjectsCategories[-1] = $objectsCategories[-1];
-        }else{
+        } else {
             unset($anrObjectsCategories[-1]);
         }
         unset($objectsCategories);
 
         // Order categories by position
-        usort($anrObjectsCategories, function ($a, $b) { return $this->sortCategories($a, $b); });
+        usort($anrObjectsCategories, function ($a, $b) {
+            return $this->sortCategories($a, $b);
+        });
         foreach ($anrObjectsCategories as &$cat) {
             if (isset($cat['child']) && is_array($cat['child'])) {
                 usort($cat['child'], function ($a, $b) {
@@ -1210,7 +1239,15 @@ class ObjectService extends AbstractService
         return $anrObjectsCategories;
     }
 
-    protected function sortCategories($a, $b) {
+    /**
+     * Sort Categories
+     *
+     * @param $a
+     * @param $b
+     * @return int
+     */
+    protected function sortCategories($a, $b)
+    {
         if (isset($a['position']) && isset($b['position'])) {
             //echo "all set for " . $a['label1'] . ' and ' . $b['label1'];
             return ($a['position'] - $b['position']);
@@ -1229,8 +1266,9 @@ class ObjectService extends AbstractService
      * @param $category
      * @param $array
      */
-    public function getRecursiveParents($category, &$array ,$objectToArray = false){
-        if(is_object($category)){
+    public function getRecursiveParents($category, &$array, $objectToArray = false)
+    {
+        if (is_object($category)) {
             $category = $category->getJsonArray();
         }
 
@@ -1239,17 +1277,24 @@ class ObjectService extends AbstractService
             $table = $this->get('categoryTable');
             $parent = $table->getEntity($category['parent']->id);
 
-            if($objectToArray){
+            if ($objectToArray) {
                 $array[$parent->id] = $parent->getJsonArray();
-            }else{
+            } else {
                 $array[$parent->id] = $parent;
             }
 
-            $this->getRecursiveParents($parent, $array,$objectToArray);
+            $this->getRecursiveParents($parent, $array, $objectToArray);
         }
     }
 
-    public function getDirectParents($object_id){
+    /**
+     * Get Direct Parents
+     *
+     * @param $object_id
+     * @return array
+     */
+    public function getDirectParents($object_id)
+    {
         /** @var ObjectObjectTable $objectObjectTable */
         $objectObjectTable = $this->get('objectObjectTable');
         return $objectObjectTable->getDirectParentsInfos($object_id);
@@ -1262,12 +1307,12 @@ class ObjectService extends AbstractService
      * @param $objectsCategories
      * @return mixed
      */
-    public function getChildren($parentObjectCategory, &$objectsCategories) {
-
+    public function getChildren($parentObjectCategory, &$objectsCategories)
+    {
         $currentObjectCategory = $parentObjectCategory;
         unset($objectsCategories[$parentObjectCategory['id']]);
 
-        foreach($objectsCategories as $objectsCategory) {
+        foreach ($objectsCategories as $objectsCategory) {
             if ($objectsCategory['parent']) {
                 if ($objectsCategory['parent']->id == $parentObjectCategory['id']) {
                     $objectsCategory = $this->getChildren($objectsCategory, $objectsCategories);
@@ -1282,18 +1327,26 @@ class ObjectService extends AbstractService
         return $currentObjectCategory;
     }
 
-    public function export(&$data) {
+    /**
+     * Export
+     *
+     * @param $data
+     * @return string
+     * @throws \Exception
+     */
+    public function export(&$data)
+    {
         if (empty($data['id'])) {
-            throw new \Exception('Object to export is required',412);
+            throw new \Exception('Object to export is required', 412);
         }
         if (empty($data['password'])) {
             $data['password'] = '';
         }
 
         $filename = "";
-        $return = $this->get('objectExportService')->generateExportArray($data['id'],$filename);
+        $return = $this->get('objectExportService')->generateExportArray($data['id'], $filename);
         $data['filename'] = $filename;
 
-        return base64_encode($this->encrypt(json_encode($return),$data['password']));
+        return base64_encode($this->encrypt(json_encode($return), $data['password']));
     }
 }

@@ -1,10 +1,6 @@
 <?php
 namespace MonarcCore\Service;
 
-use MonarcCore\Model\Table\AnrTable;
-use MonarcCore\Model\Table\ObjectTable;
-use MonarcCore\Model\Table\ScaleCommentTable;
-
 /**
  * Anr Object Service
  *
@@ -17,11 +13,33 @@ class AnrObjectService extends AbstractService
     protected $objectService;
     protected $userAnrTable;
 
+    /**
+     * Get List Specific
+     *
+     * @param int $page
+     * @param int $limit
+     * @param null $order
+     * @param null $filter
+     * @param null $asset
+     * @param null $category
+     * @param null $model
+     * @param null $anr
+     * @param null $lock
+     * @return mixed
+     */
     public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $model = null, $anr = null, $lock = null)
     {
         return $this->get('objectService')->getListSpecific($page, $limit, $order, $filter, $asset, $category, $model, $anr, $lock);
     }
 
+    /**
+     * Get Parents
+     *
+     * @param $anrid
+     * @param $id
+     * @return mixed
+     * @throws \Exception
+     */
     public function getParents($anrid, $id)
     {
         $object = $this->get('table')->getEntity($id);
@@ -29,7 +47,7 @@ class AnrObjectService extends AbstractService
             throw new \Exception('Entity does not exist', 412);
         }
 
-        //on doit vérifier que l'objet auquel on tente d'accéder est bien rattaché à anrid
+        //verify object is linked to an anr
         if (!$this->get('table')->checkInAnr($anrid, $id)) {
             throw new \Exception('Entity does not exist for this ANR', 412);
         }

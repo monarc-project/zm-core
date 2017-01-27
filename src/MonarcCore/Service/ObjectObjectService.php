@@ -1,6 +1,6 @@
 <?php
 namespace MonarcCore\Service;
-use MonarcCore\Model\Entity\AbstractEntity;
+
 use MonarcCore\Model\Entity\Object;
 use MonarcCore\Model\Entity\ObjectObject;
 use MonarcCore\Model\Table\AnrTable;
@@ -23,7 +23,6 @@ class ObjectObjectService extends AbstractService
     protected $childTable;
     protected $fatherTable;
     protected $modelTable;
-
     protected $dependencies = ['[child](object)', '[father](object)', '[anr](object)'];
 
     /**
@@ -34,7 +33,8 @@ class ObjectObjectService extends AbstractService
      * @return mixed
      * @throws \Exception
      */
-    public function create($data, $last = true, $context = Object::BACK_OFFICE) {
+    public function create($data, $last = true, $context = Object::BACK_OFFICE)
+    {
         if ($data['father'] == $data['child']) {
             throw new \Exception("You cannot add yourself as a component", 412);
         }
@@ -43,7 +43,7 @@ class ObjectObjectService extends AbstractService
         $objectObjectTable = $this->get('table');
 
         //verify child not already existing
-        $objectsObjects = $objectObjectTable->getEntityByFields(['anr' => (empty($data['anr'])?null:$data['anr']), 'father' => $data['father'], 'child' => $data['child']]);
+        $objectsObjects = $objectObjectTable->getEntityByFields(['anr' => (empty($data['anr']) ? null : $data['anr']), 'father' => $data['father'], 'child' => $data['child']]);
         if (count($objectsObjects)) {
             throw new \Exception('This component already exist for this object', 412);
         }
@@ -65,7 +65,7 @@ class ObjectObjectService extends AbstractService
         // on doit déterminer si par voie de conséquence, cet objet ne va pas se retrouver dans un modèle dans lequel il n'a pas le droit d'être
         if ($context == Object::BACK_OFFICE) {
             $models = $father->get('asset')->get('models');
-            foreach($models as $m){
+            foreach ($models as $m) {
                 $this->get('modelTable')->canAcceptObject($m->get('id'), $child, $context);
             }
         }
@@ -75,7 +75,7 @@ class ObjectObjectService extends AbstractService
         }
 
         if (!empty($data['implicitPosition'])) {
-             unset($data['position']);
+            unset($data['position']);
         } else if (!empty($data['position'])) {
             unset($data['implicitPosition']);
         }
@@ -104,12 +104,12 @@ class ObjectObjectService extends AbstractService
         //link to anr
         $parentAnrs = [];
         $childAnrs = [];
-        if($father->anrs){
+        if ($father->anrs) {
             foreach ($father->anrs as $anr) {
                 $parentAnrs[] = $anr->id;
             }
         }
-        if($child->anrs){
+        if ($child->anrs) {
             foreach ($child->anrs as $anr) {
                 $childAnrs[] = $anr->id;
             }
@@ -117,7 +117,7 @@ class ObjectObjectService extends AbstractService
 
         /** @var AnrTable $anrTable */
         $anrTable = $this->get('anrTable');
-        foreach($parentAnrs as $anrId) {
+        foreach ($parentAnrs as $anrId) {
             if (!in_array($anrId, $childAnrs)) {
                 $child->addAnr($anrTable->getEntity($anrId));
             }
@@ -130,14 +130,14 @@ class ObjectObjectService extends AbstractService
         $instanceTable = $this->get('instanceTable');
         $instancesParent = $instanceTable->getEntityByFields(['object' => $father->id]);
 
-        foreach($instancesParent as $instanceParent) {
+        foreach ($instancesParent as $instanceParent) {
             $anrId = $instanceParent->anr->id;
 
             $previousInstance = false;
             if ($data['implicitPosition'] == 3) {
                 $previousObject = $objectObjectTable->get($previous)['child'];
                 $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $previousObject->id]);
-                foreach($instances as $instance) {
+                foreach ($instances as $instance) {
                     $previousInstance = $instance->id;
                 }
             }
@@ -179,10 +179,18 @@ class ObjectObjectService extends AbstractService
         /** @var ObjectObjectTable $table */
         $table = $this->get('table');
 
-        return $table->getEntityByFields(array('father' => $objectId), array('position' => 'DESC'));
+        return $table->getEntityByFields(['father' => $objectId], ['position' => 'DESC']);
     }
 
-    public function getRecursiveChildren($fatherId, $anrId = null) {
+    /**
+     * Get Recursive Children
+     *
+     * @param $fatherId
+     * @param null $anrId
+     * @return array
+     */
+    public function getRecursiveChildren($fatherId, $anrId = null)
+    {
         /** @var ObjectObjectTable $table */
         $table = $this->get('table');
 
@@ -208,11 +216,18 @@ class ObjectObjectService extends AbstractService
         return $array_children;
     }
 
-    public function getRecursiveParents($parent_id){
+    /**
+     * Get Recursive Parents
+     *
+     * @param $parent_id
+     * @return array
+     */
+    public function getRecursiveParents($parent_id)
+    {
         /** @var ObjectObjectTable $table */
         $table = $this->get('table');
 
-        $parents = $table->getEntityByFields(array('child' => $parent_id), array('position' => 'ASC'));
+        $parents = $table->getEntityByFields(['child' => $parent_id], ['position' => 'ASC']);
         $array_parents = [];
 
         foreach ($parents as $parent) {
@@ -228,12 +243,19 @@ class ObjectObjectService extends AbstractService
         return $array_parents;
     }
 
-    public function getRecursiveParentsListId($parentId, &$array){
+    /**
+     * Get Recursive Parents List Id
+     *
+     * @param $parentId
+     * @param $array
+     */
+    public function getRecursiveParentsListId($parentId, &$array)
+    {
 
         /** @var ObjectObjectTable $table */
         $table = $this->get('table');
 
-        $parents = $table->getEntityByFields(array('child' => $parentId), array('position' => 'ASC'));
+        $parents = $table->getEntityByFields(['child' => $parentId], ['position' => 'ASC']);
 
         foreach ($parents as $parent) {
             $array[] = $parent->father->id;
@@ -241,7 +263,14 @@ class ObjectObjectService extends AbstractService
         }
     }
 
-    public function moveObject($id, $direction) {
+    /**
+     * Move Object
+     *
+     * @param $id
+     * @param $direction
+     */
+    public function moveObject($id, $direction)
+    {
         $entity = $this->get('table')->getEntity($id);
 
         if ($entity->position == 1 && $direction == 'up') {
@@ -258,8 +287,8 @@ class ObjectObjectService extends AbstractService
      * @param $id
      * @throws \Exception
      */
-    public function delete($id) {
-
+    public function delete($id)
+    {
         /** @var ObjectObjectTable $table */
         $table = $this->get('table');
         $objectObject = $table->getEntity($id);
@@ -271,11 +300,11 @@ class ObjectObjectService extends AbstractService
         //delete instance instance
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('instanceTable');
-        $childInstances =  $instanceTable->getEntityByFields(['object' => $objectObject->child->id]);
-        $fatherInstances =  $instanceTable->getEntityByFields(['object' => $objectObject->father->id]);
+        $childInstances = $instanceTable->getEntityByFields(['object' => $objectObject->child->id]);
+        $fatherInstances = $instanceTable->getEntityByFields(['object' => $objectObject->father->id]);
 
-        foreach($childInstances as $childInstance) {
-            foreach($fatherInstances as $fatherInstance) {
+        foreach ($childInstances as $childInstance) {
+            foreach ($fatherInstances as $fatherInstance) {
                 if ($childInstance->parent) {
                     if ($childInstance->parent->id == $fatherInstance->id) {
                         $childInstance->parent = null;

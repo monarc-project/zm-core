@@ -1,6 +1,6 @@
 <?php
 namespace MonarcCore\Service;
-use MonarcCore\Model\Entity\AbstractEntity;
+
 use MonarcCore\Model\Table\AnrObjectCategoryTable;
 
 /**
@@ -17,9 +17,7 @@ class ObjectCategoryService extends AbstractService
     protected $parentTable;//required for autopositionning
     protected $anrTable;//required for autopositionning of anrobjectcategories
     protected $userAnrTable;
-
     protected $filterColumns = ['label1', 'label2', 'label3', 'label4'];
-
     protected $dependencies = ['root', 'parent', 'anr'];//required for autopositionning
 
     /**
@@ -28,18 +26,18 @@ class ObjectCategoryService extends AbstractService
      * @param $id
      * @return array
      */
-    public function getEntity($id){
+    public function getEntity($id)
+    {
         $entity = $this->get('table')->get($id);
 
-
         $entity['previous'] = null;
-        if($entity['position'] == 1){
+        if ($entity['position'] == 1) {
             $entity['implicitPosition'] = 1;
-        }else{
+        } else {
             $pos = $this->get('table')->getRepository()->createQueryBuilder('t')->select('count(t.id)');
-            if(empty($entity['parent'])){
+            if (empty($entity['parent'])) {
                 $pos = $pos->where('t.parent IS NULL');
-            }else{
+            } else {
                 $pos = $pos->where('t.parent = :parent')
                     ->setParameter(':parent', $entity['parent']->id);
             }
@@ -47,17 +45,17 @@ class ObjectCategoryService extends AbstractService
             if ($entity['anr']) {
                 $pos->andWhere('t.anr = :anr')->setParameter(':anr', $entity['anr']->id);
             }
-            
+
             $pos = $pos->getQuery()->getSingleScalarResult();
-            if($entity['position'] >= $pos){
+            if ($entity['position'] >= $pos) {
                 $entity['implicitPosition'] = 2;
-            }else{
+            } else {
                 $entity['implicitPosition'] = 3;
                 // Autre chose ?te
                 $prev = $this->get('table')->getRepository()->createQueryBuilder('t')->select('t.id');
-                if(empty($entity['parent'])){
+                if (empty($entity['parent'])) {
                     $prev = $prev->where('t.parent IS NULL');
-                }else{
+                } else {
                     $prev = $prev->where('t.parent = :parent')
                         ->setParameter(':parent', $entity['parent']->id);
                 }
@@ -65,7 +63,7 @@ class ObjectCategoryService extends AbstractService
                     $prev->andWhere('t.anr = :anr')->setParameter(':anr', $entity['anr']->id);
                 }
                 $prev = $prev->andWhere('t.position = :pos')
-                    ->setParameter(':pos',$entity['position']-1)
+                    ->setParameter(':pos', $entity['position'] - 1)
                     ->getQuery()->getSingleScalarResult();
                 $entity['previous'] = $prev;
             }
@@ -84,17 +82,18 @@ class ObjectCategoryService extends AbstractService
      * @param array $filterAnd
      * @return mixed
      */
-    public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = []){
-        $objects = $this->getList($page, $limit, $order, $filter,$filterAnd);
+    public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = [])
+    {
+        $objects = $this->getList($page, $limit, $order, $filter, $filterAnd);
 
         $currentObjectsListId = [];
-        foreach($objects as $object) {
+        foreach ($objects as $object) {
             $currentObjectsListId[] = $object['id'];
         }
 
         //retrieve parent
-        if(empty($filterAnd['id'])){
-            foreach($objects as $object) {
+        if (empty($filterAnd['id'])) {
+            foreach ($objects as $object) {
                 $this->addParent($objects, $object, $currentObjectsListId);
             }
         }
@@ -109,7 +108,8 @@ class ObjectCategoryService extends AbstractService
      * @param $object
      * @param $currentObjectsListId
      */
-    protected function addParent(&$objects, $object, &$currentObjectsListId) {
+    protected function addParent(&$objects, $object, &$currentObjectsListId)
+    {
         if ($object['parent']) {
             if (!in_array($object['parent']->id, $currentObjectsListId)) {
 
@@ -135,7 +135,8 @@ class ObjectCategoryService extends AbstractService
      * @return mixed
      * @throws \Exception
      */
-    public function create($data, $last = true) {
+    public function create($data, $last = true)
+    {
 
         $entity = $this->get('entity');
         $entity->setLanguage($this->getLanguage());
@@ -156,7 +157,8 @@ class ObjectCategoryService extends AbstractService
      * @param $data
      * @return mixed
      */
-    public function update($id, $data){
+    public function update($id, $data)
+    {
 
         $entity = $this->get('table')->getEntity($id);
         $entity->setLanguage($this->getLanguage());
@@ -175,18 +177,16 @@ class ObjectCategoryService extends AbstractService
      *
      * @param $id
      */
-    public function delete($id) {
-
-        $entity = $this->get('table')->getEntity($id);
-
+    public function delete($id)
+    {
         // On supprime en cascade les fils
         $children = $this->get('table')->getRepository()->createQueryBuilder('t')
             ->where('t.parent = :parent')
-            ->setParameter(':parent',$id)
+            ->setParameter(':parent', $id)
             ->getQuery()->getResult();
         $i = 1;
         $nbChildren = count($children);
-        foreach($children as $c){
+        foreach ($children as $c) {
             $this->delete($c->id, ($i == $nbChildren));
             $i++;
         }
@@ -194,16 +194,23 @@ class ObjectCategoryService extends AbstractService
         $this->get('objectTable')->getRepository()->createQueryBuilder('t')
             ->update()
             ->set('t.category', ':categ')
-            ->setParameter(':categ',null)
+            ->setParameter(':categ', null)
             ->where('t.category = :c')
-            ->setParameter(':c',$id)
+            ->setParameter(':c', $id)
             ->getQuery()->getResult();
 
         $this->get('table')->delete($id);
     }
 
-    public function patchLibraryCategory($categoryId, $data) {
-
+    /**
+     * Patch Library Category
+     *
+     * @param $categoryId
+     * @param $data
+     * @return mixed|null
+     */
+    public function patchLibraryCategory($categoryId, $data)
+    {
         $anrId = $data['anr'];
 
         /** @var AnrObjectCategoryTable $anrObjectCategoryTable */
@@ -212,13 +219,13 @@ class ObjectCategoryService extends AbstractService
         $anrObjectCategory->setDbAdapter($anrObjectCategoryTable->getDb());
 
         //Specific handle of previous data
-        if(isset($data['previous'])){//we get a position but we need an id
+        if (isset($data['previous'])) {//we get a position but we need an id
             $id = $anrObjectCategoryTable->getRepository()->createQueryBuilder('t')
-                                         ->select('t.id')
-                                         ->where('t.anr = :anrid')
-                                         ->andWhere('t.position = :pos')
-                                         ->setParameters([':anrid' => $anrId, ':pos' => $data['previous']])
-                                         ->getQuery()->getSingleScalarResult();
+                ->select('t.id')
+                ->where('t.anr = :anrid')
+                ->andWhere('t.position = :pos')
+                ->setParameters([':anrid' => $anrId, ':pos' => $data['previous']])
+                ->getQuery()->getSingleScalarResult();
 
             $data['previous'] = $id ? $id : null;
         }

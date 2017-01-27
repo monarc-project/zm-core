@@ -9,7 +9,5 @@ namespace MonarcCore\Service;
  */
 class ThemeService extends AbstractService
 {
-    protected $filterColumns = array(
-        'label1', 'label2', 'label3', 'label4'
-    );
+    protected $filterColumns = ['label1', 'label2', 'label3', 'label4'];
 }

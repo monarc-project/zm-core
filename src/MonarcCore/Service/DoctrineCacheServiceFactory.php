@@ -4,21 +4,34 @@ namespace MonarcCore\Service;
 use Zend\ServiceManager\FactoryInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 
+/**
+ * Doctrine Cache Service Factory
+ *
+ * Class DoctrineCacheServiceFactory
+ * @package MonarcCore\Service
+ */
 class DoctrineCacheServiceFactory implements FactoryInterface
 {
     protected $ressources;
 
-    public function createService(ServiceLocatorInterface $serviceLocator){
+    /**
+     * Create Service
+     *
+     * @param ServiceLocatorInterface $serviceLocator
+     * @return \Doctrine\Common\Cache\ArrayCache|\Doctrine\Common\Cache\ChainCache
+     */
+    public function createService(ServiceLocatorInterface $serviceLocator)
+    {
         $arrayCache = new \Doctrine\Common\Cache\ArrayCache();
 
-        if(getenv('APPLICATION_ENV') == 'production'){
-            if(extension_loaded('apc')){
+        if (getenv('APPLICATION_ENV') == 'production') {
+            if (extension_loaded('apc')) {
                 $apcCache = new \Doctrine\Common\Cache\ApcCache();
-                $chainCache = new \Doctrine\Common\Cache\ChainCache([$apcCache,$arrayCache]);
+                $chainCache = new \Doctrine\Common\Cache\ChainCache([$apcCache, $arrayCache]);
                 return $chainCache;
-            }elseif(extension_loaded('apcu')){
+            } elseif (extension_loaded('apcu')) {
                 $apcuCache = new \Doctrine\Common\Cache\ApcuCache();
-                $chainCache = new \Doctrine\Common\Cache\ChainCache([$apcuCache,$arrayCache]);
+                $chainCache = new \Doctrine\Common\Cache\ChainCache([$apcuCache, $arrayCache]);
                 return $chainCache;
             }
             // TODO: untested / add param for memchache(d) host & port

@@ -35,8 +35,8 @@ class InstanceRiskOpService extends AbstractService
      * @param $anrId
      * @param $object
      */
-    public function createInstanceRisksOp($instanceId, $anrId, $object) {
-
+    public function createInstanceRisksOp($instanceId, $anrId, $object)
+    {
         if (isset($object->asset)) {
             if ($object->asset->type == Asset::TYPE_PRIMARY) {
                 if (!is_null($object->rolfTag)) {
@@ -57,7 +57,7 @@ class InstanceRiskOpService extends AbstractService
                         foreach($instances as $instance) {
                             if ($instance->id != $instanceId) {
                                 $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['instance' => $instance->id]);
-                                foreach($instancesRisksOp as $instanceRiskOp) {
+                                foreach ($instancesRisksOp as $instanceRiskOp) {
                                     $newInstanceRiskOp = clone $instanceRiskOp;
                                     $newInstanceRiskOp->setId(null);
                                     $newInstanceRiskOp->setInstance($currentInstance);
@@ -109,12 +109,13 @@ class InstanceRiskOpService extends AbstractService
      * @param $instanceId
      * @param $anrId
      */
-    public function deleteInstanceRisksOp($instanceId, $anrId){
+    public function deleteInstanceRisksOp($instanceId, $anrId)
+    {
         $risks = $this->getInstanceRisksOp($instanceId, $anrId);
         $table = $this->get('table');
         $nb = count($risks);
         $i = 1;
-        foreach($risks as $r){
+        foreach ($risks as $r) {
             $r->set('kindOfMeasure',\MonarcCore\Model\Entity\InstanceRiskOp::KIND_NOT_TREATED);
             $this->updateRecoRisksOp($r);
             $table->delete($r->id,($i == $nb));
@@ -129,8 +130,8 @@ class InstanceRiskOpService extends AbstractService
      * @param $anrId
      * @return array|bool
      */
-    public function getInstanceRisksOp($instanceId, $anrId) {
-
+    public function getInstanceRisksOp($instanceId, $anrId)
+    {
         /** @var InstanceRiskOpTable $table */
         $table = $this->get('table');
         return $table->getEntityByFields(['anr' => $anrId, 'instance' => $instanceId]);
@@ -143,8 +144,8 @@ class InstanceRiskOpService extends AbstractService
      * @param $anrId
      * @return array
      */
-    public function getInstancesRisksOp($instancesIds, $anrId, $params = []) {
-
+    public function getInstancesRisksOp($instancesIds, $anrId, $params = [])
+    {
         /** @var InstanceRiskOpTable $table */
         $table = $this->get('table');
         return $table->getInstancesRisksOp($anrId, $instancesIds, $params);
@@ -157,7 +158,7 @@ class InstanceRiskOpService extends AbstractService
      * @param $data
      * @return mixed
      */
-    public function patch($id,$data)
+    public function patch($id, $data)
     {
         $entity = $this->get('table')->getEntity($id);
         if (!$entity) {
@@ -171,8 +172,16 @@ class InstanceRiskOpService extends AbstractService
         return $r;
     }
 
-    public function update($id, $data){
-
+    /**
+     * Update
+     *
+     * @param $id
+     * @param $data
+     * @return mixed
+     * @throws \Exception
+     */
+    public function update($id, $data)
+    {
         $risk = $this->get('table')->getEntity($id);
 
         if (!$risk) {
@@ -188,26 +197,26 @@ class InstanceRiskOpService extends AbstractService
 
         $risk->exchangeArray($data);
 
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($risk, $dependencies);
 
         //Calculate risk values
         $datatype = ['brut', 'net', 'targeted'];
         $impacts = ['r', 'o', 'l', 'f', 'p'];
 
-        foreach($datatype as $type){
+        foreach ($datatype as $type) {
             $max = -1;
-            $prob = $type.'Prob';
-            if($risk->$prob != -1){
-                foreach($impacts as $i){
-                    $icol = $type.strtoupper($i);
-                    if($risk->$icol > -1 && ( $risk->$prob * $risk->$icol > $max)){
+            $prob = $type . 'Prob';
+            if ($risk->$prob != -1) {
+                foreach ($impacts as $i) {
+                    $icol = $type . strtoupper($i);
+                    if ($risk->$icol > -1 && ($risk->$prob * $risk->$icol > $max)) {
                         $max = $risk->$prob * $risk->$icol;
                     }
                 }
             }
 
-            $cache = 'cache'.ucfirst($type).'Risk';
+            $cache = 'cache' . ucfirst($type) . 'Risk';
             $risk->$cache = $max;
         }
 

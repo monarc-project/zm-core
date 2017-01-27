@@ -1,5 +1,6 @@
 <?php
 namespace MonarcCore\Service;
+
 use MonarcCore\Model\Table\InstanceTable;
 
 /**
@@ -14,7 +15,6 @@ class ScaleImpactTypeService extends AbstractService
     protected $scaleTable;
     protected $instanceTable;
     protected $instanceConsequenceService;
-
     protected $dependencies = ['anr', 'scale'];
     protected $forbiddenFields = ['scale'];
     protected $types = [
@@ -46,7 +46,8 @@ class ScaleImpactTypeService extends AbstractService
      * @param null $filter
      * @return mixed
      */
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null){
+    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
+    {
 
         $scales = parent::getList($page, $limit, $order, $filter, $filterAnd);
 
@@ -54,10 +55,10 @@ class ScaleImpactTypeService extends AbstractService
         $revertTypes = array_flip($types);
 
         foreach ($scales as $key => $scale) {
-            if(isset($scale['type'])){
-                if(isset($types[$scale['type']])){
+            if (isset($scale['type'])) {
+                if (isset($types[$scale['type']])) {
                     $scales[$key]['type'] = $types[$scale['type']];
-                }elseif(isset($revertTypes[$scale['type']])){
+                } elseif (isset($revertTypes[$scale['type']])) {
                     // on ne fait rien, mais le type n'est pas bon
                 }
             }
@@ -73,8 +74,8 @@ class ScaleImpactTypeService extends AbstractService
      * @param bool $last
      * @return mixed
      */
-    public function create($data, $last = true) {
-
+    public function create($data, $last = true)
+    {
         $anrId = $data['anr'];
 
         if (!isset($data['isSys'])) {
@@ -94,7 +95,7 @@ class ScaleImpactTypeService extends AbstractService
 
         $entity->exchangeArray($data);
 
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
 
         $id = $this->get('table')->save($entity);
@@ -129,8 +130,8 @@ class ScaleImpactTypeService extends AbstractService
      * @param $data
      * @return mixed
      */
-    public function update($id,$data){
-
+    public function update($id, $data)
+    {
         $data['isSys'] = 0;
         $data['type'] = 9;
 
@@ -141,7 +142,7 @@ class ScaleImpactTypeService extends AbstractService
 
         $entity->exchangeArray($data);
 
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
 
         return $this->get('table')->save($entity);
@@ -153,8 +154,8 @@ class ScaleImpactTypeService extends AbstractService
      * @param $id
      * @throws \Exception
      */
-    public function delete($id) {
-
+    public function delete($id)
+    {
         $entity = $this->getEntity($id);
 
         if ($entity['isSys']) {
@@ -171,7 +172,7 @@ class ScaleImpactTypeService extends AbstractService
      * @param $data
      * @return mixed
      */
-    public function patch($id,$data)
+    public function patch($id, $data)
     {
         //security
         $this->filterPatchFields($data);

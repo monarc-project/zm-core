@@ -1,10 +1,14 @@
 <?php
 namespace MonarcCore\Service;
 
-use MonarcCore\Model\Entity\PasswordToken;
-use MonarcCore\Model\Entity\User;
 use MonarcFO\Model\Table\PasswordTokenTable;
 
+/**
+ * Password Service
+ *
+ * Class PasswordService
+ * @package MonarcCore\Service
+ */
 class PasswordService extends AbstractService
 {
     protected $userTable;
@@ -16,8 +20,8 @@ class PasswordService extends AbstractService
      *
      * @param $email
      */
-    public function passwordForgotten($email) {
-
+    public function passwordForgotten($email)
+    {
         $user = $this->get('userTable')->getByEmail($email);
 
         if ($user) {
@@ -26,7 +30,7 @@ class PasswordService extends AbstractService
             $date->add(new \DateInterval("P1D"));
 
             //generate token
-            $token = uniqid(bin2hex(openssl_random_pseudo_bytes(rand(20,40))), true);
+            $token = uniqid(bin2hex(openssl_random_pseudo_bytes(rand(20, 40))), true);
             $passwordTokenData = [
                 'user' => $user['id'],
                 'token' => $token,
@@ -67,9 +71,8 @@ class PasswordService extends AbstractService
      * @param $token
      * @param $password
      */
-    public function newPasswordByToken($token, $password) {
-
-
+    public function newPasswordByToken($token, $password)
+    {
         $date = new \DateTime("now");
         $passwordToken = $this->get('table')->getByToken($token, $date);
 
@@ -90,7 +93,8 @@ class PasswordService extends AbstractService
      * @param $token
      * @return bool
      */
-    public function verifyToken($token) {
+    public function verifyToken($token)
+    {
         $date = new \DateTime("now");
         $passwordToken = $this->get('table')->getByToken($token, $date);
 
@@ -109,8 +113,8 @@ class PasswordService extends AbstractService
      * @param $newPassword
      * @throws \Exception
      */
-    public function changePassword($userId, $oldPassword, $newPassword) {
-
+    public function changePassword($userId, $oldPassword, $newPassword)
+    {
         $user = $this->get('userService')->getEntity($userId);
 
         if ($user) {

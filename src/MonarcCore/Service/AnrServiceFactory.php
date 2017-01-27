@@ -1,9 +1,15 @@
 <?php
 namespace MonarcCore\Service;
 
+/**
+ * Anr Service Factory
+ *
+ * Class AnrServiceFactory
+ * @package MonarcCore\Service
+ */
 class AnrServiceFactory extends AbstractServiceFactory
 {
-    protected $ressources = array(
+    protected $ressources = [
         'table' => 'MonarcCore\Model\Table\AnrTable',
         'entity' => 'MonarcCore\Model\Entity\Anr',
         'scaleService' => 'MonarcCore\Service\ScaleService',
@@ -17,5 +23,5 @@ class AnrServiceFactory extends AbstractServiceFactory
         'scaleImpactTypeTable' => 'MonarcCore\Model\Table\ScaleImpactTypeTable',
         'scaleCommentTable' => 'MonarcCore\Model\Table\ScaleCommentTable',
         'instanceService' => 'MonarcCore\Service\InstanceService',
-    );
+    ];
 }

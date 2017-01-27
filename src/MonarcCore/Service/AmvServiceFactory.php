@@ -1,9 +1,15 @@
 <?php
 namespace MonarcCore\Service;
 
+/**
+ * Amv Service Factory
+ *
+ * Class AmvServiceFactory
+ * @package MonarcCore\Service
+ */
 class AmvServiceFactory extends AbstractServiceFactory
 {
-    protected $ressources = array(
+    protected $ressources = [
         'table' => 'MonarcCore\Model\Table\AmvTable',
         'entity' => 'MonarcCore\Model\Entity\Amv',
         'anrTable' => '\MonarcCore\Model\Table\AnrTable',
@@ -14,5 +20,5 @@ class AmvServiceFactory extends AbstractServiceFactory
         'threatTable' => '\MonarcCore\Model\Table\ThreatTable',
         'vulnerabilityTable' => '\MonarcCore\Model\Table\VulnerabilityTable',
         'historicalService' => 'MonarcCore\Service\HistoricalService',
-    );
+    ];
 }

@@ -3,7 +3,6 @@ namespace MonarcCore\Service;
 
 use MonarcCore\Model\Entity\User;
 use MonarcCore\Model\Entity\UserRole;
-use MonarcCore\Model\Table\UserTable;
 use MonarcCore\Validator\PasswordStrength;
 
 /**
@@ -15,6 +14,7 @@ use MonarcCore\Validator\PasswordStrength;
 class UserService extends AbstractService
 {
     protected $roleTable;
+    protected $userRoleEntity;
     protected $userTokenTable;
     protected $passwordTokenTable;
     protected $mailService;
@@ -38,12 +38,12 @@ class UserService extends AbstractService
      * @param null $filter
      * @return bool|mixed
      */
-    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null) {
+    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
+    {
 
         return $this->get('table')->countFiltered($page, $limit, $this->parseFrontendOrder($order),
-            $this->parseFrontendFilter($filter, array('firstname', 'lastname', 'email')));
+            $this->parseFrontendFilter($filter, ['firstname', 'lastname', 'email']));
     }
-
 
     /**
      * Create
@@ -57,7 +57,7 @@ class UserService extends AbstractService
         $user = $this->get('entity');
         $data['status'] = 1;
 
-        if(empty($data['language'])){
+        if (empty($data['language'])) {
             $data['language'] = $this->getLanguage();
         }
 
@@ -77,7 +77,8 @@ class UserService extends AbstractService
      * @param $data
      * @return mixed
      */
-    public function update($id,$data){
+    public function update($id, $data)
+    {
         /** @var User $user */
         $user = $this->get('table')->getEntity($id);
 
@@ -88,7 +89,6 @@ class UserService extends AbstractService
         return parent::update($id, $data);
     }
 
-
     /**
      * Patch
      *
@@ -97,8 +97,8 @@ class UserService extends AbstractService
      * @return mixed
      * @throws \Exception
      */
-    public function patch($id, $data){
-
+    public function patch($id, $data)
+    {
         if (isset($data['password'])) {
             $this->validatePassword($data);
         }
@@ -111,7 +111,6 @@ class UserService extends AbstractService
 
         return parent::patch($id, $data);
     }
-
 
     /**
      * Get By Email
@@ -130,12 +129,12 @@ class UserService extends AbstractService
      * @param $data
      * @throws \Exception
      */
-    protected function validatePassword($data) {
-
+    protected function validatePassword($data)
+    {
         $password = $data['password'];
 
         $passwordValidator = new PasswordStrength();
-        if (! $passwordValidator->isValid($password)) {
+        if (!$passwordValidator->isValid($password)) {
             $errors = [];
             foreach ($passwordValidator->getMessages() as $messageId => $message) {
                 $errors[] = $message;
@@ -152,7 +151,8 @@ class UserService extends AbstractService
      * @param $data
      * @throws \Exception
      */
-    protected function manageRoles($user, $data) {
+    protected function manageRoles($user, $data)
+    {
 
         $userRoleTable = $this->get('roleTable');
         $userRoleTable->deleteByUser($user->id);
@@ -163,12 +163,16 @@ class UserService extends AbstractService
                     'role' => $role,
                 ];
 
-                $userRoleEntity = new UserRole();
+                $class = $this->get('userRoleEntity');
+
+                $userRoleEntity = new $class();
+                $userRoleEntity->setLanguage($this->getLanguage());
+                $userRoleEntity->setDbAdapter($this->get('table')->getDb());
                 $userRoleEntity->exchangeArray($roleData);
 
                 $userRoleTable->save($userRoleEntity);
             }
-        }else{
+        } else {
             throw new \Exception("You must select on or more roles", 422);
         }
     }
@@ -179,12 +183,13 @@ class UserService extends AbstractService
      * @param $id
      * @return array
      */
-    public function getEntity($id){
+    public function getEntity($id)
+    {
         $user = $this->get('table')->get($id);
         $roles = $this->get('roleTable')->getRepository()->findByUser($user['id']);
-        $user['role'] = array();
-        if(!empty($roles)){
-            foreach($roles as $r){
+        $user['role'] = [];
+        if (!empty($roles)) {
+            foreach ($roles as $r) {
                 $user['role'][] = $r->get('role');
             }
         }

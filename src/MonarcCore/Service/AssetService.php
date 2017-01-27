@@ -59,7 +59,6 @@ class AssetService extends AbstractService
         return $this->get('table')->save($entity);
     }
 
-
     /**
      * Update
      *
@@ -70,7 +69,6 @@ class AssetService extends AbstractService
      */
     public function update($id, $data)
     {
-
         $this->filterPatchFields($data);
 
         $entity = $this->get('table')->getEntity($id);
@@ -82,8 +80,7 @@ class AssetService extends AbstractService
             unset($data['models']);
         }
 
-
-        $models = isset($data['models']) ? $data['models'] : array();
+        $models = isset($data['models']) ? $data['models'] : [];
         $follow = isset($data['follow']) ? $data['follow'] : null;
         unset($data['models']);
         unset($data['follow']);
@@ -109,7 +106,6 @@ class AssetService extends AbstractService
         if (!$amvService->checkModelsInstantiation($entity, $models)) {
             throw new \Exception('This type of asset is used in a model that is no longer part of the list', 412);
         }
-
 
         switch ($entity->get('mode')) {
             case Asset::MODE_SPECIFIC:
@@ -164,6 +160,7 @@ class AssetService extends AbstractService
                 }
             }
         }
+
         return $this->get('table')->save($entity);
     }
 
@@ -185,8 +182,9 @@ class AssetService extends AbstractService
     /**
      * Export Asset
      *
-     * @param $id
-     * @return array
+     * @param $data
+     * @return string
+     * @throws \Exception
      */
     public function exportAsset(&$data)
     {
@@ -203,6 +201,14 @@ class AssetService extends AbstractService
         return base64_encode($this->encrypt(json_encode($return), $data['password']));
     }
 
+    /**
+     * Generate Export Array
+     *
+     * @param $id
+     * @param string $filename
+     * @return array
+     * @throws \Exception
+     */
     public function generateExportArray($id, &$filename = "")
     {
         if (empty($id)) {
@@ -216,7 +222,7 @@ class AssetService extends AbstractService
 
         $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $entity->get('code'));
 
-        $assetObj = array(
+        $assetObj = [
             'id' => 'id',
             'label1' => 'label1',
             'label2' => 'label2',
@@ -230,12 +236,12 @@ class AssetService extends AbstractService
             'mode' => 'mode',
             'type' => 'type',
             'code' => 'code',
-        );
-        $return = array(
+        ];
+        $return = [
             'type' => 'asset',
             'asset' => $entity->getJsonArray($assetObj),
             'version' => $this->getVersion(),
-        );
+        ];
         $amvService = $this->get('amvService');
         $amvTable = $amvService->get('table');
 
@@ -252,9 +258,9 @@ class AssetService extends AbstractService
         }
         $amvResults = $amvResults->getQuery()->getResult();
 
-        $data_amvs = $data_threats = $data_vuls = $data_themes = $t_ids = $v_ids = $m_ids = $tt_ids = $threats = $vuls = $themes = array();
+        $data_amvs = $data_threats = $data_vuls = $data_themes = $t_ids = $v_ids = $m_ids = $tt_ids = $threats = $vuls = $themes = [];
 
-        $amvObj = array(
+        $amvObj = [
             'id' => 'v',
             'threat' => 'o',
             'vulnerability' => 'o',
@@ -262,8 +268,8 @@ class AssetService extends AbstractService
             'measure2' => 'o',
             'measure3' => 'o',
             'status' => 'v',
-        );
-        $treatsObj = array(
+        ];
+        $treatsObj = [
             'id' => 'id',
             'theme' => 'theme',
             'mode' => 'mode',
@@ -305,8 +311,8 @@ class AssetService extends AbstractService
             'trend' => 'trend',
             'comment' => 'comment',
             'qualification' => 'qualification',
-        );
-        $vulsObj = array(
+        ];
+        $vulsObj = [
             'id' => 'id',
             'mode' => 'mode',
             'code' => 'code',
@@ -319,15 +325,15 @@ class AssetService extends AbstractService
             'description3' => 'description3',
             'description4' => 'description4',
             'status' => 'status',
-        );
-        $themesObj = array(
+        ];
+        $themesObj = [
             'id' => 'id',
             'label1' => 'label1',
             'label2' => 'label2',
             'label3' => 'label3',
             'label4' => 'label4',
-        );
-        $measuresObj = array(
+        ];
+        $measuresObj = [
             'id' => 'id',
             'code' => 'code',
             'description1' => 'description1',
@@ -335,10 +341,10 @@ class AssetService extends AbstractService
             'description3' => 'description3',
             'description4' => 'description4',
             'status' => 'status',
-        );
+        ];
 
         foreach ($amvResults as $amv) {
-            $data_amvs[$amv->get('id')] = array();
+            $data_amvs[$amv->get('id')] = [];
             foreach ($amvObj as $k => $v) {
                 switch ($v) {
                     case 'v':

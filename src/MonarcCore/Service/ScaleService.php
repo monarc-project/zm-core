@@ -1,5 +1,6 @@
 <?php
 namespace MonarcCore\Service;
+
 use MonarcCore\Model\Entity\Scale;
 use MonarcCore\Model\Entity\ScaleComment;
 use MonarcCore\Model\Table\InstanceConsequenceTable;
@@ -30,7 +31,6 @@ class ScaleService extends AbstractService
     protected $commentTable;
     protected $dependencies = ['anr'];
     protected $forbiddenFields = ['anr'];
-
     protected $types = [
         Scale::TYPE_IMPACT => 'impact',
         Scale::TYPE_THREAT => 'threat',
@@ -54,7 +54,8 @@ class ScaleService extends AbstractService
      * @param null $filter
      * @return mixed
      */
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null){
+    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
+    {
 
         $scales = parent::getList($page, $limit, $order, $filter, $filterAnd);
 
@@ -74,7 +75,8 @@ class ScaleService extends AbstractService
      * @param bool $last
      * @return mixed
      */
-    public function create($data, $last = true) {
+    public function create($data, $last = true)
+    {
 
         //scale
         //$entity = $this->get('entity');
@@ -84,7 +86,7 @@ class ScaleService extends AbstractService
         $entity->exchangeArray($data);
         $entity->setId(null);
 
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
 
         $scaleId = $this->get('table')->save($entity);
@@ -202,7 +204,7 @@ class ScaleService extends AbstractService
      * @param $data
      * @return mixed
      */
-    public function patch($id,$data)
+    public function patch($id, $data)
     {
         //security
         $this->filterPatchFields($data);
@@ -217,7 +219,7 @@ class ScaleService extends AbstractService
      * @param $data
      * @return mixed
      */
-    public function update($id,$data)
+    public function update($id, $data)
     {
         $anrId = false;
         if (isset($data['anr'])) {
@@ -287,7 +289,7 @@ class ScaleService extends AbstractService
                 $instanceRiskOpTable = $this->get('instanceRiskOpTable');
                 $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['anr' => $anrId]);
                 $fields = ['netR', 'netO', 'netL', 'netP', 'brutR', 'brutO', 'brutL', 'brutP'];
-                foreach($instancesRisksOp as $instanceRiskOp) {
+                foreach ($instancesRisksOp as $instanceRiskOp) {
                     $dataRisksOp = [];
                     foreach ($fields as $field) {
                         if (($instanceRiskOp->$field != -1) && ($instanceRiskOp->$field < $data['min'])) {
@@ -309,7 +311,7 @@ class ScaleService extends AbstractService
                 /** @var InstanceRiskTable $instanceRiskTable */
                 $instanceRiskTable = $this->get('instanceRiskTable');
                 $instancesRisks = $instanceRiskTable->getEntityByFields(['anr' => $anrId]);
-                foreach($instancesRisks as $instanceRisk) {
+                foreach ($instancesRisks as $instanceRisk) {
                     $dataRisks = [];
                     if (($instanceRisk->threatRate != -1) && ($instanceRisk->threatRate < $data['min'])) {
                         $dataRisks['threatRate'] = $data['min'];
@@ -332,7 +334,7 @@ class ScaleService extends AbstractService
                 $instanceRiskOpTable = $this->get('instanceRiskOpTable');
                 $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['anr' => $anrId]);
                 $fields = ['brutProb', 'netProb', 'targetedProb'];
-                foreach($instancesRisksOp as $instanceRiskOp) {
+                foreach ($instancesRisksOp as $instanceRiskOp) {
                     $dataRisksOp = [];
                     foreach ($fields as $field) {
                         if (($instanceRiskOp->$field != -1) && ($instanceRiskOp->$field < $data['min'])) {
@@ -355,7 +357,7 @@ class ScaleService extends AbstractService
                 $instanceRiskTable = $this->get('instanceRiskTable');
                 $instancesRisks = $instanceRiskTable->getEntityByFields(['anr' => $anrId]);
                 $fields = ['vulnerabilityRate', 'reductionAmount'];
-                foreach($instancesRisks as $instanceRisk) {
+                foreach ($instancesRisks as $instanceRisk) {
                     $dataRisks = [];
                     foreach ($fields as $field) {
                         if (($instanceRisk->$field != -1) && ($instanceRisk->$field < $data['min'])) {
@@ -393,5 +395,4 @@ class ScaleService extends AbstractService
 
         return $result;
     }
-
 }

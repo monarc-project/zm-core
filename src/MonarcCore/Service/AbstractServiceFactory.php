@@ -8,7 +8,7 @@ abstract class AbstractServiceFactory implements FactoryInterface
 {
     protected $ressources;
     protected $language;
-    protected $monarcConf = array();
+    protected $monarcConf = [];
 
     /**
      * Create Service
@@ -25,7 +25,7 @@ abstract class AbstractServiceFactory implements FactoryInterface
             if (empty($ressources)) {
                 $instance = new $class();
             } elseif (is_array($ressources)) {
-                $sls = array();
+                $sls = [];
                 foreach ($ressources as $key => $value) {
                     $sls[$key] = $serviceLocator->get($value);
                 }
@@ -36,7 +36,7 @@ abstract class AbstractServiceFactory implements FactoryInterface
 
             $instance->setLanguage($this->getDefaultLanguage($serviceLocator));
             $conf = $serviceLocator->get('Config');
-            $instance->setMonarcConf(isset($conf['monarc']) ? $conf['monarc'] : array());
+            $instance->setMonarcConf(isset($conf['monarc']) ? $conf['monarc'] : []);
 
             return $instance;
         } else {
@@ -68,7 +68,6 @@ abstract class AbstractServiceFactory implements FactoryInterface
 
         return $defaultLanguageIndex;
     }
-
 
     /**
      * Get Language

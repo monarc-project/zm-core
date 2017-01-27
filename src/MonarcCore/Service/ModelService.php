@@ -2,11 +2,7 @@
 namespace MonarcCore\Service;
 
 use MonarcCore\Model\Entity\Object;
-use MonarcCore\Model\Table\InstanceRiskOpTable;
-use MonarcCore\Model\Table\InstanceRiskTable;
 use MonarcCore\Model\Table\ModelTable;
-use MonarcCore\Model\Entity\Model;
-use MonarcCore\Model\Table\ObjectTable;
 
 /**
  * Model Service
@@ -20,17 +16,14 @@ class ModelService extends AbstractService
     protected $anrService;
     protected $anrTable;
     protected $instanceRiskTable;
-    //protected $instanceService; // unused
     protected $instanceRiskOpTable;
     protected $objectTable;
     protected $amvTable;
     protected $clientTable; // only loaded by MonarcFO service factory
     protected $forbiddenFields = ['anr'];
-
-    protected $filterColumns = array(
-        'label1', 'label2', 'label3', 'label4',
-        'description1', 'description2', 'description3', 'description4',
-    );
+    protected $filterColumns = [
+        'label1', 'label2', 'label3', 'label4', 'description1', 'description2', 'description3', 'description4',
+    ];
 
     /**
      * Get List
@@ -41,7 +34,8 @@ class ModelService extends AbstractService
      * @param null $filter
      * @return mixed
      */
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null, $scope = 'BO'){
+    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null, $scope = 'BO')
+    {
         $joinModel = -1;
 
         if ($scope == 'FO') {
@@ -79,7 +73,6 @@ class ModelService extends AbstractService
         return $models;
     }
 
-
     /**
      * Create
      *
@@ -87,20 +80,21 @@ class ModelService extends AbstractService
      * @param bool $last
      * @return mixed
      */
-    public function create($data, $last = true) {
+    public function create($data, $last = true)
+    {
         $entity = $this->get('entity');
         $entity->setLanguage($this->getLanguage());
 
         //anr
         $dataAnr = [
-            'label1'        => $data['label1'],
-            'label2'        => $data['label2'],
-            'label3'        => $data['label3'],
-            'label4'        => $data['label4'],
-            'description1'  => $data['description1'],
-            'description2'  => $data['description2'],
-            'description3'  => $data['description3'],
-            'description4'  => $data['description4'],
+            'label1' => $data['label1'],
+            'label2' => $data['label2'],
+            'label3' => $data['label3'],
+            'label4' => $data['label4'],
+            'description1' => $data['description1'],
+            'description2' => $data['description2'],
+            'description3' => $data['description3'],
+            'description4' => $data['description4'],
         ];
         /** @var AnrService $anrService */
         $anrService = $this->get('anrService');
@@ -111,7 +105,7 @@ class ModelService extends AbstractService
         //model
         $entity->exchangeArray($data);
 
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
 
         // If we reached here, our object is ready to be saved.
@@ -129,7 +123,8 @@ class ModelService extends AbstractService
      * @param $id
      * @return array
      */
-    public function getModelWithAnr($id){
+    public function getModelWithAnr($id)
+    {
         $model = $this->get('table')->get($id);
 
         $anrModel = $model['anr']->getJsonArray();
@@ -142,7 +137,7 @@ class ModelService extends AbstractService
         return $model;
     }
 
-     /**
+    /**
      * Update
      *
      * @param $id
@@ -150,8 +145,8 @@ class ModelService extends AbstractService
      * @return mixed
      * @throws \Exception
      */
-    public function update($id, $data){
-
+    public function update($id, $data)
+    {
         $model = $this->get('table')->getEntity($id);
         if (!$model) {
             throw new \Exception('Entity does not exist', 412);
@@ -175,7 +170,7 @@ class ModelService extends AbstractService
 
         $model->exchangeArray($data);
 
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($model, $dependencies);
 
         return $this->get('table')->save($model);
@@ -189,24 +184,26 @@ class ModelService extends AbstractService
      * @return bool
      * @throws \Exception
      */
-    public function verifyBeforeUpdate($model, $data) {
+    public function verifyBeforeUpdate($model, $data)
+    {
         if (isset($data['isRegulator']) && isset($data['isGeneric']) &&
-            $data['isRegulator'] && $data['isGeneric']) {
+            $data['isRegulator'] && $data['isGeneric']
+        ) {
             throw new \Exception("A regulator model may not be generic", 412);
         }
 
         $modeObject = null;
 
-        if(isset($data['isRegulator']) && $data['isRegulator'] && !$model->isRegulator){ // change to regulator
+        if (isset($data['isRegulator']) && $data['isRegulator'] && !$model->isRegulator) { // change to regulator
             //retrieve assets
             $assetsIds = [];
-            foreach($model->assets as $asset) {
+            foreach ($model->assets as $asset) {
                 $assetsIds[] = $asset->id;
             }
-            if(!empty($assetsIds)){
-                $amvs = $this->get('amvTable')->getEntityByFields(['asset'=>$assetsIds]);
-                foreach($amvs as $amv){
-                    if($amv->get('asset')->get('mode') == Object::MODE_SPECIFIC && $amv->get('threat')->get('mode') == Object::MODE_GENERIC && $amv->get('vulnerability')->get('mode') == Object::MODE_GENERIC){
+            if (!empty($assetsIds)) {
+                $amvs = $this->get('amvTable')->getEntityByFields(['asset' => $assetsIds]);
+                foreach ($amvs as $amv) {
+                    if ($amv->get('asset')->get('mode') == Object::MODE_SPECIFIC && $amv->get('threat')->get('mode') == Object::MODE_GENERIC && $amv->get('vulnerability')->get('mode') == Object::MODE_GENERIC) {
                         throw new \Exception('You can not make this change. The level of integrity between the model and its objects would corrupt', 412);
                         return false;
                     }
@@ -214,15 +211,15 @@ class ModelService extends AbstractService
             }
 
             $modeObject = Object::MODE_GENERIC;
-        }elseif(isset($data['isGeneric']) && $data['isGeneric'] && !$model->isGeneric){ // change to generic
+        } elseif (isset($data['isGeneric']) && $data['isGeneric'] && !$model->isGeneric) { // change to generic
             $modeObject = Object::MODE_SPECIFIC;
         }
 
-        if(!is_null($modeObject)){
+        if (!is_null($modeObject)) {
             $objects = $model->get('anr')->get('objects');
-            if(!empty($objects)){
-                foreach($objects as $o){
-                    if($o->get('mode') == $modeObject){
+            if (!empty($objects)) {
+                foreach ($objects as $o) {
+                    if ($o->get('mode') == $modeObject) {
                         throw new \Exception('You can not make this change. The level of integrity between the model and its objects would corrupt', 412);
                         return false;
                     }
@@ -240,7 +237,7 @@ class ModelService extends AbstractService
      * @param $data
      * @return mixed
      */
-    public function patch($id,$data)
+    public function patch($id, $data)
     {
         //security
         $this->filterPatchFields($data);
@@ -251,7 +248,8 @@ class ModelService extends AbstractService
     /**
      * Reset Current Default
      */
-    protected function resetCurrentDefault() {
+    protected function resetCurrentDefault()
+    {
         $this->get('table')->resetCurrentDefault();
     }
 
@@ -260,10 +258,11 @@ class ModelService extends AbstractService
      *
      * @param $data
      */
-    public function unsetSpecificModels(&$data) {
+    public function unsetSpecificModels(&$data)
+    {
         /** @var ModelTable $modelTable */
         $modelTable = $this->get('table');
-        foreach($data['models'] as $key => $modelId) {
+        foreach ($data['models'] as $key => $modelId) {
             $model = $modelTable->getEntity($modelId);
             if (!$model->isGeneric) {
                 unset($data['models'][$key]);
@@ -277,7 +276,8 @@ class ModelService extends AbstractService
      * @param $modelId
      * @return mixed|null
      */
-    public function duplicate($modelId) {
+    public function duplicate($modelId)
+    {
         //retrieve model
         /** @var ModelTable $modelTable */
         $modelTable = $this->get('table');
@@ -285,12 +285,12 @@ class ModelService extends AbstractService
 
         //duplicate model
         $newModel = clone $model;
-        $newModel->set('id',null);
+        $newModel->set('id', null);
         $newModel->set('isDefault', false);
 
-        $suffix = ' (copié le '.date('m/d/Y à H:i').')';
-        for($i=1;$i<=4;$i++){
-            $newModel->set('label'.$i,$newModel->get('label'.$i).$suffix);
+        $suffix = ' (copié le ' . date('m/d/Y à H:i') . ')';
+        for ($i = 1; $i <= 4; $i++) {
+            $newModel->set('label' . $i, $newModel->get('label' . $i) . $suffix);
         }
 
         //duplicate anr
@@ -310,15 +310,17 @@ class ModelService extends AbstractService
      * Delete
      *
      * @param $id
+     * @return bool
      */
-    public function delete($id) {
+    public function delete($id)
+    {
         $model = $this->get('table')->getEntity($id);
         $anr = $model->get('anr');
-        $model->set('anr',null);
-        $model->set('status',\MonarcCore\Model\Entity\AbstractEntity::STATUS_DELETED);
+        $model->set('anr', null);
+        $model->set('status', \MonarcCore\Model\Entity\AbstractEntity::STATUS_DELETED);
         $this->get('table')->save($model);
-        
-        if($anr){
+
+        if ($anr) {
             $this->get('anrTable')->delete($anr->get('id'));
         }
         return true;
@@ -330,19 +332,19 @@ class ModelService extends AbstractService
      * @param $data
      * @return bool
      */
-    public function deleteList($data){
-        $anrIds = [];
+    public function deleteList($data)
+    {
         $nbData = count($data);
         $i = 1;
-        foreach($data as $d){
+        foreach ($data as $d) {
             $model = $this->get('table')->getEntity($d);
             $anr = $model->get('anr');
-            $model->set('anr',null);
-            $model->set('status',\MonarcCore\Model\Entity\AbstractEntity::STATUS_DELETED);
+            $model->set('anr', null);
+            $model->set('status', \MonarcCore\Model\Entity\AbstractEntity::STATUS_DELETED);
             $this->get('table')->save($model, ($i == $nbData));
             $i++;
 
-            if($anr){
+            if ($anr) {
                 $this->get('anrTable')->delete($anr->get('id'));
             }
         }

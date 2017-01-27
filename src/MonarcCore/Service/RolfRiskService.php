@@ -1,5 +1,6 @@
 <?php
 namespace MonarcCore\Service;
+
 use MonarcCore\Model\Table\InstanceRiskOpTable;
 use MonarcCore\Model\Table\InstanceTable;
 use MonarcCore\Model\Table\ObjectTable;
@@ -18,11 +19,22 @@ class RolfRiskService extends AbstractService
     protected $instanceTable;
     protected $instanceRiskOpTable;
     protected $instanceRiskOpService;
-
-    protected $filterColumns = array(
+    protected $filterColumns = [
         'code', 'label1', 'label2', 'label3', 'label4', 'description1', 'description2', 'description3', 'description4'
-    );
+    ];
 
+    /**
+     * Get List Specific
+     *
+     * @param int $page
+     * @param int $limit
+     * @param null $order
+     * @param null $filter
+     * @param null $category
+     * @param null $tag
+     * @param null $anr
+     * @return mixed
+     */
     public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $category = null, $tag = null, $anr = null)
     {
         $filterAnd = [];
@@ -59,7 +71,20 @@ class RolfRiskService extends AbstractService
         );
     }
 
-    public function getFilteredSpecificCount($page = 1, $limit = 25, $order = null, $filter = null, $category = null, $tag = null, $anr = null) {
+    /**
+     * Get Filtered Specific Count
+     *
+     * @param int $page
+     * @param int $limit
+     * @param null $order
+     * @param null $filter
+     * @param null $category
+     * @param null $tag
+     * @param null $anr
+     * @return mixed
+     */
+    public function getFilteredSpecificCount($page = 1, $limit = 25, $order = null, $filter = null, $category = null, $tag = null, $anr = null)
+    {
         $filterAnd = [];
         $filterJoin = [];
 
@@ -101,7 +126,8 @@ class RolfRiskService extends AbstractService
      * @param bool $last
      * @return mixed
      */
-    public function create($data, $last = true) {
+    public function create($data, $last = true)
+    {
         $entity = $this->get('entity');
         if (isset($data['anr']) && is_numeric($data['anr'])) {
             $data['anr'] = $this->get('anrTable')->getEntity($data['anr']);
@@ -139,11 +165,11 @@ class RolfRiskService extends AbstractService
      * @param $data
      * @return mixed
      */
-    public function update($id,$data){
-
-        $rolfCategories = isset($data['categories']) ? $data['categories'] : array();
+    public function update($id, $data)
+    {
+        $rolfCategories = isset($data['categories']) ? $data['categories'] : [];
         unset($data['categories']);
-        $rolfTags = isset($data['tags']) ? $data['tags'] : array();
+        $rolfTags = isset($data['tags']) ? $data['tags'] : [];
         unset($data['tags']);
 
         $entity = $this->get('table')->getEntity($id);
@@ -152,14 +178,14 @@ class RolfRiskService extends AbstractService
         $entity->exchangeArray($data);
 
         $currentTagId = [];
-        foreach($entity->tags as $tag) {
+        foreach ($entity->tags as $tag) {
             $currentTagId[] = $tag->id;
         }
 
         $entity->get('categories')->initialize();
         $entity->get('tags')->initialize();
 
-        foreach($entity->get('categories') as $rolfCategory) {
+        foreach ($entity->get('categories') as $rolfCategory) {
             if (in_array($rolfCategory->get('id'), $rolfCategories)) {
                 unset($rolfCategories[array_search($rolfCategory->get('id'), $rolfCategories)]);
             } else {
@@ -167,28 +193,28 @@ class RolfRiskService extends AbstractService
             }
         }
 
-        foreach($entity->get('tags') as $rolfTag){
-            if (in_array($rolfTag->get('id'), $rolfTags)){
+        foreach ($entity->get('tags') as $rolfTag) {
+            if (in_array($rolfTag->get('id'), $rolfTags)) {
                 unset($rolfTags[array_search($rolfTag->get('id'), $rolfTags)]);
             } else {
                 $entity->get('tags')->removeElement($rolfTag);
             }
         }
 
-        if (!empty($rolfCategories)){
+        if (!empty($rolfCategories)) {
             $rolfCategoryTable = $this->get('rolfCategoryTable');
             foreach ($rolfCategories as $key => $rolfCategoryId) {
-                if(!empty($rolfCategoryId)){
+                if (!empty($rolfCategoryId)) {
                     $rolfCategory = $rolfCategoryTable->getEntity($rolfCategoryId);
                     $entity->setCategory($key, $rolfCategory);
                 }
             }
         }
 
-        if (!empty($rolfTags)){
+        if (!empty($rolfTags)) {
             $rolfTagTable = $this->get('rolfTagTable');
             foreach ($rolfTags as $key => $rolfTagId) {
-                if(!empty($rolfTagId)){
+                if (!empty($rolfTagId)) {
                     $rolfTag = $rolfTagTable->getEntity($rolfTagId);
                     $entity->setTag($key, $rolfTag);
                 }
@@ -198,19 +224,19 @@ class RolfRiskService extends AbstractService
         $this->setDependencies($entity, ['anr']);
 
         $newTagId = [];
-        foreach($entity->tags as $tag) {
+        foreach ($entity->tags as $tag) {
             $newTagId[] = $tag->id;
         }
 
         $deletedTags = [];
-        foreach($currentTagId as $tagId) {
+        foreach ($currentTagId as $tagId) {
             if (!in_array($tagId, $newTagId)) {
                 $deletedTags[] = $tagId;
             }
         }
 
         $addedTags = [];
-        foreach($newTagId as $tagId) {
+        foreach ($newTagId as $tagId) {
             if (!in_array($tagId, $currentTagId)) {
                 $addedTags[] = $tagId;
             }
@@ -220,7 +246,7 @@ class RolfRiskService extends AbstractService
             /** @var ObjectTable $objectTable */
             $objectTable = $this->get('objectTable');
             $objects = $objectTable->getEntityByFields(['rolfTag' => $deletedTag]);
-            foreach($objects as $object) {
+            foreach ($objects as $object) {
                 /** @var InstanceRiskOpTable $instanceRiskOpTable */
                 $instanceRiskOpTable = $this->get('instanceRiskOpTable');
                 $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['object' => $object->id, 'rolfRisk' => $id]);
@@ -233,11 +259,11 @@ class RolfRiskService extends AbstractService
                 }
             }
         }
-        foreach($addedTags as $addedTag) {
+        foreach ($addedTags as $addedTag) {
             /** @var ObjectTable $objectTable */
             $objectTable = $this->get('objectTable');
             $objects = $objectTable->getEntityByFields(['rolfTag' => $addedTag]);
-            foreach($objects as $object) {
+            foreach ($objects as $object) {
                 /** @var InstanceTable $instanceTable */
                 $instanceTable = $this->get('instanceTable');
                 $instances = $instanceTable->getEntityByFields(['object' => $object->id]);

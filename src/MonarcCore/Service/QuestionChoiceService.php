@@ -12,7 +12,6 @@ class QuestionChoiceService extends AbstractService
     protected $questionTable;
     protected $anrTable;
     protected $userAnrTable;
-
     protected $dependencies = ['anr', 'question'];
 
     /**
@@ -22,7 +21,8 @@ class QuestionChoiceService extends AbstractService
      * @param bool $last
      * @return mixed
      */
-    public function create($data, $last = true) {
+    public function create($data, $last = true)
+    {
         $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
 
         $entity = $this->get('entity');
@@ -41,26 +41,16 @@ class QuestionChoiceService extends AbstractService
      * @param $data
      * @return mixed
      */
-    public function update($id,$data){
+    public function update($id, $data)
+    {
         $entity = $this->get('table')->getEntity($id);
         $entity->exchangeArray($data);
 
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
 
 
         return $this->get('table')->save($entity);
-    }
-
-    /**
-     * Delete
-     *
-     * @param $id
-     */
-    public function delete($id) {
-        $entity = $this->getEntity($id);
-
-        $this->get('table')->delete($id);
     }
 
     /**
@@ -69,8 +59,8 @@ class QuestionChoiceService extends AbstractService
      * @param $data
      * @param $anrId
      */
-    public function replaceList($data, $anrId) {
-
+    public function replaceList($data, $anrId)
+    {
         /** @var QuestionChoiceTable $table */
         $table = $this->get('table');
 
@@ -110,5 +100,4 @@ class QuestionChoiceService extends AbstractService
             $i++;
         }
     }
-
 }

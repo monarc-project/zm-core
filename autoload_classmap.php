@@ -98,6 +98,7 @@ return array(
     'MonarcCore\Model\Entity\Threat'                                        => __DIR__ . '/src/MonarcCore/Model/Entity/Threat.php',
     'MonarcCore\Model\Entity\ThreatSuperClass'                              => __DIR__ . '/src/MonarcCore/Model/Entity/ThreatSuperClass.php',
     'MonarcCore\Model\Entity\User'                                          => __DIR__ . '/src/MonarcCore/Model/Entity/User.php',
+    'MonarcCore\Model\Entity\UserSuperClass'                                => __DIR__ . '/src/MonarcCore/Model/Entity/UserSuperClass.php',
     'MonarcCore\Model\Entity\UserRole'                                      => __DIR__ . '/src/MonarcCore/Model/Entity/UserRole.php',
     'MonarcCore\Model\Entity\UserToken'                                     => __DIR__ . '/src/MonarcCore/Model/Entity/UserToken.php',
     'MonarcCore\Model\Entity\UserTokenSuperClass'                           => __DIR__ . '/src/MonarcCore/Model/Entity/UserTokenSuperClass.php',

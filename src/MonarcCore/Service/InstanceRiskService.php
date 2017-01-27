@@ -24,7 +24,7 @@ class InstanceRiskService extends AbstractService
     protected $amvTable;
     protected $instanceTable;
     protected $recommandationTable;
-    
+
     // only for setDependencies (deprecated)
     protected $assetTable;
     protected $objectTable;
@@ -41,8 +41,8 @@ class InstanceRiskService extends AbstractService
      * @param $anrId
      * @param $object
      */
-    public function createInstanceRisks($instanceId, $anrId, $object) {
-
+    public function createInstanceRisks($instanceId, $anrId, $object)
+    {
         //retrieve brothers instances
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('instanceTable');
@@ -102,12 +102,13 @@ class InstanceRiskService extends AbstractService
      * @param $instanceId
      * @param $anrId
      */
-    public function deleteInstanceRisks($instanceId, $anrId){
+    public function deleteInstanceRisks($instanceId, $anrId)
+    {
         $risks = $this->getInstanceRisks($instanceId, $anrId);
         $table = $this->get('table');
         $nb = count($risks);
         $i = 1;
-        foreach($risks as $r){
+        foreach ($risks as $r) {
             $r->set('kindOfMeasure',InstanceRisk::KIND_NOT_TREATED);
             $this->updateRecoRisks($r);
             $table->delete($r->id,($i == $nb));
@@ -122,8 +123,8 @@ class InstanceRiskService extends AbstractService
      * @param $anrId
      * @return array|bool
      */
-    public function getInstanceRisks($instanceId, $anrId) {
-
+    public function getInstanceRisks($instanceId, $anrId)
+    {
         /** @var InstanceRiskTable $table */
         $table = $this->get('table');
         return $table->getEntityByFields(['anr' => $anrId, 'instance' => $instanceId]);
@@ -136,8 +137,8 @@ class InstanceRiskService extends AbstractService
      * @param $anrId
      * @return array
      */
-    public function getInstancesRisks($instancesIds, $anrId) {
-
+    public function getInstancesRisks($instancesIds, $anrId)
+    {
         /** @var InstanceRiskTable $table */
         $table = $this->get('table');
         return $table->getInstancesRisks($anrId, $instancesIds);
@@ -152,8 +153,8 @@ class InstanceRiskService extends AbstractService
      * @return mixed
      * @throws \Exception
      */
-    public function patch($id, $data, $manageGlobal = true){
-
+    public function patch($id, $data, $manageGlobal = true)
+    {
         $initialData = $data;
         $anrId = $data['anr'];
 
@@ -180,10 +181,10 @@ class InstanceRiskService extends AbstractService
                 $instanceTable = $this->get('instanceTable');
                 $instances = $instanceTable->getEntityByFields(['anr' => $entity->anr->id, 'object' => $object->id]);
 
-                foreach($instances as $instance) {
+                foreach ($instances as $instance) {
                     if ($instance != $entity->instance) {
                         $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $instance->id, 'amv' => $entity->amv->id]);
-                        foreach($instancesRisks as $instanceRisk) {
+                        foreach ($instancesRisks as $instanceRisk) {
                             $initialData['id'] = $instanceRisk->id;
                             $initialData['instance'] = $instance->id;
                             $this->patch($instanceRisk->id, $initialData, false);
@@ -203,7 +204,7 @@ class InstanceRiskService extends AbstractService
 
         $entity->exchangeArray($data, true);
 
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
 
         $instanceRiskTable->save($entity);
@@ -223,8 +224,8 @@ class InstanceRiskService extends AbstractService
      * @return mixed
      * @throws \Exception
      */
-    public function update($id, $data, $manageGlobal = true){
-
+    public function update($id, $data, $manageGlobal = true)
+    {
         $initialData = $data;
         $anrId = $data['anr'];
 
@@ -248,14 +249,14 @@ class InstanceRiskService extends AbstractService
                 $instanceTable = $this->get('instanceTable');
                 $instances = $instanceTable->getEntityByFields(['anr' => $entity->anr->id, 'object' => $object->id]);
 
-                foreach($instances as $instance) {
+                foreach ($instances as $instance) {
                     if ($instance != $entity->instance) {
                         if ($entity->specific == 0) {
                             $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $instance->id, 'amv' => $entity->amv->id]);
                         } else {
                             $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $instance->id, 'specific' => 1, 'threat' => $entity->threat->id, 'vulnerability' => $entity->vulnerability->id]);
                         }
-                        foreach($instancesRisks as $instanceRisk) {
+                        foreach ($instancesRisks as $instanceRisk) {
                             $initialData['id'] = $instanceRisk->id;
                             $initialData['instance'] = $instance->id;
                             $this->update($instanceRisk->id, $initialData, false);
@@ -276,7 +277,7 @@ class InstanceRiskService extends AbstractService
 
         $entity->exchangeArray($data);
 
-        $dependencies =  (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
 
         $instanceRiskTable->save($entity);
@@ -293,8 +294,8 @@ class InstanceRiskService extends AbstractService
      * @param $instanceRisk
      * @param bool $last
      */
-    public function updateRisks($instanceRisk, $last = true) {
-
+    public function updateRisks($instanceRisk, $last = true)
+    {
         /** @var InstanceRiskTable $instanceRiskTable */
         $instanceRiskTable = $this->get('table');
 
@@ -344,9 +345,10 @@ class InstanceRiskService extends AbstractService
      *
      * @param $id
      * @param $data
+     * @return mixed
      */
-    public function updateFromRiskTable($id, $data) {
-
+    public function updateFromRiskTable($id, $data)
+    {
         /** @var InstanceRiskTable $instanceRiskTable */
         $instanceRiskTable = $this->get('table');
         $instanceRisk = $instanceRiskTable->getEntity($id);
@@ -354,7 +356,7 @@ class InstanceRiskService extends AbstractService
         //security
         $data['specific'] = $instanceRisk->get('specific');
 
-        if($instanceRisk->threatRate != $data['threatRate']) {
+        if ($instanceRisk->threatRate != $data['threatRate']) {
             $data['mh'] = 0;
         }
 
