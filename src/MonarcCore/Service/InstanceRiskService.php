@@ -165,7 +165,7 @@ class InstanceRiskService extends AbstractService
             }
         }
         if(isset($data['vulnerabilityRate'])){
-            $data['vulnerabilityRate' = trim($data['vulnerabilityRate']);
+            $data['vulnerabilityRate'] = trim($data['vulnerabilityRate']);
             if(empty($data['vulnerabilityRate']) || $data['vulnerabilityRate'] == '-' || $data['vulnerabilityRate'] == -1){
                 $data['vulnerabilityRate'] = -1;
             }
@@ -249,7 +249,7 @@ class InstanceRiskService extends AbstractService
             }
         }
         if(isset($data['vulnerabilityRate'])){
-            $data['vulnerabilityRate' = trim($data['vulnerabilityRate']);
+            $data['vulnerabilityRate'] = trim($data['vulnerabilityRate']);
             if(empty($data['vulnerabilityRate']) || $data['vulnerabilityRate'] == '-' || $data['vulnerabilityRate'] == -1){
                 $data['vulnerabilityRate'] = -1;
             }
