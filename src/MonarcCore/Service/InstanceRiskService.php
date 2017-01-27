@@ -158,6 +158,19 @@ class InstanceRiskService extends AbstractService
         $initialData = $data;
         $anrId = $data['anr'];
 
+        if(isset($data['threatRate'])){
+            $data['threatRate'] = trim($data['threatRate']);
+            if(empty($data['threatRate']) || $data['threatRate'] == '-' || $data['threatRate'] == -1){
+                $data['threatRate'] = -1;
+            }
+        }
+        if(isset($data['vulnerabilityRate'])){
+            $data['vulnerabilityRate' = trim($data['vulnerabilityRate']);
+            if(empty($data['vulnerabilityRate']) || $data['vulnerabilityRate'] == '-' || $data['vulnerabilityRate'] == -1){
+                $data['vulnerabilityRate'] = -1;
+            }
+        }
+
         //security
         $this->filterPatchFields($data);
 
@@ -228,6 +241,19 @@ class InstanceRiskService extends AbstractService
     {
         $initialData = $data;
         $anrId = $data['anr'];
+
+        if(isset($data['threatRate'])){
+            $data['threatRate'] = trim($data['threatRate']);
+            if(empty($data['threatRate']) || $data['threatRate'] == '-' || $data['threatRate'] == -1){
+                $data['threatRate'] = -1;
+            }
+        }
+        if(isset($data['vulnerabilityRate'])){
+            $data['vulnerabilityRate' = trim($data['vulnerabilityRate']);
+            if(empty($data['vulnerabilityRate']) || $data['vulnerabilityRate'] == '-' || $data['vulnerabilityRate'] == -1){
+                $data['vulnerabilityRate'] = -1;
+            }
+        }
 
         $this->verifyRates($anrId, $data, $this->getEntity($id));
 
