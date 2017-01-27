@@ -18,30 +18,36 @@ class Db {
     }
 
     public function getEntityManager(){
+        if(!$this->entityManager->isOpen()){
+            $this->entityManager = $this->entityManager->create(
+                $this->entityManager->getConnection(),
+                $this->entityManager->getConfiguration()
+            );
+        }
         return $this->entityManager;
     }
 
     public function fetchAll($entity)
     {
-        $repository = $this->entityManager->getRepository(get_class($entity));
+        $repository = $this->getEntityManager()->getRepository(get_class($entity));
         $entities = $repository->findAll();
         return $entities;
     }
 
     public function getRepository($class){
-        return $this->entityManager->getRepository($class);
+        return $this->getEntityManager()->getRepository($class);
     }
 
     public function beginTransaction() {
-        $this->entityManager->getConnection()->beginTransaction();
+        $this->getEntityManager()->getConnection()->beginTransaction();
     }
 
     public function commit() {
-        $this->entityManager->getConnection()->commit();
+        $this->getEntityManager()->getConnection()->commit();
     }
 
     public function rollback() {
-        $this->entityManager->getConnection()->rollBack();
+        $this->getEntityManager()->getConnection()->rollBack();
     }
 
     /**
@@ -54,7 +60,7 @@ class Db {
      * @return array
      */
     public function fetchAllFiltered($entity, $page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null, $filterJoin = null, $filterLeft = null) {
-        $repository = $this->entityManager->getRepository(get_class($entity));
+        $repository = $this->getEntityManager()->getRepository(get_class($entity));
 
         $qb = $this->buildFilteredQuery($repository, $page, $limit, $order, $filter, $filterAnd, $filterJoin, $filterLeft);
 
@@ -62,12 +68,12 @@ class Db {
     }
 
     public function count($entity) {
-        $repository = $this->entityManager->getRepository(get_class($entity));
+        $repository = $this->getEntityManager()->getRepository(get_class($entity));
         return $repository->createQueryBuilder('u')->select('count(u.id)')->getQuery()->getSingleScalarResult();
     }
 
     public function countFiltered($entity, $limit = 25, $order = null, $filter = null, $filterAnd = null, $filterJoin = null, $filterLeft = null) {
-        $repository = $this->entityManager->getRepository(get_class($entity));
+        $repository = $this->getEntityManager()->getRepository(get_class($entity));
         $qb = $this->buildFilteredQuery($repository, 1, 0, $order, $filter, $filterAnd, $filterJoin, $filterLeft);
         $qb->select('count(t.id)');
 
@@ -79,11 +85,11 @@ class Db {
         if (!$entity->get('id')) {
             throw new \Exception('Entity `id` not found.');
         }
-        return $this->entityManager->find(get_class($entity), $entity->get('id'));
+        return $this->getEntityManager()->find(get_class($entity), $entity->get('id'));
     }
     public function fetchByFields($entity, $fields, $orderBy)
     {
-        $repository = $this->entityManager->getRepository(get_class($entity));
+        $repository = $this->getEntityManager()->getRepository(get_class($entity));
         $qb = $repository->createQueryBuilder('u');
 
         $metadata = $this->getClassMetadata(get_class($entity));
@@ -135,14 +141,14 @@ class Db {
     }
 
     public function fetchByIds($entity,$ids = array()){
-        return $this->entityManager->getRepository(get_class($entity))->findById($ids);
+        return $this->getEntityManager()->getRepository(get_class($entity))->findById($ids);
     }
     public function deleteAll($entities = array()){
          try {
             foreach($entities as $entity){
-                $this->entityManager->remove($entity);
+                $this->getEntityManager()->remove($entity);
             }
-            $this->entityManager->flush();
+            $this->getEntityManager()->flush();
         } catch (ForeignKeyConstraintViolationException $e) {
             throw new \Exception('Foreign key violation', '400');
         }
@@ -151,9 +157,9 @@ class Db {
     public function delete($entity, $last = true)
     {
         try {
-            $this->entityManager->remove($entity);
+            $this->getEntityManager()->remove($entity);
             if ($last) {
-                $this->entityManager->flush();
+                $this->getEntityManager()->flush();
             }
         } catch (ForeignKeyConstraintViolationException $e) {
             throw new \Exception('Foreign key violation', '400');
@@ -161,10 +167,10 @@ class Db {
     }
     public function save($entity, $last = true)
     {
-        $this->entityManager->persist($entity);
+        $this->getEntityManager()->persist($entity);
 
         if ($last) {
-            $this->entityManager->flush();
+            $this->getEntityManager()->flush();
         }
 
         return $entity->id;
@@ -172,15 +178,15 @@ class Db {
 
     public function flush()
     {
-        $this->entityManager->flush();
+        $this->getEntityManager()->flush();
     }
 
     public function lastInsertId(){
-        return $this->entityManager->getConnection()->lastInsertId();
+        return $this->getEntityManager()->getConnection()->lastInsertId();
     }
 
     public function quote($str, $paramType) {
-        return $this->entityManager->getConnection()->quote($str, $paramType);
+        return $this->getEntityManager()->getConnection()->quote($str, $paramType);
     }
 
     /**
@@ -325,10 +331,10 @@ class Db {
     }
 
     public function getReference($entityName, $id){
-        return $this->entityManager->getReference($entityName, $id);
+        return $this->getEntityManager()->getReference($entityName, $id);
     }
 
     public function getClassMetadata($entityName){
-        return $this->entityManager->getClassMetadata($entityName);
+        return $this->getEntityManager()->getClassMetadata($entityName);
     }
 }
