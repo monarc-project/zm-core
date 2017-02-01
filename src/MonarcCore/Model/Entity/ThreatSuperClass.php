@@ -9,7 +9,8 @@ use Doctrine\ORM\Mapping as ORM;
  * Threat
  *
  * @ORM\Table(name="threats", indexes={
- *      @ORM\Index(name="anr", columns={"anr_id"}),
+ *      @ORM\Index(name="anr_id", columns={"anr_id","code"}),
+ *      @ORM\Index(name="anr_id2", columns={"anr_id"}),
  *      @ORM\Index(name="theme_id", columns={"theme_id"})
  * })
  * @ORM\MappedSuperclass
@@ -21,7 +22,7 @@ class ThreatSuperClass extends AbstractEntity
      *
      * @ORM\Column(name="id", type="integer", nullable=false)
      * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
+     * @ORM\GeneratedValue(strategy="AUTO")
      */
     protected $id;
 
@@ -165,16 +166,16 @@ class ThreatSuperClass extends AbstractEntity
     protected $comment;
 
     /**
-     * @var boolean
+     * @var smallint
      *
-     * @ORM\Column(name="is_accidental", type="boolean", options={"unsigned":true, "default":0})
+     * @ORM\Column(name="is_accidental", type="smallint", options={"unsigned":true, "default":0})
      */
     protected $isAccidental = '0';
 
     /**
-     * @var boolean
+     * @var smallint
      *
-     * @ORM\Column(name="is_deliberate", type="boolean", options={"unsigned":true, "default":0})
+     * @ORM\Column(name="is_deliberate", type="smallint", options={"unsigned":true, "default":0})
      */
     protected $isDeliberate = '0';
 
@@ -394,6 +395,14 @@ class ThreatSuperClass extends AbstractEntity
         $this->theme = $theme;
     }
 
+    /**
+     * @return Theme
+     */
+    public function getTheme()
+    {
+        return $this->theme;
+    }
+
     public function getInputFilter($partial = false){
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);
@@ -527,4 +536,3 @@ class ThreatSuperClass extends AbstractEntity
         return $this->inputFilter;
     }
 }
-
