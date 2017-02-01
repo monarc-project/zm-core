@@ -170,7 +170,7 @@ class Db {
         $this->getEntityManager()->persist($entity);
 
         if ($last) {
-            $this->getEntityManager()->flush();
+            $this->flush();
         }
 
         return $entity->id;
