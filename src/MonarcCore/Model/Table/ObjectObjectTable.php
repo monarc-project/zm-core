@@ -1,7 +1,18 @@
 <?php
+/**
+ * @link      https://github.com/CASES-LU for the canonical source repository
+ * @copyright Copyright (c) Cases is a registered trademark of SECURITYMADEIN.LU
+ * @license   MyCases is licensed under the GNU Affero GPL v3 - See license.txt for more information
+ */
+
 namespace MonarcCore\Model\Table;
 
-class ObjectObjectTable extends AbstractEntityTable {
+/**
+ * Class ObjectObjectTable
+ * @package MonarcCore\Model\Table
+ */
+class ObjectObjectTable extends AbstractEntityTable
+{
 
     /**
      * Get Childs
@@ -9,7 +20,8 @@ class ObjectObjectTable extends AbstractEntityTable {
      * @param $objectId
      * @return array
      */
-    public function getChildren($objectId) {
+    public function getChildren($objectId)
+    {
         $child = $this->getRepository()->createQueryBuilder('o')
             ->select(array('IDENTITY(o.child) as childId', 'o.position'))
             ->where('o.father = :father')
@@ -20,26 +32,39 @@ class ObjectObjectTable extends AbstractEntityTable {
         return $child;
     }
 
-    public function getDirectParentsInfos($child_id){
+    /**
+     * Get Direct Parents Infos
+     *
+     * @param $child_id
+     * @return array
+     */
+    public function getDirectParentsInfos($child_id)
+    {
         return $this->getRepository()->createQueryBuilder('oo')
-                    ->select(['o.name1', 'o.name2', 'o.name3', 'o.name4', 'o.label1', 'o.label2', 'o.label3', 'o.label4' ])
-                    ->innerJoin('oo.father', 'o')
-                    ->where('oo.child = :child_id')
-                    ->setParameter(':child_id', $child_id)
-                    ->getQuery()
-                    ->getResult();
+            ->select(['o.name1', 'o.name2', 'o.name3', 'o.name4', 'o.label1', 'o.label2', 'o.label3', 'o.label4'])
+            ->innerJoin('oo.father', 'o')
+            ->where('oo.child = :child_id')
+            ->setParameter(':child_id', $child_id)
+            ->getQuery()
+            ->getResult();
     }
 
-    public function getDirectParentsInAnr($anrid, $id){
+    /**
+     * Get Direct Parents In Anr
+     *
+     * @param $anrid
+     * @param $id
+     * @return array
+     */
+    public function getDirectParentsInAnr($anrid, $id)
+    {
         $stmt = $this->getDb()->getEntityManager()->getConnection()->prepare(
-         'SELECT         o.id, oo.id as linkid, o.label1, o.label2, o.label3, o.label4, o.name1, o.name2, o.name3, o.name4
-          FROM           objects_objects oo
-          INNER JOIN objects o
-          ON                 oo.father_id = o.id
-          INNER JOIN anrs_objects ao
-          ON                 ao.object_id = o.id
-          WHERE          ao.anr_id = :anrid
-          AND                oo.child_id = :oid'
+            'SELECT o.id, oo.id as linkid, o.label1, o.label2, o.label3, o.label4, o.name1, o.name2, o.name3, o.name4
+            FROM objects_objects oo
+            INNER JOIN objects o ON oo.father_id = o.id
+            INNER JOIN anrs_objects ao ON ao.object_id = o.id
+            WHERE ao.anr_id = :anrid
+            AND oo.child_id = :oid'
         );
 
         $stmt->execute([':anrid' => $anrid, ':oid' => $id]);

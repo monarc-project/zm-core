@@ -1,4 +1,10 @@
 <?php
+/**
+ * @link      https://github.com/CASES-LU for the canonical source repository
+ * @copyright Copyright (c) Cases is a registered trademark of SECURITYMADEIN.LU
+ * @license   MyCases is licensed under the GNU Affero GPL v3 - See license.txt for more information
+ */
+
 namespace MonarcCore\Service;
 
 /**
@@ -14,7 +20,6 @@ class ModelObjectService extends AbstractService
     protected $rolfTagTable;
     protected $sourceTable;
     protected $modelTable;
-
     protected $filterColumns = [
         'label1', 'label2', 'label3', 'label4',
         'description1', 'description2', 'description3', 'description4',

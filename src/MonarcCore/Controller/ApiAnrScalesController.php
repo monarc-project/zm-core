@@ -1,10 +1,18 @@
 <?php
+/**
+ * @link      https://github.com/CASES-LU for the canonical source repository
+ * @copyright Copyright (c) Cases is a registered trademark of SECURITYMADEIN.LU
+ * @license   MyCases is licensed under the GNU Affero GPL v3 - See license.txt for more information
+ */
 
 namespace MonarcCore\Controller;
 
-use MonarcCore\Service\ScaleService;
 use Zend\View\Model\JsonModel;
 
+/**
+ * Class ApiAnrScalesController
+ * @package MonarcCore\Controller
+ */
 class ApiAnrScalesController extends AbstractController
 {
     protected $dependencies = ['anr'];
@@ -58,7 +66,6 @@ class ApiAnrScalesController extends AbstractController
      */
     public function update($id, $data)
     {
-
         $anrId = (int) $this->params()->fromRoute('anrId');
 
         if ($anrId) {

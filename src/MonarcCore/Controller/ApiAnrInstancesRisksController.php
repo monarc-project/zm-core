@@ -1,9 +1,18 @@
 <?php
+/**
+ * @link      https://github.com/CASES-LU for the canonical source repository
+ * @copyright Copyright (c) Cases is a registered trademark of SECURITYMADEIN.LU
+ * @license   MyCases is licensed under the GNU Affero GPL v3 - See license.txt for more information
+ */
 
 namespace MonarcCore\Controller;
 
 use Zend\View\Model\JsonModel;
 
+/**
+ * Class ApiAnrInstancesRisksController
+ * @package MonarcCore\Controller
+ */
 class ApiAnrInstancesRisksController extends AbstractController
 {
     protected $dependencies = ['anr','amv', 'asset', 'threat', 'vulnerability', 'instance'];
@@ -39,7 +48,6 @@ class ApiAnrInstancesRisksController extends AbstractController
 
         return new JsonModel(array('status' => 'ok'));
     }
-
 
     /**
      * Update

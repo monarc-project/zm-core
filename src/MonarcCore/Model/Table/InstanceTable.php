@@ -1,18 +1,26 @@
 <?php
+/**
+ * @link      https://github.com/CASES-LU for the canonical source repository
+ * @copyright Copyright (c) Cases is a registered trademark of SECURITYMADEIN.LU
+ * @license   MyCases is licensed under the GNU Affero GPL v3 - See license.txt for more information
+ */
+
 namespace MonarcCore\Model\Table;
 
-use MonarcCore\Model\Entity\Anr;
-
-class InstanceTable extends AbstractEntityTable {
-
+/**
+ * Class InstanceTable
+ * @package MonarcCore\Model\Table
+ */
+class InstanceTable extends AbstractEntityTable
+{
     /**
      * Find By Anr
      *
      * @param $anrId
      * @return array
      */
-    public function findByAnr($anrId) {
-
+    public function findByAnr($anrId)
+    {
         return $this->getRepository()->createQueryBuilder('i')
             ->select(array(
                 'i.id', 'i.level', 'IDENTITY(i.parent) as parentId',
@@ -28,35 +36,42 @@ class InstanceTable extends AbstractEntityTable {
             ->getResult();
     }
 
-    public function getAscendance($instance){
+    /**
+     * Get Ascendance
+     *
+     * @param $instance
+     * @return array
+     */
+    public function getAscendance($instance)
+    {
         $root = $instance->get('root');
         $idRoot = null;
         $arbo[] = $instance->getJsonArray();
-        if(!empty($root)){
+        if (!empty($root)) {
             $idRoot = $root->get('id');
         }
-        if(!empty($idRoot)){
+        if (!empty($idRoot)) {
             $idAnr = $instance->get('anr')->get('id');
             $result = $this->getRepository()->createQueryBuilder('i')
                 ->where('i.anr = :anrId')
                 ->andWhere('i.root = :rootid')
-                ->setParameter(':anrId', empty($idAnr)?null:$idAnr)
+                ->setParameter(':anrId', empty($idAnr) ? null : $idAnr)
                 ->setParameter(':rootid', $idRoot)
                 ->getQuery()
                 ->getResult();
             $family = array();
-            foreach($result as $r){
+            foreach ($result as $r) {
                 $p = $r->get('parent');
-                if(!empty($p)){//Cyril - Fix Trello [#9KkvKj5M] - not sure it's enough, what if we want the anr itself (null)
+                if (!empty($p)) {//Cyril - Fix Trello [#9KkvKj5M] - not sure it's enough, what if we want the anr itself (null)
                     $family[$r->get('id')][$r->get('parent')->get('id')] = $r->get('parent')->getJsonArray();
                 }
             }
             $temp = array();
             $temp[] = $instance->getJsonArray();
-            while(count($temp)){
+            while (count($temp)) {
                 $cur = array_shift($temp);
-                if(isset($family[$cur['id']])){
-                    foreach($family[$cur['id']] as $id => $parent){
+                if (isset($family[$cur['id']])) {
+                    foreach ($family[$cur['id']] as $id => $parent) {
                         $arbo[$id] = $parent;
                         $temp[] = $parent;
                     }
@@ -66,72 +81,97 @@ class InstanceTable extends AbstractEntityTable {
         return $arbo;
     }
 
-    protected function buildWhereForPositionCreate($params,$queryBuilder,\MonarcCore\Model\Entity\AbstractEntity $entity, $newOrOld = 'new'){
-        $queryBuilder = parent::buildWhereForPositionCreate($params,$queryBuilder, $entity,$newOrOld);
+    /**
+     * Build Where For Position Create
+     *
+     * @param $params
+     * @param $queryBuilder
+     * @param \MonarcCore\Model\Entity\AbstractEntity $entity
+     * @param string $newOrOld
+     * @return mixed
+     */
+    protected function buildWhereForPositionCreate($params, $queryBuilder, \MonarcCore\Model\Entity\AbstractEntity $entity, $newOrOld = 'new')
+    {
+        $queryBuilder = parent::buildWhereForPositionCreate($params, $queryBuilder, $entity, $newOrOld);
         $anr = $entity->get('anr');
-        if($anr){
+        if ($anr) {
             $queryBuilder = $queryBuilder->andWhere('t.anr = :anr')
-                ->setParameter(':anr',is_object($anr)?$anr->get('id'):$anr);
-        }else{
+                ->setParameter(':anr', is_object($anr) ? $anr->get('id') : $anr);
+        } else {
             $queryBuilder = $queryBuilder->andWhere('t.anr IS NULL');
         }
         return $queryBuilder;
     }
 
-    protected function manageDeletePosition(\MonarcCore\Model\Entity\AbstractEntity $entity,$params = array()){
+    /**
+     * Manage Delete Position
+     *
+     * @param \MonarcCore\Model\Entity\AbstractEntity $entity
+     * @param array $params
+     */
+    protected function manageDeletePosition(\MonarcCore\Model\Entity\AbstractEntity $entity, $params = array())
+    {
         $return = $this->getRepository()->createQueryBuilder('t')
             ->update()
             ->set('t.position', 't.position - 1');
         $hasWhere = false;
-        if(!empty($params['field'])){
+        if (!empty($params['field'])) {
             $hasWhere = true;
-            if(is_null($entity->get($params['field']))){
-                $return = $return->where('t.'.$params['field'].' IS NULL');
-            }else{
-                $return = $return->where('t.' . $params['field'] . ' = :'.$params['field'])
-                    ->setParameter(':'.$params['field'], $entity->get($params['field']));
+            if (is_null($entity->get($params['field']))) {
+                $return = $return->where('t.' . $params['field'] . ' IS NULL');
+            } else {
+                $return = $return->where('t.' . $params['field'] . ' = :' . $params['field'])
+                    ->setParameter(':' . $params['field'], $entity->get($params['field']));
             }
         }
 
         $anr = $entity->get('anr');
-        if($anr){
+        if ($anr) {
             $return = $return->andWhere('t.anr = :anr')
-                ->setParameter(':anr',is_object($anr)?$anr->get('id'):$anr);
-        }else{
+                ->setParameter(':anr', is_object($anr) ? $anr->get('id') : $anr);
+        } else {
             $return = $return->andWhere('t.anr IS NULL');
         }
 
-        if($hasWhere){
+        if ($hasWhere) {
             $return = $return->andWhere('t.position >= :pos');
-        }else{
+        } else {
             $return = $return->where('t.position >= :pos');
         }
         $return = $return->setParameter(':pos', $entity->get('position'));
         $return->getQuery()->getResult();
     }
 
-    protected function countPositionMax(\MonarcCore\Model\Entity\AbstractEntity $entity,$params = array()){
+    /**
+     * Count Position Max
+     *
+     * @param \MonarcCore\Model\Entity\AbstractEntity $entity
+     * @param array $params
+     * @return mixed
+     */
+    protected function countPositionMax(\MonarcCore\Model\Entity\AbstractEntity $entity, $params = array())
+    {
         $return = $this->getRepository()->createQueryBuilder('t')
             ->select('COUNT(t.id)');
-        if(!empty($params['field'])){
-            if(isset($params['newField'][$params['field']])){
-                if(is_null($params['newField'][$params['field']])){
-                    $return = $return->where('t.'.$params['field'].' IS NULL');
-                }else{
-                    $return = $return->where('t.' . $params['field'] . ' = :'.$params['field'])
-                        ->setParameter(':'.$params['field'], $params['newField'][$params['field']]);
+        if (!empty($params['field'])) {
+            if (isset($params['newField'][$params['field']])) {
+                if (is_null($params['newField'][$params['field']])) {
+                    $return = $return->where('t.' . $params['field'] . ' IS NULL');
+                } else {
+                    $return = $return->where('t.' . $params['field'] . ' = :' . $params['field'])
+                        ->setParameter(':' . $params['field'], $params['newField'][$params['field']]);
                 }
             }
         }
         $anr = $entity->get('anr');
-        if($anr){
+        if ($anr) {
             $return = $return->andWhere('t.anr = :anr')
-                ->setParameter(':anr',is_object($anr)?$anr->get('id'):$anr);
-        }else{
+                ->setParameter(':anr', is_object($anr) ? $anr->get('id') : $anr);
+        } else {
             $return = $return->andWhere('t.anr IS NULL');
         }
 
         $id = $entity->get('id');
-        return $return->getQuery()->getSingleScalarResult()+($id?0:1);
+        return $return->getQuery()->getSingleScalarResult() + ($id ? 0 : 1);
     }
 }

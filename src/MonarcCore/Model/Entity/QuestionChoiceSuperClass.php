@@ -1,8 +1,12 @@
 <?php
+/**
+ * @link      https://github.com/CASES-LU for the canonical source repository
+ * @copyright Copyright (c) Cases is a registered trademark of SECURITYMADEIN.LU
+ * @license   MyCases is licensed under the GNU Affero GPL v3 - See license.txt for more information
+ */
 
 namespace MonarcCore\Model\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -140,7 +144,8 @@ class QuestionChoiceSuperclass extends AbstractEntity
     //     ),
     // );
 
-    public function getInputFilter($partial = false){
+    public function getInputFilter($partial = false)
+    {
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);
 
@@ -148,7 +153,7 @@ class QuestionChoiceSuperclass extends AbstractEntity
                 'label1', 'label2', 'label3', 'label4'
             ];
 
-            foreach($labels as $label) {
+            foreach ($labels as $label) {
                 $this->inputFilter->add(array(
                     'name' => $label,
                     'required' => false,
@@ -167,19 +172,19 @@ class QuestionChoiceSuperclass extends AbstractEntity
                 'filters' => [['name' => 'ToInt']],
                 'validators' => array()
             ));
-/*
-            $this->inputFilter->add(array(
-                'name' => 'question',
-                'required' => true,
-                'allow_empty' => false,
-                'filters' => array(),
-                'validators' => array(
-                    array(
-                        'name' => 'IsInt',
-                    ),
-                ),
-            ));
-*/
+            /*
+                        $this->inputFilter->add(array(
+                            'name' => 'question',
+                            'required' => true,
+                            'allow_empty' => false,
+                            'filters' => array(),
+                            'validators' => array(
+                                array(
+                                    'name' => 'IsInt',
+                                ),
+                            ),
+                        ));
+            */
         }
         return $this->inputFilter;
     }

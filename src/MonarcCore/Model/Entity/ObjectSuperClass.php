@@ -1,4 +1,9 @@
 <?php
+/**
+ * @link      https://github.com/CASES-LU for the canonical source repository
+ * @copyright Copyright (c) Cases is a registered trademark of SECURITYMADEIN.LU
+ * @license   MyCases is licensed under the GNU Affero GPL v3 - See license.txt for more information
+ */
 
 namespace MonarcCore\Model\Entity;
 
@@ -17,7 +22,6 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class ObjectSuperClass extends AbstractEntity
 {
-
     // Must be 16, 24 or 32 characters
     const SALT = '__$$00_C4535_5M1L3_00$$__XMP0)XW';
 
@@ -383,13 +387,14 @@ class ObjectSuperClass extends AbstractEntity
         ),
     );
 
-    public function getInputFilter($partial = false){
+    public function getInputFilter($partial = false)
+    {
 
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);
 
             $names = ['name1', 'name2', 'name3', 'name4'];
-            foreach($names as $name) {
+            foreach ($names as $name) {
                 $validatorsName = [];
                 if (!$partial) {
                     $validatorsName = array(
@@ -406,7 +411,7 @@ class ObjectSuperClass extends AbstractEntity
 
                 $this->inputFilter->add(array(
                     'name' => $name,
-                    'required' => ((strchr($name, (string) $this->getLanguage())) && (!$partial)) ? true : false,
+                    'required' => ((strchr($name, (string)$this->getLanguage())) && (!$partial)) ? true : false,
                     'allow_empty' => false,
                     'filters' => array(),
                     'validators' => $validatorsName,
@@ -414,10 +419,10 @@ class ObjectSuperClass extends AbstractEntity
             }
 
             $labels = ['label1', 'label2', 'label3', 'label4'];
-            foreach($labels as $label) {
+            foreach ($labels as $label) {
                 $this->inputFilter->add(array(
                     'name' => $label,
-                    'required' => ((strchr($label, (string) $this->getLanguage())) && (!$partial)) ? true : false,
+                    'required' => ((strchr($label, (string)$this->getLanguage())) && (!$partial)) ? true : false,
                     'allow_empty' => false,
                     'filters' => array(),
                     'validators' => array(),
@@ -534,8 +539,7 @@ class ObjectSuperClass extends AbstractEntity
                 'allow_empty' => true,
                 'continue_if_empty' => true,
                 'filters' => array(),
-                'validators' => array(
-                    /*array(
+                'validators' => array(/*array(
                         'name' => 'IsInt',
                     ),*/
                 ),

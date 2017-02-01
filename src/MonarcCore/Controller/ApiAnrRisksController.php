@@ -1,4 +1,10 @@
 <?php
+/**
+ * @link      https://github.com/CASES-LU for the canonical source repository
+ * @copyright Copyright (c) Cases is a registered trademark of SECURITYMADEIN.LU
+ * @license   MyCases is licensed under the GNU Affero GPL v3 - See license.txt for more information
+ */
+
 namespace MonarcCore\Controller;
 
 use Zend\View\Model\JsonModel;
@@ -11,6 +17,12 @@ use Zend\View\Model\JsonModel;
  */
 class ApiAnrRisksController extends AbstractController
 {
+    /**
+     * Get
+     *
+     * @param mixed $id
+     * @return JsonModel
+     */
 	public function get($id){
         $anrId = (int) $this->params()->fromRoute('anrid');
         $params = $this->parseParams();
@@ -26,6 +38,11 @@ class ApiAnrRisksController extends AbstractController
         }
 	}
 
+    /**
+     * Get List
+     *
+     * @return JsonModel
+     */
 	public function getList(){
         $anrId = (int) $this->params()->fromRoute('anrid');
         $params = $this->parseParams();
@@ -56,6 +73,11 @@ class ApiAnrRisksController extends AbstractController
 		$this->methodNotAllowed();
 	}
 
+    /**
+     * Parse Params
+     *
+     * @return array
+     */
 	protected function parseParams() {
         $keywords = $this->params()->fromQuery("keywords");
         $kindOfMeasure = $this->params()->fromQuery("kindOfMeasure");

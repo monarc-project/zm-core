@@ -1,15 +1,28 @@
 <?php
+/**
+ * @link      https://github.com/CASES-LU for the canonical source repository
+ * @copyright Copyright (c) Cases is a registered trademark of SECURITYMADEIN.LU
+ * @license   MyCases is licensed under the GNU Affero GPL v3 - See license.txt for more information
+ */
+
 namespace MonarcCore\Model\Table;
 
-class ObjectCategoryTable extends AbstractEntityTable {
-
+/**
+ * Object Category Table
+ *
+ * Class ObjectCategoryTable
+ * @package MonarcCore\Model\Table
+ */
+class ObjectCategoryTable extends AbstractEntityTable
+{
     /**
      * Get Child
      *
      * @param $id
      * @return array
      */
-    public function getChild($id) {
+    public function getChild($id)
+    {
         $child = $this->getRepository()->createQueryBuilder('t')
             ->select(array('t.id'))
             ->where('t.parent = :parent')
@@ -26,8 +39,8 @@ class ObjectCategoryTable extends AbstractEntityTable {
      * @param $objectsIds
      * @return array
      */
-    public function getRootCategories($objectsIds) {
-
+    public function getRootCategories($objectsIds)
+    {
         $qb = $this->getRepository()->createQueryBuilder('t');
 
         return $qb
@@ -37,7 +50,6 @@ class ObjectCategoryTable extends AbstractEntityTable {
             ->getResult();
     }
 
-
     /**
      * Get By Roots Or Ids
      *
@@ -45,8 +57,8 @@ class ObjectCategoryTable extends AbstractEntityTable {
      * @param $ids
      * @return array
      */
-    public function getByRootsOrIds($rootIds, $ids) {
-
+    public function getByRootsOrIds($rootIds, $ids)
+    {
         $fields = array('t.id', 't.label1', 't.label2', 't.label3', 't.label4', 't.position', 'IDENTITY(t.parent) as parentId');
 
         $qb = $this->getRepository()->createQueryBuilder('t');
@@ -59,7 +71,7 @@ class ObjectCategoryTable extends AbstractEntityTable {
                 ->getQuery()
                 ->getResult();
         } else if (!count($rootIds) && count($ids)) {
-            $result =  $qb
+            $result = $qb
                 ->select($fields)
                 ->where($qb->expr()->in('t.id', $ids))
                 ->getQuery()
@@ -68,5 +80,4 @@ class ObjectCategoryTable extends AbstractEntityTable {
 
         return $result;
     }
-
 }

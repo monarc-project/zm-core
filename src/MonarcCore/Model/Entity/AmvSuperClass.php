@@ -1,4 +1,9 @@
 <?php
+/**
+ * @link      https://github.com/CASES-LU for the canonical source repository
+ * @copyright Copyright (c) Cases is a registered trademark of SECURITYMADEIN.LU
+ * @license   MyCases is licensed under the GNU Affero GPL v3 - See license.txt for more information
+ */
 
 namespace MonarcCore\Model\Entity;
 
@@ -291,13 +296,14 @@ class AmvSuperclass extends AbstractEntity
         ),
     );
 
-    public function getInputFilter($partial = false){
+    public function getInputFilter($partial = false)
+    {
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);
 
             $texts = ['vulnerability', 'asset'];
 
-            foreach($texts as $text) {
+            foreach ($texts as $text) {
                 $this->inputFilter->add(array(
                     'name' => $text,
                     'required' => ($partial) ? false : true,
@@ -327,7 +333,7 @@ class AmvSuperclass extends AbstractEntity
                             'messages' => array(
                                 \Zend\Validator\Callback::INVALID_VALUE => 'This AMV link is already used',
                             ),
-                            'callback' => function($value, $context = array()) use ($partial){
+                            'callback' => function ($value, $context = array()) use ($partial) {
                                 if (!$partial) {
                                     $adapter = $this->getDbAdapter();
                                     if (empty($adapter)) {

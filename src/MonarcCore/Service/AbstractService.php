@@ -1,4 +1,10 @@
 <?php
+/**
+ * @link      https://github.com/CASES-LU for the canonical source repository
+ * @copyright Copyright (c) Cases is a registered trademark of SECURITYMADEIN.LU
+ * @license   MyCases is licensed under the GNU Affero GPL v3 - See license.txt for more information
+ */
+
 namespace MonarcCore\Service;
 
 use MonarcCore\Model\Entity\Scale;
@@ -6,6 +12,10 @@ use MonarcCore\Model\Table\AnrTable;
 use MonarcCore\Model\Table\ObjectObjectTable;
 use MonarcFO\Model\Table\UserAnrTable;
 
+/**
+ * Class AbstractService
+ * @package MonarcCore\Service
+ */
 abstract class AbstractService extends AbstractServiceFactory
 {
     use \MonarcCore\Model\GetAndSet;

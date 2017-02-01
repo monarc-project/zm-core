@@ -1,9 +1,18 @@
 <?php
+/**
+ * @link      https://github.com/CASES-LU for the canonical source repository
+ * @copyright Copyright (c) Cases is a registered trademark of SECURITYMADEIN.LU
+ * @license   MyCases is licensed under the GNU Affero GPL v3 - See license.txt for more information
+ */
 
 namespace MonarcCore\Controller;
 
 use Zend\View\Model\JsonModel;
 
+/**
+ * Class ApiAnrScalesCommentsController
+ * @package MonarcCore\Controller
+ */
 class ApiAnrScalesCommentsController extends AbstractController
 {
     protected $dependencies = ['scale', 'scaleImpactType'];
@@ -36,11 +45,22 @@ class ApiAnrScalesCommentsController extends AbstractController
         ));
     }
 
+    /**
+     * Get
+     *
+     * @param mixed $id
+     */
     public function get($id)
     {
         return $this->methodNotAllowed();
     }
 
+    /**
+     * Create
+     *
+     * @param mixed $data
+     * @return JsonModel
+     */
     public function create($data)
     {
         $anrId = (int) $this->params()->fromRoute('anrId');
@@ -59,6 +79,13 @@ class ApiAnrScalesCommentsController extends AbstractController
         );
     }
 
+    /**
+     * Update
+     *
+     * @param mixed $id
+     * @param mixed $data
+     * @return JsonModel
+     */
     public function update($id, $data)
     {
         $anrId = (int) $this->params()->fromRoute('anrId');
@@ -87,4 +114,3 @@ class ApiAnrScalesCommentsController extends AbstractController
         return $this->methodNotAllowed();
     }
 }
-

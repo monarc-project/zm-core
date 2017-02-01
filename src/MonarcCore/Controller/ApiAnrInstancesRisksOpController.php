@@ -1,8 +1,18 @@
 <?php
+/**
+ * @link      https://github.com/CASES-LU for the canonical source repository
+ * @copyright Copyright (c) Cases is a registered trademark of SECURITYMADEIN.LU
+ * @license   MyCases is licensed under the GNU Affero GPL v3 - See license.txt for more information
+ */
 
 namespace MonarcCore\Controller;
+
 use Zend\View\Model\JsonModel;
 
+/**
+ * Class ApiAnrInstancesRisksOpController
+ * @package MonarcCore\Controller
+ */
 class ApiAnrInstancesRisksOpController extends AbstractController
 {
     protected $name = 'instances-oprisks';
@@ -22,6 +32,13 @@ class ApiAnrInstancesRisksOpController extends AbstractController
         return $this->methodNotAllowed();
     }
 
+    /**
+     * Update
+     *
+     * @param mixed $id
+     * @param mixed $data
+     * @return JsonModel
+     */
     public function update($id, $data){
         $risk = $this->getService()->update($id, $data);
         unset($risk['anr']);
@@ -32,4 +49,3 @@ class ApiAnrInstancesRisksOpController extends AbstractController
         return new JsonModel($risk);
     }
 }
-

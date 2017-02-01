@@ -1,4 +1,10 @@
 <?php
+/**
+ * @link      https://github.com/CASES-LU for the canonical source repository
+ * @copyright Copyright (c) Cases is a registered trademark of SECURITYMADEIN.LU
+ * @license   MyCases is licensed under the GNU Affero GPL v3 - See license.txt for more information
+ */
+
 namespace MonarcCore\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -23,7 +29,8 @@ class ScaleImpactTypeSuperClass extends AbstractEntity
     const SCALE_TYPE_F = 7;
     const SCALE_TYPE_P = 8;
 
-    static function getScaleImpactTypeRolfp() {
+    static function getScaleImpactTypeRolfp()
+    {
         return [
             self::SCALE_TYPE_R,
             self::SCALE_TYPE_O,
@@ -33,7 +40,8 @@ class ScaleImpactTypeSuperClass extends AbstractEntity
         ];
     }
 
-    static function getScaleImpactTypeCid() {
+    static function getScaleImpactTypeCid()
+    {
         return [
             self::SCALE_TYPE_C,
             self::SCALE_TYPE_I,
@@ -214,13 +222,14 @@ class ScaleImpactTypeSuperClass extends AbstractEntity
         ),
     );
 
-    public function getInputFilter($partial = false){
+    public function getInputFilter($partial = false)
+    {
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);
 
             $texts = ['label1', 'label2', 'label3', 'label4'];
 
-            foreach($texts as $text) {
+            foreach ($texts as $text) {
                 $this->inputFilter->add(array(
                     'name' => $text,
                     'required' => false,

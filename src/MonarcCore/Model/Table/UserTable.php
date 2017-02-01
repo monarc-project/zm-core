@@ -1,8 +1,18 @@
 <?php
+/**
+ * @link      https://github.com/CASES-LU for the canonical source repository
+ * @copyright Copyright (c) Cases is a registered trademark of SECURITYMADEIN.LU
+ * @license   MyCases is licensed under the GNU Affero GPL v3 - See license.txt for more information
+ */
+
 namespace MonarcCore\Model\Table;
 
-class UserTable extends AbstractEntityTable {
-
+/**
+ * Class UserTable
+ * @package MonarcCore\Model\Table
+ */
+class UserTable extends AbstractEntityTable
+{
     protected $userRoleTable;
     protected $userTokenTable;
     protected $passwordTokenTable;
@@ -68,15 +78,16 @@ class UserTable extends AbstractEntityTable {
      * @return mixed
      * @throws \Exception
      */
-    public function getByEmail($email) {
-        $users =  $this->getRepository()->createQueryBuilder('u')
+    public function getByEmail($email)
+    {
+        $users = $this->getRepository()->createQueryBuilder('u')
             ->select(array('u.id', 'u.firstname', 'u.lastname', 'u.email', 'u.phone', 'u.status'))
             ->where('u.email = :email')
             ->setParameter(':email', $email)
             ->getQuery()
             ->getResult();
 
-        if (! count($users)) {
+        if (!count($users)) {
             throw new \Exception('Entity does not exist', 422);
         } else {
             return $users[0];
@@ -112,5 +123,4 @@ class UserTable extends AbstractEntityTable {
             throw $e;
         }
     }
-
 }

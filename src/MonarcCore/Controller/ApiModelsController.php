@@ -1,6 +1,12 @@
 <?php
+/**
+ * @link      https://github.com/CASES-LU for the canonical source repository
+ * @copyright Copyright (c) Cases is a registered trademark of SECURITYMADEIN.LU
+ * @license   MyCases is licensed under the GNU Affero GPL v3 - See license.txt for more information
+ */
 
 namespace MonarcCore\Controller;
+
 use MonarcCore\Service\ModelService;
 use Zend\View\Model\JsonModel;
 
@@ -42,7 +48,6 @@ class ApiModelsController extends AbstractController
                 $filterAnd = ['status' => ['op'=> 'IN', 'value' => [\MonarcCore\Model\Entity\AbstractEntity::STATUS_INACTIVE,\MonarcCore\Model\Entity\AbstractEntity::STATUS_ACTIVE]]];
                 break;
         }
-        
 
         if (!is_null($isGeneric)) {
             $filterAnd['isGeneric'] = $isGeneric;
@@ -61,7 +66,6 @@ class ApiModelsController extends AbstractController
         ));
     }
 
-
     /**
      * Get
      *
@@ -77,4 +81,3 @@ class ApiModelsController extends AbstractController
         return new JsonModel($entity);
     }
 }
-

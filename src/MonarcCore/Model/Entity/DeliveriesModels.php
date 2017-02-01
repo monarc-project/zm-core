@@ -1,4 +1,9 @@
 <?php
+/**
+ * @link      https://github.com/CASES-LU for the canonical source repository
+ * @copyright Copyright (c) Cases is a registered trademark of SECURITYMADEIN.LU
+ * @license   MyCases is licensed under the GNU Affero GPL v3 - See license.txt for more information
+ */
 
 namespace MonarcCore\Model\Entity;
 
@@ -155,18 +160,19 @@ class DeliveriesModels extends AbstractEntity
     const MODEL_ASSETS_AND_MODELS_VALIDATION = 2; // Document model for Assets and models validation
     const MODEL_RISK_ANALYSIS = 3; // Document model for Risk analysis
 
-    public function getInputFilter($partial = false){
+    public function getInputFilter($partial = false)
+    {
         if (!$this->inputFilter) {
             $dirFile = './data/monarc/models/';
-            if(!is_dir($dirFile)){
-                mkdir($dirFile,0775,true);
+            if (!is_dir($dirFile)) {
+                mkdir($dirFile, 0775, true);
             }
 
             parent::getInputFilter($partial);
 
             $this->inputFilter->add(array(
                 'name' => 'category',
-                'required' => !($this->get('id')>0),
+                'required' => !($this->get('id') > 0),
                 'allow_empty' => false,
                 'filters' => array(
                     array('name' => 'ToInt',),
@@ -175,7 +181,7 @@ class DeliveriesModels extends AbstractEntity
                     array(
                         'name' => 'InArray',
                         'options' => array(
-                            'haystack' => array(self::MODEL_CONTEXT_VALIDATION,self::MODEL_ASSETS_AND_MODELS_VALIDATION,self::MODEL_RISK_ANALYSIS),
+                            'haystack' => array(self::MODEL_CONTEXT_VALIDATION, self::MODEL_ASSETS_AND_MODELS_VALIDATION, self::MODEL_RISK_ANALYSIS),
                         ),
                     ),
                     array(
@@ -190,9 +196,9 @@ class DeliveriesModels extends AbstractEntity
                 ),
             ));
 
-            for($i = 1; $i <= 4; $i++){
+            for ($i = 1; $i <= 4; $i++) {
                 $this->inputFilter->add(array(
-                    'name' => 'path'.$i,
+                    'name' => 'path' . $i,
                     'required' => ($this->getLanguage() == $i && !$partial && !$this->get('id')),
                     'allow_empty' => false,
                     'filters' => array(
@@ -200,7 +206,7 @@ class DeliveriesModels extends AbstractEntity
                             'name' => 'Zend\Filter\File\RenameUpload',
                             'options' => array(
                                 'randomize' => true,
-                                'target' => $dirFile.$this->{"path$i"}['name'],
+                                'target' => $dirFile . $this->{"path$i"}['name'],
                             ),
                         ),
                     ),
@@ -224,12 +230,12 @@ class DeliveriesModels extends AbstractEntity
         parent::exchangeArray($options);
 
         for ($i = 1; $i <= 4; ++$i) {
-            if (!empty($this->{'path'.$i}['tmp_name']) && file_exists($this->{'path'.$i}['tmp_name'])) {
-                $info = pathinfo($this->{'path'.$i}['tmp_name']);
-                $targetFile = $info['dirname'] . DIRECTORY_SEPARATOR . uniqid() . '_' . $this->{'path'.$i}['name'];
-                rename($this->{'path'.$i}['tmp_name'], $targetFile);
+            if (!empty($this->{'path' . $i}['tmp_name']) && file_exists($this->{'path' . $i}['tmp_name'])) {
+                $info = pathinfo($this->{'path' . $i}['tmp_name']);
+                $targetFile = $info['dirname'] . DIRECTORY_SEPARATOR . uniqid() . '_' . $this->{'path' . $i}['name'];
+                rename($this->{'path' . $i}['tmp_name'], $targetFile);
 
-                $this->{'path'.$i} = $targetFile;
+                $this->{'path' . $i} = $targetFile;
                 $this->{"content$i"} = file_get_contents($this->{'path' . $i});
             }
         }
@@ -241,7 +247,7 @@ class DeliveriesModels extends AbstractEntity
     {
         $res = parent::getJsonArray($fields);
         for ($i = 1; $i <= 4; ++$i) {
-            unset($res['content'.$i]);
+            unset($res['content' . $i]);
         }
         return $res;
     }
