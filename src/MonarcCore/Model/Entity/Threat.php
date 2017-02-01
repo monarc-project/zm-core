@@ -14,7 +14,8 @@ use Doctrine\ORM\Mapping as ORM;
  * Threat
  *
  * @ORM\Table(name="threats", indexes={
- *      @ORM\Index(name="anr", columns={"anr_id"}),
+ *      @ORM\Index(name="anr_id", columns={"anr_id","code"}),
+ *      @ORM\Index(name="anr_id2", columns={"anr_id"}),
  *      @ORM\Index(name="theme_id", columns={"theme_id"})
  * })
  * @ORM\Entity
@@ -78,4 +79,3 @@ class Threat extends ThreatSuperClass
         parent::__construct($obj);
     }
 }
-

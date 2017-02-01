@@ -103,44 +103,44 @@ class Model extends AbstractEntity
     protected $status = '1';
 
     /**
-     * @var boolean
+     * @var smallint
      *
-     * @ORM\Column(name="is_scales_updatable", type="boolean", options={"unsigned":true, "default":1})
+     * @ORM\Column(name="is_scales_updatable", type="smallint", options={"unsigned":true, "default":1})
      */
     protected $isScalesUpdatable = '1';
 
     /**
-     * @var boolean
+     * @var smallint
      *
-     * @ORM\Column(name="is_default", type="boolean", options={"unsigned":true, "default":0})
+     * @ORM\Column(name="is_default", type="smallint", options={"unsigned":true, "default":0})
      */
     protected $isDefault = '0';
 
     /**
-     * @var boolean
+     * @var smallint
      *
-     * @ORM\Column(name="is_deleted", type="boolean", options={"unsigned":true, "default":0})
+     * @ORM\Column(name="is_deleted", type="smallint", options={"unsigned":true, "default":0})
      */
     protected $isDeleted = '0';
 
     /**
-     * @var boolean
+     * @var smallint
      *
-     * @ORM\Column(name="is_generic", type="boolean", options={"unsigned":true, "default":1})
+     * @ORM\Column(name="is_generic", type="smallint", options={"unsigned":true, "default":1})
      */
     protected $isGeneric = '1';
 
     /**
-     * @var boolean
+     * @var smallint
      *
-     * @ORM\Column(name="is_regulator", type="boolean", options={"unsigned":true, "default":0})
+     * @ORM\Column(name="is_regulator", type="smallint", options={"unsigned":true, "default":0})
      */
     protected $isRegulator = '0';
 
     /**
-     * @var boolean
+     * @var smallint
      *
-     * @ORM\Column(name="show_rolf_brut", type="boolean", options={"unsigned":true, "default":1})
+     * @ORM\Column(name="show_rolf_brut", type="smallint", options={"unsigned":true, "default":1})
      */
     protected $showRolfBrut = '1';
 
