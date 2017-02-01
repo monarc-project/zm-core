@@ -1,16 +1,29 @@
 <?php
+/**
+ * @link      https://github.com/CASES-LU for the canonical source repository
+ * @copyright Copyright (c) Cases is a registered trademark of SECURITYMADEIN.LU
+ * @license   MyCases is licensed under the GNU Affero GPL v3 - See license.txt for more information
+ */
 
 namespace MonarcCore\Controller;
 
 use MonarcCore\Service\ObjectService;
 use Zend\View\Model\JsonModel;
 
+/**
+ * Class ApiAnrLibraryController
+ * @package MonarcCore\Controller
+ */
 class ApiAnrLibraryController extends AbstractController
 {
     protected $name = 'categories';
-
     protected $dependencies = ['anr', 'parent'];
 
+    /**
+     * Get List
+     *
+     * @return JsonModel
+     */
     public function getList()
     {
         $anrId = $this->params()->fromRoute('anrid');
@@ -71,6 +84,12 @@ class ApiAnrLibraryController extends AbstractController
         return $this->methodNotAllowed();
     }
 
+    /**
+     * Delete
+     *
+     * @param mixed $id
+     * @return JsonModel
+     */
     public function delete($id)
     {
         $anrId = $this->params()->fromRoute('anrid');

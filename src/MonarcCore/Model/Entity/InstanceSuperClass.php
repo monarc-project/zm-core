@@ -1,4 +1,9 @@
 <?php
+/**
+ * @link      https://github.com/CASES-LU for the canonical source repository
+ * @copyright Copyright (c) Cases is a registered trademark of SECURITYMADEIN.LU
+ * @license   MyCases is licensed under the GNU Affero GPL v3 - See license.txt for more information
+ */
 
 namespace MonarcCore\Model\Entity;
 
@@ -20,12 +25,12 @@ use Doctrine\ORM\Mapping as ORM;
 class InstanceSuperClass extends AbstractEntity
 {
 
-    const LEVEL_ROOT    = 1; //instance de racine d'un objet
-    const LEVEL_LEAF    = 2; //instance d'une feuille d'un objet
-    const LEVEL_INTER   = 3; //instance d'une noeud intermédiaire d'un objet
+    const LEVEL_ROOT = 1; //instance de racine d'un objet
+    const LEVEL_LEAF = 2; //instance d'une feuille d'un objet
+    const LEVEL_INTER = 3; //instance d'une noeud intermédiaire d'un objet
 
-    const MODE_CREA_ROOT		= 1;//Mode de création d'une instance qui permet d'instancier directement une racine
-    const MODE_CREA_NODE		= 2;//Mode de création d'une instance à partir d'un nouveau composant d'objet
+    const MODE_CREA_ROOT = 1;//Mode de création d'une instance qui permet d'instancier directement une racine
+    const MODE_CREA_NODE = 2;//Mode de création d'une instance à partir d'un nouveau composant d'objet
 
     /**
      * @var integer
@@ -383,17 +388,18 @@ class InstanceSuperClass extends AbstractEntity
         ),
     );
 
-    public function getInputFilter($partial = false){
+    public function getInputFilter($partial = false)
+    {
         parent::getInputFilter($partial);
 
         $texts = [
             'name1', 'name2', 'name3', 'name4',
             'label1', 'label2', 'label3', 'label4',
         ];
-        foreach($texts as $text) {
+        foreach ($texts as $text) {
             $this->inputFilter->add(array(
                 'name' => $text,
-                'required' => ((strchr($text, (string) $this->getLanguage())) && (!$partial)) ? true : false,
+                'required' => ((strchr($text, (string)$this->getLanguage())) && (!$partial)) ? true : false,
                 'allow_empty' => false,
                 'filters' => array(),
                 'validators' => array(),
@@ -401,7 +407,7 @@ class InstanceSuperClass extends AbstractEntity
         }
 
         $fields = ['c', 'i', 'd', 'asset', 'object'];
-        foreach($fields as $field) {
+        foreach ($fields as $field) {
             $this->inputFilter->add(array(
                 'name' => $field,
                 'required' => (!$partial) ? true : false,
@@ -412,7 +418,7 @@ class InstanceSuperClass extends AbstractEntity
         }
 
         $descriptions = ['description1', 'description2', 'description3', 'description4'];
-        foreach($descriptions as $description) {
+        foreach ($descriptions as $description) {
             $this->inputFilter->add(array(
                 'name' => $description,
                 'required' => false,

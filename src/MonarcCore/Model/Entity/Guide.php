@@ -1,8 +1,12 @@
 <?php
+/**
+ * @link      https://github.com/CASES-LU for the canonical source repository
+ * @copyright Copyright (c) Cases is a registered trademark of SECURITYMADEIN.LU
+ * @license   MyCases is licensed under the GNU Affero GPL v3 - See license.txt for more information
+ */
 
 namespace MonarcCore\Model\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -120,12 +124,13 @@ class Guide extends AbstractEntity
     }
 
 
-    public function getInputFilter($partial = false){
+    public function getInputFilter($partial = false)
+    {
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);
 
             $descriptions = ['description1', 'description2', 'description3', 'description4'];
-            foreach($descriptions as $description) {
+            foreach ($descriptions as $description) {
                 $this->inputFilter->add(array(
                     'name' => $description,
                     'required' => false,

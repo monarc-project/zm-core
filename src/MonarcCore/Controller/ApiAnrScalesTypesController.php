@@ -1,10 +1,19 @@
 <?php
+/**
+ * @link      https://github.com/CASES-LU for the canonical source repository
+ * @copyright Copyright (c) Cases is a registered trademark of SECURITYMADEIN.LU
+ * @license   MyCases is licensed under the GNU Affero GPL v3 - See license.txt for more information
+ */
 
 namespace MonarcCore\Controller;
 
 use MonarcCore\Service\ScaleImpactTypeService;
 use Zend\View\Model\JsonModel;
 
+/**
+ * Class ApiAnrScalesTypesController
+ * @package MonarcCore\Controller
+ */
 class ApiAnrScalesTypesController extends AbstractController
 {
     protected $dependencies = [];
@@ -31,7 +40,6 @@ class ApiAnrScalesTypesController extends AbstractController
         ));
     }
 
-
     /**
      * Patch
      *
@@ -52,4 +60,3 @@ class ApiAnrScalesTypesController extends AbstractController
         return new JsonModel(array('status' => 'ok'));
     }
 }
-

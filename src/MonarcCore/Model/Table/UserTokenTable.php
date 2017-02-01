@@ -1,15 +1,25 @@
 <?php
+/**
+ * @link      https://github.com/CASES-LU for the canonical source repository
+ * @copyright Copyright (c) Cases is a registered trademark of SECURITYMADEIN.LU
+ * @license   MyCases is licensed under the GNU Affero GPL v3 - See license.txt for more information
+ */
+
 namespace MonarcCore\Model\Table;
 
-class UserTokenTable extends AbstractEntityTable {
-
+/**
+ * Class UserTokenTable
+ * @package MonarcCore\Model\Table
+ */
+class UserTokenTable extends AbstractEntityTable
+{
     /**
      * Delete By User
      *
      * @param $userId
      */
-    public function deleteByUser($userId) {
-
+    public function deleteByUser($userId)
+    {
         $this->getRepository()->createQueryBuilder('ut')
             ->delete()
             ->where('ut.user = :user')

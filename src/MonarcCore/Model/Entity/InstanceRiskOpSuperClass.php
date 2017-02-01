@@ -1,8 +1,12 @@
 <?php
+/**
+ * @link      https://github.com/CASES-LU for the canonical source repository
+ * @copyright Copyright (c) Cases is a registered trademark of SECURITYMADEIN.LU
+ * @license   MyCases is licensed under the GNU Affero GPL v3 - See license.txt for more information
+ */
 
 namespace MonarcCore\Model\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -18,11 +22,11 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class InstanceRiskOpSuperClass extends AbstractEntity
 {
-    const KIND_REDUCTION    = 1;
-    const KIND_REFUS        = 2;
-    const KIND_ACCEPTATION  = 3;
-    const KIND_PARTAGE      = 4;
-    const KIND_NOT_TREATED  = 5;
+    const KIND_REDUCTION = 1;
+    const KIND_REFUS = 2;
+    const KIND_ACCEPTATION = 3;
+    const KIND_PARTAGE = 4;
+    const KIND_NOT_TREATED = 5;
 
     /**
      * @var integer
@@ -429,7 +433,8 @@ class InstanceRiskOpSuperClass extends AbstractEntity
         return $this;
     }
 
-    public function getInputFilter($partial = false){
+    public function getInputFilter($partial = false)
+    {
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);
 
@@ -458,7 +463,7 @@ class InstanceRiskOpSuperClass extends AbstractEntity
                 'kindOfMeasure',
                 'specific',
             ];
-            foreach($integers as $i){
+            foreach ($integers as $i) {
                 $this->inputFilter->add(array(
                     'name' => $i,
                     'required' => false,

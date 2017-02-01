@@ -1,8 +1,18 @@
 <?php
+/**
+ * @link      https://github.com/CASES-LU for the canonical source repository
+ * @copyright Copyright (c) Cases is a registered trademark of SECURITYMADEIN.LU
+ * @license   MyCases is licensed under the GNU Affero GPL v3 - See license.txt for more information
+ */
+
 namespace MonarcCore\Model\Table;
 
-class ObjectTable extends AbstractEntityTable {
-
+/**
+ * Class ObjectTable
+ * @package MonarcCore\Model\Table
+ */
+class ObjectTable extends AbstractEntityTable
+{
     protected $objectObjectTable;
 
     /**
@@ -29,9 +39,9 @@ class ObjectTable extends AbstractEntityTable {
      * @param $assetId
      * @return array
      */
-    public function getGenericByAssetId($assetId) {
-
-        $objects =  $this->getRepository()->createQueryBuilder('o')
+    public function getGenericByAssetId($assetId)
+    {
+        $objects = $this->getRepository()->createQueryBuilder('o')
             ->select(array('o.id'))
             ->where('o.asset = :assetId')
             ->andWhere('o.mode = :mode')
@@ -49,8 +59,9 @@ class ObjectTable extends AbstractEntityTable {
      * @param $assetsIds
      * @return array
      */
-    public function getByAssets($assetsIds) {
-        if(empty($assetsIds)){
+    public function getByAssets($assetsIds)
+    {
+        if (empty($assetsIds)) {
             $assetsIds[] = 0;
         }
 
@@ -63,7 +74,15 @@ class ObjectTable extends AbstractEntityTable {
             ->getResult();
     }
 
-    public function checkInAnr($anrid, $id){
+    /**
+     * Check In Anr
+     *
+     * @param $anrid
+     * @param $id
+     * @return bool
+     */
+    public function checkInAnr($anrid, $id)
+    {
         $stmt = $this->getDb()->getEntityManager()->getConnection()->prepare(
             'SELECT id
              FROM   anrs_objects

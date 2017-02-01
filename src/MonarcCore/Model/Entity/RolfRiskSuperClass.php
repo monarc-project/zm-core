@@ -1,4 +1,9 @@
 <?php
+/**
+ * @link      https://github.com/CASES-LU for the canonical source repository
+ * @copyright Copyright (c) Cases is a registered trademark of SECURITYMADEIN.LU
+ * @license   MyCases is licensed under the GNU Affero GPL v3 - See license.txt for more information
+ */
 
 namespace MonarcCore\Model\Entity;
 
@@ -209,20 +214,22 @@ class RolfRiskSuperclass extends AbstractEntity
     {
         $this->tags = $rolfTags;
     }
+
     public function setCategories($categories)
     {
         $this->categories = $categories;
     }
 
-    public function getInputFilter($partial = false){
+    public function getInputFilter($partial = false)
+    {
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);
 
             $texts = ['label1', 'label2', 'label3', 'label4'];
-            foreach($texts as $text) {
+            foreach ($texts as $text) {
                 $this->inputFilter->add(array(
                     'name' => $text,
-                    'required' => ((strchr($text, (string) $this->getLanguage())) && (!$partial)) ? true : false,
+                    'required' => ((strchr($text, (string)$this->getLanguage())) && (!$partial)) ? true : false,
                     'allow_empty' => false,
                     'filters' => array(),
                     'validators' => array(),
@@ -230,7 +237,7 @@ class RolfRiskSuperclass extends AbstractEntity
             }
 
             $descriptions = ['description1', 'description2', 'description3', 'description4'];
-            foreach($descriptions as $description) {
+            foreach ($descriptions as $description) {
                 $this->inputFilter->add(array(
                     'name' => $description,
                     'required' => false,

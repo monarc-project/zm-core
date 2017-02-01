@@ -1,9 +1,23 @@
 <?php
+/**
+ * @link      https://github.com/CASES-LU for the canonical source repository
+ * @copyright Copyright (c) Cases is a registered trademark of SECURITYMADEIN.LU
+ * @license   MyCases is licensed under the GNU Affero GPL v3 - See license.txt for more information
+ */
+
 namespace MonarcCore\Model\Table;
 
-class ModelTable extends AbstractEntityTable {
-
-    public function resetCurrentDefault() {
+/**
+ * Class ModelTable
+ * @package MonarcCore\Model\Table
+ */
+class ModelTable extends AbstractEntityTable
+{
+    /**
+     * Reset Current Default
+     */
+    public function resetCurrentDefault()
+    {
         $defaults = $this->getEntityByFields(['isDefault' => true]);
 
         // There should only ever be one default model
@@ -22,8 +36,9 @@ class ModelTable extends AbstractEntityTable {
      * @param $anrsId
      * @return array
      */
-    public function getByAnrs($anrsId) {
-        if(empty($anrsId)){
+    public function getByAnrs($anrsId)
+    {
+        if (empty($anrsId)) {
             $anrsId[] = 0;
         }
 
@@ -47,7 +62,7 @@ class ModelTable extends AbstractEntityTable {
     public function canAcceptObject($modelId, $object, $context = null, $forceAsset = null)
     {
         //retrieve data
-        if(is_null($context) || $context == \MonarcCore\Model\Entity\AbstractEntity::BACK_OFFICE){
+        if (is_null($context) || $context == \MonarcCore\Model\Entity\AbstractEntity::BACK_OFFICE) {
             $model = $this->getEntity($modelId);
 
             $asset_mode = is_null($forceAsset) ? $object->get('asset')->get('mode') : $forceAsset->mode;
