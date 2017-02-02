@@ -8,6 +8,8 @@
 namespace MonarcCore\Controller;
 
 /**
+ * Index Controller
+ *
  * Class IndexController
  * @package MonarcCore\Controller
  */

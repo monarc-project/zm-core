@@ -11,6 +11,8 @@ use Zend\ServiceManager\FactoryInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 
 /**
+ * Abstract Service Factory
+ *
  * Class AbstractServiceFactory
  * @package MonarcCore\Service
  */

@@ -10,6 +10,8 @@ namespace MonarcCore\Controller;
 use Zend\View\Model\JsonModel;
 
 /**
+ * Api Anr Instances Risks Op Controller
+ *
  * Class ApiAnrInstancesRisksOpController
  * @package MonarcCore\Controller
  */

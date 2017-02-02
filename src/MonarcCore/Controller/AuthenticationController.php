@@ -10,6 +10,8 @@ namespace MonarcCore\Controller;
 use Zend\View\Model\JsonModel;
 
 /**
+ * Authentication Controller
+ *
  * Class AuthenticationController
  * @package MonarcCore\Controller
  */

@@ -11,6 +11,8 @@ use MonarcCore\Service\ObjectService;
 use Zend\View\Model\JsonModel;
 
 /**
+ * Api Anr Library Controller
+ *
  * Class ApiAnrLibraryController
  * @package MonarcCore\Controller
  */

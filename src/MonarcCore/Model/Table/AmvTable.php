@@ -14,17 +14,6 @@ namespace MonarcCore\Model\Table;
 class AmvTable extends AbstractEntityTable
 {
     /**
-     * Find by asset
-     *
-     * @param $asset
-     * @return array|bool
-     */
-    public function findByAsset($asset)
-    {
-        return $this->getEntityByFields(['asset' => $asset]);
-    }
-
-    /**
      * Find By AMV
      *
      * @param $asset
@@ -34,7 +23,6 @@ class AmvTable extends AbstractEntityTable
      */
     public function findByAMV($asset, $threat, $vulnerability)
     {
-
         $parameters = [];
         if (!is_null($asset)) {
             $parameters['asset'] = $asset->getId();

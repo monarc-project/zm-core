@@ -10,6 +10,8 @@ namespace MonarcCore\Controller;
 use Zend\View\Model\JsonModel;
 
 /**
+ * Api Anr Scales Comments Controller
+ *
  * Class ApiAnrScalesCommentsController
  * @package MonarcCore\Controller
  */

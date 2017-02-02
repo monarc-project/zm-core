@@ -8,6 +8,8 @@
 namespace MonarcCore\Controller;
 
 /**
+ * Authentication Controller Factory
+ *
  * Class AuthenticationControllerFactory
  * @package MonarcCore\Controller
  */

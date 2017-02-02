@@ -13,6 +13,8 @@ use MonarcCore\Model\Table\ObjectObjectTable;
 use MonarcFO\Model\Table\UserAnrTable;
 
 /**
+ * Abstract Service
+ *
  * Class AbstractService
  * @package MonarcCore\Service
  */

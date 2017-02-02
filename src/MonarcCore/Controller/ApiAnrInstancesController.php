@@ -12,6 +12,8 @@ use MonarcCore\Service\InstanceService;
 use Zend\View\Model\JsonModel;
 
 /**
+ * Api Anr Instances Controller
+ *
  * Class ApiAnrInstancesController
  * @package MonarcCore\Controller
  */

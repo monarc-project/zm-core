@@ -11,6 +11,8 @@ use MonarcCore\Service\ScaleImpactTypeService;
 use Zend\View\Model\JsonModel;
 
 /**
+ * Api Anr Scales Types Controller
+ *
  * Class ApiAnrScalesTypesController
  * @package MonarcCore\Controller
  */

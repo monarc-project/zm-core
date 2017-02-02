@@ -54,27 +54,6 @@ class ObjectTable extends AbstractEntityTable
     }
 
     /**
-     * Get By Assets
-     *
-     * @param $assetsIds
-     * @return array
-     */
-    public function getByAssets($assetsIds)
-    {
-        if (empty($assetsIds)) {
-            $assetsIds[] = 0;
-        }
-
-        $qb = $this->getRepository()->createQueryBuilder('o');
-
-        return $qb
-            ->select()
-            ->where($qb->expr()->in('o.asset', $assetsIds))
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
      * Check In Anr
      *
      * @param $anrid

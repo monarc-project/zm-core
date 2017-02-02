@@ -606,94 +606,11 @@ abstract class AbstractEntityTable
     }
 
     /**
-     * Change positions by parent
+     * Get Reference
      *
-     * @param $field
-     * @param $parentId
-     * @param $position
-     * @param string $direction
-     * @param string $referential
-     * @param bool $strict
-     * @return array
+     * @param $id
+     * @return bool|\Doctrine\Common\Proxy\Proxy|null|object
      */
-    public function changePositionsByParent($field = 'parent', $parentId, $position, $direction = 'up', $referential = 'after', $strict = false)
-    {
-        $positionDirection = ($direction == 'up') ? '+1' : '-1';
-        $sign = ($referential == 'after') ? '>' : '<';
-        if (!$strict) {
-            $sign .= '=';
-        }
-
-        $return = $this->getRepository()->createQueryBuilder('t')
-            ->update()
-            ->set('t.position', 't.position' . $positionDirection);
-        if (empty($parentId)) {
-            $return = $return->where('t.' . $field . ' IS NULL');
-        } else {
-            $return = $return->where('t.' . $field . ' = :parentid')
-                ->setParameter(':parentid', $parentId);
-
-        }
-
-        $return = $return->andWhere('t.position ' . $sign . ' :position')
-            ->setParameter(':position', $position)
-            ->getQuery();
-
-        $return->getResult();
-        return $return;
-    }
-
-    /**
-     * Change positions
-     *
-     * @param $position
-     * @param string $direction
-     * @param string $referential
-     * @param bool $strict
-     * @return \Doctrine\ORM\Query
-     */
-    public function changePositions($position, $direction = 'up', $referential = 'after', $strict = false)
-    {
-        $positionDirection = ($direction == 'up') ? '+1' : '-1';
-        $sign = ($referential == 'after') ? '>' : '<';
-        if (!$strict) {
-            $sign .= '=';
-        }
-
-        $return = $this->getRepository()->createQueryBuilder('t')
-            ->update()
-            ->set('t.position', 't.position' . $positionDirection)
-            ->andWhere('t.position ' . $sign . ' :position')
-            ->setParameter(':position', $position)
-            ->getQuery();
-
-        $return->getResult();
-        return $return;
-    }
-
-    /**
-     * Max Position By Parent
-     *
-     * @param $field
-     * @param $parentId
-     * @return mixed
-     */
-    public function maxPositionByParent($field, $parentId)
-    {
-        $maxPosition = $this->getRepository()->createQueryBuilder('t')
-            ->select(array('max(t.position)'));
-        if (empty($parentId)) {
-            $maxPosition = $maxPosition->where('t.' . $field . ' IS NULL');
-        } else {
-            $maxPosition = $maxPosition->where('t.' . $field . ' = :parentid')
-                ->setParameter(':parentid', $parentId);
-        }
-        $maxPosition = $maxPosition->getQuery()
-            ->getResult();
-
-        return $maxPosition[0][1];
-    }
-
     public function getReference($id)
     {
         return $this->getDb()->getReference($this->getClass(), $id);
@@ -706,7 +623,6 @@ abstract class AbstractEntityTable
      */
     public function getDescendants($id)
     {
-
         $childList = [];
 
         $this->getRecursiveChild($childList, $id);
@@ -735,21 +651,6 @@ abstract class AbstractEntityTable
                 $this->getRecursiveChild($childList, $child['id']);
             }
         }
-    }
-
-    /**
-     * Get Descendants Objects
-     *
-     * @param $id
-     * @return array
-     */
-    public function getDescendantsObjects($id)
-    {
-        $childList = [];
-
-        $this->getRecursiveChildObjects($childList, $id);
-
-        return $childList;
     }
 
     /**

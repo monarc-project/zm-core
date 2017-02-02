@@ -8,6 +8,8 @@
 namespace MonarcCore\Controller;
 
 /**
+ * Api Anr Export Controller Factory
+ *
  * Class ApiAnrExportControllerFactory
  * @package MonarcCore\Controller
  */
