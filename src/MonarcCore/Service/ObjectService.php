@@ -614,10 +614,14 @@ class ObjectService extends AbstractService
         $rolfTagId = ($object->rolfTag) ? $object->rolfTag->id : null;
 
         $object->exchangeArray($data, true);
+        
+        if ($object->rolfTag) {
+            $newRolfTagId = (is_int($object->rolfTag)) ? $object->rolfTag : $object->rolfTag->id;
+            $newRolfTag = ($rolfTagId == $newRolfTagId) ? false : $object->rolfTag;
+        } else {
+            $newRolfTag = false;
+        }
 
-        $newRolfTagId = (isset($data['rolfTag'])) ? $object->rolfTag : null;
-
-        $newRolfTag = ($rolfTagId == $newRolfTagId) ? false : $newRolfTagId;
 
         $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($object, $dependencies);
@@ -709,7 +713,7 @@ class ObjectService extends AbstractService
         $rolfTagId = ($object->rolfTag) ? $object->rolfTag->id : null;
 
         $object->exchangeArray($data, true);
-        
+
         if ($object->rolfTag) {
             $newRolfTagId = (is_int($object->rolfTag)) ? $object->rolfTag : $object->rolfTag->id;
             $newRolfTag = ($rolfTagId == $newRolfTagId) ? false : $object->rolfTag;

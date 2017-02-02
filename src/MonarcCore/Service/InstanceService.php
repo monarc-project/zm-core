@@ -763,7 +763,7 @@ class InstanceService extends AbstractService
 
                     if (isset($data['consequences'])) {
 
-                        //retrieve instance consequence id for the brother isnatnce id ans scale impact type
+                        //retrieve instance consequence id for the brother instance id ans scale impact type
                         /** @var InstanceConsequenceTable $instanceConsequenceTable */
                         $instanceConsequenceTable = $this->get('instanceConsequenceTable');
                         $instanceConsequences = $instanceConsequenceTable->getEntityByFields(['instance' => $brother->id]);

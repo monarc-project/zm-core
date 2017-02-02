@@ -156,14 +156,21 @@ class InstanceConsequenceService extends AbstractService
         if ($instanceConsequence->object->scope == Object::SCOPE_GLOBAL) {
             /** @var InstanceTable $instanceTable */
             $instanceTable = $this->get('instanceTable');
-            $brothers = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $instanceConsequence->object->id]);
+            $brothers = $instanceTable->getEntityByFields([
+                'anr' => $anrId,
+                'object' => $instanceConsequence->object->id
+            ]);
 
             if (count($brothers) > 1) {
                 foreach ($brothers as $brother) {
 
                     /** @var InstanceConsequenceTable $instanceConsequenceTable */
                     $instanceConsequenceTable = $this->get('table');
-                    $brotherInstancesConsequences = $instanceConsequenceTable->getEntityByFields(['anr' => $anrId, 'instance' => $brother->id, 'scaleImpactType' => $instanceConsequence->scaleImpactType->id]);
+                    $brotherInstancesConsequences = $instanceConsequenceTable->getEntityByFields([
+                        'anr' => $anrId,
+                        'instance' => $brother->id,
+                        'scaleImpactType' => $instanceConsequence->scaleImpactType->id
+                    ]);
 
                     $i = 1;
                     $nbBrotherInstancesConsequences = count($brotherInstancesConsequences);
