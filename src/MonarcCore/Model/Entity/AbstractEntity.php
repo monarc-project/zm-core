@@ -366,30 +366,41 @@ abstract class AbstractEntity implements InputFilterAwareInterface
                         ));
                         break;
                     case 'position':
-                        $inputFilter->add(array(//TIPs - previous is not a real attribute of the entity
-                            'name' => 'previous',
-                            'required' => false,
-                            'allow_empty' => true,
-                            'continue_if_empty' => true,
-                            'filters' => [['name' => 'ToInt']],
-                            'validators' => array()
-                        ));
-                        $inputFilter->add(array(
-                            'name' => 'implicitPosition',
-                            'required' => false,
-                            'allow_empty' => true,
-                            'continue_if_empty' => true,
-                            'filters' => array(),
-                            'validators' => array(
-                                array(
-                                    'name' => 'InArray',
-                                    'options' => array(
-                                        'haystack' => [null, 1, 2, 3], // null: 0 traitement / 1: start / 2: end / 3: after elem
-                                    ),
-                                    'default' => null,
+                        if (!$this->squeezeAutoPositionning && isset($this->parameters['implicitPosition']['field'])) {
+                            $inputFilter->add(array(//TIPs - previous is not a real attribute of the entity
+                                'name' => 'previous',
+                                'required' => false,
+                                'allow_empty' => true,
+                                'continue_if_empty' => true,
+                                'filters' => [['name' => 'ToInt']],
+                                'validators' => array()
+                            ));
+                            $inputFilter->add(array(
+                                'name' => 'implicitPosition',
+                                'required' => false,
+                                'allow_empty' => true,
+                                'continue_if_empty' => true,
+                                'filters' => array(),
+                                'validators' => array(
+                                    array(
+                                        'name' => 'InArray',
+                                        'options' => array(
+                                            'haystack' => [null, 1, 2, 3], // null: 0 traitement / 1: start / 2: end / 3: after elem
+                                        ),
+                                        'default' => null,
+                                    )
                                 )
-                            )
-                        ));
+                            ));
+                        }else{
+                             $inputFilter->add(array(
+                                'name' => 'position',
+                                'required' => false,
+                                'allow_empty' => true,
+                                'continue_if_empty' => true,
+                                'filters' => [['name' => 'ToInt']],
+                                'validators' => array()
+                            ));
+                        }
                         break;
                     case 'updatedAt':
                     case 'updater':
