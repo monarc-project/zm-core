@@ -120,6 +120,12 @@ In `Module.php:getServiceConfig()` add in `factories`:
 
 	'\MonarcCore\Service\MyIndexService' => '\MonarcCore\Service\MyIndexServiceFactory',
 
+License
+-------
+
+This software is licensed under [GNU Affero General Public License version 3](http://www.gnu.org/licenses/agpl-3.0.html)
+
+Copyright (C) 2016-2017 SMILE gie securitymadein.lu
 
 [^1]: https://stevenwilliamalexander.wordpress.com/2013/09/25/zf2-restful-api-example/
 [^2]: https://www.youtube.com/watch?v=CGEDNMzWoFk
