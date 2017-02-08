@@ -55,7 +55,7 @@ class PasswordService extends AbstractService
 
             //send mail
             $subject = 'Password forgotten';
-            $link = 'http://' . $_SERVER['HTTP_HOST'] . '/#/passwordforgotten/' . htmlentities($token);
+            $link = 'https://' . $_SERVER['HTTP_HOST'] . '/#/passwordforgotten/' . htmlentities($token);
             $message = "<p>Hello,</p>
                 <p>This is an automatically generated e-mail, please do not reply.</p>
                 <p>
