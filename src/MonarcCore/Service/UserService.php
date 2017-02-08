@@ -24,6 +24,8 @@ class UserService extends AbstractService
     protected $passwordTokenTable;
     protected $mailService;
 
+    protected $filterColumns = ['firstname', 'lastname', 'email', 'phone'];
+
     /**
      * Get Total Count
      *
@@ -32,22 +34,6 @@ class UserService extends AbstractService
     public function getTotalCount()
     {
         return $this->get('table')->count();
-    }
-
-    /**
-     * Get Filtered Count
-     *
-     * @param int $page
-     * @param int $limit
-     * @param null $order
-     * @param null $filter
-     * @return bool|mixed
-     */
-    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
-    {
-
-        return $this->get('table')->countFiltered($page, $limit, $this->parseFrontendOrder($order),
-            $this->parseFrontendFilter($filter, ['firstname', 'lastname', 'email']));
     }
 
     /**
