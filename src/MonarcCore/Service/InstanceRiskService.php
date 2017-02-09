@@ -248,13 +248,13 @@ class InstanceRiskService extends AbstractService
 
         if(isset($data['threatRate'])){
             $data['threatRate'] = trim($data['threatRate']);
-            if(empty($data['threatRate']) || $data['threatRate'] == '-' || $data['threatRate'] == -1){
+            if(!isset($data['threatRate']) || $data['threatRate'] == '-' || $data['threatRate'] == -1){
                 $data['threatRate'] = -1;
             }
         }
         if(isset($data['vulnerabilityRate'])){
             $data['vulnerabilityRate'] = trim($data['vulnerabilityRate']);
-            if(empty($data['vulnerabilityRate']) || $data['vulnerabilityRate'] == '-' || $data['vulnerabilityRate'] == -1){
+            if(!isset($data['vulnerabilityRate']) || $data['vulnerabilityRate'] == '-' || $data['vulnerabilityRate'] == -1){
                 $data['vulnerabilityRate'] = -1;
             }
         }
@@ -282,7 +282,11 @@ class InstanceRiskService extends AbstractService
                 foreach ($instances as $instance) {
                     if ($instance != $entity->instance) {
                         if ($entity->specific == 0) {
-                            $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $instance->id, 'amv' => $entity->amv->id]);
+                            if ($entity->amv) {
+                                $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $instance->id, 'amv' => $entity->amv->id]);
+                            } else {
+                                $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $instance->id, 'threat' => $entity->threat->id, 'vulnerability' => $entity->vulnerability->id]);
+                            }
                         } else {
                             $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $instance->id, 'specific' => 1, 'threat' => $entity->threat->id, 'vulnerability' => $entity->vulnerability->id]);
                         }
@@ -349,6 +353,7 @@ class InstanceRiskService extends AbstractService
 
         $risks = [];
         $impacts = [];
+
         if ($instanceRisk->threat->c) {
             $risks[] = $riskC;
             $impacts[] = $instance->c;
@@ -361,6 +366,8 @@ class InstanceRiskService extends AbstractService
             $risks[] = $riskD;
             $impacts[] = $instance->d;
         }
+
+
 
         $instanceRisk->cacheMaxRisk = (count($risks)) ? max($risks) : -1;
         $instanceRisk->cacheTargetedRisk = $this->getTargetRisk($impacts, $instanceRisk->threatRate, $instanceRisk->vulnerabilityRate, $instanceRisk->reductionAmount);
