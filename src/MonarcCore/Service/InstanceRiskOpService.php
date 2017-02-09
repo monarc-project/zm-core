@@ -208,7 +208,7 @@ class InstanceRiskOpService extends AbstractService
         foreach ($toFilter as $k) {
             if(isset($data[$k])){
                 $data[$k] = trim($data[$k]);
-                if(empty($data[$k]) || $data[$k] == '-' || $data[$k] == -1){
+                if(!isset($data[$k]) || $data[$k] == '-' || $data[$k] == -1){
                     $data[$k] = -1;
                 }
             }
