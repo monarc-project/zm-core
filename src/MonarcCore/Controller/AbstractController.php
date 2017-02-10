@@ -11,7 +11,7 @@ use Zend\Mvc\Controller\AbstractRestfulController;
 use Zend\View\Model\JsonModel;
 
 /**
- * Abtsract Controller
+ * Abstract Controller
  *
  * Class AbstractController
  * @package MonarcCore\Controller

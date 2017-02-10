@@ -27,6 +27,7 @@ class SecurityService extends AbstractService
     public function verifyPwd($pwd, $hash)
     {
         $conf = $this->get('config');
+        // FIXME: don't allow to disable salting
         $salt = isset($conf["monarc"]['salt']) ? $conf["monarc"]['salt'] : '';
         return password_verify($salt . $pwd, $hash);
     }
@@ -40,6 +41,7 @@ class SecurityService extends AbstractService
     public function hashPwd($pwd)
     {
         $conf = $this->get('config');
+        // FIXME: don't allow to disable salting
         $salt = isset($conf["monarc"]['salt']) ? $conf["monarc"]['salt'] : '';
         return password_hash($salt . $pwd, PASSWORD_BCRYPT);
     }
