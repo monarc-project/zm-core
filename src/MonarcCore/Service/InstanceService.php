@@ -1847,7 +1847,7 @@ class InstanceService extends AbstractService
                 'id' => 'id',
                 'code' => 'code',
                 'description' => 'description',
-                'position' => 'position',
+                'importance' => 'importance',
                 'comment' => 'comment',
                 'responsable' => 'responsable',
                 'duedate' => 'duedate',
@@ -1896,7 +1896,7 @@ class InstanceService extends AbstractService
             ->setParameter(':i', $entity->get('id'))->getQuery()->getResult();
         $instanceRiskOpArray = [
             'id' => 'id',
-            //'rolfRisk' => 'rolfRisk', // TODO doit-on garder cette donnée ?
+            'rolfRisk' => 'rolfRisk', // TODO doit-on garder cette donnée ?
             'riskCacheLabel1' => 'riskCacheLabel1',
             'riskCacheLabel2' => 'riskCacheLabel2',
             'riskCacheLabel3' => 'riskCacheLabel3',
@@ -1951,19 +1951,67 @@ class InstanceService extends AbstractService
             'cacheNetRisk' => 'cacheNetRisk',
             'cacheBrutRisk' => 'cacheBrutRisk',
         ];
+        $riskOpIds = [];
         foreach ($instanceRiskOpResults as $iro) {
+            $riskOpIds[$iro->get('id')] = $iro->get('id');
+            $return['risksop'][$iro->get('id')] = $iro->getJsonArray($instanceRiskOpArray);
+            if(!empty($return['risksop'][$iro->get('id')]['rolfRisk']->id)){
+                $return['risksop'][$iro->get('id')]['rolfRisk'] = $return['risksop'][$iro->get('id')]['rolfRisk']->id;
+            }
             if (!$with_eval) {
                 foreach ($toReset as $r) {
-                    $iro->set($r, '-1');
+                    $return['risksop'][$iro->get('id')][$r] = '-1';
                 }
-                $iro->set('kindOfMeasure', 0);
-                $iro->set('comment', '');
-                $iro->set('mitigation', '');
+                $return['risksop'][$iro->get('id')]['kindOfMeasure'] = 0;
+                $return['risksop'][$iro->get('id')]['comment'] = '';
+                $return['risksop'][$iro->get('id')]['mitigation'] = '';
             }
-            $return['risksop'][$iro->get('id')] = $iro->getJsonArray($instanceRiskOpArray);
         }
+        // Recommandation RISKOP
+        if ($with_eval && !empty($riskOpIds) && $this->get('recommandationRiskTable')) {
+            $recosObj = [
+                'id' => 'id',
+                'code' => 'code',
+                'description' => 'description',
+                'importance' => 'importance',
+                'comment' => 'comment',
+                'responsable' => 'responsable',
+                'duedate' => 'duedate',
+                'counterTreated' => 'counterTreated',
+            ];
+            $return['recosop'] = $recoIds = [];
+            $recoRisk = $this->get('recommandationRiskTable')->getEntityByFields(['anr' => $entity->get('anr')->get('id'), 'instanceRiskOp' => $riskOpIds], ['id' => 'ASC']);
+            foreach ($recoRisk as $rr) {
+                if (!empty($rr)) {
+                    $return['recosop'][$rr->get('instanceRiskOp')->get('id')][$rr->get('recommandation')->get('id')] = $rr->get('recommandation')->getJsonArray($recosObj);
+                    $return['recosop'][$rr->get('instanceRiskOp')->get('id')][$rr->get('recommandation')->get('id')]['commentAfter'] = $rr->get('commentAfter');
+                    $recoIds[$rr->get('recommandation')->get('id')] = $rr->get('recommandation')->get('id');
+                }
+            }
 
-        // TODO: Recommandations liées aux RisksOp
+            if (!empty($recoIds) && $this->get('recommandationMeasureTable')) {
+                $measuresObj = [
+                    'id' => 'id',
+                    'code' => 'code',
+                    'status' => 'status',
+                    'description1' => 'description1',
+                    'description2' => 'description2',
+                    'description3' => 'description3',
+                    'description4' => 'description4',
+                ];
+                $links = $this->get('recommandationMeasureTable')->getEntityByFields(['anr' => $entity->get('anr')->get('id'), 'recommandation' => $recoIds]);
+                $data['recolinks'] = [];
+                if (!isset($return['measures'])) {
+                    $return['measures'] = [];
+                }
+                foreach ($links as $lk) {
+                    if (!empty($lk)) {
+                        $return['recolinks'][$lk->get('recommandation')->get('id')][$lk->get('measure')->get('id')] = $lk->get('measure')->get('id');
+                        $return['measures'][$lk->get('measure')->get('id')] = $lk->get('measure')->getJsonArray($measuresObj);
+                    }
+                }
+            }
+        }
 
         // Instance consequence
         if ($with_eval) {

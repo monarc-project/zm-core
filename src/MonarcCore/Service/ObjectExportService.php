@@ -194,7 +194,8 @@ class ObjectExportService extends AbstractService
                                 $toExchange['anr'] = $anr->get('id');
                                 $risk->exchangeArray($toExchange);
                                 $this->setDependencies($risk, ['anr']);
-                                $risks[] = $this->get('rolfRiskTable')->save($risk);
+                                $objectsCache['rolfRisks'][$data['rolfRisks'][$k]['id']] = $idRt = $this->get('rolfRiskTable')->save($risk);
+                                $risks[] = $idRt;
                             }
                         }
                         $data['rolfTags'][$data['object']['rolfTag']]['risks'] = $risks;
