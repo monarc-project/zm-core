@@ -121,7 +121,7 @@ class InstanceRiskOpService extends AbstractService
         $nb = count($risks);
         $i = 1;
         foreach ($risks as $r) {
-            $r->set('kindOfMeasure',\MonarcCore\Model\Entity\InstanceRiskOp::KIND_NOT_TREATED);
+            $r->set('kindOfMeasure',-1);
             $this->updateRecoRisksOp($r);
             $table->delete($r->id,($i == $nb));
             $i++;
@@ -307,6 +307,46 @@ class InstanceRiskOpService extends AbstractService
                         $this->get('recommandationTable')->save($r);
                     }
                     break;
+                case -1: // cas particulier, on supprime l'instanceRiskOp
+                    $sql = "SELECT rr.recommandation_id
+                            FROM recommandations_risks rr
+                            LEFT JOIN instances_risks ir
+                            ON ir.id = rr.instance_risk_id
+                            LEFT JOIN instances_risks_op iro
+                            ON iro.id = rr.instance_risk_op_id
+                            WHERE rr.anr_id = :anr
+                            AND (rr.instance_risk_op_id IS NOT NULL OR rr.instance_risk_id IS NOT NULL)
+                            AND rr.instance_id != :id
+                            GROUP BY rr.recommandation_id";
+                    $res = $this->get('table')->getDb()->getEntityManager()->getConnection()
+                        ->fetchAll($sql, [':anr'=>$entity->get('anr')->get('id'), ':id'=>$entity->get('instance')->get('id')]);
+                    $ids = [];
+                    foreach($res as $r){
+                        $ids[$r['recommandation_id']] = $r['recommandation_id'];
+                    }
+                    $recos = $this->get('recommandationTable')->getEntityByFields(['anr'=>$entity->get('anr')->get('id')],['position'=>'ASC']);
+                    $i = 0;
+                    $hasSave = false;
+                    $last = null;
+                    foreach($recos as &$r){
+                        if(!isset($ids[$r->get('id')])){
+                            if($r->get('position') == null || $r->get('position') <= 0){
+                            }else{
+                                $i++;
+                            }
+                            $hasSave = true;
+                            $this->get('recommandationTable')->delete($r->get('id'),false);
+                        }elseif($i > 0 && $r->get('position') > 0){
+                            $r->set('position',$r->get('position')-$i);
+                            $this->get('recommandationTable')->save($r,false);
+                            $hasSave = true;
+                            $last = $r;
+                        }
+                    }
+                    if($hasSave && !empty($last)){
+                        $this->get('recommandationTable')->save($last);
+                    }
+                    break;
                 case \MonarcCore\Model\Entity\InstanceRiskOp::KIND_NOT_TREATED:
                 default:
                     $sql = "SELECT rr.recommandation_id
@@ -315,10 +355,11 @@ class InstanceRiskOpService extends AbstractService
                             ON ir.id = rr.instance_risk_id
                             LEFT JOIN instances_risks_op iro
                             ON iro.id = rr.instance_risk_op_id
-                            WHERE ((ir.kind_of_measure IS NOT NULL OR ir.kind_of_measure < ".\MonarcCore\Model\Entity\InstanceRisk::KIND_NOT_TREATED.")
-                                OR (iro.kind_of_measure IS NOT NULL OR iro.kind_of_measure < ".\MonarcCore\Model\Entity\InstanceRiskOp::KIND_NOT_TREATED."))
-                            AND rr.anr_id = :anr
                             AND rr.instance_risk_op_id != :id
+                            WHERE ((ir.kind_of_measure IS NOT NULL AND ir.kind_of_measure < ".\MonarcCore\Model\Entity\InstanceRisk::KIND_NOT_TREATED.")
+                                OR (iro.kind_of_measure IS NOT NULL AND iro.kind_of_measure < ".\MonarcCore\Model\Entity\InstanceRiskOp::KIND_NOT_TREATED."))
+                            AND (rr.instance_risk_op_id IS NOT NULL OR rr.instance_risk_id IS NOT NULL)
+                            AND rr.anr_id = :anr
                             GROUP BY rr.recommandation_id";
                     $res = $this->get('table')->getDb()->getEntityManager()->getConnection()
                         ->fetchAll($sql, [':anr'=>$entity->get('anr')->get('id'), ':id'=>$entity->get('id')]);
