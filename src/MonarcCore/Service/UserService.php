@@ -144,10 +144,10 @@ class UserService extends AbstractService
      */
     protected function manageRoles($user, $data)
     {
-
-        $userRoleTable = $this->get('roleTable');
-        $userRoleTable->deleteByUser($user->id);
         if (!empty($data['role'])) {
+            $userRoleTable = $this->get('roleTable');
+            $userRoleTable->deleteByUser($user->id);
+
             foreach ($data['role'] as $role) {
                 $roleData = [
                     'user' => $user,
@@ -164,7 +164,7 @@ class UserService extends AbstractService
                 $userRoleTable->save($userRoleEntity);
             }
         } else {
-            throw new \Exception("You must select on or more roles", 422);
+            throw new \Exception("You must select one or more roles", 412);
         }
     }
 
