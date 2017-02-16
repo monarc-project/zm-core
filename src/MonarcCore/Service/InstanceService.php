@@ -938,7 +938,7 @@ class InstanceService extends AbstractService
      * @return int
      * @throws \Exception
      */
-    public function getRisks($anrId, $instanceId = null, $params = [], $count = false)
+    public function getRisks($anrId, $instanceId = null, $params = [])
     {
         $params['order'] = isset($params['order']) ? $params['order'] : 'maxRisk';
 
@@ -950,49 +950,47 @@ class InstanceService extends AbstractService
         }
 
         $l = $this->getLanguage();
-        if ($count) {
-            $arraySelect = ['COUNT(o.id) as nb'];
-        } else {
-            $arraySelect = [
-                'o.id as oid',
-                'ir.id as id',
-                'i.id as instance',
-                'a.id as amv',
-                'ass.id as asset',
-                'ass.label' . $l . ' as assetLabel' . $l . '',
-                'ass.description' . $l . ' as assetDescription' . $l . '',
-                't.id as threat',
-                't.code as threatCode',
-                't.label' . $l . ' as threatLabel' . $l . '',
-                't.description' . $l . ' as threatDescription' . $l . '',
-                'ir.threat_rate as threatRate',
-                'v.id as vulnerability',
-                'v.code as vulnCode',
-                'v.label' . $l . ' as vulnLabel' . $l . '',
-                'v.description' . $l . ' as vulnDescription' . $l . '',
-                'ir.vulnerability_rate as vulnerabilityRate',
-                'ir.`specific` as `specific`',
-                'ir.reduction_amount as reductionAmount',
-                'i.c as c_impact',
-                'ir.risk_c as c_risk',
-                't.c as c_risk_enabled',
-                'i.i as i_impact',
-                'ir.risk_i as i_risk',
-                't.i as i_risk_enabled',
-                'i.d as d_impact',
-                'ir.risk_d as d_risk',
-                't.d as d_risk_enabled',
-                'ir.cache_targeted_risk as target_risk',
-                'ir.cache_max_risk as max_risk',
-                'ir.comment as comment',
-                'CONCAT(m1.code, \' - \', m1.description' . $l . ') as measure1',
-                'CONCAT(m2.code, \' - \', m2.description' . $l . ') as measure2',
-                'CONCAT(m3.code, \' - \', m3.description' . $l . ') as measure3',
-                'o.scope as scope',
-                'ir.kind_of_measure as kindOfMeasure',
-                'IF(ir.kind_of_measure IS NULL OR ir.kind_of_measure = ' . InstanceRisk::KIND_NOT_TREATED . ', false, true) as t',
-            ];
-        }
+        $arraySelect = [
+            'o.id as oid',
+            'ir.id as id',
+            'i.id as instance',
+            'a.id as amv',
+            'ass.id as asset',
+            'ass.label' . $l . ' as assetLabel' . $l . '',
+            'ass.description' . $l . ' as assetDescription' . $l . '',
+            't.id as threat',
+            't.code as threatCode',
+            't.label' . $l . ' as threatLabel' . $l . '',
+            't.description' . $l . ' as threatDescription' . $l . '',
+            'ir.threat_rate as threatRate',
+            'v.id as vulnerability',
+            'v.code as vulnCode',
+            'v.label' . $l . ' as vulnLabel' . $l . '',
+            'v.description' . $l . ' as vulnDescription' . $l . '',
+            'ir.vulnerability_rate as vulnerabilityRate',
+            'ir.`specific` as `specific`',
+            'ir.reduction_amount as reductionAmount',
+            'i.c as c_impact',
+            'ir.risk_c as c_risk',
+            't.c as c_risk_enabled',
+            'i.i as i_impact',
+            'ir.risk_i as i_risk',
+            't.i as i_risk_enabled',
+            'i.d as d_impact',
+            'ir.risk_d as d_risk',
+            't.d as d_risk_enabled',
+            'ir.cache_targeted_risk as target_risk',
+            'ir.cache_max_risk as max_risk',
+            'ir.comment as comment',
+            'CONCAT(m1.code, \' - \', m1.description' . $l . ') as measure1',
+            'CONCAT(m2.code, \' - \', m2.description' . $l . ') as measure2',
+            'CONCAT(m3.code, \' - \', m3.description' . $l . ') as measure3',
+            'o.scope as scope',
+            'ir.kind_of_measure as kindOfMeasure',
+            'IF(ir.kind_of_measure IS NULL OR ir.kind_of_measure = ' . InstanceRisk::KIND_NOT_TREATED . ', false, true) as t',
+            'ir.threat_id as tid',
+            'ir.vulnerability_id as vid',
+        ];
 
         $sql = "
             SELECT      " . implode(',', $arraySelect) . "
@@ -1015,30 +1013,14 @@ class InstanceService extends AbstractService
             ON          a.measure2_id = m2.id
             LEFT JOIN   measures as m3
             ON          a.measure3_id = m3.id
-
-            LEFT JOIN   instances_risks AS ir2
-            ON          ir.threat_id = ir2.threat_id
-            AND         ir.vulnerability_id = ir2.vulnerability_id
-            AND         ir.cache_max_risk < ir2.cache_max_risk
-            AND         ir2.anr_id = :anrid2
-            AND         ir2.cache_max_risk >= -1
-            LEFT JOIN   instances i2
-            ON          ir2.instance_id = i2.id ";
+            WHERE       ir.cache_max_risk >= -1
+            AND         ir.anr_id = :anrid ";
         $queryParams = [
             ':anrid' => $anrId,
-            ':anrid2' => $anrId,
         ];
         $typeParams = [];
-        $subSql = "
-            AND         IF(o.scope = " . Object::SCOPE_GLOBAL . ",i.object_id = i2.object_id, ir.id = ir2.id)
-
-            WHERE       ir.cache_max_risk >= -1
-            AND         ir.anr_id = :anrid 
-            AND         IF(o.scope = " . Object::SCOPE_GLOBAL . ",i2.id IS NULL, ir2.id IS NULL) ";
-
         if (empty($instance)) {
             // On prend toutes les instances, on est sur l'anr
-            $sql .= $subSql;
         } elseif ($instance->get('asset') && $instance->get('asset')->get('type') == \MonarcCore\Model\Entity\AssetSuperClass::TYPE_PRIMARY) {
             $instanceIds = [];
             $instanceIds[$instance->get('id')] = $instance->get('id');
@@ -1054,17 +1036,10 @@ class InstanceService extends AbstractService
                 }
             }
 
-            $sql .= " AND i2.id IN (:ids2) ";
-            $queryParams[':ids2'] = $instanceIds;
-            $typeParams[':ids2'] = \Doctrine\DBAL\Connection::PARAM_INT_ARRAY;
-            $sql .= $subSql;
             $sql .= " AND i.id IN (:ids) ";
             $queryParams[':ids'] = $instanceIds;
             $typeParams[':ids'] = \Doctrine\DBAL\Connection::PARAM_INT_ARRAY;
         } else {
-            $sql .= " AND i2.id = :id2 ";
-            $queryParams[':id2'] = $instance->get('id');
-            $sql .= $subSql;
             $sql .= " AND i.id = :id ";
             $queryParams[':id'] = $instance->get('id');
         }
@@ -1108,9 +1083,6 @@ class InstanceService extends AbstractService
             $sql .= " AND ir.cache_max_risk > :min ";
             $queryParams[':min'] = $params['thresholds'];
         }
-
-        // GROUP BY if scope = GLOBAL
-        $sql .= " GROUP BY IF(o.scope = " . Object::SCOPE_GLOBAL . ",o.id,ir.id), ir.threat_id, ir.vulnerability_id ";
 
         // ORDER
         $params['order_direction'] = isset($params['order_direction']) && strtolower(trim($params['order_direction'])) != 'asc' ? 'DESC' : 'ASC';
@@ -1157,22 +1129,21 @@ class InstanceService extends AbstractService
         }
         $sql .= " , t.code ASC , v.code ASC ";
 
-        if ($count) {
-            $res = $this->get('anrTable')->getDb()->getEntityManager()->getConnection()
-                ->fetchAll($sql, $queryParams, $typeParams);
-            return count($res);
-        } else {
-            // LIMIT
-            if (!empty($params['limit']) && !empty($params['page']) && $params['limit'] > 0) {
-                $sql .= " LIMIT :l1, :l2 ";
-                $queryParams[':l1'] = intval(($params['page'] - 1) * $params['limit']);
-                $queryParams[':l2'] = intval($params['limit']);
-                $typeParams[':l1'] = \PDO::PARAM_INT;
-                $typeParams[':l2'] = \PDO::PARAM_INT;
+        $res = $this->get('instanceRiskTable')->getDb()->getEntityManager()->getConnection()
+            ->fetchAll($sql, $queryParams, $typeParams);
+        $lst = [];
+        foreach($res as $r){
+            // GROUP BY if scope = GLOBAL
+            if($r['scope'] == Object::SCOPE_GLOBAL){
+                $key = 'o'.$r['oid'].'-'.$r['tid'].'-'.$r['vid'];
+                if(!isset($lst[$key]) || $lst[$key]['max_risk'] < $r['max_risk']){
+                    $lst[$key] = $r;
+                }
+            }else{
+                $lst['r'.$r['id']] = $r;
             }
-            return $this->get('anrTable')->getDb()->getEntityManager()->getConnection()
-                ->fetchAll($sql, $queryParams, $typeParams);
         }
+        return array_values($lst);
     }
 
     /**

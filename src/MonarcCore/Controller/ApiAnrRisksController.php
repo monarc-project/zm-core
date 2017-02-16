@@ -31,9 +31,10 @@ class ApiAnrRisksController extends AbstractController
             header('Content-Type: text/csv');
             die($this->getService()->getCsvRisks($anrId, ['id' => $id], $params));
         } else {
+            $lst = $this->getService()->getRisks($anrId, ['id' => $id], $params);
             return new JsonModel([
-                'count' => $risks = $this->getService()->getRisks($anrId, ['id' => $id], $params,true),
-                'risks' => $risks = $this->getService()->getRisks($anrId, ['id' => $id], $params),
+                'count' => count($lst),
+                $this->name => $params['limit'] > 0 ? array_slice($lst, ($params['page'] - 1) * $params['limit'], $params['limit']) : $lst,
             ]);
         }
 	}
@@ -51,9 +52,10 @@ class ApiAnrRisksController extends AbstractController
             header('Content-Type: text/csv');
             die($this->getService()->getCsvRisks($anrId, null, $params));
         } else {
+            $lst = $this->getService()->getRisks($anrId, null, $params);
             return new JsonModel([
-                'count' => $this->getService()->getRisks($anrId, null, $params,true),
-                'risks' => $this->getService()->getRisks($anrId, null, $params),
+                'count' => count($lst),
+                $this->name => $params['limit'] > 0 ? array_slice($lst, ($params['page'] - 1) * $params['limit'], $params['limit']) : $lst,
             ]);
         }
 	}
