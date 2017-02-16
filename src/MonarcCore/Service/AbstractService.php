@@ -241,6 +241,7 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     public function patch($id, $data)
     {
+
         $entity = $this->get('table')->getEntity($id);
         if (!$entity) {
             throw new \Exception('Entity does not exist', 412);
@@ -271,13 +272,11 @@ abstract class AbstractService extends AbstractServiceFactory
 
         $entity->setDbAdapter($this->get('table')->getDb());
         $entity->setLanguage($this->getLanguage());
-
         foreach ($this->dependencies as $dependency) {
-            if (!isset($data[$dependency])) {
+            if ((!isset($data[$dependency])) && ($entity->$dependency)) {
                 $data[$dependency] = $entity->$dependency->id;
             }
         }
-
         $entity->exchangeArray($data, true);
 
         $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
