@@ -996,12 +996,7 @@ class InstanceService extends AbstractService
 
         $sql = "
             SELECT      " . implode(',', $arraySelect) . "
-            FROM        (
-                SELECT      id, threat_rate, vulnerability_rate, `specific`, reduction_amount, risk_c, risk_i, risk_d, cache_targeted_risk, cache_max_risk, comment, kind_of_measure, instance_id, amv_id, threat_id, vulnerability_id, asset_id
-                FROM        instances_risks
-                WHERE       anr_id = :anrid
-                AND         cache_max_risk >= -1
-                ORDER BY    cache_max_risk DESC) AS ir
+            FROM        instances_risks AS ir
             INNER JOIN  instances i
             ON          ir.instance_id = i.id
             LEFT JOIN   amvs AS a
@@ -1020,14 +1015,30 @@ class InstanceService extends AbstractService
             ON          a.measure2_id = m2.id
             LEFT JOIN   measures as m3
             ON          a.measure3_id = m3.id
-            WHERE       1 = 1 ";
+
+            LEFT JOIN   instances_risks AS ir2
+            ON          ir.threat_id = ir2.threat_id
+            AND         ir.vulnerability_id = ir2.vulnerability_id
+            AND         ir.cache_max_risk < ir2.cache_max_risk
+            AND         ir2.anr_id = :anrid2
+            AND         ir2.cache_max_risk >= -1
+            LEFT JOIN   instances i2
+            ON          ir2.instance_id = i2.id ";
         $queryParams = [
             ':anrid' => $anrId,
+            ':anrid2' => $anrId,
         ];
         $typeParams = [];
+        $subSql = "
+            AND         IF(o.scope = " . Object::SCOPE_GLOBAL . ",i.object_id = i2.object_id, ir.id = ir2.id)
+
+            WHERE       ir.cache_max_risk >= -1
+            AND         ir.anr_id = :anrid 
+            AND         IF(o.scope = " . Object::SCOPE_GLOBAL . ",i2.id IS NULL, ir2.id IS NULL) ";
 
         if (empty($instance)) {
             // On prend toutes les instances, on est sur l'anr
+            $sql .= $subSql;
         } elseif ($instance->get('asset') && $instance->get('asset')->get('type') == \MonarcCore\Model\Entity\AssetSuperClass::TYPE_PRIMARY) {
             $instanceIds = [];
             $instanceIds[$instance->get('id')] = $instance->get('id');
@@ -1043,10 +1054,17 @@ class InstanceService extends AbstractService
                 }
             }
 
+            $sql .= " AND i2.id IN (:ids2) ";
+            $queryParams[':ids2'] = $instanceIds;
+            $typeParams[':ids2'] = \Doctrine\DBAL\Connection::PARAM_INT_ARRAY;
+            $sql .= $subSql;
             $sql .= " AND i.id IN (:ids) ";
             $queryParams[':ids'] = $instanceIds;
             $typeParams[':ids'] = \Doctrine\DBAL\Connection::PARAM_INT_ARRAY;
         } else {
+            $sql .= " AND i2.id = :id2 ";
+            $queryParams[':id2'] = $instance->get('id');
+            $sql .= $subSql;
             $sql .= " AND i.id = :id ";
             $queryParams[':id'] = $instance->get('id');
         }
