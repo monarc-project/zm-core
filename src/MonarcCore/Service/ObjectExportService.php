@@ -107,22 +107,23 @@ class ObjectExportService extends AbstractService
         }
 
         // Récupération des risques opérationnels
-        $rolfTag = $entity->get('rolfTag');
+        // $rolfTag = $entity->get('rolfTag');
         $return['object']['rolfTag'] = null;
-        if (!empty($rolfTag)) {
-            $risks = $rolfTag->get('risks');
-            $rolfTag = $rolfTag->getJsonArray(['id', 'code', 'label1', 'label2', 'label3', 'label4']);
-            $return['object']['rolfTag'] = $rolfTag['id'];
-            $return['rolfTags'][$rolfTag['id']] = $rolfTag;
-            $return['rolfTags'][$rolfTag['id']]['risks'] = [];
-            if (!empty($risks)) {
-                foreach ($risks as $r) {
-                    $r = $r->getJsonArray(['id', 'code', 'label1', 'label2', 'label3', 'label4', 'description1', 'description2', 'description3', 'description4']);
-                    $return['rolfTags'][$rolfTag['id']]['risks'][$r['id']] = $r['id'];
-                    $return['rolfRisks'][$r['id']] = $r;
-                }
-            }
-        }
+        // CF: old Smile, on n'exporte/importe pas les rolfTag & rolfRisk
+        // if (!empty($rolfTag)) {
+        //     $risks = $rolfTag->get('risks');
+        //     $rolfTag = $rolfTag->getJsonArray(['id', 'code', 'label1', 'label2', 'label3', 'label4']);
+        //     $return['object']['rolfTag'] = $rolfTag['id'];
+        //     $return['rolfTags'][$rolfTag['id']] = $rolfTag;
+        //     $return['rolfTags'][$rolfTag['id']]['risks'] = [];
+        //     if (!empty($risks)) {
+        //         foreach ($risks as $r) {
+        //             $r = $r->getJsonArray(['id', 'code', 'label1', 'label2', 'label3', 'label4', 'description1', 'description2', 'description3', 'description4']);
+        //             $return['rolfTags'][$rolfTag['id']]['risks'][$r['id']] = $r['id'];
+        //             $return['rolfRisks'][$r['id']] = $r;
+        //         }
+        //     }
+        // }
 
         // Récupération children(s)
         $children = array_reverse($this->get('objectObjectService')->getChildren($entity->get('id'))); // Le tri de cette fonction est "position DESC"
@@ -163,7 +164,9 @@ class ObjectExportService extends AbstractService
                 $idCateg = $this->importFromArrayCategories($data['categories'], $data['object']['category'], $anr->get('id'));
 
                 // Import des RisksOp
-                if (!empty($data['object']['rolfTag']) && !empty($data['rolfTags'][$data['object']['rolfTag']])) {
+                // CF: old Smile, on n'exporte/importe pas les rolfTag & rolfRisk
+                $data['object']['rolfTag'] = null;
+                /*if (!empty($data['object']['rolfTag']) && !empty($data['rolfTags'][$data['object']['rolfTag']])) {
                     $tag = current($this->get('rolfTagTable')->getEntityByFields([
                         'anr' => $anr->get('id'),
                         'code' => $data['rolfTags'][$data['object']['rolfTag']]['code'],
@@ -209,7 +212,7 @@ class ObjectExportService extends AbstractService
                     $data['object']['rolfTag'] = $this->get('rolfTagTable')->save($tag);
                 } else {
                     $data['object']['rolfTag'] = null;
-                }
+                }*/
 
                 /*
                  * INFO:
