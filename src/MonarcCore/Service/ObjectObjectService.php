@@ -57,7 +57,7 @@ class ObjectObjectService extends AbstractService
         $recursiveParentsListId = [];
         $this->getRecursiveParentsListId($data['father'], $recursiveParentsListId);
 
-        if (in_array($data['child'], $recursiveParentsListId)) {
+        if (isset($recursiveParentsListId[$data['child']])) {
             throw new \Exception("You cannot create a cyclic dependency", 412);
         }
 
@@ -262,10 +262,10 @@ class ObjectObjectService extends AbstractService
         $table = $this->get('table');
 
         $parents = $table->getEntityByFields(['child' => $parentId], ['position' => 'ASC']);
+        $array[$parentId] = $parentId;
 
         foreach ($parents as $parent) {
-            $array[] = $parent->father->id;
-            $this->getRecursiveParents($parent->father->id, $array);
+            $this->getRecursiveParentsListId($parent->father->id, $array);
         }
     }
 
