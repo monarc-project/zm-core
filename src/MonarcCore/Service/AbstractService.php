@@ -796,7 +796,7 @@ abstract class AbstractService extends AbstractServiceFactory
 
                 $vulnerabilityRate = (isset($data['vulnerabilityRate'])) ? (int)$data['vulnerabilityRate'] : $instanceRisk['vulnerabilityRate'];
                 if (($vulnerabilityRate != -1) && (($reductionAmount < 0) || ($reductionAmount > $vulnerabilityRate))) {
-                    $errors[] = 'Value for reduction amount is not valid';
+                    $errors[] = 'Value for reduction amount is not valid (min '.$data['vulnerabilityRate'].')';
                 }
             }
         }
