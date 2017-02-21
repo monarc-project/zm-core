@@ -17,6 +17,7 @@ use Zend\View\Model\JsonModel;
  */
 class ApiAnrRisksController extends AbstractController
 {
+    protected $name = 'risks';
     /**
      * Get
      *

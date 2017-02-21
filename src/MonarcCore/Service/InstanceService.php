@@ -1129,7 +1129,7 @@ class InstanceService extends AbstractService
         }
         $sql .= " , t.code ASC , v.code ASC ";
 
-        $res = $this->get('instanceRiskTable')->getDb()->getEntityManager()->getConnection()
+        $res = $this->get('table')->getDb()->getEntityManager()->getConnection()
             ->fetchAll($sql, $queryParams, $typeParams);
         $lst = [];
         foreach($res as $r){
