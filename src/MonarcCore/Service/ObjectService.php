@@ -836,7 +836,7 @@ class ObjectService extends AbstractService
                 return false;
                 break;
         }
-        return $this->checkModeIntegrityRecursive($objects, $mode, $field);
+        return $this->checkModeIntegrityRecursive($mode, $field, $objects);
     }
 
     /**
@@ -847,10 +847,10 @@ class ObjectService extends AbstractService
      * @param $field
      * @return bool
      */
-    private function checkModeIntegrityRecursive($objects = [], $mode, $field)
+    private function checkModeIntegrityRecursive($mode, $field, $objects = [])
     {
         foreach ($objects as $p) {
-            if ($p['mode'] == $mode || (!empty($p[$field]) && !$this->checkModeIntegrityRecursive($p[$field], $mode, $field))) {
+            if ($p['mode'] == $mode || (!empty($p[$field]) && !$this->checkModeIntegrityRecursive($mode, $field, $p[$field]))) {
                 return false;
             }
         }
