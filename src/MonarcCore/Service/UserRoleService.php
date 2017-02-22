@@ -82,6 +82,19 @@ class UserRoleService extends AbstractService
      */
     public function getByUserToken($token)
     {
+        $userId = $this->getUserIdByToken($token);
+        return $this->getByUserId($userId);
+    }
+
+    /**
+     * Get User Id By Token
+     *
+     * @param $token
+     * @return int
+     * @throws \Exception
+     */
+    protected function getUserIdByToken($token)
+    {
         if ($token instanceof GenericHeader) {
             $token = $token->getFieldValue();
         }
@@ -95,9 +108,7 @@ class UserRoleService extends AbstractService
             ->getResult();
 
         if (count($userToken)) {
-            $userId = $userToken[0]['userId'];
-
-            return $this->getByUserId($userId);
+            return $userToken[0]['userId'];
         } else {
             throw new \Exception('No user');
         }
