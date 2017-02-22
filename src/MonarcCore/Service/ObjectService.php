@@ -844,9 +844,7 @@ class ObjectService extends AbstractService
     private function checkModeIntegrityRecursive($objects = [], $mode, $field)
     {
         foreach ($objects as $p) {
-            if ($p['mode'] == $mode) {
-                return false;
-            } elseif (!empty($p[$field]) && !$this->checkModeIntegrityRecursive($p[$field], $mode, $field)) {
+            if ($p['mode'] == $mode || (!empty($p[$field]) && !$this->checkModeIntegrityRecursive($p[$field], $mode, $field))) {
                 return false;
             }
         }
