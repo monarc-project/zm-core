@@ -627,9 +627,15 @@ class AmvService extends AbstractService
                 unset($amvVulnerabilitiesIds[$vulnerability->get('id')]);
             }
 
-            if (count($amvAssetsIds)) $this->enforceToFollow($amvAssetsIds, $models, 'asset');
-            if (count($amvThreatsIds)) $this->enforceToFollow($amvThreatsIds, $models, 'threat');
-            if (count($amvVulnerabilitiesIds)) $this->enforceToFollow($amvVulnerabilitiesIds, $models, 'vulnerability');
+            if (count($amvAssetsIds)) {
+                $this->enforceToFollow($amvAssetsIds, $models, 'asset');
+            }
+            if (count($amvThreatsIds)) {
+                $this->enforceToFollow($amvThreatsIds, $models, 'threat');
+            }
+            if (count($amvVulnerabilitiesIds)) {
+                $this->enforceToFollow($amvVulnerabilitiesIds, $models, 'vulnerability');
+            }
         }
     }
 

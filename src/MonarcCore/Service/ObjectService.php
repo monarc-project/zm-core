@@ -72,7 +72,9 @@ class ObjectService extends AbstractService
         $categoryTable = $this->get('categoryTable');
 
         $filterAnd = [];
-        if ((!is_null($asset)) && ($asset != 0)) $filterAnd['asset'] = $asset;
+        if ((!is_null($asset)) && ($asset != 0)) {
+            $filterAnd['asset'] = $asset;
+        }
         if ((!is_null($category)) && ($category != 0)) {
             if ($category > 0) {
                 $child = ($lock == 'true') ? [] : $categoryTable->getDescendants($category);
@@ -384,8 +386,12 @@ class ObjectService extends AbstractService
     public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $model = null, $anr = null, $context = Object::BACK_OFFICE)
     {
         $filterAnd = [];
-        if ((!is_null($asset)) && ($asset != 0)) $filterAnd['asset'] = $asset;
-        if ((!is_null($category)) && ($category != 0)) $filterAnd['category'] = $category;
+        if ((!is_null($asset)) && ($asset != 0)) {
+            $filterAnd['asset'] = $asset;
+        }
+        if ((!is_null($category)) && ($category != 0)) {
+            $filterAnd['category'] = $category;
+        }
 
         $result = $this->getAnrObjects($page, 0, $order, $filter, $filterAnd, $model, $anr, $context);
 
