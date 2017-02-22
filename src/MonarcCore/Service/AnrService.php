@@ -150,12 +150,6 @@ class AnrService extends AbstractService
                         }
                         break;
                     case 'instanceRisk':
-                        if (!empty($entity->instance->id) && !empty($clones['instance'][$entity->instance->id])) {
-                            $newEntity->set('instance', $clones['instance'][$entity->instance->id]);
-                        } else {
-                            $newEntity->set('instance', null);
-                        }
-                        break;
                     case 'instanceRiskOp':
                         if (!empty($entity->instance->id) && !empty($clones['instance'][$entity->instance->id])) {
                             $newEntity->set('instance', $clones['instance'][$entity->instance->id]);
