@@ -259,7 +259,7 @@ class AnrService extends AbstractService
 
         $instanceService = $this->get('instanceService');
         $table = $this->get('instanceTable');
-        $instances = $table->getEntityByFields(['anr' => $entity->get('id')]);
+        $instances = $table->getEntityByFields(['anr' => $entity->get('id'), 'parent' => null], ['position'=>'ASC']);
         $f = '';
         $with_scale = false;
         foreach ($instances as $i) {

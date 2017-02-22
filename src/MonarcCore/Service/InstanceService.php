@@ -2038,7 +2038,8 @@ class InstanceService extends AbstractService
         $instanceTableResults = $this->get('table')->getRepository()
             ->createQueryBuilder('t')
             ->where('t.parent = :p')
-            ->setParameter(':p', $entity->get('id'))->getQuery()->getResult();
+            ->setParameter(':p', $entity->get('id'))
+            ->orderBy('t.position','ASC')->getQuery()->getResult();
         $return['children'] = [];
         $f = '';
         foreach ($instanceTableResults as $i) {
