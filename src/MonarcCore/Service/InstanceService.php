@@ -1418,7 +1418,7 @@ class InstanceService extends AbstractService
             'with_eval' => $with_eval,
             'instance' => $entity->getJsonArray($objInstance),
             'object' => $this->get('objectExportService')->generateExportArray($entity->get('object')->get('id')),
-            // 'asset' => $this->get('assetService')->generateExportArray($entity->get('asset')->get('id')), // l'asset sera porté par l'objet
+            // l'asset sera porté par l'objet
         ];
         $return['instance']['asset'] = $entity->get('asset')->get('id');
         $return['instance']['object'] = $entity->get('object')->get('id');
