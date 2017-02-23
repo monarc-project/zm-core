@@ -896,6 +896,9 @@ abstract class AbstractService extends AbstractServiceFactory
     protected function getVersion($type = 'major')
     {
         switch (strtolower($type)) {
+            case 'full':
+                return isset($this->monarcConf['version']) ? $this->monarcConf['version'] : null;
+                break;
             default:
             case 'major':
                 if (!empty($this->monarcConf['version'])) {
@@ -903,9 +906,6 @@ abstract class AbstractService extends AbstractServiceFactory
                 } else {
                     return null;
                 }
-                break;
-            case 'full':
-                return isset($this->monarcConf['version']) ? $this->monarcConf['version'] : null;
                 break;
         }
     }

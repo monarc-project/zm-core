@@ -85,11 +85,9 @@ class ObjectService extends AbstractService
 
             $filterAnd['category'] = $child;
         }
-        //$filterAnd['model'] = null;
 
         $objects = $this->getAnrObjects($page, $limit, $order, $filter, $filterAnd, $model, $anr);
 
-        //$objectsArray = [];
         $rootArray = [];
 
         foreach ($objects as $object) {
@@ -101,7 +99,6 @@ class ObjectService extends AbstractService
             }
 
             $rootArray[$object['id']] = $object;
-            //$objectsArray[$object['id']] = $object;
         }
         return array_values($rootArray);
     }
@@ -201,7 +198,6 @@ class ObjectService extends AbstractService
         $object_arr['children'] = $objectObjectService->getRecursiveChildren($object_arr['id'], null);
 
         // Calculate the risks table
-        //$object_arr['risks'] = $this->buildRisksTable($object, $mode);
         $object_arr['risks'] = $this->getRisks($object);
         $object_arr['oprisks'] = $this->getRisksOp($object);
         $object_arr['parents'] = $this->getDirectParents($object_arr['id']);
@@ -386,8 +382,6 @@ class ObjectService extends AbstractService
         $result = $this->getAnrObjects($page, 0, $order, $filter, $filterAnd, $model, $anr, $context);
 
         return count($result);
-
-        //return parent::getFilteredCount($page, $limit, $order, $filter, $filterAnd);
     }
 
     /**
@@ -560,7 +554,6 @@ class ObjectService extends AbstractService
         $object = $this->get('table')->getEntity($id);
         if (!$object) {
             throw new \Exception('Entity `id` not found.');
-            return false;
         }
         $object->setDbAdapter($this->get('table')->getDb());
         $object->setLanguage($this->getLanguage());
@@ -903,10 +896,7 @@ class ObjectService extends AbstractService
                 $filter['name' . $i] = $entity['name' . $i];
             }
         }
-        //$entity['name1'] = $entity['name1'].' (copy)';
-        //$entity['name2'] = $entity['name2'].' (copy)';
-        //$entity['name3'] = $entity['name3'].' (copy)';
-        //$entity['name4'] = $entity['name4'].' (copy)';
+
         $exist = current($this->get('table')->getEntityByFields($filter));
         $suff = 0;
         while (!empty($exist)) {
@@ -1161,7 +1151,6 @@ class ObjectService extends AbstractService
         /** @var ObjectTable $objectTable */
         $objectTable = $this->get('table');
         $objects = $objectTable->getEntityByFields(['anrs' => $anrId]);
-        //$objects = $objectTable->fetchAll();
 
         foreach ($objects as $object) {
             if ($object->get('category')) {
@@ -1256,7 +1245,6 @@ class ObjectService extends AbstractService
     protected function sortCategories($a, $b)
     {
         if (isset($a['position']) && isset($b['position'])) {
-            //echo "all set for " . $a['label1'] . ' and ' . $b['label1'];
             return ($a['position'] - $b['position']);
         } else if (isset($a['position']) && !isset($b['position'])) {
             return -1;

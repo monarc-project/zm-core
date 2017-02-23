@@ -211,7 +211,6 @@ class ModelService extends AbstractService
                 foreach ($amvs as $amv) {
                     if ($amv->get('asset')->get('mode') == Object::MODE_SPECIFIC && $amv->get('threat')->get('mode') == Object::MODE_GENERIC && $amv->get('vulnerability')->get('mode') == Object::MODE_GENERIC) {
                         throw new \Exception('You can not make this change. The level of integrity between the model and its objects would corrupt', 412);
-                        return false;
                     }
                 }
             }
@@ -227,7 +226,6 @@ class ModelService extends AbstractService
                 foreach ($objects as $o) {
                     if ($o->get('mode') == $modeObject) {
                         throw new \Exception('You can not make this change. The level of integrity between the model and its objects would corrupt', 412);
-                        return false;
                     }
                 }
             }

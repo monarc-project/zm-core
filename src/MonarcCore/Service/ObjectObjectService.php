@@ -93,17 +93,6 @@ class ObjectObjectService extends AbstractService
         $entity->exchangeArray($data);
 
         $this->setDependencies($entity, $this->dependencies);
-        // $fatherValue = $entity->get('father');
-        // if (!empty($fatherValue)) {
-        //     $fatherEntity = $objectTable->getEntity($fatherValue);
-        //     $entity->setFather($fatherEntity);
-        // }
-
-        // $childValue = $entity->get('child');
-        // if (!empty($childValue)) {
-        //     $childEntity = $objectTable->getEntity($childValue);
-        //     $entity->setChild($childEntity);
-        // }
 
         $id = $objectObjectTable->save($entity);
 

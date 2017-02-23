@@ -63,7 +63,7 @@ class ObjectExportService extends AbstractService
         ];
         $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $entity->get('name' . $this->getLanguage()));
 
-        // Récupération catégories
+        // Recovery categories
         $categ = $entity->get('category');
         if (!empty($categ)) {
             $categObj = [
@@ -96,7 +96,7 @@ class ObjectExportService extends AbstractService
             $return['categories'] = null;
         }
 
-        // Récupération asset
+        // Recovery asset
         $asset = $entity->get('asset');
         $return['asset'] = null;
         $return['object']['asset'] = null;
@@ -106,26 +106,11 @@ class ObjectExportService extends AbstractService
             $return['asset'] = $this->get('assetExportService')->generateExportArray($asset['id']);
         }
 
-        // Récupération des risques opérationnels
-        // $rolfTag = $entity->get('rolfTag');
+        // Recovery of operational risks
         $return['object']['rolfTag'] = null;
-        // CF: old Smile, on n'exporte/importe pas les rolfTag & rolfRisk
-        // if (!empty($rolfTag)) {
-        //     $risks = $rolfTag->get('risks');
-        //     $rolfTag = $rolfTag->getJsonArray(['id', 'code', 'label1', 'label2', 'label3', 'label4']);
-        //     $return['object']['rolfTag'] = $rolfTag['id'];
-        //     $return['rolfTags'][$rolfTag['id']] = $rolfTag;
-        //     $return['rolfTags'][$rolfTag['id']]['risks'] = [];
-        //     if (!empty($risks)) {
-        //         foreach ($risks as $r) {
-        //             $r = $r->getJsonArray(['id', 'code', 'label1', 'label2', 'label3', 'label4', 'description1', 'description2', 'description3', 'description4']);
-        //             $return['rolfTags'][$rolfTag['id']]['risks'][$r['id']] = $r['id'];
-        //             $return['rolfRisks'][$r['id']] = $r;
-        //         }
-        //     }
-        // }
+        // CF: old Smile, we don't export/import rolfTag & rolfRisk
 
-        // Récupération children(s)
+        // Recovery children(s)
         $children = array_reverse($this->get('objectObjectService')->getChildren($entity->get('id'))); // Le tri de cette fonction est "position DESC"
         $return['children'] = null;
         if (!empty($children)) {
@@ -163,56 +148,9 @@ class ObjectExportService extends AbstractService
                 // import categories
                 $idCateg = $this->importFromArrayCategories($data['categories'], $data['object']['category'], $anr->get('id'));
 
-                // Import des RisksOp
-                // CF: old Smile, on n'exporte/importe pas les rolfTag & rolfRisk
+                // Import RisksOp
+                // CF: old Smile, we don't export/import rolfTag & rolfRisk
                 $data['object']['rolfTag'] = null;
-                /*if (!empty($data['object']['rolfTag']) && !empty($data['rolfTags'][$data['object']['rolfTag']])) {
-                    $tag = current($this->get('rolfTagTable')->getEntityByFields([
-                        'anr' => $anr->get('id'),
-                        'code' => $data['rolfTags'][$data['object']['rolfTag']]['code'],
-                    ]));
-                    if (empty($tag)) {
-                        $ct = $this->get('rolfTagTable')->getClass();
-                        $tag = new $ct();
-                    }
-                    $tag->setDbAdapter($this->get('rolfTagTable')->getDb());
-                    $tag->setLanguage($this->getLanguage());
-
-                    if (!empty($data['rolfTags'][$data['object']['rolfTag']]['risks'])) {
-                        $risks = [];
-                        foreach ($data['rolfTags'][$data['object']['rolfTag']]['risks'] as $k) {
-                            if (isset($data['rolfRisks'][$k])) {
-                                $risk = current($this->get('rolfRiskTable')->getEntityByFields([
-                                    'anr' => $anr->get('id'),
-                                    'code' => $data['rolfRisks'][$k]['code'],
-                                ]));
-                                if (empty($risk)) {
-                                    $cr = $this->get('rolfRiskTable')->getClass();
-                                    $risk = new $cr();
-                                }
-                                $risk->setDbAdapter($this->get('rolfRiskTable')->getDb());
-                                $risk->setLanguage($this->getLanguage());
-                                $toExchange = $data['rolfRisks'][$k];
-                                unset($toExchange['id']);
-                                $toExchange['anr'] = $anr->get('id');
-                                $risk->exchangeArray($toExchange);
-                                $this->setDependencies($risk, ['anr']);
-                                $objectsCache['rolfRisks'][$data['rolfRisks'][$k]['id']] = $idRt = $this->get('rolfRiskTable')->save($risk);
-                                $risks[] = $idRt;
-                            }
-                        }
-                        $data['rolfTags'][$data['object']['rolfTag']]['risks'] = $risks;
-                    }
-
-                    $toExchange = $data['rolfTags'][$data['object']['rolfTag']];
-                    unset($toExchange['id']);
-                    $toExchange['anr'] = $anr->get('id');
-                    $tag->exchangeArray($toExchange);
-                    $this->setDependencies($tag, ['anr', 'risks']);
-                    $data['object']['rolfTag'] = $this->get('rolfTagTable')->save($tag);
-                } else {
-                    $data['object']['rolfTag'] = null;
-                }*/
 
                 /*
                  * INFO:

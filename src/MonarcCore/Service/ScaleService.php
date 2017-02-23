@@ -86,7 +86,6 @@ class ScaleService extends AbstractService
     {
 
         //scale
-        //$entity = $this->get('entity');
         $class = $this->get('entity');
         $entity = new $class();
 

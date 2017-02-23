@@ -103,7 +103,6 @@ class ModelObjectService extends AbstractService
 
         if (empty($data['model']) || $entity->get('model') != $data['model'] || $entity->get('type') != 'anr') {
             throw new \Exception('Entity `id` not found.');
-            return false;
         }
 
         $entity->setDbAdapter($this->get('table')->getDb());

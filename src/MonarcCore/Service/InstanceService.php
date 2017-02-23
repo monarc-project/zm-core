@@ -168,16 +168,14 @@ class InstanceService extends AbstractService
             unset($data['position']);
         }
 
-        //create instance
+        // create instance
         $instance = $this->get('entity');
         if ($instance->get('id')) {
             $c = get_class($instance);
             $instance = new $c;
             $instance->initParametersChanges();
         }
-        //$instance->squeezeAutoPositionning(true);//delegate the position algorithm to the existing code
-        //$instance = new $class();
-        //$instance->setLanguage($this->getLanguage());
+
         $instance->exchangeArray($data, false);
 
         //instance dependencies
@@ -334,19 +332,6 @@ class InstanceService extends AbstractService
 
         $this->setDependencies($instance, $this->dependencies);
 
-        //if ($instance->parent) {
-        //    $parentId = (is_object($instance->parent)) ? $instance->parent->id : $instance->parent['id'];
-        //    $instance->parent = $table->getEntity($parentId);
-        //} else {
-        //    $instance->parent = null;
-        //}
-        //if ($instance->root) {
-        //    $rootId = (is_object($instance->root)) ? $instance->root->id : $instance->root['id'];
-        //    $instance->root = $table->getEntity($rootId);
-        //} else {
-        //    $instance->root = null;
-        //}
-
         $id = $this->get('table')->save($instance);
 
         if ($dataConsequences) {
@@ -354,10 +339,6 @@ class InstanceService extends AbstractService
         }
 
         $this->updateRisks($anrId, $id);
-
-        //if ($instance->root) {
-        //    $this->updateChildrenRoot($id, $instance->root);
-        //}
 
         $this->updateChildrenImpacts($instance);
 
@@ -480,18 +461,12 @@ class InstanceService extends AbstractService
 
         $this->setDependencies($instance, $this->dependencies);
 
-        //$instance->parent = ($instance->parent) ? $table->getEntity($instance->parent) : null;
-
         $id = $table->save($instance);
 
         $parentId = ($instance->parent) ? $instance->parent->id : null;
         $this->refreshImpactsInherited($anrId, $parentId, $instance);
 
         $this->updateRisks($anrId, $id);
-
-        //if ($instance->root) {
-        //    $this->updateChildrenRoot($id, $instance->root);
-        //}
 
         $this->updateChildrenImpacts($instance);
 
@@ -523,7 +498,7 @@ class InstanceService extends AbstractService
         $table = $this->get('table');
         $instance = $table->getEntity($id);
 
-        //only root instance can be delete
+        // only root instance can be delete
         if ($instance->level != Instance::LEVEL_ROOT) {
             throw new \Exception('This is not a root instance', 412);
         }

@@ -94,7 +94,6 @@ class ScaleImpactTypeService extends AbstractService
             $data['type'] = 9;
         }
 
-        //$entity = $this->get('entity');
         $class = $this->get('entity');
         $entity = new $class();
         $entity->setDbAdapter($this->get('table')->getDb());
