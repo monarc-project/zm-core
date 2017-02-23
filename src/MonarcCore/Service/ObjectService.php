@@ -616,7 +616,7 @@ class ObjectService extends AbstractService
             $object->set('rolfTag', null);
         }
 
-        $objectRootCategory = ($object->category->root && $object->category->root) ? $object->category->root : $object->category;
+        $objectRootCategory = ($object->category->root) ? $object->category->root : $object->category;
 
         if ($currentRootCategory && $objectRootCategory && $currentRootCategory->id != $objectRootCategory->id) {
 
