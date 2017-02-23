@@ -105,7 +105,7 @@ class QuestionService extends AbstractService
                 }
                 unset($data['mode']);
             } else {
-                throw new \Exception('Anr ids diffence', 412);
+                throw new \MonarcCore\Exception\Exception('Anr ids diffence', 412);
             }
         }
 
@@ -118,14 +118,21 @@ class QuestionService extends AbstractService
     }
 
     /**
+<<<<<<< HEAD
      * @inheritdoc
+=======
+     * Delete
+     *
+     * @param $id
+     * @throws \MonarcCore\Exception\Exception
+>>>>>>> 31636fee3b3c0800213cd753ca5d7380f54fb056
      */
     public function delete($id)
     {
         $entity = $this->getEntity($id);
 
         if (!empty($entity['anr']) && isset($entity['mode']) && !$entity['mode']) {
-            throw new \Exception('Delete question is not possible', 412);
+            throw new \MonarcCore\Exception\Exception('Delete question is not possible', 412);
         }
 
         $this->get('table')->delete($id);

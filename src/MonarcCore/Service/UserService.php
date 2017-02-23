@@ -72,7 +72,16 @@ class UserService extends AbstractService
     }
 
     /**
+<<<<<<< HEAD
      * @inheritdoc
+=======
+     * Patch
+     *
+     * @param $id
+     * @param $data
+     * @return mixed
+     * @throws \MonarcCore\Exception\Exception
+>>>>>>> 31636fee3b3c0800213cd753ca5d7380f54fb056
      */
     public function patch($id, $data)
     {
@@ -100,9 +109,16 @@ class UserService extends AbstractService
     }
 
     /**
+<<<<<<< HEAD
      * Validates that the password matches the required strength policy (special chars, lower/uppercase, number)
      * @param string $data An array with a password key containing the password
      * @throws \Exception If password is invalid
+=======
+     * Validate password
+     *
+     * @param $data
+     * @throws \MonarcCore\Exception\Exception
+>>>>>>> 31636fee3b3c0800213cd753ca5d7380f54fb056
      */
     protected function validatePassword($data)
     {
@@ -115,13 +131,12 @@ class UserService extends AbstractService
                 $errors[] = $message;
             }
 
-            throw new \Exception("Password must " . implode($errors, ', ') . ".", 412);
+            throw new \MonarcCore\Exception\Exception("Password must " . implode($errors, ', ') . ".", 412);
         }
     }
 
     /**
      * Manage Roles
-     *
      * @param User $user The user to manage
      * @param array $data The new user roles
      * @throws \Exception In case of invalid roles selected
@@ -148,7 +163,7 @@ class UserService extends AbstractService
                 $userRoleTable->save($userRoleEntity);
             }
         } else {
-            throw new \Exception("You must select one or more roles", 412);
+            throw new \MonarcCore\Exception\Exception("You must select one or more roles", 412);
         }
     }
 

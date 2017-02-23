@@ -30,17 +30,17 @@ class ObjectExportService extends AbstractService
      * @param int $id The object to export
      * @param string $filename Reference to the string holding the filename
      * @return array The data
-     * @throws \Exception If the object is erroneous
+     * @throws \MonarcCore\Exception\Exception If the object is erroneous
      */
     public function generateExportArray($id, &$filename = "")
     {
         if (empty($id)) {
-            throw new \Exception('Object to export is required', 412);
+            throw new \MonarcCore\Exception\Exception('Object to export is required', 412);
         }
         $entity = $this->get('table')->getEntity($id);
 
         if (!$entity) {
-            throw new \Exception('Entity `id` not found.');
+            throw new \MonarcCore\Exception\Exception('Entity `id` not found.');
         }
 
         $objectObj = [

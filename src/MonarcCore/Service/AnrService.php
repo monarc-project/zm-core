@@ -187,12 +187,12 @@ class AnrService extends AbstractService
      * Exports an ANR encrypted and encoded into base64 for later re-import
      * @param array $data An array with the ANR 'id' and 'password' for encryption
      * @return string Base64-encoded encrypted file
-     * @throws \Exception If the ANR is invalid
+     * @throws \MonarcCore\Exception\Exception If the ANR is invalid
      */
     public function exportAnr(&$data)
     {
         if (empty($data['id'])) {
-            throw new \Exception('Anr to export is required', 412);
+            throw new \MonarcCore\Exception\Exception('Anr to export is required', 412);
         }
         if (empty($data['password'])) {
             $data['password'] = '';
@@ -214,17 +214,17 @@ class AnrService extends AbstractService
      * @param string $filename The output filename
      * @param bool $with_eval If true, exports evaluations as well
      * @return array The data array that should be saved
-     * @throws \Exception If the ANR or an entity is not found
+     * @throws \MonarcCore\Exception\Exception If the ANR or an entity is not found
      */
     public function generateExportArray($id, &$filename = "", $with_eval = false)
     {
         if (empty($id)) {
-            throw new \Exception('Anr to export is required', 412);
+            throw new \MonarcCore\Exception\Exception('Anr to export is required', 412);
         }
         $entity = $this->get('table')->getEntity($id);
 
         if (!$entity) {
-            throw new \Exception('Entity `id` not found.');
+            throw new \MonarcCore\Exception\Exception('Entity `id` not found.');
         }
 
         $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $entity->get('label' . $this->getLanguage()));

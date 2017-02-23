@@ -46,7 +46,7 @@ class AssetService extends AbstractService
             $anr = $anrTable->getEntity($data['anr']);
 
             if (!$anr) {
-                throw new \Exception('This risk analysis does not exist', 412);
+                throw new \MonarcCore\Exception\Exception('This risk analysis does not exist', 412);
             }
             $entity->setAnr($anr);
         }
@@ -89,18 +89,18 @@ class AssetService extends AbstractService
         /** @var AmvService $amvService */
         $amvService = $this->get('amvService');
         if (!$amvService->checkAMVIntegrityLevel($models, $entity, null, null, $follow)) {
-            throw new \Exception('Integrity AMV links violation', 412);
+            throw new \MonarcCore\Exception\Exception('Integrity AMV links violation', 412);
         }
 
         if ($entity->mode == Asset::MODE_SPECIFIC) {
             $associateObjects = $this->get('objectTable')->getGenericByAssetId($entity->getId());
             if (count($associateObjects)) {
-                throw new \Exception('Integrity AMV links violation', 412);
+                throw new \MonarcCore\Exception\Exception('Integrity AMV links violation', 412);
             }
         }
 
         if (!$amvService->checkModelsInstantiation($entity, $models)) {
-            throw new \Exception('This type of asset is used in a model that is no longer part of the list', 412);
+            throw new \MonarcCore\Exception\Exception('This type of asset is used in a model that is no longer part of the list', 412);
         }
 
         switch ($entity->get('mode')) {
@@ -180,7 +180,7 @@ class AssetService extends AbstractService
     public function exportAsset(&$data)
     {
         if (empty($data['id'])) {
-            throw new \Exception('Asset to export is required', 412);
+            throw new \MonarcCore\Exception\Exception('Asset to export is required', 412);
         }
         if (empty($data['password'])) {
             $data['password'] = '';

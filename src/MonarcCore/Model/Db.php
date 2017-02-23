@@ -89,7 +89,7 @@ class Db {
     public function fetch($entity)
     {
         if (!$entity->get('id')) {
-            throw new \Exception('Entity `id` not found.');
+            throw new \MonarcCore\Exception\Exception('Entity `id` not found.');
         }
         return $this->getEntityManager()->find(get_class($entity), $entity->get('id'));
     }
@@ -156,7 +156,7 @@ class Db {
             }
             $this->getEntityManager()->flush();
         } catch (ForeignKeyConstraintViolationException $e) {
-            throw new \Exception('Foreign key violation', '400');
+            throw new \MonarcCore\Exception\Exception('Foreign key violation', '400');
         }
     }
 
@@ -168,7 +168,7 @@ class Db {
                 $this->getEntityManager()->flush();
             }
         } catch (ForeignKeyConstraintViolationException $e) {
-            throw new \Exception('Foreign key violation', '400');
+            throw new \MonarcCore\Exception\Exception('Foreign key violation', '400');
         }
     }
     public function save($entity, $last = true)
@@ -205,7 +205,7 @@ class Db {
      * @param null $filterJoin
      * @param null $filterLeft
      * @return mixed
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     private function buildFilteredQuery($repository, $page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null, $filterJoin = null, $filterLeft = null)
     {
@@ -214,7 +214,7 @@ class Db {
         if (!is_null($filterJoin) && is_array($filterJoin)) {
             foreach ($filterJoin as $join) {
                 if ($join['as'] == 't') {
-                    throw new \Exception('Cannot use "t" as a table alias');
+                    throw new \MonarcCore\Exception\Exception('Cannot use "t" as a table alias');
                 }
 
                 $qb->innerJoin('t.' . $join['rel'], $join['as']);
@@ -225,7 +225,7 @@ class Db {
         if (!is_null($filterLeft) && is_array($filterLeft)) {
             foreach ($filterLeft as $left) {
                 if ($left['as'] == 't') {
-                    throw new \Exception('Cannot use "t" as a table alias');
+                    throw new \MonarcCore\Exception\Exception('Cannot use "t" as a table alias');
                 }
 
                 $qb->leftJoin('t.' . $left['rel'], $left['as']);

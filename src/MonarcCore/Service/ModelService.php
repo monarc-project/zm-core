@@ -132,13 +132,22 @@ class ModelService extends AbstractService
     }
 
     /**
+<<<<<<< HEAD
      * @inheritdoc
+=======
+     * Update
+     *
+     * @param $id
+     * @param $data
+     * @return mixed
+     * @throws \MonarcCore\Exception\Exception
+>>>>>>> 31636fee3b3c0800213cd753ca5d7380f54fb056
      */
     public function update($id, $data)
     {
         $model = $this->get('table')->getEntity($id);
         if (!$model) {
-            throw new \Exception('Entity does not exist', 412);
+            throw new \MonarcCore\Exception\Exception('Entity does not exist', 412);
         }
 
         $this->verifyBeforeUpdate($model, $data);
@@ -154,7 +163,7 @@ class ModelService extends AbstractService
         $model->setLanguage($this->getLanguage());
 
         if (empty($data)) {
-            throw new \Exception('Data missing', 412);
+            throw new \MonarcCore\Exception\Exception('Data missing', 412);
         }
 
         $model->exchangeArray($data);
@@ -166,18 +175,27 @@ class ModelService extends AbstractService
     }
 
     /**
+<<<<<<< HEAD
      * Verifies the model integrity before updating it
      * @param Model $model The model to check
      * @param array $data The new data
      * @return bool True if it's correct, false otherwise
      * @throws \Exception
+=======
+     * Verify Before Update
+     *
+     * @param $model
+     * @param $data
+     * @return bool
+     * @throws \MonarcCore\Exception\Exception
+>>>>>>> 31636fee3b3c0800213cd753ca5d7380f54fb056
      */
     public function verifyBeforeUpdate($model, $data)
     {
         if (isset($data['isRegulator']) && isset($data['isGeneric']) &&
             $data['isRegulator'] && $data['isGeneric']
         ) {
-            throw new \Exception("A regulator model may not be generic", 412);
+            throw new \MonarcCore\Exception\Exception("A regulator model may not be generic", 412);
         }
 
         $modeObject = null;
@@ -192,7 +210,7 @@ class ModelService extends AbstractService
                 $amvs = $this->get('amvTable')->getEntityByFields(['asset' => $assetsIds]);
                 foreach ($amvs as $amv) {
                     if ($amv->get('asset')->get('mode') == Object::MODE_SPECIFIC && $amv->get('threat')->get('mode') == Object::MODE_GENERIC && $amv->get('vulnerability')->get('mode') == Object::MODE_GENERIC) {
-                        throw new \Exception('You can not make this change. The level of integrity between the model and its objects would corrupt', 412);
+                        throw new \MonarcCore\Exception\Exception('You can not make this change. The level of integrity between the model and its objects would corrupt', 412);
                     }
                 }
             }
@@ -207,7 +225,7 @@ class ModelService extends AbstractService
             if (!empty($objects)) {
                 foreach ($objects as $o) {
                     if ($o->get('mode') == $modeObject) {
-                        throw new \Exception('You can not make this change. The level of integrity between the model and its objects would corrupt', 412);
+                        throw new \MonarcCore\Exception\Exception('You can not make this change. The level of integrity between the model and its objects would corrupt', 412);
                     }
                 }
             }

@@ -69,7 +69,7 @@ class GuideService extends AbstractService
         $currentGuide = $table->getEntityByFields(['type' => $data['type']]);
 
         if (count($currentGuide)) {
-            throw new \Exception('Only one guide by category', 412);
+            throw new \MonarcCore\Exception\Exception('Only one guide by category', 412);
         }
 
         return parent::create($data, $last);

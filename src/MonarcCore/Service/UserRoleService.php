@@ -97,7 +97,7 @@ class UserRoleService extends AbstractService
         if (count($userToken)) {
             return $userToken[0]['userId'];
         } else {
-            throw new \Exception('No user');
+            throw new \MonarcCore\Exception\Exception('No user');
         }
     }
 }

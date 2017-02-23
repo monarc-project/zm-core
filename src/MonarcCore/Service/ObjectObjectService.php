@@ -32,12 +32,21 @@ class ObjectObjectService extends AbstractService
     protected $dependencies = ['[child](object)', '[father](object)', '[anr](object)'];
 
     /**
+<<<<<<< HEAD
      * @inheritdoc
+=======
+     * Create
+     *
+     * @param $data
+     * @param bool $last
+     * @return mixed
+     * @throws \MonarcCore\Exception\Exception
+>>>>>>> 31636fee3b3c0800213cd753ca5d7380f54fb056
      */
     public function create($data, $last = true, $context = Object::BACK_OFFICE)
     {
         if ($data['father'] == $data['child']) {
-            throw new \Exception("You cannot add yourself as a component", 412);
+            throw new \MonarcCore\Exception\Exception("You cannot add yourself as a component", 412);
         }
 
         /** @var ObjectObjectTable $objectObjectTable */
@@ -46,14 +55,14 @@ class ObjectObjectService extends AbstractService
         //verify child not already existing
         $objectsObjects = $objectObjectTable->getEntityByFields(['anr' => (empty($data['anr']) ? null : $data['anr']), 'father' => $data['father'], 'child' => $data['child']]);
         if (count($objectsObjects)) {
-            throw new \Exception('This component already exist for this object', 412);
+            throw new \MonarcCore\Exception\Exception('This component already exist for this object', 412);
         }
 
         $recursiveParentsListId = [];
         $this->getRecursiveParentsListId($data['father'], $recursiveParentsListId);
 
         if (isset($recursiveParentsListId[$data['child']])) {
-            throw new \Exception("You cannot create a cyclic dependency", 412);
+            throw new \MonarcCore\Exception\Exception("You cannot create a cyclic dependency", 412);
         }
 
         /** @var ObjectTable $objectTable */
@@ -72,7 +81,7 @@ class ObjectObjectService extends AbstractService
         }
 
         if ($father->mode == ObjectObject::MODE_GENERIC && $child->mode == ObjectObject::MODE_SPECIFIC) {
-            throw new \Exception("You cannot add a specific object to a generic parent", 412);
+            throw new \MonarcCore\Exception\Exception("You cannot add a specific object to a generic parent", 412);
         }
 
         if (!empty($data['implicitPosition'])) {
@@ -275,7 +284,7 @@ class ObjectObjectService extends AbstractService
         $objectObject = $table->getEntity($id);
 
         if (!$objectObject) {
-            throw new \Exception('Entity does not exist', 412);
+            throw new \MonarcCore\Exception\Exception('Entity does not exist', 412);
         }
 
         //delete instance instance

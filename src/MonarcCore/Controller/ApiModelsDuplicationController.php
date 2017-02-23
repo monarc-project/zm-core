@@ -43,7 +43,7 @@ class ApiModelsDuplicationController extends AbstractController
     public function create($data)
     {
         if (!isset($data['model'])) {
-            throw new \Exception('Model missing', 412);
+            throw new \MonarcCore\Exception\Exception('Model missing', 412);
         }
 
         /** @var ModelService $modelService */

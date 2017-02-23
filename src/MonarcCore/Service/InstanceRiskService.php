@@ -172,7 +172,7 @@ class InstanceRiskService extends AbstractService
 
         $entity = $this->get('table')->getEntity($id);
         if (!$entity) {
-            throw new \Exception('Entity does not exist', 412);
+            throw new \MonarcCore\Exception\Exception('Entity does not exist', 412);
         }
 
         /** @var InstanceRiskTable $instanceRiskTable */
@@ -247,7 +247,7 @@ class InstanceRiskService extends AbstractService
 
         $entity = $this->get('table')->getEntity($id);
         if (!$entity) {
-            throw new \Exception('Entity does not exist', 412);
+            throw new \MonarcCore\Exception\Exception('Entity does not exist', 412);
         }
 
         /** @var InstanceRiskTable $instanceRiskTable */
@@ -290,7 +290,7 @@ class InstanceRiskService extends AbstractService
         $entity->setLanguage($this->getLanguage());
 
         if (empty($data)) {
-            throw new \Exception('Data missing', 412);
+            throw new \MonarcCore\Exception\Exception('Data missing', 412);
         }
 
         $entity->exchangeArray($data);

@@ -116,12 +116,12 @@ abstract class AbstractEntity implements InputFilterAwareInterface
     /**
      * @param $dbadapter
      * @return $this
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function setDbAdapter($dbadapter)
     {
         if ($dbadapter == null) {
-            throw new \Exception("Trying to call setDbAdapter with a null adapter");
+            throw new \MonarcCore\Exception\Exception("Trying to call setDbAdapter with a null adapter");
         }
 
         $this->dbadapter = $dbadapter;
@@ -157,7 +157,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
      * @param array $options
      * @param bool $partial
      * @return $this
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function exchangeArray(array $options, $partial = false)
     {
@@ -189,7 +189,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
                     }
                 }
             }
-            throw new \Exception(implode(", ", $field_errors), '412');
+            throw new \MonarcCore\Exception\Exception(implode(", ", $field_errors), '412');
         }
 
         $options = $filter->getValues();

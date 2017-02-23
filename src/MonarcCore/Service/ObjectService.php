@@ -62,7 +62,7 @@ class ObjectService extends AbstractService
      * @param null $anr
      * @param null $lock
      * @return array
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $model = null, $anr = null, $lock = null)
     {
@@ -183,7 +183,7 @@ class ObjectService extends AbstractService
      * @param string $anrContext
      * @param null $anr
      * @return mixed
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function getCompleteEntity($id, $anrContext = Object::CONTEXT_BDC, $anr = null)
     {
@@ -216,11 +216,11 @@ class ObjectService extends AbstractService
             }
 
             if (!$found) {
-                throw new \Exception('This object is not bound to the ANR', 412);
+                throw new \MonarcCore\Exception\Exception('This object is not bound to the ANR', 412);
             }
 
             if (!$anr) {
-                throw new \Exception('Anr missing', 412);
+                throw new \MonarcCore\Exception\Exception('Anr missing', 412);
             }
 
             /** @var InstanceTable $instanceTable */
@@ -429,7 +429,7 @@ class ObjectService extends AbstractService
      * @param bool $last
      * @param string $context
      * @return mixed
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function create($data, $last = true, $context = AbstractEntity::BACK_OFFICE)
     {
@@ -457,7 +457,7 @@ class ObjectService extends AbstractService
             $anr = $anrTable->getEntity($data['anr']);
 
             if (!$anr) {
-                throw new \Exception('This risk analysis does not exist', 412);
+                throw new \MonarcCore\Exception\Exception('This risk analysis does not exist', 412);
             }
             $object->setAnr($anr);
         }
@@ -494,14 +494,14 @@ class ObjectService extends AbstractService
         //security
         if ($context == AbstractEntity::BACK_OFFICE &&
             $object->mode == Object::MODE_GENERIC && $object->asset->mode == Object::MODE_SPECIFIC) {
-            throw new \Exception("You can't have a generic object based on a specific asset", 412);
+            throw new \MonarcCore\Exception\Exception("You can't have a generic object based on a specific asset", 412);
         }
         if (isset($data['modelId'])) {
             $this->get('modelTable')->canAcceptObject($data['modelId'], $object, $context);
         }
 
         if (($object->asset->type == Asset::TYPE_PRIMARY) && ($object->scope == Object::SCOPE_GLOBAL)) {
-            throw new \Exception('You cannot create an object that is both global and primary', 412);
+            throw new \MonarcCore\Exception\Exception('You cannot create an object that is both global and primary', 412);
         }
 
 
@@ -515,7 +515,7 @@ class ObjectService extends AbstractService
                 $model = $this->get('modelService')->getEntity($data['modelId']);
 
                 if (!$model['anr']) {
-                    throw new \Exception('No anr associated to this model', 412);
+                    throw new \MonarcCore\Exception\Exception('No anr associated to this model', 412);
                 }
 
                 $id = $this->attachObjectToAnr($object, $model['anr']->id);
@@ -536,14 +536,14 @@ class ObjectService extends AbstractService
      * @param $id
      * @param $data
      * @return bool
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function update($id, $data, $context = AbstractEntity::BACK_OFFICE)
     {
         unset($data['anrs']);
 
         if (empty($data)) {
-            throw new \Exception('Data missing', 412);
+            throw new \MonarcCore\Exception\Exception('Data missing', 412);
         }
 
         //in FO, all objects are generics
@@ -553,7 +553,7 @@ class ObjectService extends AbstractService
 
         $object = $this->get('table')->getEntity($id);
         if (!$object) {
-            throw new \Exception('Entity `id` not found.');
+            throw new \MonarcCore\Exception\Exception('Entity `id` not found.');
         }
         $object->setDbAdapter($this->get('table')->getDb());
         $object->setLanguage($this->getLanguage());
@@ -565,11 +565,11 @@ class ObjectService extends AbstractService
         }
 
         if (isset($data['scope']) && $data['scope'] != $object->scope) {
-            throw new \Exception('You cannot change the scope of an existing object.', 412);
+            throw new \MonarcCore\Exception\Exception('You cannot change the scope of an existing object.', 412);
         }
 
         if (isset($data['asset']) && $data['asset'] != $object->asset->id) {
-            throw new \Exception('You cannot change the asset type of an existing object.', 412);
+            throw new \MonarcCore\Exception\Exception('You cannot change the asset type of an existing object.', 412);
         }
 
         if (isset($data['mode']) && $data['mode'] != $object->get('mode') &&
@@ -579,9 +579,9 @@ class ObjectService extends AbstractService
             - que l'on a pas de fils SPECIFIC quand on passe de SPECIFIC à GENERIC
             */
             if ($object->get('mode') == Object::MODE_GENERIC) {
-                throw new \Exception('You cannot set this object to specific mode because one of its parents is in generic mode.', 412);
+                throw new \MonarcCore\Exception\Exception('You cannot set this object to specific mode because one of its parents is in generic mode.', 412);
             } else {
-                throw new \Exception('You cannot set this object to generic mode because one of its children is in specific mode.', 412);
+                throw new \MonarcCore\Exception\Exception('You cannot set this object to generic mode because one of its children is in specific mode.', 412);
             }
         }
 
@@ -616,7 +616,7 @@ class ObjectService extends AbstractService
             $object->set('rolfTag', null);
         }
 
-        $objectRootCategory = ($object->category->root && $object->category->root) ? $object->category->root : $object->category;
+        $objectRootCategory = ($object->category->root) ? $object->category->root : $object->category;
 
         if ($currentRootCategory && $objectRootCategory && $currentRootCategory->id != $objectRootCategory->id) {
 
@@ -841,7 +841,7 @@ class ObjectService extends AbstractService
      * Delete
      *
      * @param $id
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function delete($id)
     {
@@ -849,7 +849,7 @@ class ObjectService extends AbstractService
         $table = $this->get('table');
         $entity = $table->get($id);
         if (!$entity) {
-            throw new \Exception('Entity `id` not found.');
+            throw new \MonarcCore\Exception\Exception('Entity `id` not found.');
         }
 
         $table->delete($id);
@@ -860,14 +860,14 @@ class ObjectService extends AbstractService
      *
      * @param $data
      * @return mixed
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function duplicate($data, $context = AbstractEntity::BACK_OFFICE)
     {
         $entity = $this->getEntity($data['id']);
 
         if (!$entity) {
-            throw new \Exception('Entity `id` not found.');
+            throw new \MonarcCore\Exception\Exception('Entity `id` not found.');
         }
 
         $keysToRemove = ['id', 'position', 'creator', 'createdAt', 'updater', 'updatedAt', 'inputFilter', 'language', 'dbadapter', 'parameters'];
@@ -943,7 +943,7 @@ class ObjectService extends AbstractService
      * @param $anrId
      * @param null $parent
      * @return null
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function attachObjectToAnr($object, $anrId, $parent = null, $objectObjectPosition = null, $context = AbstractEntity::BACK_OFFICE)
     {
@@ -956,7 +956,7 @@ class ObjectService extends AbstractService
         }
 
         if (!$object) {
-            throw new \Exception('Object does not exist', 412);
+            throw new \MonarcCore\Exception\Exception('Object does not exist', 412);
         }
 
         if ($context == AbstractEntity::BACK_OFFICE) {
@@ -983,7 +983,7 @@ class ObjectService extends AbstractService
         $anrTable = $this->get('anrTable');
         $anr = $anrTable->getEntity($anrId);
         if (!$anr) {
-            throw new \Exception('This risk analysis does not exist', 412);
+            throw new \MonarcCore\Exception\Exception('This risk analysis does not exist', 412);
         }
 
         //add anr to object
@@ -1035,7 +1035,7 @@ class ObjectService extends AbstractService
      *
      * @param $objectId
      * @param $anrId
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function detachObjectToAnr($objectId, $anrId, $context = Object::BACK_OFFICE)
     {
@@ -1044,7 +1044,7 @@ class ObjectService extends AbstractService
         $table = $this->get('table');
         $object = $table->getEntity($objectId);
         if (!$object) {
-            throw new \Exception('Object does not exist', 412);
+            throw new \MonarcCore\Exception\Exception('Object does not exist', 412);
         }
 
         //verify anr exist
@@ -1052,7 +1052,7 @@ class ObjectService extends AbstractService
         $anrTable = $this->get('anrTable');
         $anr = $anrTable->getEntity($anrId);
         if (!$anr) {
-            throw new \Exception('This risk analysis does not exist', 412);
+            throw new \MonarcCore\Exception\Exception('This risk analysis does not exist', 412);
         }
 
         //if object is not a component, delete link and instances children for anr
@@ -1324,12 +1324,12 @@ class ObjectService extends AbstractService
      *
      * @param $data
      * @return string
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function export(&$data)
     {
         if (empty($data['id'])) {
-            throw new \Exception('Object to export is required', 412);
+            throw new \MonarcCore\Exception\Exception('Object to export is required', 412);
         }
         if (empty($data['password'])) {
             $data['password'] = '';

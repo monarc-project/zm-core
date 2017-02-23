@@ -43,18 +43,18 @@ class AnrObjectService extends AbstractService
      * @param int $anrid The ANR id
      * @param int $id The object ID
      * @return mixed The direct parent in the ANR
-     * @throws \Exception If the entity does not exist
+     * @throws \MonarcCore\Exception\Exception If the entity does not exist
      */
     public function getParents($anrid, $id)
     {
         $object = $this->get('table')->getEntity($id);
         if (!$object) {
-            throw new \Exception('Entity does not exist', 412);
+            throw new \MonarcCore\Exception\Exception('Entity does not exist', 412);
         }
 
         //verify object is linked to an anr
         if (!$this->get('table')->checkInAnr($anrid, $id)) {
-            throw new \Exception('Entity does not exist for this ANR', 412);
+            throw new \MonarcCore\Exception\Exception('Entity does not exist for this ANR', 412);
         }
 
         return $this->get('objectObjectTable')->getDirectParentsInAnr($anrid, $id);

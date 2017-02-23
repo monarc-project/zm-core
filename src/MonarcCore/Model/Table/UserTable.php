@@ -76,7 +76,7 @@ class UserTable extends AbstractEntityTable
      *
      * @param $email
      * @return mixed
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function getByEmail($email)
     {
@@ -88,7 +88,7 @@ class UserTable extends AbstractEntityTable
             ->getResult();
 
         if (!count($users)) {
-            throw new \Exception('Entity does not exist', 422);
+            throw new \MonarcCore\Exception\Exception('Entity does not exist', 422);
         } else {
             return $users[0];
         }
@@ -99,13 +99,13 @@ class UserTable extends AbstractEntityTable
      *
      * @param $id
      * @param bool $last
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function delete($id, $last = true)
     {
 
         if ($this->getConnectedUser()['id'] == $id) {
-            throw new \Exception("You can't delete yourself", 412);
+            throw new \MonarcCore\Exception\Exception("You can't delete yourself", 412);
         }
 
         $this->getDb()->beginTransaction();
@@ -118,7 +118,7 @@ class UserTable extends AbstractEntityTable
             parent::delete($id, $last);
 
             $this->getDb()->commit();
-        } catch (Exception $e) {
+        } catch (MonarcCore\Exception\Exception $e) {
             $this->getDb()->rollBack();
             throw $e;
         }

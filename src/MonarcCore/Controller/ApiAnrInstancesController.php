@@ -122,7 +122,7 @@ class ApiAnrInstancesController extends AbstractController
             }
         }
         if (count($missing)) {
-            throw new \Exception(implode(', ', $missing), 412);
+            throw new \MonarcCore\Exception\Exception(implode(', ', $missing), 412);
         }
 
         $data['c'] = isset($data['c'])?$data['c']:'-1';

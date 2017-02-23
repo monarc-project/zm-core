@@ -196,28 +196,28 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param int $id Entity's ID
      * @param array $data The new entity's data
      * @return object The new entity's object
-     * @throws \Exception If the entity does not exist, or doesn't belong to the ANR.
+     * @throws \MonarcCore\Exception\Exception If the entity does not exist, or doesn't belong to the ANR.
      * @see AbstractService::patch()
      */
     public function update($id, $data)
     {
         // Make sure we have something to update
         if (empty($data)) {
-            throw new \Exception('Data missing', 412);
+            throw new \MonarcCore\Exception\Exception('Data missing', 412);
         }
 
         // Fetch the existing entity
         /** @var AbstractEntity $entity */
         $entity = $this->get('table')->getEntity($id);
         if (!$entity) {
-            throw new \Exception('Entity does not exist', 412);
+            throw new \MonarcCore\Exception\Exception('Entity does not exist', 412);
         }
 
         // If we try to override this object's ANR, make some sanity and security checks. Ensure the data's ANR matches
         // the existing ANR, and that we have the rights to edit it.
         if (!empty($data['anr'])) {
             if ($entity->get('anr')->get('id') != $data['anr']) {
-                throw new \Exception('Anr id error', 412);
+                throw new \MonarcCore\Exception\Exception('Anr id error', 412);
             }
 
             $connectedUser = $this->get('table')->getConnectedUser();
@@ -233,7 +233,7 @@ abstract class AbstractService extends AbstractServiceFactory
             }
 
             if (!$rwd) {
-                throw new \Exception('You are not authorized to do this action', 412);
+                throw new \MonarcCore\Exception\Exception('You are not authorized to do this action', 412);
             }
         }
 
@@ -258,20 +258,20 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param int $id The entity's ID
      * @param array $data The entity's data
      * @return object The updated object
-     * @throws \Exception If the entity does not exist, or doesn't belong to the ANR.
+     * @throws \MonarcCore\Exception\Exception If the entity does not exist, or doesn't belong to the ANR.
      */
     public function patch($id, $data)
     {
         /** @var AbstractEntity $entity */
         $entity = $this->get('table')->getEntity($id);
         if (!$entity) {
-            throw new \Exception('Entity does not exist', 412);
+            throw new \MonarcCore\Exception\Exception('Entity does not exist', 412);
         }
         // If we try to override this object's ANR, make some sanity and security checks. Ensure the data's ANR matches
         // the existing ANR, and that we have the rights to edit it.
         if (!empty($data['anr'])) {
             if ($entity->get('anr')->get('id') != $data['anr']) {
-                throw new \Exception('Anr id error', 412);
+                throw new \MonarcCore\Exception\Exception('Anr id error', 412);
             }
 
             $connectedUser = $this->get('table')->getConnectedUser();
@@ -288,7 +288,7 @@ abstract class AbstractService extends AbstractServiceFactory
                 }
 
                 if (!$rwd) {
-                    throw new \Exception('You are not authorized to do this action', 412);
+                    throw new \MonarcCore\Exception\Exception('You are not authorized to do this action', 412);
                 }
             }
         }
@@ -338,14 +338,14 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param int $id The object's ID
      * @param int|null $anrId The ANR ID to filter with
      * @return bool True if the deletion is successful, false otherwise
-     * @throws \Exception If the ANR is invalid, or the user has no rights on the ANR, or the object's ANR ID mismatches
+     * @throws \MonarcCore\Exception\Exception If the ANR is invalid, or the user has no rights on the ANR, or the object's ANR ID mismatches
      */
     public function deleteFromAnr($id, $anrId = null)
     {
         if (!is_null($anrId)) {
             $entity = $this->get('table')->getEntity($id);
             if ($entity->anr->id != $anrId) {
-                throw new \Exception('Anr id error', 412);
+                throw new \MonarcCore\Exception\Exception('Anr id error', 412);
             }
 
             $connectedUser = $this->get('table')->getConnectedUser();
@@ -361,7 +361,7 @@ abstract class AbstractService extends AbstractServiceFactory
             }
 
             if (!$rwd) {
-                throw new \Exception('You are not authorized to do this action', 412);
+                throw new \MonarcCore\Exception\Exception('You are not authorized to do this action', 412);
             }
         }
 
@@ -374,7 +374,7 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param array $data The objects to delete
      * @param int|null $anrId The ANR ID to filter with
      * @return bool True if the deletion is successful, false otherwise
-     * @throws \Exception If the ANR is invalid, or the user has no rights on the ANR, or the object's ANR ID mismatches
+     * @throws \MonarcCore\Exception\Exception If the ANR is invalid, or the user has no rights on the ANR, or the object's ANR ID mismatches
      */
     public function deleteListFromAnr($data, $anrId = null)
     {
@@ -382,7 +382,7 @@ abstract class AbstractService extends AbstractServiceFactory
             foreach ($data as $id) {
                 $entity = $this->get('table')->getEntity($id);
                 if ($entity->anr->id != $anrId) {
-                    throw new \Exception('Anr id error', 412);
+                    throw new \MonarcCore\Exception\Exception('Anr id error', 412);
                 }
             }
 
@@ -399,7 +399,7 @@ abstract class AbstractService extends AbstractServiceFactory
             }
 
             if (!$rwd) {
-                throw new \Exception('You are not authorized to do this action', 412);
+                throw new \MonarcCore\Exception\Exception('You are not authorized to do this action', 412);
             }
         }
 
@@ -545,7 +545,7 @@ abstract class AbstractService extends AbstractServiceFactory
      * Defines and loads the entity's dependencies (relationship fields)
      * @param AbstractEntity $entity The entity to load
      * @param array $dependencies The array of dependencies fields (relationships)
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function setDependencies(&$entity, $dependencies)
     {
@@ -574,12 +574,12 @@ abstract class AbstractService extends AbstractServiceFactory
                             $depAnrId = $dep->anr->id;
                             $entityAnrId = is_integer($entity->anr) ? $entity->anr : $entity->anr->id;
                             if ($depAnrId != $entityAnrId) {
-                                throw new \Exception('You are not authorized to use this dependency', 412);
+                                throw new \MonarcCore\Exception\Exception('You are not authorized to use this dependency', 412);
                             }
                         }
 
                         if (!$dep->id) {
-                            throw new \Exception('Entity does not exist', 412);
+                            throw new \MonarcCore\Exception\Exception('Entity does not exist', 412);
                         }
                         $entity->set($propertyname, $dep);
                     } elseif (!array_key_exists('id', $value)) {
@@ -588,7 +588,7 @@ abstract class AbstractService extends AbstractServiceFactory
                             if (!is_null($v) && !empty($v) && !is_object($v)) {
                                 $dep = $db->getReference($class, $v);
                                 if (!$dep->id) {
-                                    throw new \Exception('Entity does not exist', 412);
+                                    throw new \MonarcCore\Exception\Exception('Entity does not exist', 412);
                                 }
                                 $a_dep[] = $dep;
                             }
@@ -601,7 +601,7 @@ abstract class AbstractService extends AbstractServiceFactory
                     if (!is_array($value) || isset($value['id'])) {
                         $dep = $this->get($tableName)->getReference(isset($value['id']) ? $value['id'] : $value);
                         if (!$dep->id) {
-                            throw new \Exception('Entity does not exist', 412);
+                            throw new \MonarcCore\Exception\Exception('Entity does not exist', 412);
                         }
                         $entity->$method($dep);
                     } elseif (!array_key_exists('id', $value)) {
@@ -610,7 +610,7 @@ abstract class AbstractService extends AbstractServiceFactory
                             if (!is_null($v) && !empty($v) && !is_object($v)) {
                                 $dep = $this->get($tableName)->getReference($v);
                                 if (!$dep->id) {
-                                    throw new \Exception('Entity does not exist', 412);
+                                    throw new \MonarcCore\Exception\Exception('Entity does not exist', 412);
                                 }
                                 $a_dep[] = $dep;
                             }
@@ -764,7 +764,7 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param int $anrId The ANR's ID
      * @param array $data The consequence data array
      * @param array $instanceRisk The instance risk data array
-     * @throws \Exception If there are incorrect values, return a comma-separated string of all the errors
+     * @throws \MonarcCore\Exception\Exception If there are incorrect values, return a comma-separated string of all the errors
      */
     protected function verifyRates($anrId, $data, $instanceRisk = null)
     {
@@ -860,7 +860,7 @@ abstract class AbstractService extends AbstractServiceFactory
         }
 
         if (count($errors)) {
-            throw new \Exception(implode(', ', $errors), 412);
+            throw new \MonarcCore\Exception\Exception(implode(', ', $errors), 412);
         }
     }
 
