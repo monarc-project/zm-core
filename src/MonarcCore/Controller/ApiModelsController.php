@@ -22,9 +22,7 @@ class ApiModelsController extends AbstractController
     protected $name = 'models';
 
     /**
-     * Get list
-     *
-     * @return JsonModel
+     * @inheritdoc
      */
     public function getList()
     {
@@ -67,10 +65,7 @@ class ApiModelsController extends AbstractController
     }
 
     /**
-     * Get
-     *
-     * @param mixed $id
-     * @return JsonModel
+     * @inheritdoc
      */
     public function get($id)
     {

@@ -19,27 +19,8 @@ class ApiAnrInstancesConsequencesController extends AbstractController
 {
     protected $name = 'instances-consequences';
 
-    public function getList()
-    {
-        return $this->methodNotAllowed();
-    }
-
-    public function get($id)
-    {
-        return $this->methodNotAllowed();
-    }
-
-    public function create($data)
-    {
-        return $this->methodNotAllowed();
-    }
-
     /**
-     * Patch
-     *
-     * @param mixed $id
-     * @param mixed $data
-     * @return JsonModel
+     * @inheritdoc
      */
     public function patch($id, $data)
     {
@@ -51,11 +32,7 @@ class ApiAnrInstancesConsequencesController extends AbstractController
     }
 
     /**
-     * Update
-     *
-     * @param mixed $id
-     * @param mixed $data
-     * @return JsonModel
+     * @inheritdoc
      */
     public function update($id, $data)
     {
@@ -65,5 +42,30 @@ class ApiAnrInstancesConsequencesController extends AbstractController
 
         return new JsonModel(array('status' => 'ok'));
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function getList()
+    {
+        return $this->methodNotAllowed();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function get($id)
+    {
+        return $this->methodNotAllowed();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function create($data)
+    {
+        return $this->methodNotAllowed();
+    }
+
 }
 

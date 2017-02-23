@@ -18,10 +18,7 @@ use Zend\View\Model\JsonModel;
 class ApiAnrRisksOpController extends AbstractController
 {
     /**
-     * Get
-     *
-     * @param mixed $id
-     * @return JsonModel
+     * @inheritdoc
      */
 	public function get($id){
         $anrId = (int) $this->params()->fromRoute('anrid');
@@ -40,9 +37,7 @@ class ApiAnrRisksOpController extends AbstractController
 	}
 
     /**
-     * Get List
-     *
-     * @return JsonModel
+     * @inheritdoc
      */
 	public function getList(){
         $anrId = (int) $this->params()->fromRoute('anrid');
@@ -59,26 +54,45 @@ class ApiAnrRisksOpController extends AbstractController
             ]);
         }
 	}
+
+    /**
+     * @inheritdoc
+     */
 	public function create($data){
         $this->methodNotAllowed();
 	}
+
+    /**
+     * @inheritdoc
+     */
 	public function delete($id){
 		$this->methodNotAllowed($id);
 	}
+
+    /**
+     * @inheritdoc
+     */
 	public function deleteList($data){
 		$this->methodNotAllowed();
 	}
+
+    /**
+     * @inheritdoc
+     */
 	public function update($id, $data){
 		$this->methodNotAllowed();
 	}
+
+    /**
+     * @inheritdoc
+     */
 	public function patch($id, $data){
 		$this->methodNotAllowed();
 	}
 
     /**
-     * Parse Params
-     *
-     * @return array
+     * Helper method to parse filter params from the frontend
+     * @return array Parsed params
      */
 	protected function parseParams() {
         $keywords = $this->params()->fromQuery("keywords");
