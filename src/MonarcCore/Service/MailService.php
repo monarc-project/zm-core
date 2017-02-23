@@ -16,11 +16,10 @@ namespace MonarcCore\Service;
 class MailService extends AbstractService
 {
     /**
-     * Send
-     *
-     * @param $email
-     * @param $subject
-     * @param $message
+     * Send an email to the specified recipient, with the subject and message set
+     * @param string $email Email address
+     * @param string $subject Email subject
+     * @param string $message Email message
      */
     public function send($email, $subject, $message)
     {

@@ -18,9 +18,8 @@ class ConfigService extends AbstractService
     protected $config;
 
     /**
-     * Get Language
-     *
-     * @return array
+     * Retrieves the languages from the configuration
+     * @return array The configuration's languages
      */
     public function getlanguage()
     {

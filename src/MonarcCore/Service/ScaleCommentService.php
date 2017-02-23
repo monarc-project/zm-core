@@ -24,14 +24,7 @@ class ScaleCommentService extends AbstractService
     protected $forbiddenFields = ['anr', 'scale'];
 
     /**
-     * Get List
-     *
-     * @param int $page
-     * @param int $limit
-     * @param null $order
-     * @param null $filter
-     * @param null $filterAnd
-     * @return mixed
+     * @inheritdoc
      */
     public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
     {
@@ -46,11 +39,7 @@ class ScaleCommentService extends AbstractService
     }
 
     /**
-     * Create
-     *
-     * @param $data
-     * @param bool $last
-     * @return mixed
+     * @inheritdoc
      */
     public function create($data, $last = true)
     {
@@ -71,11 +60,7 @@ class ScaleCommentService extends AbstractService
     }
 
     /**
-     * Update
-     *
-     * @param $id
-     * @param $data
-     * @return mixed
+     * @inheritdoc
      */
     public function update($id, $data)
     {
@@ -96,11 +81,7 @@ class ScaleCommentService extends AbstractService
     }
 
     /**
-     * Patch
-     *
-     * @param $id
-     * @param $data
-     * @return mixed
+     * @inheritdoc
      */
     public function patch($id, $data)
     {

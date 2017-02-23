@@ -18,11 +18,7 @@ class RolfCategoryService extends AbstractService
     protected $filterColumns = ['code', 'label1', 'label2', 'label3', 'label4'];
 
     /**
-     * Create
-     * @param $data
-     * @param bool $last
-     * @return mixed
-     * @throws \Exception
+     * @inheritdoc
      */
     public function create($data, $last = true)
     {

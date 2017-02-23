@@ -21,11 +21,7 @@ class QuestionChoiceService extends AbstractService
     protected $dependencies = ['anr', 'question'];
 
     /**
-     * Create
-     *
-     * @param $data
-     * @param bool $last
-     * @return mixed
+     * @inheritdoc
      */
     public function create($data, $last = true)
     {
@@ -41,11 +37,7 @@ class QuestionChoiceService extends AbstractService
     }
 
     /**
-     * Update
-     *
-     * @param $id
-     * @param $data
-     * @return mixed
+     * @inheritdoc
      */
     public function update($id, $data)
     {
@@ -60,10 +52,7 @@ class QuestionChoiceService extends AbstractService
     }
 
     /**
-     * Replace List
-     *
-     * @param $data
-     * @param $anrId
+     * @inheritdoc
      */
     public function replaceList($data, $anrId)
     {

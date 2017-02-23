@@ -23,14 +23,7 @@ class UserRoleService extends AbstractService
     protected $userRoleEntity;
 
     /**
-     * Get List
-     *
-     * @param int $page
-     * @param int $limit
-     * @param null $order
-     * @param null $filter
-     * @param array $options
-     * @return array
+     * @inheritdoc
      */
     public function getList($page = 1, $limit = 25, $order = null, $filter = null, $options = [])
     {
@@ -45,10 +38,7 @@ class UserRoleService extends AbstractService
     }
 
     /**
-     * Get Entity
-     *
-     * @param $id
-     * @return mixed
+     * @inheritdoc
      */
     public function getEntity($id)
     {
@@ -56,10 +46,9 @@ class UserRoleService extends AbstractService
     }
 
     /**
-     * Get By User Id
-     *
-     * @param $userId
-     * @return array
+     * Get roles by user ID
+     * @param int $userId THe user ID
+     * @return array The roles
      */
     public function getByUserId($userId)
     {
@@ -74,11 +63,10 @@ class UserRoleService extends AbstractService
     }
 
     /**
-     * Get By User Token
-     *
-     * @param $token
-     * @return array
-     * @throws \Exception
+     * Get roles by user authentication token
+     * @param string $token The authentication token
+     * @return array The roles
+     * @throws \Exception If token is invalid
      */
     public function getByUserToken($token)
     {
@@ -88,10 +76,9 @@ class UserRoleService extends AbstractService
 
     /**
      * Get User Id By Token
-     *
-     * @param $token
-     * @return int
-     * @throws \Exception
+     * @param string $token The token
+     * @return int The user ID
+     * @throws \Exception If token is invalid
      */
     protected function getUserIdByToken($token)
     {

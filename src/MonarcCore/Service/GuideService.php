@@ -33,14 +33,7 @@ class GuideService extends AbstractService
     }
 
     /**
-     * Get List
-     *
-     * @param int $page
-     * @param int $limit
-     * @param null $order
-     * @param null $filter
-     * @param array $options
-     * @return mixed
+     * @inheritdoc
      */
     public function getList($page = 1, $limit = 25, $order = null, $filter = null, $options = [])
     {
@@ -55,10 +48,7 @@ class GuideService extends AbstractService
     }
 
     /**
-     * Get Entity
-     *
-     * @param $id
-     * @return array
+     * @inheritdoc
      */
     public function getEntity($id)
     {
@@ -70,12 +60,7 @@ class GuideService extends AbstractService
     }
 
     /**
-     * Create
-     *
-     * @param $data
-     * @param bool $last
-     * @return mixed
-     * @throws \Exception
+     * @inheritdoc
      */
     public function create($data, $last = true)
     {

@@ -7,6 +7,7 @@
 
 namespace MonarcCore\Service;
 
+use MonarcCore\Model\Entity\Anr;
 use MonarcCore\Model\Table\AnrTable;
 use MonarcCore\Model\Table\ObjectTable;
 
@@ -31,11 +32,7 @@ class AnrService extends AbstractService
     protected $instanceService;
 
     /**
-     * Create
-     *
-     * @param $data
-     * @param bool $last
-     * @return mixed
+     * @inheritdoc
      */
     public function create($data, $last = true)
     {
@@ -76,9 +73,9 @@ class AnrService extends AbstractService
     }
 
     /**
-     * Duplicate Anr
-     *
-     * @param $anr
+     * Duplicates an anr
+     * @param Anr $anr The source ANR object
+     * @return Anr The new ANR object
      */
     public function duplicate($anr)
     {
@@ -187,11 +184,10 @@ class AnrService extends AbstractService
     }
 
     /**
-     * Export Anr
-     *
-     * @param $data
-     * @return string
-     * @throws \Exception
+     * Exports an ANR encrypted and encoded into base64 for later re-import
+     * @param array $data An array with the ANR 'id' and 'password' for encryption
+     * @return string Base64-encoded encrypted file
+     * @throws \Exception If the ANR is invalid
      */
     public function exportAnr(&$data)
     {
@@ -212,13 +208,13 @@ class AnrService extends AbstractService
     }
 
     /**
-     * Generate Export Array
-     *
-     * @param $id
-     * @param string $filename
-     * @param bool $with_eval
-     * @return array
-     * @throws \Exception
+     * Generates the array to be exported into a file when calling {#exportAnr}
+     * @see #exportAnr
+     * @param int $id The ANR id
+     * @param string $filename The output filename
+     * @param bool $with_eval If true, exports evaluations as well
+     * @return array The data array that should be saved
+     * @throws \Exception If the ANR or an entity is not found
      */
     public function generateExportArray($id, &$filename = "", $with_eval = false)
     {

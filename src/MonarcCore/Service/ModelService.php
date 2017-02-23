@@ -7,6 +7,7 @@
 
 namespace MonarcCore\Service;
 
+use MonarcCore\Model\Entity\Model;
 use MonarcCore\Model\Entity\Object;
 use MonarcCore\Model\Table\ModelTable;
 
@@ -32,13 +33,7 @@ class ModelService extends AbstractService
     ];
 
     /**
-     * Get List
-     *
-     * @param int $page
-     * @param int $limit
-     * @param null $order
-     * @param null $filter
-     * @return mixed
+     * @inheritdoc
      */
     public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null, $scope = 'BO')
     {
@@ -80,11 +75,7 @@ class ModelService extends AbstractService
     }
 
     /**
-     * Create
-     *
-     * @param $data
-     * @param bool $last
-     * @return mixed
+     * @inheritdoc
      */
     public function create($data, $last = true)
     {
@@ -124,10 +115,7 @@ class ModelService extends AbstractService
     }
 
     /**
-     * Get Entity
-     *
-     * @param $id
-     * @return array
+     * @inheritdoc
      */
     public function getModelWithAnr($id)
     {
@@ -144,12 +132,7 @@ class ModelService extends AbstractService
     }
 
     /**
-     * Update
-     *
-     * @param $id
-     * @param $data
-     * @return mixed
-     * @throws \Exception
+     * @inheritdoc
      */
     public function update($id, $data)
     {
@@ -183,11 +166,10 @@ class ModelService extends AbstractService
     }
 
     /**
-     * Verify Before Update
-     *
-     * @param $model
-     * @param $data
-     * @return bool
+     * Verifies the model integrity before updating it
+     * @param Model $model The model to check
+     * @param array $data The new data
+     * @return bool True if it's correct, false otherwise
      * @throws \Exception
      */
     public function verifyBeforeUpdate($model, $data)
@@ -235,22 +217,17 @@ class ModelService extends AbstractService
     }
 
     /**
-     * Patch
-     *
-     * @param $id
-     * @param $data
-     * @return mixed
+     * @inheritdoc
      */
     public function patch($id, $data)
     {
         //security
         $this->filterPatchFields($data);
-
         return parent::patch($id, $data);
     }
 
     /**
-     * Reset Current Default
+     * Resets the current default model
      */
     protected function resetCurrentDefault()
     {
@@ -258,9 +235,8 @@ class ModelService extends AbstractService
     }
 
     /**
-     * Unset Specific Models
-     *
-     * @param $data
+     * Unset Specific Models from the passed array
+     * @param array $data Models array
      */
     public function unsetSpecificModels(&$data)
     {
@@ -275,10 +251,9 @@ class ModelService extends AbstractService
     }
 
     /**
-     * Duplicate
-     *
-     * @param $modelId
-     * @return mixed|null
+     * Duplicates a model
+     * @param int $modelId The model ID to duplicate
+     * @return mixed|null The new model entity
      */
     public function duplicate($modelId)
     {
@@ -308,10 +283,7 @@ class ModelService extends AbstractService
     }
 
     /**
-     * Delete
-     *
-     * @param $id
-     * @return bool
+     * @inheritdoc
      */
     public function delete($id)
     {
@@ -328,10 +300,7 @@ class ModelService extends AbstractService
     }
 
     /**
-     * Delete List
-     *
-     * @param $data
-     * @return bool
+     * @inheritdoc
      */
     public function deleteList($data)
     {

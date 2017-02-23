@@ -39,11 +39,10 @@ class InstanceRiskService extends AbstractService
     protected $forbiddenFields = ['anr', 'amv', 'asset', 'threat', 'vulnerability'];
 
     /**
-     * Create Instance Risk
-     *
-     * @param $instanceId
-     * @param $anrId
-     * @param $object
+     * Creates a new Instance Risk
+     * @param int $instanceId The instance ID
+     * @param int $anrId The ANR ID
+     * @param Object $object The object
      */
     public function createInstanceRisks($instanceId, $anrId, $object)
     {
@@ -101,10 +100,9 @@ class InstanceRiskService extends AbstractService
     }
 
     /**
-     * Delete Instance Risk
-     *
-     * @param $instanceId
-     * @param $anrId
+     * Deletes an Instance Risk
+     * @param int $instanceId The instance ID
+     * @param int $anrId The ANR ID
      */
     public function deleteInstanceRisks($instanceId, $anrId)
     {
@@ -121,10 +119,9 @@ class InstanceRiskService extends AbstractService
     }
 
     /**
-     * Get Instance Risks
-     *
-     * @param $instanceId
-     * @param $anrId
+     * Retrieves and returns the risks of the specified instance ID
+     * @param int $instanceId The instance ID
+     * @param int $anrId The ANR ID
      * @return array|bool
      */
     public function getInstanceRisks($instanceId, $anrId)
@@ -135,11 +132,10 @@ class InstanceRiskService extends AbstractService
     }
 
     /**
-     * Get Instances Risks
-     *
-     * @param $instancesIds
-     * @param $anrId
-     * @return array
+     * Retrieves and returns the risks of multiple instances
+     * @param int[] $instancesIds An array of instance IDs
+     * @param int $anrId The ANR ID
+     * @return array The instances risks
      */
     public function getInstancesRisks($instancesIds, $anrId)
     {
@@ -149,13 +145,7 @@ class InstanceRiskService extends AbstractService
     }
 
     /**
-     * Patch
-     *
-     * @param $id
-     * @param $data
-     * @param bool $manageGlobal
-     * @return mixed
-     * @throws \Exception
+     * @inheritdoc
      */
     public function patch($id, $data, $manageGlobal = true)
     {
@@ -233,13 +223,7 @@ class InstanceRiskService extends AbstractService
     }
 
     /**
-     * Update
-     *
-     * @param $id
-     * @param $data
-     * @param bool $manageGlobal
-     * @return mixed
-     * @throws \Exception
+     * @inheritdoc
      */
     public function update($id, $data, $manageGlobal = true)
     {
@@ -323,10 +307,9 @@ class InstanceRiskService extends AbstractService
     }
 
     /**
-     * Update Risks
-     *
-     * @param $instanceRisk
-     * @param bool $last
+     * Update the specified instance risk
+     * @param InstanceRisk|int $instanceRisk The instance risk object, or its ID
+     * @param bool $last If set to false, database flushes will be suspended until a call to this method with "true"
      */
     public function updateRisks($instanceRisk, $last = true)
     {
@@ -378,10 +361,9 @@ class InstanceRiskService extends AbstractService
     }
 
     /**
-     * Update From Risk Table
-     *
-     * @param $id
-     * @param $data
+     * Updates this risk  from the Risk Table
+     * @param int $id The ID
+     * @param array $data The new data to update
      * @return mixed
      */
     public function updateFromRiskTable($id, $data)
@@ -401,9 +383,7 @@ class InstanceRiskService extends AbstractService
     }
 
     /**
-     * Delete
-     *
-     * @param $id
+     * @inheritdoc
      */
     public function delete($id)
     {
@@ -416,8 +396,7 @@ class InstanceRiskService extends AbstractService
 
     /**
      * Update recommandation risk position
-     *
-     * @param $entity InstanceRisk
+     * @param InstanceRisk $entity The entity to update
      */
     public function updateRecoRisks($entity){
         if(!empty($this->get('recommandationTable'))){

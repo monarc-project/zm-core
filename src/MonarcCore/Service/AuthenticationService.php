@@ -20,13 +20,12 @@ class AuthenticationService extends AbstractService
     protected $adapter;
 
     /**
-     * Authenticate
-     *
-     * @param $data
-     * @param null $token
-     * @param null $uid
-     * @param null $language
-     * @return bool
+     * Authenticates the user
+     * @param array $data The posted data (login/password)
+     * @param string|null $token Reference variable in which the token value will be set
+     * @param string|null $uid Reference variable in which the user ID will be set
+     * @param string|null $language Reference variable in which the user language will be set
+     * @return bool True if the authentication succeeded, false otherwise
      */
     public function authenticate($data, &$token = null, &$uid = null, &$language = null)
     {
@@ -45,10 +44,9 @@ class AuthenticationService extends AbstractService
     }
 
     /**
-     * Logout
-     *
-     * @param $data
-     * @return bool
+     * Disconnnects an user and invalidates the token
+     * @param array $data Array with 'token'
+     * @return bool True if the token existed and got removed, false otherwise
      */
     public function logout($data)
     {
@@ -60,10 +58,9 @@ class AuthenticationService extends AbstractService
     }
 
     /**
-     * Check Connect
-     *
-     * @param $data
-     * @return bool
+     * Checks if the user is currently connected based on the token passed in $data
+     * @param array $data Array with a 'token' key/value
+     * @return bool True if the token is valid, false otherwise
      */
     public function checkConnect($data)
     {

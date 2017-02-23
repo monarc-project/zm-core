@@ -53,13 +53,7 @@ class ScaleService extends AbstractService
     }
 
     /**
-     * Get List
-     *
-     * @param int $page
-     * @param int $limit
-     * @param null $order
-     * @param null $filter
-     * @return mixed
+     * @inheritdoc
      */
     public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
     {
@@ -76,11 +70,7 @@ class ScaleService extends AbstractService
     }
 
     /**
-     * Create
-     *
-     * @param $data
-     * @param bool $last
-     * @return mixed
+     * @inheritdoc
      */
     public function create($data, $last = true)
     {
@@ -163,11 +153,7 @@ class ScaleService extends AbstractService
     }
 
     /**
-     * Patch
-     *
-     * @param $id
-     * @param $data
-     * @return mixed
+     * @inheritdoc
      */
     public function patch($id, $data)
     {
@@ -178,11 +164,7 @@ class ScaleService extends AbstractService
     }
 
     /**
-     * Update
-     *
-     * @param $id
-     * @param $data
-     * @return mixed
+     * @inheritdoc
      */
     public function update($id, $data)
     {

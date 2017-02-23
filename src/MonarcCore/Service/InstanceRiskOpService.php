@@ -8,6 +8,7 @@
 namespace MonarcCore\Service;
 
 use MonarcCore\Model\Entity\Asset;
+use MonarcCore\Model\Entity\InstanceRiskOp;
 use MonarcCore\Model\Entity\Object;
 use MonarcCore\Model\Table\InstanceRiskOpTable;
 use MonarcCore\Model\Table\RolfTagTable;
@@ -34,17 +35,17 @@ class InstanceRiskOpService extends AbstractService
     protected $recommandationTable;
 
     /**
-     * Create Instance Risks Op
-     *
-     * @param $instanceId
-     * @param $anrId
-     * @param $object
+     * Creates a new instance operational risk
+     * @param int $instanceId The ID of the instance
+     * @param int $anrId The ANR ID
+     * @param Object $object The affected object
      */
     public function createInstanceRisksOp($instanceId, $anrId, $object)
     {
         if (isset($object->asset) &&
             $object->asset->type == Asset::TYPE_PRIMARY &&
-            !is_null($object->rolfTag)) {
+            !is_null($object->rolfTag)
+        ) {
             //retrieve brothers instances
             /** @var InstanceTable $instanceTable */
             $instanceTable = $this->get('instanceTable');
@@ -58,7 +59,7 @@ class InstanceRiskOpService extends AbstractService
 
                 /** @var InstanceRiskOpTable $instanceRiskOpTable */
                 $instanceRiskOpTable = $this->get('table');
-                foreach($instances as $instance) {
+                foreach ($instances as $instance) {
                     if ($instance->id != $instanceId) {
                         $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['instance' => $instance->id]);
                         foreach ($instancesRisksOp as $instanceRiskOp) {
@@ -106,10 +107,9 @@ class InstanceRiskOpService extends AbstractService
     }
 
     /**
-     * Delete Instance Risk
-     *
-     * @param $instanceId
-     * @param $anrId
+     * Deletes the operational risk from the instance
+     * @param int $instanceId The instance ID
+     * @param int $anrId The anr ID
      */
     public function deleteInstanceRisksOp($instanceId, $anrId)
     {
@@ -118,19 +118,18 @@ class InstanceRiskOpService extends AbstractService
         $nb = count($risks);
         $i = 1;
         foreach ($risks as $r) {
-            $r->set('kindOfMeasure',-1);
+            $r->set('kindOfMeasure', -1);
             $this->updateRecoRisksOp($r);
-            $table->delete($r->id,($i == $nb));
+            $table->delete($r->id, ($i == $nb));
             $i++;
         }
     }
 
     /**
-     * Get Instance Risks Op
-     *
-     * @param $instanceId
-     * @param $anrId
-     * @return array|bool
+     * Retrieves and returns the instance's operational risks
+     * @param int $instanceId The instance ID
+     * @param int $anrId The ANR ID
+     * @return array|bool An array of operational risks, or false in case of error
      */
     public function getInstanceRisksOp($instanceId, $anrId)
     {
@@ -140,11 +139,10 @@ class InstanceRiskOpService extends AbstractService
     }
 
     /**
-     * Get Instances Risks Op
-     *
-     * @param $instancesIds
-     * @param $anrId
-     * @return array
+     * Retrieves and returns the operational risks of multiple instances
+     * @param int[] $instancesIds The IDs of instances
+     * @param int $anrId The ANR ID
+     * @return array The instances risks
      */
     public function getInstancesRisksOp($instancesIds, $anrId, $params = [])
     {
@@ -154,11 +152,7 @@ class InstanceRiskOpService extends AbstractService
     }
 
     /**
-     * Patch
-     *
-     * @param $id
-     * @param $data
-     * @return mixed
+     * @inheritdoc
      */
     public function patch($id, $data)
     {
@@ -167,17 +161,19 @@ class InstanceRiskOpService extends AbstractService
             throw new \Exception('Entity does not exist', 412);
         }
 
-        $toFilter = ['brutProb','brutR','brutO','brutL','brutF','brutP','netProb','netR','netO','netL','netF','netP'];
+        $toFilter = ['brutProb', 'brutR', 'brutO', 'brutL', 'brutF', 'brutP', 'netProb', 'netR', 'netO', 'netL', 'netF', 'netP'];
+
+        // CLean up the values to avoid empty values or dashes
         foreach ($toFilter as $k) {
-            if(isset($data[$k])){
+            if (isset($data[$k])) {
                 $data[$k] = trim($data[$k]);
-                if(empty($data[$k]) || $data[$k] == '-' || $data[$k] == -1){
+                if (empty($data[$k]) || $data[$k] == '-' || $data[$k] == -1) {
                     $data[$k] = -1;
                 }
             }
         }
 
-        //security
+        // Filter out fields we don't want to update
         $this->filterPatchFields($data);
 
         $r = parent::patch($id, $data);
@@ -186,12 +182,7 @@ class InstanceRiskOpService extends AbstractService
     }
 
     /**
-     * Update
-     *
-     * @param $id
-     * @param $data
-     * @return mixed
-     * @throws \Exception
+     * @inheritdoc
      */
     public function update($id, $data)
     {
@@ -201,11 +192,11 @@ class InstanceRiskOpService extends AbstractService
             throw new \Exception('Entity does not exist', 412);
         }
 
-        $toFilter = ['brutProb','brutR','brutO','brutL','brutF','brutP','netProb','netR','netO','netL','netF','netP'];
+        $toFilter = ['brutProb', 'brutR', 'brutO', 'brutL', 'brutF', 'brutP', 'netProb', 'netR', 'netO', 'netL', 'netF', 'netP'];
         foreach ($toFilter as $k) {
-            if(isset($data[$k])){
+            if (isset($data[$k])) {
                 $data[$k] = trim($data[$k]);
-                if(!isset($data[$k]) || $data[$k] == '-' || $data[$k] == -1){
+                if (!isset($data[$k]) || $data[$k] == '-' || $data[$k] == -1) {
                     $data[$k] = -1;
                 }
             }
@@ -250,9 +241,7 @@ class InstanceRiskOpService extends AbstractService
     }
 
     /**
-     * Delete
-     *
-     * @param $id
+     * @inheritdoc
      */
     public function delete($id)
     {
@@ -264,13 +253,13 @@ class InstanceRiskOpService extends AbstractService
     }
 
     /**
-     * Update recommandation risk op position
-     *
+     * Updates recommandation operational risk position
      * @param $entity InstanceRiskOp
      */
-    public function updateRecoRisksOp($entity){
-        if(!empty($this->get('recommandationTable'))){
-            switch($entity->get('kindOfMeasure')){
+    public function updateRecoRisksOp($entity)
+    {
+        if (!empty($this->get('recommandationTable'))) {
+            switch ($entity->get('kindOfMeasure')) {
                 case \MonarcCore\Model\Entity\InstanceRiskOp::KIND_REDUCTION:
                 case \MonarcCore\Model\Entity\InstanceRiskOp::KIND_REFUS:
                 case \MonarcCore\Model\Entity\InstanceRiskOp::KIND_ACCEPTATION:
@@ -280,27 +269,27 @@ class InstanceRiskOpService extends AbstractService
                             WHERE instance_risk_op_id = :id
                             GROUP BY recommandation_id";
                     $res = $this->get('table')->getDb()->getEntityManager()->getConnection()
-                        ->fetchAll($sql, [':id'=>$entity->get('id')]);
+                        ->fetchAll($sql, [':id' => $entity->get('id')]);
                     $ids = [];
-                    foreach($res as $r){
+                    foreach ($res as $r) {
                         $ids[$r['recommandation_id']] = $r['recommandation_id'];
                     }
-                    $recos = $this->get('recommandationTable')->getEntityByFields(['anr'=>$entity->get('anr')->get('id')],['position'=>'ASC','importance'=>'DESC','code'=>'ASC']);
+                    $recos = $this->get('recommandationTable')->getEntityByFields(['anr' => $entity->get('anr')->get('id')], ['position' => 'ASC', 'importance' => 'DESC', 'code' => 'ASC']);
                     $i = 0;
                     $hasSave = false;
-                    foreach($recos as &$r){
-                        if(($r->get('position') == null || $r->get('position') <= 0) && isset($ids[$r->get('id')])){
+                    foreach ($recos as &$r) {
+                        if (($r->get('position') == null || $r->get('position') <= 0) && isset($ids[$r->get('id')])) {
                             $i++;
-                            $r->set('position',$i);
-                            $this->get('recommandationTable')->save($r,false);
+                            $r->set('position', $i);
+                            $this->get('recommandationTable')->save($r, false);
                             $hasSave = true;
-                        }elseif($i > 0 && $r->get('position') > 0){
-                            $r->set('position',$r->get('position')+$i);
-                            $this->get('recommandationTable')->save($r,false);
+                        } elseif ($i > 0 && $r->get('position') > 0) {
+                            $r->set('position', $r->get('position') + $i);
+                            $this->get('recommandationTable')->save($r, false);
                             $hasSave = true;
                         }
                     }
-                    if($hasSave && !empty($r)){
+                    if ($hasSave && !empty($r)) {
                         $this->get('recommandationTable')->save($r);
                     }
                     break;
@@ -316,31 +305,31 @@ class InstanceRiskOpService extends AbstractService
                             AND rr.instance_id != :id
                             GROUP BY rr.recommandation_id";
                     $res = $this->get('table')->getDb()->getEntityManager()->getConnection()
-                        ->fetchAll($sql, [':anr'=>$entity->get('anr')->get('id'), ':id'=>$entity->get('instance')->get('id')]);
+                        ->fetchAll($sql, [':anr' => $entity->get('anr')->get('id'), ':id' => $entity->get('instance')->get('id')]);
                     $ids = [];
-                    foreach($res as $r){
+                    foreach ($res as $r) {
                         $ids[$r['recommandation_id']] = $r['recommandation_id'];
                     }
-                    $recos = $this->get('recommandationTable')->getEntityByFields(['anr'=>$entity->get('anr')->get('id')],['position'=>'ASC']);
+                    $recos = $this->get('recommandationTable')->getEntityByFields(['anr' => $entity->get('anr')->get('id')], ['position' => 'ASC']);
                     $i = 0;
                     $hasSave = false;
                     $last = null;
-                    foreach($recos as &$r){
-                        if(!isset($ids[$r->get('id')])){
-                            if($r->get('position') == null || $r->get('position') <= 0){
-                            }else{
+                    foreach ($recos as &$r) {
+                        if (!isset($ids[$r->get('id')])) {
+                            if ($r->get('position') == null || $r->get('position') <= 0) {
+                            } else {
                                 $i++;
                             }
                             $hasSave = true;
-                            $this->get('recommandationTable')->delete($r->get('id'),false);
-                        }elseif($i > 0 && $r->get('position') > 0){
-                            $r->set('position',$r->get('position')-$i);
-                            $this->get('recommandationTable')->save($r,false);
+                            $this->get('recommandationTable')->delete($r->get('id'), false);
+                        } elseif ($i > 0 && $r->get('position') > 0) {
+                            $r->set('position', $r->get('position') - $i);
+                            $this->get('recommandationTable')->save($r, false);
                             $hasSave = true;
                             $last = $r;
                         }
                     }
-                    if($hasSave && !empty($last)){
+                    if ($hasSave && !empty($last)) {
                         $this->get('recommandationTable')->save($last);
                     }
                     break;
@@ -353,33 +342,33 @@ class InstanceRiskOpService extends AbstractService
                             LEFT JOIN instances_risks_op iro
                             ON iro.id = rr.instance_risk_op_id
                             AND rr.instance_risk_op_id != :id
-                            WHERE ((ir.kind_of_measure IS NOT NULL AND ir.kind_of_measure < ".\MonarcCore\Model\Entity\InstanceRisk::KIND_NOT_TREATED.")
-                                OR (iro.kind_of_measure IS NOT NULL AND iro.kind_of_measure < ".\MonarcCore\Model\Entity\InstanceRiskOp::KIND_NOT_TREATED."))
+                            WHERE ((ir.kind_of_measure IS NOT NULL AND ir.kind_of_measure < " . \MonarcCore\Model\Entity\InstanceRisk::KIND_NOT_TREATED . ")
+                                OR (iro.kind_of_measure IS NOT NULL AND iro.kind_of_measure < " . \MonarcCore\Model\Entity\InstanceRiskOp::KIND_NOT_TREATED . "))
                             AND (rr.instance_risk_op_id IS NOT NULL OR rr.instance_risk_id IS NOT NULL)
                             AND rr.anr_id = :anr
                             GROUP BY rr.recommandation_id";
                     $res = $this->get('table')->getDb()->getEntityManager()->getConnection()
-                        ->fetchAll($sql, [':anr'=>$entity->get('anr')->get('id'), ':id'=>$entity->get('id')]);
+                        ->fetchAll($sql, [':anr' => $entity->get('anr')->get('id'), ':id' => $entity->get('id')]);
                     $ids = [];
-                    foreach($res as $r){
+                    foreach ($res as $r) {
                         $ids[$r['recommandation_id']] = $r['recommandation_id'];
                     }
-                    $recos = $this->get('recommandationTable')->getEntityByFields(['anr'=>$entity->get('anr')->get('id'), 'position' => ['op'=>'IS NOT', 'value'=>null]],['position'=>'ASC']);
+                    $recos = $this->get('recommandationTable')->getEntityByFields(['anr' => $entity->get('anr')->get('id'), 'position' => ['op' => 'IS NOT', 'value' => null]], ['position' => 'ASC']);
                     $i = 0;
                     $hasSave = false;
-                    foreach($recos as &$r){
-                        if($r->get('position') > 0 && !isset($ids[$r->get('id')])){
+                    foreach ($recos as &$r) {
+                        if ($r->get('position') > 0 && !isset($ids[$r->get('id')])) {
                             $i++;
-                            $r->set('position',null);
-                            $this->get('recommandationTable')->save($r,false);
+                            $r->set('position', null);
+                            $this->get('recommandationTable')->save($r, false);
                             $hasSave = true;
-                        }elseif($i > 0 && $r->get('position') > 0){
-                            $r->set('position',$r->get('position')-$i);
-                            $this->get('recommandationTable')->save($r,false);
+                        } elseif ($i > 0 && $r->get('position') > 0) {
+                            $r->set('position', $r->get('position') - $i);
+                            $this->get('recommandationTable')->save($r, false);
                             $hasSave = true;
                         }
                     }
-                    if($hasSave && !empty($r)){
+                    if ($hasSave && !empty($r)) {
                         $this->get('recommandationTable')->save($r);
                     }
                     break;

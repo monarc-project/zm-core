@@ -27,10 +27,7 @@ class ObjectCategoryService extends AbstractService
     protected $dependencies = ['root', 'parent', 'anr'];//required for autopositionning
 
     /**
-     * Get Entity
-     *
-     * @param $id
-     * @return array
+     * @inheritdoc
      */
     public function getEntity($id)
     {
@@ -79,14 +76,7 @@ class ObjectCategoryService extends AbstractService
     }
 
     /**
-     * Get List Specific
-     *
-     * @param int $page
-     * @param int $limit
-     * @param null $order
-     * @param null $filter
-     * @param array $filterAnd
-     * @return mixed
+     * @inheritdoc
      */
     public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = [])
     {
@@ -108,11 +98,10 @@ class ObjectCategoryService extends AbstractService
     }
 
     /**
-     * Add parent
-     *
-     * @param $objects
-     * @param $object
-     * @param $currentObjectsListId
+     * Adds a new parent to this object category
+     * @param array $objects Objects
+     * @param array $object Object to add
+     * @param array $currentObjectsListId Current object cache list
      */
     protected function addParent(&$objects, $object, &$currentObjectsListId)
     {
@@ -131,16 +120,10 @@ class ObjectCategoryService extends AbstractService
     }
 
     /**
-     * Create
-     *
-     * @param $data
-     * @param bool $last
-     * @return mixed
-     * @throws \Exception
+     * @inheritdoc
      */
     public function create($data, $last = true)
     {
-
         $entity = $this->get('entity');
         $entity->setLanguage($this->getLanguage());
         $entity->setDbAdapter($this->table->getDb());
@@ -154,15 +137,10 @@ class ObjectCategoryService extends AbstractService
     }
 
     /**
-     * Update
-     *
-     * @param $id
-     * @param $data
-     * @return mixed
+     * @inheritdoc
      */
     public function update($id, $data)
     {
-
         $entity = $this->get('table')->getEntity($id);
         $entity->setLanguage($this->getLanguage());
         $entity->setDbAdapter($this->table->getDb());
@@ -176,9 +154,7 @@ class ObjectCategoryService extends AbstractService
     }
 
     /**
-     * Delete
-     *
-     * @param $id
+     * @inheritdoc
      */
     public function delete($id)
     {
@@ -206,11 +182,10 @@ class ObjectCategoryService extends AbstractService
     }
 
     /**
-     * Patch Library Category
-     *
-     * @param $categoryId
-     * @param $data
-     * @return mixed|null
+     * Patches the Library Category
+     * @param int $categoryId The category ID to patch
+     * @param array $data The new data
+     * @return mixed|null The resulting object
      */
     public function patchLibraryCategory($categoryId, $data)
     {

@@ -27,9 +27,8 @@ class UserService extends AbstractService
     protected $filterColumns = ['firstname', 'lastname', 'email', 'phone'];
 
     /**
-     * Get Total Count
-     *
-     * @return bool|mixed
+     * Returns the total amount of users
+     * @return int The amount of users
      */
     public function getTotalCount()
     {
@@ -37,11 +36,7 @@ class UserService extends AbstractService
     }
 
     /**
-     * Create
-     *
-     * @param $data
-     * @param bool $last
-     * @return mixed
+     * @inheritdoc
      */
     public function create($data, $last = true)
     {
@@ -62,11 +57,7 @@ class UserService extends AbstractService
     }
 
     /**
-     * Update
-     *
-     * @param $id
-     * @param $data
-     * @return mixed
+     * @inheritdoc
      */
     public function update($id, $data)
     {
@@ -81,12 +72,7 @@ class UserService extends AbstractService
     }
 
     /**
-     * Patch
-     *
-     * @param $id
-     * @param $data
-     * @return mixed
-     * @throws \Exception
+     * @inheritdoc
      */
     public function patch($id, $data)
     {
@@ -104,10 +90,9 @@ class UserService extends AbstractService
     }
 
     /**
-     * Get By Email
-     *
-     * @param $email
-     * @return array
+     * Get an user by email
+     * @param string $email The e-mail address
+     * @return array The users matching the e-mail address
      */
     public function getByEmail($email)
     {
@@ -115,10 +100,9 @@ class UserService extends AbstractService
     }
 
     /**
-     * Validate password
-     *
-     * @param $data
-     * @throws \Exception
+     * Validates that the password matches the required strength policy (special chars, lower/uppercase, number)
+     * @param string $data An array with a password key containing the password
+     * @throws \Exception If password is invalid
      */
     protected function validatePassword($data)
     {
@@ -138,9 +122,9 @@ class UserService extends AbstractService
     /**
      * Manage Roles
      *
-     * @param $user
-     * @param $data
-     * @throws \Exception
+     * @param User $user The user to manage
+     * @param array $data The new user roles
+     * @throws \Exception In case of invalid roles selected
      */
     protected function manageRoles($user, $data)
     {
@@ -169,10 +153,7 @@ class UserService extends AbstractService
     }
 
     /**
-     * Get Entity
-     *
-     * @param $id
-     * @return array
+     * @inheritdoc
      */
     public function getEntity($id)
     {

@@ -19,28 +19,17 @@ class MeasureService extends AbstractService
     protected $forbiddenFields = ['anr'];
 
     /**
-     * Patch
-     *
-     * @param $id
-     * @param $data
-     * @return mixed
+     * @inheritdoc
      */
     public function patch($id, $data)
     {
-        //security
+        // Filter unwanted fields
         $this->filterPatchFields($data);
-
         parent::patch($id, $data);
     }
 
     /**
-     * Get List
-     *
-     * @param int $page
-     * @param int $limit
-     * @param null $order
-     * @param null $filter
-     * @return mixed
+     * @inheritdoc
      */
     public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
     {

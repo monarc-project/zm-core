@@ -29,11 +29,7 @@ class InstanceConsequenceService extends AbstractService
     protected $forbiddenFields = ['anr', 'instance', 'object', 'scaleImpactType'];
 
     /**
-     * Patch
-     *
-     * @param $id
-     * @param $data
-     * @return mixed
+     * @inheritdoc
      */
     public function patchConsequence($id, $data, $patchInstance = true, $local = true, $fromInstance = false)
     {
@@ -86,12 +82,7 @@ class InstanceConsequenceService extends AbstractService
     }
 
     /**
-     * Update
-     *
-     * @param $id
-     * @param $data
-     * @return mixed
-     * @throws \Exception
+     * @inheritdoc
      */
     public function update($id, $data)
     {
@@ -127,9 +118,10 @@ class InstanceConsequenceService extends AbstractService
     }
 
     /**
-     * Update consequences
-     * @param $id
-     * @param $data
+     * Update the consequences of the provided instance ID
+     * @param int $id The instance ID
+     * @param array $data The new values
+     * @return array $data
      */
     protected function updateConsequences($id, $data)
     {
@@ -142,10 +134,9 @@ class InstanceConsequenceService extends AbstractService
     }
 
     /**
-     * Update Brother Consequences
-     *
-     * @param $anrId
-     * @param $id
+     * Update the consequences of the instances at the same level
+     * @param int $anrId The ANR ID
+     * @param int $id THe instance consequence ID
      */
     public function updateBrothersConsequences($anrId, $id)
     {
@@ -191,8 +182,7 @@ class InstanceConsequenceService extends AbstractService
 
     /**
      * Update Instance Impacts
-     *
-     * @param $instanceConsequencesId
+     * @param int $instanceConsequencesId The instance consequences ID
      */
     protected function updateInstanceImpacts($instanceConsequencesId, $fromInstance = false)
     {
@@ -251,9 +241,8 @@ class InstanceConsequenceService extends AbstractService
 
     /**
      * Patch by Scale Impact Type
-     *
-     * @param $scaleImpactTypeId
-     * @param $data
+     * @param int $scaleImpactTypeId The scale impact type ID
+     * @param array $data The new data to set
      */
     public function patchByScaleImpactType($scaleImpactTypeId, $data)
     {

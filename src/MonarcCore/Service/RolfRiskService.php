@@ -30,16 +30,7 @@ class RolfRiskService extends AbstractService
     ];
 
     /**
-     * Get List Specific
-     *
-     * @param int $page
-     * @param int $limit
-     * @param null $order
-     * @param null $filter
-     * @param null $category
-     * @param null $tag
-     * @param null $anr
-     * @return mixed
+     * @inheritdoc
      */
     public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $category = null, $tag = null, $anr = null)
     {
@@ -78,16 +69,7 @@ class RolfRiskService extends AbstractService
     }
 
     /**
-     * Get Filtered Specific Count
-     *
-     * @param int $page
-     * @param int $limit
-     * @param null $order
-     * @param null $filter
-     * @param null $category
-     * @param null $tag
-     * @param null $anr
-     * @return mixed
+     * @inheritdoc
      */
     public function getFilteredSpecificCount($page = 1, $limit = 25, $order = null, $filter = null, $category = null, $tag = null, $anr = null)
     {
@@ -126,11 +108,7 @@ class RolfRiskService extends AbstractService
     }
 
     /**
-     * Create
-     *
-     * @param $data
-     * @param bool $last
-     * @return mixed
+     * @inheritdoc
      */
     public function create($data, $last = true)
     {
@@ -165,11 +143,7 @@ class RolfRiskService extends AbstractService
     }
 
     /**
-     * Update
-     *
-     * @param $id
-     * @param $data
-     * @return mixed
+     * @inheritdoc
      */
     public function update($id, $data)
     {

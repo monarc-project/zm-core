@@ -44,13 +44,7 @@ class ScaleImpactTypeService extends AbstractService
     }
 
     /**
-     * Get List
-     *
-     * @param int $page
-     * @param int $limit
-     * @param null $order
-     * @param null $filter
-     * @return mixed
+     * @inheritdoc
      */
     public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
     {
@@ -74,11 +68,7 @@ class ScaleImpactTypeService extends AbstractService
     }
 
     /**
-     * Create
-     *
-     * @param $data
-     * @param bool $last
-     * @return mixed
+     * @inheritdoc
      */
     public function create($data, $last = true)
     {
@@ -129,11 +119,7 @@ class ScaleImpactTypeService extends AbstractService
     }
 
     /**
-     * Update
-     *
-     * @param $id
-     * @param $data
-     * @return mixed
+     * @inheritdoc
      */
     public function update($id, $data)
     {
@@ -154,10 +140,7 @@ class ScaleImpactTypeService extends AbstractService
     }
 
     /**
-     * Delete
-     *
-     * @param $id
-     * @throws \Exception
+     * @inheritdoc
      */
     public function delete($id)
     {
@@ -171,11 +154,7 @@ class ScaleImpactTypeService extends AbstractService
     }
 
     /**
-     * Patch
-     *
-     * @param $id
-     * @param $data
-     * @return mixed
+     * @inheritdoc
      */
     public function patch($id, $data)
     {

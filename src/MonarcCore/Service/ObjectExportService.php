@@ -7,6 +7,8 @@
 
 namespace MonarcCore\Service;
 
+use MonarcCore\Model\Entity\Anr;
+
 /**
  * Object Service Export
  *
@@ -24,12 +26,11 @@ class ObjectExportService extends AbstractService
     protected $rolfRiskTable;
 
     /**
-     * Generate Export Array
-     *
-     * @param $id
-     * @param string $filename
-     * @return array
-     * @throws \Exception
+     * Generates an array to export into a filename
+     * @param int $id The object to export
+     * @param string $filename Reference to the string holding the filename
+     * @return array The data
+     * @throws \Exception If the object is erroneous
      */
     public function generateExportArray($id, &$filename = "")
     {
@@ -124,12 +125,11 @@ class ObjectExportService extends AbstractService
     }
 
     /**
-     * Import From Array
-     *
-     * @param $data
-     * @param $anr
-     * @param string $modeImport
-     * @param array $objectsCache
+     * Imports an object from an array
+     * @param array $data The object data
+     * @param Anr $anr The ANR object
+     * @param string $modeImport The import mode, either 'merge' or 'duplicate'
+     * @param array $objectsCache The objects cache reference array
      * @return bool
      */
     public function importFromArray($data, $anr, $modeImport = 'merge', &$objectsCache = [])
@@ -264,12 +264,11 @@ class ObjectExportService extends AbstractService
     }
 
     /**
-     * Import From Array Categories
-     *
-     * @param $data
-     * @param $idCateg
-     * @param $anrId
-     * @return null
+     * Import categories from an exported array
+     * @param array $data The imported data
+     * @param int $idCateg The category ID
+     * @param int $anrId The ANR ID
+     * @return null|int The category ID or null
      */
     protected function importFromArrayCategories($data, $idCateg, $anrId)
     {

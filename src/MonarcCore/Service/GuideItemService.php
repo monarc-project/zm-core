@@ -19,11 +19,7 @@ class GuideItemService extends AbstractService
     protected $dependencies = ['guide'];
 
     /**
-     * Create
-     *
-     * @param $data
-     * @param bool $last
-     * @return mixed
+     * @inheritdoc
      */
     public function create($data, $last = true)
     {
@@ -40,11 +36,7 @@ class GuideItemService extends AbstractService
     }
 
     /**
-     * Update
-     *
-     * @param $id
-     * @param $data
-     * @return mixed
+     * @inheritdoc
      */
     public function update($id, $data)
     {
@@ -59,9 +51,7 @@ class GuideItemService extends AbstractService
     }
 
     /**
-     * Delete
-     *
-     * @param $id
+     * @inheritdoc
      */
     public function delete($id)
     {

@@ -22,9 +22,8 @@ class PasswordService extends AbstractService
     protected $mailService;
 
     /**
-     * Password forgotten
-     *
-     * @param $email
+     * Handles password forgotten
+     * @param string $email The email to which send the reset password email
      */
     public function passwordForgotten($email)
     {
@@ -94,10 +93,9 @@ class PasswordService extends AbstractService
     }
 
     /**
-     * New Password By Token
-     *
-     * @param $token
-     * @param $password
+     * Sets a new password based on the reset token passed
+     * @param string $token The reset token
+     * @param string $password The new password for the account associated with the token
      */
     public function newPasswordByToken($token, $password)
     {
@@ -116,10 +114,9 @@ class PasswordService extends AbstractService
     }
 
     /**
-     * Verify Token
-     *
-     * @param $token
-     * @return bool
+     * Verifies if the passed token is a valid password reset token
+     * @param string $token The password reset token
+     * @return bool True if the token is valid, false otherwise
      */
     public function verifyToken($token)
     {
@@ -134,12 +131,11 @@ class PasswordService extends AbstractService
     }
 
     /**
-     * Change Password
-     *
-     * @param $userId
-     * @param $oldPassword
-     * @param $newPassword
-     * @throws \Exception
+     * Changes the password for the specified user ID based on its old password
+     * @param int $userId The user ID
+     * @param string $oldPassword The previous (current) user password
+     * @param string $newPassword The new password to set
+     * @throws \Exception If the origin password is incorrect, or user does not exist
      */
     public function changePassword($userId, $oldPassword, $newPassword)
     {
