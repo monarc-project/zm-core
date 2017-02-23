@@ -7,13 +7,12 @@
 
 namespace MonarcCore\Controller;
 
+use MonarcCore\Model\Entity\AbstractEntity;
 use Zend\Mvc\Controller\AbstractRestfulController;
 use Zend\View\Model\JsonModel;
 
 /**
- * Abstract Controller
- *
- * Class AbstractController
+ * Abstract Controller used on every REST API controllers
  * @package MonarcCore\Controller
  */
 abstract class AbstractController extends AbstractRestfulController
@@ -22,15 +21,27 @@ abstract class AbstractController extends AbstractRestfulController
 
     protected $dependencies = [];
 
+    /**
+     * AbstractController constructor.
+     * @param \MonarcCore\Service\AbstractServiceFactory $service The service factory to use
+     */
     public function __construct(\MonarcCore\Service\AbstractServiceFactory $service)
     {
         $this->service = $service;
     }
 
+    /**
+     * @return \MonarcCore\Service\AbstractServiceFactory The attached service factory
+     */
     protected function getService()
     {
         return $this->service;
     }
+
+    /**
+     * Default method to prevent access to a non-authorized verb
+     * @throws \Exception HTTP 405 "Method Not Allowed"
+     */
     protected function methodNotAllowed()
     {
         $this->response->setStatusCode(405);
@@ -38,9 +49,8 @@ abstract class AbstractController extends AbstractRestfulController
     }
 
     /**
-     * Get list
-     *
-     * @return JsonModel
+     * Default action called for a GET without an id, generally to get a list of entities
+     * @return JsonModel JSON data of the entities list
      */
     public function getList()
     {
@@ -65,10 +75,9 @@ abstract class AbstractController extends AbstractRestfulController
     }
 
     /**
-     * Get
-     *
-     * @param mixed $id
-     * @return JsonModel
+     * Default action called for a GET with an id, to get the specifics of an entity
+     * @param int $id The entity's ID
+     * @return JsonModel JSON data of the entity fields
      */
     public function get($id)
     {
@@ -82,10 +91,9 @@ abstract class AbstractController extends AbstractRestfulController
     }
 
     /**
-     * Create
-     *
-     * @param mixed $data
-     * @return JsonModel
+     * Default action called for a POST (without an ID), to create a new entity
+     * @param array $data The posted JSON data
+     * @return JsonModel JSON data of the status and the created entity ID
      */
     public function create($data)
     {
@@ -100,10 +108,9 @@ abstract class AbstractController extends AbstractRestfulController
     }
 
     /**
-     * Delete
-     *
-     * @param mixed $id
-     * @return JsonModel
+     * Default action called for a DELETE with an ID, to delete an entity
+     * @param int $id The entity ID to delete
+     * @return JsonModel JSON status confirmation
      */
     public function delete($id)
     {
@@ -115,10 +122,9 @@ abstract class AbstractController extends AbstractRestfulController
     }
 
     /**
-     * Delete list
-     *
-     * @param mixed $data
-     * @return JsonModel
+     * Default action called for a DELETE without an ID, to delete multiple entities at once
+     * @param array $data An array of IDs to delete
+     * @return JsonModel JSON status confirmation
      */
     public function deleteList($data)
     {
@@ -130,11 +136,10 @@ abstract class AbstractController extends AbstractRestfulController
     }
 
     /**
-     * Update
-     *
-     * @param mixed $id
-     * @param mixed $data
-     * @return JsonModel
+     * Default action called for a PUT with an ID, to replace an existing entity
+     * @param int $id The entity ID to replace
+     * @param array $data The new data for the entity
+     * @return JsonModel JSON status confirmation
      */
     public function update($id, $data)
     {
@@ -144,11 +149,11 @@ abstract class AbstractController extends AbstractRestfulController
     }
 
     /**
-     * Patch
-     *
-     * @param mixed $id
-     * @param mixed $data
-     * @return JsonModel
+     * Default action called for a PATCH with an ID, to update an existing entity while keeping unreferenced fields
+     * unchanged (as opposed to update()/PUT which will erase empty fields not passed in parameter)
+     * @param int $id The entity ID to patch
+     * @param array $data The new fields to replace on the entity
+     * @return JsonModel JSON status confirmation
      */
     public function patch($id, $data)
     {
@@ -158,10 +163,9 @@ abstract class AbstractController extends AbstractRestfulController
     }
 
     /**
-     * Format Dependencies
-     *
-     * @param $entity
-     * @param $dependencies
+     * Automatically loads the dependencies of the entity based on the class' "dependencies" field
+     * @param AbstractEntity $entity The entity for which the deps should be resolved
+     * @param array $dependencies The dependencies fields
      */
     public function formatDependencies(&$entity, $dependencies) {
         foreach($dependencies as $dependency) {
@@ -201,14 +205,13 @@ abstract class AbstractController extends AbstractRestfulController
     }
 
     /**
-     * recursive array
-     *
-     * @param $array
-     * @param $parent
-     * @param $level
-     * @param $fields
-     * @return array
-     * @throws \Exception
+     * Computes a recursive array based on the parents
+     * @param array $array The source array
+     * @param int $parent The parent ID
+     * @param int $level The current recursion level
+     * @param array $fields The fields to keep
+     * @return array A recursive array of all the children
+     * @throws \Exception If there is no parent
      */
     public function recursiveArray($array, $parent, $level, $fields)
     {
