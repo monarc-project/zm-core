@@ -47,10 +47,8 @@ class InstanceService extends AbstractService
     protected $objectObjectService;
     protected $translateService;
 
-    // Useless (Deprecated)
+    // TODO: This was marked as useless (deprecated) but it's still used in code?
     protected $instanceTable;
-    protected $assetTable;
-    protected $rolfRiskTable;
 
     // Export (Services)
     protected $objectExportService;
