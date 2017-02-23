@@ -1199,7 +1199,7 @@ class InstanceService extends AbstractService
         $allInstances = $instanceTable->getEntityByFields(['anr' => $anrId], ['parent' => 'DESC', 'position' => 'ASC']);
 
         $instances = $temp = [];
-        foreach ($allInstances as $key => $instance) {
+        foreach ($allInstances as $instance) {
             $instanceArray = $instance->getJsonArray();
             $instanceArray['scope'] = $instance->object->scope;
             $instanceArray['child'] = [];
@@ -1285,7 +1285,6 @@ class InstanceService extends AbstractService
             //retrieve scale impact types
             /** @var ScaleImpactTypeTable $scaleImpactTypeTable */
             $scaleImpactTypeTable = $this->get('scaleImpactTypeTable');
-            //$scalesImpactTypes = $scaleImpactTypeTable->getEntityByFields(['anr' => $anrId, 'isHidden' => 0]);
             $scalesImpactTypes = $scaleImpactTypeTable->getEntityByFields(['anr' => $anrId]);
 
             /** @var InstanceConsequenceTable $instanceConsequenceTable */

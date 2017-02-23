@@ -718,7 +718,7 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     protected function getTargetRisk($impacts, $tRate, $vRate, $vRateReduc)
     {
-        return $targetRisk = ((max($impacts) != -1) && ($tRate != -1) && ($vRate != -1))
+        return ((max($impacts) != -1) && ($tRate != -1) && ($vRate != -1))
             ? max($impacts) * $tRate * ($vRate - $vRateReduc) : -1;
     }
 

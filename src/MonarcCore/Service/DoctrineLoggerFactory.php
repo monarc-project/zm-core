@@ -21,7 +21,7 @@ class DoctrineLoggerFactory implements FactoryInterface
     public function createService(ServiceLocatorInterface $serviceLocator)
     {
         $env = getenv('APP_ENV') ?: 'production';
-        $conf = $serviceLocator->get('Config');
+        $config = $serviceLocator->get('Config');
         $enable = isset($config['monarc']['doctrineLog'])?$config['monarc']['doctrineLog']:false;
         if($env != 'production' && $enable){
             if(!is_dir('data/log')){

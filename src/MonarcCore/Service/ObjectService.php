@@ -558,7 +558,6 @@ class ObjectService extends AbstractService
         $object->setDbAdapter($this->get('table')->getDb());
         $object->setLanguage($this->getLanguage());
 
-        $previous = (isset($data['previous'])) ? $data['previous'] : null;
         $setRolfTagNull = false;
         if (empty($data['rolfTag'])) {
             unset($data['rolfTag']);

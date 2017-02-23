@@ -127,7 +127,7 @@ class UserService extends AbstractService
         $passwordValidator = new PasswordStrength();
         if (!$passwordValidator->isValid($password)) {
             $errors = [];
-            foreach ($passwordValidator->getMessages() as $messageId => $message) {
+            foreach ($passwordValidator->getMessages() as $message) {
                 $errors[] = $message;
             }
 
