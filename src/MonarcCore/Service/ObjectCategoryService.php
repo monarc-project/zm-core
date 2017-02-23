@@ -136,7 +136,7 @@ class ObjectCategoryService extends AbstractService
      * @param $data
      * @param bool $last
      * @return mixed
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function create($data, $last = true)
     {

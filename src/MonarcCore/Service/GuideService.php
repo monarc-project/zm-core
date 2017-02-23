@@ -75,7 +75,7 @@ class GuideService extends AbstractService
      * @param $data
      * @param bool $last
      * @return mixed
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function create($data, $last = true)
     {
@@ -84,7 +84,7 @@ class GuideService extends AbstractService
         $currentGuide = $table->getEntityByFields(['type' => $data['type']]);
 
         if (count($currentGuide)) {
-            throw new \Exception('Only one guide by category', 412);
+            throw new \MonarcCore\Exception\Exception('Only one guide by category', 412);
         }
 
         return parent::create($data, $last);

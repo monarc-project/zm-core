@@ -91,12 +91,12 @@ class InstanceConsequenceService extends AbstractService
      * @param $id
      * @param $data
      * @return mixed
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function update($id, $data)
     {
         if (empty($data)) {
-            throw new \Exception('Data missing', 412);
+            throw new \MonarcCore\Exception\Exception('Data missing', 412);
         }
 
         $anrId = $data['anr'];

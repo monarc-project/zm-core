@@ -41,6 +41,7 @@ return array(
     'MonarcCore\Controller\AuthenticationControllerFactory'                 => __DIR__ . '/src/MonarcCore/Controller/AuthenticationControllerFactory.php',
     'MonarcCore\Controller\IndexController'                                 => __DIR__ . '/src/MonarcCore/Controller/IndexController.php',
     'MonarcCore\Controller\IndexControllerFactory'                          => __DIR__ . '/src/MonarcCore/Controller/IndexControllerFactory.php',
+    'MonarcCore\Exception\Exception'                                        => __DIR__ . '/src/MonarcCore/Exception/Exception.php',
     'MonarcCore\Filter\Password'                                            => __DIR__ . '/src/MonarcCore/Filter/Password.php',
     'MonarcCore\Filter\SpecAlnum'                                           => __DIR__ . '/src/MonarcCore/Filter/SpecAlnum.php',
     'MonarcCore\Log\SqlLogger'                                              => __DIR__ . '/src/MonarcCore/Log/SqlLogger.php',

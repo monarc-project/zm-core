@@ -157,14 +157,14 @@ class ScaleImpactTypeService extends AbstractService
      * Delete
      *
      * @param $id
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function delete($id)
     {
         $entity = $this->getEntity($id);
 
         if ($entity['isSys']) {
-            throw new \Exception('You are not authorized to do this action', '401');
+            throw new \MonarcCore\Exception\Exception('You are not authorized to do this action', '401');
         }
 
         $this->get('table')->delete($id);

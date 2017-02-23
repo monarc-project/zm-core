@@ -108,7 +108,7 @@ class AmvService extends AbstractService
      * @param $data
      * @param bool $last
      * @return mixed
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function create($data, $last = true)
     {
@@ -121,7 +121,7 @@ class AmvService extends AbstractService
         $authorized = $this->compliesRequirement($entity);
 
         if (!$authorized) {
-            throw new \Exception($this->errorMessage);
+            throw new \MonarcCore\Exception\Exception($this->errorMessage);
         }
 
         $id = $this->get('table')->save($entity);
@@ -173,14 +173,14 @@ class AmvService extends AbstractService
      * @param $id
      * @param $data
      * @return mixed
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function update($id, $data)
     {
         $this->filterPatchFields($data);
 
         if (empty($data)) {
-            throw new \Exception('Data missing', 412);
+            throw new \MonarcCore\Exception\Exception('Data missing', 412);
         }
 
         $entity = $this->get('table')->getEntity($id);
@@ -210,7 +210,7 @@ class AmvService extends AbstractService
         $authorized = $this->compliesRequirement($entity);
 
         if (!$authorized) {
-            throw new \Exception($this->errorMessage);
+            throw new \MonarcCore\Exception\Exception($this->errorMessage);
         }
 
         //historisation
@@ -332,14 +332,14 @@ class AmvService extends AbstractService
      * @param null $vulnerability
      * @param null $vulnerabilityModels
      * @return bool
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function compliesRequirement($amv, $asset = null, $assetModels = null, $threat = null, $threatModels = null, $vulnerability = null, $vulnerabilityModels = null)
     {
         //asset
         $asset = (is_null($asset)) ? $amv->getAsset() : $asset;
         if ($asset->get('type') == 1) {
-            throw new \Exception('Asset can\'t be primary', 412);
+            throw new \MonarcCore\Exception\Exception('Asset can\'t be primary', 412);
         }
 
         $assetMode = $asset->mode;
@@ -380,7 +380,7 @@ class AmvService extends AbstractService
         $result = $this->compliesControl($assetMode, $threatMode, $vulnerabilityMode, $assetModelsIds, $threatModelsIds, $vulnerabilityModelsIds, $assetModelsIsRegulator);
 
         if (strlen($this->errorMessage)) {
-            throw new \Exception($this->errorMessage, 412);
+            throw new \MonarcCore\Exception\Exception($this->errorMessage, 412);
         }
 
         return $result;
@@ -397,7 +397,7 @@ class AmvService extends AbstractService
      * @param $vulnerabilityModelsIds
      * @param $assetModelsIsRegulator
      * @return bool
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function compliesControl($assetMode, $threatMode, $vulnerabilityMode, $assetModelsIds, $threatModelsIds, $vulnerabilityModelsIds, $assetModelsIsRegulator)
     {

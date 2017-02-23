@@ -159,12 +159,13 @@ class InstanceRiskOpService extends AbstractService
      * @param $id
      * @param $data
      * @return mixed
+     * @throws \MonarcCore\Exception\Exception
      */
     public function patch($id, $data)
     {
         $entity = $this->get('table')->getEntity($id);
         if (!$entity) {
-            throw new \Exception('Entity does not exist', 412);
+            throw new \MonarcCore\Exception\Exception('Entity does not exist', 412);
         }
 
         $toFilter = ['brutProb','brutR','brutO','brutL','brutF','brutP','netProb','netR','netO','netL','netF','netP'];
@@ -191,14 +192,14 @@ class InstanceRiskOpService extends AbstractService
      * @param $id
      * @param $data
      * @return mixed
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function update($id, $data)
     {
         $risk = $this->get('table')->getEntity($id);
 
         if (!$risk) {
-            throw new \Exception('Entity does not exist', 412);
+            throw new \MonarcCore\Exception\Exception('Entity does not exist', 412);
         }
 
         $toFilter = ['brutProb','brutR','brutO','brutL','brutF','brutP','netProb','netR','netO','netL','netF','netP'];
@@ -216,7 +217,7 @@ class InstanceRiskOpService extends AbstractService
         $risk->setLanguage($this->getLanguage());
 
         if (empty($data)) {
-            throw new \Exception('Data missing', 412);
+            throw new \MonarcCore\Exception\Exception('Data missing', 412);
         }
 
         $risk->exchangeArray($data);

@@ -139,7 +139,7 @@ class PasswordService extends AbstractService
      * @param $userId
      * @param $oldPassword
      * @param $newPassword
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function changePassword($userId, $oldPassword, $newPassword)
     {
@@ -149,10 +149,10 @@ class PasswordService extends AbstractService
             if (password_verify($oldPassword, $user['password'])) {
                 $this->get('userService')->patch($userId, ['password' => $newPassword]);
             } else {
-                throw new \Exception('Original password incorrect', 412);
+                throw new \MonarcCore\Exception\Exception('Original password incorrect', 412);
             }
         } else {
-            throw new \Exception('User does not exist', 422);
+            throw new \MonarcCore\Exception\Exception('User does not exist', 422);
         }
     }
 }

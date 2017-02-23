@@ -95,21 +95,21 @@ class ModelObjectService extends AbstractService
      * @param $id
      * @param $data
      * @return mixed
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function update($id, $data)
     {
         $entity = $this->get('table')->getEntity($id);
 
         if (empty($data['model']) || $entity->get('model') != $data['model'] || $entity->get('type') != 'anr') {
-            throw new \Exception('Entity `id` not found.');
+            throw new \MonarcCore\Exception\Exception('Entity `id` not found.');
         }
 
         $entity->setDbAdapter($this->get('table')->getDb());
         $entity->setLanguage($this->getLanguage());
 
         if (empty($data)) {
-            throw new \Exception('Data missing', 412);
+            throw new \MonarcCore\Exception\Exception('Data missing', 412);
         }
         $entity->exchangeArray($data);
 
@@ -125,7 +125,7 @@ class ModelObjectService extends AbstractService
      *
      * @param $id
      * @return bool
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function delete($id)
     {

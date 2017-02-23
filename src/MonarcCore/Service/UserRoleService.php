@@ -78,7 +78,7 @@ class UserRoleService extends AbstractService
      *
      * @param $token
      * @return array
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function getByUserToken($token)
     {
@@ -91,7 +91,7 @@ class UserRoleService extends AbstractService
      *
      * @param $token
      * @return int
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     protected function getUserIdByToken($token)
     {
@@ -110,7 +110,7 @@ class UserRoleService extends AbstractService
         if (count($userToken)) {
             return $userToken[0]['userId'];
         } else {
-            throw new \Exception('No user');
+            throw new \MonarcCore\Exception\Exception('No user');
         }
     }
 }

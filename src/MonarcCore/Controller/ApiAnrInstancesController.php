@@ -115,7 +115,7 @@ class ApiAnrInstancesController extends AbstractController
      *
      * @param mixed $data
      * @return JsonModel
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function create($data)
     {
@@ -130,7 +130,7 @@ class ApiAnrInstancesController extends AbstractController
             }
         }
         if (count($missing)) {
-            throw new \Exception(implode(', ', $missing), 412);
+            throw new \MonarcCore\Exception\Exception(implode(', ', $missing), 412);
         }
 
         $data['c'] = isset($data['c'])?$data['c']:'-1';

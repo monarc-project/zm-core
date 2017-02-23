@@ -54,14 +54,14 @@ class ApiAnrLibraryController extends AbstractController
      *
      * @param mixed $data
      * @return JsonModel
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function create($data)
     {
         $anrId = $this->params()->fromRoute('anrid');
 
         if (!isset($data['objectId'])) {
-            throw new \Exception('objectId is missing');
+            throw new \MonarcCore\Exception\Exception('objectId is missing');
         }
 
         /** @var ObjectService $service */

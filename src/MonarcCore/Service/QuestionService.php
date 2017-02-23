@@ -94,7 +94,7 @@ class QuestionService extends AbstractService
      * @param $id
      * @param $data
      * @return mixed
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function update($id, $data)
     {
@@ -120,7 +120,7 @@ class QuestionService extends AbstractService
                 }
                 unset($data['mode']);
             } else {
-                throw new \Exception('Anr ids diffence', 412);
+                throw new \MonarcCore\Exception\Exception('Anr ids diffence', 412);
             }
         }
 
@@ -136,14 +136,14 @@ class QuestionService extends AbstractService
      * Delete
      *
      * @param $id
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function delete($id)
     {
         $entity = $this->getEntity($id);
 
         if (!empty($entity['anr']) && isset($entity['mode']) && !$entity['mode']) {
-            throw new \Exception('Delete question is not possible', 412);
+            throw new \MonarcCore\Exception\Exception('Delete question is not possible', 412);
         }
 
         $this->get('table')->delete($id);

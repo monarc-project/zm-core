@@ -227,7 +227,7 @@ abstract class AbstractEntityTable
      *
      * @param $id
      * @return bool|null|object
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function getEntity($id)
     {
@@ -238,7 +238,7 @@ abstract class AbstractEntityTable
             $entity->set('id', $id);
             $entity = $this->getDb()->fetch($entity);
             if (!$entity) {
-                throw new \Exception('Entity does not exist', 412);
+                throw new \MonarcCore\Exception\Exception('Entity does not exist', 412);
             }
             $entity->initParametersChanges();
             return $entity;

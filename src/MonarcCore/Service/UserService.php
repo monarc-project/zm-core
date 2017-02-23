@@ -86,7 +86,7 @@ class UserService extends AbstractService
      * @param $id
      * @param $data
      * @return mixed
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function patch($id, $data)
     {
@@ -118,7 +118,7 @@ class UserService extends AbstractService
      * Validate password
      *
      * @param $data
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     protected function validatePassword($data)
     {
@@ -131,7 +131,7 @@ class UserService extends AbstractService
                 $errors[] = $message;
             }
 
-            throw new \Exception("Password must " . implode($errors, ', ') . ".", 412);
+            throw new \MonarcCore\Exception\Exception("Password must " . implode($errors, ', ') . ".", 412);
         }
     }
 
@@ -140,7 +140,7 @@ class UserService extends AbstractService
      *
      * @param $user
      * @param $data
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     protected function manageRoles($user, $data)
     {
@@ -164,7 +164,7 @@ class UserService extends AbstractService
                 $userRoleTable->save($userRoleEntity);
             }
         } else {
-            throw new \Exception("You must select one or more roles", 412);
+            throw new \MonarcCore\Exception\Exception("You must select one or more roles", 412);
         }
     }
 

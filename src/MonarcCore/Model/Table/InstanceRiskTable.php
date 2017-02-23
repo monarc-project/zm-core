@@ -48,7 +48,7 @@ class InstanceRiskTable extends AbstractEntityTable
             $anr->set('id', $anrId);
             $anr = $this->getDb()->fetch($anr);
             if (!$anr) {
-                throw new \Exception('Entity does not exist', 412);
+                throw new \MonarcCore\Exception\Exception('Entity does not exist', 412);
             }
             $l = $anr->get('language');
         }
@@ -117,7 +117,7 @@ class InstanceRiskTable extends AbstractEntityTable
      * @param array $params
      * @param string $context
      * @return int
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function getFilteredInstancesRisks($anrId, $instanceId = null, $params = [], $context = \MonarcCore\Model\Entity\AbstractEntity::BACK_OFFICE)
     {
@@ -133,10 +133,10 @@ class InstanceRiskTable extends AbstractEntityTable
             $instance->set('id', $instanceId);
             $instance = $this->getDb()->fetch($instance);
             if (!$instance) {
-                throw new \Exception('Entity does not exist', 412);
+                throw new \MonarcCore\Exception\Exception('Entity does not exist', 412);
             }
             if ($instance->get('anr')->get('id') != $anrId) {
-                throw new \Exception('Anr ids differents', 412);
+                throw new \MonarcCore\Exception\Exception('Anr ids differents', 412);
             }
         }
         $l = $this->getContextLanguage($anrId,$context);

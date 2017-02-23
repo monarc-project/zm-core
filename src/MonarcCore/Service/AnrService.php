@@ -191,12 +191,12 @@ class AnrService extends AbstractService
      *
      * @param $data
      * @return string
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function exportAnr(&$data)
     {
         if (empty($data['id'])) {
-            throw new \Exception('Anr to export is required', 412);
+            throw new \MonarcCore\Exception\Exception('Anr to export is required', 412);
         }
         if (empty($data['password'])) {
             $data['password'] = '';
@@ -218,17 +218,17 @@ class AnrService extends AbstractService
      * @param string $filename
      * @param bool $with_eval
      * @return array
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function generateExportArray($id, &$filename = "", $with_eval = false)
     {
         if (empty($id)) {
-            throw new \Exception('Anr to export is required', 412);
+            throw new \MonarcCore\Exception\Exception('Anr to export is required', 412);
         }
         $entity = $this->get('table')->getEntity($id);
 
         if (!$entity) {
-            throw new \Exception('Entity `id` not found.');
+            throw new \MonarcCore\Exception\Exception('Entity `id` not found.');
         }
 
         $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $entity->get('label' . $this->getLanguage()));

@@ -34,7 +34,7 @@ abstract class AbstractController extends AbstractRestfulController
     protected function methodNotAllowed()
     {
         $this->response->setStatusCode(405);
-        throw new \Exception('Method Not Allowed');
+        throw new \MonarcCore\Exception\Exception('Method Not Allowed');
     }
 
     /**
@@ -208,7 +208,7 @@ abstract class AbstractController extends AbstractRestfulController
      * @param $level
      * @param $fields
      * @return array
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function recursiveArray($array, $parent, $level, $fields)
     {
@@ -225,7 +225,7 @@ abstract class AbstractController extends AbstractRestfulController
                     $parentId = $node['parentId'];
                 }
             } else {
-                throw new \Exception('Parent missing', 412);
+                throw new \MonarcCore\Exception\Exception('Parent missing', 412);
             }
 
             $nodeArray = [];

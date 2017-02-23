@@ -23,17 +23,17 @@ class AssetExportService extends AbstractService
      * @param $id
      * @param string $filename
      * @return array
-     * @throws \Exception
+     * @throws \MonarcCore\Exception\Exception
      */
     public function generateExportArray($id, &$filename = "")
     {
         if (empty($id)) {
-            throw new \Exception('Asset to export is required', 412);
+            throw new \MonarcCore\Exception\Exception('Asset to export is required', 412);
         }
 
         $entity = $this->get('table')->getEntity($id);
         if (empty($entity)) {
-            throw new \Exception('Asset not found', 412);
+            throw new \MonarcCore\Exception\Exception('Asset not found', 412);
         }
 
         $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $entity->get('code'));
