@@ -1320,14 +1320,12 @@ class ObjectService extends AbstractService
         unset($objectsCategories[$parentObjectCategory['id']]);
 
         foreach ($objectsCategories as $objectsCategory) {
-            if ($objectsCategory['parent']) {
-                if ($objectsCategory['parent']->id == $parentObjectCategory['id']) {
-                    $objectsCategory = $this->getChildren($objectsCategory, $objectsCategories);
-                    unset($objectsCategory['__initializer__']);
-                    unset($objectsCategory['__cloner__']);
-                    unset($objectsCategory['__isInitialized__']);
-                    $currentObjectCategory['child'][] = $objectsCategory;
-                }
+            if ($objectsCategory['parent'] && $objectsCategory['parent']->id == $parentObjectCategory['id']) {
+                $objectsCategory = $this->getChildren($objectsCategory, $objectsCategories);
+                unset($objectsCategory['__initializer__']);
+                unset($objectsCategory['__cloner__']);
+                unset($objectsCategory['__isInitialized__']);
+                $currentObjectCategory['child'][] = $objectsCategory;
             }
         }
 

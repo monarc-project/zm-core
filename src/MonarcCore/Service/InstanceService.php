@@ -1167,10 +1167,7 @@ class InstanceService extends AbstractService
                 $specialInstancesUniquesRisks[$risk->amv->id] = $risk;
             }
         }
-
-        $instancesRisks = $instancesRisks + $specialInstancesUniquesRisks;
-
-        return $instancesRisks;
+        return $instancesRisks + $specialInstancesUniquesRisks;
     }
 
     /**
