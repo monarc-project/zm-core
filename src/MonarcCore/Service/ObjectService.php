@@ -103,10 +103,7 @@ class ObjectService extends AbstractService
             $rootArray[$object['id']] = $object;
             //$objectsArray[$object['id']] = $object;
         }
-
-        $newRoot = array_values($rootArray);
-
-        return $newRoot;
+        return array_values($rootArray);
     }
 
     /**
@@ -172,7 +169,7 @@ class ObjectService extends AbstractService
         /** @var ObjectTable $objectTable */
         $objectTable = $this->get('table');
 
-        $objects = $objectTable->fetchAllFiltered(
+        return $objectTable->fetchAllFiltered(
             array_keys($this->get('entity')->getJsonArray()),
             $page,
             $limit,
@@ -180,8 +177,6 @@ class ObjectService extends AbstractService
             $this->parseFrontendFilter($filter, $this->filterColumns),
             $filterAnd
         );
-
-        return $objects;
     }
 
     /**
@@ -335,35 +330,30 @@ class ObjectService extends AbstractService
     {
         $riskOps = [];
 
-        if (isset($object->asset)) {
-            if ($object->asset->type == Asset::TYPE_PRIMARY) {
-                if (!is_null($object->rolfTag)) {
+        if (isset($object->asset) && $object->asset->type == Asset::TYPE_PRIMARY && !is_null($object->rolfTag)) {
+            //retrieve rolf risks
+            /** @var RolfTagTable $rolfTagTable */
+            $rolfTagTable = $this->get('rolfTagTable');
+            $rolfTag = $rolfTagTable->getEntity($object->rolfTag->id);
+            $rolfRisks = $rolfTag->risks;
 
-                    //retrieve rolf risks
-                    /** @var RolfTagTable $rolfTagTable */
-                    $rolfTagTable = $this->get('rolfTagTable');
-                    $rolfTag = $rolfTagTable->getEntity($object->rolfTag->id);
-                    $rolfRisks = $rolfTag->risks;
-
-                    if (!empty($rolfRisks)) {
-                        foreach ($rolfRisks as $rolfRisk) {
-                            $riskOps[] = [
-                                'description1' => $rolfRisk->label1,
-                                'description2' => $rolfRisk->label2,
-                                'description3' => $rolfRisk->label3,
-                                'description4' => $rolfRisk->label4,
-                                'prob' => '-',
-                                'r' => '-',
-                                'o' => '-',
-                                'l' => '-',
-                                'p' => '-',
-                                'risk' => '-',
-                                'comment' => '',
-                                't' => '',
-                                'target' => '-',
-                            ];
-                        }
-                    }
+            if (!empty($rolfRisks)) {
+                foreach ($rolfRisks as $rolfRisk) {
+                    $riskOps[] = [
+                        'description1' => $rolfRisk->label1,
+                        'description2' => $rolfRisk->label2,
+                        'description3' => $rolfRisk->label3,
+                        'description4' => $rolfRisk->label4,
+                        'prob' => '-',
+                        'r' => '-',
+                        'o' => '-',
+                        'l' => '-',
+                        'p' => '-',
+                        'risk' => '-',
+                        'comment' => '',
+                        't' => '',
+                        'target' => '-',
+                    ];
                 }
             }
         }
@@ -508,10 +498,9 @@ class ObjectService extends AbstractService
         }
 
         //security
-        if ($context == AbstractEntity::BACK_OFFICE) {
-            if ($object->mode == Object::MODE_GENERIC && $object->asset->mode == Object::MODE_SPECIFIC) {
-                throw new \Exception("You can't have a generic object based on a specific asset", 412);
-            }
+        if ($context == AbstractEntity::BACK_OFFICE &&
+            $object->mode == Object::MODE_GENERIC && $object->asset->mode == Object::MODE_SPECIFIC) {
+            throw new \Exception("You can't have a generic object based on a specific asset", 412);
         }
         if (isset($data['modelId'])) {
             $this->get('modelTable')->canAcceptObject($data['modelId'], $object, $context);
@@ -591,17 +580,16 @@ class ObjectService extends AbstractService
             throw new \Exception('You cannot change the asset type of an existing object.', 412);
         }
 
-        if (isset($data['mode']) && $data['mode'] != $object->get('mode')) {
+        if (isset($data['mode']) && $data['mode'] != $object->get('mode') &&
+            !$this->checkModeIntegrity($object->get('id'), $object->get('mode'))) {
             /* on test:
             - que l'on a pas de parents GENERIC quand on passe de GENERIC à SPECIFIC
             - que l'on a pas de fils SPECIFIC quand on passe de SPECIFIC à GENERIC
             */
-            if (!$this->checkModeIntegrity($object->get('id'), $object->get('mode'))) {
-                if ($object->get('mode') == Object::MODE_GENERIC) {
-                    throw new \Exception('You cannot set this object to specific mode because one of its parents is in generic mode.', 412);
-                } else {
-                    throw new \Exception('You cannot set this object to generic mode because one of its children is in specific mode.', 412);
-                }
+            if ($object->get('mode') == Object::MODE_GENERIC) {
+                throw new \Exception('You cannot set this object to specific mode because one of its parents is in generic mode.', 412);
+            } else {
+                throw new \Exception('You cannot set this object to generic mode because one of its children is in specific mode.', 412);
             }
         }
 

@@ -662,28 +662,26 @@ class InstanceService extends AbstractService
         //for cid, if a value is received
         //if this value equal -1
         //retrieve parent value
-        if (isset($data['c']) || isset($data['i']) || isset($data['d'])) {
-            if (((isset($data['c'])) && ($data['c'] == -1))
-                || ((isset($data['i'])) && ($data['i'] == -1))
-                || ((isset($data['d'])) && ($data['d'] == -1))
-            ) {
-                if ($parent) {
-                    if ((isset($data['c'])) && ($data['c'] == -1)) {
-                        $data['c'] = (int)$parent->c;
-                    }
-
-                    if ((isset($data['i'])) && ($data['i'] == -1)) {
-                        $data['i'] = (int)$parent->i;
-                    }
-
-                    if ((isset($data['d'])) && ($data['d'] == -1)) {
-                        $data['d'] = (int)$parent->d;
-                    }
-                } else {
-                    $data['c'] = -1;
-                    $data['i'] = -1;
-                    $data['d'] = -1;
+        if (((isset($data['c'])) && ($data['c'] == -1))
+            || ((isset($data['i'])) && ($data['i'] == -1))
+            || ((isset($data['d'])) && ($data['d'] == -1))
+        ) {
+            if ($parent) {
+                if ((isset($data['c'])) && ($data['c'] == -1)) {
+                    $data['c'] = (int)$parent->c;
                 }
+
+                if ((isset($data['i'])) && ($data['i'] == -1)) {
+                    $data['i'] = (int)$parent->i;
+                }
+
+                if ((isset($data['d'])) && ($data['d'] == -1)) {
+                    $data['d'] = (int)$parent->d;
+                }
+            } else {
+                $data['c'] = -1;
+                $data['i'] = -1;
+                $data['d'] = -1;
             }
         }
     }
@@ -795,7 +793,7 @@ class InstanceService extends AbstractService
         if (isset($data['consequences'])) {
             $i = 1;
             foreach ($data['consequences'] as $consequence) {
-                $patchInstance = ($i == count($data['consequences'])) ? true : false;
+                $patchInstance = ($i == count($data['consequences']));
 
                 $dataConsequences = [
                     'anr' => $anrId,
@@ -1071,7 +1069,7 @@ class InstanceService extends AbstractService
 
                 'kindOfMeasure' => $instanceRiskOp->kindOfMeasure,
                 'comment' => $instanceRiskOp->comment,
-                't' => (($instanceRiskOp->kindOfMeasure == InstanceRiskOp::KIND_NOT_TREATED) || (!$instanceRiskOp->kindOfMeasure)) ? false : true,
+                't' => (($instanceRiskOp->kindOfMeasure == InstanceRiskOp::KIND_NOT_TREATED) || (!$instanceRiskOp->kindOfMeasure)),
 
                 'targetedProb' => $instanceRiskOp->targetedProb,
                 'targetedR' => $instanceRiskOp->targetedR,

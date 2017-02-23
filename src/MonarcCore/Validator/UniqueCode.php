@@ -15,9 +15,6 @@ class UniqueCode extends AbstractValidator
     protected $messageTemplates = array(
         self::ALREADYUSED => 'This code is already used',
     );
-    public function __construct(array $options = array()){
-       parent::__construct($options);
-    }
 
     public function isValid($value){
 

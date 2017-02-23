@@ -93,7 +93,7 @@ class InstanceRiskService extends AbstractService
 
             if ($nbAmvs) {
                 for ($i = $instanceRiskLastId - $nbAmvs + 1; $i <= $instanceRiskLastId; $i++) {
-                    $lastRisk = ($i == $instanceRiskLastId) ? true : false;
+                    $lastRisk = ($i == $instanceRiskLastId);
                     $this->updateRisks($i, $lastRisk);
                 }
             }

@@ -311,12 +311,10 @@ class ObjectObjectService extends AbstractService
 
         foreach ($childInstances as $childInstance) {
             foreach ($fatherInstances as $fatherInstance) {
-                if ($childInstance->parent) {
-                    if ($childInstance->parent->id == $fatherInstance->id) {
-                        $childInstance->parent = null;
-                        $childInstance->root = null;
-                        $instanceTable->delete($childInstance->id);
-                    }
+                if ($childInstance->parent && $childInstance->parent->id == $fatherInstance->id) {
+                    $childInstance->parent = null;
+                    $childInstance->root = null;
+                    $instanceTable->delete($childInstance->id);
                 }
             }
         }

@@ -17,10 +17,6 @@ class UniqueName extends AbstractValidator
         self::ALREADYUSED => 'This name is already used',
     );
 
-    public function __construct(array $options = array()){
-       parent::__construct($options);
-    }
-
     /**
      * Is valid
      *

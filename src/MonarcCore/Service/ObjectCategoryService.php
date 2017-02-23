@@ -116,20 +116,17 @@ class ObjectCategoryService extends AbstractService
      */
     protected function addParent(&$objects, $object, &$currentObjectsListId)
     {
-        if ($object['parent']) {
-            if (!in_array($object['parent']->id, $currentObjectsListId)) {
+        if ($object['parent'] && !in_array($object['parent']->id, $currentObjectsListId)) {
+            $parent = $object['parent']->getJsonArray();
+            unset($parent['__initializer__']);
+            unset($parent['__cloner__']);
+            unset($parent['__isInitialized__']);
 
-                $parent = $object['parent']->getJsonArray();
-                unset($parent['__initializer__']);
-                unset($parent['__cloner__']);
-                unset($parent['__isInitialized__']);
+            $objects[] = $parent;
 
-                $objects[] = $parent;
+            $currentObjectsListId[] = $object['parent']->id;
 
-                $currentObjectsListId[] = $object['parent']->id;
-
-                $this->addParent($objects, $parent, $currentObjectsListId);
-            }
+            $this->addParent($objects, $parent, $currentObjectsListId);
         }
     }
 

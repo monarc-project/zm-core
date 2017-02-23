@@ -51,8 +51,6 @@ abstract class AbstractServiceModelEntity implements FactoryInterface
     {
         $config = $sm->get('Config');
 
-        $defaultLanguageIndex = $config['defaultLanguageIndex'];
-
-        return $defaultLanguageIndex;
+        return $config['defaultLanguageIndex'];
     }
 }

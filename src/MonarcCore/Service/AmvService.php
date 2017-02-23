@@ -232,7 +232,7 @@ class AmvService extends AbstractService
         foreach ($this->dependencies as $dep) {
             $propertyname = $dep;
             $matching = [];
-            if (preg_match("/(\[([a-z0-9]*)\])\(([a-z0-9]*)\)$/", $dep, $matching) != false) {//si c'est 0 c'est pas bon non plus
+            if (preg_match("/(\[([a-z0-9]*)\])\(([a-z0-9]*)\)$/", $dep, $matching)) {//si c'est 0 c'est pas bon non plus
                 $propertyname = str_replace($matching[0], $matching[2], $dep);
                 $dep = str_replace($matching[0], $matching[3], $dep);
             }

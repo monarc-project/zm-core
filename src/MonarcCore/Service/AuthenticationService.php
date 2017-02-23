@@ -52,11 +52,9 @@ class AuthenticationService extends AbstractService
      */
     public function logout($data)
     {
-        if (!empty($data['token'])) {
-            if ($this->get('storage')->hasItem($data['token'])) {
-                $this->get('storage')->removeItem($data['token']);
-                return true;
-            }
+        if (!empty($data['token']) && $this->get('storage')->hasItem($data['token'])) {
+            $this->get('storage')->removeItem($data['token']);
+            return true;
         }
         return false;
     }
@@ -69,16 +67,14 @@ class AuthenticationService extends AbstractService
      */
     public function checkConnect($data)
     {
-        if (!empty($data['token'])) {
-            if ($this->get('storage')->hasItem($data['token'])) {
-                $dd = $this->get('storage')->getItem($data['token']);
-                if ($dd->get('dateEnd')->getTimestamp() < time()) {
-                    $this->logout($data);
-                    return false;
-                } else {
-                    $this->get('storage')->replaceItem($data['token'], $dd);
-                    return true;
-                }
+        if (!empty($data['token']) && $this->get('storage')->hasItem($data['token'])) {
+            $dd = $this->get('storage')->getItem($data['token']);
+            if ($dd->get('dateEnd')->getTimestamp() < time()) {
+                $this->logout($data);
+                return false;
+            } else {
+                $this->get('storage')->replaceItem($data['token'], $dd);
+                return true;
             }
         }
         return false;

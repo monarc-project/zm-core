@@ -68,11 +68,9 @@ abstract class AbstractService extends AbstractServiceFactory
     protected function parseFrontendFilter($filter, $columns = [])
     {
         $output = [];
-        if (!is_null($filter)) {
-            if ($columns) {
-                foreach ($columns as $c) {
-                    $output[$c] = $filter;
-                }
+        if (!is_null($filter) && $columns) {
+            foreach ($columns as $c) {
+                $output[$c] = $filter;
             }
         }
 
@@ -421,7 +419,7 @@ abstract class AbstractService extends AbstractServiceFactory
         foreach ($this->dependencies as $dep) {
             $propertyname = $dep;
             $matching = [];
-            if (preg_match("/(\[([a-z0-9]*)\])\(([a-z0-9]*)\)$/", $dep, $matching) != false) {//si c'est 0 c'est pas bon non plus
+            if (preg_match("/(\[([a-z0-9]*)\])\(([a-z0-9]*)\)$/", $dep, $matching)) {//si c'est 0 c'est pas bon non plus
                 $propertyname = str_replace($matching[0], $matching[2], $dep);
                 $dep = str_replace($matching[0], $matching[3], $dep);
             }
@@ -560,7 +558,7 @@ abstract class AbstractService extends AbstractServiceFactory
         foreach ($dependencies as $dependency) {
             $deptable = $propertyname = $dependency;
             $matching = [];
-            if (preg_match("/(\[([a-z0-9]*)\])\(([a-z0-9]*)\)$/", $deptable, $matching) != false) {//si c'est 0 c'est pas bon non plus
+            if (preg_match("/(\[([a-z0-9]*)\])\(([a-z0-9]*)\)$/", $deptable, $matching)) {//si c'est 0 c'est pas bon non plus
                 $propertyname = str_replace($matching[0], $matching[2], $deptable);
                 $deptable = str_replace($matching[0], $matching[3], $deptable);
             }
@@ -683,9 +681,7 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     protected function getRiskC($c, $tRate, $vRate)
     {
-        $cRisks = (($c != -1) && ($tRate != -1) && ($vRate != -1)) ? $c * $tRate * $vRate : -1;
-
-        return $cRisks;
+        return (($c != -1) && ($tRate != -1) && ($vRate != -1)) ? $c * $tRate * $vRate : -1;
     }
 
     /**
@@ -697,9 +693,7 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     protected function getRiskI($i, $tRate, $vRate)
     {
-        $iRisks = (($i != -1) && ($tRate != -1) && ($vRate != -1)) ? $i * $tRate * $vRate : -1;
-
-        return $iRisks;
+        return (($i != -1) && ($tRate != -1) && ($vRate != -1)) ? $i * $tRate * $vRate : -1;
     }
 
     /**
@@ -711,9 +705,7 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     protected function getRiskD($d, $tRate, $vRate)
     {
-        $dRisks = (($d != -1) && ($tRate != -1) && ($vRate != -1)) ? $d * $tRate * $vRate : -1;
-
-        return $dRisks;
+        return (($d != -1) && ($tRate != -1) && ($vRate != -1)) ? $d * $tRate * $vRate : -1;
     }
 
     /**
@@ -726,10 +718,8 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     protected function getTargetRisk($impacts, $tRate, $vRate, $vRateReduc)
     {
-        $targetRisk = ((max($impacts) != -1) && ($tRate != -1) && ($vRate != -1))
+        return $targetRisk = ((max($impacts) != -1) && ($tRate != -1) && ($vRate != -1))
             ? max($impacts) * $tRate * ($vRate - $vRateReduc) : -1;
-
-        return $targetRisk;
     }
 
     /**
@@ -814,14 +804,12 @@ abstract class AbstractService extends AbstractServiceFactory
         }
 
         // If an instance risk is passed, make sure the reduction amount is not higher than the vulnerability rate
-        if ($instanceRisk) {
-            if (isset($data['reductionAmount'])) {
-                $reductionAmount = (int)$data['reductionAmount'];
+        if ($instanceRisk && isset($data['reductionAmount'])) {
+            $reductionAmount = (int)$data['reductionAmount'];
 
-                $vulnerabilityRate = (isset($data['vulnerabilityRate'])) ? (int)$data['vulnerabilityRate'] : $instanceRisk['vulnerabilityRate'];
-                if (($vulnerabilityRate != -1) && (($reductionAmount < 0) || ($reductionAmount > $vulnerabilityRate))) {
-                    $errors[] = 'Value for reduction amount is not valid (min '.$data['vulnerabilityRate'].')';
-                }
+            $vulnerabilityRate = (isset($data['vulnerabilityRate'])) ? (int)$data['vulnerabilityRate'] : $instanceRisk['vulnerabilityRate'];
+            if (($vulnerabilityRate != -1) && (($reductionAmount < 0) || ($reductionAmount > $vulnerabilityRate))) {
+                $errors[] = 'Value for reduction amount is not valid (min '.$data['vulnerabilityRate'].')';
             }
         }
 
@@ -842,10 +830,8 @@ abstract class AbstractService extends AbstractServiceFactory
             foreach ($fields as $field) {
                 if (isset($data[$field])) {
                     $value = (int)$data[$field];
-                    if ($value != -1) {
-                        if (($value < $scaleImpact->get('min')) || ($value > $scaleImpact->get('max'))) {
-                            $errors[] = 'Value for ' . $field . ' is not valid';
-                        }
+                    if ($value != -1 && ($value < $scaleImpact->get('min') || $value > $scaleImpact->get('max'))) {
+                        $errors[] = 'Value for ' . $field . ' is not valid';
                     }
                 }
             }
@@ -866,10 +852,8 @@ abstract class AbstractService extends AbstractServiceFactory
                 if (isset($data[$field])) {
                     $value = (int)$data[$field];
 
-                    if ($value != -1) {
-                        if (($value < $scaleThreat->get('min')) || ($value > $scaleThreat->get('max'))) {
-                            $errors[] = 'Value for ' . $field . ' is not valid';
-                        }
+                    if ($value != -1 && ($value < $scaleThreat->get('min') || $value > $scaleThreat->get('max'))) {
+                        $errors[] = 'Value for ' . $field . ' is not valid';
                     }
                 }
             }

@@ -248,7 +248,7 @@ class ModelService extends AbstractService
         //security
         $this->filterPatchFields($data);
 
-        parent::patch($id, $data);
+        return parent::patch($id, $data);
     }
 
     /**
@@ -306,10 +306,7 @@ class ModelService extends AbstractService
 
         $newModel->setAnr($newAnr);
 
-
-        $id = $modelTable->save($newModel);
-
-        return $id;
+        return $modelTable->save($newModel);
     }
 
     /**

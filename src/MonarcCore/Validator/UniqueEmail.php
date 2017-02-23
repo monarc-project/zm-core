@@ -16,9 +16,6 @@ class UniqueEmail extends AbstractValidator
     protected $messageTemplates = array(
         self::ALREADYUSED => 'This email is already used',
     );
-    public function __construct(array $options = array()){
-       parent::__construct($options);
-    }
 
     public function isValid($value){
 

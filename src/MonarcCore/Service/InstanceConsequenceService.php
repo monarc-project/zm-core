@@ -228,10 +228,8 @@ class InstanceConsequenceService extends AbstractService
         $parent = $instanceCurrentConsequence->get('instance')->get('parent');
         foreach ($data as $k => $v) {
             $data[$k . 'h'] = ($v == -1) ? 1 : 0;
-            if ($data[$k . 'h']) { // hérité: on prend la valeur du parent
-                if (!empty($parent)) {
-                    $data[$k] = $parent->get($k);
-                }
+            if ($data[$k . 'h'] && !empty($parent)) { // hérité: on prend la valeur du parent
+                $data[$k] = $parent->get($k);
             }
         }
 

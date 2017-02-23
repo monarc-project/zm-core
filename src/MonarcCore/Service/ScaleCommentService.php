@@ -35,7 +35,7 @@ class ScaleCommentService extends AbstractService
      */
     public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
     {
-        $comments = $this->get('table')->fetchAllFiltered(
+        return $this->get('table')->fetchAllFiltered(
             array_keys($this->get('entity')->getJsonArray()),
             $page,
             $limit,
@@ -43,15 +43,6 @@ class ScaleCommentService extends AbstractService
             $this->parseFrontendFilter($filter, $this->filterColumns),
             $filterAnd
         );
-
-        /*$scaleTypes = $this->get('scaleService')->getTypes();
-        $scaleTypesImpact = $this->get('scaleTypeService')->getTypes();
-
-        foreach ($comments as $key => $comment) {
-            $comments[$key]['scaleTypeImpact']->type = $scaleTypesImpact[$comment['scaleTypeImpact']->type];
-        }*/
-
-        return $comments;
     }
 
     /**
@@ -116,6 +107,6 @@ class ScaleCommentService extends AbstractService
         //security
         $this->filterPatchFields($data);
 
-        parent::patch($id, $data);
+        return parent::patch($id, $data);
     }
 }

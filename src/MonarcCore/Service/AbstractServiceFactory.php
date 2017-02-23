@@ -76,9 +76,7 @@ abstract class AbstractServiceFactory implements FactoryInterface
     {
         $config = $sm->get('Config');
 
-        $defaultLanguageIndex = $config['defaultLanguageIndex'];
-
-        return $defaultLanguageIndex;
+        return $config['defaultLanguageIndex'];
     }
 
     /**

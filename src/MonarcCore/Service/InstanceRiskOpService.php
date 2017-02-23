@@ -42,67 +42,64 @@ class InstanceRiskOpService extends AbstractService
      */
     public function createInstanceRisksOp($instanceId, $anrId, $object)
     {
-        if (isset($object->asset)) {
-            if ($object->asset->type == Asset::TYPE_PRIMARY) {
-                if (!is_null($object->rolfTag)) {
+        if (isset($object->asset) &&
+            $object->asset->type == Asset::TYPE_PRIMARY &&
+            !is_null($object->rolfTag)) {
+            //retrieve brothers instances
+            /** @var InstanceTable $instanceTable */
+            $instanceTable = $this->get('instanceTable');
+            $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $object->id]);
 
-                    //retrieve brothers instances
-                    /** @var InstanceTable $instanceTable */
-                    $instanceTable = $this->get('instanceTable');
-                    $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $object->id]);
+            if ($object->scope == Object::SCOPE_GLOBAL && count($instances) > 1) {
 
-                    if ($object->scope == Object::SCOPE_GLOBAL && count($instances) > 1) {
+                /** @var InstanceTable $instanceTable */
+                $instanceTable = $this->get('instanceTable');
+                $currentInstance = $instanceTable->getEntity($instanceId);
 
-                        /** @var InstanceTable $instanceTable */
-                        $instanceTable = $this->get('instanceTable');
-                        $currentInstance = $instanceTable->getEntity($instanceId);
-
-                        /** @var InstanceRiskOpTable $instanceRiskOpTable */
-                        $instanceRiskOpTable = $this->get('table');
-                        foreach($instances as $instance) {
-                            if ($instance->id != $instanceId) {
-                                $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['instance' => $instance->id]);
-                                foreach ($instancesRisksOp as $instanceRiskOp) {
-                                    $newInstanceRiskOp = clone $instanceRiskOp;
-                                    $newInstanceRiskOp->setId(null);
-                                    $newInstanceRiskOp->setInstance($currentInstance);
-                                    $instanceRiskOpTable->save($newInstanceRiskOp);
-                                }
-                            }
-                            break;
-                        }
-                    } else {
-
-                        //retrieve rolf risks
-                        /** @var RolfTagTable $rolfTagTable */
-                        $rolfTagTable = $this->get('rolfTagTable');
-                        $rolfTag = $rolfTagTable->getEntity($object->rolfTag->id);
-
-                        $rolfRisks = $rolfTag->risks;
-
-                        $nbRolfRisks = count($rolfRisks);
-                        $i = 1;
-                        $nbRolfRisks = count($rolfRisks);
-                        foreach ($rolfRisks as $rolfRisk) {
-                            $data = [
-                                'anr' => $anrId,
-                                'instance' => $instanceId,
-                                'object' => $object->id,
-                                'rolfRisk' => $rolfRisk->id,
-                                'riskCacheCode' => $rolfRisk->code,
-                                'riskCacheLabel1' => $rolfRisk->label1,
-                                'riskCacheLabel2' => $rolfRisk->label2,
-                                'riskCacheLabel3' => $rolfRisk->label3,
-                                'riskCacheLabel4' => $rolfRisk->label4,
-                                'riskCacheDescription1' => $rolfRisk->description1,
-                                'riskCacheDescription2' => $rolfRisk->description2,
-                                'riskCacheDescription3' => $rolfRisk->description3,
-                                'riskCacheDescription4' => $rolfRisk->description4,
-                            ];
-                            $this->create($data, ($i == $nbRolfRisks));
-                            $i++;
+                /** @var InstanceRiskOpTable $instanceRiskOpTable */
+                $instanceRiskOpTable = $this->get('table');
+                foreach($instances as $instance) {
+                    if ($instance->id != $instanceId) {
+                        $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['instance' => $instance->id]);
+                        foreach ($instancesRisksOp as $instanceRiskOp) {
+                            $newInstanceRiskOp = clone $instanceRiskOp;
+                            $newInstanceRiskOp->setId(null);
+                            $newInstanceRiskOp->setInstance($currentInstance);
+                            $instanceRiskOpTable->save($newInstanceRiskOp);
                         }
                     }
+                    break;
+                }
+            } else {
+
+                //retrieve rolf risks
+                /** @var RolfTagTable $rolfTagTable */
+                $rolfTagTable = $this->get('rolfTagTable');
+                $rolfTag = $rolfTagTable->getEntity($object->rolfTag->id);
+
+                $rolfRisks = $rolfTag->risks;
+
+                $nbRolfRisks = count($rolfRisks);
+                $i = 1;
+                $nbRolfRisks = count($rolfRisks);
+                foreach ($rolfRisks as $rolfRisk) {
+                    $data = [
+                        'anr' => $anrId,
+                        'instance' => $instanceId,
+                        'object' => $object->id,
+                        'rolfRisk' => $rolfRisk->id,
+                        'riskCacheCode' => $rolfRisk->code,
+                        'riskCacheLabel1' => $rolfRisk->label1,
+                        'riskCacheLabel2' => $rolfRisk->label2,
+                        'riskCacheLabel3' => $rolfRisk->label3,
+                        'riskCacheLabel4' => $rolfRisk->label4,
+                        'riskCacheDescription1' => $rolfRisk->description1,
+                        'riskCacheDescription2' => $rolfRisk->description2,
+                        'riskCacheDescription3' => $rolfRisk->description3,
+                        'riskCacheDescription4' => $rolfRisk->description4,
+                    ];
+                    $this->create($data, ($i == $nbRolfRisks));
+                    $i++;
                 }
             }
         }
