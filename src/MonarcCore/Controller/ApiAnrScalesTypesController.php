@@ -22,9 +22,7 @@ class ApiAnrScalesTypesController extends AbstractController
     protected $name = 'types';
 
     /**
-     * Get List
-     *
-     * @return JsonModel
+     * @inheritdoc
      */
     public function getList()
     {
@@ -43,11 +41,7 @@ class ApiAnrScalesTypesController extends AbstractController
     }
 
     /**
-     * Patch
-     *
-     * @param mixed $id
-     * @param mixed $data
-     * @return JsonModel
+     * @inheritdoc
      */
     public function patch($id, $data)
     {

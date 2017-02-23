@@ -4,6 +4,10 @@ namespace MonarcCore\Adapter;
 use Zend\ServiceManager\FactoryInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 
+/**
+ * Factory class attached to Authentication adapter
+ * @package MonarcCore\Adapter
+ */
 class AuthentificationFactory implements FactoryInterface
 {
     public function createService(ServiceLocatorInterface $serviceLocator){

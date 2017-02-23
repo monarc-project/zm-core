@@ -23,9 +23,7 @@ class ApiAnrInstancesController extends AbstractController
     protected $dependencies = ['anr', 'asset', 'object', 'root', 'parent'];
 
     /**
-     * Get List
-     *
-     * @return JsonModel
+     * @inheritdoc
      */
     public function getList()
     {
@@ -40,11 +38,7 @@ class ApiAnrInstancesController extends AbstractController
     }
 
     /**
-     * Update
-     *
-     * @param mixed $id
-     * @param mixed $data
-     * @return JsonModel
+     * @inheritdoc
      */
     public function update($id, $data)
     {
@@ -58,11 +52,7 @@ class ApiAnrInstancesController extends AbstractController
     }
 
     /**
-     * Patch
-     *
-     * @param mixed $id
-     * @param mixed $data
-     * @return JsonModel
+     * @inheritdoc
      */
     public function patch($id, $data)
     {
@@ -75,7 +65,9 @@ class ApiAnrInstancesController extends AbstractController
         return new JsonModel(array('status' => 'ok'));
     }
 
-
+    /**
+     * @inheritdoc
+     */
     public function get($id)
     {
         $anrId = (int) $this->params()->fromRoute('anrid');
@@ -91,6 +83,10 @@ class ApiAnrInstancesController extends AbstractController
         return new JsonModel($entity);
     }
 
+    /**
+     * Exports an instance in our own custom encrypted format and downloads it to the client browser
+     * @return \Zend\Stdlib\ResponseInterface The file attachment response
+     */
     public function exportAction()
     {
         /** @var InstanceService $service */
@@ -111,11 +107,7 @@ class ApiAnrInstancesController extends AbstractController
     }
 
     /**
-     * Create
-     *
-     * @param mixed $data
-     * @return JsonModel
-     * @throws \Exception
+     * @inheritdoc
      */
     public function create($data)
     {

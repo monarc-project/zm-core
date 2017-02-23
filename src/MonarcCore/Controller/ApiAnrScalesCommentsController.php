@@ -21,9 +21,7 @@ class ApiAnrScalesCommentsController extends AbstractController
     protected $name = 'comments';
 
     /**
-     * Get List
-     *
-     * @return JsonModel
+     * @inheritdoc
      */
     public function getList()
     {
@@ -48,9 +46,7 @@ class ApiAnrScalesCommentsController extends AbstractController
     }
 
     /**
-     * Get
-     *
-     * @param mixed $id
+     * @inheritdoc
      */
     public function get($id)
     {
@@ -58,10 +54,7 @@ class ApiAnrScalesCommentsController extends AbstractController
     }
 
     /**
-     * Create
-     *
-     * @param mixed $data
-     * @return JsonModel
+     * @inheritdoc
      */
     public function create($data)
     {
@@ -82,11 +75,7 @@ class ApiAnrScalesCommentsController extends AbstractController
     }
 
     /**
-     * Update
-     *
-     * @param mixed $id
-     * @param mixed $data
-     * @return JsonModel
+     * @inheritdoc
      */
     public function update($id, $data)
     {
@@ -106,11 +95,17 @@ class ApiAnrScalesCommentsController extends AbstractController
         );
     }
 
+    /**
+     * @inheritdoc
+     */
     public function patch($id, $data)
     {
         return $this->methodNotAllowed();
     }
 
+    /**
+     * @inheritdoc
+     */
     public function delete($id)
     {
         return $this->methodNotAllowed();

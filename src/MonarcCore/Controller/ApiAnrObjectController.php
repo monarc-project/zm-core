@@ -23,9 +23,7 @@ class ApiAnrObjectController extends AbstractController
     protected $name = 'objects';
 
     /**
-     * Get list
-     *
-     * @return JsonModel
+     * @inheritdoc
      */
     public function getList()
     {
@@ -56,10 +54,7 @@ class ApiAnrObjectController extends AbstractController
     }
 
     /**
-     * Get
-     *
-     * @param mixed $id
-     * @return JsonModel
+     * @inheritdoc
      */
     public function get($id)
     {
@@ -83,9 +78,7 @@ class ApiAnrObjectController extends AbstractController
     }
 
     /**
-     * Parents Action
-     *
-     * @return JsonModel
+     * @inheritdoc
      */
     public function parentsAction(){
         $matcher = $this->getEvent()->getRouteMatch();

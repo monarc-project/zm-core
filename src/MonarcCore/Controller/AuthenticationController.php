@@ -18,10 +18,7 @@ use Zend\View\Model\JsonModel;
 class AuthenticationController extends AbstractController
 {
     /**
-     * Create
-     *
-     * @param mixed $data
-     * @return JsonModel
+     * @inheritdoc
      */
     public function create($data)
     {
@@ -29,6 +26,9 @@ class AuthenticationController extends AbstractController
         $uid = null;
         $language = null;
 
+        // If the authentication is successful, return 200 with a token and the user ID. Otherwise, return an HTTP
+        // error 405 so that the frontend can process accordingly. Remember that 401 is a reserved code that will
+        // reset the authentication token and will redirect the user to the login page.
         if ($this->getService()->authenticate($data, $t, $uid, $language)) {
             $this->response->setStatusCode(200);
             return new JsonModel(array('token' => $t, 'uid' => $uid, 'language' => $language));
@@ -39,10 +39,7 @@ class AuthenticationController extends AbstractController
     }
 
     /**
-     * Delete List
-     *
-     * @param mixed $data
-     * @return JsonModel
+     * @inheritdoc
      */
     public function deleteList($data)
     {
