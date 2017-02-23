@@ -181,7 +181,7 @@ class ScaleSuperClass extends AbstractEntity
                 'O' => 'Operational',
                 'L' => 'Legal',
                 'F' => 'Financial',
-                'P' => 'Person'
+                'P' => 'Personal'
             ],
             'de' => [
                 'C' => 'Vertraulichkeit',
