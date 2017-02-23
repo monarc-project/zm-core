@@ -23,6 +23,7 @@ use MonarcCore\Model\Table\ScaleImpactTypeTable;
  */
 class ScaleService extends AbstractService
 {
+    protected $filterColumns = [];
     protected $config;
     protected $anrTable;
     protected $instanceConsequenceService;
@@ -174,7 +175,7 @@ class ScaleService extends AbstractService
         //security
         $this->filterPatchFields($data);
 
-        parent::patch($id, $data);
+        return parent::patch($id, $data);
     }
 
     /**
