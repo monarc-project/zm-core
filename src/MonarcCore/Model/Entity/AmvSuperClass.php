@@ -372,5 +372,72 @@ class AmvSuperclass extends AbstractEntity
         }
         return $this->inputFilter;
     }
+
+    public function getFiltersForService(){
+        $filterJoin = [
+            [
+                'as' => 'a',
+                'rel' => 'asset',
+            ],
+            [
+                'as' => 'th',
+                'rel' => 'threat',
+            ],
+            [
+                'as' => 'v',
+                'rel' => 'vulnerability',
+            ],
+        ];
+        $filterLeft = [
+            [
+                'as' => 'm1',
+                'rel' => 'measure1',
+            ],
+            [
+                'as' => 'm2',
+                'rel' => 'measure2',
+            ],
+            [
+                'as' => 'm3',
+                'rel' => 'measure3',
+            ],
+        ];
+        $filtersCol = [
+            'a.code',
+            'a.label1',
+            'a.label2',
+            'a.label3',
+            'a.description1',
+            'a.description2',
+            'a.description3',
+            'th.code',
+            'th.label1',
+            'th.label2',
+            'th.label3',
+            'th.description1',
+            'th.description2',
+            'th.description3',
+            'v.code',
+            'v.label1',
+            'v.label2',
+            'v.label3',
+            'v.description1',
+            'v.description2',
+            'v.description3',
+            'm1.code',
+            'm1.description1',
+            'm1.description2',
+            'm1.description3',
+            'm2.code',
+            'm2.description1',
+            'm2.description2',
+            'm2.description3',
+            'm3.code',
+            'm3.description1',
+            'm3.description2',
+            'm3.description3',
+        ];
+        return [$filterJoin,$filterLeft,$filtersCol];
+    }
 }
 

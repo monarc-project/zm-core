@@ -23,6 +23,7 @@ use MonarcCore\Model\Table\ScaleImpactTypeTable;
  */
 class ScaleService extends AbstractService
 {
+    protected $filterColumns = [];
     protected $config;
     protected $anrTable;
     protected $instanceConsequenceService;
@@ -98,49 +99,8 @@ class ScaleService extends AbstractService
         $scaleId = $this->get('table')->save($entity);
 
         //scale type
-        if ($entity->type == 1) {
-            $langs = [
-                'fr' => [
-                    'C' => 'Confidentialité',
-                    'I' => 'Intégrité',
-                    'D' => 'Disponibilité',
-                    'R' => 'Réputation',
-                    'O' => 'Opérationnel',
-                    'L' => 'Légal',
-                    'F' => 'Financier',
-                    'P' => 'Personne'
-                ],
-                'en' => [
-                    'C' => 'Confidentiality',
-                    'I' => 'Integrity',
-                    'D' => 'Availability',
-                    'R' => 'Reputation',
-                    'O' => 'Operational',
-                    'L' => 'Legal',
-                    'F' => 'Financial',
-                    'P' => 'Person'
-                ],
-                'de' => [
-                    'C' => 'Vertraulichkeit',
-                    'I' => 'Integrität',
-                    'D' => 'Verfügbarkeit',
-                    'R' => 'Ruf',
-                    'O' => 'Einsatzbereit',
-                    'L' => 'Legal',
-                    'F' => 'Finanziellen',
-                    'P' => 'Person'
-                ],
-                '0' => [
-                    'C' => '',
-                    'I' => '',
-                    'D' => '',
-                    'R' => '',
-                    'O' => '',
-                    'L' => '',
-                    'F' => '',
-                    'P' => ''
-                ]
-            ];
+        if ($entity->type == Scale::TYPE_IMPACT) {
+            $langs = $this->get('entity')->getImpactLangues();
 
             $configLangStruct = $this->config->getlanguage();
             $configLang = $configLangStruct['languages'];
@@ -215,7 +175,7 @@ class ScaleService extends AbstractService
         //security
         $this->filterPatchFields($data);
 
-        parent::patch($id, $data);
+        return parent::patch($id, $data);
     }
 
     /**

@@ -19,38 +19,6 @@ class MeasureService extends AbstractService
     protected $forbiddenFields = ['anr'];
 
     /**
-     * Create
-     *
-     * @param $data
-     * @param bool $last
-     * @return mixed
-     * @throws \Exception
-     */
-    public function create($data, $last = true)
-    {
-        $class = $this->get('entity');
-        $entity = new $class();
-        $entity->setLanguage($this->getLanguage());
-        $entity->setDbAdapter($this->get('table')->getDb());
-        if (isset($data['anr']) && strlen($data['anr'])) {
-            /** @var AnrTable $anrTable */
-            $anrTable = $this->get('anrTable');
-            $anr = $anrTable->getEntity($data['anr']);
-
-            if (!$anr) {
-                throw new \Exception('Risk analysis does not exist', 412);
-            }
-            $entity->setAnr($anr);
-        }
-        $entity->exchangeArray($data);
-
-        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($entity, $dependencies);
-
-        return $this->get('table')->save($entity);
-    }
-
-    /**
      * Patch
      *
      * @param $id
@@ -78,19 +46,22 @@ class MeasureService extends AbstractService
     {
         $data = $this->get('table')->fetchAllFiltered(
             array_keys($this->get('entity')->getJsonArray()),
-            $page,
-            $limit,
+            1,
+            0,
             $this->parseFrontendOrder($order),
             $this->parseFrontendFilter($filter, $this->filterColumns),
             $filterAnd
         );
 
+        // TODO: try to order in SQL instead of php with usort
         if ($order == "code" || $order == "-code") {
             $desc = ($order == "-code");
 
             // Codes might be in xx.xx.xx format which need a numerical sorting instead of an alphabetical one
             $re = '/^([0-9]+\.)+[0-9]+$/m';
             usort($data, function ($a, $b) use ($re, $desc) {
+                $a['code'] = trim($a['code']);
+                $b['code'] = trim($b['code']);
                 $a_match = (preg_match($re, $a['code']) > 0);
                 $b_match = (preg_match($re, $b['code']) > 0);
 
@@ -125,6 +96,6 @@ class MeasureService extends AbstractService
 
         }
 
-        return $data;
+        return array_slice($data, ($page - 1) * $limit, $limit, false);
     }
 }

@@ -6,18 +6,18 @@ use Zend\Validator\AbstractValidator;
 
 class UniqueName extends AbstractValidator
 {
-	protected $options = array(
+    protected $options = array(
         'entity' => null,
         'field' => 'name1',
-	);
+    );
 
-	const ALREADYUSED = "ALREADYUSED";
+    const ALREADYUSED = "ALREADYUSED";
 
-	protected $messageTemplates = array(
-		self::ALREADYUSED => 'This name is already used',
-	);
+    protected $messageTemplates = array(
+        self::ALREADYUSED => 'This name is already used',
+    );
 
-	public function __construct(array $options = array()){
+    public function __construct(array $options = array()){
        parent::__construct($options);
     }
 
@@ -27,11 +27,11 @@ class UniqueName extends AbstractValidator
      * @param mixed $value
      * @return bool
      */
-	public function isValid($value){
+    public function isValid($value){
 
-		if (empty($this->options['entity'])) {
-			return false;
-		} else {
+        if (empty($this->options['entity'])) {
+            return false;
+        } else {
 
             $entity = $this->options['entity'];
             $fields = [
@@ -40,12 +40,12 @@ class UniqueName extends AbstractValidator
             ];
             $res = $entity->getDbAdapter()->getRepository(get_class($entity))->findOneBy($fields);
 
-			if(!empty($res) && $entity->getId() != $res->get('id')){
-				$this->error(self::ALREADYUSED);
-				return false;
-			}
-		}
+            if(!empty($res) && $entity->getId() != $res->get('id')){
+                $this->error(self::ALREADYUSED);
+                return false;
+            }
+        }
 
-		return true;
-	}
+        return true;
+    }
 }

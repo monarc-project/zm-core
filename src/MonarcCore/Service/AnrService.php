@@ -54,26 +54,15 @@ class AnrService extends AbstractService
                 $data['scales'][$i]['min'] = 0;
             }
         }
-        $scales = [
-            [
+        $scales = [];
+        for($i = 1; $i <= 3; $i++){
+            $scales[] = [
                 'anr' => $anrId,
-                'type' => 1,
-                'min' => $data['scales'][1]['min'],
-                'max' => (isset($data['scales'][1]['max']) ? $data['scales'][1]['max'] : 3),
-            ],
-            [
-                'anr' => $anrId,
-                'type' => 2,
-                'min' => $data['scales'][2]['min'],
-                'max' => (isset($data['scales'][2]['max']) ? $data['scales'][2]['max'] : 4),
-            ],
-            [
-                'anr' => $anrId,
-                'type' => 3,
-                'min' => $data['scales'][3]['min'],
-                'max' => (isset($data['scales'][3]['max']) ? $data['scales'][3]['max'] : 3),
-            ],
-        ];
+                'type' => $i,
+                'min' => $data['scales'][$i]['min'],
+                'max' => (isset($data['scales'][$i]['max']) ? $data['scales'][$i]['max'] : ($i == 2?4:3)),
+            ];
+        }
         $i = 1;
         $nbScales = count($scales);
         foreach ($scales as $scale) {
@@ -161,12 +150,6 @@ class AnrService extends AbstractService
                         }
                         break;
                     case 'instanceRisk':
-                        if (!empty($entity->instance->id) && !empty($clones['instance'][$entity->instance->id])) {
-                            $newEntity->set('instance', $clones['instance'][$entity->instance->id]);
-                        } else {
-                            $newEntity->set('instance', null);
-                        }
-                        break;
                     case 'instanceRiskOp':
                         if (!empty($entity->instance->id) && !empty($clones['instance'][$entity->instance->id])) {
                             $newEntity->set('instance', $clones['instance'][$entity->instance->id]);
