@@ -6,6 +6,12 @@ use Locale;
 use Traversable;
 use \Zend\I18n\Filter\AbstractLocale;
 
+/**
+ * Class SpecAlnum is a filter that expands the regular Alphanumeric filter by granting the ability to allow
+ * specific non-alphanumeric characters, such as quotes and spaces which might be allowed in certain fields, like
+ * codes and labels.
+ * @package MonarcCore\Filter
+ */
 class SpecAlnum extends AbstractLocale
 {
     /**
