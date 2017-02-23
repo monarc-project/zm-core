@@ -34,12 +34,7 @@ class ThreatService extends AbstractService
     protected $forbiddenFields = ['anr'];
 
     /**
-     * Create
-     *
-     * @param $data
-     * @param bool $last
-     * @return mixed
-     * @throws \MonarcCore\Exception\Exception
+     * @inheritdoc
      */
     public function create($data, $last = true)
     {
@@ -71,12 +66,7 @@ class ThreatService extends AbstractService
     }
 
     /**
-     * Update
-     *
-     * @param $id
-     * @param $data
-     * @return mixed
-     * @throws \MonarcCore\Exception\Exception
+     * @inheritdoc
      */
     public function update($id, $data)
     {
@@ -157,11 +147,7 @@ class ThreatService extends AbstractService
     }
 
     /**
-     * Patch
-     *
-     * @param $id
-     * @param $data
-     * @return mixed
+     * @inheritdoc
      */
     public function patch($id, $data)
     {

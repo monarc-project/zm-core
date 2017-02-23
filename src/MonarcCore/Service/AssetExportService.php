@@ -18,11 +18,10 @@ class AssetExportService extends AbstractService
     protected $amvService;
 
     /**
-     * Generate Export Array
-     *
-     * @param $id
-     * @param string $filename
-     * @return array
+     * Generates the array to be exported into a file
+     * @param int $id The asset ID
+     * @param string $filename The filename to put into
+     * @return array The exported data
      * @throws \MonarcCore\Exception\Exception
      */
     public function generateExportArray($id, &$filename = "")

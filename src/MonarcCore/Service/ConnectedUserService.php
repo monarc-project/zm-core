@@ -18,9 +18,7 @@ class ConnectedUserService
     protected $connectedUser;
 
     /**
-     * Get Connected User
-     *
-     * @return mixed
+     * @return array The current connected user information
      */
     public function getConnectedUser()
     {
@@ -28,10 +26,9 @@ class ConnectedUserService
     }
 
     /**
-     * Set Connected User
-     *
-     * @param $connectedUser
-     * @return $this
+     * Sets the currently connected user information
+     * @param \MonarcCore\Model\Entity\User $connectedUser The current user
+     * @return $this For chaining calls
      */
     public function setConnectedUser($connectedUser)
     {

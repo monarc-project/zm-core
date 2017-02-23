@@ -40,8 +40,8 @@ class InstanceRiskTable extends AbstractEntityTable
     protected function getContextLanguage($anrId, $context = \MonarcCore\Model\Entity\AbstractEntity::BACK_OFFICE)
     {
         if($context == \MonarcCore\Model\Entity\AbstractEntity::BACK_OFFICE){
-            // entity->getLanguage()
-            $l = $this->getLanguage();
+            $user = $this->getConnectedUser();
+            $l = $user['language'];
         }else{
             $anr = new \MonarcFO\Model\Entity\Anr();
             $anr->setDbAdapter($this->getDb());

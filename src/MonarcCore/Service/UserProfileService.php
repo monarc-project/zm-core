@@ -18,11 +18,7 @@ class UserProfileService extends AbstractService
     protected $securityService;
 
     /**
-     * Update
-     *
-     * @param $user
-     * @param $data
-     * @return array
+     * @inheritdoc
      */
     public function update($user, $data)
     {

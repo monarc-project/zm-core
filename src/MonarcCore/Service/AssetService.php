@@ -34,12 +34,7 @@ class AssetService extends AbstractService
     ];
 
     /**
-     * Create
-     *
-     * @param $data
-     * @param bool $last
-     * @return mixed
-     * @throws \MonarcCore\Exception\Exception
+     * @inheritdoc
      */
     public function create($data, $last = true)
     {
@@ -66,12 +61,7 @@ class AssetService extends AbstractService
     }
 
     /**
-     * Update
-     *
-     * @param $id
-     * @param $data
-     * @return mixed
-     * @throws \MonarcCore\Exception\Exception
+     * @inheritdoc
      */
     public function update($id, $data)
     {
@@ -171,11 +161,7 @@ class AssetService extends AbstractService
     }
 
     /**
-     * Patch
-     *
-     * @param $id
-     * @param $data
-     * @return mixed
+     * @inheritdoc
      */
     public function patch($id, $data)
     {
@@ -186,11 +172,10 @@ class AssetService extends AbstractService
     }
 
     /**
-     * Export Asset
-     *
-     * @param $data
-     * @return string
-     * @throws \MonarcCore\Exception\Exception
+     * Exports the asset as base64-encoded file
+     * @param array $data The 'id' and 'password' for export
+     * @return string The base64-encoded file
+     * @throws \Exception if the asset is invalid
      */
     public function exportAsset(&$data)
     {

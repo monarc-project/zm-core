@@ -32,12 +32,16 @@ class ObjectObjectService extends AbstractService
     protected $dependencies = ['[child](object)', '[father](object)', '[anr](object)'];
 
     /**
+<<<<<<< HEAD
+     * @inheritdoc
+=======
      * Create
      *
      * @param $data
      * @param bool $last
      * @return mixed
      * @throws \MonarcCore\Exception\Exception
+>>>>>>> 31636fee3b3c0800213cd753ca5d7380f54fb056
      */
     public function create($data, $last = true, $context = Object::BACK_OFFICE)
     {
@@ -164,10 +168,9 @@ class ObjectObjectService extends AbstractService
     }
 
     /**
-     * Get Childs
-     *
-     * @param $objectId
-     * @return mixed
+     * Fetch and returns the children of the object
+     * @param int $objectId The object ID
+     * @return array The children objects
      */
     public function getChildren($objectId)
     {
@@ -178,11 +181,10 @@ class ObjectObjectService extends AbstractService
     }
 
     /**
-     * Get Recursive Children
-     *
-     * @param $fatherId
-     * @param null $anrId
-     * @return array
+     * Recursively fetches and return the children
+     * @param int $fatherId The parent object ID
+     * @param int $anrId The ANR ID
+     * @return array The children
      */
     public function getRecursiveChildren($fatherId, $anrId = null)
     {
@@ -212,10 +214,9 @@ class ObjectObjectService extends AbstractService
     }
 
     /**
-     * Get Recursive Parents
-     *
-     * @param $parent_id
-     * @return array
+     * Recursively fetches and returns the parent objects
+     * @param int $parent_id The parent object ID
+     * @return array The parents
      */
     public function getRecursiveParents($parent_id)
     {
@@ -239,14 +240,12 @@ class ObjectObjectService extends AbstractService
     }
 
     /**
-     * Get Recursive Parents List Id
-     *
-     * @param $parentId
-     * @param $array
+     * Fetches and returns a list of parents recursively
+     * @param int $parentId The parent ID
+     * @param array $array A reference to the array that will contain the parents
      */
     public function getRecursiveParentsListId($parentId, &$array)
     {
-
         /** @var ObjectObjectTable $table */
         $table = $this->get('table');
 
@@ -259,10 +258,9 @@ class ObjectObjectService extends AbstractService
     }
 
     /**
-     * Move Object
-     *
-     * @param $id
-     * @param $direction
+     * Moves an object's position
+     * @param int $id The object ID to move
+     * @param string $direction The direction to move the object towards, either 'up' or 'down'
      */
     public function moveObject($id, $direction)
     {
@@ -277,10 +275,7 @@ class ObjectObjectService extends AbstractService
     }
 
     /**
-     * Delete
-     *
-     * @param $id
-     * @throws \MonarcCore\Exception\Exception
+     * @inheritdoc
      */
     public function delete($id)
     {

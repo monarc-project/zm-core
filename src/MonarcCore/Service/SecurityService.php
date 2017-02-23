@@ -18,11 +18,10 @@ class SecurityService extends AbstractService
     protected $config;
 
     /**
-     * Verify Password
-     *
-     * @param $pwd
-     * @param $hash
-     * @return bool
+     * Verifies if the password matches the provided hash
+     * @param string $pwd The password
+     * @param string $hash The password hash
+     * @return bool True if it matches, false otherwise
      */
     public function verifyPwd($pwd, $hash)
     {
@@ -33,10 +32,9 @@ class SecurityService extends AbstractService
     }
 
     /**
-     * Hash Password
-     *
-     * @param $pwd
-     * @return bool|string
+     * Hashes the passed password
+     * @param string $pwd The password to hash
+     * @return bool|string The hashed password or false in case of error
      */
     public function hashPwd($pwd)
     {

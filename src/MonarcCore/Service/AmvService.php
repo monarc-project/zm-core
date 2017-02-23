@@ -8,6 +8,11 @@
 namespace MonarcCore\Service;
 
 use MonarcCore\Model\Entity\AbstractEntity;
+use MonarcCore\Model\Entity\Amv;
+use MonarcCore\Model\Entity\Asset;
+use MonarcCore\Model\Entity\Model;
+use MonarcCore\Model\Entity\Threat;
+use MonarcCore\Model\Entity\Vulnerability;
 use MonarcCore\Model\Table\InstanceTable;
 use MonarcCore\Model\Table\ModelTable;
 
@@ -33,13 +38,7 @@ class AmvService extends AbstractService
     protected $forbiddenFields = ['anr'];
 
     /**
-     * Get List
-     *
-     * @param int $page
-     * @param int $limit
-     * @param null $order
-     * @param null $filter
-     * @return mixed
+     * @inheritdoc
      */
     public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
     {
@@ -58,11 +57,7 @@ class AmvService extends AbstractService
     }
 
     /**
-     * Patch
-     *
-     * @param $id
-     * @param $data
-     * @return mixed
+     * @inheritdoc
      */
     public function patch($id, $data)
     {
@@ -78,14 +73,7 @@ class AmvService extends AbstractService
     }
 
     /**
-     * Get Filtered Count
-     *
-     * @param int $page
-     * @param int $limit
-     * @param null $order
-     * @param null $filter
-     * @param null $filterAnd
-     * @return mixed
+     * @inheritdoc
      */
     public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
     {
@@ -103,12 +91,7 @@ class AmvService extends AbstractService
     }
 
     /**
-     * Create
-     *
-     * @param $data
-     * @param bool $last
-     * @return mixed
-     * @throws \MonarcCore\Exception\Exception
+     * @inheritdoc
      */
     public function create($data, $last = true)
     {
@@ -167,13 +150,7 @@ class AmvService extends AbstractService
     }
 
     /**
-     *
-     * Update
-     *
-     * @param $id
-     * @param $data
-     * @return mixed
-     * @throws \MonarcCore\Exception\Exception
+     * @inheritdoc
      */
     public function update($id, $data)
     {
@@ -220,11 +197,7 @@ class AmvService extends AbstractService
     }
 
     /**
-     * Compare Entities
-     *
-     * @param $newEntity
-     * @param $oldEntity
-     * @return array
+     * @inheritdoc
      */
     public function compareEntities($newEntity, $oldEntity)
     {
@@ -271,9 +244,7 @@ class AmvService extends AbstractService
     }
 
     /**
-     * Delete
-     *
-     * @param $id
+     * @inheritdoc
      */
     public function delete($id)
     {
@@ -322,17 +293,16 @@ class AmvService extends AbstractService
     }
 
     /**
-     * Complies Requirement
-     *
-     * @param $amv
-     * @param null $asset
-     * @param null $assetModels
-     * @param null $threat
-     * @param null $threatModels
-     * @param null $vulnerability
-     * @param null $vulnerabilityModels
-     * @return bool
-     * @throws \MonarcCore\Exception\Exception
+     * Checks whether or not the specified theoretical AMV link complies with the behavioral requirements
+     * @param Amv $amv The AMV link to check
+     * @param Asset|null $asset The asset
+     * @param Model[]|null $assetModels The asset's model
+     * @param Threat|null $threat The threat
+     * @param Model[]|null $threatModels The threat's model
+     * @param Vulnerability|null $vulnerability The vulnerability
+     * @param Model[]|null $vulnerabilityModels The vulnerability's models
+     * @return bool True if the AMV link is valid, false otherwise
+     * @throws \MonarcCore\Exception\Exception If there are behavioral issues
      */
     public function compliesRequirement($amv, $asset = null, $assetModels = null, $threat = null, $threatModels = null, $vulnerability = null, $vulnerabilityModels = null)
     {
@@ -387,8 +357,7 @@ class AmvService extends AbstractService
     }
 
     /**
-     * Complies control
-     *
+     * Checks whether or not the A/M/V combo is compatible to build a link
      * @param $assetMode
      * @param $threatMode
      * @param $vulnerabilityMode
@@ -486,13 +455,12 @@ class AmvService extends AbstractService
     }
 
     /**
-     * Check AMV Integrity Level
-     *
-     * @param $models
-     * @param null $asset
-     * @param null $threat
-     * @param null $vulnerability
-     * @param bool $follow
+     * Checks the AMV Integrity Level
+     * @param Model[] $models The models in which the AMV link will be applicable
+     * @param Asset|null $asset The asset
+     * @param Threat|null $threat The threat
+     * @param Vulnerability|null $vulnerability The vulnerability
+     * @param bool $follow Whether or not the AMV link follows changes
      * @return bool
      */
     public function checkAMVIntegrityLevel($models, $asset = null, $threat = null, $vulnerability = null, $follow = false)
@@ -515,11 +483,10 @@ class AmvService extends AbstractService
 
     /**
      * Ensure Assets Integrity If Enforced
-     *
-     * @param $models
-     * @param null $asset
-     * @param null $threat
-     * @param null $vulnerability
+     * @param Model[] $models The models in which the AMV link will be applicable
+     * @param Asset|null $asset The asset
+     * @param Asset|null $threat The threat
+     * @param Asset|null $vulnerability The vulnerability
      * @return bool
      */
     public function ensureAssetsIntegrityIfEnforced($models, $asset = null, $threat = null, $vulnerability = null)
@@ -559,11 +526,11 @@ class AmvService extends AbstractService
     }
 
     /**
-     * Check Models Instantiation
-     *
-     * @param $asset
-     * @param $newModelsIds
-     * @return bool
+     * Check Models Instantiation: Don't remove to an asset of specific model if it is linked to asset by an instance
+     * in an anr (by object)
+     * @param Asset $asset The asset to check
+     * @param array $newModelsIds The IDs of the models
+     * @return bool True if valid, false otherwise
      */
     public function checkModelsInstantiation($asset, $newModelsIds)
     {
@@ -595,12 +562,11 @@ class AmvService extends AbstractService
     }
 
     /**
-     * Enforce Amv To Follow
-     *
-     * @param $models
-     * @param null $asset
-     * @param null $threat
-     * @param null $vulnerability
+     * Enforces Amv To Follow evolution
+     * @param Model[] $models Models
+     * @param Asset|null $asset Asset
+     * @param Threat|null $threat Threat
+     * @param Vulnerability|null $vulnerability Vulnerability
      */
     public function enforceAMVtoFollow($models, $asset = null, $threat = null, $vulnerability = null)
     {
@@ -640,11 +606,10 @@ class AmvService extends AbstractService
     }
 
     /**
-     * Enforce To Follow
-     *
-     * @param $entitiesIds
-     * @param $models
-     * @param $type
+     * Enforce the entities to follow the model
+     * @param array $entitiesIds IDs of entities
+     * @param array $models The models the entities should follow
+     * @param string $type The type of the entities
      */
     public function enforceToFollow($entitiesIds, $models, $type)
     {
@@ -661,10 +626,9 @@ class AmvService extends AbstractService
     }
 
     /**
-     * Generate Export Array
-     *
-     * @param $amv
-     * @return array
+     * Generate an array ready for export
+     * @param Amv $amv The AMV entity to export
+     * @return array The exported array
      */
     public function generateExportArray($amv)
     {

@@ -30,11 +30,10 @@ class TranslateService
     }
 
     /**
-     * Translator
-     *
-     * @param $message
-     * @param null $langueIndex
-     * @return mixed
+     * Translates the provided message into the target language in $langueIndex
+     * @param string $message The message to translate
+     * @param null|int $langueIndex The language index or null for the default language
+     * @return string The translated message
      */
     public function translate($message, $langueIndex = null)
     {
@@ -48,7 +47,7 @@ class TranslateService
     }
 
     /**
-     * @return null
+     * @return Translator The translator service
      */
     public function getTranslator()
     {

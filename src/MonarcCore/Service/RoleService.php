@@ -18,14 +18,7 @@ class RoleService extends AbstractService
     protected $config;
 
     /**
-     * Get Filtered Count
-     *
-     * @param int $page
-     * @param int $limit
-     * @param null $order
-     * @param null $filter
-     * @param null $filterAnd
-     * @return int
+     * @inheritdoc
      */
     public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
     {
@@ -36,14 +29,7 @@ class RoleService extends AbstractService
     }
 
     /**
-     * Get List
-     *
-     * @param int $page
-     * @param int $limit
-     * @param null $order
-     * @param null $filter
-     * @param null $filterAnd
-     * @return array
+     * @inheritdoc
      */
     public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
     {

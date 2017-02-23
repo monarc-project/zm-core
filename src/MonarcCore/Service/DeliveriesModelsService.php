@@ -21,11 +21,7 @@ class DeliveriesModelsService extends AbstractService
     ];
 
     /**
-     * Patch
-     *
-     * @param $id
-     * @param $data
-     * @return mixed
+     * @inheritdoc
      */
     public function patch($id, $data)
     {

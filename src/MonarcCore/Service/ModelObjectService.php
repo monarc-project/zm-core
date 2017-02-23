@@ -27,11 +27,7 @@ class ModelObjectService extends AbstractService
     protected $dependencies = ['asset', 'category', 'rolfTag', 'source', 'model'];
 
     /**
-     * Create
-     *
-     * @param $data
-     * @param bool $last
-     * @return mixed
+     * @inheritdoc
      */
     public function create($data, $last = true)
     {
@@ -90,12 +86,7 @@ class ModelObjectService extends AbstractService
     }
 
     /**
-     * Update
-     *
-     * @param $id
-     * @param $data
-     * @return mixed
-     * @throws \MonarcCore\Exception\Exception
+     * @inheritdoc
      */
     public function update($id, $data)
     {
@@ -121,11 +112,7 @@ class ModelObjectService extends AbstractService
 
 
     /**
-     * Delete
-     *
-     * @param $id
-     * @return bool
-     * @throws \MonarcCore\Exception\Exception
+     * @inheritdoc
      */
     public function delete($id)
     {

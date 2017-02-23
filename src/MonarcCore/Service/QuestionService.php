@@ -21,13 +21,7 @@ class QuestionService extends AbstractService
     protected $dependencies = ['anr'];
 
     /**
-     * Get List
-     *
-     * @param int $page
-     * @param int $limit
-     * @param null $order
-     * @param null $filter
-     * @return mixed
+     * @inheritdoc
      */
     public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
     {
@@ -61,11 +55,7 @@ class QuestionService extends AbstractService
     }
 
     /**
-     * Create
-     *
-     * @param $data
-     * @param bool $last
-     * @return mixed
+     * @inheritdoc
      */
     public function create($data, $last = true)
     {
@@ -89,12 +79,7 @@ class QuestionService extends AbstractService
     }
 
     /**
-     * Update
-     *
-     * @param $id
-     * @param $data
-     * @return mixed
-     * @throws \MonarcCore\Exception\Exception
+     * @inheritdoc
      */
     public function update($id, $data)
     {
@@ -133,10 +118,14 @@ class QuestionService extends AbstractService
     }
 
     /**
+<<<<<<< HEAD
+     * @inheritdoc
+=======
      * Delete
      *
      * @param $id
      * @throws \MonarcCore\Exception\Exception
+>>>>>>> 31636fee3b3c0800213cd753ca5d7380f54fb056
      */
     public function delete($id)
     {
