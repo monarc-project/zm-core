@@ -1,9 +1,19 @@
 <?php
+/**
+ * @link      https://github.com/CASES-LU for the canonical source repository
+ * @copyright Copyright (c) Cases is a registered trademark of SECURITYMADEIN.LU
+ * @license   MyCases is licensed under the GNU Affero GPL v3 - See license.txt for more information
+ */
 
 namespace MonarcCore\Validator;
 
 use Zend\Validator\AbstractValidator;
 
+/**
+ * Class UniqueEmail is an implementation of AbstractValidator that ensures the unicity of email.
+ * @package MonarcCore\Validator
+ * @see MonarcCore\Model\Entity\User
+ */
 class UniqueEmail extends AbstractValidator
 {
     protected $options = array(
@@ -17,6 +27,9 @@ class UniqueEmail extends AbstractValidator
         self::ALREADYUSED => 'This email is already used',
     );
 
+    /**
+     * @inheritdoc
+     */
     public function isValid($value){
 
         if(empty($this->options['adapter'])){

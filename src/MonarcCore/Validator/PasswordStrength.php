@@ -1,8 +1,17 @@
 <?php
+/**
+ * @link      https://github.com/CASES-LU for the canonical source repository
+ * @copyright Copyright (c) Cases is a registered trademark of SECURITYMADEIN.LU
+ * @license   MyCases is licensed under the GNU Affero GPL v3 - See license.txt for more information
+ */
 namespace MonarcCore\Validator;
 
 use Zend\Validator\AbstractValidator;
 
+/**
+ * Class PasswordStrength is an implementation of AbstractValidator that ensures the strength of passwords.
+ * @package MonarcCore\Validator
+ */
 class PasswordStrength extends AbstractValidator
 {
     const LENGTH = 'length';
@@ -20,10 +29,7 @@ class PasswordStrength extends AbstractValidator
     );
 
     /**
-     * Is Valid
-     *
-     * @param mixed $value
-     * @return bool
+     * @inheritdoc
      */
     public function isValid($value)
     {

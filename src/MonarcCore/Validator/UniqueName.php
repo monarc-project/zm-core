@@ -1,9 +1,19 @@
 <?php
+/**
+ * @link      https://github.com/CASES-LU for the canonical source repository
+ * @copyright Copyright (c) Cases is a registered trademark of SECURITYMADEIN.LU
+ * @license   MyCases is licensed under the GNU Affero GPL v3 - See license.txt for more information
+ */
 
 namespace MonarcCore\Validator;
 
 use Zend\Validator\AbstractValidator;
 
+/**
+ * Class UniqueName is an implementation of AbstractValidator that ensures the unicity of name.
+ * @package MonarcCore\Validator
+ * @see MonarcCore\Model\Entity\Object
+ */
 class UniqueName extends AbstractValidator
 {
     protected $options = array(
@@ -18,10 +28,7 @@ class UniqueName extends AbstractValidator
     );
 
     /**
-     * Is valid
-     *
-     * @param mixed $value
-     * @return bool
+     * @inheritdoc
      */
     public function isValid($value){
 
