@@ -44,14 +44,12 @@ return array(
     'router' => array(
         'routes' => array(
             'monarc' => array(
-                'type'    => 'segment',
+                'type' => 'Zend\Mvc\Router\Http\Literal',
                 'options' => array(
-                    'route'    => '/index[/:id]',
-                    'constraints' => array(
-                        'id'     => '[0-9]+',
-                    ),
+                    'route'    => '/',
                     'defaults' => array(
                         'controller' => '\MonarcCore\Controller\Index',
+                        'action' => 'index',
                     ),
                 ),
             ),
@@ -479,7 +477,6 @@ return array(
 
     'permissions' => array(
         'monarc',
-        'home',
         'auth',
         'monarc_api_admin_roles',
         'monarc_api_admin_passwords',
