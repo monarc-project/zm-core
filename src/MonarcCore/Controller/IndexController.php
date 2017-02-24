@@ -14,6 +14,10 @@ namespace MonarcCore\Controller;
  */
 class IndexController extends AbstractController
 {
+    /**
+     * Default action route /, return template with JS
+     * @return MonarcCore\Controller\IndexController
+     */
     public function indexAction(){
         return $this;
     }
