@@ -37,7 +37,7 @@ class ApiAnrScalesController extends AbstractController
         }
 
         return new JsonModel(array(
-            'count' => $this->getService()->getFilteredCount($page, $limit, $order, $filter, ['anr' => $anrId]),
+            'count' => $this->getService()->getFilteredCount($filter, ['anr' => $anrId]),
             $this->name => $scales
         ));
     }

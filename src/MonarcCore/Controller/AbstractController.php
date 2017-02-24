@@ -69,7 +69,7 @@ abstract class AbstractController extends AbstractRestfulController
         }
 
         return new JsonModel(array(
-            'count' => $service->getFilteredCount($page, $limit, $order, $filter),
+            'count' => $service->getFilteredCount($filter),
             $this->name => $entities
         ));
     }

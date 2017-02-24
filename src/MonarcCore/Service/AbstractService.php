@@ -113,19 +113,13 @@ abstract class AbstractService extends AbstractServiceFactory
      * Counts and returns the number of elements available for the specified query. Page and limit parameters
      * are ignored but kept for compatibility with getList calls. The order parameter is also ignored since it
      * will have no impact on the final count.
-     * @param int $page This parameter is ignored.
-     * @param int $limit This parameter is ignored.
-     * @param null $order This parameter is ignored.
      * @param array|null $filter The array of columns => values which should be filtered (in a WHERE.. OR.. fashion)
      * @param array|null $filterAnd The array of columns => values which should be filtered (in a WHERE.. AND.. fashion)
      * @return int The number of elements retrieved from the query
      */
-    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
+    public function getFilteredCount($filter = null, $filterAnd = null)
     {
         return $this->get('table')->countFiltered(
-            $page,
-            $limit,
-            $this->parseFrontendOrder($order),
             $this->parseFrontendFilter($filter, $this->filterColumns),
             $filterAnd
         );

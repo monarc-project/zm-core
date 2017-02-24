@@ -186,20 +186,17 @@ abstract class AbstractEntityTable
     /**
      * Count Filtered
      *
-     * @param int $page
-     * @param int $limit
-     * @param null $order
      * @param null $filter
      * @param null $filterAnd
      * @param null $filterJoin
      * @param null $filterLeft
      * @return bool|mixed
      */
-    public function countFiltered($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null, $filterJoin = null, $filterLeft = null)
+    public function countFiltered($filter = null, $filterAnd = null, $filterJoin = null, $filterLeft = null)
     {
         $c = $this->getClass();
         if (class_exists($c)) {
-            return $this->getDb()->countFiltered(new $c(), $limit, $order, $filter, $filterAnd, $filterJoin, $filterLeft);
+            return $this->getDb()->countFiltered(new $c(), $filter, $filterAnd, $filterJoin, $filterLeft);
         } else {
             return false;
         }

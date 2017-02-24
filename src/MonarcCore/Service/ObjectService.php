@@ -360,16 +360,13 @@ class ObjectService extends AbstractService
     /**
      * Get Filtered Count
      *
-     * @param int $page
-     * @param int $limit
-     * @param null $order
      * @param null $filter
      * @param null $asset
      * @param null $category
      * @param null $model
      * @return int
      */
-    public function getFilteredCount($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $model = null, $anr = null, $context = Object::BACK_OFFICE)
+    public function getFilteredCount($filter = null, $asset = null, $category = null, $model = null, $anr = null, $context = Object::BACK_OFFICE)
     {
         $filterAnd = [];
         if ((!is_null($asset)) && ($asset != 0)) {
@@ -379,7 +376,7 @@ class ObjectService extends AbstractService
             $filterAnd['category'] = $category;
         }
 
-        $result = $this->getAnrObjects($page, 0, $order, $filter, $filterAnd, $model, $anr, $context);
+        $result = $this->getAnrObjects(1, 0, null, $filter, $filterAnd, $model, $anr, $context);
 
         return count($result);
     }

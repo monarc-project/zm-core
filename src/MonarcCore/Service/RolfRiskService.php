@@ -98,9 +98,6 @@ class RolfRiskService extends AbstractService
 
 
         return $this->get('table')->countFiltered(
-            $page,
-            $limit,
-            $this->parseFrontendOrder($order),
             $this->parseFrontendFilter($filter, $this->filterColumns),
             $filterAnd,
             $filterJoin

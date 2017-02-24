@@ -48,7 +48,7 @@ class ApiAnrObjectController extends AbstractController
         }
 
         return new JsonModel(array(
-            'count' => $service->getFilteredCount($page, $limit, $order, $filter, $asset, $category, $model, $anr),
+            'count' => $service->getFilteredCount($filter, $asset, $category, $model, $anr),
             $this->name => $objects
         ));
     }
