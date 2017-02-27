@@ -18,11 +18,19 @@ class Db {
     /** @var EntityManager */
     protected $entityManager;
 
+    /**
+     * Construct Db object and set the entity manager
+     * @param EntityManager $entityManager The entity manager from Doctrine ORM
+     */
     public function __construct($entityManager)
     {
         $this->entityManager = $entityManager;
     }
 
+    /**
+     * Return the entity manager and check if connection already opened
+     * @return EntityManager $entityManager The entity manager from Doctrine ORM
+     */
     public function getEntityManager(){
         if(!$this->entityManager->isOpen()){
             $this->entityManager = $this->entityManager->create(
@@ -33,6 +41,11 @@ class Db {
         return $this->entityManager;
     }
 
+    /**
+     * Finds all objects in the repository.
+     * @param  \MonarcCore\Model\Entity\AbstractEntity $entity An entity from Monarc
+     * @return \MonarcCore\Model\Entity\AbstractEntity[] All entities stored in database
+     */
     public function fetchAll($entity)
     {
         $repository = $this->getEntityManager()->getRepository(get_class($entity));
@@ -40,24 +53,49 @@ class Db {
         return $entities;
     }
 
+    /**
+     * Gets the repository for an entity class.
+     *
+     * @param string $class The name of the entity.
+     *
+     * @return \Doctrine\ORM\EntityRepository The repository class.
+     */
     public function getRepository($class){
         return $this->getEntityManager()->getRepository($class);
     }
 
+    /**
+     * Starts a transaction on the underlying database connection.
+     *
+     * @return void
+     */
     public function beginTransaction() {
         $this->getEntityManager()->getConnection()->beginTransaction();
     }
 
+    /**
+     * Commits a transaction on the underlying database connection.
+     *
+     * @return void
+     */
     public function commit() {
         $this->getEntityManager()->getConnection()->commit();
     }
 
+    /**
+     * Performs a rollback on the underlying database connection.
+     *
+     * @return void
+     */
     public function rollback() {
         $this->getEntityManager()->getConnection()->rollBack();
     }
 
     /**
-     * @param Entity $entity
+     * Find entities in repository who matches with filters.
+     * Apply order and limit for pagination.
+     * 
+     * @param \MonarcCore\Model\Entity\AbstractEntity $entity
      * @param int $page
      * @param int $limit
      * @param array|null $order
@@ -73,11 +111,27 @@ class Db {
         return $qb->getQuery()->getResult();
     }
 
+    /**
+     * Count number of elements in repository
+     * @param \MonarcCore\Model\Entity\AbstractEntity $entity
+     * @return int Number of elements
+     */
     public function count($entity) {
         $repository = $this->getEntityManager()->getRepository(get_class($entity));
         return $repository->createQueryBuilder('u')->select('count(u.id)')->getQuery()->getSingleScalarResult();
     }
 
+    /**
+     * Count number of elements in repository who matches with filters.
+     * Apply order and limit for pagination.
+     * 
+     * @param \MonarcCore\Model\Entity\AbstractEntity $entity
+     * @param array|null $filter
+     * @param array|null $filterAnd
+     * @param array|null $filterJoin
+     * @param array|null $filterLeft
+     * @return int Number of elements
+     */
     public function countFiltered($entity, $filter = null, $filterAnd = null, $filterJoin = null, $filterLeft = null) {
         $repository = $this->getEntityManager()->getRepository(get_class($entity));
         $qb = $this->buildFilteredQuery($repository, 1, 0, null, $filter, $filterAnd, $filterJoin, $filterLeft);
@@ -86,6 +140,18 @@ class Db {
         return $qb->getQuery()->getSingleScalarResult();
     }
 
+    /**
+     * Finds an Entity by its identifier.
+     *
+     * @param \MonarcCore\Model\Entity\AbstractEntity $entity
+     * @return \MonarcCore\Model\Entity\AbstractEntity The entity instance.
+     *
+     * @throws OptimisticLockException
+     * @throws ORMInvalidArgumentException
+     * @throws TransactionRequiredException
+     * @throws ORMException
+     * @throws \MonarcCore\Exception\Exception
+     */
     public function fetch($entity)
     {
         if (!$entity->get('id')) {
@@ -93,6 +159,15 @@ class Db {
         }
         return $this->getEntityManager()->find(get_class($entity), $entity->get('id'));
     }
+
+    /**
+     * Finds Entities matches with params fields and ordered.
+     *
+     * @param \MonarcCore\Model\Entity\AbstractEntity $entity
+     * @param array $fields List of conditions ([key=>value,...] or [key=>[op=>operator,value=>value]...])
+     * @param string[] $orderBy Order by [field=>DESC/ASC,...]
+     * @return \MonarcCore\Model\Entity\AbstractEntity[] List of entities.
+     */
     public function fetchByFields($entity, $fields, $orderBy)
     {
         $repository = $this->getEntityManager()->getRepository(get_class($entity));
@@ -149,6 +224,14 @@ class Db {
     public function fetchByIds($entity,$ids = array()){
         return $this->getEntityManager()->getRepository(get_class($entity))->findById($ids);
     }
+
+    /**
+     * Delete Entities.
+     *
+     * @param \MonarcCore\Model\Entity\AbstractEntity[] $entities
+     *
+     * @throws \Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException
+     */
     public function deleteAll($entities = array()){
          try {
             foreach($entities as $entity){
@@ -160,6 +243,14 @@ class Db {
         }
     }
 
+    /**
+     * Delete Entity.
+     *
+     * @param \MonarcCore\Model\Entity\AbstractEntity $entity
+     * @param boolean $last If true, flush entity in the repository
+     *
+     * @throws \Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException
+     */
     public function delete($entity, $last = true)
     {
         try {
@@ -171,6 +262,14 @@ class Db {
             throw new \MonarcCore\Exception\Exception('Foreign key violation', '400');
         }
     }
+
+    /**
+     * Save Entity.
+     *
+     * @param \MonarcCore\Model\Entity\AbstractEntity $entity
+     * @param boolean $last If true, flush entity in the repository
+     * @return int identifier of the entity
+     */
     public function save($entity, $last = true)
     {
         $this->getEntityManager()->persist($entity);
@@ -182,17 +281,47 @@ class Db {
         return $entity->id;
     }
 
+    /**
+     * Flushes all changes to objects that have been queued up to now to the database.
+     * This effectively synchronizes the in-memory state of managed objects with the
+     * database.
+     *
+     * If an entity is explicitly passed to this method only this entity and
+     * the cascade-persist semantics + scheduled inserts/removals are synchronized.
+     * @return void
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException If a version check on an entity that
+     *         makes use of optimistic locking fails.
+     */
     public function flush()
     {
         $this->getEntityManager()->flush();
     }
 
+    /**
+     * Returns the ID of the last inserted row, or the last value from a sequence object,
+     * depending on the underlying driver.
+     *
+     * Note: This method may not return a meaningful or consistent result across different drivers,
+     * because the underlying database may not even support the notion of AUTO_INCREMENT/IDENTITY
+     * columns or sequences.
+     * 
+     * @return string A string representation of the last inserted ID.
+     */
     public function lastInsertId(){
         return $this->getEntityManager()->getConnection()->lastInsertId();
     }
 
-    public function quote($str, $paramType) {
-        return $this->getEntityManager()->getConnection()->quote($str, $paramType);
+    /**
+     * Quotes a given input parameter.
+     *
+     * @param mixed       $input The parameter to be quoted.
+     * @param string|null $type  The type of the parameter.
+     *
+     * @return string The quoted parameter.
+     */
+    public function quote($input, $type) {
+        return $this->getEntityManager()->getConnection()->quote($input, $type);
     }
 
     /**
@@ -336,10 +465,37 @@ class Db {
         return $qb;
     }
 
+    /**
+     * Gets a reference to the entity identified by the given type and identifier
+     * without actually loading it, if the entity is not yet loaded.
+     *
+     * @param string $entityName The name of the entity type.
+     * @param mixed  $id         The entity identifier.
+     *
+     * @return object The entity reference.
+     *
+     * @throws ORMException
+     */
     public function getReference($entityName, $id){
         return $this->getEntityManager()->getReference($entityName, $id);
     }
 
+    /**
+     * Returns the ORM metadata descriptor for a class.
+     *
+     * The class name must be the fully-qualified class name without a leading backslash
+     * (as it is returned by get_class($obj)) or an aliased class name.
+     *
+     * Examples:
+     * MyProject\Domain\User
+     * sales:PriceRequest
+     *
+     * Internal note: Performance-sensitive method.
+     *
+     * @param string $className
+     *
+     * @return \Doctrine\ORM\Mapping\ClassMetadata
+     */
     public function getClassMetadata($entityName){
         return $this->getEntityManager()->getClassMetadata($entityName);
     }

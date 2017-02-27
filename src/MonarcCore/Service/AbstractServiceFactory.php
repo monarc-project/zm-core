@@ -18,8 +18,20 @@ use Zend\ServiceManager\ServiceLocatorInterface;
  */
 abstract class AbstractServiceFactory implements FactoryInterface
 {
+    /**
+     * The list of ressources loaded for the associated service (AbstractService)
+     * @var string[]
+     */
     protected $ressources;
+    /**
+     * The index of the default language defined for this API
+     * @var int
+     */
     protected $language;
+    /**
+     * Monarc configuration defined in local.php & module.config.php
+     * @var array
+     */
     protected $monarcConf = [];
 
     /**

@@ -28,6 +28,7 @@ class MailService extends AbstractService
         $headers .= 'Reply-To: Cases <info@cases.lu>' . "\r\n";
         $headers .= 'From: Cases <info@cases.lu>' . "\r\n";
 
+        // TODO: don't exist mail class in zf2?
         mail($email, $subject, $message, $headers);
     }
 }

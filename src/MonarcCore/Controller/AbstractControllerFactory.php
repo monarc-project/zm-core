@@ -18,8 +18,15 @@ use Zend\ServiceManager\ServiceLocatorInterface;
  */
 abstract class AbstractControllerFactory implements FactoryInterface
 {
+    /**
+     * The service name to load for associated controller
+     * @var string
+     */
     protected $serviceName;
 
+    /**
+     * @inheritdoc
+     */
     public function createService(ServiceLocatorInterface $serviceLocator){
 
         $class = substr(get_class($this),0,-7);
@@ -43,6 +50,10 @@ abstract class AbstractControllerFactory implements FactoryInterface
         }
     }
 
+    /**
+     * Return the service name property
+     * @return string The service name
+     */
     public function getServiceName(){
         return $this->serviceName;
     }

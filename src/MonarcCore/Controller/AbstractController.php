@@ -17,9 +17,23 @@ use Zend\View\Model\JsonModel;
  */
 abstract class AbstractController extends AbstractRestfulController
 {
+    /**
+     * The service used by the controller.
+     * @var \MonarcCore\Service\AbstractService
+     */
     protected $service;
 
+    /**
+     * The lists of the dependencies of the entity
+     * @var array
+     */
     protected $dependencies = [];
+
+    /**
+     * The name of the key corresponding to the list of elements returned in the function getList.
+     * @var string
+     */
+    protected $name = 'datas';
 
     /**
      * AbstractController constructor.

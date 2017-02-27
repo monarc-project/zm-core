@@ -25,11 +25,32 @@ abstract class AbstractService extends AbstractServiceFactory
 {
     use \MonarcCore\Model\GetAndSet;
 
+    /**
+     * The service factory used in this service
+     * @var AbstractServiceFactory|array|null
+     */
     protected $serviceFactory;
+
+    /**
+     * The default table used in this service
+     * @var \MonarcCore\Model\Table\AbstractEntityTable
+     */
     protected $table;
+    /**
+     * The default entity used in this service
+     * @var \MonarcCore\Model\Entity\AbstractEntity
+     */
     protected $entity;
     protected $label;
+    /**
+     * The list of fields deleted during POST/PUT/PATCH
+     * @var array
+     */
     protected $forbiddenFields = [];
+    /**
+     * The list of fields corresponding to the entity's dependencies
+     * @var array
+     */
     protected $dependencies = [];
 
     /**
