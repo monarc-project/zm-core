@@ -1133,15 +1133,18 @@ class InstanceService extends AbstractService
         $specialInstancesUniquesRisks = [];
         foreach ($specialInstancesRisks as $risk) {
             if (
-                (isset($specialInstancesUniquesRisks[$risk->amv->id]))
-                &&
-                ($risk->cacheMaxRisk > $specialInstancesUniquesRisks[$risk->amv->id]->cacheMaxRisk)
-            ) {
-                $specialInstancesUniquesRisks[$risk->amv->id] = $risk;
-            } else {
+                (!isset($specialInstancesUniquesRisks[$risk->amv->id]))
+                ||
+                (
+                    (isset($specialInstancesUniquesRisks[$risk->amv->id]))
+                    &&
+                    ($risk->cacheMaxRisk > $specialInstancesUniquesRisks[$risk->amv->id]->cacheMaxRisk)
+                )
+            ){
                 $specialInstancesUniquesRisks[$risk->amv->id] = $risk;
             }
         }
+        
         return $instancesRisks + $specialInstancesUniquesRisks;
     }
 
