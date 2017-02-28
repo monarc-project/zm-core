@@ -1394,6 +1394,14 @@ class InstanceService extends AbstractService
         $return['instance']['object'] = $entity->get('object')->get('id');
         $return['instance']['root'] = 0;
         $return['instance']['parent'] = $entity->get('parent') ? $entity->get('parent')->get('id') : 0;
+        if(!$with_eval){ // if not with assessments, CID are inherited
+            $return['instance']['c'] = -1;
+            $return['instance']['ch'] = 1;
+            $return['instance']['i'] = -1;
+            $return['instance']['ih'] = 1;
+            $return['instance']['d'] = -1;
+            $return['instance']['dh'] = 1;
+        }
 
         // Scales
         if ($with_eval && $with_scale) {
