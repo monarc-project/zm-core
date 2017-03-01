@@ -6,6 +6,9 @@
  */
 
 namespace MonarcCore\Service;
+use Zend\Mail\Message;
+use Zend\Mail\Transport\Sendmail;
+use Zend\Mime\Part;
 
 /**
  * Mail Service
@@ -23,12 +26,19 @@ class MailService extends AbstractService
      */
     public function send($email, $subject, $message)
     {
-        $headers = 'MIME-Version: 1.0' . "\r\n";
-        $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-        $headers .= 'Reply-To: Cases <info@cases.lu>' . "\r\n";
-        $headers .= 'From: Cases <info@cases.lu>' . "\r\n";
+        $html = new Part($message);
+        $html->type = "text/html";
 
-        // TODO: don't exist mail class in zf2?
-        mail($email, $subject, $message, $headers);
+        $body = new \Zend\Mime\Message();
+        $body->setParts(array($html));
+
+        $message = new Message();
+        $message->setBody($body);
+        $message->setFrom('info@cases.lu', 'Cases');
+        $message->addTo($email, $email);
+        $message->setSubject($subject);
+
+        $transport = new Sendmail();
+        $transport->send($message);
     }
 }
