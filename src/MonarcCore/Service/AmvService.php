@@ -735,4 +735,75 @@ class AmvService extends AbstractService
             $measures,
         ];
     }
+
+
+    /**
+     * Compares and stores differences between two entities in the history (if there are any) as an update event.
+     * @param string $type The entity type
+     * @param AbstractEntity $entity The new entity (post-changes)
+     * @param AbstractEntity $oldEntity The old entity (pre-changes)
+     */
+    public function historizeUpdate($type, $entity, $oldEntity)
+    {
+        $diff = $this->compareEntities($entity, $oldEntity);
+
+        if (count($diff)) {
+            $this->historize($entity, $type, 'update', implode(' / ', $diff));
+        }
+    }
+
+    /**
+     * Stores an object creation event in the history
+     * @param string $type The entity type
+     * @param AbstractEntity $entity The entity that has been created
+     * @param array $details An array of changes details
+     */
+    public function historizeCreate($type, $entity, $details)
+    {
+        $this->historize($entity, $type, 'create', implode(' / ', $details));
+    }
+
+    /**
+     * Stores an object deletion event in the history
+     * @param string $type The entity type
+     * @param AbstractEntity $entity The entity that has been deleted
+     * @param array $details An array of changes details
+     */
+    public function historizeDelete($type, $entity, $details)
+    {
+        $this->historize($entity, $type, 'delete', implode(' / ', $details));
+    }
+
+    /**
+     * Stores an event into the history
+     * @param AbstractEntity|array $entity The affected entity
+     * @param string $type The event type
+     * @param string $verb The event kind (create, delete, update)
+     * @param string $details The event description / details
+     */
+    public function historize($entity, $type, $verb, $details)
+    {
+        $entityId = null;
+
+        if (is_object($entity) && (property_exists($entity, 'id'))) {
+            $entityId = $entity->id;
+        } else if (is_array($entity) && (isset($entity['id']))) {
+            $entityId = $entity['id'];
+        }
+
+        $data = [
+            'type' => $type,
+            'sourceId' => $entityId,
+            'action' => $verb,
+            'label1' => (is_object($entity) && property_exists($entity, 'label1')) ? $entity->label1 : $this->label[0],
+            'label2' => (is_object($entity) && property_exists($entity, 'label2')) ? $entity->label2 : $this->label[1],
+            'label3' => (is_object($entity) && property_exists($entity, 'label3')) ? $entity->label3 : $this->label[2],
+            'label4' => (is_object($entity) && property_exists($entity, 'label4')) ? $entity->label4 : $this->label[3],
+            'details' => $details,
+        ];
+
+        /** @var HistoricalService $historicalService */
+        $historicalService = $this->get('historicalService');
+        $historicalService->create($data);
+    }
 }

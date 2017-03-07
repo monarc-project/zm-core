@@ -10,6 +10,7 @@ namespace MonarcCore\Service;
 use MonarcCore\Model\Table\InstanceRiskOpTable;
 use MonarcCore\Model\Table\InstanceTable;
 use MonarcCore\Model\Table\ObjectTable;
+use MonarcFO\Model\Entity\RolfRisk;
 
 /**
  * Rolf Risk Service
@@ -109,6 +110,7 @@ class RolfRiskService extends AbstractService
      */
     public function create($data, $last = true)
     {
+        /** @var RolfRisk $entity */
         $entity = $this->get('entity');
         if (isset($data['anr']) && is_numeric($data['anr'])) {
             $data['anr'] = $this->get('anrTable')->getEntity($data['anr']);
