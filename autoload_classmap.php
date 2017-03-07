@@ -310,6 +310,7 @@ return array(
     'MonarcCore\Service\VulnerabilityServiceFactory'                        => __DIR__ . '/src/MonarcCore/Service/VulnerabilityServiceFactory.php',
     'MonarcCore\Storage\Authentication'                                     => __DIR__ . '/src/MonarcCore/Storage/Authentication.php',
     'MonarcCore\Storage\AuthentificationFactory'                            => __DIR__ . '/src/MonarcCore/Storage/AuthentificationFactory.php',
+    'MonarcCore\Traits\RiskTrait'                                           => __DIR__ . '/src/MonarcCore/Traits/RiskTrait.php',
     'MonarcCore\Validator\PasswordStrength'                                 => __DIR__ . '/src/MonarcCore/Validator/PasswordStrength.php',
     'MonarcCore\Validator\UniqueCode'                                       => __DIR__ . '/src/MonarcCore/Validator/UniqueCode.php',
     'MonarcCore\Validator\UniqueDeliveryModel'                              => __DIR__ . '/src/MonarcCore/Validator/UniqueDeliveryModel.php',

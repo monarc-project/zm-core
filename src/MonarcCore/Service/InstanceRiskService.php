@@ -12,6 +12,7 @@ use MonarcCore\Model\Entity\Object;
 use MonarcCore\Model\Table\AmvTable;
 use MonarcCore\Model\Table\InstanceRiskTable;
 use MonarcCore\Model\Table\InstanceTable;
+use MonarcCore\Traits\RiskTrait;
 
 /**
  * Instance Risk Service
@@ -21,6 +22,8 @@ use MonarcCore\Model\Table\InstanceTable;
  */
 class InstanceRiskService extends AbstractService
 {
+    use RiskTrait;
+
     protected $dependencies = ['anr', 'amv', 'asset', 'instance', 'threat', 'vulnerability'];
 
     protected $anrTable;
@@ -349,8 +352,6 @@ class InstanceRiskService extends AbstractService
             $risks[] = $riskD;
             $impacts[] = $instance->d;
         }
-
-
 
         $instanceRisk->cacheMaxRisk = (count($risks)) ? max($risks) : -1;
         $instanceRisk->cacheTargetedRisk = $this->getTargetRisk($impacts, $instanceRisk->threatRate, $instanceRisk->vulnerabilityRate, $instanceRisk->reductionAmount);
