@@ -9,12 +9,14 @@ namespace MonarcCore\Service;
 
 use MonarcCore\Model\Entity\Asset;
 use MonarcCore\Model\Entity\Instance;
-use MonarcCore\Model\Entity\InstanceRisk;
 use MonarcCore\Model\Entity\InstanceRiskOp;
 use MonarcCore\Model\Entity\Object;
+use MonarcCore\Model\Table\AnrTable;
 use MonarcCore\Model\Table\InstanceConsequenceTable;
 use MonarcCore\Model\Table\InstanceTable;
+use MonarcCore\Model\Table\ScaleCommentTable;
 use MonarcCore\Model\Table\ScaleImpactTypeTable;
+use MonarcCore\Model\Table\ScaleCommentsTable;
 use Zend\EventManager\EventManager;
 
 /**
@@ -33,6 +35,7 @@ class InstanceService extends AbstractService
     protected $amvTable;
     protected $objectTable;
     protected $scaleTable;
+    protected $scaleCommentTable;
     protected $scaleImpactTypeTable;
     protected $instanceConsequenceTable;
     protected $instanceConsequenceEntity;
@@ -1155,13 +1158,17 @@ class InstanceService extends AbstractService
      * @param $anrId
      * @return array
      */
-    protected function getConsequences($anrId, $instance)
+    public function getConsequences($anrId, $instance, $delivery = false)
     {
         $instanceId = $instance['id'];
 
         /** @var InstanceConsequenceTable $table */
         $table = $this->get('instanceConsequenceTable');
         $instanceConsequences = $table->getEntityByFields(['anr' => $anrId, 'instance' => $instanceId]);
+
+        /** @var AnrTable $anrTable */
+        $anrTable = $this->get('anrTable');
+        $anr = $anrTable->getEntity($anrId);
 
         $consequences = [];
         foreach ($instanceConsequences as $instanceConsequence) {
@@ -1170,9 +1177,27 @@ class InstanceService extends AbstractService
             $scaleImpactType = $scaleImpactTypeTable->getEntity($instanceConsequence->scaleImpactType->id);
 
             if (!$scaleImpactType->isHidden) {
-                $consequences[] = [
+                if ($delivery) {
+
+                    /** @var ScaleCommentTable $scaleCommentTable */
+                    $scaleCommentTable = $this->get('scaleCommentTable');
+                    $scalesComments = $scaleCommentTable->getEntityByFields([
+                        'anr' => $anrId,
+                        'scaleImpactType' => $instanceConsequence->scaleImpactType->id,
+                    ]);
+
+
+                    $comments = [];
+                    foreach ($scalesComments as $scaleComment) {
+                        $comment = 'comment' . $anr->language;
+                        $comments[$scaleComment->val] = $scaleComment->$comment;
+                    }
+                }
+
+                $array = [
                     'id' => $instanceConsequence->id,
                     'scaleImpactType' => $scaleImpactType->type,
+                    'scaleImpactTypeId' => $scaleImpactType->id,
                     'scaleImpactTypeDescription1' => $scaleImpactType->label1,
                     'scaleImpactTypeDescription2' => $scaleImpactType->label2,
                     'scaleImpactTypeDescription3' => $scaleImpactType->label3,
@@ -1183,6 +1208,12 @@ class InstanceService extends AbstractService
                     'isHidden' => $instanceConsequence->isHidden,
                     'locallyTouched' => $instanceConsequence->locallyTouched,
                 ];
+
+                if ($delivery) {
+                    $array['comments'] = $comments;
+                }
+
+                $consequences[] = $array;
             }
         }
 
