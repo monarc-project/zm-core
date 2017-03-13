@@ -176,9 +176,9 @@ class InstanceService extends AbstractService
         if ($instance->get('id')) {
             $c = get_class($instance);
             $instance = new $c;
+            $instance->setDbAdapter($this->get('table')->getDb());
             $instance->initParametersChanges();
         }
-
         $instance->exchangeArray($data, false);
 
         //instance dependencies

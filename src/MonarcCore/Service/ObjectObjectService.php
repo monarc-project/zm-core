@@ -32,16 +32,7 @@ class ObjectObjectService extends AbstractService
     protected $dependencies = ['[child](object)', '[father](object)', '[anr](object)'];
 
     /**
-<<<<<<< HEAD
      * @inheritdoc
-=======
-     * Create
-     *
-     * @param $data
-     * @param bool $last
-     * @return mixed
-     * @throws \MonarcCore\Exception\Exception
->>>>>>> 31636fee3b3c0800213cd753ca5d7380f54fb056
      */
     public function create($data, $last = true, $context = Object::BACK_OFFICE)
     {
@@ -134,7 +125,7 @@ class ObjectObjectService extends AbstractService
 
             $previousInstance = false;
             if ($data['implicitPosition'] == 3) {
-                $previousObject = $objectObjectTable->get($previous)['child'];
+                $previousObject = $objectObjectTable->get($data['previous'])['child'];
                 $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $previousObject->id]);
                 foreach ($instances as $instance) {
                     $previousInstance = $instance->id;
