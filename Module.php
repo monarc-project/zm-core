@@ -79,6 +79,13 @@ class Module
                     file_exists($cacheDir."module-classmap-cache.".$appConf['module_listener_options']['module_map_cache_key'].".php")){
                     unlink($cacheDir."module-classmap-cache.".$appConf['module_listener_options']['module_map_cache_key'].".php");
                 }
+
+                $sm->get('doctrine.cli')->get('orm:clear-cache:metadata');
+                $sm->get('doctrine.cli')->get('orm:clear-cache:query');
+                $sm->get('doctrine.cli')->get('orm:clear-cache:result');
+
+                // Rm cache doctrine
+
                 unlink('./data/cache/upgrade');
             }
         }
