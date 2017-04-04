@@ -118,14 +118,7 @@ class QuestionService extends AbstractService
     }
 
     /**
-<<<<<<< HEAD
      * @inheritdoc
-=======
-     * Delete
-     *
-     * @param $id
-     * @throws \MonarcCore\Exception\Exception
->>>>>>> 31636fee3b3c0800213cd753ca5d7380f54fb056
      */
     public function delete($id)
     {

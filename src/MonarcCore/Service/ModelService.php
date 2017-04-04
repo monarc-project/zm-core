@@ -132,16 +132,7 @@ class ModelService extends AbstractService
     }
 
     /**
-<<<<<<< HEAD
      * @inheritdoc
-=======
-     * Update
-     *
-     * @param $id
-     * @param $data
-     * @return mixed
-     * @throws \MonarcCore\Exception\Exception
->>>>>>> 31636fee3b3c0800213cd753ca5d7380f54fb056
      */
     public function update($id, $data)
     {
@@ -175,20 +166,11 @@ class ModelService extends AbstractService
     }
 
     /**
-<<<<<<< HEAD
      * Verifies the model integrity before updating it
      * @param Model $model The model to check
      * @param array $data The new data
      * @return bool True if it's correct, false otherwise
      * @throws \Exception
-=======
-     * Verify Before Update
-     *
-     * @param $model
-     * @param $data
-     * @return bool
-     * @throws \MonarcCore\Exception\Exception
->>>>>>> 31636fee3b3c0800213cd753ca5d7380f54fb056
      */
     public function verifyBeforeUpdate($model, $data)
     {
