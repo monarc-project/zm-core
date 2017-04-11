@@ -24,10 +24,15 @@ class DoctrineLoggerFactory implements FactoryInterface
         $config = $serviceLocator->get('Config');
         $enable = isset($config['monarc']['doctrineLog'])?$config['monarc']['doctrineLog']:false;
         if($env != 'production' && $enable){
-            if(!is_dir('data/log')){
-                mkdir('data/log');
+            $datapath = './data/log/';
+            $appconfdir = getenv('APP_CONF_DIR') ? getenv('APP_CONF_DIR') : '';
+            if( ! empty($appconfdir) ){
+                $datapath = $appconfdir.'/data/log/';
             }
-            $writer = new \Zend\Log\Writer\Stream('data/log/'.date('Y-m-d').'-doctrine.log');
+            if(!is_dir($datapath)){
+                mkdir($datapath);
+            }
+            $writer = new \Zend\Log\Writer\Stream($datapath.date('Y-m-d').'-doctrine.log');
 
             $log = new \Zend\Log\Logger();
             $log->addWriter($writer);

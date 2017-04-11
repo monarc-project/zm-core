@@ -163,7 +163,12 @@ class DeliveriesModels extends AbstractEntity
     public function getInputFilter($partial = false)
     {
         if (!$this->inputFilter) {
-            $dirFile = './data/monarc/models/';
+            $dirFile = './data/';
+            $appconfdir = getenv('APP_CONF_DIR') ? getenv('APP_CONF_DIR') : '';
+            if( ! empty($appconfdir) ){
+                $dirFile = $appconfdir.'/data/';
+            }
+            $dirFile .= 'monarc/models/';
             if (!is_dir($dirFile)) {
                 mkdir($dirFile, 0775, true);
             }
