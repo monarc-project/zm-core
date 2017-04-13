@@ -72,16 +72,7 @@ class UserService extends AbstractService
     }
 
     /**
-<<<<<<< HEAD
      * @inheritdoc
-=======
-     * Patch
-     *
-     * @param $id
-     * @param $data
-     * @return mixed
-     * @throws \MonarcCore\Exception\Exception
->>>>>>> 31636fee3b3c0800213cd753ca5d7380f54fb056
      */
     public function patch($id, $data)
     {
@@ -109,16 +100,9 @@ class UserService extends AbstractService
     }
 
     /**
-<<<<<<< HEAD
      * Validates that the password matches the required strength policy (special chars, lower/uppercase, number)
      * @param string $data An array with a password key containing the password
      * @throws \Exception If password is invalid
-=======
-     * Validate password
-     *
-     * @param $data
-     * @throws \MonarcCore\Exception\Exception
->>>>>>> 31636fee3b3c0800213cd753ca5d7380f54fb056
      */
     protected function validatePassword($data)
     {

@@ -80,9 +80,19 @@ class Module
                     unlink($cacheDir."module-classmap-cache.".$appConf['module_listener_options']['module_map_cache_key'].".php");
                 }
 
-                $sm->get('doctrine.cli')->get('orm:clear-cache:metadata');
-                $sm->get('doctrine.cli')->get('orm:clear-cache:query');
-                $sm->get('doctrine.cli')->get('orm:clear-cache:result');
+                $output = new \Symfony\Component\Console\Output\NullOutput();
+                $inputMetadata = new \Symfony\Component\Console\Input\ArrayInput(array(
+                   'command' => 'orm:clear-cache:metadata',
+                ));
+                $sm->get('doctrine.cli')->get('orm:clear-cache:metadata')->run($inputMetadata,$output);
+                $inputQuery = new \Symfony\Component\Console\Input\ArrayInput(array(
+                   'command' => 'orm:clear-cache:query',
+                ));
+                $sm->get('doctrine.cli')->get('orm:clear-cache:query')->run($inputQuery,$output);
+                $inputResult = new \Symfony\Component\Console\Input\ArrayInput(array(
+                   'command' => 'orm:clear-cache:result',
+                ));
+                $sm->get('doctrine.cli')->get('orm:clear-cache:result')->run($inputResult,$output);
 
                 // Rm cache doctrine
 

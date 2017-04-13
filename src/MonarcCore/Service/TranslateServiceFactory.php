@@ -36,7 +36,7 @@ class TranslateServiceFactory implements FactoryInterface
             return false;
         }
         $transConf = [
-            'local' => '',
+            'locale' => '',
             'translation_files' => [],
         ];
 
@@ -52,11 +52,11 @@ class TranslateServiceFactory implements FactoryInterface
                     'filename' => $baseDir . $k . '.mo',
                     'type' => 'gettext',
                     'text_domain' => 'monarc',
-                    'local' => $k,
+                    'locale' => $k,
                 ];
             }
             if ($l['index'] == $defaultLanguageIndex) {
-                $transConf['local'] = $k;
+                $transConf['locale'] = $k;
             }
         }
         if (empty($transConf['translation_files'])) {
