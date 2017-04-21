@@ -23,6 +23,7 @@ class MailService extends AbstractService
      * @param string $email Email address
      * @param string $subject Email subject
      * @param string $message Email message
+     * @param string $from Email sender (optionnal)
      */
     public function send($email, $subject, $message, $from = null)
     {
