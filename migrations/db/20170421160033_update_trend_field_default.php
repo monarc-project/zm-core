@@ -28,6 +28,6 @@ class UpdateTrendFieldDefault extends AbstractMigration
     public function change()
     {
         $this->table('threats')->changeColumn('trend', 'integer', array('default' => 1));
-	$this->execute('UPDATE threats SET trends = 1);
+	$this->execute('UPDATE threats SET trends = 1');
     }
 }
