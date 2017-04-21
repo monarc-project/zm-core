@@ -23,8 +23,9 @@ class MailService extends AbstractService
      * @param string $email Email address
      * @param string $subject Email subject
      * @param string $message Email message
+     * @param string $from Email sender (optionnal)
      */
-    public function send($email, $subject, $message)
+    public function send($email, $subject, $message, $from = null)
     {
         $html = new Part($message);
         $html->type = "text/html";
@@ -34,7 +35,11 @@ class MailService extends AbstractService
 
         $message = new Message();
         $message->setBody($body);
-        $message->setFrom('info@cases.lu', 'Cases');
+        if(empty($from)){
+            $message->setFrom('info@cases.lu', 'Cases');
+        }else{
+            $message->setFrom($from, $from);
+        }
         $message->addTo($email, $email);
         $message->setSubject($subject);
 
