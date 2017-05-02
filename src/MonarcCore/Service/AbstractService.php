@@ -765,6 +765,7 @@ abstract class AbstractService extends AbstractServiceFactory
 
     /**
      * Encrypt the provided data using the specified key
+     * This is used for import and exporting of files mainly
      * @param string $data The data to encrypt
      * @param string $key The key to use to encrypt the data
      * @return string The encrypted data
@@ -777,6 +778,7 @@ abstract class AbstractService extends AbstractServiceFactory
 
     /**
      * Decrypt the provided data using the specified key
+     * This is used for import and exporting of files mainly
      * @param string $data The data to decrypt
      * @param string $key The key to use to decrypt the data
      * @return string The decrypted data
