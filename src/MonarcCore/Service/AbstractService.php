@@ -765,6 +765,7 @@ abstract class AbstractService extends AbstractServiceFactory
 
     /**
      * Encrypt the provided data using the specified key
+     * This is used for import and exporting of files mainly
      * @param string $data The data to encrypt
      * @param string $key The key to use to encrypt the data
      * @return string The encrypted data
@@ -772,11 +773,13 @@ abstract class AbstractService extends AbstractServiceFactory
     protected function encrypt($data, $key)
     {
         // TODO: Replace mcrypt_encrypt with openssl_encrypt
-        return mcrypt_encrypt(MCRYPT_RIJNDAEL_256, md5($key), $data, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND));
+        # return mcrypt_encrypt(MCRYPT_RIJNDAEL_256, md5($key), $data, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND));
+        return openssl_encrypt($data,'AES-256-ECB',md5($key));
     }
 
     /**
      * Decrypt the provided data using the specified key
+     * This is used for import and exporting of files mainly
      * @param string $data The data to decrypt
      * @param string $key The key to use to decrypt the data
      * @return string The decrypted data
@@ -784,7 +787,8 @@ abstract class AbstractService extends AbstractServiceFactory
     protected function decrypt($data, $key)
     {
         // TODO: Replace mcrypt_decrypt with openssl_decrypt
-        return mcrypt_decrypt(MCRYPT_RIJNDAEL_256, md5($key), $data, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND));
+        # return mcrypt_decrypt(MCRYPT_RIJNDAEL_256, md5($key), $data, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND));
+        return openssl_decrypt($data,'AES-256-ECB',md5($key));
     }
 
     /**

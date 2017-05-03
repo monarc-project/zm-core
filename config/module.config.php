@@ -288,6 +288,22 @@ return array(
         ),
     ),
 
+    "console" => array(
+        "router" => array(
+            "routes" => array(
+                "monarc-mail-tester" => array(
+                    "options" => array(
+                        "route" => "monarc:mail-tester [--from=] <email>",
+                        "defaults" => array(
+                            "controller" => 'MonarcCore\Controller\MailTester',
+                            "action" => "index",
+                        ),
+                    ),
+                ),
+            ),
+        ),
+    ),
+
     'view_manager' => array(
         'strategies' => array(
             'ViewJsonStrategy',
@@ -357,6 +373,7 @@ return array(
             'MonarcCore\Service\ModelObjectService'         => 'MonarcCore\Service\ModelObjectServiceFactory',
             'MonarcCore\Service\UserProfileService'         => 'MonarcCore\Service\UserProfileServiceFactory',
             'MonarcCore\Service\AnrObjectService'           => 'MonarcCore\Service\AnrObjectServiceFactory',
+            'MonarcCore\Service\MailTesterService'          => 'MonarcCore\Service\MailTesterServiceFactory',
 
             // Entities
             '\MonarcCore\Model\Entity\DeliveriesModels' => '\MonarcCore\Service\Model\Entity\DeliveriesModelsServiceModelEntity',
@@ -466,6 +483,7 @@ return array(
             '\MonarcCore\Controller\ApiAnrScales'                   => '\MonarcCore\Controller\ApiAnrScalesControllerFactory',
             '\MonarcCore\Controller\ApiAnrScalesTypes'              => '\MonarcCore\Controller\ApiAnrScalesTypesControllerFactory',
             '\MonarcCore\Controller\ApiAnrScalesComments'           => '\MonarcCore\Controller\ApiAnrScalesCommentsControllerFactory',
+            '\MonarcCore\Controller\MailTester'                     => '\MonarcCore\Controller\MailTesterControllerFactory',
         ),
     ),
 

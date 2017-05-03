@@ -241,4 +241,13 @@ class Module
 
         return $e->getResponse()->setStatusCode(401);
     }
+
+    public function getConsoleUsage(\Zend\Console\Adapter\AdapterInterface $console)
+    {
+        return array(
+            "MonarcCore Tools\n",
+            'monarc:mail-tester [--from=] <email>' => 'Sends a test email to the specified address',
+            ['--from', 'Define from email'],
+        );
+    }
 }
