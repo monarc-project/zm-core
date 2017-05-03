@@ -336,10 +336,14 @@ class ObjectService extends AbstractService
             if (!empty($rolfRisks)) {
                 foreach ($rolfRisks as $rolfRisk) {
                     $riskOps[] = [
-                        'description1' => $rolfRisk->label1,
-                        'description2' => $rolfRisk->label2,
-                        'description3' => $rolfRisk->label3,
-                        'description4' => $rolfRisk->label4,
+                        'label1' => $rolfRisk->label1,
+                        'label2' => $rolfRisk->label2,
+                        'label3' => $rolfRisk->label3,
+                        'label4' => $rolfRisk->label4,
+                        'description1' => $rolfRisk->description1,
+                        'description2' => $rolfRisk->description2,
+                        'description3' => $rolfRisk->description3,
+                        'description4' => $rolfRisk->description4,
                         'prob' => '-',
                         'r' => '-',
                         'o' => '-',
