@@ -489,7 +489,6 @@ return array(
 
     'monarc' => array(
         'ttl' => 20, // timeout
-        'salt' => '', // salt privé pour chiffrement pwd
         'doctrineLog' => false, // enable doctrine log (data/log/date('Y-m-d')-doctrine.log)
     ),
 

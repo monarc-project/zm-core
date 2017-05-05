@@ -20,6 +20,7 @@ class PasswordService extends AbstractService
     protected $userTable;
     protected $userService;
     protected $mailService;
+    protected $securityService;
 
     /**
      * Handles password forgotten
@@ -142,7 +143,7 @@ class PasswordService extends AbstractService
         $user = $this->get('userService')->getEntity($userId);
 
         if ($user) {
-            if (password_verify($oldPassword, $user['password'])) {
+            if ($this->securityService->verifyPwd($oldPassword, $user['password'])) {
                 $this->get('userService')->patch($userId, ['password' => $newPassword]);
             } else {
                 throw new \MonarcCore\Exception\Exception('Original password incorrect', 412);

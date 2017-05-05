@@ -174,9 +174,6 @@ class UserSuperClass extends AbstractEntity
                 'filters' => array(
                     array(
                         'name' => '\MonarcCore\Filter\Password',
-                        'options' => array(
-                            'salt' => $this->getUserSalt(),
-                        ),
                     ),
                 ),
                 'validators' => array(),
@@ -194,24 +191,6 @@ class UserSuperClass extends AbstractEntity
             ));
         }
         return $this->inputFilter;
-    }
-
-    /**
-     * @param $userSalt
-     * @return $this
-     */
-    public function setUserSalt($userSalt)
-    {
-        $this->parameters['userSalt'] = $userSalt;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getUserSalt()
-    {
-        return isset($this->parameters['userSalt']) ? $this->parameters['userSalt'] : '';
     }
 }
 
