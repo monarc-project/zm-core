@@ -411,7 +411,7 @@ class ObjectSuperClass extends AbstractEntity
 
                 $this->inputFilter->add(array(
                     'name' => $name,
-                    'required' => ((strchr($name, (string)$this->getLanguage())) && (!$partial)) ? true : false,
+                    'required' => false,
                     'allow_empty' => false,
                     'filters' => array(),
                     'validators' => $validatorsName,
@@ -422,7 +422,7 @@ class ObjectSuperClass extends AbstractEntity
             foreach ($labels as $label) {
                 $this->inputFilter->add(array(
                     'name' => $label,
-                    'required' => ((strchr($label, (string)$this->getLanguage())) && (!$partial)) ? true : false,
+                    'required' => false,
                     'allow_empty' => false,
                     'filters' => array(),
                     'validators' => array(),

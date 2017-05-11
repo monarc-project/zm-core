@@ -244,7 +244,7 @@ class ObjectCategorySuperClass extends AbstractEntity
             foreach ($texts as $text) {
                 $this->inputFilter->add(array(
                     'name' => $text,
-                    'required' => ((strchr($text, (string)$this->getLanguage())) && (!$partial)) ? true : false,
+                    'required' => false,
                     'allow_empty' => false,
                     'filters' => array(),
                     'validators' => array(),
