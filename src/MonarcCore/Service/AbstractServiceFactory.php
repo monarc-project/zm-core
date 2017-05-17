@@ -86,6 +86,27 @@ abstract class AbstractServiceFactory implements FactoryInterface
      */
     public function getDefaultLanguage($sm)
     {
+        $request = $sm->get('Request');
+        if(!$request instanceof \Zend\Console\Request){
+            /** @var TreeRouteStack $router */
+            $router = $sm->get('Router');
+            /** @var RouteMatch $match */
+            $match = $router->match($request);
+            if($match && strpos($match->getMatchedRouteName(), 'monarc_api_global_client_anr/') === 0){
+                $anrId = $match->getParam('anrid', false);
+
+                if ($anrId) {
+                    /** @var AnrTable $anrTable */
+                    $anrTable = $sm->get('\MonarcFO\Model\Table\AnrTable');
+                    $anr = $anrTable->getEntity($anrId);
+
+                    if ($anr->get('language')) {
+                        return $anr->get('language');
+                    }
+                }
+            }
+        }
+
         $config = $sm->get('Config');
 
         return $config['defaultLanguageIndex'];
