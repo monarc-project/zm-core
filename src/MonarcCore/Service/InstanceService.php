@@ -177,6 +177,7 @@ class InstanceService extends AbstractService
             $c = get_class($instance);
             $instance = new $c;
             $instance->setDbAdapter($this->get('table')->getDb());
+            $instance->setLanguage($this->getLanguage());
             $instance->initParametersChanges();
         }
         $instance->exchangeArray($data, false);
@@ -1308,9 +1309,9 @@ class InstanceService extends AbstractService
 
                 $class = $this->get('instanceConsequenceEntity');
                 $instanceConsequenceEntity = new $class();
-
+                $instanceConsequenceEntity->setLanguage($this->getLanguage());
+                $instanceConsequenceEntity->setDbAdapter($this->get('instanceConsequenceTable')->getDb());
                 $instanceConsequenceEntity->exchangeArray($data);
-
                 $instanceConsequenceTable->save($instanceConsequenceEntity, ($i == $nbInstancesConsequences));
 
                 $i++;
@@ -1336,6 +1337,8 @@ class InstanceService extends AbstractService
                 ];
                 $class = $this->get('instanceConsequenceEntity');
                 $instanceConsequenceEntity = new $class();
+                $instanceConsequenceEntity->setLanguage($this->getLanguage());
+                $instanceConsequenceEntity->setDbAdapter($this->get('instanceConsequenceTable')->getDb());
                 $instanceConsequenceEntity->exchangeArray($data);
                 $instanceConsequenceTable->save($instanceConsequenceEntity, ($i == $nbScalesImpactTypes));
                 $i++;
