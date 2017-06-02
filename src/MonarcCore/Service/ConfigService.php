@@ -45,4 +45,9 @@ class ConfigService extends AbstractService
             'defaultLanguageIndex' => $defaultLanguageIndex,
         ];
     }
+
+    public function gethost()
+    {
+        return isset($this->config['publicHost']) ? $this->config['publicHost'] : '';
+    }
 }

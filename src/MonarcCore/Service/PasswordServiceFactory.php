@@ -22,5 +22,6 @@ class PasswordServiceFactory extends AbstractServiceFactory
         'userService' => 'MonarcCore\Service\UserService',
         'mailService' => 'MonarcCore\Service\MailService',
         'securityService' => 'MonarcCore\Service\SecurityService',
+        'configService' => 'MonarcCore\Service\ConfigService',
     ];
 }
