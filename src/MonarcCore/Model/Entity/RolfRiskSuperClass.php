@@ -41,17 +41,6 @@ class RolfRiskSuperclass extends AbstractEntity
     protected $anr;
 
     /**
-     * @var \MonarcCore\Model\Entity\RolfCategory
-     *
-     * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\RolfCategory", cascade={"persist"})
-     * @ORM\JoinTable(name="rolf_risks_categories",
-     *  joinColumns={@ORM\JoinColumn(name="rolf_risk_id", referencedColumnName="id")},
-     *  inverseJoinColumns={@ORM\JoinColumn(name="rolf_category_id", referencedColumnName="id")}
-     * )
-     */
-    protected $categories;
-
-    /**
      * @var \MonarcCore\Model\Entity\RolfTag
      *
      * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\RolfTag", inversedBy="risks", cascade={"persist"})
@@ -216,11 +205,6 @@ class RolfRiskSuperclass extends AbstractEntity
         $this->tags = $rolfTags;
     }
 
-    public function setCategories($categories)
-    {
-        $this->categories = $categories;
-    }
-
     public function getInputFilter($partial = false)
     {
         if (!$this->inputFilter) {
@@ -279,4 +263,3 @@ class RolfRiskSuperclass extends AbstractEntity
         parent::__construct($obj);
     }
 }
-
