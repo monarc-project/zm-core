@@ -13,7 +13,6 @@ use Zend\Validator\AbstractValidator;
  * @package MonarcCore\Validator
  * @see MonarcCore\Model\Entity\Asset
  * @see MonarcCore\Model\Entity\Measure
- * @see MonarcCore\Model\Entity\RolfCategory
  * @see MonarcCore\Model\Entity\RolfRisk
  * @see MonarcCore\Model\Entity\RolfTag
  * @see MonarcCore\Model\Entity\Threat
