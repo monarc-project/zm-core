@@ -20,7 +20,6 @@ use MonarcFO\Model\Entity\RolfRisk;
  */
 class RolfRiskService extends AbstractService
 {
-    protected $rolfCategoryTable;
     protected $rolfTagTable;
     protected $objectTable;
     protected $instanceTable;
@@ -33,18 +32,10 @@ class RolfRiskService extends AbstractService
     /**
      * @inheritdoc
      */
-    public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $category = null, $tag = null, $anr = null)
+    public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $tag = null, $anr = null)
     {
         $filterAnd = [];
         $filterJoin = [];
-
-        if (!is_null($category)) {
-            $filterJoin[] = [
-                'as' => 'c',
-                'rel' => 'categories'
-            ];
-            $filterAnd['c.id'] = $category;
-        }
 
         if (!is_null($tag)) {
             $filterJoin[] = [
@@ -72,18 +63,10 @@ class RolfRiskService extends AbstractService
     /**
      * @inheritdoc
      */
-    public function getFilteredSpecificCount($page = 1, $limit = 25, $order = null, $filter = null, $category = null, $tag = null, $anr = null)
+    public function getFilteredSpecificCount($page = 1, $limit = 25, $order = null, $filter = null, $tag = null, $anr = null)
     {
         $filterAnd = [];
         $filterJoin = [];
-
-        if (!is_null($category)) {
-            $filterJoin[] = [
-                'as' => 'c',
-                'rel' => 'categories'
-            ];
-            $filterAnd['c.id'] = $category;
-        }
 
         if (!is_null($tag)) {
             $filterJoin[] = [
@@ -118,16 +101,6 @@ class RolfRiskService extends AbstractService
 
         $entity->exchangeArray($data);
 
-        $rolfCategories = $entity->get('categories');
-        if (!empty($rolfCategories)) {
-            $rolfCategoryTable = $this->get('rolfCategoryTable');
-            foreach ($rolfCategories as $key => $rolfCategoryId) {
-                if (!empty($rolfCategoryId)) {
-                    $rolfCategory = $rolfCategoryTable->getEntity($rolfCategoryId);
-                    $entity->setCategory($key, $rolfCategory);
-                }
-            }
-        }
         $rolfTags = $entity->get('tags');
         if (!empty($rolfTags)) {
             $rolfTagTable = $this->get('rolfTagTable');
@@ -146,8 +119,6 @@ class RolfRiskService extends AbstractService
      */
     public function update($id, $data)
     {
-        $rolfCategories = isset($data['categories']) ? $data['categories'] : [];
-        unset($data['categories']);
         $rolfTags = isset($data['tags']) ? $data['tags'] : [];
         unset($data['tags']);
 
@@ -161,32 +132,13 @@ class RolfRiskService extends AbstractService
             $currentTagId[] = $tag->id;
         }
 
-        $entity->get('categories')->initialize();
         $entity->get('tags')->initialize();
-
-        foreach ($entity->get('categories') as $rolfCategory) {
-            if (in_array($rolfCategory->get('id'), $rolfCategories)) {
-                unset($rolfCategories[array_search($rolfCategory->get('id'), $rolfCategories)]);
-            } else {
-                $entity->get('categories')->removeElement($rolfCategory);
-            }
-        }
 
         foreach ($entity->get('tags') as $rolfTag) {
             if (in_array($rolfTag->get('id'), $rolfTags)) {
                 unset($rolfTags[array_search($rolfTag->get('id'), $rolfTags)]);
             } else {
                 $entity->get('tags')->removeElement($rolfTag);
-            }
-        }
-
-        if (!empty($rolfCategories)) {
-            $rolfCategoryTable = $this->get('rolfCategoryTable');
-            foreach ($rolfCategories as $key => $rolfCategoryId) {
-                if (!empty($rolfCategoryId)) {
-                    $rolfCategory = $rolfCategoryTable->getEntity($rolfCategoryId);
-                    $entity->setCategory($key, $rolfCategory);
-                }
             }
         }
 
