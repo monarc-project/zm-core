@@ -109,7 +109,9 @@ abstract class AbstractEntity implements InputFilterAwareInterface
             unset($array['squeezeAutoPositionning']);
             return $array;
         } else {
-            return array_intersect_key(get_object_vars($this), array_flip($fields));
+            $array = get_object_vars($this);
+            unset($array['password']);
+            return array_intersect_key($array, array_flip($fields));
         }
     }
 
