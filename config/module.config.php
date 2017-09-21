@@ -517,5 +517,9 @@ return array(
             'index' => 3,
             'label' => 'Deutsch'
         ),
+        'ne' => array(
+            'index' => 4,
+            'label' => 'Nederlands'
+        ),
     ),
 );
