@@ -36,7 +36,7 @@ class MailService extends AbstractService
         $message = new Message();
         $message->setBody($body);
         if(empty($from)){
-            $message->setFrom('info@cases.lu', 'Cases');
+            $message->setFrom('info@monarc.lu', 'MONARC');
         }else{
             $message->setFrom($from, $from);
         }

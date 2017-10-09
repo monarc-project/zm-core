@@ -500,7 +500,7 @@ return array(
 
     'cases' => [
         'name' => 'Cases',
-        'mail' => 'info@cases.lu',
+        'mail' => 'info@monarc.lu',
     ],
 
     'defaultLanguageIndex' => 1,
