@@ -108,6 +108,7 @@ class ObjectExportService extends AbstractService
         }
 
         // Recovery of operational risks
+        $rolfTag = $entity->get('rolfTag');
         $return['object']['rolfTag'] = null;
         if (!empty($rolfTag)) {
             $risks = $rolfTag->get('risks');
@@ -162,7 +163,7 @@ class ObjectExportService extends AbstractService
                 $idCateg = $this->importFromArrayCategories($data['categories'], $data['object']['category'], $anr->get('id'));
 
                 // Import RisksOp
-                $data['object']['rolfTag'] = null;
+                //$data['object']['rolfTag'] = null;
                 if (!empty($data['object']['rolfTag']) && !empty($data['rolfTags'][$data['object']['rolfTag']])) {
                     $tag = current($this->get('rolfTagTable')->getEntityByFields([
                         'anr' => $anr->get('id'),
