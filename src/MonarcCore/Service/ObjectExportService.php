@@ -163,7 +163,6 @@ class ObjectExportService extends AbstractService
                 $idCateg = $this->importFromArrayCategories($data['categories'], $data['object']['category'], $anr->get('id'));
 
                 // Import RisksOp
-                //$data['object']['rolfTag'] = null;
                 if (!empty($data['object']['rolfTag']) && !empty($data['rolfTags'][$data['object']['rolfTag']])) {
                     $tag = current($this->get('rolfTagTable')->getEntityByFields([
                         'anr' => $anr->get('id'),
