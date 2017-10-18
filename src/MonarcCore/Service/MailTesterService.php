@@ -44,7 +44,8 @@ class MailTesterService {
         if(empty($from)){
             $this->mailService->send($email,
                 '[Monarc] Test email / NOT REPLY',
-                '[Monarc] Test email / NOT REPLY');
+                '[Monarc] Test email / NOT REPLY',
+                'info@monarc.lu');
         }else{
             $this->mailService->send($email,
                 '[Monarc] Test email / NOT REPLY',

@@ -6,6 +6,7 @@
  */
 
 namespace MonarcCore\Service;
+
 use Zend\Mail\Message;
 use Zend\Mail\Transport\Sendmail;
 use Zend\Mime\Part;
@@ -18,6 +19,8 @@ use Zend\Mime\Part;
  */
 class MailService extends AbstractService
 {
+    protected $configService;
+
     /**
      * Send an email to the specified recipient, with the subject and message set
      * @param string $email Email address
@@ -25,7 +28,7 @@ class MailService extends AbstractService
      * @param string $message Email message
      * @param string $from Email sender (optionnal)
      */
-    public function send($email, $subject, $message, $from = null)
+    public function send($email, $subject, $message, $from)
     {
         $html = new Part($message);
         $html->type = "text/html";
@@ -35,11 +38,7 @@ class MailService extends AbstractService
 
         $message = new Message();
         $message->setBody($body);
-        if(empty($from)){
-            $message->setFrom('info@monarc.lu', 'MONARC');
-        }else{
-            $message->setFrom($from, $from);
-        }
+        $message->setFrom($from['from'], $from['name']);
         $message->addTo($email, $email);
         $message->setSubject($subject);
 

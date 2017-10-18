@@ -94,7 +94,8 @@ class PasswordService extends AbstractService
 
             /** @var MailService $mailService */
             $mailService = $this->get('mailService');
-            $mailService->send($email, $subject, $message);
+            $from = $this->configService->getemail();
+            $mailService->send($email, $subject, $message, $from);
         }
     }
 

@@ -50,4 +50,14 @@ class ConfigService extends AbstractService
     {
         return isset($this->config['publicHost']) ? $this->config['publicHost'] : '';
     }
+
+    public function getemail()
+    {
+        return [
+            'from' =>
+                isset($this->config['email']['from']) ? $this->config['email']['from'] : 'info@monarc.lu',
+            'name' =>
+                isset($this->config['email']['name']) ? $this->config['email']['name'] : 'MONARC',
+        ];
+    }
 }
