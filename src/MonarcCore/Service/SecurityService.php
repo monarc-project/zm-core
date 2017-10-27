@@ -25,7 +25,6 @@ class SecurityService extends AbstractService
      */
     public function verifyPwd($pwd, $hash)
     {
-	return true; // to fix
         return password_verify($pwd, $hash);
     }
 
