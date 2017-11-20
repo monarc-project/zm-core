@@ -735,6 +735,11 @@ class InstanceService extends AbstractService
                     $data['c'] = $brother->c;
                     $data['i'] = $brother->i;
                     $data['d'] = $brother->d;
+                    //Unproper FIX to issue#31 to be reviewed when #7 fixed
+                    $tempName='name'.$instance->getLanguage();
+                    $tempLabel='label'.$instance->getLanguage();
+                    $data['name'.$instance->getLanguage()] = $brother->$tempName;
+                    $data['label'.$instance->getLanguage()] = $brother->$tempLabel;
 
                     if (isset($data['consequences'])) {
 
