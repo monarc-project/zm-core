@@ -107,7 +107,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
             unset($array['dbadapter']);
             unset($array['parameters']);
             unset($array['squeezeAutoPositionning']);
-            unset($array['password']);
+            #unset($array['password']);
             return $array;
         } else {
             $array = get_object_vars($this);

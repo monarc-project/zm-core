@@ -193,4 +193,3 @@ class UserSuperClass extends AbstractEntity
         return $this->inputFilter;
     }
 }
-
