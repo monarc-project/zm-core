@@ -609,7 +609,7 @@ class ObjectService extends AbstractService
         $rolfTagId = ($object->rolfTag) ? $object->rolfTag->id : null;
 
         $object->exchangeArray($data, true);
-        
+
         if ($object->rolfTag) {
             $newRolfTagId = (is_int($object->rolfTag)) ? $object->rolfTag : $object->rolfTag->id;
             $newRolfTag = ($rolfTagId == $newRolfTagId) ? false : $object->rolfTag;
@@ -908,7 +908,7 @@ class ObjectService extends AbstractService
         $exist = current($this->get('table')->getEntityByFields($filter));
         $suff = 0;
         while (!empty($exist)) {
-            $suff++;
+            $suff=time();
             $filterB = $filter;
             foreach ($filterB as $k => $v) {
                 $filterB[$k] = $v . ' (copy #' . $suff . ')';
