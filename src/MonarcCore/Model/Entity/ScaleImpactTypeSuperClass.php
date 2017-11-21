@@ -86,32 +86,12 @@ class ScaleImpactTypeSuperClass extends AbstractEntity
     protected $type;
 
     /**
-     * @var string
+     * @var \MonarcCore\Model\Entity\Translation
      *
-     * @ORM\Column(name="label1", type="string", length=255, nullable=true)
+     * @ORM\OneToOne(targetEntity="\MonarcCore\Model\Entity\Translation")
+     * @ORM\JoinColumn(name="label_translation_id", referencedColumnName="id")
      */
-    protected $label1;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label2", type="string", length=255, nullable=true)
-     */
-    protected $label2;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label3", type="string", length=255, nullable=true)
-     */
-    protected $label3;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label4", type="string", length=255, nullable=true)
-     */
-    protected $label4;
+    protected $label;
 
     /**
      * @var smallint

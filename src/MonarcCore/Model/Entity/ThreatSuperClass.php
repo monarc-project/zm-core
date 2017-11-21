@@ -51,60 +51,20 @@ class ThreatSuperClass extends AbstractEntity
     protected $theme;
 
     /**
-     * @var string
+     * @var \MonarcCore\Model\Entity\Translation
      *
-     * @ORM\Column(name="label1", type="string", length=255, nullable=true)
+     * @ORM\OneToOne(targetEntity="\MonarcCore\Model\Entity\Translation")
+     * @ORM\JoinColumn(name="label_translation_id", referencedColumnName="id")
      */
-    protected $label1;
+    protected $label;
 
     /**
-     * @var string
+     * @var \MonarcCore\Model\Entity\Translation
      *
-     * @ORM\Column(name="label2", type="string", length=255, nullable=true)
+     * @ORM\OneToOne(targetEntity="\MonarcCore\Model\Entity\Translation")
+     * @ORM\JoinColumn(name="description_translation_id", referencedColumnName="id")
      */
-    protected $label2;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label3", type="string", length=255, nullable=true)
-     */
-    protected $label3;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label4", type="string", length=255, nullable=true)
-     */
-    protected $label4;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="description1", type="string", length=255, nullable=true)
-     */
-    protected $description1;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="description2", type="string", length=255, nullable=true)
-     */
-    protected $description2;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="description3", type="string", length=255, nullable=true)
-     */
-    protected $description3;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="description4", type="string", length=255, nullable=true)
-     */
-    protected $description4;
+    protected $description;
 
     /**
      * @var smallint
@@ -144,21 +104,21 @@ class ThreatSuperClass extends AbstractEntity
     /**
      * @var smallint
      *
-     * @ORM\Column(name="c", type="smallint", options={"unsigned":true, "default":0})
+     * @ORM\Column(name="confidentiality", type="smallint", options={"unsigned":true, "default":0})
      */
     protected $c = '1';
 
     /**
      * @var smallint
      *
-     * @ORM\Column(name="i", type="smallint", options={"unsigned":true, "default":0})
+     * @ORM\Column(name="integrity", type="smallint", options={"unsigned":true, "default":0})
      */
     protected $i = '1';
 
     /**
      * @var smallint
      *
-     * @ORM\Column(name="d", type="smallint", options={"unsigned":true, "default":0})
+     * @ORM\Column(name="disponibility", type="smallint", options={"unsigned":true, "default":0})
      */
     protected $d = '1';
 

@@ -68,32 +68,12 @@ class ScaleCommentSuperClass extends AbstractEntity
     protected $val;
 
     /**
-     * @var text
+     * @var \MonarcCore\Model\Entity\Translation
      *
-     * @ORM\Column(name="comment1", type="text", length=255, nullable=true)
+     * @ORM\OneToOne(targetEntity="\MonarcCore\Model\Entity\Translation")
+     * @ORM\JoinColumn(name="comment_translation_id", referencedColumnName="id")
      */
-    protected $comment1;
-
-    /**
-     * @var text
-     *
-     * @ORM\Column(name="comment2", type="text", length=255, nullable=true)
-     */
-    protected $comment2;
-
-    /**
-     * @var text
-     *
-     * @ORM\Column(name="comment3", type="text", length=255, nullable=true)
-     */
-    protected $comment3;
-
-    /**
-     * @var text
-     *
-     * @ORM\Column(name="comment4", type="text", length=255, nullable=true)
-     */
-    protected $comment4;
+    protected $comment;
 
     /**
      * @var string

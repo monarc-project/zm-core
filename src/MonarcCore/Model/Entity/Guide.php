@@ -43,32 +43,12 @@ class Guide extends AbstractEntity
     protected $type;
 
     /**
-     * @var string
+     * @var \MonarcCore\Model\Entity\Translation
      *
-     * @ORM\Column(name="description1", type="string", length=255, nullable=true)
+     * @ORM\OneToOne(targetEntity="\MonarcCore\Model\Entity\Translation")
+     * @ORM\JoinColumn(name="description_translation_id", referencedColumnName="id")
      */
-    protected $description1;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="description2", type="string", length=255, nullable=true)
-     */
-    protected $description2;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="description3", type="string", length=255, nullable=true)
-     */
-    protected $description3;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="description4", type="string", length=255, nullable=true)
-     */
-    protected $description4;
+    protected $description;
 
     /**
      * @var smallint

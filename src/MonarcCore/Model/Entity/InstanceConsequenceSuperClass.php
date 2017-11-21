@@ -88,21 +88,21 @@ class InstanceConsequenceSuperClass extends AbstractEntity
     /**
      * @var smallint
      *
-     * @ORM\Column(name="c", type="smallint", options={"unsigned":true, "default":-1})
+     * @ORM\Column(name="confidentiality", type="smallint", options={"unsigned":true, "default":-1})
      */
     protected $c = -1;
 
     /**
      * @var smallint
      *
-     * @ORM\Column(name="i", type="smallint", options={"unsigned":true, "default":-1})
+     * @ORM\Column(name="integrity", type="smallint", options={"unsigned":true, "default":-1})
      */
     protected $i = -1;
 
     /**
      * @var smallint
      *
-     * @ORM\Column(name="d", type="smallint", options={"unsigned":true, "default":-1})
+     * @ORM\Column(name="disponibility", type="smallint", options={"unsigned":true, "default":-1})
      */
     protected $d = -1;
 

@@ -62,6 +62,14 @@ class AnrSuperClass extends AbstractEntity
     protected $label4;
 
     /**
+     * @var \MonarcCore\Model\Entity\Translation
+     *
+     * @ORM\OneToOne(targetEntity="\MonarcCore\Model\Entity\Translation")
+     * @ORM\JoinColumn(name="label_translation_id", referencedColumnName="id")
+     */
+    protected $label;
+
+    /**
      * @var text
      *
      * @ORM\Column(name="description1", type="text", length=255, nullable=true)
@@ -89,6 +97,14 @@ class AnrSuperClass extends AbstractEntity
      */
     protected $description4;
 
+    /**
+     * @var \MonarcCore\Model\Entity\Translation
+     *
+     * @ORM\OneToOne(targetEntity="\MonarcCore\Model\Entity\Translation")
+     * @ORM\JoinColumn(name="description_translation_id", referencedColumnName="id")
+     */
+    protected $description;
+    
     /**
      * @var integer
      *
