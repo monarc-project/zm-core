@@ -172,9 +172,9 @@ class AssetService extends AbstractService
     }
 
     /**
-     * Exports the asset as base64-encoded file
+     * Exports the asset, optionaly encrypted
      * @param array $data The 'id' and 'password' for export
-     * @return string The base64-encoded file
+     * @return string The file, optionaly encrypted
      * @throws \Exception if the asset is invalid
      */
     public function exportAsset(&$data)
@@ -182,13 +182,15 @@ class AssetService extends AbstractService
         if (empty($data['id'])) {
             throw new \MonarcCore\Exception\Exception('Asset to export is required', 412);
         }
-        if (empty($data['password'])) {
-            $data['password'] = '';
-        }
         $filename = "";
-        $return = $this->get('assetExportService')->generateExportArray($data['id'], $filename);
+
+        $exportedAsset = json_encode($this->get('assetExportService')->generateExportArray($data['id'], $filename));
         $data['filename'] = $filename;
 
-        return base64_encode($this->encrypt(json_encode($return), $data['password']));
+        if (! empty($data['password'])) {
+            $exportedAsset = $this->encrypt($exportedAsset, $data['password']);
+        }
+
+        return $exportedAsset;
     }
 }
