@@ -1348,6 +1348,7 @@ class ObjectService extends AbstractService
         $return = $this->get('objectExportService')->generateExportArray($data['id'], $filename);
         $data['filename'] = $filename;
 
-        return base64_encode($this->encrypt(json_encode($return), $data['password']));
+        return json_encode($return);
+        #return base64_encode($this->encrypt(json_encode($return), $data['password']));
     }
 }
