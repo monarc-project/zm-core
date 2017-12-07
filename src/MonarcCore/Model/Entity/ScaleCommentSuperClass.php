@@ -70,8 +70,12 @@ class ScaleCommentSuperClass extends AbstractEntity
     /**
      * @var \MonarcCore\Model\Entity\Translation
      *
-     * @ORM\OneToOne(targetEntity="\MonarcCore\Model\Entity\Translation")
-     * @ORM\JoinColumn(name="comment_translation_id", referencedColumnName="id")
+     * @ORM\ManyToMany(targetEntity="\MonarcCore\Model\Entity\Translation")
+     * @ORM\Column(name="comment_translation_id")
+     * @ORM\JoinTable(name="translation_language",
+     *     joinColumns={@ORM\JoinColumn(name="entity_string_id", referencedColumnName="comment_translation_id")},
+     *     inverseJoinColumns={@ORM\JoinColumn(name="translation_id", referencedColumnName="id")})
+     *
      */
     protected $comment;
 

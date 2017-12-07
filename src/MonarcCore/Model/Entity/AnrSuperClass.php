@@ -34,74 +34,26 @@ class AnrSuperClass extends AbstractEntity
     protected $objects;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="label1", type="string", length=255, nullable=true)
-     */
-    protected $label1;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label2", type="string", length=255, nullable=true)
-     */
-    protected $label2;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label3", type="string", length=255, nullable=true)
-     */
-    protected $label3;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label4", type="string", length=255, nullable=true)
-     */
-    protected $label4;
-
-    /**
      * @var \MonarcCore\Model\Entity\Translation
      *
-     * @ORM\OneToOne(targetEntity="\MonarcCore\Model\Entity\Translation")
-     * @ORM\JoinColumn(name="label_translation_id", referencedColumnName="id")
+     * @ORM\ManyToMany(targetEntity="\MonarcCore\Model\Entity\Translation")
+     * @ORM\Column(name="label_translation_id")
+     * @ORM\JoinTable(name="translation_language",
+     *     joinColumns={@ORM\JoinColumn(name="entity_string_id", referencedColumnName="label_translation_id")},
+     *     inverseJoinColumns={@ORM\JoinColumn(name="translation_id", referencedColumnName="id")})
+     *
      */
     protected $label;
 
     /**
-     * @var text
-     *
-     * @ORM\Column(name="description1", type="text", length=255, nullable=true)
-     */
-    protected $description1;
-
-    /**
-     * @var text
-     *
-     * @ORM\Column(name="description2", type="text", length=255, nullable=true)
-     */
-    protected $description2;
-
-    /**
-     * @var text
-     *
-     * @ORM\Column(name="description3", type="text", length=255, nullable=true)
-     */
-    protected $description3;
-
-    /**
-     * @var text
-     *
-     * @ORM\Column(name="description4", type="text", length=255, nullable=true)
-     */
-    protected $description4;
-
-    /**
      * @var \MonarcCore\Model\Entity\Translation
      *
-     * @ORM\OneToOne(targetEntity="\MonarcCore\Model\Entity\Translation")
-     * @ORM\JoinColumn(name="description_translation_id", referencedColumnName="id")
+     * @ORM\ManyToMany(targetEntity="\MonarcCore\Model\Entity\Translation")
+     * @ORM\Column(name="description_translation_id")
+     * @ORM\JoinTable(name="translation_language",
+     *     joinColumns={@ORM\JoinColumn(name="entity_string_id", referencedColumnName="description_translation_id")},
+     *     inverseJoinColumns={@ORM\JoinColumn(name="translation_id", referencedColumnName="id")})
+     *
      */
     protected $description;
     
