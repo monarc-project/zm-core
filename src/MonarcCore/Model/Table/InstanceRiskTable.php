@@ -74,20 +74,21 @@ class InstanceRiskTable extends AbstractEntityTable
         $output = '';
         if (count($risks) > 0) {
             $fields = [
-                'instanceName' . $lang => $translate->translate('Instance', $lang),
-                'c_impact' => $translate->translate('Impact C', $lang),
-                'i_impact' => $translate->translate('Impact I', $lang),
-                'd_impact' => $translate->translate('Impact D', $lang),
+                'instanceName' . $lang => $translate->translate('Asset', $lang),
+                'c_impact' => $translate->translate('C Impact', $lang),
+                'i_impact' => $translate->translate('I Impact', $lang),
+                'd_impact' => $translate->translate('A Impact', $lang),
                 'threatLabel' . $lang => $translate->translate('Threat', $lang),
-                'threatCode' => $translate->translate('Threat code', $lang),
                 'threatRate' => $translate->translate('Prob.', $lang),
                 'vulnLabel' . $lang => $translate->translate('Vulnerability', $lang),
-                'vulnCode' => $translate->translate('Vulnerability code', $lang),
+                'comment' => $translate->translate('Existing controls', $lang),
                 'vulnerabilityRate' => $translate->translate('Qualif.', $lang),
-                'c_risk' => $translate->translate('Current risk C', $lang),
-                'i_risk' => $translate->translate('Current risk I', $lang),
-                'd_risk' => $translate->translate('Current risk D', $lang),
-                'target_risk' => $translate->translate('Target risk', $lang),
+                'c_risk' => $translate->translate('Current risk', $lang). " C",
+                'i_risk' => $translate->translate('Current risk', $lang) . " I",
+                'd_risk' => $translate->translate('Current risk', $lang) . " " . $translate->translate('A', $lang),
+                'kindOfMeasure' => $translate->translate('Treatment', $lang),
+                'target_risk' => $translate->translate('Residual risk', $lang),
+
             ];
 
             // TODO: why don't use "fputcsv" ?
@@ -97,12 +98,36 @@ class InstanceRiskTable extends AbstractEntityTable
 
             // Fill in the lines then
             foreach ($risks as $risk) {
-                foreach ($fields as $k => $v) {
+              foreach ($fields as $k => $v) {
+                  if ($k == 'kindOfMeasure'){
+                    switch ($risk[$k]) {
+                      case 1:
+                          $array_values[] = $translate->translate('Reduction', $lang);
+                          break;
+                      case 2:
+                          $array_values[] = $translate->translate('Denied', $lang);;
+                          break;
+                      case 3:
+                          $array_values[] = $translate->translate('Accepted', $lang);
+                          break;
+                      case 4:
+                          $array_values[] = $translate->translate('Shared', $lang);
+                          break;
+                      default:
+                        $array_values[] = $translate->translate('Not treated', $lang);
+                    }
+                  }
+                  elseif ($risk[$k] == '-1'){
+                    $array_values[] = null;
+                  }
+                  else {
                     $array_values[] = $risk[$k];
+                  }
                 }
                 $output .= '"';
                 $output .= implode('","', str_replace('"', '\"', $array_values));
                 $output .= "\"\r\n";
+                $array_values = null;
             }
         }
 
