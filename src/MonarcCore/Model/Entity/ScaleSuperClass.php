@@ -193,17 +193,16 @@ class ScaleSuperClass extends AbstractEntity
                 'F' => 'Finanziellen',
                 'P' => 'Person'
             ],
-            '0' => [
-                'C' => '',
-                'I' => '',
-                'D' => '',
-                'R' => '',
-                'O' => '',
-                'L' => '',
-                'F' => '',
-                'P' => ''
+            'ne' => [
+                'C' => 'Vertrouwelijkheid',
+                'I' => 'Integriteit',
+                'D' => 'Beschikbaarheid',
+                'R' => 'Reputatie',
+                'O' => 'Operationeel',
+                'L' => 'Legaal',
+                'F' => 'Financieel',
+                'P' => 'Persoon'
             ]
         ];
     }
 }
-
