@@ -683,7 +683,7 @@ class ObjectService extends AbstractService
 
         $this->get('table')->save($object);
 
-        $this->instancesImpacts($object, $newRolfTag);
+        $this->instancesImpacts($object, $newRolfTag, $setRolfTagNull);
 
         return $id;
     }
@@ -721,7 +721,7 @@ class ObjectService extends AbstractService
 
         $this->get('table')->save($object);
 
-        $this->instancesImpacts($object, $newRolfTag);
+        $this->instancesImpacts($object, $newRolfTag, $setRolfTagNull);
 
         return $id;
     }
@@ -731,8 +731,9 @@ class ObjectService extends AbstractService
      *
      * @param $object
      * @param bool $newRolfTag
+     * @param bool $forcecSpecific
      */
-    protected function instancesImpacts($object, $newRolfTag = false)
+    protected function instancesImpacts($object, $newRolfTag = false, $forceSpecific = false)
     {
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('instanceTable');
@@ -754,7 +755,7 @@ class ObjectService extends AbstractService
             if ($modifyInstance) {
                 $instanceTable->save($instance);
             }
-            if (($newRolfTag) || (is_null($newRolfTag))) {
+            if (($newRolfTag) || (is_null($newRolfTag)) || ($forceSpecific)) {
 
                 //change instance risk op to specific
                 /** @var InstanceRiskOpTable $instanceRiskOpTable */
@@ -768,7 +769,7 @@ class ObjectService extends AbstractService
                     $i++;
                 }
 
-                if (!is_null($newRolfTag)) {
+                if (!is_null($newRolfTag) && (!$forceSpecific)) {
                     //add new risk op to instance
                     /** @var RolfTagTable $rolfTagTable */
                     $rolfTagTable = $this->get('rolfTagTable');
