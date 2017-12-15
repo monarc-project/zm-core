@@ -1363,16 +1363,19 @@ class InstanceService extends AbstractService
         if (empty($data['id'])) {
             throw new \MonarcCore\Exception\Exception('Instance to export is required', 412);
         }
-        if (empty($data['password'])) {
-            $data['password'] = '';
-        }
 
         $filename = "";
+
         $with_eval = isset($data['assessments']) && $data['assessments'];
-        $return = $this->generateExportArray($data['id'], $filename, $with_eval);
+
+        $exportedInstance = json_encode($this->generateExportArray($data['id'], $filename, $with_eval));
         $data['filename'] = $filename;
 
-        return base64_encode($this->encrypt(json_encode($return), $data['password']));
+        if (! empty($data['password'])) {
+            $exportedInstance = $this->encrypt($exportedInstance, $data['password']);
+        }
+
+        return $exportedInstance;
     }
 
     /**

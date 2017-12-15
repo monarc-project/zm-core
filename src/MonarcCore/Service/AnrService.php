@@ -184,9 +184,9 @@ class AnrService extends AbstractService
     }
 
     /**
-     * Exports an ANR encrypted and encoded into base64 for later re-import
+     * Exports an ANR, optionaly encrypted, for later re-import
      * @param array $data An array with the ANR 'id' and 'password' for encryption
-     * @return string Base64-encoded encrypted file
+     * @return string JSON file, optionaly encrypted
      * @throws \MonarcCore\Exception\Exception If the ANR is invalid
      */
     public function exportAnr(&$data)
@@ -194,17 +194,19 @@ class AnrService extends AbstractService
         if (empty($data['id'])) {
             throw new \MonarcCore\Exception\Exception('Anr to export is required', 412);
         }
-        if (empty($data['password'])) {
-            $data['password'] = '';
-        }
+
         $filename = "";
 
         $with_eval = isset($data['assessments']) && $data['assessments'];
 
-        $return = $this->generateExportArray($data['id'], $filename, $with_eval);
+        $exportedAnr = json_encode($this->generateExportArray($data['id'], $filename, $with_eval));
         $data['filename'] = $filename;
 
-        return base64_encode($this->encrypt(json_encode($return), $data['password']));
+        if (! empty($data['password'])) {
+            $exportedAnr = $this->encrypt($exportedAnr, $data['password']);
+        }
+
+        return $exportedAnr;
     }
 
     /**

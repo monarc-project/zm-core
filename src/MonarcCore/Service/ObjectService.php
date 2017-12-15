@@ -1341,14 +1341,15 @@ class ObjectService extends AbstractService
         if (empty($data['id'])) {
             throw new \MonarcCore\Exception\Exception('Object to export is required', 412);
         }
-        if (empty($data['password'])) {
-            $data['password'] = '';
-        }
-
         $filename = "";
-        $return = $this->get('objectExportService')->generateExportArray($data['id'], $filename);
+
+        $exported = json_encode($this->get('objectExportService')->generateExportArray($data['id'], $filename));
         $data['filename'] = $filename;
 
-        return base64_encode($this->encrypt(json_encode($return), $data['password']));
+        if (! empty($data['password'])) {
+            $exported = $this->encrypt($exported, $data['password']);
+        }
+
+        return $exported;
     }
 }

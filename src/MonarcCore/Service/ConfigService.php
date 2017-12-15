@@ -51,6 +51,13 @@ class ConfigService extends AbstractService
         return isset($this->config['publicHost']) ? $this->config['publicHost'] : '';
     }
 
+    public function getAppVersion()
+    {
+        return [
+            'appVersion' => isset($this->config['appVersion']) ? $this->config['appVersion'] : '',
+        ];
+    }
+
     public function getemail()
     {
         return [
