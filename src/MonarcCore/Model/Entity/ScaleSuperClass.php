@@ -202,7 +202,7 @@ class ScaleSuperClass extends AbstractEntity
                 'L' => 'Legaal',
                 'F' => 'Financieel',
                 'P' => 'Persoon'
-            ]
+            ],
             '0' => [
                 'C' => 'Confidentiality',
                 'I' => 'Integrity',
@@ -212,7 +212,7 @@ class ScaleSuperClass extends AbstractEntity
                 'L' => 'Legal',
                 'F' => 'Financial',
                 'P' => 'Personal'
-            ],
+            ]
         ];
     }
 }
