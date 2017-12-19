@@ -126,7 +126,7 @@ class ThreatSuperClass extends AbstractEntity
     /**
      * @var smallint
      *
-     * @ORM\Column(name="disponibility", type="smallint", options={"unsigned":true, "default":0})
+     * @ORM\Column(name="availability", type="smallint", options={"unsigned":true, "default":0})
      */
     protected $d = '1';
 

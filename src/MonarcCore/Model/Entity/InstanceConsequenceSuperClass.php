@@ -102,7 +102,7 @@ class InstanceConsequenceSuperClass extends AbstractEntity
     /**
      * @var smallint
      *
-     * @ORM\Column(name="disponibility", type="smallint", options={"unsigned":true, "default":-1})
+     * @ORM\Column(name="availability", type="smallint", options={"unsigned":true, "default":-1})
      */
     protected $d = -1;
 
