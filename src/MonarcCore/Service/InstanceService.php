@@ -952,7 +952,7 @@ class InstanceService extends AbstractService
      */
     public function getCsvRisks($anrId, $instance = null, $params = [])
     {
-        return $this->get('instanceRiskService')->get('table')->getCsvRisks($anrId, $instance, $params, $this->get('translateService'), \MonarcCore\Model\Entity\AbstractEntity::BACK_OFFICE);
+        return $this->get('instanceRiskService')->get('table')->getCsvRisks($anrId, $instance, $params, $this->get('translateService'), \MonarcCore\Model\Entity\AbstractEntity::FRONT_OFFICE);
     }
 
     /**
