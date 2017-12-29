@@ -260,6 +260,28 @@ class AnrService extends AbstractService
             foreach ($scales as $s) {
                 $return['scales'][$s->type] = $s->getJsonArray($scalesArray);
             }
+
+
+            //Risks analysis method data
+            $return['method']['steps'] = [
+            'initAnrContext' => $entity->initAnrContext,
+            'initEvalContext' => $entity->initEvalContext,
+            'initRiskContext' => $entity->initRiskContext,
+            'initDefContext' => $entity->initDefContext,
+            'modelImpacts' => $entity->modelImpacts,
+            'modelSummary' => $entity->modelSummary,
+            'evalRisks' => $entity->evalRisks,
+            'evalPlanRisks' => $entity->evalPlanRisks,
+            'manageRisks' => $entity->manageRisks,
+            ];
+
+            $return['method']['data'] = [
+            'contextAnaRisk' => $entity->contextAnaRisk,
+            'contextGestRisk' => $entity->contextGestRisk,
+            'synthThreat' => $entity->synthThreat,
+            'synthAct' => $entity->synthAct,
+            ];
+
         }
         return $return;
     }
