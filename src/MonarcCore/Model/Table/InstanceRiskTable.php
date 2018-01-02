@@ -117,6 +117,15 @@ class InstanceRiskTable extends AbstractEntityTable
                         $array_values[] = $translate->translate('Not treated', $lang);
                     }
                   }
+                  elseif ($k == 'c_risk' && $risk[c_risk_enabled] == '0') {
+                    $array_values[] = null;
+                  }
+                  elseif ($k == 'i_risk' && $risk[i_risk_enabled] == '0') {
+                    $array_values[] = null;
+                  }
+                  elseif ($k == 'd_risk' && $risk[d_risk_enabled] == '0') {
+                    $array_values[] = null;
+                  }
                   elseif ($risk[$k] == '-1'){
                     $array_values[] = null;
                   }
