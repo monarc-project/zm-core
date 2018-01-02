@@ -288,6 +288,13 @@ class ObjectExportService extends AbstractService
                 $toExchange['anr'] = $anr->get('id');
                 $toExchange['asset'] = $assetId;
                 $toExchange['category'] = $idCateg;
+                // unset the unright langue To modify when issue#7 is corrected
+                for ($i = 1; $i <= 4; $i++) {
+                    if ($i != $this->getLanguage()) {
+                        unset($toExchange['name' . $i]);
+                        unset($toExchange['label' . $i]);
+                    }
+                  }
                 $object->exchangeArray($toExchange);
                 $this->setDependencies($object, ['anr', 'category', 'asset', 'rolfTag']);
                 $object->addAnr($anr);
