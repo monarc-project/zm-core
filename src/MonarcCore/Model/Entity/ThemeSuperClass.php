@@ -44,7 +44,7 @@ class ThemeSuperclass extends AbstractEntity
      * @ORM\ManyToMany(targetEntity="\MonarcCore\Model\Entity\Translation")
      * @ORM\Column(name="label_translation_id")
      * @ORM\JoinTable(name="translation_language",
-     *     joinColumns={@ORM\JoinColumn(name="entity_string_id", referencedColumnName="label_translation_id")},
+     *     joinColumns={@ORM\JoinColumn(name="themes_string_id", referencedColumnName="label_translation_id")},
      *     inverseJoinColumns={@ORM\JoinColumn(name="translation_id", referencedColumnName="id")})
      *
      */

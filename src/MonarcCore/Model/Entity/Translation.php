@@ -29,29 +29,15 @@ class Translation extends AbstractEntity
     /**
      * @var string
      *
-     * @ORM\Column(name="fr", type="string", length=255, nullable=true)
+     * @ORM\Column(name="ISO", type="string", length=255, nullable=true)
      */
-    protected $fr;
+    protected $iso;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="en", type="string", length=255, nullable=true)
+     * @ORM\Column(name="content", type="string", length=255, nullable=true)
      */
-    protected $en;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="de", type="string", length=255, nullable=true)
-     */
-    protected $de;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="nl", type="string", length=255, nullable=true)
-     */
-    protected $nl;
+    protected $content;
 }
 
