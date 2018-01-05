@@ -30,6 +30,9 @@ class AnrService extends AbstractService
     protected $scaleImpactTypeTable;
     protected $scaleCommentTable;
     protected $instanceService;
+    protected $questionTable;
+    protected $questionChoiceTable;
+
 
     /**
      * @inheritdoc
@@ -281,6 +284,40 @@ class AnrService extends AbstractService
             'synthThreat' => $entity->synthThreat,
             'synthAct' => $entity->synthAct,
             ];
+
+
+            $questionTable = $this->get('questionTable');
+            $questions = $questionTable->getEntityByFields(['anr' => $entity->get('id')], ['position'=>'ASC']);
+            $questionArray = [
+              'id' => 'id',
+              'mode' => 'mode',
+              'multichoice' => 'multichoice',
+              'label1' => 'label1',
+              'label2' => 'label2',
+              'label3' => 'label3',
+              'label4' => 'label4',
+              'response' => 'response',
+              'type' => 'type',
+              'position' => 'position',
+
+            ];
+
+            foreach ($questions as $q) {
+                $return['method']['questions'][$q->position] = $q->getJsonArray($questionArray);
+            }
+
+                $questionChoiceTable = $this->get('questionChoiceTable');
+                $questionsChoices = $questionChoiceTable->getEntityByFields(['anr' => $entity->get('id')]);
+                $questionChoiceArray = [
+                  'label1' => 'label1',
+                  'label2' => 'label2',
+                  'label3' => 'label3',
+                  'label4' => 'label4',
+                ];
+                foreach ($questionsChoices as $qc) {
+                    $return['method']['questionChoice'][$qc->id] = $qc->getJsonArray($questionChoiceArray);
+            }
+
 
         }
         return $return;
