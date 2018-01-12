@@ -32,6 +32,7 @@ class AnrService extends AbstractService
     protected $instanceService;
     protected $questionTable;
     protected $questionChoiceTable;
+    protected $threatTable;
 
 
     /**
@@ -264,6 +265,26 @@ class AnrService extends AbstractService
                 $return['scales'][$s->type] = $s->getJsonArray($scalesArray);
             }
 
+            $scaleCommentTable = $this->get('scaleCommentTable');
+            $scaleComment = $scaleCommentTable->getEntityByFields(['anr' => $entity->get('id')]);
+            $scalesCommentArray = [
+                'id' => 'id',
+                'scale' => [],
+                'scaleImpactType' => [],
+                'val' => 'val',
+                'comment1' => 'comment1',
+                'comment2' => 'comment2',
+                'comment3' => 'comment3',
+                'comment4' => 'comment4',
+            ];
+            foreach ($scaleComment as $sc) {
+                $return['scalesComments'][$sc->id] = $sc->getJsonArray($scalesCommentArray);
+                $return['scalesComments'][$sc->id]['scale']['id'] = $sc->scale->id;
+                $return['scalesComments'][$sc->id]['scale']['type'] = $sc->scale->type;
+                $return['scalesComments'][$sc->id]['scaleImpactType']['id'] = $sc->scaleImpactType->id;
+                $return['scalesComments'][$sc->id]['scaleImpactType']['type'] = $sc->scaleImpactType->type;
+
+            }
 
             //Risks analysis method data
             $return['method']['steps'] = [
@@ -285,6 +306,12 @@ class AnrService extends AbstractService
             'synthAct' => $entity->synthAct,
             ];
 
+            $return['method']['thresholds'] = [
+            'seuil1' => $entity->seuil1,
+            'seuil2' => $entity->seuil2,
+            'seuilRolf1' => $entity->seuilRolf1,
+            'seuilRolf2' => $entity->seuilRolf2,
+            ];
 
             $questionTable = $this->get('questionTable');
             $questions = $questionTable->getEntityByFields(['anr' => $entity->get('id')], ['position'=>'ASC']);
@@ -309,6 +336,7 @@ class AnrService extends AbstractService
                 $questionChoiceTable = $this->get('questionChoiceTable');
                 $questionsChoices = $questionChoiceTable->getEntityByFields(['anr' => $entity->get('id')]);
                 $questionChoiceArray = [
+                  'question' => 'question',
                   'label1' => 'label1',
                   'label2' => 'label2',
                   'label3' => 'label3',
@@ -316,6 +344,35 @@ class AnrService extends AbstractService
                 ];
                 foreach ($questionsChoices as $qc) {
                     $return['method']['questionChoice'][$qc->id] = $qc->getJsonArray($questionChoiceArray);
+                    $return['method']['questionChoice'][$qc->id]['question'] = $qc->question->id;
+            }
+
+            $threatTable = $this->get('threatTable');
+            $threats = $threatTable->getEntityByFields(['anr' => $entity->get('id')]);
+            $threatArray = [
+                'id' => 'id',
+                'code' => 'code',
+                'label1' => 'label1',
+                'label2' => 'label2',
+                'label3' => 'label3',
+                'label4' => 'label4',
+                'description1' => 'description1',
+                'description2' => 'description2',
+                'description3' => 'description3',
+                'description4' => 'description4',
+                'c' => 'c',
+                'i' => 'i',
+                'd' => 'd',
+                'trend' => 'trend',
+                'theme' => 'theme',
+                'comment' => 'comment',
+                'qualification' => 'qualification',
+            ];
+
+            foreach ($threats as $t) {
+
+                $return['method']['threats'][$t->id] = $t->getJsonArray($threatArray);
+                $return['method']['threats'][$t->id]['theme'] = $t->theme->id;
             }
 
 
