@@ -282,7 +282,7 @@ class AnrService extends AbstractService
                 $return['scalesComments'][$sc->id]['scale']['id'] = $sc->scale->id;
                 $return['scalesComments'][$sc->id]['scale']['type'] = $sc->scale->type;
                 $return['scalesComments'][$sc->id]['scaleImpactType']['id'] = $sc->scaleImpactType->id;
-                $return['scalesComments'][$sc->id]['scaleImpactType']['type'] = $sc->scaleImpactType->type;
+                $return['scalesComments'][$sc->id]['scaleImpactType']['position'] = $sc->scaleImpactType->position;
 
             }
 

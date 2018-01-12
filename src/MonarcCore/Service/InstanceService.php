@@ -1835,6 +1835,7 @@ class InstanceService extends AbstractService
                 'label4' => 'label4',
                 'isSys' => 'isSys',
                 'isHidden' => 'isHidden',
+                'type' => 'type',
                 'position' => 'position',
             ];
             $return['consequences'] = [];
