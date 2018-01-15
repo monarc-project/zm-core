@@ -33,6 +33,7 @@ class AnrService extends AbstractService
     protected $questionTable;
     protected $questionChoiceTable;
     protected $threatTable;
+    protected $interviewTable;
 
 
     /**
@@ -313,6 +314,19 @@ class AnrService extends AbstractService
             'seuilRolf2' => $entity->seuilRolf2,
             ];
 
+            $interviewTable = $this->get('interviewTable');
+            $interviews = $interviewTable->getEntityByFields(['anr' => $entity->get('id')], ['id'=>'ASC']);
+            $interviewArray = [
+              'id' => 'id',
+              'date' => 'date',
+              'service' => 'service',
+              'content' => 'content',
+            ];
+
+            foreach ($interviews as $i) {
+                $return['method']['interviews'][$i->id] = $i->getJsonArray($interviewArray);
+            }
+
             $questionTable = $this->get('questionTable');
             $questions = $questionTable->getEntityByFields(['anr' => $entity->get('id')], ['position'=>'ASC']);
             $questionArray = [
@@ -333,18 +347,18 @@ class AnrService extends AbstractService
                 $return['method']['questions'][$q->position] = $q->getJsonArray($questionArray);
             }
 
-                $questionChoiceTable = $this->get('questionChoiceTable');
-                $questionsChoices = $questionChoiceTable->getEntityByFields(['anr' => $entity->get('id')]);
-                $questionChoiceArray = [
-                  'question' => 'question',
-                  'label1' => 'label1',
-                  'label2' => 'label2',
-                  'label3' => 'label3',
-                  'label4' => 'label4',
-                ];
-                foreach ($questionsChoices as $qc) {
-                    $return['method']['questionChoice'][$qc->id] = $qc->getJsonArray($questionChoiceArray);
-                    $return['method']['questionChoice'][$qc->id]['question'] = $qc->question->id;
+            $questionChoiceTable = $this->get('questionChoiceTable');
+            $questionsChoices = $questionChoiceTable->getEntityByFields(['anr' => $entity->get('id')]);
+            $questionChoiceArray = [
+              'question' => 'question',
+              'label1' => 'label1',
+              'label2' => 'label2',
+              'label3' => 'label3',
+              'label4' => 'label4',
+            ];
+            foreach ($questionsChoices as $qc) {
+                $return['method']['questionChoice'][$qc->id] = $qc->getJsonArray($questionChoiceArray);
+                $return['method']['questionChoice'][$qc->id]['question'] = $qc->question->id;
             }
 
             $threatTable = $this->get('threatTable');
