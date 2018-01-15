@@ -378,7 +378,7 @@ class AnrService extends AbstractService
                 'i' => 'i',
                 'd' => 'd',
                 'trend' => 'trend',
-                'theme' => 'theme',
+                'theme' => [],
                 'comment' => 'comment',
                 'qualification' => 'qualification',
             ];
@@ -386,7 +386,8 @@ class AnrService extends AbstractService
             foreach ($threats as $t) {
 
                 $return['method']['threats'][$t->id] = $t->getJsonArray($threatArray);
-                $return['method']['threats'][$t->id]['theme'] = $t->theme->id;
+                $return['method']['threats'][$t->id]['theme']['id'] = $t->theme->id;
+                $return['method']['threats'][$t->id]['theme']['label' . $this->getLanguage()] = $t->theme->get('label' . $this->getLanguage());
             }
 
 
