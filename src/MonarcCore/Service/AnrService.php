@@ -259,6 +259,7 @@ class AnrService extends AbstractService
             $scaleTable = $this->get('scaleTable');
             $scales = $scaleTable->getEntityByFields(['anr' => $entity->get('id')]);
             $scalesArray = [
+                'id' => 'id',
                 'min' => 'min',
                 'max' => 'max',
                 'type' => 'type',
@@ -268,24 +269,28 @@ class AnrService extends AbstractService
             }
 
             $scaleCommentTable = $this->get('scaleCommentTable');
-            $scaleComment = $scaleCommentTable->getEntityByFields(['anr' => $entity->get('id')]);
-            $scalesCommentArray = [
-                'id' => 'id',
-                'scale' => [],
-                'scaleImpactType' => [],
-                'val' => 'val',
-                'comment1' => 'comment1',
-                'comment2' => 'comment2',
-                'comment3' => 'comment3',
-                'comment4' => 'comment4',
-            ];
-            foreach ($scaleComment as $sc) {
-                $return['scalesComments'][$sc->id] = $sc->getJsonArray($scalesCommentArray);
-                $return['scalesComments'][$sc->id]['scale']['id'] = $sc->scale->id;
-                $return['scalesComments'][$sc->id]['scale']['type'] = $sc->scale->type;
-                $return['scalesComments'][$sc->id]['scaleImpactType']['id'] = $sc->scaleImpactType->id;
-                $return['scalesComments'][$sc->id]['scaleImpactType']['position'] = $sc->scaleImpactType->position;
+            for ($s=1; $s <= 3; $s++) {
+              for ($i=$return['scales'][$s]['min']; $i <=$return['scales'][$s]['max'] ; $i++) {
+                $scaleComment = $scaleCommentTable->getEntityByFields(['anr' => $entity->get('id') , 'val' => $i , 'scale' => $return['scales'][$s]['id']]);
+                $scalesCommentArray = [
+                  'id' => 'id',
+                  'scale' => [],
+                  'scaleImpactType' => [],
+                  'val' => 'val',
+                  'comment1' => 'comment1',
+                  'comment2' => 'comment2',
+                  'comment3' => 'comment3',
+                  'comment4' => 'comment4',
+                ];
+                foreach ($scaleComment as $sc) {
+                  $return['scalesComments'][$sc->id] = $sc->getJsonArray($scalesCommentArray);
+                  $return['scalesComments'][$sc->id]['scale']['id'] = $sc->scale->id;
+                  $return['scalesComments'][$sc->id]['scale']['type'] = $sc->scale->type;
+                  $return['scalesComments'][$sc->id]['scaleImpactType']['id'] = $sc->scaleImpactType->id;
+                  $return['scalesComments'][$sc->id]['scaleImpactType']['position'] = $sc->scaleImpactType->position;
 
+                }
+              }
             }
 
             //Risks analysis method data
