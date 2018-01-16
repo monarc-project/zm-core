@@ -376,6 +376,7 @@ class AnrService extends AbstractService
             $questionsChoices = $questionChoiceTable->getEntityByFields(['anr' => $entity->get('id')]);
             $questionChoiceArray = [
               'question' => 'question',
+              'position' => 'position',
               'label1' => 'label1',
               'label2' => 'label2',
               'label3' => 'label3',
