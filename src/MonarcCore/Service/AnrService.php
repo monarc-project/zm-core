@@ -34,6 +34,7 @@ class AnrService extends AbstractService
     protected $questionChoiceTable;
     protected $threatTable;
     protected $interviewTable;
+    protected $deliveryTable;
 
 
     /**
@@ -314,6 +315,25 @@ class AnrService extends AbstractService
             'seuilRolf2' => $entity->seuilRolf2,
             ];
 
+            $deliveryTable = $this->get('deliveryTable');
+            for ($i=0; $i <= 4; $i++) {
+              $deliveries = $deliveryTable->getEntityByFields(['anr' => $entity->get('id') , 'typedoc' => $i ], ['id'=>'ASC']);
+              $deliveryArray = [
+                'id' => 'id',
+                'typedoc' => 'typedoc',
+                'name' => 'name',
+                'status' => 'status',
+                'version' => 'version',
+                'classification' => 'classification',
+                'respCustomer' => 'respCustomer',
+                'respSmile' => 'respSmile',
+                'summaryEvalRisk' => 'summaryEvalRisk',
+              ];
+              foreach ($deliveries as $d) {
+                  $return['method']['deliveries'][$d->typedoc] = $d->getJsonArray($deliveryArray);
+              }
+            }
+
             $interviewTable = $this->get('interviewTable');
             $interviews = $interviewTable->getEntityByFields(['anr' => $entity->get('id')], ['id'=>'ASC']);
             $interviewArray = [
@@ -386,8 +406,10 @@ class AnrService extends AbstractService
             foreach ($threats as $t) {
 
                 $return['method']['threats'][$t->id] = $t->getJsonArray($threatArray);
-                $return['method']['threats'][$t->id]['theme']['id'] = $t->theme->id;
-                $return['method']['threats'][$t->id]['theme']['label' . $this->getLanguage()] = $t->theme->get('label' . $this->getLanguage());
+                if (isset($t->theme->id)) {
+                  $return['method']['threats'][$t->id]['theme']['id'] = $t->theme->id;
+                  $return['method']['threats'][$t->id]['theme']['label' . $this->getLanguage()] = $t->theme->get('label' . $this->getLanguage());
+                }
             }
 
 
