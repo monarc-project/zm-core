@@ -85,60 +85,29 @@ class InstanceRiskOpSuperClass extends AbstractEntity
     protected $riskCacheCode;
 
     /**
-     * @var string
+     * @var \MonarcCore\Model\Entity\Translation
      *
-     * @ORM\Column(name="risk_cache_label1", type="string", length=255, nullable=true)
+     * @ORM\ManyToMany(targetEntity="\MonarcCore\Model\Entity\Translation")
+     * @ORM\Column(name="risk_cache_label_translation_id")
+     * @ORM\JoinTable(name="translation_language",
+     *     joinColumns={@ORM\JoinColumn(name="instances_risks_op_string_id", referencedColumnName="risk_cache_label_translation_id")},
+     *     inverseJoinColumns={@ORM\JoinColumn(name="translation_id", referencedColumnName="id")})
+     *
      */
-    protected $riskCacheLabel1;
+    protected $riskCacheLabel;
+
 
     /**
-     * @var string
+     * @var \MonarcCore\Model\Entity\Translation
      *
-     * @ORM\Column(name="risk_cache_label2", type="string", length=255, nullable=true)
-     */
-    protected $riskCacheLabel2;
-
-    /**
-     * @var string
+     * @ORM\ManyToMany(targetEntity="\MonarcCore\Model\Entity\Translation")
+     * @ORM\Column(name="risk_cache_description_translation_id")
+     * @ORM\JoinTable(name="translation_language",
+     *     joinColumns={@ORM\JoinColumn(name="instances_risks_op_string_id", referencedColumnName="risk_cache_description_translation_id")},
+     *     inverseJoinColumns={@ORM\JoinColumn(name="translation_id", referencedColumnName="id")})
      *
-     * @ORM\Column(name="risk_cache_label3", type="string", length=255, nullable=true)
      */
-    protected $riskCacheLabel3;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="risk_cache_label4", type="string", length=255, nullable=true)
-     */
-    protected $riskCacheLabel4;
-
-    /**
-     * @var text
-     *
-     * @ORM\Column(name="risk_cache_description1", type="text", length=255, nullable=true)
-     */
-    protected $riskCacheDescription1;
-
-    /**
-     * @var text
-     *
-     * @ORM\Column(name="risk_cache_description2", type="text", length=255, nullable=true)
-     */
-    protected $riskCacheDescription2;
-
-    /**
-     * @var text
-     *
-     * @ORM\Column(name="risk_cache_description3", type="text", length=255, nullable=true)
-     */
-    protected $riskCacheDescription3;
-
-    /**
-     * @var text
-     *
-     * @ORM\Column(name="risk_cache_description4", type="text", length=255, nullable=true)
-     */
-    protected $riskCacheDescription4;
+    protected $riskCacheDescription;
 
     /**
      * @var smallint
