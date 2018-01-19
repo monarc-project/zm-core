@@ -234,10 +234,21 @@ class DeliveriesModels extends AbstractEntity
     {
         parent::exchangeArray($options);
 
+        $languages = array(
+            1 => 'FR',
+            2 => 'EN',
+            3 => 'DE',
+            4 => 'NE',
+        );
+
         for ($i = 1; $i <= 4; ++$i) {
             if (!empty($this->{'path' . $i}['tmp_name']) && file_exists($this->{'path' . $i}['tmp_name'])) {
                 $info = pathinfo($this->{'path' . $i}['tmp_name']);
-                $targetFile = $info['dirname'] . DIRECTORY_SEPARATOR . uniqid() . '_' . $this->{'path' . $i}['name'];
+                $dirFile = $info['dirname'] . DIRECTORY_SEPARATOR . $languages[$i];
+                if (!is_dir($dirFile)) {
+                    mkdir($dirFile, 0775, true);
+                }
+                $targetFile = $dirFile . DIRECTORY_SEPARATOR .$this->{'path' . $i}['name'];
                 rename($this->{'path' . $i}['tmp_name'], $targetFile);
 
                 $this->{'path' . $i} = $targetFile;
@@ -257,4 +268,3 @@ class DeliveriesModels extends AbstractEntity
         return $res;
     }
 }
-
