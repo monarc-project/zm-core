@@ -30,6 +30,12 @@ class AnrService extends AbstractService
     protected $scaleImpactTypeTable;
     protected $scaleCommentTable;
     protected $instanceService;
+    protected $questionTable;
+    protected $questionChoiceTable;
+    protected $threatTable;
+    protected $interviewTable;
+    protected $deliveryTable;
+
 
     /**
      * @inheritdoc
@@ -253,6 +259,7 @@ class AnrService extends AbstractService
             $scaleTable = $this->get('scaleTable');
             $scales = $scaleTable->getEntityByFields(['anr' => $entity->get('id')]);
             $scalesArray = [
+                'id' => 'id',
                 'min' => 'min',
                 'max' => 'max',
                 'type' => 'type',
@@ -260,6 +267,158 @@ class AnrService extends AbstractService
             foreach ($scales as $s) {
                 $return['scales'][$s->type] = $s->getJsonArray($scalesArray);
             }
+
+            $scaleCommentTable = $this->get('scaleCommentTable');
+            for ($s=1; $s <= 3; $s++) {
+              for ($i=$return['scales'][$s]['min']; $i <=$return['scales'][$s]['max'] ; $i++) {
+                $scaleComment = $scaleCommentTable->getEntityByFields(['anr' => $entity->get('id') , 'val' => $i , 'scale' => $return['scales'][$s]['id']]);
+                $scalesCommentArray = [
+                  'id' => 'id',
+                  'scale' => [],
+                  'scaleImpactType' => [],
+                  'val' => 'val',
+                  'comment1' => 'comment1',
+                  'comment2' => 'comment2',
+                  'comment3' => 'comment3',
+                  'comment4' => 'comment4',
+                ];
+                foreach ($scaleComment as $sc) {
+                  $return['scalesComments'][$sc->id] = $sc->getJsonArray($scalesCommentArray);
+                  $return['scalesComments'][$sc->id]['scale']['id'] = $sc->scale->id;
+                  $return['scalesComments'][$sc->id]['scale']['type'] = $sc->scale->type;
+                  $return['scalesComments'][$sc->id]['scaleImpactType']['id'] = $sc->scaleImpactType->id;
+                  $return['scalesComments'][$sc->id]['scaleImpactType']['position'] = $sc->scaleImpactType->position;
+
+                }
+              }
+            }
+
+            //Risks analysis method data
+            $return['method']['steps'] = [
+            'initAnrContext' => $entity->initAnrContext,
+            'initEvalContext' => $entity->initEvalContext,
+            'initRiskContext' => $entity->initRiskContext,
+            'initDefContext' => $entity->initDefContext,
+            'modelImpacts' => $entity->modelImpacts,
+            'modelSummary' => $entity->modelSummary,
+            'evalRisks' => $entity->evalRisks,
+            'evalPlanRisks' => $entity->evalPlanRisks,
+            'manageRisks' => $entity->manageRisks,
+            ];
+
+            $return['method']['data'] = [
+            'contextAnaRisk' => $entity->contextAnaRisk,
+            'contextGestRisk' => $entity->contextGestRisk,
+            'synthThreat' => $entity->synthThreat,
+            'synthAct' => $entity->synthAct,
+            ];
+
+            $return['method']['thresholds'] = [
+            'seuil1' => $entity->seuil1,
+            'seuil2' => $entity->seuil2,
+            'seuilRolf1' => $entity->seuilRolf1,
+            'seuilRolf2' => $entity->seuilRolf2,
+            ];
+
+            $deliveryTable = $this->get('deliveryTable');
+            for ($i=0; $i <= 4; $i++) {
+              $deliveries = $deliveryTable->getEntityByFields(['anr' => $entity->get('id') , 'typedoc' => $i ], ['id'=>'ASC']);
+              $deliveryArray = [
+                'id' => 'id',
+                'typedoc' => 'typedoc',
+                'name' => 'name',
+                'status' => 'status',
+                'version' => 'version',
+                'classification' => 'classification',
+                'respCustomer' => 'respCustomer',
+                'respSmile' => 'respSmile',
+                'summaryEvalRisk' => 'summaryEvalRisk',
+              ];
+              foreach ($deliveries as $d) {
+                  $return['method']['deliveries'][$d->typedoc] = $d->getJsonArray($deliveryArray);
+              }
+            }
+
+            $interviewTable = $this->get('interviewTable');
+            $interviews = $interviewTable->getEntityByFields(['anr' => $entity->get('id')], ['id'=>'ASC']);
+            $interviewArray = [
+              'id' => 'id',
+              'date' => 'date',
+              'service' => 'service',
+              'content' => 'content',
+            ];
+
+            foreach ($interviews as $i) {
+                $return['method']['interviews'][$i->id] = $i->getJsonArray($interviewArray);
+            }
+
+            $questionTable = $this->get('questionTable');
+            $questions = $questionTable->getEntityByFields(['anr' => $entity->get('id')], ['position'=>'ASC']);
+            $questionArray = [
+              'id' => 'id',
+              'mode' => 'mode',
+              'multichoice' => 'multichoice',
+              'label1' => 'label1',
+              'label2' => 'label2',
+              'label3' => 'label3',
+              'label4' => 'label4',
+              'response' => 'response',
+              'type' => 'type',
+              'position' => 'position',
+
+            ];
+
+            foreach ($questions as $q) {
+                $return['method']['questions'][$q->position] = $q->getJsonArray($questionArray);
+            }
+
+            $questionChoiceTable = $this->get('questionChoiceTable');
+            $questionsChoices = $questionChoiceTable->getEntityByFields(['anr' => $entity->get('id')]);
+            $questionChoiceArray = [
+              'question' => 'question',
+              'position' => 'position',
+              'label1' => 'label1',
+              'label2' => 'label2',
+              'label3' => 'label3',
+              'label4' => 'label4',
+            ];
+            foreach ($questionsChoices as $qc) {
+                $return['method']['questionChoice'][$qc->id] = $qc->getJsonArray($questionChoiceArray);
+                $return['method']['questionChoice'][$qc->id]['question'] = $qc->question->id;
+            }
+
+            $threatTable = $this->get('threatTable');
+            $threats = $threatTable->getEntityByFields(['anr' => $entity->get('id')]);
+            $threatArray = [
+                'id' => 'id',
+                'code' => 'code',
+                'label1' => 'label1',
+                'label2' => 'label2',
+                'label3' => 'label3',
+                'label4' => 'label4',
+                'description1' => 'description1',
+                'description2' => 'description2',
+                'description3' => 'description3',
+                'description4' => 'description4',
+                'c' => 'c',
+                'i' => 'i',
+                'd' => 'd',
+                'trend' => 'trend',
+                'theme' => [],
+                'comment' => 'comment',
+                'qualification' => 'qualification',
+            ];
+
+            foreach ($threats as $t) {
+
+                $return['method']['threats'][$t->id] = $t->getJsonArray($threatArray);
+                if (isset($t->theme->id)) {
+                  $return['method']['threats'][$t->id]['theme']['id'] = $t->theme->id;
+                  $return['method']['threats'][$t->id]['theme']['label' . $this->getLanguage()] = $t->theme->get('label' . $this->getLanguage());
+                }
+            }
+
+
         }
         return $return;
     }

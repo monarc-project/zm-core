@@ -294,7 +294,7 @@ class ObjectExportService extends AbstractService
                         unset($toExchange['name' . $i]);
                         unset($toExchange['label' . $i]);
                     }
-                  }
+                }
                 $object->exchangeArray($toExchange);
                 $this->setDependencies($object, ['anr', 'category', 'asset', 'rolfTag']);
                 $object->addAnr($anr);
