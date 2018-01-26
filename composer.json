@@ -7,20 +7,18 @@
         {"name": "Guillaume Lesniak", "email": "guillaume@netlor.fr"},
         {"name": "Jerôme De Almeida", "email": "jerome.dealmeida@vesperiagroup.com"},
         {"name": "Benjamin Ganivet", "email": "benjamin@netlor.fr"},
-        {"name": "Thomas Metois", "email": "thomas@netlor.fr"}
+        {"name": "Thomas Metois", "email": "thomas@netlor.fr"},
+        {"name": "Jérôme Lombardi", "email": "jerome.lombardi@cases.lu"},
+        {"name": "Juan Rocha", "email": "juan.rocha@cases.lu"},
+        {"name": "Cédric Bonhomme", "email": "cedric.bonhomme@cases.lu"}
     ],
     "require": {
         "php": ">=5.5",
         "zendframework/zendframework": "2.5.3",
         "doctrine/doctrine-orm-module": "^0.10",
-        "robmorgan/phinx": "0.5.*",
-        "behat/behat": "~3.0",
-        "behat/mink": "^1.6",
-        "behat/mink-extension": "^2.0",
-        "behat/mink-goutte-driver": "^1.1"
+        "robmorgan/phinx": "0.5.*"
     },
     "autoload": {
         "psr-0": {"MonarcCore\\":"/"}
     }
 }
-
