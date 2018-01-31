@@ -159,6 +159,7 @@ class DeliveriesModels extends AbstractEntity
     const MODEL_CONTEXT_VALIDATION = 1; // Document model for Context validation
     const MODEL_ASSETS_AND_MODELS_VALIDATION = 2; // Document model for Assets and models validation
     const MODEL_RISK_ANALYSIS = 3; // Document model for Risk analysis
+    const MODEL_IMPLEMENTATION_PLAN = 4; // Document model for implementation plan
 
     public function getInputFilter($partial = false)
     {
@@ -186,7 +187,7 @@ class DeliveriesModels extends AbstractEntity
                     array(
                         'name' => 'InArray',
                         'options' => array(
-                            'haystack' => array(self::MODEL_CONTEXT_VALIDATION, self::MODEL_ASSETS_AND_MODELS_VALIDATION, self::MODEL_RISK_ANALYSIS),
+                            'haystack' => array(self::MODEL_CONTEXT_VALIDATION, self::MODEL_ASSETS_AND_MODELS_VALIDATION, self::MODEL_RISK_ANALYSIS, self::MODEL_IMPLEMENTATION_PLAN),
                         ),
                     ),
                     array(
