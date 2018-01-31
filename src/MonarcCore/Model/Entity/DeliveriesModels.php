@@ -70,25 +70,11 @@ class DeliveriesModels extends AbstractEntity
     protected $path1;
 
     /**
-     * @var resource
-     *
-     * @ORM\Column(name="content1", type="blob", nullable=true)
-     */
-    protected $content1;
-
-    /**
      * @var string
      *
      * @ORM\Column(name="path2", type="text", length=255, nullable=true)
      */
     protected $path2;
-
-    /**
-     * @var resource
-     *
-     * @ORM\Column(name="content2", type="blob", nullable=true)
-     */
-    protected $content2;
 
     /**
      * @var string
@@ -98,25 +84,11 @@ class DeliveriesModels extends AbstractEntity
     protected $path3;
 
     /**
-     * @var resource
-     *
-     * @ORM\Column(name="content3", type="blob", nullable=true)
-     */
-    protected $content3;
-
-    /**
      * @var string
      *
      * @ORM\Column(name="path4", type="text", length=255, nullable=true)
      */
     protected $path4;
-
-    /**
-     * @var resource
-     *
-     * @ORM\Column(name="content4", type="blob", nullable=true)
-     */
-    protected $content4;
 
     /**
      * @var string
@@ -164,12 +136,12 @@ class DeliveriesModels extends AbstractEntity
     public function getInputFilter($partial = false)
     {
         if (!$this->inputFilter) {
-            $dirFile = './data/';
+            $dirFile = './deliveries/';
             $appconfdir = getenv('APP_CONF_DIR') ? getenv('APP_CONF_DIR') : '';
             if( ! empty($appconfdir) ){
                 $dirFile = $appconfdir.'/data/';
             }
-            $dirFile .= 'monarc/models/';
+            $dirFile .= 'cases/';
             if (!is_dir($dirFile)) {
                 mkdir($dirFile, 0775, true);
             }
@@ -253,7 +225,6 @@ class DeliveriesModels extends AbstractEntity
                 rename($this->{'path' . $i}['tmp_name'], $targetFile);
 
                 $this->{'path' . $i} = $targetFile;
-                $this->{"content$i"} = file_get_contents($this->{'path' . $i});
             }
         }
 
@@ -263,9 +234,6 @@ class DeliveriesModels extends AbstractEntity
     public function getJsonArray($fields = array())
     {
         $res = parent::getJsonArray($fields);
-        for ($i = 1; $i <= 4; ++$i) {
-            unset($res['content' . $i]);
-        }
         return $res;
     }
 }
