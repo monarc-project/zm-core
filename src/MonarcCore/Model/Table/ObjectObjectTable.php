@@ -41,7 +41,7 @@ class ObjectObjectTable extends AbstractEntityTable
     public function getDirectParentsInfos($child_id)
     {
         return $this->getRepository()->createQueryBuilder('oo')
-            ->select(['o.name1', 'o.name2', 'o.name3', 'o.name4', 'o.label1', 'o.label2', 'o.label3', 'o.label4'])
+            ->select(['o.name', 'o.label'])
             ->innerJoin('oo.father', 'o')
             ->where('oo.child = :child_id')
             ->setParameter(':child_id', $child_id)
@@ -59,7 +59,7 @@ class ObjectObjectTable extends AbstractEntityTable
     public function getDirectParentsInAnr($anrid, $id)
     {
         $stmt = $this->getDb()->getEntityManager()->getConnection()->prepare(
-            'SELECT o.id, oo.id as linkid, o.label1, o.label2, o.label3, o.label4, o.name1, o.name2, o.name3, o.name4
+            'SELECT o.id, oo.id as linkid, o.label, o.name
             FROM objects_objects oo
             INNER JOIN objects o ON oo.father_id = o.id
             INNER JOIN anrs_objects ao ON ao.object_id = o.id

@@ -114,21 +114,21 @@ class ThreatSuperClass extends AbstractEntity
      *
      * @ORM\Column(name="confidentiality", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $c = '1';
+    protected $confidentiality = '1';
 
     /**
      * @var smallint
      *
      * @ORM\Column(name="integrity", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $i = '1';
+    protected $integrity = '1';
 
     /**
      * @var smallint
      *
      * @ORM\Column(name="availability", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $d = '1';
+    protected $availability = '1';
 
     /**
      * @var text
@@ -225,7 +225,7 @@ class ThreatSuperClass extends AbstractEntity
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);
 
-            $texts = ['label1', 'label2', 'label3', 'label4'];
+            $texts = ['label'];
             foreach ($texts as $text) {
                 $this->inputFilter->add(array(
                     'name' => $text,
@@ -236,7 +236,7 @@ class ThreatSuperClass extends AbstractEntity
                 ));
             }
 
-            $descriptions = ['description1', 'description2', 'description3', 'description4'];
+            $descriptions = ['description'];
             foreach ($descriptions as $description) {
                 $this->inputFilter->add(array(
                     'name' => $description,
@@ -354,4 +354,3 @@ class ThreatSuperClass extends AbstractEntity
         return $this->inputFilter;
     }
 }
-

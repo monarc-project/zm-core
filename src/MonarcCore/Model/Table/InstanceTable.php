@@ -25,8 +25,8 @@ class InstanceTable extends AbstractEntityTable
             ->select(array(
                 'i.id', 'i.level', 'IDENTITY(i.parent) as parentId',
                 'i.c', 'i.i', 'i.d', 'i.ch', 'i.ih', 'i.dh',
-                'i.name1', 'i.name2', 'i.name3', 'i.name4',
-                'i.label1', 'i.label2', 'i.label3', 'i.label4'
+                'i.name_translation_id',
+                'i.label_translation_id'
             ))
             ->where('i.anr = :anrId')
             ->setParameter(':anrId', $anrId)

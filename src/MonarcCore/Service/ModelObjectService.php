@@ -21,8 +21,8 @@ class ModelObjectService extends AbstractService
     protected $sourceTable;
     protected $modelTable;
     protected $filterColumns = [
-        'label1', 'label2', 'label3', 'label4',
-        'description1', 'description2', 'description3', 'description4',
+        'label',
+        'description',
     ];
     protected $dependencies = ['asset', 'category', 'rolfTag', 'source', 'model'];
 

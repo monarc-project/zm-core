@@ -171,41 +171,41 @@ class InstanceRiskTable extends AbstractEntityTable
             'i.id as instance',
             'a.id as amv',
             'ass.id as asset',
-            'ass.label' . $l . ' as assetLabel' . $l . '',
-            'ass.description' . $l . ' as assetDescription' . $l . '',
+            'ass.label_translation_id' . ' as assetLabel' . $l . '',
+            'ass.description_translation_id' . ' as assetDescription' . $l . '',
             't.id as threat',
             't.code as threatCode',
-            't.label' . $l . ' as threatLabel' . $l . '',
-            't.description' . $l . ' as threatDescription' . $l . '',
+            't.label_translation_id' . ' as threatLabel' . $l . '',
+            't.description_translation_id' . ' as threatDescription' . $l . '',
             'ir.threat_rate as threatRate',
             'v.id as vulnerability',
             'v.code as vulnCode',
-            'v.label' . $l . ' as vulnLabel' . $l . '',
-            'v.description' . $l . ' as vulnDescription' . $l . '',
+            'v.label_translation_id' . ' as vulnLabel' . $l . '',
+            'v.description_translation_id' . ' as vulnDescription' . $l . '',
             'ir.vulnerability_rate as vulnerabilityRate',
             'ir.`specific` as `specific`',
             'ir.reduction_amount as reductionAmount',
-            'i.c as c_impact',
+            'i.confidentiality as c_impact',
             'ir.risk_c as c_risk',
-            't.c as c_risk_enabled',
-            'i.i as i_impact',
+            't.confidentiality as c_risk_enabled',
+            'i.integrity as i_impact',
             'ir.risk_i as i_risk',
-            't.i as i_risk_enabled',
-            'i.d as d_impact',
+            't.integrity as i_risk_enabled',
+            'i.disponibility as d_impact',
             'ir.risk_d as d_risk',
-            't.d as d_risk_enabled',
+            't.availability as d_risk_enabled',
             'ir.cache_targeted_risk as target_risk',
             'ir.cache_max_risk as max_risk',
             'ir.comment as comment',
-            'CONCAT(m1.code, \' - \', m1.description' . $l . ') as measure1',
-            'CONCAT(m2.code, \' - \', m2.description' . $l . ') as measure2',
-            'CONCAT(m3.code, \' - \', m3.description' . $l . ') as measure3',
+            'CONCAT(m1.code, \' - \', m1.description_translation_id) as measure1',
+            'CONCAT(m2.code, \' - \', m2.description_translation_id) as measure2',
+            'CONCAT(m3.code, \' - \', m3.description_translation_id) as measure3',
             'o.scope as scope',
             'ir.kind_of_measure as kindOfMeasure',
             'IF(ir.kind_of_measure IS NULL OR ir.kind_of_measure = ' . \MonarcCore\Model\Entity\InstanceRiskSuperClass::KIND_NOT_TREATED . ', false, true) as t',
             'ir.threat_id as tid',
             'ir.vulnerability_id as vid',
-            'i.name' . $l . ' as instanceName' . $l . '',
+            'i.name_translation_id as instanceName' . $l . '',
         ];
 
         $sql = "
@@ -288,12 +288,12 @@ class InstanceRiskTable extends AbstractEntityTable
                 't.label' . $l . '',
                 'v.label' . $l . '',
                 'm1.code',
-                'm1.description' . $l . '',
+                'm1.description_translation_id',
                 'm2.code',
-                'm2.description' . $l . '',
+                'm2.description_translation_id',
                 'm3.code',
-                'm3.description' . $l . '',
-                'i.name' . $l . '',
+                'm3.description_translation_id',
+                'i.name_translation_id',
                 'ir.comment',
             ];
             $orFilter = [];
@@ -315,7 +315,7 @@ class InstanceRiskTable extends AbstractEntityTable
         $sql .= " ORDER BY ";
         switch ($params['order']) {
             case 'instance':
-                $sql .= " i.name$l ";
+                $sql .= " i.name_translation_id ";
                 break;
             case 'auditOrder':
                 $sql .= " a.position ";
@@ -351,7 +351,7 @@ class InstanceRiskTable extends AbstractEntityTable
         }
         $sql .= " " . $params['order_direction'] . " ";
         if ($params['order'] != 'instance') {
-            $sql .= " , i.name$l ASC ";
+            $sql .= " , i.name_translation_id ASC ";
         }
         $sql .= " , t.code ASC , v.code ASC ";
 

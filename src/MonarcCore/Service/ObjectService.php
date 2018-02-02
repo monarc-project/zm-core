@@ -46,7 +46,7 @@ class ObjectService extends AbstractService
     protected $rolfTagTable;
     protected $amvTable;
     protected $objectExportService;
-    protected $filterColumns = ['name1', 'name2', 'name3', 'name4', 'label1', 'label2', 'label3', 'label4'];
+    protected $filterColumns = ['name', 'label'];
     protected $dependencies = ['anr', 'asset', 'category', 'rolfTag'];
 
     /**
@@ -232,16 +232,16 @@ class ObjectService extends AbstractService
                 $asc = $instanceTable->getAscendance($instance);
 
                 $names = [
-                    'name1' => $anrObject->label1,
-                    'name2' => $anrObject->label2,
-                    'name3' => $anrObject->label3,
-                    'name4' => $anrObject->label4,
+                    'name1' => $anrObject->label,
+                    'name2' => $anrObject->label,
+                    'name3' => $anrObject->label,
+                    'name4' => $anrObject->label,
                 ];
                 foreach ($asc as $a) {
-                    $names['name1'] .= ' > ' . $a['name1'];
-                    $names['name2'] .= ' > ' . $a['name2'];
-                    $names['name3'] .= ' > ' . $a['name3'];
-                    $names['name4'] .= ' > ' . $a['name4'];
+                    $names['name1'] .= ' > ' . $a['name'];
+                    $names['name2'] .= ' > ' . $a['name'];
+                    $names['name3'] .= ' > ' . $a['name'];
+                    $names['name4'] .= ' > ' . $a['name'];
                 }
                 $names['id'] = $instance->get('id');
                 $instances_arr[] = $names;

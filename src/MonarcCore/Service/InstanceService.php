@@ -28,7 +28,7 @@ use Zend\EventManager\EventManager;
 class InstanceService extends AbstractService
 {
     protected $dependencies = ['anr', 'asset', 'object', '[parent](instance)', '[root](instance)'];
-    protected $filterColumns = ['label1', 'label2', 'label3', 'label4'];
+    protected $filterColumns = ['label'];
 
     // Tables & Entities
     protected $anrTable;
@@ -86,7 +86,7 @@ class InstanceService extends AbstractService
 
         $data['anr'] = $anrId;
 
-        $commonProperties = ['name1', 'name2', 'name3', 'name4', 'label1', 'label2', 'label3', 'label4'];
+        $commonProperties = ['name', 'label'];
         foreach ($commonProperties as $commonProperty) {
             $data[$commonProperty] = $object->$commonProperty;
         }
@@ -477,7 +477,7 @@ class InstanceService extends AbstractService
         $data['asset'] = $instance->asset->id;
         $data['object'] = $instance->object->id;
         $data['name1'] = $instance->name1;
-        $data['label1'] = $instance->label1;
+        $data['label1'] = $instance->label;
 
         unset($data['implicitPosition']);
         unset($data['previous']);
@@ -526,10 +526,10 @@ class InstanceService extends AbstractService
             'name2' => $instance->name2,
             'name3' => $instance->name3,
             'name4' => $instance->name4,
-            'label1' => $instance->label1,
-            'label2' => $instance->label2,
-            'label3' => $instance->label3,
-            'label4' => $instance->label4,
+            'label1' => $instance->label,
+            'label2' => $instance->label,
+            'label3' => $instance->label,
+            'label4' => $instance->label,
         ];
 
         $eventManager = new EventManager();
@@ -888,18 +888,18 @@ class InstanceService extends AbstractService
 
         foreach ($result as $r) {
             $names = [
-                'name1' => $anr['label1'],//." > ".$r->get('name1'),
-                'name2' => $anr['label2'],//." > ".$r->get('name2'),
-                'name3' => $anr['label3'],//." > ".$r->get('name3'),
-                'name4' => $anr['label4'],//." > ".$r->get('name4'),
+                'name1' => $anr['label'],//." > ".$r->get('name1'),
+                'name2' => $anr['label'],//." > ".$r->get('name2'),
+                'name3' => $anr['label'],//." > ".$r->get('name3'),
+                'name4' => $anr['label'],//." > ".$r->get('name4'),
             ];
 
             $asc = array_reverse($this->get('table')->getAscendance($r));
             foreach ($asc as $a) {
-                $names['name1'] .= ' > ' . $a['name1'];
-                $names['name2'] .= ' > ' . $a['name2'];
-                $names['name3'] .= ' > ' . $a['name3'];
-                $names['name4'] .= ' > ' . $a['name4'];
+                $names['name1'] .= ' > ' . $a['name'];
+                $names['name2'] .= ' > ' . $a['name'];
+                $names['name3'] .= ' > ' . $a['name'];
+                $names['name4'] .= ' > ' . $a['name'];
             }
 
             $names['id'] = $r->get('id');
@@ -1023,10 +1023,10 @@ class InstanceService extends AbstractService
             $riskOps[] = [
                 'id' => $instanceRiskOp->id,
                 'instanceInfos' => isset($instancesInfos[$instanceRiskOp->instance->id]) ? $instancesInfos[$instanceRiskOp->instance->id] : [],
-                'label1' => $instanceRiskOp->riskCacheLabel1,
-                'label2' => $instanceRiskOp->riskCacheLabel2,
-                'label3' => $instanceRiskOp->riskCacheLabel3,
-                'label4' => $instanceRiskOp->riskCacheLabel4,
+                'label1' => $instanceRiskOp->riskCacheLabel,
+                'label2' => $instanceRiskOp->riskCacheLabel,
+                'label3' => $instanceRiskOp->riskCacheLabel,
+                'label4' => $instanceRiskOp->riskCacheLabel,
 
                 'description1' => $instanceRiskOp->riskCacheDescription1,
                 'description2' => $instanceRiskOp->riskCacheDescription2,

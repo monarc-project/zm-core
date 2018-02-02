@@ -397,4 +397,3 @@ class InstanceRiskSuperClass extends AbstractEntity
         return $this->inputFilter;
     }
 }
-

@@ -361,7 +361,7 @@ class ObjectSuperClass extends AbstractEntity
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);
 
-            $names = ['name1', 'name2', 'name3', 'name4'];
+            $names = ['name'];
             foreach ($names as $name) {
                 $validatorsName = [];
                 if (!$partial) {
@@ -538,4 +538,3 @@ class ObjectSuperClass extends AbstractEntity
         parent::__construct($obj);
     }
 }
-
