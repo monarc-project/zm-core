@@ -34,7 +34,7 @@ class ApiAnrLibraryController extends AbstractController
 
         $this->formatDependencies($objectsCategories, $this->dependencies);
 
-        $fields = ['id', 'label1', 'label2', 'label3', 'label4', 'position', 'objects', 'child'];
+        $fields = ['id', 'label', 'position', 'objects', 'child'];
         $objectsCategories = $this->recursiveArray($objectsCategories, null, 0, $fields);
 
         return new JsonModel(array(
@@ -108,4 +108,3 @@ class ApiAnrLibraryController extends AbstractController
 
     }
 }
-

@@ -167,7 +167,7 @@ class RolfRiskSuperclass extends AbstractEntity
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);
 
-            $texts = ['label1', 'label2', 'label3', 'label4'];
+            $texts = ['label'];
             foreach ($texts as $text) {
                 $this->inputFilter->add(array(
                     'name' => $text,
@@ -178,7 +178,7 @@ class RolfRiskSuperclass extends AbstractEntity
                 ));
             }
 
-            $descriptions = ['description1', 'description2', 'description3', 'description4'];
+            $descriptions = ['description'];
             foreach ($descriptions as $description) {
                 $this->inputFilter->add(array(
                     'name' => $description,

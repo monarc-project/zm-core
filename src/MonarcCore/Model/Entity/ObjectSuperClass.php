@@ -386,7 +386,7 @@ class ObjectSuperClass extends AbstractEntity
                 ));
             }
 
-            $labels = ['label1', 'label2', 'label3', 'label4'];
+            $labels = ['label'];
             foreach ($labels as $label) {
                 $this->inputFilter->add(array(
                     'name' => $label,

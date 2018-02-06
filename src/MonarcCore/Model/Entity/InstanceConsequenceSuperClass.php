@@ -90,21 +90,21 @@ class InstanceConsequenceSuperClass extends AbstractEntity
      *
      * @ORM\Column(name="confidentiality", type="smallint", options={"unsigned":true, "default":-1})
      */
-    protected $c = -1;
+    protected $confidentiality = -1;
 
     /**
      * @var smallint
      *
      * @ORM\Column(name="integrity", type="smallint", options={"unsigned":true, "default":-1})
      */
-    protected $i = -1;
+    protected $integrity = -1;
 
     /**
      * @var smallint
      *
      * @ORM\Column(name="availability", type="smallint", options={"unsigned":true, "default":-1})
      */
-    protected $d = -1;
+    protected $availability = -1;
 
     /**
      * @var string
@@ -251,4 +251,3 @@ class InstanceConsequenceSuperClass extends AbstractEntity
         return $this->inputFilter;
     }
 }
-

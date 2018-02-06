@@ -211,7 +211,7 @@ class ScaleImpactTypeSuperClass extends AbstractEntity
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);
 
-            $texts = ['label1', 'label2', 'label3', 'label4'];
+            $texts = ['label'];
 
             foreach ($texts as $text) {
                 $this->inputFilter->add(array(
@@ -255,4 +255,3 @@ class ScaleImpactTypeSuperClass extends AbstractEntity
         return $this->inputFilter;
     }
 }
-

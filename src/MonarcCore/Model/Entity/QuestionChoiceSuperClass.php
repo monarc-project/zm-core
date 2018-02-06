@@ -134,7 +134,7 @@ class QuestionChoiceSuperclass extends AbstractEntity
             parent::getInputFilter($partial);
 
             $labels = [
-                'label1', 'label2', 'label3', 'label4'
+                'label'
             ];
 
             foreach ($labels as $label) {
@@ -173,4 +173,3 @@ class QuestionChoiceSuperclass extends AbstractEntity
         return $this->inputFilter;
     }
 }
-

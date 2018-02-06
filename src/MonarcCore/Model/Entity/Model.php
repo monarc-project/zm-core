@@ -218,7 +218,7 @@ class Model extends AbstractEntity
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);
 
-            $texts = ['label1', 'label2', 'label3', 'label4'];
+            $texts = ['label'];
             foreach ($texts as $text) {
                 $this->inputFilter->add(array(
                     'name' => $text,
@@ -229,7 +229,7 @@ class Model extends AbstractEntity
                 ));
             }
 
-            $descriptions = ['description1', 'description2', 'description3', 'description4'];
+            $descriptions = ['description'];
             foreach ($descriptions as $description) {
                 $this->inputFilter->add(array(
                     'name' => $description,
@@ -278,4 +278,3 @@ class Model extends AbstractEntity
         return $this->inputFilter;
     }
 }
-
