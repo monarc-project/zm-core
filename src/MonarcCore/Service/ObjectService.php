@@ -702,6 +702,12 @@ class ObjectService extends AbstractService
             $data['mode'] = Object::MODE_GENERIC;
         }
 
+        $setRolfTagNull = false;
+        if (empty($data['rolfTag'])) {
+            unset($data['rolfTag']);
+            $setRolfTagNull = true;
+        }
+
         $object = $this->get('table')->getEntity($id);
         $object->setLanguage($this->getLanguage());
 
