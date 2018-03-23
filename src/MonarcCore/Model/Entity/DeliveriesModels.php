@@ -221,7 +221,7 @@ class DeliveriesModels extends AbstractEntity
                 if (!is_dir($dirFile)) {
                     mkdir($dirFile, 0775, true);
                 }
-                $targetFile = $dirFile . DIRECTORY_SEPARATOR .$this->{'path' . $i}['name'];
+                $targetFile = $dirFile . DIRECTORY_SEPARATOR . uniqid() . '_' . $this->{'path' . $i}['name'];
                 rename($this->{'path' . $i}['tmp_name'], $targetFile);
 
                 $this->{'path' . $i} = $targetFile;
