@@ -13,4 +13,5 @@ namespace MonarcCore\Service\Model\Table;
  */
 class DeliveriesModelsServiceModelTable extends AbstractServiceModelTable
 {
+    protected $dbService = '\MonarcCli\Model\Db';
 }

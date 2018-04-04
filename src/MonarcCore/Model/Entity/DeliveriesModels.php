@@ -91,6 +91,13 @@ class DeliveriesModels extends AbstractEntity
     protected $path4;
 
     /**
+     * @var boolean
+     *
+     * @ORM\Column(name="editable", type="boolean", options={"default":true})
+     */
+    protected $editable;
+
+    /**
      * @var string
      *
      * @ORM\Column(name="creator", type="string", length=255, nullable=true)
