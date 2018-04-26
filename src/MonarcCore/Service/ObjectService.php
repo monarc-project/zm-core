@@ -459,6 +459,7 @@ class ObjectService extends AbstractService
             $setRolfTagNull = true;
         }
 
+
         $anr = false;
         if (isset($data['anr']) && strlen($data['anr'])) {
             /** @var AnrTable $anrTable */
@@ -702,11 +703,14 @@ class ObjectService extends AbstractService
             $data['mode'] = Object::MODE_GENERIC;
         }
 
+        /** To improve.
+        * There is a bug on operational risks when position of primary asset changing. Risks are changed to specific.
         $setRolfTagNull = false;
         if (empty($data['rolfTag'])) {
             unset($data['rolfTag']);
             $setRolfTagNull = true;
         }
+        */
 
         $object = $this->get('table')->getEntity($id);
         $object->setLanguage($this->getLanguage());
