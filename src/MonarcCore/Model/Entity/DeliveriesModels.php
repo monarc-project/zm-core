@@ -146,7 +146,7 @@ class DeliveriesModels extends AbstractEntity
             $dirFile = './data/';
             $appconfdir = getenv('APP_CONF_DIR') ? getenv('APP_CONF_DIR') : '';
             if( ! empty($appconfdir) ){
-                $dirFile = $appconfdir.'/data/';
+                $dirFile = $appconfdir . '/data/';
             }
             $dirFile .= 'monarc/models/';
             if (!is_dir($dirFile)) {
@@ -221,17 +221,31 @@ class DeliveriesModels extends AbstractEntity
             4 => 'NE',
         );
 
+        $dirFile = './data';
+        $appconfdir = getenv('APP_CONF_DIR') ? getenv('APP_CONF_DIR') : '';
+        if( ! empty($appconfdir) ){
+            $dirFile = $appconfdir . DIRECTORY_SEPARATOR . 'data';
+        }
+        $dirFile .= DIRECTORY_SEPARATOR . 'monarc/models';
+        if (!is_dir($dirFile)) {
+            mkdir($dirFile, 0775, true);
+        }
+
         for ($i = 1; $i <= 4; ++$i) {
             if (!empty($this->{'path' . $i}['tmp_name']) && file_exists($this->{'path' . $i}['tmp_name'])) {
                 $info = pathinfo($this->{'path' . $i}['tmp_name']);
-                $dirFile = $info['dirname'] . DIRECTORY_SEPARATOR . $languages[$i];
-                if (!is_dir($dirFile)) {
-                    mkdir($dirFile, 0775, true);
+                $dirFileAbsolute =  $dirFile . DIRECTORY_SEPARATOR . $languages[$i];
+                $dirFileRelative = './data/monarc/models' . DIRECTORY_SEPARATOR . $languages[$i];
+                if (!is_dir($dirFileAbsolute)) {
+                    mkdir($dirFileAbsolute, 0775, true);
                 }
-                $targetFile = $dirFile . DIRECTORY_SEPARATOR . uniqid() . '_' . $this->{'path' . $i}['name'];
+                $newFileName = uniqid() . '_' . $this->{'path' . $i}['name'];
+                $newFileRelative = $dirFileRelative . DIRECTORY_SEPARATOR . $newFileName;
+                $targetFile = $dirFileAbsolute . DIRECTORY_SEPARATOR . $newFileName;
                 rename($this->{'path' . $i}['tmp_name'], $targetFile);
+                file_put_contents('php://stderr', print_r($targetFile, TRUE));
 
-                $this->{'path' . $i} = $targetFile;
+                $this->{'path' . $i} = $newFileRelative;
             }
         }
 
