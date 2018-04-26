@@ -23,9 +23,11 @@ class UniqueDeliveryModel extends AbstractValidator
     );
 
     const ALREADYUSED = "ALREADYUSED";
+    const MAXIMUMBYCATEGORYREACHED = "MAXIMUMBYCATEGORYREACHED";
 
     protected $messageTemplates = array(
-        self::ALREADYUSED => 'This category is already used',
+        self::ALREADYUSED => 'This category is already used.',
+        self::MAXIMUMBYCATEGORYREACHED => 'Maximum number of templates reached for this category.',
     );
 
     /**
@@ -35,9 +37,9 @@ class UniqueDeliveryModel extends AbstractValidator
         if(empty($this->options['adapter'])){
             return false;
         }else{
-            $res = $this->options['adapter']->getRepository('\MonarcCore\Model\Entity\DeliveriesModels')->findOneByCategory($value);
-            if(!empty($res) && $this->options['id'] != $res->get('id')){
-                $this->error(self::ALREADYUSED);
+            $res = $this->options['adapter']->getRepository('\MonarcCore\Model\Entity\DeliveriesModels')->findByCategory($value);
+            if(count($res) >= 5){
+                $this->error(self::MAXIMUMBYCATEGORYREACHED);
                 return false;
             }
         }

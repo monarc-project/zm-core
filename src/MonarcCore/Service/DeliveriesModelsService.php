@@ -32,4 +32,27 @@ class DeliveriesModelsService extends AbstractService
 
         return parent::patch($id,$data);
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function delete($id)
+    {
+        $entity = $this->get('table')->getEntity($id);
+
+        if (file_exists($entity->path1)) {
+            unlink($entity->path1);
+        }
+        if (file_exists($entity->path2)) {
+            unlink($entity->path2);
+        }
+        if (file_exists($entity->path3)) {
+            unlink($entity->path3);
+        }
+        if (file_exists($entity->path4)) {
+            unlink($entity->path4);
+        }
+
+        return parent::delete($id);
+    }
 }

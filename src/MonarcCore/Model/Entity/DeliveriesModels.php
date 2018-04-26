@@ -91,6 +91,13 @@ class DeliveriesModels extends AbstractEntity
     protected $path4;
 
     /**
+     * @var boolean
+     *
+     * @ORM\Column(name="editable", type="boolean", options={"default":true})
+     */
+    protected $editable;
+
+    /**
      * @var string
      *
      * @ORM\Column(name="creator", type="string", length=255, nullable=true)
@@ -184,7 +191,7 @@ class DeliveriesModels extends AbstractEntity
                             'name' => 'Zend\Filter\File\RenameUpload',
                             'options' => array(
                                 'randomize' => true,
-                                'target' => $dirFile . $this->{"path$i"}['name'],
+                                'target' => $dirFile . $this->{"path$i"},
                             ),
                         ),
                     ),
@@ -221,7 +228,7 @@ class DeliveriesModels extends AbstractEntity
                 if (!is_dir($dirFile)) {
                     mkdir($dirFile, 0775, true);
                 }
-                $targetFile = $dirFile . DIRECTORY_SEPARATOR .$this->{'path' . $i}['name'];
+                $targetFile = $dirFile . DIRECTORY_SEPARATOR . uniqid() . '_' . $this->{'path' . $i}['name'];
                 rename($this->{'path' . $i}['tmp_name'], $targetFile);
 
                 $this->{'path' . $i} = $targetFile;
