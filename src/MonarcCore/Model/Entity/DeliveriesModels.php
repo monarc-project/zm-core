@@ -243,7 +243,6 @@ class DeliveriesModels extends AbstractEntity
                 $newFileRelative = $dirFileRelative . DIRECTORY_SEPARATOR . $newFileName;
                 $targetFile = $dirFileAbsolute . DIRECTORY_SEPARATOR . $newFileName;
                 rename($this->{'path' . $i}['tmp_name'], $targetFile);
-                file_put_contents('php://stderr', print_r($targetFile, TRUE));
 
                 $this->{'path' . $i} = $newFileRelative;
             }

@@ -40,17 +40,15 @@ class DeliveriesModelsService extends AbstractService
     {
         $entity = $this->get('table')->getEntity($id);
 
-        if (file_exists($entity->path1)) {
-            unlink($entity->path1);
-        }
-        if (file_exists($entity->path2)) {
-            unlink($entity->path2);
-        }
-        if (file_exists($entity->path3)) {
-            unlink($entity->path3);
-        }
-        if (file_exists($entity->path4)) {
-            unlink($entity->path4);
+        $pathModel = getenv('APP_CONF_DIR') ? getenv('APP_CONF_DIR') : '';
+
+        $entitiesPaths = array($entity->path1, $entity->path2, $entity->path3, $entity->path4);
+
+        foreach ($entitiesPaths as $entityPath) {
+            $currentFile = $pathModel . $entityPath;
+            if (file_exists($currentFile)) {
+                unlink($currentFile);
+            }
         }
 
         return parent::delete($id);
