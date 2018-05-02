@@ -201,6 +201,7 @@ class AnrSuperClass extends AbstractEntity
      */
     protected $manageRisks = '0';
 
+
     /**
      * @var text
      *
@@ -271,6 +272,17 @@ class AnrSuperClass extends AbstractEntity
      */
     protected $updatedAt;
 
+
+
+    /**
+     * @var smallint
+   *
+   * @ORM\Column(name="SOA", type="smallint", options={"unsigned":true, "default":0})
+     */
+    protected $SOA = '0';
+
+
+
     /**
      * @return int
      */
@@ -307,4 +319,3 @@ class AnrSuperClass extends AbstractEntity
         return $this;
     }
 }
-

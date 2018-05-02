@@ -304,6 +304,8 @@ class AnrService extends AbstractService
             'evalRisks' => $entity->evalRisks,
             'evalPlanRisks' => $entity->evalPlanRisks,
             'manageRisks' => $entity->manageRisks,
+            'SOA' => $entity->SOA,
+
             ];
 
             $return['method']['data'] = [

@@ -19,4 +19,22 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Measure extends MeasureSuperClass
 {
+
+//  /**
+//  * @var \MonarcCore\Model\Entity\Soa
+//  *
+//  * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Soa", inversedBy="")
+//  */
+//  protected $Soa;
+
+
+//  /**
+//   * @var \MonarcCore\Model\Entity\Threat
+//   *
+//   * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Threat", inversedBy="id")
+//   */
+//  protected $Threat;
+
+
+
 }
