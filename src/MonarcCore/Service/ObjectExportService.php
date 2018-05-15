@@ -56,6 +56,7 @@ class ObjectExportService extends AbstractService
             'label3' => 'label3',
             'label4' => 'label4',
             'disponibility' => 'disponibility',
+            'position' => 'position',
         ];
         $return = [
             'type' => 'object',
@@ -130,8 +131,11 @@ class ObjectExportService extends AbstractService
         $return['children'] = null;
         if (!empty($children)) {
             $return['children'] = [];
+            $place =1;
             foreach ($children as $child) {
                 $return['children'][$child->get('child')->get('id')] = $this->generateExportArray($child->get('child')->get('id'));
+                $return['children'][$child->get('child')->get('id')]['object']['position'] = $place;
+                $place ++;
             }
         }
 
@@ -311,7 +315,11 @@ class ObjectExportService extends AbstractService
 
                 //on s'occupe des enfants
                 if (!empty($data['children'])) {
+                  usort($data['children'], function($a,$b){
+                    return $a['object']['position'] <=> $b['object']['position'];
+                  });
                     foreach ($data['children'] as $c) {
+
                         $child = $this->importFromArray($c, $anr, $modeImport, $objectsCache);
 
                         if ($child) {
