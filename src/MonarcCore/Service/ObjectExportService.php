@@ -24,6 +24,8 @@ class ObjectExportService extends AbstractService
     protected $anrObjectCategoryTable;
     protected $rolfTagTable;
     protected $rolfRiskTable;
+    /** @var  ConfigService */
+    protected $configService;
 
     /**
      * Generates an array to export into a filename
@@ -58,10 +60,12 @@ class ObjectExportService extends AbstractService
             'disponibility' => 'disponibility',
             'position' => 'position',
         ];
+
         $return = [
             'type' => 'object',
             'object' => $entity->getJsonArray($objectObj),
             'version' => $this->getVersion(),
+            'monarc_version' => $this->configService->getAppVersion()['appVersion'],
         ];
         $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $entity->get('name' . $this->getLanguage()));
 
