@@ -24,7 +24,7 @@ class UserService extends AbstractService
     protected $passwordTokenTable;
     protected $mailService;
 
-    protected $filterColumns = ['firstname', 'lastname', 'email', 'phone'];
+    protected $filterColumns = ['firstname', 'lastname', 'email'];
 
     /**
      * Returns the total amount of users

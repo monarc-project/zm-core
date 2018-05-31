@@ -81,7 +81,7 @@ class UserTable extends AbstractEntityTable
     public function getByEmail($email)
     {
         $users = $this->getRepository()->createQueryBuilder('u')
-            ->select(array('u.id', 'u.firstname', 'u.lastname', 'u.email', 'u.phone', 'u.status'))
+            ->select(array('u.id', 'u.firstname', 'u.lastname', 'u.email', 'u.status'))
             ->where('u.email = :email')
             ->setParameter(':email', $email)
             ->getQuery()
