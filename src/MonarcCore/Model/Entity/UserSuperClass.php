@@ -71,13 +71,6 @@ class UserSuperClass extends AbstractEntity
     /**
      * @var string
      *
-     * @ORM\Column(name="phone", type="string", length=20, nullable=true)
-     */
-    protected $phone;
-
-    /**
-     * @var string
-     *
      * @ORM\Column(name="password", type="string", length=255, nullable=true)
      */
     protected $password;
