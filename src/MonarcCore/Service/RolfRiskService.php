@@ -225,6 +225,38 @@ class RolfRiskService extends AbstractService
             }
         }
 
+        foreach ($currentTagId as $currentTag) {
+          // manage the fact that label can changed for OP risk
+          $objectTable = $this->get('objectTable');
+          $objects = $objectTable->getEntityByFields(['rolfTag' => $currentTag]);
+          foreach ($objects as $object) {
+            $instanceRiskOpTable = $this->get('instanceRiskOpTable');
+            $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['object' => $object->id, 'rolfRisk' => $id]);
+
+            $nbInstances = count($instancesRisksOp);
+            //update label
+            file_put_contents('php://stderr', print_r('rolf risk id : '. $nbInstances ."\n" , TRUE));
+            foreach ($instancesRisksOp as $instance) {
+                $data = [
+                    'anr' => $object->anr->id,
+                    'object' => $object->id,
+                    'rolfRisk' => $entity->id,
+                    'riskCacheLabel1' => $entity->label1,
+                    'riskCacheLabel2' => $entity->label2,
+                    'riskCacheLabel3' => $entity->label3,
+                    'riskCacheLabel4' => $entity->label4,
+                    'riskCacheDescription1' => $entity->description1,
+                    'riskCacheDescription2' => $entity->description2,
+                    'riskCacheDescription3' => $entity->description3,
+                    'riskCacheDescription4' => $entity->description4,
+                ];
+                file_put_contents('php://stderr', print_r('id instances : '. $instance->id ."\n" , TRUE));
+                $instanceRiskOpService = $this->get('instanceRiskOpService');
+                $instanceRiskOpService->update($instance->id, $data); // on update l'instance
+
+              }
+            }
+          }
         return $this->get('table')->save($entity);
     }
 }
