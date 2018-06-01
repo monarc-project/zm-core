@@ -91,6 +91,13 @@ class DeliveriesModels extends AbstractEntity
     protected $path4;
 
     /**
+     * @var boolean
+     *
+     * @ORM\Column(name="editable", type="boolean", options={"default":true})
+     */
+    protected $editable;
+
+    /**
      * @var string
      *
      * @ORM\Column(name="creator", type="string", length=255, nullable=true)
@@ -139,7 +146,7 @@ class DeliveriesModels extends AbstractEntity
             $dirFile = './data/';
             $appconfdir = getenv('APP_CONF_DIR') ? getenv('APP_CONF_DIR') : '';
             if( ! empty($appconfdir) ){
-                $dirFile = $appconfdir.'/data/';
+                $dirFile = $appconfdir . '/data/';
             }
             $dirFile .= 'monarc/models/';
             if (!is_dir($dirFile)) {
@@ -184,7 +191,7 @@ class DeliveriesModels extends AbstractEntity
                             'name' => 'Zend\Filter\File\RenameUpload',
                             'options' => array(
                                 'randomize' => true,
-                                'target' => $dirFile . $this->{"path$i"}['name'],
+                                'target' => $dirFile . $this->{"path$i"},
                             ),
                         ),
                     ),
@@ -214,17 +221,30 @@ class DeliveriesModels extends AbstractEntity
             4 => 'NE',
         );
 
+        $dirFile = './data';
+        $appconfdir = getenv('APP_CONF_DIR') ? getenv('APP_CONF_DIR') : '';
+        if( ! empty($appconfdir) ){
+            $dirFile = $appconfdir . DIRECTORY_SEPARATOR . 'data';
+        }
+        $dirFile .= DIRECTORY_SEPARATOR . 'monarc/models';
+        if (!is_dir($dirFile)) {
+            mkdir($dirFile, 0775, true);
+        }
+
         for ($i = 1; $i <= 4; ++$i) {
             if (!empty($this->{'path' . $i}['tmp_name']) && file_exists($this->{'path' . $i}['tmp_name'])) {
                 $info = pathinfo($this->{'path' . $i}['tmp_name']);
-                $dirFile = $info['dirname'] . DIRECTORY_SEPARATOR . $languages[$i];
-                if (!is_dir($dirFile)) {
-                    mkdir($dirFile, 0775, true);
+                $dirFileAbsolute =  $dirFile . DIRECTORY_SEPARATOR . $languages[$i];
+                $dirFileRelative = './data/monarc/models' . DIRECTORY_SEPARATOR . $languages[$i];
+                if (!is_dir($dirFileAbsolute)) {
+                    mkdir($dirFileAbsolute, 0775, true);
                 }
-                $targetFile = $dirFile . DIRECTORY_SEPARATOR .$this->{'path' . $i}['name'];
+                $newFileName = uniqid() . '_' . $this->{'path' . $i}['name'];
+                $newFileRelative = $dirFileRelative . DIRECTORY_SEPARATOR . $newFileName;
+                $targetFile = $dirFileAbsolute . DIRECTORY_SEPARATOR . $newFileName;
                 rename($this->{'path' . $i}['tmp_name'], $targetFile);
 
-                $this->{'path' . $i} = $targetFile;
+                $this->{'path' . $i} = $newFileRelative;
             }
         }
 

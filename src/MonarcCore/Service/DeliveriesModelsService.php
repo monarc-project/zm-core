@@ -32,4 +32,25 @@ class DeliveriesModelsService extends AbstractService
 
         return parent::patch($id,$data);
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function delete($id)
+    {
+        $entity = $this->get('table')->getEntity($id);
+
+        $pathModel = getenv('APP_CONF_DIR') ? getenv('APP_CONF_DIR') : '';
+
+        $entitiesPaths = array($entity->path1, $entity->path2, $entity->path3, $entity->path4);
+
+        foreach ($entitiesPaths as $entityPath) {
+            $currentFile = $pathModel . $entityPath;
+            if (file_exists($currentFile)) {
+                unlink($currentFile);
+            }
+        }
+
+        return parent::delete($id);
+    }
 }
