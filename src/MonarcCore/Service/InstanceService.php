@@ -1427,8 +1427,9 @@ class InstanceService extends AbstractService
         $filename = "";
 
         $with_eval = isset($data['assessments']) && $data['assessments'];
+        $with_controls_reco = isset($data['controls_reco']) && $data['controls_reco'];
 
-        $exportedInstance = json_encode($this->generateExportArray($data['id'], $filename, $with_eval));
+        $exportedInstance = json_encode($this->generateExportArray($data['id'], $filename, $with_eval, $with_controls_reco));
         $data['filename'] = $filename;
 
         if (! empty($data['password'])) {
@@ -1448,7 +1449,11 @@ class InstanceService extends AbstractService
      * @return array
      * @throws \MonarcCore\Exception\Exception
      */
+<<<<<<< HEAD
     public function generateExportArray($id, &$filename = "", $with_eval = false, &$with_scale = true, $with_controls_reco)
+=======
+    public function generateExportArray($id, &$filename = "", $with_eval = false, &$with_scale = true, $with_controls_reco = false)
+>>>>>>> 91e466f5d550b21708c3e4aff552ed982e8d47ea
     {
         if (empty($id)) {
             throw new \MonarcCore\Exception\Exception('Instance to export is required', 412);
@@ -1488,7 +1493,7 @@ class InstanceService extends AbstractService
             'type' => 'instance',
             'version' => $this->getVersion(),
             'with_eval' => $with_eval,
-            'with_controls_reco' => $with_controls_reco,
+            '$with_controls_reco' => $with_controls_reco,
             'instance' => $entity->getJsonArray($objInstance),
             'object' => $this->get('objectExportService')->generateExportArray($entity->get('object')->get('id')),
             // l'asset sera porté par l'objet
