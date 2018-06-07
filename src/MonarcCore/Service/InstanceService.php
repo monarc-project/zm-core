@@ -1427,8 +1427,9 @@ class InstanceService extends AbstractService
         $filename = "";
 
         $with_eval = isset($data['assessments']) && $data['assessments'];
+        $with_controls_reco = isset($data['controls_reco']) && $data['controls_reco'];
 
-        $exportedInstance = json_encode($this->generateExportArray($data['id'], $filename, $with_eval));
+        $exportedInstance = json_encode($this->generateExportArray($data['id'], $filename, $with_eval, $with_controls_reco));
         $data['filename'] = $filename;
 
         if (! empty($data['password'])) {
@@ -1448,7 +1449,7 @@ class InstanceService extends AbstractService
      * @return array
      * @throws \MonarcCore\Exception\Exception
      */
-    public function generateExportArray($id, &$filename = "", $with_eval = false, &$with_scale = true)
+    public function generateExportArray($id, &$filename = "", $with_eval = false, &$with_scale = true, $with_controls_reco = false)
     {
         if (empty($id)) {
             throw new \MonarcCore\Exception\Exception('Instance to export is required', 412);
@@ -1488,7 +1489,7 @@ class InstanceService extends AbstractService
             'type' => 'instance',
             'version' => $this->getVersion(),
             'with_eval' => $with_eval,
-            'with_controls_reco' => $with_controls_reco,
+            '$with_controls_reco' => $with_controls_reco,
             'instance' => $entity->getJsonArray($objInstance),
             'object' => $this->get('objectExportService')->generateExportArray($entity->get('object')->get('id')),
             // l'asset sera porté par l'objet
@@ -1592,6 +1593,11 @@ class InstanceService extends AbstractService
                 $ir->set('commentAfter', '');
             }
 
+            if (!$with_controls_reco) {
+                $ir->set('comment', '');
+                $ir->set('commentAfter', '');
+            }
+
             $ir->set('mh', 1);
             $ir->set('riskC', '-1');
             $ir->set('riskI', '-1');
@@ -1647,7 +1653,7 @@ class InstanceService extends AbstractService
         }
 
         // Recommandation
-        if ($with_eval && !empty($riskIds) && $this->get('recommandationRiskTable')) {
+        if ($with_eval && $with_controls_reco && !empty($riskIds) && $this->get('recommandationRiskTable')) {
             $recosObj = [
                 'id' => 'id',
                 'code' => 'code',
