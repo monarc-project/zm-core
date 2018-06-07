@@ -1449,11 +1449,8 @@ class InstanceService extends AbstractService
      * @return array
      * @throws \MonarcCore\Exception\Exception
      */
-<<<<<<< HEAD
+
     public function generateExportArray($id, &$filename = "", $with_eval = false, &$with_scale = true, $with_controls_reco)
-=======
-    public function generateExportArray($id, &$filename = "", $with_eval = false, &$with_scale = true, $with_controls_reco = false)
->>>>>>> 91e466f5d550b21708c3e4aff552ed982e8d47ea
     {
         if (empty($id)) {
             throw new \MonarcCore\Exception\Exception('Instance to export is required', 412);
