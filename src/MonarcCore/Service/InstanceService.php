@@ -1448,7 +1448,7 @@ class InstanceService extends AbstractService
      * @return array
      * @throws \MonarcCore\Exception\Exception
      */
-    public function generateExportArray($id, &$filename = "", $with_eval = false, &$with_scale = true)
+    public function generateExportArray($id, &$filename = "", $with_eval = false, &$with_scale = true, $with_controls_reco)
     {
         if (empty($id)) {
             throw new \MonarcCore\Exception\Exception('Instance to export is required', 412);
@@ -1592,6 +1592,11 @@ class InstanceService extends AbstractService
                 $ir->set('commentAfter', '');
             }
 
+            if (!$with_controls_reco) {
+                $ir->set('comment', '');
+                $ir->set('commentAfter', '');
+            }
+
             $ir->set('mh', 1);
             $ir->set('riskC', '-1');
             $ir->set('riskI', '-1');
@@ -1647,7 +1652,7 @@ class InstanceService extends AbstractService
         }
 
         // Recommandation
-        if ($with_eval && !empty($riskIds) && $this->get('recommandationRiskTable')) {
+        if ($with_eval && $with_controls_reco && !empty($riskIds) && $this->get('recommandationRiskTable')) {
             $recosObj = [
                 'id' => 'id',
                 'code' => 'code',
@@ -1771,9 +1776,12 @@ class InstanceService extends AbstractService
                 $return['risksop'][$iro->get('id')]['comment'] = '';
                 $return['risksop'][$iro->get('id')]['mitigation'] = '';
             }
+            if (!$with_controls_reco) {
+                $return['risksop'][$iro->get('id')]['comment'] = '';
+            }
         }
         // Recommandation RISKOP
-        if ($with_eval && !empty($riskOpIds) && $this->get('recommandationRiskTable')) {
+        if ($with_eval && $with_controls_reco && !empty($riskOpIds) && $this->get('recommandationRiskTable')) {
             $recosObj = [
                 'id' => 'id',
                 'code' => 'code',
