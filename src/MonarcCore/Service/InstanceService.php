@@ -1488,6 +1488,7 @@ class InstanceService extends AbstractService
             'type' => 'instance',
             'version' => $this->getVersion(),
             'with_eval' => $with_eval,
+            'with_controls_reco' => $with_controls_reco,
             'instance' => $entity->getJsonArray($objInstance),
             'object' => $this->get('objectExportService')->generateExportArray($entity->get('object')->get('id')),
             // l'asset sera porté par l'objet
