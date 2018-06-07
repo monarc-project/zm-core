@@ -243,6 +243,7 @@ class AnrService extends AbstractService
             'version' => $this->getVersion(),
             'instances' => [],
             'with_eval' => $with_eval,
+            'with_controls_reco' => $with_controls_reco,
         ];
 
         $instanceService = $this->get('instanceService');

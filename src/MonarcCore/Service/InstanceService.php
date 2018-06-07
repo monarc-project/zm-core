@@ -1449,8 +1449,7 @@ class InstanceService extends AbstractService
      * @return array
      * @throws \MonarcCore\Exception\Exception
      */
-
-    public function generateExportArray($id, &$filename = "", $with_eval = false, &$with_scale = true, $with_controls_reco)
+    public function generateExportArray($id, &$filename = "", $with_eval = false, &$with_scale = true, $with_controls_reco = false)
     {
         if (empty($id)) {
             throw new \MonarcCore\Exception\Exception('Instance to export is required', 412);
@@ -1490,7 +1489,7 @@ class InstanceService extends AbstractService
             'type' => 'instance',
             'version' => $this->getVersion(),
             'with_eval' => $with_eval,
-            '$with_controls_reco' => $with_controls_reco,
+            'with_controls_reco' => $with_controls_reco,
             'instance' => $entity->getJsonArray($objInstance),
             'object' => $this->get('objectExportService')->generateExportArray($entity->get('object')->get('id')),
             // l'asset sera porté par l'objet
