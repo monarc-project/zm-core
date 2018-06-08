@@ -1428,8 +1428,9 @@ class InstanceService extends AbstractService
 
         $with_eval = isset($data['assessments']) && $data['assessments'];
         $with_controls_reco = isset($data['controls_reco']) && $data['controls_reco'];
+        $with_scale = true;
 
-        $exportedInstance = json_encode($this->generateExportArray($data['id'], $filename, $with_eval, $with_controls_reco));
+        $exportedInstance = json_encode($this->generateExportArray($data['id'], $filename, $with_eval, $with_scale, $with_controls_reco));
         $data['filename'] = $filename;
 
         if (! empty($data['password'])) {
