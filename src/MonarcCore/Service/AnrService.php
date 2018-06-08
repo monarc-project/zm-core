@@ -208,7 +208,7 @@ class AnrService extends AbstractService
         $with_controls = isset($data['controls']) && $data['controls'];
         $with_recommendations = isset($data['recommendations']) && $data['recommendations'];
         $with_methodSteps = isset($data['methodSteps']) && $data['methodSteps'];
-        $exportedAnr = json_encode($this->generateExportArray($data['id'], $filename, $with_eval, $with_controls, $with_recommendations));
+        $exportedAnr = json_encode($this->generateExportArray($data['id'], $filename, $with_eval, $with_controls, $with_recommendations, $with_methodSteps));
         $data['filename'] = $filename;
 
         if (! empty($data['password'])) {
