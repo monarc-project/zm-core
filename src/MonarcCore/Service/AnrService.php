@@ -208,7 +208,8 @@ class AnrService extends AbstractService
         $with_controls = isset($data['controls']) && $data['controls'];
         $with_recommendations = isset($data['recommendations']) && $data['recommendations'];
         $with_methodSteps = isset($data['methodSteps']) && $data['methodSteps'];
-        $exportedAnr = json_encode($this->generateExportArray($data['id'], $filename, $with_eval, $with_controls, $with_recommendations, $with_methodSteps));
+        $with_interviews = isset($data['interviews']) && $data['interviews'];
+        $exportedAnr = json_encode($this->generateExportArray($data['id'], $filename, $with_eval, $with_controls, $with_recommendations, $with_methodSteps, $with_interviews));
         $data['filename'] = $filename;
 
         if (! empty($data['password'])) {
@@ -227,7 +228,7 @@ class AnrService extends AbstractService
      * @return array The data array that should be saved
      * @throws \MonarcCore\Exception\Exception If the ANR or an entity is not found
      */
-    public function generateExportArray($id, &$filename = "", $with_eval = false, $with_controls = false, $with_recommendations = false, $with_methodSteps = false)
+    public function generateExportArray($id, &$filename = "", $with_eval = false, $with_controls = false, $with_recommendations = false, $with_methodSteps = false, $with_interviews = false)
     {
         if (empty($id)) {
             throw new \MonarcCore\Exception\Exception('Anr to export is required', 412);
@@ -342,55 +343,59 @@ class AnrService extends AbstractService
                     $return['method']['deliveries'][$d->typedoc] = $d->getJsonArray($deliveryArray);
                 }
               }
+              $questionTable = $this->get('questionTable');
+              $questions = $questionTable->getEntityByFields(['anr' => $entity->get('id')], ['position'=>'ASC']);
+              $questionArray = [
+                'id' => 'id',
+                'mode' => 'mode',
+                'multichoice' => 'multichoice',
+                'label1' => 'label1',
+                'label2' => 'label2',
+                'label3' => 'label3',
+                'label4' => 'label4',
+                'response' => 'response',
+                'type' => 'type',
+                'position' => 'position',
+
+              ];
+
+              foreach ($questions as $q) {
+                  $return['method']['questions'][$q->position] = $q->getJsonArray($questionArray);
+              }
+
+              $questionChoiceTable = $this->get('questionChoiceTable');
+              $questionsChoices = $questionChoiceTable->getEntityByFields(['anr' => $entity->get('id')]);
+              $questionChoiceArray = [
+                'question' => 'question',
+                'position' => 'position',
+                'label1' => 'label1',
+                'label2' => 'label2',
+                'label3' => 'label3',
+                'label4' => 'label4',
+              ];
+              foreach ($questionsChoices as $qc) {
+                  $return['method']['questionChoice'][$qc->id] = $qc->getJsonArray($questionChoiceArray);
+                  $return['method']['questionChoice'][$qc->id]['question'] = $qc->question->id;
+              }
+            }
+            // manage the interviews 
+            if($with_interviews)
+            {
+              $interviewTable = $this->get('interviewTable');
+              $interviews = $interviewTable->getEntityByFields(['anr' => $entity->get('id')], ['id'=>'ASC']);
+              $interviewArray = [
+                'id' => 'id',
+                'date' => 'date',
+                'service' => 'service',
+                'content' => 'content',
+              ];
+
+              foreach ($interviews as $i) {
+                  $return['method']['interviews'][$i->id] = $i->getJsonArray($interviewArray);
+              }
             }
 
-            $interviewTable = $this->get('interviewTable');
-            $interviews = $interviewTable->getEntityByFields(['anr' => $entity->get('id')], ['id'=>'ASC']);
-            $interviewArray = [
-              'id' => 'id',
-              'date' => 'date',
-              'service' => 'service',
-              'content' => 'content',
-            ];
 
-            foreach ($interviews as $i) {
-                $return['method']['interviews'][$i->id] = $i->getJsonArray($interviewArray);
-            }
-
-            $questionTable = $this->get('questionTable');
-            $questions = $questionTable->getEntityByFields(['anr' => $entity->get('id')], ['position'=>'ASC']);
-            $questionArray = [
-              'id' => 'id',
-              'mode' => 'mode',
-              'multichoice' => 'multichoice',
-              'label1' => 'label1',
-              'label2' => 'label2',
-              'label3' => 'label3',
-              'label4' => 'label4',
-              'response' => 'response',
-              'type' => 'type',
-              'position' => 'position',
-
-            ];
-
-            foreach ($questions as $q) {
-                $return['method']['questions'][$q->position] = $q->getJsonArray($questionArray);
-            }
-
-            $questionChoiceTable = $this->get('questionChoiceTable');
-            $questionsChoices = $questionChoiceTable->getEntityByFields(['anr' => $entity->get('id')]);
-            $questionChoiceArray = [
-              'question' => 'question',
-              'position' => 'position',
-              'label1' => 'label1',
-              'label2' => 'label2',
-              'label3' => 'label3',
-              'label4' => 'label4',
-            ];
-            foreach ($questionsChoices as $qc) {
-                $return['method']['questionChoice'][$qc->id] = $qc->getJsonArray($questionChoiceArray);
-                $return['method']['questionChoice'][$qc->id]['question'] = $qc->question->id;
-            }
 
             $threatTable = $this->get('threatTable');
             $threats = $threatTable->getEntityByFields(['anr' => $entity->get('id')]);
