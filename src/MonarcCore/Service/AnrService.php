@@ -204,9 +204,10 @@ class AnrService extends AbstractService
         $filename = "";
 
         $with_eval = isset($data['assessments']) && $data['assessments'];
-        $with_controls_reco = isset($data['controls_reco']) && $data['controls_reco'];
-
-        $exportedAnr = json_encode($this->generateExportArray($data['id'], $filename, $with_eval, $with_controls_reco));
+        //$with_controls_reco = isset($data['controls_reco']) && $data['controls_reco'];
+        $with_controls = isset($data['controls']) && $data['controls'];
+        $with_recommendations = isset($data['recommendations']) && $data['recommendations'];
+        $exportedAnr = json_encode($this->generateExportArray($data['id'], $filename, $with_eval, $with_controls, $with_recommendations));
         $data['filename'] = $filename;
 
         if (! empty($data['password'])) {
@@ -225,7 +226,7 @@ class AnrService extends AbstractService
      * @return array The data array that should be saved
      * @throws \MonarcCore\Exception\Exception If the ANR or an entity is not found
      */
-    public function generateExportArray($id, &$filename = "", $with_eval = false, $with_controls_reco = false)
+    public function generateExportArray($id, &$filename = "", $with_eval = false, $with_controls = false, $with_recommendations = false)
     {
         if (empty($id)) {
             throw new \MonarcCore\Exception\Exception('Anr to export is required', 412);
@@ -243,7 +244,7 @@ class AnrService extends AbstractService
             'version' => $this->getVersion(),
             'instances' => [],
             'with_eval' => $with_eval,
-            'with_controls_reco' => $with_controls_reco,
+      //      'with_controls_reco' => $with_controls_reco,
         ];
 
         $instanceService = $this->get('instanceService');
@@ -252,7 +253,7 @@ class AnrService extends AbstractService
         $f = '';
         $with_scale = false;
         foreach ($instances as $i) {
-            $return['instances'][$i->id] = $instanceService->generateExportArray($i->id, $f, $with_eval, $with_scale, $with_controls_reco);
+            $return['instances'][$i->id] = $instanceService->generateExportArray($i->id, $f, $with_eval, $with_scale, $with_controls, $with_recommendations);
         }
 
         if ($with_eval) {
