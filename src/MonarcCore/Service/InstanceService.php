@@ -1449,7 +1449,7 @@ class InstanceService extends AbstractService
      * @return array
      * @throws \MonarcCore\Exception\Exception
      */
-    public function generateExportArray($id, &$filename = "", $with_eval = false, &$with_scale = true, $with_controls_reco = false)
+    public function generateExportArray($id, &$filename = "", $with_eval = false, &$with_scale = true, $with_controls_reco)
     {
         if (empty($id)) {
             throw new \MonarcCore\Exception\Exception('Instance to export is required', 412);
@@ -1869,7 +1869,7 @@ class InstanceService extends AbstractService
         $return['children'] = [];
         $f = '';
         foreach ($instanceTableResults as $i) {
-            $return['children'][$i->get('id')] = $this->generateExportArray($i->get('id'), $f, $with_eval, $with_scale);
+            $return['children'][$i->get('id')] = $this->generateExportArray($i->get('id'), $f, $with_eval, $with_scale, $with_controls_reco);
         }
         return $return;
     }
