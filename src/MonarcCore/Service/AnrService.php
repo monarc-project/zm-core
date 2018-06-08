@@ -318,12 +318,7 @@ class AnrService extends AbstractService
               'synthAct' => $entity->synthAct,
               ];
 
-              $return['method']['thresholds'] = [
-              'seuil1' => $entity->seuil1,
-              'seuil2' => $entity->seuil2,
-              'seuilRolf1' => $entity->seuilRolf1,
-              'seuilRolf2' => $entity->seuilRolf2,
-              ];
+
 
               $deliveryTable = $this->get('deliveryTable');
               for ($i=0; $i <= 4; $i++) {
@@ -378,7 +373,14 @@ class AnrService extends AbstractService
                   $return['method']['questionChoice'][$qc->id]['question'] = $qc->question->id;
               }
             }
-            // manage the interviews 
+            //import thresholds
+            $return['method']['thresholds'] = [
+            'seuil1' => $entity->seuil1,
+            'seuil2' => $entity->seuil2,
+            'seuilRolf1' => $entity->seuilRolf1,
+            'seuilRolf2' => $entity->seuilRolf2,
+            ];
+            // manage the interviews
             if($with_interviews)
             {
               $interviewTable = $this->get('interviewTable');
