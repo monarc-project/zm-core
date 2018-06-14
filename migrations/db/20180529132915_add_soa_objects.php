@@ -34,15 +34,19 @@ class AddSoaObjects extends AbstractMigration
       $table
         //  ->addColumn('id', 'integer', array('null' => true, 'signed' => false))
           ->addColumn('reference', 'string', array('null' => true, 'limit' => 255))
-          ->addColumn('control', 'text', array('null' => true, 'limit' => MysqlAdapter::TEXT_LONG))
+        //  ->addColumn('control', 'text', array('null' => true, 'limit' => MysqlAdapter::TEXT_LONG))
           ->addColumn('requirement', 'text', array('null' => true, 'limit' => MysqlAdapter::TEXT_LONG))
           ->addColumn('justification', 'text', array('null' => true, 'limit' => MysqlAdapter::TEXT_LONG))
           ->addColumn('evidences', 'text', array('null' => true, 'limit' => MysqlAdapter::TEXT_LONG))
           ->addColumn('actions', 'text', array('null' => true, 'limit' => MysqlAdapter::TEXT_LONG))
           ->addColumn('compliance', 'string', array('null' => true, 'limit' => 255))
           ->addColumn('measure_id', 'integer', array('null' => true, 'signed' => false))
+          ->addColumn('control1', 'text', array('null' => true, 'limit' => MysqlAdapter::TEXT_LONG))
+          ->addColumn('control2', 'text', array('null' => true, 'limit' => MysqlAdapter::TEXT_LONG))
+          ->addColumn('control3', 'text', array('null' => true, 'limit' => MysqlAdapter::TEXT_LONG))
+          ->addColumn('control4', 'text', array('null' => true, 'limit' => MysqlAdapter::TEXT_LONG))
           ->addIndex(array('measure_id'))
-        
+
         //  ->addIndex(array(''))
 
           ->create();
