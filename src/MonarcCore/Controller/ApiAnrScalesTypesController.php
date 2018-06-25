@@ -21,6 +21,31 @@ class ApiAnrScalesTypesController extends AbstractController
     protected $dependencies = [];
     protected $name = 'types';
 
+
+    public function create($data)
+    {
+        $anrId = $data['anrId'];
+        if (empty($anrId)) {
+            throw new \MonarcCore\Exception\Exception('Anr id missing', 412);
+        }
+        $data['anr'] = $anrId;
+        $rightCommLanguage ="label".$data['langue'];
+      $data[$rightCommLanguage] = $data['Label'];
+
+      if(isset($data['langue']))
+      {
+        unset($data['Label']);
+        unset($data['langue']);
+      }
+
+        $id = $this->getService()->create($data);
+
+        return new JsonModel([
+            'status' => 'ok',
+            'id' => $id,
+        ]);
+    }
+
     /**
      * @inheritdoc
      */

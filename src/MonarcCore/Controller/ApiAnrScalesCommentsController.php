@@ -64,6 +64,15 @@ class ApiAnrScalesCommentsController extends AbstractController
         $data['anr'] = $anrId;
         $data['scale'] = $scaleId;
 
+        $rightCommLanguage ="comment".$data['langue'];
+    		$data[$rightCommLanguage] = $data['comment'];
+
+    		if(isset($data['langue']))
+    			{
+    				unset($data['comment']);
+    				unset($data['langue']);
+    			}
+
         $id = $this->getService()->create($data);
 
         return new JsonModel(
