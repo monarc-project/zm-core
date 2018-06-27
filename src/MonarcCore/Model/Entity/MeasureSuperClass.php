@@ -43,6 +43,9 @@ class MeasureSuperClass extends AbstractEntity
      *
      * @ORM\Column(name="code", type="string", length=255, nullable=true)
      */
+
+
+
     protected $code;
 
     /**
@@ -144,6 +147,7 @@ class MeasureSuperClass extends AbstractEntity
         return $this;
     }
 
+
     public function getInputFilter($partial = false)
     {
 
@@ -203,4 +207,3 @@ class MeasureSuperClass extends AbstractEntity
         return $this->inputFilter;
     }
 }
-

@@ -20,20 +20,34 @@ use Doctrine\ORM\Mapping as ORM;
 class Measure extends MeasureSuperClass
 {
 
-//  /**
-//  * @var \MonarcCore\Model\Entity\Soa
-//  *
-//  * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Soa", inversedBy="")
-//  */
-//  protected $Soa;
+
+       /**
+        * @var \MonarcFO\Model\Entity\Category
+        *
+        * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Category", cascade={"persist"})
+        * @ORM\JoinColumns({
+        *   @ORM\JoinColumn(name="category_id", referencedColumnName="id", nullable=true)
+        * })
+        */
+       protected $category;
 
 
-//  /**
-//   * @var \MonarcCore\Model\Entity\Threat
-//   *
-//   * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Threat", inversedBy="id")
-//   */
-//  protected $Threat;
+           /**
+            * @return Category
+            */
+           public function getCategory()
+           {
+               return $this->category;
+           }
+
+           /**
+            * @param Category $category
+            */
+           public function setCategory($category)
+           {
+               $this->category = $category;
+           }
+
 
 
 
