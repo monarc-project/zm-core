@@ -1594,13 +1594,12 @@ class InstanceService extends AbstractService
                 $ir->set('reductionAmount', 0);
                 $ir->set('comment', '');
                 $ir->set('commentAfter', '');
+                $ir->set('mh', 1);
             }
-
             if (!$with_controls) {
                 $ir->set('comment', '');
                 $ir->set('commentAfter', '');
             }
-
             $ir->set('mh', 1);
             $ir->set('riskC', '-1');
             $ir->set('riskI', '-1');
