@@ -104,9 +104,9 @@ class UserTable extends AbstractEntityTable
     public function delete($id, $last = true)
     {
 
-        if ($this->getConnectedUser()['id'] == $id) {
-            throw new \MonarcCore\Exception\Exception("You can't delete yourself", 412);
-        }
+        // if ($this->getConnectedUser()['id'] == $id) {
+        //     throw new \MonarcCore\Exception\Exception("You can't delete yourself", 412);
+        // }
 
         $this->getDb()->beginTransaction();
 
