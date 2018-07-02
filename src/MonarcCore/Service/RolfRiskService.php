@@ -235,7 +235,6 @@ class RolfRiskService extends AbstractService
 
             $nbInstances = count($instancesRisksOp);
             //update label
-            file_put_contents('php://stderr', print_r('rolf risk id : '. $nbInstances ."\n" , TRUE));
             foreach ($instancesRisksOp as $instance) {
                 $data = [
                     'anr' => $object->anr->id,
@@ -250,7 +249,6 @@ class RolfRiskService extends AbstractService
                     'riskCacheDescription3' => $entity->description3,
                     'riskCacheDescription4' => $entity->description4,
                 ];
-                file_put_contents('php://stderr', print_r('id instances : '. $instance->id ."\n" , TRUE));
                 $instanceRiskOpService = $this->get('instanceRiskOpService');
                 $instanceRiskOpService->update($instance->id, $data); // on update l'instance
 
