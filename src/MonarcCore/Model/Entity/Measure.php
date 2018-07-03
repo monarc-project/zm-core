@@ -13,41 +13,14 @@ use Doctrine\ORM\Mapping as ORM;
  * Measure
  *
  * @ORM\Table(name="measures", indexes={
- *      @ORM\Index(name="anr", columns={"anr_id"})
+ *      @ORM\Index(name="anr", columns={"anr_id"}),
+ *      @ORM\Index(name="category", columns={"category_id"})
+
  * })
  * @ORM\Entity
  */
 class Measure extends MeasureSuperClass
 {
-
-
-       /**
-        * @var \MonarcFO\Model\Entity\Category
-        *
-        * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Category", cascade={"persist"})
-        * @ORM\JoinColumns({
-        *   @ORM\JoinColumn(name="category_id", referencedColumnName="id", nullable=true)
-        * })
-        */
-       protected $category;
-
-
-           /**
-            * @return Category
-            */
-           public function getCategory()
-           {
-               return $this->category;
-           }
-
-           /**
-            * @param Category $category
-            */
-           public function setCategory($category)
-           {
-               $this->category = $category;
-           }
-
 
 
 
