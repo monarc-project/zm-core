@@ -58,6 +58,13 @@ class ConfigService extends AbstractService
         ];
     }
 
+    public function getCheckVersion()
+    {
+        return [
+            'checkVersion' => isset($this->config['checkVersion']) ? $this->config['checkVersion'] : true,
+        ];
+    }
+
     public function getemail()
     {
         return [
