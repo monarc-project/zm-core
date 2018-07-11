@@ -204,8 +204,12 @@ class AnrService extends AbstractService
         $filename = "";
 
         $with_eval = isset($data['assessments']) && $data['assessments'];
-
-        $exportedAnr = json_encode($this->generateExportArray($data['id'], $filename, $with_eval));
+        //$with_controls_reco = isset($data['controls_reco']) && $data['controls_reco'];
+        $with_controls = isset($data['controls']) && $data['controls'];
+        $with_recommendations = isset($data['recommendations']) && $data['recommendations'];
+        $with_methodSteps = isset($data['methodSteps']) && $data['methodSteps'];
+        $with_interviews = isset($data['interviews']) && $data['interviews'];
+        $exportedAnr = json_encode($this->generateExportArray($data['id'], $filename, $with_eval, $with_controls, $with_recommendations, $with_methodSteps, $with_interviews));
         $data['filename'] = $filename;
 
         if (! empty($data['password'])) {
@@ -224,7 +228,7 @@ class AnrService extends AbstractService
      * @return array The data array that should be saved
      * @throws \MonarcCore\Exception\Exception If the ANR or an entity is not found
      */
-    public function generateExportArray($id, &$filename = "", $with_eval = false)
+    public function generateExportArray($id, &$filename = "", $with_eval = false, $with_controls = false, $with_recommendations = false, $with_methodSteps = false, $with_interviews = false)
     {
         if (empty($id)) {
             throw new \MonarcCore\Exception\Exception('Anr to export is required', 412);
@@ -242,6 +246,7 @@ class AnrService extends AbstractService
             'version' => $this->getVersion(),
             'instances' => [],
             'with_eval' => $with_eval,
+      //      'with_controls_reco' => $with_controls_reco,
         ];
 
         $instanceService = $this->get('instanceService');
@@ -250,7 +255,7 @@ class AnrService extends AbstractService
         $f = '';
         $with_scale = false;
         foreach ($instances as $i) {
-            $return['instances'][$i->id] = $instanceService->generateExportArray($i->id, $f, $with_eval, $with_scale);
+            $return['instances'][$i->id] = $instanceService->generateExportArray($i->id, $f, $with_eval, $with_scale, $with_controls, $with_recommendations);
         }
 
         if ($with_eval) {
@@ -292,102 +297,107 @@ class AnrService extends AbstractService
                 }
               }
             }
+            if($with_methodSteps)
+            {//Risks analysis method data
+              $return['method']['steps'] = [
+              'initAnrContext' => $entity->initAnrContext,
+              'initEvalContext' => $entity->initEvalContext,
+              'initRiskContext' => $entity->initRiskContext,
+              'initDefContext' => $entity->initDefContext,
+              'modelImpacts' => $entity->modelImpacts,
+              'modelSummary' => $entity->modelSummary,
+              'evalRisks' => $entity->evalRisks,
+              'evalPlanRisks' => $entity->evalPlanRisks,
+              'manageRisks' => $entity->manageRisks,
+              ];
 
-            //Risks analysis method data
-            $return['method']['steps'] = [
-            'initAnrContext' => $entity->initAnrContext,
-            'initEvalContext' => $entity->initEvalContext,
-            'initRiskContext' => $entity->initRiskContext,
-            'initDefContext' => $entity->initDefContext,
-            'modelImpacts' => $entity->modelImpacts,
-            'modelSummary' => $entity->modelSummary,
-            'evalRisks' => $entity->evalRisks,
-            'evalPlanRisks' => $entity->evalPlanRisks,
-            'manageRisks' => $entity->manageRisks,
-            'SOA' => $entity->SOA,
+              $return['method']['data'] = [
+              'contextAnaRisk' => $entity->contextAnaRisk,
+              'contextGestRisk' => $entity->contextGestRisk,
+              'synthThreat' => $entity->synthThreat,
+              'synthAct' => $entity->synthAct,
+              ];
 
-            ];
 
-            $return['method']['data'] = [
-            'contextAnaRisk' => $entity->contextAnaRisk,
-            'contextGestRisk' => $entity->contextGestRisk,
-            'synthThreat' => $entity->synthThreat,
-            'synthAct' => $entity->synthAct,
-            ];
 
+              $deliveryTable = $this->get('deliveryTable');
+              for ($i=0; $i <= 4; $i++) {
+                $deliveries = $deliveryTable->getEntityByFields(['anr' => $entity->get('id') , 'typedoc' => $i ], ['id'=>'ASC']);
+                $deliveryArray = [
+                  'id' => 'id',
+                  'typedoc' => 'typedoc',
+                  'name' => 'name',
+                  'status' => 'status',
+                  'version' => 'version',
+                  'classification' => 'classification',
+                  'respCustomer' => 'respCustomer',
+                  'respSmile' => 'respSmile',
+                  'summaryEvalRisk' => 'summaryEvalRisk',
+                ];
+                foreach ($deliveries as $d) {
+                    $return['method']['deliveries'][$d->typedoc] = $d->getJsonArray($deliveryArray);
+                }
+              }
+              $questionTable = $this->get('questionTable');
+              $questions = $questionTable->getEntityByFields(['anr' => $entity->get('id')], ['position'=>'ASC']);
+              $questionArray = [
+                'id' => 'id',
+                'mode' => 'mode',
+                'multichoice' => 'multichoice',
+                'label1' => 'label1',
+                'label2' => 'label2',
+                'label3' => 'label3',
+                'label4' => 'label4',
+                'response' => 'response',
+                'type' => 'type',
+                'position' => 'position',
+
+              ];
+
+              foreach ($questions as $q) {
+                  $return['method']['questions'][$q->position] = $q->getJsonArray($questionArray);
+              }
+
+              $questionChoiceTable = $this->get('questionChoiceTable');
+              $questionsChoices = $questionChoiceTable->getEntityByFields(['anr' => $entity->get('id')]);
+              $questionChoiceArray = [
+                'question' => 'question',
+                'position' => 'position',
+                'label1' => 'label1',
+                'label2' => 'label2',
+                'label3' => 'label3',
+                'label4' => 'label4',
+              ];
+              foreach ($questionsChoices as $qc) {
+                  $return['method']['questionChoice'][$qc->id] = $qc->getJsonArray($questionChoiceArray);
+                  $return['method']['questionChoice'][$qc->id]['question'] = $qc->question->id;
+              }
+            }
+            //import thresholds
             $return['method']['thresholds'] = [
             'seuil1' => $entity->seuil1,
             'seuil2' => $entity->seuil2,
             'seuilRolf1' => $entity->seuilRolf1,
             'seuilRolf2' => $entity->seuilRolf2,
             ];
-
-            $deliveryTable = $this->get('deliveryTable');
-            for ($i=0; $i <= 4; $i++) {
-              $deliveries = $deliveryTable->getEntityByFields(['anr' => $entity->get('id') , 'typedoc' => $i ], ['id'=>'ASC']);
-              $deliveryArray = [
+            // manage the interviews
+            if($with_interviews)
+            {
+              $interviewTable = $this->get('interviewTable');
+              $interviews = $interviewTable->getEntityByFields(['anr' => $entity->get('id')], ['id'=>'ASC']);
+              $interviewArray = [
                 'id' => 'id',
-                'typedoc' => 'typedoc',
-                'name' => 'name',
-                'status' => 'status',
-                'version' => 'version',
-                'classification' => 'classification',
-                'respCustomer' => 'respCustomer',
-                'respSmile' => 'respSmile',
-                'summaryEvalRisk' => 'summaryEvalRisk',
+                'date' => 'date',
+                'service' => 'service',
+                'content' => 'content',
               ];
-              foreach ($deliveries as $d) {
-                  $return['method']['deliveries'][$d->typedoc] = $d->getJsonArray($deliveryArray);
+
+              foreach ($interviews as $i) {
+                  $return['method']['interviews'][$i->id] = $i->getJsonArray($interviewArray);
               }
             }
 
-            $interviewTable = $this->get('interviewTable');
-            $interviews = $interviewTable->getEntityByFields(['anr' => $entity->get('id')], ['id'=>'ASC']);
-            $interviewArray = [
-              'id' => 'id',
-              'date' => 'date',
-              'service' => 'service',
-              'content' => 'content',
-            ];
 
-            foreach ($interviews as $i) {
-                $return['method']['interviews'][$i->id] = $i->getJsonArray($interviewArray);
-            }
-
-            $questionTable = $this->get('questionTable');
-            $questions = $questionTable->getEntityByFields(['anr' => $entity->get('id')], ['position'=>'ASC']);
-            $questionArray = [
-              'id' => 'id',
-              'mode' => 'mode',
-              'multichoice' => 'multichoice',
-              'label1' => 'label1',
-              'label2' => 'label2',
-              'label3' => 'label3',
-              'label4' => 'label4',
-              'response' => 'response',
-              'type' => 'type',
-              'position' => 'position',
-
-            ];
-
-            foreach ($questions as $q) {
-                $return['method']['questions'][$q->position] = $q->getJsonArray($questionArray);
-            }
-
-            $questionChoiceTable = $this->get('questionChoiceTable');
-            $questionsChoices = $questionChoiceTable->getEntityByFields(['anr' => $entity->get('id')]);
-            $questionChoiceArray = [
-              'question' => 'question',
-              'position' => 'position',
-              'label1' => 'label1',
-              'label2' => 'label2',
-              'label3' => 'label3',
-              'label4' => 'label4',
-            ];
-            foreach ($questionsChoices as $qc) {
-                $return['method']['questionChoice'][$qc->id] = $qc->getJsonArray($questionChoiceArray);
-                $return['method']['questionChoice'][$qc->id]['question'] = $qc->question->id;
-            }
 
             $threatTable = $this->get('threatTable');
             $threats = $threatTable->getEntityByFields(['anr' => $entity->get('id')]);
