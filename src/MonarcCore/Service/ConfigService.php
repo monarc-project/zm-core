@@ -65,6 +65,13 @@ class ConfigService extends AbstractService
         ];
     }
 
+    public function getAppCheckingURL()
+    {
+        return [
+            'appCheckingURL' => isset($this->config['appCheckingURL']) ? $this->config['appCheckingURL'] : '',
+        ];
+    }
+
     public function getemail()
     {
         return [
