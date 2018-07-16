@@ -267,7 +267,7 @@ class InstanceRiskService extends AbstractService
                 $instances = $instanceTable->getEntityByFields(['anr' => $entity->anr->id, 'object' => $object->id]);
 
                 foreach ($instances as $instance) {
-                    if ($instance != $entity->instance) {
+                    if ($instance !== $entity->instance) {
                         if ($entity->specific == 0) {
                             if ($entity->amv) {
                                 $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $instance->id, 'amv' => $entity->amv->id]);
