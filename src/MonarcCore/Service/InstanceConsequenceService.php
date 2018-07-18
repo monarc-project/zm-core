@@ -184,7 +184,7 @@ class InstanceConsequenceService extends AbstractService
      * Update Instance Impacts
      * @param int $instanceConsequencesId The instance consequences ID
      */
-    protected function updateInstanceImpacts($instanceConsequencesId, $fromInstance = false)
+    public function updateInstanceImpacts($instanceConsequencesId, $fromInstance = false)
     {
         $class = $this->get('scaleImpactTypeTable')->getClass();
         $cidTypes = $class::getScaleImpactTypeCid();

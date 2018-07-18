@@ -1381,6 +1381,7 @@ class InstanceService extends AbstractService
 
                 $i++;
             }
+            $this->get('instanceConsequenceService')->updateInstanceImpacts($instanceConsequenceEntity->get('id'));
         } else {
             //retrieve scale impact types
             /** @var ScaleImpactTypeTable $scaleImpactTypeTable */
