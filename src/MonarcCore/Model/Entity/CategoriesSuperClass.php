@@ -70,6 +70,14 @@ class CategoriesSuperClass extends AbstractEntity
     protected $label4 ;
 
 
+
+    /**
+     * @var smallint
+     *
+     * @ORM\Column(name="status", type="smallint", options={"unsigned":true, "default":1})
+     */
+    protected $status = '1';
+
         /**
          * @return int
          */
@@ -155,5 +163,70 @@ class CategoriesSuperClass extends AbstractEntity
           {
               $this->label4 = $label4;
           }
+
+
+
+
+              public function getInputFilter($partial = false)
+              {
+
+                  if (!$this->inputFilter) {
+                      parent::getInputFilter($partial);
+
+                      $texts = ['label1', 'label2', 'label3', 'label4'];
+
+                      foreach ($texts as $text) {
+                          $this->inputFilter->add(array(
+                              'name' => $text,
+                              'required' => ((strchr($text, (string)$this->getLanguage())) && (!$partial)) ? true : false,
+                              'allow_empty' => false,
+                              'filters' => array(),
+                              'validators' => array(),
+                          ));
+                      }
+                      $validatorsCode = [];
+                      if (!$partial) {
+                          $validatorsCode = array(
+                              array(
+                                  'name' => '\MonarcCore\Validator\UniqueCode',
+                                  'options' => array(
+                                      'entity' => $this
+                                  ),
+                              ),
+                          );
+                      }
+
+                      $this->inputFilter->add(array(
+                          'name' => 'code',
+                          'required' => ($partial) ? false : true,
+                          'allow_empty' => false,
+                          'filters' => array(),
+                          'validators' => $validatorsCode
+                      ));
+
+                      $this->inputFilter->add(array(
+                          'name' => 'status',
+                          'required' => false,
+                          'allow_empty' => false,
+                          'filters' => array(
+                              array('name' => 'ToInt'),
+                          ),
+                          'validators' => array(
+                              array(
+                                  'name' => 'InArray',
+                                  'options' => array(
+                                      'haystack' => array(self::STATUS_INACTIVE, self::STATUS_ACTIVE),
+                                  ),
+                              ),
+                          ),
+                      ));
+                  }
+
+
+                  return $this->inputFilter;
+              }
+
+
+
 
 }
