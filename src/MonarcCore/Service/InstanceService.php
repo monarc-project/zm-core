@@ -202,7 +202,9 @@ class InstanceService extends AbstractService
         $instanceRiskOpService->createInstanceRisksOp($id, $anrId, $object);
 
         //instances consequences
-        $this->createInstanceConsequences($id, $anrId, $object);
+        $instanceConsequenceId = $this->createInstanceConsequences($id, $anrId, $object);
+        $this->get('instanceConsequenceService')->updateInstanceImpacts($instanceConsequenceId->get('id'));
+
 
         $this->createChildren($anrId, $id, $object);
 
@@ -1381,7 +1383,6 @@ class InstanceService extends AbstractService
 
                 $i++;
             }
-            $this->get('instanceConsequenceService')->updateInstanceImpacts($instanceConsequenceEntity->get('id'));
         } else {
             //retrieve scale impact types
             /** @var ScaleImpactTypeTable $scaleImpactTypeTable */
@@ -1410,6 +1411,8 @@ class InstanceService extends AbstractService
                 $i++;
             }
         }
+
+        return $instanceConsequenceEntity;
     }
 
     /**
