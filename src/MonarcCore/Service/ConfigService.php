@@ -68,7 +68,7 @@ class ConfigService extends AbstractService
     public function getAppCheckingURL()
     {
         return [
-            'appCheckingURL' => isset($this->config['appCheckingURL']) ? $this->config['appCheckingURL'] : '',
+            'appCheckingURL' => isset($this->config['appCheckingURL']) ? $this->config['appCheckingURL'] : 'https://version.monarc.lu/check/MONARC',
         ];
     }
 
