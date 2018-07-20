@@ -58,6 +58,20 @@ class ConfigService extends AbstractService
         ];
     }
 
+    public function getCheckVersion()
+    {
+        return [
+            'checkVersion' => isset($this->config['checkVersion']) ? $this->config['checkVersion'] : true,
+        ];
+    }
+
+    public function getAppCheckingURL()
+    {
+        return [
+            'appCheckingURL' => isset($this->config['appCheckingURL']) ? $this->config['appCheckingURL'] : 'https://version.monarc.lu/check/MONARC',
+        ];
+    }
+
     public function getemail()
     {
         return [
