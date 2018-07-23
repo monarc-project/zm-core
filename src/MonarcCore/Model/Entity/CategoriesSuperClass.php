@@ -184,25 +184,7 @@ class CategoriesSuperClass extends AbstractEntity
                               'validators' => array(),
                           ));
                       }
-                      $validatorsCode = [];
-                      if (!$partial) {
-                          $validatorsCode = array(
-                              array(
-                                  'name' => '\MonarcCore\Validator\UniqueCode',
-                                  'options' => array(
-                                      'entity' => $this
-                                  ),
-                              ),
-                          );
-                      }
-
-                      $this->inputFilter->add(array(
-                          'name' => 'code',
-                          'required' => ($partial) ? false : true,
-                          'allow_empty' => false,
-                          'filters' => array(),
-                          'validators' => $validatorsCode
-                      ));
+                    
 
                       $this->inputFilter->add(array(
                           'name' => 'status',
