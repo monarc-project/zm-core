@@ -39,21 +39,38 @@ class InstanceRiskOpTable extends AbstractEntityTable
         }
 
         if (isset($params['thresholds']) && $params['thresholds'] > 0) {
-            $return->andWhere('iro.cacheNetRisk < :cnr')
+            $return->andWhere('iro.cacheNetRisk > :cnr')
                 ->setParameter(':cnr', $params['thresholds']);
         }
 
         if (isset($params['keywords']) && !empty($params['keywords'])) {
-            $fields = ['riskCacheLabel1', 'riskCacheLabel2', 'riskCacheLabel3', 'riskCacheLabel4', 'riskCacheDescription1', 'riskCacheDescription2', 'riskCacheDescription3', 'riskCacheDescription4', 'comment'];
+            $anr = new \MonarcFO\Model\Entity\Anr();
+            $anr->setDbAdapter($this->getDb());
+            $anr->set('id', $anrId);
+            $anr = $this->getDb()->fetch($anr);
+            if (!$anr) {
+                throw new \MonarcCore\Exception\Exception('Entity does not exist', 412);
+            }
+            $l = $anr->get('language');
+            $l = $anr->get('language');
+
+            $fields = [
+            'riskCacheLabel' .$l,
+            'riskCacheDescription' . $l,
+            'comment'];
+
             $query = [];
             foreach ($fields as $f) {
-                $query[] = $qb->expr()->contains('iro.' . $f, $params['keywords']);
+                $query[] = $qb->expr()->like('iro.' . $f, "'%" . $params['keywords'] . "%'");
             }
-            $return->andWhere($qb->expr()->orX($query));
+            $orX = $qb->expr()->orX();
+            $orX->addMultiple($query);
+            $return->andWhere($orX);
         }
 
-        return $return->orderBy('iro.cacheNetRisk', 'DESC')
-            ->getQuery()
-            ->getResult();
+        $params['order_direction'] = isset($params['order_direction']) && strtolower(trim($params['order_direction'])) != 'asc' ? 'DESC' : 'ASC';
+        return $return->orderBy('iro.' . "'" . $params['order'] . "'" , $params['order_direction'])
+                      ->getQuery()
+                      ->getResult();
     }
 }
