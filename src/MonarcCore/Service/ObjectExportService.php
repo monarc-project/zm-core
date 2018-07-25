@@ -214,12 +214,12 @@ class ObjectExportService extends AbstractService
                     $toExchange['anr'] = $anr->get('id');
                     $tag->exchangeArray($toExchange);
                     $this->setDependencies($tag, ['anr', 'risks']);
-		    $data['object']['rolfTag'] = $this->get('rolfTagTable')->save($tag);
-		    // Creation the link between tag_id and risk_id on rolf_riks_tags table
+                    $data['object']['rolfTag'] = $this->get('rolfTagTable')->save($tag);
+                    // Creation the link between tag_id and risk_id on rolf_riks_tags table
                     foreach ($risks as $risk => $value) {
-                      $riskId = $this->get('rolfRiskTable')->getEntity($value);
-                      $rolfTag = $this->get('rolfTagTable')->getEntity($tag->id);
-                      $riskId->setTag($tag->id, $rolfTag);
+                        $riskId = $this->get('rolfRiskTable')->getEntity($value);
+                        $rolfTag = $this->get('rolfTagTable')->getEntity($tag->id);
+                        $riskId->setTag($tag->id, $rolfTag);
                     }
                 } else {
                     $data['object']['rolfTag'] = null;
