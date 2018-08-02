@@ -27,14 +27,8 @@ class AddColumnToCategory extends AbstractMigration
      */
     public function change()
     {
-      $this->table('category')
-      ->addColumn('reference', 'string', array('null' => true, 'limit' => 255))
-      ->save();
 
-      $this->query('
-      delete from category;
-      ');
-
+    
       $this->query('
       INSERT INTO category (reference,label1, label2, label3,label4)
       VALUES ("5","Politiques de sécurité de l\'information","Information security policies","",""),
@@ -50,8 +44,7 @@ class AddColumnToCategory extends AbstractMigration
       ("15","Relations avec le fournisseurs","Supplier relationships","",""),
       ("16","Gestion des incidents liés à la sécurité de l\'information","information security incident management","",""),
       ("17","Aspects de la sécurité de l\'information dans la gestion de la continuité de l\'activité","Information security aspects of business continuity management","",""),
-      ("18","Conformité","Compliance","",""),
-      ("19","aucune","none","","");
+      ("18","Conformité","Compliance","","");
       ');
 
 

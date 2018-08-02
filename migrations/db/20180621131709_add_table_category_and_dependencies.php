@@ -34,11 +34,13 @@ class AddTableCategoryAndDependencies extends AbstractMigration
       $table = $this->table('category');
       $table
       //  ->addColumn('id', 'integer', array('null' => true, 'signed' => false))
-
+          ->addColumn('reference', 'string', array('null' => true, 'limit' => 255))
           ->addColumn('label1', 'text', array('null' => true, 'limit' => MysqlAdapter::TEXT_LONG))
           ->addColumn('label2', 'text', array('null' => true, 'limit' => MysqlAdapter::TEXT_LONG))
           ->addColumn('label3', 'text', array('null' => true, 'limit' => MysqlAdapter::TEXT_LONG))
           ->addColumn('label4', 'text', array('null' => true, 'limit' => MysqlAdapter::TEXT_LONG))
+          ->addColumn('status', 'integer', array('null' => true, 'default' => '1', 'limit' => 11))
+
           ->create();
       $table->changeColumn('id', 'integer',array('identity'=>true,'signed'=>false))->update();
 
