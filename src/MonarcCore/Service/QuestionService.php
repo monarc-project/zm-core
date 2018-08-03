@@ -63,13 +63,41 @@ class QuestionService extends AbstractService
 
         $entity = $this->get('entity');
         $entity->setDbAdapter($this->get('table')->getDb());
-
+        $table = $this->get('table');
         if (!empty($data['anr'])) {
             $data['mode'] = 1;
             $data['implicitPosition'] = \MonarcCore\Model\Entity\AbstractEntity::IMP_POS_END;
             $data['type'] = 1; // on force en textarea uniquement
             $data['multichoice'] = 0;
             unset($data['position']);
+        }
+        //bo case manage position
+        // quick fix : TO DO : improve the position management
+        if (!empty($data['implicitPosition']) && empty($data['anr']))
+        {
+          if($data['implicitPosition']==1)//the first
+          {
+            if($data['position'] != $table->minQuestionPosition())
+            {
+              $table->movePosition(0);
+              $data['position']= 1;
+            }
+          }
+          else if ($data['implicitPosition']==2)// the last
+          {
+            if($data['position'] != $table->maxQuestionPosition())
+              $data['position']= $table->maxQuestionPosition()+1;
+          }
+          else { //in the middle
+              if($data['previous'])
+              {
+                $previous = $this->get('table')->getEntity($data['previous']);
+                file_put_contents('php://stderr', print_r('previous position :  '. $previous->position . "\n" , TRUE));
+                $table->movePosition($previous->position);
+                file_put_contents('php://stderr', print_r('NEW previous position :  '. $previous->position . "\n" , TRUE));
+                $data['position'] = $previous->position+1;
+              }
+          }
         }
 
         $entity->exchangeArray($data);
@@ -85,7 +113,8 @@ class QuestionService extends AbstractService
     {
         $entity = $this->get('table')->getEntity($id);
         $entity->setDbAdapter($this->get('table')->getDb());
-
+        $table = $this->get('table');
+        //FO case
         if (!empty($data['anr'])) {
             if ($data['anr'] == $entity->get('anr')->get('id')) {
                 if ($entity->get('mode')) {
@@ -107,6 +136,35 @@ class QuestionService extends AbstractService
             } else {
                 throw new \MonarcCore\Exception\Exception('Anr ids diffence', 412);
             }
+        }
+        //bo case manage position
+        // quick fix : TO DO : improve the position management
+        if (!empty($data['implicitPosition']) && empty($data['anr']))
+        {
+          if($data['implicitPosition']==1)//the first
+          {
+            if($data['position'] != $table->minQuestionPosition())
+            {
+              $table->movePosition(0);
+              $data['position']= 1;
+            }
+          }
+          else if ($data['implicitPosition']==2)// the last
+          {
+            if($data['position'] != $table->maxQuestionPosition())
+              $data['position']= $table->maxQuestionPosition()+1;
+          }
+          else { //in the middle
+              if($data['previous'] != $table->getPrevious($data['position']))
+              {
+                $previous = $this->get('table')->getEntity($data['previous']);
+                file_put_contents('php://stderr', print_r('previous position :  '. $previous->position . "\n" , TRUE));
+                $table->movePosition($previous->position);
+                file_put_contents('php://stderr', print_r('NEW previous position :  '. $previous->position . "\n" , TRUE));
+                $data['position'] = $previous->position+1;
+
+              }
+          }
         }
 
         $entity->exchangeArray($data);
