@@ -12,7 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Measure
  *
- * @ORM\Table(name="category" )
+ * @ORM\Table(name="soacategory" )
  * @ORM\Entity
  */
 class Category extends CategoriesSuperClass

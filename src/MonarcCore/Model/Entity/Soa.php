@@ -12,7 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Soa
  *
- * @ORM\Table(name="Soa")
+ * @ORM\Table(name="soa")
  * @ORM\Entity
  */
 class Soa extends AbstractEntity

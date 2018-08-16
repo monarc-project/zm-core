@@ -14,7 +14,7 @@ use MonarcCore\Model\Entity\AbstractEntity;
 /**
  * CategoriesSuperClass
  *
- * @ORM\Table(name="category")
+ * @ORM\Table(name="soacategory")
  * @ORM\MappedSuperclass
  */
 class CategoriesSuperClass extends AbstractEntity
@@ -184,7 +184,7 @@ class CategoriesSuperClass extends AbstractEntity
                               'validators' => array(),
                           ));
                       }
-                    
+
 
                       $this->inputFilter->add(array(
                           'name' => 'status',

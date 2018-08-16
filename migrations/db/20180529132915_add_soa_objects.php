@@ -30,7 +30,7 @@ class AddSoaObjects extends AbstractMigration
     public function change()
     {
       // Migration for table Soa
-      $table = $this->table('Soa');
+      $table = $this->table('soa');
       $table
         //  ->addColumn('id', 'integer', array('null' => true, 'signed' => false))
           ->addColumn('reference', 'string', array('null' => true, 'limit' => 255))
@@ -52,7 +52,7 @@ class AddSoaObjects extends AbstractMigration
       $table->changeColumn('id', 'integer',array('identity'=>true,'signed'=>false))->update();
 
       // Migration for table category
-      $table = $this->table('category');
+      $table = $this->table('soacategory');
       $table
       //  ->addColumn('id', 'integer', array('null' => true, 'signed' => false))
           ->addColumn('reference', 'string', array('null' => true, 'limit' => 255))
@@ -64,11 +64,11 @@ class AddSoaObjects extends AbstractMigration
           ->create();
       $table->changeColumn('id', 'integer',array('identity'=>true,'signed'=>false))->update();
       $this->table('measures')
-      ->addColumn('category_id', 'integer',  array('null' => true, 'default' => '15',  'signed' => false))
+      ->addColumn('soacategory_id', 'integer',  array('null' => true, 'default' => '15',  'signed' => false))
       ->save();
 
       //set the default iso27002 categories
-      $this->query('INSERT INTO category (reference,label1, label2, label3,label4)values
+      $this->query('INSERT INTO soacategory (reference,label1, label2, label3,label4)values
       ("5","Politiques de sécurité de l\'information","Information security policies","Informationssicherheitspolitik","Informatiebeveiligingsbeleid"),
       ("6","Organisation de la sécurité de l\'information","Organization of information security","Organisation der Informationssicherheit","Organiseren van informatiebeveiliging"),
       ("7","La sécurité des ressources humaines","Human resource security","Personalsicherheit","Veilig personeel"),
@@ -83,6 +83,6 @@ class AddSoaObjects extends AbstractMigration
       ("16","Gestion des incidents liés à la sécurité de l\'information","information security incident management","Informationssicherheits-Störfallmanagement","Beheer van informatiebeveiligingsincidenten"),
       ("17","Aspects de la sécurité de l\'information dans la gestion de la continuité de l\'activité","Information security aspects of business continuity management","Informationssicherheitsaspekte des betrieblichen Kontinuitätsmanagement","Informatiebeveiligingsaspecten van bedrijfscontinuïteitsbeheer"),
       ("18","Conformité","Compliance","Konformität","Naleving");');
-      $this->execute('UPDATE measures m SET m.category_id= (SELECT id FROM category c WHERE m.code LIKE concat(c.reference ,".","%"));');
+      $this->execute('UPDATE measures m SET m.soacategory_id= (SELECT id FROM soacategory c WHERE m.code LIKE concat(c.reference ,".","%"));');
     }
 }
