@@ -11,6 +11,6 @@ namespace MonarcCore\Model\Table;
  * Class CategoryTable
  * @package MonarcCore\Model\Table
  */
-class CategoryTable extends AbstractEntityTable
+class SoaCategoryTable extends AbstractEntityTable
 {
 }

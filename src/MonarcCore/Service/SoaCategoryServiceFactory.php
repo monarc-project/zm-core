@@ -8,15 +8,15 @@
 namespace MonarcCore\Service;
 
 /**
- * SOACategory Service Factory
+ * SoaCategory Service Factory
  *
- * Class SOACategoryServiceFactory
+ * Class SoaCategoryServiceFactory
  * @package MonarcCore\Service
  */
-class SOACategoryServiceFactory extends AbstractServiceFactory
+class SoaCategoryServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = [
-        'table' => 'MonarcCore\Model\Table\CategoryTable',
-        'entity' => 'MonarcCore\Model\Entity\Category',
+        'table' => 'MonarcCore\Model\Table\SoaCategoryTable',
+        'entity' => 'MonarcCore\Model\Entity\SoaCategory',
     ];
 }
