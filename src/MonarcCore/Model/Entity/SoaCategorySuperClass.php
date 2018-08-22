@@ -17,7 +17,7 @@ use MonarcCore\Model\Entity\AbstractEntity;
  * @ORM\Table(name="soacategory")
  * @ORM\MappedSuperclass
  */
-class CategoriesSuperClass extends AbstractEntity
+class SoaCategorySuperClass extends AbstractEntity
 {
 
 

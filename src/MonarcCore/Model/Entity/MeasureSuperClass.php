@@ -40,24 +40,15 @@ class MeasureSuperClass extends AbstractEntity
      */
     protected $anr;
 
-
-
-
-
-             /**
-              * @var \MonarcFO\Model\Entity\Category
-              *
-              * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Category", cascade={"persist"})
-              * @ORM\JoinColumns({
-              *   @ORM\JoinColumn(name="soacategory_id", referencedColumnName="id", nullable=true)
-              * })
-              */
-             protected $category;
-
-
-
-
-
+     /**
+      * @var \MonarcFO\Model\Entity\SoaCategory
+      *
+      * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\SoaCategory", cascade={"persist"})
+      * @ORM\JoinColumns({
+      *   @ORM\JoinColumn(name="soacategory_id", referencedColumnName="id", nullable=true)
+      * })
+      */
+     protected $category;
 
     /**
      * @var string

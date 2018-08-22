@@ -5,15 +5,12 @@
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
-namespace MonarcCore\Service;
+namespace MonarcCore\Service\Model\Table;
 
 /**
- * SOACategory Service
- *
- * Class SOACategoryService
- * @package MonarcCore\Service
+ * Class CategoryServiceModelTable
+ * @package MonarcCore\Service\Model\Table
  */
-class SOACategoryService extends AbstractService
+class SoaCategoryServiceModelTable extends AbstractServiceModelTable
 {
-    protected $filterColumns = ['label1', 'label2', 'label3', 'label4'];
 }
