@@ -13,7 +13,9 @@ use Doctrine\ORM\Mapping as ORM;
  * Measure
  *
  * @ORM\Table(name="measures", indexes={
- *      @ORM\Index(name="anr", columns={"anr_id"})
+ *      @ORM\Index(name="anr", columns={"anr_id"}),
+ *      @ORM\Index(name="category", columns={"soacategory_id"})
+
  * })
  * @ORM\MappedSuperclass
  */
@@ -38,11 +40,33 @@ class MeasureSuperClass extends AbstractEntity
      */
     protected $anr;
 
+
+
+
+
+             /**
+              * @var \MonarcFO\Model\Entity\Category
+              *
+              * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Category", cascade={"persist"})
+              * @ORM\JoinColumns({
+              *   @ORM\JoinColumn(name="soacategory_id", referencedColumnName="id", nullable=true)
+              * })
+              */
+             protected $category;
+
+
+
+
+
+
     /**
      * @var string
      *
      * @ORM\Column(name="code", type="string", length=255, nullable=true)
      */
+
+
+
     protected $code;
 
     /**
@@ -144,6 +168,25 @@ class MeasureSuperClass extends AbstractEntity
         return $this;
     }
 
+    /**
+     * @return Category
+     */
+    public function getCategory()
+    {
+        return $this->category;
+    }
+
+    /**
+     * @param Category $category
+     */
+    public function setCategory($category)
+    {
+        $this->category = $category;
+    }
+
+
+
+
     public function getInputFilter($partial = false)
     {
 
@@ -203,4 +246,3 @@ class MeasureSuperClass extends AbstractEntity
         return $this->inputFilter;
     }
 }
-

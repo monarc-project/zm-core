@@ -78,4 +78,15 @@ class Threat extends ThreatSuperClass
         $this->models = new ArrayCollection();
         parent::__construct($obj);
     }
+
+
+    /**
+     * @var \MonarcCore\Model\Entity\Measure
+     *
+     * @ORM\OneToMany(targetEntity="MonarcCore\Model\Entity\Measure", mappedBy="Threat")
+     */
+    protected $threats;
+
+
+
 }

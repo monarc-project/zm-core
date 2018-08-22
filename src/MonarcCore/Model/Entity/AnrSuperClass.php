@@ -201,6 +201,7 @@ class AnrSuperClass extends AbstractEntity
      */
     protected $manageRisks = '0';
 
+
     /**
      * @var text
      *
@@ -271,6 +272,9 @@ class AnrSuperClass extends AbstractEntity
      */
     protected $updatedAt;
 
+
+
+
     /**
      * @return int
      */
@@ -307,4 +311,3 @@ class AnrSuperClass extends AbstractEntity
         return $this;
     }
 }
-

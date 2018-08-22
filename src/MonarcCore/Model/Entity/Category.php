@@ -12,15 +12,12 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Measure
  *
- * @ORM\Table(name="measures", indexes={
- *      @ORM\Index(name="anr", columns={"anr_id"}),
- *      @ORM\Index(name="soacategory", columns={"soacategory_id"})
-
- * })
+ * @ORM\Table(name="soacategory" )
  * @ORM\Entity
  */
-class Measure extends MeasureSuperClass
+class Category extends CategoriesSuperClass
 {
+
 
 
 

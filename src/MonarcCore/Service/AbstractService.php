@@ -26,7 +26,7 @@ use MonarcFO\Model\Table\UserAnrTable;
 abstract class AbstractService extends AbstractServiceFactory
 {
     use \MonarcCore\Model\GetAndSet;
-	use RiskTrait; 
+	use RiskTrait;
 
     /**
      * The service factory used in this service
@@ -620,7 +620,7 @@ abstract class AbstractService extends AbstractServiceFactory
         }
     }
 
-    
+
 	/**
      * Filter fields for a patch request by removing the forbidden fields list
      * @param array $data The fields data
