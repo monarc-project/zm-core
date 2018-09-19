@@ -7,7 +7,7 @@
 
 namespace MonarcCore\Service;
 
-use MonarcCore\Model\Entity\Object;
+use MonarcCore\Model\Entity\MonarcObject;
 use MonarcCore\Model\Entity\ObjectObject;
 use MonarcCore\Model\Table\AnrTable;
 use MonarcCore\Model\Table\InstanceTable;
@@ -34,7 +34,7 @@ class ObjectObjectService extends AbstractService
     /**
      * @inheritdoc
      */
-    public function create($data, $last = true, $context = Object::BACK_OFFICE)
+    public function create($data, $last = true, $context = MonarcObject::BACK_OFFICE)
     {
         if ($data['father'] == $data['child']) {
             throw new \MonarcCore\Exception\Exception("You cannot add yourself as a component", 412);
@@ -64,14 +64,14 @@ class ObjectObjectService extends AbstractService
         $child = $objectTable->getEntity($data['child']);
 
         // on doit déterminer si par voie de conséquence, cet objet ne va pas se retrouver dans un modèle dans lequel il n'a pas le droit d'être
-        if ($context == Object::BACK_OFFICE) {
+        if ($context == MonarcObject::BACK_OFFICE) {
             $models = $father->get('asset')->get('models');
             foreach ($models as $m) {
                 $this->get('modelTable')->canAcceptObject($m->get('id'), $child, $context);
             }
         }
 
-        if ($father->mode == ObjectObject::MODE_GENERIC && $child->mode == ObjectObject::MODE_SPECIFIC) {
+        if ($father->mode == ObjectMonarcObject::MODE_GENERIC && $child->mode == ObjectMonarcObject::MODE_SPECIFIC) {
             throw new \MonarcCore\Exception\Exception("You cannot add a specific object to a generic parent", 412);
         }
 

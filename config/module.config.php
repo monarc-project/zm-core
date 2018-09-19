@@ -379,7 +379,7 @@ return array(
             '\MonarcCore\Model\Entity\Measure' => '\MonarcCore\Service\Model\Entity\MeasureServiceModelEntity',
             '\MonarcCore\Model\Entity\SoaCategory' => '\MonarcCore\Service\Model\Entity\SoaCategoryServiceModelEntity',
             '\MonarcCore\Model\Entity\Model' => '\MonarcCore\Service\Model\Entity\ModelServiceModelEntity',
-            '\MonarcCore\Model\Entity\Object' => '\MonarcCore\Service\Model\Entity\ObjectServiceModelEntity',
+            '\MonarcCore\Model\Entity\MonarcObject' => '\MonarcCore\Service\Model\Entity\ObjectServiceModelEntity',
             '\MonarcCore\Model\Entity\Instance' => '\MonarcCore\Service\Model\Entity\InstanceServiceModelEntity',
             '\MonarcCore\Model\Entity\InstanceConsequence' => '\MonarcCore\Service\Model\Entity\InstanceConsequenceServiceModelEntity',
             '\MonarcCore\Model\Entity\InstanceRisk' => '\MonarcCore\Service\Model\Entity\InstanceRiskServiceModelEntity',

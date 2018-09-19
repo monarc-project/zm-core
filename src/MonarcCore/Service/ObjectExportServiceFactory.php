@@ -17,7 +17,7 @@ class ObjectExportServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = [
         'table' => '\MonarcCore\Model\Table\ObjectTable',
-        'entity' => '\MonarcCore\Model\Entity\Object',
+        'entity' => '\MonarcCore\Model\Entity\MonarcObject',
         'assetExportService' => 'MonarcCore\Service\AssetExportService',
         'objectObjectService' => 'MonarcCore\Service\ObjectObjectService',
         'categoryTable' => '\MonarcCore\Model\Table\ObjectCategoryTable',

@@ -9,7 +9,7 @@ namespace MonarcCore\Service;
 
 use MonarcCore\Model\Entity\AbstractEntity;
 use MonarcCore\Model\Entity\Asset;
-use MonarcCore\Model\Entity\Object;
+use MonarcCore\Model\Entity\MonarcObject;
 use MonarcCore\Model\Table\AmvTable;
 use MonarcCore\Model\Table\AnrObjectCategoryTable;
 use MonarcCore\Model\Table\AnrTable;
@@ -122,18 +122,18 @@ class ObjectService extends AbstractService
             $modelTable = $this->get('modelTable');
             $model = $modelTable->getEntity($model);
             if ($model->get('isGeneric')) { // le modèle est générique, on récupère les modèles génériques
-                $filterAnd['mode'] = Object::MODE_GENERIC;
+                $filterAnd['mode'] = MonarcObject::MODE_GENERIC;
             } else {
                 $filterAnd['asset'] = [];
 
                 $assets = $model->get('assets');
                 foreach ($assets as $a) { // on récupère tous les assets associés au modèle et on ne prend que les spécifiques
-                    if ($a->get('mode') == Object::MODE_SPECIFIC) {
+                    if ($a->get('mode') == MonarcObject::MODE_SPECIFIC) {
                         $filterAnd['asset'][$a->get('id')] = $a->get('id');
                     }
                 }
                 if (!$model->get('isRegulator')) { // si le modèle n'est pas régulateur
-                    $assets = $this->get('assetTable')->getEntityByFields(['mode' => Object::MODE_GENERIC]); // on récupère tous les assets génériques
+                    $assets = $this->get('assetTable')->getEntityByFields(['mode' => MonarcObject::MODE_GENERIC]); // on récupère tous les assets génériques
                     foreach ($assets as $a) {
                         $filterAnd['asset'][$a->get('id')] = $a->get('id');
                     }
@@ -164,7 +164,7 @@ class ObjectService extends AbstractService
         }
 
         /** @var ObjectTable $objectTable */
-        $objectTable = $this->get('table');
+        $objectTable = $this->get('objectTable');
 
         return $objectTable->fetchAllFiltered(
             array_keys($this->get('entity')->getJsonArray()),
@@ -185,7 +185,7 @@ class ObjectService extends AbstractService
      * @return mixed
      * @throws \MonarcCore\Exception\Exception
      */
-    public function getCompleteEntity($id, $anrContext = Object::CONTEXT_BDC, $anr = null)
+    public function getCompleteEntity($id, $anrContext = MonarcObject::CONTEXT_BDC, $anr = null)
     {
         $table = $this->get('table');
         /** @var Object $object */
@@ -203,7 +203,7 @@ class ObjectService extends AbstractService
         $object_arr['parents'] = $this->getDirectParents($object_arr['id']);
 
         // Retrieve parent recursively
-        if ($anrContext == Object::CONTEXT_ANR) {
+        if ($anrContext == MonarcObject::CONTEXT_ANR) {
             //Check if the object is linked to the $anr
             $found = false;
             $anrObject = null;
@@ -378,7 +378,7 @@ class ObjectService extends AbstractService
      * @param null $model
      * @return int
      */
-    public function getFilteredCount($filter = null, $asset = null, $category = null, $model = null, $anr = null, $context = Object::BACK_OFFICE)
+    public function getFilteredCount($filter = null, $asset = null, $category = null, $model = null, $anr = null, $context = MonarcObject::BACK_OFFICE)
     {
         $filterAnd = [];
         if ((!is_null($asset)) && ($asset != 0)) {
@@ -450,7 +450,7 @@ class ObjectService extends AbstractService
 
         //in FO, all objects are generics
         if ($context == AbstractEntity::FRONT_OFFICE) {
-            $data['mode'] = Object::MODE_GENERIC;
+            $data['mode'] = MonarcObject::MODE_GENERIC;
         }
 
         $setRolfTagNull = false;
@@ -503,19 +503,19 @@ class ObjectService extends AbstractService
 
         //security
         if ($context == AbstractEntity::BACK_OFFICE &&
-            $object->mode == Object::MODE_GENERIC && $object->asset->mode == Object::MODE_SPECIFIC) {
+            $object->mode == MonarcObject::MODE_GENERIC && $object->asset->mode == MonarcObject::MODE_SPECIFIC) {
             throw new \MonarcCore\Exception\Exception("You can't have a generic object based on a specific asset", 412);
         }
         if (isset($data['modelId'])) {
             $this->get('modelTable')->canAcceptObject($data['modelId'], $object, $context);
         }
 
-        if (($object->asset->type == Asset::TYPE_PRIMARY) && ($object->scope == Object::SCOPE_GLOBAL)) {
+        if (($object->asset->type == Asset::TYPE_PRIMARY) && ($object->scope == MonarcObject::SCOPE_GLOBAL)) {
             throw new \MonarcCore\Exception\Exception('You cannot create an object that is both global and primary', 412);
         }
 
 
-        if ($context == Object::BACK_OFFICE) {
+        if ($context == MonarcObject::BACK_OFFICE) {
             //create object type bdc
             $id = $this->get('table')->save($object);
 
@@ -558,7 +558,7 @@ class ObjectService extends AbstractService
 
         //in FO, all objects are generics
         if ($context == AbstractEntity::FRONT_OFFICE) {
-            $data['mode'] = Object::MODE_GENERIC;
+            $data['mode'] = MonarcObject::MODE_GENERIC;
         }
 
         $object = $this->get('table')->getEntity($id);
@@ -588,7 +588,7 @@ class ObjectService extends AbstractService
             - que l'on a pas de parents GENERIC quand on passe de GENERIC à SPECIFIC
             - que l'on a pas de fils SPECIFIC quand on passe de SPECIFIC à GENERIC
             */
-            if ($object->get('mode') == Object::MODE_GENERIC) {
+            if ($object->get('mode') == MonarcObject::MODE_GENERIC) {
                 throw new \MonarcCore\Exception\Exception('You cannot set this object to specific mode because one of its parents is in generic mode.', 412);
             } else {
                 throw new \MonarcCore\Exception\Exception('You cannot set this object to generic mode because one of its children is in specific mode.', 412);
@@ -700,7 +700,7 @@ class ObjectService extends AbstractService
     {
         //in FO, all objects are generics
         if ($context == AbstractEntity::FRONT_OFFICE) {
-            $data['mode'] = Object::MODE_GENERIC;
+            $data['mode'] = MonarcObject::MODE_GENERIC;
         }
 
         /** To improve.
@@ -824,11 +824,11 @@ class ObjectService extends AbstractService
     {
         $objectObjectService = $this->get('objectObjectService');
         switch ($mode) {
-            case Object::MODE_GENERIC:
+            case MonarcObject::MODE_GENERIC:
                 $objects = $objectObjectService->getRecursiveParents($id);
                 $field = 'parents';
                 break;
-            case Object::MODE_SPECIFIC:
+            case MonarcObject::MODE_SPECIFIC:
                 $objects = $objectObjectService->getRecursiveChildren($id);
                 $field = 'children';
                 break;
@@ -1057,7 +1057,7 @@ class ObjectService extends AbstractService
      * @param $anrId
      * @throws \MonarcCore\Exception\Exception
      */
-    public function detachObjectToAnr($objectId, $anrId, $context = Object::BACK_OFFICE)
+    public function detachObjectToAnr($objectId, $anrId, $context = MonarcObject::BACK_OFFICE)
     {
         //verify object exist
         /** @var ObjectTable $table */
@@ -1078,7 +1078,7 @@ class ObjectService extends AbstractService
         //if object is not a component, delete link and instances children for anr
         /** @var ObjectObjectTable $objectObjectTable */
         $objectObjectTable = $this->get('objectObjectTable');
-        $links = $objectObjectTable->getEntityByFields(['anr' => ($context == Object::BACK_OFFICE) ? 'null' : $anrId, 'child' => $objectId]);
+        $links = $objectObjectTable->getEntityByFields(['anr' => ($context == MonarcObject::BACK_OFFICE) ? 'null' : $anrId, 'child' => $objectId]);
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('instanceTable');
         foreach ($links as $link) {

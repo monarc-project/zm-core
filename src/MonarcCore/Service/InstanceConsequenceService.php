@@ -7,7 +7,7 @@
 
 namespace MonarcCore\Service;
 
-use MonarcCore\Model\Entity\Object;
+use MonarcCore\Model\Entity\MonarcObject;
 use MonarcCore\Model\Table\InstanceConsequenceTable;
 use MonarcCore\Model\Table\InstanceTable;
 use Zend\EventManager\EventManager;
@@ -144,7 +144,7 @@ class InstanceConsequenceService extends AbstractService
         $table = $this->get('table');
         $instanceConsequence = $table->getEntity($id);
 
-        if ($instanceConsequence->object->scope == Object::SCOPE_GLOBAL) {
+        if ($instanceConsequence->object->scope == MonarcObject::SCOPE_GLOBAL) {
             /** @var InstanceTable $instanceTable */
             $instanceTable = $this->get('instanceTable');
             $brothers = $instanceTable->getEntityByFields([

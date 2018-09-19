@@ -27,9 +27,9 @@ class AnrSuperClass extends AbstractEntity
     protected $id;
 
     /**
-     * @var \MonarcCore\Model\Entity\Object
+     * @var \MonarcCore\Model\Entity\MonarcObject
      *
-     * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Object", mappedBy="anrs")
+     * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\MonarcObject", mappedBy="anrs")
      */
     protected $objects;
 

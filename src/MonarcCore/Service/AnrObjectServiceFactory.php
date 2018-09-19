@@ -17,7 +17,7 @@ class AnrObjectServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = [
         'table' => 'MonarcCore\Model\Table\ObjectTable',
-        'entity' => 'MonarcCore\Model\Entity\Object',
+        'entity' => 'MonarcCore\Model\Entity\MonarcObject',
         'objectObjectTable' => 'MonarcCore\Model\Table\ObjectObjectTable',
         'objectService' => 'MonarcCore\Service\ObjectService'
     ];

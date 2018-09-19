@@ -71,7 +71,7 @@ return array(
     'MonarcCore\Model\Entity\Measure'                                       => __DIR__ . '/src/MonarcCore/Model/Entity/Measure.php',
     'MonarcCore\Model\Entity\MeasureSuperClass'                             => __DIR__ . '/src/MonarcCore/Model/Entity/MeasureSuperClass.php',
     'MonarcCore\Model\Entity\Model'                                         => __DIR__ . '/src/MonarcCore/Model/Entity/Model.php',
-    'MonarcCore\Model\Entity\Object'                                        => __DIR__ . '/src/MonarcCore/Model/Entity/Object.php',
+    'MonarcCore\Model\Entity\MonarcObject'                                  => __DIR__ . '/src/MonarcCore/Model/Entity/MonarcObject.php',
     'MonarcCore\Model\Entity\ObjectCategory'                                => __DIR__ . '/src/MonarcCore/Model/Entity/ObjectCategory.php',
     'MonarcCore\Model\Entity\ObjectCategorySuperClass'                      => __DIR__ . '/src/MonarcCore/Model/Entity/ObjectCategorySuperClass.php',
     'MonarcCore\Model\Entity\ObjectObject'                                  => __DIR__ . '/src/MonarcCore/Model/Entity/ObjectObject.php',
