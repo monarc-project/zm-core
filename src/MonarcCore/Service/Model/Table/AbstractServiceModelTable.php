@@ -20,7 +20,6 @@ abstract class AbstractServiceModelTable implements FactoryInterface
 
     public function createService(ServiceLocatorInterface $serviceLocator)
     {
-        file_put_contents('php://stderr', print_r(get_class($this), TRUE));
         $class = str_replace('Service\\', '', substr(get_class($this), 0, -17)) . 'Table';
         if (class_exists($class)) {
             $instance = new $class($serviceLocator->get($this->dbService));

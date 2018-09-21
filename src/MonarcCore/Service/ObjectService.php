@@ -442,11 +442,7 @@ class ObjectService extends AbstractService
     public function create($data, $last = true, $context = AbstractEntity::BACK_OFFICE)
     {
         //create object
-        file_put_contents('php://stderr', print_r('$this', TRUE));
-        // file_put_contents('php://stderr', print_r($this->get('entity'), TRUE));
-        //$class = $this->get('entity');
         $class = $this->get('entity');
-        file_put_contents('php://stderr', print_r('end $this', TRUE));
         $object = new $class;
         $object->setLanguage($this->getLanguage());
         $object->setDbAdapter($this->get('table')->getDb());
