@@ -10,10 +10,10 @@ namespace MonarcCore\Service\Model\Table;
 use Zend\ServiceManager\ServiceLocatorInterface;
 
 /**
- * Class ObjectServiceModelTable
+ * Class MonarcObjectServiceModelTable
  * @package MonarcCore\Service\Model\Table
  */
-class ObjectServiceModelTable extends AbstractServiceModelTable
+class MonarcObjectServiceModelTable extends AbstractServiceModelTable
 {
     public function createService(ServiceLocatorInterface $serviceLocator)
     {

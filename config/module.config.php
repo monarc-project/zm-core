@@ -415,7 +415,7 @@ return array(
             '\MonarcCore\Model\Table\GuideItemTable' => '\MonarcCore\Service\Model\Table\GuideItemServiceModelTable',
             '\MonarcCore\Model\Table\MeasureTable' => '\MonarcCore\Service\Model\Table\MeasureServiceModelTable',
             '\MonarcCore\Model\Table\SoaCategoryTable' => '\MonarcCore\Service\Model\Table\SoaCategoryServiceModelTable',
-            '\MonarcCore\Model\Table\ObjectTable' => '\MonarcCore\Service\Model\Table\ObjectServiceModelTable',
+            '\MonarcCore\Model\Table\ObjectTable' => '\MonarcCore\Service\Model\Table\MonarcObjectServiceModelTable',
             '\MonarcCore\Model\Table\InstanceTable' => '\MonarcCore\Service\Model\Table\InstanceServiceModelTable',
             '\MonarcCore\Model\Table\InstanceConsequenceTable' => '\MonarcCore\Service\Model\Table\InstanceConsequenceServiceModelTable',
             '\MonarcCore\Model\Table\InstanceRiskTable' => '\MonarcCore\Service\Model\Table\InstanceRiskServiceModelTable',
