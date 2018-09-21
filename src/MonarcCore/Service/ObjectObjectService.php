@@ -71,7 +71,7 @@ class ObjectObjectService extends AbstractService
             }
         }
 
-        if ($father->mode == ObjectMonarcObject::MODE_GENERIC && $child->mode == ObjectMonarcObject::MODE_SPECIFIC) {
+        if ($father->mode == ObjectObject::MODE_GENERIC && $child->mode == ObjectObject::MODE_SPECIFIC) {
             throw new \MonarcCore\Exception\Exception("You cannot add a specific object to a generic parent", 412);
         }
 

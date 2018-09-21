@@ -151,7 +151,7 @@ class ObjectService extends AbstractService
                     }
                 }
             }
-        } elseif ($anr) {
+        } else if ($anr) {
             /** @var AnrTable $anrTable */
             $anrTable = $this->get('anrTable');
 
@@ -164,8 +164,7 @@ class ObjectService extends AbstractService
         }
 
         /** @var ObjectTable $objectTable */
-        $objectTable = $this->get('objectTable');
-
+        $objectTable = $this->get('table');
         return $objectTable->fetchAllFiltered(
             array_keys($this->get('entity')->getJsonArray()),
             $page,
@@ -443,8 +442,12 @@ class ObjectService extends AbstractService
     public function create($data, $last = true, $context = AbstractEntity::BACK_OFFICE)
     {
         //create object
+        file_put_contents('php://stderr', print_r('$this', TRUE));
+        // file_put_contents('php://stderr', print_r($this->get('entity'), TRUE));
+        //$class = $this->get('entity');
         $class = $this->get('entity');
-        $object = new $class();
+        file_put_contents('php://stderr', print_r('end $this', TRUE));
+        $object = new $class;
         $object->setLanguage($this->getLanguage());
         $object->setDbAdapter($this->get('table')->getDb());
 
@@ -698,19 +701,18 @@ class ObjectService extends AbstractService
      */
     public function patch($id, $data, $context = AbstractEntity::FRONT_OFFICE)
     {
-        //in FO, all objects are generics
+        // in FO, all objects are generics
         if ($context == AbstractEntity::FRONT_OFFICE) {
             $data['mode'] = MonarcObject::MODE_GENERIC;
         }
 
-        /** To improve.
-        * There is a bug on operational risks when position of primary asset changing. Risks are changed to specific.
-        $setRolfTagNull = false;
-        if (empty($data['rolfTag'])) {
-            unset($data['rolfTag']);
-            $setRolfTagNull = true;
-        }
-        */
+        // To improve.
+        // There is a bug on operational risks when position of primary asset changing. Risks are changed to specific.
+        // $setRolfTagNull = false;
+        // if (empty($data['rolfTag'])) {
+        //     unset($data['rolfTag']);
+        //     $setRolfTagNull = true;
+        // }
 
         $object = $this->get('table')->getEntity($id);
         $object->setLanguage($this->getLanguage());
