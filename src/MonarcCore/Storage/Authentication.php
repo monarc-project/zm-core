@@ -15,6 +15,7 @@ class Authentication implements StorageInterface
         $this->userTokenTable = $userTokenTable;
         return $this;
     }
+
     public function getUserTokenTable(){
         return $this->userTokenTable;
     }
@@ -23,11 +24,11 @@ class Authentication implements StorageInterface
         $this->config = $config;
         return $this;
     }
+
     public function getConfig(){
         return $this->config;
     }
 
-    // TODO: peux être généré des exceptions
     public function addItem($key, $value)
     {
         $this->clearItems();
@@ -45,6 +46,7 @@ class Authentication implements StorageInterface
         }
         return false;
     }
+
     public function getItem($key, & $success = null, & $casToken = null)
     {
         $success = false;
@@ -58,6 +60,7 @@ class Authentication implements StorageInterface
         }
         return null;
     }
+
     public function replaceItem($key, $value)
     {
         $t = $this->getItem($key,$success);
@@ -71,11 +74,25 @@ class Authentication implements StorageInterface
         }
         return false;
     }
+
     public function hasItem($key)
     {
         $token = $this->getUserTokenTable()->getRepository()->findOneByToken($key);
-        return count($token)>0;
+        if (null === $token) {
+            return false;
+        }
+        if (is_scalar($token)) {
+            return mb_strlen($token)>0;
+        }
+        if (is_object($token) && method_exists($token, '__toString') && !$token instanceof \Countable) {
+            return mb_strlen((string) $token)>0;
+        }
+        if ($token instanceof \Countable || is_array($token)) {
+            return count($token)>0;
+        }
+        return true;
     }
+
     public function removeItem($key)
     {
         $t = $this->getItem($key,$success);
