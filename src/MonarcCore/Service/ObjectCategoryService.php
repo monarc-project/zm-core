@@ -18,7 +18,7 @@ use MonarcCore\Model\Table\AnrObjectCategoryTable;
 class ObjectCategoryService extends AbstractService
 {
     protected $anrObjectCategoryTable;
-    protected $objectTable;
+    protected $MonarcObjectTable;
     protected $rootTable;//required for autopositionning
     protected $parentTable;//required for autopositionning
     protected $anrTable;//required for autopositionning of anrobjectcategories
@@ -170,7 +170,7 @@ class ObjectCategoryService extends AbstractService
             $i++;
         }
 
-        $this->get('objectTable')->getRepository()->createQueryBuilder('t')
+        $this->get('MonarcObjectTable')->getRepository()->createQueryBuilder('t')
             ->update()
             ->set('t.category', ':categ')
             ->setParameter(':categ', null)

@@ -19,10 +19,10 @@ class ObjectObjectServiceFactory extends AbstractServiceFactory
         'table' => '\MonarcCore\Model\Table\ObjectObjectTable',
         'anrTable' => '\MonarcCore\Model\Table\AnrTable',
         'instanceTable' => '\MonarcCore\Model\Table\InstanceTable',
-        'objectTable' => '\MonarcCore\Model\Table\ObjectTable',
+        'MonarcObjectTable' => '\MonarcCore\Model\Table\MonarcObjectTable',
         'entity' => '\MonarcCore\Model\Entity\ObjectObject',
-        'childTable' => '\MonarcCore\Model\Table\ObjectTable',
-        'fatherTable' => '\MonarcCore\Model\Table\ObjectTable',
+        'childTable' => '\MonarcCore\Model\Table\MonarcObjectTable',
+        'fatherTable' => '\MonarcCore\Model\Table\MonarcObjectTable',
         'modelTable' => '\MonarcCore\Model\Table\modelTable',
     ];
 }

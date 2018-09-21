@@ -16,12 +16,12 @@ namespace MonarcCore\Service;
 class ModelObjectServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = [
-        'table' => 'MonarcCore\Model\Table\ObjectTable',
+        'table' => 'MonarcCore\Model\Table\MonarcObjectTable',
         'entity' => 'MonarcCore\Model\Entity\MonarcObject',
         'assetTable' => '\MonarcCore\Model\Table\AssetTable',
         'categoryTable' => '\MonarcCore\Model\Table\ObjectCategoryTable',
         'rolfTagTable' => '\MonarcCore\Model\Table\RolfTagTable',
-        'sourceTable' => 'MonarcCore\Model\Table\ObjectTable',
+        'sourceTable' => 'MonarcCore\Model\Table\MonarcObjectTable',
         'modelTable' => 'MonarcCore\Model\Table\ModelTable',
     ];
 }

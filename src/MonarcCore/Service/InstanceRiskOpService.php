@@ -27,7 +27,7 @@ class InstanceRiskOpService extends AbstractService
     protected $userAnrTable;
     protected $modelTable;
     protected $instanceTable;
-    protected $objectTable;
+    protected $MonarcObjectTable;
     protected $rolfRiskTable;
     protected $rolfTagTable;
     protected $scaleTable;

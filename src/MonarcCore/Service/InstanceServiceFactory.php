@@ -23,7 +23,7 @@ class InstanceServiceFactory extends AbstractServiceFactory
         'amvTable' => 'MonarcCore\Model\Table\AmvTable',
         'instanceTable' => 'MonarcCore\Model\Table\InstanceTable',
         'instanceConsequenceTable' => 'MonarcCore\Model\Table\InstanceConsequenceTable',
-        'objectTable' => 'MonarcCore\Model\Table\ObjectTable',
+        'MonarcObjectTable' => 'MonarcCore\Model\Table\MonarcObjectTable',
         'scaleTable' => 'MonarcCore\Model\Table\ScaleTable',
         'scaleCommentTable' => 'MonarcCore\Model\Table\ScaleCommentTable',
         'scaleImpactTypeTable' => 'MonarcCore\Model\Table\ScaleImpactTypeTable',

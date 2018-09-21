@@ -23,7 +23,7 @@ class InstanceConsequenceService extends AbstractService
     protected $dependencies = ['anr', 'instance', 'object', 'scaleImpactType'];
     protected $anrTable;
     protected $instanceTable;
-    protected $objectTable;
+    protected $MonarcObjectTable;
     protected $scaleTable;
     protected $scaleImpactTypeTable;
     protected $forbiddenFields = ['anr', 'instance', 'object', 'scaleImpactType'];

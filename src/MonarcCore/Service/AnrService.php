@@ -9,7 +9,7 @@ namespace MonarcCore\Service;
 
 use MonarcCore\Model\Entity\Anr;
 use MonarcCore\Model\Table\AnrTable;
-use MonarcCore\Model\Table\ObjectTable;
+use MonarcCore\Model\Table\MonarcObjectTable;
 
 /**
  * Anr Service
@@ -21,7 +21,7 @@ class AnrService extends AbstractService
 {
     protected $scaleService;
     protected $anrObjectCategoryTable;
-    protected $objectTable;
+    protected $MonarcObjectTable;
     protected $instanceTable;
     protected $instanceConsequenceTable;
     protected $instanceRiskTable;
@@ -104,9 +104,9 @@ class AnrService extends AbstractService
             //add anr to object
             $object->addAnr($newAnr);
 
-            /** @var ObjectTable $objectTable */
-            $objectTable = $this->get('objectTable');
-            $objectTable->save($object, ($i == $nbObjects));
+            /** @var MonarcObjectTable $MonarcObjectTable */
+            $MonarcObjectTable = $this->get('MonarcObjectTable');
+            $MonarcObjectTable->save($object, ($i == $nbObjects));
             $i++;
         }
 

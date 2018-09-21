@@ -33,7 +33,7 @@ class InstanceService extends AbstractService
     // Tables & Entities
     protected $anrTable;
     protected $amvTable;
-    protected $objectTable;
+    protected $MonarcObjectTable;
     protected $scaleTable;
     protected $scaleCommentTable;
     protected $scaleImpactTypeTable;
@@ -70,7 +70,7 @@ class InstanceService extends AbstractService
     public function instantiateObjectToAnr($anrId, $data, $managePosition = true, $rootLevel = false, $mode = Instance::MODE_CREA_NODE)
     {
         //retrieve object properties
-        $object = $this->get('objectTable')->getEntity($data['object']);
+        $object = $this->get('MonarcObjectTable')->getEntity($data['object']);
 
         //verify if user is authorized to instantiate this object
         $authorized = false;

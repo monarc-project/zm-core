@@ -24,7 +24,7 @@ class AnrServiceFactory extends AbstractServiceFactory
         'instanceConsequenceTable' => 'MonarcCore\Model\Table\InstanceConsequenceTable',
         'instanceRiskTable' => 'MonarcCore\Model\Table\InstanceRiskTable',
         'instanceRiskOpTable' => 'MonarcCore\Model\Table\InstanceRiskOpTable',
-        'objectTable' => 'MonarcCore\Model\Table\ObjectTable',
+        'MonarcObjectTable' => 'MonarcCore\Model\Table\MonarcObjectTable',
         'scaleTable' => 'MonarcCore\Model\Table\ScaleTable',
         'scaleImpactTypeTable' => 'MonarcCore\Model\Table\ScaleImpactTypeTable',
         'scaleCommentTable' => 'MonarcCore\Model\Table\ScaleCommentTable',

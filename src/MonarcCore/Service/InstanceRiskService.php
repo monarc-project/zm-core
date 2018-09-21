@@ -34,7 +34,7 @@ class InstanceRiskService extends AbstractService
 
     // only for setDependencies (deprecated)
     protected $assetTable;
-    protected $objectTable;
+    protected $MonarcObjectTable;
     protected $scaleTable;
     protected $threatTable;
     protected $vulnerabilityTable;

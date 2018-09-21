@@ -19,7 +19,7 @@ use MonarcCore\Model\Table\InstanceTable;
 use MonarcCore\Model\Table\ModelTable;
 use MonarcCore\Model\Table\ObjectCategoryTable;
 use MonarcCore\Model\Table\ObjectObjectTable;
-use MonarcCore\Model\Table\ObjectTable;
+use MonarcCore\Model\Table\MonarcObjectTable;
 
 /**
  * Object Service
@@ -163,9 +163,9 @@ class ObjectService extends AbstractService
             }
         }
 
-        /** @var ObjectTable $objectTable */
-        $objectTable = $this->get('table');
-        return $objectTable->fetchAllFiltered(
+        /** @var MonarcObjectTable $MonarcObjectTable */
+        $MonarcObjectTable = $this->get('table');
+        return $MonarcObjectTable->fetchAllFiltered(
             array_keys($this->get('entity')->getJsonArray()),
             $page,
             $limit,
@@ -867,7 +867,7 @@ class ObjectService extends AbstractService
      */
     public function delete($id)
     {
-        /** @var ObjectTable $table */
+        /** @var MonarcObjectTable $table */
         $table = $this->get('table');
         $entity = $table->get($id);
         if (!$entity) {
@@ -970,7 +970,7 @@ class ObjectService extends AbstractService
     public function attachObjectToAnr($object, $anrId, $parent = null, $objectObjectPosition = null, $context = AbstractEntity::BACK_OFFICE)
     {
         //object
-        /** @var ObjectTable $table */
+        /** @var MonarcObjectTable $table */
         $table = $this->get('table');
 
         if (!is_object($object)) {
@@ -1062,7 +1062,7 @@ class ObjectService extends AbstractService
     public function detachObjectToAnr($objectId, $anrId, $context = MonarcObject::BACK_OFFICE)
     {
         //verify object exist
-        /** @var ObjectTable $table */
+        /** @var MonarcObjectTable $table */
         $table = $this->get('table');
         $object = $table->getEntity($objectId);
         if (!$object) {
@@ -1144,7 +1144,7 @@ class ObjectService extends AbstractService
         }
 
         //detach object
-        /** @var ObjectTable $table */
+        /** @var MonarcObjectTable $table */
         $table = $this->get('table');
         $object = $table->getEntity($objectId);
         $anrs = [];
@@ -1169,9 +1169,9 @@ class ObjectService extends AbstractService
         $anrObjects = [];
         $objectsCategories = [];
 
-        /** @var ObjectTable $objectTable */
-        $objectTable = $this->get('table');
-        $objects = $objectTable->getEntityByFields(['anrs' => $anrId]);
+        /** @var MonarcObjectTable $MonarcObjectTable */
+        $MonarcObjectTable = $this->get('table');
+        $objects = $MonarcObjectTable->getEntityByFields(['anrs' => $anrId]);
 
         foreach ($objects as $object) {
             if ($object->get('category')) {

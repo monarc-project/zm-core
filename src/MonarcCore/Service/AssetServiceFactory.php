@@ -22,7 +22,7 @@ class AssetServiceFactory extends AbstractServiceFactory
         'modelTable' => 'MonarcCore\Model\Table\ModelTable',
         'amvService' => 'MonarcCore\Service\AmvService',
         'modelService' => 'MonarcCore\Service\ModelService',
-        'objectTable' => 'MonarcCore\Model\Table\ObjectTable',
+        'MonarcObjectTable' => 'MonarcCore\Model\Table\MonarcObjectTable',
         'objectObjectTable' => 'MonarcCore\Model\Table\ObjectObjectTable',
         'assetExportService' => 'MonarcCore\Service\AssetExportService',
     ];

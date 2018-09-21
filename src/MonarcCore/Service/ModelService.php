@@ -24,7 +24,7 @@ class ModelService extends AbstractService
     protected $anrTable;
     protected $instanceRiskTable;
     protected $instanceRiskOpTable;
-    protected $objectTable;
+    protected $MonarcObjectTable;
     protected $amvTable;
     protected $clientTable; // only loaded by MonarcFO service factory
     protected $forbiddenFields = ['anr'];

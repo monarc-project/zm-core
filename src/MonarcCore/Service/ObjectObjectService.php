@@ -24,7 +24,7 @@ class ObjectObjectService extends AbstractService
 {
     protected $anrTable;
     protected $userAnrTable;
-    protected $objectTable;
+    protected $MonarcObjectTable;
     protected $instanceTable;
     protected $childTable;
     protected $fatherTable;
@@ -56,12 +56,12 @@ class ObjectObjectService extends AbstractService
             throw new \MonarcCore\Exception\Exception("You cannot create a cyclic dependency", 412);
         }
 
-        /** @var ObjectTable $objectTable */
-        $objectTable = $this->get('objectTable');
+        /** @var MonarcObjectTable $MonarcObjectTable */
+        $MonarcObjectTable = $this->get('MonarcObjectTable');
 
         // Ensure that we're not trying to add a specific item if the father is generic
-        $father = $objectTable->getEntity($data['father']);
-        $child = $objectTable->getEntity($data['child']);
+        $father = $MonarcObjectTable->getEntity($data['father']);
+        $child = $MonarcObjectTable->getEntity($data['child']);
 
         // on doit déterminer si par voie de conséquence, cet objet ne va pas se retrouver dans un modèle dans lequel il n'a pas le droit d'être
         if ($context == MonarcObject::BACK_OFFICE) {
@@ -113,7 +113,7 @@ class ObjectObjectService extends AbstractService
             }
         }
 
-        $objectTable->save($child);
+        $MonarcObjectTable->save($child);
 
         //create instance
         /** @var InstanceTable $instanceTable */
@@ -195,7 +195,7 @@ class ObjectObjectService extends AbstractService
             /** @var ObjectObject $child */
             $child_array = $child->getJsonArray();
 
-            $object_child = $this->get('objectTable')->get($child_array['child']);
+            $object_child = $this->get('MonarcObjectTable')->get($child_array['child']);
             $object_child['children'] = $this->getRecursiveChildren($child_array['child']);
             $object_child['component_link_id'] = $child_array['id'];
             $array_children[] = $object_child;
@@ -221,7 +221,7 @@ class ObjectObjectService extends AbstractService
             /** @var ObjectObject $parent */
             $parent_array = $parent->getJsonArray();
 
-            $object_parent = $this->get('objectTable')->get($parent_array['father']);
+            $object_parent = $this->get('MonarcObjectTable')->get($parent_array['father']);
             $object_parent['parents'] = $this->getRecursiveParents($parent_array['father']);
             $object_parent['component_link_id'] = $parent_array['id'];
             $array_parents[] = $object_parent;
