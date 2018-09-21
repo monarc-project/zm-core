@@ -69,7 +69,7 @@ class InstanceRiskOpTable extends AbstractEntityTable
         }
 
         $params['order_direction'] = isset($params['order_direction']) && strtolower(trim($params['order_direction'])) != 'asc' ? 'DESC' : 'ASC';
-        return $return->orderBy('iro.' . "'" . $params['order'] . "'" , $params['order_direction'])
+        return $return->orderBy('iro.' . $params['order'], $params['order_direction'])
                       ->getQuery()
                       ->getResult();
     }
