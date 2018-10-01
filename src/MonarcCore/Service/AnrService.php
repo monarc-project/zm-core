@@ -291,9 +291,10 @@ class AnrService extends AbstractService
                   $return['scalesComments'][$sc->id] = $sc->getJsonArray($scalesCommentArray);
                   $return['scalesComments'][$sc->id]['scale']['id'] = $sc->scale->id;
                   $return['scalesComments'][$sc->id]['scale']['type'] = $sc->scale->type;
-                  $return['scalesComments'][$sc->id]['scaleImpactType']['id'] = $sc->scaleImpactType->id;
-                  $return['scalesComments'][$sc->id]['scaleImpactType']['position'] = $sc->scaleImpactType->position;
-
+                  if (null !== $sc->scaleImpactType) {
+                    $return['scalesComments'][$sc->id]['scaleImpactType']['id'] = $sc->scaleImpactType->id;
+                    $return['scalesComments'][$sc->id]['scaleImpactType']['position'] = $sc->scaleImpactType->position;
+                  }
                 }
               }
             }

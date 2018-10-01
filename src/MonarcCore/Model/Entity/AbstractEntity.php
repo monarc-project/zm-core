@@ -107,12 +107,15 @@ abstract class AbstractEntity implements InputFilterAwareInterface
             unset($array['dbadapter']);
             unset($array['parameters']);
             unset($array['squeezeAutoPositionning']);
-            #unset($array['password']);
             return $array;
         } else {
             $array = get_object_vars($this);
             unset($array['password']);
             return array_intersect_key($array, array_flip($fields));
+            // array_flip — Exchanges all keys with their associated values in
+            // an array
+            // A warning will be emitted if a value has the wrong type,
+            // and the key/value pair in question will not be included in the result.
         }
     }
 
