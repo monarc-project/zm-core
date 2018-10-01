@@ -702,9 +702,9 @@ class ObjectService extends AbstractService
             $data['mode'] = MonarcObject::MODE_GENERIC;
         }
 
+        $setRolfTagNull = false;
         // To improve.
         // There is a bug on operational risks when position of primary asset changing. Risks are changed to specific.
-        // $setRolfTagNull = false;
         // if (empty($data['rolfTag'])) {
         //     unset($data['rolfTag']);
         //     $setRolfTagNull = true;
