@@ -16,8 +16,8 @@ namespace MonarcCore\Service;
 class ObjectServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = [
-        'table' => '\MonarcCore\Model\Table\ObjectTable',
-        'entity' => '\MonarcCore\Model\Entity\Object',
+        'table' => '\MonarcCore\Model\Table\MonarcObjectTable',
+        'entity' => '\MonarcCore\Model\Entity\MonarcObject',
         'anrObjectCategoryEntity' => 'MonarcCore\Model\Entity\AnrObjectCategory',
         'assetTable' => '\MonarcCore\Model\Table\AssetTable',
         'assetService' => 'MonarcCore\Service\AssetService',

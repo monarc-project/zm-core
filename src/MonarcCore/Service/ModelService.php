@@ -8,7 +8,7 @@
 namespace MonarcCore\Service;
 
 use MonarcCore\Model\Entity\Model;
-use MonarcCore\Model\Entity\Object;
+use MonarcCore\Model\Entity\MonarcObject;
 use MonarcCore\Model\Table\ModelTable;
 
 /**
@@ -24,7 +24,7 @@ class ModelService extends AbstractService
     protected $anrTable;
     protected $instanceRiskTable;
     protected $instanceRiskOpTable;
-    protected $objectTable;
+    protected $MonarcObjectTable;
     protected $amvTable;
     protected $clientTable; // only loaded by MonarcFO service factory
     protected $forbiddenFields = ['anr'];
@@ -191,15 +191,15 @@ class ModelService extends AbstractService
             if (!empty($assetsIds)) {
                 $amvs = $this->get('amvTable')->getEntityByFields(['asset' => $assetsIds]);
                 foreach ($amvs as $amv) {
-                    if ($amv->get('asset')->get('mode') == Object::MODE_SPECIFIC && $amv->get('threat')->get('mode') == Object::MODE_GENERIC && $amv->get('vulnerability')->get('mode') == Object::MODE_GENERIC) {
+                    if ($amv->get('asset')->get('mode') == MonarcObject::MODE_SPECIFIC && $amv->get('threat')->get('mode') == MonarcObject::MODE_GENERIC && $amv->get('vulnerability')->get('mode') == MonarcObject::MODE_GENERIC) {
                         throw new \MonarcCore\Exception\Exception('You can not make this change. The level of integrity between the model and its objects would corrupt', 412);
                     }
                 }
             }
 
-            $modeObject = Object::MODE_GENERIC;
+            $modeObject = MonarcObject::MODE_GENERIC;
         } elseif (isset($data['isGeneric']) && $data['isGeneric'] && !$model->isGeneric) { // change to generic
-            $modeObject = Object::MODE_SPECIFIC;
+            $modeObject = MonarcObject::MODE_SPECIFIC;
         }
 
         if (!is_null($modeObject)) {

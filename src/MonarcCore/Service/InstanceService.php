@@ -10,7 +10,7 @@ namespace MonarcCore\Service;
 use MonarcCore\Model\Entity\Asset;
 use MonarcCore\Model\Entity\Instance;
 use MonarcCore\Model\Entity\InstanceRiskOp;
-use MonarcCore\Model\Entity\Object;
+use MonarcCore\Model\Entity\MonarcObject;
 use MonarcCore\Model\Table\AnrTable;
 use MonarcCore\Model\Table\InstanceConsequenceTable;
 use MonarcCore\Model\Table\InstanceTable;
@@ -33,7 +33,7 @@ class InstanceService extends AbstractService
     // Tables & Entities
     protected $anrTable;
     protected $amvTable;
-    protected $objectTable;
+    protected $MonarcObjectTable;
     protected $scaleTable;
     protected $scaleCommentTable;
     protected $scaleImpactTypeTable;
@@ -70,7 +70,7 @@ class InstanceService extends AbstractService
     public function instantiateObjectToAnr($anrId, $data, $managePosition = true, $rootLevel = false, $mode = Instance::MODE_CREA_NODE)
     {
         //retrieve object properties
-        $object = $this->get('objectTable')->getEntity($data['object']);
+        $object = $this->get('MonarcObjectTable')->getEntity($data['object']);
 
         //verify if user is authorized to instantiate this object
         $authorized = false;
@@ -721,7 +721,7 @@ class InstanceService extends AbstractService
     {
         $fieldsToDelete = ['parent', 'createdAt', 'creator', 'risks', 'oprisks', 'instances', 'position'];
         //if source object is global, reverberate to other instance with the same source object
-        if ($instance->object->scope == Object::SCOPE_GLOBAL) {
+        if ($instance->object->scope == MonarcObject::SCOPE_GLOBAL) {
             //retrieve instance with same object source
             /** @var InstanceTable $table */
             $table = $this->get('table');
@@ -1172,7 +1172,7 @@ class InstanceService extends AbstractService
         $globalInstancesIds = [];
         $duplicateGlobalObject = [];
         foreach ($instances as $instance2) {
-            if ($instance2->object->scope == Object::SCOPE_GLOBAL) {
+            if ($instance2->object->scope == MonarcObject::SCOPE_GLOBAL) {
                 if (in_array($instance2->object->id, $globalInstancesIds)) {
                     $duplicateGlobalObject[] = $instance2->object->id;
                 } else {
@@ -1342,13 +1342,13 @@ class InstanceService extends AbstractService
      */
     public function createInstanceConsequences($instanceId, $anrId, $object)
     {
-        if ($object->scope == Object::SCOPE_GLOBAL) {
+        if ($object->scope == MonarcObject::SCOPE_GLOBAL) {
             /** @var InstanceTable $instanceTable */
             $instanceTable = $this->get('instanceTable');
             $brothers = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $object->id]);
         }
 
-        if (($object->scope == Object::SCOPE_GLOBAL) && (count($brothers) > 1)) {
+        if (($object->scope == MonarcObject::SCOPE_GLOBAL) && (count($brothers) > 1)) {
             foreach ($brothers as $brother) {
                 if ($brother->id != $instanceId) {
                     $refInstance = $brother;
@@ -1606,7 +1606,7 @@ class InstanceService extends AbstractService
                 $ir->set('comment', '');
                 $ir->set('commentAfter', '');
             }
-            
+
             $ir->set('riskC', '-1');
             $ir->set('riskI', '-1');
             $ir->set('riskD', '-1');

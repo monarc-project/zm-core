@@ -9,7 +9,7 @@ namespace MonarcCore\Service;
 
 use MonarcCore\Model\Entity\Anr;
 use MonarcCore\Model\Table\AnrTable;
-use MonarcCore\Model\Table\ObjectTable;
+use MonarcCore\Model\Table\MonarcObjectTable;
 
 /**
  * Anr Service
@@ -21,7 +21,7 @@ class AnrService extends AbstractService
 {
     protected $scaleService;
     protected $anrObjectCategoryTable;
-    protected $objectTable;
+    protected $MonarcObjectTable;
     protected $instanceTable;
     protected $instanceConsequenceTable;
     protected $instanceRiskTable;
@@ -104,9 +104,9 @@ class AnrService extends AbstractService
             //add anr to object
             $object->addAnr($newAnr);
 
-            /** @var ObjectTable $objectTable */
-            $objectTable = $this->get('objectTable');
-            $objectTable->save($object, ($i == $nbObjects));
+            /** @var MonarcObjectTable $MonarcObjectTable */
+            $MonarcObjectTable = $this->get('MonarcObjectTable');
+            $MonarcObjectTable->save($object, ($i == $nbObjects));
             $i++;
         }
 
@@ -291,9 +291,10 @@ class AnrService extends AbstractService
                   $return['scalesComments'][$sc->id] = $sc->getJsonArray($scalesCommentArray);
                   $return['scalesComments'][$sc->id]['scale']['id'] = $sc->scale->id;
                   $return['scalesComments'][$sc->id]['scale']['type'] = $sc->scale->type;
-                  $return['scalesComments'][$sc->id]['scaleImpactType']['id'] = $sc->scaleImpactType->id;
-                  $return['scalesComments'][$sc->id]['scaleImpactType']['position'] = $sc->scaleImpactType->position;
-
+                  if (null !== $sc->scaleImpactType) {
+                    $return['scalesComments'][$sc->id]['scaleImpactType']['id'] = $sc->scaleImpactType->id;
+                    $return['scalesComments'][$sc->id]['scaleImpactType']['position'] = $sc->scaleImpactType->position;
+                  }
                 }
               }
             }

@@ -8,10 +8,10 @@
 namespace MonarcCore\Model\Table;
 
 /**
- * Class ObjectTable
+ * Class MonarcObjectTable
  * @package MonarcCore\Model\Table
  */
-class ObjectTable extends AbstractEntityTable
+class MonarcObjectTable extends AbstractEntityTable
 {
     protected $objectObjectTable;
 
@@ -25,7 +25,7 @@ class ObjectTable extends AbstractEntityTable
 
     /**
      * @param mixed $objectObjectTable
-     * @return ObjectTable
+     * @return MonarcObjectTable
      */
     public function setObjectObjectTable($objectObjectTable)
     {

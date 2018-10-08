@@ -316,11 +316,13 @@ class ObjectExportService extends AbstractService
 
                 $objectsCache['objects'][$data['object']['name' . $this->getLanguage()]] = $idObj;
 
-                //on s'occupe des enfants
+                // going through the childrens
                 if (!empty($data['children'])) {
-                  usort($data['children'], function($a,$b){
-                    return $a['object']['position'] <=> $b['object']['position'];
-                  });
+                    usort($data['children'], function($a, $b) {
+                        if (array_key_exists('position', $a['object']) && array_key_exists('position', $b['object'])) {
+                            return $a['object']['position'] <=> $b['object']['position'];
+                        }
+                    });
                     foreach ($data['children'] as $c) {
 
                         $child = $this->importFromArray($c, $anr, $modeImport, $objectsCache);

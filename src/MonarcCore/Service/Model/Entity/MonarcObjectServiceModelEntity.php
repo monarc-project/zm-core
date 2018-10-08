@@ -8,9 +8,9 @@
 namespace MonarcCore\Service\Model\Entity;
 
 /**
- * Class ObjectServiceModelEntity
+ * Class MonarcObjectServiceModelEntity
  * @package MonarcCore\Service\Model\Entity
  */
-class ObjectServiceModelEntity extends AbstractServiceModelEntity
+class MonarcObjectServiceModelEntity extends AbstractServiceModelEntity
 {
 }

@@ -11,7 +11,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Object
+ * ObjectSuperClass
  *
  * @ORM\Table(name="objects", indexes={
  *      @ORM\Index(name="object_category_id", columns={"object_category_id"}),
@@ -570,4 +570,3 @@ class ObjectSuperClass extends AbstractEntity
         parent::__construct($obj);
     }
 }
-

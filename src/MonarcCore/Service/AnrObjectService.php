@@ -67,7 +67,7 @@ class AnrObjectService extends AbstractService
      * @param int $anr The ANR ID
      * @return mixed
      */
-    public function getCompleteEntity($id, $context = Object::CONTEXT_BDC, $anr = null)
+    public function getCompleteEntity($id, $context = MonarcObject::CONTEXT_BDC, $anr = null)
     {
         return $this->get('objectService')->getCompleteEntity($id, $context, $anr);
     }

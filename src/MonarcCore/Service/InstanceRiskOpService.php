@@ -9,7 +9,7 @@ namespace MonarcCore\Service;
 
 use MonarcCore\Model\Entity\Asset;
 use MonarcCore\Model\Entity\InstanceRiskOp;
-use MonarcCore\Model\Entity\Object;
+use MonarcCore\Model\Entity\MonarcObject;
 use MonarcCore\Model\Table\InstanceRiskOpTable;
 use MonarcCore\Model\Table\RolfTagTable;
 
@@ -27,7 +27,7 @@ class InstanceRiskOpService extends AbstractService
     protected $userAnrTable;
     protected $modelTable;
     protected $instanceTable;
-    protected $objectTable;
+    protected $MonarcObjectTable;
     protected $rolfRiskTable;
     protected $rolfTagTable;
     protected $scaleTable;
@@ -51,7 +51,7 @@ class InstanceRiskOpService extends AbstractService
             $instanceTable = $this->get('instanceTable');
             $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $object->id]);
 
-            if ($object->scope == Object::SCOPE_GLOBAL && count($instances) > 1) {
+            if ($object->scope == MonarcObject::SCOPE_GLOBAL && count($instances) > 1) {
 
                 /** @var InstanceTable $instanceTable */
                 $instanceTable = $this->get('instanceTable');

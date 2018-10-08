@@ -41,9 +41,9 @@ class ObjectObjectSuperClass extends AbstractEntity
     protected $anr;
 
     /**
-     * @var \MonarcCore\Model\Entity\Object
+     * @var \MonarcCore\Model\Entity\MonarcObject
      *
-     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Object", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\MonarcObject", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="father_id", referencedColumnName="id", nullable=true)
      * })
@@ -51,9 +51,9 @@ class ObjectObjectSuperClass extends AbstractEntity
     protected $father;
 
     /**
-     * @var \MonarcCore\Model\Entity\Object
+     * @var \MonarcCore\Model\Entity\MonarcObject
      *
-     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Object", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\MonarcObject", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="child_id", referencedColumnName="id", nullable=true)
      * })

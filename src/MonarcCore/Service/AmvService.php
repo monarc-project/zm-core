@@ -614,7 +614,7 @@ class AmvService extends AbstractService
 
         foreach ($entitiesIds as $entitiesId) {
             $entity = $this->get($tableName)->getEntity($entitiesId);
-            if ($entity->mode == AbstractEntity::MODE_SPECIFIC) { //petite sécurité pour pas construire de la daube
+            if ($entity->mode == AbstractEntity::MODE_SPECIFIC) { // ensures to construct a correct object
                 $entity->set('models', $models);
 
                 $this->get($tableName)->save($entity);

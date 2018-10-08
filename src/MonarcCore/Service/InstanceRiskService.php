@@ -8,7 +8,7 @@
 namespace MonarcCore\Service;
 
 use MonarcCore\Model\Entity\InstanceRisk;
-use MonarcCore\Model\Entity\Object;
+use MonarcCore\Model\Entity\MonarcObject;
 use MonarcCore\Model\Table\AmvTable;
 use MonarcCore\Model\Table\InstanceRiskTable;
 use MonarcCore\Model\Table\InstanceTable;
@@ -34,7 +34,7 @@ class InstanceRiskService extends AbstractService
 
     // only for setDependencies (deprecated)
     protected $assetTable;
-    protected $objectTable;
+    protected $MonarcObjectTable;
     protected $scaleTable;
     protected $threatTable;
     protected $vulnerabilityTable;
@@ -53,7 +53,7 @@ class InstanceRiskService extends AbstractService
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('instanceTable');
         $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $object->id]);
-        if ($object->scope == Object::SCOPE_GLOBAL && count($instances) > 1) {
+        if ($object->scope == MonarcObject::SCOPE_GLOBAL && count($instances) > 1) {
 
             $currentInstance = $instanceTable->getEntity($instanceId);
 
@@ -184,7 +184,7 @@ class InstanceRiskService extends AbstractService
         //if object is global, impact modifications to brothers
         if ($manageGlobal) {
             $object = $entity->instance->object;
-            if ($object->scope == Object::SCOPE_GLOBAL) {
+            if ($object->scope == MonarcObject::SCOPE_GLOBAL) {
 
                 //retrieve brothers instances
                 /** @var InstanceTable $instanceTable */
@@ -259,7 +259,7 @@ class InstanceRiskService extends AbstractService
         //if object is global, impact modifications to brothers
         if ($manageGlobal) {
             $object = $entity->instance->object;
-            if ($object->scope == Object::SCOPE_GLOBAL) {
+            if ($object->scope == MonarcObject::SCOPE_GLOBAL) {
 
                 //retrieve brothers instances
                 /** @var InstanceTable $instanceTable */

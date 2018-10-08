@@ -21,7 +21,7 @@ class InstanceRiskOpServiceFactory extends AbstractServiceFactory
         'anrTable' => 'MonarcCore\Model\Table\AnrTable',
         'modelTable' => 'MonarcCore\Model\Table\ModelTable',
         'instanceTable' => 'MonarcCore\Model\Table\InstanceTable',
-        'objectTable' => 'MonarcCore\Model\Table\ObjectTable',
+        'MonarcObjectTable' => 'MonarcCore\Model\Table\MonarcObjectTable',
         'rolfRiskTable' => 'MonarcCore\Model\Table\RolfRiskTable',
         'rolfTagTable' => 'MonarcCore\Model\Table\RolfTagTable',
         'scaleTable' => 'MonarcCore\Model\Table\ScaleTable',

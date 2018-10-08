@@ -22,7 +22,7 @@ class AssetService extends AbstractService
     protected $modelTable;
     protected $amvService;
     protected $modelService;
-    protected $objectTable;
+    protected $MonarcObjectTable;
     protected $objectObjectTable;
     protected $assetExportService;
     protected $dependencies = ['anr', 'model[s]()'];
@@ -93,7 +93,7 @@ class AssetService extends AbstractService
         }
 
         if ($entity->mode == Asset::MODE_SPECIFIC) {
-            $associateObjects = $this->get('objectTable')->getGenericByAssetId($entity->getId());
+            $associateObjects = $this->get('MonarcObjectTable')->getGenericByAssetId($entity->getId());
             if (count($associateObjects)) {
                 throw new \MonarcCore\Exception\Exception('Integrity AMV links violation', 412);
             }
@@ -123,7 +123,7 @@ class AssetService extends AbstractService
                 break;
         }
 
-        $objects = $this->get('objectTable')->getEntityByFields(['asset' => $entity->get('id')]);
+        $objects = $this->get('MonarcObjectTable')->getEntityByFields(['asset' => $entity->get('id')]);
         if (!empty($objects)) {
             $oids = [];
             foreach ($objects as $o) {

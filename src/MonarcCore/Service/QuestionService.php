@@ -92,9 +92,7 @@ class QuestionService extends AbstractService
               if($data['previous'])
               {
                 $previous = $this->get('table')->getEntity($data['previous']);
-                file_put_contents('php://stderr', print_r('previous position :  '. $previous->position . "\n" , TRUE));
                 $table->movePosition($previous->position);
-                file_put_contents('php://stderr', print_r('NEW previous position :  '. $previous->position . "\n" , TRUE));
                 $data['position'] = $previous->position+1;
               }
           }
@@ -158,9 +156,7 @@ class QuestionService extends AbstractService
               if($data['previous'] != $table->getPrevious($data['position']))
               {
                 $previous = $this->get('table')->getEntity($data['previous']);
-                file_put_contents('php://stderr', print_r('previous position :  '. $previous->position . "\n" , TRUE));
                 $table->movePosition($previous->position);
-                file_put_contents('php://stderr', print_r('NEW previous position :  '. $previous->position . "\n" , TRUE));
                 $data['position'] = $previous->position+1;
 
               }

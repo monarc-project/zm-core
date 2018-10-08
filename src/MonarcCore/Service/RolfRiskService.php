@@ -9,7 +9,7 @@ namespace MonarcCore\Service;
 
 use MonarcCore\Model\Table\InstanceRiskOpTable;
 use MonarcCore\Model\Table\InstanceTable;
-use MonarcCore\Model\Table\ObjectTable;
+use MonarcCore\Model\Table\MonarcObjectTable;
 use MonarcFO\Model\Entity\RolfRisk;
 
 /**
@@ -21,7 +21,7 @@ use MonarcFO\Model\Entity\RolfRisk;
 class RolfRiskService extends AbstractService
 {
     protected $rolfTagTable;
-    protected $objectTable;
+    protected $MonarcObjectTable;
     protected $instanceTable;
     protected $instanceRiskOpTable;
     protected $instanceRiskOpService;
@@ -174,9 +174,9 @@ class RolfRiskService extends AbstractService
         }
 
         foreach ($deletedTags as $deletedTag) {
-            /** @var ObjectTable $objectTable */
-            $objectTable = $this->get('objectTable');
-            $objects = $objectTable->getEntityByFields(['rolfTag' => $deletedTag]);
+            /** @var MonarcObjectTable $MonarcObjectTable */
+            $MonarcObjectTable = $this->get('MonarcObjectTable');
+            $objects = $MonarcObjectTable->getEntityByFields(['rolfTag' => $deletedTag]);
             foreach ($objects as $object) {
                 /** @var InstanceRiskOpTable $instanceRiskOpTable */
                 $instanceRiskOpTable = $this->get('instanceRiskOpTable');
@@ -191,9 +191,9 @@ class RolfRiskService extends AbstractService
             }
         }
         foreach ($addedTags as $addedTag) {
-            /** @var ObjectTable $objectTable */
-            $objectTable = $this->get('objectTable');
-            $objects = $objectTable->getEntityByFields(['rolfTag' => $addedTag]);
+            /** @var MonarcObjectTable $MonarcObjectTable */
+            $MonarcObjectTable = $this->get('MonarcObjectTable');
+            $objects = $MonarcObjectTable->getEntityByFields(['rolfTag' => $addedTag]);
             foreach ($objects as $object) {
                 /** @var InstanceTable $instanceTable */
                 $instanceTable = $this->get('instanceTable');
@@ -227,8 +227,8 @@ class RolfRiskService extends AbstractService
 
         foreach ($currentTagId as $currentTag) {
           // manage the fact that label can changed for OP risk
-          $objectTable = $this->get('objectTable');
-          $objects = $objectTable->getEntityByFields(['rolfTag' => $currentTag]);
+          $MonarcObjectTable = $this->get('MonarcObjectTable');
+          $objects = $MonarcObjectTable->getEntityByFields(['rolfTag' => $currentTag]);
           foreach ($objects as $object) {
             $instanceRiskOpTable = $this->get('instanceRiskOpTable');
             $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['object' => $object->id, 'rolfRisk' => $id]);

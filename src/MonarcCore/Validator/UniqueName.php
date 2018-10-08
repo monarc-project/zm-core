@@ -12,7 +12,7 @@ use Zend\Validator\AbstractValidator;
 /**
  * Class UniqueName is an implementation of AbstractValidator that ensures the unicity of name.
  * @package MonarcCore\Validator
- * @see MonarcCore\Model\Entity\Object
+ * @see MonarcCore\Model\Entity\MonarcObject
  */
 class UniqueName extends AbstractValidator
 {

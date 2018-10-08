@@ -67,18 +67,18 @@ class ModelTable extends AbstractEntityTable
 
             $asset_mode = is_null($forceAsset) ? $object->get('asset')->get('mode') : $forceAsset->mode;
 
-            if ($model->get('isGeneric') && $object->get('mode') == \MonarcCore\Model\Entity\Object::MODE_SPECIFIC) {
+            if ($model->get('isGeneric') && $object->get('mode') == \MonarcCore\Model\Entity\MonarcObject::MODE_SPECIFIC) {
                 throw new \MonarcCore\Exception\Exception('You cannot add a specific object to a generic model', 412);
             } else {
                 if ($model->get('isRegulator')) {
-                    if ($object->get('mode') == \MonarcCore\Model\Entity\Object::MODE_GENERIC) {
+                    if ($object->get('mode') == \MonarcCore\Model\Entity\MonarcObject::MODE_GENERIC) {
                         throw new \MonarcCore\Exception\Exception('You cannot add a generic object to a regulator model', 412);
-                    } elseif ($object->get('mode') == \MonarcCore\Model\Entity\Object::MODE_SPECIFIC && $asset_mode == \MonarcCore\Model\Entity\Object::MODE_GENERIC) {
+                    } elseif ($object->get('mode') == \MonarcCore\Model\Entity\MonarcObject::MODE_SPECIFIC && $asset_mode == \MonarcCore\Model\Entity\MonarcObject::MODE_GENERIC) {
                         throw new \MonarcCore\Exception\Exception('You cannot add a specific object with generic asset to a regulator model', 412);
                     }
                 }
 
-                if (!$model->get('isGeneric') && $asset_mode == \MonarcCore\Model\Entity\Object::MODE_SPECIFIC) {
+                if (!$model->get('isGeneric') && $asset_mode == \MonarcCore\Model\Entity\MonarcObject::MODE_SPECIFIC) {
                     $models = is_null($forceAsset) ? $object->get('asset')->get('models') : $forceAsset->models;
                     $found = false;
                     foreach ($models as $m) {

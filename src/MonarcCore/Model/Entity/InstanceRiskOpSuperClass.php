@@ -58,9 +58,9 @@ class InstanceRiskOpSuperClass extends AbstractEntity
     protected $instance;
 
     /**
-     * @var \MonarcCore\Model\Entity\Object
+     * @var \MonarcCore\Model\Entity\MonarcObject
      *
-     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Object", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\MonarcObject", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="object_id", referencedColumnName="id", nullable=true)
      * })
