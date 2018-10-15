@@ -142,6 +142,11 @@ class DeliveriesModels extends AbstractEntity
 
     public function getInputFilter($partial = false)
     {
+        if ((!$partial)==1) {
+            $partial = true;
+        } else {
+            $partial = false;
+        }
         if (!$this->inputFilter) {
             $dirFile = './data/';
             $appconfdir = getenv('APP_CONF_DIR') ? getenv('APP_CONF_DIR') : '';
