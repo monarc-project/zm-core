@@ -29,6 +29,11 @@ class AuthenticationService extends AbstractService
      */
     public function authenticate($data, &$token = null, &$uid = null, &$language = null)
     {
+        file_put_contents('php://stderr', print_r('authenticate', TRUE));
+        file_put_contents('php://stderr', print_r($data, TRUE));
+        if (! empty($data['customAuth'])) {
+
+        }
         if (!empty($data['login']) && !empty($data['password'])) {
             $res = $this->get('adapter')->setIdentity($data['login'])->setCredential($data['password'])->setUserTable($this->get('userTable'))->authenticate();
             if ($res->isValid()) {
@@ -64,6 +69,7 @@ class AuthenticationService extends AbstractService
      */
     public function checkConnect($data)
     {
+        file_put_contents('php://stderr', print_r('checkConnect', TRUE).PHP_EOL);
         if (!empty($data['token']) && $this->get('storage')->hasItem($data['token'])) {
             $dd = $this->get('storage')->getItem($data['token']);
             if ($dd->get('dateEnd')->getTimestamp() < time()) {
@@ -75,5 +81,22 @@ class AuthenticationService extends AbstractService
             }
         }
         return false;
+    }
+
+    /**
+     * Checks the custom auth token of the user.
+     * @param array $data Array with a 'customAuthToken' key/value
+     * @return bool True if the token is valid, false otherwise
+     */
+    public function checkCustomAuthToken($data) {
+        file_put_contents('php://stderr', print_r('checkCustomAuthToken', TRUE).PHP_EOL);
+        if (!empty($data['customAuthToken'])) {
+            // $user = $this->User->getByCustomAuthToken($data['customAuthToken']);
+            // if (empty($user)) {
+            // create the user ?
+            //     return false;
+            // }
+            return true;
+        }
     }
 }

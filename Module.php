@@ -71,11 +71,11 @@ class Module
                 // Clear caches
                 $appConf = file_exists('./config/application.config.php')?include './config/application.config.php':[];
                 $cacheDir = isset($appConf['module_listener_options']['cache_dir'])?$appConf['module_listener_options']['cache_dir']:"";
-                if(isset($appConf['module_listener_options']['config_cache_key']) && 
+                if(isset($appConf['module_listener_options']['config_cache_key']) &&
                     file_exists($cacheDir."module-config-cache.".$appConf['module_listener_options']['config_cache_key'].".php")){
                     unlink($cacheDir."module-config-cache.".$appConf['module_listener_options']['config_cache_key'].".php");
                 }
-                if(isset($appConf['module_listener_options']['module_map_cache_key']) && 
+                if(isset($appConf['module_listener_options']['module_map_cache_key']) &&
                     file_exists($cacheDir."module-classmap-cache.".$appConf['module_listener_options']['module_map_cache_key'].".php")){
                     unlink($cacheDir."module-classmap-cache.".$appConf['module_listener_options']['module_map_cache_key'].".php");
                 }
@@ -215,6 +215,7 @@ class Module
     }
 
     public function MCEventRoute($e){
+        file_put_contents('php://stderr', print_r('MCEventRoute', TRUE).PHP_EOL);
         $sm  = $e->getApplication()->getServiceManager();
         $serv = $sm->get('\MonarcCore\Service\AuthenticationService');
         $match = $e->getRouteMatch();
@@ -229,12 +230,24 @@ class Module
         $permissions = $config['permissions'];
         $name = $match->getMatchedRouteName();
         if (in_array($name, $permissions)) {
+            file_put_contents('php://stderr', print_r('perms', TRUE).PHP_EOL);
             return;
+        }
+
+        $customAuthToken = $e->getRequest()->getHeader('customAuthToken');
+        if(!empty($customAuthToken)){
+            file_put_contents('php://stderr', print_r('!empty($customAuthToken)', TRUE).PHP_EOL);
+            if($serv->checkCustomAuthToken(array('customAuthToken'=>$customAuthToken->getFieldValue()))){
+                file_put_contents('php://stderr', print_r('logged with custom token', TRUE).PHP_EOL);
+                return;
+            }
         }
 
         $token = $e->getRequest()->getHeader('token');
         if(!empty($token)){
+            file_put_contents('php://stderr', print_r('!empty($token)', TRUE).PHP_EOL);
             if($serv->checkConnect(array('token'=>$token->getFieldValue()))){
+                file_put_contents('php://stderr', print_r('logged with token', TRUE).PHP_EOL);
                 return;
             }
         }

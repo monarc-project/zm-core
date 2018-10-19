@@ -386,4 +386,3 @@ class ThreatSuperClass extends AbstractEntity
         return $this->inputFilter;
     }
 }
-

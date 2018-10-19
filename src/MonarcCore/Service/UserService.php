@@ -90,13 +90,23 @@ class UserService extends AbstractService
     }
 
     /**
-     * Get an user by email
+     * Get a user by email
      * @param string $email The e-mail address
      * @return array The users matching the e-mail address
      */
     public function getByEmail($email)
     {
         return $this->get('table')->getByEmail($email);
+    }
+
+    /**
+     * Get a user by custom auth token
+     * @param string $customAuthToken The custom auth token
+     * @return array The users matching the custom auth token
+     */
+    public function getByCustomAuthToken($customAuthToken)
+    {
+        return $this->get('table')->getByCustomAuthToken($customAuthToken);
     }
 
     /**

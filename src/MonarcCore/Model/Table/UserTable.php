@@ -95,6 +95,29 @@ class UserTable extends AbstractEntityTable
     }
 
     /**
+     * Get By Custom Auth Token
+     *
+     * @param $customAuthToken
+     * @return mixed
+     * @throws \MonarcCore\Exception\Exception
+     */
+    public function getByCustomAuthToken($customAuthToken)
+    {
+        $users = $this->getRepository()->createQueryBuilder('u')
+            ->select(array('u.id', 'u.firstname', 'u.lastname', 'u.email', 'u.status', 'u.custom_auth_token'))
+            ->where('u.custom_auth_token = :customAuthToken')
+            ->setParameter(':email', $email)
+            ->getQuery()
+            ->getResult();
+
+        if (!count($users)) {
+            throw new \MonarcCore\Exception\Exception('Entity does not exist', 422);
+        } else {
+            return $users[0];
+        }
+    }
+
+    /**
      * Delete
      *
      * @param $id
