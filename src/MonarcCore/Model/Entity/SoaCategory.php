@@ -12,13 +12,9 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Measure
  *
- * @ORM\Table(name="soacategory" )
+ * @ORM\Table(name="soacategory")
  * @ORM\Entity
  */
 class SoaCategory extends SoaCategorySuperClass
 {
-
-
-
-
 }
