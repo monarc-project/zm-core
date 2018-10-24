@@ -45,63 +45,63 @@ class Soa extends AbstractEntity
     *
     * @ORM\Column(name="control1", type="text", length=255, nullable=true)
     */
-    protected $control1 ;
+    protected $control1;
 
     /**
     * @var text
     *
     * @ORM\Column(name="control2", type="text", length=255, nullable=true)
     */
-    protected $control2 ;
+    protected $control2;
 
     /**
     * @var text
     *
     * @ORM\Column(name="control3", type="text", length=255, nullable=true)
     */
-    protected $control3 ;
+    protected $control3;
 
     /**
     * @var text
     *
     * @ORM\Column(name="control4", type="text", length=255, nullable=true)
     */
-    protected $control4 ;
+    protected $control4;
 
     /**
     * @var text
     *
     * @ORM\Column(name="requirement", type="text", length=255, nullable=true)
     */
-    protected $requirement ;
+    protected $requirement;
 
     /**
     * @var text
     *
     * @ORM\Column(name="justification", type="text", length=255, nullable=true)
     */
-    protected $justification ;
+    protected $justification;
 
     /**
     * @var text
     *
     * @ORM\Column(name="evidences", type="text", length=255, nullable=true)
     */
-    protected $evidences ;
+    protected $evidences;
 
     /**
     * @var text
     *
     * @ORM\Column(name="actions", type="text", length=255, nullable=true)
     */
-    protected $actions ;
+    protected $actions;
 
     /**
     * @var string
     *
     * @ORM\Column(name="compliance", type="string", length=255, nullable=true)
     */
-    protected $compliance ;
+    protected $compliance;
 
     /**
     * @return int
@@ -193,7 +193,7 @@ class Soa extends AbstractEntity
     */
     public function getControl2()
     {
-        return $this->control;
+        return $this->control2;
     }
 
     /**
