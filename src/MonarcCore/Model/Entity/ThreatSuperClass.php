@@ -158,9 +158,9 @@ class ThreatSuperClass extends AbstractEntity
     /**
      * @var smallint
      *
-     * @ORM\Column(name="d", type="smallint", options={"unsigned":true, "default":0})
+     * @ORM\Column(name="a", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $d = '1';
+    protected $a = '1';
 
     /**
      * @var text
@@ -312,7 +312,7 @@ class ThreatSuperClass extends AbstractEntity
                 ),
             ));
             $this->inputFilter->add(array(
-                'name' => 'd',
+                'name' => 'a',
                 'required' => false,
                 'allow_empty' => true,
                 'continue_if_empty' => true,
@@ -386,4 +386,3 @@ class ThreatSuperClass extends AbstractEntity
         return $this->inputFilter;
     }
 }
-

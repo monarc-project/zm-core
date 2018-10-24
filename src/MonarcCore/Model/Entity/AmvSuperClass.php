@@ -425,19 +425,18 @@ class AmvSuperclass extends AbstractEntity
             'v.description2',
             'v.description3',
             'm1.code',
-            'm1.description1',
-            'm1.description2',
-            'm1.description3',
+            'm1.label1',
+            'm1.label2',
+            'm1.label3',
             'm2.code',
-            'm2.description1',
-            'm2.description2',
-            'm2.description3',
+            'm2.label1',
+            'm2.label2',
+            'm2.label3',
             'm3.code',
-            'm3.description1',
-            'm3.description2',
-            'm3.description3',
+            'm3.label1',
+            'm3.label2',
+            'm3.label3',
         ];
         return [$filterJoin,$filterLeft,$filtersCol];
     }
 }
-
