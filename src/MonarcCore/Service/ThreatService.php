@@ -76,7 +76,7 @@ class ThreatService extends AbstractService
         $entity->setDbAdapter($this->get('table')->getDb());
         $entity->setLanguage($this->getLanguage());
 
-        $needUpdateRisks = (($entity->c != $data['c']) || ($entity->i != $data['i']) || ($entity->d != $data['d']));
+        $needUpdateRisks = (($entity->c != $data['c']) || ($entity->i != $data['i']) || ($entity->a != $data['a']));
 
         if (($entity->mode == Threat::MODE_SPECIFIC) && ($data['mode'] == Threat::MODE_GENERIC)) {
             //delete models

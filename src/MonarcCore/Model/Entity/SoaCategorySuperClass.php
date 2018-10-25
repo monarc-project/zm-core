@@ -29,11 +29,11 @@ class SoaCategorySuperClass extends AbstractEntity
     protected $id;
 
     /**
-    * @var string
-    *
-    * @ORM\Column(name="reference", type="string", length=255, nullable=true)
-    */
-    protected $reference;
+     * @var string
+     *
+     * @ORM\Column(name="code", type="string", length=255, nullable=true)
+     */
+    protected $code;
 
     /**
     * @var text

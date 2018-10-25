@@ -653,7 +653,7 @@ class AmvService extends AbstractService
             'description4' => 'description4',
             'c' => 'c',
             'i' => 'i',
-            'd' => 'd',
+            'a' => 'a',
             'status' => 'status',
             'trend' => 'trend',
             'comment' => 'comment',
@@ -682,12 +682,14 @@ class AmvService extends AbstractService
         ];
         $measuresObj = [
             'id' => 'id',
+            'category' => 'category',
             'code' => 'code',
             'status' => 'status',
-            'description1' => 'description1',
-            'description2' => 'description2',
-            'description3' => 'description3',
-            'description4' => 'description4',
+            'label1' => 'label1',
+            'label2' => 'label2',
+            'label3' => 'label3',
+            'label4' => 'label4',
+
         ];
 
         $amvs = $threats = $vulns = $themes = $measures = [];
