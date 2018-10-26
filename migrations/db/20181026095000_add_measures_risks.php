@@ -44,9 +44,9 @@ class AddMeasuresRisks extends AbstractMigration
           ->create();
       $table->changeColumn('id', 'integer',array('identity'=>true,'signed'=>false))->update();
 
-      $this->query('INSERT INTO measures_risks ( measure_id,amv_id) SELECT  amvs.measure1_id, amvs.id FROM amvs where amvs.measure1_id is not null;');
-      $this->query('INSERT INTO measures_risks ( measure_id,amv_id) SELECT  amvs.measure2_id, amvs.id FROM amvs where amvs.measure2_id is not null;');
-      $this->query('INSERT INTO measures_risks ( measure_id,amv_id) SELECT  amvs.measure3_id, amvs.id FROM amvs where amvs.measure3_id is not null;');
+      $this->query('INSERT INTO measures_amvs ( measure_id,amv_id) SELECT  amvs.measure1_id, amvs.id FROM amvs where amvs.measure1_id is not null;');
+      $this->query('INSERT INTO measures_amvs ( measure_id,amv_id) SELECT  amvs.measure2_id, amvs.id FROM amvs where amvs.measure2_id is not null;');
+      $this->query('INSERT INTO measures_amvs ( measure_id,amv_id) SELECT  amvs.measure3_id, amvs.id FROM amvs where amvs.measure3_id is not null;');
 
       $table = $this->table('amvs');
       $table->dropForeignKey('measure1_id')
