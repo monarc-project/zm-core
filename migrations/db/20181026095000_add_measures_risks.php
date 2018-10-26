@@ -29,7 +29,7 @@ class AddMeasuresRisks extends AbstractMigration
     public function change()
     {
       // Migration for table objects_objects
-      $table = $this->table('measures_risks');
+      $table = $this->table('measures_amvs');
       $table
           //->addColumn('anr_id', 'integer', array('null' => true, 'signed' => false))
           ->addColumn('amv_id', 'integer', array('null' => true, 'signed' => false))
