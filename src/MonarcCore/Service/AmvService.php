@@ -34,7 +34,7 @@ class AmvService extends AbstractService
     protected $historicalService;
     protected $errorMessage;
     protected $filterColumns = ['status'];
-    protected $dependencies = ['anr', 'asset', 'threat', 'vulnerability', 'measure[1]()', 'measure[2]()', 'measure[3]()'];
+    protected $dependencies = ['anr', 'asset', 'threat', 'vulnerability', 'measures'];
     protected $forbiddenFields = ['anr'];
 
     /**

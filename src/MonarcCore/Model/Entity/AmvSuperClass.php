@@ -214,7 +214,7 @@ class AmvSuperclass extends AbstractEntity
     }
 
     /**
-     * @return Measure
+     * @return Measures
      */
     public function getMeasures()
     {
