@@ -17,9 +17,6 @@ use Doctrine\ORM\Mapping as ORM;
  *      @ORM\Index(name="asset", columns={"asset_id"}),
  *      @ORM\Index(name="threat", columns={"threat_id"}),
  *      @ORM\Index(name="vulnerability", columns={"vulnerability_id"}),
- *      @ORM\Index(name="measure1", columns={"measure1_id"}),
- *      @ORM\Index(name="measure2", columns={"measure2_id"}),
- *      @ORM\Index(name="measure3", columns={"measure3_id"})
  * })
  * @ORM\MappedSuperclass
  */
@@ -75,34 +72,14 @@ class AmvSuperclass extends AbstractEntity
     protected $vulnerability;
 
     /**
-     * @var \MonarcCore\Model\Entity\Measure
-     *
-     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Measure", cascade={"persist"})
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="measure1_id", referencedColumnName="id", nullable=true)
-     * })
+     * @var \Doctrine\Common\Collections\Collection
+     * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Measure", inversedBy="amvs", cascade={"persist"})
+     * @ORM\JoinTable(name="measures_amvs",
+     *  joinColumns={@ORM\JoinColumn(name="amv_id", referencedColumnName="id")},
+     *  inverseJoinColumns={@ORM\JoinColumn(name="measure_id", referencedColumnName="id")}
+     * )
      */
-    protected $measure1;
-
-    /**
-     * @var \MonarcCore\Model\Entity\Measure
-     *
-     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Measure", cascade={"persist"})
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="measure2_id", referencedColumnName="id", nullable=true)
-     * })
-     */
-    protected $measure2;
-
-    /**
-     * @var \MonarcCore\Model\Entity\Measure
-     *
-     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Measure", cascade={"persist"})
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="measure3_id", referencedColumnName="id", nullable=true)
-     * })
-     */
-    protected $measure3;
+    protected $measures;
 
     /**
      * @var smallint
@@ -239,56 +216,21 @@ class AmvSuperclass extends AbstractEntity
     /**
      * @return Measure
      */
-    public function getMeasure1()
+    public function getMeasures()
     {
-        return $this->measure1;
+        return $this->measures;
     }
 
     /**
-     * @param Measure $measure1
+     * @param Measure $measures
      * @return Amv
      */
-    public function setMeasure1($measure1)
+    public function setMeasures($measures)
     {
-        $this->measure1 = $measure1;
+        $this->measures = $measures;
         return $this;
     }
 
-    /**
-     * @return Measure
-     */
-    public function getMeasure2()
-    {
-        return $this->measure2;
-    }
-
-    /**
-     * @param Measure $measure2
-     * @return Amv
-     */
-    public function setMeasure2($measure2)
-    {
-        $this->measure2 = $measure2;
-        return $this;
-    }
-
-    /**
-     * @return Measure
-     */
-    public function getMeasure3()
-    {
-        return $this->measure3;
-    }
-
-    /**
-     * @param Measure $measure3
-     * @return Amv
-     */
-    public function setMeasure3($measure3)
-    {
-        $this->measure3 = $measure3;
-        return $this;
-    }
 
     protected $parameters = array(
         'implicitPosition' => array(
@@ -388,7 +330,7 @@ class AmvSuperclass extends AbstractEntity
                 'rel' => 'vulnerability',
             ],
         ];
-        $filterLeft = [
+        /*$filterLeft = [
             [
                 'as' => 'm1',
                 'rel' => 'measure1',
@@ -401,7 +343,7 @@ class AmvSuperclass extends AbstractEntity
                 'as' => 'm3',
                 'rel' => 'measure3',
             ],
-        ];
+        ]; */
         $filtersCol = [
             'a.code',
             'a.label1',

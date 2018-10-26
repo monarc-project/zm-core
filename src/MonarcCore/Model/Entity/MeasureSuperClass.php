@@ -96,6 +96,12 @@ class MeasureSuperClass extends AbstractEntity
     protected $status = '1';
 
     /**
+     * @var \Doctrine\Common\Collections\Collection
+     * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Amv", mappedBy="measures", cascade={"persist"})
+     */
+    protected $amvs;
+
+    /**
      * @var string
      *
      * @ORM\Column(name="creator", type="string", length=255, nullable=true)
