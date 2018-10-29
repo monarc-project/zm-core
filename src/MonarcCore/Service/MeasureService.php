@@ -34,7 +34,7 @@ class MeasureService extends AbstractService
      */
     public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
     {
-        file_put_contents('php://stderr', print_r('MeasureService::getList', TRUE));
+        file_put_contents('php://stderr', print_r('MeasureService::getList', TRUE).PHP_EOL);
         $data = $this->get('table')->fetchAllFiltered(
             array_keys($this->get('entity')->getJsonArray()),
             1,
