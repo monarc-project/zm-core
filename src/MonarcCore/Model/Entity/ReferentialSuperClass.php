@@ -29,13 +29,6 @@ class ReferentialSuperClass extends AbstractEntity
     /**
      * @var string
      *
-     * @ORM\Column(name="code", type="string", length=255, nullable=true)
-     */
-    protected $code;
-
-    /**
-     * @var string
-     *
      * @ORM\Column(name="label1", type="string", length=255, nullable=true)
      */
     protected $label1;
