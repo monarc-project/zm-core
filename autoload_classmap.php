@@ -84,7 +84,7 @@ return array(
     'MonarcCore\Model\Entity\QuestionChoiceSuperclass'                      => __DIR__ . '/src/MonarcCore/Model/Entity/QuestionChoiceSuperClass.php',
     'MonarcCore\Model\Entity\QuestionSuperclass'                            => __DIR__ . '/src/MonarcCore/Model/Entity/QuestionSuperclass.php',
     'MonarcCore\Model\Entity\Referential'                                   => __DIR__ . '/src/MonarcCore/Model/Entity/Referential.php',
-    'MonarcCore\Model\Entity\ReferentialSuperclass'                         => __DIR__ . '/src/MonarcCore/Model/Entity/ReferentialSuperClass.php',
+    'MonarcCore\Model\Entity\ReferentialSuperClass'                         => __DIR__ . '/src/MonarcCore/Model/Entity/ReferentialSuperClass.php',
     'MonarcCore\Model\Entity\RolfRisk'                                      => __DIR__ . '/src/MonarcCore/Model/Entity/RolfRisk.php',
     'MonarcCore\Model\Entity\RolfRiskSuperclass'                            => __DIR__ . '/src/MonarcCore/Model/Entity/RolfRiskSuperClass.php',
     'MonarcCore\Model\Entity\RolfTag'                                       => __DIR__ . '/src/MonarcCore/Model/Entity/RolfTag.php',
