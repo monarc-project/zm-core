@@ -348,6 +348,7 @@ return array(
             'MonarcCore\Service\InstanceRiskOpService'      => 'MonarcCore\Service\InstanceRiskOpServiceFactory',
             'MonarcCore\Service\InstanceConsequenceService' => 'MonarcCore\Service\InstanceConsequenceServiceFactory',
             'MonarcCore\Service\MailService'                => 'MonarcCore\Service\MailServiceFactory',
+            'MonarcCore\Service\ReferentialService'         => 'MonarcCore\Service\ReferentialServiceFactory',
             'MonarcCore\Service\MeasureService'             => 'MonarcCore\Service\MeasureServiceFactory',
             'MonarcCore\Service\ModelService'               => 'MonarcCore\Service\ModelServiceFactory',
             'MonarcCore\Service\ObjectService'              => 'MonarcCore\Service\ObjectServiceFactory',

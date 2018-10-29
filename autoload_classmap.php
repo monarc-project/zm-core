@@ -274,6 +274,8 @@ return array(
     'MonarcCore\Service\QuestionChoiceServiceFactory'                       => __DIR__ . '/src/MonarcCore/Service/QuestionChoiceServiceFactory.php',
     'MonarcCore\Service\QuestionService'                                    => __DIR__ . '/src/MonarcCore/Service/QuestionService.php',
     'MonarcCore\Service\QuestionServiceFactory'                             => __DIR__ . '/src/MonarcCore/Service/QuestionServiceFactory.php',
+    'MonarcCore\Service\ReferentialService'                                 => __DIR__ . '/src/MonarcCore/Service/ReferentialService.php',
+    'MonarcCore\Service\ReferentialServiceFactory'                          => __DIR__ . '/src/MonarcCore/Service/ReferentialServiceFactory.php',
     'MonarcCore\Service\RoleService'                                        => __DIR__ . '/src/MonarcCore/Service/RoleService.php',
     'MonarcCore\Service\RoleServiceFactory'                                 => __DIR__ . '/src/MonarcCore/Service/RoleServiceFactory.php',
     'MonarcCore\Service\RolfRiskService'                                    => __DIR__ . '/src/MonarcCore/Service/RolfRiskService.php',
