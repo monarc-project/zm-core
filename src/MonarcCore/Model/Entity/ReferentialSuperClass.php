@@ -10,12 +10,12 @@ namespace MonarcCore\Model\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Referential
+ * ReferentialSuperClass
  *
  * @ORM\Table(name="referentials")
  * @ORM\MappedSuperclass
  */
-class ReferentialSuperclass extends AbstractEntity
+class ReferentialSuperClass extends AbstractEntity
 {
     /**
      * @var integer

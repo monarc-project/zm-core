@@ -377,6 +377,7 @@ return array(
             // Entities
             '\MonarcCore\Model\Entity\DeliveriesModels' => '\MonarcCore\Service\Model\Entity\DeliveriesModelsServiceModelEntity',
             '\MonarcCore\Model\Entity\Asset' => '\MonarcCore\Service\Model\Entity\AssetServiceModelEntity',
+            '\MonarcCore\Model\Entity\Referential' => '\MonarcCore\Service\Model\Entity\ReferentialServiceModelEntity',
             '\MonarcCore\Model\Entity\Measure' => '\MonarcCore\Service\Model\Entity\MeasureServiceModelEntity',
             '\MonarcCore\Model\Entity\SoaCategory' => '\MonarcCore\Service\Model\Entity\SoaCategoryServiceModelEntity',
             '\MonarcCore\Model\Entity\Model' => '\MonarcCore\Service\Model\Entity\ModelServiceModelEntity',
@@ -414,6 +415,7 @@ return array(
             '\MonarcCore\Model\Table\QuestionChoiceTable' => '\MonarcCore\Service\Model\Table\QuestionChoiceServiceModelTable',
             '\MonarcCore\Model\Table\GuideTable' => '\MonarcCore\Service\Model\Table\GuideServiceModelTable',
             '\MonarcCore\Model\Table\GuideItemTable' => '\MonarcCore\Service\Model\Table\GuideItemServiceModelTable',
+            '\MonarcCore\Model\Table\ReferentialTable' => '\MonarcCore\Service\Model\Table\ReferentialServiceModelTable',
             '\MonarcCore\Model\Table\MeasureTable' => '\MonarcCore\Service\Model\Table\MeasureServiceModelTable',
             '\MonarcCore\Model\Table\SoaCategoryTable' => '\MonarcCore\Service\Model\Table\SoaCategoryServiceModelTable',
             '\MonarcCore\Model\Table\MonarcObjectTable' => '\MonarcCore\Service\Model\Table\MonarcObjectServiceModelTable',
