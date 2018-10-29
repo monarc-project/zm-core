@@ -330,20 +330,20 @@ class AmvSuperclass extends AbstractEntity
                 'rel' => 'vulnerability',
             ],
         ];
-        /*$filterLeft = [
-            [
-                'as' => 'm1',
-                'rel' => 'measure1',
-            ],
-            [
-                'as' => 'm2',
-                'rel' => 'measure2',
-            ],
-            [
-                'as' => 'm3',
-                'rel' => 'measure3',
-            ],
-        ]; */
+        $filterLeft = [
+            // [
+            //     'as' => 'm1',
+            //     'rel' => 'measure1',
+            // ],
+            // [
+            //     'as' => 'm2',
+            //     'rel' => 'measure2',
+            // ],
+            // [
+            //     'as' => 'm3',
+            //     'rel' => 'measure3',
+            // ],
+        ];
         $filtersCol = [
             'a.code',
             'a.label1',
@@ -366,19 +366,7 @@ class AmvSuperclass extends AbstractEntity
             'v.description1',
             'v.description2',
             'v.description3',
-            'm1.code',
-            'm1.label1',
-            'm1.label2',
-            'm1.label3',
-            'm2.code',
-            'm2.label1',
-            'm2.label2',
-            'm2.label3',
-            'm3.code',
-            'm3.label1',
-            'm3.label2',
-            'm3.label3',
         ];
-        return [$filterJoin,$filterLeft,$filtersCol];
+        return [$filterJoin, $filterLeft, $filtersCol];
     }
 }
