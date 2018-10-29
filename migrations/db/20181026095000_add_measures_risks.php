@@ -43,6 +43,9 @@ class AddMeasuresRisks extends AbstractMigration
           ->addIndex(array('measure_id'))
           ->create();
       $table->changeColumn('id', 'integer',array('identity'=>true,'signed'=>false))->update();
+      $table->addForeignKey('amv_id', 'amvs', 'id', array('delete' => 'CASCADE','update' => 'RESTRICT'))
+            ->addForeignKey('measure_id', 'measures', 'id', array('delete' => 'CASCADE','update' => 'RESTRICT'))
+            ->update();
 
       $this->query('INSERT INTO measures_amvs ( measure_id,amv_id) SELECT  amvs.measure1_id, amvs.id FROM amvs where amvs.measure1_id is not null;');
       $this->query('INSERT INTO measures_amvs ( measure_id,amv_id) SELECT  amvs.measure2_id, amvs.id FROM amvs where amvs.measure2_id is not null;');
