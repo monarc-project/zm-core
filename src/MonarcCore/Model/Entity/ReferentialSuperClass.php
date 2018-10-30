@@ -21,7 +21,6 @@ class ReferentialSuperClass extends AbstractEntity
      * @var integer
      *
      * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     protected $id;
@@ -30,6 +29,7 @@ class ReferentialSuperClass extends AbstractEntity
      * @var string
      *
      * @ORM\Column(name="uniqid", type="string", length=255, nullable=true)
+     * @ORM\Id
      */
     protected $uniqid;
 
