@@ -15,7 +15,7 @@ use Doctrine\ORM\Mapping as ORM;
 * @ORM\Table(name="measures", indexes={
 *      @ORM\Index(name="anr", columns={"anr_id"}),
 *      @ORM\Index(name="category", columns={"soacategory_id"}),
-*      @ORM\Index(name="referential_uniqid", columns={"referential_uniqid"})
+*      @ORM\Index(name="referential", columns={"referential_uniqid"})
 * })
 * @ORM\MappedSuperclass
 */
@@ -43,7 +43,7 @@ class MeasureSuperClass extends AbstractEntity
     /**
      * @var \MonarcCore\Model\Entity\Referential
      *
-     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Referential", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Referential", inversedBy="measures")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="referential_uniqid", referencedColumnName="uniqid", nullable=true)
      * })

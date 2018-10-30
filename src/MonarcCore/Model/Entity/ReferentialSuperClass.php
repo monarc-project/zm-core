@@ -64,7 +64,7 @@ class ReferentialSuperClass extends AbstractEntity
     /**
      * @var \MonarcCore\Model\Entity\Measure
      *
-     * @ORM\OneToMany(targetEntity="MonarcCore\Model\Entity\Measure", mappedBy="Referential")
+     * @ORM\OneToMany(targetEntity="MonarcCore\Model\Entity\Measure", mappedBy="referential")
      */
     protected $measures;
 
