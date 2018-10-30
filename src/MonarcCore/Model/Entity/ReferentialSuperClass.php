@@ -114,7 +114,60 @@ class ReferentialSuperClass extends AbstractEntity
         return $this;
     }
 
+    /**
+     * @return int
+     */
+    public function getUniqid()
+    {
+        return $this->uniqid;
+    }
+
+    /**
+     * @param int $id
+     * @return Referential
+     */
+    public function setUniqid($uniqid)
+    {
+        $this->uniqid = $uniqid;
+        return $this;
+    }
+
     public function getInputFilter($partial = false)
     {
+        if (!$this->inputFilter) {
+            file_put_contents('php://stderr', print_r('getInputFilter', TRUE).PHP_EOL);
+            parent::getInputFilter($partial);
+
+            $texts = ['label1', 'label2', 'label3', 'label4'];
+            foreach ($texts as $text) {
+                $this->inputFilter->add(array(
+                    'name' => $text,
+                    'required' => ((strchr($text, (string)$this->getLanguage())) && (!$partial)) ? true : false,
+                    'allow_empty' => false,
+                    'filters' => array(),
+                    'validators' => array(),
+                ));
+            }
+            $validatorsCode = [];
+            if (!$partial) {
+                $validatorsCode = array(
+                    array(
+                        'name' => '\MonarcCore\Validator\UniqueCode',
+                        'options' => array(
+                            'entity' => $this
+                        ),
+                    ),
+                );
+            }
+
+            $this->inputFilter->add(array(
+                'name' => 'uniqid',
+                'required' => ($partial) ? false : true,
+                'allow_empty' => false,
+                'filters' => array(),
+                // 'validators' => $validatorsCode
+            ));
+        }
+        return $this->inputFilter;
     }
 }
