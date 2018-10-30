@@ -41,20 +41,30 @@ class AddReferentials extends AbstractMigration
           ->addColumn('created_at', 'datetime', array('null' => true))
           ->addColumn('updater', 'string', array('null' => true, 'limit' => 255))
           ->addColumn('updated_at', 'datetime', array('null' => true))
+          ->addIndex(array('uniqid'))
           ->create();
       $table->changeColumn('id', 'integer',array('identity'=>true,'signed'=>false))->update();
       $row = ['id'=>'','uniqid'=>'98ca84fb-db87-11e8-ac77-0800279aaa2b','label1'=>'ISO 27002','label2'=>'ISO 27002','label3'=>'ISO 27002','label4'=>'ISO 27002'];
       $table->insert($row);
       $table->saveData();
-
+      //add foreign key for measures
       $table = $this->table('measures');
       $table
-          ->addColumn('referential_uniqid', 'uuid',array('null' => true))
-          ->addIndex(array('referential_uniqid'))
-          //->addForeignKey('referential_uniqid', 'referentials', 'uniqid', array('delete' => 'CASCADE','update' => 'RESTRICT'))
+          ->addColumn('referential_uniqid', 'uuid', ['after' => 'soacategory_id'])
           ->update();
       $this->execute('UPDATE measures m SET m.referential_uniqid=(SELECT uniqid FROM referentials LIMIT 1) ;');
-
+      $table
+          ->addForeignKey('referential_uniqid', 'referentials', 'uniqid', array('delete' => 'CASCADE','update' => 'RESTRICT'))
+          ->update();
+      //add foreign key for the category
+      $table = $this->table('soacategory');
+      $table
+          ->addColumn('referential_uniqid', 'uuid', ['after' => 'code'])
+          ->update();
+      $this->execute('UPDATE soacategory s SET s.referential_uniqid=(SELECT uniqid FROM referentials LIMIT 1) ;');
+      $table
+          ->addForeignKey('referential_uniqid', 'referentials', 'uniqid', array('delete' => 'CASCADE','update' => 'RESTRICT'))
+          ->update();
 
     }
 }
