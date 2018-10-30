@@ -1,146 +1,143 @@
 <?php
 /**
- * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2018 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
- * @license   MONARC is licensed under GNU Affero General Public License version 3
- */
+* @link      https://github.com/monarc-project for the canonical source repository
+* @copyright Copyright (c) 2018 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+* @license   MONARC is licensed under GNU Affero General Public License version 3
+*/
 
 namespace MonarcCore\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Measure
- *
- * @ORM\Table(name="measures", indexes={
- *      @ORM\Index(name="anr", columns={"anr_id"}),
- *      @ORM\Index(name="category", columns={"soacategory_id"})
+* Measure
+*
+* @ORM\Table(name="measures", indexes={
+*      @ORM\Index(name="anr", columns={"anr_id"}),
+*      @ORM\Index(name="category", columns={"soacategory_id"})
 
- * })
- * @ORM\MappedSuperclass
- */
+* })
+* @ORM\MappedSuperclass
+*/
 class MeasureSuperClass extends AbstractEntity
 {
     /**
-     * @var integer
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     */
+    * @var integer
+    *
+    * @ORM\Column(name="id", type="integer", nullable=false)
+    * @ORM\Id
+    * @ORM\GeneratedValue(strategy="IDENTITY")
+    */
     protected $id;
 
     /**
-     * @var \MonarcCore\Model\Entity\Anr
-     *
-     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Anr", cascade={"persist"})
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true)
-     * })
-     */
+    * @var \MonarcCore\Model\Entity\Anr
+    *
+    * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Anr", cascade={"persist"})
+    * @ORM\JoinColumns({
+    *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true)
+    * })
+    */
     protected $anr;
 
-     /**
-      * @var \MonarcFO\Model\Entity\SoaCategory
-      *
-      * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\SoaCategory", cascade={"persist"})
-      * @ORM\JoinColumns({
-      *   @ORM\JoinColumn(name="soacategory_id", referencedColumnName="id", nullable=true)
-      * })
-      */
-     protected $category;
+    /**
+    * @var \MonarcFO\Model\Entity\SoaCategory
+    *
+    * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\SoaCategory", cascade={"persist"})
+    * @ORM\JoinColumns({
+    *   @ORM\JoinColumn(name="soacategory_id", referencedColumnName="id", nullable=true)
+    * })
+    */
+    protected $category;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="code", type="string", length=255, nullable=true)
-     */
-
-
-
+    * @var string
+    *
+    * @ORM\Column(name="code", type="string", length=255, nullable=true)
+    */
     protected $code;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="label1", type="string", length=255, nullable=true)
-     */
+    * @var string
+    *
+    * @ORM\Column(name="label1", type="string", length=255, nullable=true)
+    */
     protected $label1;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="label2", type="string", length=255, nullable=true)
-     */
+    * @var string
+    *
+    * @ORM\Column(name="label2", type="string", length=255, nullable=true)
+    */
     protected $label2;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="label3", type="string", length=255, nullable=true)
-     */
+    * @var string
+    *
+    * @ORM\Column(name="label3", type="string", length=255, nullable=true)
+    */
     protected $label3;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="label4", type="string", length=255, nullable=true)
-     */
+    * @var string
+    *
+    * @ORM\Column(name="label4", type="string", length=255, nullable=true)
+    */
     protected $label4;
 
     /**
-     * @var smallint
-     *
-     * @ORM\Column(name="status", type="smallint", options={"unsigned":true, "default":1})
-     */
+    * @var smallint
+    *
+    * @ORM\Column(name="status", type="smallint", options={"unsigned":true, "default":1})
+    */
     protected $status = '1';
 
     /**
-     * @var \Doctrine\Common\Collections\Collection
-     * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Amv", mappedBy="measures", cascade={"persist"})
-     */
+    * @var \Doctrine\Common\Collections\Collection
+    * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Amv", mappedBy="measures", cascade={"persist"})
+    */
     protected $amvs;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="creator", type="string", length=255, nullable=true)
-     */
+    * @var string
+    *
+    * @ORM\Column(name="creator", type="string", length=255, nullable=true)
+    */
     protected $creator;
 
     /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="created_at", type="datetime", nullable=true)
-     */
+    * @var \DateTime
+    *
+    * @ORM\Column(name="created_at", type="datetime", nullable=true)
+    */
     protected $createdAt;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="updater", type="string", length=255, nullable=true)
-     */
+    * @var string
+    *
+    * @ORM\Column(name="updater", type="string", length=255, nullable=true)
+    */
     protected $updater;
 
     /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
-     */
+    * @var \DateTime
+    *
+    * @ORM\Column(name="updated_at", type="datetime", nullable=true)
+    */
     protected $updatedAt;
 
     /**
-     * @return int
-     */
+    * @return int
+    */
     public function getId()
     {
         return $this->id;
     }
 
     /**
-     * @param int $id
-     * @return Model
-     */
+    * @param int $id
+    * @return Model
+    */
     public function setId($id)
     {
         $this->id = $id;
@@ -148,17 +145,17 @@ class MeasureSuperClass extends AbstractEntity
     }
 
     /**
-     * @return int
-     */
+    * @return int
+    */
     public function getAnr()
     {
         return $this->anr;
     }
 
     /**
-     * @param int $anr
-     * @return Measure
-     */
+    * @param int $anr
+    * @return Measure
+    */
     public function setAnr($anr)
     {
         $this->anr = $anr;
@@ -166,23 +163,20 @@ class MeasureSuperClass extends AbstractEntity
     }
 
     /**
-     * @return Category
-     */
+    * @return Category
+    */
     public function getCategory()
     {
         return $this->category;
     }
 
     /**
-     * @param Category $category
-     */
+    * @param Category $category
+    */
     public function setCategory($category)
     {
         $this->category = $category;
     }
-
-
-
 
     public function getInputFilter($partial = false)
     {
@@ -238,8 +232,6 @@ class MeasureSuperClass extends AbstractEntity
                 ),
             ));
         }
-
-
         return $this->inputFilter;
     }
 }

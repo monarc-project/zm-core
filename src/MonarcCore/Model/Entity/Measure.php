@@ -21,7 +21,4 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Measure extends MeasureSuperClass
 {
-
-
-
 }
