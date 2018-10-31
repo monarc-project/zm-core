@@ -16,7 +16,7 @@ namespace MonarcCore\Service;
 class ReferentialService extends AbstractService
 {
     protected $dependencies = ['anr', 'amvs'];
-    protected $filterColumns = ['label1', 'label2', 'label3', 'label4'];
+    protected $filterColumns = ['uniqid', 'label1', 'label2', 'label3', 'label4'];
     protected $forbiddenFields = ['anr'];
 
     /**

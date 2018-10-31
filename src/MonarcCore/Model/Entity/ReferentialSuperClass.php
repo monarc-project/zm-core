@@ -21,6 +21,7 @@ class ReferentialSuperClass extends AbstractEntity
      * @var integer
      *
      * @ORM\Column(name="id", type="integer", nullable=false)
+     * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     protected $id;
@@ -29,7 +30,6 @@ class ReferentialSuperClass extends AbstractEntity
      * @var string
      *
      * @ORM\Column(name="uniqid", type="string", length=255, nullable=true)
-     * @ORM\Id
      */
     protected $uniqid;
 
@@ -148,17 +148,17 @@ class ReferentialSuperClass extends AbstractEntity
                     'validators' => array(),
                 ));
             }
-            $validatorsCode = [];
-            if (!$partial) {
-                $validatorsCode = array(
-                    array(
-                        'name' => '\MonarcCore\Validator\UniqueCode',
-                        'options' => array(
-                            'entity' => $this
-                        ),
-                    ),
-                );
-            }
+            // $validatorsCode = [];
+            // if (!$partial) {
+            //     $validatorsCode = array(
+            //         array(
+            //             'name' => '\MonarcCore\Validator\UniqueCode',
+            //             'options' => array(
+            //                 'entity' => $this
+            //             ),
+            //         ),
+            //     );
+            // }
 
             $this->inputFilter->add(array(
                 'name' => 'uniqid',
