@@ -102,7 +102,7 @@ class ReferentialSuperClass extends AbstractEntity
     protected $updatedAt;
 
 
-    public function getId(): ?int
+    public function getId()
     {
         return $this->id;
     }
@@ -153,13 +153,13 @@ class ReferentialSuperClass extends AbstractEntity
             //     );
             // }
 
-            $this->inputFilter->add(array(
-                'name' => 'uniqid',
-                'required' => true,
-                'allow_empty' => false,
-                'filters' => array(),
-                // 'validators' => $validatorsCode
-            ));
+            // $this->inputFilter->add(array(
+            //     'name' => 'uniqid',
+            //     'required' => true,
+            //     'allow_empty' => false,
+            //     'filters' => array(),
+            //     // 'validators' => $validatorsCode
+            // ));
         }
         return $this->inputFilter;
     }
