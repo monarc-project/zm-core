@@ -1,7 +1,16 @@
 <?php
+use Ramsey\Uuid\Doctrine\UuidType;
+
 return array(
     // DOCTRINE CONF
     'doctrine' => array(
+        'configuration' => [
+            'orm_default' => [
+                'types' => [
+                    UuidType::NAME => UuidType::class,
+                ]
+            ]
+        ],
         'driver' => array(
             'Monarc_core_driver' => array(
                 'class' => 'Doctrine\ORM\Mapping\Driver\AnnotationDriver',

@@ -8,6 +8,7 @@
 namespace MonarcCore\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Ramsey\Uuid\UuidInterface;
 
 /**
  * ReferentialSuperClass
@@ -21,15 +22,19 @@ class ReferentialSuperClass extends AbstractEntity
      * @var integer
      *
      * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\GeneratedValue(strategy="IDENTITY")
+     * @ORM\GeneratedValue
      */
     protected $id;
 
     /**
-     * @var string
+     * The uuid or the referential.
      *
-     * @ORM\Column(name="uniqid", type="string", length=255, nullable=true)
+     * @var \Ramsey\Uuid\UuidInterface
+     *
      * @ORM\Id
+     * @ORM\Column(name="uniqid", type="uuid", unique=true)
+     * @ORM\GeneratedValue(strategy="CUSTOM")
+     * @ORM\CustomIdGenerator(class="Ramsey\Uuid\Doctrine\UuidGenerator")
      */
     protected $uniqid;
 
@@ -96,10 +101,8 @@ class ReferentialSuperClass extends AbstractEntity
      */
     protected $updatedAt;
 
-    /**
-     * @return int
-     */
-    public function getId()
+
+    public function getId(): ?int
     {
         return $this->id;
     }
@@ -115,21 +118,11 @@ class ReferentialSuperClass extends AbstractEntity
     }
 
     /**
-     * @return int
+     * @return UuidInterface
      */
-    public function getUniqid()
+    public function getUniqid(): UuidInterface
     {
         return $this->uniqid;
-    }
-
-    /**
-     * @param int $id
-     * @return Referential
-     */
-    public function setUniqid($uniqid)
-    {
-        $this->uniqid = $uniqid;
-        return $this;
     }
 
     public function getInputFilter($partial = false)
@@ -162,7 +155,7 @@ class ReferentialSuperClass extends AbstractEntity
 
             $this->inputFilter->add(array(
                 'name' => 'uniqid',
-                'required' => ($partial) ? false : true,
+                'required' => true,
                 'allow_empty' => false,
                 'filters' => array(),
                 // 'validators' => $validatorsCode
