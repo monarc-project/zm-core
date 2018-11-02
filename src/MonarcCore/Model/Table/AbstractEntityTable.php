@@ -7,6 +7,8 @@
 
 namespace MonarcCore\Model\Table;
 
+use Ramsey\Uuid\Uuid;
+
 /**
  * Class AbstractEntityTable
  * @package MonarcCore\Model\Table
@@ -512,7 +514,12 @@ abstract class AbstractEntityTable
     {
         $c = $this->getClass();
         if (class_exists($c)) {
-            //$id = (int)$id;  // problem when the id is a uuid
+            try {
+                $uuid = Uuid::fromString($id);
+            }
+            catch (Exception $e) {
+                $id = (int)$id;
+            }
 
             $entity = new $c();
             $entity->set('id', $id);
