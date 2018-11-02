@@ -512,7 +512,7 @@ abstract class AbstractEntityTable
     {
         $c = $this->getClass();
         if (class_exists($c)) {
-            $id = (int)$id;
+            //$id = (int)$id;  // problem when the id is a uuid
 
             $entity = new $c();
             $entity->set('id', $id);
