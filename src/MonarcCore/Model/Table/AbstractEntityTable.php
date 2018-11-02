@@ -515,7 +515,7 @@ abstract class AbstractEntityTable
         $c = $this->getClass();
         if (class_exists($c)) {
             try {
-                $uuid = Uuid::fromString($id);
+                $id = Uuid::fromString($id);
             }
             catch (Exception $e) {
                 $id = (int)$id;
