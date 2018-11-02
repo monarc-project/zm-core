@@ -8,6 +8,7 @@
 namespace MonarcCore\Model\Table;
 
 use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\Exception\InvalidUuidStringException;
 
 /**
  * Class AbstractEntityTable
@@ -517,7 +518,7 @@ abstract class AbstractEntityTable
             try {
                 $id = Uuid::fromString($id);
             }
-            catch (Exception $e) {
+            catch (InvalidUuidStringException $e) {
                 $id = (int)$id;
             }
 
