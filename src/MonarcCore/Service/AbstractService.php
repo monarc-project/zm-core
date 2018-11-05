@@ -315,6 +315,9 @@ abstract class AbstractService extends AbstractServiceFactory
         $entity->setLanguage($this->getLanguage());
         foreach ($this->dependencies as $dependency) {
             if ((!isset($data[$dependency])) && ($entity->$dependency)) {
+              if($entity->$dependency->uniqid)
+                $data[$dependency] = $entity->$dependency->uniqid;
+              else
                 $data[$dependency] = $entity->$dependency->id;
             }
         }
@@ -516,6 +519,9 @@ abstract class AbstractService extends AbstractServiceFactory
                 if ($metadata->hasAssociation($propertyname)) {
                     $class = $metadata->getAssociationTargetClass($propertyname);
                     if (!is_array($value) || isset($value['id'])) {
+                      if(isset($value['uniqid']))
+                        $dep = $db->getReference($class, isset($value['uniqid']) ? $value['uniqid'] : $value);
+                      else
                         $dep = $db->getReference($class, isset($value['id']) ? $value['id'] : $value);
 
                         if (isset($dep->anr) && isset($entity->anr) && $dep->anr instanceof \MonarcCore\Model\Entity\AnrSuperClass) {
