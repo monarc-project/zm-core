@@ -244,4 +244,26 @@ class MeasureSuperClass extends AbstractEntity
         }
         return $this->inputFilter;
     }
+
+    public function getFiltersForService(){
+        $filterJoin = [
+            [
+                'as' => 'r',
+                'rel' => 'referential',
+            ],
+        ];
+        $filterLeft = [
+            [
+                'as' => 'r1',
+                'rel' => 'referential',
+            ],
+        ];
+        $filtersCol = [
+            'r.label1',
+            'r.label2',
+            'r.label3',
+            'r.uniqid',
+        ];
+        return [$filterJoin,$filterLeft,$filtersCol];
+    }
 }

@@ -16,7 +16,7 @@ namespace MonarcCore\Service;
 class MeasureService extends AbstractService
 {
     protected $dependencies = ['anr','category', 'amvs'];
-    protected $filterColumns = ['label1', 'label2', 'label3', 'label4', 'code', 'status'];
+    protected $filterColumns = ['label1', 'label2', 'label3', 'label4', 'code', 'status', 'referential'];
     protected $forbiddenFields = ['anr'];
 
     /**
@@ -35,13 +35,17 @@ class MeasureService extends AbstractService
     public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
     {
         file_put_contents('php://stderr', print_r('MeasureService::getList', TRUE).PHP_EOL);
+        list($filterJoin,$filterLeft,$filtersCol) = $this->get('entity')->getFiltersForService();
+
         $data = $this->get('table')->fetchAllFiltered(
             array_keys($this->get('entity')->getJsonArray()),
-            1,
-            0,
+            $page,
+            $limit,
             $this->parseFrontendOrder($order),
-            $this->parseFrontendFilter($filter, $this->filterColumns),
-            $filterAnd
+            $this->parseFrontendFilter($filter, $filtersCol),
+            $filterAnd,
+            $filterJoin,
+            $filterLeft
         );
 
         // TODO: try to order in SQL instead of php with usort
