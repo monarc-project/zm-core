@@ -14,7 +14,9 @@ use MonarcCore\Model\Entity\AbstractEntity;
 /**
 * CategoriesSuperClass
 *
-* @ORM\Table(name="soacategory")
+* @ORM\Table(name="soacategory", indexes={
+*       @ORM\Index(name="referential", columns={"referential_uniqid"})
+* })
 * @ORM\MappedSuperclass
 */
 class SoaCategorySuperClass extends AbstractEntity
@@ -95,6 +97,24 @@ class SoaCategorySuperClass extends AbstractEntity
     public function setId($id)
     {
         $this->id = $id;
+        return $this;
+    }
+
+    /**
+     * @return UuidInterface
+     */
+    public function getReferential()
+    {
+        return $this->referential;
+    }
+
+    /**
+    * @param Referential $referential
+    * @return Model
+    */
+    public function setReferential($referential)
+    {
+        $this->referential = $referential;
         return $this;
     }
 
