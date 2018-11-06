@@ -36,6 +36,16 @@ class SoaCategorySuperClass extends AbstractEntity
     protected $code;
 
     /**
+     * @var \MonarcCore\Model\Entity\Referential
+     *
+     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Referential", inversedBy="categories")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="referential_uniqid", referencedColumnName="uniqid", nullable=true)
+     * })
+     */
+    protected $referential;
+
+    /**
     * @var text
     *
     * @ORM\Column(name="label1", type="text", length=255, nullable=true)

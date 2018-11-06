@@ -74,6 +74,13 @@ class ReferentialSuperClass extends AbstractEntity
     protected $measures;
 
     /**
+     * @var \MonarcCore\Model\Entity\SoaCategory
+     *
+     * @ORM\OneToMany(targetEntity="MonarcCore\Model\Entity\SoaCategory", mappedBy="referential")
+     */
+    protected $categories;
+
+    /**
      * @var string
      *
      * @ORM\Column(name="creator", type="string", length=255, nullable=true)
