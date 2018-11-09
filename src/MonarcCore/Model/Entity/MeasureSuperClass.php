@@ -63,30 +63,30 @@ class MeasureSuperClass extends AbstractEntity
     /**
      * @var string
      *
-     * @ORM\Column(name="description1", type="string", length=255, nullable=true)
+     * @ORM\Column(name="label1", type="string", length=255, nullable=true)
      */
-    protected $description1;
+    protected $label1;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="description2", type="string", length=255, nullable=true)
+     * @ORM\Column(name="label2", type="string", length=255, nullable=true)
      */
-    protected $description2;
+    protected $label2;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="description3", type="string", length=255, nullable=true)
+     * @ORM\Column(name="label3", type="string", length=255, nullable=true)
      */
-    protected $description3;
+    protected $label3;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="description4", type="string", length=255, nullable=true)
+     * @ORM\Column(name="label4", type="string", length=255, nullable=true)
      */
-    protected $description4;
+    protected $label4;
 
     /**
      * @var smallint
@@ -184,7 +184,7 @@ class MeasureSuperClass extends AbstractEntity
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);
 
-            $texts = ['description1', 'description2', 'description3', 'description4'];
+            $texts = ['label1', 'label2', 'label3', 'label4'];
 
             foreach ($texts as $text) {
                 $this->inputFilter->add(array(
