@@ -348,7 +348,7 @@ class InstanceRiskService extends AbstractService
             $risks[] = $riskI;
             $impacts[] = $instance->i;
         }
-        if ($instanceRisk->threat->d) {
+        if ($instanceRisk->threat->a) {
             $risks[] = $riskD;
             $impacts[] = $instance->d;
         }
