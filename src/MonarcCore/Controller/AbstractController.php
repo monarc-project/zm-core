@@ -180,8 +180,10 @@ abstract class AbstractController extends AbstractRestfulController
      * Automatically loads the dependencies of the entity based on the class' "dependencies" field
      * @param AbstractEntity $entity The entity for which the deps should be resolved
      * @param array $dependencies The dependencies fields
+     * @param string $EntityDependency name of class of the dependency (object) entity to get focus on
+     * @param array $subField the list of subfield to fetch
      */
-    public function formatDependencies(&$entity, $dependencies) {
+    public function formatDependencies(&$entity, $dependencies, $EntityDependency = "", $subField = []) {
         foreach($dependencies as $dependency) {
             if (!empty($entity[$dependency])) {
                 if (is_object($entity[$dependency])) {
@@ -196,11 +198,23 @@ abstract class AbstractController extends AbstractRestfulController
                             $$dependency = $entity[$dependency]->getSnapshot();
                             $entity[$dependency] = [];
                             foreach($$dependency as $d){
-                                if(is_a($d, '\MonarcCore\Model\Entity\AbstractEntity')){
+                              if(is_a($d, $EntityDependency)){ //fetch more info
+                                  $temp = $d->toArray();
+                                  if(!empty($subField)){
+                                    foreach ($subField as $key => $value){
+                                      $temp[$value] = $d->$value->getJsonArray();
+                                      unset($temp[$value]['__initializer__']);
+                                      unset($temp[$value]['__cloner__']);
+                                      unset($temp[$value]['__isInitialized__']);
+                                    }
+                                    $entity[$dependency][] = $temp;
+                                  }
+                              }
+                              else if(is_a($d, '\MonarcCore\Model\Entity\AbstractEntity')){
                                     $entity[$dependency][] = $d->getJsonArray();
-                                }else{
-                                    $entity[$dependency][] = $d;
-                                }
+                              }else{
+                                  $entity[$dependency][] = $d;
+                              }
                             }
                         }
                     }
