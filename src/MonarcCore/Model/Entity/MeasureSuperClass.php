@@ -21,6 +21,16 @@ use Doctrine\ORM\Mapping as ORM;
 */
 class MeasureSuperClass extends AbstractEntity
 {
+
+  /**
+   * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Measure")
+   * @ORM\JoinTable(name="measures_measures",
+   *     joinColumns={@ORM\JoinColumn(name="father_id", referencedColumnName="id")},
+   *     inverseJoinColumns={@ORM\JoinColumn(name="child_id", referencedColumnName="id")}
+   * )
+   */
+   protected $measuresLinked;
+
     /**
     * @var integer
     *
@@ -186,6 +196,22 @@ class MeasureSuperClass extends AbstractEntity
     public function setCategory($category)
     {
         $this->category = $category;
+    }
+
+    /**
+    * @return measuresLinked
+    */
+    public function getMeasuresLinked()
+    {
+        return $this->measuresLinked;
+    }
+
+    /**
+    * @param measuresLinked $measuresLinked
+    */
+    public function setMeasuresLinked($measuresLinked)
+    {
+        $this->measuresLinked = $measuresLinked;
     }
 
     public function getInputFilter($partial = false)
