@@ -15,7 +15,7 @@ namespace MonarcCore\Service;
  */
 class MeasureService extends AbstractService
 {
-    protected $dependencies = ['anr','category', 'amvs', 'referential'];
+    protected $dependencies = ['anr','category', 'amvs', 'referential', 'measuresLinked', 'measuresLinkedToMe'];
     protected $filterColumns = ['label1', 'label2', 'label3', 'label4', 'code', 'status'];
     protected $forbiddenFields = ['anr'];
 
