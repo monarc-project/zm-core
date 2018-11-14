@@ -149,7 +149,7 @@ class MeasureSuperClass extends AbstractEntity
     /**
      * Add a linked measure
      *
-     * @param Anr $anr
+     * @param MeasureSuperClass $measure
      * @throws \Exception
      */
     public function addLinkedMeasure(MeasureSuperClass $measure)
