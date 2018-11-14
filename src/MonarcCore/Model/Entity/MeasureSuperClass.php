@@ -164,6 +164,7 @@ class MeasureSuperClass extends AbstractEntity
         }
         if (!$errors) {
             $this->measuresLinked[] = $measure;
+            $measure->addLinkedMeasure($this);
         }
     }
 
