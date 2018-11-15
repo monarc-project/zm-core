@@ -32,7 +32,7 @@ class MeasureMeasureSuperClass extends AbstractEntity
     /**
      * @var \MonarcCore\Model\Entity\Measure
      *
-     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\MonarcObject", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Measure", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="father_id", referencedColumnName="id", nullable=true)
      * })
@@ -42,7 +42,7 @@ class MeasureMeasureSuperClass extends AbstractEntity
     /**
      * @var \MonarcCore\Model\Entity\Measure
      *
-     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\MonarcObject", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Measure", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="child_id", referencedColumnName="id", nullable=true)
      * })
@@ -96,7 +96,7 @@ class MeasureMeasureSuperClass extends AbstractEntity
     }
 
     /**
-     * @return Object
+     * @return Measure
      */
     public function getFather()
     {
@@ -104,8 +104,8 @@ class MeasureMeasureSuperClass extends AbstractEntity
     }
 
     /**
-     * @param Object $father
-     * @return ObjectObject
+     * @param Measure $father
+     * @return MeasureMeasure
      */
     public function setFather($father)
     {
@@ -114,7 +114,7 @@ class MeasureMeasureSuperClass extends AbstractEntity
     }
 
     /**
-     * @return Object
+     * @return Measure
      */
     public function getChild()
     {
@@ -122,8 +122,8 @@ class MeasureMeasureSuperClass extends AbstractEntity
     }
 
     /**
-     * @param Object $child
-     * @return ObjectObject
+     * @param Measure $child
+     * @return MeasureMeasure
      */
     public function setChild($child)
     {
