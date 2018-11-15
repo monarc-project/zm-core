@@ -30,7 +30,7 @@ class AddMeasuresMeasures extends AbstractMigration
     public function change()
     {
       // Migration for table measures_measures to link measures set primary key composed of id of measures to avoid duplicata
-      $table = $this->table('measures_measures',['id' => false, 'primary_key' => ['child_id', 'father_id']]);
+      $table = $this->table('measures_measures');
       $table
           ->addColumn('father_id', 'integer', array('null' => false, 'signed' => false))
           ->addColumn('child_id', 'integer', array('null' => false, 'signed' => false))
@@ -43,5 +43,6 @@ class AddMeasuresMeasures extends AbstractMigration
           ->addIndex(array('father_id'))
           ->addIndex(array('child_id'))
           ->create();
+      $table->changeColumn('id', 'integer',array('identity'=>true,'signed'=>false))->update();
     }
 }
