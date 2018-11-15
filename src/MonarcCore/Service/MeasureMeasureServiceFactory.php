@@ -17,6 +17,8 @@ class MeasureMeasureServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = [
         'table' => 'MonarcCore\Model\Table\MeasureMeasureTable',
+        'measureTable' => 'MonarcCore\Model\Table\MeasureTable',
         'entity' => 'MonarcCore\Model\Entity\MeasureMeasure',
+        'measureEntity' => 'MonarcCore\Model\Entity\Measure',
     ];
 }

@@ -18,15 +18,32 @@ class MeasureMeasureService extends AbstractService
     protected $dependencies = [];
     protected $filterColumns = [];
     protected $forbiddenFields = ['anr'];
+    protected $measureTable;
+    protected $measureEntity;
 
     /**
      * @inheritdoc
      */
-    public function patch($id, $data)
+    public function create($data)
     {
-        // Filter unwanted fields
-        $this->filterPatchFields($data);
-        parent::patch($id, $data);
+      $id = null;
+        if ($data['father'] == $data['child']) {
+            throw new \MonarcCore\Exception\Exception("You cannot add yourself as a component", 412);
+        }
+        $measureEntity = $this->get('measureEntity');
+        $measureTable = $this->get('measureTable');
+        $measureMeasureTable = $this->get('table');
+        $measuresMeasures = $measureMeasureTable->getEntityByFields(['child' => $data['child'] , 'father' => $data['father']]);
+
+        if (count($measuresMeasures)) {
+            throw new \MonarcCore\Exception\Exception('This component already exist for this object', 412);
+        }else {
+          $father = $measureTable->getEntity($data['father']);
+          $child = $measureTable->getEntity($data['child']);
+          $father->addLinkedMeasure($child);
+          $id = $measureTable->save($father);
+        }
+        return $id;
     }
 
     /**
