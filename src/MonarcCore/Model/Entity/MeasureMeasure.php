@@ -10,15 +10,14 @@ namespace MonarcCore\Model\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Measure
- *
- * @ORM\Table(name="measures", indexes={
- *      @ORM\Index(name="anr", columns={"anr_id"}),
- *      @ORM\Index(name="soacategory", columns={"soacategory_id"}),
- *      @ORM\Index(name="referential", columns={"referential_uniqid"})
- * })
+* Measure Measure
+*
+* @ORM\Table(name="measures_measures", indexes={
+*      @ORM\Index(name="father_id", columns={"father_id"}),
+*      @ORM\Index(name="child_id", columns={"child_id"})
+* })
  * @ORM\Entity
  */
-class Measure extends MeasureSuperClass
+class MeasureMeasure extends MeasureMeasureSuperClass
 {
 }
