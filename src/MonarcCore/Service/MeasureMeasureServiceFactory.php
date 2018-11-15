@@ -13,7 +13,7 @@ namespace MonarcCore\Service;
  * Class MeasureMeasureServiceFactory
  * @package MonarcCore\Service
  */
-class MeasureServiceFactory extends AbstractServiceFactory
+class MeasureMeasureServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = [
         'table' => 'MonarcCore\Model\Table\MeasureMeasureTable',
