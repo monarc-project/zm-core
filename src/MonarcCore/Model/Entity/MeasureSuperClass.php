@@ -147,28 +147,6 @@ class MeasureSuperClass extends AbstractEntity
     protected $updatedAt;
 
     /**
-     * Add a linked measure
-     *
-     * @param MeasureSuperClass $measure
-     * @throws \Exception
-     */
-    public function addLinkedMeasure(MeasureSuperClass $measure)
-    {
-        $currentMeasures = $this->measuresLinked;
-        if ($currentMeasures) {
-            foreach ($currentMeasures as $currentMeasure) {
-                if ($currentMeasure->id == $measure->id) {
-                    $errors = true;
-                }
-            }
-        }
-        if (!$errors) {
-            $this->measuresLinked[] = $measure;
-            $measure->addLinkedMeasure($this);
-        }
-    }
-
-    /**
     * @return int
     */
     public function getId()
