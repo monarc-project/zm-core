@@ -50,7 +50,7 @@ class SoaCategorySuperClass extends AbstractEntity
     /**
      * @var \MonarcCore\Model\Entity\Measure
      *
-     * @ORM\OneToMany(targetEntity="MonarcCore\Model\Entity\Measure", mappedBy="referential")
+     * @ORM\OneToMany(targetEntity="MonarcCore\Model\Entity\Measure", mappedBy="category")
      */
     protected $measures;
 
@@ -104,6 +104,24 @@ class SoaCategorySuperClass extends AbstractEntity
     public function setId($id)
     {
         $this->id = $id;
+        return $this;
+    }
+
+    /**
+    * @return measures
+    */
+    public function getMeasures()
+    {
+        return $this->measures;
+    }
+
+    /**
+    * @param int $measures
+    * @return Model
+    */
+    public function setMeasures($measures)
+    {
+        $this->measures = $measures;
         return $this;
     }
 
