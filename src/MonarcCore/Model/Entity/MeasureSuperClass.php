@@ -145,7 +145,7 @@ class MeasureSuperClass extends AbstractEntity
     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
     */
     protected $updatedAt;
-    
+
     public function addLinkedMeasure(MeasureSuperClass $measure)
     {
         $currentMeasures = $this->measuresLinked;
@@ -211,6 +211,22 @@ class MeasureSuperClass extends AbstractEntity
     public function setCategory($category)
     {
         $this->category = $category;
+    }
+
+    /**
+    * @return Referential
+    */
+    public function getReferential()
+    {
+        return $this->referential;
+    }
+
+    /**
+    * @param Referential $referential
+    */
+    public function setReferential($referential)
+    {
+        $this->referential = $referential;
     }
 
     /**
