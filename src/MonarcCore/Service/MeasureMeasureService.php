@@ -24,7 +24,7 @@ class MeasureMeasureService extends AbstractService
     /**
      * @inheritdoc
      */
-    public function create($data)
+    public function create($data, $last=true)
     {
       $id = null;
         if ($data['father'] == $data['child']) {

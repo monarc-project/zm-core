@@ -154,6 +154,7 @@ class MeasureSuperClass extends AbstractEntity
    */
     public function addLinkedMeasure(MeasureSuperClass $measure)
     {
+      $errors=false;
         $currentMeasures = $this->measuresLinked;
         if ($currentMeasures) {
             foreach ($currentMeasures as $currentMeasure) {
