@@ -63,14 +63,10 @@ class MeasureMeasureService extends AbstractService
           throw new \MonarcCore\Exception\Exception('Entity does not exist', 412);
       }
 
-      //file_put_contents('php://stderr', print_r($measureMeasure->father->id, TRUE).PHP_EOL);
       $father = $measureTable->getEntity($measureMeasure->father->id);
       $child = $measureTable->getEntity($measureMeasure->child->id);
       $father->deleteLinkedMeasure($child);
-      $child->deleteLinkedMeasure($father);
       $measureTable->save($father);
-      $measureTable->save($child);
-
     }
 
     /**

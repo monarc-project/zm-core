@@ -185,14 +185,14 @@ class MeasureSuperClass extends AbstractEntity
                 if ($currentMeasure->id == $measure->id) {
                     unset($currentMeasures[$i]);
                     file_put_contents('php://stderr', print_r($i, TRUE).PHP_EOL);
+                    $delete = true;
                 }
                 $i++;
             }
         }
-        // if ($delete) {
-        //     $this->measuresLinked[] = $measure;
-        //     $measure->deleteLinkedMeasure($this); //delete the measure in the other way
-        // }
+        if ($delete) {
+            $measure->deleteLinkedMeasure($this); //delete the measure in the other way
+        }
     }
 
     /**
