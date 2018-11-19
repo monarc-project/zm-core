@@ -147,12 +147,11 @@ class MeasureSuperClass extends AbstractEntity
     protected $updatedAt;
 
     /**
-   * Add a linked measure
+   * Add a linked measure in the two way
    *
    * @param Measure $measure
    * @throws \Exception
    */
-
     public function addLinkedMeasure(MeasureSuperClass $measure)
     {
         $currentMeasures = $this->measuresLinked;
@@ -168,6 +167,33 @@ class MeasureSuperClass extends AbstractEntity
             $measure->addLinkedMeasure($this); //add the measure in the other way
         }
     }
+
+    /**
+   * delete a linked measure in the two way
+   *
+   * @param Measure $measure
+   * @throws \Exception
+   */
+    public function deleteLinkedMeasure(MeasureSuperClass $measure)
+    {
+      $delete = false;
+      $i=0;
+        $currentMeasures = $this->measuresLinked;
+        if ($currentMeasures) {
+            foreach ($currentMeasures as $currentMeasure) {
+                if ($currentMeasure->id == $measure->id) {
+                    unset($currentMeasures[$i]);
+                    file_put_contents('php://stderr', print_r($i, TRUE).PHP_EOL);
+                }
+                $i++;
+            }
+        }
+        // if ($delete) {
+        //     $this->measuresLinked[] = $measure;
+        //     $measure->deleteLinkedMeasure($this); //delete the measure in the other way
+        // }
+    }
+
     /**
     * @return int
     */
