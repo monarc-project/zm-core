@@ -184,7 +184,6 @@ class MeasureSuperClass extends AbstractEntity
             foreach ($currentMeasures as $currentMeasure) {
                 if ($currentMeasure->id == $measure->id) {
                     unset($currentMeasures[$i]);
-                    file_put_contents('php://stderr', print_r($i, TRUE).PHP_EOL);
                     $delete = true;
                 }
                 $i++;
