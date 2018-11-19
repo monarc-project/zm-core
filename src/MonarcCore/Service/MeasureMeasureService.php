@@ -35,12 +35,12 @@ class MeasureMeasureService extends AbstractService
         $measureMeasureTable = $this->get('table');
         $measuresMeasures = $measureMeasureTable->getEntityByFields(['child' => $data['child'] , 'father' => $data['father']]);
 
-        if (count($measuresMeasures)) {
+        if (count($measuresMeasures)) { // the linkk already exist
             throw new \MonarcCore\Exception\Exception('This component already exist for this object', 412);
         }else {
           $father = $measureTable->getEntity($data['father']);
           $child = $measureTable->getEntity($data['child']);
-          $father->addLinkedMeasure($child);
+          $father->addLinkedMeasure($child); //we add the link for the two measure
           $id = $measureTable->save($father);
         }
         return $id;
