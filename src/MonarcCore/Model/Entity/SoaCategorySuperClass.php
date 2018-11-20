@@ -29,10 +29,10 @@ class SoaCategorySuperClass extends AbstractEntity
     protected $id;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="code", type="string", length=255, nullable=true)
-     */
+    * @var string
+    *
+    * @ORM\Column(name="code", type="string", length=255, nullable=true)
+    */
     protected $code;
 
     /**
@@ -40,28 +40,28 @@ class SoaCategorySuperClass extends AbstractEntity
     *
     * @ORM\Column(name="label1", type="text", length=255, nullable=true)
     */
-    protected $label1 ;
+    protected $label1;
 
     /**
     * @var text
     *
     * @ORM\Column(name="label2", type="text", length=255, nullable=true)
     */
-    protected $label2 ;
+    protected $label2;
 
     /**
     * @var text
     *
     * @ORM\Column(name="label3", type="text", length=255, nullable=true)
     */
-    protected $label3 ;
+    protected $label3;
 
     /**
     * @var text
     *
     * @ORM\Column(name="label4", type="text", length=255, nullable=true)
     */
-    protected $label4 ;
+    protected $label4;
 
     /**
     * @var smallint
@@ -110,7 +110,7 @@ class SoaCategorySuperClass extends AbstractEntity
     */
     public function getlabel2()
     {
-        return $this->label;
+        return $this->label2;
     }
 
     /**
