@@ -175,7 +175,7 @@ class InstanceRiskTable extends AbstractEntityTable
                 throw new \MonarcCore\Exception\Exception('Anr ids differents', 412);
             }
         }
-        $l = $this->getContextLanguage($anrId,$context);
+        $l = $this->getContextLanguage($anrId, $context);
         $arraySelect = [
             'o.id as oid',
             'ir.id as id',
@@ -208,9 +208,6 @@ class InstanceRiskTable extends AbstractEntityTable
             'ir.cache_targeted_risk as target_risk',
             'ir.cache_max_risk as max_risk',
             'ir.comment as comment',
-            'CONCAT(m1.code, \' - \', m1.label' . $l . ') as measure1',
-            'CONCAT(m2.code, \' - \', m2.label' . $l . ') as measure2',
-            'CONCAT(m3.code, \' - \', m3.label' . $l . ') as measure3',
             'o.scope as scope',
             'ir.kind_of_measure as kindOfMeasure',
             'IF(ir.kind_of_measure IS NULL OR ir.kind_of_measure = ' . \MonarcCore\Model\Entity\InstanceRiskSuperClass::KIND_NOT_TREATED . ', false, true) as t',
@@ -234,17 +231,10 @@ class InstanceRiskTable extends AbstractEntityTable
             ON          ir.asset_id = ass.id
             INNER JOIN  objects AS o
             ON          i.object_id = o.id
-            LEFT JOIN   measures as m1
-            ON          a.measure1_id = m1.id
-            LEFT JOIN   measures as m2
-            ON          a.measure2_id = m2.id
-            LEFT JOIN   measures as m3
-            ON          a.measure3_id = m3.id
             WHERE       ir.cache_max_risk >= -1
             AND         ir.anr_id = :anrid ";
         $queryParams = [
             ':anrid' => $anrId,
-            //':anrid2' => $anrId,
         ];
         $typeParams = [];
         // Find instance(s) id
