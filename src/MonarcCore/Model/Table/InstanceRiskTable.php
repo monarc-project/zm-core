@@ -288,12 +288,6 @@ class InstanceRiskTable extends AbstractEntityTable
                 //'amv.label'.$l.'',
                 't.label' . $l . '',
                 'v.label' . $l . '',
-                'm1.code',
-                'm1.label' . $l . '',
-                'm2.code',
-                'm2.label' . $l . '',
-                'm3.code',
-                'm3.label' . $l . '',
                 'i.name' . $l . '',
                 'ir.comment',
             ];
