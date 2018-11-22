@@ -53,7 +53,7 @@ class MeasureSuperClass extends AbstractEntity
     /**
      * @var \MonarcCore\Model\Entity\Referential
      *
-     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Referential", inversedBy="measures")
+     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Referential", inversedBy="measures", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="referential_uniqid", referencedColumnName="uniqid", nullable=true)
      * })
@@ -63,7 +63,7 @@ class MeasureSuperClass extends AbstractEntity
     /**
     * @var \MonarcFO\Model\Entity\SoaCategory
     *
-    * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\SoaCategory", inversedBy="measures")
+    * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\SoaCategory", inversedBy="measures", cascade={"persist"})
     * @ORM\JoinColumns({
     *   @ORM\JoinColumn(name="soacategory_id", referencedColumnName="id", nullable=true)
     * })

@@ -69,14 +69,14 @@ class ReferentialSuperClass extends AbstractEntity
     /**
      * @var \MonarcCore\Model\Entity\Measure
      *
-     * @ORM\OneToMany(targetEntity="MonarcCore\Model\Entity\Measure", mappedBy="referential")
+     * @ORM\OneToMany(targetEntity="MonarcCore\Model\Entity\Measure", mappedBy="referential", cascade={"persist"})
      */
     protected $measures;
 
     /**
      * @var \MonarcCore\Model\Entity\SoaCategory
      *
-     * @ORM\OneToMany(targetEntity="MonarcCore\Model\Entity\SoaCategory", mappedBy="referential")
+     * @ORM\OneToMany(targetEntity="MonarcCore\Model\Entity\SoaCategory", mappedBy="referential", cascade={"persist"})
      */
     protected $categories;
 
