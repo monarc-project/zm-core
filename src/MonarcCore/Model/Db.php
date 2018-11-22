@@ -94,7 +94,7 @@ class Db {
     /**
      * Find entities in repository who matches with filters.
      * Apply order and limit for pagination.
-     * 
+     *
      * @param \MonarcCore\Model\Entity\AbstractEntity $entity
      * @param int $page
      * @param int $limit
@@ -124,7 +124,7 @@ class Db {
     /**
      * Count number of elements in repository who matches with filters.
      * Apply order and limit for pagination.
-     * 
+     *
      * @param \MonarcCore\Model\Entity\AbstractEntity $entity
      * @param array|null $filter
      * @param array|null $filterAnd
@@ -155,9 +155,12 @@ class Db {
     public function fetch($entity)
     {
         if (!$entity->get('id')) {
-            throw new \MonarcCore\Exception\Exception('Entity `id` not found.');
+          return $this->getEntityManager()->find(get_class($entity), ['anr' => $entity->get('anr'),'uniqid'=>$entity->get('uniqid')]);
+            //throw new \MonarcCore\Exception\Exception('Entity `id` not found.');
+        }else {
+          return $this->getEntityManager()->find(get_class($entity), $entity->get('id'));
         }
-        return $this->getEntityManager()->find(get_class($entity), $entity->get('id'));
+
     }
 
     /**
@@ -305,7 +308,7 @@ class Db {
      * Note: This method may not return a meaningful or consistent result across different drivers,
      * because the underlying database may not even support the notion of AUTO_INCREMENT/IDENTITY
      * columns or sequences.
-     * 
+     *
      * @return string A string representation of the last inserted ID.
      */
     public function lastInsertId(){

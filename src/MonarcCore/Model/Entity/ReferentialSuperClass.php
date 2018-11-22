@@ -19,22 +19,12 @@ use Ramsey\Uuid\UuidInterface;
 class ReferentialSuperClass extends AbstractEntity
 {
     /**
-     * @var integer
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\GeneratedValue
-     */
-    protected $id;
-
-    /**
      * The uuid or the referential.
      *
      * @var \Ramsey\Uuid\UuidInterface
      *
      * @ORM\Id
      * @ORM\Column(name="uniqid", type="uuid", unique=true)
-     * @ORM\GeneratedValue(strategy="CUSTOM")
-     * @ORM\CustomIdGenerator(class="Ramsey\Uuid\Doctrine\UuidGenerator")
      */
     protected $uniqid;
 
@@ -109,20 +99,6 @@ class ReferentialSuperClass extends AbstractEntity
     protected $updatedAt;
 
 
-    public function getId()
-    {
-        return $this->id;
-    }
-
-    /**
-     * @param int $id
-     * @return Referential
-     */
-    public function setId($id)
-    {
-        $this->id = $id;
-        return $this;
-    }
 
     /**
      * @return UuidInterface

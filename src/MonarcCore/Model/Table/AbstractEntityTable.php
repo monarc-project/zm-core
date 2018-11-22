@@ -235,7 +235,13 @@ abstract class AbstractEntityTable
         if (class_exists($class)) {
             $entity = new $class();
             $entity->setDbAdapter($this->getDb());
-            $entity->set('id', $id);
+            if (is_array($id)){
+              foreach ($id as $key => $value) {
+                  $entity->set($key, $value);
+              }
+            }else {
+                $entity->set('id', $id);
+            }
             $entity = $this->getDb()->fetch($entity);
             if (!$entity) {
                 throw new \MonarcCore\Exception\Exception('Entity does not exist', 412);
