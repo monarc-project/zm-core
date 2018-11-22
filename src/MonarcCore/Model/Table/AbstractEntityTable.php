@@ -323,7 +323,8 @@ abstract class AbstractEntityTable
         }
 
         $id = $this->getDb()->save($entity, $last);
-        $entity->set('id', $id);
+        if ($entity->get('id'))
+          $entity->set('id', $id);
         $entity->initParametersChanges();
 
         return $id;
