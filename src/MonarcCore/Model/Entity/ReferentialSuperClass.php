@@ -132,6 +132,16 @@ class ReferentialSuperClass extends AbstractEntity
         return $this->uniqid;
     }
 
+    /**
+     * @param UuidInterface $uniqid
+     * @return Referential
+     */
+    public function setUniqid($uniqid)
+    {
+        $this->uniqid = $uniqid;
+        return $this;
+    }
+
     public function getInputFilter($partial = false)
     {
         if (!$this->inputFilter) {
