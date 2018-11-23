@@ -118,6 +118,16 @@ class ReferentialSuperClass extends AbstractEntity
         return $this;
     }
 
+    /**
+     * @param \MonarcCore\Model\Entity\Measure $measures
+     * @return Referential
+     */
+    public function setMeasures($measures)
+    {
+        $this->measures = $measures;
+        return $this;
+    }
+
     public function getInputFilter($partial = false)
     {
         if (!$this->inputFilter) {
