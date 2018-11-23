@@ -155,8 +155,12 @@ class Db {
     public function fetch($entity)
     {
         if (!$entity->get('id')) {
+          if ($entity->get('anr')){ // cas du FO
           return $this->getEntityManager()->find(get_class($entity), ['anr' => $entity->get('anr'),'uniqid'=>$entity->get('uniqid')]);
-            //throw new \MonarcCore\Exception\Exception('Entity `id` not found.');
+          }  //throw new \MonarcCore\Exception\Exception('Entity `id` not found.');
+          else{ // BO
+            return $this->getEntityManager()->find(get_class($entity), ['uniqid'=>$entity->get('uniqid')]);
+          }
         }else {
           return $this->getEntityManager()->find(get_class($entity), $entity->get('id'));
         }
