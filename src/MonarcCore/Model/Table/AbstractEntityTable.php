@@ -240,7 +240,6 @@ abstract class AbstractEntityTable
                   $entity->set($key, $value);
               }
             }else {
-              file_put_contents('php://stderr', print_r($this->getClassMetadata()->getSingleIdentifierFieldName(), TRUE).PHP_EOL);
                 $entity->set($this->getClassMetadata()->getSingleIdentifierFieldName(), $id);
             }
             $entity = $this->getDb()->fetch($entity);
@@ -322,8 +321,12 @@ abstract class AbstractEntityTable
         if ($clean_params) {
             unset($params['implicitPosition']['changes']);
         }
-
-        $id = $this->getDb()->save($entity, $last);
+        $ids = $this->getClassMetadata()->getIdentifierFieldNames(); // fetch for the composite key
+        foreach ($ids as $key => $value) {
+          if($value==='uniqid') //uniqid have to be generated and setted
+            $entity->set('uniqid', Uuid::uuid4());
+        }
+        $id = $this->getDb()->save($entity, $last); // standard stuff for normal AI id
         if ($entity->get('id'))
           $entity->set('id', $id);
         $entity->initParametersChanges();
