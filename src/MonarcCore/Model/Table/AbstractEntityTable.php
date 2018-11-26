@@ -240,7 +240,8 @@ abstract class AbstractEntityTable
                   $entity->set($key, $value);
               }
             }else {
-                $entity->set('id', $id);
+              file_put_contents('php://stderr', print_r($this->getClassMetadata()->getSingleIdentifierFieldName(), TRUE).PHP_EOL);
+                $entity->set($this->getClassMetadata()->getSingleIdentifierFieldName(), $id);
             }
             $entity = $this->getDb()->fetch($entity);
             if (!$entity) {
