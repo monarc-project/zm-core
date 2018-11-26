@@ -20,6 +20,7 @@ abstract class AbstractEntityTable
     protected $class;
     protected $language;
     protected $connectedUser;
+    protected $em; //entityManager
 
     /**
      * AbstractEntityTable constructor.
@@ -29,6 +30,7 @@ abstract class AbstractEntityTable
     public function __construct(\MonarcCore\Model\Db $dbService, $class = null)
     {
         $this->db = $dbService;
+        $em = $this->getDb()->getEntityManager();
         if ($class != null) {
             $this->class = $class;
         } else {
@@ -235,12 +237,13 @@ abstract class AbstractEntityTable
         if (class_exists($class)) {
             $entity = new $class();
             $entity->setDbAdapter($this->getDb());
-            if (is_array($id)){
+            if (is_array($id)){ //composed key
               foreach ($id as $key => $value) {
                   $entity->set($key, $value);
               }
-            }else {
-                $entity->set('id', $id);
+            }else { //single key
+              $identifier = $em->getClassMetadata(get_class($this))->getSingleIdentifierFieldName();
+              $entity->set($identifier, $id);
             }
             $entity = $this->getDb()->fetch($entity);
             if (!$entity) {
