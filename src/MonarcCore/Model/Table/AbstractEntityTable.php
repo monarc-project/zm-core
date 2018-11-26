@@ -538,7 +538,13 @@ abstract class AbstractEntityTable
             }
 
             $entity = new $c();
-            $entity->set('id', $id);
+            if (is_array($id)){
+              foreach ($id as $key => $value) {
+                  $entity->set($key, $value);
+              }
+            }else {
+                $entity->set($this->getClassMetadata()->getSingleIdentifierFieldName(), $id);
+            }
             $entity = $this->getDb()->fetch($entity);
 
             $params = $entity->get('parameters');
