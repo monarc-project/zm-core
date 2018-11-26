@@ -242,7 +242,7 @@ abstract class AbstractEntityTable
                   $entity->set($key, $value);
               }
             }else { //single key
-              $identifier = $em->getClassMetadata(get_class($this))->getSingleIdentifierFieldName();
+              $identifier = $em->getClassMetadata($class)->getSingleIdentifierFieldName();
               $entity->set($identifier, $id);
             }
             $entity = $this->getDb()->fetch($entity);
