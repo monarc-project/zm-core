@@ -530,13 +530,14 @@ abstract class AbstractEntityTable
     {
         $c = $this->getClass();
         if (class_exists($c)) {
-            try {
+            if (!is_array($id)){
+              try {
                 $id = Uuid::fromString($id);
-            }
-            catch (InvalidUuidStringException $e) {
+              }
+              catch (InvalidUuidStringException $e) {
                 $id = (int)$id;
+              }
             }
-
             $entity = new $c();
             if (is_array($id)){
               foreach ($id as $key => $value) {
