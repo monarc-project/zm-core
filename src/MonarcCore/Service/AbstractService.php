@@ -519,10 +519,15 @@ abstract class AbstractService extends AbstractServiceFactory
                 if ($metadata->hasAssociation($propertyname)) {
                     $class = $metadata->getAssociationTargetClass($propertyname);
                     if (!is_array($value) || isset($value['id'])) {
+
                       if(isset($value['uniqid']))
-                        $dep = $db->getReference($class, isset($value['uniqid']) ? $value['uniqid'] : $value);
+                        {$dep = $db->getReference($class, isset($value['uniqid']) ? $value['uniqid'] : $value);
+                          file_put_contents('php://stderr', print_r('passage 22'. $value , TRUE).PHP_EOL);
+}
                       else
-                        $dep = $db->getReference($class, isset($value['id']) ? $value['id'] : $value);
+                        {$dep = $db->getReference($class, isset($value['id']) ? $value['id'] : $value);
+                          file_put_contents('php://stderr', print_r('passage 33'. $value , TRUE).PHP_EOL);
+}
 
                         if (isset($dep->anr) && isset($entity->anr) && $dep->anr instanceof \MonarcCore\Model\Entity\AnrSuperClass) {
                             $depAnrId = $dep->anr->id;
@@ -531,22 +536,26 @@ abstract class AbstractService extends AbstractServiceFactory
                                 throw new \MonarcCore\Exception\Exception('You are not authorized to use this dependency', 412);
                             }
                         }
-
-                        if (!$dep->id) {
+                        if (!$dep->id && !$dep->uniqid) {
                             throw new \MonarcCore\Exception\Exception('Entity does not exist', 412);
                         }
                         $entity->set($propertyname, $dep);
                     } elseif (!array_key_exists('id', $value)) {
+                      file_put_contents('php://stderr', print_r($value, TRUE).PHP_EOL);
+                      $dep = $db->getReference($class, $value);
                         $a_dep = [];
-                        foreach ($value as $v) {
-                            if (!is_null($v) && !empty($v) && !is_object($v)) {
-                                $dep = $db->getReference($class, $v);
-                                if (!$dep->id) {
-                                    throw new \MonarcCore\Exception\Exception('Entity does not exist', 412);
-                                }
-                                $a_dep[] = $dep;
-                            }
-                        }
+                        $a_dep[] = $dep;
+                        // foreach ($value as $v) {
+                        //   file_put_contents('php://stderr', print_r($v , TRUE).PHP_EOL);
+                        //
+                        //     // if (!is_null($v) && !empty($v) && !is_object($v)) {
+                        //     //     $dep = $db->getReference($class, $v);
+                        //     //     if (!$dep->id) {
+                        //     //         throw new \MonarcCore\Exception\Exception('Entity does not exist', 412);
+                        //     //     }
+                        //     //     $a_dep[] = $dep;
+                        //     // }
+                        // }
                         $entity->set($propertyname, $a_dep);
                     }
                 } else { // DEPRECATED
