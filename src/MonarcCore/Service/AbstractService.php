@@ -542,21 +542,25 @@ abstract class AbstractService extends AbstractServiceFactory
                         }
                         $entity->set($propertyname, $dep);
                     } elseif (!array_key_exists('id', $value)) {
-                      $dep = $db->getReference($class, $value);
-                        $a_dep = [];
-                        $a_dep[] = $dep;
-                      if($dep == null){
-                        foreach ($value as $v) {
-                            if (!is_null($v) && !empty($v) && !is_object($v)) {
-                                $dep = $db->getReference($class, $v);
-                                if (!$dep->id) {
-                                    throw new \MonarcCore\Exception\Exception('Entity does not exist', 412);
-                                }
-                                $a_dep[] = $dep;
-                            }
-                        }
+                      $a_dep = [];
+                      try {
+                          $dep = $db->getReference($class, $value);
+                          $a_dep[] = $dep;
+                      } catch (\Exception $e) {
+
+                          foreach ($value as $v) {
+                              if (!is_null($v) && !empty($v) && !is_object($v)) {
+                                  $dep = $db->getReference($class, $v);
+                                  if (!$dep->id &&!$dep->uniqid) {
+                                      throw new \MonarcCore\Exception\Exception('Entity does not exist', 412);
+                                  }
+                                  $a_dep[] = $dep;
+                              }
+                          }
+
                       }
-                        $entity->set($propertyname, $a_dep);
+                      $entity->set($propertyname, $a_dep);
+
                     }
                 } else { // DEPRECATED
                     $tableName = $deptable . 'Table';
