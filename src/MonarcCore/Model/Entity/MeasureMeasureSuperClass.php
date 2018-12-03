@@ -8,6 +8,7 @@
 namespace MonarcCore\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Ramsey\Uuid\UuidInterface;
 
 /**
  * Measure Measure
@@ -34,7 +35,7 @@ class MeasureMeasureSuperClass extends AbstractEntity
      *
      * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Measure", cascade={"persist"})
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="father_id", referencedColumnName="id", nullable=true)
+     *   @ORM\JoinColumn(name="father_id", referencedColumnName="uniqid", nullable=true)
      * })
      */
     protected $father;
@@ -44,7 +45,7 @@ class MeasureMeasureSuperClass extends AbstractEntity
      *
      * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Measure", cascade={"persist"})
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="child_id", referencedColumnName="id", nullable=true)
+     *   @ORM\JoinColumn(name="child_id", referencedColumnName="uniqid", nullable=true)
      * })
      */
     protected $child;

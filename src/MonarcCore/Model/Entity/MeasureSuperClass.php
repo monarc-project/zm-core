@@ -8,6 +8,7 @@
 namespace MonarcCore\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Ramsey\Uuid\UuidInterface;
 
 /**
 * Measure
@@ -25,8 +26,8 @@ class MeasureSuperClass extends AbstractEntity
   /**
    * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Measure")
    * @ORM\JoinTable(name="measures_measures",
-   *     joinColumns={@ORM\JoinColumn(name="father_id", referencedColumnName="id")},
-   *     inverseJoinColumns={@ORM\JoinColumn(name="child_id", referencedColumnName="id")}
+   *     joinColumns={@ORM\JoinColumn(name="father_id", referencedColumnName="uniqid")},
+   *     inverseJoinColumns={@ORM\JoinColumn(name="child_id", referencedColumnName="uniqid")}
    * )
    */
    protected $measuresLinked;
@@ -34,11 +35,10 @@ class MeasureSuperClass extends AbstractEntity
     /**
     * @var integer
     *
-    * @ORM\Column(name="id", type="integer", nullable=false)
+    * @ORM\Column(name="uniqid", type="uuid", nullable=false)
     * @ORM\Id
-    * @ORM\GeneratedValue(strategy="IDENTITY")
     */
-    protected $id;
+    protected $uniqid;
 
     /**
     * @var \MonarcCore\Model\Entity\Anr
@@ -182,7 +182,7 @@ class MeasureSuperClass extends AbstractEntity
         $currentMeasures = $this->measuresLinked;
         if ($currentMeasures) {
             foreach ($currentMeasures as $currentMeasure) {
-                if ($currentMeasure->id == $measure->id) {
+                if ($currentMeasure->uniqid == $measure->uniqid) {
                     unset($currentMeasures[$i]);
                     $delete = true;
                 }
@@ -193,22 +193,30 @@ class MeasureSuperClass extends AbstractEntity
             $measure->deleteLinkedMeasure($this); //delete the measure in the other way
         }
     }
-
     /**
-    * @return int
-    */
-    public function getId()
+    * Usefull for validator
+     * @return UuidInterface
+     */
+    public function getId(): UuidInterface
     {
-        return $this->id;
+        return $this->uniqid;
     }
 
     /**
-    * @param int $id
-    * @return Model
-    */
-    public function setId($id)
+     * @return UuidInterface
+     */
+    public function getUniqid(): UuidInterface
     {
-        $this->id = $id;
+        return $this->uniqid;
+    }
+
+    /**
+     * @param UuidInterface $uniqid
+     * @return Referential
+     */
+    public function setUniqid($uniqid)
+    {
+        $this->uniqid = $uniqid;
         return $this;
     }
 
