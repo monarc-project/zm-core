@@ -271,6 +271,13 @@ class InstanceRiskTable extends AbstractEntityTable
             $queryParams[':id'] = $instance->get('id');
         }
 
+        // FILTER: amvs ==
+        if (isset($params['amvs'])) {
+          $params['amvs'] = explode(',', substr($params['amvs'],1,-1));
+          $sql .= " AND a.id IN (:amvIds) ";
+          $queryParams[':amvIds'] = $params['amvs'];
+          $typeParams[':amvIds'] = \Doctrine\DBAL\Connection::PARAM_INT_ARRAY;
+        }
         // FILTER: kind_of_measure ==
         if (isset($params['kindOfMeasure'])) {
             if ($params['kindOfMeasure'] == \MonarcCore\Model\Entity\InstanceRiskSuperClass::KIND_NOT_TREATED) {
