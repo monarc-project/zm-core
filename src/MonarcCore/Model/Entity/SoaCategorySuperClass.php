@@ -40,7 +40,7 @@ class SoaCategorySuperClass extends AbstractEntity
     /**
      * @var \MonarcCore\Model\Entity\Referential
      *
-     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Referential", inversedBy="categories")
+     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Referential", inversedBy="categories", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="referential_uniqid", referencedColumnName="uniqid", nullable=true)
      * })
