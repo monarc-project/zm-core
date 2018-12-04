@@ -118,7 +118,7 @@ class Db {
      */
     public function count($entity) {
         $repository = $this->getEntityManager()->getRepository(get_class($entity));
-        return $repository->createQueryBuilder('u')->select('count(u.id)')->getQuery()->getSingleScalarResult();
+        return $repository->createQueryBuilder('u')->select('count(u)')->getQuery()->getSingleScalarResult();
     }
 
     /**
@@ -135,7 +135,7 @@ class Db {
     public function countFiltered($entity, $filter = null, $filterAnd = null, $filterJoin = null, $filterLeft = null) {
         $repository = $this->getEntityManager()->getRepository(get_class($entity));
         $qb = $this->buildFilteredQuery($repository, 1, 0, null, $filter, $filterAnd, $filterJoin, $filterLeft);
-        $qb->select('count(t.id)');
+        $qb->select('count(t)');
 
         return $qb->getQuery()->getSingleScalarResult();
     }
