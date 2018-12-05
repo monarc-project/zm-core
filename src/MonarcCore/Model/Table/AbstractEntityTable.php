@@ -323,7 +323,7 @@ abstract class AbstractEntityTable
         }
 
         if($this->getClassMetadata()->getIdentifierFieldNames())
-          {
+        {
           $ids = $this->getClassMetadata()->getIdentifierFieldNames(); // fetch for the composite key
           foreach ($ids as $key => $value) {
             if($value==='uniqid' && !$entity->get('uniqid') ) //uniqid have to be generated and setted

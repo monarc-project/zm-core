@@ -23,7 +23,14 @@ use Ramsey\Uuid\UuidInterface;
 class MeasureSuperClass extends AbstractEntity
 {
 
-  
+  /**
+   * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Measure")
+   * @ORM\JoinTable(name="measures_measures",
+   *     joinColumns={@ORM\JoinColumn(name="father_id", referencedColumnName="uniqid")},
+   *     inverseJoinColumns={@ORM\JoinColumn(name="child_id", referencedColumnName="uniqid")}
+   * )
+   */
+   protected $measuresLinked;
 
     /**
     * @var integer
