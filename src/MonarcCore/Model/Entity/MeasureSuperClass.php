@@ -152,13 +152,13 @@ class MeasureSuperClass extends AbstractEntity
    * @param Measure $measure
    * @throws \Exception
    */
-    public function addLinkedMeasure(MeasureSuperClass $measure)
+    public function addLinkedMeasure( $measure)
     {
       $errors=false;
         $currentMeasures = $this->measuresLinked;
         if ($currentMeasures) {
             foreach ($currentMeasures as $currentMeasure) {
-                if ($currentMeasure->id == $measure->id) {
+                if ($currentMeasure->uniqid == $measure->uniqid) {
                     $errors = true;
                 }
             }

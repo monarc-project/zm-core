@@ -20,4 +20,24 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class MeasureMeasure extends MeasureMeasureSuperClass
 {
+
+      /**
+       * @var \MonarcCore\Model\Entity\Measure
+       * @ORM\Id
+       * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Measure", cascade={"persist"})
+       * @ORM\JoinColumns({
+       *   @ORM\JoinColumn(name="father_id", referencedColumnName="uniqid", nullable=true)
+       * })
+       */
+      protected $father;
+
+      /**
+       * @var \MonarcCore\Model\Entity\Measure
+       * @ORM\Id
+       * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Measure", cascade={"persist"})
+       * @ORM\JoinColumns({
+       *   @ORM\JoinColumn(name="child_id", referencedColumnName="uniqid", nullable=true)
+       * })
+       */
+      protected $child;
 }
