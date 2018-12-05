@@ -21,35 +21,6 @@ use Ramsey\Uuid\UuidInterface;
  */
 class MeasureMeasureSuperClass extends AbstractEntity
 {
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     */
-    protected $id;
-
-    /**
-     * @var \MonarcCore\Model\Entity\Measure
-     *
-     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Measure", cascade={"persist"})
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="father_id", referencedColumnName="uniqid", nullable=true)
-     * })
-     */
-    protected $father;
-
-    /**
-     * @var \MonarcCore\Model\Entity\Measure
-     *
-     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Measure", cascade={"persist"})
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="child_id", referencedColumnName="uniqid", nullable=true)
-     * })
-     */
-    protected $child;
-
       /**
      * @var string
      *
