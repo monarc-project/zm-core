@@ -193,14 +193,6 @@ class MeasureSuperClass extends AbstractEntity
             $measure->deleteLinkedMeasure($this); //delete the measure in the other way
         }
     }
-    /**
-    * Usefull for validator
-     * @return UuidInterface
-     */
-    public function getId(): UuidInterface
-    {
-        return $this->uniqid;
-    }
 
     /**
      * @return UuidInterface
