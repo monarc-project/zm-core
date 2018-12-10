@@ -32,7 +32,7 @@ class MeasureService extends AbstractService
     /**
      * @inheritdoc
      */
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
+    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null, $filterJoin = null)
     {
         $data = $this->get('table')->fetchAllFiltered(
             array_keys($this->get('entity')->getJsonArray()),
@@ -40,7 +40,8 @@ class MeasureService extends AbstractService
             0,
             $this->parseFrontendOrder($order),
             $this->parseFrontendFilter($filter, $this->filterColumns),
-            $filterAnd
+            $filterAnd,
+            $filterJoin
         );
 
         // TODO: try to order in SQL instead of php with usort

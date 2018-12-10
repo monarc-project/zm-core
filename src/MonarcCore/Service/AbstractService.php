@@ -159,7 +159,7 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param array|null $filterAnd The array of columns => values which should be filtered (in a WHERE.. AND.. fashion)
      * @return array An array of elements based on the provided search query
      */
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
+    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null, $filterJoin = null)
     {
         return $this->get('table')->fetchAllFiltered(
             array_keys($this->get('entity')->getJsonArray()),
@@ -167,7 +167,8 @@ abstract class AbstractService extends AbstractServiceFactory
             $limit,
             $this->parseFrontendOrder($order),
             $this->parseFrontendFilter($filter, $this->filterColumns),
-            $filterAnd
+            $filterAnd,
+            $filterJoin
         );
     }
 
