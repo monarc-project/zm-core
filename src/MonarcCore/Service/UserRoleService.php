@@ -25,7 +25,7 @@ class UserRoleService extends AbstractService
     /**
      * @inheritdoc
      */
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $options = [])
+    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $options = [], $filterJoin = null)
     {
         /** @var UserRoleTable $userRoleTable */
         $userRoleTable = $this->get('userRoleTable');
