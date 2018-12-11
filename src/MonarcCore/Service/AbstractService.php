@@ -141,10 +141,10 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param array|null $filterAnd The array of columns => values which should be filtered (in a WHERE.. AND.. fashion)
      * @return int The number of elements retrieved from the query
      */
-    public function getFilteredCount($filter = null, $filterAnd = null)
+    public function getFilteredCount($filter = null, $filterAnd = null, $filterJoin = null)
     {
         // set limit to null because we want to count the total number of objects
-        return count($this->getList(1, null, null, $filter, $filterAnd, null));
+        return count($this->getList(1, null, null, $filter, $filterAnd, $filterJoin));
         // return $this->get('table')->countFiltered(
         //     $this->parseFrontendFilter($filter, $this->filterColumns),
         //     $filterAnd
