@@ -143,10 +143,11 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     public function getFilteredCount($filter = null, $filterAnd = null)
     {
-        return $this->get('table')->countFiltered(
-            $this->parseFrontendFilter($filter, $this->filterColumns),
-            $filterAnd
-        );
+        return count($this->getList(1, 0, null, $filter, $filterAnd));
+        // return $this->get('table')->countFiltered(
+        //     $this->parseFrontendFilter($filter, $this->filterColumns),
+        //     $filterAnd
+        // );
     }
 
     /**
