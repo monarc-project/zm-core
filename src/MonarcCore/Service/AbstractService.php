@@ -143,6 +143,7 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     public function getFilteredCount($filter = null, $filterAnd = null)
     {
+        // set limit to 0 because we want to count the total number of objects
         return count($this->getList(1, 0, null, $filter, $filterAnd));
         // return $this->get('table')->countFiltered(
         //     $this->parseFrontendFilter($filter, $this->filterColumns),
