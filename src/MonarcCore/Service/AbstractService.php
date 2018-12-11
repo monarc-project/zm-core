@@ -143,8 +143,8 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     public function getFilteredCount($filter = null, $filterAnd = null)
     {
-        // set limit to 0 because we want to count the total number of objects
-        return count($this->getList(1, 0, null, $filter, $filterAnd));
+        // set limit to null because we want to count the total number of objects
+        return count($this->getList(1, null, null, $filter, $filterAnd, null));
         // return $this->get('table')->countFiltered(
         //     $this->parseFrontendFilter($filter, $this->filterColumns),
         //     $filterAnd
@@ -155,7 +155,7 @@ abstract class AbstractService extends AbstractServiceFactory
      * Returns the list of elements based on the provided filters passed in parameters. Results are paginated (using the
      * $page and $limit combo), except when $limit is <= 0, in which case all results will be returned.
      * @param int $page The page number, starting at 1.
-     * @param int $limit The maximum number of elements retrieved, or 0 to retrieve everything
+     * @param int $limit The maximum number of elements retrieved, or null to retrieve everything
      * @param array|null $order The order in which elements should be retrieved (['column' => 'ASC/DESC'])
      * @param array|null $filter The array of columns => values which should be filtered (in a WHERE.. OR.. fashion)
      * @param array|null $filterAnd The array of columns => values which should be filtered (in a WHERE.. AND.. fashion)
