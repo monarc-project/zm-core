@@ -192,7 +192,7 @@ abstract class AbstractController extends AbstractRestfulController
                           $entity[$dependency] = $entity[$dependency]->getJsonArray();
                             if(!empty($subField)){
                               foreach ($subField as $key => $value){
-                                $entity[$dependency][$value] = $entity[$dependency][$value]->getJsonArray();
+                                $entity[$dependency][$value] = $entity[$dependency][$value] ? $entity[$dependency][$value]->getJsonArray() : [];
                                 unset($entity[$dependency][$value]['__initializer__']);
                                 unset($entity[$dependency][$value]['__cloner__']);
                                 unset($entity[$dependency][$value]['__isInitialized__']);
