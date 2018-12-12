@@ -548,7 +548,7 @@ abstract class AbstractService extends AbstractServiceFactory
                       $a_dep = [];
                       try {
                           $dep = $db->getReference($class, $value);
-                          $a_dep[] = $dep;
+                          $entity->set($propertyname, $dep);
                       } catch (\Exception $e) {
 
                           foreach ($value as $v) {
@@ -560,9 +560,9 @@ abstract class AbstractService extends AbstractServiceFactory
                                   $a_dep[] = $dep;
                               }
                           }
-
+                        $entity->set($propertyname, $a_dep);
                       }
-                      $entity->set($propertyname, $a_dep);
+
 
                     }
                 } else { // DEPRECATED
