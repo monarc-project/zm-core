@@ -335,7 +335,7 @@ class Db {
      * @param $repository
      * @param int $page
      * @param int $limit
-     * @param null $order
+     * @param null $order : to order on join filter : ['name_of_the_alias'.'name_of_the_field']['ASC']
      * @param null $filter
      * @param null $filterAnd
      * @param null $filterJoin
@@ -460,7 +460,10 @@ class Db {
 
         // Add order
         if ($order != null) {
-            $qb->orderBy('t.' . $order[0], $order[1]);
+            if(count(explode('.',$order[0]))>1)
+              $qb->orderBy($order[0], $order[1]); //link on join table
+            else
+              $qb->orderBy('t.' . $order[0], $order[1]);
         }
 
         // Add limit and offset
