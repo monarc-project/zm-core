@@ -37,7 +37,7 @@ class MeasureService extends AbstractService
          {
              list($filterJoin,$filterLeft,$filtersCol) = $this->get('entity')->getFiltersForService();
 
-             $data =  $this->get('table')->fetchAllFiltered(
+             return  $this->get('table')->fetchAllFiltered(
                  array_keys($this->get('entity')->getJsonArray()),
                  $page,
                  $limit,
@@ -47,51 +47,52 @@ class MeasureService extends AbstractService
                  $filterJoin,
                  $filterLeft
              );
-
-
-        // TODO: try to order in SQL instead of php with usort
-        if ($order == "code" || $order == "-code") {
-            $desc = ($order == "-code");
-
-            // Codes might be in xx.xx.xx format which need a numerical sorting instead of an alphabetical one
-            $re = '/^([0-9]+\.)+[0-9]+$/m';
-            usort($data, function ($a, $b) use ($re, $desc) {
-                $a['code'] = trim($a['code']);
-                $b['code'] = trim($b['code']);
-                $a_match = (preg_match($re, $a['code']) > 0);
-                $b_match = (preg_match($re, $b['code']) > 0);
-
-                if ($a_match && $b_match) {
-                    $a_values = explode('.', $a['code']);
-                    $b_values = explode('.', $b['code']);
-
-                    if (count($a_values) < count($b_values)) {
-                        return $desc ? 1 : -1;
-                    } else if (count($a_values) > count($b_values)) {
-                        return $desc ? -1 : 1;
-                    } else {
-                        for ($i = 0; $i < count($a_values); ++$i) {
-                            if ($a_values[$i] != $b_values[$i]) {
-                                return $desc ? (intval($b_values[$i]) - intval($a_values[$i])) : (intval($a_values[$i]) - intval($b_values[$i]));
-                            }
-                        }
-
-                        // If we reach here, all values are equal
-                        return 0;
-                    }
-
-
-                } else if ($a_match && !$b_match) {
-                    return $desc ? 1 : -1;
-                } else if (!$a_match && $b_match) {
-                    return $desc ? -1 : 1;
-                } else {
-                    return $desc ? strcmp($b_match, $a_match) : strcmp($a_match, $b_match);
-                }
-            });
-
-        }
-
-        return array_slice($data, ($page - 1) * $limit, $limit, false);
+        //      file_put_contents('php://stderr', print_r($data, TRUE).PHP_EOL);
+        //
+        //
+        // // TODO: try to order in SQL instead of php with usort
+        // if ($order == "code" || $order == "-code") {
+        //     $desc = ($order == "-code");
+        //
+        //     // Codes might be in xx.xx.xx format which need a numerical sorting instead of an alphabetical one
+        //     $re = '/^([0-9]+\.)+[0-9]+$/m';
+        //     usort($data, function ($a, $b) use ($re, $desc) {
+        //         $a['code'] = trim($a['code']);
+        //         $b['code'] = trim($b['code']);
+        //         $a_match = (preg_match($re, $a['code']) > 0);
+        //         $b_match = (preg_match($re, $b['code']) > 0);
+        //
+        //         if ($a_match && $b_match) {
+        //             $a_values = explode('.', $a['code']);
+        //             $b_values = explode('.', $b['code']);
+        //
+        //             if (count($a_values) < count($b_values)) {
+        //                 return $desc ? 1 : -1;
+        //             } else if (count($a_values) > count($b_values)) {
+        //                 return $desc ? -1 : 1;
+        //             } else {
+        //                 for ($i = 0; $i < count($a_values); ++$i) {
+        //                     if ($a_values[$i] != $b_values[$i]) {
+        //                         return $desc ? (intval($b_values[$i]) - intval($a_values[$i])) : (intval($a_values[$i]) - intval($b_values[$i]));
+        //                     }
+        //                 }
+        //
+        //                 // If we reach here, all values are equal
+        //                 return 0;
+        //             }
+        //
+        //
+        //         } else if ($a_match && !$b_match) {
+        //             return $desc ? 1 : -1;
+        //         } else if (!$a_match && $b_match) {
+        //             return $desc ? -1 : 1;
+        //         } else {
+        //             return $desc ? strcmp($b_match, $a_match) : strcmp($a_match, $b_match);
+        //         }
+        //     });
+        //
+        // }
+        //
+        // return array_slice($data, ($page - 1) * $limit, $limit, false);
     }
 }
