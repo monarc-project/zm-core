@@ -141,10 +141,10 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param array|null $filterAnd The array of columns => values which should be filtered (in a WHERE.. AND.. fashion)
      * @return int The number of elements retrieved from the query
      */
-    public function getFilteredCount($filter = null, $filterAnd = null, $filterJoin = null)
+    public function getFilteredCount($filter = null, $filterAnd = null)
     {
         // set limit to null because we want to count the total number of objects
-        return count($this->getList(1, null, null, $filter, $filterAnd, $filterJoin));
+        return count($this->getList(1, null, null, $filter, $filterAnd));
         // return $this->get('table')->countFiltered(
         //     $this->parseFrontendFilter($filter, $this->filterColumns),
         //     $filterAnd
@@ -163,13 +163,21 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
     {
+      $filterJoin = $filterLeft = null;
+      if(is_callable(array($this->get('entity'), 'getFiltersForService'),false,$name))
+      {
+        file_put_contents('php://stderr', print_r($name, TRUE).PHP_EOL);
+          list($filterJoin,$filterLeft,$filtersColumns) = $this->get('entity')->getFiltersForService();
+      }
         return $this->get('table')->fetchAllFiltered(
             array_keys($this->get('entity')->getJsonArray()),
             $page,
             $limit,
             $this->parseFrontendOrder($order),
             $this->parseFrontendFilter($filter, $this->filterColumns),
-            $filterAnd
+            $filterAnd,
+            $filterJoin,
+            $filterLeft
         );
     }
 
