@@ -46,10 +46,9 @@ class MeasureService extends AbstractService
            $filterJoin,
            $filterLeft
        );
-
+       file_put_contents('php://stderr', print_r(count($data), TRUE).PHP_EOL);
         // TODO: try to order in SQL instead of php with usort
         if ($order == "code" || $order == "-code") {
-          file_put_contents('php://stderr', print_r('coucou je passe ici', TRUE).PHP_EOL);
           $desc = ($order == "-code");
           if(!$desc)
             uasort($data, function($a,$b){
@@ -57,7 +56,9 @@ class MeasureService extends AbstractService
           else
             uasort($data, function($a,$b){return strnatcmp ( $b['code'],  $a['code'] );});
         }
-
-        return array_slice($data, ($page - 1) * $limit, $limit, false);
+        if($limit !=0)
+          return array_slice($data, ($page - 1) * $limit, $limit, false);
+        else
+          return $data;
     }
 }
