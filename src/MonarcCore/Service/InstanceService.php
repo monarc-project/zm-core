@@ -37,6 +37,7 @@ class InstanceService extends AbstractService
     protected $scaleTable;
     protected $scaleCommentTable;
     protected $scaleImpactTypeTable;
+    protected $referentialTable;
     protected $instanceConsequenceTable;
     protected $instanceConsequenceEntity;
     protected $recommandationRiskTable; // Used for FO
