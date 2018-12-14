@@ -33,66 +33,31 @@ class MeasureService extends AbstractService
      * @inheritdoc
      */
 
-         public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
-         {
-             list($filterJoin,$filterLeft,$filtersCol) = $this->get('entity')->getFiltersForService();
+    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
+    {
+       list($filterJoin,$filterLeft,$filtersCol) = $this->get('entity')->getFiltersForService();
+       $data =  $this->get('table')->fetchAllFiltered(
+           array_keys($this->get('entity')->getJsonArray()),
+           1,
+           0,
+           $this->parseFrontendOrder($order),
+           $this->parseFrontendFilter($filter, $filtersCol),
+           $filterAnd,
+           $filterJoin,
+           $filterLeft
+       );
 
-             return  $this->get('table')->fetchAllFiltered(
-                 array_keys($this->get('entity')->getJsonArray()),
-                 $page,
-                 $limit,
-                 $this->parseFrontendOrder($order),
-                 $this->parseFrontendFilter($filter, $filtersCol),
-                 $filterAnd,
-                 $filterJoin,
-                 $filterLeft
-             );
-        //      file_put_contents('php://stderr', print_r($data, TRUE).PHP_EOL);
-        //
-        //
-        // // TODO: try to order in SQL instead of php with usort
-        // if ($order == "code" || $order == "-code") {
-        //     $desc = ($order == "-code");
-        //
-        //     // Codes might be in xx.xx.xx format which need a numerical sorting instead of an alphabetical one
-        //     $re = '/^([0-9]+\.)+[0-9]+$/m';
-        //     usort($data, function ($a, $b) use ($re, $desc) {
-        //         $a['code'] = trim($a['code']);
-        //         $b['code'] = trim($b['code']);
-        //         $a_match = (preg_match($re, $a['code']) > 0);
-        //         $b_match = (preg_match($re, $b['code']) > 0);
-        //
-        //         if ($a_match && $b_match) {
-        //             $a_values = explode('.', $a['code']);
-        //             $b_values = explode('.', $b['code']);
-        //
-        //             if (count($a_values) < count($b_values)) {
-        //                 return $desc ? 1 : -1;
-        //             } else if (count($a_values) > count($b_values)) {
-        //                 return $desc ? -1 : 1;
-        //             } else {
-        //                 for ($i = 0; $i < count($a_values); ++$i) {
-        //                     if ($a_values[$i] != $b_values[$i]) {
-        //                         return $desc ? (intval($b_values[$i]) - intval($a_values[$i])) : (intval($a_values[$i]) - intval($b_values[$i]));
-        //                     }
-        //                 }
-        //
-        //                 // If we reach here, all values are equal
-        //                 return 0;
-        //             }
-        //
-        //
-        //         } else if ($a_match && !$b_match) {
-        //             return $desc ? 1 : -1;
-        //         } else if (!$a_match && $b_match) {
-        //             return $desc ? -1 : 1;
-        //         } else {
-        //             return $desc ? strcmp($b_match, $a_match) : strcmp($a_match, $b_match);
-        //         }
-        //     });
-        //
-        // }
-        //
-        // return array_slice($data, ($page - 1) * $limit, $limit, false);
+        // TODO: try to order in SQL instead of php with usort
+        if ($order == "code" || $order == "-code") {
+          file_put_contents('php://stderr', print_r('coucou je passe ici', TRUE).PHP_EOL);
+          $desc = ($order == "-code");
+          if(!$desc)
+            uasort($data, function($a,$b){
+              return strnatcmp ( $a['code'],  $b['code'] );});
+          else
+            uasort($data, function($a,$b){return strnatcmp ( $b['code'],  $a['code'] );});
+        }
+
+        return array_slice($data, ($page - 1) * $limit, $limit, false);
     }
 }
