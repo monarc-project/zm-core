@@ -37,6 +37,8 @@ class AnrService extends AbstractService
     protected $deliveryTable;
     protected $referentialTable;
     protected $measureTable;
+    protected $measureMeasureTable;
+    protected $soaCategoryTable;
 
 
     /**
@@ -283,7 +285,7 @@ class AnrService extends AbstractService
             $measures = $measureTable->getEntityByFields(['anr' => $entity->get('id')]);
             $measuresArray = [
                 'uniqid' => 'uniqid',
-                'referential_uniqid' => 'referential_uniqid',
+                'referential' => 'referential',
                 'code' => 'code',
                 'label1' => 'label1',
                 'label2' => 'label2',
@@ -296,18 +298,33 @@ class AnrService extends AbstractService
             }
 
             // measures-measures
-            //$measureMeasureTable = $this->get('measureMeasureTable');
-            // $measuresMeasures = $measureMeasureTable->getEntityByFields(['anr' => $entity->get('id')]);
-            // $measuresMeasuresArray = [
-            //     'child_id' => 'uniqid',
-            //     'father_id' => 'referential_uniqid'
-            // ];
-            // foreach ($measuresMeasures as $mm) {
-            //     $return['measuresMeasures'] = $mm->getJsonArray($measuresMeasuresArray);
-            // }
+            $return['measuresMeasures'] = [];
+            $measureMeasureTable = $this->get('measureMeasureTable');
+            $measuresMeasures = $measureMeasureTable->getEntityByFields(['anr' => $entity->get('id')]);
+            $measuresMeasuresArray = [
+                'uniqid' => 'uniqid'
+            ];
+            foreach ($measuresMeasures as $mm) {
+                $newMeasureMeasure = [];
+                $newMeasureMeasure['father'] = $mm->father->getJsonArray($measuresMeasuresArray);
+                $newMeasureMeasure['child'] = $mm->child->getJsonArray($measuresMeasuresArray);
+                $return['measuresMeasures'][] = $newMeasureMeasure;
+            }
 
             // category
-
+            $return['categories'] = [];
+            $soaCategoryTable = $this->get('soaCategoryTable');
+            $soaCategories = $soaCategoryTable->getEntityByFields(['anr' => $entity->get('id')]);
+            $soaCategoriesArray = [
+                'referential' => 'referential',
+                'label1' => 'label1',
+                'label2' => 'label2',
+                'label3' => 'label3',
+                'label4' => 'label4'
+            ];
+            foreach ($soaCategories as $c) {
+                $return['categories'][] = $c->getJsonArray($soaCategoriesArray);
+            }
 
             // scales
             $return['scales'] = [];
