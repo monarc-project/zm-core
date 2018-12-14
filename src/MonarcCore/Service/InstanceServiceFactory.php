@@ -27,7 +27,6 @@ class InstanceServiceFactory extends AbstractServiceFactory
         'scaleTable' => 'MonarcCore\Model\Table\ScaleTable',
         'scaleCommentTable' => 'MonarcCore\Model\Table\ScaleCommentTable',
         'scaleImpactTypeTable' => 'MonarcCore\Model\Table\ScaleImpactTypeTable',
-        'referentialTable' => 'MonarcCore\Model\Table\ReferentialTable',
         'instanceConsequenceService' => 'MonarcCore\Service\InstanceConsequenceService',
         'instanceRiskService' => 'MonarcCore\Service\InstanceRiskService',
         'instanceRiskOpService' => 'MonarcCore\Service\InstanceRiskOpService',

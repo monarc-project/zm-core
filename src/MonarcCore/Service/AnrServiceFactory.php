@@ -28,8 +28,6 @@ class AnrServiceFactory extends AbstractServiceFactory
         'scaleTable' => 'MonarcCore\Model\Table\ScaleTable',
         'scaleImpactTypeTable' => 'MonarcCore\Model\Table\ScaleImpactTypeTable',
         'scaleCommentTable' => 'MonarcCore\Model\Table\ScaleCommentTable',
-        'referentialTable' => 'MonarcCore\Model\Table\ReferentialTable',
-        'measureTable' => 'MonarcCore\Model\Table\MeasureTable',
         'instanceService' => 'MonarcCore\Service\InstanceService',
     ];
 }

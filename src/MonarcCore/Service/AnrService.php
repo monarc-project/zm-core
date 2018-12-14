@@ -10,7 +10,6 @@ namespace MonarcCore\Service;
 use MonarcCore\Model\Entity\Anr;
 use MonarcCore\Model\Table\AnrTable;
 use MonarcCore\Model\Table\MonarcObjectTable;
-use MonarcCore\Model\Entity\Referential;
 
 /**
 * Anr Service
@@ -265,37 +264,49 @@ class AnrService extends AbstractService
         if ($with_eval) {
             // referentials
             $return['referentials'] = [];
-            // $referentialTable = $this->get('referentialTable');
-            // //file_put_contents('php://stderr', print_r($referentialTable, TRUE).PHP_EOL);
-            // $referentials = $referentialTable->getEntityByFields(['anr' => $entity->get('id')]);
-            // $referentialsArray = [
-            //     'uniqid' => 'uniqid',
-            //     'label1' => 'label1',
-            //     'label2' => 'label2',
-            //     'label3' => 'label3',
-            //     'label4' => 'label4',
-            // ];
-            // foreach ($referentials as $r) {
-            //     $return['referentials'][$s->uniqid] = $s->getJsonArray($referentialsArray);
-            // }
+            $referentialTable = $this->get('referentialTable');
+            $referentials = $referentialTable->getEntityByFields(['anr' => $entity->get('id')]);
+            $referentialsArray = [
+                'uniqid' => 'uniqid',
+                'label1' => 'label1',
+                'label2' => 'label2',
+                'label3' => 'label3',
+                'label4' => 'label4'
+            ];
+            foreach ($referentials as $r) {
+                $return['referentials'][$r->getUniqid()->toString()] = $r->getJsonArray($referentialsArray);
+            }
 
+            // measures
             $return['measures'] = [];
             $measureTable = $this->get('measureTable');
-            // //file_put_contents('php://stderr', print_r($referentialTable, TRUE).PHP_EOL);
-            // $measures = $measureTable->getEntityByFields(['anr' => $entity->get('id')]);
-            // $measuresArray = [
-            //     'uniqid' => 'uniqid',
-            //     'referential_uniqid' => 'referential_uniqid',
-            //     'code' => 'code',
-            //     'label1' => 'label1',
-            //     'label2' => 'label2',
-            //     'label3' => 'label3',
-            //     'label4' => 'label4',
-            //     'status' => 'status',
+            $measures = $measureTable->getEntityByFields(['anr' => $entity->get('id')]);
+            $measuresArray = [
+                'uniqid' => 'uniqid',
+                'referential_uniqid' => 'referential_uniqid',
+                'code' => 'code',
+                'label1' => 'label1',
+                'label2' => 'label2',
+                'label3' => 'label3',
+                'label4' => 'label4',
+                'status' => 'status'
+            ];
+            foreach ($measures as $m) {
+                $return['measures'][$m->getUniqid()->toString()] = $m->getJsonArray($measuresArray);
+            }
+
+            // measures-measures
+            //$measureMeasureTable = $this->get('measureMeasureTable');
+            // $measuresMeasures = $measureMeasureTable->getEntityByFields(['anr' => $entity->get('id')]);
+            // $measuresMeasuresArray = [
+            //     'child_id' => 'uniqid',
+            //     'father_id' => 'referential_uniqid'
             // ];
-            // foreach ($measures as $m) {
-            //     $return['measures'][$m->uniqid] = $s->getJsonArray($measuresArray);
+            // foreach ($measuresMeasures as $mm) {
+            //     $return['measuresMeasures'] = $mm->getJsonArray($measuresMeasuresArray);
             // }
+
+            // category
 
 
             // scales

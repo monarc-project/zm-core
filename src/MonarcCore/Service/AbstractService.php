@@ -13,7 +13,6 @@ use MonarcCore\Model\Table\AbstractEntityTable;
 use MonarcCore\Model\Table\AnrTable;
 use MonarcCore\Model\Table\ObjectObjectTable;
 use MonarcCore\Model\Table\ScaleTable;
-use MonarcCore\Model\Table\ReferentialTable;
 use MonarcCore\Traits\RiskTrait;
 
 use MonarcFO\Model\Table\UserAnrTable;
