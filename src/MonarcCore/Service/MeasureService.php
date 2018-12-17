@@ -59,6 +59,6 @@ class MeasureService extends AbstractService
         if($limit !=0)
           return array_slice($data, ($page - 1) * $limit, $limit, false);
         else
-          return $data;
+          return array_slice($data, 0, null, false);
     }
 }
