@@ -39,17 +39,21 @@ abstract class AbstractService extends AbstractServiceFactory
      * @var \MonarcCore\Model\Table\AbstractEntityTable
      */
     protected $table;
+
     /**
      * The default entity used in this service
      * @var \MonarcCore\Model\Entity\AbstractEntity
      */
     protected $entity;
+
     protected $label;
+
     /**
      * The list of fields deleted during POST/PUT/PATCH
      * @var array
      */
     protected $forbiddenFields = [];
+
     /**
      * The list of fields corresponding to the entity's dependencies
      * @var array
@@ -166,7 +170,6 @@ abstract class AbstractService extends AbstractServiceFactory
       $filterJoin = $filterLeft = null;
       if(is_callable(array($this->get('entity'), 'getFiltersForService'),false,$name))
       {
-        file_put_contents('php://stderr', print_r($name, TRUE).PHP_EOL);
           list($filterJoin,$filterLeft,$filtersColumns) = $this->get('entity')->getFiltersForService();
       }
         return $this->get('table')->fetchAllFiltered(
