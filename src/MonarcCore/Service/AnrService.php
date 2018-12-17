@@ -295,7 +295,7 @@ class AnrService extends AbstractService
             ];
             foreach ($measures as $m) {
                 $newMeasure = $m->getJsonArray($measuresArray);
-                $newMeasure['referential'] = $m->getReferential()->getUniqid();
+                $newMeasure['referential'] = $m->getReferential()->getUniqid()->toString();
                 $return['measures'][$m->getUniqid()->toString()] = $newMeasure;
             }
 
@@ -313,19 +313,23 @@ class AnrService extends AbstractService
                 $return['measuresMeasures'][] = $newMeasureMeasure;
             }
 
-            // category
-            $return['categories'] = [];
+            // soacategories
+            $return['soacategories'] = [];
             $soaCategoryTable = $this->get('soaCategoryTable');
             $soaCategories = $soaCategoryTable->getEntityByFields(['anr' => $entity->get('id')]);
             $soaCategoriesArray = [
                 'referential' => 'referential',
+                'code' => 'code',
                 'label1' => 'label1',
                 'label2' => 'label2',
                 'label3' => 'label3',
-                'label4' => 'label4'
+                'label4' => 'label4',
+                'status' => 'status'
             ];
             foreach ($soaCategories as $c) {
-                $return['categories'][] = $c->getJsonArray($soaCategoriesArray);
+                $newSoaCategory = $c->getJsonArray($soaCategoriesArray);
+                $newSoaCategory['referential'] = $c->getReferential()->getUniqid()->toString();
+                $return['soacategories'][] = $newSoaCategory;
             }
 
             // scales
