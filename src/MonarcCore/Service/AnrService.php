@@ -294,10 +294,9 @@ class AnrService extends AbstractService
                 'status' => 'status'
             ];
             foreach ($measures as $m) {
-                $newMeasure = [];
-                $newMeasure[$m->getUniqid()->toString()] = $m->getJsonArray($measuresArray);
-                $newMeasure[$m->getUniqid()->toString()]['referential'] = $m->getReferential()->getUniqid();
-                $return['measures'][] = $newMeasure;
+                $newMeasure = $m->getJsonArray($measuresArray);
+                $newMeasure['referential'] = $m->getReferential()->getUniqid();
+                $return['measures'][$m->getUniqid()->toString()] = $newMeasure;
             }
 
             // measures-measures
