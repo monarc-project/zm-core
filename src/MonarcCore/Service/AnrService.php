@@ -286,6 +286,7 @@ class AnrService extends AbstractService
             $measuresArray = [
                 'uniqid' => 'uniqid',
                 'referential' => 'referential',
+                'category' => 'category',
                 'code' => 'code',
                 'label1' => 'label1',
                 'label2' => 'label2',
@@ -296,6 +297,7 @@ class AnrService extends AbstractService
             foreach ($measures as $m) {
                 $newMeasure = $m->getJsonArray($measuresArray);
                 $newMeasure['referential'] = $m->getReferential()->getUniqid()->toString();
+                $newMeasure['category'] = $m->getCategory()->getCode();
                 $return['measures'][$m->getUniqid()->toString()] = $newMeasure;
             }
 

@@ -108,6 +108,14 @@ class SoaCategorySuperClass extends AbstractEntity
     }
 
     /**
+    * @return string
+    */
+    public function getCode()
+    {
+        return $this->code;
+    }
+
+    /**
     * @return measures
     */
     public function getMeasures()
