@@ -16,9 +16,7 @@
         "php": ">=5.5",
         "zendframework/zendframework": "2.5.3",
         "doctrine/doctrine-orm-module": "1.1.8",
-        "robmorgan/phinx": "0.5.*",
-        "ramsey/uuid": "^3.8",
-        "ramsey/uuid-doctrine": "^1.5"
+        "robmorgan/phinx": "0.5.*"
     },
     "autoload": {
         "psr-0": {"MonarcCore\\":"/"}
