@@ -294,7 +294,9 @@ class AnrService extends AbstractService
                 'status' => 'status'
             ];
             foreach ($measures as $m) {
-                $return['measures'][$m->getUniqid()->toString()] = $m->getJsonArray($measuresArray);
+                $newMeasure = $m->getJsonArray($measuresArray);
+                $newMeasure['referential'] = $m->getReferential()->getUniqid();
+                $return['measures'][$m->getUniqid()->toString()] = $newMeasure;
             }
 
             // measures-measures
@@ -306,8 +308,8 @@ class AnrService extends AbstractService
             ];
             foreach ($measuresMeasures as $mm) {
                 $newMeasureMeasure = [];
-                $newMeasureMeasure['father'] = $mm->father->getJsonArray($measuresMeasuresArray);
-                $newMeasureMeasure['child'] = $mm->child->getJsonArray($measuresMeasuresArray);
+                $newMeasureMeasure['father'] = $mm->getFather()->toString();
+                $newMeasureMeasure['child'] = $mm->getChild()->toString();
                 $return['measuresMeasures'][] = $newMeasureMeasure;
             }
 

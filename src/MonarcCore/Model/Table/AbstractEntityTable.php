@@ -337,7 +337,7 @@ abstract class AbstractEntityTable
         if($entity->get('uniqid'))
           return $entity->get('uniqid');
         else
-          return $id; 
+          return $id;
     }
 
     /**
@@ -549,7 +549,7 @@ abstract class AbstractEntityTable
                 $entity->set($this->getClassMetadata()->getSingleIdentifierFieldName(), $id);
             }
             $entity = $this->getDb()->fetch($entity);
-            file_put_contents('php://stderr', print_r($entity->get('label1'), TRUE).PHP_EOL);
+            //file_put_contents('php://stderr', print_r($entity->get('label1'), TRUE).PHP_EOL);
 
             $params = $entity->get('parameters');
             if (!empty($params['implicitPosition'])) {
