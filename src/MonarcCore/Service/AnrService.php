@@ -308,8 +308,8 @@ class AnrService extends AbstractService
             ];
             foreach ($measuresMeasures as $mm) {
                 $newMeasureMeasure = [];
-                $newMeasureMeasure['father'] = $mm->father->getJsonArray($measuresMeasuresArray);
-                $newMeasureMeasure['child'] = $mm->child->getJsonArray($measuresMeasuresArray);
+                $newMeasureMeasure['father'] = $mm->getFather()->toString();
+                $newMeasureMeasure['child'] = $mm->getChild()->toString();
                 $return['measuresMeasures'][] = $newMeasureMeasure;
             }
 
