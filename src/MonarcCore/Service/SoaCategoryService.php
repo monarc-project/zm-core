@@ -15,5 +15,27 @@ namespace MonarcCore\Service;
  */
 class SoaCategoryService extends AbstractService
 {
-    protected $filterColumns = ['label1', 'label2', 'label3', 'label4'];
+    protected $filterColumns = ['code','label1', 'label2', 'label3', 'label4'];
+    protected $dependencies = ['referential'];
+    protected $referentialTable;
+
+    public function create($data, $last = true)
+    {
+        $class = $this->get('entity');
+
+        $table = $this->get('table');
+        $referentialTable = $this->get('referentialTable');
+        $data['referential'] = $referentialTable->getEntity($data['referential']);
+
+        $entity = new $class();
+
+        $entity->setLanguage($this->getLanguage());
+        $entity->setDbAdapter($table->getDb());
+        $entity->exchangeArray($data);
+
+        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $this->setDependencies($entity, $dependencies);
+
+        return $table->save($entity, $last);
+    }
 }

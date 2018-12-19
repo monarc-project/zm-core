@@ -94,7 +94,7 @@ class Db {
     /**
      * Find entities in repository who matches with filters.
      * Apply order and limit for pagination.
-     * 
+     *
      * @param \MonarcCore\Model\Entity\AbstractEntity $entity
      * @param int $page
      * @param int $limit
@@ -118,13 +118,13 @@ class Db {
      */
     public function count($entity) {
         $repository = $this->getEntityManager()->getRepository(get_class($entity));
-        return $repository->createQueryBuilder('u')->select('count(u.id)')->getQuery()->getSingleScalarResult();
+        return $repository->createQueryBuilder('u')->select('count(u)')->getQuery()->getSingleScalarResult();
     }
 
     /**
      * Count number of elements in repository who matches with filters.
      * Apply order and limit for pagination.
-     * 
+     *
      * @param \MonarcCore\Model\Entity\AbstractEntity $entity
      * @param array|null $filter
      * @param array|null $filterAnd
@@ -135,7 +135,7 @@ class Db {
     public function countFiltered($entity, $filter = null, $filterAnd = null, $filterJoin = null, $filterLeft = null) {
         $repository = $this->getEntityManager()->getRepository(get_class($entity));
         $qb = $this->buildFilteredQuery($repository, 1, 0, null, $filter, $filterAnd, $filterJoin, $filterLeft);
-        $qb->select('count(t.id)');
+        $qb->select('count(t)');
 
         return $qb->getQuery()->getSingleScalarResult();
     }
@@ -155,9 +155,16 @@ class Db {
     public function fetch($entity)
     {
         if (!$entity->get('id')) {
-            throw new \MonarcCore\Exception\Exception('Entity `id` not found.');
+          if ($entity->get('anr')){ // cas du FO
+          return $this->getEntityManager()->find(get_class($entity), ['anr' => $entity->get('anr'),'uniqid'=>$entity->get('uniqid')]);
+          }  //throw new \MonarcCore\Exception\Exception('Entity `id` not found.');
+          else{ // BO
+            return $this->getEntityManager()->find(get_class($entity), ['uniqid'=>$entity->get('uniqid')]);
+          }
+        }else {
+          return $this->getEntityManager()->find(get_class($entity), $entity->get('id'));
         }
-        return $this->getEntityManager()->find(get_class($entity), $entity->get('id'));
+
     }
 
     /**
@@ -305,7 +312,7 @@ class Db {
      * Note: This method may not return a meaningful or consistent result across different drivers,
      * because the underlying database may not even support the notion of AUTO_INCREMENT/IDENTITY
      * columns or sequences.
-     * 
+     *
      * @return string A string representation of the last inserted ID.
      */
     public function lastInsertId(){
@@ -328,7 +335,7 @@ class Db {
      * @param $repository
      * @param int $page
      * @param int $limit
-     * @param null $order
+     * @param null $order : to order on join filter : ['name_of_the_alias'.'name_of_the_field']['ASC']
      * @param null $filter
      * @param null $filterAnd
      * @param null $filterJoin
@@ -453,7 +460,10 @@ class Db {
 
         // Add order
         if ($order != null) {
-            $qb->orderBy('t.' . $order[0], $order[1]);
+            if(count(explode('.',$order[0]))>1)
+              $qb->orderBy($order[0], $order[1]); //link on join table
+            else
+              $qb->orderBy('t.' . $order[0], $order[1]);
         }
 
         // Add limit and offset

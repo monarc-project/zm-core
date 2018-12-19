@@ -5,16 +5,12 @@
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
-namespace MonarcCore\Model\Entity;
-
-use Doctrine\ORM\Mapping as ORM;
+namespace MonarcCore\Service\Model\Entity;
 
 /**
- * Measure
- *
- * @ORM\Table(name="soacategory")
- * @ORM\Entity
+ * Class ReferentialServiceModelEntity
+ * @package MonarcCore\Service\Model\Entity
  */
-class SoaCategory extends SoaCategorySuperClass
+class ReferentialServiceModelEntity extends AbstractServiceModelEntity
 {
 }

@@ -7,6 +7,9 @@
 
 namespace MonarcCore\Model\Table;
 
+use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\Exception\InvalidUuidStringException;
+
 /**
  * Class AbstractEntityTable
  * @package MonarcCore\Model\Table
@@ -232,7 +235,13 @@ abstract class AbstractEntityTable
         if (class_exists($class)) {
             $entity = new $class();
             $entity->setDbAdapter($this->getDb());
-            $entity->set('id', $id);
+            if (is_array($id)){
+              foreach ($id as $key => $value) {
+                  $entity->set($key, $value);
+              }
+            }else {
+                $entity->set($this->getClassMetadata()->getSingleIdentifierFieldName(), $id);
+            }
             $entity = $this->getDb()->fetch($entity);
             if (!$entity) {
                 throw new \MonarcCore\Exception\Exception('Entity does not exist', 412);
@@ -313,11 +322,22 @@ abstract class AbstractEntityTable
             unset($params['implicitPosition']['changes']);
         }
 
-        $id = $this->getDb()->save($entity, $last);
-        $entity->set('id', $id);
+        if($this->getClassMetadata()->getIdentifierFieldNames())
+        {
+          $ids = $this->getClassMetadata()->getIdentifierFieldNames(); // fetch for the composite key
+          foreach ($ids as $key => $value) {
+            if($value==='uniqid' && !$entity->get('uniqid') ) //uniqid have to be generated and setted
+              $entity->set('uniqid', Uuid::uuid4());
+          }
+        }
+        $id = $this->getDb()->save($entity, $last); // standard stuff for normal AI id
+        if ($entity->get('id'))
+          $entity->set('id', $id);
         $entity->initParametersChanges();
-
-        return $id;
+        if($entity->get('uniqid'))
+          return $entity->get('uniqid');
+        else
+          return $id;
     }
 
     /**
@@ -512,11 +532,24 @@ abstract class AbstractEntityTable
     {
         $c = $this->getClass();
         if (class_exists($c)) {
-            $id = (int)$id;
-
+            if (!is_array($id)){
+              try {
+                $id = Uuid::fromString($id);
+              }
+              catch (InvalidUuidStringException $e) {
+                $id = (int)$id;
+              }
+            }
             $entity = new $c();
-            $entity->set('id', $id);
+            if (is_array($id)){
+              foreach ($id as $key => $value) {
+                  $entity->set($key, $value);
+              }
+            }else {
+                $entity->set($this->getClassMetadata()->getSingleIdentifierFieldName(), $id);
+            }
             $entity = $this->getDb()->fetch($entity);
+            //file_put_contents('php://stderr', print_r($entity->get('label1'), TRUE).PHP_EOL);
 
             $params = $entity->get('parameters');
             if (!empty($params['implicitPosition'])) {

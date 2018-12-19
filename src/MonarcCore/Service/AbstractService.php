@@ -39,17 +39,21 @@ abstract class AbstractService extends AbstractServiceFactory
      * @var \MonarcCore\Model\Table\AbstractEntityTable
      */
     protected $table;
+
     /**
      * The default entity used in this service
      * @var \MonarcCore\Model\Entity\AbstractEntity
      */
     protected $entity;
+
     protected $label;
+
     /**
      * The list of fields deleted during POST/PUT/PATCH
      * @var array
      */
     protected $forbiddenFields = [];
+
     /**
      * The list of fields corresponding to the entity's dependencies
      * @var array
@@ -143,17 +147,19 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     public function getFilteredCount($filter = null, $filterAnd = null)
     {
-        return $this->get('table')->countFiltered(
-            $this->parseFrontendFilter($filter, $this->filterColumns),
-            $filterAnd
-        );
+        // set limit to null because we want to count the total number of objects
+        return count($this->getList(1, null, null, $filter, $filterAnd));
+        // return $this->get('table')->countFiltered(
+        //     $this->parseFrontendFilter($filter, $this->filterColumns),
+        //     $filterAnd
+        // );
     }
 
     /**
      * Returns the list of elements based on the provided filters passed in parameters. Results are paginated (using the
      * $page and $limit combo), except when $limit is <= 0, in which case all results will be returned.
      * @param int $page The page number, starting at 1.
-     * @param int $limit The maximum number of elements retrieved, or 0 to retrieve everything
+     * @param int $limit The maximum number of elements retrieved, or null to retrieve everything
      * @param array|null $order The order in which elements should be retrieved (['column' => 'ASC/DESC'])
      * @param array|null $filter The array of columns => values which should be filtered (in a WHERE.. OR.. fashion)
      * @param array|null $filterAnd The array of columns => values which should be filtered (in a WHERE.. AND.. fashion)
@@ -161,13 +167,20 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
     {
+      $filterJoin = $filterLeft = null;
+      if(is_callable(array($this->get('entity'), 'getFiltersForService'),false,$name))
+      {
+          list($filterJoin,$filterLeft,$filtersColumns) = $this->get('entity')->getFiltersForService();
+      }
         return $this->get('table')->fetchAllFiltered(
             array_keys($this->get('entity')->getJsonArray()),
             $page,
             $limit,
             $this->parseFrontendOrder($order),
             $this->parseFrontendFilter($filter, $this->filterColumns),
-            $filterAnd
+            $filterAnd,
+            $filterJoin,
+            $filterLeft
         );
     }
 
@@ -315,6 +328,9 @@ abstract class AbstractService extends AbstractServiceFactory
         $entity->setLanguage($this->getLanguage());
         foreach ($this->dependencies as $dependency) {
             if ((!isset($data[$dependency])) && ($entity->$dependency)) {
+              if($entity->$dependency->uniqid)
+                $data[$dependency] = $entity->$dependency->uniqid;
+              else
                 $data[$dependency] = $entity->$dependency->id;
             }
         }
@@ -516,7 +532,16 @@ abstract class AbstractService extends AbstractServiceFactory
                 if ($metadata->hasAssociation($propertyname)) {
                     $class = $metadata->getAssociationTargetClass($propertyname);
                     if (!is_array($value) || isset($value['id'])) {
-                        $dep = $db->getReference($class, isset($value['id']) ? $value['id'] : $value);
+
+                      if(isset($value['uniqid']))
+                        {$dep = $db->getReference($class, isset($value['uniqid']) ? $value['uniqid'] : $value);
+                          //file_put_contents('php://stderr', print_r($value , TRUE).PHP_EOL);
+                        }
+                      else
+                        {
+                          $dep = $db->getReference($class, isset($value['id']) ? $value['id'] : $value);
+                          //file_put_contents('php://stderr', print_r( $value , TRUE).PHP_EOL);
+                        }
 
                         if (isset($dep->anr) && isset($entity->anr) && $dep->anr instanceof \MonarcCore\Model\Entity\AnrSuperClass) {
                             $depAnrId = $dep->anr->id;
@@ -525,23 +550,30 @@ abstract class AbstractService extends AbstractServiceFactory
                                 throw new \MonarcCore\Exception\Exception('You are not authorized to use this dependency', 412);
                             }
                         }
-
-                        if (!$dep->id) {
+                        if (!$dep->id && !$dep->uniqid) {
                             throw new \MonarcCore\Exception\Exception('Entity does not exist', 412);
                         }
                         $entity->set($propertyname, $dep);
                     } elseif (!array_key_exists('id', $value)) {
-                        $a_dep = [];
-                        foreach ($value as $v) {
-                            if (!is_null($v) && !empty($v) && !is_object($v)) {
-                                $dep = $db->getReference($class, $v);
-                                if (!$dep->id) {
-                                    throw new \MonarcCore\Exception\Exception('Entity does not exist', 412);
-                                }
-                                $a_dep[] = $dep;
-                            }
-                        }
+                      $a_dep = [];
+                      try {
+                          $dep = $db->getReference($class, $value);
+                          $entity->set($propertyname, $dep);
+                      } catch (\Exception $e) {
+
+                          foreach ($value as $v) {
+                              if (!is_null($v) && !empty($v) && !is_object($v)) {
+                                  $dep = $db->getReference($class, $v);
+                                  if (!$dep->id &&!$dep->uniqid) {
+                                      throw new \MonarcCore\Exception\Exception('Entity does not exist', 412);
+                                  }
+                                  $a_dep[] = $dep;
+                              }
+                          }
                         $entity->set($propertyname, $a_dep);
+                      }
+
+
                     }
                 } else { // DEPRECATED
                     $tableName = $deptable . 'Table';

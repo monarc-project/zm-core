@@ -34,10 +34,17 @@ class UniqueCode extends AbstractValidator
      * @inheritdoc
      */
     public function isValid($value){
-
+      $identifier[] = null;
         if(empty($this->options['entity'])){
             return false;
         }else{
+            if (count($this->options['entity']->getDbAdapter()->getClassMetadata(get_class($this->options['entity']))->getIdentifierFieldNames())>1)
+              {
+                $identifier = $this->options['entity']->getDbAdapter()->getClassMetadata(get_class($this->options['entity']))->getIdentifierFieldNames();
+              }
+            else
+              $identifier = $this->options['entity']->getDbAdapter()->getClassMetadata(get_class($this->options['entity']))->getSingleIdentifierFieldName();
+
             $fields = [
                 'code' => $value,
             ];
@@ -45,9 +52,13 @@ class UniqueCode extends AbstractValidator
                 $fields['anr'] = (isset($this->options['entity']->anr->id)) ? $this->options['entity']->anr->id : null;
             }
             $res = $this->options['entity']->getDbAdapter()->getRepository(get_class($this->options['entity']))->findOneBy($fields);
-            if(!empty($res) && $this->options['entity']->getId() != $res->get('id')){
-                $this->error(self::ALREADYUSED);
-                return false;
+            if(!empty($res)){
+              foreach ($identifier as $key => $value) {
+                if($this->options['entity']->get($value) != $res->get($value)){
+                  $this->error(self::ALREADYUSED);
+                  return false;
+                }
+              }
             }
         }
         return true;

@@ -34,13 +34,13 @@ class AmvService extends AbstractService
     protected $historicalService;
     protected $errorMessage;
     protected $filterColumns = ['status'];
-    protected $dependencies = ['anr', 'asset', 'threat', 'vulnerability', 'measure[1]()', 'measure[2]()', 'measure[3]()'];
+    protected $dependencies = ['anr', 'asset', 'threat', 'vulnerability', 'measures'];
     protected $forbiddenFields = ['anr'];
 
     /**
      * @inheritdoc
      */
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
+    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null, $filterJoin = null)
     {
         list($filterJoin,$filterLeft,$filtersCol) = $this->get('entity')->getFiltersForService();
 

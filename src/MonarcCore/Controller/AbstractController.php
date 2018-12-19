@@ -180,13 +180,27 @@ abstract class AbstractController extends AbstractRestfulController
      * Automatically loads the dependencies of the entity based on the class' "dependencies" field
      * @param AbstractEntity $entity The entity for which the deps should be resolved
      * @param array $dependencies The dependencies fields
+     * @param string $EntityDependency name of class of the dependency (object) entity to get focus on
+     * @param array $subField the list of subfield to fetch
      */
-    public function formatDependencies(&$entity, $dependencies) {
+    public function formatDependencies(&$entity, $dependencies, $EntityDependency = "", $subField = []) {
         foreach($dependencies as $dependency) {
             if (!empty($entity[$dependency])) {
                 if (is_object($entity[$dependency])) {
                     if (is_a($entity[$dependency], '\MonarcCore\Model\Entity\AbstractEntity')) {
-                        $entity[$dependency] = $entity[$dependency]->getJsonArray();
+                        if(is_a($entity[$dependency], $EntityDependency)){ //fetch more info
+                          $entity[$dependency] = $entity[$dependency]->getJsonArray();
+                            if(!empty($subField)){
+                              foreach ($subField as $key => $value){
+                                $entity[$dependency][$value] = $entity[$dependency][$value] ? $entity[$dependency][$value]->getJsonArray() : [];
+                                unset($entity[$dependency][$value]['__initializer__']);
+                                unset($entity[$dependency][$value]['__cloner__']);
+                                unset($entity[$dependency][$value]['__isInitialized__']);
+                              }
+                            }
+                        }else {
+                          $entity[$dependency] = $entity[$dependency]->getJsonArray();
+                        }
                         unset($entity[$dependency]['__initializer__']);
                         unset($entity[$dependency]['__cloner__']);
                         unset($entity[$dependency]['__isInitialized__']);
@@ -196,11 +210,23 @@ abstract class AbstractController extends AbstractRestfulController
                             $$dependency = $entity[$dependency]->getSnapshot();
                             $entity[$dependency] = [];
                             foreach($$dependency as $d){
-                                if(is_a($d, '\MonarcCore\Model\Entity\AbstractEntity')){
+                              if(is_a($d, $EntityDependency)){ //fetch more info
+                                  $temp = $d->toArray();
+                                  if(!empty($subField)){
+                                    foreach ($subField as $key => $value){
+                                      $temp[$value] = $d->$value->getJsonArray();
+                                      unset($temp[$value]['__initializer__']);
+                                      unset($temp[$value]['__cloner__']);
+                                      unset($temp[$value]['__isInitialized__']);
+                                    }
+                                    $entity[$dependency][] = $temp;
+                                  }
+                              }
+                              else if(is_a($d, '\MonarcCore\Model\Entity\AbstractEntity')){
                                     $entity[$dependency][] = $d->getJsonArray();
-                                }else{
-                                    $entity[$dependency][] = $d;
-                                }
+                              }else{
+                                  $entity[$dependency][] = $d;
+                              }
                             }
                         }
                     }

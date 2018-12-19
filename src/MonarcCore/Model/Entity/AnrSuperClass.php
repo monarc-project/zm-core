@@ -272,9 +272,6 @@ class AnrSuperClass extends AbstractEntity
      */
     protected $updatedAt;
 
-
-
-
     /**
      * @return int
      */
