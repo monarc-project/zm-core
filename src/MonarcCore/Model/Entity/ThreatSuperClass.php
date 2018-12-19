@@ -339,9 +339,9 @@ class ThreatSuperClass extends AbstractEntity
 
             $this->inputFilter->add(array(
                 'name' => 'mode',
-                'required' => ($partial) ? false : true,
-                'allow_empty' => false,
-                'continue_if_empty' => false,
+                'required' => false,
+                'allow_empty' => true,
+                'continue_if_empty' => true,
                 'filters' => array(),
                 'validators' => array(),
             ));
