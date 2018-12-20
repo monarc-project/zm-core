@@ -31,10 +31,10 @@ class SoaCategorySuperClass extends AbstractEntity
     protected $id;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="code", type="string", length=255, nullable=true)
-     */
+    * @var string
+    *
+    * @ORM\Column(name="code", type="string", length=255, nullable=true)
+    */
     protected $code;
 
     /**
@@ -173,7 +173,7 @@ class SoaCategorySuperClass extends AbstractEntity
     */
     public function getlabel2()
     {
-        return $this->label;
+        return $this->label2;
     }
 
     /**

@@ -284,6 +284,7 @@ abstract class AbstractEntityTable
     {
         if (!empty($this->connectedUser) && isset($this->connectedUser['firstname']) && isset($this->connectedUser['lastname'])) {
             $id = $entity->get('id');
+            if(empty($id))$id= $entity->get('uniqid'); //manage the case where the id field doesn't exist
             if (empty($id)) {
                 if ($entity->__isset('creator')) {
                     $entity->set('creator', trim($this->connectedUser['firstname'] . " " . $this->connectedUser['lastname']));

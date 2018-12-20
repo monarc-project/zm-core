@@ -47,25 +47,11 @@ class MeasureMeasureService extends AbstractService
         return $id;
     }
 
-    /**
-     * Delete
-     *
-     * @param $id
-     * @param bool $last
-     * @throws \MonarcCore\Exception\Exception
-     */
-    public function delete($id, $last = true)
+    public function delete($id)
     {
-      $table = $this->get('table');
       $measureTable = $this->get('measureTable');
-      $measureMeasure = $table->getEntity($id);
-
-      if (!$measureMeasure) {
-          throw new \MonarcCore\Exception\Exception('Entity does not exist', 412);
-      }
-
-      $father = $measureTable->getEntity($measureMeasure->father->id);
-      $child = $measureTable->getEntity($measureMeasure->child->id);
+      $father = $measureTable->getEntity($id['father']);
+      $child = $measureTable->getEntity($id['child']);
       $father->deleteLinkedMeasure($child);
       $measureTable->save($father);
     }
