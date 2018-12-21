@@ -229,7 +229,16 @@ class Db {
     }
 
     public function fetchByIds($entity,$ids = array()){
+
+      if (is_array($ids[0])) {
+        $entities = [];
+        foreach ($ids as $id) {
+          $entities[] = $this->getEntityManager()->getRepository(get_class($entity))->find($id); // cas du FO
+        }
+        return $entities;
+      }else {
         return $this->getEntityManager()->getRepository(get_class($entity))->findById($ids);
+      }
     }
 
     /**
