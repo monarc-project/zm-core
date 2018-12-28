@@ -352,7 +352,13 @@ class MeasureSuperClass extends AbstractEntity
             'r.label1',
             'r.label2',
             'r.label3',
+            'r.label3',
             'r.uniqid',
+            'label1',
+            'label2',
+            'label3',
+            'label3',
+            'code',
         ];
         return [$filterJoin,$filterLeft,$filtersCol];
     }
