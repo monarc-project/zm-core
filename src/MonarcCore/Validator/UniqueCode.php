@@ -21,7 +21,7 @@ use Zend\Validator\AbstractValidator;
 class UniqueCode extends AbstractValidator
 {
     protected $options = array(
-        'entity' => null,
+
     );
 
     const ALREADYUSED = "ALREADYUSED";
@@ -33,33 +33,57 @@ class UniqueCode extends AbstractValidator
     /**
      * @inheritdoc
      */
-    public function isValid($value){
+    public function isValid($value, $context=null){ //we put the context option which correspond to the submitted form values
       $identifier[] = null;
         if(empty($this->options['entity'])){
             return false;
         }else{
-            if (count($this->options['entity']->getDbAdapter()->getClassMetadata(get_class($this->options['entity']))->getIdentifierFieldNames())>1)
-              {
-                $identifier = $this->options['entity']->getDbAdapter()->getClassMetadata(get_class($this->options['entity']))->getIdentifierFieldNames();
-              }
-            else
-              $identifier = $this->options['entity']->getDbAdapter()->getClassMetadata(get_class($this->options['entity']))->getSingleIdentifierFieldName();
-
-            $fields = [
+          $referential = null;
+          $update = false;
+          $identifier = $this->options['entity']->getDbAdapter()->getClassMetadata(get_class($this->options['entity']))->getIdentifierFieldNames();
+          $fields = [
                 'code' => $value,
             ];
-            if(isset($this->options['entity']->anr)){
-                $fields['anr'] = (isset($this->options['entity']->anr->id)) ? $this->options['entity']->anr->id : null;
-            }
-            $res = $this->options['entity']->getDbAdapter()->getRepository(get_class($this->options['entity']))->findOneBy($fields);
-            if(!empty($res)){
-              foreach ($identifier as $key => $value) {
-                if($this->options['entity']->get($value) != $res->get($value)){
-                  $this->error(self::ALREADYUSED);
-                  return false;
+
+            if(isset($context['anr'])) //allow to pass in all cases the anr_id in the case of the entity is empty (create)
+              $fields['anr'] = $context['anr'];
+            if(isset($this->options['entity']->anr->id)){ //if we fetch an anr_id we are updating and not creating
+                 $fields['anr'] = (isset($this->options['entity']->anr->id)) ? $this->options['entity']->anr->id : null;
+                 $update = true;
+             }
+            if(isset($context['referential']['uniqid']))
+              $referential = $context['referential']['uniqid'];
+
+            $result = $this->options['entity']->getDbAdapter()->getRepository(get_class($this->options['entity']))->findBy($fields);
+
+          if($update){
+              foreach ($result as $res){
+                foreach ($identifier as $key => $value) {
+                  if($this->options['entity']->get($value) != $res->get($value)){
+                    if($referential == null){
+                      $this->error(self::ALREADYUSED);
+                      return false;
+                    }
+                    else if($referential != null && $referential == $res->get('referential')->uniqid ){
+                      $this->error(self::ALREADYUSED);
+                      return false;
+                    }
+                  }
                 }
               }
             }
+          else if(!$update && count($result)>0){ //if create and we find a record in the DB on the same anr it's not correct except if it's a measure and the referential is different
+            foreach ($result as $res){
+              if($referential == null){
+                $this->error(self::ALREADYUSED);
+                return false;
+              }
+              else if($referential != null && $referential == $res->get('referential')->uniqid ){
+                $this->error(self::ALREADYUSED);
+                return false;
+              }
+            }
+          }
         }
         return true;
     }
