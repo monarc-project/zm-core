@@ -53,6 +53,10 @@ class UniqueCode extends AbstractValidator
              }
             if(isset($context['referential']['uniqid']))
               $referential = $context['referential']['uniqid'];
+            if(isset($context['referential']) && !isset($context['anr'])) {//BO
+              $referential = $context['referential'];
+              $update = true;
+            }
 
             $result = $this->options['entity']->getDbAdapter()->getRepository(get_class($this->options['entity']))->findBy($fields);
 
