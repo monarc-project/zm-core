@@ -341,6 +341,10 @@ class MeasureSuperClass extends AbstractEntity
                 'as' => 'r',
                 'rel' => 'referential',
             ],
+            [
+                'as' => 'c',
+                'rel' => 'category',
+            ],
         ];
         $filterLeft = [
             [
@@ -352,7 +356,17 @@ class MeasureSuperClass extends AbstractEntity
             'r.label1',
             'r.label2',
             'r.label3',
+            'r.label3',
+            'c.label1',
+            'c.label2',
+            'c.label3',
+            'c.label3',
             'r.uniqid',
+            'label1',
+            'label2',
+            'label3',
+            'label3',
+            'code',
         ];
         return [$filterJoin,$filterLeft,$filtersCol];
     }
