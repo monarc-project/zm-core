@@ -111,14 +111,22 @@ abstract class AbstractController extends AbstractRestfulController
      */
     public function create($data)
     {
-        $id = $this->getService()->create($data);
-
-        return new JsonModel(
-            array(
-                'status' => 'ok',
-                'id' => $id,
-            )
-        );
+      if (array_keys($data) !== range(0, count($data) - 1)) {
+          # if $data is an associative array
+          $data = array($data);
+      }
+      $created_objects = array();
+      foreach ($data as $key => $new_data) {
+          if($new_data['referential']){
+             $new_data['referential'] = ['uniqid' => $new_data['referential']];
+          }
+          $id = $this->getService()->create($new_data);
+          array_push($created_objects, $id);
+      }
+      return new JsonModel([
+          'status' => 'ok',
+          'id' => count($created_objects)==1 ? $created_objects[0]: $created_objects,
+      ]);
     }
 
     /**
