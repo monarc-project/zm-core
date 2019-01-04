@@ -52,7 +52,6 @@ class InstanceRiskOpTable extends AbstractEntityTable
                 throw new \MonarcCore\Exception\Exception('Entity does not exist', 412);
             }
             $l = $anr->get('language');
-            $l = $anr->get('language');
 
             $fields = [
             'riskCacheLabel' .$l,

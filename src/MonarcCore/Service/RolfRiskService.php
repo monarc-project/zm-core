@@ -94,9 +94,15 @@ class RolfRiskService extends AbstractService
     public function create($data, $last = true)
     {
         /** @var RolfRisk $entity */
-        $entity = $this->get('entity');
+        foreach ($data as $key => $value) { file_put_contents('php://stderr', print_r($key ." = " . $value . "\n" , TRUE));}
+        $class = $this->get('entity');
+        $table = $this->get('table');
+        $entity = new $class();
+        $entity->setLanguage($this->getLanguage());
+        $entity->setDbAdapter($table->getDb());
         if (isset($data['anr']) && is_numeric($data['anr'])) {
             $data['anr'] = $this->get('anrTable')->getEntity($data['anr']);
+
         }
 
         $entity->exchangeArray($data);
@@ -111,7 +117,11 @@ class RolfRiskService extends AbstractService
                 }
             }
         }
-        return $this->get('table')->save($entity);
+        $opId = $this->get('table')->save($entity);
+        return $opId;
+
+
+
     }
 
     /**
