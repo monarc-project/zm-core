@@ -46,7 +46,6 @@ class MeasureService extends AbstractService
            $filterJoin,
            $filterLeft
        );
-       file_put_contents('php://stderr', print_r(count($data), TRUE).PHP_EOL);
         // TODO: try to order in SQL instead of php with usort
         if ($order == "code" || $order == "-code") {
           $desc = ($order == "-code");

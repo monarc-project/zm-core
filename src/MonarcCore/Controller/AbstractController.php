@@ -118,7 +118,7 @@ abstract class AbstractController extends AbstractRestfulController
       $created_objects = array();
       foreach ($data as $key => $new_data) {
           if($new_data['referential']){
-             $new_data['referential'] = ['uniqid' => $new_data['referential']];
+             $new_data['referential'] = $new_data['referential']['uniqid'];
           }
           $id = $this->getService()->create($new_data);
           array_push($created_objects, $id);
