@@ -52,6 +52,7 @@ class AddReferentials extends AbstractMigration
       $table = $this->table('measures');
       $table
           ->addColumn('referential_uniqid', 'uuid', ['after' => 'soacategory_id'])
+          ->addIndex(['referential_uniqid', 'code'], ['unique' => true]) // we can't have 2 times the same code for same referential
           ->update();
       $this->execute('UPDATE measures m SET m.referential_uniqid=(SELECT uniqid FROM referentials LIMIT 1) ;');
       $table
