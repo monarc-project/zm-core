@@ -43,11 +43,13 @@ class AddReferentials extends AbstractMigration
           ->addColumn('updated_at', 'datetime', array('null' => true))
           ->addIndex(array('uniqid'))
           ->create();
-      $table->changeColumn('id', 'integer',array('identity'=>true,'signed'=>false))->update();
+      $table->removeColumn('id')->update();
       $row = ['uniqid'=>'98ca84fb-db87-11e8-ac77-0800279aaa2b','label1'=>'ISO 27002','label2'=>'ISO 27002',
       'label3'=>'ISO 27002','label4'=>'ISO 27002','creator' => 'Migration script','created_at' => date('Y-m-d H:i:s')];
       $table->insert($row);
       $table->saveData();
+
+      $this->execute("ALTER TABLE referentials ADD PRIMARY KEY uniqid (uniqid)");
       //add foreign key for measures
       $table = $this->table('measures');
       $table
