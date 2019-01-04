@@ -44,7 +44,8 @@ class AddReferentials extends AbstractMigration
           ->addIndex(array('uniqid'))
           ->create();
       $table->changeColumn('id', 'integer',array('identity'=>true,'signed'=>false))->update();
-      $row = ['uniqid'=>'98ca84fb-db87-11e8-ac77-0800279aaa2b','label1'=>'ISO 27002','label2'=>'ISO 27002','label3'=>'ISO 27002','label4'=>'ISO 27002'];
+      $row = ['uniqid'=>'98ca84fb-db87-11e8-ac77-0800279aaa2b','label1'=>'ISO 27002','label2'=>'ISO 27002',
+      'label3'=>'ISO 27002','label4'=>'ISO 27002','creator' => 'Migration script','created_at' => date('Y-m-d H:i:s')];
       $table->insert($row);
       $table->saveData();
       //add foreign key for measures
