@@ -340,8 +340,8 @@ class AnrService extends AbstractService
             $soaTable = $this->get('soaTable');
             $soas = $soaTable->getEntityByFields(['anr' => $entity->get('id')]);
             $soasArray = [
-                'mesure_id' => 'mesure_id',
-                'justification' => 'justification',
+                'measure_id' => 'measure_id',
+                'remarks' => 'remarks',
                 'evidences' => 'evidences',
                 'actions' => 'actions',
                 'compliance' => 'compliance',
