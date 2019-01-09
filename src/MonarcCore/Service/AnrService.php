@@ -340,7 +340,6 @@ class AnrService extends AbstractService
             $soaTable = $this->get('soaTable');
             $soas = $soaTable->getEntityByFields(['anr' => $entity->get('id')]);
             $soasArray = [
-                'measure_id' => 'measure_id',
                 'remarks' => 'remarks',
                 'evidences' => 'evidences',
                 'actions' => 'actions',
@@ -354,6 +353,7 @@ class AnrService extends AbstractService
             ];
             foreach ($soas as $s) {
                 $newSoas = $s->getJsonArray($soasArray);
+                $newSoas['measure_id'] = $s->getMeasure()->getUniqid()->toString();
                 $return['soas'][] = $newSoas;
             }
 
