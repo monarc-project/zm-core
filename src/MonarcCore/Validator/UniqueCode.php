@@ -39,7 +39,6 @@ class UniqueCode extends AbstractValidator
             return false;
         }else{
           $referential = null;
-          $update = false;
           $identifier = $this->options['entity']->getDbAdapter()->getClassMetadata(get_class($this->options['entity']))->getIdentifierFieldNames();
           $fields = [
                 'code' => $value,
@@ -49,45 +48,30 @@ class UniqueCode extends AbstractValidator
               $fields['anr'] = $context['anr'];
             if(isset($this->options['entity']->anr->id)){ //if we fetch an anr_id we are updating and not creating
                  $fields['anr'] = (isset($this->options['entity']->anr->id)) ? $this->options['entity']->anr->id : null;
-                 $update = true;
              }
             if(isset($context['referential']['uniqid']))
               $referential = $context['referential']['uniqid'];
             if(isset($context['referential']) && !isset($context['anr'])) {//BO
               $referential = $context['referential'];
-              $update = true;
             }
 
             $result = $this->options['entity']->getDbAdapter()->getRepository(get_class($this->options['entity']))->findBy($fields);
 
-          if($update){
-              foreach ($result as $res){
-                foreach ($identifier as $key => $value) {
-                  if($this->options['entity']->get($value) != $res->get($value)){
-                    if($referential == null){
-                      $this->error(self::ALREADYUSED);
-                      return false;
-                    }
-                    else if($referential != null && $referential == $res->get('referential')->uniqid ){
-                      $this->error(self::ALREADYUSED);
-                      return false;
-                    }
+            foreach ($result as $res){
+              foreach ($identifier as $key => $value) {
+                if($this->options['entity']->get($value) != $res->get($value)){
+                  if($referential == null){
+                    $this->error(self::ALREADYUSED);
+                    return false;
+                  }
+                  else if($referential != null && $referential == $res->get('referential')->uniqid ){
+                    $this->error(self::ALREADYUSED);
+                    return false;
                   }
                 }
               }
             }
-          else if(!$update && count($result)>0){ //if create and we find a record in the DB on the same anr it's not correct except if it's a measure and the referential is different
-            foreach ($result as $res){
-              if($referential == null){
-                $this->error(self::ALREADYUSED);
-                return false;
-              }
-              else if($referential != null && $referential == $res->get('referential')->uniqid ){
-                $this->error(self::ALREADYUSED);
-                return false;
-              }
-            }
-          }
+
         }
         return true;
     }
