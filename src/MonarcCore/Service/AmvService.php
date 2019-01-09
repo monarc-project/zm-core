@@ -691,8 +691,17 @@ class AmvService extends AbstractService
             'label4' => 'label4',
 
         ];
+        $soacategoriesObj = [
+            'id' => 'id',
+            'code' => 'code',
+            'status' => 'status',
+            'label1' => 'label1',
+            'label2' => 'label2',
+            'label3' => 'label3',
+            'label4' => 'label4',
+        ];
 
-        $amvs = $threats = $vulns = $themes = $measures = [];
+        $amvs = $threats = $vulns = $themes = $measures = $soacategories = [];
 
         foreach ($amvObj as $k => $v) {
             switch ($v) {
@@ -722,6 +731,11 @@ class AmvService extends AbstractService
                             case 'measure2':
                             case 'measure3':
                                 $measures[$o['id']] = $amv->get($k)->getJsonArray($measuresObj);
+                                if (!empty($measures[$o['id']]['category'])) {
+                                    $measures[$o['id']]['category'] = $measures[$o['id']]['category']->getJsonArray($soacategoriesObj);
+                                    $soacategories[$measures[$o['id']]['category']['id']] = $measures[$o['id']]['category'];
+                                    $measures[$o['id']]['category'] = $measures[$o['id']]['category']['id'];
+                                }
                                 break;
                         }
                     }

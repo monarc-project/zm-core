@@ -39,7 +39,11 @@ class AssetService extends AbstractService
     public function create($data, $last = true)
     {
 
-        $entity = $this->get('entity');
+        $class = $this->get('entity');
+        $entity = new $class();
+        $entity->setLanguage($this->getLanguage());
+        $entity->setDbAdapter($this->get('table')->getDb());
+        
         if (isset($data['anr']) && strlen($data['anr'])) {
             /** @var AnrTable $anrTable */
             $anrTable = $this->get('anrTable');
