@@ -39,6 +39,7 @@ class AnrService extends AbstractService
     protected $measureTable;
     protected $measureMeasureTable;
     protected $soaCategoryTable;
+    protected $soaTable;
 
 
     /**
@@ -332,6 +333,28 @@ class AnrService extends AbstractService
                 $newSoaCategory = $c->getJsonArray($soaCategoriesArray);
                 $newSoaCategory['referential'] = $c->getReferential()->getUniqid()->toString();
                 $return['soacategories'][] = $newSoaCategory;
+            }
+
+            // soas
+            $return['soas'] = [];
+            $soaTable = $this->get('soaTable');
+            $soas = $soaTable->getEntityByFields(['anr' => $entity->get('id')]);
+            $soasArray = [
+                'mesure_id' => 'mesure_id',
+                'justification' => 'justification',
+                'evidences' => 'evidences',
+                'actions' => 'actions',
+                'compliance' => 'compliance',
+                'EX' => 'EX',
+                'LR' => 'LR',
+                'CO' => 'CO',
+                'BR' => 'BR',
+                'BP' => 'BP',
+                'RRA' => 'RRA',
+            ];
+            foreach ($soas as $s) {
+                $newSoas = $s->getJsonArray($soasArray);
+                $return['soas'][] = $newSoas;
             }
 
             // scales
