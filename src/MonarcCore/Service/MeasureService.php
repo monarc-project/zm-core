@@ -18,6 +18,8 @@ class MeasureService extends AbstractService
     protected $dependencies = ['anr','category', 'amvs', 'referential', 'measuresLinked'];
     protected $filterColumns = ['label1', 'label2', 'label3', 'label4', 'code', 'status'];
     protected $forbiddenFields = ['anr'];
+    protected $categoryTable;
+
 
     /**
      * @inheritdoc
@@ -59,5 +61,18 @@ class MeasureService extends AbstractService
           return array_slice($data, ($page - 1) * $limit, $limit, false);
         else
           return array_slice($data, 0, null, false);
+    }
+
+    public function delete($id)
+    {
+      $category = $this->get('table')->getEntity($id)->getCategory()->getId();
+      parent::delete($id);
+      $categoryTable = $this->get('categoryTable');
+      $categ = $categoryTable->getEntity($category);
+
+      if(count($categ->measures)==0) //if the category is empty delete it
+      {
+        $categoryTable->delete($category);
+      }
     }
 }
