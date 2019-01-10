@@ -115,11 +115,9 @@ abstract class AbstractController extends AbstractRestfulController
           # if $data is an associative array
           $data = array($data);
       }
+
       $created_objects = array();
       foreach ($data as $key => $new_data) {
-          if($new_data['referential']){
-             $new_data['referential'] = $new_data['referential']['uniqid'];
-          }
           $id = $this->getService()->create($new_data);
           array_push($created_objects, $id);
       }
