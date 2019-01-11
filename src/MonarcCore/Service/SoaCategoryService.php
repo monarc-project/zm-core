@@ -15,7 +15,7 @@ namespace MonarcCore\Service;
  */
 class SoaCategoryService extends AbstractService
 {
-    protected $filterColumns = ['code','label1', 'label2', 'label3', 'label4'];
+    protected $filterColumns = ['label1', 'label2', 'label3', 'label4'];
     protected $dependencies = ['referential'];
     protected $referentialTable;
 
