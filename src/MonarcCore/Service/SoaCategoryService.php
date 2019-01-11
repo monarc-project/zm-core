@@ -38,4 +38,16 @@ class SoaCategoryService extends AbstractService
 
         return $table->save($entity, $last);
     }
+
+    public function delete($id)
+    {
+      $table = $this->get('table');
+      $categ = $table->getEntity($id);
+
+      foreach ($categ->measures as $measure) {
+        $measure->setCategory(null);
+      }
+
+      return parent::delete($id);
+    }
 }
