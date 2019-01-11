@@ -15,7 +15,7 @@ namespace MonarcCore\Service;
  */
 class SoaCategoryService extends AbstractService
 {
-    protected $filterColumns = ['code','label1', 'label2', 'label3', 'label4'];
+    protected $filterColumns = ['label1', 'label2', 'label3', 'label4'];
     protected $dependencies = ['referential'];
     protected $referentialTable;
 
@@ -37,5 +37,17 @@ class SoaCategoryService extends AbstractService
         $this->setDependencies($entity, $dependencies);
 
         return $table->save($entity, $last);
+    }
+
+    public function delete($id)
+    {
+      $table = $this->get('table');
+      $categ = $table->getEntity($id);
+
+      foreach ($categ->measures as $measure) {
+        $measure->setCategory(null);
+      }
+
+      return parent::delete($id);
     }
 }

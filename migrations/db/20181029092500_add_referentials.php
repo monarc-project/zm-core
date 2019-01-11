@@ -63,7 +63,7 @@ class AddReferentials extends AbstractMigration
       //add foreign key for the category
       $table = $this->table('soacategory');
       $table
-          ->addColumn('referential_uniqid', 'uuid', ['after' => 'code'])
+          ->addColumn('referential_uniqid', 'uuid')
           ->update();
       $this->execute('UPDATE soacategory s SET s.referential_uniqid=(SELECT uniqid FROM referentials LIMIT 1) ;');
       $table

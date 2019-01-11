@@ -31,13 +31,6 @@ class SoaCategorySuperClass extends AbstractEntity
     protected $id;
 
     /**
-    * @var string
-    *
-    * @ORM\Column(name="code", type="string", length=255, nullable=true)
-    */
-    protected $code;
-
-    /**
      * @var \MonarcCore\Model\Entity\Referential
      *
      * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Referential", inversedBy="categories", cascade={"persist"})
@@ -105,14 +98,6 @@ class SoaCategorySuperClass extends AbstractEntity
     {
         $this->id = $id;
         return $this;
-    }
-
-    /**
-    * @return string
-    */
-    public function getCode()
-    {
-        return $this->code;
     }
 
     /**

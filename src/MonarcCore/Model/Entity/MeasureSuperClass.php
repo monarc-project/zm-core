@@ -370,15 +370,15 @@ class MeasureSuperClass extends AbstractEntity
                 'as' => 'r',
                 'rel' => 'referential',
             ],
-            [
-                'as' => 'c',
-                'rel' => 'category',
-            ],
         ];
         $filterLeft = [
             [
                 'as' => 'r1',
                 'rel' => 'referential',
+            ],
+            [
+                'as' => 'c',
+                'rel' => 'category',
             ],
         ];
         $filtersCol = [
