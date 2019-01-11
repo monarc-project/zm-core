@@ -263,6 +263,35 @@ class MeasureSuperClass extends AbstractEntity
     }
 
     /**
+     * @return Amv
+     */
+    public function getAmvs()
+    {
+        return $this->$amvs;
+    }
+
+    /**
+     * @param Amv $amvs
+     * @return Measure
+     */
+    public function setAmvs($amvs)
+    {
+        $this->amvs = $amvs;
+        return $this;
+
+    }
+
+    /**
+     * @param Amv $amv
+     * @return Measure
+     */
+    public function addAmv($amv)
+    {
+        array_push($this->amvs, $amv);
+        return $this;
+    }
+
+    /**
     * @return measuresLinked
     */
     public function getMeasuresLinked()

@@ -231,6 +231,15 @@ class AmvSuperclass extends AbstractEntity
         return $this;
     }
 
+    /**
+     * @param Measure $measure
+     * @return Amv
+     */
+    public function addMeasure($measure)
+    {
+        array_push($this->measures, $measure);
+        return $this;
+    }
 
     protected $parameters = array(
         'implicitPosition' => array(
