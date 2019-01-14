@@ -288,7 +288,6 @@ class AnrService extends AbstractService
                 'uniqid' => 'uniqid',
                 'referential' => 'referential',
                 'category' => 'category',
-                'code' => 'code',
                 'label1' => 'label1',
                 'label2' => 'label2',
                 'label3' => 'label3',
@@ -298,7 +297,7 @@ class AnrService extends AbstractService
             foreach ($measures as $m) {
                 $newMeasure = $m->getJsonArray($measuresArray);
                 $newMeasure['referential'] = $m->getReferential()->getUniqid()->toString();
-                $newMeasure['category'] = $m->getCategory()->getCode();
+                $newMeasure['category'] = $m->getCategory()->get('label' . $this->getLanguage());
                 $return['measures'][$m->getUniqid()->toString()] = $newMeasure;
             }
 
@@ -322,7 +321,6 @@ class AnrService extends AbstractService
             $soaCategories = $soaCategoryTable->getEntityByFields(['anr' => $entity->get('id')]);
             $soaCategoriesArray = [
                 'referential' => 'referential',
-                'code' => 'code',
                 'label1' => 'label1',
                 'label2' => 'label2',
                 'label3' => 'label3',
