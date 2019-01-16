@@ -237,7 +237,7 @@ class AmvSuperclass extends AbstractEntity
      */
     public function addMeasure($measure)
     {
-        array_push($this->measures, $measure);
+        $this->measures[] = $measure;
         return $this;
     }
 

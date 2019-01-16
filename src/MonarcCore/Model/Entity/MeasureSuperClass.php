@@ -278,7 +278,6 @@ class MeasureSuperClass extends AbstractEntity
     {
         $this->amvs = $amvs;
         return $this;
-
     }
 
     /**
@@ -287,7 +286,7 @@ class MeasureSuperClass extends AbstractEntity
      */
     public function addAmv($amv)
     {
-        array_push($this->amvs, $amv);
+        $this->amvs[] = $amv;
         return $this;
     }
 
