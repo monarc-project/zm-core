@@ -75,4 +75,23 @@ class MeasureService extends AbstractService
         $categoryTable->delete($category);
       }
     }
+
+    public function deleteListFromAnr($data, $anrId = null)
+    {
+      $categoryTable = $this->get('categoryTable');
+      $categories = [];
+      foreach ($data as $id) {
+        array_push($categories, $this->get('table')->getEntity($id)->getCategory()->getId());
+      }
+
+      parent::deleteListFromAnr($data, $anrId);
+
+      foreach (array_unique($categories) as $category) {
+        $categ = $categoryTable->getEntity($category);
+        if(count($categ->measures)==0) //if the category is empty delete it
+        {
+          $categoryTable->delete($category);
+        }
+      }
+    }
 }
