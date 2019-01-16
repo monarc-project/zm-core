@@ -214,7 +214,8 @@ class AnrService extends AbstractService
         $with_recommendations = isset($data['recommendations']) && $data['recommendations'];
         $with_methodSteps = isset($data['methodSteps']) && $data['methodSteps'];
         $with_interviews = isset($data['interviews']) && $data['interviews'];
-        $exportedAnr = json_encode($this->generateExportArray($data['id'], $filename, $with_eval, $with_controls, $with_recommendations, $with_methodSteps, $with_interviews));
+        $with_soas = isset($data['soas']) && $data['soas'];
+        $exportedAnr = json_encode($this->generateExportArray($data['id'], $filename, $with_eval, $with_controls, $with_recommendations, $with_methodSteps, $with_interviews, $with_soas));
         $data['filename'] = $filename;
 
         if (! empty($data['password'])) {
@@ -233,7 +234,7 @@ class AnrService extends AbstractService
     * @return array The data array that should be saved
     * @throws \MonarcCore\Exception\Exception If the ANR or an entity is not found
     */
-    public function generateExportArray($id, &$filename = "", $with_eval = false, $with_controls = false, $with_recommendations = false, $with_methodSteps = false, $with_interviews = false)
+    public function generateExportArray($id, &$filename = "", $with_eval = false, $with_controls = false, $with_recommendations = false, $with_methodSteps = false, $with_interviews = false, $with_soas = false)
     {
         if (empty($id)) {
             throw new \MonarcCore\Exception\Exception('Anr to export is required', 412);
@@ -265,94 +266,96 @@ class AnrService extends AbstractService
 
 
         if ($with_eval) {
-            // referentials
-            $return['referentials'] = [];
-            $referentialTable = $this->get('referentialTable');
-            $referentials = $referentialTable->getEntityByFields(['anr' => $entity->get('id')]);
-            $referentialsArray = [
-                'uniqid' => 'uniqid',
-                'label1' => 'label1',
-                'label2' => 'label2',
-                'label3' => 'label3',
-                'label4' => 'label4'
-            ];
-            foreach ($referentials as $r) {
-                $return['referentials'][$r->getUniqid()->toString()] = $r->getJsonArray($referentialsArray);
-            }
+            if ($with_soas) {
+                // referentials
+                $return['referentials'] = [];
+                $referentialTable = $this->get('referentialTable');
+                $referentials = $referentialTable->getEntityByFields(['anr' => $entity->get('id')]);
+                $referentialsArray = [
+                    'uniqid' => 'uniqid',
+                    'label1' => 'label1',
+                    'label2' => 'label2',
+                    'label3' => 'label3',
+                    'label4' => 'label4'
+                ];
+                foreach ($referentials as $r) {
+                    $return['referentials'][$r->getUniqid()->toString()] = $r->getJsonArray($referentialsArray);
+                }
 
-            // measures
-            $return['measures'] = [];
-            $measureTable = $this->get('measureTable');
-            $measures = $measureTable->getEntityByFields(['anr' => $entity->get('id')]);
-            $measuresArray = [
-                'uniqid' => 'uniqid',
-                'referential' => 'referential',
-                'category' => 'category',
-                'label1' => 'label1',
-                'label2' => 'label2',
-                'label3' => 'label3',
-                'label4' => 'label4',
-                'status' => 'status'
-            ];
-            foreach ($measures as $m) {
-                $newMeasure = $m->getJsonArray($measuresArray);
-                $newMeasure['referential'] = $m->getReferential()->getUniqid()->toString();
-                $newMeasure['category'] = $m->getCategory()->get('label' . $this->getLanguage());
-                $return['measures'][$m->getUniqid()->toString()] = $newMeasure;
-            }
+                // measures
+                $return['measures'] = [];
+                $measureTable = $this->get('measureTable');
+                $measures = $measureTable->getEntityByFields(['anr' => $entity->get('id')]);
+                $measuresArray = [
+                    'uniqid' => 'uniqid',
+                    'referential' => 'referential',
+                    'category' => 'category',
+                    'label1' => 'label1',
+                    'label2' => 'label2',
+                    'label3' => 'label3',
+                    'label4' => 'label4',
+                    'status' => 'status'
+                ];
+                foreach ($measures as $m) {
+                    $newMeasure = $m->getJsonArray($measuresArray);
+                    $newMeasure['referential'] = $m->getReferential()->getUniqid()->toString();
+                    $newMeasure['category'] = $m->getCategory()->get('label' . $this->getLanguage());
+                    $return['measures'][$m->getUniqid()->toString()] = $newMeasure;
+                }
 
-            // measures-measures
-            $return['measuresMeasures'] = [];
-            $measureMeasureTable = $this->get('measureMeasureTable');
-            $measuresMeasures = $measureMeasureTable->getEntityByFields(['anr' => $entity->get('id')]);
-            $measuresMeasuresArray = [
-                'uniqid' => 'uniqid'
-            ];
-            foreach ($measuresMeasures as $mm) {
-                $newMeasureMeasure = [];
-                $newMeasureMeasure['father'] = $mm->getFather()->toString();
-                $newMeasureMeasure['child'] = $mm->getChild()->toString();
-                $return['measuresMeasures'][] = $newMeasureMeasure;
-            }
+                // measures-measures
+                $return['measuresMeasures'] = [];
+                $measureMeasureTable = $this->get('measureMeasureTable');
+                $measuresMeasures = $measureMeasureTable->getEntityByFields(['anr' => $entity->get('id')]);
+                $measuresMeasuresArray = [
+                    'uniqid' => 'uniqid'
+                ];
+                foreach ($measuresMeasures as $mm) {
+                    $newMeasureMeasure = [];
+                    $newMeasureMeasure['father'] = $mm->getFather()->toString();
+                    $newMeasureMeasure['child'] = $mm->getChild()->toString();
+                    $return['measuresMeasures'][] = $newMeasureMeasure;
+                }
 
-            // soacategories
-            $return['soacategories'] = [];
-            $soaCategoryTable = $this->get('soaCategoryTable');
-            $soaCategories = $soaCategoryTable->getEntityByFields(['anr' => $entity->get('id')]);
-            $soaCategoriesArray = [
-                'referential' => 'referential',
-                'label1' => 'label1',
-                'label2' => 'label2',
-                'label3' => 'label3',
-                'label4' => 'label4',
-                'status' => 'status'
-            ];
-            foreach ($soaCategories as $c) {
-                $newSoaCategory = $c->getJsonArray($soaCategoriesArray);
-                $newSoaCategory['referential'] = $c->getReferential()->getUniqid()->toString();
-                $return['soacategories'][] = $newSoaCategory;
-            }
+                // soacategories
+                $return['soacategories'] = [];
+                $soaCategoryTable = $this->get('soaCategoryTable');
+                $soaCategories = $soaCategoryTable->getEntityByFields(['anr' => $entity->get('id')]);
+                $soaCategoriesArray = [
+                    'referential' => 'referential',
+                    'label1' => 'label1',
+                    'label2' => 'label2',
+                    'label3' => 'label3',
+                    'label4' => 'label4',
+                    'status' => 'status'
+                ];
+                foreach ($soaCategories as $c) {
+                    $newSoaCategory = $c->getJsonArray($soaCategoriesArray);
+                    $newSoaCategory['referential'] = $c->getReferential()->getUniqid()->toString();
+                    $return['soacategories'][] = $newSoaCategory;
+                }
 
-            // soas
-            $return['soas'] = [];
-            $soaTable = $this->get('soaTable');
-            $soas = $soaTable->getEntityByFields(['anr' => $entity->get('id')]);
-            $soasArray = [
-                'remarks' => 'remarks',
-                'evidences' => 'evidences',
-                'actions' => 'actions',
-                'compliance' => 'compliance',
-                'EX' => 'EX',
-                'LR' => 'LR',
-                'CO' => 'CO',
-                'BR' => 'BR',
-                'BP' => 'BP',
-                'RRA' => 'RRA',
-            ];
-            foreach ($soas as $s) {
-                $newSoas = $s->getJsonArray($soasArray);
-                $newSoas['measure_id'] = $s->getMeasure()->getUniqid()->toString();
-                $return['soas'][] = $newSoas;
+                // soas
+                $return['soas'] = [];
+                $soaTable = $this->get('soaTable');
+                $soas = $soaTable->getEntityByFields(['anr' => $entity->get('id')]);
+                $soasArray = [
+                    'remarks' => 'remarks',
+                    'evidences' => 'evidences',
+                    'actions' => 'actions',
+                    'compliance' => 'compliance',
+                    'EX' => 'EX',
+                    'LR' => 'LR',
+                    'CO' => 'CO',
+                    'BR' => 'BR',
+                    'BP' => 'BP',
+                    'RRA' => 'RRA',
+                ];
+                foreach ($soas as $s) {
+                    $newSoas = $s->getJsonArray($soasArray);
+                    $newSoas['measure_id'] = $s->getMeasure()->getUniqid()->toString();
+                    $return['soas'][] = $newSoas;
+                }
             }
 
             // scales
