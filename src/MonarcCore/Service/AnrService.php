@@ -290,6 +290,7 @@ class AnrService extends AbstractService
                     'uniqid' => 'uniqid',
                     'referential' => 'referential',
                     'category' => 'category',
+                    'code' => 'code',
                     'label1' => 'label1',
                     'label2' => 'label2',
                     'label3' => 'label3',
