@@ -209,10 +209,5 @@ class AddMeasuresUuid extends AbstractMigration
       $table->dropForeignKey('rolf_risk_id')
             ->dropForeignKey('rolf_tag_id')
             ->update();
-
-      $table = $this->table('measures_measures');
-      $table->dropForeignKey('father_id')
-            ->dropForeignKey('child_id')
-            ->update();
     }
 }
