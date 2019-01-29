@@ -201,5 +201,15 @@ class AddMeasuresUniqid extends AbstractMigration
       $table->removeColumn('id')
             ->update();
       $this->execute("ALTER TABLE measures ADD PRIMARY KEY uniqid_anr_id (uniqid)");
+
+      $table = $this->table('rolf_risks_tags');
+      $table->dropForeignKey('rolf_risk_id')
+            ->dropForeignKey('rolf_tag_id')
+            ->update();
+
+      $table = $this->table('measures_measures');
+      $table->dropForeignKey('father_id')
+            ->dropForeignKey('child_id')
+            ->update();
     }
 }
