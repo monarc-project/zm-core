@@ -328,8 +328,8 @@ abstract class AbstractService extends AbstractServiceFactory
         $entity->setLanguage($this->getLanguage());
         foreach ($this->dependencies as $dependency) {
             if ((!isset($data[$dependency])) && ($entity->$dependency)) {
-              if($entity->$dependency->uniqid)
-                $data[$dependency] = $entity->$dependency->uniqid;
+              if($entity->$dependency->uuid)
+                $data[$dependency] = $entity->$dependency->uuid;
               else
                 $data[$dependency] = $entity->$dependency->id;
             }
@@ -533,8 +533,8 @@ abstract class AbstractService extends AbstractServiceFactory
                     $class = $metadata->getAssociationTargetClass($propertyname);
                     if (!is_array($value) || isset($value['id'])) {
 
-                      if(isset($value['uniqid']))
-                        {$dep = $db->getReference($class, isset($value['uniqid']) ? $value['uniqid'] : $value);
+                      if(isset($value['uuid']))
+                        {$dep = $db->getReference($class, isset($value['uuid']) ? $value['uuid'] : $value);
                           //file_put_contents('php://stderr', print_r($value , TRUE).PHP_EOL);
                         }
                       else
@@ -550,7 +550,7 @@ abstract class AbstractService extends AbstractServiceFactory
                                 throw new \MonarcCore\Exception\Exception('You are not authorized to use this dependency', 412);
                             }
                         }
-                        if (!$dep->id && !$dep->uniqid) {
+                        if (!$dep->id && !$dep->uuid) {
                             throw new \MonarcCore\Exception\Exception('Entity does not exist', 412);
                         }
                         $entity->set($propertyname, $dep);
@@ -564,7 +564,7 @@ abstract class AbstractService extends AbstractServiceFactory
                           foreach ($value as $v) {
                               if (!is_null($v) && !empty($v) && !is_object($v)) {
                                   $dep = $db->getReference($class, $v);
-                                  if (!$dep->id &&!$dep->uniqid) {
+                                  if (!$dep->id &&!$dep->uuid) {
                                       throw new \MonarcCore\Exception\Exception('Entity does not exist', 412);
                                   }
                                   $a_dep[] = $dep;

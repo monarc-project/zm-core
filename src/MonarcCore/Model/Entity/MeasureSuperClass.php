@@ -16,7 +16,7 @@ use Ramsey\Uuid\UuidInterface;
 * @ORM\Table(name="measures", indexes={
 *      @ORM\Index(name="anr", columns={"anr_id"}),
 *      @ORM\Index(name="category", columns={"soacategory_id"}),
-*      @ORM\Index(name="referential", columns={"referential_uniqid"})
+*      @ORM\Index(name="referential", columns={"referential_uuid"})
 * })
 * @ORM\MappedSuperclass
 */
@@ -26,8 +26,8 @@ class MeasureSuperClass extends AbstractEntity
   /**
    * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Measure")
    * @ORM\JoinTable(name="measures_measures",
-   *     joinColumns={@ORM\JoinColumn(name="father_id", referencedColumnName="uniqid")},
-   *     inverseJoinColumns={@ORM\JoinColumn(name="child_id", referencedColumnName="uniqid")}
+   *     joinColumns={@ORM\JoinColumn(name="father_id", referencedColumnName="uuid")},
+   *     inverseJoinColumns={@ORM\JoinColumn(name="child_id", referencedColumnName="uuid")}
    * )
    */
    protected $measuresLinked;
@@ -35,10 +35,10 @@ class MeasureSuperClass extends AbstractEntity
     /**
     * @var integer
     *
-    * @ORM\Column(name="uniqid", type="uuid", nullable=false)
+    * @ORM\Column(name="uuid", type="uuid", nullable=false)
     * @ORM\Id
     */
-    protected $uniqid;
+    protected $uuid;
 
     /**
     * @var \MonarcCore\Model\Entity\Anr
@@ -55,7 +55,7 @@ class MeasureSuperClass extends AbstractEntity
      *
      * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Referential", inversedBy="measures", cascade={"persist"})
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="referential_uniqid", referencedColumnName="uniqid", nullable=true)
+     *   @ORM\JoinColumn(name="referential_uuid", referencedColumnName="uuid", nullable=true)
      * })
      */
     protected $referential;
@@ -158,7 +158,7 @@ class MeasureSuperClass extends AbstractEntity
         $currentMeasures = $this->measuresLinked;
         if ($currentMeasures) {
             foreach ($currentMeasures as $currentMeasure) {
-                if ($currentMeasure->uniqid == $measure->uniqid) {
+                if ($currentMeasure->uuid == $measure->uuid) {
                     $errors = true;
                 }
             }
@@ -182,7 +182,7 @@ class MeasureSuperClass extends AbstractEntity
         $currentMeasures = $this->measuresLinked;
         if ($currentMeasures) {
             foreach ($currentMeasures as $currentMeasure) {
-                if ($currentMeasure->uniqid == $measure->uniqid) {
+                if ($currentMeasure->uuid == $measure->uuid) {
                     unset($currentMeasures[$i]);
                     $delete = true;
                 }
@@ -197,18 +197,18 @@ class MeasureSuperClass extends AbstractEntity
     /**
      * @return UuidInterface
      */
-    public function getUniqid(): UuidInterface
+    public function getuuid(): UuidInterface
     {
-        return $this->uniqid;
+        return $this->uuid;
     }
 
     /**
-     * @param UuidInterface $uniqid
+     * @param UuidInterface $uuid
      * @return Referential
      */
-    public function setUniqid($uniqid)
+    public function setuuid($uuid)
     {
-        $this->uniqid = $uniqid;
+        $this->uuid = $uuid;
         return $this;
     }
 
@@ -389,7 +389,7 @@ class MeasureSuperClass extends AbstractEntity
             'c.label2',
             'c.label3',
             'c.label3',
-            'r.uniqid',
+            'r.uuid',
             'label1',
             'label2',
             'label3',

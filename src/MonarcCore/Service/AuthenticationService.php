@@ -33,7 +33,7 @@ class AuthenticationService extends AbstractService
             $res = $this->get('adapter')->setIdentity($data['login'])->setCredential($data['password'])->setUserTable($this->get('userTable'))->authenticate();
             if ($res->isValid()) {
                 $user = $this->get('adapter')->getUser();
-                $token = uniqid(bin2hex(openssl_random_pseudo_bytes(rand(20, 40))), true);
+                $token = uuid(bin2hex(openssl_random_pseudo_bytes(rand(20, 40))), true);
                 $uid = $user->get('id');
                 $language = $user->get('language');
                 $this->get('storage')->addItem($token, $user);

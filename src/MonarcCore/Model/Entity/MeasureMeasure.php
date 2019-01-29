@@ -26,7 +26,7 @@ class MeasureMeasure extends MeasureMeasureSuperClass
        * @ORM\Id
        * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Measure", cascade={"persist"})
        * @ORM\JoinColumns({
-       *   @ORM\JoinColumn(name="father_id", referencedColumnName="uniqid", nullable=true)
+       *   @ORM\JoinColumn(name="father_id", referencedColumnName="uuid", nullable=true)
        * })
        */
       protected $father;
@@ -36,7 +36,7 @@ class MeasureMeasure extends MeasureMeasureSuperClass
        * @ORM\Id
        * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Measure", cascade={"persist"})
        * @ORM\JoinColumns({
-       *   @ORM\JoinColumn(name="child_id", referencedColumnName="uniqid", nullable=true)
+       *   @ORM\JoinColumn(name="child_id", referencedColumnName="uuid", nullable=true)
        * })
        */
       protected $child;

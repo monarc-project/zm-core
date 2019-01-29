@@ -29,10 +29,10 @@ class AddReferentials extends AbstractMigration
      */
     public function change()
     {
-      // Migration for table referentials it appears that we can set a function as default value, so the uniqid has to be managed via php or a trigger
+      // Migration for table referentials it appears that we can set a function as default value, so the uuid has to be managed via php or a trigger
       $table = $this->table('referentials');
       $table
-          ->addColumn('uniqid', 'uuid')
+          ->addColumn('uuid', 'uuid')
           ->addColumn('label1', 'string', array('null' => true, 'limit' => 255))
           ->addColumn('label2', 'string', array('null' => true, 'limit' => 255))
           ->addColumn('label3', 'string', array('null' => true, 'limit' => 255))
@@ -41,33 +41,33 @@ class AddReferentials extends AbstractMigration
           ->addColumn('created_at', 'datetime', array('null' => true))
           ->addColumn('updater', 'string', array('null' => true, 'limit' => 255))
           ->addColumn('updated_at', 'datetime', array('null' => true))
-          ->addIndex(array('uniqid'))
+          ->addIndex(array('uuid'))
           ->create();
       $table->removeColumn('id')->update();
-      $row = ['uniqid'=>'98ca84fb-db87-11e8-ac77-0800279aaa2b','label1'=>'ISO 27002','label2'=>'ISO 27002',
+      $row = ['uuid'=>'98ca84fb-db87-11e8-ac77-0800279aaa2b','label1'=>'ISO 27002','label2'=>'ISO 27002',
       'label3'=>'ISO 27002','label4'=>'ISO 27002','creator' => 'Migration script','created_at' => date('Y-m-d H:i:s')];
       $table->insert($row);
       $table->saveData();
 
-      $this->execute("ALTER TABLE referentials ADD PRIMARY KEY uniqid (uniqid)");
+      $this->execute("ALTER TABLE referentials ADD PRIMARY KEY uuid (uuid)");
       //add foreign key for measures
       $table = $this->table('measures');
       $table
-          ->addColumn('referential_uniqid', 'uuid', ['after' => 'soacategory_id'])
-          ->addIndex(['referential_uniqid', 'code'], ['unique' => true]) // we can't have 2 times the same code for same referential
+          ->addColumn('referential_uuid', 'uuid', ['after' => 'soacategory_id'])
+          ->addIndex(['referential_uuid', 'code'], ['unique' => true]) // we can't have 2 times the same code for same referential
           ->update();
-      $this->execute('UPDATE measures m SET m.referential_uniqid=(SELECT uniqid FROM referentials LIMIT 1) ;');
+      $this->execute('UPDATE measures m SET m.referential_uuid=(SELECT uuid FROM referentials LIMIT 1) ;');
       $table
-          ->addForeignKey('referential_uniqid', 'referentials', 'uniqid', array('delete' => 'CASCADE','update' => 'RESTRICT'))
+          ->addForeignKey('referential_uuid', 'referentials', 'uuid', array('delete' => 'CASCADE','update' => 'RESTRICT'))
           ->update();
       //add foreign key for the category
       $table = $this->table('soacategory');
       $table
-          ->addColumn('referential_uniqid', 'uuid')
+          ->addColumn('referential_uuid', 'uuid')
           ->update();
-      $this->execute('UPDATE soacategory s SET s.referential_uniqid=(SELECT uniqid FROM referentials LIMIT 1) ;');
+      $this->execute('UPDATE soacategory s SET s.referential_uuid=(SELECT uuid FROM referentials LIMIT 1) ;');
       $table
-          ->addForeignKey('referential_uniqid', 'referentials', 'uniqid', array('delete' => 'CASCADE','update' => 'RESTRICT'))
+          ->addForeignKey('referential_uuid', 'referentials', 'uuid', array('delete' => 'CASCADE','update' => 'RESTRICT'))
           ->update();
 
     }

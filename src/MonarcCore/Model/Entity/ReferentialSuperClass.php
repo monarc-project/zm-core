@@ -24,9 +24,9 @@ class ReferentialSuperClass extends AbstractEntity
      * @var \Ramsey\Uuid\UuidInterface
      *
      * @ORM\Id
-     * @ORM\Column(name="uniqid", type="uuid", unique=true)
+     * @ORM\Column(name="uuid", type="uuid", unique=true)
      */
-    protected $uniqid;
+    protected $uuid;
 
     /**
      * @var string
@@ -103,18 +103,18 @@ class ReferentialSuperClass extends AbstractEntity
     /**
      * @return UuidInterface
      */
-    public function getUniqid(): UuidInterface
+    public function getuuid(): UuidInterface
     {
-        return $this->uniqid;
+        return $this->uuid;
     }
 
     /**
-     * @param UuidInterface $uniqid
+     * @param UuidInterface $uuid
      * @return Referential
      */
-    public function setUniqid($uniqid)
+    public function setuuid($uuid)
     {
-        $this->uniqid = $uniqid;
+        $this->uuid = $uuid;
         return $this;
     }
 
@@ -165,7 +165,7 @@ class ReferentialSuperClass extends AbstractEntity
             // }
 
             // $this->inputFilter->add(array(
-            //     'name' => 'uniqid',
+            //     'name' => 'uuid',
             //     'required' => true,
             //     'allow_empty' => false,
             //     'filters' => array(),

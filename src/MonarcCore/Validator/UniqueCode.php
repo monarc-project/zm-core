@@ -49,8 +49,8 @@ class UniqueCode extends AbstractValidator
             if(isset($this->options['entity']->anr->id)){ //if we fetch an anr_id we are updating and not creating
                  $fields['anr'] = (isset($this->options['entity']->anr->id)) ? $this->options['entity']->anr->id : null;
              }
-            if(isset($context['referential']['uniqid']))
-              $referential = $context['referential']['uniqid'];
+            if(isset($context['referential']['uuid']))
+              $referential = $context['referential']['uuid'];
             if(isset($context['referential']) && !isset($context['anr'])) {//BO
               $referential = $context['referential'];
             }
@@ -64,7 +64,7 @@ class UniqueCode extends AbstractValidator
                     $this->error(self::ALREADYUSED);
                     return false;
                   }
-                  else if($referential != null && $referential == $res->get('referential')->uniqid ){
+                  else if($referential != null && $referential == $res->get('referential')->uuid ){
                     $this->error(self::ALREADYUSED);
                     return false;
                   }

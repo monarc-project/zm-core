@@ -284,7 +284,7 @@ abstract class AbstractEntityTable
     {
         if (!empty($this->connectedUser) && isset($this->connectedUser['firstname']) && isset($this->connectedUser['lastname'])) {
             $id = $entity->get('id');
-            if(empty($id))$id= $entity->get('uniqid'); //manage the case where the id field doesn't exist
+            if(empty($id))$id= $entity->get('uuid'); //manage the case where the id field doesn't exist
             if (empty($id)) {
                 if ($entity->__isset('creator')) {
                     $entity->set('creator', trim($this->connectedUser['firstname'] . " " . $this->connectedUser['lastname']));
@@ -327,16 +327,16 @@ abstract class AbstractEntityTable
         {
           $ids = $this->getClassMetadata()->getIdentifierFieldNames(); // fetch for the composite key
           foreach ($ids as $key => $value) {
-            if($value==='uniqid' && !$entity->get('uniqid') ) //uniqid have to be generated and setted
-              $entity->set('uniqid', Uuid::uuid4());
+            if($value==='uuid' && !$entity->get('uuid') ) //uuid have to be generated and setted
+              $entity->set('uuid', Uuid::uuid4());
           }
         }
         $id = $this->getDb()->save($entity, $last); // standard stuff for normal AI id
         if ($entity->get('id'))
           $entity->set('id', $id);
         $entity->initParametersChanges();
-        if($entity->get('uniqid'))
-          return $entity->get('uniqid');
+        if($entity->get('uuid'))
+          return $entity->get('uuid');
         else
           return $id;
     }

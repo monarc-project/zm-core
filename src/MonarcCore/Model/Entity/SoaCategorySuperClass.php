@@ -15,7 +15,7 @@ use MonarcCore\Model\Entity\AbstractEntity;
 * CategoriesSuperClass
 *
 * @ORM\Table(name="soacategory", indexes={
-*       @ORM\Index(name="referential", columns={"referential_uniqid"})
+*       @ORM\Index(name="referential", columns={"referential_uuid"})
 * })
 * @ORM\MappedSuperclass
 */
@@ -35,7 +35,7 @@ class SoaCategorySuperClass extends AbstractEntity
      *
      * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Referential", inversedBy="categories", cascade={"persist"})
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="referential_uniqid", referencedColumnName="uniqid", nullable=true)
+     *   @ORM\JoinColumn(name="referential_uuid", referencedColumnName="uuid", nullable=true)
      * })
      */
     protected $referential;
@@ -259,7 +259,7 @@ class SoaCategorySuperClass extends AbstractEntity
             'r.label2',
             'r.label3',
             'r.label4',
-            'r.uniqid',
+            'r.uuid',
         ];
         return [$filterJoin,$filterLeft,$filtersCol];
     }

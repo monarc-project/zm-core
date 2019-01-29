@@ -15,7 +15,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Table(name="measures", indexes={
  *      @ORM\Index(name="anr", columns={"anr_id"}),
  *      @ORM\Index(name="soacategory", columns={"soacategory_id"}),
- *      @ORM\Index(name="referential", columns={"referential_uniqid"})
+ *      @ORM\Index(name="referential", columns={"referential_uuid"})
  * })
  * @ORM\Entity
  */

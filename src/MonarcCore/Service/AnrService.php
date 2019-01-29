@@ -272,14 +272,14 @@ class AnrService extends AbstractService
                 $referentialTable = $this->get('referentialTable');
                 $referentials = $referentialTable->getEntityByFields(['anr' => $entity->get('id')]);
                 $referentialsArray = [
-                    'uniqid' => 'uniqid',
+                    'uuid' => 'uuid',
                     'label1' => 'label1',
                     'label2' => 'label2',
                     'label3' => 'label3',
                     'label4' => 'label4'
                 ];
                 foreach ($referentials as $r) {
-                    $return['referentials'][$r->getUniqid()->toString()] = $r->getJsonArray($referentialsArray);
+                    $return['referentials'][$r->getuuid()->toString()] = $r->getJsonArray($referentialsArray);
                 }
 
                 // measures
@@ -287,7 +287,7 @@ class AnrService extends AbstractService
                 $measureTable = $this->get('measureTable');
                 $measures = $measureTable->getEntityByFields(['anr' => $entity->get('id')]);
                 $measuresArray = [
-                    'uniqid' => 'uniqid',
+                    'uuid' => 'uuid',
                     'referential' => 'referential',
                     'category' => 'category',
                     'code' => 'code',
@@ -299,9 +299,9 @@ class AnrService extends AbstractService
                 ];
                 foreach ($measures as $m) {
                     $newMeasure = $m->getJsonArray($measuresArray);
-                    $newMeasure['referential'] = $m->getReferential()->getUniqid()->toString();
+                    $newMeasure['referential'] = $m->getReferential()->getuuid()->toString();
                     $newMeasure['category'] = $m->getCategory()->get('label' . $this->getLanguage());
-                    $return['measures'][$m->getUniqid()->toString()] = $newMeasure;
+                    $return['measures'][$m->getuuid()->toString()] = $newMeasure;
                 }
 
                 // measures-measures
@@ -309,7 +309,7 @@ class AnrService extends AbstractService
                 $measureMeasureTable = $this->get('measureMeasureTable');
                 $measuresMeasures = $measureMeasureTable->getEntityByFields(['anr' => $entity->get('id')]);
                 $measuresMeasuresArray = [
-                    'uniqid' => 'uniqid'
+                    'uuid' => 'uuid'
                 ];
                 foreach ($measuresMeasures as $mm) {
                     $newMeasureMeasure = [];
@@ -332,7 +332,7 @@ class AnrService extends AbstractService
                 ];
                 foreach ($soaCategories as $c) {
                     $newSoaCategory = $c->getJsonArray($soaCategoriesArray);
-                    $newSoaCategory['referential'] = $c->getReferential()->getUniqid()->toString();
+                    $newSoaCategory['referential'] = $c->getReferential()->getuuid()->toString();
                     $return['soacategories'][] = $newSoaCategory;
                 }
 
@@ -354,7 +354,7 @@ class AnrService extends AbstractService
                 ];
                 foreach ($soas as $s) {
                     $newSoas = $s->getJsonArray($soasArray);
-                    $newSoas['measure_id'] = $s->getMeasure()->getUniqid()->toString();
+                    $newSoas['measure_id'] = $s->getMeasure()->getuuid()->toString();
                     $return['soas'][] = $newSoas;
                 }
             }

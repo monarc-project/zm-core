@@ -5,7 +5,7 @@ use Phinx\Db\Adapter\MysqlAdapter;
 use Phinx\Util\Literal;
 use Ramsey\Uuid\Uuid;
 
-class AddMeasuresUniqid extends AbstractMigration
+class AddMeasuresUuid extends AbstractMigration
 {
     /**
      * Change Method.
@@ -30,7 +30,7 @@ class AddMeasuresUniqid extends AbstractMigration
      */
     public function change()
     {
-      //uniqid for measures
+      //uuid for measures
       $data = array('5.1.1' => '267fc596-f705-11e8-b555-0800279aaa2b',
       '5.1.2' => '267fc6a6-f705-11e8-b555-0800279aaa2b',
       '7.2.1' => '267fc6f7-f705-11e8-b555-0800279aaa2b',
@@ -148,45 +148,45 @@ class AddMeasuresUniqid extends AbstractMigration
       // Migration for table measures -- Modify the data
       $table = $this->table('measures');
       $table
-          ->addColumn('uniqid', 'uuid',array('after' => 'id'))
-          ->addIndex(array('uniqid'))
+          ->addColumn('uuid', 'uuid',array('after' => 'id'))
+          ->addIndex(array('uuid'))
           ->update();
-      foreach ($data as $key => $value) { //fill the uniqid only for 27002
-        $this->execute('UPDATE measures SET uniqid =' .'"'.$value.'"'.' WHERE code ='.'"'.$key .'"');
+      foreach ($data as $key => $value) { //fill the uuid only for 27002
+        $this->execute('UPDATE measures SET uuid =' .'"'.$value.'"'.' WHERE code ='.'"'.$key .'"');
       }
-      $unUUIDpdo = $this->query('select uniqid,id from measures' .' WHERE uniqid ='.'"'.'"');
+      $unUUIDpdo = $this->query('select uuid,id from measures' .' WHERE uuid ='.'"'.'"');
       $unUUIDrows = $unUUIDpdo->fetchAll();
 
       foreach ($unUUIDrows as $key => $value) {
-       $this->execute('UPDATE measures SET uniqid =' .'"'.Uuid::uuid4().'"'.' WHERE id ='.$value['id']); //manage measure which are not 27002
+       $this->execute('UPDATE measures SET uuid =' .'"'.Uuid::uuid4().'"'.' WHERE id ='.$value['id']); //manage measure which are not 27002
       }
 
       $table = $this->table('measures_amvs'); //set the stufff for measures_amvs
       $table->dropForeignKey('measure_id')
-            ->addColumn('measure_uniqid', 'uuid',array('after' => 'id'))
+            ->addColumn('measure_uuid', 'uuid',array('after' => 'id'))
             ->update();
-      $this->execute('UPDATE measures_amvs MA,measures M SET MA.measure_uniqid = M.uniqid where M.id=MA.measure_id');
+      $this->execute('UPDATE measures_amvs MA,measures M SET MA.measure_uuid = M.uuid where M.id=MA.measure_id');
       $table->removeColumn('measure_id')
-            ->renameColumn('measure_uniqid','measure_id')
+            ->renameColumn('measure_uuid','measure_id')
             ->update();
-      $table->addForeignKey('measure_id', 'measures', 'uniqid', ['delete'=> 'CASCADE', 'update'=> 'RESTRICT'])
+      $table->addForeignKey('measure_id', 'measures', 'uuid', ['delete'=> 'CASCADE', 'update'=> 'RESTRICT'])
             ->update();
 
       $table = $this->table('measures_measures'); //set the stufff for measures_measures
       $table->dropForeignKey('father_id')
             ->dropForeignKey('child_id')
-            ->addColumn('father_uniqid', 'uuid',array('after' => 'id'))
-            ->addColumn('child_uniqid', 'uuid',array('after' => 'id'))
+            ->addColumn('father_uuid', 'uuid',array('after' => 'id'))
+            ->addColumn('child_uuid', 'uuid',array('after' => 'id'))
             ->update();
-      $this->execute('UPDATE measures_measures MM,measures M SET MM.father_uniqid = M.uniqid where M.id=MM.father_id');
-      $this->execute('UPDATE measures_measures MM,measures M SET MM.child_uniqid = M.uniqid where M.id=MM.child_id');
+      $this->execute('UPDATE measures_measures MM,measures M SET MM.father_uuid = M.uuid where M.id=MM.father_id');
+      $this->execute('UPDATE measures_measures MM,measures M SET MM.child_uuid = M.uuid where M.id=MM.child_id');
       $table->removeColumn('father_id')
-            ->renameColumn('father_uniqid','father_id')
+            ->renameColumn('father_uuid','father_id')
             ->removeColumn('child_id')
-            ->renameColumn('child_uniqid','child_id')
+            ->renameColumn('child_uuid','child_id')
             ->update();
-      $table->addForeignKey('father_id', 'measures', 'uniqid', ['delete'=> 'CASCADE', 'update'=> 'RESTRICT'])
-            ->addForeignKey('child_id', 'measures', 'uniqid', ['delete'=> 'CASCADE', 'update'=> 'RESTRICT'])
+      $table->addForeignKey('father_id', 'measures', 'uuid', ['delete'=> 'CASCADE', 'update'=> 'RESTRICT'])
+            ->addForeignKey('child_id', 'measures', 'uuid', ['delete'=> 'CASCADE', 'update'=> 'RESTRICT'])
             ->update();
 
       $this->table('soa')->drop(); //set the stufff for soa
@@ -200,7 +200,7 @@ class AddMeasuresUniqid extends AbstractMigration
       $table = $this->table('measures');
       $table->removeColumn('id')
             ->update();
-      $this->execute("ALTER TABLE measures ADD PRIMARY KEY uniqid_anr_id (uniqid)");
+      $this->execute("ALTER TABLE measures ADD PRIMARY KEY uuid_anr_id (uuid)");
 
       $table = $this->table('rolf_risks_tags');
       $table->dropForeignKey('rolf_risk_id')
