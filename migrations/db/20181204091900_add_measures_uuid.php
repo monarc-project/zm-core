@@ -198,6 +198,9 @@ class AddMeasuresUuid extends AbstractMigration
       $this->execute("ALTER TABLE measures_measures ADD PRIMARY KEY child_id_father_id_anr_id (child_id, father_id)");
 
       $table = $this->table('measures');
+      $table->dropForeignKey('anr_id')
+            ->removeColumn('anr_id')
+            ->update();
       $table->removeColumn('id')
             ->update();
       $this->execute("ALTER TABLE measures ADD PRIMARY KEY uuid_anr_id (uuid)");

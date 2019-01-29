@@ -41,16 +41,6 @@ class MeasureSuperClass extends AbstractEntity
     protected $uuid;
 
     /**
-    * @var \MonarcCore\Model\Entity\Anr
-    *
-    * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Anr", cascade={"persist"})
-    * @ORM\JoinColumns({
-    *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true)
-    * })
-    */
-    protected $anr;
-
-    /**
      * @var \MonarcCore\Model\Entity\Referential
      *
      * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Referential", inversedBy="measures", cascade={"persist"})
