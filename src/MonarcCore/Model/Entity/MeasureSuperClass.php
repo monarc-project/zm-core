@@ -14,7 +14,6 @@ use Ramsey\Uuid\UuidInterface;
 * Measure
 *
 * @ORM\Table(name="measures", indexes={
-*      @ORM\Index(name="anr", columns={"anr_id"}),
 *      @ORM\Index(name="category", columns={"soacategory_id"}),
 *      @ORM\Index(name="referential", columns={"referential_uuid"})
 * })
@@ -199,24 +198,6 @@ class MeasureSuperClass extends AbstractEntity
     public function setuuid($uuid)
     {
         $this->uuid = $uuid;
-        return $this;
-    }
-
-    /**
-    * @return int
-    */
-    public function getAnr()
-    {
-        return $this->anr;
-    }
-
-    /**
-    * @param int $anr
-    * @return Measure
-    */
-    public function setAnr($anr)
-    {
-        $this->anr = $anr;
         return $this;
     }
 
