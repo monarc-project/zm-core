@@ -209,5 +209,11 @@ class AddMeasuresUuid extends AbstractMigration
       $table->dropForeignKey('rolf_risk_id')
             ->dropForeignKey('rolf_tag_id')
             ->update();
+
+      $table = $this->table('rolf_risks_tags');
+      $table->addForeignKey('rolf_risk_id', 'rolf_risks', 'id', ['delete'=> 'CASCADE', 'update'=> 'RESTRICT'])
+            ->addForeignKey('rolf_tag_id', 'rolf_tags', 'id', ['delete'=> 'CASCADE', 'update'=> 'RESTRICT'])
+            ->update();
+
     }
 }
