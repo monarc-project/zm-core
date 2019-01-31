@@ -60,11 +60,7 @@ class UniqueCode extends AbstractValidator
             foreach ($result as $res){
               foreach ($identifier as $key => $value) {
                 if($this->options['entity']->get($value) != $res->get($value)){
-                  if($referential == null){
-                    $this->error(self::ALREADYUSED);
-                    return false;
-                  }
-                  else if($referential != null && $referential == $res->get('referential')->uuid ){
+                  if($referential != null && $referential == $res->get('referential')->uuid ){
                     $this->error(self::ALREADYUSED);
                     return false;
                   }
