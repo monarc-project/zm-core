@@ -26,7 +26,6 @@ class MeasureMeasureService extends AbstractService
      */
     public function create($data, $last=true)
     {
-      file_put_contents('php://stderr', print_r('$id', TRUE).PHP_EOL);
       $id = null;
         if ($data['father'] == $data['child']) {
             throw new \MonarcCore\Exception\Exception("You cannot add yourself as a component", 412);

@@ -94,7 +94,6 @@ class RolfRiskService extends AbstractService
     public function create($data, $last = true)
     {
         /** @var RolfRisk $entity */
-        foreach ($data as $key => $value) { file_put_contents('php://stderr', print_r($key ." = " . $value . "\n" , TRUE));}
         $class = $this->get('entity');
         $table = $this->get('table');
         $entity = new $class();
