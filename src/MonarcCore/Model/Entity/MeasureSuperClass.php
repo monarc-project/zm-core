@@ -340,26 +340,26 @@ class MeasureSuperClass extends AbstractEntity
                 'as' => 'r',
                 'rel' => 'referential',
             ],
-            [
-                'as' => 'c',
-                'rel' => 'category',
-            ],
         ];
         $filterLeft = [
             [
                 'as' => 'r1',
                 'rel' => 'referential',
             ],
+            [
+                'as' => 'c',
+                'rel' => 'category',
+            ],
         ];
         $filtersCol = [
             'r.label1',
             'r.label2',
             'r.label3',
-            'r.label3',
+            'r.label4',
             'c.label1',
             'c.label2',
             'c.label3',
-            'c.label3',
+            'c.label4',
             'r.uuid',
             'label1',
             'label2',
