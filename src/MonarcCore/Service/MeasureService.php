@@ -87,7 +87,8 @@ class MeasureService extends AbstractService
       $categoryTable = $this->get('categoryTable');
       $categories = [];
       foreach ($data as $id) {
-        array_push($categories, $this->get('table')->getEntity($id)->getCategory()->getId());
+        if($this->get('table')->getEntity($id)->getCategory() != null)
+          array_push($categories, $this->get('table')->getEntity($id)->getCategory()->getId());
       }
 
       parent::deleteListFromAnr($data, $anrId);
