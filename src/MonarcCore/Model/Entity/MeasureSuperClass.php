@@ -364,7 +364,7 @@ class MeasureSuperClass extends AbstractEntity
             'label1',
             'label2',
             'label3',
-            'label3',
+            'label4',
             'code',
         ];
         return [$filterJoin,$filterLeft,$filtersCol];

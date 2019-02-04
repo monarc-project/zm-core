@@ -65,14 +65,20 @@ class MeasureService extends AbstractService
 
     public function delete($id)
     {
-      $category = $this->get('table')->getEntity($id)->getCategory()->getId();
-      parent::delete($id);
-      $categoryTable = $this->get('categoryTable');
-      $categ = $categoryTable->getEntity($category);
+      $category = null;
+      if($this->get('table')->getEntity($id)->getCategory() != null) // fetch teh category
+        $category = $this->get('table')->getEntity($id)->getCategory()->getId();
 
-      if(count($categ->measures)==0) //if the category is empty delete it
+      parent::delete($id);
+      if($category != null) //check if the measure has a category
       {
-        $categoryTable->delete($category);
+        $categoryTable = $this->get('categoryTable');
+        $categ = $categoryTable->getEntity($category);
+
+        if(count($categ->measures)==0) //if the category is empty delete it
+        {
+          $categoryTable->delete($category);
+        }
       }
     }
 
