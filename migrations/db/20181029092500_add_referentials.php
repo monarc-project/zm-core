@@ -59,6 +59,7 @@ class AddReferentials extends AbstractMigration
       $this->execute('UPDATE measures m SET m.referential_uuid=(SELECT uuid FROM referentials LIMIT 1) ;');
       $table
           ->addForeignKey('referential_uuid', 'referentials', 'uuid', array('delete' => 'CASCADE','update' => 'RESTRICT'))
+          ->addForeignKey('soacategory_id', 'soacategory', 'id', ['delete'=> 'SET_NULL', 'update'=> 'RESTRICT'])
           ->update();
       //add foreign key for the category
       $table = $this->table('soacategory');

@@ -215,5 +215,11 @@ class AddMeasuresUuid extends AbstractMigration
             ->addForeignKey('rolf_tag_id', 'rolf_tags', 'id', ['delete'=> 'CASCADE', 'update'=> 'RESTRICT'])
             ->update();
 
+      //delete a theme of a threat mustn't delete all the threat linked to the theme
+      $table = $this->table('threats');
+      $table->dropForeignKey('theme_id')
+            ->addForeignKey('theme_id', 'themes', 'id', ['delete'=> 'SET_NULL', 'update'=> 'RESTRICT'])
+            ->update();
+
     }
 }
