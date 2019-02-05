@@ -20,6 +20,25 @@ class MeasureService extends AbstractService
     protected $forbiddenFields = ['anr'];
     protected $categoryTable;
 
+    /**
+     * Creates a new entity of the type of this class, where the fields have the value of the $data array.
+     * @param array $data The object's data
+     * @param bool $last Whether or not this will be the last element of a batch. Setting this to false will suspend
+     *                   flushing to the database to increase performance during batch insertions.
+     * @return object The created entity object
+     */
+    public function create($data, $last = true)
+    {
+      file_put_contents('php://stderr', print_r($data, TRUE).PHP_EOL);
+        try{
+          $uuid = parent::create($data, $last);
+        }
+        catch(\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e) // we check if the uuid id already existing
+        {
+          unset($data['uuid']); //if the uuid exist create a new one
+          $uuid = parent::create($data, $last)->toString();
+        }
+    }
 
     /**
      * @inheritdoc
