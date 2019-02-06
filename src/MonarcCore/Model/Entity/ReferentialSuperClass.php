@@ -139,7 +139,6 @@ class ReferentialSuperClass extends AbstractEntity
     public function getInputFilter($partial = false)
     {
         if (!$this->inputFilter) {
-            file_put_contents('php://stderr', print_r('getInputFilter', TRUE).PHP_EOL);
             parent::getInputFilter($partial);
 
             $texts = ['label1', 'label2', 'label3', 'label4'];

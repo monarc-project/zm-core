@@ -29,7 +29,6 @@ class MeasureService extends AbstractService
      */
     public function create($data, $last = true)
     {
-      file_put_contents('php://stderr', print_r($data, TRUE).PHP_EOL);
         try{
           $uuid = parent::create($data, $last);
         }

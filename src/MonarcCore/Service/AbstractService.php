@@ -535,12 +535,10 @@ abstract class AbstractService extends AbstractServiceFactory
 
                       if(isset($value['uuid']))
                         {$dep = $db->getReference($class, isset($value['uuid']) ? $value['uuid'] : $value);
-                          //file_put_contents('php://stderr', print_r($value , TRUE).PHP_EOL);
                         }
                       else
                         {
                           $dep = $db->getReference($class, isset($value['id']) ? $value['id'] : $value);
-                          //file_put_contents('php://stderr', print_r( $value , TRUE).PHP_EOL);
                         }
 
                         if (isset($dep->anr) && isset($entity->anr) && $dep->anr instanceof \MonarcCore\Model\Entity\AnrSuperClass) {
