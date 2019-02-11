@@ -73,7 +73,7 @@ class AmvSuperclass extends AbstractEntity
 
     /**
      * @var \Doctrine\Common\Collections\Collection
-     * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Measure", inversedBy="amvs", cascade={"persist"})
+     * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Measure", mappedBy="amvs", cascade={"persist"})
      * @ORM\JoinTable(name="measures_amvs",
      *  joinColumns={@ORM\JoinColumn(name="amv_id", referencedColumnName="id")},
      *  inverseJoinColumns={@ORM\JoinColumn(name="measure_id", referencedColumnName="uuid")}

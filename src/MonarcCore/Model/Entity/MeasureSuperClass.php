@@ -103,7 +103,7 @@ class MeasureSuperClass extends AbstractEntity
 
     /**
     * @var \Doctrine\Common\Collections\Collection
-    * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Amv", mappedBy="measures", cascade={"persist"})
+    * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Amv", inversedBy="measures", cascade={"persist"})
     */
     protected $amvs;
 
