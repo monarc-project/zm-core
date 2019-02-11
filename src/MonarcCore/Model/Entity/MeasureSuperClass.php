@@ -262,6 +262,26 @@ class MeasureSuperClass extends AbstractEntity
     }
 
     /**
+     * @param Amv $amv
+     * @return Measure
+     */
+    public function deleteAmv($amv)
+    {
+      $this->amvs->removeElement($amv);
+      // $currentAmvs = $this->amvs;
+      // $i=0;
+      // foreach ($currentAmvs as $currentAmv) {
+      //     if ($currentAmv->id == $amv) {
+      //         unset($currentAmvs[$i]);
+      //         file_put_contents('php://stderr', print_r('$id', TRUE).PHP_EOL);
+      //     }
+      //     $i++;
+      //   }
+      // $this->amvs = $currentAmvs;
+      // return $this;
+    }
+
+    /**
     * @return measuresLinked
     */
     public function getMeasuresLinked()
