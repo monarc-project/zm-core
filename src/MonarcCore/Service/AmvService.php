@@ -66,6 +66,20 @@ class AmvService extends AbstractService
         $this->filterPatchFields($data);
 
         $entity = $this->get('table')->getEntity($id);
+
+        //manage the measures separatly because it's the slave of the relation amv<-->measures
+        foreach ($data['measures'] as $measure) {
+            $measureEntity =  $this->get('measureTable')->getEntity($measure);
+            $measureEntity->addAmv($entity);
+        }
+
+        foreach ($entity->measures as $m) {
+            if(false === array_search($m->uuid->toString(), $data['measures'],true)){
+              $m->deleteAmv($entity);
+            }
+        }
+        unset($data['measures']);
+
         $entity->exchangeArray($data, true);
 
         $this->setDependencies($entity, $this->dependencies);
@@ -94,6 +108,13 @@ class AmvService extends AbstractService
     public function create($data, $last = true)
     {
         $entity = $this->get('entity');
+        //manage the measures separatly because it's the slave of the relation amv<-->measures
+        foreach ($data['measures'] as $measure) {
+            $measureEntity =  $this->get('measureTable')->getEntity($measure);
+            $measureEntity->addAmv($entity);
+        }
+        unset($data['measures']);
+
         $entity->exchangeArray($data);
 
         $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
@@ -178,6 +199,19 @@ class AmvService extends AbstractService
         $name = implode(' - ', $name);
         $this->label = [$name, $name, $name, $name];
 
+        file_put_contents('php://stderr', print_r($data, TRUE).PHP_EOL);
+        //manage the measures separatly because it's the slave of the relation amv<-->measures
+        foreach ($data['measures'] as $measure) {
+            $measureEntity =  $this->get('measureTable')->getEntity($measure);
+            $measureEntity->addAmv($entity);
+        }
+
+        foreach ($entity->measures as $m) {
+            if(false === array_search($m->uuid->toString(), $data['measures'],true)){
+              $m->deleteAmv($entity);
+            }
+        }
+        unset($data['measures']);
         $entity->exchangeArray($data);
 
         $this->setDependencies($entity, $this->dependencies);
