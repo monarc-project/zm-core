@@ -28,6 +28,7 @@ class AmvService extends AbstractService
     protected $assetTable;
     protected $instanceTable;
     protected $measureTable;
+    protected $referentialTable;
     protected $modelTable;
     protected $threatTable;
     protected $vulnerabilityTable;
@@ -288,6 +289,25 @@ class AmvService extends AbstractService
             $this->get('table')->delete($id);
         }
     }
+
+    /*
+    * Function to link automatically the amv of the destination from the source depending of the measures_measures
+    */
+      public function createLinkedAmvs($source_uuid, $destination_uuid)
+      {
+        $measures_dest = $this->get('referentialTable')->getEntity($destination_uuid)->getMeasures();
+        foreach ($measures_dest as $md) {
+          foreach ($md->getMeasuresLinked() as $measureLink) {
+            if($measureLink->getReferential()->getuuid()->toString()==$source_uuid ){
+                if(true){
+                  $md->amvs = $measureLink->amvs;
+                  $this->get('measureTable')->save($md,false);
+                }
+            }
+          }
+        }
+        $this->get('measureTable')->getDb()->flush();
+      }
 
     /**
      * Checks whether or not the specified theoretical AMV link complies with the behavioral requirements

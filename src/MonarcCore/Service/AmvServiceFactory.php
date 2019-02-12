@@ -22,6 +22,7 @@ class AmvServiceFactory extends AbstractServiceFactory
         'assetTable' => '\MonarcCore\Model\Table\AssetTable',
         'instanceTable' => 'MonarcCore\Model\Table\InstanceTable',
         'measureTable' => '\MonarcCore\Model\Table\MeasureTable',
+        'referentialTable' => '\MonarcCore\Model\Table\ReferentialTable',
         'modelTable' => '\MonarcCore\Model\Table\ModelTable',
         'threatTable' => '\MonarcCore\Model\Table\ThreatTable',
         'vulnerabilityTable' => '\MonarcCore\Model\Table\VulnerabilityTable',
