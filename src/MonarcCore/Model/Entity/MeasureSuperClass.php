@@ -116,7 +116,7 @@ class MeasureSuperClass extends AbstractEntity
     * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\RolfRisk", inversedBy="measures", cascade={"persist"})
     * @ORM\JoinTable(name="measures_rolf_risks",
     *  inverseJoinColumns={@ORM\JoinColumn(name="rolf_risk_id", referencedColumnName="id")},
-    *  joinColumns={@ORM\JoinColumn(name="measure_uuid", referencedColumnName="uuid"),},
+    *  joinColumns={@ORM\JoinColumn(name="measure_id", referencedColumnName="uuid"),},
     * )
     */
     protected $rolfRisks;
