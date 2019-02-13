@@ -25,6 +25,8 @@ class RolfRiskService extends AbstractService
     protected $instanceTable;
     protected $instanceRiskOpTable;
     protected $instanceRiskOpService;
+    protected $measureTable;
+    protected $dependencies = ['measures'];
     protected $filterColumns = [
         'code', 'label1', 'label2', 'label3', 'label4', 'description1', 'description2', 'description3', 'description4'
     ];
@@ -128,11 +130,17 @@ class RolfRiskService extends AbstractService
      */
     public function update($id, $data)
     {
-      unset($data['measures']);
+      file_put_contents('php://stderr', print_r($data, TRUE).PHP_EOL);
         $rolfTags = isset($data['tags']) ? $data['tags'] : [];
         unset($data['tags']);
 
         $entity = $this->get('table')->getEntity($id);
+        foreach ($data['measures'] as $measure) {
+          $measureEntity = $this->get('measureTable')->getEntity($measure);
+          $measureEntity->AddOpRisk($entity);
+          $this->get('measureTable')->save($measureEntity);
+        }
+        unset($data['measures']);
         $entity->setDbAdapter($this->get('table')->getDb());
         $entity->setLanguage($this->getLanguage());
         $entity->exchangeArray($data);

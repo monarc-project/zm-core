@@ -275,6 +275,12 @@ class MeasureSuperClass extends AbstractEntity
         return $this;
     }
 
+    public function AddOpRisk($riskInput)
+    {
+        $this->rolfRisks->add($riskInput);
+        return $this;
+    }
+
     /**
      * @param Amv $amv
      * @return Measure
