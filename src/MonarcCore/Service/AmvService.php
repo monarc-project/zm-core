@@ -333,10 +333,10 @@ class AmvService extends AbstractService
         foreach ($measures_dest as $md) {
           foreach ($md->getMeasuresLinked() as $measureLink) {
             if($measureLink->getReferential()->getuuid()->toString()==$source_uuid ){
-                if(true){
-                  $md->amvs = $measureLink->amvs;
-                  $this->get('measureTable')->save($md,false);
-                }
+              foreach ($measureLink->amvs as $amv) {
+                $md->addAmv($amv);
+              }
+              $this->get('measureTable')->save($md,false);
             }
           }
         }
