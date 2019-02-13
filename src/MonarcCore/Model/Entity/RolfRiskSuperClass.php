@@ -143,6 +143,17 @@ class RolfRiskSuperclass extends AbstractEntity
     protected $updatedAt;
 
     /**
+     * @var \Doctrine\Common\Collections\Collection
+     * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Measure", mappedBy="rolfRisks", cascade={"persist"})
+     * @ORM\JoinTable(name="measures_rolf_risks",
+     *  joinColumns={@ORM\JoinColumn(name="rolf_risk_id", referencedColumnName="id")},
+     *  inverseJoinColumns={@ORM\JoinColumn(name="measure_uuid", referencedColumnName="uuid")}
+     * )
+     */
+    protected $measures;
+
+
+    /**
      * @return int
      */
     public function getId()
@@ -250,4 +261,31 @@ class RolfRiskSuperclass extends AbstractEntity
         $this->tags = new ArrayCollection();
         parent::__construct($obj);
     }
+
+
+    /**
+     * Get the value of Measures
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getMeasures()
+    {
+        return $this->measures;
+    }
+
+
+    /**
+     * Set the value of Measures
+     *
+     * @param \Doctrine\Common\Collections\Collection measures
+     *
+     * @return self
+     */
+    public function setMeasures(\Doctrine\Common\Collections\Collection $measures)
+    {
+        $this->measures = $measures;
+
+        return $this;
+    }
+
 }

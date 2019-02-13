@@ -128,6 +128,7 @@ class RolfRiskService extends AbstractService
      */
     public function update($id, $data)
     {
+      unset($data['measures']);
         $rolfTags = isset($data['tags']) ? $data['tags'] : [];
         unset($data['tags']);
 

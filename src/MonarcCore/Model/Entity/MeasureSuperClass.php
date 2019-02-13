@@ -112,6 +112,16 @@ class MeasureSuperClass extends AbstractEntity
     protected $amvs;
 
     /**
+    * @var \Doctrine\Common\Collections\Collection
+    * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\RolfRisk", inversedBy="measures", cascade={"persist"})
+    * @ORM\JoinTable(name="measures_rolf_risks",
+    *  inverseJoinColumns={@ORM\JoinColumn(name="rolf_risk_id", referencedColumnName="id")},
+    *  joinColumns={@ORM\JoinColumn(name="measure_uuid", referencedColumnName="uuid"),},
+    * )
+    */
+    protected $rolfRisks;
+
+    /**
     * @var string
     *
     * @ORM\Column(name="creator", type="string", length=255, nullable=true)
