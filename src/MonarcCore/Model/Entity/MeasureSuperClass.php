@@ -275,9 +275,14 @@ class MeasureSuperClass extends AbstractEntity
         return $this;
     }
 
+    /**
+     * @param RolfRisk $riskInput
+     * @return Measure
+     */
     public function AddOpRisk($riskInput)
     {
-        $this->rolfRisks->add($riskInput);
+      if(!$this->getRolfRisks()->contains($riskInput))
+          $this->rolfRisks->add($riskInput);
         return $this;
     }
 
@@ -288,17 +293,17 @@ class MeasureSuperClass extends AbstractEntity
     public function deleteAmv($amv)
     {
       $this->amvs->removeElement($amv);
-      // $currentAmvs = $this->amvs;
-      // $i=0;
-      // foreach ($currentAmvs as $currentAmv) {
-      //     if ($currentAmv->id == $amv) {
-      //         unset($currentAmvs[$i]);
-      //         file_put_contents('php://stderr', print_r('$id', TRUE).PHP_EOL);
-      //     }
-      //     $i++;
-      //   }
-      // $this->amvs = $currentAmvs;
-      // return $this;
+      return $this;
+    }
+
+    /**
+     * @param RolfRisk $riskInput
+     * @return Measure
+     */
+    public function deleteOpRisk($riskInput)
+    {
+      $this->rolfRisks->removeElement($riskInput);
+      return $this;
     }
 
     /**
@@ -409,4 +414,29 @@ class MeasureSuperClass extends AbstractEntity
         ];
         return [$filterJoin,$filterLeft,$filtersCol];
     }
+
+    /**
+     * Get the value of Rolf Risks
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getRolfRisks()
+    {
+        return $this->rolfRisks;
+    }
+
+    /**
+     * Set the value of Rolf Risks
+     *
+     * @param \Doctrine\Common\Collections\Collection rolfRisks
+     *
+     * @return self
+     */
+    public function setRolfRisks(\Doctrine\Common\Collections\Collection $rolfRisks)
+    {
+        $this->rolfRisks = $rolfRisks;
+
+        return $this;
+    }
+
 }

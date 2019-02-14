@@ -105,7 +105,12 @@ class RolfRiskService extends AbstractService
             $data['anr'] = $this->get('anrTable')->getEntity($data['anr']);
 
         }
-
+        //manage the measures separatly because it's the slave of the relation RolfRisks<-->measures
+        foreach ($data['measures'] as $measure) {
+          $measureEntity = $this->get('measureTable')->getEntity($measure);
+          $measureEntity->AddOpRisk($entity);
+        }
+        unset($data['measures']);
         $entity->exchangeArray($data);
 
         $rolfTags = $entity->get('tags');
@@ -135,15 +140,22 @@ class RolfRiskService extends AbstractService
         unset($data['tags']);
 
         $entity = $this->get('table')->getEntity($id);
+        //manage the measures separatly because it's the slave of the relation RolfRisks<-->measures
         foreach ($data['measures'] as $measure) {
           $measureEntity = $this->get('measureTable')->getEntity($measure);
           $measureEntity->AddOpRisk($entity);
-          $this->get('measureTable')->save($measureEntity);
+        }
+        foreach ($entity->measures as $m) {
+            if(false === array_search($m->uuid->toString(), array_column($data['measures'], 'uuid'),true)){
+              $m->deleteOpRisk($entity);
+            }
         }
         unset($data['measures']);
         $entity->setDbAdapter($this->get('table')->getDb());
         $entity->setLanguage($this->getLanguage());
         $entity->exchangeArray($data);
+        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $this->setDependencies($entity, $dependencies);
 
         $currentTagId = [];
         foreach ($entity->tags as $tag) {
