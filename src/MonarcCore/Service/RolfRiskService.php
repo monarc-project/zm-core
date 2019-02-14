@@ -287,4 +287,23 @@ class RolfRiskService extends AbstractService
           }
         return $this->get('table')->save($entity);
     }
+
+    /*
+    * Function to link automatically the amv of the destination from the source depending of the measures_measures
+    */
+      public function createLinkedRisks($source_uuid, $destination)
+      {
+        $measures_dest = $this->get('referentialTable')->getEntity($destination)->getMeasures();
+        foreach ($measures_dest as $md) {
+          foreach ($md->getMeasuresLinked() as $measureLink) {
+              if($measureLink->getReferential()->getuuid()->toString()==$source_uuid){
+                foreach ($measureLink->rolfRisks as $risk) {
+                  $md->AddOpRisk($risk);
+                }
+                $this->get('measureTable')->save($md,false);
+              }
+          }
+        }
+        $this->get('measureTable')->getDb()->flush();
+      }
 }
