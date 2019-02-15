@@ -327,9 +327,9 @@ class AmvService extends AbstractService
     /*
     * Function to link automatically the amv of the destination from the source depending of the measures_measures
     */
-      public function createLinkedAmvs($source_uuid, $destination_uuid)
+      public function createLinkedAmvs($source_uuid, $destination)
       {
-        $measures_dest = $this->get('referentialTable')->getEntity($destination_uuid)->getMeasures();
+        $measures_dest = $this->get('referentialTable')->getEntity($destination)->getMeasures();
         foreach ($measures_dest as $md) {
           foreach ($md->getMeasuresLinked() as $measureLink) {
             if($measureLink->getReferential()->getuuid()->toString()==$source_uuid ){
