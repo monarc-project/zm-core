@@ -271,8 +271,9 @@ class MeasureSuperClass extends AbstractEntity
      */
     public function addAmv($amv)
     {
-        $this->amvs[] = $amv;
-        return $this;
+      if(!$this->getAmvs()->contains($amv))
+        $this->amvs->add($amv);
+      return $this;
     }
 
     /**
