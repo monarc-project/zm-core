@@ -123,9 +123,13 @@ class ObjectExportService extends AbstractService
             $return['rolfTags'][$rolfTag['id']]['risks'] = [];
             if (!empty($risks)) {
                 foreach ($risks as $r) {
-                    $r = $r->getJsonArray(['id', 'code', 'label1', 'label2', 'label3', 'label4', 'description1', 'description2', 'description3', 'description4']);
-                    $return['rolfTags'][$rolfTag['id']]['risks'][$r['id']] = $r['id'];
-                    $return['rolfRisks'][$r['id']] = $r;
+                    $risk = $r->getJsonArray(['id', 'code', 'label1', 'label2', 'label3', 'label4', 'description1', 'description2', 'description3', 'description4']);
+                    $risk['measures'] = array();
+                    foreach ($r->measures as $m) {
+                      $risk['measures'][] = $m->uuid;
+                    }
+                    $return['rolfTags'][$rolfTag['id']]['risks'][$risk['id']] = $risk['id'];
+                    $return['rolfRisks'][$risk['id']] = $risk;
                 }
             }
         }
