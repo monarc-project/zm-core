@@ -199,7 +199,6 @@ class AmvService extends AbstractService
         $name = implode(' - ', $name);
         $this->label = [$name, $name, $name, $name];
 
-        file_put_contents('php://stderr', print_r($data, TRUE).PHP_EOL);
         //manage the measures separatly because it's the slave of the relation amv<-->measures
         foreach ($data['measures'] as $measure) {
             $measureEntity =  $this->get('measureTable')->getEntity($measure);

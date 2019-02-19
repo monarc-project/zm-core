@@ -24,6 +24,7 @@ class ObjectExportService extends AbstractService
     protected $anrObjectCategoryTable;
     protected $rolfTagTable;
     protected $rolfRiskTable;
+    protected $measureTable;
     /** @var  ConfigService */
     protected $configService;
 
@@ -202,6 +203,13 @@ class ObjectExportService extends AbstractService
                                 $risk->setDbAdapter($this->get('rolfRiskTable')->getDb());
                                 $risk->setLanguage($this->getLanguage());
                                 $toExchange = $data['rolfRisks'][$k];
+                                foreach ($toExchange['measures'] as $m) {
+                                  try {
+                                    $measure = $this->get('measureTable')->getEntity(['anr'=>$anr->id,'uuid'=>$m]);
+                                    $measure->AddOpRisk($risk);
+                                  } catch (\MonarcCore\Exception\Exception $e) { }
+                                }
+                                unset($toExchange['measures']);
                                 unset($toExchange['id']);
                                 $toExchange['anr'] = $anr->get('id');
                                 $risk->exchangeArray($toExchange);
