@@ -687,9 +687,7 @@ class AmvService extends AbstractService
             'id' => 'v',
             'threat' => 'o',
             'vulnerability' => 'o',
-            'measure1' => 'o',
-            'measure2' => 'o',
-            'measure3' => 'o',
+            'measures' => 'o',
             'status' => 'v',
         ];
         $treatsObj = [
@@ -735,8 +733,9 @@ class AmvService extends AbstractService
             'label4' => 'label4',
         ];
         $measuresObj = [
-            'id' => 'id',
+            'uuid' => 'uuid',
             'category' => 'category',
+            'referential' => 'referential',
             'code' => 'code',
             'status' => 'status',
             'label1' => 'label1',
@@ -767,10 +766,10 @@ class AmvService extends AbstractService
                     if (empty($o)) {
                         $amvs[$k] = null;
                     } else {
-                        $o = $amv->get($k)->getJsonArray();
-                        $amvs[$k] = $o['id'];
                         switch ($k) {
                             case 'threat':
+                                $o = $amv->get($k)->getJsonArray();
+                                $amvs[$k] = $o['id'];
                                 $threats[$o['id']] = $amv->get($k)->getJsonArray($treatsObj);
                                 if (!empty($threats[$o['id']]['theme'])) {
                                     $threats[$o['id']]['theme'] = $threats[$o['id']]['theme']->getJsonArray($themesObj);
@@ -779,18 +778,21 @@ class AmvService extends AbstractService
                                 }
                                 break;
                             case 'vulnerability':
+                                $o = $amv->get($k)->getJsonArray();
+                                $amvs[$k] = $o['id'];
                                 $vulns[$o['id']] = $amv->get($k)->getJsonArray($vulsObj);
                                 break;
-                            case 'measure1':
-                            case 'measure2':
-                            case 'measure3':
-                                $measures[$o['id']] = $amv->get($k)->getJsonArray($measuresObj);
-                                if (!empty($measures[$o['id']]['category'])) {
-                                    $measures[$o['id']]['category'] = $measures[$o['id']]['category']->getJsonArray($soacategoriesObj);
-                                    $soacategories[$measures[$o['id']]['category']['id']] = $measures[$o['id']]['category'];
-                                    $measures[$o['id']]['category'] = $measures[$o['id']]['category']['id'];
+                            case 'measures':
+                                $measuresList = $amv->get($k);
+                                if(count($measuresList>0)){
+                                  foreach ($measuresList  as $m) {
+                                    $measures[$m->uuid->toString()] = $m->getJsonArray($measuresObj);
+                                    $measures[$m->uuid->toString()]['category'] = $m->category->getJsonArray($soacategoriesObj);
+                                    $measures[$m->uuid->toString()]['referential'] = $m->referential->uuid->toString();
+                                    $amvs[$k][] = $m->uuid->toString();
+                                  }
                                 }
-                                break;
+                            break;
                         }
                     }
                     break;
