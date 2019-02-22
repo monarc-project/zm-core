@@ -777,7 +777,7 @@ class AmvService extends AbstractService
                                 break;
                             case 'measures':
                                 $measuresList = $amv->get($k);
-                                if(count($measuresList>0)){
+                                if(count($measuresList)>0){
                                   foreach ($measuresList  as $m) {
                                     $measures[$m->uuid->toString()] = $m->getJsonArray($measuresObj);
                                     $measures[$m->uuid->toString()]['category'] = $m->category->getJsonArray($soacategoriesObj);
