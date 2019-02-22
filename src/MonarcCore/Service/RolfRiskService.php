@@ -136,7 +136,6 @@ class RolfRiskService extends AbstractService
      */
     public function update($id, $data)
     {
-      file_put_contents('php://stderr', print_r($data, TRUE).PHP_EOL);
         $rolfTags = isset($data['tags']) ? $data['tags'] : [];
         unset($data['tags']);
 
