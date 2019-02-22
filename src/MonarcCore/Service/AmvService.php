@@ -151,10 +151,7 @@ class AmvService extends AbstractService
             'anr' => 'code',
             'asset' => 'code',
             'threat' => 'code',
-            'vulnerability' => 'code',
-            'measure1' => 'code',
-            'measure2' => 'code',
-            'measure3' => 'code'
+            'vulnerability' => 'code'
         ];
         $details = [];
         foreach ($fields as $key => $field) {
@@ -305,10 +302,7 @@ class AmvService extends AbstractService
                 'anr' => 'code',
                 'asset' => 'code',
                 'threat' => 'code',
-                'vulnerability' => 'code',
-                'measure1' => 'code',
-                'measure2' => 'code',
-                'measure3' => 'code'
+                'vulnerability' => 'code'
             ];
             $details = [];
             foreach ($fields as $key => $field) {
