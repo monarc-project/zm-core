@@ -231,7 +231,7 @@ class InstanceRiskService extends AbstractService
     public function update($id, $data, $manageGlobal = true)
     {
         $initialData = $data;
-        $anrId = $data['anr'];
+        $anrId = (isset($data['anr']))? $data['anr'] : null;
 
         if(isset($data['threatRate'])){
             $data['threatRate'] = trim($data['threatRate']);
