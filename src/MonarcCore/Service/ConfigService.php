@@ -72,6 +72,13 @@ class ConfigService extends AbstractService
         ];
     }
 
+    public function getTerms()
+    {
+        return [
+            'terms' => isset($this->config['terms']) ? $this->config['terms'] : '',
+        ];
+    }
+
     public function getemail()
     {
         return [
