@@ -28,7 +28,7 @@ class ThreatSuperClass extends AbstractEntity
     * @ORM\Column(name="uuid", type="uuid", nullable=false)
     * @ORM\Id
     */
-    protected $id;
+    protected $uuid;
 
     /**
      * @var \MonarcCore\Model\Entity\Anr
