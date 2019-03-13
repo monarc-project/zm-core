@@ -46,7 +46,7 @@ class AmvSuperclass extends AbstractEntity
      *
      * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Asset", cascade={"persist"})
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="asset_id", referencedColumnName="id", nullable=true)
+     *   @ORM\JoinColumn(name="asset_id", referencedColumnName="uuid", nullable=true)
      * })
      */
     protected $asset;

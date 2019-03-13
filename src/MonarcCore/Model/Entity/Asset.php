@@ -25,7 +25,7 @@ class Asset extends AssetSuperClass
      * @var \Doctrine\Common\Collections\Collection
      * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Model", inversedBy="assets", cascade={"persist"})
      * @ORM\JoinTable(name="assets_models",
-     *  joinColumns={@ORM\JoinColumn(name="asset_id", referencedColumnName="id")},
+     *  joinColumns={@ORM\JoinColumn(name="asset_id", referencedColumnName="uuid")},
      *  inverseJoinColumns={@ORM\JoinColumn(name="model_id", referencedColumnName="id")}
      * )
      */
@@ -84,4 +84,3 @@ class Asset extends AssetSuperClass
         parent::__construct($obj);
     }
 }
-

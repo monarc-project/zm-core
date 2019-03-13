@@ -21,13 +21,12 @@ use Doctrine\ORM\Mapping as ORM;
 class AssetSuperClass extends AbstractEntity
 {
     /**
-     * @var integer
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     */
-    protected $id;
+    * @var integer
+    *
+    * @ORM\Column(name="uuid", type="uuid", nullable=false)
+    * @ORM\Id
+    */
+    protected $uuid;
 
     /**
      * @var \MonarcCore\Model\Entity\Anr
@@ -274,4 +273,3 @@ class AssetSuperClass extends AbstractEntity
         return $this->inputFilter;
     }
 }
-
