@@ -74,7 +74,7 @@ class InstanceRiskSuperClass extends AbstractEntity
      *
      * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Threat", cascade={"persist"})
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="threat_id", referencedColumnName="id", nullable=true)
+     *   @ORM\JoinColumn(name="threat_id", referencedColumnName="uuid", nullable=true)
      * })
      */
     protected $threat;

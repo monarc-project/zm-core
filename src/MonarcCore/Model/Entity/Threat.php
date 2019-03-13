@@ -28,7 +28,7 @@ class Threat extends ThreatSuperClass
      *
      * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Model", inversedBy="threats", cascade={"persist"})
      * @ORM\JoinTable(name="threats_models",
-     *  joinColumns={@ORM\JoinColumn(name="threat_id", referencedColumnName="id")},
+     *  joinColumns={@ORM\JoinColumn(name="threat_id", referencedColumnName="uuid")},
      *  inverseJoinColumns={@ORM\JoinColumn(name="model_id", referencedColumnName="id")}
      * )
      */

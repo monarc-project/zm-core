@@ -8,6 +8,7 @@
 namespace MonarcCore\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Ramsey\Uuid\UuidInterface;
 
 /**
  * Threat
@@ -22,12 +23,11 @@ use Doctrine\ORM\Mapping as ORM;
 class ThreatSuperClass extends AbstractEntity
 {
     /**
-     * @var integer
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
+    * @var integer
+    *
+    * @ORM\Column(name="uuid", type="uuid", nullable=false)
+    * @ORM\Id
+    */
     protected $id;
 
     /**
