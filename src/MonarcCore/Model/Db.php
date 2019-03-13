@@ -9,6 +9,7 @@ namespace MonarcCore\Model;
 use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\Entity;
+use Ramsey\Uuid\Uuid;
 
 /**
  * Class Db
@@ -236,7 +237,14 @@ class Db {
           $entities[] = $this->getEntityManager()->getRepository(get_class($entity))->find($id); // cas du FO
         }
         return $entities;
-      }else {
+      }else if (Uuid::isValid($ids[0]))
+      {
+        foreach ($ids as $id) {
+          $entities[] = $this->getEntityManager()->getRepository(get_class($entity))->find(['uuid' => $id]); // BO case with uuid
+        }
+        return $entities;
+      }
+      else {
         return $this->getEntityManager()->getRepository(get_class($entity))->findById($ids);
       }
     }
