@@ -181,15 +181,15 @@ class InstanceRiskTable extends AbstractEntityTable
             'ir.id as id',
             'i.id as instance',
             'a.id as amv',
-            'ass.id as asset',
+            'ass.uuid as asset',
             'ass.label' . $l . ' as assetLabel' . $l . '',
             'ass.description' . $l . ' as assetDescription' . $l . '',
-            't.id as threat',
+            't.uuid as threat',
             't.code as threatCode',
             't.label' . $l . ' as threatLabel' . $l . '',
             't.description' . $l . ' as threatDescription' . $l . '',
             'ir.threat_rate as threatRate',
-            'v.id as vulnerability',
+            'v.uuid as vulnerability',
             'v.code as vulnCode',
             'v.label' . $l . ' as vulnLabel' . $l . '',
             'v.description' . $l . ' as vulnDescription' . $l . '',
@@ -224,11 +224,12 @@ class InstanceRiskTable extends AbstractEntityTable
             LEFT JOIN   amvs AS a
             ON          ir.amv_id = a.id
             INNER JOIN  threats AS t
-            ON          ir.threat_id = t.id
+            ON          ir.threat_id = t.uuid
             INNER JOIN  vulnerabilities AS v
-            ON          ir.vulnerability_id = v.id
+            ON          ir.vulnerability_id = v.uuid
             LEFT JOIN   assets AS ass
-            ON          ir.asset_id = ass.id
+            ON          ir.asset_id = ass.uuid
+            and         ir.anr_id = ass.anr_id
             INNER JOIN  objects AS o
             ON          i.object_id = o.id
             WHERE       ir.cache_max_risk >= -1
