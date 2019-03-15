@@ -76,7 +76,7 @@ class InstanceRiskService extends AbstractService
 
             /** @var AmvTable $amvTable */
             $amvTable = $this->get('amvTable');
-            $amvs = $amvTable->getEntityByFields(['asset' => $object->asset->id]);
+            $amvs = $amvTable->getEntityByFields(['asset' => $object->asset->uuid]);
 
             $nbAmvs = count($amvs);
             $i = 1;
@@ -84,10 +84,10 @@ class InstanceRiskService extends AbstractService
                 $data = [
                     'anr' => $anrId,
                     'amv' => $amv->id,
-                    'asset' => $amv->asset->id,
+                    'asset' => $amv->asset->uuid,
                     'instance' => $instanceId,
-                    'threat' => $amv->threat->id,
-                    'vulnerability' => $amv->vulnerability->id,
+                    'threat' => $amv->threat->uuid,
+                    'vulnerability' => $amv->vulnerability->uuid,
                 ];
                 $instanceRiskLastId = $this->create($data, ($nbAmvs == $i));
                 $i++;
@@ -272,10 +272,10 @@ class InstanceRiskService extends AbstractService
                             if ($entity->amv) {
                                 $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $instance->id, 'amv' => $entity->amv->id]);
                             } else {
-                                $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $instance->id, 'threat' => $entity->threat->id, 'vulnerability' => $entity->vulnerability->id]);
+                                $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $instance->id, 'threat' => $entity->threat->uuid, 'vulnerability' => $entity->vulnerability->uuid]);
                             }
                         } else {
-                            $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $instance->id, 'specific' => 1, 'threat' => $entity->threat->id, 'vulnerability' => $entity->vulnerability->id]);
+                            $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $instance->id, 'specific' => 1, 'threat' => $entity->threat->uuid, 'vulnerability' => $entity->vulnerability->uuid]);
                         }
                         foreach ($instancesRisks as $instanceRisk) {
                             $initialData['id'] = $instanceRisk->id;
