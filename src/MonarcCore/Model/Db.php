@@ -204,6 +204,15 @@ class Db {
                             $qb->andWhere("$db ".$value['op']." :$key");
                             $qb->setParameter($key, '%'.$value['value'].'%');
                         }
+                    }else if(!empty($value['uuid']) && !empty($value['anr'])) { //request on uuid in fo to improve to be more generic
+                      $qb->innerJoin($db,$key);
+                      $qb->andWhere("$key".'.uuid = '." :uuid")
+                          ->andWhere("$key".'.anr = '." :anr")
+                          ->setParameters(array(
+                                'uuid' => $value['uuid'],
+                                'anr' => $value['anr']
+                                )
+                              );
                     }else{
                         $qb->andWhere("$db IN (:$key)");
                         $qb->setParameter($key, $value);
