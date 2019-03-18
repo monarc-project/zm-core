@@ -396,4 +396,37 @@ class InstanceRiskSuperClass extends AbstractEntity
         }
         return $this->inputFilter;
     }
+
+    public function getFiltersForService(){
+        $filterJoin = [
+            [
+                'as' => 'th',
+                'rel' => 'threat',
+            ],
+            [
+                'as' => 'v',
+                'rel' => 'vulnerability',
+            ],
+            [
+                'as' => 'i',
+                'rel' => 'instance',
+            ],
+        ];
+        $filterLeft = [
+          [
+              'as' => 'th1',
+              'rel' => 'threat',
+          ],
+          [
+              'as' => 'v1',
+              'rel' => 'vulnerability',
+          ],
+
+        ];
+        $filtersCol = [
+
+        ];
+        return [$filterJoin,$filterLeft,$filtersCol];
+    }
+
 }
