@@ -92,7 +92,7 @@ class ObjectService extends AbstractService
 
         foreach ($objects as $object) {
             if (!empty($object['asset'])) {
-                $object['asset'] = $assetTable->get($object['asset']->getId());
+                $object['asset'] = $assetTable->get($object['asset']->getUuid());
             }
             if (!empty($object['category'])) {
                 $object['category'] = $categoryTable->get($object['category']->getId());
@@ -285,7 +285,7 @@ class ObjectService extends AbstractService
     {
         /** @var AmvTable $amvTable */
         $amvTable = $this->get('amvTable');
-        $amvs = $amvTable->getEntityByFields(['asset' => $object->asset->id], ['position' => 'asc']);
+        $amvs = $amvTable->getEntityByFields(['asset' => $object->asset->uuid], ['position' => 'asc']);
 
         $risks = [];
         foreach ($amvs as $amv) {

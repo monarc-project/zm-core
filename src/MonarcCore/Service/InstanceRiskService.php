@@ -76,7 +76,7 @@ class InstanceRiskService extends AbstractService
 
             /** @var AmvTable $amvTable */
             $amvTable = $this->get('amvTable');
-            $amvs = $amvTable->getEntityByFields(['asset' => ['uuid' => $object->asset->uuid, 'anr' => $anrId ]]);
+            $amvs = $amvTable->getEntityByFields(['asset' => $object->asset->uuid->toString()]);
 
             $nbAmvs = count($amvs);
             $i = 1;
@@ -84,10 +84,10 @@ class InstanceRiskService extends AbstractService
                 $data = [
                     'anr' => $anrId,
                     'amv' => $amv->id,
-                    'asset' => $amv->asset->uuid,
+                    'asset' => $amv->asset->uuid->toString(),
                     'instance' => $instanceId,
-                    'threat' => $amv->threat->uuid,
-                    'vulnerability' => $amv->vulnerability->uuid,
+                    'threat' => $amv->threat->uuid->toString(),
+                    'vulnerability' => $amv->vulnerability->uuid->toString(),
                 ];
                 $instanceRiskLastId = $this->create($data, ($nbAmvs == $i));
                 $i++;

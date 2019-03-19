@@ -42,6 +42,7 @@ class InstanceService extends AbstractService
     protected $recommandationRiskTable; // Used for FO
     protected $recommandationMeasureTable; // Used for FO
     protected $recommandationTable; // Used for FO
+    protected $assetTable;
 
     // Services
     protected $instanceConsequenceService;
@@ -106,10 +107,12 @@ class InstanceService extends AbstractService
         $parent = ($data['parent']) ? $this->get('table')->getEntity($data['parent']) : null;
 
         $this->updateImpactsInherited($anrId, $parent, $data);
-
         //asset
         if (isset($object->asset)) {
+          if(in_array('anr',$this->get('assetTable')->getClassMetadata()->getIdentifierFieldNames()))
             $data['asset'] = ['uuid' => $object->asset->uuid->toString(), 'anr' => $anrId];
+          else
+            $data['asset'] = $object->asset->uuid->toString();
         }
         //manage position
         if (!$managePosition) {

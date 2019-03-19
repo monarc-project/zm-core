@@ -534,7 +534,8 @@ abstract class AbstractService extends AbstractServiceFactory
                     if (!is_array($value) || isset($value['id'])) {
 
                       if(isset($value['uuid']))
-                        {$dep = $db->getReference($class, isset($value['uuid']) ? $value['uuid'] : $value);
+                        {
+                          $dep = $db->getReference($class, isset($value['uuid']) ? $value['uuid'] : $value);
                         }
                       else
                         {
@@ -680,12 +681,14 @@ abstract class AbstractService extends AbstractServiceFactory
                 if (in_array($key, $forbiddenFields)) {
                     if (is_object($entity->$key)) {
                       if($entity->$key->uuid != null){
-                        if(isset($data['anr']) && $data['anr'] != null) // TO IMPROVE fo with uuid
-                          $data[$key] = ($entity->$key) ? ['uuid' => $entity->$key->uuid->toString(), 'anr' => $data['anr'] ] : null;
-                        else if($entity->$key->anr !=null)
-                          $data[$key] = ($entity->$key) ? ['uuid' => $entity->$key->uuid->toString(), 'anr' => $entity->$key->anr->id ] : null;
-                        else // bo with uuid
-                          $data[$key] = ($entity->$key) ? $entity->$key->uuid->toString() : null;
+                        if(in_array('anr',$this->get('table')->getClassMetadata()->getIdentifierFieldNames())){
+                          if(isset($data['anr']) && $data['anr'] != null) // TO IMPROVE fo with uuid
+                            $data[$key] = ($entity->$key) ? ['uuid' => $entity->$key->uuid->toString(), 'anr' => $data['anr'] ] : null;
+                          else if($entity->$key->anr !=null && $entity->$key->anr->id !=null )
+                            $data[$key] = ($entity->$key) ? ['uuid' => $entity->$key->uuid->toString(), 'anr' => $entity->$key->anr->id ] : null;
+                          }
+                          else // bo with uuid
+                            $data[$key] = ($entity->$key) ? $entity->$key->uuid->toString() : null;
                         }
                       else //standard case
                         $data[$key] = ($entity->$key) ? $entity->$key->id : null;

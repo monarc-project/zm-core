@@ -17,6 +17,7 @@ class InstanceServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = [
         'table' => 'MonarcCore\Model\Table\InstanceTable',
+        'assetTable' => 'MonarcCore\Model\Table\AssetTable',
         'entity' => 'MonarcCore\Model\Entity\Instance',
         'instanceConsequenceEntity' => 'MonarcCore\Model\Entity\InstanceConsequence',
         'anrTable' => 'MonarcCore\Model\Table\AnrTable',
