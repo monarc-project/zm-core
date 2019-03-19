@@ -679,7 +679,7 @@ abstract class AbstractService extends AbstractServiceFactory
             foreach (array_keys($data) as $key) {
                 if (in_array($key, $forbiddenFields)) {
                     if (is_object($entity->$key)) {
-                      if($entity->$key->uuid != null && (isset($data['anr']) || $entity->$key->anr !=null)){
+                      if($entity->$key->uuid != null){
                         if(isset($data['anr']) && $data['anr'] != null) // TO IMPROVE fo with uuid
                           $data[$key] = ($entity->$key) ? ['uuid' => $entity->$key->uuid->toString(), 'anr' => $data['anr'] ] : null;
                         else if($entity->$key->anr !=null)
