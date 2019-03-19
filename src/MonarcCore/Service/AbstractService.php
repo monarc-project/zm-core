@@ -681,7 +681,8 @@ abstract class AbstractService extends AbstractServiceFactory
                 if (in_array($key, $forbiddenFields)) {
                     if (is_object($entity->$key)) {
                       if($entity->$key->uuid != null){
-                        if(in_array('anr',$this->get('table')->getClassMetadata()->getIdentifierFieldNames())){
+                        //file_put_contents('php://stderr', print_r($this->get('table'), TRUE).PHP_EOL);
+                        if(in_array('anr',$this->get($key.'Table')->getClassMetadata()->getIdentifierFieldNames())){
                           if(isset($data['anr']) && $data['anr'] != null) // TO IMPROVE fo with uuid
                             $data[$key] = ($entity->$key) ? ['uuid' => $entity->$key->uuid->toString(), 'anr' => $data['anr'] ] : null;
                           else if($entity->$key->anr !=null && $entity->$key->anr->id !=null )
