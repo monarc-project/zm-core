@@ -200,18 +200,18 @@ class ThreatSuperClass extends AbstractEntity
     /**
      * @return int
      */
-    public function getId()
+    public function getUuid()
     {
-        return $this->id;
+        return $this->uuid;
     }
 
     /**
      * @param int $id
      * @return Threat
      */
-    public function setId($id)
+    public function setUuid($id)
     {
-        $this->id = $id;
+        $this->uuid = $id;
         return $this;
     }
 

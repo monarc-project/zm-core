@@ -154,18 +154,18 @@ class AssetSuperClass extends AbstractEntity
     /**
      * @return int
      */
-    public function getId()
+    public function getUuid()
     {
-        return $this->id;
+        return $this->uuid;
     }
 
     /**
      * @param int $id
      * @return Asset
      */
-    public function setId($id)
+    public function setUuid($id)
     {
-        $this->id = $id;
+        $this->uuid = $id;
         return $this;
     }
 

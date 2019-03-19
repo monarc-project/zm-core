@@ -109,7 +109,7 @@ class InstanceService extends AbstractService
 
         //asset
         if (isset($object->asset)) {
-            $data['asset'] = $object->asset->id;
+            $data['asset'] = ['uuid' => $object->asset->uuid->toString(), 'anr' => $anrId];
         }
         //manage position
         if (!$managePosition) {
@@ -248,7 +248,6 @@ class InstanceService extends AbstractService
     {
         $historic[] = $id;
         $initialData = $data;
-
         //retrieve instance
         /** @var InstanceTable $table */
         $table = $this->get('table');
@@ -332,7 +331,6 @@ class InstanceService extends AbstractService
         }
 
         $dataConsequences = (isset($data['consequences'])) ? $data['consequences'] : null;
-
         $this->filterPostFields($data, $instance, $this->forbiddenFields + ['c', 'i', 'd']);
         $instance->exchangeArray($data);
 
@@ -476,7 +474,7 @@ class InstanceService extends AbstractService
 
         $this->updateChildrenImpacts($instance);
 
-        $data['asset'] = $instance->asset->id;
+        $data['asset'] = ['uuid' => $instance->object->asset->uuid->toString(), 'anr' => $anrId];
         $data['object'] = $instance->object->id;
         $data['name1'] = $instance->name1;
         $data['label1'] = $instance->label1;
