@@ -273,7 +273,9 @@ class InstanceRiskTable extends AbstractEntityTable
 
         // FILTER: amvs ==
         if (isset($params['amvs'])) {
-          $params['amvs'] = explode(',', substr($params['amvs'],1,-1));
+          if (!is_array($params['amvs'])) {
+            $params['amvs'] = explode(',', substr($params['amvs'],1,-1));
+          }
           $sql .= " AND a.id IN (:amvIds) ";
           $queryParams[':amvIds'] = $params['amvs'];
           $typeParams[':amvIds'] = \Doctrine\DBAL\Connection::PARAM_INT_ARRAY;
