@@ -386,6 +386,8 @@ abstract class AbstractEntityTable
     {
         //objects could be sorted even if they haven't a parent field
         $isParentable = !isset($entity->parameters['isParentRelative']) || $entity->parameters['isParentRelative'];
+        //fetch the ids of the associations (needed for where clause) because the association can be (uuid / anr)
+        $implicitPositionFieldIds = $entity->getDbAdapter()->getClassMetadata($this->getClassMetadata()->getAssociationTargetClass($entity->parameters['implicitPosition']['field']))->getIdentifierFieldNames();
         /*
         * MEMO :
         * Be sure that the corresponding service has its parent dependency declared
@@ -402,13 +404,28 @@ abstract class AbstractEntityTable
 
             $bros = $this->getRepository()->createQueryBuilder('bro')
                 ->update()->set("bro.position", "bro.position + 1")->where("1 = 1");
+            $bros = $this->getRepository()->createQueryBuilder('bro');
             if ($isParentable) {
+              if($entity->parameters['implicitPosition']['field'])
                 $parentWhere = 'bro.' . $entity->parameters['implicitPosition']['field'] . ' = :parentid';
                 if (is_null($entity->get($entity->parameters['implicitPosition']['field']))) {
+                  if(count($implicitPositionFieldIds)>1){
+                    $bros->innerJoin('bro.'.$this->parameters['implicitPosition']['field'] ,$this->parameters['implicitPosition']['field']);
+                    $bros->where($this->parameters['implicitPosition']['field'].'.anr IS NULL')
+                          ->andWhere($this->parameters['implicitPosition']['field'].'.uuid IS NULL');
+                  }else
                     $bros->where('bro.' . $entity->parameters['implicitPosition']['field'] . ' IS NULL');
                 } else {
+                  if(count($implicitPositionFieldIds)>1){
+                    $bros->innerJoin('bro.'.$entity->parameters['implicitPosition']['field'] ,$entity->parameters['implicitPosition']['field']);
+                    $bros->where($entity->parameters['implicitPosition']['field'].'.anr = :implicitPositionFieldAnr')
+                          ->andWhere($entity->parameters['implicitPosition']['field'].'.uuid = :implicitPositionFieldUuid');
+                    $params[':implicitPositionFieldUuid'] = $entity->get($entity->parameters['implicitPosition']['field'])->get('uuid')->toString();
+                    $params[':implicitPositionFieldAnr'] = $entity->get('anr')->get('id');
+                  }else{
                     $bros->where('bro.' . $entity->parameters['implicitPosition']['field'] . ' = :parentid');
                     $params[':parentid'] = $entity->get($entity->parameters['implicitPosition']['field'])->get('id');
+                  }
                 }
 
                 if (!empty($entity->parameters['implicitPosition']['subField'])) {
@@ -438,17 +455,29 @@ abstract class AbstractEntityTable
                 ':position' => !empty($changes['position']['before']) ? $changes['position']['before'] : $entity->get('position'),
                 ':id' => $entity->get('id')
             ];
-
             $bros = $this->getRepository()->createQueryBuilder('bro')
                 ->update()->set("bro.position", "bro.position - 1")->where("1 = 1");
+            $bros = $this->getRepository()->createQueryBuilder('bro');
             if ($isParentable) {//by security - inverse never should happen in this case
                 if (is_null($changes['parent']['before'])) {
+                  if(count($implicitPositionFieldIds)>1){
+                    $bros->innerJoin('bro.'.$this->parameters['implicitPosition']['field'] ,$this->parameters['implicitPosition']['field']);
+                    $bros->where($this->parameters['implicitPosition']['field'].'.anr IS NULL')
+                          ->andWhere($this->parameters['implicitPosition']['field'].'.uuid IS NULL');
+                  }else
                     $bros->where('bro.' . $entity->parameters['implicitPosition']['field'] . ' IS NULL');
                 } else {
+                  if(count($implicitPositionFieldIds)>1){
+                    $bros->innerJoin('bro.'.$entity->parameters['implicitPosition']['field'] ,$entity->parameters['implicitPosition']['field']);
+                    $bros->where($entity->parameters['implicitPosition']['field'].'.anr = :implicitPositionFieldAnr')
+                          ->andWhere($entity->parameters['implicitPosition']['field'].'.uuid = :implicitPositionFieldUuid');
+                    $params[':implicitPositionFieldUuid'] = $entity->get($entity->parameters['implicitPosition']['field'])->get('uuid')->toString();
+                    $params[':implicitPositionFieldAnr'] = $entity->get('anr')->get('id');
+                  }else{
                     $bros->where('bro.' . $entity->parameters['implicitPosition']['field'] . ' = :parentid');
                     $params[':parentid'] = $changes['parent']['before'];
+                  }
                 }
-
                 if (!empty($entity->parameters['implicitPosition']['subField'])) {
                     foreach ($entity->parameters['implicitPosition']['subField'] as $k) {
                         $sub = is_null($entity->get($k)) ? null : (is_object($entity->get($k)) ? $entity->get($k)->get('id') : $entity->get($k));

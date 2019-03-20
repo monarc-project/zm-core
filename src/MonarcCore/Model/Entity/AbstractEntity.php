@@ -174,8 +174,8 @@ abstract class AbstractEntity implements InputFilterAwareInterface
             ->setData($options)
             ->setValidationGroup(InputFilterInterface::VALIDATE_ALL);
 
-
         $isValid = $filter->isValid();
+
         if (!$isValid) {
             $field_errors = array();
 
@@ -198,7 +198,8 @@ abstract class AbstractEntity implements InputFilterAwareInterface
             throw new \MonarcCore\Exception\Exception(implode(", ", $field_errors), '412');
         }
 
-        $options = $filter->getValues();
+
+       $options = $filter->getValues();
 
         if (isset($options['implicitPosition'])) {
             if (isset($options['position'])) {
@@ -209,8 +210,11 @@ abstract class AbstractEntity implements InputFilterAwareInterface
             }
         }
 
+
         //Abstract handling on recursive trees
         $parent_before = $parent_after = null;
+        file_put_contents('php://stderr', print_r($this->parameters, TRUE).PHP_EOL);
+
         if (!$this->squeezeAutoPositionning && isset($this->parameters['implicitPosition']['field'])) {
             $parent_before = $this->get($this->parameters['implicitPosition']['field']);
             if (is_object($parent_before)) {
@@ -222,13 +226,14 @@ abstract class AbstractEntity implements InputFilterAwareInterface
                 'parent' => ['before' => $parent_before, 'after' => $parent_after]
             ];
         }
+        file_put_contents('php://stderr', print_r($parent_after, TRUE).PHP_EOL);
+
         //Absact handling of positions
         if (!$this->squeezeAutoPositionning && isset($options['implicitPosition'])) {
             $this->calculatePosition($options['implicitPosition'], isset($options['previous']) ? $options['previous'] : null, $parent_before, $parent_after, $options);
             unset($options['implicitPosition']);
             unset($options['previous']);
         }
-
         foreach ($options as $k => $v) {
             if ($this->__isset($k) && isset($keys[$k])) {
                 $this->set($k, $v);
@@ -306,9 +311,20 @@ abstract class AbstractEntity implements InputFilterAwareInterface
                 ->select('MAX(t.position)');
 
             if ($isParentable) {
+              if(is_array($parent_after)) //manage fo with uuid key = (anr,uuid)
+                {
+                  $qb->innerJoin('t.'.$this->parameters['implicitPosition']['field'] ,$this->parameters['implicitPosition']['field']);
+                  $qb->where(!is_null($parent_after) ? $this->parameters['implicitPosition']['field'] . '.anr = :parentAnr' : 't.' . $this->parameters['implicitPosition']['field'] . ' IS NULL');
+                  $qb->andWhere(!is_null($parent_after) ? $this->parameters['implicitPosition']['field'] . '.uuid = :parentUuid' : 't.' . $this->parameters['implicitPosition']['field'] . ' IS NULL');
+                }else {
                 $qb->where(!is_null($parent_after) ? 't.' . $this->parameters['implicitPosition']['field'] . ' = :parentid' : 't.' . $this->parameters['implicitPosition']['field'] . ' IS NULL');
-
+                }
                 if (!is_null($parent_after)) {
+                  if(is_array($parent_after))
+                  {
+                    $qb->setParameter(':parentAnr', $parent_after['anr']);
+                    $qb->setParameter(':parentUuid', $parent_after['uuid']);
+                  }else
                     $qb->setParameter(':parentid', $parent_after);
                 }
 
@@ -329,8 +345,8 @@ abstract class AbstractEntity implements InputFilterAwareInterface
                     }
                 }
             }
-            $max = $qb->getQuery()->getSingleScalarResult();
 
+            $max = $qb->getQuery()->getSingleScalarResult();
             if (!$this->id || $parent_before != $parent_after) {
                 $this->set('position', $max + 1);
             } else {//internal movement
