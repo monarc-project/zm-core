@@ -601,17 +601,42 @@ abstract class AbstractEntityTable
      */
     protected function manageDeletePosition(\MonarcCore\Model\Entity\AbstractEntity $entity, $params = array())
     {
+        if (!empty($params['field']))
+          $implicitPositionFieldIds = $this->getDb()->getEntityManager()->getClassMetadata($this->getClassMetadata()->getAssociationTargetClass($params['field']))->getIdentifierFieldNames();
+
+        $subquery = null; //initialize varaible for subquery if needed
         $return = $this->getRepository()->createQueryBuilder('t')
-            ->update()
-            ->set('t.position', 't.position - 1');
+                      ->set('t.position', 't.position - 1')->update();
+
+        if(count($implicitPositionFieldIds)>1){ //not possible to join on update directly so make subquery
+          $subquery = $this->getRepository()->createQueryBuilder('s')
+                          ->select('distinct(ll.id)') //fetch distinct id
+                          ->from(get_class($entity),'ll')
+                          ->Join('ll.'.$params['field'],$params['field']); //join the field
+        }
+
         $hasWhere = false;
         if (!empty($params['field'])) {
             $hasWhere = true;
             if (is_null($entity->get($params['field']))) {
-                $return = $return->where('t.' . $params['field'] . ' IS NULL');
+              if(count($implicitPositionFieldIds)>1)
+              {
+                $subquery = $subquery->andWhere($params['field'] . '.anr IS NULL')
+                                  ->andWhere($params['field'] . '.uuid IS NULL');
+              }else
+                $return = $return->andWhere('t.' . $params['field'] . ' IS NULL');
             } else {
-                $return = $return->where('t.' . $params['field'] . ' = :' . $params['field'])
+              if(count($implicitPositionFieldIds)>1)
+              {
+                $subquery = $subquery->andWhere($params['field'] . '.anr = :fieldAnr')
+                                  ->andWhere($params['field'] . '.uuid = :fieldUuid')
+                                  ->setParameter(':fieldAnr' , $entity->get($params['field'])->get('anr')->get('id'))
+                                  ->setParameter(':fieldUuid' , $entity->get($params['field'])->get('uuid')->toString());
+
+              }else{
+                $return = $return->andWhere('t.' . $params['field'] . ' = :' . $params['field'])
                     ->setParameter(':' . $params['field'], $entity->get($params['field']));
+              }
             }
             if (!empty($params['subField'])) {
                 foreach ($params['subField'] as $k) {
@@ -628,9 +653,15 @@ abstract class AbstractEntityTable
         if ($hasWhere) {
             $return = $return->andWhere('t.position >= :pos');
         } else {
-            $return = $return->where('t.position >= :pos');
+            $return = $return->andWhere('t.position >= :pos');
+        }
+        if(count($implicitPositionFieldIds)>1){
+          $ids = $subquery->getQuery()->getResult();
+          $return = $return->andWhere('t.id IN (:ids)');
         }
         $return = $return->setParameter(':pos', $entity->get('position'));
+        $return = $return->setParameter(':ids', $ids);
+
         $return->getQuery()->getResult();
     }
 
