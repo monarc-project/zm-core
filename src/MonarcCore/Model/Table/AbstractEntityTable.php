@@ -394,6 +394,14 @@ abstract class AbstractEntityTable
         * and the create or update method calls $this->setDependencies($entity, $this->dependencies).
         * This required the injection of the parentTable in the factory of your Service
         */
+
+        if(count($implicitPositionFieldIds)>1){ //not possible to join on update directly so make subquery
+          $subquery = $this->getRepository()->createQueryBuilder('s')
+                          ->select('distinct(ll.id)') //fetch distinct id
+                          ->from(get_class($entity),'ll')
+                          ->Join('ll.'.$entity->parameters['implicitPosition']['field'],$entity->parameters['implicitPosition']['field']); //join the field
+        }
+
         if ($was_new || $force_new) {
             $parentfield = $isParentable ? $entity->parameters['implicitPosition']['field'] : null;
 
@@ -404,24 +412,20 @@ abstract class AbstractEntityTable
 
             $bros = $this->getRepository()->createQueryBuilder('bro')
                 ->update()->set("bro.position", "bro.position + 1")->where("1 = 1");
-            $bros = $this->getRepository()->createQueryBuilder('bro');
             if ($isParentable) {
               if($entity->parameters['implicitPosition']['field'])
-                $parentWhere = 'bro.' . $entity->parameters['implicitPosition']['field'] . ' = :parentid';
                 if (is_null($entity->get($entity->parameters['implicitPosition']['field']))) {
                   if(count($implicitPositionFieldIds)>1){
-                    $bros->innerJoin('bro.'.$this->parameters['implicitPosition']['field'] ,$this->parameters['implicitPosition']['field']);
-                    $bros->where($this->parameters['implicitPosition']['field'].'.anr IS NULL')
+                    $subquery->andWhere($this->parameters['implicitPosition']['field'].'.anr IS NULL')
                           ->andWhere($this->parameters['implicitPosition']['field'].'.uuid IS NULL');
                   }else
-                    $bros->where('bro.' . $entity->parameters['implicitPosition']['field'] . ' IS NULL');
+                    $bros->andWhere('bro.' . $entity->parameters['implicitPosition']['field'] . ' IS NULL');
                 } else {
                   if(count($implicitPositionFieldIds)>1){
-                    $bros->innerJoin('bro.'.$entity->parameters['implicitPosition']['field'] ,$entity->parameters['implicitPosition']['field']);
-                    $bros->where($entity->parameters['implicitPosition']['field'].'.anr = :implicitPositionFieldAnr')
-                          ->andWhere($entity->parameters['implicitPosition']['field'].'.uuid = :implicitPositionFieldUuid');
-                    $params[':implicitPositionFieldUuid'] = $entity->get($entity->parameters['implicitPosition']['field'])->get('uuid')->toString();
-                    $params[':implicitPositionFieldAnr'] = $entity->get('anr')->get('id');
+                    $subquery->andWhere($entity->parameters['implicitPosition']['field'].'.anr = :implicitPositionFieldAnr')
+                            ->andWhere($entity->parameters['implicitPosition']['field'].'.uuid = :implicitPositionFieldUuid')
+                            ->setParameter(':implicitPositionFieldUuid' , $entity->get($entity->parameters['implicitPosition']['field'])->get('uuid')->toString())
+                            ->setParameter(':implicitPositionFieldAnr' , $entity->get('anr')->get('id'));
                   }else{
                     $bros->where('bro.' . $entity->parameters['implicitPosition']['field'] . ' = :parentid');
                     $params[':parentid'] = $entity->get($entity->parameters['implicitPosition']['field'])->get('id');
@@ -440,10 +444,17 @@ abstract class AbstractEntityTable
                     }
                 }
             }
-            $bros = $bros->andWhere('bro.position >= :position')
-                ->andWhere('bro.id != :id')
-                ->setParameters($params)
-                ->getQuery()->getResult();
+            $bros = $bros->andWhere('bro.position >= :position');
+            if(count($implicitPositionFieldIds)>1)
+            {
+              $ids = $subquery->getQuery()->getResult();
+              $bros->andWhere('bro.id IN (:ids)');
+              $params[':ids'] = $ids;
+            }
+              $bros->andWhere('bro.id != :id')
+                    ->setParameters($params);
+
+            $bros->getQuery()->getResult();
             // if(!empty($bros)){
             //     foreach($bros as $bro){
             //         $bro->set('position', $bro->get('position') + 1);
