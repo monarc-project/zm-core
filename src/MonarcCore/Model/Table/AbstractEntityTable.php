@@ -673,9 +673,9 @@ abstract class AbstractEntityTable
         if(count($implicitPositionFieldIds)>1){
           $ids = $subquery->getQuery()->getResult();
           $return = $return->andWhere('t.id IN (:ids)');
+          $return = $return->setParameter(':ids', $ids);
         }
         $return = $return->setParameter(':pos', $entity->get('position'));
-        $return = $return->setParameter(':ids', $ids);
 
         $return->getQuery()->getResult();
     }
