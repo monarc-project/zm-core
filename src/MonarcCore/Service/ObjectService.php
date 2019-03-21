@@ -285,7 +285,13 @@ class ObjectService extends AbstractService
     {
         /** @var AmvTable $amvTable */
         $amvTable = $this->get('amvTable');
-        $amvs = $amvTable->getEntityByFields(['asset' => $object->asset->uuid], ['position' => 'asc']);
+        try{
+          $amvs = $amvTable->getEntityByFields(['asset' => $object->asset->uuid], ['position' => 'asc']);
+        }catch(\Doctrine\ORM\Query\QueryException $e) // we check if the uuid id already existing
+        {
+          $amvs = $amvTable->getEntityByFields(['asset' => ['uuid' =>$object->asset->uuid->toString(), 'anr'=>$object->asset->anr->id]], ['position' => 'asc']);
+        }
+
 
         $risks = [];
         foreach ($amvs as $amv) {

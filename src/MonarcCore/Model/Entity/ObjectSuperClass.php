@@ -512,11 +512,11 @@ class ObjectSuperClass extends AbstractEntity
                 'allow_empty' => true,
                 'continue_if_empty' => true,
                 'filters' => array(),
-                'validators' => array(
-                    array(
-                        'name' => 'IsInt',
-                    ),
-                ),
+                // 'validators' => array(
+                //     array(
+                //         'name' => 'IsInt',
+                //     ),
+                // ),
             ));
 
             // Dans certains cas, la catégorie n'est pas fourni. On n'empêche pas le save mais du coup l'objet n'est pas attaché à une categorie
