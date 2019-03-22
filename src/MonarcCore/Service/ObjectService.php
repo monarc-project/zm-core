@@ -92,6 +92,9 @@ class ObjectService extends AbstractService
 
         foreach ($objects as $object) {
             if (!empty($object['asset'])) {
+              if($anr !=null)
+                $object['asset'] = $assetTable->get(['uuid' => $object['asset']->getUuid()->toString(),'anr'=>$anr]);
+              else
                 $object['asset'] = $assetTable->get($object['asset']->getUuid());
             }
             if (!empty($object['category'])) {
