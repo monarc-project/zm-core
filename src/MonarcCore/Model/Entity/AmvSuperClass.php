@@ -23,13 +23,12 @@ use Doctrine\ORM\Mapping as ORM;
 class AmvSuperclass extends AbstractEntity
 {
     /**
-     * @var integer
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     */
-    protected $id;
+    * @var integer
+    *
+    * @ORM\Column(name="uuid", type="uuid", nullable=false)
+    * @ORM\Id
+    */
+    protected $uuid;
 
     /**
      * @var \MonarcCore\Model\Entity\Anr
@@ -247,7 +246,7 @@ class AmvSuperclass extends AbstractEntity
         ),
     );
 
-    
+
     public function getFiltersForService(){
         $filterJoin = [
             [

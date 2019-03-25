@@ -105,7 +105,7 @@ class MeasureSuperClass extends AbstractEntity
     * @var \Doctrine\Common\Collections\Collection
     * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Amv", inversedBy="measures", cascade={"persist"})
     * @ORM\JoinTable(name="measures_amvs",
-    *  inverseJoinColumns={@ORM\JoinColumn(name="amv_id", referencedColumnName="id")},
+    *  inverseJoinColumns={@ORM\JoinColumn(name="amv_id", referencedColumnName="uuid")},
     *  joinColumns={@ORM\JoinColumn(name="measure_id", referencedColumnName="uuid"),},
     * )
     */

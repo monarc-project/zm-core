@@ -180,7 +180,7 @@ class InstanceRiskTable extends AbstractEntityTable
             'o.id as oid',
             'ir.id as id',
             'i.id as instance',
-            'a.id as amv',
+            'a.uuid as amv',
             'ass.uuid as asset',
             'ass.label' . $l . ' as assetLabel' . $l . '',
             'ass.description' . $l . ' as assetDescription' . $l . '',
@@ -222,7 +222,7 @@ class InstanceRiskTable extends AbstractEntityTable
             INNER JOIN  instances i
             ON          ir.instance_id = i.id
             LEFT JOIN   amvs AS a
-            ON          ir.amv_id = a.id
+            ON          ir.amv_id = a.uuid
             INNER JOIN  threats AS t
             ON          ir.threat_id = t.uuid
             INNER JOIN  vulnerabilities AS v
