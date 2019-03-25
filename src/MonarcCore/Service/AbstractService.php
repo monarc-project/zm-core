@@ -17,6 +17,8 @@ use MonarcCore\Traits\RiskTrait;
 
 use MonarcFO\Model\Table\UserAnrTable;
 
+use Ramsey\Uuid\Uuid;
+
 /**
  * Abstract Service
  *
@@ -531,11 +533,16 @@ abstract class AbstractService extends AbstractServiceFactory
             if (!is_null($value) && !empty($value) && !is_object($value)) {
                 if ($metadata->hasAssociation($propertyname)) {
                     $class = $metadata->getAssociationTargetClass($propertyname);
-                    if (!is_array($value) || isset($value['id'])) {
-
-                      if(isset($value['uuid']))
+                    $valueIdentifier = $entity->getDbAdapter()->getClassMetadata($class)->getIdentifierFieldNames(); //fetch the identifiers of the value to set
+                    if (!is_array($value) || isset($value['id']) || isset($value['uuid'])) {
+                       file_put_contents('php://stderr', print_r('$class', TRUE).PHP_EOL);
+                       file_put_contents('php://stderr', print_r($valueIdentifier, TRUE).PHP_EOL);
+                      if(isset($value['uuid']) || Uuid::isValid($value) )
                         {
-                          $dep = $db->getReference($class, isset($value['uuid']) ? $value['uuid'] : $value);
+                          if(in_array('anr',$valueIdentifier))
+                            $dep = $db->getReference($class, ['uuid' => isset($value['uuid']) ? $value['uuid'] : $value, 'anr' => 470]);
+                          else
+                            $dep = $db->getReference($class, isset($value['uuid']) ? $value['uuid'] : $value);
                         }
                       else
                         {

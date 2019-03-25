@@ -384,10 +384,20 @@ abstract class AbstractEntityTable
      */
     protected function autopose($entity, $was_new, $changes = [], $force_new = false)
     {
+      // file_put_contents('php://stderr', print_r('was new', TRUE).PHP_EOL);
+      // file_put_contents('php://stderr', print_r($was_new, TRUE).PHP_EOL);
+      // file_put_contents('php://stderr', print_r('changes', TRUE).PHP_EOL);
+      // file_put_contents('php://stderr', print_r($changes, TRUE).PHP_EOL);
+      // file_put_contents('php://stderr', print_r('$force_new', TRUE).PHP_EOL);
+      // file_put_contents('php://stderr', print_r($force_new, TRUE).PHP_EOL);
+      // file_put_contents('php://stderr', print_r('implicit', TRUE).PHP_EOL);
+      // file_put_contents('php://stderr', print_r($entity->parameters['implicitPosition'], TRUE).PHP_EOL);
+
         //objects could be sorted even if they haven't a parent field
         $isParentable = !isset($entity->parameters['isParentRelative']) || $entity->parameters['isParentRelative'];
         //fetch the ids of the associations (needed for where clause) because the association can be (uuid / anr)
-        $implicitPositionFieldIds = $entity->getDbAdapter()->getClassMetadata($this->getClassMetadata()->getAssociationTargetClass($entity->parameters['implicitPosition']['field']))->getIdentifierFieldNames();
+        if($this != null && isset($entity->parameters['implicitPosition']['field']) && $entity->getDbAdapter()!=null)
+          $implicitPositionFieldIds = $entity->getDbAdapter()->getClassMetadata($this->getClassMetadata()->getAssociationTargetClass($entity->parameters['implicitPosition']['field']))->getIdentifierFieldNames();
         /*
         * MEMO :
         * Be sure that the corresponding service has its parent dependency declared
@@ -507,9 +517,7 @@ abstract class AbstractEntityTable
             }
               $bros->andWhere('bro.id != :id')
                     ->setParameters($params);
-
             $bros->getQuery()->getResult();
-
             // if(!empty($bros)){
             //     foreach($bros as $bro){
             //         $bro->set('position', $bro->get('position') - 1);//get down old pals
@@ -533,10 +541,21 @@ abstract class AbstractEntityTable
             if ($isParentable) {
                 $parentWhere = 'bro.' . $entity->parameters['implicitPosition']['field'] . ' = :parentid';
                 if (is_null($entity->get($entity->parameters['implicitPosition']['field']))) {
+                  if(count($implicitPositionFieldIds)>1){
+                    $subquery->where($this->parameters['implicitPosition']['field'].'.anr IS NULL')
+                          ->andWhere($this->parameters['implicitPosition']['field'].'.uuid IS NULL');
+                  }else
                     $bros->where('bro.' . $entity->parameters['implicitPosition']['field'] . ' IS NULL');
                 } else {
+                  if(count($implicitPositionFieldIds)>1){
+                    $subquery->where($entity->parameters['implicitPosition']['field'].'.anr = :implicitPositionFieldAnr')
+                            ->andWhere($entity->parameters['implicitPosition']['field'].'.uuid = :implicitPositionFieldUuid')
+                            ->setParameter($params[':implicitPositionFieldUuid'] = $changes['parent']['before'])
+                            ->setParameter($params[':implicitPositionFieldAnr'] = $entity->get('anr')->get('id'));
+                  }else{
                     $bros->where('bro.' . $entity->parameters['implicitPosition']['field'] . ' = :parentid');
                     $params[':parentid'] = $entity->get($entity->parameters['implicitPosition']['field'])->get('id');
+                  }
                 }
 
                 if (!empty($entity->parameters['implicitPosition']['subField'])) {
@@ -551,7 +570,13 @@ abstract class AbstractEntityTable
                     }
                 }
             }
-
+            file_put_contents('php://stderr', print_r('trolololo', TRUE).PHP_EOL);
+            if(count($implicitPositionFieldIds)>1)
+            {
+              $ids = $subquery->getQuery()->getResult();
+              $bros->andWhere('bro.id IN (:ids)');
+              $params[':ids'] = $ids;
+            }
             $bros = $bros->andWhere('bro.position ' . (($avant > $apres) ? '>=' : '<=') . ' :apres')
                 ->andWhere('bro.position ' . (($avant > $apres) ? '<' : '>') . ' :avant')
                 ->andWhere('bro.id != :id')
