@@ -535,8 +535,6 @@ abstract class AbstractService extends AbstractServiceFactory
                     $class = $metadata->getAssociationTargetClass($propertyname);
                     $valueIdentifier = $entity->getDbAdapter()->getClassMetadata($class)->getIdentifierFieldNames(); //fetch the identifiers of the value to set
                     if (!is_array($value) || isset($value['id']) || isset($value['uuid'])) {
-                       file_put_contents('php://stderr', print_r('$class', TRUE).PHP_EOL);
-                       file_put_contents('php://stderr', print_r($valueIdentifier, TRUE).PHP_EOL);
                       if(isset($value['uuid']) || Uuid::isValid($value) )
                         {
                           if(in_array('anr',$valueIdentifier))

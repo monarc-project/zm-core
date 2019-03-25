@@ -396,6 +396,7 @@ abstract class AbstractEntityTable
         //objects could be sorted even if they haven't a parent field
         $isParentable = !isset($entity->parameters['isParentRelative']) || $entity->parameters['isParentRelative'];
         //fetch the ids of the associations (needed for where clause) because the association can be (uuid / anr)
+        $implicitPositionFieldIds = [];
         if($this != null && isset($entity->parameters['implicitPosition']['field']) && $entity->getDbAdapter()!=null)
           $implicitPositionFieldIds = $entity->getDbAdapter()->getClassMetadata($this->getClassMetadata()->getAssociationTargetClass($entity->parameters['implicitPosition']['field']))->getIdentifierFieldNames();
         /*
@@ -570,7 +571,6 @@ abstract class AbstractEntityTable
                     }
                 }
             }
-            file_put_contents('php://stderr', print_r('trolololo', TRUE).PHP_EOL);
             if(count($implicitPositionFieldIds)>1)
             {
               $ids = $subquery->getQuery()->getResult();
