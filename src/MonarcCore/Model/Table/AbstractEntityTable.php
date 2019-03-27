@@ -397,8 +397,15 @@ abstract class AbstractEntityTable
         $isParentable = !isset($entity->parameters['isParentRelative']) || $entity->parameters['isParentRelative'];
         //fetch the ids of the associations (needed for where clause) because the association can be (uuid / anr)
         $implicitPositionFieldIds = [];
+        $classIdentifier = []; // the ids of the class
+        $idName = 'id'; // the value of the name of the id (id or uuid) use for sql request
         if($this != null && isset($entity->parameters['implicitPosition']['field']) && $entity->getDbAdapter()!=null)
           $implicitPositionFieldIds = $entity->getDbAdapter()->getClassMetadata($this->getClassMetadata()->getAssociationTargetClass($entity->parameters['implicitPosition']['field']))->getIdentifierFieldNames();
+
+        $classIdentifier = $entity->getDbAdapter()->getClassMetadata(get_class($entity))->getIdentifierFieldNames();
+        if(in_array('uuid',$classIdentifier))
+          $idName = 'uuid';
+
         /*
         * MEMO :
         * Be sure that the corresponding service has its parent dependency declared
@@ -408,9 +415,8 @@ abstract class AbstractEntityTable
 
         if(count($implicitPositionFieldIds)>1){ //not possible to join on update directly so make subquery
           $subquery = $this->getRepository()->createQueryBuilder('s')
-                          ->select('distinct(ll.id)') //fetch distinct id
-                          ->from(get_class($entity),'ll')
-                          ->Join('ll.'.$entity->parameters['implicitPosition']['field'],$entity->parameters['implicitPosition']['field']); //join the field
+                          ->select('distinct(s.'.$idName.')') //fetch distinct id
+                          ->Join('s.'.$entity->parameters['implicitPosition']['field'],$entity->parameters['implicitPosition']['field']); //join the field
         }
 
         if ($was_new || $force_new) {
@@ -418,7 +424,7 @@ abstract class AbstractEntityTable
 
             $params = [
                 ':position' => $entity->get('position'),
-                ':id' => $entity->get('id') === null ? '' : $entity->get('id') //specific to the TIPs below
+                ':id' => $entity->get($idName) === null ? '' : $entity->get($idName) //specific to the TIPs below
             ];
 
             $bros = $this->getRepository()->createQueryBuilder('bro')
@@ -439,7 +445,7 @@ abstract class AbstractEntityTable
                             ->setParameter(':implicitPositionFieldAnr' , $entity->get('anr')->get('id'));
                   }else{
                     $bros->where('bro.' . $entity->parameters['implicitPosition']['field'] . ' = :parentid');
-                    $params[':parentid'] = $entity->get($entity->parameters['implicitPosition']['field'])->get('id');
+                    $params[':parentid'] = $entity->get($entity->parameters['implicitPosition']['field'])->get($idName);
                   }
                 }
 
@@ -459,10 +465,10 @@ abstract class AbstractEntityTable
             if(count($implicitPositionFieldIds)>1)
             {
               $ids = $subquery->getQuery()->getResult();
-              $bros->andWhere('bro.id IN (:ids)');
+              $bros->andWhere('bro.'.$idName.' IN (:ids)');
               $params[':ids'] = $ids;
             }
-              $bros->andWhere('bro.id != :id')
+              $bros->andWhere('bro.'.$idName.' != :id')
                     ->setParameters($params);
 
             $bros->getQuery()->getResult();
@@ -475,7 +481,7 @@ abstract class AbstractEntityTable
         } else if (!empty($changes['parent']) && $changes['parent']['before'] != $changes['parent']['after']) {//this is somewhat like we was new but we need to redistribute brothers
             $params = [
                 ':position' => !empty($changes['position']['before']) ? $changes['position']['before'] : $entity->get('position'),
-                ':id' => $entity->get('id')
+                ':id' => $entity->get($idName)
             ];
             $bros = $this->getRepository()->createQueryBuilder('bro')
                 ->update()->set("bro.position", "bro.position - 1")->where("1 = 1");
@@ -513,10 +519,10 @@ abstract class AbstractEntityTable
             if(count($implicitPositionFieldIds)>1)
             {
               $ids = $subquery->getQuery()->getResult();
-              $bros->andWhere('bro.id IN (:ids)');
+              $bros->andWhere('bro.'.$idName.' IN (:ids)');
               $params[':ids'] = $ids;
             }
-              $bros->andWhere('bro.id != :id')
+              $bros->andWhere('bro.'.$idName.' != :id')
                     ->setParameters($params);
             $bros->getQuery()->getResult();
             // if(!empty($bros)){
@@ -534,7 +540,7 @@ abstract class AbstractEntityTable
             $params = [
                 ':apres' => $apres,
                 ':avant' => $avant,
-                ':id' => $entity->get('id')
+                ':id' => $entity->get($idName)
             ];
 
             $bros = $this->getRepository()->createQueryBuilder('bro')
@@ -574,12 +580,12 @@ abstract class AbstractEntityTable
             if(count($implicitPositionFieldIds)>1)
             {
               $ids = $subquery->getQuery()->getResult();
-              $bros->andWhere('bro.id IN (:ids)');
+              $bros->andWhere('bro.'.$idName.' IN (:ids)');
               $params[':ids'] = $ids;
             }
             $bros = $bros->andWhere('bro.position ' . (($avant > $apres) ? '>=' : '<=') . ' :apres')
                 ->andWhere('bro.position ' . (($avant > $apres) ? '<' : '>') . ' :avant')
-                ->andWhere('bro.id != :id')
+                ->andWhere('bro.'.$idName.' != :id')
                 ->setParameters($params)
                 ->getQuery()->getResult();
             // if(!empty($bros)){
@@ -644,15 +650,21 @@ abstract class AbstractEntityTable
         if (!empty($params['field']))
           $implicitPositionFieldIds = $this->getDb()->getEntityManager()->getClassMetadata($this->getClassMetadata()->getAssociationTargetClass($params['field']))->getIdentifierFieldNames();
 
+        $classIdentifier = []; // the ids of the class
+        $idName = 'id'; // the value of the name of the id (id or uuid) use for sql request
+        $classIdentifier = $this->getClassMetadata()->getIdentifierFieldNames();
+        if(in_array('uuid',$classIdentifier))
+          $idName = 'uuid';
+
+
         $subquery = null; //initialize varaible for subquery if needed
         $return = $this->getRepository()->createQueryBuilder('t')
                       ->set('t.position', 't.position - 1')->update();
 
         if(count($implicitPositionFieldIds)>1){ //not possible to join on update directly so make subquery
           $subquery = $this->getRepository()->createQueryBuilder('s')
-                          ->select('distinct(ll.id)') //fetch distinct id
-                          ->from(get_class($entity),'ll')
-                          ->Join('ll.'.$params['field'],$params['field']); //join the field
+                          ->select('distinct(s.'.$idName.')') //fetch distinct id
+                          ->innerJoin('s.'.$params['field'],$params['field']); //join the field
         }
 
         $hasWhere = false;
@@ -672,6 +684,7 @@ abstract class AbstractEntityTable
                                   ->andWhere($params['field'] . '.uuid = :fieldUuid')
                                   ->setParameter(':fieldAnr' , $entity->get($params['field'])->get('anr')->get('id'))
                                   ->setParameter(':fieldUuid' , $entity->get($params['field'])->get('uuid')->toString());
+
 
               }else{
                 $return = $return->andWhere('t.' . $params['field'] . ' = :' . $params['field'])
@@ -697,7 +710,7 @@ abstract class AbstractEntityTable
         }
         if(count($implicitPositionFieldIds)>1){
           $ids = $subquery->getQuery()->getResult();
-          $return = $return->andWhere('t.id IN (:ids)');
+          $return = $return->andWhere('t.'.$idName.' IN (:ids)');
           $return = $return->setParameter(':ids', $ids);
         }
         $return = $return->setParameter(':pos', $entity->get('position'));

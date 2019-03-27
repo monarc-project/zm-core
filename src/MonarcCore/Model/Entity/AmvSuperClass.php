@@ -33,7 +33,7 @@ class AmvSuperclass extends AbstractEntity
     /**
      * @var \MonarcCore\Model\Entity\Anr
      *
-     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Anr", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\Anr", )
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
      * })
@@ -125,18 +125,18 @@ class AmvSuperclass extends AbstractEntity
     /**
      * @return int
      */
-    public function getId()
+    public function getUuid()
     {
-        return $this->id;
+        return $this->uuid;
     }
 
     /**
      * @param int $id
      * @return Model
      */
-    public function setId($id)
+    public function setUuid($id)
     {
-        $this->id = $id;
+        $this->uuid = $id;
         return $this;
     }
 
