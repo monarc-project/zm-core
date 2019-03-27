@@ -312,7 +312,6 @@ class AmvService extends AbstractService
             }
 
             //$this->historizeDelete('amv', $entity, $details);
-
             $this->get('table')->delete($id);
         }
     }

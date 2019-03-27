@@ -402,7 +402,8 @@ abstract class AbstractEntityTable
         if($this != null && isset($entity->parameters['implicitPosition']['field']) && $entity->getDbAdapter()!=null)
           $implicitPositionFieldIds = $entity->getDbAdapter()->getClassMetadata($this->getClassMetadata()->getAssociationTargetClass($entity->parameters['implicitPosition']['field']))->getIdentifierFieldNames();
 
-        $classIdentifier = $entity->getDbAdapter()->getClassMetadata(get_class($entity))->getIdentifierFieldNames();
+        if($entity != null && $entity->getDbAdapter()!=null)
+          $classIdentifier = $entity->getDbAdapter()->getClassMetadata(get_class($entity))->getIdentifierFieldNames();
         if(in_array('uuid',$classIdentifier))
           $idName = 'uuid';
 
