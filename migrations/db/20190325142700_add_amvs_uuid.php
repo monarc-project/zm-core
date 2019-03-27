@@ -1991,7 +1991,7 @@ class AddAmvsUuid extends AbstractMigration
 
       $table = $this->table('instances_risks'); //set the stufff for instances_risks
       $table->dropForeignKey('amv_id')
-            ->addColumn('amv_uuid', 'uuid',array('after' => 'id'))
+            ->addColumn('amv_uuid', 'uuid',array('after' => 'id', 'null' => true))
             ->update();
       $this->execute('UPDATE instances_risks A,amvs B SET A.amv_uuid = B.uuid where B.id=A.amv_id');
       $table->removeColumn('amv_id')

@@ -213,7 +213,6 @@ abstract class AbstractEntity implements InputFilterAwareInterface
 
         //Abstract handling on recursive trees
         $parent_before = $parent_after = null;
-        file_put_contents('php://stderr', print_r($this->parameters, TRUE).PHP_EOL);
 
         if (!$this->squeezeAutoPositionning && isset($this->parameters['implicitPosition']['field'])) {
             $parent_before = $this->get($this->parameters['implicitPosition']['field']);
@@ -226,7 +225,6 @@ abstract class AbstractEntity implements InputFilterAwareInterface
                 'parent' => ['before' => $parent_before, 'after' => $parent_after]
             ];
         }
-        file_put_contents('php://stderr', print_r($parent_after, TRUE).PHP_EOL);
 
         //Absact handling of positions
         if (!$this->squeezeAutoPositionning && isset($options['implicitPosition'])) {
