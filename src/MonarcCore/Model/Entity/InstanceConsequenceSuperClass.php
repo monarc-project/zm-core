@@ -56,7 +56,7 @@ class InstanceConsequenceSuperClass extends AbstractEntity
      *
      * @ORM\ManyToOne(targetEntity="MonarcCore\Model\Entity\MonarcObject", cascade={"persist"})
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="object_id", referencedColumnName="id", nullable=true)
+     *   @ORM\JoinColumn(name="object_id", referencedColumnName="uuid", nullable=true)
      * })
      */
     protected $object;
@@ -251,4 +251,3 @@ class InstanceConsequenceSuperClass extends AbstractEntity
         return $this->inputFilter;
     }
 }
-

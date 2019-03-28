@@ -31,11 +31,10 @@ class ObjectSuperClass extends AbstractEntity
     /**
      * @var integer
      *
-     * @ORM\Column(name="id", type="integer", nullable=false)
+     * @ORM\Column(name="uuid", type="uuid", nullable=false)
      * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    protected $id;
+    protected $uuid;
 
     /**
      * @var \MonarcCore\Model\Entity\Anr
@@ -51,7 +50,7 @@ class ObjectSuperClass extends AbstractEntity
      * @var \Doctrine\Common\Collections\Collection
      * @ORM\ManyToMany(targetEntity="MonarcCore\Model\Entity\Anr", inversedBy="objects", cascade={"persist"})
      * @ORM\JoinTable(name="anrs_objects",
-     *  joinColumns={@ORM\JoinColumn(name="object_id", referencedColumnName="id")},
+     *  joinColumns={@ORM\JoinColumn(name="object_id", referencedColumnName="uuid")},
      *  inverseJoinColumns={@ORM\JoinColumn(name="anr_id", referencedColumnName="id")}
      * )
      */
@@ -568,5 +567,21 @@ class ObjectSuperClass extends AbstractEntity
     {
         $this->models = new ArrayCollection();
         parent::__construct($obj);
+    }
+
+    public function getFiltersForService(){
+        $filterJoin = [
+            [
+                'as' => 'a',
+                'rel' => 'anrs',
+            ],
+        ];
+        $filterLeft = [
+
+        ];
+        $filtersCol = [
+
+        ];
+        return [$filterJoin,$filterLeft,$filtersCol];
     }
 }

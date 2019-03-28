@@ -177,7 +177,7 @@ class InstanceRiskTable extends AbstractEntityTable
         }
         $l = $this->getContextLanguage($anrId, $context);
         $arraySelect = [
-            'o.id as oid',
+            'o.uuid as oid',
             'ir.id as id',
             'i.id as instance',
             'a.uuid as amv',
@@ -232,7 +232,8 @@ class InstanceRiskTable extends AbstractEntityTable
             ON          ir.asset_id = ass.uuid
             and         ir.anr_id = ass.anr_id
             INNER JOIN  objects AS o
-            ON          i.object_id = o.id
+            ON          i.object_id = o.uuid
+            and         i.anr_id = o.anr_id
             WHERE       ir.cache_max_risk >= -1
             AND         ir.anr_id = :anrid ";
         $queryParams = [
