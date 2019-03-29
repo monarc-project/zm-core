@@ -13,6 +13,7 @@ use MonarcCore\Model\Table\AnrTable;
 use MonarcCore\Model\Table\InstanceTable;
 use MonarcCore\Model\Table\ObjectObjectTable;
 use Zend\EventManager\EventManager;
+use Doctrine\ORM\Mapping\MappingException;
 
 /**
  * Object Object Service
@@ -163,20 +164,19 @@ class ObjectObjectService extends AbstractService
      * @param int $objectId The object ID
      * @return array The children objects
      */
-    public function getChildren($objectId)
+    public function getChildren($objectId, $anrId = null)
     {
         /** @var ObjectObjectTable $table */
         $table = $this->get('table');
-        // try{
-        //   $entity = $this->get('objectTable')->getEntity($objectId);
-        // }catch(Exception $e){
-        //   $filters['father']  = ['uuid' => $objectId, 'anr' => $anrId];
-        //}
-        //$filters['father']  = ['uuid' => $objectId, 'anr' => 470];
+
         file_put_contents('php://stderr', print_r($objectId, TRUE).PHP_EOL);
         if($objectId != null)
         {
-          return $table->getEntityByFields(['father' => ['uuid' => $objectId, 'anr' => 470]], ['position' => 'DESC']);
+          try{
+            return $table->getEntityByFields(['father' => $objectId], ['position' => 'DESC']);
+          }catch(MappingException $e){
+            return $table->getEntityByFields(['father' => ['uuid' => $objectId, 'anr' => $anrId]], ['position' => 'DESC']);
+          }
         }else {
           return null;
         }

@@ -1063,7 +1063,7 @@ class ObjectService extends AbstractService
         //children
         /** @var ObjectObjectService $objectObjectService */
         $objectObjectService = $this->get('objectObjectService');
-        $children = $objectObjectService->getChildren($object->id);
+        $children = $objectObjectService->getChildren($object->id,$anrId);
         foreach ($children as $child) {
             $childObject = $table->getEntity($child->child->id);
             $this->attachObjectToAnr($childObject, $anrId, $id, $child->position, $context);

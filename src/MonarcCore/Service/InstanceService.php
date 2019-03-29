@@ -190,7 +190,7 @@ class InstanceService extends AbstractService
         $this->setDependencies($instance, $dependencies);
 
         //level
-        $this->updateInstanceLevels($rootLevel, $data['object'], $instance, $mode);
+        $this->updateInstanceLevels($rootLevel, $data['object'], $instance, $mode, $anrId);
 
         $id = $this->get('table')->save($instance);
 
@@ -556,7 +556,7 @@ class InstanceService extends AbstractService
         //retrieve object children and create instance for each child
         /** @var ObjectObjectService $objectObjectService */
         $objectObjectService = $this->get('objectObjectService');
-        $children = $objectObjectService->getChildren($object);
+        $children = $objectObjectService->getChildren($object,$anrId);
         foreach ($children as $child) {
             $data = [
                 'object' => $child->child->id,
@@ -581,7 +581,7 @@ class InstanceService extends AbstractService
      * @param $instance
      * @param $mode
      */
-    protected function updateInstanceLevels($rootLevel, $objectId, &$instance, $mode)
+    protected function updateInstanceLevels($rootLevel, $objectId, &$instance, $mode, $anrId = null)
     {
         if (($rootLevel) || ($mode == Instance::MODE_CREA_ROOT)) {
             $instance->setLevel(Instance::LEVEL_ROOT);
@@ -589,7 +589,7 @@ class InstanceService extends AbstractService
             //retrieve children
             /** @var ObjectObjectService $objectObjectService */
             $objectObjectService = $this->get('objectObjectService');
-            $children = $objectObjectService->getChildren($objectId);
+            $children = $objectObjectService->getChildren($objectId, $anrId);
 
             if (!count($children)) {
                 $instance->setLevel(Instance::LEVEL_LEAF);
