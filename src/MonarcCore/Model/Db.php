@@ -178,6 +178,7 @@ class Db {
      */
     public function fetchByFields($entity, $fields, $orderBy)
     {
+
         $repository = $this->getEntityManager()->getRepository(get_class($entity));
         $qb = $repository->createQueryBuilder('u');
 

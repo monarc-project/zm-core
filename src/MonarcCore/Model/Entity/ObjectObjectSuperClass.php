@@ -189,4 +189,20 @@ class ObjectObjectSuperClass extends AbstractEntity
             'field' => 'father',
         ),
     );
+
+    public function getFiltersForService(){
+        $filterJoin = [
+            [
+                'as' => 'f',
+                'rel' => 'father',
+            ],
+        ];
+        $filterLeft = [
+
+        ];
+        $filtersCol = [
+
+        ];
+        return [$filterJoin,$filterLeft,$filtersCol];
+    }
 }

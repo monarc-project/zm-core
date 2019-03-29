@@ -38,15 +38,28 @@ class ObjectObjectTable extends AbstractEntityTable
      * @param $child_id
      * @return array
      */
-    public function getDirectParentsInfos($child_id)
+    public function getDirectParentsInfos($child_id, $anrid)
     {
-        return $this->getRepository()->createQueryBuilder('oo')
-            ->select(['o.name1', 'o.name2', 'o.name3', 'o.name4', 'o.label1', 'o.label2', 'o.label3', 'o.label4'])
-            ->innerJoin('oo.father', 'o')
-            ->where('oo.child = :child_id')
-            ->setParameter(':child_id', $child_id)
-            ->getQuery()
-            ->getResult();
+        // return $this->getRepository()->createQueryBuilder('oo')
+        //     ->select(['o.name1', 'o.name2', 'o.name3', 'o.name4', 'o.label1', 'o.label2', 'o.label3', 'o.label4'])
+        //     ->innerJoin('oo.father', 'o')
+        //     ->where('oo.child = :child_id')
+        //     ->setParameter(':child_id', $child_id)
+        //     ->getQuery()
+        //     ->getResult();
+        $stmt = $this->getDb()->getEntityManager()->getConnection()->prepare(
+            'SELECT  o.name1, o.name2, o.name3, o.name4, o.label1, o.label2, o.label3, o.label4
+            FROM objects_objects oo
+            INNER JOIN objects o ON oo.father_id = o.uuid and oo.anr_id = o.anr_id
+
+            WHERE oo.anr_id = :anrid
+            AND oo.child_id = :oid'
+        );
+
+        $stmt->execute([':anrid' => $anrid, ':oid' => $child_id]);
+        return $stmt->fetchAll();
+
+
     }
 
     /**

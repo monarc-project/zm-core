@@ -215,18 +215,18 @@ class ObjectSuperClass extends AbstractEntity
     /**
      * @return int
      */
-    public function getId()
+    public function getUuid()
     {
-        return $this->id;
+        return $this->uuid;
     }
 
     /**
      * @param int $id
      * @return Object
      */
-    public function setId($id)
+    public function setUuid($id)
     {
-        $this->id = $id;
+        $this->uuid = $id;
         return $this;
     }
 
@@ -413,7 +413,7 @@ class ObjectSuperClass extends AbstractEntity
                     'required' => false,
                     'allow_empty' => false,
                     'filters' => array(),
-                    'validators' => $validatorsName,
+                  //  'validators' => $validatorsName,
                 ));
             }
 

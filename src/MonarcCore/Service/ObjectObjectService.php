@@ -167,8 +167,20 @@ class ObjectObjectService extends AbstractService
     {
         /** @var ObjectObjectTable $table */
         $table = $this->get('table');
+        // try{
+        //   $entity = $this->get('objectTable')->getEntity($objectId);
+        // }catch(Exception $e){
+        //   $filters['father']  = ['uuid' => $objectId, 'anr' => $anrId];
+        //}
+        //$filters['father']  = ['uuid' => $objectId, 'anr' => 470];
+        file_put_contents('php://stderr', print_r($objectId, TRUE).PHP_EOL);
+        if($objectId != null)
+        {
+          return $table->getEntityByFields(['father' => ['uuid' => $objectId, 'anr' => 470]], ['position' => 'DESC']);
+        }else {
+          return null;
+        }
 
-        return $table->getEntityByFields(['father' => $objectId], ['position' => 'DESC']);
     }
 
     /**
@@ -182,13 +194,17 @@ class ObjectObjectService extends AbstractService
         /** @var ObjectObjectTable $table */
         $table = $this->get('table');
 
-        $filters = ['father' => $fatherId];
-
+        $filters = ['f.uuid' => $fatherId];
         if (!is_null($anrId)) {
             $filters['anr'] = $anrId;
-        }
+            $filters['f.anr'] = $anrId;
 
-        $children = $table->getEntityByFields($filters, ['position' => 'ASC']);
+            //$filters['father.uuid']  = ['uuid' => $fatherId, 'anr' => $anrId];
+        }
+        $filterJoin = $filterLeft = $filtersCol = [];
+         list($filterJoin,$filterLeft,$filtersCol) = $this->get('entity')->getFiltersForService();
+        $children = $table->fetchAllFiltered([], 1, 0, null, null , $filters , $filterJoin, $filterLeft);
+        //getEntityByFields($filters, ['position' => 'ASC']);
         $array_children = [];
 
         foreach ($children as $child) {
@@ -197,7 +213,7 @@ class ObjectObjectService extends AbstractService
 
             $object_child = $this->get('MonarcObjectTable')->get($child_array['child']);
             $object_child['children'] = $this->getRecursiveChildren($child_array['child']);
-            $object_child['component_link_id'] = $child_array['id'];
+            $object_child['component_link_id'] = $child_array['uuid'];
             $array_children[] = $object_child;
         }
 

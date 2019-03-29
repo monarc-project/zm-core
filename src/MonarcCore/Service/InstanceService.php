@@ -882,10 +882,11 @@ class InstanceService extends AbstractService
         $instances = [];
         $result = $this->get('table')->getRepository()
             ->createQueryBuilder('t')
+            ->innerJoin('t.object','object')
             ->where("t.anr = ?1")
-            ->andWhere("t.object = ?2")
+            ->andWhere("object.uuid = ?2")
             ->setParameter(1, $instance['anr']->id)
-            ->setParameter(2, $instance['object']->id)
+            ->setParameter(2, $instance['object']->uuid)
             ->getQuery()->getResult();
         $anr = $instance['anr']->getJsonArray();
 

@@ -20,6 +20,7 @@ use MonarcCore\Model\Table\ModelTable;
 use MonarcCore\Model\Table\ObjectCategoryTable;
 use MonarcCore\Model\Table\ObjectObjectTable;
 use MonarcCore\Model\Table\MonarcObjectTable;
+use Doctrine\ORM\Mapping\MappingException;
 
 /**
  * Object Service
@@ -189,20 +190,27 @@ class ObjectService extends AbstractService
      */
     public function getCompleteEntity($id, $anrContext = MonarcObject::CONTEXT_BDC, $anr = null)
     {
+      $monarcFO = false;
         $table = $this->get('table');
         /** @var Object $object */
-        $object = $table->getEntity($id);
+        try{
+          $object = $table->getEntity($id);
+        }catch(MappingException $e)
+        {
+          $object = $table->getEntity(['uuid'=>$id,'anr'=>$anr]);
+          $monarcFO = true;
+        }
         $object_arr = $object->getJsonArray();
 
         // Retrieve children recursively
         /** @var ObjectObjectService $objectObjectService */
         $objectObjectService = $this->get('objectObjectService');
-        $object_arr['children'] = $objectObjectService->getRecursiveChildren($object_arr['id'], null);
+        $object_arr['children'] = $objectObjectService->getRecursiveChildren($object_arr['uuid'], null);
 
         // Calculate the risks table
         $object_arr['risks'] = $this->getRisks($object);
         $object_arr['oprisks'] = $this->getRisksOp($object);
-        $object_arr['parents'] = $this->getDirectParents($object_arr['id']);
+        $object_arr['parents'] = $this->getDirectParents($object_arr['uuid'], $anr);
 
         // Retrieve parent recursively
         if ($anrContext == MonarcObject::CONTEXT_ANR) {
@@ -227,7 +235,11 @@ class ObjectService extends AbstractService
 
             /** @var InstanceTable $instanceTable */
             $instanceTable = $this->get('instanceTable');
-            $instances = $instanceTable->getEntityByFields(['anr' => $anr, 'object' => $id]);
+            if($monarcFO)
+              $instances = $instanceTable->getEntityByFields(['anr' => $anr, 'object' => ['uuid' => $id, 'anr'=>$anr]]);
+            else
+              $instances = $instanceTable->getEntityByFields(['anr' => $anr, 'object' => $id]);
+
 
             $instances_arr = [];
             foreach ($instances as $instance) {
@@ -979,6 +991,9 @@ class ObjectService extends AbstractService
         $table = $this->get('table');
 
         if (!is_object($object)) {
+          if($anrId !=null)
+            $object = $table->getEntity(['uuid' =>$object, 'anr'=>$anrId]);
+          else
             $object = $table->getEntity($object);
         }
 
@@ -1314,11 +1329,11 @@ class ObjectService extends AbstractService
      * @param $object_id
      * @return array
      */
-    public function getDirectParents($object_id)
+    public function getDirectParents($object_id, $anrId = null)
     {
         /** @var ObjectObjectTable $objectObjectTable */
         $objectObjectTable = $this->get('objectObjectTable');
-        return $objectObjectTable->getDirectParentsInfos($object_id);
+        return $objectObjectTable->getDirectParentsInfos($object_id->toString(),$anrId);
     }
 
     /**
