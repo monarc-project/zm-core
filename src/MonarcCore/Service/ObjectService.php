@@ -205,7 +205,7 @@ class ObjectService extends AbstractService
         // Retrieve children recursively
         /** @var ObjectObjectService $objectObjectService */
         $objectObjectService = $this->get('objectObjectService');
-        $object_arr['children'] = $objectObjectService->getRecursiveChildren($object_arr['uuid'], null);
+        $object_arr['children'] = $objectObjectService->getRecursiveChildren($object_arr['uuid']->toString(), $anr);
 
         // Calculate the risks table
         $object_arr['risks'] = $this->getRisks($object);

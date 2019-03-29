@@ -209,11 +209,15 @@ class ObjectObjectService extends AbstractService
 
         foreach ($children as $child) {
             /** @var ObjectObject $child */
-            $child_array = $child->getJsonArray();
 
-            $object_child = $this->get('MonarcObjectTable')->get($child_array['child']);
-            $object_child['children'] = $this->getRecursiveChildren($child_array['child']);
-            $object_child['component_link_id'] = $child_array['uuid'];
+            $child_array = $child;
+            try{
+              $object_child = $this->get('MonarcObjectTable')->get($child_array['child']->uuid->toString());
+            }catch(MappingException $e){
+              $object_child = $this->get('MonarcObjectTable')->get(['uuid' => $child_array['child']->uuid->toString(), 'anr' =>$child['child']->anr->id ]);
+            }
+            $object_child['children'] = $this->getRecursiveChildren($child['child']->uuid->toString(),$child['child']->anr->id);
+            $object_child['component_link_id'] = $child_array['id'];
             $array_children[] = $object_child;
         }
 
