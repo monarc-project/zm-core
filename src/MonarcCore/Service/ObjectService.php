@@ -102,7 +102,7 @@ class ObjectService extends AbstractService
                 $object['category'] = $categoryTable->get($object['category']->getId());
             }
 
-            $rootArray[$object['id']] = $object;
+            $rootArray[$object['uuid']->toString()] = $object;
         }
         return array_values($rootArray);
     }
@@ -133,25 +133,25 @@ class ObjectService extends AbstractService
                 $assets = $model->get('assets');
                 foreach ($assets as $a) { // on récupère tous les assets associés au modèle et on ne prend que les spécifiques
                     if ($a->get('mode') == MonarcObject::MODE_SPECIFIC) {
-                        $filterAnd['asset'][$a->get('id')] = $a->get('id');
+                        $filterAnd['asset'][$a->get('uuid')] = $a->get('uuid');
                     }
                 }
                 if (!$model->get('isRegulator')) { // si le modèle n'est pas régulateur
                     $assets = $this->get('assetTable')->getEntityByFields(['mode' => MonarcObject::MODE_GENERIC]); // on récupère tous les assets génériques
                     foreach ($assets as $a) {
-                        $filterAnd['asset'][$a->get('id')] = $a->get('id');
+                        $filterAnd['asset'][$a->get('uuid')] = $a->get('uuid');
                     }
                 }
             }
             if ($context != \MonarcCore\Model\Entity\AbstractEntity::FRONT_OFFICE) {
                 $objects = $model->get('anr')->get('objects');
                 if (!empty($objects)) { // on enlève tout les objets déjà liés
-                    $filterAnd['id'] = ['op' => 'NOT IN', 'value' => []];
+                    $filterAnd['uuid'] = ['op' => 'NOT IN', 'value' => []];
                     foreach ($objects as $o) {
-                        $filterAnd['id']['value'][$o->get('id')] = $o->get('id');
+                        $filterAnd['uuid']['value'][$o->get('uuid')] = $o->get('uuid');
                     }
-                    if (empty($filterAnd['id']['value'])) {
-                        unset($filterAnd['id']);
+                    if (empty($filterAnd['uuid']['value'])) {
+                        unset($filterAnd['uuid']);
                     }
                 }
             }
@@ -160,12 +160,17 @@ class ObjectService extends AbstractService
             $anrTable = $this->get('anrTable');
 
             $anrObj = $anrTable->getEntity($anr);
-            $filterAnd['id'] = [];
+            $filterAnd['uuid'] = [];
             $objects = $anrObj->get('objects');
+            $value = [];
             foreach ($objects as $o) { // on en prend que les objets déjà liés (composants)
-                $filterAnd['id'][$o->get('id')] = $o->get('id');
+              array_push($value,$o->get('uuid')->toString());
+                //$filterAnd['uuid'][$o->get('uuid')->toString()] = $o->get('uuid')->toString();
             }
+            $filterAnd['uuid'] = ['op' => 'IN', 'value' => $value];
+
         }
+        file_put_contents('php://stderr', print_r($value, TRUE).PHP_EOL);
 
         /** @var MonarcObjectTable $MonarcObjectTable */
         $MonarcObjectTable = $this->get('table');
