@@ -164,14 +164,12 @@ class ObjectService extends AbstractService
             $objects = $anrObj->get('objects');
             $value = [];
             foreach ($objects as $o) { // on en prend que les objets déjà liés (composants)
-              array_push($value,$o->get('uuid')->toString());
+              $value[] = $o->get('uuid')->toString();
                 //$filterAnd['uuid'][$o->get('uuid')->toString()] = $o->get('uuid')->toString();
             }
             $filterAnd['uuid'] = ['op' => 'IN', 'value' => $value];
 
         }
-        file_put_contents('php://stderr', print_r($value, TRUE).PHP_EOL);
-
         /** @var MonarcObjectTable $MonarcObjectTable */
         $MonarcObjectTable = $this->get('table');
         return $MonarcObjectTable->fetchAllFiltered(

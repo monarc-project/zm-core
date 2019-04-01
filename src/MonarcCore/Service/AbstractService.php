@@ -19,6 +19,8 @@ use MonarcFO\Model\Table\UserAnrTable;
 
 use Ramsey\Uuid\Uuid;
 
+use Doctrine\ORM\Query\QueryException;
+
 /**
  * Abstract Service
  *
@@ -618,8 +620,11 @@ abstract class AbstractService extends AbstractServiceFactory
         $table = $this->get('table');
 
         if ($direction == 'up') {
+          try{
             $entityAbove = $table->getEntityByFields([$field => $entity->$field, 'position' => $entity->position - 1]);
-
+          }catch(QueryException $e){
+            $entityAbove = $table->getEntityByFields([$field => ['uuid' => $entity->$field->uuid->toString(), 'anr'=>$entity->$field->anr->id], 'position' => $entity->position - 1]);
+          }
             if (count($entityAbove) == 1) {
                 $entityAbove = $entityAbove[0];
                 $entityAbove->position = $entityAbove->position + 1;
@@ -629,10 +634,15 @@ abstract class AbstractService extends AbstractServiceFactory
             $entity->position = $entity->position - 1;
             $table->save($entity);
         } else if ($direction == 'down') {
+          try{
             $entityBelow = $table->getEntityByFields([$field => $entity->$field, 'position' => $entity->position + 1]);
-
+          }catch(QueryException $e){
+            $entityBelow = $table->getEntityByFields([$field => ['uuid' => $entity->$field->uuid->toString(), 'anr'=>$entity->$field->anr->id], 'position' => $entity->position + 1]);
+          }
             if (count($entityBelow) == 1) {
                 $entityBelow = $entityBelow[0];
+                //file_put_contents('php://stderr', print_r(count($entityBelow), TRUE).PHP_EOL);
+
                 $entityBelow->position = $entityBelow->position - 1;
                 $table->save($entityBelow);
 
