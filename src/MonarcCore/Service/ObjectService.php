@@ -21,6 +21,7 @@ use MonarcCore\Model\Table\ObjectCategoryTable;
 use MonarcCore\Model\Table\ObjectObjectTable;
 use MonarcCore\Model\Table\MonarcObjectTable;
 use Doctrine\ORM\Mapping\MappingException;
+use Doctrine\ORM\Query\QueryException;
 
 /**
  * Object Service
@@ -734,8 +735,13 @@ class ObjectService extends AbstractService
         //     $setRolfTagNull = true;
         // }
 
-        $object = $this->get('table')->getEntity($id);
+        try{
+          $object = $this->get('table')->getEntity($id);
+        }catch(MappingException $e){
+          $object = $this->get('table')->getEntity(['uuid'=>$id, 'anr' => $data['anr']]);
+        }
         $object->setLanguage($this->getLanguage());
+        unset($data['anr']);
 
         $rolfTagId = ($object->rolfTag) ? $object->rolfTag->id : null;
 
@@ -769,7 +775,11 @@ class ObjectService extends AbstractService
     {
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('instanceTable');
-        $instances = $instanceTable->getEntityByFields(['object' => $object]);
+        try{
+          $instances = $instanceTable->getEntityByFields(['object' => $object]);
+        }catch(QueryException $e){
+          $instances = $instanceTable->getEntityByFields(['object' => ['uuid' =>$object->uuid->toString(), 'anr'=>$object->anr->id]]);
+        }
         foreach ($instances as $instance) {
             $modifyInstance = false;
             for ($i = 1; $i <= 4; $i++) {

@@ -18,6 +18,7 @@ use MonarcCore\Model\Table\ScaleCommentTable;
 use MonarcCore\Model\Table\ScaleImpactTypeTable;
 use MonarcCore\Model\Table\ScaleCommentsTable;
 use Zend\EventManager\EventManager;
+use Doctrine\ORM\Query\QueryException;
 
 /**
  * Instance Service
@@ -33,7 +34,7 @@ class InstanceService extends AbstractService
     // Tables & Entities
     protected $anrTable;
     protected $amvTable;
-    protected $MonarcObjectTable;
+    protected $objectTable;
     protected $scaleTable;
     protected $scaleCommentTable;
     protected $scaleImpactTypeTable;
@@ -71,7 +72,7 @@ class InstanceService extends AbstractService
     public function instantiateObjectToAnr($anrId, $data, $managePosition = true, $rootLevel = false, $mode = Instance::MODE_CREA_NODE)
     {
         //retrieve object properties
-        $object = $this->get('MonarcObjectTable')->getEntity($data['object']);
+        $object = $this->get('objectTable')->getEntity($data['object']);
 
         //verify if user is authorized to instantiate this object
         $authorized = false;
@@ -478,7 +479,7 @@ class InstanceService extends AbstractService
         $this->updateChildrenImpacts($instance);
 
         $data['asset'] = ['uuid' => $instance->object->asset->uuid->toString(), 'anr' => $anrId];
-        $data['object'] = $instance->object->id;
+        $data['object'] = $instance->object->uuid->toString();
         $data['name1'] = $instance->name1;
         $data['label1'] = $instance->label1;
 
@@ -523,7 +524,8 @@ class InstanceService extends AbstractService
      */
     protected function objectImpacts($instance)
     {
-        $objectId = $instance->object->id;
+        $objectId = $instance->object->uuid->toString();
+
         $data = [
             'name1' => $instance->name1,
             'name2' => $instance->name2,
@@ -533,6 +535,7 @@ class InstanceService extends AbstractService
             'label2' => $instance->label2,
             'label3' => $instance->label3,
             'label4' => $instance->label4,
+            'anr' => $instance->anr->id,
         ];
 
         $eventManager = new EventManager();
@@ -559,7 +562,7 @@ class InstanceService extends AbstractService
         $children = $objectObjectService->getChildren($object,$anrId);
         foreach ($children as $child) {
             $data = [
-                'object' => $child->child->id,
+                'object' => $child->child->uuid->toString(),
                 'parent' => $parentId,
                 'position' => $child->position,
                 'c' => '-1',
@@ -726,7 +729,11 @@ class InstanceService extends AbstractService
             //retrieve instance with same object source
             /** @var InstanceTable $table */
             $table = $this->get('table');
-            $brothers = $table->getEntityByFields(['object' => $instance->object->id]);
+            try{
+              $brothers = $table->getEntityByFields(['object' => $instance->object->uuid->toString()]);
+            }catch(QueryException $e){
+              $brothers = $table->getEntityByFields(['object' => ['uuid' => $instance->object->uuid->toString(), 'anr' => $anrId]]);
+            }
             foreach ($brothers as $brother) {
                 if (($brother->id != $instance->id) && (!in_array($brother->id, $historic))) {
                     foreach ($fieldsToDelete as $fieldToDelete) {

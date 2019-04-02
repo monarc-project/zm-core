@@ -9,6 +9,7 @@ namespace MonarcCore\Model\Table;
 
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\Exception\InvalidUuidStringException;
+use Doctrine\Common\Util\ClassUtils;
 
 /**
  * Class AbstractEntityTable
@@ -402,8 +403,8 @@ abstract class AbstractEntityTable
         if($this != null && isset($entity->parameters['implicitPosition']['field']) && $entity->getDbAdapter()!=null)
           $implicitPositionFieldIds = $entity->getDbAdapter()->getClassMetadata($this->getClassMetadata()->getAssociationTargetClass($entity->parameters['implicitPosition']['field']))->getIdentifierFieldNames();
 
-        if($entity != null && $entity->getDbAdapter()!=null)
-          $classIdentifier = $entity->getDbAdapter()->getClassMetadata(get_class($entity))->getIdentifierFieldNames();
+        if($entity != null )
+          $classIdentifier = $this->getDb()->getClassMetadata(ClassUtils::getRealClass(get_class($entity)))->getIdentifierFieldNames();
         if(in_array('uuid',$classIdentifier))
           $idName = 'uuid';
 
