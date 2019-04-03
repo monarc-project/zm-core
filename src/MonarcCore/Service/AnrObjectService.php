@@ -7,6 +7,8 @@
 
 namespace MonarcCore\Service;
 
+use Doctrine\ORM\Mapping\MappingException;
+
 /**
  * Anr Object Service
  *
@@ -47,7 +49,11 @@ class AnrObjectService extends AbstractService
      */
     public function getParents($anrid, $id)
     {
-        $object = $this->get('table')->getEntity($id);
+        try{
+          $object = $this->get('table')->getEntity($id);
+        }catch(MappingException $e){
+          $object = $this->get('table')->getEntity(['uuid' => $id, 'anr' => $anrid]);
+        }
         if (!$object) {
             throw new \MonarcCore\Exception\Exception('Entity does not exist', 412);
         }
