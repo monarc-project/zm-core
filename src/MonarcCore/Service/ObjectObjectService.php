@@ -185,12 +185,11 @@ class ObjectObjectService extends AbstractService
         /** @var ObjectObjectTable $table */
         $table = $this->get('table');
 
-        file_put_contents('php://stderr', print_r($objectId, TRUE).PHP_EOL);
         if($objectId != null)
         {
           try{
             return $table->getEntityByFields(['father' => $objectId], ['position' => 'DESC']);
-          }catch(MappingException $e){
+          }catch(MappingException | QueryException $e){
             return $table->getEntityByFields(['father' => ['uuid' => $objectId, 'anr' => $anrId]], ['position' => 'DESC']);
           }
         }else {
