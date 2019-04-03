@@ -14,6 +14,7 @@ use MonarcCore\Model\Table\InstanceTable;
 use MonarcCore\Model\Table\ObjectObjectTable;
 use Zend\EventManager\EventManager;
 use Doctrine\ORM\Mapping\MappingException;
+use Doctrine\ORM\Query\QueryException;
 
 /**
  * Object Object Service
@@ -301,8 +302,13 @@ class ObjectObjectService extends AbstractService
         //delete instance instance
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('instanceTable');
-        $childInstances = $instanceTable->getEntityByFields(['object' => $objectObject->child->id]);
-        $fatherInstances = $instanceTable->getEntityByFields(['object' => $objectObject->father->id]);
+        try{
+          $childInstances = $instanceTable->getEntityByFields(['object' => $objectObject->child->uuid->toString()]);
+          $fatherInstances = $instanceTable->getEntityByFields(['object' => $objectObject->father->uuid->toString()]);
+        }catch(QueryException $e){
+          $childInstances = $instanceTable->getEntityByFields(['object' => ['uuid' => $objectObject->child->uuid->toString(), 'anr' => $objectObject->anr->id]]);
+          $fatherInstances = $instanceTable->getEntityByFields(['object' => ['uuid' => $objectObject->father->uuid->toString(), 'anr' => $objectObject->anr->id]]);
+        }
 
         foreach ($childInstances as $childInstance) {
             foreach ($fatherInstances as $fatherInstance) {
