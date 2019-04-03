@@ -19,6 +19,7 @@ use MonarcCore\Model\Table\ScaleImpactTypeTable;
 use MonarcCore\Model\Table\ScaleCommentsTable;
 use Zend\EventManager\EventManager;
 use Doctrine\ORM\Query\QueryException;
+use Doctrine\ORM\Mapping\MappingException;
 
 /**
  * Instance Service
@@ -72,7 +73,12 @@ class InstanceService extends AbstractService
     public function instantiateObjectToAnr($anrId, $data, $managePosition = true, $rootLevel = false, $mode = Instance::MODE_CREA_NODE)
     {
         //retrieve object properties
-        $object = $this->get('objectTable')->getEntity($data['object']);
+        file_put_contents('php://stderr', print_r($data, TRUE).PHP_EOL);
+        try{
+          $object = $this->get('objectTable')->getEntity($data['object']);
+        }catch(MappingException | QueryException $e){
+          $object = $this->get('objectTable')->getEntity(['uuid' => $data['object'],'anr'=>$anrId]);
+        }
 
         //verify if user is authorized to instantiate this object
         $authorized = false;
@@ -1354,7 +1360,12 @@ class InstanceService extends AbstractService
         if ($object->scope == MonarcObject::SCOPE_GLOBAL) {
             /** @var InstanceTable $instanceTable */
             $instanceTable = $this->get('instanceTable');
-            $brothers = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $object->id]);
+
+            try{
+              $brothers = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $object->uuid->toString()]);
+            }catch(MappingException | QueryException $e){
+              $brothers = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => ['uuid' => $object->uuid->toString(),'anr' =>$anrId]]);
+            }
         }
 
         if (($object->scope == MonarcObject::SCOPE_GLOBAL) && (count($brothers) > 1)) {

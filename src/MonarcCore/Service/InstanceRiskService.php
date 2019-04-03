@@ -13,6 +13,8 @@ use MonarcCore\Model\Table\AmvTable;
 use MonarcCore\Model\Table\InstanceRiskTable;
 use MonarcCore\Model\Table\InstanceTable;
 use MonarcCore\Traits\RiskTrait;
+use Doctrine\ORM\Query\QueryException;
+use Doctrine\ORM\Mapping\MappingException;
 
 /**
  * Instance Risk Service
@@ -52,7 +54,11 @@ class InstanceRiskService extends AbstractService
         //retrieve brothers instances
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('instanceTable');
-        $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $object->id]);
+        try{
+          $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $object->uuid->toString()]);
+        }catch(MappingException | QueryException $e){
+          $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => ['uuid' => $object->uuid->toString(), 'anr' => $anrId]]);
+        }
         if ($object->scope == MonarcObject::SCOPE_GLOBAL && count($instances) > 1) {
 
             $currentInstance = $instanceTable->getEntity($instanceId);

@@ -150,7 +150,7 @@ class ObjectObjectService extends AbstractService
             }
 
             $dataInstance = [
-                'object' => $child->id,
+                'object' => $child->uuid->toString(),
                 'parent' => $instanceParent->id,
                 'root' => ($instanceParent->root) ? $instanceParent->root->id : $instanceParent->id,
                 'implicitPosition' => $data['implicitPosition'],
@@ -184,7 +184,8 @@ class ObjectObjectService extends AbstractService
     {
         /** @var ObjectObjectTable $table */
         $table = $this->get('table');
-
+        if(is_object($objectId))
+          $objectId = $objectId->uuid->toString();
         if($objectId != null)
         {
           try{
