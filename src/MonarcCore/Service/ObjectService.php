@@ -575,7 +575,6 @@ class ObjectService extends AbstractService
     public function update($id, $data, $context = AbstractEntity::BACK_OFFICE)
     {
         unset($data['anrs']);
-
         if (empty($data)) {
             throw new \MonarcCore\Exception\Exception('Data missing', 412);
         }
@@ -585,7 +584,11 @@ class ObjectService extends AbstractService
             $data['mode'] = MonarcObject::MODE_GENERIC;
         }
 
-        $object = $this->get('table')->getEntity($id);
+        try{
+          $object = $this->get('table')->getEntity($id);
+        }catch(QueryException | MappingException $e){
+          $object = $this->get('table')->getEntity(['uuid' => $id, 'anr' => $data['anr']]);
+        }
         if (!$object) {
             throw new \MonarcCore\Exception\Exception('Entity `id` not found.');
         }
@@ -602,7 +605,7 @@ class ObjectService extends AbstractService
             throw new \MonarcCore\Exception\Exception('You cannot change the scope of an existing object.', 412);
         }
 
-        if (isset($data['asset']) && $data['asset'] != $object->asset->id) {
+        if (isset($data['asset']) && $data['asset'] != $object->asset->uuid) {
             throw new \MonarcCore\Exception\Exception('You cannot change the asset type of an existing object.', 412);
         }
 
@@ -624,7 +627,11 @@ class ObjectService extends AbstractService
         // Si asset secondaire, pas de rolfTag
         if (!empty($data['asset']) && !empty($data['rolfTag'])) {
             $assetTable = $this->get('assetTable');
-            $asset = $assetTable->get($data['asset']);
+            try{
+              $asset = $assetTable->get($data['asset']);
+            }catch(MappingException $e){
+              $asset = $assetTable->get(['uuid'=>$data['asset'], 'anr' => $data['anr']]);
+            }
             if (!empty($asset['type']) && $asset['type'] != \MonarcCore\Model\Entity\Asset::TYPE_PRIMARY) {
                 unset($data['rolfTag']);
                 $setRolfTagNull = true;
@@ -778,7 +785,8 @@ class ObjectService extends AbstractService
         try{
           $instances = $instanceTable->getEntityByFields(['object' => $object]);
         }catch(QueryException $e){
-          $instances = $instanceTable->getEntityByFields(['object' => ['uuid' =>$object->uuid->toString(), 'anr'=>$object->anr->id]]);
+          $uuid = is_string($object->uuid)?$object->uuid:$object->uuid->toString();
+          $instances = $instanceTable->getEntityByFields(['object' => ['uuid' =>$uuid, 'anr'=>$object->anr->id]]);
         }
         foreach ($instances as $instance) {
             $modifyInstance = false;
