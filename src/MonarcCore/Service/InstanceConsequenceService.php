@@ -12,6 +12,8 @@ use MonarcCore\Model\Table\InstanceConsequenceTable;
 use MonarcCore\Model\Table\InstanceTable;
 use Zend\EventManager\EventManager;
 
+use Doctrine\ORM\Query\QueryException;
+
 /**
  * Instance Consequence Service
  *
@@ -147,10 +149,17 @@ class InstanceConsequenceService extends AbstractService
         if ($instanceConsequence->object->scope == MonarcObject::SCOPE_GLOBAL) {
             /** @var InstanceTable $instanceTable */
             $instanceTable = $this->get('instanceTable');
-            $brothers = $instanceTable->getEntityByFields([
-                'anr' => $anrId,
-                'object' => $instanceConsequence->object->id
-            ]);
+            try{
+                $brothers = $instanceTable->getEntityByFields([
+                  'anr' => $anrId,
+                  'object' => $instanceConsequence->object->uuid->toString()
+              ]);
+            }catch(QueryException $e){
+                $brothers = $instanceTable->getEntityByFields([
+                  'anr' => $anrId,
+                  'object' => ['uuid' => $instanceConsequence->object->uuid->toString(),'anr' => $anrId,]
+              ]);
+            }
 
             if (count($brothers) > 1) {
                 foreach ($brothers as $brother) {

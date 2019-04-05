@@ -333,7 +333,7 @@ abstract class AbstractService extends AbstractServiceFactory
         foreach ($this->dependencies as $dependency) {
             if ((!isset($data[$dependency])) && ($entity->$dependency)) {
               if($entity->$dependency->uuid)
-                $data[$dependency] = $entity->$dependency->uuid;
+                $data[$dependency] = $entity->$dependency->uuid->toString();              
               else
                 $data[$dependency] = $entity->$dependency->id;
             }
