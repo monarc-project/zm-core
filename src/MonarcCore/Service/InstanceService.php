@@ -379,7 +379,7 @@ class InstanceService extends AbstractService
     {
         //security
         if ($modifyCid) { // on provient du trigger
-            $this->forbiddenFields = ['anr', 'asset', 'object'];
+            $this->forbiddenFields = ['anr', 'asset',]; //temporary remove object to allow creation
         }
 
         $this->filterPatchFields($data);

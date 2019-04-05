@@ -143,7 +143,11 @@ class ObjectObjectService extends AbstractService
             $previousInstance = false;
             if ($data['implicitPosition'] == 3) {
                 $previousObject = $objectObjectTable->get($data['previous'])['child'];
-                $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $previousObject->id]);
+                try{
+                  $instances = $instanceTable->getEntityByFields(['anr' => $data['anr'], 'object' => $previousObject->uuid->toString()]);
+                }catch(QueryException $e){
+                  $instances = $instanceTable->getEntityByFields(['anr' => $data['anr'], 'object' => ['uuid' => $previousObject->uuid->toString(), 'anr' => $data['anr']]]);
+                }
                 foreach ($instances as $instance) {
                     $previousInstance = $instance->id;
                 }

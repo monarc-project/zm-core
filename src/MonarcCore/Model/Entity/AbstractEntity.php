@@ -10,6 +10,7 @@ namespace MonarcCore\Model\Entity;
 use Zend\InputFilter\InputFilter;
 use Zend\InputFilter\InputFilterAwareInterface;
 use Zend\InputFilter\InputFilterInterface;
+use Doctrine\Common\Util\ClassUtils;
 
 /**
  * Class AbstractEntity
@@ -294,6 +295,10 @@ abstract class AbstractEntity implements InputFilterAwareInterface
                 $prec_parent_id = null;
 
                 if ($isParentable) {
+                  $identifiers = is_null($prec->get($this->parameters['implicitPosition']['field'])) ? null : $this->getDbAdapter()->getClassMetadata(ClassUtils::getRealClass(get_class($prec->get($this->parameters['implicitPosition']['field']))))->getIdentifierFieldNames();
+                  if(in_array('uuid',$identifiers))
+                    $prec_parent_id = is_null($prec->get($this->parameters['implicitPosition']['field'])) ? null : $prec->get($this->parameters['implicitPosition']['field'])->getUuid()->toString();
+                  else
                     $prec_parent_id = is_null($prec->get($this->parameters['implicitPosition']['field'])) ? null : $prec->get($this->parameters['implicitPosition']['field'])->get('id');
                 }
                 if ($parent_after == $prec_parent_id || !$isParentable) {
