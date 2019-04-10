@@ -333,7 +333,7 @@ abstract class AbstractService extends AbstractServiceFactory
         foreach ($this->dependencies as $dependency) {
             if ((!isset($data[$dependency])) && ($entity->$dependency)) {
               if($entity->$dependency->uuid)
-                $data[$dependency] = $entity->$dependency->uuid->toString();              
+                $data[$dependency] = $entity->$dependency->uuid->toString();
               else
                 $data[$dependency] = $entity->$dependency->id;
             }
@@ -540,7 +540,7 @@ abstract class AbstractService extends AbstractServiceFactory
                       if(isset($value['uuid']) || Uuid::isValid($value) )
                         {
                           if(in_array('anr',$valueIdentifier))
-                            $dep = $db->getReference($class, ['uuid' => isset($value['uuid']) ? $value['uuid'] : $value, 'anr' => 470]);
+                            $dep = $db->getReference($class, ['uuid' => isset($value['uuid']) ? $value['uuid'] : $value, 'anr' => $entity->anr->id]);
                           else
                             $dep = $db->getReference($class, isset($value['uuid']) ? $value['uuid'] : $value);
                         }
