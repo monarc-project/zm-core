@@ -539,8 +539,11 @@ abstract class AbstractService extends AbstractServiceFactory
                     if (!is_array($value) || isset($value['id']) || isset($value['uuid'])) {
                       if(isset($value['uuid']) || Uuid::isValid($value) )
                         {
-                          if(in_array('anr',$valueIdentifier))
-                            $dep = $db->getReference($class, ['uuid' => isset($value['uuid']) ? $value['uuid'] : $value, 'anr' => $entity->anr->id]);
+
+                          if(in_array('anr',$valueIdentifier)){
+                            $entityAnrId = is_integer($entity->anr) ? $entity->anr : $entity->anr->id;
+                            $dep = $db->getReference($class, ['uuid' => isset($value['uuid']) ? $value['uuid'] : $value, 'anr' => isset($value['anr']) ? $value['anr'] : $entityAnrId]);
+                          }
                           else
                             $dep = $db->getReference($class, isset($value['uuid']) ? $value['uuid'] : $value);
                         }
