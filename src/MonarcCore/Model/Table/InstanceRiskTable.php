@@ -226,9 +226,11 @@ class InstanceRiskTable extends AbstractEntityTable
             and         ir.anr_id = a.anr_id
             INNER JOIN  threats AS t
             ON          ir.threat_id = t.uuid
+            and         ir.anr_id = t.anr_id
             INNER JOIN  vulnerabilities AS v
             ON          ir.vulnerability_id = v.uuid
-            LEFT JOIN   assets AS ass
+            and         ir.anr_id = v.anr_id
+            INNER JOIN   assets AS ass
             ON          ir.asset_id = ass.uuid
             and         ir.anr_id = ass.anr_id
             INNER JOIN  objects AS o
