@@ -13,6 +13,9 @@ use MonarcCore\Model\Entity\MonarcObject;
 use MonarcCore\Model\Table\InstanceRiskOpTable;
 use MonarcCore\Model\Table\RolfTagTable;
 
+use Doctrine\ORM\Query\QueryException;
+use Doctrine\ORM\Mapping\MappingException;
+
 /**
  * Instance Risk Service Op
  *
@@ -49,7 +52,11 @@ class InstanceRiskOpService extends AbstractService
             //retrieve brothers instances
             /** @var InstanceTable $instanceTable */
             $instanceTable = $this->get('instanceTable');
-            $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $object->id]);
+            try{
+              $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $object->uuid->toString()]);
+            }catch(QueryException | MappingException $e){
+              $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => ['anr' => $anrId ,'uuid' => $object->uuid->toString()]]);
+            }
 
             if ($object->scope == MonarcObject::SCOPE_GLOBAL && count($instances) > 1) {
 
@@ -87,7 +94,7 @@ class InstanceRiskOpService extends AbstractService
                     $data = [
                         'anr' => $anrId,
                         'instance' => $instanceId,
-                        'object' => $object->id,
+                        'object' => $object->uuid->toString(),
                         'rolfRisk' => $rolfRisk->id,
                         'riskCacheCode' => $rolfRisk->code,
                         'riskCacheLabel1' => $rolfRisk->label1,

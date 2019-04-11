@@ -668,7 +668,7 @@ class ObjectService extends AbstractService
                 $nbObjectsSameOldRootCategory = 0;
                 foreach ($anr->objects as $anrObject) {
                     $anrObjectCategory = ($anrObject->category->root) ? $anrObject->category->root : $anrObject->category;
-                    if (($anrObjectCategory->id == $currentRootCategory->id) && ($anrObject->id != $object->id)) {
+                    if (($anrObjectCategory->id == $currentRootCategory->id) && ($anrObject->uuid->toString() != $object->uuid->toString())) {
                         $nbObjectsSameOldRootCategory++;
                         break; // no need to go further
                     }
@@ -689,7 +689,7 @@ class ObjectService extends AbstractService
                 $nbObjectsSameNewRootCategory = 0;
                 foreach ($anr->objects as $anrObject) {
                     $anrObjectCategory = ($anrObject->category->root) ? $anrObject->category->root : $anrObject->category;
-                    if (($anrObjectCategory->id == $objectRootCategory->id) && ($anrObject->id != $object->id)) {
+                    if (($anrObjectCategory->id == $objectRootCategory->id) && ($anrObject->uuid->toString() != $object->uuid->toString())) {
                         $nbObjectsSameNewRootCategory++;
                         break; // no need to go further
                     }
@@ -831,7 +831,7 @@ class ObjectService extends AbstractService
                         $data = [
                             'anr' => $object->anr->id,
                             'instance' => $instance->id,
-                            'object' => $object->id,
+                            'object' => is_string($object->uuid)?$object->uuid:$object->uuid->toString(),
                             'rolfRisk' => $rolfRisk->id,
                             'riskCacheCode' => $rolfRisk->code,
                             'riskCacheLabel1' => $rolfRisk->label1,
@@ -1125,20 +1125,32 @@ class ObjectService extends AbstractService
         //if object is not a component, delete link and instances children for anr
         /** @var ObjectObjectTable $objectObjectTable */
         $objectObjectTable = $this->get('objectObjectTable');
-        $links = $objectObjectTable->getEntityByFields(['anr' => ($context == MonarcObject::BACK_OFFICE) ? 'null' : $anrId, 'child' => $objectId]);
+        try{
+          $links = $objectObjectTable->getEntityByFields(['anr' => ($context == MonarcObject::BACK_OFFICE) ? 'null' : $anrId, 'child' => $objectId]);
+        }catch(QueryException | MappingException $e){
+          $links = $objectObjectTable->getEntityByFields(['anr' => ($context == MonarcObject::BACK_OFFICE) ? 'null' : $anrId, 'child' => ['uuid' => $objectId, 'anr' => $anrId]]);
+        }
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('instanceTable');
         foreach ($links as $link) {
 
             //retrieve instance with link father object
             $fatherInstancesIds = [];
-            $fatherInstances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $link->father->id]);
+            try{
+              $fatherInstances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $link->father->uuid->toString()]);
+            }catch(QueryException | MappingException $e){
+              $fatherInstances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => ['anr' => $anrId,'uuid' => $link->father->uuid->toString()]]);
+            }
             foreach ($fatherInstances as $fatherInstance) {
                 $fatherInstancesIds[] = $fatherInstance->id;
             }
 
             //retrieve instance with link child object and delete instance child if parent id is concern by link
-            $childInstances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $link->child->id]);
+            try{
+              $childInstances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $link->child->uuid->toString()]);
+            }catch(QueryException | MappingException $e){
+              $childInstances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => ['anr' => $anrId, 'uuid' => $link->child->uuid->toString()]]);
+            }
             foreach ($childInstances as $childInstance) {
                 if (in_array($childInstance->parent->id, $fatherInstancesIds)) {
                     $instanceTable->delete($childInstance->id);
@@ -1155,7 +1167,7 @@ class ObjectService extends AbstractService
             $objectRootCategory = ($object->category->root) ? $object->category->root : $object->category;
             foreach ($anr->objects as $anrObject) {
                 $anrObjectRootCategory = ($anrObject->category->root) ? $anrObject->category->root : $anrObject->category;
-                if (($anrObjectRootCategory->id == $objectRootCategory->id) && ($anrObject->id != $object->id)) {
+                if (($anrObjectRootCategory->id == $objectRootCategory->id) && ($anrObject->uuid->toString() != $object->uuid->toString())) {
                     $nbObjectsSameRootCategory++;
                 }
             }
@@ -1180,7 +1192,11 @@ class ObjectService extends AbstractService
         //delete instance from anr
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('instanceTable');
-        $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $objectId]);
+        try{
+          $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $objectId]);
+        }catch(MappingException | QueryException $e){
+          $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => ['anr' => $anrId,'uuid' => $objectId]]);
+        }
         $i = 1;
         $nbInstances = count($instances);
         foreach ($instances as $instance) {

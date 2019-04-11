@@ -12,6 +12,9 @@ use MonarcCore\Model\Table\InstanceTable;
 use MonarcCore\Model\Table\MonarcObjectTable;
 use MonarcFO\Model\Entity\RolfRisk;
 
+use Doctrine\ORM\Query\QueryException;
+use Doctrine\ORM\Mapping\MappingException;
+
 /**
  * Rolf Risk Service
  *
@@ -136,6 +139,8 @@ class RolfRiskService extends AbstractService
      */
     public function update($id, $data)
     {
+      file_put_contents('php://stderr', print_r($data, TRUE).PHP_EOL);
+
         $rolfTags = isset($data['tags']) ? $data['tags'] : [];
         unset($data['tags']);
 
@@ -210,7 +215,11 @@ class RolfRiskService extends AbstractService
             foreach ($objects as $object) {
                 /** @var InstanceRiskOpTable $instanceRiskOpTable */
                 $instanceRiskOpTable = $this->get('instanceRiskOpTable');
-                $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['object' => $object->id, 'rolfRisk' => $id]);
+                try{
+                  $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['object' => $object->uuid->toString(), 'rolfRisk' => $id]);
+                }catch(QueryException | MappingException $e){
+                  $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['object' => ['anr' => $data['anr'],'uuid' => $object->uuid->toString()], 'rolfRisk' => $id]);
+                }
                 $i = 1;
                 $nbInstancesRisksOp = count($instancesRisksOp);
                 foreach ($instancesRisksOp as $instanceRiskOp) {
@@ -227,14 +236,18 @@ class RolfRiskService extends AbstractService
             foreach ($objects as $object) {
                 /** @var InstanceTable $instanceTable */
                 $instanceTable = $this->get('instanceTable');
-                $instances = $instanceTable->getEntityByFields(['object' => $object->id]);
+                try{
+                  $instances = $instanceTable->getEntityByFields(['object' => $object->uuid->toString()]);
+                }catch(QueryException | MappingException $e){
+                  $instances = $instanceTable->getEntityByFields(['object' => ['anr' => $data['anr'],'uuid' => $object->uuid->toString()]]);
+                }
                 $i = 1;
                 $nbInstances = count($instances);
                 foreach ($instances as $instance) {
                     $data = [
                         'anr' => $object->anr->id,
                         'instance' => $instance->id,
-                        'object' => $object->id,
+                        'object' => $object->uuid->toString(),
                         'rolfRisk' => $entity->id,
                         'riskCacheCode' => $entity->code,
                         'riskCacheLabel1' => $entity->label1,
@@ -261,14 +274,18 @@ class RolfRiskService extends AbstractService
           $objects = $MonarcObjectTable->getEntityByFields(['rolfTag' => $currentTag]);
           foreach ($objects as $object) {
             $instanceRiskOpTable = $this->get('instanceRiskOpTable');
-            $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['object' => $object->id, 'rolfRisk' => $id]);
+            try{
+              $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['object' => $object->uuid->toString(), 'rolfRisk' => $id] );
+            }catch(QueryException | MappingException $e){
+              $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['object' => ['anr' => $data['anr'],'uuid' => $object->uuid->toString()], 'rolfRisk' => $id]);
+            }
 
             $nbInstances = count($instancesRisksOp);
             //update label
             foreach ($instancesRisksOp as $instance) {
                 $data = [
                     'anr' => $object->anr->id,
-                    'object' => $object->id,
+                    'object' => $object->uuid->toString(),
                     'rolfRisk' => $entity->id,
                     'riskCacheLabel1' => $entity->label1,
                     'riskCacheLabel2' => $entity->label2,
