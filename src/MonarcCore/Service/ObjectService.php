@@ -980,7 +980,7 @@ class ObjectService extends AbstractService
         $objectsObjects = $objectObjectTable->getEntityByFields(['father' => $data['id']]);
         foreach ($objectsObjects as $objectsObject) {
             $data = [
-                'id' => $objectsObject->child->id,
+                'id' => is_string($objectsObject->child->uuid)?$objectsObject->child->uuid:$objectsObject->child->uuid->toString(),
                 'implicitPosition' => $data['implicitPosition'],
             ];
 

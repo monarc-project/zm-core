@@ -106,7 +106,7 @@ class ScaleImpactTypeService extends AbstractService
             $dataConsequences = [
                 'anr' => $anrId,
                 'instance' => $instance->id,
-                'object' => $instance->object->id,
+                'object' => is_string($instance->object->uuid)?$instance->object->uuid:$instance->object->uuid>toString(),
                 'scaleImpactType' => $id,
             ];
             /** @var InstanceConsequenceService $instanceConsequenceService */

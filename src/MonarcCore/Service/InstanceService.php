@@ -1188,10 +1188,10 @@ class InstanceService extends AbstractService
         $duplicateGlobalObject = [];
         foreach ($instances as $instance2) {
             if ($instance2->object->scope == MonarcObject::SCOPE_GLOBAL) {
-                if (in_array($instance2->object->id, $globalInstancesIds)) {
-                    $duplicateGlobalObject[] = $instance2->object->id;
+                if (in_array($instance2->object->uuid->toString(), $globalInstancesIds)) {
+                    $duplicateGlobalObject[] = $instance2->object->uuid->toString();
                 } else {
-                    $globalInstancesIds[] = $instance2->object->id;
+                    $globalInstancesIds[] = $instance2->object->uuid->toString();
                 }
 
             }
@@ -1200,7 +1200,7 @@ class InstanceService extends AbstractService
         //retrieve instance associated to duplicate global object
         $specialInstances = $instancesIds = [];
         foreach ($instances as $instance2) {
-            if (in_array($instance2->object->id, $duplicateGlobalObject)) {
+            if (in_array($instance2->object->uuid->toString(), $duplicateGlobalObject)) {
                 $specialInstances[] = $instance2->id;
             } else {
                 $instancesIds[] = $instance2->id;
