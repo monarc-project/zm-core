@@ -33,6 +33,7 @@ class InstanceRiskService extends AbstractService
     protected $amvTable;
     protected $instanceTable;
     protected $recommandationTable;
+    protected $recommandationRiskTable;
 
     // only for setDependencies (deprecated)
     protected $assetTable;
@@ -74,6 +75,17 @@ class InstanceRiskService extends AbstractService
                         $newInstanceRisk->setId(null);
                         $newInstanceRisk->setInstance($currentInstance);
                         $instanceRiskTable->save($newInstanceRisk);
+
+                        $recoRisks = $this->get('recommandationRiskTable')->getEntityByFields(['anr' => $anrId, 'instanceRisk' => $instanceRisk->id]);
+                        if (count($recoRisks) > 0) {
+                          foreach($recoRisks as $recoRisk) {
+                            $newRecoRisk = clone $recoRisk;
+                            $newRecoRisk->set('id', null);
+                            $newRecoRisk->set('instance',$currentInstance);
+                            $newRecoRisk->set('instanceRisk',$newInstanceRisk);
+                            $this->get('recommandationRiskTable')->save($newRecoRisk);
+                          }
+                        }
                     }
                 }
                 break;
