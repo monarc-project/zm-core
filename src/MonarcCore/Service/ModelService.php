@@ -186,7 +186,7 @@ class ModelService extends AbstractService
             //retrieve assets
             $assetsIds = [];
             foreach ($model->assets as $asset) {
-                $assetsIds[] = $asset->id;
+                $assetsIds[] = $asset->uuid->toString();
             }
             if (!empty($assetsIds)) {
                 $amvs = $this->get('amvTable')->getEntityByFields(['asset' => $assetsIds]);

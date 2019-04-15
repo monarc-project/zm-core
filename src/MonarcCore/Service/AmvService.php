@@ -581,7 +581,7 @@ class AmvService extends AbstractService
 
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('instanceTable');
-        $instances = $instanceTable->getEntityByFields(['asset' => $asset->id]);
+        $instances = $instanceTable->getEntityByFields(['asset' => $asset->uuid->toString()]);
 
         if (!empty($instances)) {
             $anrs = [];
