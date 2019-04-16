@@ -104,7 +104,7 @@ class InstanceRiskService extends AbstractService
             foreach ($amvs as $amv) {
                 $data = [
                     'anr' => $anrId,
-                    'amv' => $amv->id,
+                    'amv' => $amv->uuid->toString(),
                     'asset' => $amv->asset->uuid->toString(),
                     'instance' => $instanceId,
                     'threat' => $amv->threat->uuid->toString(),
