@@ -207,13 +207,11 @@ class Db {
                         }
                     }else if(!empty($value['uuid']) && !empty($value['anr'])) { //request on uuid in fo to improve to be more generic
                       $qb->innerJoin($db,$key);
-                      $qb->Where("$key".'.uuid = '." :uuid")
-                          ->andWhere("$key".'.anr = '." :anr")
-                          ->setParameters(array(
-                                'uuid' => $value['uuid'],
-                                'anr' => $value['anr']
-                                )
-                              );
+                      $qb->andWhere("$key".'.uuid = '." :".$key."uuid");
+                      $qb->andWhere("$key".'.anr = '." :".$key."anr");
+                      $qb->setParameter($key.'uuid' , $value['uuid']);
+                      $qb->setParameter($key.'anr' , $value['anr']);
+
                     }else{
                         $qb->andWhere("$db IN (:$key)");
                         $qb->setParameter($key, $value);
@@ -236,6 +234,8 @@ class Db {
                 $qb->addOrderBy("u.$field", $way);
             }
         }
+        // file_put_contents('php://stderr', print_r($qb->getQuery()->getSQL(), TRUE).PHP_EOL);
+        // file_put_contents('php://stderr', print_r($qb->getQuery()->getParameters(), TRUE).PHP_EOL);
         return $qb->getQuery()->getResult();
     }
 
