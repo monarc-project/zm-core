@@ -207,7 +207,7 @@ class Db {
                         }
                     }else if(!empty($value['uuid']) && !empty($value['anr'])) { //request on uuid in fo to improve to be more generic
                       $qb->innerJoin($db,$key);
-                      $qb->andWhere("$key".'.uuid = '." :uuid")
+                      $qb->Where("$key".'.uuid = '." :uuid")
                           ->andWhere("$key".'.anr = '." :anr")
                           ->setParameters(array(
                                 'uuid' => $value['uuid'],
