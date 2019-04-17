@@ -316,7 +316,7 @@ class ObjectService extends AbstractService
         foreach ($amvs as $amv) {
 
             $risks[] = [
-                'id' => $amv->id,
+                'id' => $amv->uuid->toString(),
                 'threatLabel1' => $amv->threat->label1,
                 'threatLabel2' => $amv->threat->label2,
                 'threatLabel3' => $amv->threat->label3,

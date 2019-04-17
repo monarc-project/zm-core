@@ -1221,15 +1221,15 @@ class InstanceService extends AbstractService
         $specialInstancesUniquesRisks = [];
         foreach ($specialInstancesRisks as $risk) {
             if (
-                (!isset($specialInstancesUniquesRisks[$risk->amv->id]))
+                (!isset($specialInstancesUniquesRisks[$risk->amv->uuid->toString()]))
                 ||
                 (
-                    (isset($specialInstancesUniquesRisks[$risk->amv->id]))
+                    (isset($specialInstancesUniquesRisks[$risk->amv->uuid->toString()]))
                     &&
-                    ($risk->cacheMaxRisk > $specialInstancesUniquesRisks[$risk->amv->id]->cacheMaxRisk)
+                    ($risk->cacheMaxRisk > $specialInstancesUniquesRisks[$risk->amv->uuid->toString()]->cacheMaxRisk)
                 )
             ){
-                $specialInstancesUniquesRisks[$risk->amv->id] = $risk;
+                $specialInstancesUniquesRisks[$risk->amv->uuid->toString()] = $risk;
             }
         }
 
