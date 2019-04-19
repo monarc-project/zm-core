@@ -194,8 +194,16 @@ class Db {
                 if(is_array($value)){
                     if(!empty($value['op']) && array_key_exists('value', $value)){
                         if(is_array($value['value'])){ // IN || NOT IN
+                          if(array_key_exists('uuid', $value['value']) && array_key_exists('anr', $value['value'])){ //uuid case ex : ['op' => '!=', 'value' =>['anr'=> INT,'uuid' => Array or UUID]]]);
+                            $qb->innerJoin($db,$key);
+                            $qb->andWhere("$key".'.uuid '.$value['op']." (:".$key."uuid)");
+                            $qb->andWhere("$key".'.anr = '." :".$key."anr");
+                            $qb->setParameter($key.'uuid' , $value['value']['uuid']);
+                            $qb->setParameter($key.'anr' , $value['value']['anr']);
+                          }else{
                             $qb->andWhere("$db ".$value['op']." (:$key)");
                             $qb->setParameter($key, $value['value']);
+                          }
                         }elseif(is_int($value['value'])){
                             $qb->andWhere("$db ".$value['op']." :$key");
                             $qb->setParameter($key, $value['value']);
@@ -234,8 +242,8 @@ class Db {
                 $qb->addOrderBy("u.$field", $way);
             }
         }
-        // file_put_contents('php://stderr', print_r($qb->getQuery()->getSQL(), TRUE).PHP_EOL);
-        // file_put_contents('php://stderr', print_r($qb->getQuery()->getParameters(), TRUE).PHP_EOL);
+         // file_put_contents('php://stderr', print_r($qb->getQuery()->getSQL(), TRUE).PHP_EOL);
+         // file_put_contents('php://stderr', print_r($qb->getQuery()->getParameters(), TRUE).PHP_EOL);
         return $qb->getQuery()->getResult();
     }
 

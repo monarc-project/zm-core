@@ -261,7 +261,7 @@ class ObjectExportService extends AbstractService
                         // il faut que le scope soit le même sinon souci potentiel sur l'impact des valeurs dans les instances (ex : on passe de local à global, toutes les instances choperaient la valeur globale)
                         'scope' => $data['object']['scope'],
                         // il faut bien sûr que le type d'actif soit identique sinon on mergerait des torchons et des serviettes, ça donne des torchettes et c'est pas cool
-                        'asset' => $assetId,
+                        'asset' => ['anr' => $anr->get('id'), 'uuid' => $assetId],
                         'category' => $idCateg
                     ]));
                     if (!empty($object)) {
@@ -302,7 +302,7 @@ class ObjectExportService extends AbstractService
                     // Si l'objet existe déjà, on risque de lui recréer des fils qu'il a déjà, dans ce cas faut détacher tous ses fils avant de lui re-rattacher (après import)
                     $links = $this->get('objectObjectService')->get('table')->getEntityByFields([
                         'anr' => $anr->get('id'),
-                        'father' => $object->get('id')
+                        'father' => ['anr' => $anr->get('id'),'uuid' => $object->get('uuid')->toString()]
                     ], ['position' => 'DESC']);
                     foreach ($links as $l) {
                         if (!empty($l)) {
@@ -346,8 +346,8 @@ class ObjectExportService extends AbstractService
                             $oo->setLanguage($this->getLanguage());
                             $oo->exchangeArray([
                                 'anr' => $anr->get('id'),
-                                'father' => $idObj,
-                                'child' => $child,
+                                'father' => ['anr' => $anr->get('id'), 'uuid' => $idObj],
+                                'child' => ['anr' => $anr->get('id'), 'uuid' => $child],
                                 'implicitPosition' => 2
                             ]);
                             $this->setDependencies($oo, ['father', 'child', 'anr']);

@@ -139,6 +139,8 @@ class InstanceTable extends AbstractEntityTable
             $return = $return->where('t.position >= :pos');
         }
         $return = $return->setParameter(':pos', $entity->get('position'));
+         // file_put_contents('php://stderr', print_r($return->getQuery()->getSQL(), TRUE).PHP_EOL);
+         // file_put_contents('php://stderr', print_r($return->getQuery()->getParameters(), TRUE).PHP_EOL);
         $return->getQuery()->getResult();
     }
 

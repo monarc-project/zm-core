@@ -302,22 +302,40 @@ abstract class AbstractEntityTable
                 }
             }
         }
+        $ids = $this->getClassMetadata()->getIdentifierFieldNames(); // fetch for the composite key
 
         $params = $entity->get('parameters');
         $clean_params = false;
-        if (isset($params['implicitPosition']['changes'])) {
-            if (isset($entity->parameters['implicitPosition']['root']) && (!$entity->id || $params['implicitPosition']['changes']['parent']['before'] != $params['implicitPosition']['changes']['parent']['after'])) {
-                $this->updateRootTree($entity, !$entity->id, $params['implicitPosition']['changes']);
-                $clean_params = true;
-            }
+        if(in_array('uuid',$ids)){ //uuid
+          if (isset($params['implicitPosition']['changes'])) {
+              if (isset($entity->parameters['implicitPosition']['root']) && (!$entity->uuid || $params['implicitPosition']['changes']['parent']['before'] != $params['implicitPosition']['changes']['parent']['after'])) {
+                  $this->updateRootTree($entity, !$entity->uuid, $params['implicitPosition']['changes']);
+                  $clean_params = true;
+              }
 
-            if (!$entity->id
-                || (isset($params['implicitPosition']['changes']['parent']) && $params['implicitPosition']['changes']['parent']['before'] != $params['implicitPosition']['changes']['parent']['after'])
-                || (isset($params['implicitPosition']['changes']['position']) && $params['implicitPosition']['changes']['position']['before'] != $params['implicitPosition']['changes']['position']['after'])
-            ) {
-                $this->autopose($entity, !$entity->id, $params['implicitPosition']['changes']);
-                $clean_params = true;
-            }
+              if ((!$entity->uuid)
+                  || (isset($params['implicitPosition']['changes']['parent']) && $params['implicitPosition']['changes']['parent']['before'] != $params['implicitPosition']['changes']['parent']['after'])
+                  || (isset($params['implicitPosition']['changes']['position']) && $params['implicitPosition']['changes']['position']['before'] != $params['implicitPosition']['changes']['position']['after'])
+              ) {
+                  $this->autopose($entity, !$entity->uuid, $params['implicitPosition']['changes']);
+                  $clean_params = true;
+              }
+          }
+        }else{ //id
+          if (isset($params['implicitPosition']['changes'])) {
+              if (isset($entity->parameters['implicitPosition']['root']) && (!$entity->id || $params['implicitPosition']['changes']['parent']['before'] != $params['implicitPosition']['changes']['parent']['after'])) {
+                  $this->updateRootTree($entity, !$entity->id, $params['implicitPosition']['changes']);
+                  $clean_params = true;
+              }
+
+              if ((!$entity->id)
+                  || (isset($params['implicitPosition']['changes']['parent']) && $params['implicitPosition']['changes']['parent']['before'] != $params['implicitPosition']['changes']['parent']['after'])
+                  || (isset($params['implicitPosition']['changes']['position']) && $params['implicitPosition']['changes']['position']['before'] != $params['implicitPosition']['changes']['position']['after'])
+              ) {
+                  $this->autopose($entity, !$entity->id, $params['implicitPosition']['changes']);
+                  $clean_params = true;
+              }
+          }
         }
 
         if ($clean_params) {
@@ -326,7 +344,6 @@ abstract class AbstractEntityTable
 
         if($this->getClassMetadata()->getIdentifierFieldNames())
         {
-          $ids = $this->getClassMetadata()->getIdentifierFieldNames(); // fetch for the composite key
           foreach ($ids as $key => $value) {
             if($value==='uuid' && !$entity->get('uuid') ) //uuid have to be generated and setted
               $entity->set('uuid', Uuid::uuid4());
@@ -336,8 +353,10 @@ abstract class AbstractEntityTable
         if ($entity->get('id'))
           $entity->set('id', $id);
         $entity->initParametersChanges();
-        if($entity->get('uuid'))
-          return $entity->get('uuid');
+        if($entity->get('uuid')){
+          is_string($entity->get('uuid'))?$uuid= $entity->get('uuid') : $uuid= $entity->get('uuid')->toString();
+          return $uuid;
+        }
         else
           return $id;
     }
