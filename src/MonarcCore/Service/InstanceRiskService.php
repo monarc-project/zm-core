@@ -107,8 +107,8 @@ class InstanceRiskService extends AbstractService
                     'amv' => $amv->uuid->toString(),
                     'asset' => $amv->asset->uuid->toString(),
                     'instance' => $instanceId,
-                    'threat' => $amv->threat->uuid->toString(),
-                    'vulnerability' => $amv->vulnerability->uuid->toString(),
+                    'threat' => $amv->getThreat()->getUuid()->toString(),
+                    'vulnerability' => $amv->getVulnerability()->getUuid()->toString(),
                 ];
                 $instanceRiskLastId = $this->create($data, ($nbAmvs == $i));
                 $i++;
