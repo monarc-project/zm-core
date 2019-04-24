@@ -15,6 +15,8 @@ use MonarcCore\Model\Table\ObjectObjectTable;
 use MonarcCore\Model\Table\ScaleTable;
 use MonarcCore\Traits\RiskTrait;
 
+use Doctrine\Common\Util\ClassUtils;
+
 use MonarcFO\Model\Table\UserAnrTable;
 
 use Ramsey\Uuid\Uuid;
@@ -535,7 +537,11 @@ abstract class AbstractService extends AbstractServiceFactory
             if (!is_null($value) && !empty($value) && !is_object($value)) {
                 if ($metadata->hasAssociation($propertyname)) {
                     $class = $metadata->getAssociationTargetClass($propertyname);
-                    $valueIdentifier = $entity->getDbAdapter()->getClassMetadata($class)->getIdentifierFieldNames(); //fetch the identifiers of the value to set
+                    if(ClassUtils::getRealClass($class) != 'MonarcFO\Model\Entity\Anr') //seems to have some bug with getDbadapter and anr and anr mustn t have uniqid or N identifier
+                      $valueIdentifier = $entity->getDbAdapter()->getClassMetadata(ClassUtils::getRealClass($class))->getIdentifierFieldNames(); //fetch the identifiers of the value to set
+                    else
+                      $valueIdentifier = null;
+
                     if (!is_array($value) || isset($value['id']) || isset($value['uuid'])) {
                       if(isset($value['uuid']) || Uuid::isValid($value) )
                         {
