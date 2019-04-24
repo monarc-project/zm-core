@@ -531,7 +531,7 @@ return array(
             'index' => 3,
             'label' => 'Deutsch'
         ),
-        'ne' => array(
+        'nl' => array(
             'index' => 4,
             'label' => 'Nederlands'
         ),
