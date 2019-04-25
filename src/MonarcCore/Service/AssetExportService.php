@@ -7,6 +7,9 @@
 
 namespace MonarcCore\Service;
 
+use Doctrine\ORM\Query\QueryException;
+use Doctrine\ORM\Query\MappingException;
+
 /**
  * Asset Service Export
  *
@@ -24,13 +27,19 @@ class AssetExportService extends AbstractService
      * @return array The exported data
      * @throws \MonarcCore\Exception\Exception
      */
-    public function generateExportArray($id, &$filename = "")
+    public function generateExportArray($id, $anr = null,&$filename = "")
     {
         if (empty($id)) {
             throw new \MonarcCore\Exception\Exception('Asset to export is required', 412);
         }
 
-        $entity = $this->get('table')->getEntity($id);
+        try{
+          $entity = $this->get('table')->getEntity(['uuid' => $id, "anr" => $anr]);
+        }
+        catch(MappingException | QueryException $e){
+          $entity = $this->get('table')->getEntity($id);
+        }
+
         if (empty($entity)) {
             throw new \MonarcCore\Exception\Exception('Asset not found', 412);
         }
@@ -38,7 +47,7 @@ class AssetExportService extends AbstractService
         $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $entity->get('code'));
 
         $assetObj = [
-            'id' => 'id',
+            'uuid' => 'uuid',
             'label1' => 'label1',
             'label2' => 'label2',
             'label3' => 'label3',
@@ -60,28 +69,22 @@ class AssetExportService extends AbstractService
         ];
         $amvService = $this->get('amvService');
         $amvTable = $amvService->get('table');
-
-        $amvResults = $amvTable->getRepository()
-            ->createQueryBuilder('t')
-            ->where("t.asset = :asset")
-            ->setParameter(':asset', $entity->get('id'));
         $anrId = $entity->get('anr');
-        if (empty($anrId)) {
-            $amvResults = $amvResults->andWhere('t.anr IS NULL');
-        } else {
-            $anrId = $anrId->get('id');
-            $amvResults = $amvResults->andWhere('t.anr = :anr')->setParameter(':anr', $anrId);
+        try{
+          $amvResults = $amvTable->getEntityByFields(['asset' => ['uuid' => $entity->getUuid()->toString(), 'anr' => $anrId]]);
+        }catch(QueryException | MappingException $e){
+          $amvResults = $amvTable->getEntityByFields(['asset' => $entity->getUuid()->toString(), 'anr' => $anrId]);
         }
-        $amvResults = $amvResults->getQuery()->getResult();
+
 
         foreach ($amvResults as $amv) {
             list(
-                $return['amvs'][$amv->get('id')],
+                $return['amvs'][$amv->get('uuid')->toString()],
                 $threats,
                 $vulns,
                 $themes,
                 $measures,
-                $soacategories) = $amvService->generateExportArray($amv);
+                $soacategories) = $amvService->generateExportArray($amv,$anrId);
             if (empty($return['threats'])) {
                 $return['threats'] = $threats;
             } else {

@@ -673,17 +673,17 @@ class AmvService extends AbstractService
      * @param Amv $amv The AMV entity to export
      * @return array The exported array
      */
-    public function generateExportArray($amv)
+    public function generateExportArray($amv, $anrId)
     {
         $amvObj = [
-            'id' => 'v',
+            'uuid' => 'v',
             'threat' => 'o',
             'vulnerability' => 'o',
             'measures' => 'o',
             'status' => 'v',
         ];
         $treatsObj = [
-            'id' => 'id',
+            'uuid' => 'uuid',
             'theme' => 'theme',
             'mode' => 'mode',
             'code' => 'code',
@@ -704,7 +704,7 @@ class AmvService extends AbstractService
             'qualification' => 'qualification',
         ];
         $vulsObj = [
-            'id' => 'id',
+            'uuid' => 'uuid',
             'mode' => 'mode',
             'code' => 'code',
             'label1' => 'label1',
@@ -760,19 +760,19 @@ class AmvService extends AbstractService
                     } else {
                         switch ($k) {
                             case 'threat':
-                                $o = $amv->get($k)->getJsonArray();
-                                $amvs[$k] = $o['id'];
-                                $threats[$o['id']] = $amv->get($k)->getJsonArray($treatsObj);
-                                if (!empty($threats[$o['id']]['theme'])) {
-                                    $threats[$o['id']]['theme'] = $threats[$o['id']]['theme']->getJsonArray($themesObj);
-                                    $themes[$threats[$o['id']]['theme']['id']] = $threats[$o['id']]['theme'];
-                                    $threats[$o['id']]['theme'] = $threats[$o['id']]['theme']['id'];
+                                $o = $amv->get($k);
+                                $amvs[$k] = $o->uuid->toString();
+                                $threats[$o->uuid->toString()] = $amv->get($k)->getJsonArray($treatsObj);
+                                if (!empty($threats[$o->uuid->toString()]['theme'])) {
+                                    $threats[$o->uuid->toString()]['theme'] = $threats[$o->uuid->toString()]['theme']->getJsonArray($themesObj);
+                                    $themes[$threats[$o->uuid->toString()]['theme']['id']] = $threats[$o->uuid->toString()]['theme'];
+                                    $threats[$o->uuid->toString()]['theme'] = $threats[$o->uuid->toString()]['theme']['id'];
                                 }
                                 break;
                             case 'vulnerability':
-                                $o = $amv->get($k)->getJsonArray();
-                                $amvs[$k] = $o['id'];
-                                $vulns[$o['id']] = $amv->get($k)->getJsonArray($vulsObj);
+                                $o = $amv->get($k);
+                                $amvs[$k] = $o->uuid->toString();
+                                $vulns[$o->uuid->toString()] = $amv->get($k)->getJsonArray($vulsObj);
                                 break;
                             case 'measures':
                                 $measuresList = $amv->get($k);

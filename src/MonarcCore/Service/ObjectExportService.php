@@ -8,6 +8,8 @@
 namespace MonarcCore\Service;
 
 use MonarcCore\Model\Entity\Anr;
+use Doctrine\ORM\Query\QueryException;
+use Doctrine\ORM\Query\MappingException;
 
 /**
  * Object Service Export
@@ -35,19 +37,24 @@ class ObjectExportService extends AbstractService
      * @return array The data
      * @throws \MonarcCore\Exception\Exception If the object is erroneous
      */
-    public function generateExportArray($id, &$filename = "")
+    public function generateExportArray($id,  $anr = null, &$filename = "")
     {
         if (empty($id)) {
             throw new \MonarcCore\Exception\Exception('Object to export is required', 412);
         }
-        $entity = $this->get('table')->getEntity($id);
+        try{
+          $entity = $this->get('table')->getEntity(['uuid' => $id, "anr" => $anr]);
+        }
+        catch(MappingException | QueryException $e){
+          $entity = $this->get('table')->getEntity($id);
+        }
 
         if (!$entity) {
             throw new \MonarcCore\Exception\Exception('Entity `id` not found.');
         }
 
         $objectObj = [
-            'id' => 'id',
+            'uuid' => 'uuid',
             'mode' => 'mode',
             'scope' => 'scope',
             'name1' => 'name1',
@@ -108,9 +115,9 @@ class ObjectExportService extends AbstractService
         $return['asset'] = null;
         $return['object']['asset'] = null;
         if (!empty($asset)) {
-            $asset = $asset->getJsonArray(['id']);
-            $return['object']['asset'] = $asset['id'];
-            $return['asset'] = $this->get('assetExportService')->generateExportArray($asset['id']);
+            $asset = $asset->getJsonArray(['uuid']);
+            $return['object']['asset'] = $asset['uuid'];
+            $return['asset'] = $this->get('assetExportService')->generateExportArray($asset['uuid'],$anr);
         }
 
         // Recovery of operational risks
@@ -136,14 +143,14 @@ class ObjectExportService extends AbstractService
         }
 
         // Recovery children(s)
-        $children = array_reverse($this->get('objectObjectService')->getChildren($entity->get('id'),$entity->get('anr')->get('id'))); // Le tri de cette fonction est "position DESC"
+        $children = array_reverse($this->get('objectObjectService')->getChildren($entity->get('uuid')->toString(),$entity->get('anr')->get('id'))); // Le tri de cette fonction est "position DESC"
         $return['children'] = null;
         if (!empty($children)) {
             $return['children'] = [];
             $place =1;
             foreach ($children as $child) {
-                $return['children'][$child->get('child')->get('id')] = $this->generateExportArray($child->get('child')->get('id'));
-                $return['children'][$child->get('child')->get('id')]['object']['position'] = $place;
+                $return['children'][$child->get('child')->get('uuid')->toString()] = $this->generateExportArray($child->get('child')->get('uuid')->toString(),$anr);
+                $return['children'][$child->get('child')->get('uuid')->toString()]['object']['position'] = $place;
                 $place ++;
             }
         }
