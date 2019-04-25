@@ -349,6 +349,8 @@ abstract class AbstractEntityTable
               $entity->set('uuid', Uuid::uuid4());
           }
         }
+        // file_put_contents('php://stderr', print_r('abstractentitytable::save', TRUE).PHP_EOL);
+        // file_put_contents('php://stderr', print_r(get_class($entity), TRUE).PHP_EOL);
         $id = $this->getDb()->save($entity, $last); // standard stuff for normal AI id
         if ($entity->get('id'))
           $entity->set('id', $id);
@@ -462,7 +464,7 @@ abstract class AbstractEntityTable
                   if(count($implicitPositionFieldIds)>1){
                     $subquery->andWhere($entity->parameters['implicitPosition']['field'].'.anr = :implicitPositionFieldAnr')
                             ->andWhere($entity->parameters['implicitPosition']['field'].'.uuid = :implicitPositionFieldUuid')
-                            ->setParameter(':implicitPositionFieldUuid' , $entity->get($entity->parameters['implicitPosition']['field'])->get('uuid')->toString())
+                            ->setParameter(':implicitPositionFieldUuid' , is_string($entity->get($entity->parameters['implicitPosition']['field'])->get('uuid'))?$entity->get($entity->parameters['implicitPosition']['field'])->get('uuid'):$entity->get($entity->parameters['implicitPosition']['field'])->get('uuid')->toString())
                             ->setParameter(':implicitPositionFieldAnr' , $entity->get('anr')->get('id'));
                   }else{
                     $bros->where('bro.' . $entity->parameters['implicitPosition']['field'] . ' = :parentid');
