@@ -171,12 +171,12 @@ class ObjectExportService extends AbstractService
         if (isset($data['type']) && $data['type'] == 'object' &&
             array_key_exists('version', $data) && $data['version'] == $this->getVersion()
         ) {
-
+          $monarc_version = $data['monarc_version']?$data['monarc_version']:""; //set the version of monarc to choose the right algo
             if (isset($data['object']['name' . $this->getLanguage()]) && isset($objectsCache['objects'][$data['object']['name' . $this->getLanguage()]])) {
                 return $objectsCache['objects'][$data['object']['name' . $this->getLanguage()]];
             }
             // import asset
-            $assetId = $this->get('assetService')->importFromArray($data['asset'], $anr, $objectsCache);
+            $assetId = $this->get('assetService')->importFromArray($monarc_version,$data['asset'], $anr, $objectsCache);
 
             if ($assetId) {
                 // import categories

@@ -705,8 +705,8 @@ abstract class AbstractEntityTable
               {
                 $subquery = $subquery->andWhere($params['field'] . '.anr = :fieldAnr')
                                   ->andWhere($params['field'] . '.uuid = :fieldUuid')
-                                  ->setParameter(':fieldAnr' , $entity->get($params['field'])->get('anr')->get('id'))
-                                  ->setParameter(':fieldUuid' , $entity->get($params['field'])->get('uuid')->toString());
+                                  ->setParameter(':fieldAnr' , $entity->get($params['field'])->getAnr()->getId())
+                                  ->setParameter(':fieldUuid' , $entity->get($params['field'])->getUuid()->toString());
 
 
               }else{
