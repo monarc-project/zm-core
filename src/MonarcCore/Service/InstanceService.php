@@ -1520,11 +1520,11 @@ class InstanceService extends AbstractService
             'with_eval' => $with_eval,
             //'with_controls_reco' => $with_controls_reco,
             'instance' => $entity->getJsonArray($objInstance),
-            'object' => $this->get('objectExportService')->generateExportArray($entity->get('object')->get('id')),
+            'object' => $this->get('objectExportService')->generateExportArray($entity->get('object')->get('uuid')->toString(),$entity->get('object')->get('anr')->getId()),
             // l'asset sera porté par l'objet
         ];
-        $return['instance']['asset'] = $entity->get('asset')->get('id');
-        $return['instance']['object'] = $entity->get('object')->get('id');
+        $return['instance']['asset'] = $entity->get('asset')->get('uuid')->toString();
+        $return['instance']['object'] = $entity->get('object')->get('uuid')->toString();
         $return['instance']['root'] = 0;
         $return['instance']['parent'] = $entity->get('parent') ? $entity->get('parent')->get('id') : 0;
         if(!$with_eval){ // if not with assessments, CID are inherited
@@ -1577,7 +1577,7 @@ class InstanceService extends AbstractService
         ];
 
         $treatsObj = [
-            'id' => 'id',
+            'uuid' => 'uuid',
             'mode' => 'mode',
             'code' => 'code',
             'label1' => 'label1',
@@ -1597,7 +1597,7 @@ class InstanceService extends AbstractService
             'qualification' => 'qualification',
         ];
         $vulsObj = [
-            'id' => 'id',
+            'uuid' => 'uuid',
             'mode' => 'mode',
             'code' => 'code',
             'label1' => 'label1',
@@ -1633,15 +1633,15 @@ class InstanceService extends AbstractService
             $return['risks'][$ir->get('id')] = $ir->getJsonArray($instanceRiskArray);
 
             $irAmv = $ir->get('amv');
-            $return['risks'][$ir->get('id')]['amv'] = empty($irAmv) ? null : $irAmv->get('id');
-            if (!empty($return['risks'][$ir->get('id')]['amv']) && empty($return['amvs'][$ir->get('amv')->get('id')])) {
+            $return['risks'][$ir->get('id')]['amv'] = is_null($irAmv) ? null : $irAmv->get('uuid')->toString();
+            if (!empty($return['risks'][$ir->get('id')]['amv']) && empty($return['amvs'][$ir->get('amv')->get('uuid')->toString()])) {
                 list(
                     $amv,
                     $threats,
                     $vulns,
                     $themes,
-                    $measures) = $this->get('amvService')->generateExportArray($ir->get('amv')); // TODO: measuress
-                $return['amvs'][$ir->get('amv')->get('id')] = $amv;
+                    $measures) = $this->get('amvService')->generateExportArray($ir->get('amv'),$ir->getAnr()->getId()); // TODO: measuress
+                $return['amvs'][$ir->get('amv')->get('uuid')->toString()] = $amv;
                 if (empty($return['threats'])) {
                     $return['threats'] = $threats;
                 } else {
@@ -1661,20 +1661,20 @@ class InstanceService extends AbstractService
 
             $threat = $ir->get('threat');
             if (!empty($threat)) {
-                if (empty($return['threats'][$ir->get('threat')->get('id')])) {
+                if (empty($return['threats'][$ir->get('threat')->get('uuid')->toString()])) {
                     $return['threats'][$ir->get('threat')->get('id')] = $ir->get('threat')->getJsonArray($treatsObj);
                 }
-                $return['risks'][$ir->get('id')]['threat'] = $ir->get('threat')->get('id');
+                $return['risks'][$ir->get('id')]['threat'] = $ir->get('threat')->get('uuid')->toString();
             } else {
                 $return['risks'][$ir->get('id')]['threat'] = null;
             }
 
             $vulnerability = $ir->get('vulnerability');
             if (!empty($vulnerability)) {
-                if (empty($return['vuls'][$ir->get('vulnerability')->get('id')])) {
+                if (empty($return['vuls'][$ir->get('vulnerability')->get('uuid')->toString()])) {
                     $return['vuls'][$ir->get('vulnerability')->get('id')] = $ir->get('vulnerability')->getJsonArray($vulsObj);
                 }
-                $return['risks'][$ir->get('id')]['vulnerability'] = $ir->get('vulnerability')->get('id');
+                $return['risks'][$ir->get('id')]['vulnerability'] = $ir->get('vulnerability')->get('uuid')->toString();
             } else {
                 $return['risks'][$ir->get('id')]['vulnerability'] = null;
             }
@@ -1704,7 +1704,7 @@ class InstanceService extends AbstractService
 
             if (!empty($recoIds) && $this->get('recommandationMeasureTable')) {
                 $measuresObj = [
-                    'id' => 'id',
+                    'uuid' => 'uuid',
                     'code' => 'code',
                     'status' => 'status',
                     'description1' => 'description1',
@@ -1719,8 +1719,8 @@ class InstanceService extends AbstractService
                 }
                 foreach ($links as $lk) {
                     if (!empty($lk)) {
-                        $return['recolinks'][$lk->get('recommandation')->get('id')][$lk->get('measure')->get('id')] = $lk->get('measure')->get('id');
-                        $return['measures'][$lk->get('measure')->get('id')] = $lk->get('measure')->getJsonArray($measuresObj);
+                        $return['recolinks'][$lk->get('recommandation')->get('id')][$lk->get('measure')->get('id')] = $lk->get('measure')->get('uuid')->toString();
+                        $return['measures'][$lk->get('measure')->get('uuid')->toString()] = $lk->get('measure')->getJsonArray($measuresObj);
                     }
                 }
             }
