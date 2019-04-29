@@ -1362,9 +1362,9 @@ class InstanceService extends AbstractService
             $instanceTable = $this->get('instanceTable');
 
             try{
-              $brothers = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $object->uuid->toString()]);
+              $brothers = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => is_string($object->uuid)?$object->uuid:$object->uuid->toString()]);
             }catch(MappingException | QueryException $e){
-              $brothers = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => ['uuid' => $object->uuid->toString(),'anr' =>$anrId]]);
+              $brothers = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => ['uuid' => is_string($object->uuid)?$object->uuid:$object->uuid->toString(),'anr' =>$anrId]]);
             }
         }
 

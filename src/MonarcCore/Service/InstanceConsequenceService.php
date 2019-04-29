@@ -152,12 +152,12 @@ class InstanceConsequenceService extends AbstractService
             try{
                 $brothers = $instanceTable->getEntityByFields([
                   'anr' => $anrId,
-                  'object' => $instanceConsequence->object->uuid->toString()
+                  'object' => is_string($instanceConsequence->object->uuid)?$instanceConsequence->object->uuid:$instanceConsequence->object->uuid->toString()
               ]);
             }catch(QueryException $e){
                 $brothers = $instanceTable->getEntityByFields([
                   'anr' => $anrId,
-                  'object' => ['uuid' => $instanceConsequence->object->uuid->toString(),'anr' => $anrId,]
+                  'object' => ['uuid' => is_string($instanceConsequence->object->uuid)?$instanceConsequence->object->uuid:$instanceConsequence->object->uuid->toString(),'anr' => $anrId,]
               ]);
             }
 

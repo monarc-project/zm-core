@@ -56,9 +56,9 @@ class InstanceRiskService extends AbstractService
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('instanceTable');
         try{
-          $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $object->uuid->toString()]);
+          $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => is_string($object->uuid)?$object->uuid :$object->uuid->toString()]);
         }catch(MappingException | QueryException $e){
-          $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => ['uuid' => $object->uuid->toString(), 'anr' => $anrId]]);
+          $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => ['uuid' => is_string($object->uuid)?$object->uuid :$object->uuid->toString(), 'anr' => $anrId]]);
         }
         if ($object->scope == MonarcObject::SCOPE_GLOBAL && count($instances) > 1) {
 
@@ -95,20 +95,20 @@ class InstanceRiskService extends AbstractService
             /** @var AmvTable $amvTable */
             $amvTable = $this->get('amvTable');
             if(in_array('anr',$this->get('assetTable')->getClassMetadata()->getIdentifierFieldNames()))
-              $amvs = $amvTable->getEntityByFields(['asset' => ['uuid' => $object->asset->uuid->toString(), 'anr' => $anrId ]]);
+              $amvs = $amvTable->getEntityByFields(['asset' => ['uuid' => is_string($object->asset->uuid)?$object->asset->uuid:$object->asset->uuid->toString(), 'anr' => $anrId ]]);
             else
-              $amvs = $amvTable->getEntityByFields(['asset' => $object->asset->uuid->toString()]);
+              $amvs = $amvTable->getEntityByFields(['asset' => is_string($object->asset->uuid)?$object->asset->uuid:$object->asset->uuid->toString()]);
 
             $nbAmvs = count($amvs);
             $i = 1;
             foreach ($amvs as $amv) {
                 $data = [
                     'anr' => $anrId,
-                    'amv' => $amv->uuid->toString(),
-                    'asset' => $amv->asset->uuid->toString(),
+                    'amv' => is_string($amv->uuid)?$amv->uuid:$amv->uuid->toString(),
+                    'asset' => is_string($amv->asset->uuid)?$amv->asset->uuid:$amv->asset->uuid->toString(),
                     'instance' => $instanceId,
-                    'threat' => $amv->getThreat()->getUuid()->toString(),
-                    'vulnerability' => $amv->getVulnerability()->getUuid()->toString(),
+                    'threat' => is_string($amv->getThreat()->getUuid())?$amv->getThreat()->getUuid():$amv->getThreat()->getUuid()->toString(),
+                    'vulnerability' => is_string($amv->getVulnerability()->getUuid())?$amv->getVulnerability()->getUuid():$amv->getVulnerability()->getUuid()->toString(),
                 ];
                 $instanceRiskLastId = $this->create($data, ($nbAmvs == $i));
                 $i++;
@@ -290,9 +290,9 @@ class InstanceRiskService extends AbstractService
                 /** @var InstanceTable $instanceTable */
                 $instanceTable = $this->get('instanceTable');
                 try{
-                  $instances = $instanceTable->getEntityByFields(['anr' => $entity->anr->id, 'object' => $object->uuid->toString()]);
+                  $instances = $instanceTable->getEntityByFields(['anr' => $entity->anr->id, 'object' => is_string($object->uuid)?$object->uuid:$object->uuid->toString()]);
                 }catch(QueryException | MappingException $e){
-                  $instances = $instanceTable->getEntityByFields(['anr' => $entity->anr->id, 'object' => ['anr' => $entity->anr->id, 'uuid' => $object->uuid->toString()]]);
+                  $instances = $instanceTable->getEntityByFields(['anr' => $entity->anr->id, 'object' => ['anr' => $entity->anr->id, 'uuid' => is_string($object->uuid)?$object->uuid:$object->uuid->toString()]]);
                 }
 
                 foreach ($instances as $instance) {
