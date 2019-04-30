@@ -270,7 +270,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
             //Get the position of the previous element
             $prec = $this->getDbAdapter()->getRepository(get_class($this))->createQueryBuilder('t')
                 ->select()
-                ->where('t.id = :previousid')
+                ->where('t.uuid = :previousid')
                 ->setParameter(':previousid', $previous);
             if (!empty($this->parameters['implicitPosition']['subField'])) {
                 foreach ($this->parameters['implicitPosition']['subField'] as $k) {
