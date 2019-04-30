@@ -350,7 +350,9 @@ abstract class AbstractEntity implements InputFilterAwareInterface
             }
 
             $max = $qb->getQuery()->getSingleScalarResult();
-            if (!$this->id || $parent_before != $parent_after) {
+            $parent_after_id = (is_array($parent_after)&&array_key_exists('uuid', $parent_after))?$parent_after['uuid']:$parent_after; //in case of uuid to compare just on the uuid
+
+            if ((!$this->id && !$this->uuid)  || $parent_before != $parent_after_id) {
                 $this->set('position', $max + 1);
             } else {//internal movement
                 $this->set('position', $max);//in this case we're not adding something, no +1
