@@ -323,12 +323,12 @@ abstract class AbstractEntity implements InputFilterAwareInterface
                 $qb->where(!is_null($parent_after) ? 't.' . $this->parameters['implicitPosition']['field'] . ' = :parentid' : 't.' . $this->parameters['implicitPosition']['field'] . ' IS NULL');
                 }
                 if (!is_null($parent_after)) {
-                  if(is_array($parent_after))
-                  {
-                    $qb->setParameter(':parentAnr', $parent_after['anr']);
-                    $qb->setParameter(':parentUuid', $parent_after['uuid']);
-                  }else
-                    $qb->setParameter(':parentid', $parent_after);
+                    if(is_array($parent_after)) {
+                        $qb->setParameter(':parentAnr', $parent_after['anr']);
+                        $qb->setParameter(':parentUuid', $parent_after['uuid']);
+                    } else {
+                        $qb->setParameter(':parentid', $parent_after);
+                    }
                 }
 
                 if (!empty($this->parameters['implicitPosition']['subField'])) {
