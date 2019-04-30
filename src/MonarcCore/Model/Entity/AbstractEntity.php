@@ -212,32 +212,32 @@ abstract class AbstractEntity implements InputFilterAwareInterface
         }
 
 
-        //Abstract handling on recursive trees
-        $parent_before = $parent_after = null;
+        // Abstract handling on recursive trees
+        // $parent_before = $parent_after = null;
+        //
+        // if (!$this->squeezeAutoPositionning && isset($this->parameters['implicitPosition']['field'])) {
+        //     $parent_before = $this->get($this->parameters['implicitPosition']['field']);
+        //     if (is_object($parent_before)) {
+        //         $parent_before = $parent_before->get('id');
+        //     }
+        //     $parent_after = array_key_exists($this->parameters['implicitPosition']['field'], $options) ? $options[$this->parameters['implicitPosition']['field']] : null;
+        //
+        //     $this->parameters['implicitPosition']['changes'] = [
+        //         'parent' => ['before' => $parent_before, 'after' => $parent_after]
+        //     ];
+        // }
 
-        if (!$this->squeezeAutoPositionning && isset($this->parameters['implicitPosition']['field'])) {
-            $parent_before = $this->get($this->parameters['implicitPosition']['field']);
-            if (is_object($parent_before)) {
-                $parent_before = $parent_before->get('id');
-            }
-            $parent_after = array_key_exists($this->parameters['implicitPosition']['field'], $options) ? $options[$this->parameters['implicitPosition']['field']] : null;
-
-            $this->parameters['implicitPosition']['changes'] = [
-                'parent' => ['before' => $parent_before, 'after' => $parent_after]
-            ];
-        }
-
-        //Absact handling of positions
-        if (!$this->squeezeAutoPositionning && isset($options['implicitPosition'])) {
-            $this->calculatePosition($options['implicitPosition'], isset($options['previous']) ? $options['previous'] : null, $parent_before, $parent_after, $options);
-            unset($options['implicitPosition']);
-            unset($options['previous']);
-        }
-        foreach ($options as $k => $v) {
-            if ($this->__isset($k) && isset($keys[$k])) {
-                $this->set($k, $v);
-            }
-        }
+        // Absact handling of positions
+        // if (!$this->squeezeAutoPositionning && isset($options['implicitPosition'])) {
+        //     $this->calculatePosition($options['implicitPosition'], isset($options['previous']) ? $options['previous'] : null, $parent_before, $parent_after, $options);
+        //     unset($options['implicitPosition']);
+        //     unset($options['previous']);
+        // }
+        // foreach ($options as $k => $v) {
+        //     if ($this->__isset($k) && isset($keys[$k])) {
+        //         $this->set($k, $v);
+        //     }
+        // }
 
         return $this;
     }
