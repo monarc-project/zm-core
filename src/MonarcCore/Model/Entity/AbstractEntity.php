@@ -199,8 +199,9 @@ abstract class AbstractEntity implements InputFilterAwareInterface
             throw new \MonarcCore\Exception\Exception(implode(", ", $field_errors), '412');
         }
 
-
+       file_put_contents('php://stderr', print_r($options, TRUE).PHP_EOL);
        $options = $filter->getValues();
+       file_put_contents('php://stderr', print_r($options, TRUE).PHP_EOL);
 
         if (isset($options['implicitPosition'])) {
             if (isset($options['position'])) {
@@ -271,7 +272,9 @@ abstract class AbstractEntity implements InputFilterAwareInterface
             $prec = $this->getDbAdapter()->getRepository(get_class($this))->createQueryBuilder('t')
                 ->select()
                 ->where('t.uuid = :previousid')
-                ->setParameter(':previousid', $previous);
+                ->andWhere('t.anr = :anrid')
+                ->setParameter(':previousid', $previous)
+                ->setParameter(':anrid', $options['anr']);
             if (!empty($this->parameters['implicitPosition']['subField'])) {
                 foreach ($this->parameters['implicitPosition']['subField'] as $k) {
                     $sub = $this->get($k);
