@@ -269,12 +269,20 @@ abstract class AbstractEntity implements InputFilterAwareInterface
             $this->set('position', 1);//heading
         } else if ($mode == self::IMP_POS_AFTER && !empty($previous)) {
             //Get the position of the previous element
-            $prec = $this->getDbAdapter()->getRepository(get_class($this))->createQueryBuilder('t')
-                ->select()
-                ->where('t.uuid = :previousid')
-                ->andWhere('t.anr = :anrid')
-                ->setParameter(':previousid', $previous)
-                ->setParameter(':anrid', $options['anr']);
+
+            if (array_key_exists('uuid', $options)) {
+                $prec = $this->getDbAdapter()->getRepository(get_class($this))->createQueryBuilder('t')
+                    ->select()
+                    ->where('t.uuid = :previousid')
+                    ->andWhere('t.anr = :anrid')
+                    ->setParameter(':previousid', $previous)
+                    ->setParameter(':anrid', $options['anr']);
+            } else {
+                $prec = $this->getDbAdapter()->getRepository(get_class($this))->createQueryBuilder('t')
+                    ->select()
+                    ->where('t.id = :previousid')
+                    ->setParameter(':previousid', $previous);
+            }
             if (!empty($this->parameters['implicitPosition']['subField'])) {
                 foreach ($this->parameters['implicitPosition']['subField'] as $k) {
                     $sub = $this->get($k);
@@ -402,7 +410,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
                                 'required' => false,
                                 'allow_empty' => true,
                                 'continue_if_empty' => true,
-                                'filters' => [['name' => 'ToInt']],
+                                // 'filters' => [['name' => 'ToInt']],
                                 'validators' => array()
                             ));
                             $inputFilter->add(array(
