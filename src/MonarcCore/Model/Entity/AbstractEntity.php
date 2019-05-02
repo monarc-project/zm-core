@@ -199,9 +199,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
             throw new \MonarcCore\Exception\Exception(implode(", ", $field_errors), '412');
         }
 
-       file_put_contents('php://stderr', print_r($options, TRUE).PHP_EOL);
        $options = $filter->getValues();
-       file_put_contents('php://stderr', print_r($options, TRUE).PHP_EOL);
 
         if (isset($options['implicitPosition'])) {
             if (isset($options['position'])) {
