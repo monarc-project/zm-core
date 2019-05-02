@@ -315,7 +315,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
                 $parent_after_id = (is_array($parent_after)&&array_key_exists('uuid', $parent_after))?$parent_after['uuid']:$parent_after;
                 if ($parent_after_id == $prec_parent_id || !$isParentable) {
                     $prec_position = $prec->get('position');
-                    $this->set('position', ((!$this->id  && !$this->uuid)|| $parent_before != $parent_after || $this->get('position') > $prec_position) ? $prec_position + 1 : $prec_position);
+                    $this->set('position', ((!$this->id  && !$this->uuid)|| $parent_before != $parent_after_id || $this->get('position') > $prec_position) ? $prec_position + 1 : $prec_position);
                 } else $fallback = true;//end
             } else $fallback = true;//end
         } else $fallback = true;//end
