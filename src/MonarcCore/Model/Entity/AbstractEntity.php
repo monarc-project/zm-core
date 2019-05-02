@@ -269,7 +269,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
             $this->set('position', 1);//heading
         } else if ($mode == self::IMP_POS_AFTER && !empty($previous)) {
             //Get the position of the previous element
-
+            $prec = null;
             if (array_key_exists('uuid', $options)) {
                 $prec = $this->getDbAdapter()->getRepository(get_class($this))->createQueryBuilder('t')
                     ->select()
@@ -312,9 +312,10 @@ abstract class AbstractEntity implements InputFilterAwareInterface
                   else
                     $prec_parent_id = is_null($prec->get($this->parameters['implicitPosition']['field'])) ? null : $prec->get($this->parameters['implicitPosition']['field'])->get('id');
                 }
-                if ($parent_after == $prec_parent_id || !$isParentable) {
+                $parent_after_id = (is_array($parent_after)&&array_key_exists('uuid', $parent_after))?$parent_after['uuid']:$parent_after;
+                if ($parent_after_id == $prec_parent_id || !$isParentable) {
                     $prec_position = $prec->get('position');
-                    $this->set('position', (!$this->id || $parent_before != $parent_after || $this->get('position') > $prec_position) ? $prec_position + 1 : $prec_position);
+                    $this->set('position', ((!$this->id  && !$this->uuid)|| $parent_before != $parent_after || $this->get('position') > $prec_position) ? $prec_position + 1 : $prec_position);
                 } else $fallback = true;//end
             } else $fallback = true;//end
         } else $fallback = true;//end
