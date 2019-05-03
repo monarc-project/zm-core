@@ -362,7 +362,6 @@ class AmvSuperclass extends AbstractEntity
                                               ->setParameter(':threat', $context['threat'])
                                               ->setParameter(':asset', $context['asset']);
                                         } else { //FO case
-                                          file_put_contents('php://stderr', print_r($context, TRUE).PHP_EOL);
                                            $res ->innerJoin('a.vulnerability','vulnerability')
                                                 ->innerJoin('a.threat','threat')
                                                 ->innerJoin('a.asset','asset')
