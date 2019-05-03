@@ -32,7 +32,6 @@ class ScaleImpactTypeService extends AbstractService
         6 => 'L',
         7 => 'F',
         8 => 'P',
-        9 => 'CUS',
     ];
 
     /**
@@ -52,14 +51,13 @@ class ScaleImpactTypeService extends AbstractService
         $scales = parent::getList($page, $limit, $order, $filter, $filterAnd);
 
         $types = $this->getTypes();
-        $revertTypes = array_flip($types);
 
         foreach ($scales as $key => $scale) {
             if (isset($scale['type'])) {
                 if (isset($types[$scale['type']])) {
                     $scales[$key]['type'] = $types[$scale['type']];
-                } elseif (isset($revertTypes[$scale['type']])) {
-                    // on ne fait rien, mais le type n'est pas bon
+                } else{
+                    $scales[$key]['type'] = 'CUS'; // Custom user-defined column
                 }
             }
         }
@@ -73,6 +71,7 @@ class ScaleImpactTypeService extends AbstractService
     public function create($data, $last = true)
     {
         $anrId = $data['anr'];
+        $scales = parent::getList(1,0, null, null, ['anr' => $anrId]);
 
         if (!isset($data['isSys'])) {
             $data['isSys'] = 0;
@@ -81,7 +80,7 @@ class ScaleImpactTypeService extends AbstractService
             $data['isSys'] = 0;
         }
         if (!isset($data['type'])) {
-            $data['type'] = 9;
+            $data['type'] = count($scales) + 1;
         }
 
         $class = $this->get('entity');
