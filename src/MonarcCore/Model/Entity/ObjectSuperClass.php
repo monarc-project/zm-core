@@ -429,57 +429,6 @@ class ObjectSuperClass extends AbstractEntity
             }
 
             $this->inputFilter->add(array(
-                'name' => 'c',
-                'required' => false,
-                'allow_empty' => true,
-                'continue_if_empty' => true,
-                'filters' => array(),
-                'validators' => array(
-                    array(
-                        'name' => 'InArray',
-                        'options' => array(
-                            'haystack' => [-1, 0, 1, 2, 3, 4],
-                        ),
-                        'default' => 0,
-                    ),
-                ),
-            ));
-
-            $this->inputFilter->add(array(
-                'name' => 'i',
-                'required' => false,
-                'allow_empty' => true,
-                'continue_if_empty' => true,
-                'filters' => array(),
-                'validators' => array(
-                    array(
-                        'name' => 'InArray',
-                        'options' => array(
-                            'haystack' => [-1, 0, 1, 2, 3, 4],
-                        ),
-                        'default' => 0,
-                    ),
-                ),
-            ));
-
-            $this->inputFilter->add(array(
-                'name' => 'd',
-                'required' => false,
-                'allow_empty' => true,
-                'continue_if_empty' => true,
-                'filters' => array(),
-                'validators' => array(
-                    array(
-                        'name' => 'InArray',
-                        'options' => array(
-                            'haystack' => [-1, 0, 1, 2, 3, 4],
-                        ),
-                        'default' => 0,
-                    ),
-                ),
-            ));
-
-            $this->inputFilter->add(array(
                 'name' => 'scope',
                 'required' => false,
                 'allow_empty' => true,
