@@ -512,7 +512,7 @@ class AmvService extends AbstractService
 
         foreach ($amvs as $amv) {
 
-            $amv = $this->get('table')->getEntity($amv['id']);
+            $amv = $this->get('table')->getEntity($amv['uuid']);
             $assetModels = ($asset || $follow) ? $models : null;
             $threatsModels = ($threat || $follow) ? $models : null;
             $vulnerabilityModels = ($vulnerability || $follow) ? $models : null;
@@ -627,13 +627,13 @@ class AmvService extends AbstractService
                 $amvVulnerabilitiesIds[$amv['vulnerabilityId']] = $amv['vulnerabilityId'];
             }
             if (!is_null($asset)) {
-                unset($amvAssetsIds[$asset->get('id')]);
+                unset($amvAssetsIds[is_string($asset->get('uuid'))?$asset->get('uuid'):$asset->get('uuid')->toString()]);
             }
             if (!is_null($threat)) {
-                unset($amvThreatsIds[$threat->get('id')]);
+                unset($amvThreatsIds[is_string($threat->get('uuid'))?$threat->get('uuid'):$threat->get('uuid')->toString()]);
             }
             if (!is_null($vulnerability)) {
-                unset($amvVulnerabilitiesIds[$vulnerability->get('id')]);
+                unset($amvVulnerabilitiesIds[is_string($vulnerability->get('uuid'))?$vulnerability->get('uuid'):$vulnerability->get('uuid')->toString()]);
             }
 
             if (count($amvAssetsIds)) {

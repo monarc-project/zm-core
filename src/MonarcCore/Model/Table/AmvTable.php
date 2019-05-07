@@ -25,30 +25,33 @@ class AmvTable extends AbstractEntityTable
     {
         $parameters = [];
         if (!is_null($asset)) {
-            $parameters['asset'] = $asset->getId();
+            $parameters['asset'] = is_string($asset->getUuid())?$asset->getUuid():$asset->getUuid()->toString();
         }
         if (!is_null($threat)) {
-            $parameters['threat'] = $threat->getId();
+            $parameters['threat'] = is_string($threat->getUuid())?$threat->getUuid():$threat->getUuid()->toString();
         }
         if (!is_null($vulnerability)) {
-            $parameters['vulnerability'] = $vulnerability->getId();
+            $parameters['vulnerability'] = is_string($vulnerability->getUuid())?$vulnerability->getUuid():$vulnerability->getUuid()->toString();
         }
 
         $amvs = $this->getRepository()->createQueryBuilder('amv')
             ->select(array(
-                'amv.id',
-                'IDENTITY(amv.asset) as assetId',
-                'IDENTITY(amv.threat) as threatId',
-                'IDENTITY(amv.vulnerability) as vulnerabilityId'
+                'amv.uuid',
+                'asset.uuid as assetId',
+                'threat.uuid as threatId',
+                'vulnerability.uuid as vulnerabilityId'
             ));
+        $amvs->innerJoin('amv.asset','asset')
+              ->innerJoin('amv.threat','threat')
+              ->innerJoin('amv.vulnerability','vulnerability');
 
         $first = true;
         foreach ($parameters as $parameter => $value) {
             if ($first) {
-                $amvs->where('amv.' . $parameter . ' = :' . $parameter);
+                $amvs->where( $parameter . '.uuid = :' . $parameter);
                 $first = false;
             } else {
-                $amvs->andWhere('amv.' . $parameter . ' = :' . $parameter);
+                $amvs->andWhere( $parameter . '.uuid = :' . $parameter);
             }
             $amvs->setParameter(':' . $parameter, $value);
         }
