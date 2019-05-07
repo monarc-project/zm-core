@@ -74,8 +74,10 @@ class ObjectService extends AbstractService
         $categoryTable = $this->get('categoryTable');
 
         $filterAnd = [];
-        if ((!is_null($asset)) && ($asset != 0)) {
-            $filterAnd['asset'] = $asset;
+        $assetsTab = [];
+        if ((!is_null($asset)) && ($asset != null)) {
+          $assetsTab[] = $asset;
+          $filterAnd['asset'] = ['op' => 'IN', 'value' => $assetsTab];
         }
         if ((!is_null($category)) && ($category != 0)) {
             if ($category > 0) {
