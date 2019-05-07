@@ -272,9 +272,11 @@ abstract class AbstractEntity implements InputFilterAwareInterface
                 $prec = $this->getDbAdapter()->getRepository(get_class($this))->createQueryBuilder('t')
                     ->select()
                     ->where('t.uuid = :previousid')
-                    ->andWhere('t.anr = :anrid')
-                    ->setParameter(':previousid', $previous)
-                    ->setParameter(':anrid', $options['anr']);
+                    ->setParameter(':previousid', $previous);
+                    if(array_key_exists('anr', $options) && !is_null($options['anr'])){ //fo with uuid
+                      $prec->andWhere('t.anr = :anrid')
+                            ->setParameter(':anrid', $options['anr']);
+                    }
             } else {
                 $prec = $this->getDbAdapter()->getRepository(get_class($this))->createQueryBuilder('t')
                     ->select()
