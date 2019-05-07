@@ -421,8 +421,10 @@ abstract class AbstractEntityTable
         $implicitPositionFieldIds = [];
         $classIdentifier = []; // the ids of the class
         $idName = 'id'; // the value of the name of the id (id or uuid) use for sql request
+
         if($this != null && isset($entity->parameters['implicitPosition']['field']) && $entity->getDbAdapter()!=null)
           $implicitPositionFieldIds = $entity->getDbAdapter()->getClassMetadata($this->getClassMetadata()->getAssociationTargetClass($entity->parameters['implicitPosition']['field']))->getIdentifierFieldNames();
+        $implicitPositionFieldMainId = (in_array('uuid',$implicitPositionFieldIds))?'uuid':'id';// the value of the name of the id (id or uuid) use for sql request for the implicit position
 
         if($entity != null )
           $classIdentifier = $this->getDb()->getClassMetadata(ClassUtils::getRealClass(get_class($entity)))->getIdentifierFieldNames();
@@ -468,7 +470,7 @@ abstract class AbstractEntityTable
                             ->setParameter(':implicitPositionFieldAnr', $entity->get('anr')->get('id'));
                   }else{
                     $bros->where('bro.' . $entity->parameters['implicitPosition']['field'] . ' = :parentid');
-                    $params[':parentid'] = $entity->get($entity->parameters['implicitPosition']['field'])->get($idName);
+                    $params[':parentid'] = $entity->get($entity->parameters['implicitPosition']['field'])->get($implicitPositionFieldMainId);
                   }
                 }
 
@@ -584,7 +586,7 @@ abstract class AbstractEntityTable
                             ->setParameter(':implicitPositionFieldAnr', $entity->get('anr')->get('id'));
                   }else{
                     $bros->where('bro.' . $entity->parameters['implicitPosition']['field'] . ' = :parentid');
-                    $params[':parentid'] = $entity->get($entity->parameters['implicitPosition']['field'])->get('id');
+                    $params[':parentid'] = $entity->get($entity->parameters['implicitPosition']['field'])->get($implicitPositionFieldMainId);
                   }
                 }
 
