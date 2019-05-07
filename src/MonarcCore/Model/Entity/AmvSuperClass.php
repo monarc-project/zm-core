@@ -8,6 +8,7 @@
 namespace MonarcCore\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Zend\Validator\Uuid;
 
 /**
  * Amv
@@ -23,11 +24,11 @@ use Doctrine\ORM\Mapping as ORM;
 class AmvSuperclass extends AbstractEntity
 {
     /**
-    * @var integer
-    *
-    * @ORM\Column(name="uuid", type="uuid", nullable=false)
-    * @ORM\Id
-    */
+     * @var integer
+     *
+     * @ORM\Column(name="uuid", type="uuid", nullable=false)
+     * @ORM\Id
+     */
     protected $uuid;
 
     /**
@@ -247,7 +248,8 @@ class AmvSuperclass extends AbstractEntity
     );
 
 
-    public function getFiltersForService(){
+    public function getFiltersForService()
+    {
         $filterJoin = [
             [
                 'as' => 'a',
@@ -307,21 +309,36 @@ class AmvSuperclass extends AbstractEntity
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);
 
-            $texts = ['vulnerability', 'asset'];
-
-            foreach ($texts as $text) {
-                $this->inputFilter->add(array(
-                    'name' => $text,
-                    'required' => ($partial) ? false : true,
-                    'allow_empty' => false,
-                    // 'filters' => array(
-                    //     array(
-                    //         'name' => 'Digits',
-                    //     ),
-                    // ),
-                    'validators' => array(),
-                ));
-            }
+            $this->inputFilter->add(array(
+                'name' => 'status',
+                'required' => ($partial) ? false : true,
+                'allow_empty' => false,
+                'validators' => array(
+                    array(
+                        'name' => 'Callback', //'\MonarcCore\Validator\Uuid',
+                        'options' => array(
+                            'messages' => array(
+                                \Zend\Validator\Callback::INVALID_VALUE => 'an uuid is missing or incorrect',
+                            ),
+                            'callback' => function ($value, $context = array()) use ($partial) {
+                                if (!$partial) {
+                                    $texts = ['threat', 'vulnerability', 'asset'];
+                                    foreach ($texts as $text) {
+                                        if (is_array($context[$text])) {
+                                            if (!preg_match(Uuid::REGEX_UUID, $context[$text]['uuid'])) return false;
+                                        } else {
+                                            if (!preg_match(Uuid::REGEX_UUID, $context[$text])) return false;
+                                        }
+                                    }
+                                    return true;
+                                } else {
+                                    return true;
+                                }
+                            },
+                        ),
+                    ),
+                ),
+            ));
 
             $this->inputFilter->add(array(
                 'name' => 'threat',
@@ -334,7 +351,7 @@ class AmvSuperclass extends AbstractEntity
                 // ),
                 'validators' => array(
                     array(
-                        'name' => 'Callback',//'\MonarcCore\Validator\UniqueAMV',
+                        'name' => 'Callback', //'\MonarcCore\Validator\UniqueAMV',
                         'options' => array(
                             'messages' => array(
                                 \Zend\Validator\Callback::INVALID_VALUE => 'This AMV link is already used',
@@ -348,23 +365,23 @@ class AmvSuperclass extends AbstractEntity
                                         $res = $adapter->getRepository(get_class($this))->createQueryBuilder('a')
                                             ->select(array('a.uuid'));
                                         if (empty($context['anr'])) {
-                                          $res->innerJoin('a.vulnerability','vulnerability')
-                                              ->innerJoin('a.threat','threat')
-                                              ->innerJoin('a.asset','asset')
-                                              ->where('vulnerability.uuid = :vulnerability')
-                                              ->andWhere('asset.uuid = :asset')
-                                              ->andWhere('threat.uuid = :threat')
-                                              ->andWhere('vulnerability.anr IS NULL')
-                                              ->andWhere('asset.anr IS NULL')
-                                              ->andWhere('threat.anr IS NULL ')
-                                              ->andWhere(' a.anr  IS NULL')
-                                              ->setParameter(':vulnerability', $context['vulnerability'])
-                                              ->setParameter(':threat', $context['threat'])
-                                              ->setParameter(':asset', $context['asset']);
+                                            $res->innerJoin('a.vulnerability', 'vulnerability')
+                                                ->innerJoin('a.threat', 'threat')
+                                                ->innerJoin('a.asset', 'asset')
+                                                ->where('vulnerability.uuid = :vulnerability')
+                                                ->andWhere('asset.uuid = :asset')
+                                                ->andWhere('threat.uuid = :threat')
+                                                ->andWhere('vulnerability.anr IS NULL')
+                                                ->andWhere('asset.anr IS NULL')
+                                                ->andWhere('threat.anr IS NULL ')
+                                                ->andWhere(' a.anr  IS NULL')
+                                                ->setParameter(':vulnerability', $context['vulnerability'])
+                                                ->setParameter(':threat', $context['threat'])
+                                                ->setParameter(':asset', $context['asset']);
                                         } else { //FO case
-                                           $res ->innerJoin('a.vulnerability','vulnerability')
-                                                ->innerJoin('a.threat','threat')
-                                                ->innerJoin('a.asset','asset')
+                                            $res->innerJoin('a.vulnerability', 'vulnerability')
+                                                ->innerJoin('a.threat', 'threat')
+                                                ->innerJoin('a.asset', 'asset')
                                                 ->where('vulnerability.uuid = :vulnerability ')
                                                 ->andWhere('asset.uuid = :asset ')
                                                 ->andWhere('threat.uuid = :threat ')
@@ -379,7 +396,7 @@ class AmvSuperclass extends AbstractEntity
                                         }
                                         $res = $res->getQuery()
                                             ->getResult();
-                                        $context['uuid'] = empty($context['uuid']) ? $this->get('uuid'): $context['uuid'];
+                                        $context['uuid'] = empty($context['uuid']) ? $this->get('uuid') : $context['uuid'];
                                         if (!empty($res) && $context['uuid'] != $res[0]['uuid']) {
                                             return false;
                                         }
