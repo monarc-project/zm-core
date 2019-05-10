@@ -80,6 +80,8 @@ class AmvService extends AbstractService
         }
         unset($data['measures']);
 
+        if($entity->changeUuid($data)) //check if we need a new uuid
+          $data['uuid'] = Uuid::uuid4()->toString();
         $entity->exchangeArray($data, true);
 
         $this->setDependencies($entity, $this->dependencies);
