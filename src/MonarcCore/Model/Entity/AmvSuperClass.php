@@ -8,7 +8,8 @@
 namespace MonarcCore\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Zend\Validator\Uuid;
+use Zend\Validator\Uuid as ValidatorUuid;
+use Ramsey\Uuid\Uuid;
 
 /**
  * Amv
@@ -247,6 +248,24 @@ class AmvSuperclass extends AbstractEntity
         ),
     );
 
+    /**
+      * Check if we need to change the uuid if asset or threat or vulnerability is not the same as before
+     * @param Array $context
+     * @return boolean
+     */
+    public function changeUuid($context)
+    {
+      if(!isset($context['uuid']))
+        return false;
+      $threat = !is_array($context['threat'])?$context['threat']:$context['threat']['uuid'];
+      $vuln = !is_array($context['vulnerability'])?$context['vulnerability']:$context['vulnerability']['uuid'];
+      $asset = !is_array($context['asset'])?$context['asset']:$context['asset']['uuid'];
+      if($this->threat->uuid->toString() != $threat || $this->vulnerability->uuid->toString() != $vuln || $this->asset->uuid->toString() != $asset) { //the amv doesnt exist and it's an edition we have to set new uuid
+          return true;
+      }
+      return false;
+    }
+
 
     public function getFiltersForService()
     {
@@ -373,16 +392,22 @@ class AmvSuperclass extends AbstractEntity
                                                 ->andWhere('asset.anr = :anr ')
                                                 ->andWhere('threat.anr = :anr ')
                                                 ->andWhere(' a.anr = :anr ')
-                                                ->setParameter(':vulnerability', $context['vulnerability']['uuid'])
-                                                ->setParameter(':threat', $context['threat']['uuid'])
-                                                ->setParameter(':asset', $context['asset']['uuid'])
+                                                ->setParameter(':vulnerability', !is_array($context['vulnerability'])?$context['vulnerability']:$context['vulnerability']['uuid'])
+                                                ->setParameter(':threat', !is_array($context['threat'])?$context['threat']:$context['threat']['uuid'])
+                                                ->setParameter(':asset', !is_array($context['asset'])?$context['asset']:$context['asset']['uuid'])
                                                 ->setParameter(':anr', $context['anr']);
                                         }
                                         $res = $res->getQuery()
                                             ->getResult();
-                                        $context['uuid'] = empty($context['uuid']) ? $this->get('uuid') : $context['uuid'];
-                                        if (!empty($res) && $context['uuid'] != $res[0]['uuid']) {
-                                            return false;
+                                        $amvUuid= empty($context['uuid']) ? $this->get('uuid') : $context['uuid'];
+                                        if(empty($context['uuid'])){ //creation
+                                          if (!empty($res) && $amvUuid != $res[0]['uuid']) {
+                                              return false;
+                                          }
+                                        }else { //edition
+                                          if (!empty($res) && $amvUuid != $res[0]['uuid']) { //the amv link is existing
+                                              return false;
+                                          }
                                         }
                                     }
                                     return true;
@@ -411,9 +436,9 @@ class AmvSuperclass extends AbstractEntity
                                     $texts = ['threat', 'vulnerability', 'asset'];
                                     foreach ($texts as $text) {
                                         if (is_array($context[$text])) {
-                                            if (!preg_match(Uuid::REGEX_UUID, $context[$text]['uuid'])) return false;
+                                            if (!preg_match(ValidatorUuid::REGEX_UUID, $context[$text]['uuid'])) return false;
                                         } else {
-                                            if (!preg_match(Uuid::REGEX_UUID, $context[$text])) return false;
+                                            if (!preg_match(ValidatorUuid::REGEX_UUID, $context[$text])) return false;
                                         }
                                     }
                                     return true;
