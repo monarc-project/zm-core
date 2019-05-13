@@ -49,7 +49,8 @@ class AddRecommandations extends AbstractMigration
             ->addColumn('created_at', 'datetime', array('null' => true))
             ->addColumn('updater', 'string', array('null' => true, 'limit' => 255))
             ->addColumn('updated_at', 'datetime', array('null' => true))
-            ->addIndex(array('anr_id','code'))
+            ->addIndex(array('anr_id'))
+            ->addIndex(array('anr_id','code'), array('name' => 'anr_id_2'))
             ->addIndex(array('uuid'))
             ->create();
 
