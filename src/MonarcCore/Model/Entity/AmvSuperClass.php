@@ -391,11 +391,6 @@ class AmvSuperclass extends AbstractEntity
                 'name' => 'threat',
                 'required' => ($partial) ? false : true,
                 'allow_empty' => false,
-                // 'filters' => array(
-                //     array(
-                //         'name' => 'Digits',
-                //     ),
-                // ),
                 'validators' => array(
                     array(
                         'name' => 'Callback', //'\MonarcCore\Validator\UniqueAMV',
