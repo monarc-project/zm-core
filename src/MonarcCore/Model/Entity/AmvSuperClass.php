@@ -87,14 +87,14 @@ class AmvSuperclass extends AbstractEntity
      *
      * @ORM\Column(name="position", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $position = '1';
+    protected $position = 1;
 
     /**
      * @var smallint
      *
      * @ORM\Column(name="status", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $status = '1';
+    protected $status = 1;
 
     /**
      * @var string
