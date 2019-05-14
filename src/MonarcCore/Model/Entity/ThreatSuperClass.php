@@ -111,14 +111,14 @@ class ThreatSuperClass extends AbstractEntity
      *
      * @ORM\Column(name="status", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $status = '1';
+    protected $status = 1;
 
     /**
      * @var smallint
      *
-     * @ORM\Column(name="mode", type="smallint", options={"unsigned":true, "default":1})
+     * @ORM\Column(name="mode", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $mode = '1';
+    protected $mode = 0;
 
     /**
      * @var string
@@ -132,35 +132,35 @@ class ThreatSuperClass extends AbstractEntity
      *
      * @ORM\Column(name="trend", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $trend = '0';
+    protected $trend = 0;
 
     /**
      * @var smallint
      *
      * @ORM\Column(name="qualification", type="smallint", options={"unsigned":false, "default":-1})
      */
-    protected $qualification = '-1';
+    protected $qualification = -1;
 
     /**
      * @var smallint
      *
      * @ORM\Column(name="c", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $c = '1';
+    protected $c = 1;
 
     /**
      * @var smallint
      *
      * @ORM\Column(name="i", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $i = '1';
+    protected $i = 1;
 
     /**
      * @var smallint
      *
      * @ORM\Column(name="a", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $a = '1';
+    protected $a = 1;
 
     /**
      * @var text
