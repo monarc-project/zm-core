@@ -105,16 +105,16 @@ class AssetSuperClass extends AbstractEntity
     /**
      * @var smallint
      *
-     * @ORM\Column(name="mode", type="smallint", options={"unsigned":true, "default":1})
+     * @ORM\Column(name="mode", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $mode = '1';
+    protected $mode = 0;
 
     /**
      * @var smallint
      *
      * @ORM\Column(name="type", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $type = '1';
+    protected $type = 1;
 
     /**
      * @var string
