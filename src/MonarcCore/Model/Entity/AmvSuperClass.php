@@ -373,7 +373,7 @@ class AmvSuperclass extends AbstractEntity
                                 ),
                                 'callback' => function ($value, $context = array()) use ($partial) {
                                     if (!$partial) {
-                                        if (!preg_match(ValidatorUuid::REGEX_UUID, $value['uuid'])) {
+                                        if (!preg_match(ValidatorUuid::REGEX_UUID, is_array($value) ? $value['uuid'] : $value)) {
                                             return false;
                                         }
                                         return true;
