@@ -300,9 +300,9 @@ class InstanceRiskService extends AbstractService
                         if ($entity->specific == 0) {
                             if ($entity->amv) {
                                 try{
-                                  $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $instance->id, 'amv' => $entity->amv->uuid->toString()]);
+                                  $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $instance->id, 'amv' => is_string($entity->amv->uuid)?$entity->amv->uuid:$entity->amv->uuid->toString()]);
                                 }catch(QueryException | MappingException $e){
-                                  $instancesRisks = $instanceRiskTable->getEntityByFields([ 'amv' => ['anr' =>$entity->anr->id ,'uuid' => $entity->amv->uuid->toString()], 'instance' => $instance->id]);
+                                  $instancesRisks = $instanceRiskTable->getEntityByFields([ 'amv' => ['anr' =>$entity->anr->id ,'uuid' => is_string($entity->amv->uuid)?$entity->amv->uuid:$entity->amv->uuid->toString()], 'instance' => $instance->id]);
                                 }
                             } else {
                                 try{
