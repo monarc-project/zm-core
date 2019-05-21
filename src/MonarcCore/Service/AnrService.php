@@ -423,7 +423,7 @@ class AnrService extends AbstractService
 
 
                 $deliveryTable = $this->get('deliveryTable');
-                for ($i=0; $i <= 4; $i++) {
+                for ($i=0; $i <= 5; $i++) {
                     $deliveries = $deliveryTable->getEntityByFields(['anr' => $entity->get('id') , 'typedoc' => $i ], ['id'=>'ASC']);
                     $deliveryArray = [
                         'id' => 'id',
