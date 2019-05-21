@@ -1642,7 +1642,7 @@ class InstanceService extends AbstractService
                     $threats,
                     $vulns,
                     $themes,
-                    $measures) = $this->get('amvService')->generateExportArray($ir->get('amv'),$ir->getAnr()->getId()); // TODO: measuress
+                    $measures) = $this->get('amvService')->generateExportArray($ir->get('amv'),$ir->getAnr()->getId());
                 $return['amvs'][$ir->get('amv')->get('uuid')->toString()] = $amv;
                 if (empty($return['threats'])) {
                     $return['threats'] = $threats;
@@ -1664,7 +1664,7 @@ class InstanceService extends AbstractService
             $threat = $ir->get('threat');
             if (!empty($threat)) {
                 if (empty($return['threats'][$ir->get('threat')->get('uuid')->toString()])) {
-                    $return['threats'][$ir->get('threat')->get('id')] = $ir->get('threat')->getJsonArray($treatsObj);
+                    $return['threats'][$ir->get('threat')->get('uuid')->toString()] = $ir->get('threat')->getJsonArray($treatsObj);
                 }
                 $return['risks'][$ir->get('id')]['threat'] = $ir->get('threat')->get('uuid')->toString();
             } else {
@@ -1674,7 +1674,7 @@ class InstanceService extends AbstractService
             $vulnerability = $ir->get('vulnerability');
             if (!empty($vulnerability)) {
                 if (empty($return['vuls'][$ir->get('vulnerability')->get('uuid')->toString()])) {
-                    $return['vuls'][$ir->get('vulnerability')->get('id')] = $ir->get('vulnerability')->getJsonArray($vulsObj);
+                    $return['vuls'][$ir->get('vulnerability')->get('uuid')->toString()] = $ir->get('vulnerability')->getJsonArray($vulsObj);
                 }
                 $return['risks'][$ir->get('id')]['vulnerability'] = $ir->get('vulnerability')->get('uuid')->toString();
             } else {

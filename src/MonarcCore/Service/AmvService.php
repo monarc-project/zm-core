@@ -720,21 +720,6 @@ class AmvService extends AbstractService
             'description4' => 'description4',
             'status' => 'status',
         ];
-        $threatObj = [
-            'uuid' => 'uuid',
-            'mode' => 'mode',
-            'type' => 'type',
-            'code' => 'code',
-            'label1' => 'label1',
-            'label2' => 'label2',
-            'label3' => 'label3',
-            'label4' => 'label4',
-            'description1' => 'description1',
-            'description2' => 'description2',
-            'description3' => 'description3',
-            'description4' => 'description4',
-            'status' => 'status',
-        ];
         $themesObj = [
             'id' => 'id',
             'label1' => 'label1',
@@ -795,7 +780,6 @@ class AmvService extends AbstractService
                             case 'asset':
                                 $o = $amv->get($k);
                                 $amvs[$k] = $o->uuid->toString();
-                                $vulns[$o->uuid->toString()] = $amv->get($k)->getJsonArray($threatObj);
                                 break;
                             case 'measures':
                                 $measuresList = $amv->get($k);
