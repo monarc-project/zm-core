@@ -52,6 +52,7 @@ class InstanceService extends AbstractService
     protected $instanceRiskOpService;
     protected $objectObjectService;
     protected $translateService;
+    protected $configService;
 
     // TODO: This was marked as useless (deprecated) but it's still used in code?
     protected $instanceTable;
@@ -1516,7 +1517,8 @@ class InstanceService extends AbstractService
 
         $return = [
             'type' => 'instance',
-            'version' => $this->getVersion(),
+            //'version' => $this->getVersion(),
+            'monarc_version' => $this->get('configService')->getAppVersion()['appVersion'],
             'with_eval' => $with_eval,
             //'with_controls_reco' => $with_controls_reco,
             'instance' => $entity->getJsonArray($objInstance),
