@@ -40,6 +40,7 @@ class AnrService extends AbstractService
     protected $measureMeasureTable;
     protected $soaCategoryTable;
     protected $soaTable;
+    protected $configService;
 
 
     /**
@@ -249,7 +250,8 @@ class AnrService extends AbstractService
 
         $return = [
             'type' => 'anr',
-            'version' => $this->getVersion(),
+            //'version' => $this->getVersion(),
+            'monarc_version' => $this->get('configService')->getAppVersion()['appVersion'],
             'instances' => [],
             'with_eval' => $with_eval,
             //'with_controls_reco' => $with_controls_reco,
