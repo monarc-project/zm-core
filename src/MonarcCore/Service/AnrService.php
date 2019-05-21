@@ -527,7 +527,10 @@ class AnrService extends AbstractService
                 $return['method']['threats'][$t->id] = $t->getJsonArray($threatArray);
                 if (isset($t->theme->id)) {
                     $return['method']['threats'][$t->id]['theme']['id'] = $t->theme->id;
-                    $return['method']['threats'][$t->id]['theme']['label' . $this->getLanguage()] = $t->theme->get('label' . $this->getLanguage());
+                    $return['method']['threats'][$t->id]['theme']['label1'] = $t->theme->label1;
+                    $return['method']['threats'][$t->id]['theme']['label2'] = $t->theme->label2;
+                    $return['method']['threats'][$t->id]['theme']['label3'] = $t->theme->label3;
+                    $return['method']['threats'][$t->id]['theme']['label4'] = $t->theme->label4;
                 }
             }
 
