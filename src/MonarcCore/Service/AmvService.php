@@ -680,6 +680,7 @@ class AmvService extends AbstractService
         $amvObj = [
             'uuid' => 'v',
             'threat' => 'o',
+            'asset' => 'o',
             'vulnerability' => 'o',
             'measures' => 'o',
             'status' => 'v',
@@ -708,6 +709,21 @@ class AmvService extends AbstractService
         $vulsObj = [
             'uuid' => 'uuid',
             'mode' => 'mode',
+            'code' => 'code',
+            'label1' => 'label1',
+            'label2' => 'label2',
+            'label3' => 'label3',
+            'label4' => 'label4',
+            'description1' => 'description1',
+            'description2' => 'description2',
+            'description3' => 'description3',
+            'description4' => 'description4',
+            'status' => 'status',
+        ];
+        $threatObj = [
+            'uuid' => 'uuid',
+            'mode' => 'mode',
+            'type' => 'type',
             'code' => 'code',
             'label1' => 'label1',
             'label2' => 'label2',
@@ -775,6 +791,11 @@ class AmvService extends AbstractService
                                 $o = $amv->get($k);
                                 $amvs[$k] = $o->uuid->toString();
                                 $vulns[$o->uuid->toString()] = $amv->get($k)->getJsonArray($vulsObj);
+                                break;
+                            case 'asset':
+                                $o = $amv->get($k);
+                                $amvs[$k] = $o->uuid->toString();
+                                $vulns[$o->uuid->toString()] = $amv->get($k)->getJsonArray($threatObj);
                                 break;
                             case 'measures':
                                 $measuresList = $amv->get($k);
