@@ -505,7 +505,7 @@ class AnrService extends AbstractService
             $threatTable = $this->get('threatTable');
             $threats = $threatTable->getEntityByFields(['anr' => $entity->get('id')]);
             $threatArray = [
-                'id' => 'id',
+                'uuid' => 'uuid',
                 'code' => 'code',
                 'label1' => 'label1',
                 'label2' => 'label2',
@@ -526,10 +526,10 @@ class AnrService extends AbstractService
 
             foreach ($threats as $t) {
 
-                $return['method']['threats'][$t->id] = $t->getJsonArray($threatArray);
+                $return['method']['threats'][$t->uuid->toString()] = $t->getJsonArray($threatArray);
                 if (isset($t->theme->id)) {
-                    $return['method']['threats'][$t->id]['theme']['id'] = $t->theme->id;
-                    $return['method']['threats'][$t->id]['theme']['label' . $this->getLanguage()] = $t->theme->get('label' . $this->getLanguage());
+                    $return['method']['threats'][$t->uuid->toString()]['theme']['id'] = $t->theme->id;
+                    $return['method']['threats'][$t->uuid->toString()]['theme']['label' . $this->getLanguage()] = $t->theme->get('label' . $this->getLanguage());
                 }
             }
 
