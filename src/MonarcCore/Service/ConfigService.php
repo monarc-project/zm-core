@@ -72,6 +72,13 @@ class ConfigService extends AbstractService
         ];
     }
 
+    public function getMospApiUrl()
+    {
+        return [
+            'mospApiUrl' => isset($this->config['mospApiUrl']) ? $this->config['mospApiUrl'] : 'https://objects.monarc.lu/api/v1/',
+        ];
+    }
+
     public function getTerms()
     {
         return [
