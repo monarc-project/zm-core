@@ -519,21 +519,20 @@ class AnrService extends AbstractService
                 'i' => 'i',
                 'd' => 'd',
                 'trend' => 'trend',
-                'theme' => [],
                 'comment' => 'comment',
                 'qualification' => 'qualification',
             ];
 
-            foreach ($threats as $t) {
 
+            foreach ($threats as $t) {
                 $return['method']['threats'][$t->uuid->toString()] = $t->getJsonArray($threatArray);
                 if (isset($t->theme->id)) {
                     $return['method']['threats'][$t->uuid->toString()]['theme']['id'] = $t->theme->id;
                     $return['method']['threats'][$t->uuid->toString()]['theme']['label' . $this->getLanguage()] = $t->theme->get('label' . $this->getLanguage());
-                    $return['method']['threats'][$t->id]['theme']['label1'] = $t->theme->label1;
-                    $return['method']['threats'][$t->id]['theme']['label2'] = $t->theme->label2;
-                    $return['method']['threats'][$t->id]['theme']['label3'] = $t->theme->label3;
-                    $return['method']['threats'][$t->id]['theme']['label4'] = $t->theme->label4;
+                    $return['method']['threats'][$t->uuid->toString()]['theme']['label1'] = $t->theme->label1;
+                    $return['method']['threats'][$t->uuid->toString()]['theme']['label2'] = $t->theme->label2;
+                    $return['method']['threats'][$t->uuid->toString()]['theme']['label3'] = $t->theme->label3;
+                    $return['method']['threats'][$t->uuid->toString()]['theme']['label4'] = $t->theme->label4;
                 }
             }
 
