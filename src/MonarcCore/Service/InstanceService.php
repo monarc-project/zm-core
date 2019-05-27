@@ -77,9 +77,11 @@ class InstanceService extends AbstractService
         file_put_contents('php://stderr', print_r($data, TRUE).PHP_EOL);
         try{
           $object = $this->get('objectTable')->getEntity($data['object']);
-        }catch(MappingException | QueryException $e){
+        }catch(MappingException $e){
           $object = $this->get('objectTable')->getEntity(['uuid' => $data['object'],'anr'=>$anrId]);
-        }
+      } catch (QueryException $e) {
+          $object = $this->get('objectTable')->getEntity(['uuid' => $data['object'],'anr'=>$anrId]);
+      }
 
         //verify if user is authorized to instantiate this object
         $authorized = false;
@@ -1364,8 +1366,10 @@ class InstanceService extends AbstractService
 
             try{
               $brothers = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => is_string($object->uuid)?$object->uuid:$object->uuid->toString()]);
-            }catch(MappingException | QueryException $e){
+            }catch(MappingException $e){
               $brothers = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => ['uuid' => is_string($object->uuid)?$object->uuid:$object->uuid->toString(),'anr' =>$anrId]]);
+            } catch (QueryException $e) {
+                $brothers = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => ['uuid' => is_string($object->uuid)?$object->uuid:$object->uuid->toString(),'anr' =>$anrId]]);
             }
         }
 

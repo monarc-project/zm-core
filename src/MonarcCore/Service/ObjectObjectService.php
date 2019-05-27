@@ -194,9 +194,11 @@ class ObjectObjectService extends AbstractService
         {
           try{
             return $table->getEntityByFields(['father' => $objectId], ['position' => 'DESC']);
-          }catch(MappingException | QueryException $e){
+          }catch(MappingException $e){
             return $table->getEntityByFields(['father' => ['uuid' => $objectId, 'anr' => $anrId]], ['position' => 'DESC']);
-          }
+        } catch (QueryException $e) {
+            return $table->getEntityByFields(['father' => ['uuid' => $objectId, 'anr' => $anrId]], ['position' => 'DESC']);
+        }
         }else {
           return null;
         }

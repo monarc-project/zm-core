@@ -36,8 +36,10 @@ class AssetExportService extends AbstractService
         try{
           $entity = $this->get('table')->getEntity(['uuid' => $id, "anr" => $anr]);
         }
-        catch(MappingException | QueryException $e){
+        catch(MappingException $e){
           $entity = $this->get('table')->getEntity($id);
+        } catch (QueryException $e) {
+             $entity = $this->get('table')->getEntity($id);
         }
 
         if (empty($entity)) {
@@ -72,9 +74,11 @@ class AssetExportService extends AbstractService
         $anrId = $entity->get('anr');
         try{
           $amvResults = $amvTable->getEntityByFields(['asset' => ['uuid' => $entity->getUuid()->toString(), 'anr' => $anrId]]);
-        }catch(QueryException | MappingException $e){
+        }catch(QueryException $e){
           $amvResults = $amvTable->getEntityByFields(['asset' => $entity->getUuid()->toString(), 'anr' => $anrId]);
-        }
+      } catch(MappingException $e) {
+          $amvResults = $amvTable->getEntityByFields(['asset' => $entity->getUuid()->toString(), 'anr' => $anrId]);
+      }
 
 
         foreach ($amvResults as $amv) {

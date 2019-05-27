@@ -588,7 +588,9 @@ class ObjectService extends AbstractService
 
         try{
           $object = $this->get('table')->getEntity($id);
-        }catch(QueryException | MappingException $e){
+        }catch(QueryException $e){
+          $object = $this->get('table')->getEntity(['uuid' => $id, 'anr' => $data['anr']]);
+        } catch (MappingException $e) {
           $object = $this->get('table')->getEntity(['uuid' => $id, 'anr' => $data['anr']]);
         }
         if (!$object) {
@@ -1129,8 +1131,10 @@ class ObjectService extends AbstractService
         $objectObjectTable = $this->get('objectObjectTable');
         try{
           $links = $objectObjectTable->getEntityByFields(['anr' => ($context == MonarcObject::BACK_OFFICE) ? 'null' : $anrId, 'child' => $objectId]);
-        }catch(QueryException | MappingException $e){
+        }catch(QueryException $e){
           $links = $objectObjectTable->getEntityByFields(['anr' => ($context == MonarcObject::BACK_OFFICE) ? 'null' : $anrId, 'child' => ['uuid' => $objectId, 'anr' => $anrId]]);
+        } catch (MappingException $e) {
+            $links = $objectObjectTable->getEntityByFields(['anr' => ($context == MonarcObject::BACK_OFFICE) ? 'null' : $anrId, 'child' => ['uuid' => $objectId, 'anr' => $anrId]]);
         }
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('instanceTable');
@@ -1140,8 +1144,10 @@ class ObjectService extends AbstractService
             $fatherInstancesIds = [];
             try{
               $fatherInstances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $link->father->uuid->toString()]);
-            }catch(QueryException | MappingException $e){
+            } catch(QueryException $e){
               $fatherInstances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => ['anr' => $anrId,'uuid' => $link->father->uuid->toString()]]);
+            } catch (MappingException $e) {
+                $fatherInstances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => ['anr' => $anrId,'uuid' => $link->father->uuid->toString()]]);
             }
             foreach ($fatherInstances as $fatherInstance) {
                 $fatherInstancesIds[] = $fatherInstance->id;
@@ -1150,8 +1156,10 @@ class ObjectService extends AbstractService
             //retrieve instance with link child object and delete instance child if parent id is concern by link
             try{
               $childInstances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $link->child->uuid->toString()]);
-            }catch(QueryException | MappingException $e){
+            }catch(QueryException $e){
               $childInstances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => ['anr' => $anrId, 'uuid' => $link->child->uuid->toString()]]);
+            } catch (MappingException $e) {
+                $childInstances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => ['anr' => $anrId, 'uuid' => $link->child->uuid->toString()]]);
             }
             foreach ($childInstances as $childInstance) {
                 if (in_array($childInstance->parent->id, $fatherInstancesIds)) {
@@ -1196,7 +1204,9 @@ class ObjectService extends AbstractService
         $instanceTable = $this->get('instanceTable');
         try{
           $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $objectId]);
-        }catch(MappingException | QueryException $e){
+        }catch(MappingException $e){
+          $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => ['anr' => $anrId,'uuid' => $objectId]]);
+        } catch(QueryException $e) {
           $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => ['anr' => $anrId,'uuid' => $objectId]]);
         }
         $i = 1;
