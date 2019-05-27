@@ -54,7 +54,7 @@ class InstanceRiskOpService extends AbstractService
             $instanceTable = $this->get('instanceTable');
             try{
               $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $object->uuid->toString()]);
-            }catch(QueryException | MappingException $e){
+            }catch(QueryException || MappingException $e){
               $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => ['anr' => $anrId ,'uuid' => $object->uuid->toString()]]);
             }
 
