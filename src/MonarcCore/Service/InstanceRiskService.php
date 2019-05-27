@@ -57,7 +57,7 @@ class InstanceRiskService extends AbstractService
         $instanceTable = $this->get('instanceTable');
         try{
           $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => is_string($object->uuid)?$object->uuid :$object->uuid->toString()]);
-        }catch(MappingException | QueryException $e){
+      }catch(MappingException || QueryException $e){
           $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => ['uuid' => is_string($object->uuid)?$object->uuid :$object->uuid->toString(), 'anr' => $anrId]]);
         }
         if ($object->scope == MonarcObject::SCOPE_GLOBAL && count($instances) > 1) {
