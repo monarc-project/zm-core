@@ -575,10 +575,9 @@ abstract class AbstractService extends AbstractServiceFactory
                           $dep = $db->getReference($class, $value);
                           $entity->set($propertyname, $dep);
                       } catch (\Exception $e) {
-
                           foreach ($value as $v) {
                               if (!is_null($v) && !empty($v) && !is_object($v)) {
-                                  $dep = $db->getReference($class, $v);
+                                  $dep = $db->getReference($class, $v['uuid']);
                                   if (!$dep->id &&!$dep->uuid) {
                                       throw new \MonarcCore\Exception\Exception('Entity does not exist', 412);
                                   }
