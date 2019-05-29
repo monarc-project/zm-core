@@ -22,6 +22,7 @@ use MonarcCore\Model\Table\ObjectObjectTable;
 use MonarcCore\Model\Table\MonarcObjectTable;
 use Doctrine\ORM\Mapping\MappingException;
 use Doctrine\ORM\Query\QueryException;
+use Doctrine\ORM\ORMException;
 
 /**
  * Object Service
@@ -96,15 +97,21 @@ class ObjectService extends AbstractService
 
         foreach ($objects as $object) {
             if (!empty($object['asset'])) {
-              if($anr !=null)
-                $object['asset'] = $assetTable->get(['uuid' => $object['asset']->getUuid()->toString(),'anr'=>$anr]);
-              else
-                $object['asset'] = $assetTable->get($object['asset']->getUuid());
+                if ($anr != null) {
+                    try {
+                        $object['asset'] = $assetTable->get(['uuid' => $object['asset']->getUuid()->toString(), 'anr'=>$anr]);
+                    } catch (ORMException $e) {
+                        // section used when the request comes from a back office
+                        $object['asset'] = $assetTable->get(['uuid' => $object['asset']->getUuid()->toString()]);
+                    }
+                }
+                else {
+                    $object['asset'] = $assetTable->get($object['asset']->getUuid());
+                }
             }
             if (!empty($object['category'])) {
                 $object['category'] = $categoryTable->get($object['category']->getId());
             }
-
             $rootArray[$object['uuid']->toString()] = $object;
         }
         return array_values($rootArray);
@@ -1423,7 +1430,6 @@ class ObjectService extends AbstractService
      */
     public function export(&$data)
     {
-      file_put_contents('php://stderr', print_r($data, TRUE).PHP_EOL);
         if (empty($data['id'])) {
             throw new \MonarcCore\Exception\Exception('Object to export is required', 412);
         }

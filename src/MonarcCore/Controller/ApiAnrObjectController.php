@@ -85,4 +85,3 @@ class ApiAnrObjectController extends AbstractController
         return new JsonModel($this->getService()->getParents($matcher->getParam('anrid'), $matcher->getParam('id')));
     }
 }
-
