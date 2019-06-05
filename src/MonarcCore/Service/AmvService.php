@@ -80,6 +80,8 @@ class AmvService extends AbstractService
         }
         unset($data['measures']);
 
+        if($entity->changeUuid($data)) //check if we need a new uuid
+          $data['uuid'] = Uuid::uuid4()->toString();
         $entity->exchangeArray($data, true);
 
         $this->setDependencies($entity, $this->dependencies);
@@ -581,7 +583,7 @@ class AmvService extends AbstractService
 
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('instanceTable');
-        $instances = $instanceTable->getEntityByFields(['asset' => $asset->uuid->toString()]);
+        $instances = $instanceTable->getEntityByFields(['asset' => is_string($asset->get('uuid'))?$asset->get('uuid'):$asset->get('uuid')->toString()]);
 
         if (!empty($instances)) {
             $anrs = [];
@@ -678,6 +680,7 @@ class AmvService extends AbstractService
         $amvObj = [
             'uuid' => 'v',
             'threat' => 'o',
+            'asset' => 'o',
             'vulnerability' => 'o',
             'measures' => 'o',
             'status' => 'v',
@@ -773,6 +776,10 @@ class AmvService extends AbstractService
                                 $o = $amv->get($k);
                                 $amvs[$k] = $o->uuid->toString();
                                 $vulns[$o->uuid->toString()] = $amv->get($k)->getJsonArray($vulsObj);
+                                break;
+                            case 'asset':
+                                $o = $amv->get($k);
+                                $amvs[$k] = $o->uuid->toString();
                                 break;
                             case 'measures':
                                 $measuresList = $amv->get($k);

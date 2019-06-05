@@ -45,8 +45,10 @@ class ObjectExportService extends AbstractService
         try{
           $entity = $this->get('table')->getEntity(['uuid' => $id, "anr" => $anr]);
         }
-        catch(MappingException | QueryException $e){
+        catch(MappingException $e){
           $entity = $this->get('table')->getEntity($id);
+        } catch (QueryException $e) {
+            $entity = $this->get('table')->getEntity($id);
         }
 
         if (!$entity) {
@@ -168,8 +170,7 @@ class ObjectExportService extends AbstractService
      */
     public function importFromArray($data, $anr, $modeImport = 'merge', &$objectsCache = [])
     {
-        if (isset($data['type']) && $data['type'] == 'object' &&
-            array_key_exists('version', $data) && $data['version'] == $this->getVersion()
+        if (isset($data['type']) && $data['type'] == 'object'
         ) {
           $monarc_version = $data['monarc_version']?$data['monarc_version']:""; //set the version of monarc to choose the right algo
             if (isset($data['object']['name' . $this->getLanguage()]) && isset($objectsCache['objects'][$data['object']['name' . $this->getLanguage()]])) {

@@ -22,6 +22,7 @@ use MonarcCore\Model\Table\ObjectObjectTable;
 use MonarcCore\Model\Table\MonarcObjectTable;
 use Doctrine\ORM\Mapping\MappingException;
 use Doctrine\ORM\Query\QueryException;
+use Doctrine\ORM\ORMException;
 
 /**
  * Object Service
@@ -96,15 +97,21 @@ class ObjectService extends AbstractService
 
         foreach ($objects as $object) {
             if (!empty($object['asset'])) {
-              if($anr !=null)
-                $object['asset'] = $assetTable->get(['uuid' => $object['asset']->getUuid()->toString(),'anr'=>$anr]);
-              else
-                $object['asset'] = $assetTable->get($object['asset']->getUuid());
+                if ($anr != null) {
+                    try {
+                        $object['asset'] = $assetTable->get(['uuid' => $object['asset']->getUuid()->toString(), 'anr'=>$anr]);
+                    } catch (ORMException $e) {
+                        // section used when the request comes from a back office
+                        $object['asset'] = $assetTable->get(['uuid' => $object['asset']->getUuid()->toString()]);
+                    }
+                }
+                else {
+                    $object['asset'] = $assetTable->get($object['asset']->getUuid());
+                }
             }
             if (!empty($object['category'])) {
                 $object['category'] = $categoryTable->get($object['category']->getId());
             }
-
             $rootArray[$object['uuid']->toString()] = $object;
         }
         return array_values($rootArray);
@@ -211,7 +218,11 @@ class ObjectService extends AbstractService
         // Retrieve children recursively
         /** @var ObjectObjectService $objectObjectService */
         $objectObjectService = $this->get('objectObjectService');
-        $object_arr['children'] = $objectObjectService->getRecursiveChildren($object_arr['uuid']->toString(), $anr);
+        if ($object->anr->id == null) {
+            $object_arr['children'] = $objectObjectService->getRecursiveChildren($object_arr['uuid']->toString(), null);
+        } else {
+            $object_arr['children'] = $objectObjectService->getRecursiveChildren($object_arr['uuid']->toString(), $anr);
+        }
 
         // Calculate the risks table
         $object_arr['risks'] = $this->getRisks($object);
@@ -588,7 +599,9 @@ class ObjectService extends AbstractService
 
         try{
           $object = $this->get('table')->getEntity($id);
-        }catch(QueryException | MappingException $e){
+        }catch(QueryException $e){
+          $object = $this->get('table')->getEntity(['uuid' => $id, 'anr' => $data['anr']]);
+        } catch (MappingException $e) {
           $object = $this->get('table')->getEntity(['uuid' => $id, 'anr' => $data['anr']]);
         }
         if (!$object) {
@@ -1129,8 +1142,10 @@ class ObjectService extends AbstractService
         $objectObjectTable = $this->get('objectObjectTable');
         try{
           $links = $objectObjectTable->getEntityByFields(['anr' => ($context == MonarcObject::BACK_OFFICE) ? 'null' : $anrId, 'child' => $objectId]);
-        }catch(QueryException | MappingException $e){
+        }catch(QueryException $e){
           $links = $objectObjectTable->getEntityByFields(['anr' => ($context == MonarcObject::BACK_OFFICE) ? 'null' : $anrId, 'child' => ['uuid' => $objectId, 'anr' => $anrId]]);
+        } catch (MappingException $e) {
+            $links = $objectObjectTable->getEntityByFields(['anr' => ($context == MonarcObject::BACK_OFFICE) ? 'null' : $anrId, 'child' => ['uuid' => $objectId, 'anr' => $anrId]]);
         }
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('instanceTable');
@@ -1140,8 +1155,10 @@ class ObjectService extends AbstractService
             $fatherInstancesIds = [];
             try{
               $fatherInstances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $link->father->uuid->toString()]);
-            }catch(QueryException | MappingException $e){
+            } catch(QueryException $e){
               $fatherInstances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => ['anr' => $anrId,'uuid' => $link->father->uuid->toString()]]);
+            } catch (MappingException $e) {
+                $fatherInstances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => ['anr' => $anrId,'uuid' => $link->father->uuid->toString()]]);
             }
             foreach ($fatherInstances as $fatherInstance) {
                 $fatherInstancesIds[] = $fatherInstance->id;
@@ -1150,8 +1167,10 @@ class ObjectService extends AbstractService
             //retrieve instance with link child object and delete instance child if parent id is concern by link
             try{
               $childInstances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $link->child->uuid->toString()]);
-            }catch(QueryException | MappingException $e){
+            }catch(QueryException $e){
               $childInstances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => ['anr' => $anrId, 'uuid' => $link->child->uuid->toString()]]);
+            } catch (MappingException $e) {
+                $childInstances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => ['anr' => $anrId, 'uuid' => $link->child->uuid->toString()]]);
             }
             foreach ($childInstances as $childInstance) {
                 if (in_array($childInstance->parent->id, $fatherInstancesIds)) {
@@ -1196,7 +1215,9 @@ class ObjectService extends AbstractService
         $instanceTable = $this->get('instanceTable');
         try{
           $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $objectId]);
-        }catch(MappingException | QueryException $e){
+        }catch(MappingException $e){
+          $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => ['anr' => $anrId,'uuid' => $objectId]]);
+        } catch(QueryException $e) {
           $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => ['anr' => $anrId,'uuid' => $objectId]]);
         }
         $i = 1;
@@ -1413,7 +1434,6 @@ class ObjectService extends AbstractService
      */
     public function export(&$data)
     {
-      file_put_contents('php://stderr', print_r($data, TRUE).PHP_EOL);
         if (empty($data['id'])) {
             throw new \MonarcCore\Exception\Exception('Object to export is required', 412);
         }

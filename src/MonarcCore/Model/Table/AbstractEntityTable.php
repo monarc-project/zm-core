@@ -406,14 +406,14 @@ abstract class AbstractEntityTable
      */
     protected function autopose($entity, $was_new, $changes = [], $force_new = false)
     {
-      // file_put_contents('php://stderr', print_r('was new', TRUE).PHP_EOL);
-      // file_put_contents('php://stderr', print_r($was_new, TRUE).PHP_EOL);
-      // file_put_contents('php://stderr', print_r('changes', TRUE).PHP_EOL);
-      // file_put_contents('php://stderr', print_r($changes, TRUE).PHP_EOL);
-      // file_put_contents('php://stderr', print_r('$force_new', TRUE).PHP_EOL);
-      // file_put_contents('php://stderr', print_r($force_new, TRUE).PHP_EOL);
-      // file_put_contents('php://stderr', print_r('implicit', TRUE).PHP_EOL);
-      // file_put_contents('php://stderr', print_r($entity->parameters['implicitPosition'], TRUE).PHP_EOL);
+        // file_put_contents('php://stderr', print_r('was new', TRUE).PHP_EOL);
+        // file_put_contents('php://stderr', print_r($was_new, TRUE).PHP_EOL);
+        // file_put_contents('php://stderr', print_r('changes', TRUE).PHP_EOL);
+        // file_put_contents('php://stderr', print_r($changes, TRUE).PHP_EOL);
+        // file_put_contents('php://stderr', print_r('$force_new', TRUE).PHP_EOL);
+        // file_put_contents('php://stderr', print_r($force_new, TRUE).PHP_EOL);
+        // file_put_contents('php://stderr', print_r('implicit', TRUE).PHP_EOL);
+        // file_put_contents('php://stderr', print_r($entity->parameters['implicitPosition'], TRUE).PHP_EOL);
 
         //objects could be sorted even if they haven't a parent field
         $isParentable = !isset($entity->parameters['isParentRelative']) || $entity->parameters['isParentRelative'];
@@ -451,15 +451,14 @@ abstract class AbstractEntityTable
                 ':position' => $entity->get('position'),
                 ':id' => $entity->get($idName) === null ? '' : $entity->get($idName) //specific to the TIPs below
             ];
-
             $bros = $this->getRepository()->createQueryBuilder('bro')
                 ->update()->set("bro.position", "bro.position + 1")->where("1 = 1");
             if ($isParentable) {
               if($entity->parameters['implicitPosition']['field'])
                 if (is_null($entity->get($entity->parameters['implicitPosition']['field']))) {
                   if(count($implicitPositionFieldIds)>1){
-                    $subquery->andWhere($this->parameters['implicitPosition']['field'].'.anr IS NULL')
-                          ->andWhere($this->parameters['implicitPosition']['field'].'.uuid IS NULL');
+                    $subquery->andWhere($entity->parameters['implicitPosition']['field'].'.anr IS NULL')
+                          ->andWhere($entity->parameters['implicitPosition']['field'].'.uuid IS NULL');
                   }else
                     $bros->andWhere('bro.' . $entity->parameters['implicitPosition']['field'] . ' IS NULL');
                 } else {
@@ -513,8 +512,8 @@ abstract class AbstractEntityTable
             if ($isParentable) {//by security - inverse never should happen in this case
                 if (is_null($changes['parent']['before'])) {
                   if(count($implicitPositionFieldIds)>1){
-                    $subquery->where($this->parameters['implicitPosition']['field'].'.anr IS NULL')
-                          ->andWhere($this->parameters['implicitPosition']['field'].'.uuid IS NULL');
+                    $subquery->where($entity->parameters['implicitPosition']['field'].'.anr IS NULL')
+                       ->andWhere($entity->parameters['implicitPosition']['field'].'.uuid IS NULL');
                   }else
                     $bros->where('bro.' . $entity->parameters['implicitPosition']['field'] . ' IS NULL');
                 } else {
@@ -540,6 +539,7 @@ abstract class AbstractEntityTable
                     }
                 }
             }
+
             $bros = $bros->andWhere('bro.position >= :position');
             if(count($implicitPositionFieldIds)>1)
             {
@@ -574,8 +574,8 @@ abstract class AbstractEntityTable
                 $parentWhere = 'bro.' . $entity->parameters['implicitPosition']['field'] . ' = :parentid';
                 if (is_null($entity->get($entity->parameters['implicitPosition']['field']))) {
                   if(count($implicitPositionFieldIds)>1){
-                    $subquery->where($this->parameters['implicitPosition']['field'].'.anr IS NULL')
-                          ->andWhere($this->parameters['implicitPosition']['field'].'.uuid IS NULL');
+                    $subquery->where($entity->parameters['implicitPosition']['field'].'.anr IS NULL')
+                          ->andWhere($entity->parameters['implicitPosition']['field'].'.uuid IS NULL');
                   }else
                     $bros->where('bro.' . $entity->parameters['implicitPosition']['field'] . ' IS NULL');
                 } else {

@@ -216,8 +216,10 @@ class RolfRiskService extends AbstractService
                 $instanceRiskOpTable = $this->get('instanceRiskOpTable');
                 try{
                   $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['object' => $object->uuid->toString(), 'rolfRisk' => $id]);
-                }catch(QueryException | MappingException $e){
+                }catch(QueryException $e){
                   $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['object' => ['anr' => $data['anr'],'uuid' => $object->uuid->toString()], 'rolfRisk' => $id]);
+                } catch (MappingException $e) {
+                    $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['object' => ['anr' => $data['anr'],'uuid' => $object->uuid->toString()], 'rolfRisk' => $id]);
                 }
                 $i = 1;
                 $nbInstancesRisksOp = count($instancesRisksOp);
@@ -237,8 +239,10 @@ class RolfRiskService extends AbstractService
                 $instanceTable = $this->get('instanceTable');
                 try{
                   $instances = $instanceTable->getEntityByFields(['object' => $object->uuid->toString()]);
-                }catch(QueryException | MappingException $e){
+                }catch(QueryException $e){
                   $instances = $instanceTable->getEntityByFields(['object' => ['anr' => $data['anr'],'uuid' => $object->uuid->toString()]]);
+                } catch (MappingException $e) {
+                    $instances = $instanceTable->getEntityByFields(['object' => ['anr' => $data['anr'],'uuid' => $object->uuid->toString()]]);
                 }
                 $i = 1;
                 $nbInstances = count($instances);
@@ -275,8 +279,10 @@ class RolfRiskService extends AbstractService
             $instanceRiskOpTable = $this->get('instanceRiskOpTable');
             try{
               $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['object' => $object->uuid->toString(), 'rolfRisk' => $id] );
-            }catch(QueryException | MappingException $e){
+            }catch(QueryException $e){
               $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['object' => ['anr' => $data['anr'],'uuid' => $object->uuid->toString()], 'rolfRisk' => $id]);
+            } catch (MappingException $e) {
+                $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['object' => ['anr' => $data['anr'],'uuid' => $object->uuid->toString()], 'rolfRisk' => $id]);
             }
 
             $nbInstances = count($instancesRisksOp);

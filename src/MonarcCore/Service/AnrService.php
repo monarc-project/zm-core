@@ -40,6 +40,7 @@ class AnrService extends AbstractService
     protected $measureMeasureTable;
     protected $soaCategoryTable;
     protected $soaTable;
+    protected $configService;
 
 
     /**
@@ -249,7 +250,8 @@ class AnrService extends AbstractService
 
         $return = [
             'type' => 'anr',
-            'version' => $this->getVersion(),
+            //'version' => $this->getVersion(),
+            'monarc_version' => $this->get('configService')->getAppVersion()['appVersion'],
             'instances' => [],
             'with_eval' => $with_eval,
             //'with_controls_reco' => $with_controls_reco,
@@ -423,7 +425,7 @@ class AnrService extends AbstractService
 
 
                 $deliveryTable = $this->get('deliveryTable');
-                for ($i=0; $i <= 4; $i++) {
+                for ($i=0; $i <= 5; $i++) {
                     $deliveries = $deliveryTable->getEntityByFields(['anr' => $entity->get('id') , 'typedoc' => $i ], ['id'=>'ASC']);
                     $deliveryArray = [
                         'id' => 'id',
@@ -503,7 +505,7 @@ class AnrService extends AbstractService
             $threatTable = $this->get('threatTable');
             $threats = $threatTable->getEntityByFields(['anr' => $entity->get('id')]);
             $threatArray = [
-                'id' => 'id',
+                'uuid' => 'uuid',
                 'code' => 'code',
                 'label1' => 'label1',
                 'label2' => 'label2',
@@ -517,17 +519,20 @@ class AnrService extends AbstractService
                 'i' => 'i',
                 'd' => 'd',
                 'trend' => 'trend',
-                'theme' => [],
                 'comment' => 'comment',
                 'qualification' => 'qualification',
             ];
 
-            foreach ($threats as $t) {
 
-                $return['method']['threats'][$t->id] = $t->getJsonArray($threatArray);
+            foreach ($threats as $t) {
+                $return['method']['threats'][$t->uuid->toString()] = $t->getJsonArray($threatArray);
                 if (isset($t->theme->id)) {
-                    $return['method']['threats'][$t->id]['theme']['id'] = $t->theme->id;
-                    $return['method']['threats'][$t->id]['theme']['label' . $this->getLanguage()] = $t->theme->get('label' . $this->getLanguage());
+                    $return['method']['threats'][$t->uuid->toString()]['theme']['id'] = $t->theme->id;
+                    $return['method']['threats'][$t->uuid->toString()]['theme']['label' . $this->getLanguage()] = $t->theme->get('label' . $this->getLanguage());
+                    $return['method']['threats'][$t->uuid->toString()]['theme']['label1'] = $t->theme->label1;
+                    $return['method']['threats'][$t->uuid->toString()]['theme']['label2'] = $t->theme->label2;
+                    $return['method']['threats'][$t->uuid->toString()]['theme']['label3'] = $t->theme->label3;
+                    $return['method']['threats'][$t->uuid->toString()]['theme']['label4'] = $t->theme->label4;
                 }
             }
 
