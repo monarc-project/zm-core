@@ -524,6 +524,7 @@ abstract class AbstractService extends AbstractServiceFactory
             $db = $this->get('table')->getDb();
         }
         $metadata = $db->getClassMetadata(get_class($entity));
+        $entity->setDbAdapter($db);
 
         foreach ($dependencies as $dependency) {
             $deptable = $propertyname = $dependency;
