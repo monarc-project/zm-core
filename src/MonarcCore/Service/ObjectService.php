@@ -1052,10 +1052,11 @@ class ObjectService extends AbstractService
         $table = $this->get('table');
 
         if (!is_object($object)) {
-          if($anrId !=null)
-            $object = $table->getEntity(['uuid' =>$object, 'anr'=>$anrId]);
-          else
+          try{
             $object = $table->getEntity($object);
+          }catch(MappingException $e){
+            $object = $table->getEntity(['uuid' =>$object, 'anr'=>$anrId]);
+          }
         }
 
         if (!$object) {

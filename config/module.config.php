@@ -206,7 +206,7 @@ return array(
                 'options' => array(
                     'route' => '/api/anr/:anrid/library[/:id]',
                     'constraints' => array(
-                        'id' => '[0-9]+',
+                        'id' => '[a-f0-9-]*',
                     ),
                     'defaults' => array(
                         'controller' => 'MonarcCore\Controller\ApiAnrLibrary',
