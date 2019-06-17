@@ -57,11 +57,10 @@ class PasswordStrength extends AbstractValidator
             $isValid = false;
         }
 
-        if (!preg_match('/[\W]/', $value)) {
+        if (!preg_match('/[\W_]/', $value)) {
             $this->error(self::SPECIAL);
             $isValid = false;
         }
         return $isValid;
     }
 }
-
