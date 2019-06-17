@@ -277,6 +277,7 @@ class ObjectExportService extends AbstractService
                     if (!empty($object)) {
                         $object->setDbAdapter($this->get('table')->getDb());
                         $object->setLanguage($this->getLanguage());
+                        unset($data['object']['uuid']); //we keep the uuid of the original anr
                     }
                     // Si il existe, c'est bien, on ne fera pas de "new"
                     // Sinon, on passera dans la création d'un nouvel "object"
@@ -284,6 +285,12 @@ class ObjectExportService extends AbstractService
 
                 $toExchange = $data['object'];
                 if (empty($object)) {
+                    try{
+                      if(isset($toExchange['uuid']) && !is_null($toExchange['uuid'])){
+                        $this->get('table')->getEntity(['uuid' => $toExchange['uuid'], 'anr' => $anr->get('id')]);
+                        unset($toExchange['uuid']);
+                      } //if the uuid is in the DB drop it to have a new one and avoid conflict
+                    }catch(\MonarcCore\Exception\Exception $e){}
                     $class = $this->get('table')->getClass();
                     $object = new $class();
                     $object->setDbAdapter($this->get('table')->getDb());
