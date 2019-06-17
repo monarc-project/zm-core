@@ -232,7 +232,7 @@ return array(
                 'options' => array(
                     'route' => '/api/anr/:anrid/objects/:id/parents',
                     'constraints' => array(
-                        'id' => '[0-9]+',
+                        'id' => '[a-f0-9-]*',
                     ),
                     'defaults' => array(
                         'controller'    => 'MonarcCore\Controller\ApiAnrObject',
