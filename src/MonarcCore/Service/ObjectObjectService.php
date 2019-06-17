@@ -213,37 +213,31 @@ class ObjectObjectService extends AbstractService
      */
     public function getRecursiveChildren($fatherId, $anrId = null)
     {
-        /** @var ObjectObjectTable $table */
-        $table = $this->get('table');
+      /** @var ObjectObjectTable $table */
+      $table = $this->get('table');
 
-        $filters = ['f.uuid' => $fatherId];
-        if (!is_null($anrId)) {
-            $filters['anr'] = $anrId;
-            $filters['f.anr'] = $anrId;
+      try{
+        $children = $table->getEntityByFields(['father' => $fatherId], ['position' => 'ASC']);
+      }catch(QueryException $e){
+        $children = $table->getEntityByFields(['father' => ['uuid' => $fatherId, 'anr' => $anrId]], ['position' => 'ASC']);
+      }
+      $array_children = [];
 
-            //$filters['father.uuid']  = ['uuid' => $fatherId, 'anr' => $anrId];
-        }
-        $filterJoin = $filterLeft = $filtersCol = [];
-         list($filterJoin,$filterLeft,$filtersCol) = $this->get('entity')->getFiltersForService();
-        $children = $table->fetchAllFiltered([], 1, 0, null, null , $filters , $filterJoin, $filterLeft);
-        //getEntityByFields($filters, ['position' => 'ASC']);
-        $array_children = [];
+      foreach ($children as $child) {
+          /** @var ObjectObject $child */
 
-        foreach ($children as $child) {
-            /** @var ObjectObject $child */
+          $child_array = $child->getJsonArray();
+          try{
+            $object_child = $this->get('MonarcObjectTable')->get($child_array['child']->uuid->toString());
+          }catch(MappingException $e){
+            $object_child = $this->get('MonarcObjectTable')->get(['uuid' => $child_array['child']->uuid->toString(), 'anr' =>$child_array['child']->anr->id ]);
+          }
+          $object_child['children'] = $this->getRecursiveChildren($child_array['child']->uuid->toString(),$child_array['child']->anr->id);
+          $object_child['component_link_id'] = $child_array['id'];
+          $array_children[] = $object_child;
+      }
 
-            $child_array = $child;
-            try{
-              $object_child = $this->get('MonarcObjectTable')->get($child_array['child']->uuid->toString());
-            }catch(MappingException $e){
-              $object_child = $this->get('MonarcObjectTable')->get(['uuid' => $child_array['child']->uuid->toString(), 'anr' =>$child['child']->anr->id ]);
-            }
-            $object_child['children'] = $this->getRecursiveChildren($child['child']->uuid->toString(),$child['child']->anr->id);
-            $object_child['component_link_id'] = $child_array['id'];
-            $array_children[] = $object_child;
-        }
-
-        return $array_children;
+      return $array_children;
     }
 
     /**
