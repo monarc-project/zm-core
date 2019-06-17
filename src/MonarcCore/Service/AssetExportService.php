@@ -9,6 +9,7 @@ namespace MonarcCore\Service;
 
 use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\Query\MappingException;
+use Doctrine\DBAL\Exception\DriverException;
 
 /**
  * Asset Service Export
@@ -77,6 +78,8 @@ class AssetExportService extends AbstractService
         }catch(QueryException $e){
           $amvResults = $amvTable->getEntityByFields(['asset' => $entity->getUuid()->toString(), 'anr' => $anrId]);
       } catch(MappingException $e) {
+          $amvResults = $amvTable->getEntityByFields(['asset' => $entity->getUuid()->toString(), 'anr' => $anrId]);
+      }catch(DriverException $e) {
           $amvResults = $amvTable->getEntityByFields(['asset' => $entity->getUuid()->toString(), 'anr' => $anrId]);
       }
 

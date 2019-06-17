@@ -524,6 +524,7 @@ abstract class AbstractService extends AbstractServiceFactory
             $db = $this->get('table')->getDb();
         }
         $metadata = $db->getClassMetadata(get_class($entity));
+        $entity->setDbAdapter($db);
 
         foreach ($dependencies as $dependency) {
             $deptable = $propertyname = $dependency;
@@ -577,7 +578,7 @@ abstract class AbstractService extends AbstractServiceFactory
                       } catch (\Exception $e) {
                           foreach ($value as $v) {
                               if (!is_null($v) && !empty($v) && !is_object($v)) {
-                                  $dep = $db->getReference($class, $v['uuid']);
+                                  $dep = $db->getReference($class, isset($v['uuid']) ? $v['uuid'] : $v);
                                   if (!$dep->id &&!$dep->uuid) {
                                       throw new \MonarcCore\Exception\Exception('Entity does not exist', 412);
                                   }

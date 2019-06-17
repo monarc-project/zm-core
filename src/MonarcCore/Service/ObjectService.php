@@ -939,19 +939,26 @@ class ObjectService extends AbstractService
      */
     public function duplicate($data, $context = AbstractEntity::BACK_OFFICE)
     {
-        $entity = $this->getEntity($data['id']);
+        try{
+          $entity = $this->getEntity($data['id']);
+        }catch(MappingException $e){
+          $entity = $this->getEntity(['uuid' => $data['id'], 'anr' => $data['anr']]);
+        }
 
         if (!$entity) {
             throw new \MonarcCore\Exception\Exception('Entity `id` not found.');
         }
 
-        $keysToRemove = ['id', 'position', 'creator', 'createdAt', 'updater', 'updatedAt', 'inputFilter', 'language', 'dbadapter', 'parameters'];
+        $keysToRemove = ['uuid', 'position', 'creator', 'createdAt', 'updater', 'updatedAt', 'inputFilter', 'language', 'dbadapter', 'parameters'];
         foreach ($keysToRemove as $key) {
             unset($entity[$key]);
         }
 
         foreach ($this->dependencies as $dependency) {
             if (is_object($entity[$dependency])) {
+              if($dependency=='asset')
+                $entity[$dependency] = ['anr' => $data['anr'],'uuid' => $entity[$dependency]->uuid->toString()];
+              else
                 $entity[$dependency] = $entity[$dependency]->id;
             }
         }
@@ -992,19 +999,37 @@ class ObjectService extends AbstractService
         //children
         /** @var ObjectObjectTable $objectObjectTable */
         $objectObjectTable = $this->get('objectObjectTable');
-        $objectsObjects = $objectObjectTable->getEntityByFields(['father' => $data['id']]);
+        try{
+          $objectsObjects = $objectObjectTable->getEntityByFields(['father' => $data['id']]);
+        }catch(QueryException $e){
+          $objectsObjects = $objectObjectTable->getEntityByFields(['anr' => $data['anr'],'father' => ['anr' => $data['anr'], 'uuid' => $data['id']]]);
+        }
         foreach ($objectsObjects as $objectsObject) {
-            $data = [
+          if($context == AbstractEntity::BACK_OFFICE)
+          {
+              $data = [
                 'id' => is_string($objectsObject->child->uuid)?$objectsObject->child->uuid:$objectsObject->child->uuid->toString(),
                 'implicitPosition' => $data['implicitPosition'],
             ];
+          }else{
+            $data = [
+              'id' => is_string($objectsObject->child->uuid)?$objectsObject->child->uuid:$objectsObject->child->uuid->toString(),
+              'implicitPosition' => $data['implicitPosition'],
+              'anr' => $data['anr'],
+            ];
+          }
 
             $childId = $this->duplicate($data, $context);
 
             $newObjectObject = clone $objectsObject;
             $newObjectObject->setId(null);
-            $newObjectObject->setFather($this->get('table')->getEntity($id));
-            $newObjectObject->setChild($this->get('table')->getEntity($childId));
+            try{
+              $newObjectObject->setFather($this->get('table')->getEntity($id));
+              $newObjectObject->setChild($this->get('table')->getEntity($childId));
+            }catch(MappingException $e){
+              $newObjectObject->setFather($this->get('table')->getEntity(['anr' => $data['anr'], 'uuid' =>$id]));
+              $newObjectObject->setChild($this->get('table')->getEntity(['anr' => $data['anr'], 'uuid' =>$childId]));
+            }
             $objectObjectTable->save($newObjectObject);
         }
 
@@ -1027,10 +1052,11 @@ class ObjectService extends AbstractService
         $table = $this->get('table');
 
         if (!is_object($object)) {
-          if($anrId !=null)
-            $object = $table->getEntity(['uuid' =>$object, 'anr'=>$anrId]);
-          else
+          try{
             $object = $table->getEntity($object);
+          }catch(MappingException $e){
+            $object = $table->getEntity(['uuid' =>$object, 'anr'=>$anrId]);
+          }
         }
 
         if (!$object) {
