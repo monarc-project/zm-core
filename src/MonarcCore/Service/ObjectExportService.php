@@ -319,7 +319,7 @@ class ObjectExportService extends AbstractService
                     // Si l'objet existe déjà, on risque de lui recréer des fils qu'il a déjà, dans ce cas faut détacher tous ses fils avant de lui re-rattacher (après import)
                     $links = $this->get('objectObjectService')->get('table')->getEntityByFields([
                         'anr' => $anr->get('id'),
-                        'father' => ['anr' => $anr->get('id'),'uuid' => $object->get('uuid')->toString()]
+                        'father' => ['anr' => $anr->get('id'),'uuid' => is_string($object->get('uuid'))?$object->get('uuid'):$object->get('uuid')->toString()]
                     ], ['position' => 'DESC']);
                     foreach ($links as $l) {
                         if (!empty($l)) {
