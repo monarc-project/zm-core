@@ -145,7 +145,9 @@ class ObjectExportService extends AbstractService
         }
 
         // Recovery children(s)
-        $children = array_reverse($this->get('objectObjectService')->getChildren($entity->get('uuid')->toString(),$entity->get('anr')->get('id'))); // Le tri de cette fonction est "position DESC"
+        $children = array_reverse($this->get('objectObjectService')->getChildren($entity->get('uuid')->toString(),
+                                                                                is_null($entity->get('anr'))?null:$entity->get('anr')->get('id'))
+                                  ); // Le tri de cette fonction est "position DESC"
         $return['children'] = null;
         if (!empty($children)) {
             $return['children'] = [];
@@ -275,6 +277,7 @@ class ObjectExportService extends AbstractService
                     if (!empty($object)) {
                         $object->setDbAdapter($this->get('table')->getDb());
                         $object->setLanguage($this->getLanguage());
+                        unset($data['object']['uuid']); //we keep the uuid of the original anr
                     }
                     // Si il existe, c'est bien, on ne fera pas de "new"
                     // Sinon, on passera dans la création d'un nouvel "object"
@@ -282,6 +285,12 @@ class ObjectExportService extends AbstractService
 
                 $toExchange = $data['object'];
                 if (empty($object)) {
+                    try{
+                      if(isset($toExchange['uuid']) && !is_null($toExchange['uuid'])){
+                        $this->get('table')->getEntity(['uuid' => $toExchange['uuid'], 'anr' => $anr->get('id')]);
+                        unset($toExchange['uuid']);
+                      } //if the uuid is in the DB drop it to have a new one and avoid conflict
+                    }catch(\MonarcCore\Exception\Exception $e){}
                     $class = $this->get('table')->getClass();
                     $object = new $class();
                     $object->setDbAdapter($this->get('table')->getDb());
@@ -310,7 +319,7 @@ class ObjectExportService extends AbstractService
                     // Si l'objet existe déjà, on risque de lui recréer des fils qu'il a déjà, dans ce cas faut détacher tous ses fils avant de lui re-rattacher (après import)
                     $links = $this->get('objectObjectService')->get('table')->getEntityByFields([
                         'anr' => $anr->get('id'),
-                        'father' => ['anr' => $anr->get('id'),'uuid' => $object->get('uuid')->toString()]
+                        'father' => ['anr' => $anr->get('id'),'uuid' => is_string($object->get('uuid'))?$object->get('uuid'):$object->get('uuid')->toString()]
                     ], ['position' => 'DESC']);
                     foreach ($links as $l) {
                         if (!empty($l)) {
