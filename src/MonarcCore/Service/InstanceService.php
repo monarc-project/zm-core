@@ -42,8 +42,9 @@ class InstanceService extends AbstractService
     protected $instanceConsequenceTable;
     protected $instanceConsequenceEntity;
     protected $recommandationRiskTable; // Used for FO
-    protected $recommandationMeasureTable; // Used for FO
     protected $recommandationTable; // Used for FO
+    protected $recommandationSetTable; // Used for FO
+
     protected $assetTable;
 
     // Services
@@ -1686,52 +1687,52 @@ class InstanceService extends AbstractService
             }
         }
 
+        //Recommandations Sets
+        if ($with_eval && $with_recommendations)
+        {
+            $recsSetsObj = [
+                'uuid' => 'uuid',
+                'label1' => 'label1',
+                'label2' => 'label2',
+                'label3' => 'label3',
+                'label4' => 'label4',
+            ];
+
+            $return['recSets'] = $recSetIds = [];
+            $recommandationsSets = $this->get('recommandationSetTable')->getEntityByFields(['anr' => $entity->get('anr')->get('id')]);
+            foreach ($recommandationsSets as $recommandationSet){
+                $return['recSets'][$recommandationSet->get('uuid')->toString()] = $recommandationSet->getJsonArray($recsSetsObj);
+            }
+
+        }
+
+        
         // Recommandation
+        $recoIds = [];
         if ($with_eval && $with_recommendations && !empty($riskIds) && $this->get('recommandationRiskTable')) {
             $recosObj = [
-                'id' => 'id',
+                'uuid' => 'uuid',
+                'recommandationSet' => 'recommandationSet',
                 'code' => 'code',
                 'description' => 'description',
                 'importance' => 'importance',
                 'comment' => 'comment',
+                'status' => 'status',
                 'responsable' => 'responsable',
                 'duedate' => 'duedate',
                 'counterTreated' => 'counterTreated',
             ];
-            $return['recos'] = $recoIds = [];
+            $return['recos'] = [];
             $recoRisk = $this->get('recommandationRiskTable')->getEntityByFields(['anr' => $entity->get('anr')->get('id'), 'instanceRisk' => $riskIds], ['id' => 'ASC']);
             foreach ($recoRisk as $rr) {
                 if (!empty($rr)) {
-                    $return['recos'][$rr->get('instanceRisk')->get('id')][$rr->get('recommandation')->get('id')] = $rr->get('recommandation')->getJsonArray($recosObj);
-                    $return['recos'][$rr->get('instanceRisk')->get('id')][$rr->get('recommandation')->get('id')]['commentAfter'] = $rr->get('commentAfter');
-                    $recoIds[$rr->get('recommandation')->get('id')] = $rr->get('recommandation')->get('id');
-                }
-            }
-
-            if (!empty($recoIds) && $this->get('recommandationMeasureTable')) {
-                $measuresObj = [
-                    'uuid' => 'uuid',
-                    'code' => 'code',
-                    'status' => 'status',
-                    'description1' => 'description1',
-                    'description2' => 'description2',
-                    'description3' => 'description3',
-                    'description4' => 'description4',
-                ];
-                $links = $this->get('recommandationMeasureTable')->getEntityByFields(['anr' => $entity->get('anr')->get('id'), 'recommandation' => $recoIds]);
-                $data['recolinks'] = [];
-                if (!isset($return['measures'])) {
-                    $return['measures'] = [];
-                }
-                foreach ($links as $lk) {
-                    if (!empty($lk)) {
-                        $return['recolinks'][$lk->get('recommandation')->get('id')][$lk->get('measure')->get('id')] = $lk->get('measure')->get('uuid')->toString();
-                        $return['measures'][$lk->get('measure')->get('uuid')->toString()] = $lk->get('measure')->getJsonArray($measuresObj);
-                    }
+                    $return['recos'][$rr->get('instanceRisk')->get('id')][$rr->get('recommandation')->get('uuid')->toString()] = $rr->get('recommandation')->getJsonArray($recosObj);
+                    $return['recos'][$rr->get('instanceRisk')->get('id')][$rr->get('recommandation')->get('uuid')->toString()]['recommandationSet'] = $rr->get('recommandation')->getRecommandationSet()->getUuid()->toString();
+                    $return['recos'][$rr->get('instanceRisk')->get('id')][$rr->get('recommandation')->get('uuid')->toString()]['commentAfter'] = $rr->get('commentAfter');
+                    $recoIds[$rr->get('recommandation')->get('uuid')->toString()] = $rr->get('recommandation')->get('uuid')->toString();
                 }
             }
         }
-
         // Instance risk op
         $return['risksop'] = [];
         $instanceRiskOpTable = $this->get('instanceRiskOpService')->get('table');
@@ -1818,45 +1819,50 @@ class InstanceService extends AbstractService
         // Recommandation RISKOP
         if ($with_eval && $with_recommendations && !empty($riskOpIds) && $this->get('recommandationRiskTable')) {
             $recosObj = [
-                'id' => 'id',
+                'uuid' => 'uuid',
+                'recommandationSet' => 'recommandationSet',
                 'code' => 'code',
                 'description' => 'description',
                 'importance' => 'importance',
                 'comment' => 'comment',
+                'status' => 'status',
                 'responsable' => 'responsable',
                 'duedate' => 'duedate',
                 'counterTreated' => 'counterTreated',
             ];
-            $return['recosop'] = $recoIds = [];
+            $return['recosop'] = [];
             $recoRisk = $this->get('recommandationRiskTable')->getEntityByFields(['anr' => $entity->get('anr')->get('id'), 'instanceRiskOp' => $riskOpIds], ['id' => 'ASC']);
             foreach ($recoRisk as $rr) {
                 if (!empty($rr)) {
-                    $return['recosop'][$rr->get('instanceRiskOp')->get('id')][$rr->get('recommandation')->get('id')] = $rr->get('recommandation')->getJsonArray($recosObj);
-                    $return['recosop'][$rr->get('instanceRiskOp')->get('id')][$rr->get('recommandation')->get('id')]['commentAfter'] = $rr->get('commentAfter');
-                    $recoIds[$rr->get('recommandation')->get('id')] = $rr->get('recommandation')->get('id');
+                    $return['recosop'][$rr->get('instanceRiskOp')->get('id')][$rr->get('recommandation')->get('uuid')->toString()] = $rr->get('recommandation')->getJsonArray($recosObj);
+                    $return['recosop'][$rr->get('instanceRiskOp')->get('id')][$rr->get('recommandation')->get('uuid')->toString()]['recommandationSet'] = $rr->get('recommandation')->getRecommandationSet()->getUuid()->toString();
+                    $return['recosop'][$rr->get('instanceRiskOp')->get('id')][$rr->get('recommandation')->get('uuid')->toString()]['commentAfter'] = $rr->get('commentAfter');
+                    $recoIds[$rr->get('recommandation')->get('uuid')->toString()] = $rr->get('recommandation')->get('uuid')->toString();
                 }
             }
+        }
 
-            if (!empty($recoIds) && $this->get('recommandationMeasureTable')) {
-                $measuresObj = [
-                    'id' => 'id',
-                    'code' => 'code',
-                    'status' => 'status',
-                    'description1' => 'description1',
-                    'description2' => 'description2',
-                    'description3' => 'description3',
-                    'description4' => 'description4',
-                ];
-                $links = $this->get('recommandationMeasureTable')->getEntityByFields(['anr' => $entity->get('anr')->get('id'), 'recommandation' => $recoIds]);
-                $data['recolinks'] = [];
-                if (!isset($return['measures'])) {
-                    $return['measures'] = [];
-                }
-                foreach ($links as $lk) {
-                    if (!empty($lk)) {
-                        $return['recolinks'][$lk->get('recommandation')->get('id')][$lk->get('measure')->get('id')] = $lk->get('measure')->get('id');
-                        $return['measures'][$lk->get('measure')->get('id')] = $lk->get('measure')->getJsonArray($measuresObj);
-                    }
+        //Recommandation unlinked to recommandations-risks
+        if ($with_eval && $with_recommendations){
+            $recosObj = [
+                'uuid' => 'uuid',
+                'recommandationSet' => 'recommandationSet',
+                'code' => 'code',
+                'description' => 'description',
+                'importance' => 'importance',
+                'comment' => 'comment',
+                'status' => 'status',
+                'responsable' => 'responsable',
+                'duedate' => 'duedate',
+                'counterTreated' => 'counterTreated',
+            ];
+            $return['recs'] = [];
+            $recommandations = $this->get('recommandationTable')->getEntityByFields(['anr' => $entity->get('anr')->get('id')]);
+            foreach ($recommandations as $rec){
+                if(!isset($recoIds[$rec->getUuid()->toString()])){
+                $return['recs'][$rec->getUuid()->toString()] = $rec->getJsonArray($recosObj);
+                $return['recs'][$rec->getUuid()->toString()]['recommandationSet'] = $rec->getRecommandationSet()->getUuid()->toString();
+                $recoIds[$rec->getUuid()->toString()] = $rec->getUuid()->toString();
                 }
             }
         }
