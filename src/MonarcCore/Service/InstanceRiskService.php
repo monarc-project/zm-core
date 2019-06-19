@@ -488,7 +488,7 @@ class InstanceRiskService extends AbstractService
                     $i = 0;
                     $hasSave = false;
                     foreach($recos as &$r){
-                        if(($r->get('position') == null || $r->get('position') <= 0) && isset($ids[$r->get('id')])){
+                        if(($r->get('position') == null || $r->get('position') <= 0) && isset($ids[$r->get('uuid')])){
                             $i++;
                             $r->set('position',$i);
                             $this->get('recommandationTable')->save($r,false);
@@ -525,13 +525,13 @@ class InstanceRiskService extends AbstractService
                     $hasSave = false;
                     $last = null;
                     foreach($recos as &$r){
-                        if(!isset($ids[$r->get('id')])){
+                        if(!isset($ids[$r->get('uuid')])){
                             if($r->get('position') == null || $r->get('position') <= 0){
                             }else{
                                 $i++;
                             }
                             $hasSave = true;
-                            $this->get('recommandationTable')->delete($r->get('id'));
+                            $this->get('recommandationTable')->delete(['anr'=> $r->get('anr'), 'uuid' => $r->get('uuid')]);
                         }elseif($i > 0 && $r->get('position') > 0){
                             $r->set('position',$r->get('position')-$i);
                             $this->get('recommandationTable')->save($r,false);
@@ -567,7 +567,7 @@ class InstanceRiskService extends AbstractService
                     $i = 0;
                     $hasSave = false;
                     foreach($recos as &$r){
-                        if($r->get('position') > 0 && !isset($ids[$r->get('id')])){
+                        if($r->get('position') > 0 && !isset($ids[$r->get('uuid')])){
                             $i++;
                             $r->set('position',null);
                             $this->get('recommandationTable')->save($r,false);
