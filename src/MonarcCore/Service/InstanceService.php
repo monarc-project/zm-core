@@ -427,6 +427,9 @@ class InstanceService extends AbstractService
                     $return = $return->andWhere('t.anr IS NULL');
                 }
                 $return = $return->getQuery()->getSingleScalarResult();
+                if ($data['parent'] != $instance->get('parent')) {
+                    $return++;
+                }
                 if ($data['position'] == $return) {
                     $data['implicitPosition'] = 2;
                 } else {
@@ -446,7 +449,7 @@ class InstanceService extends AbstractService
                         $return = $return->andWhere('t.anr IS NULL');
                     }
                     $return = $return->andWhere('t.position = :pos')
-                        ->setParameter(':pos', $data['position'] + ($data['position'] < $instance->get('position') ? -1 : 0))
+                        ->setParameter(':pos', $data['position'] + ($data['position'] < $instance->get('position') || $data['parent'] != $instance->get('parent') ? -1 : 0))
                         ->setMaxResults(1)
                         ->getQuery()->getSingleScalarResult();
                     if ($return) {
