@@ -78,14 +78,16 @@ class InstanceRiskService extends AbstractService
                         $newInstanceRisk->setInstance($currentInstance);
                         $instanceRiskTable->save($newInstanceRisk);
 
-                        $recoRisks = $this->get('recommandationRiskTable')->getEntityByFields(['anr' => $anrId, 'instanceRisk' => $instanceRisk->id]);
-                        if (count($recoRisks) > 0) {
-                          foreach($recoRisks as $recoRisk) {
-                            $newRecoRisk = clone $recoRisk;
-                            $newRecoRisk->set('id', null);
-                            $newRecoRisk->set('instance',$currentInstance);
-                            $newRecoRisk->set('instanceRisk',$newInstanceRisk);
-                            $this->get('recommandationRiskTable')->save($newRecoRisk);
+                        if($recoRisks = $this->get('recommandationRiskTable') !=null){
+                          $recoRisks = $this->get('recommandationRiskTable')->getEntityByFields(['anr' => $anrId, 'instanceRisk' => $instanceRisk->id]);
+                          if (count($recoRisks) > 0) {
+                            foreach($recoRisks as $recoRisk) {
+                              $newRecoRisk = clone $recoRisk;
+                              $newRecoRisk->set('id', null);
+                              $newRecoRisk->set('instance',$currentInstance);
+                              $newRecoRisk->set('instanceRisk',$newInstanceRisk);
+                              $this->get('recommandationRiskTable')->save($newRecoRisk);
+                            }
                           }
                         }
                     }

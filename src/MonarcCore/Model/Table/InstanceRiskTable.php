@@ -216,6 +216,25 @@ class InstanceRiskTable extends AbstractEntityTable
             'i.name' . $l . ' as instanceName' . $l . '',
         ];
 
+        //TO DO : if we want to keep the specific models, make an if on it
+        if($context == \MonarcCore\Model\Entity\AbstractEntity::BACK_OFFICE){
+          $sql = "
+              SELECT      " . implode(',', $arraySelect) . "
+              FROM        instances_risks AS ir
+              INNER JOIN  instances i
+              ON          ir.instance_id = i.id
+              LEFT JOIN   amvs AS a
+              ON          ir.amv_id = a.uuid
+              INNER JOIN  threats AS t
+              ON          ir.threat_id = t.uuid
+              INNER JOIN  vulnerabilities AS v
+              ON          ir.vulnerability_id = v.uuid
+              LEFT JOIN   assets AS ass
+              ON          ir.asset_id = ass.uuid
+              INNER JOIN  objects AS o
+              ON          i.object_id = o.uuid
+              WHERE       ir.cache_max_risk >= -1";
+        }else{
         $sql = "
             SELECT      " . implode(',', $arraySelect) . "
             FROM        instances_risks AS ir
@@ -238,6 +257,7 @@ class InstanceRiskTable extends AbstractEntityTable
             and         i.anr_id = o.anr_id
             WHERE       ir.cache_max_risk >= -1
             AND         ir.anr_id = :anrid ";
+          }
         $queryParams = [
             ':anrid' => $anrId,
         ];
