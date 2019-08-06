@@ -770,11 +770,13 @@ class AddVulnerabilitiesUuid extends AbstractMigration
             ->addColumn('vulnerability_uuid', 'uuid')
             ->update();
       $this->execute('UPDATE vulnerabilities_models A,vulnerabilities B SET A.vulnerability_uuid = B.uuid where B.id=A.vulnerability_id');
+      $this->execute('ALTER TABLE `vulnerabilities_models` DROP INDEX `PRIMARY`;');
       $table->removeColumn('vulnerability_id')
             ->renameColumn('vulnerability_uuid','vulnerability_id')
             ->update();
       $table->addForeignKey('vulnerability_id', 'vulnerabilities', 'uuid', ['delete'=> 'CASCADE', 'update'=> 'RESTRICT'])
             ->update();
+      $this->execute("ALTER TABLE `vulnerabilities_models` ADD PRIMARY KEY `vulnerability_id_model_id` (`vulnerability_id`, `model_id`);");
 
       $table = $this->table('instances_risks'); //set the stufff for instances_risks
       $table->dropForeignKey('vulnerability_id')
