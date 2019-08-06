@@ -93,12 +93,14 @@ class AddThreatsUuid extends AbstractMigration
       $table->dropForeignKey('threat_id')
             ->addColumn('threat_uuid', 'uuid')
             ->update();
+      $this->execute('ALTER TABLE `threats_models` DROP INDEX `PRIMARY`;');
       $this->execute('UPDATE threats_models A,threats B SET A.threat_uuid = B.uuid where B.id=A.threat_id');
       $table->removeColumn('threat_id')
             ->renameColumn('threat_uuid','threat_id')
             ->update();
       $table->addForeignKey('threat_id', 'threats', 'uuid', ['delete'=> 'CASCADE', 'update'=> 'RESTRICT'])
             ->update();
+      $this->execute("ALTER TABLE `threats_models` ADD PRIMARY KEY `threat_id_model_id` (`threat_id`, `model_id`);");
 
       $table = $this->table('instances_risks'); //set the stufff for instances_risks
       $table->dropForeignKey('threat_id')
