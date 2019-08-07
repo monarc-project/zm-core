@@ -106,11 +106,13 @@ class AddAssetsUuid extends AbstractMigration
             ->addColumn('asset_uuid', 'uuid')
             ->update();
       $this->execute('UPDATE assets_models A,assets B SET A.asset_uuid = B.uuid where B.id=A.asset_id');
+      $this->execute('ALTER TABLE `assets_models` DROP INDEX `PRIMARY`;');
       $table->removeColumn('asset_id')
             ->renameColumn('asset_uuid','asset_id')
             ->update();
       $table->addForeignKey('asset_id', 'assets', 'uuid', ['delete'=> 'CASCADE', 'update'=> 'RESTRICT'])
             ->update();
+      $this->execute("ALTER TABLE `assets_models` ADD PRIMARY KEY `asset_id_model_id` (`asset_id`, `model_id`);");
 
       $table = $this->table('instances'); //set the stufff for instances
       $table->dropForeignKey('asset_id')
