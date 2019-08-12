@@ -40,6 +40,8 @@ class AnrService extends AbstractService
     protected $measureMeasureTable;
     protected $soaCategoryTable;
     protected $soaTable;
+    protected $recordTable;
+    protected $recordService;
     protected $configService;
 
 
@@ -216,7 +218,8 @@ class AnrService extends AbstractService
         $with_methodSteps = isset($data['methodSteps']) && $data['methodSteps'];
         $with_interviews = isset($data['interviews']) && $data['interviews'];
         $with_soas = isset($data['soas']) && $data['soas'];
-        $exportedAnr = json_encode($this->generateExportArray($data['id'], $filename, $with_eval, $with_controls, $with_recommendations, $with_methodSteps, $with_interviews, $with_soas));
+        $with_records = isset($data['records']) && $data['records'];
+        $exportedAnr = json_encode($this->generateExportArray($data['id'], $filename, $with_eval, $with_controls, $with_recommendations, $with_methodSteps, $with_interviews, $with_soas, $with_records));
         $data['filename'] = $filename;
 
         if (! empty($data['password'])) {
@@ -235,7 +238,7 @@ class AnrService extends AbstractService
     * @return array The data array that should be saved
     * @throws \MonarcCore\Exception\Exception If the ANR or an entity is not found
     */
-    public function generateExportArray($id, &$filename = "", $with_eval = false, $with_controls = false, $with_recommendations = false, $with_methodSteps = false, $with_interviews = false, $with_soas = false)
+    public function generateExportArray($id, &$filename = "", $with_eval = false, $with_controls = false, $with_recommendations = false, $with_methodSteps = false, $with_interviews = false, $with_soas = false, $with_records = false)
     {
         if (empty($id)) {
             throw new \MonarcCore\Exception\Exception('Anr to export is required', 412);
@@ -536,7 +539,17 @@ class AnrService extends AbstractService
                 }
             }
 
-
+            // manage the GDPR records
+            if($with_records)
+            {
+                $recordService = $this->get('recordService');
+                $table = $this->get('recordTable');
+                $records = $table->getEntityByFields(['anr' => $entity->get('id')], ['id'=>'ASC']);
+                $f = '';
+                foreach ($records as $r) {
+                    $return['records'][$r->id] = $recordService->generateExportArray($r->id, $f);
+                }
+            }
         }
         return $return;
     }
