@@ -75,7 +75,6 @@ class InstanceService extends AbstractService
     public function instantiateObjectToAnr($anrId, $data, $managePosition = true, $rootLevel = false, $mode = Instance::MODE_CREA_NODE)
     {
         //retrieve object properties
-        file_put_contents('php://stderr', print_r($data, TRUE).PHP_EOL);
         try{
           $object = $this->get('objectTable')->getEntity($data['object']);
         }catch(MappingException $e){
@@ -1709,7 +1708,7 @@ class InstanceService extends AbstractService
 
         }
 
-        
+
         // Recommandation
         $recoIds = [];
         if ($with_eval && $with_recommendations && !empty($riskIds) && $this->get('recommandationRiskTable')) {

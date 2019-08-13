@@ -342,8 +342,6 @@ class AmvSuperclass extends AbstractEntity
                                 \Zend\Validator\Callback::INVALID_VALUE => 'an uuid is missing or incorrect',
                             ),
                             'callback' => function ($value, $context = array()) use ($partial) {
-                                file_put_contents('php://stderr', print_r($context['uuid'], TRUE).PHP_EOL);
-
                                 if (!$partial) {
                                     if (!preg_match(ValidatorUuid::REGEX_UUID, $context['uuid'])) {
                                         return false;
