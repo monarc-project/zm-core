@@ -48,6 +48,13 @@ class UserSuperClass extends AbstractEntity
     protected $status = '1';
 
     /**
+     * @var smallint
+     *
+     * @ORM\Column(name="ldap_connection", type="smallint", nullable=false)
+     */
+    protected $ldapConnection;
+
+    /**
      * @var string
      *
      * @ORM\Column(name="firstname", type="string", length=255, nullable=true)

@@ -16,6 +16,7 @@ class Authentication extends AbstractAdapter
     protected $userTable;
     protected $user;
     protected $security;
+    protected $config;
 
     /**
      * Sets the user table to use to check credentials
@@ -74,6 +75,15 @@ class Authentication extends AbstractAdapter
         return $this->security;
     }
 
+    public function setConfig($config){
+        $this->config = $config;
+        return $this;
+    }
+
+    public function getConfig(){
+        return $this->config;
+    }
+
     /**
      * Authenticates the user from its identity and credential
      * @return Result The authentication result
@@ -91,15 +101,49 @@ class Authentication extends AbstractAdapter
                 $user = current($users);
                 //$now = mktime();
                 // TODO: faire le test sur dateStart && dateEnd
-                if ($user->get('status')) {
-                    if ($this->getSecurity()->verifyPwd($credential, $user->get('password'))) {
-                        $this->setUser($user);
-                        return new Result(Result::SUCCESS, $this->getIdentity());
+                if($user->get('ldapConnection')) {
+                    $conf = $this->getConfig();
+                    $ldapUri = isset($conf['ldap']['uri'])?$conf['ldap']['uri']:"ldap:///";
+                    $ldapConn = ldap_connect($ldapUri);
+                    ldap_set_option($ldapConn, LDAP_OPT_PROTOCOL_VERSION, isset($conf['ldap']['ldapOptProtocolVersion'])?$conf['ldap']['ldapOptProtocolVersion']:3);
+                    ldap_set_option($ldapConn, LDAP_OPT_REFERRALS, isset($conf['ldap']['ldapOptReferrals'])?$conf['ldap']['ldapOptReferrals']:0);
+                    if (!$ldapConn) {
+                        file_put_contents('php://stderr', print_r('ldap connection failed', TRUE).PHP_EOL);
+                        return  new Result(Result::FAILURE_UNCATEGORIZED, $this->getIdentity());
+                    }
+                    if(ldap_bind($ldapConn, isset($conf['ldap']['adminDN'])?$conf['ldap']['adminDN']:'', isset($conf['ldap']['adminPassword'])?$conf['ldap']['adminPassword']:'')) {
+                        $arr = array('dn', 1);
+                        $loginAttribute = isset($conf['ldap']['loginAttribute'])?$conf['ldap']['loginAttribute']:'mail';
+                        $result = ldap_search($ldapConn, isset($conf['ldap']['baseDN'])?$conf['ldap']['baseDN']:'dc=monarc,dc=com', "($loginAttribute=$identity)", $arr);
+                        $entries = ldap_get_entries($ldapConn, $result);
+                        if ($entries['count'] > 0) {
+                            if (ldap_bind($ldapConn, $entries[0]['dn'], $credential)) {
+                                ldap_close($ldapConn);
+                                $this->setUser($user);
+                                return new Result(Result::SUCCESS, $this->getIdentity());
+                            } else {
+                                ldap_close($ldapConn);
+                                return new Result(Result::FAILURE_CREDENTIAL_INVALID, $this->getIdentity());
+                            }
+                        } else {
+                            ldap_close($ldapConn);
+                            return new Result(Result::FAILURE_IDENTITY_NOT_FOUND, $this->getIdentity());
+                        }
                     } else {
-                        return new Result(Result::FAILURE_CREDENTIAL_INVALID, $this->getIdentity());
+                        ldap_close($ldapConn);
+                        return new Result(Result::FAILURE_UNCATEGORIZED, $this->getIdentity());
                     }
                 } else {
-                    return new Result(Result::FAILURE_UNCATEGORIZED, $this->getIdentity());
+                    if ($user->get('status')) {
+                        if ($this->getSecurity()->verifyPwd($credential, $user->get('password'))) {
+                            $this->setUser($user);
+                            return new Result(Result::SUCCESS, $this->getIdentity());
+                        } else {
+                            return new Result(Result::FAILURE_CREDENTIAL_INVALID, $this->getIdentity());
+                        }
+                    } else {
+                        return new Result(Result::FAILURE_UNCATEGORIZED, $this->getIdentity());
+                    }
                 }
                 break;
             default:

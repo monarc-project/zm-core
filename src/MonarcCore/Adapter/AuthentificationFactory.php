@@ -14,6 +14,7 @@ class AuthentificationFactory implements FactoryInterface
         $aa = new Authentication();
         $aa->setUserTable($serviceLocator->get('\MonarcCore\Model\Table\UserTable'));
         $aa->setSecurity($serviceLocator->get('\MonarcCore\Service\SecurityService'));
+        $aa->setConfig($serviceLocator->get('config'));
         return $aa;
     }
 }
