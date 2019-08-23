@@ -712,12 +712,7 @@ class InstanceService extends AbstractService
             $table->save($child);
 
             //update children
-            $childrenData = [
-                'c' => $child->c,
-                'i' => $child->i,
-                'd' => $child->d,
-            ];
-            $this->updateChildrenImpacts($child, $childrenData);
+            $this->updateChildrenImpacts($child);
 
             if ($child->anr) {
                 $this->updateRisks($child->anr->id, $child->id);
