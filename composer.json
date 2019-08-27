@@ -1,7 +1,6 @@
 {
     "name": "monarc/core",
-    "type": "library",
-    "description": "Core for Monarc project",
+    "description": "Core for monarc/monarc application",
     "authors": [
         {"name": "Cyril Rouyer", "email": "cyril@netlor.fr"},
         {"name": "Guillaume Lesniak", "email": "guillaume@netlor.fr"},
@@ -13,12 +12,12 @@
         {"name": "Cédric Bonhomme", "email": "cedric.bonhomme@cases.lu"}
     ],
     "require": {
-        "php": ">=5.5",
-        "zendframework/zendframework": "2.5.3",
-        "doctrine/doctrine-orm-module": "^0.10",
+        "php": ">=5.6",
         "robmorgan/phinx": "0.5.*"
     },
     "autoload": {
-        "psr-0": {"MonarcCore\\":"/"}
+        "psr-4": {
+            "MonarcCore\\": "src/MonarcCore",
+        }
     }
 }
