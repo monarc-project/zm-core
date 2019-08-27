@@ -116,7 +116,7 @@ class Authentication extends AbstractAdapter
                         $loginAttribute = isset($conf['ldap']['loginAttribute'])?$conf['ldap']['loginAttribute']:'mail';
                         $result = ldap_search($ldapConn, isset($conf['ldap']['baseDN'])?$conf['ldap']['baseDN']:'dc=monarc,dc=com', "($loginAttribute=$identity)", $arr);
                         $entries = ldap_get_entries($ldapConn, $result);
-                        if ($entries['count'] > 0) {
+                        if ($entries['count'] == 1) {
                             if (ldap_bind($ldapConn, $entries[0]['dn'], $credential)) {
                                 ldap_close($ldapConn);
                                 $this->setUser($user);
@@ -125,7 +125,10 @@ class Authentication extends AbstractAdapter
                                 ldap_close($ldapConn);
                                 return new Result(Result::FAILURE_CREDENTIAL_INVALID, $this->getIdentity());
                             }
-                        } else {
+                        } else if ($entries['count'] > 1) {
+                            ldap_close($ldapConn);
+                            return new Result(Result::FAILURE_IDENTITY_AMBIGUOUS, $this->getIdentity());
+                        }else {
                             ldap_close($ldapConn);
                             return new Result(Result::FAILURE_IDENTITY_NOT_FOUND, $this->getIdentity());
                         }
