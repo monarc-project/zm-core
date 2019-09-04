@@ -21,7 +21,7 @@ Define `protected` attributes and use [DoctrineOrm][1] for define table & column
 
 In `Module.php:getServiceConfig()` add in `invokables`:
 
-	'\MonarcCore\Model\Entity\MyEntity' => '\MonarcCore\Model\Entity\MyEntity',
+	'\Monarc\Core\Model\Entity\MyEntity' => '\Monarc\Core\Model\Entity\MyEntity',
 
 For generating migrating file & migrate DB avec adding/deleting/changing column:
 
@@ -45,8 +45,8 @@ AbstractEntityTable has already functions:
 
 In `Module.php:getServiceConfig()` add in `factories`:
 
-	'\MonarcCore\Model\Table\MyEntityTable' => function($sm){
-        return new Model\Table\MyEntityTable($sm->get('\MonarcCore\Model\Db'));
+	'\Monarc\Core\Model\Table\MyEntityTable' => function($sm){
+        return new Model\Table\MyEntityTable($sm->get('\Monarc\Core\Model\Db'));
     },
 
 
@@ -65,7 +65,7 @@ Adding function:
 
 In `module.config.php`, define route & controller:
 
-	'controller' => '\MonarcCore\Controller\MyIndex',
+	'controller' => '\Monarc\Core\Controller\MyIndex',
 
 
 Controller Factory
@@ -73,11 +73,11 @@ Controller Factory
 
 Create Controller Factory file & class in Controller folder and extend it with `AbstractControllerFactory`.
 
-Define `protected $serviceName = '\MonarcCore\Service\MyService';`.
+Define `protected $serviceName = '\Monarc\Core\Service\MyService';`.
 
 In `Module.php:getControllerConfig()` add in `factories`:
 
-	'\MonarcCore\Controller\MyIndex' => '\MonarcCore\Controller\MyIndexControllerFactory',
+	'\Monarc\Core\Controller\MyIndex' => '\Monarc\Core\Controller\MyIndexControllerFactory',
 
 
 Service
@@ -109,17 +109,17 @@ Create Service file & class in Service Factory folder and extend it with `Abstra
 Define ressources to load in Service:
 
 	protected $ressources = array(
-		'ressource1'=> '\MonarcCore\Model\Table\EntityTable',
-		'ressource2'=> '\MonarcCore\Model\Entity\Entity',
+		'ressource1'=> '\Monarc\Core\Model\Table\EntityTable',
+		'ressource2'=> '\Monarc\Core\Model\Entity\Entity',
 	);
 
 Or
 
-	protected $ressources = '\MonarcCore\Model\Table\EntityTable';
+	protected $ressources = '\Monarc\Core\Model\Table\EntityTable';
 
 In `Module.php:getServiceConfig()` add in `factories`:
 
-	'\MonarcCore\Service\MyIndexService' => '\MonarcCore\Service\MyIndexServiceFactory',
+	'\Monarc\Core\Service\MyIndexService' => '\Monarc\Core\Service\MyIndexServiceFactory',
 
 
 License

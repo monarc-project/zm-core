@@ -1,0 +1,59 @@
+{
+    "name": "ramsey/uuid-doctrine",
+    "description": "Allow the use of a ramsey/uuid UUID as Doctrine field type.",
+    "type": "library",
+    "keywords": [
+        "uuid",
+        "identifier",
+        "guid",
+        "doctrine"
+    ],
+    "homepage": "https://github.com/ramsey/uuid-doctrine",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ben Ramsey",
+            "email": "ben@benramsey.com",
+            "homepage": "http://benramsey.com"
+        },
+        {
+            "name": "Marijn Huizendveld",
+            "email": "marijn.huizendveld@gmail.com"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/ramsey/uuid-doctrine/issues",
+        "source": "https://github.com/ramsey/uuid-doctrine"
+    },
+    "require": {
+        "php": "^5.4 || ^7.0",
+        "doctrine/orm": "^2.5",
+        "ramsey/uuid": "^3.0"
+    },
+    "require-dev": {
+        "jakub-onderka/php-parallel-lint": "^1.0",
+        "mockery/mockery": "^0.9 || ^1.1",
+        "php-coveralls/php-coveralls": "^1.1 || ^2.1",
+        "phpunit/phpunit": "^4.8 || ^5.7 || ^6.5",
+        "squizlabs/php_codesniffer": "^3.3"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "autoload": {
+        "psr-4": {"Ramsey\\Uuid\\Doctrine\\": "src/"}
+    },
+    "autoload-dev": {
+        "psr-4": {"Ramsey\\Uuid\\Doctrine\\": "tests/"}
+    },
+    "scripts": {
+       "lint": "parallel-lint src tests",
+       "phpunit": "phpunit --verbose --colors=always",
+       "phpcs": "phpcs src tests --standard=psr12 -sp --colors --exclude=\"PSR2.ControlStructures.ControlStructureSpacing\"",
+       "test": [
+            "@lint",
+            "@phpunit",
+            "@phpcs"
+       ]
+    }
+}
