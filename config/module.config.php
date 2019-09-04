@@ -349,7 +349,7 @@ return [
             'class_map' => [
                 ModelTable\UserTokenTable::class => ModelTable\UserTokenTable::class,
             ],
-            'proxies_target_dir' => '',
+            'proxies_target_dir' => $dataPath,
         ],
         'delegators' => [
             ModelTable\UserTokenTable::class => [
