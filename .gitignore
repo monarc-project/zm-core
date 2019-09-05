@@ -6,3 +6,4 @@
 *.lock
 *.sublime-*
 nbproject
+vendor
