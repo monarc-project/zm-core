@@ -18,6 +18,5 @@ class UserProfileServiceFactory extends AbstractServiceFactory
     protected $ressources = [
         'table' => 'Monarc\Core\Model\Table\UserTable',
         'entity' => 'Monarc\Core\Model\Entity\User',
-        'securityService' => '\Monarc\Core\Service\SecurityService',
     ];
 }

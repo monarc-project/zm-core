@@ -15,8 +15,6 @@ namespace Monarc\Core\Service;
  */
 class UserProfileService extends AbstractService
 {
-    protected $securityService;
-
     /**
      * @inheritdoc
      */
@@ -30,7 +28,11 @@ class UserProfileService extends AbstractService
         $entity = $this->get('table')->getEntity($user['id']);
         $entity->setDbAdapter($this->get('table')->getDb());
         if (!empty($data['new'])) {
-            if (!empty($data['confirm']) && !empty($data['old']) && $data['new'] == $data['old'] && $this->get('securityService')->verifyPwd($data['confirm'], $user->get('password'))) {
+            if (!empty($data['confirm'])
+                && !empty($data['old'])
+                && $data['new'] === $data['old']
+                && password_verify($data['confirm'], $user->get('password'))
+            ) {
                 $entity->exchangeArray(['password' => $data['new']]);
             }
         } else {

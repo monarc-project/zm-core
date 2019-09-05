@@ -21,7 +21,6 @@ class PasswordServiceFactory extends AbstractServiceFactory
         'userTable' => 'Monarc\Core\Model\Table\UserTable',
         'userService' => 'Monarc\Core\Service\UserService',
         'mailService' => 'Monarc\Core\Service\MailService',
-        'securityService' => 'Monarc\Core\Service\SecurityService',
         'configService' => 'Monarc\Core\Service\ConfigService',
     ];
 }

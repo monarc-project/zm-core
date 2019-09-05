@@ -23,7 +23,7 @@ use Zend\ServiceManager\Proxy\LazyServiceFactory;
 
 $appConfigDir = getenv('APP_CONF_DIR') ?? '';
 
-$dataPath = 'data';
+$dataPath = './data';
 if (!empty($appConfigDir)) {
     $dataPath = $appConfigDir . '/data';
 }
@@ -349,7 +349,8 @@ return [
             'class_map' => [
                 ModelTable\UserTokenTable::class => ModelTable\UserTokenTable::class,
             ],
-            'proxies_target_dir' => $dataPath,
+            'proxies_target_dir' => $dataPath . '/LazyServices/Proxy',
+            'write_proxy_files' => true,
         ],
         'delegators' => [
             ModelTable\UserTokenTable::class => [
@@ -486,8 +487,6 @@ return [
             ModelTable\UserRoleTable::class => AutowireFactory::class,
             ModelTable\DeliveriesModelsTable::class => ServiceModelTable\DeliveriesModelsServiceModelTable::class,
 
-            /* Security */
-            Service\SecurityService::class => Service\SecurityServiceFactory::class,
             /* Authentification */
             StorageAuthentication::class => ReflectionBasedAbstractFactory::class,
             AdapterAuthentication::class => AutowireFactory::class,

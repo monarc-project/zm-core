@@ -3,7 +3,6 @@ namespace Monarc\Core\Adapter;
 
 use Monarc\Core\Model\Entity\User;
 use Monarc\Core\Model\Table\UserTable;
-use Monarc\Core\Service\SecurityService;
 use Zend\Authentication\Adapter\AbstractAdapter;
 use Zend\Authentication\Result;
 
@@ -18,16 +17,12 @@ class Authentication extends AbstractAdapter
     /** @var UserTable */
     private $userTable;
 
-    /** @var SecurityService */
-    private $securityService;
-
     /** @var User */
     protected $user;
 
-    public function __construct(UserTable $userTable, SecurityService $securityService)
+    public function __construct(UserTable $userTable)
     {
         $this->userTable = $userTable;
-        $this->securityService = $securityService;
     }
 
     /**

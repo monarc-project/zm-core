@@ -7,6 +7,8 @@
 
 namespace Monarc\Core\Service;
 
+use DateTime;
+use Monarc\Core\Exception\Exception;
 use Monarc\FrontOffice\Model\Table\PasswordTokenTable;
 
 /**
@@ -20,7 +22,6 @@ class PasswordService extends AbstractService
     protected $userTable;
     protected $userService;
     protected $mailService;
-    protected $securityService;
     /** @var  ConfigService */
     protected $configService;
 
@@ -127,7 +128,7 @@ class PasswordService extends AbstractService
      */
     public function verifyToken($token)
     {
-        $date = new \DateTime("now");
+        $date = new DateTime();
         $passwordToken = $this->get('table')->getByToken($token, $date);
 
         if ($passwordToken) {
@@ -142,20 +143,20 @@ class PasswordService extends AbstractService
      * @param int $userId The user ID
      * @param string $oldPassword The previous (current) user password
      * @param string $newPassword The new password to set
-     * @throws \Exception If the origin password is incorrect, or user does not exist
+     * @throws Exception If the origin password is incorrect, or user does not exist
      */
     public function changePassword($userId, $oldPassword, $newPassword)
     {
         $user = $this->get('userService')->getEntity($userId);
 
         if ($user) {
-            if ($this->securityService->verifyPwd($oldPassword, $user['password'])) {
+            if (password_verify($oldPassword, $user['password'])) {
                 $this->get('userService')->patch($userId, ['password' => $newPassword]);
             } else {
-                throw new \Monarc\Core\Exception\Exception('Original password incorrect', 412);
+                throw new Exception('Original password incorrect', 412);
             }
         } else {
-            throw new \Monarc\Core\Exception\Exception('User does not exist', 422);
+            throw new Exception('User does not exist', 422);
         }
     }
 }
