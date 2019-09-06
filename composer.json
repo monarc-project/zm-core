@@ -22,7 +22,8 @@
         "ramsey/uuid-doctrine": "^1.5",
         "zendframework/zend-log": "^2.11",
         "zendframework/zend-console": "^2.8",
-        "ocramius/proxy-manager": "<2.3"
+        "ocramius/proxy-manager": "<2.3",
+        "zendframework/zend-mail": "^2.10"
     },
     "autoload": {
         "psr-4": {
