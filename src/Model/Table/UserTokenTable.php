@@ -19,7 +19,7 @@ class UserTokenTable extends AbstractEntityTable
 {
     public function __construct(DbCli $db, ConnectedUserService $connectedUserService)
     {
-        parent::__construct($db, UserToken::class, $connectedUserService->getConnectedUser());
+        parent::__construct($db, UserToken::class, $connectedUserService);
     }
 
     /**

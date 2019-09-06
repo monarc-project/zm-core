@@ -272,6 +272,7 @@ class InstanceRiskTable extends AbstractEntityTable
             $instanceIds[$instance->get('id')] = $instance->get('id');
 
             if ($context == AbstractEntity::BACK_OFFICE) {
+                // TODO: this woun't work for BackOffice, we need to refactor this calls and inject the object.
                 $instanceTable = new InstanceTable($this->getDb());
             } else {
                 $instanceTable = new \Monarc\FrontOffice\Model\Table\InstanceTable($this->getDb());

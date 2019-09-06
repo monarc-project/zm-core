@@ -36,7 +36,7 @@ class UserTable extends AbstractEntityTable
         UserTokenTable $userTokenTable,
         PasswordTokenTable $passwordTokenTable
     ) {
-        parent::__construct($db, User::class, $connectedUserService->getConnectedUser());
+        parent::__construct($db, User::class, $connectedUserService);
 
         $this->userRoleTable = $userRoleTable;
         $this->userTokenTable = $userTokenTable;

@@ -64,7 +64,7 @@ class Authentication extends AbstractAdapter
                 $user = current($users);
                 // TODO: faire le test sur dateStart && dateEnd
                 if ($user->get('status')) {
-                    if ($this->securityService->verifyPwd($credential, $user->get('password'))) {
+                    if (password_verify($credential, $user->get('password'))) {
                         $this->setUser($user);
 
                         return new Result(Result::SUCCESS, $this->getIdentity());

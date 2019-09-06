@@ -16,6 +16,7 @@ use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\AbstractEntity;
 use Monarc\Core\Model\Entity\User;
+use Monarc\Core\Service\ConnectedUserService;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\Exception\InvalidUuidStringException;
 use Doctrine\Common\Util\ClassUtils;
@@ -35,14 +36,14 @@ abstract class AbstractEntityTable
     /** @var string|null */
     protected $language;
 
-    /** @var User */
-    protected $connectedUser;
+    /** @var ConnectedUserService */
+    protected $connectedUserService;
 
-    public function __construct(Db $dbService, string $entityClass, User $connectedUser)
+    public function __construct(Db $dbService, string $entityClass, ConnectedUserService $connectedUserService)
     {
         $this->db = $dbService;
         $this->entityClass = $entityClass;
-        $this->connectedUser = $connectedUser;
+        $this->connectedUserService = $connectedUserService;
     }
 
     /**
@@ -77,9 +78,9 @@ abstract class AbstractEntityTable
         return $this->entityClass;
     }
 
-    public function getConnectedUser(): User
+    public function getConnectedUser(): ?User
     {
-        return $this->connectedUser;
+        return $this->connectedUserService->getConnectedUser();
     }
 
     /**

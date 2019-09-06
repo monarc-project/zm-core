@@ -32,7 +32,7 @@ abstract class AbstractServiceModelTable implements FactoryInterface
             $instance = new $class(
                 $container->get($this->dbService),
                 str_replace(array('\\Table', 'Table'), array('\\Entity', ''), $class),
-                $container->get(ConnectedUserService::class)->getConnectedUser()
+                $container->get(ConnectedUserService::class)
             );
 
             return $instance;

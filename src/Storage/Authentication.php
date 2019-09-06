@@ -18,7 +18,7 @@ class Authentication implements StorageInterface
     /** @var int */
     private $authTtl;
 
-    public function __construct(UserTokenTable $userTokenTable, array $config = [])
+    public function __construct(UserTokenTable $userTokenTable, array $config)
     {
         $this->userTokenTable = $userTokenTable;
         $this->authTtl = $config['monarc']['ttl'] ?? static::DEFAULT_TTL;
