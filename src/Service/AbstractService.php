@@ -9,6 +9,7 @@ namespace Monarc\Core\Service;
 
 use Monarc\Core\Model\Entity\AbstractEntity;
 use Monarc\Core\Model\Entity\Scale;
+use Monarc\Core\Model\Entity\User;
 use Monarc\Core\Model\GetAndSet;
 use Monarc\Core\Model\Table\AbstractEntityTable;
 use Monarc\Core\Model\Table\AnrTable;
@@ -22,7 +23,7 @@ use Ramsey\Uuid\Uuid;
 use Doctrine\ORM\Query\QueryException;
 
 /**
- * TODO: refactor, clean up, ideally remove the class.
+ * TODO: refactor, clean up, but better to remove the class.
  * Abstract Service
  *
  * Class AbstractService
@@ -256,11 +257,12 @@ abstract class AbstractService extends AbstractServiceFactory
                 throw new \Monarc\Core\Exception\Exception('Anr id error', 412);
             }
 
-            $connectedUser = $this->get('table')->getConnectedUser();
-
             /** @var UserAnrTable $userAnrTable */
             $userAnrTable = $this->get('userAnrTable');
-            $rights = $userAnrTable->getEntityByFields(['user' => $connectedUser['id'], 'anr' => $entity->anr->id]);
+            $rights = $userAnrTable->getEntityByFields([
+                'user' => $this->getConnectedUser()->getId(),
+                'anr' => $entity->anr->id,
+            ]);
             $rwd = 0;
             foreach ($rights as $right) {
                 if ($right->rwd == 1) {
@@ -310,12 +312,13 @@ abstract class AbstractService extends AbstractServiceFactory
                 throw new \Monarc\Core\Exception\Exception('Anr id error', 412);
             }
 
-            $connectedUser = $this->get('table')->getConnectedUser();
-
             /** @var UserAnrTable $userAnrTable */
             $userAnrTable = $this->get('userAnrTable');
             if ($userAnrTable) {
-                $rights = $userAnrTable->getEntityByFields(['user' => $connectedUser['id'], 'anr' => $entity->anr->id]);
+                $rights = $userAnrTable->getEntityByFields([
+                    'user' => $this->getConnectedUser()->getId(),
+                    'anr' => $entity->anr->id,
+                ]);
                 $rwd = 0;
                 foreach ($rights as $right) {
                     if ($right->rwd == 1) {
@@ -387,11 +390,12 @@ abstract class AbstractService extends AbstractServiceFactory
                 throw new \Monarc\Core\Exception\Exception('Anr id error', 412);
             }
 
-            $connectedUser = $this->get('table')->getConnectedUser();
-
             /** @var UserAnrTable $userAnrTable */
             $userAnrTable = $this->get('userAnrTable');
-            $rights = $userAnrTable->getEntityByFields(['user' => $connectedUser['id'], 'anr' => $anrId]);
+            $rights = $userAnrTable->getEntityByFields([
+                'user' => $this->getConnectedUser()->getId(),
+                'anr' => $anrId,
+            ]);
             $rwd = 0;
             foreach ($rights as $right) {
                 if ($right->rwd == 1) {
@@ -425,11 +429,12 @@ abstract class AbstractService extends AbstractServiceFactory
                 }
             }
 
-            $connectedUser = $this->get('table')->getConnectedUser();
-
             /** @var UserAnrTable $userAnrTable */
             $userAnrTable = $this->get('userAnrTable');
-            $rights = $userAnrTable->getEntityByFields(['user' => $connectedUser['id'], 'anr' => $anrId]);
+            $rights = $userAnrTable->getEntityByFields([
+                'user' => $this->getConnectedUser()->getId(),
+                'anr' => $anrId,
+            ]);
             $rwd = 0;
             foreach ($rights as $right) {
                 if ($right->rwd == 1) {
@@ -877,5 +882,10 @@ abstract class AbstractService extends AbstractServiceFactory
                 }
                 break;
         }
+    }
+
+    private function getConnectedUser(): User
+    {
+        return $this->get('table')->getConnectedUser();
     }
 }

@@ -7,6 +7,8 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Monarc\Core\Model\Entity\AbstractEntity;
+
 /**
  * Class InstanceRiskTable
  * @package Monarc\Core\Model\Table
@@ -37,11 +39,11 @@ class InstanceRiskTable extends AbstractEntityTable
             ->getResult();
     }
 
-    protected function getContextLanguage($anrId, $context = \Monarc\Core\Model\Entity\AbstractEntity::BACK_OFFICE)
+    protected function getContextLanguage($anrId, $context = AbstractEntity::BACK_OFFICE)
     {
-        if($context == \Monarc\Core\Model\Entity\AbstractEntity::BACK_OFFICE){
+        if($context == AbstractEntity::BACK_OFFICE){
             $user = $this->getConnectedUser();
-            $l = $user['language'];
+            $l = $user->getLanguage();
         }else{
             $anr = new \Monarc\FrontOffice\Model\Entity\Anr();
             $anr->setDbAdapter($this->getDb());
@@ -65,7 +67,7 @@ class InstanceRiskTable extends AbstractEntityTable
      * @param string $context
      * @return string
      */
-    public function getCsvRisks($anrId, $instanceId = null, $params, $translate, $context = \Monarc\Core\Model\Entity\AbstractEntity::BACK_OFFICE)
+    public function getCsvRisks($anrId, $instanceId = null, $params, $translate, $context = AbstractEntity::BACK_OFFICE)
     {
         $risks = $this->getFilteredInstancesRisks($anrId, $instanceId, $params, $context);
 
@@ -155,12 +157,12 @@ class InstanceRiskTable extends AbstractEntityTable
      * @return int
      * @throws \Monarc\Core\Exception\Exception
      */
-    public function getFilteredInstancesRisks($anrId, $instanceId = null, $params = [], $context = \Monarc\Core\Model\Entity\AbstractEntity::BACK_OFFICE)
+    public function getFilteredInstancesRisks($anrId, $instanceId = null, $params = [], $context = AbstractEntity::BACK_OFFICE)
     {
         $params['order'] = isset($params['order']) ? $params['order'] : 'maxRisk';
 
         if (!empty($instanceId)) {
-            if($context == \Monarc\Core\Model\Entity\AbstractEntity::BACK_OFFICE){
+            if($context == AbstractEntity::BACK_OFFICE){
                 $instance = new \Monarc\Core\Model\Entity\Instance();
             }else{
                 $instance = new \Monarc\FrontOffice\Model\Entity\Instance();
@@ -217,7 +219,7 @@ class InstanceRiskTable extends AbstractEntityTable
         ];
 
         //TO DO : if we want to keep the specific models, make an if on it
-        if($context == \Monarc\Core\Model\Entity\AbstractEntity::BACK_OFFICE){
+        if($context == AbstractEntity::BACK_OFFICE){
           $sql = "
               SELECT      " . implode(',', $arraySelect) . "
               FROM        instances_risks AS ir
@@ -269,16 +271,14 @@ class InstanceRiskTable extends AbstractEntityTable
             $instanceIds = [];
             $instanceIds[$instance->get('id')] = $instance->get('id');
 
-            if($context == \Monarc\Core\Model\Entity\AbstractEntity::BACK_OFFICE){
-                $instanceTable = new \Monarc\Core\Model\Table\InstanceTable($this->getDb());
-            }else{
+            if ($context == AbstractEntity::BACK_OFFICE) {
+                $instanceTable = new InstanceTable($this->getDb());
+            } else {
                 $instanceTable = new \Monarc\FrontOffice\Model\Table\InstanceTable($this->getDb());
             }
-            // @ruslan.baidan: Commented this out, because it should not be needed as we always pass the logged in user.
-            // $instanceTable->setConnectedUser($this->getConnectedUser());
 
             $instanceTable->initTree($instance);
-            $temp = isset($instance->parameters['children']) ? $instance->parameters['children'] : [];
+            $temp = $instance->parameters['children'] ?? [];
             while (!empty($temp)) {
                 $sub = array_shift($temp);
                 $instanceIds[$sub->get('id')] = $sub->get('id');

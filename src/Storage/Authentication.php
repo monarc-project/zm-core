@@ -28,7 +28,6 @@ class Authentication implements StorageInterface
     {
         $this->clearItems();
         if (!$this->hasItem($key) && !empty($value)) {
-
             $tt = new UserToken();
             $tt->exchangeArray([
                 'token' => $key,
@@ -43,27 +42,21 @@ class Authentication implements StorageInterface
         return false;
     }
 
-    public function getItem($key, &$success = null, & $casToken = null)
+    public function getItem($key)
     {
-        $success = false;
-        if($this->hasItem($key)){
-            $token = $this->userTokenTable->getRepository()->findOneByToken($key);
-            if(!empty($token)){
-                $casToken = $key;
-                $success = true;
-                return $token;
-            }
+        if ($this->hasItem($key)) {
+            return $this->userTokenTable->getRepository()->findOneByToken($key);
         }
+
         return null;
     }
 
     public function replaceItem($key, $value)
     {
-        $success = false;
-        $t = $this->getItem($key, $success);
-        if ($success) {
-            $t->set('dateEnd', new DateTime(sprintf('+%d min', $this->authTtl)));
-            $this->userTokenTable->save($t);
+        $item = $this->getItem($key);
+        if ($item) {
+            $item->set('dateEnd', new DateTime(sprintf('+%d min', $this->authTtl)));
+            $this->userTokenTable->save($item);
 
             return true;
         }
@@ -92,9 +85,9 @@ class Authentication implements StorageInterface
 
     public function removeItem($key)
     {
-        $t = $this->getItem($key, $success);
-        if ($success) {
-            $this->userTokenTable->delete($t->get('id'));
+        $item = $this->getItem($key);
+        if ($item) {
+            $this->userTokenTable->delete($item->get('id'));
 
             return true;
         }

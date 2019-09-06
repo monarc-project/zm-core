@@ -8,8 +8,8 @@
 namespace Monarc\Core\Service;
 
 use Exception;
-use Monarc\Core\Adapter\Authentication as AdapterAuthentication;
-use Monarc\Core\Storage\Authentication as StorageAuthentication;
+use Monarc\Core\Adapter\Authentication as AuthenticationAdapter;
+use Monarc\Core\Storage\Authentication as AuthenticationStorage;
 
 /**
  * Authentication Service
@@ -19,18 +19,18 @@ use Monarc\Core\Storage\Authentication as StorageAuthentication;
  */
 class AuthenticationService
 {
-    /** @var StorageAuthentication */
-    private $storageAuthentication;
+    /** @var AuthenticationStorage */
+    private $authenticationStorage;
 
-    /** @var AdapterAuthentication */
-    private $adapterAuthentication;
+    /** @var AuthenticationAdapter */
+    private $authenticationAdapter;
 
     public function __construct(
-        StorageAuthentication $storageAuthentication,
-        AdapterAuthentication $adapterAuthentication
+        AuthenticationStorage $authenticationStorage,
+        AuthenticationAdapter $authenticationAdapter
     ) {
-        $this->storageAuthentication = $storageAuthentication;
-        $this->adapterAuthentication = $adapterAuthentication;
+        $this->authenticationStorage = $authenticationStorage;
+        $this->authenticationAdapter = $authenticationAdapter;
     }
 
 
@@ -47,17 +47,17 @@ class AuthenticationService
     public function authenticate($data, &$token = null, &$uid = null, &$language = null)
     {
         if (!empty($data['login']) && !empty($data['password'])) {
-            $res = $this->adapterAuthentication
+            $res = $this->authenticationAdapter
                 ->setIdentity($data['login'])
                 ->setCredential($data['password'])
                 ->authenticate();
 
             if ($res->isValid()) {
-                $user = $this->adapterAuthentication->getUser();
+                $user = $this->authenticationAdapter->getUser();
                 $token = uniqid(bin2hex(openssl_random_pseudo_bytes(random_int(20, 40))), true);
                 $uid = $user->get('id');
                 $language = $user->get('language');
-                $this->storageAuthentication->addItem($token, $user);
+                $this->authenticationStorage->addItem($token, $user);
 
                 return true;
             }
@@ -75,8 +75,8 @@ class AuthenticationService
      */
     public function logout($data)
     {
-        if (!empty($data['token']) && $this->storageAuthentication->hasItem($data['token'])) {
-            $this->storageAuthentication->removeItem($data['token']);
+        if (!empty($data['token']) && $this->authenticationStorage->hasItem($data['token'])) {
+            $this->authenticationStorage->removeItem($data['token']);
 
             return true;
         }
@@ -93,14 +93,14 @@ class AuthenticationService
      */
     public function checkConnect($data)
     {
-        if (!empty($data['token']) && $this->storageAuthentication->hasItem($data['token'])) {
-            $dd = $this->storageAuthentication->getItem($data['token']);
+        if (!empty($data['token']) && $this->authenticationStorage->hasItem($data['token'])) {
+            $dd = $this->authenticationStorage->getItem($data['token']);
             if ($dd->get('dateEnd')->getTimestamp() < time()) {
                 $this->logout($data);
                 return false;
             }
 
-            $this->storageAuthentication->replaceItem($data['token'], $dd);
+            $this->authenticationStorage->replaceItem($data['token'], $dd);
 
             return true;
         }

@@ -19,4 +19,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class UserToken extends UserTokenSuperClass
 {
+    public function getUser(): User
+    {
+        return $this->user;
+    }
 }

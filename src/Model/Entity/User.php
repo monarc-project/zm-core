@@ -18,6 +18,12 @@ use Monarc\Core\Model\DbCli;
  */
 class User extends UserSuperClass
 {
-    // TODO: get rid of the dependency from entities classes:
+    // TODO: get rid of the dependency from entities classes.
     protected $ressources = ['setDbAdapter' => DbCli::class];
+
+    // TODO: When we remove all the super classes the entities fields goes here.
+    public function getId(): int
+    {
+        return $this->id;
+    }
 }

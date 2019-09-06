@@ -8,39 +8,46 @@
 namespace Monarc\Core\Service;
 
 use Monarc\Core\Model\Entity\User;
+use Monarc\Core\Model\Entity\UserToken;
+use Monarc\Core\Storage\Authentication as AuthenticationStorage;
+use Zend\Http\Request;
 
 /**
- * Connected User Service
+ * Determines and returns the system logged in user.
  *
  * Class ConnectedUserService
  * @package Monarc\Core\Service
  */
 class ConnectedUserService
 {
-    /** @var array */
-    protected $connectedUser = [];
+    /** @var User|null */
+    protected $connectedUser;
 
-    /**
-     * @return array The current connected user information
-     */
-    public function getConnectedUser()
+    /** @var Request */
+    private $request;
+
+    /** @var AuthenticationStorage */
+    private $authenticationStorage;
+
+    public function __construct(Request $request, AuthenticationStorage $authenticationStorage)
     {
-        return $this->connectedUser;
+        $this->request = $request;
+        $this->authenticationStorage = $authenticationStorage;
     }
 
-    /**
-     * Sets the currently connected user information
-     * @param User $connectedUser The current user
-     * @return $this For chaining calls
-     */
-    public function setConnectedUser($connectedUser)
+    public function getConnectedUser(): ?User
     {
-        if (!$connectedUser instanceof User) {
-            $connectedUser = new User();
+        if ($this->connectedUser === null) {
+            $token = $this->request->getHeader('token');
+            if (!empty($token)) {
+                /** @var UserToken $userToken */
+                $userToken = $this->authenticationStorage->getItem($token->getFieldValue());
+                if ($userToken) {
+                    $this->connectedUser = $userToken->getUser();
+                }
+            }
         }
 
-        $this->connectedUser = $connectedUser->toArray();
-
-        return $this;
+        return $this->connectedUser;
     }
 }

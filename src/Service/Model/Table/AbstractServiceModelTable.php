@@ -28,18 +28,16 @@ abstract class AbstractServiceModelTable implements FactoryInterface
     {
         $class = str_replace('Service\\', '', substr(get_class($this), 0, -17)) . 'Table';
         if (class_exists($class)) {
-            //TODO: remove it, just temporary solution.
-            $entityClass = str_replace(array('\\Table', 'Table'), array('\\Entity', ''), $class);
-
+            //TODO: this factory class will be removed, it's just a temporary solution.
             $instance = new $class(
                 $container->get($this->dbService),
-                $entityClass,
+                str_replace(array('\\Table', 'Table'), array('\\Entity', ''), $class),
                 $container->get(ConnectedUserService::class)->getConnectedUser()
             );
 
             return $instance;
-        } else {
-            return false;
         }
+
+        return false;
     }
 }

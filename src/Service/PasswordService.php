@@ -34,7 +34,6 @@ class PasswordService extends AbstractService
         $user = $this->get('userTable')->getByEmail($email);
 
         if ($user) {
-
             $date = new \DateTime("now");
             $date->add(new \DateInterval("P1D"));
 

@@ -15,6 +15,7 @@ use Doctrine\ORM\Mapping\MappingException;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\AbstractEntity;
+use Monarc\Core\Model\Entity\User;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\Exception\InvalidUuidStringException;
 use Doctrine\Common\Util\ClassUtils;
@@ -34,10 +35,10 @@ abstract class AbstractEntityTable
     /** @var string|null */
     protected $language;
 
-    /** @var array */
+    /** @var User */
     protected $connectedUser;
 
-    public function __construct(Db $dbService, string $entityClass, array $connectedUser)
+    public function __construct(Db $dbService, string $entityClass, User $connectedUser)
     {
         $this->db = $dbService;
         $this->entityClass = $entityClass;
@@ -76,10 +77,7 @@ abstract class AbstractEntityTable
         return $this->entityClass;
     }
 
-    /**
-     * @return array
-     */
-    public function getConnectedUser(): array
+    public function getConnectedUser(): User
     {
         return $this->connectedUser;
     }

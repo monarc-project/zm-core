@@ -345,18 +345,6 @@ return [
     ],
 
     'service_manager' => [
-        'lazy_services' => [
-            'class_map' => [
-                ModelTable\UserTokenTable::class => ModelTable\UserTokenTable::class,
-            ],
-            'proxies_target_dir' => $dataPath . '/LazyServices/Proxy',
-            'write_proxy_files' => true,
-        ],
-        'delegators' => [
-            ModelTable\UserTokenTable::class => [
-                LazyServiceFactory::class,
-            ],
-        ],
         'invokables' => [
             ModelEntity\Question::class => ModelEntity\Question::class,
             ModelEntity\QuestionChoice::class => ModelEntity\QuestionChoice::class,
@@ -490,7 +478,7 @@ return [
             /* Authentification */
             StorageAuthentication::class => ReflectionBasedAbstractFactory::class,
             AdapterAuthentication::class => AutowireFactory::class,
-            Service\ConnectedUserService::class => Service\ConnectedUserServiceFactory::class,
+            Service\ConnectedUserService::class => AutowireFactory::class,
             /* Translation */
             Service\TranslateService::class => Service\TranslateServiceFactory::class,
         ],
@@ -500,7 +488,7 @@ return [
         ],
         'initializers' => [
             ObjectManagerInitializer::class,
-        ]
+        ],
     ],
     'controllers' => [
         'factories' => [

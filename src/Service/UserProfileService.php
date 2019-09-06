@@ -16,6 +16,7 @@ namespace Monarc\Core\Service;
 class UserProfileService extends AbstractService
 {
     /**
+     * TODO: change the method to manipulate with User object.
      * @inheritdoc
      */
     public function update($user, $data)
@@ -27,18 +28,18 @@ class UserProfileService extends AbstractService
 
         $entity = $this->get('table')->getEntity($user['id']);
         $entity->setDbAdapter($this->get('table')->getDb());
-        if (!empty($data['new'])) {
-            if (!empty($data['confirm'])
-                && !empty($data['old'])
-                && $data['new'] === $data['old']
-                && password_verify($data['confirm'], $user->get('password'))
-            ) {
-                $entity->exchangeArray(['password' => $data['new']]);
-            }
+        if (!empty($data['new'])
+            && !empty($data['confirm'])
+            && !empty($data['old'])
+            && $data['new'] === $data['old']
+            && password_verify($data['confirm'], $user['password'])
+        ) {
+            $entity->exchangeArray(['password' => $data['new']]);
         } else {
             $entity->exchangeArray($data);
         }
         $this->get('table')->save($entity);
+
         return ['status' => 'ok'];
     }
 }
