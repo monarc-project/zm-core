@@ -489,6 +489,18 @@ return [
         'initializers' => [
             ObjectManagerInitializer::class,
         ],
+        'lazy_services' => [
+            'class_map' => [
+                ModelTable\UserTokenTable::class => ModelTable\UserTokenTable::class,
+            ],
+            'proxies_target_dir' => $dataPath . '/LazyServices/Proxy',
+            'write_proxy_files' => true,
+        ],
+        'delegators' => [
+            ModelTable\UserTokenTable::class => [
+                LazyServiceFactory::class,
+            ],
+        ],
     ],
     'controllers' => [
         'factories' => [

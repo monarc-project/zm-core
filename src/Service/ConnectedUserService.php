@@ -10,7 +10,7 @@ namespace Monarc\Core\Service;
 use Monarc\Core\Model\Entity\User;
 use Monarc\Core\Model\Entity\UserToken;
 use Monarc\Core\Storage\Authentication as AuthenticationStorage;
-use Zend\Http\Request;
+use Zend\Http\PhpEnvironment\Request;
 
 /**
  * Determines and returns the system logged in user.
