@@ -217,9 +217,9 @@ abstract class AbstractController extends AbstractRestfulController
                     }elseif(get_class($entity[$dependency]) == 'Doctrine\ORM\PersistentCollection'){
                         $entity[$dependency]->initialize();
                         if($entity[$dependency]->count()){
-                            $$dependency = $entity[$dependency]->getSnapshot();
+                            $dependency = $entity[$dependency]->getSnapshot();
                             $entity[$dependency] = [];
-                            foreach($$dependency as $d){
+                            foreach($dependency as $d){
                               if(is_a($d, $EntityDependency)){ //fetch more info
                                   $temp = $d->toArray();
                                   if(!empty($subField)){

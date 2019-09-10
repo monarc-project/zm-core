@@ -21,6 +21,7 @@ use Zend\ServiceManager\AbstractFactory\ReflectionBasedAbstractFactory;
 use Zend\ServiceManager\Factory\InvokableFactory;
 use Zend\ServiceManager\Proxy\LazyServiceFactory;
 
+$env = getenv('APP_ENV') ?: 'production';
 $appConfigDir = getenv('APP_CONF_DIR') ?? '';
 
 $dataPath = './data';
@@ -494,7 +495,7 @@ return [
                 ModelTable\UserTokenTable::class => ModelTable\UserTokenTable::class,
             ],
             'proxies_target_dir' => $dataPath . '/LazyServices/Proxy',
-            'write_proxy_files' => true,
+            'write_proxy_files' => $env === 'production',
         ],
         'delegators' => [
             ModelTable\UserTokenTable::class => [
