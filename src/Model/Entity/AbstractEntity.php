@@ -374,7 +374,6 @@ abstract class AbstractEntity implements InputFilterAwareInterface
     public function toArray()
     {
         return $this->getJsonArray();
-        //return get_object_vars($this);
     }
 
     /**

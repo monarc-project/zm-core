@@ -145,7 +145,6 @@ class Module
             return;
         }
 
-        $response = $e->getResponse();
         $exception = $e->getParam('exception');
         $exceptionJson = array();
         if ($exception) {

@@ -11,6 +11,8 @@ use Interop\Container\ContainerInterface;
 use Zend\ServiceManager\Factory\FactoryInterface;
 
 /**
+ * TODO: Remove me.
+ *
  * Abstract Service Factory
  *
  * Class AbstractServiceFactory
@@ -34,7 +36,6 @@ abstract class AbstractServiceFactory implements FactoryInterface
      */
     protected $monarcConf = [];
 
-    // TODO: refactor me.
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
         $class = (property_exists($this, 'class')) ? $this->class : substr(get_class($this), 0, -7);

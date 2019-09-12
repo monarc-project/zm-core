@@ -7,7 +7,13 @@
 
 namespace Monarc\Core\Service;
 
+use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\User;
+use Monarc\Core\Model\Entity\UserRole;
+use Monarc\Core\Model\Table\PasswordTokenTable;
+use Monarc\Core\Model\Table\UserRoleTable;
+use Monarc\Core\Model\Table\UserTable;
+use Monarc\Core\Model\Table\UserTokenTable;
 use Monarc\Core\Validator\PasswordStrength;
 
 /**
@@ -16,23 +22,51 @@ use Monarc\Core\Validator\PasswordStrength;
  * Class UserService
  * @package Monarc\Core\Service
  */
-class UserService extends AbstractService
+class UserService
 {
-    protected $roleTable;
-    protected $userRoleEntity;
-    protected $userTokenTable;
-    protected $passwordTokenTable;
-    protected $mailService;
-
+//    protected $roleTable;
+//    protected $userRoleEntity;
+//    protected $userTokenTable;
+//    protected $passwordTokenTable;
+//    protected $mailService;
+    /*
+    'table' => '\Monarc\Core\Model\Table\UserTable',
+    'entity' => '\Monarc\Core\Model\Entity\User',
+    'userRoleEntity' => '\Monarc\Core\Model\Entity\UserRole',
+    'roleTable' => '\Monarc\Core\Model\Table\UserRoleTable',
+    'userTokenTable' => '\Monarc\Core\Model\Table\UserTokenTable',
+    'passwordTokenTable' => '\Monarc\Core\Model\Table\PasswordTokenTable',
+    'mailService' => '\Monarc\Core\Service\MailService',
+    */
     protected $filterColumns = ['firstname', 'lastname', 'email'];
 
-    /**
-     * Returns the total amount of users
-     * @return int The amount of users
-     */
-    public function getTotalCount()
-    {
-        return $this->get('table')->count();
+    /** @var UserTable */
+    private $userTable;
+
+    /** @var UserRoleTable */
+    private $userRoleTable;
+
+    /** @var UserTokenTable */
+    private $userTokenTable;
+
+    /** @var PasswordTokenTable */
+    private $passwordTokenTable;
+
+    /** @var MailService */
+    private $mailService;
+
+    public function __construct(
+        UserTable $userTable,
+        UserRoleTable $userRoleTable,
+        UserTokenTable $userTokenTable,
+        PasswordTokenTable $passwordTokenTable,
+        MailService $mailService
+    ) {
+        $this->userTable = $userTable;
+        $this->userRoleTable = $userRoleTable;
+        $this->userTokenTable = $userTokenTable;
+        $this->passwordTokenTable = $passwordTokenTable;
+        $this->mailService = $mailService;
     }
 
     /**
@@ -40,7 +74,7 @@ class UserService extends AbstractService
      */
     public function create($data, $last = true)
     {
-        $user = $this->get('entity');
+        $user = new User();
         $data['status'] = 1;
 
         if (empty($data['language'])) {
@@ -89,19 +123,16 @@ class UserService extends AbstractService
         return parent::patch($id, $data);
     }
 
-    /**
-     * Get an user by email
-     * @param string $email The e-mail address
-     * @return array The users matching the e-mail address
-     */
-    public function getByEmail($email)
+    public function getByEmail(string $email): User
     {
-        return $this->get('table')->getByEmail($email);
+        return $this->userTable->getByEmail($email);
     }
 
     /**
      * Validates that the password matches the required strength policy (special chars, lower/uppercase, number)
+     *
      * @param string $data An array with a password key containing the password
+     *
      * @throws \Exception If password is invalid
      */
     protected function validatePassword($data)
@@ -115,39 +146,38 @@ class UserService extends AbstractService
                 $errors[] = $message;
             }
 
-            throw new \Monarc\Core\Exception\Exception("Password must " . implode($errors, ', ') . ".", 412);
+            throw new Exception("Password must " . implode($errors, ', ') . ".", 412);
         }
     }
 
     /**
      * Manage Roles
+     *
      * @param User $user The user to manage
      * @param array $data The new user roles
+     *
      * @throws \Exception In case of invalid roles selected
      */
-    protected function manageRoles($user, $data)
+    protected function manageRoles(User $user, $data)
     {
-        if (!empty($data['role'])) {
-            $userRoleTable = $this->get('roleTable');
-            $userRoleTable->deleteByUser($user->id);
+        if (empty($data['role'])) {
+            throw new Exception('You must select one or more roles', 412);
+        }
 
-            foreach ($data['role'] as $role) {
-                $roleData = [
-                    'user' => $user,
-                    'role' => $role,
-                ];
+        $this->userRoleTable->deleteByUser($user->id);
 
-                $class = $this->get('userRoleEntity');
+        foreach ($data['role'] as $role) {
+            $roleData = [
+                'user' => $user,
+                'role' => $role,
+            ];
 
-                $userRoleEntity = new $class();
-                $userRoleEntity->setLanguage($this->getLanguage());
-                $userRoleEntity->setDbAdapter($this->get('table')->getDb());
-                $userRoleEntity->exchangeArray($roleData);
+            $userRoleEntity = new UserRole();
+            $userRoleEntity->setLanguage($this->getLanguage());
+            $userRoleEntity->setDbAdapter($this->get('table')->getDb());
+            $userRoleEntity->exchangeArray($roleData);
 
-                $userRoleTable->save($userRoleEntity);
-            }
-        } else {
-            throw new \Monarc\Core\Exception\Exception("You must select one or more roles", 412);
+            $this->userRoleTable->save($userRoleEntity);
         }
     }
 
@@ -165,5 +195,44 @@ class UserService extends AbstractService
             }
         }
         return $user;
+    }
+
+    /**
+     * TODO: The following code is copied from AbstractService. To be cleaned up.
+     */
+
+    public function getFilteredCount($filter = null, $filterAnd = null)
+    {
+        return count($this->getList(1, null, null, $filter, $filterAnd));
+    }
+
+    /**
+     * Returns the list of elements based on the provided filters passed in parameters. Results are paginated (using the
+     * $page and $limit combo), except when $limit is <= 0, in which case all results will be returned.
+     *
+     * @param int $page The page number, starting at 1.
+     * @param int $limit The maximum number of elements retrieved, or null to retrieve everything
+     * @param string|null $order The order in which elements should be retrieved (['column' => 'ASC/DESC'])
+     * @param string|null $filter The array of columns => values which should be filtered (in a WHERE.. OR.. fashion)
+     * @param array|null $filterAnd The array of columns => values which should be filtered (in a WHERE.. AND.. fashion)
+     *
+     * @return array An array of elements based on the provided search query
+     */
+    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
+    {
+        $filterJoin = $filterLeft = null;
+        if (is_callable(array($this->get('entity'), 'getFiltersForService'), false, $name)) {
+            [$filterJoin, $filterLeft] = $this->get('entity')->getFiltersForService();
+        }
+        return $this->get('table')->fetchAllFiltered(
+            array_keys($this->get('entity')->getJsonArray()),
+            $page,
+            $limit,
+            $this->parseFrontendOrder($order),
+            $this->parseFrontendFilter($filter, $this->filterColumns),
+            $filterAnd,
+            $filterJoin,
+            $filterLeft
+        );
     }
 }

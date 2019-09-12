@@ -145,16 +145,11 @@ abstract class AbstractEntityTable
     }
 
     /**
-     * @return bool|mixed
+     * @return bool|int
      */
     public function count()
     {
-        $c = $this->getEntityClass();
-        if (class_exists($c)) {
-            return $this->getDb()->count(new $c());
-        }
-
-        return false;
+        return $this->getDb()->count($this->getEntityClass());
     }
 
     /**

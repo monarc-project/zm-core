@@ -6,6 +6,9 @@ use DoctrineModule\Persistence\ObjectManagerAwareInterface;
 use Interop\Container\ContainerInterface;
 use Zend\ServiceManager\Initializer\InitializerInterface;
 
+/**
+ * TODO: Remove me. Global Initializer is not a good practice, because are called for every object's initialization.
+ */
 class ObjectManagerInitializer implements InitializerInterface
 {
     /**

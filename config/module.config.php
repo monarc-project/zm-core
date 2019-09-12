@@ -400,7 +400,7 @@ return [
             Service\ThreatService::class => Service\ThreatServiceFactory::class,
             Service\SoaCategoryService::class => Service\SoaCategoryServiceFactory::class,
             Service\UserRoleService::class => AutowireFactory::class,
-            Service\UserService::class => Service\UserServiceFactory::class,
+            Service\UserService::class => AnnotationDriver::class,
             Service\VulnerabilityService::class => Service\VulnerabilityServiceFactory::class,
             Service\DeliveriesModelsService::class => Service\DeliveriesModelsServiceFactory::class,
             Service\ModelObjectService::class => Service\ModelObjectServiceFactory::class,
