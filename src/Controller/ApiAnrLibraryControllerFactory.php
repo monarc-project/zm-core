@@ -15,5 +15,5 @@ namespace Monarc\Core\Controller;
  */
 class ApiAnrLibraryControllerFactory extends AbstractControllerFactory
 {
-    protected $serviceName = '\Monarc\Core\Service\ObjectService';
+    protected $serviceName = 'Monarc\Core\Service\ObjectService';
 }

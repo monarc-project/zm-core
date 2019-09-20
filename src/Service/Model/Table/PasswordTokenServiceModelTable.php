@@ -7,20 +7,27 @@
 
 namespace Monarc\Core\Service\Model\Table;
 
+use Interop\Container\ContainerInterface;
 use Monarc\Core\Model\DbCli;
-use Zend\ServiceManager\ServiceLocatorInterface;
+use Monarc\Core\Model\Entity\PasswordToken;
+use Monarc\Core\Model\Table\PasswordTokenTable;
+use Monarc\Core\Service\ConnectedUserService;
+use Zend\ServiceManager\Factory\FactoryInterface;
 
 /**
  * Class PasswordTokenServiceModelTable
  * @package Monarc\Core\Service\Model\Table
  */
-class PasswordTokenServiceModelTable extends AbstractServiceModelTable
+class PasswordTokenServiceModelTable implements FactoryInterface
 {
-    protected $dbService = DbCli::class;
-
-    public function createService(ServiceLocatorInterface $serviceLocator)
+    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
-        // TODO: Password tokens can be stored in for instance in redis by multiple reasons, one is lifetime of the token, second faster storage.
-        return new \Monarc\Core\Model\Table\PasswordTokenTable($serviceLocator->get($this->dbService));
+        // TODO: Password tokens can be stored in for instance in redis by multiple reasons,
+        //  one is lifetime of the token, second faster storage.
+        return new PasswordTokenTable(
+            $container->get(DbCli::class),
+            PasswordToken::class,
+            $container->get(ConnectedUserService::class)
+        );
     }
 }

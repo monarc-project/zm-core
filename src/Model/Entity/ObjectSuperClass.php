@@ -398,7 +398,7 @@ class ObjectSuperClass extends AbstractEntity
                 if (!$partial) {
                     $validatorsName = array(
                         array(
-                            'name' => '\Monarc\Core\Validator\UniqueName',
+                            'name' => 'Monarc\Core\Validator\UniqueName',
                             'options' => array(
                                 'entity' => $this,
                                 'adapter' => $this->getDbAdapter(),

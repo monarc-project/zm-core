@@ -62,7 +62,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
     {
         if (!empty($obj)) {
             if (is_object($obj)) {
-                if (is_subclass_of($obj, '\Monarc\Core\Model\Entity\AbstractEntity') && method_exists($obj, 'getJsonArray')) {
+                if (is_subclass_of($obj, 'Monarc\Core\Model\Entity\AbstractEntity') && method_exists($obj, 'getJsonArray')) {
                     $obj = $obj->getJsonArray();
                     foreach ($obj as $k => $v) {
                         if ($this->__isset($k)) {

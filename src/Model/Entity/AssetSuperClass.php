@@ -238,7 +238,7 @@ class AssetSuperClass extends AbstractEntity
         if (!$partial) {
             $validatorsCode = array(
                 array(
-                    'name' => '\Monarc\Core\Validator\UniqueCode',
+                    'name' => 'Monarc\Core\Validator\UniqueCode',
                     'options' => array(
                         'entity' => $this
                     ),

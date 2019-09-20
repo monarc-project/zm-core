@@ -18,9 +18,9 @@ class ModelObjectServiceFactory extends AbstractServiceFactory
     protected $ressources = [
         'table' => 'Monarc\Core\Model\Table\MonarcObjectTable',
         'entity' => 'Monarc\Core\Model\Entity\MonarcObject',
-        'assetTable' => '\Monarc\Core\Model\Table\AssetTable',
-        'categoryTable' => '\Monarc\Core\Model\Table\ObjectCategoryTable',
-        'rolfTagTable' => '\Monarc\Core\Model\Table\RolfTagTable',
+        'assetTable' => 'Monarc\Core\Model\Table\AssetTable',
+        'categoryTable' => 'Monarc\Core\Model\Table\ObjectCategoryTable',
+        'rolfTagTable' => 'Monarc\Core\Model\Table\RolfTagTable',
         'sourceTable' => 'Monarc\Core\Model\Table\MonarcObjectTable',
         'modelTable' => 'Monarc\Core\Model\Table\ModelTable',
     ];

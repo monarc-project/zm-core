@@ -16,14 +16,14 @@ namespace Monarc\Core\Service;
 class ThreatServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = [
-        'table' => '\Monarc\Core\Model\Table\ThreatTable',
-        'entity' => '\Monarc\Core\Model\Entity\Threat',
-        'anrTable' => '\Monarc\Core\Model\Table\AnrTable',
+        'table' => 'Monarc\Core\Model\Table\ThreatTable',
+        'entity' => 'Monarc\Core\Model\Entity\Threat',
+        'anrTable' => 'Monarc\Core\Model\Table\AnrTable',
         'instanceRiskService' => 'Monarc\Core\Service\InstanceRiskService',
-        'instanceRiskTable' => '\Monarc\Core\Model\Table\InstanceRiskTable',
-        'modelTable' => '\Monarc\Core\Model\Table\ModelTable',
+        'instanceRiskTable' => 'Monarc\Core\Model\Table\InstanceRiskTable',
+        'modelTable' => 'Monarc\Core\Model\Table\ModelTable',
         'modelService' => 'Monarc\Core\Service\ModelService',
-        'themeTable' => '\Monarc\Core\Model\Table\ThemeTable',
+        'themeTable' => 'Monarc\Core\Model\Table\ThemeTable',
         'amvService' => 'Monarc\Core\Service\AmvService',
     ];
 }

@@ -15,5 +15,5 @@ namespace Monarc\Core\Controller;
  */
 class IndexControllerFactory extends AbstractControllerFactory
 {
-	protected $serviceName = '\Monarc\Core\Service\IndexService';
+	protected $serviceName = 'Monarc\Core\Service\IndexService';
 }

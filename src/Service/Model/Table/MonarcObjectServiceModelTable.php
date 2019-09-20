@@ -7,7 +7,8 @@
 
 namespace Monarc\Core\Service\Model\Table;
 
-use Zend\ServiceManager\ServiceLocatorInterface;
+use Interop\Container\ContainerInterface;
+use Monarc\Core\Model\Table\ObjectObjectTable;
 
 /**
  * Class MonarcObjectServiceModelTable
@@ -15,13 +16,12 @@ use Zend\ServiceManager\ServiceLocatorInterface;
  */
 class MonarcObjectServiceModelTable extends AbstractServiceModelTable
 {
-    public function createService(ServiceLocatorInterface $serviceLocator)
+    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
-        $instance = parent::createService($serviceLocator);
-        if ($instance !== false) {
-            // TODO: check why do we need to set it here.
-            $instance->setObjectObjectTable($serviceLocator->get('\Monarc\Core\Model\Table\ObjectObjectTable'));
-        }
+        $instance = parent::__invoke($container, $requestedName, $options);
+
+        $instance->setObjectObjectTable($container->get(ObjectObjectTable::class));
+
         return $instance;
     }
 }

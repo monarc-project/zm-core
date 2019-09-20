@@ -15,5 +15,5 @@ namespace Monarc\Core\Controller;
  */
 class ApiModelsDuplicationControllerFactory extends AbstractControllerFactory
 {
-    protected $serviceName = '\Monarc\Core\Service\ModelService';
+    protected $serviceName = 'Monarc\Core\Service\ModelService';
 }

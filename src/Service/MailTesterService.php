@@ -1,22 +1,22 @@
 <?php
 namespace Monarc\Core\Service;
 
-use Zend\ServiceManager\ServiceLocatorInterface;
 use Zend\Console\Request as ConsoleRequest;
 use Zend\Console\ColorInterface;
 
-class MailTesterService {
-    protected $serviceLocator;
+class MailTesterService
+{
     protected $console;
     protected $mailService;
 
-    public function __construct(ServiceLocatorInterface $serviceLocator){
-        $this->serviceLocator = $serviceLocator;
+    public function __construct($console, MailService $mailService)
+    {
         $this->console = $serviceLocator->get('console');
         $this->mailService = $serviceLocator->get('Monarc\Core\Service\MailService');
     }
 
-    public function send(ConsoleRequest $request){
+    public function send(ConsoleRequest $request)
+    {
         $email = trim($request->getParam('email'));
         if(empty($email)){
             $this->console->write("Email is empty\n",ColorInterface::RED);

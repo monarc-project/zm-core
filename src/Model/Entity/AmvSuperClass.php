@@ -336,7 +336,7 @@ class AmvSuperclass extends AbstractEntity
                 'filters' => array(),
                 'validators' => array(
                     array(
-                        'name' => 'Callback', //'\Monarc\Core\Validator\Uuid',
+                        'name' => 'Callback', //'Monarc\Core\Validator\Uuid',
                         'options' => array(
                             'messages' => array(
                                 \Zend\Validator\Callback::INVALID_VALUE => 'an uuid is missing or incorrect',
@@ -364,7 +364,7 @@ class AmvSuperclass extends AbstractEntity
                     'allow_empty' => false,
                     'validators' => array(
                         array(
-                            'name' => 'Callback', //'\Monarc\Core\Validator\Uuid',
+                            'name' => 'Callback', //'Monarc\Core\Validator\Uuid',
                             'options' => array(
                                 'messages' => array(
                                     \Zend\Validator\Callback::INVALID_VALUE => 'an uuid is missing or incorrect',
@@ -391,7 +391,7 @@ class AmvSuperclass extends AbstractEntity
                 'allow_empty' => false,
                 'validators' => array(
                     array(
-                        'name' => 'Callback', //'\Monarc\Core\Validator\UniqueAMV',
+                        'name' => 'Callback', //'Monarc\Core\Validator\UniqueAMV',
                         'options' => array(
                             'messages' => array(
                                 \Zend\Validator\Callback::INVALID_VALUE => 'This AMV link is already used',

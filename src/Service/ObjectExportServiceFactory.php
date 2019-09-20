@@ -16,14 +16,14 @@ namespace Monarc\Core\Service;
 class ObjectExportServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = [
-        'table' => '\Monarc\Core\Model\Table\MonarcObjectTable',
-        'entity' => '\Monarc\Core\Model\Entity\MonarcObject',
+        'table' => 'Monarc\Core\Model\Table\MonarcObjectTable',
+        'entity' => 'Monarc\Core\Model\Entity\MonarcObject',
         'assetExportService' => 'Monarc\Core\Service\AssetExportService',
         'objectObjectService' => 'Monarc\Core\Service\ObjectObjectService',
-        'categoryTable' => '\Monarc\Core\Model\Table\ObjectCategoryTable',
-        'anrObjectCategoryTable' => '\Monarc\Core\Model\Table\AnrObjectCategoryTable',
-        'rolfTagTable' => '\Monarc\Core\Model\Table\RolfTagTable',
-        'rolfRiskTable' => '\Monarc\Core\Model\Table\RolfRiskTable',
+        'categoryTable' => 'Monarc\Core\Model\Table\ObjectCategoryTable',
+        'anrObjectCategoryTable' => 'Monarc\Core\Model\Table\AnrObjectCategoryTable',
+        'rolfTagTable' => 'Monarc\Core\Model\Table\RolfTagTable',
+        'rolfRiskTable' => 'Monarc\Core\Model\Table\RolfRiskTable',
         'configService' => 'Monarc\Core\Service\ConfigService',
     ];
 }

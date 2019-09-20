@@ -16,13 +16,13 @@ namespace Monarc\Core\Service;
 class ObjectObjectServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = [
-        'table' => '\Monarc\Core\Model\Table\ObjectObjectTable',
-        'anrTable' => '\Monarc\Core\Model\Table\AnrTable',
-        'instanceTable' => '\Monarc\Core\Model\Table\InstanceTable',
-        'MonarcObjectTable' => '\Monarc\Core\Model\Table\MonarcObjectTable',
-        'entity' => '\Monarc\Core\Model\Entity\ObjectObject',
-        'childTable' => '\Monarc\Core\Model\Table\MonarcObjectTable',
-        'fatherTable' => '\Monarc\Core\Model\Table\MonarcObjectTable',
-        'modelTable' => '\Monarc\Core\Model\Table\ModelTable',
+        'table' => 'Monarc\Core\Model\Table\ObjectObjectTable',
+        'anrTable' => 'Monarc\Core\Model\Table\AnrTable',
+        'instanceTable' => 'Monarc\Core\Model\Table\InstanceTable',
+        'MonarcObjectTable' => 'Monarc\Core\Model\Table\MonarcObjectTable',
+        'entity' => 'Monarc\Core\Model\Entity\ObjectObject',
+        'childTable' => 'Monarc\Core\Model\Table\MonarcObjectTable',
+        'fatherTable' => 'Monarc\Core\Model\Table\MonarcObjectTable',
+        'modelTable' => 'Monarc\Core\Model\Table\ModelTable',
     ];
 }

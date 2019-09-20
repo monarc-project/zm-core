@@ -37,7 +37,7 @@ class UniqueDeliveryModel extends AbstractValidator
         if(empty($this->options['adapter'])){
             return false;
         }else{
-            $res = $this->options['adapter']->getRepository('\Monarc\Core\Model\Entity\DeliveriesModels')->findByCategory($value);
+            $res = $this->options['adapter']->getRepository('Monarc\Core\Model\Entity\DeliveriesModels')->findByCategory($value);
             if(count($res) >= 5){
                 $this->error(self::MAXIMUMBYCATEGORYREACHED);
                 return false;

@@ -15,5 +15,5 @@ namespace Monarc\Core\Controller;
  */
 class ApiAnrInstancesRisksControllerFactory extends AbstractControllerFactory
 {
-    protected $serviceName = '\Monarc\Core\Service\InstanceRiskService';
+    protected $serviceName = 'Monarc\Core\Service\InstanceRiskService';
 }

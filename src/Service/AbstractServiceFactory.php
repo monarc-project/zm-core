@@ -93,7 +93,8 @@ abstract class AbstractServiceFactory implements FactoryInterface
 
                 if ($anrId) {
                     /** @var AnrTable $anrTable */
-                    $anrTable = $sm->get('\Monarc\FrontOffice\Model\Table\AnrTable');
+                    // TODO: the FrontOffice dependency should not be presented in core.
+                    $anrTable = $sm->get('Monarc\FrontOffice\Model\Table\AnrTable');
                     $anr = $anrTable->getEntity($anrId);
 
                     if ($anr->get('language')) {

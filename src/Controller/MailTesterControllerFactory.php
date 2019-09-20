@@ -1,12 +1,13 @@
 <?php
 namespace Monarc\Core\Controller;
 
-use Zend\ServiceManager\FactoryInterface;
-use Zend\ServiceManager\ServiceLocatorInterface;
-use \Monarc\Core\Controller\MailTesterController;
+use Interop\Container\ContainerInterface;
+use Zend\ServiceManager\Factory\FactoryInterface;
 
-class MailTesterControllerFactory implements FactoryInterface{
-    public function createService(ServiceLocatorInterface $serviceLocator){
-        return new MailTesterController($serviceLocator->getServiceLocator()->get('Monarc\Core\Service\MailTesterService'));
+class MailTesterControllerFactory implements FactoryInterface
+{
+    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
+    {
+        return new MailTesterController($container->get('MailTesterService'));
     }
 }

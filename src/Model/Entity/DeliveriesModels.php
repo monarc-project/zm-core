@@ -177,7 +177,7 @@ class DeliveriesModels extends AbstractEntity
                         ),
                     ),
                     array(
-                        'name' => '\Monarc\Core\Validator\UniqueDeliveryModel',
+                        'name' => 'Monarc\Core\Validator\UniqueDeliveryModel',
                         'options' => array(
                             'adapter' => $this->getDbAdapter(),
                             'category' => $this->get('category'),
