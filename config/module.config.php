@@ -405,7 +405,7 @@ return [
             Service\VulnerabilityService::class => Service\VulnerabilityServiceFactory::class,
             Service\DeliveriesModelsService::class => Service\DeliveriesModelsServiceFactory::class,
             Service\ModelObjectService::class => Service\ModelObjectServiceFactory::class,
-            Service\UserProfileService::class => Service\UserProfileServiceFactory::class,
+            Service\UserProfileService::class => AutowireFactory::class,
             Service\AnrObjectService::class => Service\AnrObjectServiceFactory::class,
             Service\MailTesterService::class => Service\MailTesterServiceFactory::class,
 
