@@ -11,6 +11,7 @@ use Monarc\Core\Service\Model\DbCliFactory;
 use Monarc\Core\Service\Model\DbFactory;
 use Monarc\Core\Service;
 use Monarc\Core\Storage\Authentication as StorageAuthentication;
+use Monarc\Core\Validator\LanguageValidator;
 use Ramsey\Uuid\Doctrine\UuidType;
 use Zend\Di\Container\AutowireFactory;
 use Monarc\Core\Model\Entity as ModelEntity;
@@ -350,8 +351,8 @@ return [
             ModelEntity\Question::class => ModelEntity\Question::class,
             ModelEntity\QuestionChoice::class => ModelEntity\QuestionChoice::class,
             ModelEntity\PasswordToken::class => ModelEntity\PasswordToken::class,
-            ModelEntity\UserRole::class => ModelEntity\UserRole::class,
-            ModelEntity\User::class => ModelEntity\User::class,
+            // ModelEntity\UserRole::class => ModelEntity\UserRole::class,
+            // ModelEntity\User::class => ModelEntity\User::class,
 
             // TODO: fix the classes and dependencies.
             'Monarc\Core\Service\Mime\Part' => 'Zend\Mime\Part',
@@ -400,7 +401,7 @@ return [
             Service\ThreatService::class => Service\ThreatServiceFactory::class,
             Service\SoaCategoryService::class => Service\SoaCategoryServiceFactory::class,
             Service\UserRoleService::class => AutowireFactory::class,
-            Service\UserService::class => AnnotationDriver::class,
+            Service\UserService::class => ReflectionBasedAbstractFactory::class,
             Service\VulnerabilityService::class => Service\VulnerabilityServiceFactory::class,
             Service\DeliveriesModelsService::class => Service\DeliveriesModelsServiceFactory::class,
             Service\ModelObjectService::class => Service\ModelObjectServiceFactory::class,
@@ -482,6 +483,9 @@ return [
             Service\ConnectedUserService::class => AutowireFactory::class,
             /* Translation */
             Service\TranslateService::class => Service\TranslateServiceFactory::class,
+
+            /* Validators */
+            LanguageValidator::class => ReflectionBasedAbstractFactory::class,
         ],
         'shared' => [
             ModelEntity\Scale::class => false,

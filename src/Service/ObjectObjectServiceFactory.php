@@ -23,6 +23,6 @@ class ObjectObjectServiceFactory extends AbstractServiceFactory
         'entity' => '\Monarc\Core\Model\Entity\ObjectObject',
         'childTable' => '\Monarc\Core\Model\Table\MonarcObjectTable',
         'fatherTable' => '\Monarc\Core\Model\Table\MonarcObjectTable',
-        'modelTable' => '\Monarc\Core\Model\Table\modelTable',
+        'modelTable' => '\Monarc\Core\Model\Table\ModelTable',
     ];
 }

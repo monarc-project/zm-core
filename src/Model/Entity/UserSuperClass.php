@@ -7,18 +7,28 @@
 
 namespace Monarc\Core\Model\Entity;
 
+use DateTime;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
+ * TODO: move filter functionality to a filter class.
+ * TODO: move exchangeArray functionality to a some validator class (what can guess from the first look)
+ *
  * User Super Class
  *
  * @ORM\Table(name="users")
  * @ORM\MappedSuperclass
  */
-class UserSuperClass extends AbstractEntity
+abstract class UserSuperClass
 {
+    public const STATUS_ACTIVE = 1;
+    public const STATUS_INACTIVE = 0;
+
+    public const CREATOR_SYSTEM = 'System';
+
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer", nullable=false)
      * @ORM\Id
@@ -27,25 +37,25 @@ class UserSuperClass extends AbstractEntity
     protected $id;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      *
      * @ORM\Column(name="date_start", type="date", nullable=true)
      */
     protected $dateStart;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      *
      * @ORM\Column(name="date_end", type="date", nullable=true)
      */
     protected $dateEnd;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="status", type="smallint", nullable=true)
      */
-    protected $status = '1';
+    protected $status;
 
     /**
      * @var string
@@ -64,7 +74,7 @@ class UserSuperClass extends AbstractEntity
     /**
      * @var string
      *
-     * @ORM\Column(name="email", type="string", length=255, nullable=true)
+     * @ORM\Column(name="email", type="string", length=255, nullable=false)
      */
     protected $email;
 
@@ -83,7 +93,7 @@ class UserSuperClass extends AbstractEntity
     protected $creator;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      *
      * @ORM\Column(name="created_at", type="datetime", nullable=true)
      */
@@ -97,7 +107,7 @@ class UserSuperClass extends AbstractEntity
     protected $updater;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=true)
      */
@@ -110,79 +120,150 @@ class UserSuperClass extends AbstractEntity
      */
     protected $language;
 
-    public function getInputFilter($partial = false)
+    /**
+     * @var ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="UserRole", orphanRemoval=true, mappedBy="user", cascade={"persist", "remove"})
+     */
+    protected $roles;
+
+    public function __construct(array $data)
     {
-
-        if (!$this->inputFilter) {
-            parent::getInputFilter($partial);
-            $this->inputFilter->add(array(
-                'name' => 'firstname',
-                'required' => ($partial) ? false : true,
-                'filters' => array(
-                    array('name' => 'StringTrim',),
-                ),
-                'validators' => array(),
-            ));
-            $this->inputFilter->add(array(
-                'name' => 'lastname',
-                'required' => ($partial) ? false : true,
-                'filters' => array(
-                    array('name' => 'StringTrim',),
-                ),
-                'validators' => array(),
-            ));
-
-            $validators = array(
-                array('name' => 'EmailAddress'),
-            );
-            if (!$partial) {
-                $validators[] = array(
-                    'name' => '\Monarc\Core\Validator\UniqueEmail',
-                    'options' => array(
-                        'adapter' => $this->getDbAdapter(),
-                        'id' => $this->get('id'),
-                    ),
-                );
-            }
-
-            $this->inputFilter->add(array(
-                'name' => 'email',
-                'required' => ($partial) ? false : true,
-                'filters' => array(
-                    array('name' => 'StringTrim',),
-                ),
-                'validators' => $validators
-            ));
-
-            $this->inputFilter->add(array(
-                'name' => 'role',
-                'required' => false,
-            ));
-
-            $this->inputFilter->add(array(
-                'name' => 'password',
-                'allowEmpty' => true,
-                'continueIfEmpty' => true,
-                'required' => false,
-                'filters' => array(
-                    array(
-                        'name' => '\Monarc\Core\Filter\Password',
-                    ),
-                ),
-                'validators' => array(),
-            ));
-
-            $this->inputFilter->add(array(
-                'name' => 'language',
-                'allowEmpty' => true,
-                'continueIfEmpty' => true,
-                'required' => false,
-                'filters' => array(
-                    array('name' => 'ToInt',),
-                ),
-                'validators' => array(),
-            ));
+        $this->firstname = $data['firstname'];
+        $this->lastname = $data['lastname'];
+        $this->email = $data['email'];
+        if (isset($data['password'])) {
+            $this->password = $data['password'];
         }
-        return $this->inputFilter;
+        $this->language = $data['language'];
+        $this->status = $data['status'] ?? self::STATUS_ACTIVE;
+        $this->creator = $data['creator'];
+        $this->setRoles($data['role']);
+        $this->createdAt = new DateTime();
+    }
+
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    public function getFirstname(): string
+    {
+        return $this->firstname;
+    }
+
+    public function setFirstname(string $firstname): self
+    {
+        $this->firstname = $firstname;
+
+        return $this;
+    }
+
+    public function getLastname(): string
+    {
+        return $this->lastname;
+    }
+
+    public function setLastname(string $lastname): self
+    {
+        $this->lastname = $lastname;
+
+        return $this;
+    }
+
+    public function getEmail(): string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(string $email): self
+    {
+        $this->email = $email;
+
+        return $this;
+    }
+
+    public function getPassword(): string
+    {
+        return $this->password;
+    }
+
+    public function setPassword(string $password): self
+    {
+        $this->password = $password;
+
+        return $this;
+    }
+
+    public function setLanguage(int $language): self
+    {
+        $this->language = $language;
+
+        return $this;
+    }
+
+    public function getLanguage(): int
+    {
+        return $this->language;
+    }
+
+    abstract protected function createRole(string $role): UserRoleSuperClass;
+
+    public function setRoles(array $roles): self
+    {
+        $this->roles = new ArrayCollection();
+        foreach ($roles as $role) {
+            $this->addRole($this->createRole($role));
+        }
+
+        return $this;
+    }
+
+    public function getRoles(): array
+    {
+        $roles = [];
+        foreach ($this->roles as $role) {
+            $roles[] = $role->getRole();
+        }
+
+        return $roles;
+    }
+
+    public function addRole(UserRoleSuperClass $role): self
+    {
+        $this->roles->add($role);
+
+        return $this;
+    }
+
+    public function hasRole(string $roleName): bool
+    {
+        foreach ($this->roles as $role) {
+            if ($role->getRole() === $role) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->status === self::STATUS_ACTIVE;
+    }
+
+    public function getStatus(): int
+    {
+        return $this->status;
+    }
+
+    public function isSystemUser(): bool
+    {
+        return $this->creator === static::CREATOR_SYSTEM;
+    }
+
+    public function getCreator(): string
+    {
+        return $this->creator;
     }
 }

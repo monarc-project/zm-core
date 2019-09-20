@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Controller;
 
+use Monarc\Core\Model\Entity\User;
 use Monarc\Core\Service\AuthenticationService;
 use Zend\Mvc\Controller\AbstractRestfulController;
 use Zend\View\Model\JsonModel;
@@ -32,22 +33,25 @@ class AuthenticationController extends AbstractRestfulController
      */
     public function create($data)
     {
-        $t = null;
-        $uid = null;
-        $language = null;
-
         // If the authentication is successful, return 200 with a token and the user ID. Otherwise, return an HTTP
         // error 405 so that the frontend can process accordingly. Remember that 401 is a reserved code that will
         // reset the authentication token and will redirect the user to the login page.
-        if ($this->authenticationService->authenticate($data, $t, $uid, $language)) {
+        $authenticatedData = $this->authenticationService->authenticate($data);
+        if (!empty($authenticatedData)) {
             $this->getResponse()->setStatusCode(200);
+            /** @var User $user */
+            $user = $authenticatedData['user'];
 
-            return new JsonModel(['token' => $t, 'uid' => $uid, 'language' => $language]);
-        } else {
-            $this->getResponse()->setStatusCode(405);
-
-            return new JsonModel([]);
+            return new JsonModel([
+                'token' => $authenticatedData['token'],
+                'uid' => $user->getId(),
+                'language' => $user->getLanguage(),
+            ]);
         }
+
+        $this->getResponse()->setStatusCode(405);
+
+        return new JsonModel([]);
     }
 
     /**

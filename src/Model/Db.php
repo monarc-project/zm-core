@@ -8,13 +8,15 @@ namespace Monarc\Core\Model;
 
 use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\ORM\EntityManager;
+use Monarc\Core\Model\Entity\AbstractEntity;
 use Ramsey\Uuid\Uuid;
 
 /**
  * Class Db
  * @package Monarc\Core\Model
  */
-class Db {
+class Db
+{
     /** @var EntityManager */
     protected $entityManager;
 
@@ -95,7 +97,7 @@ class Db {
      * Find entities in repository who matches with filters.
      * Apply order and limit for pagination.
      *
-     * @param \Monarc\Core\Model\Entity\AbstractEntity $entity
+     * @param AbstractEntity|string $entity
      * @param int $page
      * @param int $limit
      * @param array|null $order
@@ -104,7 +106,13 @@ class Db {
      * @return array
      */
     public function fetchAllFiltered($entity, $page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null, $filterJoin = null, $filterLeft = null) {
-        $repository = $this->getEntityManager()->getRepository(get_class($entity));
+        // TODO: This is added for backward compatibility. Should be removed along with the class.
+        if ($entity instanceof AbstractEntity) {
+            $entityClassName = \get_class($entity);
+        } else {
+            $entityClassName = $entity;
+        }
+        $repository = $this->getEntityManager()->getRepository($entityClassName);
 
         $qb = $this->buildFilteredQuery($repository, $page, $limit, $order, $filter, $filterAnd, $filterJoin, $filterLeft);
 
@@ -169,18 +177,17 @@ class Db {
     /**
      * Finds Entities matches with params fields and ordered.
      *
-     * @param \Monarc\Core\Model\Entity\AbstractEntity $entity
+     * @param string $entityClass
      * @param array $fields List of conditions ([key=>value,...] or [key=>[op=>operator,value=>value]...])
      * @param string[] $orderBy Order by [field=>DESC/ASC,...]
      * @return \Monarc\Core\Model\Entity\AbstractEntity[] List of entities.
      */
-    public function fetchByFields($entity, $fields, $orderBy)
+    public function fetchByFields(string $entityClass, $fields, $orderBy)
     {
-
-        $repository = $this->getEntityManager()->getRepository(get_class($entity));
+        $repository = $this->getEntityManager()->getRepository($entityClass);
         $qb = $repository->createQueryBuilder('u');
 
-        $metadata = $this->getClassMetadata(get_class($entity));
+        $metadata = $this->getClassMetadata($entityClass);
 
         foreach ($fields as $key => $value) {
             $db = 'u.'.$key;

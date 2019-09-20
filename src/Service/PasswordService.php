@@ -9,6 +9,7 @@ namespace Monarc\Core\Service;
 
 use DateTime;
 use Monarc\Core\Exception\Exception;
+use Monarc\Core\Model\Entity\User;
 use Monarc\FrontOffice\Model\Table\PasswordTokenTable;
 
 /**
@@ -31,72 +32,71 @@ class PasswordService extends AbstractService
      */
     public function passwordForgotten($email)
     {
+        /** @var User $user */
         $user = $this->get('userTable')->getByEmail($email);
 
-        if ($user) {
-            $date = new \DateTime("now");
-            $date->add(new \DateInterval("P1D"));
+        $date = new \DateTime("now");
+        $date->add(new \DateInterval("P1D"));
 
-            //generate token
-            $token = uniqid(bin2hex(openssl_random_pseudo_bytes(rand(20, 40))), true);
-            $passwordTokenData = [
-                'user' => $user['id'],
-                'token' => $token,
-                'dateEnd' => $date
-            ];
+        //generate token
+        $token = uniqid(bin2hex(openssl_random_pseudo_bytes(rand(20, 40))), true);
+        $passwordTokenData = [
+            'user' => $user->getId(),
+            'token' => $token,
+            'dateEnd' => $date
+        ];
 
-            $passwordTokenEntity = $this->get('entity');
-            $passwordTokenEntity->exchangeArray($passwordTokenData);
+        $passwordTokenEntity = $this->get('entity');
+        $passwordTokenEntity->exchangeArray($passwordTokenData);
 
-            $this->setDependencies($passwordTokenEntity, ['user']);
+        $this->setDependencies($passwordTokenEntity, ['user']);
 
 
-            /** @var PasswordTokenTable $passwordTokenTable */
-            $passwordTokenTable = $this->get('table');
-            $passwordTokenTable->save($passwordTokenEntity);
+        /** @var PasswordTokenTable $passwordTokenTable */
+        $passwordTokenTable = $this->get('table');
+        $passwordTokenTable->save($passwordTokenEntity);
 
-            $host = $this->configService->gethost();
+        $host = $this->configService->gethost();
 
-            if (empty($host)) {
-                // Determine HTTP/HTTPS proto, and HTTP_HOST
-                if (isset($_SERVER['X_FORWARDED_PROTO'])) {
-                    $proto = strtolower($_SERVER['X_FORWARDED_PROTO']);
-                } else if (isset($_SERVER['X_URL_SCHEME'])) {
-                    $proto = strtolower($_SERVER['X_URL_SCHEME']);
-                } else if (isset($_SERVER['X_FORWARDED_SSL'])) {
-                    $proto = (strtolower($_SERVER['X_FORWARDED_SSL']) == 'on') ? 'https' : 'http';
-                } else if (isset($_SERVER['FRONT_END_HTTPS'])) { // Microsoft variant
-                    $proto = (strtolower($_SERVER['FRONT_END_HTTPS']) == 'on') ? 'https' : 'http';
-                } else if (isset($_SERVER['HTTPS'])) {
-                    $proto = 'https';
-                } else {
-                    $proto = 'http';
-                }
-
-                if (isset($_SERVER['X_FORWARDED_HOST'])) {
-                    $host = $proto. '://' . $_SERVER['X_FORWARDED_HOST'];
-                } else {
-                    $host = $proto. '://' . $_SERVER['HTTP_HOST'];
-                }
+        if (empty($host)) {
+            // Determine HTTP/HTTPS proto, and HTTP_HOST
+            if (isset($_SERVER['X_FORWARDED_PROTO'])) {
+                $proto = strtolower($_SERVER['X_FORWARDED_PROTO']);
+            } else if (isset($_SERVER['X_URL_SCHEME'])) {
+                $proto = strtolower($_SERVER['X_URL_SCHEME']);
+            } else if (isset($_SERVER['X_FORWARDED_SSL'])) {
+                $proto = (strtolower($_SERVER['X_FORWARDED_SSL']) == 'on') ? 'https' : 'http';
+            } else if (isset($_SERVER['FRONT_END_HTTPS'])) { // Microsoft variant
+                $proto = (strtolower($_SERVER['FRONT_END_HTTPS']) == 'on') ? 'https' : 'http';
+            } else if (isset($_SERVER['HTTPS'])) {
+                $proto = 'https';
+            } else {
+                $proto = 'http';
             }
 
-            //send mail
-            $subject = 'Password forgotten';
-            $link = $host . '/#/passwordforgotten/' . htmlentities($token);
-            $message = "<p>Hello,</p>
-                <p>This is an automatically generated e-mail, please do not reply.</p>
-                <p>
-                Thank you for requesting a new password, please confirm your request by clicking on the link below :<br />
-                <a href='" . $link . "'><strong>" . $link . "</strong></a>
-                </p>
-                <p>In case you have not made request for a new password, we kindly ask you to ignore this e-mail</p>
-                <p>Best regards,</p>";
-
-            /** @var MailService $mailService */
-            $mailService = $this->get('mailService');
-            $from = $this->configService->getemail();
-            $mailService->send($email, $subject, $message, $from);
+            if (isset($_SERVER['X_FORWARDED_HOST'])) {
+                $host = $proto. '://' . $_SERVER['X_FORWARDED_HOST'];
+            } else {
+                $host = $proto. '://' . $_SERVER['HTTP_HOST'];
+            }
         }
+
+        //send mail
+        $subject = 'Password forgotten';
+        $link = $host . '/#/passwordforgotten/' . htmlentities($token);
+        $message = "<p>Hello,</p>
+            <p>This is an automatically generated e-mail, please do not reply.</p>
+            <p>
+            Thank you for requesting a new password, please confirm your request by clicking on the link below :<br />
+            <a href='" . $link . "'><strong>" . $link . "</strong></a>
+            </p>
+            <p>In case you have not made request for a new password, we kindly ask you to ignore this e-mail</p>
+            <p>Best regards,</p>";
+
+        /** @var MailService $mailService */
+        $mailService = $this->get('mailService');
+        $from = $this->configService->getemail();
+        $mailService->send($email, $subject, $message, $from);
     }
 
     /**
@@ -146,16 +146,13 @@ class PasswordService extends AbstractService
      */
     public function changePassword($userId, $oldPassword, $newPassword)
     {
-        $user = $this->get('userService')->getEntity($userId);
+        /** @var User $user */
+        $user = $this->get('userTable')->findById($userId);
 
-        if ($user) {
-            if (password_verify($oldPassword, $user['password'])) {
-                $this->get('userService')->patch($userId, ['password' => $newPassword]);
-            } else {
-                throw new Exception('Original password incorrect', 412);
-            }
+        if (password_verify($oldPassword, $user->getPassword())) {
+            $this->get('userService')->patch($userId, ['password' => $newPassword]);
         } else {
-            throw new Exception('User does not exist', 422);
+            throw new Exception('Original password incorrect', 412);
         }
     }
 }

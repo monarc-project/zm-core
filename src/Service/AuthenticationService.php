@@ -44,7 +44,7 @@ class AuthenticationService
      *
      * @throws Exception
      */
-    public function authenticate($data, &$token = null, &$uid = null, &$language = null)
+    public function authenticate($data): array
     {
         if (!empty($data['login']) && !empty($data['password'])) {
             $res = $this->authenticationAdapter
@@ -55,15 +55,13 @@ class AuthenticationService
             if ($res->isValid()) {
                 $user = $this->authenticationAdapter->getUser();
                 $token = uniqid(bin2hex(openssl_random_pseudo_bytes(random_int(20, 40))), true);
-                $uid = $user->get('id');
-                $language = $user->get('language');
                 $this->authenticationStorage->addItem($token, $user);
 
-                return true;
+                return compact('token', 'user');
             }
         }
 
-        return false;
+        return [];
     }
 
     /**

@@ -7,8 +7,8 @@
 
 namespace Monarc\Core\Service;
 
-use Zend\ServiceManager\FactoryInterface;
-use Zend\ServiceManager\ServiceLocatorInterface;
+use Interop\Container\ContainerInterface;
+use Zend\ServiceManager\Factory\FactoryInterface;
 use Zend\I18n\Translator\Translator;
 
 /**
@@ -20,14 +20,10 @@ use Zend\I18n\Translator\Translator;
 class TranslateServiceFactory implements FactoryInterface
 {
     /**
-     * Create Service
-     *
-     * @param ServiceLocatorInterface $serviceLocator
-     * @return bool|TranslateService
+     * @inheritDoc
      */
-    public function createService(ServiceLocatorInterface $serviceLocator)
+    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
-        $baseDir = '';
         if (is_dir('node_modules/ng_client/po')) {
             $baseDir = 'node_modules/ng_client/po/';
         } elseif (is_dir('node_modules/ng_backoffice/po')) {
@@ -40,7 +36,7 @@ class TranslateServiceFactory implements FactoryInterface
             'translation_files' => [],
         ];
 
-        $config = $serviceLocator->get('Config');
+        $config = $container->get('Config');
         $defaultLanguageIndex = $config['defaultLanguageIndex'];
 
         $confLanguages = $config['languages'];
@@ -59,9 +55,9 @@ class TranslateServiceFactory implements FactoryInterface
                 $transConf['locale'] = $k;
             }
         }
-        if (empty($transConf['translation_files'])) {
-            $translator = null;
-        } else {
+
+        $translator = null;
+        if (!empty($transConf['translation_files'])) {
             $translator = Translator::factory($transConf);
         }
 

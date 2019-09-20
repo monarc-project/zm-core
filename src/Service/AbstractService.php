@@ -9,7 +9,7 @@ namespace Monarc\Core\Service;
 
 use Monarc\Core\Model\Entity\AbstractEntity;
 use Monarc\Core\Model\Entity\Scale;
-use Monarc\Core\Model\Entity\User;
+use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Model\GetAndSet;
 use Monarc\Core\Model\Table\AbstractEntityTable;
 use Monarc\Core\Model\Table\AnrTable;
@@ -252,6 +252,7 @@ abstract class AbstractService extends AbstractServiceFactory
 
         // If we try to override this object's ANR, make some sanity and security checks. Ensure the data's ANR matches
         // the existing ANR, and that we have the rights to edit it.
+        // TODO: this part seems only belongs to FrontOffice as BackOffice doesn't have such functionality.
         if (!empty($data['anr'])) {
             if ($entity->get('anr')->get('id') != $data['anr']) {
                 throw new \Monarc\Core\Exception\Exception('Anr id error', 412);
@@ -884,7 +885,7 @@ abstract class AbstractService extends AbstractServiceFactory
         }
     }
 
-    private function getConnectedUser(): User
+    private function getConnectedUser(): UserSuperClass
     {
         return $this->get('table')->getConnectedUser();
     }

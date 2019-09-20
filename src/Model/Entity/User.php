@@ -8,22 +8,17 @@
 namespace Monarc\Core\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Monarc\Core\Model\DbCli;
 
 /**
- * User
+ * User Entity
  *
  * @ORM\Table(name="users", uniqueConstraints={@ORM\UniqueConstraint(name="email", columns={"email"})})
  * @ORM\Entity
  */
 class User extends UserSuperClass
 {
-    // TODO: get rid of the dependency from entities classes.
-    protected $ressources = ['setDbAdapter' => DbCli::class];
-
-    // TODO: When we remove all the super classes the entities fields goes here.
-    public function getId(): int
+    protected function createRole(string $role): UserRoleSuperClass
     {
-        return $this->id;
+        return new UserRole($this, $role);
     }
 }

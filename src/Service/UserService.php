@@ -7,13 +7,12 @@
 
 namespace Monarc\Core\Service;
 
+use Doctrine\ORM\EntityNotFoundException;
+use Doctrine\ORM\ORMException;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\User;
-use Monarc\Core\Model\Entity\UserRole;
-use Monarc\Core\Model\Table\PasswordTokenTable;
-use Monarc\Core\Model\Table\UserRoleTable;
+use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Model\Table\UserTable;
-use Monarc\Core\Model\Table\UserTokenTable;
 use Monarc\Core\Validator\PasswordStrength;
 
 /**
@@ -24,111 +23,101 @@ use Monarc\Core\Validator\PasswordStrength;
  */
 class UserService
 {
-//    protected $roleTable;
-//    protected $userRoleEntity;
-//    protected $userTokenTable;
-//    protected $passwordTokenTable;
-//    protected $mailService;
-    /*
-    'table' => '\Monarc\Core\Model\Table\UserTable',
-    'entity' => '\Monarc\Core\Model\Entity\User',
-    'userRoleEntity' => '\Monarc\Core\Model\Entity\UserRole',
-    'roleTable' => '\Monarc\Core\Model\Table\UserRoleTable',
-    'userTokenTable' => '\Monarc\Core\Model\Table\UserTokenTable',
-    'passwordTokenTable' => '\Monarc\Core\Model\Table\PasswordTokenTable',
-    'mailService' => '\Monarc\Core\Service\MailService',
-    */
     protected $filterColumns = ['firstname', 'lastname', 'email'];
 
     /** @var UserTable */
-    private $userTable;
+    protected $userTable;
 
-    /** @var UserRoleTable */
-    private $userRoleTable;
-
-    /** @var UserTokenTable */
-    private $userTokenTable;
-
-    /** @var PasswordTokenTable */
-    private $passwordTokenTable;
-
-    /** @var MailService */
-    private $mailService;
+    /** @var int */
+    protected $defaultLanguageIndex;
 
     public function __construct(
         UserTable $userTable,
-        UserRoleTable $userRoleTable,
-        UserTokenTable $userTokenTable,
-        PasswordTokenTable $passwordTokenTable,
-        MailService $mailService
+        array $config
     ) {
         $this->userTable = $userTable;
-        $this->userRoleTable = $userRoleTable;
-        $this->userTokenTable = $userTokenTable;
-        $this->passwordTokenTable = $passwordTokenTable;
-        $this->mailService = $mailService;
+        $this->defaultLanguageIndex = $config['defaultLanguageIndex'];
     }
 
     /**
-     * @inheritdoc
+     * @throws ORMException
      */
-    public function create($data, $last = true)
+    public function create(array $data): UserSuperClass
     {
-        $user = new User();
-        $data['status'] = 1;
-
         if (empty($data['language'])) {
-            $data['language'] = $this->getLanguage();
+            $data['language'] = $this->defaultLanguageIndex;
+        }
+        if (empty($data['creator'])) {
+            $data['creator'] = $this->userTable->getConnectedUser()->getFirstname() . ' '
+                . $this->userTable->getConnectedUser()->getLastname();
         }
 
-        $user->exchangeArray($data);
+        $user = new User($data);
+        $this->userTable->saveEntity($user);
 
-        $id = $this->get('table')->save($user);
-
-        $this->manageRoles($user, $data);
-
-        return $id;
+        return $user;
     }
 
     /**
-     * @inheritdoc
+     * @throws EntityNotFoundException
+     * @throws ORMException
      */
-    public function update($id, $data)
+    public function update(int $userId, array $data): UserSuperClass
     {
-        /** @var User $user */
-        $user = $this->get('table')->getEntity($id);
+        $user = $this->getUpdatedUser($userId, $data);
 
-        if (isset($data['role'])) {
-            $this->manageRoles($user, $data);
-        }
+        $this->userTable->saveEntity($user);
 
-        return parent::update($id, $data);
+        return $user;
     }
 
     /**
-     * @inheritdoc
+     * @throws EntityNotFoundException
+     * @throws ORMException
      */
-    public function patch($id, $data)
+    protected function getUpdatedUser(int $userId, array $data): UserSuperClass
+    {
+        $user = $this->userTable->findById($userId);
+
+        $user->setFirstname($data['firstname']);
+        $user->setLastname($data['lastname']);
+        $user->setEmail($data['email']);
+
+        if (!empty($data['role'])) {
+            $user->setRoles($data['role']);
+        }
+
+        return $user;
+    }
+
+    /**
+     * @throws EntityNotFoundException
+     * @throws ORMException
+     */
+    public function patch($userId, $data): UserSuperClass
     {
         if (isset($data['password'])) {
             $this->validatePassword($data);
         }
 
-        $user = $this->get('table')->getEntity($id);
+        $user = $this->getUpdatedUser($userId, $data);
 
-        if (isset($data['role'])) {
-            $this->manageRoles($user, $data);
-        }
+        $this->userTable->saveEntity($user);
 
-        return parent::patch($id, $data);
+        return $user;
     }
 
-    public function getByEmail(string $email): User
+    /**
+     * @throws Exception
+     */
+    public function getByEmail(string $email): UserSuperClass
     {
         return $this->userTable->getByEmail($email);
     }
 
     /**
+     * TODO: Move password validation to the controller's validator. Actually there is a rule for that, so it's an extra here.
+     *
      * Validates that the password matches the required strength policy (special chars, lower/uppercase, number)
      *
      * @param string $data An array with a password key containing the password
@@ -137,64 +126,15 @@ class UserService
      */
     protected function validatePassword($data)
     {
-        $password = $data['password'];
-
         $passwordValidator = new PasswordStrength();
-        if (!$passwordValidator->isValid($password)) {
+        if (!$passwordValidator->isValid($data['password'])) {
             $errors = [];
             foreach ($passwordValidator->getMessages() as $message) {
                 $errors[] = $message;
             }
 
-            throw new Exception("Password must " . implode($errors, ', ') . ".", 412);
+            throw new Exception('Password validation errors: [ ' . implode(', ', $errors) . ' ].', 412);
         }
-    }
-
-    /**
-     * Manage Roles
-     *
-     * @param User $user The user to manage
-     * @param array $data The new user roles
-     *
-     * @throws \Exception In case of invalid roles selected
-     */
-    protected function manageRoles(User $user, $data)
-    {
-        if (empty($data['role'])) {
-            throw new Exception('You must select one or more roles', 412);
-        }
-
-        $this->userRoleTable->deleteByUser($user->id);
-
-        foreach ($data['role'] as $role) {
-            $roleData = [
-                'user' => $user,
-                'role' => $role,
-            ];
-
-            $userRoleEntity = new UserRole();
-            $userRoleEntity->setLanguage($this->getLanguage());
-            $userRoleEntity->setDbAdapter($this->get('table')->getDb());
-            $userRoleEntity->exchangeArray($roleData);
-
-            $this->userRoleTable->save($userRoleEntity);
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getEntity($id)
-    {
-        $user = $this->get('table')->get($id);
-        $roles = $this->get('roleTable')->getRepository()->findByUser($user['id']);
-        $user['role'] = [];
-        if (!empty($roles)) {
-            foreach ($roles as $r) {
-                $user['role'][] = $r->get('role');
-            }
-        }
-        return $user;
     }
 
     /**
@@ -207,6 +147,8 @@ class UserService
     }
 
     /**
+     * TODO: remove me and use table for filters queries.
+     *
      * Returns the list of elements based on the provided filters passed in parameters. Results are paginated (using the
      * $page and $limit combo), except when $limit is <= 0, in which case all results will be returned.
      *
@@ -221,11 +163,9 @@ class UserService
     public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
     {
         $filterJoin = $filterLeft = null;
-        if (is_callable(array($this->get('entity'), 'getFiltersForService'), false, $name)) {
-            [$filterJoin, $filterLeft] = $this->get('entity')->getFiltersForService();
-        }
-        return $this->get('table')->fetchAllFiltered(
-            array_keys($this->get('entity')->getJsonArray()),
+
+        return $this->userTable->fetchAllFiltered(
+            array_keys($this->userTable->getJsonArray()),
             $page,
             $limit,
             $this->parseFrontendOrder($order),
@@ -234,5 +174,56 @@ class UserService
             $filterJoin,
             $filterLeft
         );
+    }
+
+    /**
+     * Parses the filter value coming from the frontend and returns an array of columns to filter. Basically, this
+     * method will construct an array where the keys are the columns, and the value of each key is the filter parameter.
+     * @param string $filter The value to look for
+     * @param array $columns An array of columns in which the value is searched
+     * @return array Key/pair array as per the description
+     */
+    protected function parseFrontendFilter($filter, $columns = [])
+    {
+        $output = [];
+        if ($filter !== null && $columns) {
+            foreach ($columns as $c) {
+                $output[$c] = $filter;
+            }
+        }
+
+        return $output;
+    }
+
+    /**
+     * Parses the order from the frontend in order to build SQL-compliant ORDER BY. The order passed by the frontend
+     * is the name of the column that we should sort the data with, eventually prepended with '-' when we need it in
+     * descending order (ascending otherwise).
+     * @param string $order The order requested by the frontend/API call
+     * @return array|null Returns null if $order is null, otherwise an array ['columnName', 'ASC/DESC']
+     */
+    protected function parseFrontendOrder($order)
+    {
+        // Fields in the ORM are using a CamelCase notation, whereas JSON fields use underscores. Convert it here in
+        // case there's a value not filtered.
+        if (strpos($order, '_') !== false) {
+            $o = explode('_', $order);
+            $order = '';
+            foreach ($o as $n => $oo) {
+                if ($n <= 0) {
+                    $order = $oo;
+                } else {
+                    $order .= ucfirst($oo);
+                }
+            }
+        }
+
+        if ($order === null) {
+            return null;
+        } elseif (strpos($order, '-') === 0) {
+            return [substr($order, 1), 'DESC'];
+        }
+
+        return [$order, 'ASC'];
     }
 }

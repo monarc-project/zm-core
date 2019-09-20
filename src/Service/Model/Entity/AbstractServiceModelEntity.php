@@ -8,6 +8,7 @@
 namespace Monarc\Core\Service\Model\Entity;
 
 use Interop\Container\ContainerInterface;
+use Monarc\Core\Model\Db;
 use Zend\ServiceManager\Factory\FactoryInterface;
 
 /**
@@ -17,10 +18,10 @@ use Zend\ServiceManager\Factory\FactoryInterface;
 abstract class AbstractServiceModelEntity implements FactoryInterface
 {
     protected $ressources = [
-        'setDbAdapter' => '\Monarc\Core\Model\Db',
+        'setDbAdapter' => Db::class,
     ];
 
-    // TODO: Before burning this out, we need to find set language and check what is resources for. And removed DB dependency from Entities of course.
+    // TODO: Before burning this out, we need to removed DB dependency from Entities.
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
         $class = str_replace('Service\\', '', substr(get_class($this), 0, -18));

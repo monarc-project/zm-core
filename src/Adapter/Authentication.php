@@ -1,7 +1,7 @@
 <?php
 namespace Monarc\Core\Adapter;
 
-use Monarc\Core\Model\Entity\User;
+use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Model\Table\UserTable;
 use Zend\Authentication\Adapter\AbstractAdapter;
 use Zend\Authentication\Result;
@@ -17,7 +17,7 @@ class Authentication extends AbstractAdapter
     /** @var UserTable */
     private $userTable;
 
-    /** @var User */
+    /** @var UserSuperClass */
     protected $user;
 
     public function __construct(UserTable $userTable)
@@ -27,12 +27,8 @@ class Authentication extends AbstractAdapter
 
     /**
      * Sets the current active (logged in) user
-     *
-     * @param User $user The user
-     *
-     * @return $this For chaining calls
      */
-    public function setUser(User $user): self
+    public function setUser(UserSuperClass $user): self
     {
         $this->user = $user;
 
@@ -42,7 +38,7 @@ class Authentication extends AbstractAdapter
     /**
      * @return User The current logged-in user
      */
-    public function getUser(): User
+    public function getUser(): UserSuperClass
     {
         return $this->user;
     }
@@ -63,8 +59,8 @@ class Authentication extends AbstractAdapter
             case 1:
                 $user = current($users);
                 // TODO: faire le test sur dateStart && dateEnd
-                if ($user->get('status')) {
-                    if (password_verify($credential, $user->get('password'))) {
+                if ($user->isActive()) {
+                    if (password_verify($credential, $user->getPassword())) {
                         $this->setUser($user);
 
                         return new Result(Result::SUCCESS, $this->getIdentity());

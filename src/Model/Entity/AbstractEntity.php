@@ -14,6 +14,10 @@ use Zend\InputFilter\InputFilterInterface;
 use Doctrine\Common\Util\ClassUtils;
 
 /**
+ * TODO: detach the class from its children.
+ *  - remove the DB dependency;
+ *  - extract the logic to a separate service.
+ *
  * Class AbstractEntity
  * @package Monarc\Core\Model\Entity
  */

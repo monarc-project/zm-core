@@ -13,4 +13,10 @@ namespace Monarc\Core\Model;
  *
  * @package Monarc\Core\Model
  */
-class DbCli extends Db {}
+class DbCli extends Db
+{
+    public function __construct($entityManager)
+    {
+        parent::__construct($entityManager);
+    }
+}

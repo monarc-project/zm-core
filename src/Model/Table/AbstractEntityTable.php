@@ -229,12 +229,9 @@ abstract class AbstractEntityTable
      */
     public function getEntityByFields($fields = array(), $orderBy = array())
     {
-        $class = $this->getEntityClass();
-        if (class_exists($class)) {
-            $entity = new $class();
-            $entity->setDbAdapter($this->getDb());
-
-            return $this->getDb()->fetchByFields($entity, $fields, $orderBy);
+        $emtityClass = $this->getEntityClass();
+        if (class_exists($emtityClass)) {
+            return $this->getDb()->fetchByFields($emtityClass, $fields, $orderBy);
         }
 
         return false;
@@ -450,7 +447,6 @@ abstract class AbstractEntityTable
             $bros->andWhere('bro.' . $idName . ' != :id')
                 ->setParameters($params);
 
-            // TODO: remove it as the results are not used.
             $bros->getQuery()->getResult();
 
         } else if (!empty($changes['parent']) && $changes['parent']['before'] != $changes['parent']['after']) {//this is somewhat like we was new but we need to redistribute brothers

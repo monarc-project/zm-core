@@ -35,6 +35,9 @@ class ConnectedUserService
         $this->authenticationStorage = $authenticationStorage;
     }
 
+    /**
+     * For logged in users it will always return User's object instance.
+     */
     public function getConnectedUser(): ?User
     {
         if ($this->connectedUser === null) {

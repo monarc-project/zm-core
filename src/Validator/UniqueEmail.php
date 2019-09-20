@@ -7,6 +7,8 @@
 
 namespace Monarc\Core\Validator;
 
+use Monarc\Core\Exception\Exception;
+use Monarc\Core\Model\Table\UserTable;
 use Zend\Validator\AbstractValidator;
 
 /**
@@ -16,12 +18,7 @@ use Zend\Validator\AbstractValidator;
  */
 class UniqueEmail extends AbstractValidator
 {
-    protected $options = array(
-        'adapter' => null,
-        'id' => 0,
-    );
-
-    const ALREADYUSED = "ALREADYUSED";
+    private const ALREADYUSED = "ALREADYUSED";
 
     protected $messageTemplates = array(
         self::ALREADYUSED => 'This email is already used',
@@ -30,17 +27,19 @@ class UniqueEmail extends AbstractValidator
     /**
      * @inheritdoc
      */
-    public function isValid($value){
+    public function isValid($value)
+    {
+        /** @var UserTable $userTable */
+        $userTable = $this->getOptions()['userTable'];
 
-        if(empty($this->options['adapter'])){
-            return false;
-        }else{
-            $res = $this->options['adapter']->getRepository('\Monarc\Core\Model\Entity\User')->findOneByEmail($value);
-            if(!empty($res) && $this->options['id'] != $res->get('id')){
-                $this->error(self::ALREADYUSED);
-                return false;
-            }
+        try {
+            $userTable->getByEmailAndNotUserId($value, $this->getOptions()['currentUserId']);
+        } catch (Exception $e) {
+            return true;
         }
-        return true;
+
+        $this->error(self::ALREADYUSED);
+
+        return false;
     }
 }
