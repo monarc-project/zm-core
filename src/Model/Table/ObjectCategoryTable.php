@@ -7,6 +7,10 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Monarc\Core\Model\Db;
+use Monarc\Core\Model\Entity\ObjectCategory;
+use Monarc\Core\Service\ConnectedUserService;
+
 /**
  * Object Category Table
  *
@@ -15,6 +19,11 @@ namespace Monarc\Core\Model\Table;
  */
 class ObjectCategoryTable extends AbstractEntityTable
 {
+    public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
+    {
+        parent::__construct($dbService, ObjectCategory::class, $connectedUserService);
+    }
+
     /**
      * Get Child
      *

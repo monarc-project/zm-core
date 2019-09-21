@@ -7,10 +7,18 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Monarc\Core\Model\Db;
+use Monarc\Core\Model\Entity\Historical;
+use Monarc\Core\Service\ConnectedUserService;
+
 /**
  * Class HistoricalTable
  * @package Monarc\Core\Model\Table
  */
 class HistoricalTable extends AbstractEntityTable
 {
+    public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
+    {
+        parent::__construct($dbService, Historical::class, $connectedUserService);
+    }
 }

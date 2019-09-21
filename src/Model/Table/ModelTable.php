@@ -7,12 +7,21 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Monarc\Core\Model\Db;
+use Monarc\Core\Model\Entity\Model;
+use Monarc\Core\Service\ConnectedUserService;
+
 /**
  * Class ModelTable
  * @package Monarc\Core\Model\Table
  */
 class ModelTable extends AbstractEntityTable
 {
+    public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
+    {
+        parent::__construct($dbService, Model::class, $connectedUserService);
+    }
+
     /**
      * Reset Current Default
      */

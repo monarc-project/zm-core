@@ -6,10 +6,18 @@
  */
 namespace Monarc\Core\Model\Table;
 
+use Monarc\Core\Model\Db;
+use Monarc\Core\Model\Entity\Anr;
+use Monarc\Core\Service\ConnectedUserService;
+
 /**
  * Class AnrTable
  * @package Monarc\Core\Model\Table
  */
 class AnrTable extends AbstractEntityTable
 {
+    public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
+    {
+        parent::__construct($dbService, Anr::class, $connectedUserService);
+    }
 }

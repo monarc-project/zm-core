@@ -7,12 +7,21 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Monarc\Core\Model\Db;
+use Monarc\Core\Model\Entity\InstanceConsequence;
+use Monarc\Core\Service\ConnectedUserService;
+
 /**
  * Class InstanceConsequenceTable
  * @package Monarc\Core\Model\Table
  */
 class InstanceConsequenceTable extends AbstractEntityTable
 {
+    public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
+    {
+        parent::__construct($dbService, InstanceConsequence::class, $connectedUserService);
+    }
+
     /**
      * Get Instances Consequences
      *

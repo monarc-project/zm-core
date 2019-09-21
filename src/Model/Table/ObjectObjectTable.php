@@ -7,12 +7,20 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Monarc\Core\Model\Db;
+use Monarc\Core\Model\Entity\ObjectObject;
+use Monarc\Core\Service\ConnectedUserService;
+
 /**
  * Class ObjectObjectTable
  * @package Monarc\Core\Model\Table
  */
 class ObjectObjectTable extends AbstractEntityTable
 {
+    public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
+    {
+        parent::__construct($dbService, ObjectObject::class, $connectedUserService);
+    }
 
     /**
      * Get Childs

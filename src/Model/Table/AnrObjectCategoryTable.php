@@ -7,10 +7,18 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Monarc\Core\Model\Db;
+use Monarc\Core\Model\Entity\AnrObjectCategory;
+use Monarc\Core\Service\ConnectedUserService;
+
 /**
  * Class AnrObjectCategoryTable
  * @package Monarc\Core\Model\Table
  */
 class AnrObjectCategoryTable extends AbstractEntityTable
 {
+    public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
+    {
+        parent::__construct($dbService, AnrObjectCategory::class, $connectedUserService);
+    }
 }

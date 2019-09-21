@@ -7,10 +7,18 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Monarc\Core\Model\Db;
+use Monarc\Core\Model\Entity\MeasureMeasure;
+use Monarc\Core\Service\ConnectedUserService;
+
 /**
  * Class MeasureMeasureTable
  * @package Monarc\Core\Model\Table
  */
 class MeasureMeasureTable extends AbstractEntityTable
 {
+    public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
+    {
+        parent::__construct($dbService, MeasureMeasure::class, $connectedUserService);
+    }
 }

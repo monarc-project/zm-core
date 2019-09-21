@@ -368,9 +368,11 @@ return [
             // TODO: replace to autowiring.
             Service\AmvService::class => Service\AmvServiceFactory::class,
             Service\AnrService::class => Service\AnrServiceFactory::class,
+            Service\UserRoleService::class => AutowireFactory::class,
+            Service\UserProfileService::class => AutowireFactory::class,
+            Service\AuthenticationService::class => AutowireFactory::class,
             Service\AssetService::class => Service\AssetServiceFactory::class,
             Service\AssetExportService::class => Service\AssetExportServiceFactory::class,
-            Service\AuthenticationService::class => AutowireFactory::class,
             Service\ConfigService::class => Service\ConfigServiceFactory::class,
             Service\QuestionService::class => Service\QuestionServiceFactory::class,
             Service\QuestionChoiceService::class => Service\QuestionChoiceServiceFactory::class,
@@ -400,12 +402,10 @@ return [
             Service\ThemeService::class => Service\ThemeServiceFactory::class,
             Service\ThreatService::class => Service\ThreatServiceFactory::class,
             Service\SoaCategoryService::class => Service\SoaCategoryServiceFactory::class,
-            Service\UserRoleService::class => AutowireFactory::class,
             Service\UserService::class => ReflectionBasedAbstractFactory::class,
             Service\VulnerabilityService::class => Service\VulnerabilityServiceFactory::class,
             Service\DeliveriesModelsService::class => Service\DeliveriesModelsServiceFactory::class,
             Service\ModelObjectService::class => Service\ModelObjectServiceFactory::class,
-            Service\UserProfileService::class => AutowireFactory::class,
             Service\AnrObjectService::class => Service\AnrObjectServiceFactory::class,
             Service\MailTesterService::class => Service\MailTesterServiceFactory::class,
 
@@ -442,6 +442,8 @@ return [
 
             // TODO: refactor/replace the relation between Table and ServiceModelTable the same for entities.
             ModelTable\UserTable::class => AutowireFactory::class,
+            ModelTable\UserTokenTable::class => AutowireFactory::class,
+            ModelTable\UserRoleTable::class => AutowireFactory::class,
             ModelTable\ModelTable::class => ServiceModelTable\ModelServiceModelTable::class,
             ModelTable\AnrTable::class => ServiceModelTable\AnrServiceModelTable::class,
             ModelTable\AnrObjectCategoryTable::class => ServiceModelTable\AnrObjectCategoryServiceModelTable::class,
@@ -463,7 +465,7 @@ return [
             ModelTable\ThemeTable::class => ServiceModelTable\ThemeServiceModelTable::class,
             ModelTable\HistoricalTable::class => ServiceModelTable\HistoricalServiceModelTable::class,
             ModelTable\AssetTable::class => ServiceModelTable\AssetServiceModelTable::class,
-            ModelTable\AmvTable::class => ServiceModelTable\AmvServiceModelTable::class,
+            ModelTable\AmvTable::class => AutowireFactory::class, // TODO: the same for all of the table classes!
             ModelTable\ThreatTable::class => ServiceModelTable\ThreatServiceModelTable::class,
             ModelTable\RolfTagTable::class => ServiceModelTable\RolfTagServiceModelTable::class,
             ModelTable\RolfRiskTable::class => ServiceModelTable\RolfRiskServiceModelTable::class,
@@ -473,8 +475,6 @@ return [
             ModelTable\SoaTable::class => ServiceModelTable\SoaServiceModelTable::class,
             ModelTable\VulnerabilityTable::class => ServiceModelTable\VulnerabilityServiceModelTable::class,
             ModelTable\PasswordTokenTable::class => ServiceModelTable\PasswordTokenServiceModelTable::class,
-            ModelTable\UserTokenTable::class => AutowireFactory::class,
-            ModelTable\UserRoleTable::class => AutowireFactory::class,
             ModelTable\DeliveriesModelsTable::class => ServiceModelTable\DeliveriesModelsServiceModelTable::class,
 
             /* Authentification */

@@ -7,10 +7,18 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Monarc\Core\Model\Db;
+use Monarc\Core\Model\Entity\Asset;
+use Monarc\Core\Service\ConnectedUserService;
+
 /**
  * Class AssetTable
  * @package Monarc\Core\Model\Table
  */
 class AssetTable extends AbstractEntityTable
 {
+    public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
+    {
+        parent::__construct($dbService, Asset::class, $connectedUserService);
+    }
 }

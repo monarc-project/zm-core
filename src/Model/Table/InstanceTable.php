@@ -7,12 +7,21 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Monarc\Core\Model\Db;
+use Monarc\Core\Model\Entity\Instance;
+use Monarc\Core\Service\ConnectedUserService;
+
 /**
  * Class InstanceTable
  * @package Monarc\Core\Model\Table
  */
 class InstanceTable extends AbstractEntityTable
 {
+    public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
+    {
+        parent::__construct($dbService, Instance::class, $connectedUserService);
+    }
+
     /**
      * Find By Anr
      *

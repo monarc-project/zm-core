@@ -7,30 +7,19 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Monarc\Core\Model\Db;
+use Monarc\Core\Model\Entity\MonarcObject;
+use Monarc\Core\Service\ConnectedUserService;
+
 /**
  * Class MonarcObjectTable
  * @package Monarc\Core\Model\Table
  */
 class MonarcObjectTable extends AbstractEntityTable
 {
-    protected $objectObjectTable;
-
-    /**
-     * @return mixed
-     */
-    public function getObjectObjectTable()
+    public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
     {
-        return $this->objectObjectTable;
-    }
-
-    /**
-     * @param mixed $objectObjectTable
-     * @return MonarcObjectTable
-     */
-    public function setObjectObjectTable($objectObjectTable)
-    {
-        $this->objectObjectTable = $objectObjectTable;
-        return $this;
+        parent::__construct($dbService, MonarcObject::class, $connectedUserService);
     }
 
     /**

@@ -7,7 +7,10 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\AbstractEntity;
+use Monarc\Core\Model\Entity\InstanceRisk;
+use Monarc\Core\Service\ConnectedUserService;
 
 /**
  * Class InstanceRiskTable
@@ -15,6 +18,11 @@ use Monarc\Core\Model\Entity\AbstractEntity;
  */
 class InstanceRiskTable extends AbstractEntityTable
 {
+    public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
+    {
+        parent::__construct($dbService, InstanceRisk::class, $connectedUserService);
+    }
+
     /**
      * Get Instances Risks
      *

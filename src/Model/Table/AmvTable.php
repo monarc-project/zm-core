@@ -7,12 +7,21 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Monarc\Core\Model\Db;
+use Monarc\Core\Model\Entity\Amv;
+use Monarc\Core\Service\ConnectedUserService;
+
 /**
  * Class AmvTable
  * @package Monarc\Core\Model\Table
  */
 class AmvTable extends AbstractEntityTable
 {
+    public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
+    {
+        parent::__construct($dbService, Amv::class, $connectedUserService);
+    }
+
     /**
      * Find By AMV
      *

@@ -7,12 +7,20 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Monarc\Core\Model\DbCli;
+use Monarc\Core\Model\Entity\DeliveriesModels;
+use Monarc\Core\Service\ConnectedUserService;
+
 /**
  * Class DeliveriesModelsTable
  * @package Monarc\Core\Model\Table
  */
 class DeliveriesModelsTable extends AbstractEntityTable
 {
+    public function __construct(DbCli $dbService, ConnectedUserService $connectedUserService)
+    {
+        parent::__construct($dbService, DeliveriesModels::class, $connectedUserService);
+    }
 
     /**
      * Delete
@@ -21,7 +29,7 @@ class DeliveriesModelsTable extends AbstractEntityTable
      * @param bool $last
      * @return bool
      */
-    public function delete($id, $last = true)
+    public function delete($id, $last = true): bool
     {
         $c = $this->getEntityClass();
         if (class_exists($c)) {

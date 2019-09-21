@@ -7,12 +7,21 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Monarc\Core\Model\DbCli;
+use Monarc\Core\Model\Entity\PasswordToken;
+use Monarc\Core\Service\ConnectedUserService;
+
 /**
  * Class PasswordTokenTable
  * @package Monarc\Core\Model\Table
  */
 class PasswordTokenTable extends AbstractEntityTable
 {
+    public function __construct(DbCli $dbService, ConnectedUserService $connectedUserService)
+    {
+        parent::__construct($dbService, PasswordToken::class, $connectedUserService);
+    }
+
     /**
      * Get By Token
      *

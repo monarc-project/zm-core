@@ -7,10 +7,18 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Monarc\Core\Model\Db;
+use Monarc\Core\Model\Entity\Guide;
+use Monarc\Core\Service\ConnectedUserService;
+
 /**
  * Class GuideTable
  * @package Monarc\Core\Model\Table
  */
 class GuideTable extends AbstractEntityTable
 {
+    public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
+    {
+        parent::__construct($dbService, Guide::class, $connectedUserService);
+    }
 }
