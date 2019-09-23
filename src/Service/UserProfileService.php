@@ -46,10 +46,10 @@ class UserProfileService
             $user->setFirstname($data['firstname']);
         }
         if (isset($data['lastname'])) {
-            $user->setFirstname($data['lastname']);
+            $user->setLastname($data['lastname']);
         }
         if (isset($data['email'])) {
-            $user->setFirstname($data['email']);
+            $user->setEmail($data['email']);
         }
         if (isset($data['language'])) {
             $user->setLanguage((int)$data['language']);
