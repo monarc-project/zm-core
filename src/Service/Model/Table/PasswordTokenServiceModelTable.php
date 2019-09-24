@@ -26,7 +26,7 @@ class PasswordTokenServiceModelTable implements FactoryInterface
         //  one is lifetime of the token, second faster storage.
         return new PasswordTokenTable(
             $container->get(DbCli::class),
-            PasswordToken::class,
+            // PasswordToken::class,
             $container->get(ConnectedUserService::class)
         );
     }
