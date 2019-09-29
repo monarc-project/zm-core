@@ -7,10 +7,18 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Monarc\Core\Model\Db;
+use Monarc\Core\Model\Entity\RolfTag;
+use Monarc\Core\Service\ConnectedUserService;
+
 /**
  * Class RolfTagTable
  * @package Monarc\Core\Model\Table
  */
 class RolfTagTable extends AbstractEntityTable
 {
+    public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
+    {
+        parent::__construct($dbService, RolfTag::class, $connectedUserService);
+    }
 }

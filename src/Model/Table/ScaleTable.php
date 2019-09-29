@@ -7,10 +7,18 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Monarc\Core\Model\Db;
+use Monarc\Core\Model\Entity\Scale;
+use Monarc\Core\Service\ConnectedUserService;
+
 /**
  * Class ScaleTable
  * @package Monarc\Core\Model\Table
  */
 class ScaleTable extends AbstractEntityTable
 {
+    public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
+    {
+        parent::__construct($dbService, Scale::class, $connectedUserService);
+    }
 }

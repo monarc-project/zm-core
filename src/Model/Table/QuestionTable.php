@@ -7,12 +7,21 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Monarc\Core\Model\Db;
+use Monarc\Core\Model\Entity\Question;
+use Monarc\Core\Service\ConnectedUserService;
+
 /**
  * Class QuestionTable
  * @package Monarc\Core\Model\Table
  */
 class QuestionTable extends AbstractEntityTable
 {
+    public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
+    {
+        parent::__construct($dbService, Question::class, $connectedUserService);
+    }
+
   /**
   * Return the last position of question
   * @return int;

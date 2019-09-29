@@ -7,10 +7,18 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Monarc\Core\Model\Db;
+use Monarc\Core\Model\Entity\Theme;
+use Monarc\Core\Service\ConnectedUserService;
+
 /**
  * Class ThemeTable
  * @package Monarc\Core\Model\Table
  */
 class ThemeTable extends AbstractEntityTable
 {
+    public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
+    {
+        parent::__construct($dbService, Theme::class, $connectedUserService);
+    }
 }

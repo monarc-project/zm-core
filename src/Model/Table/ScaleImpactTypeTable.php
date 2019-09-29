@@ -7,10 +7,18 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Monarc\Core\Model\Db;
+use Monarc\Core\Model\Entity\ScaleImpactType;
+use Monarc\Core\Service\ConnectedUserService;
+
 /**
  * Class ScaleImpactTypeTable
  * @package Monarc\Core\Model\Table
  */
 class ScaleImpactTypeTable extends AbstractEntityTable
 {
+    public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
+    {
+        parent::__construct($dbService, ScaleImpactType::class, $connectedUserService);
+    }
 }

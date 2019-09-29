@@ -7,10 +7,18 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Monarc\Core\Model\Db;
+use Monarc\Core\Model\Entity\RolfRisk;
+use Monarc\Core\Service\ConnectedUserService;
+
 /**
  * Class RolfRiskTable
  * @package Monarc\Core\Model\Table
  */
 class RolfRiskTable extends AbstractEntityTable
 {
+    public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
+    {
+        parent::__construct($dbService, RolfRisk::class, $connectedUserService);
+    }
 }

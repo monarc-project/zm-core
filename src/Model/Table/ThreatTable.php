@@ -7,10 +7,18 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Monarc\Core\Model\Db;
+use Monarc\Core\Model\Entity\Threat;
+use Monarc\Core\Service\ConnectedUserService;
+
 /**
  * Class ThreatTable
  * @package Monarc\Core\Model\Table
  */
 class ThreatTable extends AbstractEntityTable
 {
+    public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
+    {
+        parent::__construct($dbService, Threat::class, $connectedUserService);
+    }
 }

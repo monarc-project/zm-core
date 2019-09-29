@@ -7,12 +7,20 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Monarc\Core\Model\Db;
+use Monarc\Core\Model\Entity\ScaleComment;
+use Monarc\Core\Service\ConnectedUserService;
+
 /**
  * Class ScaleCommentTable
  * @package Monarc\Core\Model\Table
  */
 class ScaleCommentTable extends AbstractEntityTable
 {
+    public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
+    {
+        parent::__construct($dbService, ScaleComment::class, $connectedUserService);
+    }
     /**
      * Get By Scale
      *

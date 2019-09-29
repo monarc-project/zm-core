@@ -7,10 +7,18 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Monarc\Core\Model\Db;
+use Monarc\Core\Model\Entity\QuestionChoice;
+use Monarc\Core\Service\ConnectedUserService;
+
 /**
  * Class QuestionChoiceTable
  * @package Monarc\Core\Model\Table
  */
 class QuestionChoiceTable extends AbstractEntityTable
 {
+    public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
+    {
+        parent::__construct($dbService, QuestionChoice::class, $connectedUserService);
+    }
 }
