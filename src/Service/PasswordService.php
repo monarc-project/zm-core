@@ -10,7 +10,7 @@ namespace Monarc\Core\Service;
 use DateTime;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\User;
-use Monarc\FrontOffice\Model\Table\PasswordTokenTable;
+use Monarc\Core\Model\Table\PasswordTokenTable;
 
 /**
  * Password Service

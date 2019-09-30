@@ -11,7 +11,6 @@ use Monarc\Core\Model\Table\InstanceRiskOpTable;
 use Monarc\Core\Model\Table\InstanceTable;
 use Monarc\Core\Model\Table\MonarcObjectTable;
 use Monarc\FrontOffice\Model\Entity\RolfRisk;
-
 use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\Mapping\MappingException;
 
