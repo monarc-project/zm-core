@@ -18,6 +18,10 @@ use Monarc\Core\Service\ConnectedUserService;
  */
 class InstanceRiskTable extends AbstractEntityTable
 {
+
+    /** @var ConnectedUserService */
+    protected $connectedUserService;
+
     public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
     {
         parent::__construct($dbService, InstanceRisk::class, $connectedUserService);
@@ -283,7 +287,7 @@ class InstanceRiskTable extends AbstractEntityTable
                 // TODO: this woun't work for BackOffice, we need to refactor this calls and inject the object.
                 $instanceTable = new InstanceTable($this->getDb());
             } else {
-                $instanceTable = new \Monarc\FrontOffice\Model\Table\InstanceTable($this->getDb());
+                $instanceTable = new \Monarc\FrontOffice\Model\Table\InstanceTable($this->getDb(), $this->connectedUserService);
             }
 
             $instanceTable->initTree($instance);
