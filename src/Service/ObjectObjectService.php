@@ -168,11 +168,13 @@ class ObjectObjectService extends AbstractService
             }
 
             //if father instance exist, create instance for child
+            // TODO: we need to replace the part of the code. Some parts of EventManager are deprecated in ZF3.
+            // https://zendframework.github.io/zend-eventmanager/migration/removed/#eventmanagerinterfacesetsharedmanager
+            // This fix is might be not work properly.
             $eventManager = new EventManager();
-            $eventManager->setIdentifiers('addcomponent');
-
-            $sharedEventManager = $eventManager->getSharedManager();
-            $eventManager->setSharedManager($sharedEventManager);
+            $eventManager->setIdentifiers(['addcomponent']);
+//            $sharedEventManager = $eventManager->getSharedManager();
+//            $eventManager->setSharedManager($sharedEventManager);
             $eventManager->trigger('createinstance', null, compact(['anrId', 'dataInstance']));
         }
 

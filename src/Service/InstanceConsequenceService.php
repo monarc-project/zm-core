@@ -236,10 +236,13 @@ class InstanceConsequenceService extends AbstractService
 
         if (!$fromInstance) {
             //if father instance exist, create instance for child
+            // TODO: we need to replace the part of the code. Some parts of EventManager are deprecated in ZF3.
+            // https://zendframework.github.io/zend-eventmanager/migration/removed/#eventmanagerinterfacesetsharedmanager
+            // This fix is might be not work properly.
             $eventManager = new EventManager();
-            $eventManager->setIdentifiers('instance');
-            $sharedEventManager = $eventManager->getSharedManager();
-            $eventManager->setSharedManager($sharedEventManager);
+            $eventManager->setIdentifiers(['instance']);
+//            $sharedEventManager = $eventManager->getSharedManager();
+//            $eventManager->setSharedManager($sharedEventManager);
             $eventManager->trigger('patch', null, compact(['anrId', 'instanceId', 'data']));
         } else {
             $instance = $instanceCurrentConsequence->get('instance')->initialize();

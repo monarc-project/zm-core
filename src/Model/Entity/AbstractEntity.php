@@ -247,6 +247,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
     }
 
     /**
+     * TODO: Refactor me! Get rid of the DB dependency from entities classes.
      * @param int $mode
      * @param null $previous
      * @param null $parent_before
@@ -255,7 +256,6 @@ abstract class AbstractEntity implements InputFilterAwareInterface
      */
     private function calculatePosition($mode = self::IMP_POS_END, $previous = null, $parent_before = null, $parent_after = null, $options = [])
     {
-        throw new \Exception('TODO: Refactor me! Get rid of the DB dependency from entities classes.');
         $fallback = false;
         $initial_position = $this->get('position');
 

@@ -550,12 +550,14 @@ class InstanceService extends AbstractService
             'anr' => $instance->anr->id,
         ];
 
+        // TODO: we need to replace the part of the code. Some parts of EventManager are deprecated in ZF3.
+        // https://zendframework.github.io/zend-eventmanager/migration/removed/#eventmanagerinterfacesetsharedmanager
+        // This fix is might be not work properly.
         $eventManager = new EventManager();
-        $eventManager->setIdentifiers('object');
-
+        $eventManager->setIdentifiers(['object']);
         //update object by event
-        $sharedEventManager = $eventManager->getSharedManager();
-        $eventManager->setSharedManager($sharedEventManager);
+//        $sharedEventManager = $eventManager->getSharedManager();
+//        $eventManager->setSharedManager($sharedEventManager);
         $eventManager->trigger('patch', null, compact(['objectId', 'data']));
     }
 
