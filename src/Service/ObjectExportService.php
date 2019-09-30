@@ -192,7 +192,7 @@ class ObjectExportService extends AbstractService
                         'code' => $data['rolfTags'][$data['object']['rolfTag']]['code'],
                     ]));
                     if (empty($tag)) {
-                        $ct = $this->get('rolfTagTable')->getClass();
+                        $ct = $this->get('rolfTagTable')->getEntityClass();
                         $tag = new $ct();
                     }
                     $tag->setDbAdapter($this->get('rolfTagTable')->getDb());
@@ -207,7 +207,7 @@ class ObjectExportService extends AbstractService
                                     'code' => $data['rolfRisks'][$k]['code'],
                                 ]));
                                 if (empty($risk)) {
-                                    $cr = $this->get('rolfRiskTable')->getClass();
+                                    $cr = $this->get('rolfRiskTable')->getEntityClass();
                                     $risk = new $cr();
                                 }
                                 $risk->setDbAdapter($this->get('rolfRiskTable')->getDb());
@@ -285,13 +285,13 @@ class ObjectExportService extends AbstractService
 
                 $toExchange = $data['object'];
                 if (empty($object)) {
-                    try{
-                      if(isset($toExchange['uuid']) && !is_null($toExchange['uuid'])){
-                        $this->get('table')->getEntity(['uuid' => $toExchange['uuid'], 'anr' => $anr->get('id')]);
-                        unset($toExchange['uuid']);
-                      } //if the uuid is in the DB drop it to have a new one and avoid conflict
-                    }catch(\Monarc\Core\Exception\Exception $e){}
-                    $class = $this->get('table')->getClass();
+                    try {
+                        if(isset($toExchange['uuid']) && !is_null($toExchange['uuid'])){
+                            $this->get('table')->getEntity(['uuid' => $toExchange['uuid'], 'anr' => $anr->get('id')]);
+                            unset($toExchange['uuid']);
+                        } //if the uuid is in the DB drop it to have a new one and avoid conflict
+                    } catch (\Monarc\Core\Exception\Exception $e) {}
+                    $class = $this->get('table')->getEntityClass();
                     $object = new $class();
                     $object->setDbAdapter($this->get('table')->getDb());
                     $object->setLanguage($this->getLanguage());
@@ -357,7 +357,7 @@ class ObjectExportService extends AbstractService
                         $child = $this->importFromArray($c, $anr, $modeImport, $objectsCache);
 
                         if ($child) {
-                            $class = $this->get('objectObjectService')->get('table')->getClass();
+                            $class = $this->get('objectObjectService')->get('table')->getEntityClass();
                             $oo = new $class();
                             $oo->setDbAdapter($this->get('objectObjectService')->get('table')->getDb());
                             $oo->setLanguage($this->getLanguage());
@@ -399,7 +399,7 @@ class ObjectExportService extends AbstractService
             ]));
             $checkLink = null;
             if (empty($categ)) { // on crée une nouvelle catégorie
-                $class = $this->get('categoryTable')->getClass();
+                $class = $this->get('categoryTable')->getEntityClass();
                 $categ = new $class();
                 $categ->setDbAdapter($this->get('categoryTable')->getDb());
                 $categ->setLanguage($this->getLanguage());
@@ -430,7 +430,7 @@ class ObjectExportService extends AbstractService
                     'category' => $checkLink,
                 ]));
                 if (empty($link)) {
-                    $class = $this->get('anrObjectCategoryTable')->getClass();
+                    $class = $this->get('anrObjectCategoryTable')->getEntityClass();
                     $link = new $class();
                     $link->setDbAdapter($this->get('anrObjectCategoryTable')->getDb());
                     $link->setLanguage($this->getLanguage());

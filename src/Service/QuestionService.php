@@ -44,7 +44,7 @@ class QuestionService extends AbstractService
                 $d['choices'] = $this->get('choiceTable')->fetchAllFiltered([], 1, 0, null, null, ['question' => $d['id']]);
 
                 if (!empty($filterAnd['anr']) && !$d['multichoice']) {
-                    $c = $this->get('choiceTable')->getClass();
+                    $c = $this->get('choiceTable')->getEntityClass();
                     $empty = new $c();
                     array_unshift($d['choices'], $empty->getJsonArray());
                 }
