@@ -401,8 +401,8 @@ abstract class AbstractEntityTable
 
         if ($was_new || $force_new) {
             $params = [
-                ':position' => $entity->get('position'),
-                ':id' => $entity->get($idName) === null ? '' : $entity->get($idName) //specific to the TIPs below
+                ':position' => (int) $entity->get('position'),
+                ':id' => (int) $entity->get($idName) === null ? '' : $entity->get($idName) //specific to the TIPs below
             ];
             $bros = $this->getRepository()->createQueryBuilder('bro')
                 ->update()->set("bro.position", "bro.position + 1")->where("1 = 1");
