@@ -16,10 +16,10 @@ use Monarc\Core\Model\Table\InstanceConsequenceTable;
 use Monarc\Core\Model\Table\InstanceTable;
 use Monarc\Core\Model\Table\ScaleCommentTable;
 use Monarc\Core\Model\Table\ScaleImpactTypeTable;
-use Monarc\Core\Model\Table\ScaleCommentsTable;
 use Zend\EventManager\EventManager;
 use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\Mapping\MappingException;
+use Zend\EventManager\SharedEventManager;
 
 /**
  * Instance Service
@@ -63,6 +63,9 @@ class InstanceService extends AbstractService
     protected $amvService;
 
     protected $forbiddenFields = ['anr', 'asset', 'object', 'ch', 'dh', 'ih'];
+
+    /** @var SharedEventManager */
+    private $sharedManager;
 
     /**
      * Instantiate Object To Anr
@@ -550,15 +553,14 @@ class InstanceService extends AbstractService
             'anr' => $instance->anr->id,
         ];
 
-        // TODO: we need to replace the part of the code. Some parts of EventManager are deprecated in ZF3.
-        // https://zendframework.github.io/zend-eventmanager/migration/removed/#eventmanagerinterfacesetsharedmanager
-        // This fix is might be not work properly.
-        $eventManager = new EventManager();
-        $eventManager->setIdentifiers(['object']);
-        //update object by event
-//        $sharedEventManager = $eventManager->getSharedManager();
-//        $eventManager->setSharedManager($sharedEventManager);
-        $eventManager->trigger('patch', null, compact(['objectId', 'data']));
+        // TODO: The events triggering did not work before upgrate to ZF3, now it works.
+        $eventManager = new EventManager($this->sharedManager, ['object']);
+        $eventManager->trigger('patch', $this, compact(['objectId', 'data']));
+    }
+
+    public function setSharedManager(SharedEventManager $sharedManager)
+    {
+        $this->sharedManager = $sharedManager;
     }
 
     /**

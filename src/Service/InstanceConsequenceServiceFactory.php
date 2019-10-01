@@ -7,6 +7,8 @@
 
 namespace Monarc\Core\Service;
 
+use Interop\Container\ContainerInterface;
+
 /**
  * Instance Consequence Service Factory
  *
@@ -24,4 +26,14 @@ class InstanceConsequenceServiceFactory extends AbstractServiceFactory
         'scaleTable' => 'Monarc\Core\Model\Table\ScaleTable',
         'scaleImpactTypeTable' => 'Monarc\Core\Model\Table\ScaleImpactTypeTable',
     ];
+
+    // TODO: A temporary solution to inject SharedEventManager. All the factories classes will be removed.
+    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
+    {
+        $objectObjectService = parent::__invoke($container, $requestedName, $options);
+
+        $objectObjectService->setSharedManager($container->get('EventManager')->getSharedManager());
+
+        return $objectObjectService;
+    }
 }

@@ -13,6 +13,7 @@ use Monarc\Core\Model\Table\InstanceTable;
 use Zend\EventManager\EventManager;
 
 use Doctrine\ORM\Query\QueryException;
+use Zend\EventManager\SharedEventManager;
 
 /**
  * Instance Consequence Service
@@ -29,6 +30,9 @@ class InstanceConsequenceService extends AbstractService
     protected $scaleTable;
     protected $scaleImpactTypeTable;
     protected $forbiddenFields = ['anr', 'instance', 'object', 'scaleImpactType'];
+
+    /** @var SharedEventManager */
+    private $sharedManager;
 
     /**
      * @inheritdoc
@@ -236,19 +240,19 @@ class InstanceConsequenceService extends AbstractService
 
         if (!$fromInstance) {
             //if father instance exist, create instance for child
-            // TODO: we need to replace the part of the code. Some parts of EventManager are deprecated in ZF3.
-            // https://zendframework.github.io/zend-eventmanager/migration/removed/#eventmanagerinterfacesetsharedmanager
-            // This fix is might be not work properly.
-            $eventManager = new EventManager();
-            $eventManager->setIdentifiers(['instance']);
-//            $sharedEventManager = $eventManager->getSharedManager();
-//            $eventManager->setSharedManager($sharedEventManager);
-            $eventManager->trigger('patch', null, compact(['anrId', 'instanceId', 'data']));
+            // TODO: The events triggering did not work before upgrate to ZF3, now it works.
+            $eventManager = new EventManager($this->sharedManager, ['instance']);
+            $eventManager->trigger('patch', $this, compact(['anrId', 'instanceId', 'data']));
         } else {
             $instance = $instanceCurrentConsequence->get('instance')->initialize();
             $instance->exchangeArray($data);
             $this->get('instanceTable')->save($instance);
         }
+    }
+
+    public function setSharedManager(SharedEventManager $sharedManager)
+    {
+        $this->sharedManager = $sharedManager;
     }
 
     /**

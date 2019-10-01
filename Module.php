@@ -5,6 +5,8 @@ namespace Monarc\Core;
 use Monarc\Core\Service\AuthenticationService;
 use Monarc\Core\Service\InstanceService;
 use Monarc\Core\Service\ObjectService;
+use Monarc\FrontOffice\Service\AnrInstanceService;
+use Monarc\FrontOffice\Service\AnrObjectServicex;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\NullOutput;
 use Zend\Console\Request;
@@ -30,8 +32,8 @@ class Module
             $sharedEventManager->attach('addcomponent', 'createinstance', function ($e) use ($sm) {
                 $params = $e->getParams();
                 /** @var InstanceService $instanceService */
-                if ($sm->has('Monarc\FrontOffice\Service\AnrInstanceService')) {
-                    $instanceService = $sm->get('\Monarc\FrontOffice\Service\AnrInstanceService');
+                if ($sm->has(AnrInstanceService::class)) {
+                    $instanceService = $sm->get(AnrInstanceService::class);
                 } else {
                     $instanceService = $sm->get(InstanceService::class);
                 }
@@ -42,8 +44,8 @@ class Module
             $sharedEventManager->attach('instance', 'patch', function ($e) use ($sm) {
                 $params = $e->getParams();
                 /** @var InstanceService $instanceService */
-                if ($sm->has('\Monarc\FrontOffice\Service\AnrInstanceService')) {
-                    $instanceService = $sm->get('\Monarc\FrontOffice\Service\AnrInstanceService');
+                if ($sm->has(AnrInstanceService::class)) {
+                    $instanceService = $sm->get(AnrInstanceService::class);
                 } else {
                     $instanceService = $sm->get(InstanceService::class);
                 }
@@ -54,8 +56,8 @@ class Module
             $sharedEventManager->attach('object', 'patch', function ($e) use ($sm) {
                 $params = $e->getParams();
                 /** @var ObjectService $objectService */
-                if ($sm->has('\Monarc\FrontOffice\Service\AnrObjectService')) {
-                    $objectService = $sm->get('\Monarc\FrontOffice\Service\AnrObjectService');
+                if ($sm->has(AnrObjectService::class)) {
+                    $objectService = $sm->get(AnrObjectService::class);
                 } else {
                     $objectService = $sm->get(ObjectService::class);
                 }

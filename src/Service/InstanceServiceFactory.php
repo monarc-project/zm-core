@@ -7,6 +7,8 @@
 
 namespace Monarc\Core\Service;
 
+use Interop\Container\ContainerInterface;
+
 /**
  * Instance Service Factory
  *
@@ -36,4 +38,14 @@ class InstanceServiceFactory extends AbstractServiceFactory
         'amvService' => 'Monarc\Core\Service\AmvService',
         'translateService' => 'Monarc\Core\Service\TranslateService',
     ];
+
+    // TODO: A temporary solution to inject SharedEventManager. All the factories classes will be removed.
+    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
+    {
+        $objectObjectService = parent::__invoke($container, $requestedName, $options);
+
+        $objectObjectService->setSharedManager($container->get('EventManager')->getSharedManager());
+
+        return $objectObjectService;
+    }
 }

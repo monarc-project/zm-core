@@ -15,6 +15,7 @@ use Monarc\Core\Model\Table\ObjectObjectTable;
 use Zend\EventManager\EventManager;
 use Doctrine\ORM\Mapping\MappingException;
 use Doctrine\ORM\Query\QueryException;
+use Zend\EventManager\SharedEventManager;
 
 /**
  * Object Object Service
@@ -32,6 +33,9 @@ class ObjectObjectService extends AbstractService
     protected $fatherTable;
     protected $modelTable;
     protected $dependencies = ['[child](object)', '[father](object)', '[anr](object)'];
+
+    /** @var SharedEventManager */
+    private $sharedManager;
 
     /**
      * @inheritdoc
@@ -168,17 +172,17 @@ class ObjectObjectService extends AbstractService
             }
 
             //if father instance exist, create instance for child
-            // TODO: we need to replace the part of the code. Some parts of EventManager are deprecated in ZF3.
-            // https://zendframework.github.io/zend-eventmanager/migration/removed/#eventmanagerinterfacesetsharedmanager
-            // This fix is might be not work properly.
-            $eventManager = new EventManager();
-            $eventManager->setIdentifiers(['addcomponent']);
-//            $sharedEventManager = $eventManager->getSharedManager();
-//            $eventManager->setSharedManager($sharedEventManager);
-            $eventManager->trigger('createinstance', null, compact(['anrId', 'dataInstance']));
+            // TODO: The events triggering did not work before upgrate to ZF3, now it works.
+            $eventManager = new EventManager($this->sharedManager, ['addcomponent']);
+            $eventManager->trigger('createinstance', $this, compact(['anrId', 'dataInstance']));
         }
 
         return $id;
+    }
+
+    public function setSharedManager(SharedEventManager $sharedManager)
+    {
+        $this->sharedManager = $sharedManager;
     }
 
     /**
@@ -204,7 +208,6 @@ class ObjectObjectService extends AbstractService
         }else {
           return null;
         }
-
     }
 
     /**
