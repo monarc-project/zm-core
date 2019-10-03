@@ -198,32 +198,32 @@ abstract class AbstractController extends AbstractRestfulController
             if (!empty($entity[$dependency])) {
                 if (is_object($entity[$dependency])) {
                     if (is_a($entity[$dependency], 'Monarc\Core\Model\Entity\AbstractEntity')) {
-                        if(is_a($entity[$dependency], $EntityDependency)){ //fetch more info
-                          $entity[$dependency] = $entity[$dependency]->getJsonArray();
-                            if(!empty($subField)){
-                              foreach ($subField as $key => $value){
-                                $entity[$dependency][$value] = $entity[$dependency][$value] ? $entity[$dependency][$value]->getJsonArray() : [];
-                                unset($entity[$dependency][$value]['__initializer__']);
-                                unset($entity[$dependency][$value]['__cloner__']);
-                                unset($entity[$dependency][$value]['__isInitialized__']);
-                              }
+                        if(is_a($entity[$dependency], $EntityDependency)) { // fetch more info
+                            $entity[$dependency] = $entity[$dependency]->getJsonArray();
+                            if(!empty($subField)) {
+                                foreach ($subField as $key => $value) {
+                                    $entity[$dependency][$value] = $entity[$dependency][$value] ? $entity[$dependency][$value]->getJsonArray() : [];
+                                    unset($entity[$dependency][$value]['__initializer__']);
+                                    unset($entity[$dependency][$value]['__cloner__']);
+                                    unset($entity[$dependency][$value]['__isInitialized__']);
+                                }
                             }
-                        }else {
-                          $entity[$dependency] = $entity[$dependency]->getJsonArray();
+                        } else {
+                            $entity[$dependency] = $entity[$dependency]->getJsonArray();
                         }
                         unset($entity[$dependency]['__initializer__']);
                         unset($entity[$dependency]['__cloner__']);
                         unset($entity[$dependency]['__isInitialized__']);
-                    }elseif(get_class($entity[$dependency]) == 'Doctrine\ORM\PersistentCollection'){
+                    } elseif (get_class($entity[$dependency]) == 'Doctrine\ORM\PersistentCollection') {
                         $entity[$dependency]->initialize();
-                        if($entity[$dependency]->count()){
-                            $dependency = $entity[$dependency]->getSnapshot();
+                        if ($entity[$dependency]->count()) {
+                            $dependenciesObjects = $entity[$dependency]->getSnapshot();
                             $entity[$dependency] = [];
-                            foreach($dependency as $d){
-                              if(is_a($d, $EntityDependency)){ //fetch more info
+                            foreach($dependenciesObjects as $d) {
+                              if(is_a($d, $EntityDependency)) { //fetch more info
                                   $temp = $d->toArray();
-                                  if(!empty($subField)){
-                                    foreach ($subField as $key => $value){
+                                  if(!empty($subField)) {
+                                    foreach ($subField as $key => $value) {
                                       $temp[$value] = $d->$value->getJsonArray();
                                       unset($temp[$value]['__initializer__']);
                                       unset($temp[$value]['__cloner__']);
@@ -232,9 +232,9 @@ abstract class AbstractController extends AbstractRestfulController
                                     $entity[$dependency][] = $temp;
                                   }
                               }
-                              else if(is_a($d, 'Monarc\Core\Model\Entity\AbstractEntity')){
-                                    $entity[$dependency][] = $d->getJsonArray();
-                              }else{
+                              else if (is_a($d, 'Monarc\Core\Model\Entity\AbstractEntity')) {
+                                  $entity[$dependency][] = $d->getJsonArray();
+                              } else {
                                   $entity[$dependency][] = $d;
                               }
                             }
