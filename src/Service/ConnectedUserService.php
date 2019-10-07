@@ -7,8 +7,8 @@
 
 namespace Monarc\Core\Service;
 
-use Monarc\Core\Model\Entity\User;
-use Monarc\Core\Model\Entity\UserToken;
+use Monarc\Core\Model\Entity\UserSuperClass;
+use Monarc\Core\Model\Entity\UserTokenSuperClass;
 use Monarc\Core\Storage\Authentication as AuthenticationStorage;
 use Zend\Http\PhpEnvironment\Request;
 
@@ -20,7 +20,7 @@ use Zend\Http\PhpEnvironment\Request;
  */
 class ConnectedUserService
 {
-    /** @var User|null */
+    /** @var UserSuperClass|null */
     protected $connectedUser;
 
     /** @var Request */
@@ -38,12 +38,12 @@ class ConnectedUserService
     /**
      * For logged in users it will always return User's object instance.
      */
-    public function getConnectedUser(): ?User
+    public function getConnectedUser(): ?UserSuperClass
     {
         if ($this->connectedUser === null) {
             $token = $this->request->getHeader('token');
             if (!empty($token)) {
-                /** @var UserToken $userToken */
+                /** @var UserTokenSuperClass $userToken */
                 $userToken = $this->authenticationStorage->getItem($token->getFieldValue());
                 if ($userToken) {
                     $this->connectedUser = $userToken->getUser();

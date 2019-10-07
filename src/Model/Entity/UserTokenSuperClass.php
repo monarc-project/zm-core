@@ -51,4 +51,9 @@ class UserTokenSuperClass extends AbstractEntity
      * @ORM\Column(name="date_end", type="datetime", precision=0, scale=0, nullable=true, unique=false)
      */
     protected $dateEnd;
+
+    public function getUser(): UserSuperClass
+    {
+        return $this->user;
+    }
 }
