@@ -33,6 +33,13 @@ trait CreateEntityTrait
         return $this->createdAt;
     }
 
+    public function setCreator(string $creator): self
+    {
+        $this->creator = $creator;
+
+        return $this;
+    }
+
     public function getCreator(): string
     {
         return $this->creator;
