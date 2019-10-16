@@ -10,6 +10,7 @@ namespace Monarc\Core\Model\Entity;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Monarc\Core\Model\Entity\Traits;
 
 /**
  * TODO: move filter functionality to a filter class.
@@ -19,9 +20,13 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="users")
  * @ORM\MappedSuperclass
+ * @ORM\HasLifecycleCallbacks()
  */
 abstract class UserSuperClass
 {
+    use Traits\CreateEntityTrait;
+    use Traits\UpdateEntityTrait;
+
     public const STATUS_ACTIVE = 1;
     public const STATUS_INACTIVE = 0;
 
@@ -86,34 +91,6 @@ abstract class UserSuperClass
     protected $password;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="creator", type="string", length=255, nullable=true)
-     */
-    protected $creator;
-
-    /**
-     * @var DateTime
-     *
-     * @ORM\Column(name="created_at", type="datetime", nullable=true)
-     */
-    protected $createdAt;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="updater", type="string", length=255, nullable=true)
-     */
-    protected $updater;
-
-    /**
-     * @var DateTime
-     *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
-     */
-    protected $updatedAt;
-
-    /**
      * @var integer
      *
      * @ORM\Column(name="language", type="integer", precision=0, scale=0, nullable=false, unique=false)
@@ -137,9 +114,8 @@ abstract class UserSuperClass
         }
         $this->language = $data['language'];
         $this->status = $data['status'] ?? self::STATUS_ACTIVE;
-        $this->creator = $data['creator'];
         $this->setRoles($data['role']);
-        $this->createdAt = new DateTime();
+        $this->creator = $data['creator'];
     }
 
     public function getId(): int
@@ -260,10 +236,5 @@ abstract class UserSuperClass
     public function isSystemUser(): bool
     {
         return $this->creator === static::CREATOR_SYSTEM;
-    }
-
-    public function getCreator(): string
-    {
-        return $this->creator;
     }
 }

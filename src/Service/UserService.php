@@ -75,25 +75,6 @@ class UserService
      * @throws EntityNotFoundException
      * @throws ORMException
      */
-    protected function getUpdatedUser(int $userId, array $data): UserSuperClass
-    {
-        $user = $this->userTable->findById($userId);
-
-        $user->setFirstname($data['firstname']);
-        $user->setLastname($data['lastname']);
-        $user->setEmail($data['email']);
-
-        if (!empty($data['role'])) {
-            $user->setRoles($data['role']);
-        }
-
-        return $user;
-    }
-
-    /**
-     * @throws EntityNotFoundException
-     * @throws ORMException
-     */
     public function patch($userId, $data): UserSuperClass
     {
         if (isset($data['password'])) {
@@ -174,6 +155,27 @@ class UserService
             $filterJoin,
             $filterLeft
         );
+    }
+
+    /**
+     * @throws EntityNotFoundException
+     * @throws ORMException
+     */
+    protected function getUpdatedUser(int $userId, array $data): UserSuperClass
+    {
+        $user = $this->userTable->findById($userId);
+
+        $user->setFirstname($data['firstname']);
+        $user->setLastname($data['lastname']);
+        $user->setEmail($data['email']);
+        $user->setUpdater($this->userTable->getConnectedUser()->getFirstname() . ' '
+            . $this->userTable->getConnectedUser()->getLastname());
+
+        if (!empty($data['role'])) {
+            $user->setRoles($data['role']);
+        }
+
+        return $user;
     }
 
     /**

@@ -7,17 +7,20 @@
 
 namespace Monarc\Core\Model\Entity;
 
-use DateTime;
 use Doctrine\ORM\Mapping as ORM;
+use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 
 /**
  * User Role
  *
  * @ORM\Table(name="users_roles")
  * @ORM\MappedSuperclass
+ * @ORM\HasLifecycleCallbacks()
  */
 class UserRoleSuperClass
 {
+    use CreateEntityTrait;
+
     public const SUPER_ADMIN_FO = 'superadminfo';
     public const USER_FO = 'userfo';
 
@@ -45,26 +48,11 @@ class UserRoleSuperClass
      */
     protected $role;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="creator", type="string", length=255, nullable=true)
-     */
-    protected $creator;
-
-    /**
-     * @var DateTime
-     *
-     * @ORM\Column(name="created_at", type="datetime", nullable=true)
-     */
-    protected $createdAt;
-
     public function __construct(UserSuperClass $user, string $role)
     {
         $this->role = $role;
         $this->user = $user;
         $this->creator = $user->getCreator();
-        $this->createdAt = new DateTime();
     }
 
     public function getUser(): UserSuperClass

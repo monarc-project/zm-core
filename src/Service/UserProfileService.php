@@ -55,6 +55,9 @@ class UserProfileService
             $user->setLanguage((int)$data['language']);
         }
 
+        $user->setUpdater($this->userTable->getConnectedUser()->getFirstname() . ' '
+            . $this->userTable->getConnectedUser()->getLastname());
+
         // TODO: think how to be with updatedAt and updater. We need to check if there are changes in the entity.
 
         $this->userTable->saveEntity($user);
