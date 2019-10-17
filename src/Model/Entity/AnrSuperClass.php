@@ -8,15 +8,20 @@
 namespace Monarc\Core\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Monarc\Core\Model\Entity\Traits;
 
 /**
  * Anr
  *
  * @ORM\Table(name="anrs")
  * @ORM\MappedSuperclass
+ * @ORM\HasLifecycleCallbacks()
  */
 class AnrSuperClass extends AbstractEntity
 {
+    use Traits\CreateEntityTrait;
+    use Traits\UpdateEntityTrait;
+
     /**
      * @var integer
      *
@@ -243,34 +248,6 @@ class AnrSuperClass extends AbstractEntity
      * @ORM\Column(name="show_rolf_brut", type="smallint", options={"unsigned":true, "default":0})
      */
     protected $showRolfBrut = '0';
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="creator", type="string", length=255, nullable=true)
-     */
-    protected $creator;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="created_at", type="datetime", nullable=true)
-     */
-    protected $createdAt;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="updater", type="string", length=255, nullable=true)
-     */
-    protected $updater;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
-     */
-    protected $updatedAt;
 
     /**
      * @return int
