@@ -28,6 +28,14 @@ trait UpdateEntityTrait
         $this->updatedAt = new DateTime();
     }
 
+    /**
+     * @ORM\PrePersist
+     */
+    public function resetUpdatedAtValue(): void
+    {
+        $this->updatedAt = null;
+    }
+
     public function getUpdatedAt(): DateTime
     {
         return $this->updatedAt;

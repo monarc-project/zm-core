@@ -254,7 +254,8 @@ class AnrSuperClass extends AbstractEntity
         return $this->id;
     }
 
-    public function setId(int $id): self
+    // TODO: remove the hack when AnrService is refactored.
+    public function setId(?int $id): self
     {
         $this->id = $id;
 
