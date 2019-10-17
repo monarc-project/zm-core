@@ -23,7 +23,7 @@ trait UpdateEntityTrait
     /**
      * @ORM\PreUpdate
      */
-    public function setUpdateAtValue(): void
+    public function setUpdatedAtValue(): void
     {
         $this->updatedAt = new DateTime();
     }

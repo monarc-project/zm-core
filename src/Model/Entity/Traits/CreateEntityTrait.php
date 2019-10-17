@@ -28,7 +28,7 @@ trait CreateEntityTrait
         $this->createdAt = new DateTime();
     }
 
-    public function getCreateAt(): DateTime
+    public function getCreatedAt(): DateTime
     {
         return $this->createdAt;
     }
