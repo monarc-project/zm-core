@@ -22,7 +22,7 @@ use Zend\ServiceManager\AbstractFactory\ReflectionBasedAbstractFactory;
 use Zend\ServiceManager\Factory\InvokableFactory;
 use Zend\ServiceManager\Proxy\LazyServiceFactory;
 
-$env = getenv('APP_ENV') ?: 'production';
+$env = getenv('APPLICATION_ENV') ?: 'production';
 $appConfigDir = getenv('APP_CONF_DIR') ?? '';
 
 $dataPath = './data';
