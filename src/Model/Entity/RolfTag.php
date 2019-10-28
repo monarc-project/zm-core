@@ -17,7 +17,7 @@ use Doctrine\ORM\Mapping as ORM;
  * })
  * @ORM\Entity
  */
-class RolfTag extends RolfTagSuperclass
+class RolfTag extends RolfTagSuperClass
 {
     /**
      * @var \Monarc\Core\Model\Entity\RolfRisk
@@ -26,4 +26,3 @@ class RolfTag extends RolfTagSuperclass
      */
     protected $risks;
 }
-

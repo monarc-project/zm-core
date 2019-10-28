@@ -17,7 +17,7 @@ use Doctrine\ORM\Mapping as ORM;
  * })
  * @ORM\MappedSuperclass
  */
-class QuestionChoiceSuperclass extends AbstractEntity
+class QuestionChoiceSuperClass extends AbstractEntity
 {
     /**
      * @var integer
@@ -189,4 +189,3 @@ class QuestionChoiceSuperclass extends AbstractEntity
         return $this->inputFilter;
     }
 }
-

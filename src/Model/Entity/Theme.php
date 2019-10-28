@@ -17,7 +17,6 @@ use Doctrine\ORM\Mapping as ORM;
  * })
  * @ORM\Entity
  */
-class Theme extends ThemeSuperclass
+class Theme extends ThemeSuperClass
 {
 }
-
