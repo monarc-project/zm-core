@@ -17,7 +17,6 @@ use Zend\Di\Container\AutowireFactory;
 use Monarc\Core\Model\Entity as ModelEntity;
 use Monarc\Core\Model\Table as ModelTable;
 use Monarc\Core\Service\Model\Entity as ServiceModelEntity;
-use Monarc\Core\Service\Model\Table as ServiceModelTable;
 use Zend\ServiceManager\AbstractFactory\ReflectionBasedAbstractFactory;
 use Zend\ServiceManager\Factory\InvokableFactory;
 use Zend\ServiceManager\Proxy\LazyServiceFactory;

@@ -28,11 +28,6 @@ class UserProfileService
 
     public function update(UserSuperClass $user, array $data): UserSuperClass
     {
-        // unauthorized fields
-        unset($data['dateStart']);
-        unset($data['dateEnd']);
-        unset($data['status']);
-
         if (!empty($data['new'])
             && !empty($data['confirm'])
             && !empty($data['old'])
@@ -57,8 +52,6 @@ class UserProfileService
 
         $user->setUpdater($this->userTable->getConnectedUser()->getFirstname() . ' '
             . $this->userTable->getConnectedUser()->getLastname());
-
-        // TODO: think how to be with updatedAt and updater. We need to check if there are changes in the entity.
 
         $this->userTable->saveEntity($user);
 
