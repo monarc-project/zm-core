@@ -17,6 +17,6 @@ use Doctrine\ORM\Mapping as ORM;
  * })
  * @ORM\Entity
  */
-class RolfRisk extends RolfRiskSuperclass
+class RolfRisk extends RolfRiskSuperClass
 {
 }

@@ -20,6 +20,6 @@ use Doctrine\ORM\Mapping as ORM;
  * })
  * @ORM\Entity
  */
-class Amv extends AmvSuperclass
+class Amv extends AmvSuperClass
 {
 }

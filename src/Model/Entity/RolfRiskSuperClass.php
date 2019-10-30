@@ -19,7 +19,7 @@ use Zend\InputFilter\InputFilter;
  * })
  * @ORM\MappedSuperclass
  */
-class RolfRiskSuperclass extends AbstractEntity
+class RolfRiskSuperClass extends AbstractEntity
 {
     /**
      * @var integer

@@ -15,6 +15,6 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Table(name="questions")
  * @ORM\Entity
  */
-class Question extends QuestionSuperclass
+class Question extends QuestionSuperClass
 {
 }

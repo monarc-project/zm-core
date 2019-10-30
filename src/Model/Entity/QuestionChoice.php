@@ -17,6 +17,6 @@ use Doctrine\ORM\Mapping as ORM;
  * })
  * @ORM\Entity
  */
-class QuestionChoice extends QuestionChoiceSuperclass
+class QuestionChoice extends QuestionChoiceSuperClass
 {
 }

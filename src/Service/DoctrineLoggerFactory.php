@@ -24,7 +24,7 @@ class DoctrineLoggerFactory implements FactoryInterface
      */
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
-        $env = getenv('APP_ENV') ?: 'production';
+        $env = getenv('APPLICATION_ENV') ?: 'production';
         $config = $container->get('Config');
         $enable = $config['monarc']['doctrineLog'] ?? false;
         if ($env !== 'production' && $enable) {

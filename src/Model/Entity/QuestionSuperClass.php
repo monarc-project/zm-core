@@ -15,7 +15,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Table(name="questions")
  * @ORM\MappedSuperclass
  */
-class QuestionSuperclass extends AbstractEntity
+class QuestionSuperClass extends AbstractEntity
 {
     /**
      * @var integer
@@ -168,4 +168,3 @@ class QuestionSuperclass extends AbstractEntity
         return $this->inputFilter;
     }
 }
-

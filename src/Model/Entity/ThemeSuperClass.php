@@ -17,7 +17,7 @@ use Doctrine\ORM\Mapping as ORM;
  * })
  * @ORM\MappedSuperclass
  */
-class ThemeSuperclass extends AbstractEntity
+class ThemeSuperClass extends AbstractEntity
 {
     /**
      * @var integer
@@ -151,4 +151,3 @@ class ThemeSuperclass extends AbstractEntity
         return $this->inputFilter;
     }
 }
-
