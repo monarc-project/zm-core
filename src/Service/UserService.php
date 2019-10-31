@@ -157,6 +157,20 @@ class UserService
         );
     }
 
+
+    /**
+     * @inheritdoc
+     */
+    public function delete(int $userId)
+    {
+        $user = $this->userTable->findById($userId);
+        if ($user->isSystemUser()) {
+            throw new Exception('You can not remove the "System" user', 412);
+        }
+
+        $this->userTable->deleteEntity($user);
+    }
+
     /**
      * @throws EntityNotFoundException
      * @throws ORMException
