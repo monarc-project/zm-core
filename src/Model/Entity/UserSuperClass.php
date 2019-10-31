@@ -114,8 +114,8 @@ abstract class UserSuperClass
         }
         $this->language = $data['language'];
         $this->status = $data['status'] ?? self::STATUS_ACTIVE;
-        $this->setRoles($data['role']);
         $this->creator = $data['creator'];
+        $this->setRoles($data['role']);
     }
 
     public function getId(): int
