@@ -97,7 +97,7 @@ class AssetService extends AbstractService
         }
 
         if ($entity->mode == Asset::MODE_SPECIFIC) {
-            $associateObjects = $this->get('MonarcObjectTable')->getGenericByAssetId($entity->getId());
+            $associateObjects = $this->get('MonarcObjectTable')->getGenericByAssetId($entity->getUuid());
             if (count($associateObjects)) {
                 throw new \Monarc\Core\Exception\Exception('Integrity AMV links violation', 412);
             }

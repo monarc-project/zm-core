@@ -438,7 +438,7 @@ class ObjectService extends AbstractService
      */
     public function getGenericByAsset($asset)
     {
-        return $this->get('table')->getGenericByAssetId($asset->getId());
+        return $this->get('table')->getGenericByAssetId($asset->getUuid());
     }
 
     /**
