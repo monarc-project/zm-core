@@ -47,10 +47,9 @@ class UserService
         if (empty($data['language'])) {
             $data['language'] = $this->defaultLanguageIndex;
         }
-        if (empty($data['creator'])) {
-            $data['creator'] = $this->userTable->getConnectedUser()->getFirstname() . ' '
-                . $this->userTable->getConnectedUser()->getLastname();
-        }
+
+        $data['creator'] = $this->userTable->getConnectedUser()->getFirstname() . ' '
+            . $this->userTable->getConnectedUser()->getLastname();
 
         $user = new User($data);
         $this->userTable->saveEntity($user);
@@ -156,7 +155,6 @@ class UserService
             $filterLeft
         );
     }
-
 
     /**
      * @inheritdoc
