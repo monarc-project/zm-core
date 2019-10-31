@@ -146,7 +146,7 @@ class UserService
         $filterJoin = $filterLeft = null;
 
         return $this->userTable->fetchAllFiltered(
-            array_keys($this->userTable->getJsonArray()),
+            ['id', 'status', 'firstname', 'lastname', 'email', 'language', 'roles'],
             $page,
             $limit,
             $this->parseFrontendOrder($order),
