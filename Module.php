@@ -1,101 +1,98 @@
 <?php
-namespace MonarcCore;
 
-//use Zend\Mvc\ModuleRouteListener;
-use MonarcCore\Model\Table\ScaleImpactTypeTable;
-use MonarcCore\Service\InstanceService;
-use MonarcCore\Service\ObjectService;
-use Zend\Di\ServiceLocator;
+namespace Monarc\Core;
+
+use Monarc\Core\Service\AuthenticationService;
+use Monarc\Core\Service\InstanceService;
+use Monarc\Core\Service\ObjectService;
+use Monarc\FrontOffice\Service\AnrInstanceService;
+use Monarc\FrontOffice\Service\AnrObjectServicex;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\NullOutput;
+use Zend\Console\Request;
 use Zend\Mvc\MvcEvent;
-use \Zend\Mvc\Controller\ControllerManager;
 use Zend\View\Model\JsonModel;
-use Zend\Mvc\Router\RouteMatch;
+use Zend\Router\RouteMatch;
 
 class Module
 {
-
     public function onBootstrap(MvcEvent $e)
     {
-        if(!$e->getRequest() instanceof \Zend\Console\Request){
+        if (!$e->getRequest() instanceof Request) {
             $eventManager = $e->getApplication()->getEventManager();
-            //$moduleRouteListener = new ModuleRouteListener();
-            //$moduleRouteListener->attach($eventManager);
 
-            $sm  = $e->getApplication()->getServiceManager();
-            $serv = $sm->get('\MonarcCore\Service\AuthenticationService');
-            $eventManager->attach(MvcEvent::EVENT_ROUTE, array($this,'MCEventRoute'),-100);
+            $sm = $e->getApplication()->getServiceManager();
+            $eventManager->attach(MvcEvent::EVENT_ROUTE, array($this, 'MCEventRoute'), -100);
 
             $eventManager->attach(MvcEvent::EVENT_DISPATCH_ERROR, array($this, 'onDispatchError'), 0);
             $eventManager->attach(MvcEvent::EVENT_RENDER_ERROR, array($this, 'onRenderError'), 0);
 
-
             $sharedEventManager = $eventManager->getSharedManager();
 
-            $sharedEventManager->attach('addcomponent', 'createinstance', function($e) use ($sm){
+            $sharedEventManager->attach('addcomponent', 'createinstance', function ($e) use ($sm) {
                 $params = $e->getParams();
                 /** @var InstanceService $instanceService */
-                if($sm->has('MonarcFO\Service\AnrInstanceService')){
-                    $instanceService = $sm->get('MonarcFO\Service\AnrInstanceService');
-                }else{
-                    $instanceService = $sm->get('MonarcCore\Service\InstanceService');
+                if ($sm->has(AnrInstanceService::class)) {
+                    $instanceService = $sm->get(AnrInstanceService::class);
+                } else {
+                    $instanceService = $sm->get(InstanceService::class);
                 }
                 $result = $instanceService->instantiateObjectToAnr($params['anrId'], $params['dataInstance']);
                 return $result;
             }, 100);
 
-            $sharedEventManager->attach('instance', 'patch', function($e) use ($sm){
+            $sharedEventManager->attach('instance', 'patch', function ($e) use ($sm) {
                 $params = $e->getParams();
                 /** @var InstanceService $instanceService */
-                if($sm->has('MonarcFO\Service\AnrInstanceService')){
-                    $instanceService = $sm->get('MonarcFO\Service\AnrInstanceService');
-                }else{
-                    $instanceService = $sm->get('MonarcCore\Service\InstanceService');
+                if ($sm->has(AnrInstanceService::class)) {
+                    $instanceService = $sm->get(AnrInstanceService::class);
+                } else {
+                    $instanceService = $sm->get(InstanceService::class);
                 }
                 $result = $instanceService->patchInstance($params['anrId'], $params['instanceId'], $params['data'], [], true);
                 return $result;
             }, 100);
 
-            $sharedEventManager->attach('object', 'patch', function($e) use ($sm){
+            $sharedEventManager->attach('object', 'patch', function ($e) use ($sm) {
                 $params = $e->getParams();
                 /** @var ObjectService $objectService */
-                if($sm->has('MonarcFO\Service\AnrObjectService')){
-                    $objectService = $sm->get('MonarcFO\Service\AnrObjectService');
-                }else{
-                    $objectService = $sm->get('MonarcCore\Service\ObjectService');
+                if ($sm->has(AnrObjectService::class)) {
+                    $objectService = $sm->get(AnrObjectService::class);
+                } else {
+                    $objectService = $sm->get(ObjectService::class);
                 }
                 $result = $objectService->patch($params['objectId'], $params['data']);
                 return $result;
             }, 100);
 
-            if(file_exists('./data/cache/upgrade')){
+            if (file_exists('./data/cache/upgrade')) {
                 // Clear caches
-                $appConf = file_exists('./config/application.config.php')?include './config/application.config.php':[];
-                $cacheDir = isset($appConf['module_listener_options']['cache_dir'])?$appConf['module_listener_options']['cache_dir']:"";
-                if(isset($appConf['module_listener_options']['config_cache_key']) && 
-                    file_exists($cacheDir."module-config-cache.".$appConf['module_listener_options']['config_cache_key'].".php")){
-                    unlink($cacheDir."module-config-cache.".$appConf['module_listener_options']['config_cache_key'].".php");
+                $appConf = file_exists('./config/application.config.php') ? include './config/application.config.php' : [];
+                $cacheDir = isset($appConf['module_listener_options']['cache_dir']) ? $appConf['module_listener_options']['cache_dir'] : "";
+                if (isset($appConf['module_listener_options']['config_cache_key']) &&
+                    file_exists($cacheDir . "module-config-cache." . $appConf['module_listener_options']['config_cache_key'] . ".php")) {
+                    unlink($cacheDir . "module-config-cache." . $appConf['module_listener_options']['config_cache_key'] . ".php");
                 }
-                if(isset($appConf['module_listener_options']['module_map_cache_key']) && 
-                    file_exists($cacheDir."module-classmap-cache.".$appConf['module_listener_options']['module_map_cache_key'].".php")){
-                    unlink($cacheDir."module-classmap-cache.".$appConf['module_listener_options']['module_map_cache_key'].".php");
+                if (isset($appConf['module_listener_options']['module_map_cache_key']) &&
+                    file_exists($cacheDir . "module-classmap-cache." . $appConf['module_listener_options']['module_map_cache_key'] . ".php")) {
+                    unlink($cacheDir . "module-classmap-cache." . $appConf['module_listener_options']['module_map_cache_key'] . ".php");
                 }
 
-                $output = new \Symfony\Component\Console\Output\NullOutput();
-                $inputMetadata = new \Symfony\Component\Console\Input\ArrayInput(array(
-                   'command' => 'orm:clear-cache:metadata',
+                $output = new NullOutput();
+                $inputMetadata = new ArrayInput(array(
+                    'command' => 'orm:clear-cache:metadata',
                 ));
-                $sm->get('doctrine.cli')->get('orm:clear-cache:metadata')->run($inputMetadata,$output);
-                $inputQuery = new \Symfony\Component\Console\Input\ArrayInput(array(
-                   'command' => 'orm:clear-cache:query',
+                $sm->get('doctrine.cli')->get('orm:clear-cache:metadata')->run($inputMetadata, $output);
+                $inputQuery = new ArrayInput(array(
+                    'command' => 'orm:clear-cache:query',
                 ));
-                $sm->get('doctrine.cli')->get('orm:clear-cache:query')->run($inputQuery,$output);
-                $inputResult = new \Symfony\Component\Console\Input\ArrayInput(array(
-                   'command' => 'orm:clear-cache:result',
+                $sm->get('doctrine.cli')->get('orm:clear-cache:query')->run($inputQuery, $output);
+                $inputResult = new ArrayInput(array(
+                    'command' => 'orm:clear-cache:result',
                 ));
-                $sm->get('doctrine.cli')->get('orm:clear-cache:result')->run($inputResult,$output);
+                $sm->get('doctrine.cli')->get('orm:clear-cache:result')->run($inputResult, $output);
 
                 // Rm cache doctrine
-
                 unlink('./data/cache/upgrade');
             }
         }
@@ -104,21 +101,6 @@ class Module
     public function getConfig()
     {
         return include __DIR__ . '/config/module.config.php';
-    }
-
-    public function getAutoloaderConfig()
-    {
-        return array(
-            // ./vendor/bin/classmap_generator.php --library module/MonarcCore/src/MonarcCore/ -w -s -o module/MonarcCore/autoload_classmap.php
-            'Zend\Loader\ClassMapAutoloader' => array(
-                __DIR__ . '/autoload_classmap.php',
-            ),
-            /*'Zend\Loader\StandardAutoloader' => array(
-                'namespaces' => array(
-                    __NAMESPACE__ => __DIR__ . '/src/' . __NAMESPACE__,
-                ),
-            ),*/
-        );
     }
 
     public function getDefaultLanguage($sm)
@@ -130,31 +112,11 @@ class Module
         return $defaultLanguageIndex;
     }
 
-    public function getServiceConfig()
-    {
-        return array(
-            'invokables' => array(
-            ),
-            'factories' => array(
-            ),
-        );
-    }
-
-    public function getControllerConfig()
-    {
-        return array(
-            'invokables' => array(
-            ),
-            'factories' => array(
-            ),
-        );
-    }
-
     public function getInputFilterConfig(){
         return array(
             'invokables' => array(
-                '\MonarcCore\Filter\Password' => '\MonarcCore\Filter\Password',
-                '\MonarcCore\Filter\SpecAlnum' => '\MonarcCore\Filter\SpecAlnum',
+                '\Monarc\Core\Filter\Password' => '\Monarc\Core\Filter\Password',
+                '\Monarc\Core\Filter\SpecAlnum' => '\Monarc\Core\Filter\SpecAlnum',
             ),
         );
     }
@@ -162,8 +124,8 @@ class Module
     public function getValidatorConfig(){
         return array(
             'invokables' => array(
-                '\MonarcCore\Validator\UniqueEmail' => '\MonarcCore\Validator\UniqueEmail',
-                '\MonarcCore\Validator\UniqueDeliveryModel' => '\MonarcCore\Validator\UniqueDeliveryModel',
+                '\Monarc\Core\Validator\UniqueEmail' => '\Monarc\Core\Validator\UniqueEmail',
+                '\Monarc\Core\Validator\UniqueDeliveryModel' => '\Monarc\Core\Validator\UniqueDeliveryModel',
             ),
         );
     }
@@ -185,7 +147,6 @@ class Module
             return;
         }
 
-        $response = $e->getResponse();
         $exception = $e->getParam('exception');
         $exceptionJson = array();
         if ($exception) {
@@ -214,10 +175,11 @@ class Module
         return $model;
     }
 
-    public function MCEventRoute($e){
-        $sm  = $e->getApplication()->getServiceManager();
-        $serv = $sm->get('\MonarcCore\Service\AuthenticationService');
-        $match = $e->getRouteMatch();
+    public function MCEventRoute($event){
+        $serv = $event->getApplication()
+            ->getServiceManager()
+            ->get(AuthenticationService::class);
+        $match = $event->getRouteMatch();
 
         // No route match, this is a 404
         if (!$match instanceof RouteMatch) {
@@ -225,29 +187,20 @@ class Module
         }
 
         // Route is whitelisted
-        $config = $e->getApplication()->getServiceManager()->get('Config');
+        $config = $event->getApplication()->getServiceManager()->get('Config');
         $permissions = $config['permissions'];
         $name = $match->getMatchedRouteName();
         if (in_array($name, $permissions)) {
             return;
         }
 
-        $token = $e->getRequest()->getHeader('token');
+        $token = $event->getRequest()->getHeader('token');
         if(!empty($token)){
             if($serv->checkConnect(array('token'=>$token->getFieldValue()))){
                 return;
             }
         }
 
-        return $e->getResponse()->setStatusCode(401);
-    }
-
-    public function getConsoleUsage(\Zend\Console\Adapter\AdapterInterface $console)
-    {
-        return array(
-            "MonarcCore Tools\n",
-            'monarc:mail-tester [--from=] <email>' => 'Sends a test email to the specified address',
-            ['--from', 'Define from email'],
-        );
+        return $event->getResponse()->setStatusCode(401);
     }
 }

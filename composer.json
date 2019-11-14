@@ -1,7 +1,7 @@
 {
     "name": "monarc/core",
-    "type": "library",
-    "description": "Core for Monarc project",
+    "description": "Core for monarc/monarc application",
+    "license": "AGPL-3.0",
     "authors": [
         {"name": "Cyril Rouyer", "email": "cyril@netlor.fr"},
         {"name": "Guillaume Lesniak", "email": "guillaume@netlor.fr"},
@@ -13,12 +13,27 @@
         {"name": "Cédric Bonhomme", "email": "cedric.bonhomme@cases.lu"}
     ],
     "require": {
-        "php": ">=5.5",
-        "zendframework/zendframework": "2.5.3",
-        "doctrine/doctrine-orm-module": "^0.10",
-        "robmorgan/phinx": "0.5.*"
+        "php": "^7.1",
+        "ext-openssl": "*",
+        "robmorgan/phinx": "^0.11.1",
+        "zendframework/zend-mvc": "^3.1",
+        "zendframework/zend-di": "^3.1",
+        "doctrine/doctrine-orm-module": "^2.1",
+        "ramsey/uuid-doctrine": "^1.5",
+        "zendframework/zend-log": "^2.11",
+        "zendframework/zend-console": "^2.8",
+        "ocramius/proxy-manager": "<2.3",
+        "ocramius/package-versions": "<1.5",
+        "zendframework/zend-mail": "^2.10",
+        "zendframework/zend-i18n": "^2.9"
+    },
+    "require-dev": {
+        "roave/security-advisories": "dev-master",
+        "zendframework/zend-component-installer": "^2.1"
     },
     "autoload": {
-        "psr-0": {"MonarcCore\\":"/"}
+        "psr-4": {
+            "Monarc\\Core\\": "src/"
+        }
     }
 }
