@@ -1,6 +1,7 @@
 <?php
 namespace Monarc\Core\Adapter;
 
+use Doctrine\ORM\EntityNotFoundException;
 use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Model\Table\UserTable;
 use Zend\Authentication\Adapter\AbstractAdapter;
@@ -17,7 +18,7 @@ class Authentication extends AbstractAdapter
     /** @var UserTable */
     private $userTable;
 
-    /** @var UserSuperClass */
+    /** @var UserSuperClass|null */
     protected $user;
 
     public function __construct(UserTable $userTable)
@@ -35,43 +36,32 @@ class Authentication extends AbstractAdapter
         return $this;
     }
 
-    /**
-     * @return User The current logged-in user
-     */
-    public function getUser(): UserSuperClass
+    public function getUser(): ?UserSuperClass
     {
         return $this->user;
     }
 
-    /**
-     * Authenticates the user from its identity and credential
-     *
-     * @return Result The authentication result
-     */
     public function authenticate(): Result
     {
         $identity = $this->getIdentity();
         $credential = $this->getCredential();
-        $users = $this->userTable->getRepository()->findByEmail($identity);
-        switch (count($users)) {
-            case 0:
-                return new Result(Result::FAILURE_IDENTITY_NOT_FOUND, $this->getIdentity());
-            case 1:
-                $user = current($users);
-                // TODO: faire le test sur dateStart && dateEnd
-                if ($user->isActive()) {
-                    if (password_verify($credential, $user->getPassword())) {
-                        $this->setUser($user);
-
-                        return new Result(Result::SUCCESS, $this->getIdentity());
-                    }
-
-                    return new Result(Result::FAILURE_CREDENTIAL_INVALID, $this->getIdentity());
-                }
-
-                return new Result(Result::FAILURE_UNCATEGORIZED, $this->getIdentity());
-            default:
-                return new Result(Result::FAILURE_IDENTITY_AMBIGUOUS, $this->getIdentity());
+        try {
+            $user = $this->userTable->getByEmail($identity);
+        } catch (EntityNotFoundException $e) {
+            return new Result(Result::FAILURE_IDENTITY_NOT_FOUND, $identity);
         }
+
+        // TODO: check if user is active within the date range: dateStart && dateEnd.
+        if ($user->isActive()) {
+            if (password_verify($credential, $user->getPassword())) {
+                $this->setUser($user);
+
+                return new Result(Result::SUCCESS, $identity);
+            }
+
+            return new Result(Result::FAILURE_CREDENTIAL_INVALID, $identity);
+        }
+
+        return new Result(Result::FAILURE_UNCATEGORIZED, $identity);
     }
 }

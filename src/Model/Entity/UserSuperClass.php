@@ -104,6 +104,13 @@ abstract class UserSuperClass
      */
     protected $roles;
 
+    /**
+     * @var boolean
+     *
+     * @ORM\Column(name="ldap_connection", type="boolean", nullable=false, default="false")
+     */
+    protected $ldapConnection;
+
     public function __construct(array $data)
     {
         $this->firstname = $data['firstname'];
