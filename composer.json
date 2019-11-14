@@ -15,6 +15,7 @@
     "require": {
         "php": "^7.1",
         "ext-openssl": "*",
+        "ext-ldap": "*",
         "robmorgan/phinx": "^0.11.1",
         "zendframework/zend-mvc": "^3.1",
         "zendframework/zend-di": "^3.1",
@@ -25,7 +26,8 @@
         "ocramius/proxy-manager": "<2.3",
         "ocramius/package-versions": "<1.5",
         "zendframework/zend-mail": "^2.10",
-        "zendframework/zend-i18n": "^2.9"
+        "zendframework/zend-i18n": "^2.9",
+        "zendframework/zend-ldap": "^2.10"
     },
     "require-dev": {
         "roave/security-advisories": "dev-master",
