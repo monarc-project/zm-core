@@ -503,11 +503,11 @@ abstract class AbstractEntityTable
         } else {//we're not new, the parent is the same, so we "just" have to change internal positions
             $avant = $changes['position']['before'];
             $apres = $changes['position']['after'];// == $entity->get('position')
-            $idName = $idName === 'uuid' ? (string)$entity->get($idName) : $entity->get($idName);
+            $idParam = $idName === 'uuid' ? (string)$entity->get($idName) : $entity->get($idName);
             $params = [
                 ':apres' => $apres,
                 ':avant' => $avant,
-                ':id' => $idName
+                ':id' => $idParam
             ];
 
             $bros = $this->getRepository()->createQueryBuilder('bro')
