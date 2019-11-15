@@ -451,7 +451,7 @@ abstract class AbstractEntityTable
             $bros->getQuery()->getResult();
 
         } else if (!empty($changes['parent']) && $changes['parent']['before'] != $changes['parent']['after']) {//this is somewhat like we was new but we need to redistribute brothers
-            $idParam = $idName === 'uuid' ? (string)$entity->get($idName) : $entity->get($idName)
+            $idParam = $idName === 'uuid' ? (string)$entity->get($idName) : $entity->get($idName);
             $params = [
                 ':position' => !empty($changes['position']['before']) ? $changes['position']['before'] : $entity->get('position'),
                 ':id' => $idParam
