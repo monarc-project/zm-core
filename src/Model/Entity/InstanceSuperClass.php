@@ -148,81 +148,81 @@ class InstanceSuperClass extends AbstractEntity
     protected $label4;
 
     /**
-     * @var decimal
+     * @var float
      *
      * @ORM\Column(name="disponibility", type="decimal", options={"unsigned":true, "default":0})
      */
-    protected $disponibility = '0';
+    protected $disponibility = 0;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="level", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $level = '1';
+    protected $level = 1;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="asset_type", type="smallint", options={"unsigned":true, "default":3})
      */
-    protected $assetType = '3';
+    protected $assetType = 3;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="exportable", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $exportable = '1';
+    protected $exportable = 1;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="c", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $c = '1';
+    protected $c = 1;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="i", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $i = '1';
+    protected $i = 1;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="d", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $d = '1';
+    protected $d = 1;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="ch", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $ch = '0';
+    protected $ch = 0;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="ih", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $ih = '0';
+    protected $ih = 0;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="dh", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $dh = '0';
+    protected $dh = 0;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="position", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $position = '1';
+    protected $position = 1;
 
     /**
      * @var string
@@ -264,27 +264,22 @@ class InstanceSuperClass extends AbstractEntity
      * @param int $id
      * @return Instance
      */
-    public function setId($id)
+    public function setId($id): self
     {
         $this->id = $id;
+
         return $this;
     }
 
-    /**
-     * @return int
-     */
-    public function getAnr()
+    public function getAnr(): Anr
     {
         return $this->anr;
     }
 
-    /**
-     * @param int $anr
-     * @return Instance
-     */
-    public function setAnr($anr)
+    public function setAnr(?Anr $anr): self
     {
         $this->anr = $anr;
+
         return $this;
     }
 
@@ -300,9 +295,10 @@ class InstanceSuperClass extends AbstractEntity
      * @param Asset $asset
      * @return Instance
      */
-    public function setAsset($asset)
+    public function setAsset($asset): self
     {
         $this->asset = $asset;
+
         return $this;
     }
 
@@ -314,67 +310,48 @@ class InstanceSuperClass extends AbstractEntity
         return $this->object;
     }
 
-    /**
-     * @param Object $object
-     * @return Instance
-     */
-    public function setObject($object)
+    public function setObject(ObjectSuperClass $object): self
     {
         $this->object = $object;
+
         return $this;
     }
 
-    /**
-     * @return Instance
-     */
-    public function getRoot()
+    public function getRoot(): ?InstanceSuperClass
     {
         return $this->root;
     }
 
-    /**
-     * @param Instance $root
-     * @return Instance
-     */
-    public function setRoot($root)
+    public function setRoot(InstanceSuperClass $root)
     {
         $this->root = $root;
         return $this;
     }
 
-    /**
-     * @return Instance
-     */
-    public function getParent()
+    public function getParent(): ?InstanceSuperClass
     {
         return $this->parent;
     }
 
-    /**
-     * @param Instance $parent
-     * @return Instance
-     */
-    public function setParent($parent)
+    public function setParent(InstanceSuperClass $parent): self
     {
         $this->parent = $parent;
+
         return $this;
     }
 
     /**
-     * @return smallint
+     * @return int
      */
     public function getLevel()
     {
         return $this->level;
     }
 
-    /**
-     * @param smallint $level
-     * @return Instance
-     */
-    public function setLevel($level)
+    public function setLevel(int $level): self
     {
         $this->level = $level;
+
         return $this;
     }
 
