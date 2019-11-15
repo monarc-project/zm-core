@@ -400,9 +400,10 @@ abstract class AbstractEntityTable
         }
 
         if ($was_new || $force_new) {
+            $idParam = $idName === 'uuid' ? (string)$entity->get($idName) : $entity->get($idName) ?? 0;
             $params = [
                 ':position' => (int) $entity->get('position'),
-                ':id' => $entity->get($idName) === null ? 0 : $entity->get($idName) //specific to the TIPs below
+                ':id' => $idParam //specific to the TIPs below
             ];
             $bros = $this->getRepository()->createQueryBuilder('bro')
                 ->update()->set("bro.position", "bro.position + 1")->where("1 = 1");
@@ -450,9 +451,10 @@ abstract class AbstractEntityTable
             $bros->getQuery()->getResult();
 
         } else if (!empty($changes['parent']) && $changes['parent']['before'] != $changes['parent']['after']) {//this is somewhat like we was new but we need to redistribute brothers
+            $idParam = $idName === 'uuid' ? (string)$entity->get($idName) : $entity->get($idName)
             $params = [
                 ':position' => !empty($changes['position']['before']) ? $changes['position']['before'] : $entity->get('position'),
-                ':id' => $entity->get($idName)
+                ':id' => $idParam
             ];
             $bros = $this->getRepository()->createQueryBuilder('bro')
                 ->update()->set("bro.position", "bro.position - 1")->where("1 = 1");
@@ -501,11 +503,11 @@ abstract class AbstractEntityTable
         } else {//we're not new, the parent is the same, so we "just" have to change internal positions
             $avant = $changes['position']['before'];
             $apres = $changes['position']['after'];// == $entity->get('position')
-
+            $idName = $idName === 'uuid' ? (string)$entity->get($idName) : $entity->get($idName);
             $params = [
                 ':apres' => $apres,
                 ':avant' => $avant,
-                ':id' => $entity->get($idName)
+                ':id' => $idName
             ];
 
             $bros = $this->getRepository()->createQueryBuilder('bro')
