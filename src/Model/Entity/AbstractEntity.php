@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Model\Entity;
 
+use Monarc\Core\Model\Db;
 use Monarc\Core\Model\GetAndSet;
 use Zend\InputFilter\InputFilter;
 use Zend\InputFilter\InputFilterAwareInterface;
@@ -134,7 +135,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
     }
 
     /**
-     * @return mixed
+     * @return Db
      */
     public function getDbAdapter()
     {
