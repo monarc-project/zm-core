@@ -7,8 +7,11 @@
 
 namespace Monarc\Core\Model\Table;
 
+use DateTime;
+use Doctrine\ORM\ORMException;
 use Monarc\Core\Model\DbCli;
 use Monarc\Core\Model\Entity\PasswordToken;
+use Monarc\Core\Model\Entity\PasswordTokenSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**
@@ -22,41 +25,30 @@ class PasswordTokenTable extends AbstractEntityTable
         parent::__construct($dbService, PasswordToken::class, $connectedUserService);
     }
 
-    /**
-     * Get By Token
-     *
-     * @param $token
-     * @return array
-     */
-    public function getByToken($token, $date)
+    public function getByToken(string $token, DateTime $date): ?PasswordTokenSuperClass
     {
         $passwordToken = $this->getRepository()->createQueryBuilder('pt')
-            ->select(array('pt.id', 'IDENTITY(pt.user) as userId', 'pt.token', 'pt.dateEnd'))
             ->where('pt.token = :token')
             ->andWhere('pt.dateEnd >= :date')
             ->setParameter(':token', $token)
             ->setParameter(':date', $date->format('Y-m-d H:i:s'))
+            ->setMaxResults(1)
             ->getQuery()
             ->getResult();
 
-        if (count($passwordToken)) {
-            return $passwordToken[0];
-        } else {
-            return null;
+        if ($passwordToken) {
+            return $passwordToken;
         }
+
+        return null;
     }
 
-    /**
-     * Delete Old
-     */
-    public function deleteOld()
+    public function deleteOld(): void
     {
-        $date = new \DateTime("now");
-
         $this->getRepository()->createQueryBuilder('pt')
             ->delete()
             ->where('pt.dateEnd < :date')
-            ->setParameter(':date', $date->format('Y-m-d H:i:s'))
+            ->setParameter(':date', (new DateTime())->format('Y-m-d H:i:s'))
             ->getQuery()
             ->getResult();
     }
@@ -66,7 +58,7 @@ class PasswordTokenTable extends AbstractEntityTable
      *
      * @param $token
      */
-    public function deleteToken($token)
+    public function deleteToken(string $token): void
     {
         $this->getRepository()->createQueryBuilder('t')
             ->delete()
@@ -81,7 +73,7 @@ class PasswordTokenTable extends AbstractEntityTable
      *
      * @param $userId
      */
-    public function deleteByUser($userId)
+    public function deleteByUser(int $userId): void
     {
         $this->getRepository()->createQueryBuilder('t')
             ->delete()
@@ -89,5 +81,16 @@ class PasswordTokenTable extends AbstractEntityTable
             ->setParameter(':user', $userId)
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * TODO: move it to an abstract table class (also rename the method to save) when we remove AbstractEntityTable.
+     * @throws ORMException
+     */
+    public function saveEntity(PasswordTokenSuperClass $passwordToken): void
+    {
+        // TODO: EntityManager has to be injected instead of the db class, actually we can remove db classes at all.
+        $this->db->getEntityManager()->persist($passwordToken);
+        $this->db->getEntityManager()->flush();
     }
 }

@@ -91,7 +91,7 @@ class ScaleService extends AbstractService
         if ($entity->type == Scale::TYPE_IMPACT) {
             $langs = $this->get('entity')->getImpactLangues();
 
-            $configLangStruct = $this->config->getlanguage();
+            $configLangStruct = $this->config->getLanguage();
             $configLang = $configLangStruct['languages'];
             $outLang = [];
 

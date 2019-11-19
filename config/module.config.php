@@ -349,9 +349,6 @@ return [
         'invokables' => [
             ModelEntity\Question::class => ModelEntity\Question::class,
             ModelEntity\QuestionChoice::class => ModelEntity\QuestionChoice::class,
-            ModelEntity\PasswordToken::class => ModelEntity\PasswordToken::class,
-            // ModelEntity\UserRole::class => ModelEntity\UserRole::class,
-            // ModelEntity\User::class => ModelEntity\User::class,
 
             // TODO: fix the classes and dependencies.
             'Monarc\Core\Service\Mime\Part' => 'Zend\Mime\Part',
@@ -372,7 +369,7 @@ return [
             Service\AuthenticationService::class => AutowireFactory::class,
             Service\AssetService::class => Service\AssetServiceFactory::class,
             Service\AssetExportService::class => Service\AssetExportServiceFactory::class,
-            Service\ConfigService::class => Service\ConfigServiceFactory::class,
+            Service\ConfigService::class => ReflectionBasedAbstractFactory::class,
             Service\QuestionService::class => Service\QuestionServiceFactory::class,
             Service\QuestionChoiceService::class => Service\QuestionChoiceServiceFactory::class,
             Service\GuideService::class => Service\GuideServiceFactory::class,
@@ -391,7 +388,7 @@ return [
             Service\ObjectExportService::class => Service\ObjectExportServiceFactory::class,
             Service\ObjectCategoryService::class => Service\ObjectCategoryServiceFactory::class,
             Service\ObjectObjectService::class => Service\ObjectObjectServiceFactory::class,
-            Service\PasswordService::class => Service\PasswordServiceFactory::class,
+            Service\PasswordService::class => AutowireFactory::class,
             Service\RolfRiskService::class => Service\RolfRiskServiceFactory::class,
             Service\RolfTagService::class => Service\RolfTagServiceFactory::class,
             Service\RoleService::class => Service\RoleServiceFactory::class,

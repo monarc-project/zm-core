@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Model\Entity;
 
+use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -17,7 +18,7 @@ use Doctrine\ORM\Mapping as ORM;
  * }), uniqueConstraints={@ORM\UniqueConstraint(name="token", columns={"token"})}
  * @ORM\MappedSuperclass
  */
-class PasswordTokenSuperClass extends AbstractEntity
+class PasswordTokenSuperClass
 {
     /**
      * @var integer
@@ -36,7 +37,7 @@ class PasswordTokenSuperClass extends AbstractEntity
     protected $token;
 
     /**
-     * @var \Monarc\Core\Model\Entity\User
+     * @var UserSuperClass
      *
      * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\User", cascade={"persist"})
      * @ORM\JoinColumns({
@@ -46,28 +47,26 @@ class PasswordTokenSuperClass extends AbstractEntity
     protected $user;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      *
      * @ORM\Column(name="date_end", type="datetime", precision=0, scale=0, nullable=true, unique=false)
      */
     protected $dateEnd;
 
-    /**
-     * @return User
-     */
-    public function getUser()
+    public function __construct(string $token, UserSuperClass $user, DateTime $dateEnd)
+    {
+        $this->token = $token;
+        $this->user = $user;
+        $this->dateEnd = $dateEnd;
+    }
+
+    public function getUser(): UserSuperClass
     {
         return $this->user;
     }
 
-    /**
-     * @param User $user
-     * @return PasswordToken
-     */
-    public function setUser($user)
+    public function getToken(): string
     {
-        $this->user = $user;
-        return $this;
+        return $this->token;
     }
 }
-

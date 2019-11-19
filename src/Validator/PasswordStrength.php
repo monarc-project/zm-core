@@ -37,7 +37,7 @@ class PasswordStrength extends AbstractValidator
 
         $isValid = true;
 
-        if (strlen($value) < 8 ) {
+        if (strlen($value) < 8) {
             $this->error(self::LENGTH);
             $isValid = false;
         }

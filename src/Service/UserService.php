@@ -76,10 +76,6 @@ class UserService
      */
     public function patch($userId, $data): UserSuperClass
     {
-        if (isset($data['password'])) {
-            $this->validatePassword($data);
-        }
-
         $user = $this->getUpdatedUser($userId, $data);
 
         $this->userTable->saveEntity($user);
@@ -93,28 +89,6 @@ class UserService
     public function getByEmail(string $email): UserSuperClass
     {
         return $this->userTable->getByEmail($email);
-    }
-
-    /**
-     * TODO: Move password validation to the controller's validator. Actually there is a rule for that, so it's an extra here.
-     *
-     * Validates that the password matches the required strength policy (special chars, lower/uppercase, number)
-     *
-     * @param string $data An array with a password key containing the password
-     *
-     * @throws \Exception If password is invalid
-     */
-    protected function validatePassword($data)
-    {
-        $passwordValidator = new PasswordStrength();
-        if (!$passwordValidator->isValid($data['password'])) {
-            $errors = [];
-            foreach ($passwordValidator->getMessages() as $message) {
-                $errors[] = $message;
-            }
-
-            throw new Exception('Password validation errors: [ ' . implode(', ', $errors) . ' ].', 412);
-        }
     }
 
     /**

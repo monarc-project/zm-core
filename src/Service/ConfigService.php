@@ -13,20 +13,22 @@ namespace Monarc\Core\Service;
  * Class ConfigService
  * @package Monarc\Core\Service
  */
-class ConfigService extends AbstractService
+class ConfigService
 {
+    /** @var array */
     protected $config;
 
-    /**
-     * Retrieves the languages from the configuration
-     * @return array The configuration's languages
-     */
-    public function getlanguage()
+    public function __construct(array $config)
+    {
+        $this->config = $config;
+    }
+
+    public function getLanguage(): array
     {
         $languages = $this->config['languages'];
         $defaultLanguageIndex = $this->config['defaultLanguageIndex'];
 
-        $activeLanguages = isset($this->config['activeLanguages']) ? $this->config['activeLanguages'] : [];
+        $activeLanguages = $this->config['activeLanguages'] ?? [];
 
         $l = [];
         if (empty($activeLanguages)) {
@@ -40,59 +42,81 @@ class ConfigService extends AbstractService
                 }
             }
         }
+
         return [
             'languages' => $l,
             'defaultLanguageIndex' => $defaultLanguageIndex,
         ];
     }
 
-    public function gethost()
+    public function getHost(): string
     {
-        return isset($this->config['publicHost']) ? $this->config['publicHost'] : '';
+        if (!empty($this->config['publicHost'])) {
+            return $this->config['publicHost'];
+        }
+
+        // Determine HTTP/HTTPS proto, and HTTP_HOST
+        if (isset($_SERVER['X_FORWARDED_PROTO'])) {
+            $proto = strtolower($_SERVER['X_FORWARDED_PROTO']);
+        } elseif (isset($_SERVER['X_URL_SCHEME'])) {
+            $proto = strtolower($_SERVER['X_URL_SCHEME']);
+        } elseif (isset($_SERVER['X_FORWARDED_SSL'])) {
+            $proto = strtolower($_SERVER['X_FORWARDED_SSL']) === 'on' ? 'https' : 'http';
+        } elseif (isset($_SERVER['FRONT_END_HTTPS'])) { // Microsoft variant
+            $proto = strtolower($_SERVER['FRONT_END_HTTPS']) === 'on' ? 'https' : 'http';
+        } elseif (isset($_SERVER['HTTPS'])) {
+            $proto = 'https';
+        } else {
+            $proto = 'http';
+        }
+
+        if (isset($_SERVER['X_FORWARDED_HOST'])) {
+            return $proto. '://' . $_SERVER['X_FORWARDED_HOST'];
+        }
+
+        return $proto. '://' . $_SERVER['HTTP_HOST'];
     }
 
-    public function getAppVersion()
+    public function getAppVersion(): array
     {
         return [
-            'appVersion' => isset($this->config['appVersion']) ? $this->config['appVersion'] : '',
+            'appVersion' => $this->config['appVersion'] ?? '',
         ];
     }
 
-    public function getCheckVersion()
+    public function getCheckVersion(): array
     {
         return [
-            'checkVersion' => isset($this->config['checkVersion']) ? $this->config['checkVersion'] : true,
+            'checkVersion' => $this->config['checkVersion'] ?? true,
         ];
     }
 
-    public function getAppCheckingURL()
+    public function getAppCheckingURL(): array
     {
         return [
-            'appCheckingURL' => isset($this->config['appCheckingURL']) ? $this->config['appCheckingURL'] : 'https://version.monarc.lu/check/MONARC',
+            'appCheckingURL' => $this->config['appCheckingURL'] ?? 'https://version.monarc.lu/check/MONARC',
         ];
     }
 
-    public function getMospApiUrl()
+    public function getMospApiUrl(): array
     {
         return [
-            'mospApiUrl' => isset($this->config['mospApiUrl']) ? $this->config['mospApiUrl'] : 'https://objects.monarc.lu/api/v1/',
+            'mospApiUrl' => $this->config['mospApiUrl'] ?? 'https://objects.monarc.lu/api/v1/',
         ];
     }
 
-    public function getTerms()
+    public function getTerms(): array
     {
         return [
-            'terms' => isset($this->config['terms']) ? $this->config['terms'] : '',
+            'terms' => $this->config['terms'] ?? '',
         ];
     }
 
-    public function getemail()
+    public function getEmail(): array
     {
         return [
-            'from' =>
-                isset($this->config['email']['from']) ? $this->config['email']['from'] : 'info@monarc.lu',
-            'name' =>
-                isset($this->config['email']['name']) ? $this->config['email']['name'] : 'MONARC',
+            'from' => $this->config['email']['from'] ?? 'info@monarc.lu',
+            'name' => $this->config['email']['name'] ?? 'Monarc',
         ];
     }
 }

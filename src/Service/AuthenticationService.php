@@ -36,11 +36,8 @@ class AuthenticationService
 
     /**
      * @param array $data The posted data (login/password)
-     * @param string|null $token Reference variable in which the token value will be set
-     * @param string|null $uid Reference variable in which the user ID will be set
-     * @param string|null $language Reference variable in which the user language will be set
      *
-     * @return bool True if the authentication succeeded, false otherwise
+     * @return array
      *
      * @throws Exception
      */
@@ -54,7 +51,7 @@ class AuthenticationService
 
             if ($res->isValid()) {
                 $user = $this->authenticationAdapter->getUser();
-                $token = uniqid(bin2hex(openssl_random_pseudo_bytes(random_int(20, 40))), true);
+                $token = uniqid(bin2hex(random_bytes(random_int(20, 40))), true);
                 $this->authenticationStorage->addItem($token, $user);
 
                 return compact('token', 'user');
