@@ -124,13 +124,13 @@ EMAIL_MESSAGE;
         /** @var User $user */
         $user = $this->userTable->findById($userId);
 
-        if (password_verify($oldPassword, $user->getPassword())) {
-            $this->validatePassword($newPassword);
-
-            $this->userTable->saveEntity($user->setPassword($newPassword));
+        if (!password_verify($oldPassword, $user->getPassword())) {
+            throw new Exception('Original password incorrect', 412);
         }
 
-        throw new Exception('Original password incorrect', 412);
+        $this->validatePassword($newPassword);
+
+        $this->userTable->saveEntity($user->setPassword($newPassword));
     }
 
     /**
