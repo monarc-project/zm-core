@@ -30,6 +30,6 @@ class UpdateTrendFieldDefault extends AbstractMigration
         $this->table('threats')
             ->changeColumn('trend', 'integer', array('default' => 1))
             ->save();
-	$this->execute('UPDATE threats SET trend = 1');
+        $this->execute('UPDATE threats SET trend = 1');
     }
 }
