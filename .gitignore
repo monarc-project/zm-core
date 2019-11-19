@@ -1,0 +1,9 @@
+.idea/*
+.buildpath
+.DS_Store
+.project
+.settings
+*.lock
+*.sublime-*
+nbproject
+vendor
