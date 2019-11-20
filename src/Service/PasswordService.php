@@ -131,7 +131,7 @@ EMAIL_MESSAGE;
 
         $this->validatePassword($newPassword);
 
-        $this->userTable->saveEntity($user->setPassword((new Password())->filter($newPassword)));
+        $this->userTable->saveEntity($user->setPassword($newPassword));
     }
 
     /**
