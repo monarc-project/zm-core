@@ -215,7 +215,7 @@ abstract class UserSuperClass
     public function hasRole(string $roleName): bool
     {
         foreach ($this->roles as $role) {
-            if ($role->getRole() === $role) {
+            if ($role->getRole() === $roleName) {
                 return true;
             }
         }
