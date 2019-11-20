@@ -12,9 +12,10 @@ class Password extends AbstractFilter
 {
     public function filter($value)
     {
-        if(!empty($value)){
-            $value = password_hash($value,PASSWORD_BCRYPT);
+        if (!empty($value)) {
+            $value = password_hash($value, PASSWORD_BCRYPT);
         }
+
         return $value;
     }
 }

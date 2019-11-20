@@ -13,7 +13,6 @@ use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\User;
 use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Model\Table\UserTable;
-use Monarc\Core\Validator\PasswordStrength;
 
 /**
  * User Service
