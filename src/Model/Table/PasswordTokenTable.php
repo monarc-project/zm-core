@@ -27,7 +27,8 @@ class PasswordTokenTable extends AbstractEntityTable
 
     public function getByToken(string $token, DateTime $date): ?PasswordTokenSuperClass
     {
-        $passwordToken = $this->getRepository()->createQueryBuilder('pt')
+        return $this->getRepository()->createQueryBuilder('pt')
+            ->select('pt')
             ->where('pt.token = :token')
             ->andWhere('pt.dateEnd >= :date')
             ->setParameter(':token', $token)
@@ -35,12 +36,6 @@ class PasswordTokenTable extends AbstractEntityTable
             ->setMaxResults(1)
             ->getQuery()
             ->getResult();
-
-        if ($passwordToken) {
-            return $passwordToken;
-        }
-
-        return null;
     }
 
     public function deleteOld(): void
