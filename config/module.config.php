@@ -322,23 +322,6 @@ return [
         ],
     ],
 
-    // TODO: Check if we can remove this.
-    'console' => [
-        'router' => [
-            'routes' => [
-                'monarc-mail-tester' => [
-                    'options' => [
-                        'route' => 'monarc:mail-tester [--from=] <email>',
-                        'defaults' => [
-                            'controller' => 'Monarc\Core\Controller\MailTester',
-                            'action' => 'index',
-                        ],
-                    ],
-                ],
-            ],
-        ],
-    ],
-
     'view_manager' => [
         'strategies' => [
             'ViewJsonStrategy',
@@ -379,7 +362,7 @@ return [
             Service\InstanceRiskService::class => Service\InstanceRiskServiceFactory::class,
             Service\InstanceRiskOpService::class => Service\InstanceRiskOpServiceFactory::class,
             Service\InstanceConsequenceService::class => Service\InstanceConsequenceServiceFactory::class,
-            Service\MailService::class => Service\MailServiceFactory::class,
+            Service\MailService::class => AutowireFactory::class,
             Service\ReferentialService::class => Service\ReferentialServiceFactory::class,
             Service\MeasureService::class => Service\MeasureServiceFactory::class,
             Service\MeasureMeasureService::class => Service\MeasureMeasureServiceFactory::class,
@@ -403,7 +386,6 @@ return [
             Service\DeliveriesModelsService::class => Service\DeliveriesModelsServiceFactory::class,
             Service\ModelObjectService::class => Service\ModelObjectServiceFactory::class,
             Service\AnrObjectService::class => Service\AnrObjectServiceFactory::class,
-            Service\MailTesterService::class => Service\MailTesterServiceFactory::class,
 
             // TODO: Entities are created from the code. Should be removed.
             ModelEntity\DeliveriesModels::class => ServiceModelEntity\DeliveriesModelsServiceModelEntity::class,
@@ -523,7 +505,6 @@ return [
             Controller\ApiAnrScalesController::class => Controller\ApiAnrScalesControllerFactory::class,
             Controller\ApiAnrScalesTypesController::class => Controller\ApiAnrScalesTypesControllerFactory::class,
             Controller\ApiAnrScalesCommentsController::class => Controller\ApiAnrScalesCommentsControllerFactory::class,
-            Controller\MailTesterController::class => Controller\MailTesterControllerFactory::class,
         ],
     ],
 

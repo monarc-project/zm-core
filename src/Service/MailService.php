@@ -9,41 +9,31 @@ namespace Monarc\Core\Service;
 
 use Zend\Mail\Message;
 use Zend\Mail\Transport\Sendmail;
+use Zend\Mime\Message as MimeMessage;
 use Zend\Mime\Part;
 
 /**
- * TODO: check if it is used. Refactor if yes.
  * Mail Service
  *
  * Class MailService
  * @package Monarc\Core\Service
  */
-class MailService extends AbstractService
+class MailService
 {
-    protected $configService;
-
-    /**
-     * Send an email to the specified recipient, with the subject and message set
-     * @param string $email Email address
-     * @param string $subject Email subject
-     * @param string $message Email message
-     * @param string $from Email sender (optionnal)
-     */
-    public function send($email, $subject, $message, $from)
+    public function send(string $email, string $subject, string $message, array $from): void
     {
         $html = new Part($message);
-        $html->type = "text/html";
+        $html->type = 'text/html';
 
-        $body = new \Zend\Mime\Message();
+        $body = new MimeMessage();
         $body->setParts(array($html));
 
-        $message = new Message();
-        $message->setBody($body);
-        $message->setFrom($from['from'], $from['name']);
-        $message->addTo($email, $email);
-        $message->setSubject($subject);
+        $mimeMessage = (new Message())
+            ->setBody($body)
+            ->setFrom($from['from'], $from['name'])
+            ->addTo($email, $email)
+            ->setSubject($subject);
 
-        $transport = new Sendmail();
-        $transport->send($message);
+        (new Sendmail())->send($mimeMessage);
     }
 }

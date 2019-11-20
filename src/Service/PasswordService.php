@@ -73,7 +73,7 @@ class PasswordService
 <p>Best regards,<br />Monarc Team</p>
 EMAIL_MESSAGE;
 
-        $this->mailService->send($email, $subject, $message, $this->configService->getEmail()['from']);
+        $this->mailService->send($email, $subject, $message, $this->configService->getEmail());
     }
 
     /**
