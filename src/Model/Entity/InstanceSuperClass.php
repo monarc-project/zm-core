@@ -42,9 +42,9 @@ class InstanceSuperClass extends AbstractEntity
     protected $id;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Anr
+     * @var AnrSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Anr", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Anr", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
      * })
@@ -276,7 +276,7 @@ class InstanceSuperClass extends AbstractEntity
         return $this->anr;
     }
 
-    public function setAnr(?Anr $anr): self
+    public function setAnr(?AnrSuperClass $anr): self
     {
         $this->anr = $anr;
 
