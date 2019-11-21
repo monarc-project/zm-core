@@ -4,7 +4,7 @@ namespace Monarc\Core\Filter;
 
 use Locale;
 use Traversable;
-use \Zend\I18n\Filter\AbstractLocale;
+use Zend\I18n\Filter\AbstractLocale;
 
 /**
  * Class SpecAlnum is a filter that expands the regular Alphanumeric filter by granting the ability to allow

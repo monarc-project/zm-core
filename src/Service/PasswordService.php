@@ -11,7 +11,6 @@ use DateTime;
 use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\ORMException;
 use Monarc\Core\Exception\Exception;
-use Monarc\Core\Filter\Password;
 use Monarc\Core\Model\Entity\PasswordToken;
 use Monarc\Core\Model\Entity\User;
 use Monarc\Core\Model\Table\PasswordTokenTable;

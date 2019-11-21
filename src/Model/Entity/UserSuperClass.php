@@ -93,9 +93,9 @@ abstract class UserSuperClass
     /**
      * @var integer
      *
-     * @ORM\Column(name="language", type="integer", precision=0, scale=0, nullable=false, unique=false)
+     * @ORM\Column(name="language", type="integer", precision=0, scale=0, nullable=false)
      */
-    protected $language;
+    protected $language = 1;
 
     /**
      * @var ArrayCollection
@@ -110,7 +110,7 @@ abstract class UserSuperClass
         $this->lastname = $data['lastname'];
         $this->email = $data['email'];
         if (isset($data['password'])) {
-            $this->password = $data['password'];
+            $this->setPassword($data['password']);
         }
         $this->language = $data['language'];
         $this->status = $data['status'] ?? self::STATUS_ACTIVE;
