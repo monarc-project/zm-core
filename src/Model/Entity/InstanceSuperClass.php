@@ -310,7 +310,7 @@ class InstanceSuperClass extends AbstractEntity
         return $this->object;
     }
 
-    public function setObject(ObjectSuperClass $object): self
+    public function setObject(?ObjectSuperClass $object): self
     {
         $this->object = $object;
 
@@ -322,7 +322,7 @@ class InstanceSuperClass extends AbstractEntity
         return $this->root;
     }
 
-    public function setRoot(InstanceSuperClass $root)
+    public function setRoot(?InstanceSuperClass $root)
     {
         $this->root = $root;
         return $this;
@@ -333,7 +333,7 @@ class InstanceSuperClass extends AbstractEntity
         return $this->parent;
     }
 
-    public function setParent(InstanceSuperClass $parent): self
+    public function setParent(?InstanceSuperClass $parent): self
     {
         $this->parent = $parent;
 
@@ -376,7 +376,7 @@ class InstanceSuperClass extends AbstractEntity
         foreach ($texts as $text) {
             $this->inputFilter->add(array(
                 'name' => $text,
-                'required' => ((strchr($text, (string)$this->getLanguage())) && (!$partial)) ? true : false,
+                'required' => strstr($text, (string)$this->getLanguage()) && (!$partial),
                 'allow_empty' => false,
                 'filters' => array(),
                 'validators' => array(),
