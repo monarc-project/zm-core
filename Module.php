@@ -6,7 +6,7 @@ use Monarc\Core\Service\AuthenticationService;
 use Monarc\Core\Service\InstanceService;
 use Monarc\Core\Service\ObjectService;
 use Monarc\FrontOffice\Service\AnrInstanceService;
-use Monarc\FrontOffice\Service\AnrObjectServicex;
+use Monarc\FrontOffice\Service\AnrObjectService;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\NullOutput;
 use Zend\Console\Request;

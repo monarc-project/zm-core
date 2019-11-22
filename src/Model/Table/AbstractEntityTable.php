@@ -402,19 +402,20 @@ abstract class AbstractEntityTable
         if ($was_new || $force_new) {
             $idParam = $idName === 'uuid' ? (string)$entity->get($idName) : $entity->get($idName) ?? 0;
             $params = [
-                ':position' => (int) $entity->get('position'),
+                ':position' => (int)$entity->get('position'),
                 ':id' => $idParam //specific to the TIPs below
             ];
             $bros = $this->getRepository()->createQueryBuilder('bro')
                 ->update()->set("bro.position", "bro.position + 1")->where("1 = 1");
             if ($isParentable) {
-                if ($entity->parameters['implicitPosition']['field'])
+                if ($entity->parameters['implicitPosition']['field']) {
                     if (is_null($entity->get($entity->parameters['implicitPosition']['field']))) {
                         if (count($implicitPositionFieldIds) > 1) {
                             $subquery->andWhere($entity->parameters['implicitPosition']['field'] . '.anr IS NULL')
                                 ->andWhere($entity->parameters['implicitPosition']['field'] . '.uuid IS NULL');
-                        } else
+                        } else {
                             $bros->andWhere('bro.' . $entity->parameters['implicitPosition']['field'] . ' IS NULL');
+                        }
                     } else {
                         if (count($implicitPositionFieldIds) > 1) {
                             $subquery->andWhere($entity->parameters['implicitPosition']['field'] . '.anr = :implicitPositionFieldAnr')
@@ -426,6 +427,7 @@ abstract class AbstractEntityTable
                             $params[':parentid'] = $entity->get($entity->parameters['implicitPosition']['field'])->get($implicitPositionFieldMainId);
                         }
                     }
+                }
 
                 if (!empty($entity->parameters['implicitPosition']['subField'])) {
                     foreach ($entity->parameters['implicitPosition']['subField'] as $k) {
@@ -448,6 +450,9 @@ abstract class AbstractEntityTable
             $bros->andWhere('bro.' . $idName . ' != :id')
                 ->setParameters($params);
 
+            if (strstr($bros->getQuery()->getSQL(), 'objects SET position = position - 1')) {
+                die($bros->getQuery()->getSQL());
+            }
             $bros->getQuery()->getResult();
 
         } else if (!empty($changes['parent']) && $changes['parent']['before'] != $changes['parent']['after']) {//this is somewhat like we was new but we need to redistribute brothers
