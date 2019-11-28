@@ -218,31 +218,40 @@ class ObjectObjectService extends AbstractService
      */
     public function getRecursiveChildren($fatherId, $anrId = null)
     {
-      /** @var ObjectObjectTable $table */
-      $table = $this->get('table');
+        /** @var ObjectObjectTable $table */
+        $table = $this->get('table');
 
-      try{
-        $children = $table->getEntityByFields(['father' => $fatherId], ['position' => 'ASC']);
-      }catch(QueryException $e){
-        $children = $table->getEntityByFields(['father' => ['uuid' => $fatherId, 'anr' => $anrId]], ['position' => 'ASC']);
-      }
-      $array_children = [];
+        $queryParams = [
+            'father' => [
+                'uuid' => $fatherId
+            ]
+        ];
+        if ($anrId !== null) {
+            $queryParams['father']['anr'] = $anrId;
+        }
 
-      foreach ($children as $child) {
-          /** @var ObjectObject $child */
+        $children = $table->getEntityByFields($queryParams, ['position' => 'ASC']);
+        $array_children = [];
 
-          $child_array = $child->getJsonArray();
-          try{
-            $object_child = $this->get('MonarcObjectTable')->get($child_array['child']->uuid->toString());
-          }catch(MappingException $e){
-            $object_child = $this->get('MonarcObjectTable')->get(['uuid' => $child_array['child']->uuid->toString(), 'anr' =>$child_array['child']->anr->id ]);
-          }
-          $object_child['children'] = $this->getRecursiveChildren($child_array['child']->uuid->toString(),$child_array['child']->anr->id);
-          $object_child['component_link_id'] = $child_array['id'];
-          $array_children[] = $object_child;
-      }
+        foreach ($children as $child) {
+            $child_array = $child->getJsonArray();
+            try {
+                $object_child = $this->get('MonarcObjectTable')->get($child_array['child']->uuid->toString());
+            } catch (MappingException $e) {
+                $object_child = $this->get('MonarcObjectTable')->get([
+                    'uuid' => $child_array['child']->uuid->toString(),
+                    'anr' => $child_array['child']->anr->id
+                ]);
+            }
+            $object_child['children'] = $this->getRecursiveChildren(
+                $child_array['child']->uuid->toString(),
+                $child_array['child']->anr->id
+            );
+            $object_child['component_link_id'] = $child_array['id'];
+            $array_children[] = $object_child;
+        }
 
-      return $array_children;
+        return $array_children;
     }
 
     /**

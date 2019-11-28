@@ -221,8 +221,14 @@ class InstanceService extends AbstractService
         $instanceConsequenceId = $this->createInstanceConsequences($id, $anrId, $object);
         $this->get('instanceConsequenceService')->updateInstanceImpacts($instanceConsequenceId->get('id'));
 
-
-        $this->createChildren($anrId, $id, $object);
+        // Check if the root element is not the same as current child element to avoid a circular dependeny.
+        if ($rootLevel
+            || $parent === null
+            || $parent->getRoot() === null
+            || $parent->getRoot()->getObject()->getUuid() !== $instance->getObject()->getUuid()
+        ) {
+            $this->createChildren($anrId, $id, $object);
+        }
 
         return $id;
     }
