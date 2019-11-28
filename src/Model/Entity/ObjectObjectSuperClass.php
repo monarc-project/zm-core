@@ -61,11 +61,11 @@ class ObjectObjectSuperClass extends AbstractEntity
     protected $child;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="position", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $position = '1';
+    protected $position = 1;
 
     /**
      * @var string
@@ -107,14 +107,15 @@ class ObjectObjectSuperClass extends AbstractEntity
      * @param int $id
      * @return Model
      */
-    public function setId($id)
+    public function setId($id): self
     {
         $this->id = $id;
+
         return $this;
     }
 
     /**
-     * @return int
+     * @return Anr
      */
     public function getAnr()
     {
@@ -122,17 +123,18 @@ class ObjectObjectSuperClass extends AbstractEntity
     }
 
     /**
-     * @param int $anr
+     * @param Anr $anr
      * @return ObjectObject
      */
     public function setAnr($anr)
     {
         $this->anr = $anr;
+
         return $this;
     }
 
     /**
-     * @return Object
+     * @return ObjectSuperClass
      */
     public function getFather()
     {
@@ -140,17 +142,18 @@ class ObjectObjectSuperClass extends AbstractEntity
     }
 
     /**
-     * @param Object $father
+     * @param ObjectSuperClass $father
      * @return ObjectObject
      */
-    public function setFather($father)
+    public function setFather($father): self
     {
         $this->father = $father;
+
         return $this;
     }
 
     /**
-     * @return Object
+     * @return ObjectSuperClass
      */
     public function getChild()
     {
@@ -158,29 +161,28 @@ class ObjectObjectSuperClass extends AbstractEntity
     }
 
     /**
-     * @param Object $child
+     * @param ObjectSuperClass $child
      * @return ObjectObject
      */
-    public function setChild($child)
+    public function setChild($child): self
     {
         $this->child = $child;
+
         return $this;
     }
 
-    /**
-     * @return smallint
-     */
-    public function getPosition()
+    public function getPosition(): int
     {
         return $this->position;
     }
 
     /**
-     * @param smallint $position
+     * @param int $position
      */
-    public function setPosition($position)
+    public function setPosition($position): self
     {
         $this->position = $position;
+
         return $this;
     }
 

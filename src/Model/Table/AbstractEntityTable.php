@@ -174,7 +174,7 @@ abstract class AbstractEntityTable
      * @param $id
      * @param array $fields
      *
-     * @return bool
+     * @return bool|array
      *
      * @throws \Exception
      */

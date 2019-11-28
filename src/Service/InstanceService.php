@@ -559,7 +559,6 @@ class InstanceService extends AbstractService
             'anr' => $instance->anr->id,
         ];
 
-        // TODO: The events triggering did not work before upgrate to ZF3, now it works.
         $eventManager = new EventManager($this->sharedManager, ['object']);
         $eventManager->trigger('patch', $this, compact(['objectId', 'data']));
     }

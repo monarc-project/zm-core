@@ -7,8 +7,10 @@
 
 namespace Monarc\Core\Model\Entity;
 
+use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Ramsey\Uuid\Uuid;
 
 /**
  * ObjectSuperClass
@@ -29,7 +31,7 @@ class ObjectSuperClass extends AbstractEntity
     const SCOPE_GLOBAL = 2;
 
     /**
-     * @var integer
+     * @var Uuid
      *
      * @ORM\Column(name="uuid", type="uuid", nullable=false)
      * @ORM\Id
@@ -87,18 +89,18 @@ class ObjectSuperClass extends AbstractEntity
     protected $rolfTag;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="mode", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $mode = '1';
+    protected $mode = 1;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="scope", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $scope = '1';
+    protected $scope = 1;
 
     /**
      * @var string
@@ -157,18 +159,18 @@ class ObjectSuperClass extends AbstractEntity
     protected $label4;
 
     /**
-     * @var decimal
+     * @var float
      *
      * @ORM\Column(name="disponibility", type="decimal", options={"unsigned":true, "default":0})
      */
     protected $disponibility = '0';
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="position", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $position = '0';
+    protected $position = 0;
 
     /**
      * @var string
@@ -192,7 +194,7 @@ class ObjectSuperClass extends AbstractEntity
     protected $creator;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      *
      * @ORM\Column(name="created_at", type="datetime", nullable=true)
      */
@@ -206,27 +208,21 @@ class ObjectSuperClass extends AbstractEntity
     protected $updater;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=true)
      */
     protected $updatedAt;
 
-    /**
-     * @return int
-     */
-    public function getUuid()
+    public function getUuid(): Uuid
     {
         return $this->uuid;
     }
 
-    /**
-     * @param int $id
-     * @return Object
-     */
-    public function setUuid($id)
+    public function setUuid($uuid): self
     {
-        $this->uuid = $id;
+        $this->uuid = $uuid;
+
         return $this;
     }
 
@@ -240,11 +236,11 @@ class ObjectSuperClass extends AbstractEntity
 
     /**
      * @param Anr $anr
-     * @return Asset
      */
-    public function setAnr($anr)
+    public function setAnr($anr): self
     {
         $this->anr = $anr;
+
         return $this;
     }
 
@@ -258,11 +254,11 @@ class ObjectSuperClass extends AbstractEntity
 
     /**
      * @param ObjectCategory $category
-     * @return Object
      */
-    public function setCategory($category)
+    public function setCategory($category): self
     {
         $this->category = $category;
+
         return $this;
     }
 
@@ -276,11 +272,11 @@ class ObjectSuperClass extends AbstractEntity
 
     /**
      * @param Asset $asset
-     * @return Object
      */
-    public function setAsset($asset)
+    public function setAsset($asset): self
     {
         $this->asset = $asset;
+
         return $this;
     }
 
@@ -303,43 +299,7 @@ class ObjectSuperClass extends AbstractEntity
     }
 
     /**
-     * @return source
-     */
-    public function getsource()
-    {
-        return $this->source;
-    }
-
-    /**
-     * @param source $source
-     * @return Object
-     */
-    public function setsource($source)
-    {
-        $this->source = $source;
-        return $this;
-    }
-
-    /**
-     * @return model
-     */
-    public function getmodel()
-    {
-        return $this->model;
-    }
-
-    /**
-     * @param model $model
-     * @return Object
-     */
-    public function setmodel($model)
-    {
-        $this->model = $model;
-        return $this;
-    }
-
-    /**
-     * @return Anr
+     * @return Anr[]
      */
     public function getAnrs()
     {
@@ -347,12 +307,12 @@ class ObjectSuperClass extends AbstractEntity
     }
 
     /**
-     * @param Anr $anrs
-     * @return Object
+     * @param Anr[] $anrs
      */
-    public function setAnrs($anrs)
+    public function setAnrs($anrs): self
     {
         $this->anrs = $anrs;
+
         return $this;
     }
 

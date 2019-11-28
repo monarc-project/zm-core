@@ -240,7 +240,6 @@ class InstanceConsequenceService extends AbstractService
 
         if (!$fromInstance) {
             //if father instance exist, create instance for child
-            // TODO: The events triggering did not work before upgrate to ZF3, now it works.
             $eventManager = new EventManager($this->sharedManager, ['instance']);
             $eventManager->trigger('patch', $this, compact(['anrId', 'instanceId', 'data']));
         } else {
