@@ -683,10 +683,11 @@ class ObjectService extends AbstractService
                 $nbObjectsSameOldRootCategory = 0;
                 foreach ($anr->objects as $anrObject) {
                     $anrObjectCategory = ($anrObject->category->root) ? $anrObject->category->root : $anrObject->category;
-                    if (($anrObjectCategory->id == $currentRootCategory->id)
-                    && ($anrObject->uuid->toString() != (is_string($object->uuid)) ? $object->uuid->toString() : $object->uuid)) {
+                    if ($anrObjectCategory->id === $currentRootCategory->id
+                        && $anrObject->uuid->toString() !== (string)$object->uuid
+                    ) {
                         $nbObjectsSameOldRootCategory++;
-                        break; // no need to go further
+                        break;
                     }
                 }
                 if (!$nbObjectsSameOldRootCategory) {
@@ -705,10 +706,11 @@ class ObjectService extends AbstractService
                 $nbObjectsSameNewRootCategory = 0;
                 foreach ($anr->objects as $anrObject) {
                     $anrObjectCategory = ($anrObject->category->root) ? $anrObject->category->root : $anrObject->category;
-                    if (($anrObjectCategory->id == $objectRootCategory->id)
-                    && ($anrObject->uuid->toString() != (is_string($object->uuid)) ? $object->uuid->toString() : $object->uuid)) {
+                    if ($anrObjectCategory->id === $objectRootCategory->id
+                        && $anrObject->uuid->toString() !== (string)$object->uuid
+                    ) {
                         $nbObjectsSameNewRootCategory++;
-                        break; // no need to go further
+                        break;
                     }
                 }
                 if (!$nbObjectsSameNewRootCategory) {
