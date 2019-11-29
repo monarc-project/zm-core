@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Service;
 
+use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Asset;
 use Monarc\Core\Model\Entity\Instance;
 use Monarc\Core\Model\Entity\InstanceRiskOp;
@@ -73,18 +74,15 @@ class InstanceService extends AbstractService
      * @param $anrId
      * @param $data
      * @return mixed|null
-     * @throws \Monarc\Core\Exception\Exception
+     * @throws Exception
      */
     public function instantiateObjectToAnr($anrId, $data, $managePosition = true, $rootLevel = false, $mode = Instance::MODE_CREA_NODE)
     {
-        //retrieve object properties
-        try{
-          $object = $this->get('objectTable')->getEntity($data['object']);
-        }catch(MappingException $e){
-          $object = $this->get('objectTable')->getEntity(['uuid' => $data['object'],'anr'=>$anrId]);
-      } catch (QueryException $e) {
-          $object = $this->get('objectTable')->getEntity(['uuid' => $data['object'],'anr'=>$anrId]);
-      }
+        try {
+            $object = $this->get('objectTable')->getEntity($data['object']);
+        } catch (MappingException | QueryException $e) {
+            $object = $this->get('objectTable')->getEntity(['uuid' => $data['object'], 'anr' => $anrId]);
+        }
 
         //verify if user is authorized to instantiate this object
         $authorized = false;
@@ -95,7 +93,7 @@ class InstanceService extends AbstractService
             }
         }
         if (!$authorized) {
-            throw new \Monarc\Core\Exception\Exception('Object is not an object of this anr', 412);
+            throw new Exception('Object is not an object of this anr', 412);
         }
 
         $data['anr'] = $anrId;
@@ -122,10 +120,11 @@ class InstanceService extends AbstractService
         $this->updateImpactsInherited($anrId, $parent, $data);
         //asset
         if (isset($object->asset)) {
-          if(in_array('anr',$this->get('assetTable')->getClassMetadata()->getIdentifierFieldNames()))
-            $data['asset'] = ['uuid' => $object->asset->uuid->toString(), 'anr' => $anrId];
-          else
-            $data['asset'] = $object->asset->uuid->toString();
+            if (in_array('anr', $this->get('assetTable')->getClassMetadata()->getIdentifierFieldNames())) {
+                $data['asset'] = ['uuid' => $object->asset->uuid->toString(), 'anr' => $anrId];
+            } else {
+                $data['asset'] = $object->asset->uuid->toString();
+            }
         }
         //manage position
         if (!$managePosition) {
@@ -221,7 +220,7 @@ class InstanceService extends AbstractService
         $instanceConsequenceId = $this->createInstanceConsequences($id, $anrId, $object);
         $this->get('instanceConsequenceService')->updateInstanceImpacts($instanceConsequenceId->get('id'));
 
-        // Check if the root element is not the same as current child element to avoid a circular dependeny.
+        // Check if the root element is not the same as current child element to avoid a circular dependency.
         if ($rootLevel
             || $parent === null
             || $parent->getRoot() === null
@@ -264,7 +263,7 @@ class InstanceService extends AbstractService
      * @param $id
      * @param $data
      * @return mixed
-     * @throws \Monarc\Core\Exception\Exception
+     * @throws Exception
      */
     public function updateInstance($anrId, $id, $data, &$historic = [], $managePosition = false)
     {
@@ -275,13 +274,13 @@ class InstanceService extends AbstractService
         $table = $this->get('table');
         $instance = $table->getEntity($id);
         if (!$instance) {
-            throw new \Monarc\Core\Exception\Exception('Instance does not exist', 412);
+            throw new Exception('Instance does not exist', 412);
         }
         $instance->setDbAdapter($table->getDb());
         $instance->setLanguage($this->getLanguage());
 
         if (empty($data)) {
-            throw new \Monarc\Core\Exception\Exception('Data missing', 412);
+            throw new Exception('Data missing', 412);
         }
 
         if (isset($data['parent']) && empty($data['parent'])) {
@@ -385,7 +384,7 @@ class InstanceService extends AbstractService
      * @param $data
      * @param array $historic
      * @return mixed|null
-     * @throws \Monarc\Core\Exception\Exception
+     * @throws Exception
      */
     public function patchInstance($anrId, $id, $data, $historic = [], $modifyCid = false)
     {
@@ -401,7 +400,7 @@ class InstanceService extends AbstractService
         $table = $this->get('table');
         $instance = $table->getEntity($id);
         if (!$instance) {
-            throw new \Monarc\Core\Exception\Exception('Instance does not exist', 412);
+            throw new Exception('Instance does not exist', 412);
         }
 
         if (isset($data['parent']) && empty($data['parent'])) {
@@ -519,7 +518,7 @@ class InstanceService extends AbstractService
      * Delete
      *
      * @param $id
-     * @throws \Monarc\Core\Exception\Exception
+     * @throws Exception
      */
     public function delete($id)
     {
@@ -529,7 +528,7 @@ class InstanceService extends AbstractService
 
         // only root instance can be delete
         if ($instance->level != Instance::LEVEL_ROOT) {
-            throw new \Monarc\Core\Exception\Exception('This is not a root instance', 412);
+            throw new Exception('This is not a root instance', 412);
         }
 
         $this->get('instanceRiskService')->deleteInstanceRisks($id, $instance->anr->id);
@@ -943,7 +942,7 @@ class InstanceService extends AbstractService
      * @param array $params
      * @param bool $count
      * @return int
-     * @throws \Monarc\Core\Exception\Exception
+     * @throws Exception
      */
     public function getRisks($anrId, $instanceId = null, $params = [])
     {
@@ -1454,12 +1453,12 @@ class InstanceService extends AbstractService
      *
      * @param $data
      * @return string
-     * @throws \Monarc\Core\Exception\Exception
+     * @throws Exception
      */
     public function export(&$data)
     {
         if (empty($data['id'])) {
-            throw new \Monarc\Core\Exception\Exception('Instance to export is required', 412);
+            throw new Exception('Instance to export is required', 412);
         }
 
         $filename = "";
@@ -1488,17 +1487,17 @@ class InstanceService extends AbstractService
      * @param bool $with_eval
      * @param bool $with_scale
      * @return array
-     * @throws \Monarc\Core\Exception\Exception
+     * @throws Exception
      */
     public function generateExportArray($id, &$filename = "", $with_eval = false, &$with_scale = true, $with_controls = false, $with_recommendations = false)
     {
         if (empty($id)) {
-            throw new \Monarc\Core\Exception\Exception('Instance to export is required', 412);
+            throw new Exception('Instance to export is required', 412);
         }
         $entity = $this->get('table')->getEntity($id);
 
         if (!$entity) {
-            throw new \Monarc\Core\Exception\Exception('Entity `id` not found.');
+            throw new Exception('Entity `id` not found.');
         }
 
         $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $entity->get('name' . $this->getLanguage()));
