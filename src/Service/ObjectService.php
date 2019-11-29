@@ -683,7 +683,8 @@ class ObjectService extends AbstractService
                 $nbObjectsSameOldRootCategory = 0;
                 foreach ($anr->objects as $anrObject) {
                     $anrObjectCategory = ($anrObject->category->root) ? $anrObject->category->root : $anrObject->category;
-                    if (($anrObjectCategory->id == $currentRootCategory->id) && ($anrObject->uuid->toString() != $object->uuid->toString())) {
+                    if (($anrObjectCategory->id == $currentRootCategory->id)
+                    && ($anrObject->uuid->toString() != (is_string($object->uuid)) ? $object->uuid->toString() : $object->uuid)) {
                         $nbObjectsSameOldRootCategory++;
                         break; // no need to go further
                     }
@@ -704,7 +705,8 @@ class ObjectService extends AbstractService
                 $nbObjectsSameNewRootCategory = 0;
                 foreach ($anr->objects as $anrObject) {
                     $anrObjectCategory = ($anrObject->category->root) ? $anrObject->category->root : $anrObject->category;
-                    if (($anrObjectCategory->id == $objectRootCategory->id) && ($anrObject->uuid->toString() != $object->uuid->toString())) {
+                    if (($anrObjectCategory->id == $objectRootCategory->id)
+                    && ($anrObject->uuid->toString() != (is_string($object->uuid)) ? $object->uuid->toString() : $object->uuid)) {
                         $nbObjectsSameNewRootCategory++;
                         break; // no need to go further
                     }
