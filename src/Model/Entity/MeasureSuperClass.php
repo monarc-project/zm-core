@@ -40,7 +40,7 @@ class MeasureSuperClass extends AbstractEntity
     /**
       * @var ReferentialSuperClass
       *
-      * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Referential", inversedBy="measures", cascade={"persist"})
+      * @ORM\ManyToOne(targetEntity="Referential", inversedBy="measures", cascade={"persist"})
       * @ORM\JoinColumns({
       *   @ORM\JoinColumn(name="referential_uuid", referencedColumnName="uuid", nullable=true)
       * })
@@ -50,7 +50,7 @@ class MeasureSuperClass extends AbstractEntity
     /**
      * @var SoaCategorySuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\SoaCategory", inversedBy="measures", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="SoaCategory", inversedBy="measures", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="soacategory_id", referencedColumnName="id", nullable=true)
      * })
@@ -60,7 +60,7 @@ class MeasureSuperClass extends AbstractEntity
     /**
      * @var MeasureSuperClass[]|ArrayCollection
      *
-     * @ORM\ManyToMany(targetEntity="Monarc\Core\Model\Entity\Measure")
+     * @ORM\ManyToMany(targetEntity="Measure")
      * @ORM\JoinTable(name="measures_measures",
      *     joinColumns={@ORM\JoinColumn(name="father_id", referencedColumnName="uuid")},
      *     inverseJoinColumns={@ORM\JoinColumn(name="child_id", referencedColumnName="uuid")}
@@ -113,7 +113,7 @@ class MeasureSuperClass extends AbstractEntity
     /**
      * @var ArrayCollection|AmvSuperClass[]
      *
-     * @ORM\ManyToMany(targetEntity="Monarc\Core\Model\Entity\Amv", inversedBy="measures", cascade={"persist"})
+     * @ORM\ManyToMany(targetEntity="Amv", inversedBy="measures", cascade={"persist"})
      * @ORM\JoinTable(name="measures_amvs",
      *  inverseJoinColumns={@ORM\JoinColumn(name="amv_id", referencedColumnName="uuid")},
      *  joinColumns={@ORM\JoinColumn(name="measure_id", referencedColumnName="uuid"),},
@@ -124,7 +124,7 @@ class MeasureSuperClass extends AbstractEntity
     /**
      * @var ArrayCollection|RolfRiskSuperClass[]
      *
-     * @ORM\ManyToMany(targetEntity="Monarc\Core\Model\Entity\RolfRisk", inversedBy="measures", cascade={"persist"})
+     * @ORM\ManyToMany(targetEntity="RolfRisk", inversedBy="measures", cascade={"persist"})
      * @ORM\JoinTable(name="measures_rolf_risks",
      *  inverseJoinColumns={@ORM\JoinColumn(name="rolf_risk_id", referencedColumnName="id")},
      *  joinColumns={@ORM\JoinColumn(name="measure_id", referencedColumnName="uuid"),},

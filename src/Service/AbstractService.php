@@ -912,7 +912,7 @@ abstract class AbstractService extends AbstractServiceFactory
         }
     }
 
-    private function getConnectedUser(): UserSuperClass
+    protected function getConnectedUser(): UserSuperClass
     {
         return $this->get('table')->getConnectedUser();
     }
