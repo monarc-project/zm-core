@@ -223,6 +223,12 @@ abstract class AbstractService extends AbstractServiceFactory
         $entity->setDbAdapter($table->getDb());
         $entity->exchangeArray($data);
 
+        if (method_exists($entity, 'setCreator')) {
+            $entity->setCreator(
+                $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+            );
+        }
+
         $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
 
@@ -286,6 +292,12 @@ abstract class AbstractService extends AbstractServiceFactory
 
         // Pass our new data to the entity. This might throw an exception if some data is invalid.
         $entity->exchangeArray($data);
+
+        if (method_exists($entity, 'setUpdater')) {
+            $entity->setUpdater(
+                $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+            );
+        }
 
         $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
@@ -351,6 +363,12 @@ abstract class AbstractService extends AbstractServiceFactory
 
         $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
+
+        if (method_exists($entity, 'setUpdater')) {
+            $entity->setUpdater(
+                $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+            );
+        }
 
         return $this->get('table')->save($entity);
     }
