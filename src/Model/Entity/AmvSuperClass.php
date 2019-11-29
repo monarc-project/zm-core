@@ -8,6 +8,8 @@
 namespace Monarc\Core\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
+use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 use Zend\Validator\Uuid as ValidatorUuid;
 use Ramsey\Uuid\Uuid;
 
@@ -21,11 +23,15 @@ use Ramsey\Uuid\Uuid;
  *      @ORM\Index(name="vulnerability", columns={"vulnerability_id"}),
  * })
  * @ORM\MappedSuperclass
+ * @ORM\HasLifecycleCallbacks()
  */
-class AmvSuperclass extends AbstractEntity
+class AmvSuperClass extends AbstractEntity
 {
+    use CreateEntityTrait;
+    use UpdateEntityTrait;
+
     /**
-     * @var integer
+     * @var Uuid
      *
      * @ORM\Column(name="uuid", type="uuid", nullable=false)
      * @ORM\Id
@@ -83,46 +89,18 @@ class AmvSuperclass extends AbstractEntity
     protected $measures;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="position", type="smallint", options={"unsigned":true, "default":1})
      */
     protected $position = 1;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="status", type="smallint", options={"unsigned":true, "default":1})
      */
     protected $status = 1;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="creator", type="string", length=255, nullable=true)
-     */
-    protected $creator;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="created_at", type="datetime", nullable=true)
-     */
-    protected $createdAt;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="updater", type="string", length=255, nullable=true)
-     */
-    protected $updater;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
-     */
-    protected $updatedAt;
 
     /**
      * @return int

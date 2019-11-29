@@ -8,6 +8,8 @@
 namespace Monarc\Core\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
+use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 
 /**
  * Instance Risk Op
@@ -19,9 +21,13 @@ use Doctrine\ORM\Mapping as ORM;
  *      @ORM\Index(name="rolf_risk_id", columns={"rolf_risk_id"})
  * })
  * @ORM\MappedSuperclass
+ * @ORM\HasLifecycleCallbacks()
  */
 class InstanceRiskOpSuperClass extends AbstractEntity
 {
+    use CreateEntityTrait;
+    use UpdateEntityTrait;
+
     const KIND_REDUCTION = 1;
     const KIND_REFUS = 2;
     const KIND_ACCEPTATION = 3;
@@ -113,235 +119,207 @@ class InstanceRiskOpSuperClass extends AbstractEntity
     protected $riskCacheLabel4;
 
     /**
-     * @var text
+     * @var string
      *
      * @ORM\Column(name="risk_cache_description1", type="text", length=255, nullable=true)
      */
     protected $riskCacheDescription1;
 
     /**
-     * @var text
+     * @var string
      *
      * @ORM\Column(name="risk_cache_description2", type="text", length=255, nullable=true)
      */
     protected $riskCacheDescription2;
 
     /**
-     * @var text
+     * @var string
      *
      * @ORM\Column(name="risk_cache_description3", type="text", length=255, nullable=true)
      */
     protected $riskCacheDescription3;
 
     /**
-     * @var text
+     * @var string
      *
      * @ORM\Column(name="risk_cache_description4", type="text", length=255, nullable=true)
      */
     protected $riskCacheDescription4;
 
     /**
-     * @var smallint
+     * @var string
      *
      * @ORM\Column(name="brut_prob", type="smallint", options={"unsigned":false, "default":-1})
      */
     protected $brutProb = '-1';
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="brut_r", type="smallint", options={"unsigned":false, "default":-1})
      */
     protected $brutR = '-1';
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="brut_o", type="smallint", options={"unsigned":false, "default":-1})
      */
     protected $brutO = '-1';
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="brut_l", type="smallint", options={"unsigned":false, "default":-1})
      */
     protected $brutL = '-1';
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="brut_f", type="smallint", options={"unsigned":false, "default":-1})
      */
     protected $brutF = '-1';
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="brut_p", type="smallint", options={"unsigned":false, "default":-1})
      */
     protected $brutP = '-1';
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="cache_brut_risk", type="smallint", options={"unsigned":false, "default":-1})
      */
     protected $cacheBrutRisk = '-1';
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="net_prob", type="smallint", options={"unsigned":false, "default":-1})
      */
     protected $netProb = '-1';
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="net_r", type="smallint", options={"unsigned":false, "default":-1})
      */
     protected $netR = '-1';
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="net_o", type="smallint", options={"unsigned":false, "default":-1})
      */
     protected $netO = '-1';
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="net_l", type="smallint", options={"unsigned":false, "default":-1})
      */
     protected $netL = '-1';
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="net_f", type="smallint", options={"unsigned":false, "default":-1})
      */
     protected $netF = '-1';
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="net_p", type="smallint", options={"unsigned":false, "default":-1})
      */
     protected $netP = '-1';
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="cache_net_risk", type="smallint", options={"unsigned":false, "default":-1})
      */
     protected $cacheNetRisk = '-1';
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="targeted_prob", type="smallint", options={"unsigned":false, "default":-1})
      */
     protected $targetedProb = '-1';
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="targeted_r", type="smallint", options={"unsigned":false, "default":-1})
      */
     protected $targetedR = '-1';
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="targeted_o", type="smallint", options={"unsigned":false, "default":-1})
      */
     protected $targetedO = '-1';
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="targeted_l", type="smallint", options={"unsigned":false, "default":-1})
      */
     protected $targetedL = '-1';
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="targeted_f", type="smallint", options={"unsigned":false, "default":-1})
      */
     protected $targetedF = '-1';
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="targeted_p", type="smallint", options={"unsigned":false, "default":-1})
      */
     protected $targetedP = '-1';
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="cache_targeted_risk", type="smallint", options={"unsigned":false, "default":-1})
      */
     protected $cacheTargetedRisk = '-1';
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="kind_of_measure", type="smallint", options={"unsigned":true, "default":5})
      */
     protected $kindOfMeasure = 5;
 
     /**
-     * @var text
+     * @var string
      *
      * @ORM\Column(name="comment", type="text", length=255, nullable=true)
      */
     protected $comment;
 
     /**
-     * @var text
+     * @var string
      *
      * @ORM\Column(name="mitigation", type="text", length=255, nullable=true)
      */
     protected $mitigation;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="`specific`", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $specific = '0';
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="creator", type="string", length=255, nullable=true)
-     */
-    protected $creator;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="created_at", type="datetime", nullable=true)
-     */
-    protected $createdAt;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="updater", type="string", length=255, nullable=true)
-     */
-    protected $updater;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
-     */
-    protected $updatedAt;
+    protected $specific = 0;
 
     /**
      * @return int

@@ -9,6 +9,9 @@ namespace Monarc\Core\Model\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
+use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
+use Ramsey\Uuid\Uuid;
 
 /**
  * ObjectSuperClass
@@ -19,9 +22,13 @@ use Doctrine\ORM\Mapping as ORM;
  *      @ORM\Index(name="rolf_tag_id", columns={"rolf_tag_id"})
  * })
  * @ORM\MappedSuperclass
+ * @ORM\HasLifecycleCallbacks()
  */
 class ObjectSuperClass extends AbstractEntity
 {
+    use CreateEntityTrait;
+    use UpdateEntityTrait;
+
     // Must be 16, 24 or 32 characters
     const SALT = '__$$00_C4535_5M1L3_00$$__XMP0)XW';
 
@@ -29,7 +36,7 @@ class ObjectSuperClass extends AbstractEntity
     const SCOPE_GLOBAL = 2;
 
     /**
-     * @var integer
+     * @var Uuid
      *
      * @ORM\Column(name="uuid", type="uuid", nullable=false)
      * @ORM\Id
@@ -87,18 +94,18 @@ class ObjectSuperClass extends AbstractEntity
     protected $rolfTag;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="mode", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $mode = '1';
+    protected $mode = 1;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="scope", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $scope = '1';
+    protected $scope = 1;
 
     /**
      * @var string
@@ -157,14 +164,14 @@ class ObjectSuperClass extends AbstractEntity
     protected $label4;
 
     /**
-     * @var decimal
+     * @var float
      *
      * @ORM\Column(name="disponibility", type="decimal", options={"unsigned":true, "default":0})
      */
     protected $disponibility = '0';
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="position", type="smallint", options={"unsigned":true, "default":0})
      */
@@ -185,35 +192,7 @@ class ObjectSuperClass extends AbstractEntity
     protected $originalName;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="creator", type="string", length=255, nullable=true)
-     */
-    protected $creator;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="created_at", type="datetime", nullable=true)
-     */
-    protected $createdAt;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="updater", type="string", length=255, nullable=true)
-     */
-    protected $updater;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
-     */
-    protected $updatedAt;
-
-    /**
-     * @return int
+     * @return Uuid
      */
     public function getUuid()
     {
@@ -221,7 +200,7 @@ class ObjectSuperClass extends AbstractEntity
     }
 
     /**
-     * @param int $id
+     * @param Uuid $id
      * @return Object
      */
     public function setUuid($id)
@@ -299,42 +278,6 @@ class ObjectSuperClass extends AbstractEntity
     public function setRolfTag($rolfTag)
     {
         $this->rolfTag = $rolfTag;
-        return $this;
-    }
-
-    /**
-     * @return source
-     */
-    public function getsource()
-    {
-        return $this->source;
-    }
-
-    /**
-     * @param source $source
-     * @return Object
-     */
-    public function setsource($source)
-    {
-        $this->source = $source;
-        return $this;
-    }
-
-    /**
-     * @return model
-     */
-    public function getmodel()
-    {
-        return $this->model;
-    }
-
-    /**
-     * @param model $model
-     * @return Object
-     */
-    public function setmodel($model)
-    {
-        $this->model = $model;
         return $this;
     }
 

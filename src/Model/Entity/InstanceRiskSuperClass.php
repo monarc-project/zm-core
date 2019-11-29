@@ -8,6 +8,8 @@
 namespace Monarc\Core\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
+use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 
 /**
  * InstanceRisk
@@ -21,9 +23,13 @@ use Doctrine\ORM\Mapping as ORM;
  *      @ORM\Index(name="instance_id", columns={"instance_id"})
  * })
  * @ORM\MappedSuperclass
+ * @ORM\HasLifecycleCallbacks()
  */
 class InstanceRiskSuperClass extends AbstractEntity
 {
+    use CreateEntityTrait;
+    use UpdateEntityTrait;
+
     const KIND_REDUCTION = 1;
     const KIND_REFUS = 2;
     const KIND_ACCEPTATION = 3;
@@ -100,123 +106,95 @@ class InstanceRiskSuperClass extends AbstractEntity
     protected $instance;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="`specific`", type="smallint", options={"unsigned":true, "default":0})
      */
     protected $specific = '0';
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="mh", type="smallint", options={"unsigned":true, "default":1})
      */
     protected $mh = '1';
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="threat_rate", type="smallint", options={"unsigned":false, "default":-1})
      */
     protected $threatRate = '-1';
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="vulnerability_rate", type="smallint", options={"unsigned":false, "default":-1})
      */
     protected $vulnerabilityRate = '-1';
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="kind_of_measure", type="smallint", options={"unsigned":true, "default":5})
      */
     protected $kindOfMeasure = 5;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="reduction_amount", type="smallint", options={"unsigned":true, "default":0})
      */
     protected $reductionAmount = '0';
 
     /**
-     * @var text
+     * @var string
      *
      * @ORM\Column(name="comment", type="text", length=255, nullable=true)
      */
     protected $comment;
 
     /**
-     * @var text
+     * @var string
      *
      * @ORM\Column(name="comment_after", type="text", length=255, nullable=true)
      */
     protected $commentAfter;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="risk_c", type="smallint", options={"unsigned":false, "default":-1})
      */
     protected $riskC = '-1';
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="risk_i", type="smallint", options={"unsigned":false, "default":-1})
      */
     protected $riskI = '-1';
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="risk_d", type="smallint", options={"unsigned":false, "default":-1})
      */
     protected $riskD = '-1';
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="cache_max_risk", type="smallint", options={"unsigned":false, "default":-1})
      */
     protected $cacheMaxRisk = '-1';
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="cache_targeted_risk", type="smallint", options={"unsigned":false, "default":-1})
      */
     protected $cacheTargetedRisk = '-1';
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="creator", type="string", length=255, nullable=true)
-     */
-    protected $creator;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="created_at", type="datetime", nullable=true)
-     */
-    protected $createdAt;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="updater", type="string", length=255, nullable=true)
-     */
-    protected $updater;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
-     */
-    protected $updatedAt;
 
     /**
      * @return int

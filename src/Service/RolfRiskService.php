@@ -388,7 +388,7 @@ class RolfRiskService extends AbstractService
         $measures_dest = $this->get('referentialTable')->getEntity($destination)->getMeasures();
         foreach ($measures_dest as $md) {
           foreach ($md->getMeasuresLinked() as $measureLink) {
-              if($measureLink->getReferential()->getuuid()->toString()==$source_uuid){
+              if($measureLink->getReferential()->getUuid()->toString()==$source_uuid){
                 foreach ($measureLink->rolfRisks as $risk) {
                   $md->AddOpRisk($risk);
                 }

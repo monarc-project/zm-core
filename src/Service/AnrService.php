@@ -284,7 +284,7 @@ class AnrService extends AbstractService
                     'label4' => 'label4'
                 ];
                 foreach ($referentials as $r) {
-                    $return['referentials'][$r->getuuid()->toString()] = $r->getJsonArray($referentialsArray);
+                    $return['referentials'][$r->getUuid()->toString()] = $r->getJsonArray($referentialsArray);
                 }
 
                 // measures
@@ -304,9 +304,9 @@ class AnrService extends AbstractService
                 ];
                 foreach ($measures as $m) {
                     $newMeasure = $m->getJsonArray($measuresArray);
-                    $newMeasure['referential'] = $m->getReferential()->getuuid()->toString();
+                    $newMeasure['referential'] = $m->getReferential()->getUuid()->toString();
                     $newMeasure['category'] = $m->getCategory()->get('label' . $this->getLanguage());
-                    $return['measures'][$m->getuuid()->toString()] = $newMeasure;
+                    $return['measures'][$m->getUuid()->toString()] = $newMeasure;
                 }
 
                 // measures-measures
@@ -337,7 +337,7 @@ class AnrService extends AbstractService
                 ];
                 foreach ($soaCategories as $c) {
                     $newSoaCategory = $c->getJsonArray($soaCategoriesArray);
-                    $newSoaCategory['referential'] = $c->getReferential()->getuuid()->toString();
+                    $newSoaCategory['referential'] = $c->getReferential()->getUuid()->toString();
                     $return['soacategories'][] = $newSoaCategory;
                 }
 
@@ -359,7 +359,7 @@ class AnrService extends AbstractService
                 ];
                 foreach ($soas as $s) {
                     $newSoas = $s->getJsonArray($soasArray);
-                    $newSoas['measure_id'] = $s->getMeasure()->getuuid()->toString();
+                    $newSoas['measure_id'] = $s->getMeasure()->getUuid()->toString();
                     $return['soas'][] = $newSoas;
                 }
             }

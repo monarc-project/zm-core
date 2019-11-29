@@ -8,6 +8,8 @@
 namespace Monarc\Core\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
+use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 
 /**
  * Theme
@@ -16,9 +18,13 @@ use Doctrine\ORM\Mapping as ORM;
  *      @ORM\Index(name="anr", columns={"anr_id"})
  * })
  * @ORM\MappedSuperclass
+ * @ORM\HasLifecycleCallbacks()
  */
 class ThemeSuperClass extends AbstractEntity
 {
+    use CreateEntityTrait;
+    use UpdateEntityTrait;
+
     /**
      * @var integer
      *
@@ -65,34 +71,6 @@ class ThemeSuperClass extends AbstractEntity
      * @ORM\Column(name="label4", type="string", length=255, nullable=true)
      */
     protected $label4;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="creator", type="string", length=255, nullable=true)
-     */
-    protected $creator;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="created_at", type="datetime", nullable=true)
-     */
-    protected $createdAt;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="updater", type="string", length=255, nullable=true)
-     */
-    protected $updater;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
-     */
-    protected $updatedAt;
 
     /**
      * @return int
