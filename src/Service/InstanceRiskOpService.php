@@ -53,9 +53,18 @@ class InstanceRiskOpService extends AbstractService
             /** @var InstanceTable $instanceTable */
             $instanceTable = $this->get('instanceTable');
             try {
-                $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $object->uuid->toString()]);
+                $instances = $instanceTable->getEntityByFields([
+                    'anr' => $anrId,
+                    'object' => (string)$object->uuid,
+                ]);
             } catch (QueryException | MappingException $e) {
-                $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => ['anr' => $anrId, 'uuid' => $object->uuid->toString()]]);
+                $instances = $instanceTable->getEntityByFields([
+                    'anr' => $anrId,
+                    'object' => [
+                        'anr' => $anrId,
+                        'uuid' => (string)$object->uuid,
+                    ]
+                ]);
             }
 
             if ($object->scope == MonarcObject::SCOPE_GLOBAL && count($instances) > 1) {

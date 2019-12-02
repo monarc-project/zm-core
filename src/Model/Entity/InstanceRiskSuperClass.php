@@ -46,9 +46,9 @@ class InstanceRiskSuperClass extends AbstractEntity
     protected $id;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Anr
+     * @var AnrSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Anr", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Anr", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
      * })
@@ -56,9 +56,9 @@ class InstanceRiskSuperClass extends AbstractEntity
     protected $anr;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Amv
+     * @var AmvSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Amv", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Amv", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="amv_id", referencedColumnName="uuid", nullable=true)
      * })
@@ -66,9 +66,9 @@ class InstanceRiskSuperClass extends AbstractEntity
     protected $amv;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Asset
+     * @var AssetSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Asset", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Asset", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="asset_id", referencedColumnName="uuid", nullable=true)
      * })
@@ -76,9 +76,9 @@ class InstanceRiskSuperClass extends AbstractEntity
     protected $asset;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Threat
+     * @var ThreatSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Threat", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Threat", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="threat_id", referencedColumnName="uuid", nullable=true)
      * })
@@ -86,9 +86,9 @@ class InstanceRiskSuperClass extends AbstractEntity
     protected $threat;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Vulnerability
+     * @var VulnerabilitySuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Vulnerability", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Vulnerability", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="vulnerability_id", referencedColumnName="uuid", nullable=true)
      * })
@@ -96,9 +96,9 @@ class InstanceRiskSuperClass extends AbstractEntity
     protected $vulnerability;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Instance
+     * @var InstanceSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Instance", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Instance", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="instance_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
      * })
@@ -206,16 +206,16 @@ class InstanceRiskSuperClass extends AbstractEntity
 
     /**
      * @param int $id
-     * @return Instance
      */
-    public function setId($id)
+    public function setId($id): self
     {
         $this->id = $id;
+
         return $this;
     }
 
     /**
-     * @return int
+     * @return AnrSuperClass
      */
     public function getAnr()
     {
@@ -223,17 +223,17 @@ class InstanceRiskSuperClass extends AbstractEntity
     }
 
     /**
-     * @param int $anr
-     * @return Instance
+     * @param AnrSuperClass $anr
      */
-    public function setAnr($anr)
+    public function setAnr($anr): self
     {
         $this->anr = $anr;
+
         return $this;
     }
 
     /**
-     * @return Asset
+     * @return AssetSuperClass
      */
     public function getAsset()
     {
@@ -241,17 +241,17 @@ class InstanceRiskSuperClass extends AbstractEntity
     }
 
     /**
-     * @param Asset $asset
-     * @return Instance
+     * @param AssetSuperClass $asset
      */
-    public function setAsset($asset)
+    public function setAsset($asset): self
     {
         $this->asset = $asset;
+
         return $this;
     }
 
     /**
-     * @return Object
+     * @return ObjectSuperClass
      */
     public function getObject()
     {
@@ -259,17 +259,17 @@ class InstanceRiskSuperClass extends AbstractEntity
     }
 
     /**
-     * @param Object $object
-     * @return Instance
+     * @param ObjectSuperClass $object
      */
-    public function setObject($object)
+    public function setObject($object): self
     {
         $this->object = $object;
+
         return $this;
     }
 
     /**
-     * @return Amv
+     * @return AmvSuperClass
      */
     public function getAmv()
     {
@@ -277,17 +277,17 @@ class InstanceRiskSuperClass extends AbstractEntity
     }
 
     /**
-     * @param Amv $amv
-     * @return InstanceRisk
+     * @param AmvSuperClass $amv
      */
-    public function setAmv($amv)
+    public function setAmv($amv): self
     {
         $this->amv = $amv;
+
         return $this;
     }
 
     /**
-     * @return Threat
+     * @return ThreatSuperClass
      */
     public function getThreat()
     {
@@ -295,17 +295,17 @@ class InstanceRiskSuperClass extends AbstractEntity
     }
 
     /**
-     * @param Threat $threat
-     * @return InstanceRisk
+     * @param ThreatSuperClass $threat
      */
-    public function setThreat($threat)
+    public function setThreat($threat): self
     {
         $this->threat = $threat;
+
         return $this;
     }
 
     /**
-     * @return Vulnerability
+     * @return VulnerabilitySuperClass
      */
     public function getVulnerability()
     {
@@ -314,16 +314,16 @@ class InstanceRiskSuperClass extends AbstractEntity
 
     /**
      * @param Vulnerability $vulnerability
-     * @return InstanceRisk
      */
-    public function setVulnerability($vulnerability)
+    public function setVulnerability($vulnerability): self
     {
         $this->vulnerability = $vulnerability;
+
         return $this;
     }
 
     /**
-     * @return Instance
+     * @return InstanceSuperClass
      */
     public function getInstance()
     {
@@ -331,13 +331,18 @@ class InstanceRiskSuperClass extends AbstractEntity
     }
 
     /**
-     * @param Instance $instance
-     * @return InstanceRisk
+     * @param InstanceSuperClass $instance
      */
-    public function setInstance($instance)
+    public function setInstance($instance): self
     {
         $this->instance = $instance;
+
         return $this;
+    }
+
+    public function getSpecific(): int
+    {
+        return $this->specific;
     }
 
     public function getInputFilter($partial = false)
@@ -406,5 +411,4 @@ class InstanceRiskSuperClass extends AbstractEntity
         ];
         return [$filterJoin,$filterLeft,$filtersCol];
     }
-
 }

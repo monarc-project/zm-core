@@ -7,7 +7,6 @@
 
 namespace Monarc\Core\Model\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
@@ -323,6 +322,11 @@ class ObjectSuperClass extends AbstractEntity
         }
     }
 
+    public function getScope(): int
+    {
+        return $this->scope;
+    }
+
     protected $parameters = array(
         'implicitPosition' => array(
             'field' => 'category',
@@ -453,12 +457,6 @@ class ObjectSuperClass extends AbstractEntity
             ));
         }
         return $this->inputFilter;
-    }
-
-    public function __construct($obj = null)
-    {
-        $this->models = new ArrayCollection();
-        parent::__construct($obj);
     }
 
     public function getFiltersForService(){

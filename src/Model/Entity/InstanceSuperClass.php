@@ -57,7 +57,7 @@ class InstanceSuperClass extends AbstractEntity
     protected $anr;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Asset
+     * @var AssetSuperClass
      *
      * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Asset", cascade={"persist"})
      * @ORM\JoinColumns({
@@ -67,7 +67,7 @@ class InstanceSuperClass extends AbstractEntity
     protected $asset;
 
     /**
-     * @var \Monarc\Core\Model\Entity\MonarcObject
+     * @var ObjectSuperClass
      *
      * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\MonarcObject", cascade={"persist"})
      * @ORM\JoinColumns({
@@ -77,7 +77,7 @@ class InstanceSuperClass extends AbstractEntity
     protected $object;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Instance
+     * @var InstanceSuperClass
      *
      * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Instance", cascade={"persist"})
      * @ORM\JoinColumns({
@@ -87,7 +87,7 @@ class InstanceSuperClass extends AbstractEntity
     protected $root;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Instance
+     * @var InstanceSuperClass
      *
      * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Instance", cascade={"persist"})
      * @ORM\JoinColumns({
@@ -261,7 +261,7 @@ class InstanceSuperClass extends AbstractEntity
     }
 
     /**
-     * @return Asset
+     * @return AssetSuperClass
      */
     public function getAsset()
     {
@@ -269,8 +269,7 @@ class InstanceSuperClass extends AbstractEntity
     }
 
     /**
-     * @param Asset $asset
-     * @return Instance
+     * @param AssetSuperClass $asset
      */
     public function setAsset($asset): self
     {
@@ -280,7 +279,7 @@ class InstanceSuperClass extends AbstractEntity
     }
 
     /**
-     * @return Object
+     * @return ObjectSuperClass
      */
     public function getObject()
     {
