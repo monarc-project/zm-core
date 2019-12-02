@@ -30,7 +30,7 @@ class DeliveriesModelsService extends AbstractService
             unset($data['description']);
         }
 
-        return parent::patch($id,$data);
+        return parent::patch($id, $data);
     }
 
     /**
@@ -40,7 +40,7 @@ class DeliveriesModelsService extends AbstractService
     {
         $entity = $this->get('table')->getEntity($id);
 
-        $pathModel = getenv('APP_CONF_DIR') ? getenv('APP_CONF_DIR') : '';
+        $pathModel = getenv('APP_CONF_DIR') ?: '';
 
         $entitiesPaths = array($entity->path1, $entity->path2, $entity->path3, $entity->path4);
 

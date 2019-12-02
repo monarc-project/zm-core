@@ -7,6 +7,8 @@
 
 namespace Monarc\Core\Service;
 
+use Monarc\Core\Model\Entity\QuestionChoice;
+
 /**
  * Question Choice Service
  *
@@ -25,15 +27,20 @@ class QuestionChoiceService extends AbstractService
      */
     public function create($data, $last = true)
     {
-        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = property_exists($this, 'dependencies') ? $this->dependencies : [];
 
-        $entity = $this->get('entity');
+        /** @var QuestionChoice $questionChoice */
+        $questionChoice = $this->get('entity');
 
-        $entity->exchangeArray($data);
+        $questionChoice->exchangeArray($data);
 
-        $this->setDependencies($entity, $dependencies);
+        $this->setDependencies($questionChoice, $dependencies);
 
-        return $this->get('table')->save($entity);
+        $questionChoice->setCreator(
+            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+        );
+
+        return $this->get('table')->save($questionChoice);
     }
 
     /**
@@ -41,14 +48,18 @@ class QuestionChoiceService extends AbstractService
      */
     public function update($id, $data)
     {
-        $entity = $this->get('table')->getEntity($id);
-        $entity->exchangeArray($data);
+        /** @var QuestionChoice $questionChoice */
+        $questionChoice = $this->get('table')->getEntity($id);
+        $questionChoice->exchangeArray($data);
 
         $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($entity, $dependencies);
+        $this->setDependencies($questionChoice, $dependencies);
 
+        $questionChoice->setUpdater(
+            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+        );
 
-        return $this->get('table')->save($entity);
+        return $this->get('table')->save($questionChoice);
     }
 
     /**

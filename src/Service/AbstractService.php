@@ -211,16 +211,20 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     public function create($data, $last = true)
     {
-        $class = $this->get('entity');
+        $entity = $this->get('entity');
 
         /** @var AnrTable $table */
         $table = $this->get('table');
 
-        /** @var AbstractEntity $entity */
-        $entity = new $class();
+        // $class is already an entity instance created in AbstractServiceModelEntity.
+        if (!$entity instanceof AbstractEntity) {
+            /** @var AbstractEntity $entity */
+            $entity = new $entity();
 
-        $entity->setLanguage($this->getLanguage());
-        $entity->setDbAdapter($table->getDb());
+            $entity->setLanguage($this->getLanguage());
+            $entity->setDbAdapter($table->getDb());
+        }
+
         $entity->exchangeArray($data);
 
         if (method_exists($entity, 'setCreator')) {

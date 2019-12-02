@@ -214,7 +214,7 @@ class MeasureSuperClass extends AbstractEntity
     /**
      * @param RolfRisk $riskInput
      */
-    public function AddOpRisk($riskInput): self
+    public function addOpRisk($riskInput): self
     {
         if (!$this->getRolfRisks()->contains($riskInput)) {
             $this->rolfRisks->add($riskInput);

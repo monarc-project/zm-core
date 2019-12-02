@@ -7,6 +7,8 @@
 
 namespace Monarc\Core\Service;
 
+use Monarc\Core\Model\Entity\Question;
+
 /**
  * Question Service
  *
@@ -59,10 +61,11 @@ class QuestionService extends AbstractService
      */
     public function create($data, $last = true)
     {
-        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = property_exists($this, 'dependencies') ? $this->dependencies : [];
 
-        $entity = $this->get('entity');
-        $entity->setDbAdapter($this->get('table')->getDb());
+        /** @var Question $question */
+        $question = $this->get('entity');
+
         $table = $this->get('table');
         if (!empty($data['anr'])) {
             $data['mode'] = 1;
@@ -73,35 +76,35 @@ class QuestionService extends AbstractService
         }
         //bo case manage position
         // quick fix : TO DO : improve the position management
-        if (!empty($data['implicitPosition']) && empty($data['anr']))
-        {
-          if($data['implicitPosition']==1)//the first
-          {
-            if($data['position'] != $table->minQuestionPosition())
-            {
-              $table->movePosition(0);
-              $data['position']= 1;
+        if (!empty($data['implicitPosition']) && empty($data['anr'])) {
+            if ($data['implicitPosition'] == 1) { //the first
+                if ($data['position'] != $table->minQuestionPosition()) {
+                    $table->movePosition(0);
+                    $data['position'] = 1;
+                }
+            } else {
+                if ($data['implicitPosition'] == 2) { // the last
+                    if ($data['position'] != $table->maxQuestionPosition()) {
+                        $data['position'] = $table->maxQuestionPosition() + 1;
+                    }
+                } else { //in the middle
+                    if ($data['previous']) {
+                        $previous = $this->get('table')->getEntity($data['previous']);
+                        $table->movePosition($previous->position);
+                        $data['position'] = $previous->position + 1;
+                    }
+                }
             }
-          }
-          else if ($data['implicitPosition']==2)// the last
-          {
-            if($data['position'] != $table->maxQuestionPosition())
-              $data['position']= $table->maxQuestionPosition()+1;
-          }
-          else { //in the middle
-              if($data['previous'])
-              {
-                $previous = $this->get('table')->getEntity($data['previous']);
-                $table->movePosition($previous->position);
-                $data['position'] = $previous->position+1;
-              }
-          }
         }
 
-        $entity->exchangeArray($data);
-        $this->setDependencies($entity, $dependencies);
+        $question->exchangeArray($data);
+        $this->setDependencies($question, $dependencies);
 
-        return $this->get('table')->save($entity);
+        $question->setCreator(
+            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+        );
+
+        return $this->get('table')->save($question);
     }
 
     /**
@@ -109,13 +112,14 @@ class QuestionService extends AbstractService
      */
     public function update($id, $data)
     {
-        $entity = $this->get('table')->getEntity($id);
-        $entity->setDbAdapter($this->get('table')->getDb());
+        /** @var Question $question */
+        $question = $this->get('table')->getEntity($id);
+        $question->setDbAdapter($this->get('table')->getDb());
         $table = $this->get('table');
         //FO case
         if (!empty($data['anr'])) {
-            if ($data['anr'] == $entity->get('anr')->get('id')) {
-                if ($entity->get('mode')) {
+            if ($data['anr'] == $question->get('anr')->get('id')) {
+                if ($question->get('mode')) {
                     unset(
                         $data['type'],
                         $data['position'],
@@ -163,12 +167,16 @@ class QuestionService extends AbstractService
           }
         }
 
-        $entity->exchangeArray($data);
+        $question->exchangeArray($data);
 
-        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($entity, $dependencies);
+        $dependencies = property_exists($this, 'dependencies') ? $this->dependencies : [];
+        $this->setDependencies($question, $dependencies);
 
-        return $this->get('table')->save($entity);
+        $question->setUpdater(
+            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+        );
+
+        return $this->get('table')->save($question);
     }
 
     /**

@@ -50,10 +50,13 @@ class AnrService extends AbstractService
     */
     public function create($data, $last = true)
     {
-        //anr
-        $entity = $this->get('entity');
-        $entity->exchangeArray($data);
-        $anrId = $this->get('table')->save($entity);
+        /** @var Anr $anr */
+        $anr = $this->get('entity');
+        $anr->exchangeArray($data);
+
+        $anr->setCreator($this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname());
+
+        $anrId = $this->get('table')->save($anr);
 
         //scales
         for ($i = 1; $i <= 3; $i++) {

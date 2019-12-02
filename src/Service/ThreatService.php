@@ -8,6 +8,7 @@
 namespace Monarc\Core\Service;
 
 use Monarc\Core\Model\Entity\Threat;
+use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\InstanceRiskTable;
 
 /**
@@ -38,10 +39,8 @@ class ThreatService extends AbstractService
      */
     public function create($data, $last = true)
     {
-        $class = $this->get('entity');
-        $entity = new $class();
-        $entity->setLanguage($this->getLanguage());
-        $entity->setDbAdapter($this->get('table')->getDb());
+        /** @var Threat $threat */
+        $threat = $this->get('entity');
 
         if (isset($data['anr']) && strlen($data['anr'])) {
             /** @var AnrTable $anrTable */
@@ -51,22 +50,24 @@ class ThreatService extends AbstractService
             if (!$anr) {
                 throw new \Monarc\Core\Exception\Exception('This risk analysis does not exist', 412);
             }
-            $entity->setAnr($anr);
+            $threat->setAnr($anr);
         }
-        $entity->exchangeArray($data);
+        $threat->exchangeArray($data);
 
-        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($entity, $dependencies);
+        $dependencies = property_exists($this, 'dependencies') ? $this->dependencies : [];
+        $this->setDependencies($threat, $dependencies);
 
-        $themeId = $entity->get('theme');
+        $themeId = $threat->get('theme');
         if (!empty($themeId)) {
             $theme = $this->get('themeTable')->getEntity($themeId);
-            $entity->setTheme($theme);
+            $threat->setTheme($theme);
         }
 
-        $entity->status = 1;
+        $threat->status = 1;
 
-        return $this->get('table')->save($entity);
+        $threat->setCreator($this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname());
+
+        return $this->get('table')->save($threat);
     }
 
     /**
@@ -76,62 +77,63 @@ class ThreatService extends AbstractService
     {
         $this->filterPatchFields($data);
 
-        $entity = $this->get('table')->getEntity($id);
-        $entity->setDbAdapter($this->get('table')->getDb());
-        $entity->setLanguage($this->getLanguage());
+        /** @var Threat $threat */
+        $threat = $this->get('table')->getEntity($id);
+        $threat->setDbAdapter($this->get('table')->getDb());
+        $threat->setLanguage($this->getLanguage());
 
-        $needUpdateRisks = (($entity->c != $data['c']) || ($entity->i != $data['i']) || ($entity->a != $data['a']));
+        $needUpdateRisks = ($threat->c != $data['c'] || $threat->i != $data['i'] || $threat->a != $data['a']);
 
-        if (($entity->mode == Threat::MODE_SPECIFIC) && ($data['mode'] == Threat::MODE_GENERIC)) {
+        if ($threat->mode == Threat::MODE_SPECIFIC && $data['mode'] == Threat::MODE_GENERIC) {
             //delete models
             unset($data['models']);
         }
 
-        $models = isset($data['models']) ? $data['models'] : [];
-        $follow = isset($data['follow']) ? $data['follow'] : null;
-        unset($data['models']);
-        unset($data['follow']);
+        $models = $data['models'] ?? [];
+        $follow = $data['follow'] ?? null;
+        unset($data['models'], $data['follow']);
 
-        $entity->exchangeArray($data);
-        if ($entity->get('models')) {
-            $entity->get('models')->initialize();
+        $threat->exchangeArray($data);
+        if ($threat->get('models')) {
+            $threat->get('models')->initialize();
         }
 
-        if (!$this->get('amvService')->checkAMVIntegrityLevel($models, null, $entity, null, $follow)) {
+        if (!$this->get('amvService')->checkAMVIntegrityLevel($models, null, $threat, null, $follow)) {
             throw new \Monarc\Core\Exception\Exception('Integrity AMV links violation', 412);
         }
 
-        if (($follow) && (!$this->get('amvService')->ensureAssetsIntegrityIfEnforced($models, null, $entity, null))) {
+        if (($follow) && (!$this->get('amvService')->ensureAssetsIntegrityIfEnforced($models, null, $threat, null))) {
             throw new \Monarc\Core\Exception\Exception('Assets Integrity', 412);
         }
 
         $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($entity, $dependencies);
+        $this->setDependencies($threat, $dependencies);
 
-        switch ($entity->get('mode')) {
+        switch ($threat->get('mode')) {
             case Threat::MODE_SPECIFIC:
                 if (empty($models)) {
-                    $entity->set('models', []);
+                    $threat->set('models', []);
                 } else {
                     $modelsObj = [];
                     foreach ($models as $mid) {
                         $modelsObj[] = $this->get('modelTable')->getEntity($mid);
                     }
-                    $entity->set('models', $modelsObj);
+                    $threat->set('models', $modelsObj);
                 }
                 if ($follow) {
-                    $this->get('amvService')->enforceAMVtoFollow($entity->get('models'), null, $entity, null);
+                    $this->get('amvService')->enforceAMVtoFollow($threat->get('models'), null, $threat, null);
                 }
                 break;
             case Threat::MODE_GENERIC:
-                $entity->set('models', []);
+                $threat->set('models', []);
                 break;
         }
 
-        $id = $this->get('table')->save($entity);
+        $threat->setUpdater($this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname());
+
+        $id = $this->get('table')->save($threat);
 
         if ($needUpdateRisks) {
-
             //retrieve instances risks
             /** @var InstanceRiskTable $instanceRiskTable */
             $instanceRiskTable = $this->get('instanceRiskTable');
