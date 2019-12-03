@@ -10,7 +10,7 @@ namespace Monarc\Core\Model\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
-use Ramsey\Uuid\UuidInterface;
+use Ramsey\Uuid\Uuid;
 
 /**
  * Threat
@@ -176,7 +176,7 @@ class ThreatSuperClass extends AbstractEntity
     protected $comment;
 
     /**
-     * @return int
+     * @return Uuid
      */
     public function getUuid()
     {
@@ -184,7 +184,7 @@ class ThreatSuperClass extends AbstractEntity
     }
 
     /**
-     * @param int $id
+     * @param Uuid $id
      * @return Threat
      */
     public function setUuid($id)
@@ -214,7 +214,6 @@ class ThreatSuperClass extends AbstractEntity
     /**
      * Set theme
      *
-     * @param key
      * @param Theme $theme
      */
     public function setTheme(ThemeSuperclass $theme)
