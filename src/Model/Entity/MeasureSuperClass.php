@@ -134,11 +134,11 @@ class MeasureSuperClass extends AbstractEntity
 
     public function __construct($obj = null)
     {
-        parent::__construct($obj);
-
         $this->measuresLinked = new ArrayCollection();
         $this->amvs = new ArrayCollection();
         $this->rolfRisks = new ArrayCollection();
+
+        parent::__construct($obj);
     }
 
     public function getUuid(): Uuid
