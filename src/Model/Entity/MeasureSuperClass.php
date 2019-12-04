@@ -161,9 +161,11 @@ class MeasureSuperClass extends AbstractEntity
         return $this->category;
     }
 
-    public function setCategory($category)
+    public function setCategory($category): self
     {
         $this->category = $category;
+
+        return $this;
     }
 
     public function getReferential()
@@ -271,6 +273,8 @@ class MeasureSuperClass extends AbstractEntity
     public function setMeasuresLinked($measuresLinked)
     {
         $this->measuresLinked = $measuresLinked;
+
+        return $this;
     }
 
     public function getInputFilter($partial = false)

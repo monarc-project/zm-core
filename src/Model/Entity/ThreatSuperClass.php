@@ -29,7 +29,7 @@ class ThreatSuperClass extends AbstractEntity
     use UpdateEntityTrait;
 
     /**
-    * @var integer
+    * @var Uuid
     *
     * @ORM\Column(name="uuid", type="uuid", nullable=false)
     * @ORM\Id
