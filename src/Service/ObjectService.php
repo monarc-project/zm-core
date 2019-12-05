@@ -205,29 +205,29 @@ class ObjectService extends AbstractService
     {
         $monarcFO = false;
         $table = $this->get('table');
-        /** @var Object $object */
-        try{
+        try {
+            /** @var MonarcObject $object */
             $object = $table->getEntity($id);
-        }catch(MappingException $e)
-        {
-            $object = $table->getEntity(['uuid'=>$id,'anr'=>$anr]);
+        } catch (MappingException $e) {
+            $object = $table->getEntity(['uuid' => $id, 'anr' => $anr]);
             $monarcFO = true;
         }
-        $object_arr = $object->getJsonArray();
+
+        $objectArr = $object->getJsonArray();
 
         // Retrieve children recursively
         /** @var ObjectObjectService $objectObjectService */
         $objectObjectService = $this->get('objectObjectService');
-        if ($object->anr->id == null) {
-            $object_arr['children'] = $objectObjectService->getRecursiveChildren($object_arr['uuid']->toString(), null);
+        if ($object->getAnr() == null) {
+            $objectArr['children'] = $objectObjectService->getRecursiveChildren($objectArr['uuid']->toString(), null);
         } else {
-            $object_arr['children'] = $objectObjectService->getRecursiveChildren($object_arr['uuid']->toString(), $anr);
+            $objectArr['children'] = $objectObjectService->getRecursiveChildren($objectArr['uuid']->toString(), $anr);
         }
 
         // Calculate the risks table
-        $object_arr['risks'] = $this->getRisks($object);
-        $object_arr['oprisks'] = $this->getRisksOp($object);
-        $object_arr['parents'] = $this->getDirectParents($object_arr['uuid'], $anr);
+        $objectArr['risks'] = $this->getRisks($object);
+        $objectArr['oprisks'] = $this->getRisksOp($object);
+        $objectArr['parents'] = $this->getDirectParents($objectArr['uuid'], $anr);
 
         // Retrieve parent recursively
         if ($anrContext == MonarcObject::CONTEXT_ANR) {
@@ -278,7 +278,7 @@ class ObjectService extends AbstractService
                 $instances_arr[] = $names;
             }
 
-            $object_arr['replicas'] = $instances_arr;
+            $objectArr['replicas'] = $instances_arr;
         } else {
 
             $anrsIds = [];
@@ -301,10 +301,10 @@ class ObjectService extends AbstractService
                 ];
             }
 
-            $object_arr['replicas'] = $models_arr;
+            $objectArr['replicas'] = $models_arr;
         }
 
-        return $object_arr;
+        return $objectArr;
     }
 
     /**
