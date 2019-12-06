@@ -11,6 +11,7 @@ use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Amv;
 use Monarc\Core\Model\Entity\Instance;
 use Monarc\Core\Model\Entity\InstanceRisk;
+use Monarc\Core\Model\Entity\InstanceSuperClass;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Entity\ObjectSuperClass;
 use Monarc\Core\Model\Table\AmvTable;
@@ -74,42 +75,44 @@ class InstanceRiskService extends AbstractService
             ]);
         }
 
-        if ($object->scope == MonarcObject::SCOPE_GLOBAL && count($instances) > 1) {
-            $currentInstance = $instanceTable->getEntity($instanceId);
+        /** @var InstanceRiskTable $instanceRiskTable */
+        $instanceRiskTable = $this->get('table');
+        /** @var InstanceSuperClass $currentInstance */
+        $currentInstance = $instanceTable->getEntity($instanceId);
 
-            /** @var InstanceRiskTable $instanceRiskTable */
-            $instanceRiskTable = $this->get('table');
-
+        if ($object->scope === MonarcObject::SCOPE_GLOBAL && \count($instances) > 1) {
+            /** @var InstanceSuperClass $instance */
             foreach ($instances as $instance) {
-                if ($instance->getId() != $instanceId) {
-                    $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $instance->getId()]);
-                    foreach ($instancesRisks as $instanceRisk) {
-                        /** @var InstanceRisk $newInstanceRisk */
-                        $newInstanceRisk = clone $instanceRisk;
-                        $newInstanceRisk->setId(null);
-                        $newInstanceRisk->setInstance($currentInstance);
-                        $newInstanceRisk->setCreator(
-                            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
-                        );
+                if ($instance->getId() === $instanceId) {
+                    break;
+                }
 
-                        $instanceRiskTable->save($newInstanceRisk);
+                $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $instance->getId()]);
+                foreach ($instancesRisks as $instanceRisk) {
+                    /** @var InstanceRisk $newInstanceRisk */
+                    $newInstanceRisk = clone $instanceRisk;
+                    $newInstanceRisk->setId(null);
+                    $newInstanceRisk->setInstance($currentInstance);
+                    $newInstanceRisk->setCreator(
+                        $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+                    );
 
-                        // This part of the code is related to the FO. Needs to be extracted.
-                        if ($this->get('recommandationRiskTable') !== null) {
-                            $recoRisks = $this->get('recommandationRiskTable')->getEntityByFields(['anr' => $anrId, 'instanceRisk' => $instanceRisk->id]);
-                            if (\count($recoRisks) > 0) {
-                                foreach ($recoRisks as $recoRisk) {
-                                    $newRecoRisk = clone $recoRisk;
-                                    $newRecoRisk->set('id', null);
-                                    $newRecoRisk->set('instance', $currentInstance);
-                                    $newRecoRisk->set('instanceRisk', $newInstanceRisk);
-                                    $this->get('recommandationRiskTable')->save($newRecoRisk);
-                                }
+                    $instanceRiskTable->save($newInstanceRisk);
+
+                    // This part of the code is related to the FO. Needs to be extracted.
+                    if ($this->get('recommandationRiskTable') !== null) {
+                        $recoRisks = $this->get('recommandationRiskTable')->getEntityByFields(['anr' => $anrId, 'instanceRisk' => $instanceRisk->id]);
+                        if (\count($recoRisks) > 0) {
+                            foreach ($recoRisks as $recoRisk) {
+                                $newRecoRisk = clone $recoRisk;
+                                $newRecoRisk->set('id', null);
+                                $newRecoRisk->set('instance', $currentInstance);
+                                $newRecoRisk->set('instanceRisk', $newInstanceRisk);
+                                $this->get('recommandationRiskTable')->save($newRecoRisk);
                             }
                         }
                     }
                 }
-                break;
             }
         } else {
             /** @var AmvTable $amvTable */
@@ -125,25 +128,21 @@ class InstanceRiskService extends AbstractService
                 $amvs = $amvTable->getEntityByFields(['asset' => (string)$object->asset->uuid]);
             }
 
-            $nbAmvs = \count($amvs);
             /** @var Amv $amv */
-            foreach ($amvs as $i => $amv) {
+            foreach ($amvs as $amv) {
                 $data = [
-                    'anr' => $anrId,
-                    'amv' => (string)$amv->getUuid(),
-                    'asset' => (string)$amv->getAsset()->getUuid(),
-                    'instance' => $instanceId,
-                    'threat' => (string)$amv->getThreat()->getUuid(),
-                    'vulnerability' => (string)$amv->getVulnerability()->getUuid(),
+                    'anr' => $amv->getAnr(),
+                    'amv' => $amv,
+                    'asset' => $amv->getAsset(),
+                    'instance' => $currentInstance,
+                    'threat' => $amv->getThreat(),
+                    'vulnerability' => $amv->getVulnerability(),
                 ];
-                $instanceRiskLastId = $this->create($data, $nbAmvs === ($i + 1));
-            }
+                $instanceRiskEntityClassName = $this->get('table')->getEntityClass();
+                $instanceRisk = new $instanceRiskEntityClassName($data);
+                $instanceRiskTable->save($instanceRisk);
 
-            if ($nbAmvs) {
-                for ($i = $instanceRiskLastId - $nbAmvs + 1; $i <= $instanceRiskLastId; $i++) {
-                    $lastRisk = ($i == $instanceRiskLastId);
-                    $this->updateRisks($i, $lastRisk);
-                }
+                $this->updateRisks($instanceRisk);
             }
         }
     }
