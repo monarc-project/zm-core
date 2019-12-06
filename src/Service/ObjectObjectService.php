@@ -11,6 +11,7 @@ use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Entity\ObjectObject;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\InstanceTable;
+use Monarc\Core\Model\Table\MonarcObjectTable;
 use Monarc\Core\Model\Table\ObjectObjectTable;
 use Zend\EventManager\EventManager;
 use Doctrine\ORM\Mapping\MappingException;
@@ -68,16 +69,16 @@ class ObjectObjectService extends AbstractService
             throw new \Monarc\Core\Exception\Exception("You cannot create a cyclic dependency", 412);
         }
 
-        /** @var MonarcObjectTable $MonarcObjectTable */
-        $MonarcObjectTable = $this->get('MonarcObjectTable');
+        /** @var MonarcObjectTable $monarcObjectTable */
+        $monarcObjectTable = $this->get('MonarcObjectTable');
 
         // Ensure that we're not trying to add a specific item if the father is generic
         try{
-          $father = $MonarcObjectTable->getEntity($data['father']);
-          $child = $MonarcObjectTable->getEntity($data['child']);
+          $father = $monarcObjectTable->getEntity($data['father']);
+          $child = $monarcObjectTable->getEntity($data['child']);
         }catch(MappingException $e){
-          $father = $MonarcObjectTable->getEntity(['uuid' => $data['father'], 'anr' => $data['anr']]);
-          $child = $MonarcObjectTable->getEntity(['uuid' => $data['child'], 'anr' => $data['anr']]);
+          $father = $monarcObjectTable->getEntity(['uuid' => $data['father'], 'anr' => $data['anr']]);
+          $child = $monarcObjectTable->getEntity(['uuid' => $data['child'], 'anr' => $data['anr']]);
         }
 
         // on doit déterminer si par voie de conséquence, cet objet ne va pas se retrouver dans un modèle dans lequel il n'a pas le droit d'être
@@ -98,15 +99,18 @@ class ObjectObjectService extends AbstractService
             unset($data['implicitPosition']);
         }
 
-        /** @var ObjectObject $entity */
-        $entity = $this->get('entity');
+        /** @var ObjectObject $objectObject */
+        $objectObject = $this->get('entity');
 
-        $entity->setDbAdapter($this->get('table')->getDb());
-        $entity->exchangeArray($data);
+        $objectObject->exchangeArray($data);
 
-        $this->setDependencies($entity, $this->dependencies);
+        $this->setDependencies($objectObject, $this->dependencies);
 
-        $id = $objectObjectTable->save($entity);
+        $objectObject->setCreator(
+            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+        );
+
+        $id = $objectObjectTable->save($objectObject);
 
         //link to anr
         $parentAnrs = [];
@@ -130,7 +134,7 @@ class ObjectObjectService extends AbstractService
             }
         }
 
-        $MonarcObjectTable->save($child);
+        $monarcObjectTable->save($child);
 
         //create instance
         /** @var InstanceTable $instanceTable */
@@ -172,7 +176,6 @@ class ObjectObjectService extends AbstractService
             }
 
             //if father instance exist, create instance for child
-            // TODO: The events triggering did not work before upgrate to ZF3, now it works.
             $eventManager = new EventManager($this->sharedManager, ['addcomponent']);
             $eventManager->trigger('createinstance', $this, compact(['anrId', 'dataInstance']));
         }
@@ -194,20 +197,18 @@ class ObjectObjectService extends AbstractService
     {
         /** @var ObjectObjectTable $table */
         $table = $this->get('table');
-        if(is_object($objectId))
-          $objectId = $objectId->uuid->toString();
-        if($objectId != null)
-        {
-          try{
-            return $table->getEntityByFields(['father' => $objectId], ['position' => 'DESC']);
-          }catch(MappingException $e){
-            return $table->getEntityByFields(['father' => ['uuid' => $objectId, 'anr' => $anrId]], ['position' => 'DESC']);
-        } catch (QueryException $e) {
-            return $table->getEntityByFields(['father' => ['uuid' => $objectId, 'anr' => $anrId]], ['position' => 'DESC']);
+        if (is_object($objectId)) {
+            $objectId = $objectId->uuid->toString();
         }
-        }else {
-          return null;
+        if ($objectId !== null) {
+            try {
+                return $table->getEntityByFields(['father' => $objectId], ['position' => 'DESC']);
+            } catch (MappingException | QueryException $e) {
+                return $table->getEntityByFields(['father' => ['uuid' => $objectId, 'anr' => $anrId]], ['position' => 'DESC']);
+            }
         }
+
+        return null;
     }
 
     /**

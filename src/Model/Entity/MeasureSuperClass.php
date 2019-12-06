@@ -7,233 +7,167 @@
 
 namespace Monarc\Core\Model\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Ramsey\Uuid\UuidInterface;
+use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
+use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
+use Ramsey\Uuid\Uuid;
 
 /**
-* Measure
-*
-* @ORM\Table(name="measures", indexes={
-*      @ORM\Index(name="category", columns={"soacategory_id"}),
-*      @ORM\Index(name="referential", columns={"referential_uuid"})
-* })
-* @ORM\MappedSuperclass
+ * Measure
+ *
+ * @ORM\Table(name="measures", indexes={
+ *      @ORM\Index(name="category", columns={"soacategory_id"}),
+ *      @ORM\Index(name="referential", columns={"referential_uuid"})
+ * })
+ * @ORM\MappedSuperclass
+ * @ORM\HasLifecycleCallbacks()
 */
 class MeasureSuperClass extends AbstractEntity
 {
-
-  /**
-   * @ORM\ManyToMany(targetEntity="Monarc\Core\Model\Entity\Measure")
-   * @ORM\JoinTable(name="measures_measures",
-   *     joinColumns={@ORM\JoinColumn(name="father_id", referencedColumnName="uuid")},
-   *     inverseJoinColumns={@ORM\JoinColumn(name="child_id", referencedColumnName="uuid")}
-   * )
-   */
-   protected $measuresLinked;
+    use CreateEntityTrait;
+    use UpdateEntityTrait;
 
     /**
-    * @var integer
-    *
-    * @ORM\Column(name="uuid", type="uuid", nullable=false)
-    * @ORM\Id
-    */
+     * @var Uuid
+     *
+     * @ORM\Column(name="uuid", type="uuid", nullable=false)
+     * @ORM\Id
+     */
     protected $uuid;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Referential
-     *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Referential", inversedBy="measures", cascade={"persist"})
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="referential_uuid", referencedColumnName="uuid", nullable=true)
-     * })
-     */
+      * @var ReferentialSuperClass
+      *
+      * @ORM\ManyToOne(targetEntity="Referential", inversedBy="measures", cascade={"persist"})
+      * @ORM\JoinColumns({
+      *   @ORM\JoinColumn(name="referential_uuid", referencedColumnName="uuid", nullable=true)
+      * })
+      */
     protected $referential;
 
     /**
-    * @var \Monarc\FrontOffice\Model\Entity\SoaCategory
-    *
-    * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\SoaCategory", inversedBy="measures", cascade={"persist"})
-    * @ORM\JoinColumns({
-    *   @ORM\JoinColumn(name="soacategory_id", referencedColumnName="id", nullable=true)
-    * })
-    */
+     * @var SoaCategorySuperClass
+     *
+     * @ORM\ManyToOne(targetEntity="SoaCategory", inversedBy="measures", cascade={"persist"})
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="soacategory_id", referencedColumnName="id", nullable=true)
+     * })
+     */
     protected $category;
 
     /**
-    * @var string
-    *
-    * @ORM\Column(name="code", type="string", length=255, nullable=true)
-    */
+     * @var MeasureSuperClass[]|ArrayCollection
+     *
+     * @ORM\ManyToMany(targetEntity="Measure")
+     * @ORM\JoinTable(name="measures_measures",
+     *     joinColumns={@ORM\JoinColumn(name="father_id", referencedColumnName="uuid")},
+     *     inverseJoinColumns={@ORM\JoinColumn(name="child_id", referencedColumnName="uuid")}
+     * )
+     */
+    protected $measuresLinked;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="code", type="string", length=255, nullable=true)
+     */
     protected $code;
 
     /**
-    * @var string
-    *
-    * @ORM\Column(name="label1", type="string", length=255, nullable=true)
-    */
+     * @var string
+     *
+     * @ORM\Column(name="label1", type="string", length=255, nullable=true)
+     */
     protected $label1;
 
     /**
-    * @var string
-    *
-    * @ORM\Column(name="label2", type="string", length=255, nullable=true)
-    */
+     * @var string
+     *
+     * @ORM\Column(name="label2", type="string", length=255, nullable=true)
+     */
     protected $label2;
 
     /**
-    * @var string
-    *
-    * @ORM\Column(name="label3", type="string", length=255, nullable=true)
-    */
+     * @var string
+     *
+     * @ORM\Column(name="label3", type="string", length=255, nullable=true)
+     */
     protected $label3;
 
     /**
-    * @var string
-    *
-    * @ORM\Column(name="label4", type="string", length=255, nullable=true)
-    */
+     * @var string
+     *
+     * @ORM\Column(name="label4", type="string", length=255, nullable=true)
+     */
     protected $label4;
 
     /**
-    * @var smallint
-    *
-    * @ORM\Column(name="status", type="smallint", options={"unsigned":true, "default":1})
-    */
+     * @var int
+     *
+     * @ORM\Column(name="status", type="smallint", options={"unsigned":true, "default":1})
+     */
     protected $status = '1';
 
     /**
-    * @var \Doctrine\Common\Collections\Collection
-    * @ORM\ManyToMany(targetEntity="Monarc\Core\Model\Entity\Amv", inversedBy="measures", cascade={"persist"})
-    * @ORM\JoinTable(name="measures_amvs",
-    *  inverseJoinColumns={@ORM\JoinColumn(name="amv_id", referencedColumnName="uuid")},
-    *  joinColumns={@ORM\JoinColumn(name="measure_id", referencedColumnName="uuid"),},
-    * )
-    */
+     * @var ArrayCollection|AmvSuperClass[]
+     *
+     * @ORM\ManyToMany(targetEntity="Amv", inversedBy="measures", cascade={"persist"})
+     * @ORM\JoinTable(name="measures_amvs",
+     *  inverseJoinColumns={@ORM\JoinColumn(name="amv_id", referencedColumnName="uuid")},
+     *  joinColumns={@ORM\JoinColumn(name="measure_id", referencedColumnName="uuid"),},
+     * )
+     */
     protected $amvs;
 
     /**
-    * @var \Doctrine\Common\Collections\Collection
-    * @ORM\ManyToMany(targetEntity="Monarc\Core\Model\Entity\RolfRisk", inversedBy="measures", cascade={"persist"})
-    * @ORM\JoinTable(name="measures_rolf_risks",
-    *  inverseJoinColumns={@ORM\JoinColumn(name="rolf_risk_id", referencedColumnName="id")},
-    *  joinColumns={@ORM\JoinColumn(name="measure_id", referencedColumnName="uuid"),},
-    * )
-    */
+     * @var ArrayCollection|RolfRiskSuperClass[]
+     *
+     * @ORM\ManyToMany(targetEntity="RolfRisk", inversedBy="measures", cascade={"persist"})
+     * @ORM\JoinTable(name="measures_rolf_risks",
+     *  inverseJoinColumns={@ORM\JoinColumn(name="rolf_risk_id", referencedColumnName="id")},
+     *  joinColumns={@ORM\JoinColumn(name="measure_id", referencedColumnName="uuid"),},
+     * )
+     */
     protected $rolfRisks;
 
-    /**
-    * @var string
-    *
-    * @ORM\Column(name="creator", type="string", length=255, nullable=true)
-    */
-    protected $creator;
-
-    /**
-    * @var \DateTime
-    *
-    * @ORM\Column(name="created_at", type="datetime", nullable=true)
-    */
-    protected $createdAt;
-
-    /**
-    * @var string
-    *
-    * @ORM\Column(name="updater", type="string", length=255, nullable=true)
-    */
-    protected $updater;
-
-    /**
-    * @var \DateTime
-    *
-    * @ORM\Column(name="updated_at", type="datetime", nullable=true)
-    */
-    protected $updatedAt;
-
-    /**
-   * Add a linked measure in the two way
-   *
-   * @param Measure $measure
-   * @throws \Exception
-   */
-    public function addLinkedMeasure( $measure)
+    public function __construct($obj = null)
     {
-      $errors=false;
-        $currentMeasures = $this->measuresLinked;
-        if ($currentMeasures) {
-            foreach ($currentMeasures as $currentMeasure) {
-                if ($currentMeasure->uuid == $measure->uuid) {
-                    $errors = true;
-                }
-            }
-        }
-        if (!$errors) {
-            $this->measuresLinked[] = $measure;
-            $measure->addLinkedMeasure($this); //add the measure in the other way
-        }
+        $this->measuresLinked = new ArrayCollection();
+        $this->amvs = new ArrayCollection();
+        $this->rolfRisks = new ArrayCollection();
+
+        parent::__construct($obj);
     }
 
-    /**
-   * delete a linked measure in the two way
-   *
-   * @param Measure $measure
-   * @throws \Exception
-   */
-    public function deleteLinkedMeasure(MeasureSuperClass $measure)
-    {
-      $delete = false;
-      $i=0;
-        $currentMeasures = $this->measuresLinked;
-        if ($currentMeasures) {
-            foreach ($currentMeasures as $currentMeasure) {
-                if ($currentMeasure->uuid == $measure->uuid) {
-                    unset($currentMeasures[$i]);
-                    $delete = true;
-                }
-                $i++;
-            }
-        }
-        if ($delete) {
-            $measure->deleteLinkedMeasure($this); //delete the measure in the other way
-        }
-    }
-
-    /**
-     * @return UuidInterface
-     */
-    public function getuuid(): UuidInterface
+    public function getUuid(): Uuid
     {
         return $this->uuid;
     }
 
     /**
-     * @param UuidInterface $uuid
-     * @return Referential
+     * @param Uuid $uuid
      */
-    public function setuuid($uuid)
+    public function setUuid($uuid): self
     {
         $this->uuid = $uuid;
+
         return $this;
     }
 
-    /**
-    * @return Category
-    */
     public function getCategory()
     {
         return $this->category;
     }
 
-    /**
-    * @param Category $category
-    */
-    public function setCategory($category)
+    public function setCategory($category): self
     {
         $this->category = $category;
+
+        return $this;
     }
 
-    /**
-    * @return Referential
-    */
     public function getReferential()
     {
         return $this->referential;
@@ -242,13 +176,15 @@ class MeasureSuperClass extends AbstractEntity
     /**
     * @param Referential $referential
     */
-    public function setReferential($referential)
+    public function setReferential($referential): self
     {
         $this->referential = $referential;
+
+        return $this;
     }
 
     /**
-     * @return Amv
+     * @return Amv[]
      */
     public function getAmvs()
     {
@@ -256,71 +192,89 @@ class MeasureSuperClass extends AbstractEntity
     }
 
     /**
-     * @param Amv $amvs
-     * @return Measure
+     * @param Amv[] $amvs
      */
-    public function setAmvs($amvs)
+    public function setAmvs($amvs): self
     {
         $this->amvs = $amvs;
+
         return $this;
     }
 
     /**
      * @param Amv $amv
-     * @return Measure
      */
-    public function addAmv($amv)
+    public function addAmv($amv): self
     {
-      if(!$this->getAmvs()->contains($amv))
-        $this->amvs->add($amv);
-      return $this;
+        if (!$this->getAmvs()->contains($amv)) {
+            $this->amvs->add($amv);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param RolfRisk $riskInput
+     */
+    public function addOpRisk($riskInput): self
+    {
+        if (!$this->getRolfRisks()->contains($riskInput)) {
+            $this->rolfRisks->add($riskInput);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param Amv $amv
+     */
+    public function deleteAmv($amv): self
+    {
+        $this->amvs->removeElement($amv);
+
+        return $this;
     }
 
     /**
      * @param RolfRisk $riskInput
      * @return Measure
      */
-    public function AddOpRisk($riskInput)
+    public function deleteOpRisk($riskInput): self
     {
-      if(!$this->getRolfRisks()->contains($riskInput))
-          $this->rolfRisks->add($riskInput);
+        $this->rolfRisks->removeElement($riskInput);
+
         return $this;
     }
 
-    /**
-     * @param Amv $amv
-     * @return Measure
-     */
-    public function deleteAmv($amv)
+    public function addLinkedMeasure(MeasureSuperClass $measure)
     {
-      $this->amvs->removeElement($amv);
-      return $this;
+        if (!$this->measuresLinked->contains($measure)) {
+            $this->measuresLinked->add($measure);
+            $measure->addLinkedMeasure($this);
+        }
     }
 
-    /**
-     * @param RolfRisk $riskInput
-     * @return Measure
-     */
-    public function deleteOpRisk($riskInput)
+    public function deleteLinkedMeasure(MeasureSuperClass $measure)
     {
-      $this->rolfRisks->removeElement($riskInput);
-      return $this;
+        if ($this->measuresLinked->contains($measure)) {
+            $this->measuresLinked->removeElement($measure);
+            $measure->deleteLinkedMeasure($this);
+        }
     }
 
-    /**
-    * @return measuresLinked
-    */
     public function getMeasuresLinked()
     {
         return $this->measuresLinked;
     }
 
     /**
-    * @param measuresLinked $measuresLinked
+    * @param MeasureSuperClass[] $measuresLinked
     */
     public function setMeasuresLinked($measuresLinked)
     {
         $this->measuresLinked = $measuresLinked;
+
+        return $this;
     }
 
     public function getInputFilter($partial = false)
@@ -334,7 +288,7 @@ class MeasureSuperClass extends AbstractEntity
             foreach ($texts as $text) {
                 $this->inputFilter->add(array(
                     'name' => $text,
-                    'required' => ((strchr($text, (string)$this->getLanguage())) && (!$partial)) ? true : false,
+                    'required' => strpos($text, (string)$this->getLanguage()) !== false && !$partial,
                     'allow_empty' => false,
                     'filters' => array(),
                     'validators' => array(),
@@ -354,7 +308,7 @@ class MeasureSuperClass extends AbstractEntity
 
             $this->inputFilter->add(array(
                 'name' => 'code',
-                'required' => ($partial) ? false : true,
+                'required' => $partial ? false : true,
                 'allow_empty' => false,
                 'filters' => array(),
                 'validators' => $validatorsCode
@@ -380,7 +334,8 @@ class MeasureSuperClass extends AbstractEntity
         return $this->inputFilter;
     }
 
-    public function getFiltersForService(){
+    public function getFiltersForService()
+    {
         $filterJoin = [
             [
                 'as' => 'r',
@@ -413,13 +368,14 @@ class MeasureSuperClass extends AbstractEntity
             'label4',
             'code',
         ];
-        return [$filterJoin,$filterLeft,$filtersCol];
+
+        return [$filterJoin, $filterLeft, $filtersCol];
     }
 
     /**
      * Get the value of Rolf Risks
      *
-     * @return \Doctrine\Common\Collections\Collection
+     * @return Collection
      */
     public function getRolfRisks()
     {
@@ -429,15 +385,14 @@ class MeasureSuperClass extends AbstractEntity
     /**
      * Set the value of Rolf Risks
      *
-     * @param \Doctrine\Common\Collections\Collection rolfRisks
+     * @param Collection rolfRisks
      *
      * @return self
      */
-    public function setRolfRisks(\Doctrine\Common\Collections\Collection $rolfRisks)
+    public function setRolfRisks(Collection $rolfRisks)
     {
         $this->rolfRisks = $rolfRisks;
 
         return $this;
     }
-
 }

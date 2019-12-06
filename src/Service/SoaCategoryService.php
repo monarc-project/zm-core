@@ -7,6 +7,8 @@
 
 namespace Monarc\Core\Service;
 
+use Monarc\Core\Model\Entity\SoaCategory;
+
 /**
  * SoaCategory Service
  *
@@ -21,33 +23,29 @@ class SoaCategoryService extends AbstractService
 
     public function create($data, $last = true)
     {
-        $class = $this->get('entity');
+        /** @var SoaCategory $soaCategory */
+        $soaCategory = $this->get('entity');
 
-        $table = $this->get('table');
         $referentialTable = $this->get('referentialTable');
         $data['referential'] = $referentialTable->getEntity($data['referential']);
 
-        $entity = new $class();
+        $soaCategory->exchangeArray($data);
 
-        $entity->setLanguage($this->getLanguage());
-        $entity->setDbAdapter($table->getDb());
-        $entity->exchangeArray($data);
+        $dependencies = property_exists($this, 'dependencies') ? $this->dependencies : [];
+        $this->setDependencies($soaCategory, $dependencies);
 
-        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($entity, $dependencies);
-
-        return $table->save($entity, $last);
+        return $this->get('table')->save($soaCategory, $last);
     }
 
     public function delete($id)
     {
-      $table = $this->get('table');
-      $categ = $table->getEntity($id);
+        $table = $this->get('table');
+        $categ = $table->getEntity($id);
 
-      foreach ($categ->measures as $measure) {
-        $measure->setCategory(null);
-      }
+        foreach ($categ->measures as $measure) {
+            $measure->setCategory(null);
+        }
 
-      return parent::delete($id);
+        return parent::delete($id);
     }
 }

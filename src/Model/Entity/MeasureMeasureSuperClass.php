@@ -8,7 +8,8 @@
 namespace Monarc\Core\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Ramsey\Uuid\UuidInterface;
+use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
+use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 
 /**
  * Measure Measure
@@ -18,57 +19,39 @@ use Ramsey\Uuid\UuidInterface;
  *      @ORM\Index(name="child_id", columns={"child_id"})
  * })
  * @ORM\MappedSuperclass
+ * @ORM\HasLifecycleCallbacks()
  */
 class MeasureMeasureSuperClass extends AbstractEntity
 {
-      /**
-     * @var string
+    use CreateEntityTrait;
+    use UpdateEntityTrait;
+
+    /**
+     * @var MeasureSuperClass
      *
-     * @ORM\Column(name="creator", type="string", length=255, nullable=true)
+     * @ORM\Id
+     * @ORM\ManyToOne(targetEntity="Measure", cascade={"persist"})
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="father_id", referencedColumnName="uuid", nullable=true)
+     * })
      */
-    protected $creator;
+    protected $father;
 
     /**
-     * @var \DateTime
+     * @var MeasureSuperClass
      *
-     * @ORM\Column(name="created_at", type="datetime", nullable=true)
+     * @ORM\Id
+     * @ORM\ManyToOne(targetEntity="Measure", cascade={"persist"})
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="child_id", referencedColumnName="uuid", nullable=true)
+     * })
      */
-    protected $createdAt;
+    protected $child;
 
     /**
-     * @var string
+     * TODO: The supporting of the Uuid|string types is added for FrontOffice and has to be refactored in the future.
      *
-     * @ORM\Column(name="updater", type="string", length=255, nullable=true)
-     */
-    protected $updater;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
-     */
-    protected $updatedAt;
-
-    /**
-     * @return int
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
-
-    /**
-     * @param int $id
-     * @return Model
-     */
-    public function setId($id)
-    {
-        $this->id = $id;
-        return $this;
-    }
-
-    /**
-     * @return Measure
+     * @return MeasureSuperClass|Uuid|string
      */
     public function getFather()
     {
@@ -76,17 +59,19 @@ class MeasureMeasureSuperClass extends AbstractEntity
     }
 
     /**
-     * @param Measure $father
-     * @return MeasureMeasure
+     * @param MeasureSuperClass|Uuid|string $father
+     *
+     * @return MeasureMeasureSuperClass
      */
-    public function setFather($father)
+    public function setFather($father): self
     {
         $this->father = $father;
+
         return $this;
     }
 
     /**
-     * @return Measure
+     * @return MeasureSuperClass|Uuid|string
      */
     public function getChild()
     {
@@ -94,13 +79,14 @@ class MeasureMeasureSuperClass extends AbstractEntity
     }
 
     /**
-     * @param Measure $child
-     * @return MeasureMeasure
+     * @param MeasureSuperClass|Uuid|string $child
+     *
+     * @return MeasureMeasureSuperClass
      */
-    public function setChild($child)
+    public function setChild($child): self
     {
         $this->child = $child;
+
         return $this;
     }
-
 }

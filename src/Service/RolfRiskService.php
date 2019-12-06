@@ -7,10 +7,11 @@
 
 namespace Monarc\Core\Service;
 
+use Monarc\Core\Model\Entity\RolfRisk;
+use Monarc\Core\Model\Entity\RolfRiskSuperClass;
 use Monarc\Core\Model\Table\InstanceRiskOpTable;
 use Monarc\Core\Model\Table\InstanceTable;
 use Monarc\Core\Model\Table\MonarcObjectTable;
-use Monarc\FrontOffice\Model\Entity\RolfRisk;
 use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\Mapping\MappingException;
 
@@ -42,7 +43,7 @@ class RolfRiskService extends AbstractService
         $filterAnd = [];
         $filterJoin = [];
 
-        if (!is_null($tag)) {
+        if ($tag !== null) {
             $filterJoin[] = [
                 'as' => 'g',
                 'rel' => 'tags'
@@ -50,8 +51,8 @@ class RolfRiskService extends AbstractService
             $filterAnd['g.id'] = $tag;
         }
 
-        if (!is_null($anr)) {
-            $filterAnd['anr'] = intval($anr);
+        if ($anr !== null) {
+            $filterAnd['anr'] = (int)$anr;
         }
 
         return $this->get('table')->fetchAllFiltered(
@@ -73,7 +74,7 @@ class RolfRiskService extends AbstractService
         $filterAnd = [];
         $filterJoin = [];
 
-        if (!is_null($tag)) {
+        if ($tag !== null) {
             $filterJoin[] = [
                 'as' => 'g',
                 'rel' => 'tags'
@@ -81,10 +82,9 @@ class RolfRiskService extends AbstractService
             $filterAnd['g.id'] = $tag;
         }
 
-        if (!is_null($anr)) {
-            $filterAnd['anr'] = intval($anr);
+        if ($anr !== null) {
+            $filterAnd['anr'] = (int)$anr;
         }
-
 
         return $this->get('table')->countFiltered(
             $this->parseFrontendFilter($filter, $this->filterColumns),
@@ -98,81 +98,85 @@ class RolfRiskService extends AbstractService
      */
     public function create($data, $last = true)
     {
-        /** @var RolfRisk $entity */
         $addedTags = [];
-        $class = $this->get('entity');
-        $table = $this->get('table');
-        $entity = new $class();
-        $entity->setLanguage($this->getLanguage());
-        $entity->setDbAdapter($table->getDb());
+        /** @var RolfRiskSuperClass $rolfRisk */
+        $rolfRisk = $this->get('entity');
+
         if (isset($data['anr']) && is_numeric($data['anr'])) {
             $data['anr'] = $this->get('anrTable')->getEntity($data['anr']);
 
         }
         //manage the measures separatly because it's the slave of the relation RolfRisks<-->measures
         foreach ($data['measures'] as $measure) {
-          $measureEntity = $this->get('measureTable')->getEntity($measure);
-          $measureEntity->AddOpRisk($entity);
+            $this->get('measureTable')->getEntity($measure)->addOpRisk($rolfRisk);
         }
         unset($data['measures']);
-        $entity->exchangeArray($data);
+        $rolfRisk->exchangeArray($data);
 
-        $rolfTags = $entity->get('tags');
+        $rolfTags = $rolfRisk->get('tags');
         if (!empty($rolfTags)) {
             $rolfTagTable = $this->get('rolfTagTable');
             foreach ($rolfTags as $key => $rolfTagId) {
                 if (!empty($rolfTagId)) {
                     $rolfTag = $rolfTagTable->getEntity($rolfTagId);
-                    $entity->setTag($key, $rolfTag);
+                    $rolfRisk->setTag($key, $rolfTag);
                     $addedTags[] = $rolfTagId;
                 }
             }
         }
-        $opId = $this->get('table')->save($entity);
+
+        $rolfRisk->setCreator(
+            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+        );
+
+        $opId = $this->get('table')->save($rolfRisk);
+
+        $data = [
+            'rolfRisk' => $opId,
+            'riskCacheCode' => $rolfRisk->code,
+            'riskCacheLabel1' => $rolfRisk->label1,
+            'riskCacheLabel2' => $rolfRisk->label2,
+            'riskCacheLabel3' => $rolfRisk->label3,
+            'riskCacheLabel4' => $rolfRisk->label4,
+            'riskCacheDescription1' => $rolfRisk->description1,
+            'riskCacheDescription2' => $rolfRisk->description2,
+            'riskCacheDescription3' => $rolfRisk->description3,
+            'riskCacheDescription4' => $rolfRisk->description4,
+        ];
         //manage the addition of tags
         foreach ($addedTags as $addedTag) {
-            /** @var MonarcObjectTable $MonarcObjectTable */
-            $MonarcObjectTable = $this->get('MonarcObjectTable');
-            $objects = $MonarcObjectTable->getEntityByFields(['rolfTag' => $addedTag]);
+            /** @var MonarcObjectTable $monarcObjectTable */
+            $monarcObjectTable = $this->get('MonarcObjectTable');
+            $objects = $monarcObjectTable->getEntityByFields(['rolfTag' => $addedTag]);
             foreach ($objects as $object) {
                 /** @var InstanceTable $instanceTable */
                 $instanceTable = $this->get('instanceTable');
-                try{
-                  $instances = $instanceTable->getEntityByFields(['object' => $object->uuid->toString()]);
-                }catch(QueryException $e){
-                  $instances = $instanceTable->getEntityByFields(['object' => ['anr' => $data['anr'],'uuid' => $object->uuid->toString()]]);
-                } catch (MappingException $e) {
-                    $instances = $instanceTable->getEntityByFields(['object' => ['anr' => $data['anr'],'uuid' => $object->uuid->toString()]]);
+                try {
+                    $instances = $instanceTable->getEntityByFields(['object' => (string)$object->uuid]);
+                } catch (QueryException | MappingException $e) {
+                    $instances = $instanceTable->getEntityByFields([
+                        'object' => [
+                            'anr' => $data['anr'],
+                            'uuid' => (string)$object->uuid
+                        ]
+                    ]);
                 }
-                $i = 1;
-                $nbInstances = count($instances);
-                foreach ($instances as $instance) {
-                    $data = [
-                        'rolfRisk' => $opId,
-                        'anr' => $object->anr->id,
-                        'instance' => $instance->id,
-                        'object' => $object->uuid->toString(),
-                        'rolfRisk' => $entity->id,
-                        'riskCacheCode' => $entity->code,
-                        'riskCacheLabel1' => $entity->label1,
-                        'riskCacheLabel2' => $entity->label2,
-                        'riskCacheLabel3' => $entity->label3,
-                        'riskCacheLabel4' => $entity->label4,
-                        'riskCacheDescription1' => $entity->description1,
-                        'riskCacheDescription2' => $entity->description2,
-                        'riskCacheDescription3' => $entity->description3,
-                        'riskCacheDescription4' => $entity->description4,
-                    ];
+
+                $nbInstances = \count($instances);
+
+                $data['object'] = (string)$object->uuid;
+                $data['anr'] = $object->anr->id;
+
+                foreach ($instances as $i => $instance) {
+                    $data['instance'] = $instance->id;
 
                     /** @var InstanceRiskOpService $instanceRiskOpService */
                     $instanceRiskOpService = $this->get('instanceRiskOpService');
-                    $instanceRiskOpService->create($data, ($i == $nbInstances));
-                    $i++;
+                    $instanceRiskOpService->create($data, ($i + 1) === $nbInstances);
                 }
             }
         }
 
-        $this->get('table')->save($entity);
         return $opId;
     }
 
@@ -182,67 +186,65 @@ class RolfRiskService extends AbstractService
      */
     public function delete($id)
     {
-      $instanceRiskOpTable = $this->get('instanceRiskOpTable');
-      $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['rolfRisk' => $id]);
-      $nbInstancesRisksOp = count($instancesRisksOp);
-      $i=1;
-      foreach ($instancesRisksOp as $instanceRiskOp) {
-          $instanceRiskOp->specific = 1;
-          $instanceRiskOpTable->save($instanceRiskOp, ($i == $nbInstancesRisksOp));
-          $i++;
-      }
-      return parent::delete($id);
+        $instanceRiskOpTable = $this->get('instanceRiskOpTable');
+        $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['rolfRisk' => $id]);
+        $nbInstancesRisksOp = \count($instancesRisksOp);
+        foreach ($instancesRisksOp as $i => $instanceRiskOp) {
+            $instanceRiskOp->specific = 1;
+            $instanceRiskOpTable->save($instanceRiskOp, ($i + 1) === $nbInstancesRisksOp);
+        }
+
+        return parent::delete($id);
     }
 
     /**
      * @inheritdoc
      * set the deleted risks in specific
      */
-    public function deleteListFromAnr($data,$anrId = NULL)
+    public function deleteListFromAnr($data, $anrId = null)
     {
-      foreach ($data as $ro) {
-        $this->delete($ro);
-      }
+        foreach ($data as $ro) {
+            $this->delete($ro);
+        }
     }
     /**
      * @inheritdoc
      */
     public function update($id, $data)
     {
-
-        $rolfTags = isset($data['tags']) ? $data['tags'] : [];
+        $rolfTags = $data['tags'] ?? [];
         unset($data['tags']);
 
-        $entity = $this->get('table')->getEntity($id);
+        /** @var RolfRisk $rolfRisk */
+        $rolfRisk = $this->get('table')->getEntity($id);
         //manage the measures separatly because it's the slave of the relation RolfRisks<-->measures
         foreach ($data['measures'] as $measure) {
-          $measureEntity = $this->get('measureTable')->getEntity($measure);
-          $measureEntity->AddOpRisk($entity);
+            $this->get('measureTable')->getEntity($measure)->addOpRisk($rolfRisk);
         }
-        foreach ($entity->measures as $m) {
-            if(false === array_search($m->uuid->toString(), array_column($data['measures'], 'uuid'),true)){
-              $m->deleteOpRisk($entity);
+        foreach ($rolfRisk->getMeasures() as $m) {
+            if (!\in_array($m->uuid->toString(), array_column($data['measures'], 'uuid'), true)) {
+                $m->deleteOpRisk($rolfRisk);
             }
         }
         unset($data['measures']);
-        $entity->setDbAdapter($this->get('table')->getDb());
-        $entity->setLanguage($this->getLanguage());
-        $entity->exchangeArray($data);
-        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($entity, $dependencies);
+        $rolfRisk->setDbAdapter($this->get('table')->getDb());
+        $rolfRisk->setLanguage($this->getLanguage());
+        $rolfRisk->exchangeArray($data);
+        $dependencies = property_exists($this, 'dependencies') ? $this->dependencies : [];
+        $this->setDependencies($rolfRisk, $dependencies);
 
         $currentTagId = [];
-        foreach ($entity->tags as $tag) {
+        foreach ($rolfRisk->tags as $tag) {
             $currentTagId[] = $tag->id;
         }
 
-        $entity->get('tags')->initialize();
+        $rolfRisk->get('tags')->initialize();
 
-        foreach ($entity->get('tags') as $rolfTag) {
+        foreach ($rolfRisk->get('tags') as $rolfTag) {
             if (in_array($rolfTag->get('id'), $rolfTags)) {
                 unset($rolfTags[array_search($rolfTag->get('id'), $rolfTags)]);
             } else {
-                $entity->get('tags')->removeElement($rolfTag);
+                $rolfRisk->get('tags')->removeElement($rolfTag);
             }
         }
 
@@ -251,15 +253,15 @@ class RolfRiskService extends AbstractService
             foreach ($rolfTags as $key => $rolfTagId) {
                 if (!empty($rolfTagId)) {
                     $rolfTag = $rolfTagTable->getEntity($rolfTagId);
-                    $entity->setTag($key, $rolfTag);
+                    $rolfRisk->setTag($key, $rolfTag);
                 }
             }
         }
 
-        $this->setDependencies($entity, ['anr']);
+        $this->setDependencies($rolfRisk, ['anr']);
 
         $newTagId = [];
-        foreach ($entity->tags as $tag) {
+        foreach ($rolfRisk->tags as $tag) {
             $newTagId[] = $tag->id;
         }
 
@@ -278,124 +280,140 @@ class RolfRiskService extends AbstractService
         }
 
         foreach ($deletedTags as $deletedTag) {
-            /** @var MonarcObjectTable $MonarcObjectTable */
-            $MonarcObjectTable = $this->get('MonarcObjectTable');
-            $objects = $MonarcObjectTable->getEntityByFields(['rolfTag' => $deletedTag]);
+            /** @var MonarcObjectTable $monarcObjectTable */
+            $monarcObjectTable = $this->get('MonarcObjectTable');
+            $objects = $monarcObjectTable->getEntityByFields(['rolfTag' => $deletedTag]);
             foreach ($objects as $object) {
                 /** @var InstanceRiskOpTable $instanceRiskOpTable */
                 $instanceRiskOpTable = $this->get('instanceRiskOpTable');
-                try{
-                  $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['object' => $object->uuid->toString(), 'rolfRisk' => $id]);
-                }catch(QueryException $e){
-                  $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['object' => ['anr' => $data['anr'],'uuid' => $object->uuid->toString()], 'rolfRisk' => $id]);
-                } catch (MappingException $e) {
-                    $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['object' => ['anr' => $data['anr'],'uuid' => $object->uuid->toString()], 'rolfRisk' => $id]);
+                try {
+                    $instancesRisksOp = $instanceRiskOpTable->getEntityByFields([
+                        'object' => (string)$object->uuid,
+                        'rolfRisk' => $id,
+                    ]);
+                } catch (QueryException | MappingException $e) {
+                    $instancesRisksOp = $instanceRiskOpTable->getEntityByFields([
+                        'object' => [
+                            'anr' => $data['anr'],
+                            'uuid' => (string)$object->uuid
+                        ],
+                        'rolfRisk' => $id
+                    ]);
                 }
+
                 $i = 1;
-                $nbInstancesRisksOp = count($instancesRisksOp);
+                $nbInstancesRisksOp = \count($instancesRisksOp);
                 foreach ($instancesRisksOp as $instanceRiskOp) {
                     $instanceRiskOp->specific = 1;
-                    $instanceRiskOpTable->save($instanceRiskOp, ($i == $nbInstancesRisksOp));
+                    $instanceRiskOpTable->save($instanceRiskOp, $i == $nbInstancesRisksOp);
                     $i++;
                 }
             }
         }
+
+        $data = [
+            'rolfRisk' => $rolfRisk->id,
+            'riskCacheCode' => $rolfRisk->code,
+            'riskCacheLabel1' => $rolfRisk->label1,
+            'riskCacheLabel2' => $rolfRisk->label2,
+            'riskCacheLabel3' => $rolfRisk->label3,
+            'riskCacheLabel4' => $rolfRisk->label4,
+            'riskCacheDescription1' => $rolfRisk->description1,
+            'riskCacheDescription2' => $rolfRisk->description2,
+            'riskCacheDescription3' => $rolfRisk->description3,
+            'riskCacheDescription4' => $rolfRisk->description4,
+        ];
+
         foreach ($addedTags as $addedTag) {
             /** @var MonarcObjectTable $MonarcObjectTable */
-            $MonarcObjectTable = $this->get('MonarcObjectTable');
-            $objects = $MonarcObjectTable->getEntityByFields(['rolfTag' => $addedTag]);
+            $monarcObjectTable = $this->get('MonarcObjectTable');
+            $objects = $monarcObjectTable->getEntityByFields(['rolfTag' => $addedTag]);
             foreach ($objects as $object) {
                 /** @var InstanceTable $instanceTable */
                 $instanceTable = $this->get('instanceTable');
-                try{
-                  $instances = $instanceTable->getEntityByFields(['object' => $object->uuid->toString()]);
-                }catch(QueryException $e){
-                  $instances = $instanceTable->getEntityByFields(['object' => ['anr' => $data['anr'],'uuid' => $object->uuid->toString()]]);
-                } catch (MappingException $e) {
-                    $instances = $instanceTable->getEntityByFields(['object' => ['anr' => $data['anr'],'uuid' => $object->uuid->toString()]]);
+                try {
+                    $instances = $instanceTable->getEntityByFields(['object' => (string)$object->uuid]);
+                } catch (QueryException | MappingException $e) {
+                    $instances = $instanceTable->getEntityByFields([
+                        'object' => [
+                            'anr' => $data['anr'],
+                            'uuid' => $object->uuid->toString()
+                        ]
+                    ]);
                 }
+
                 $i = 1;
-                $nbInstances = count($instances);
+                $nbInstances = \count($instances);
+
+                $data['anr'] = $object->anr->id;
+                $data['object'] = $object->uuid->toString();
+
                 foreach ($instances as $instance) {
-                    $data = [
-                        'anr' => $object->anr->id,
-                        'instance' => $instance->id,
-                        'object' => $object->uuid->toString(),
-                        'rolfRisk' => $entity->id,
-                        'riskCacheCode' => $entity->code,
-                        'riskCacheLabel1' => $entity->label1,
-                        'riskCacheLabel2' => $entity->label2,
-                        'riskCacheLabel3' => $entity->label3,
-                        'riskCacheLabel4' => $entity->label4,
-                        'riskCacheDescription1' => $entity->description1,
-                        'riskCacheDescription2' => $entity->description2,
-                        'riskCacheDescription3' => $entity->description3,
-                        'riskCacheDescription4' => $entity->description4,
-                    ];
+                    $data['instance'] = $instance->id;
 
                     /** @var InstanceRiskOpService $instanceRiskOpService */
                     $instanceRiskOpService = $this->get('instanceRiskOpService');
-                    $instanceRiskOpService->create($data, ($i == $nbInstances));
+                    $instanceRiskOpService->create($data, $i === $nbInstances);
                     $i++;
                 }
             }
         }
 
         foreach ($currentTagId as $currentTag) {
-          // manage the fact that label can changed for OP risk
-          $MonarcObjectTable = $this->get('MonarcObjectTable');
-          $objects = $MonarcObjectTable->getEntityByFields(['rolfTag' => $currentTag]);
-          foreach ($objects as $object) {
-            $instanceRiskOpTable = $this->get('instanceRiskOpTable');
-            try{
-              $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['object' => $object->uuid->toString(), 'rolfRisk' => $id] );
-            }catch(QueryException $e){
-              $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['object' => ['anr' => $data['anr'],'uuid' => $object->uuid->toString()], 'rolfRisk' => $id]);
-            } catch (MappingException $e) {
-                $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['object' => ['anr' => $data['anr'],'uuid' => $object->uuid->toString()], 'rolfRisk' => $id]);
-            }
+            // manage the fact that label can changed for OP risk
+            $monarcObjectTable = $this->get('MonarcObjectTable');
+            $objects = $monarcObjectTable->getEntityByFields(['rolfTag' => $currentTag]);
+            foreach ($objects as $object) {
+                $instanceRiskOpTable = $this->get('instanceRiskOpTable');
+                try {
+                    $instancesRisksOp = $instanceRiskOpTable->getEntityByFields([
+                        'object' => $object->uuid->toString(),
+                        'rolfRisk' => $id,
+                    ]);
+                } catch (QueryException | MappingException $e) {
+                    $instancesRisksOp = $instanceRiskOpTable->getEntityByFields([
+                        'object' => [
+                            'anr' => $data['anr'],
+                            'uuid' => $object->uuid->toString(),
+                        ],
+                        'rolfRisk' => $id,
+                    ]);
+                }
 
-            $nbInstances = count($instancesRisksOp);
-            //update label
-            foreach ($instancesRisksOp as $instance) {
-                $data = [
-                    'anr' => $object->anr->id,
-                    'object' => $object->uuid->toString(),
-                    'rolfRisk' => $entity->id,
-                    'riskCacheLabel1' => $entity->label1,
-                    'riskCacheLabel2' => $entity->label2,
-                    'riskCacheLabel3' => $entity->label3,
-                    'riskCacheLabel4' => $entity->label4,
-                    'riskCacheDescription1' => $entity->description1,
-                    'riskCacheDescription2' => $entity->description2,
-                    'riskCacheDescription3' => $entity->description3,
-                    'riskCacheDescription4' => $entity->description4,
-                ];
-                $instanceRiskOpService = $this->get('instanceRiskOpService');
-                $instanceRiskOpService->update($instance->id, $data); // on update l'instance
+                $data['anr'] = $object->anr->id;
+                $data['object'] = $object->uuid->toString();
 
-              }
+                //update label
+                foreach ($instancesRisksOp as $instance) {
+                    $instanceRiskOpService = $this->get('instanceRiskOpService');
+                    $instanceRiskOpService->update($instance->id, $data); // on update l'instance
+                }
             }
-          }
-        return $this->get('table')->save($entity);
+        }
+
+        $rolfRisk->setUpdater(
+            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+        );
+
+        return $this->get('table')->save($rolfRisk);
     }
 
     /*
-    * Function to link automatically the amv of the destination from the source depending of the measures_measures
+    * The method automatically links the Amv of the destination from the source depending on the measures_measures
     */
-      public function createLinkedRisks($source_uuid, $destination)
-      {
-        $measures_dest = $this->get('referentialTable')->getEntity($destination)->getMeasures();
-        foreach ($measures_dest as $md) {
-          foreach ($md->getMeasuresLinked() as $measureLink) {
-              if($measureLink->getReferential()->getuuid()->toString()==$source_uuid){
-                foreach ($measureLink->rolfRisks as $risk) {
-                  $md->AddOpRisk($risk);
+    public function createLinkedRisks($source_uuid, $destination)
+    {
+        $measuresDest = $this->get('referentialTable')->getEntity($destination)->getMeasures();
+        foreach ($measuresDest as $md) {
+            foreach ($md->getMeasuresLinked() as $measureLink) {
+                if ((string)$measureLink->getReferential()->getUuid() === (string)$source_uuid) {
+                    foreach ($measureLink->rolfRisks as $risk) {
+                        $md->addOpRisk($risk);
+                    }
+                    $this->get('measureTable')->save($md, false);
                 }
-                $this->get('measureTable')->save($md,false);
-              }
-          }
+            }
         }
         $this->get('measureTable')->getDb()->flush();
-      }
+    }
 }

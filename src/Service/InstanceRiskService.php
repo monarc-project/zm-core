@@ -7,8 +7,13 @@
 
 namespace Monarc\Core\Service;
 
+use Monarc\Core\Exception\Exception;
+use Monarc\Core\Model\Entity\Amv;
+use Monarc\Core\Model\Entity\Instance;
 use Monarc\Core\Model\Entity\InstanceRisk;
+use Monarc\Core\Model\Entity\InstanceSuperClass;
 use Monarc\Core\Model\Entity\MonarcObject;
+use Monarc\Core\Model\Entity\ObjectSuperClass;
 use Monarc\Core\Model\Table\AmvTable;
 use Monarc\Core\Model\Table\InstanceRiskTable;
 use Monarc\Core\Model\Table\InstanceTable;
@@ -55,74 +60,89 @@ class InstanceRiskService extends AbstractService
         //retrieve brothers instances
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('instanceTable');
-        try{
-          $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => is_string($object->uuid)?$object->uuid :$object->uuid->toString()]);
-      }catch(MappingException $e){
-          $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => ['uuid' => is_string($object->uuid)?$object->uuid :$object->uuid->toString(), 'anr' => $anrId]]);
-      } catch (QueryException $e) {
-          $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => ['uuid' => is_string($object->uuid)?$object->uuid :$object->uuid->toString(), 'anr' => $anrId]]);
-      }
-        if ($object->scope == MonarcObject::SCOPE_GLOBAL && count($instances) > 1) {
+        try {
+            $instances = $instanceTable->getEntityByFields([
+                'anr' => $anrId,
+                'object' => (string)$object->uuid
+            ]);
+        } catch (MappingException | QueryException $e) {
+            $instances = $instanceTable->getEntityByFields([
+                'anr' => $anrId,
+                'object' => [
+                    'uuid' => (string)$object->uuid,
+                    'anr' => $anrId
+                ]
+            ]);
+        }
 
-            $currentInstance = $instanceTable->getEntity($instanceId);
+        /** @var InstanceRiskTable $instanceRiskTable */
+        $instanceRiskTable = $this->get('table');
+        /** @var InstanceSuperClass $currentInstance */
+        $currentInstance = $instanceTable->getEntity($instanceId);
 
-            /** @var InstanceRiskTable $instanceRiskTable */
-            $instanceRiskTable = $this->get('table');
+        if ($object->scope === MonarcObject::SCOPE_GLOBAL && \count($instances) > 1) {
+            /** @var InstanceSuperClass $instance */
+            foreach ($instances as $instance) {
+                if ($instance->getId() === $instanceId) {
+                    break;
+                }
 
-            foreach($instances as $instance) {
-                if ($instance->id != $instanceId) {
-                    $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $instance->id]);
-                    foreach($instancesRisks as $instanceRisk) {
-                        $newInstanceRisk = clone $instanceRisk;
-                        $newInstanceRisk->setId(null);
-                        $newInstanceRisk->setInstance($currentInstance);
-                        $instanceRiskTable->save($newInstanceRisk);
+                $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $instance->getId()]);
+                foreach ($instancesRisks as $instanceRisk) {
+                    /** @var InstanceRisk $newInstanceRisk */
+                    $newInstanceRisk = clone $instanceRisk;
+                    $newInstanceRisk->setId(null);
+                    $newInstanceRisk->setInstance($currentInstance);
+                    $newInstanceRisk->setCreator(
+                        $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+                    );
 
-                        if($recoRisks = $this->get('recommandationRiskTable') !=null){
-                          $recoRisks = $this->get('recommandationRiskTable')->getEntityByFields(['anr' => $anrId, 'instanceRisk' => $instanceRisk->id]);
-                          if (count($recoRisks) > 0) {
-                            foreach($recoRisks as $recoRisk) {
-                              $newRecoRisk = clone $recoRisk;
-                              $newRecoRisk->set('id', null);
-                              $newRecoRisk->set('instance',$currentInstance);
-                              $newRecoRisk->set('instanceRisk',$newInstanceRisk);
-                              $this->get('recommandationRiskTable')->save($newRecoRisk);
+                    $instanceRiskTable->save($newInstanceRisk);
+
+                    // This part of the code is related to the FO. Needs to be extracted.
+                    if ($this->get('recommandationRiskTable') !== null) {
+                        $recoRisks = $this->get('recommandationRiskTable')->getEntityByFields(['anr' => $anrId, 'instanceRisk' => $instanceRisk->id]);
+                        if (\count($recoRisks) > 0) {
+                            foreach ($recoRisks as $recoRisk) {
+                                $newRecoRisk = clone $recoRisk;
+                                $newRecoRisk->set('id', null);
+                                $newRecoRisk->set('instance', $currentInstance);
+                                $newRecoRisk->set('instanceRisk', $newInstanceRisk);
+                                $this->get('recommandationRiskTable')->save($newRecoRisk);
                             }
-                          }
                         }
                     }
                 }
-                break;
             }
         } else {
-
             /** @var AmvTable $amvTable */
             $amvTable = $this->get('amvTable');
-            if(in_array('anr',$this->get('assetTable')->getClassMetadata()->getIdentifierFieldNames()))
-              $amvs = $amvTable->getEntityByFields(['asset' => ['uuid' => is_string($object->asset->uuid)?$object->asset->uuid:$object->asset->uuid->toString(), 'anr' => $anrId ]]);
-            else
-              $amvs = $amvTable->getEntityByFields(['asset' => is_string($object->asset->uuid)?$object->asset->uuid:$object->asset->uuid->toString()]);
-
-            $nbAmvs = count($amvs);
-            $i = 1;
-            foreach ($amvs as $amv) {
-                $data = [
-                    'anr' => $anrId,
-                    'amv' => is_string($amv->uuid)?$amv->uuid:$amv->uuid->toString(),
-                    'asset' => is_string($amv->asset->uuid)?$amv->asset->uuid:$amv->asset->uuid->toString(),
-                    'instance' => $instanceId,
-                    'threat' => is_string($amv->getThreat()->getUuid())?$amv->getThreat()->getUuid():$amv->getThreat()->getUuid()->toString(),
-                    'vulnerability' => is_string($amv->getVulnerability()->getUuid())?$amv->getVulnerability()->getUuid():$amv->getVulnerability()->getUuid()->toString(),
-                ];
-                $instanceRiskLastId = $this->create($data, ($nbAmvs == $i));
-                $i++;
+            if (in_array('anr', $this->get('assetTable')->getClassMetadata()->getIdentifierFieldNames())) {
+                $amvs = $amvTable->getEntityByFields([
+                    'asset' => [
+                        'uuid' => (string)$object->asset->uuid,
+                        'anr' => $anrId
+                    ]
+                ]);
+            } else {
+                $amvs = $amvTable->getEntityByFields(['asset' => (string)$object->asset->uuid]);
             }
 
-            if ($nbAmvs) {
-                for ($i = $instanceRiskLastId - $nbAmvs + 1; $i <= $instanceRiskLastId; $i++) {
-                    $lastRisk = ($i == $instanceRiskLastId);
-                    $this->updateRisks($i, $lastRisk);
-                }
+            /** @var Amv $amv */
+            foreach ($amvs as $amv) {
+                $data = [
+                    'anr' => $amv->getAnr(),
+                    'amv' => $amv,
+                    'asset' => $amv->getAsset(),
+                    'instance' => $currentInstance,
+                    'threat' => $amv->getThreat(),
+                    'vulnerability' => $amv->getVulnerability(),
+                ];
+                $instanceRiskEntityClassName = $this->get('table')->getEntityClass();
+                $instanceRisk = new $instanceRiskEntityClassName($data);
+                $instanceRiskTable->save($instanceRisk);
+
+                $this->updateRisks($instanceRisk);
             }
         }
     }
@@ -198,9 +218,10 @@ class InstanceRiskService extends AbstractService
 
         $this->verifyRates($anrId, $data, $this->getEntity($id));
 
-        $entity = $this->get('table')->getEntity($id);
-        if (!$entity) {
-            throw new \Monarc\Core\Exception\Exception('Entity does not exist', 412);
+        /** @var InstanceRisk $instanceRisk */
+        $instanceRisk = $this->get('table')->getEntity($id);
+        if (!$instanceRisk) {
+            throw new Exception('Entity does not exist', 412);
         }
 
         /** @var InstanceRiskTable $instanceRiskTable */
@@ -208,50 +229,68 @@ class InstanceRiskService extends AbstractService
 
         //if object is global, impact modifications to brothers
         if ($manageGlobal) {
-            $object = $entity->instance->object;
-            if ($object->scope == MonarcObject::SCOPE_GLOBAL) {
-
+            /** @var ObjectSuperClass $object */
+            $object = $instanceRisk->getInstance()->getObject();
+            if ($object->getScope() === MonarcObject::SCOPE_GLOBAL) {
                 //retrieve brothers instances
                 /** @var InstanceTable $instanceTable */
                 $instanceTable = $this->get('instanceTable');
-                try{
-                  $instances = $instanceTable->getEntityByFields(['anr' => $entity->anr->id, 'object' => $object->uuid->toString()]);
-                }catch(QueryException $e){
-                  $instances = $instanceTable->getEntityByFields(['anr' => $entity->anr->id, 'object' => ['anr' => $entity->anr->id, 'uuid' => $object->uuid->toString()]]);
-                } catch (MappingException $e) {
-                    $instances = $instanceTable->getEntityByFields(['anr' => $entity->anr->id, 'object' => ['anr' => $entity->anr->id, 'uuid' => $object->uuid->toString()]]);
+                try {
+                    $instances = $instanceTable->getEntityByFields([
+                        'anr' => $instanceRisk->getAnr()->getId(),
+                        'object' => (string)$object->getUuid(),
+                    ]);
+                } catch (QueryException | MappingException $e) {
+                    $instances = $instanceTable->getEntityByFields([
+                        'anr' => $instanceRisk->getAnr()->getId(),
+                        'object' => [
+                            'anr' => $instanceRisk->getAnr()->getId(),
+                            'uuid' => (string)$object->getUuid(),
+                        ]
+                    ]);
                 }
 
+                /** @var Instance $instance */
                 foreach ($instances as $instance) {
-                    if ($instance != $entity->instance) {
-                        $instancesRisks = $instanceRiskTable->getEntityByFields(['amv' => ['anr' => $entity->anr->id, 'uuid' => $entity->amv->uuid->toString()], 'instance' => $instance->id]);
+                    if ($instance != $instanceRisk->getInstance()) {
+                        $instancesRisks = $instanceRiskTable->getEntityByFields([
+                            'amv' => [
+                                'anr' => $instanceRisk->getAnr()->getId(),
+                                'uuid' => (string)$instanceRisk->getAmv()->getUuid()
+                            ],
+                            'instance' => $instance->getId()
+                        ]);
                         foreach ($instancesRisks as $instanceRisk) {
-                            $initialData['id'] = $instanceRisk->id;
-                            $initialData['instance'] = $instance->id;
-                            $this->patch($instanceRisk->id, $initialData, false);
+                            $initialData['id'] = $instanceRisk->getId();
+                            $initialData['instance'] = $instance->getId();
+                            $this->patch($instanceRisk->getId(), $initialData, false);
                         }
                     }
                 }
             }
         }
 
-        $entity->setLanguage($this->getLanguage());
+        $instanceRisk->setLanguage($this->getLanguage());
 
         foreach ($this->dependencies as $dependency) {
             if (!isset($data[$dependency])) {
-                $data[$dependency] = $entity->$dependency->id;
+                $data[$dependency] = $instanceRisk->$dependency->id;
             }
         }
 
-        $entity->exchangeArray($data, true);
+        $instanceRisk->exchangeArray($data, true);
 
         $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($entity, $dependencies);
+        $this->setDependencies($instanceRisk, $dependencies);
 
-        $instanceRiskTable->save($entity);
+        $instanceRisk->setUpdater(
+            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+        );
+
+        $instanceRiskTable->save($instanceRisk);
 
         $this->updateRisks($id);
-        $this->updateRecoRisks($entity);
+        $this->updateRecoRisks($instanceRisk);
 
         return $id;
     }
@@ -262,26 +301,27 @@ class InstanceRiskService extends AbstractService
     public function update($id, $data, $manageGlobal = true)
     {
         $initialData = $data;
-        $anrId = (isset($data['anr']))? $data['anr'] : null;
+        $anrId = $data['anr'] ?? null;
 
-        if(isset($data['threatRate'])){
+        if (isset($data['threatRate'])) {
             $data['threatRate'] = trim($data['threatRate']);
-            if(!isset($data['threatRate']) || $data['threatRate'] == '-' || $data['threatRate'] == -1){
+            if (!isset($data['threatRate']) || $data['threatRate'] == '-' || $data['threatRate'] == -1) {
                 $data['threatRate'] = -1;
             }
         }
-        if(isset($data['vulnerabilityRate'])){
+        if (isset($data['vulnerabilityRate'])) {
             $data['vulnerabilityRate'] = trim($data['vulnerabilityRate']);
-            if(!isset($data['vulnerabilityRate']) || $data['vulnerabilityRate'] == '-' || $data['vulnerabilityRate'] == -1){
+            if ($data['vulnerabilityRate'] == '-' || $data['vulnerabilityRate'] == -1) {
                 $data['vulnerabilityRate'] = -1;
             }
         }
 
         $this->verifyRates($anrId, $data, $this->getEntity($id));
 
-        $entity = $this->get('table')->getEntity($id);
-        if (!$entity) {
-            throw new \Monarc\Core\Exception\Exception('Entity does not exist', 412);
+        /** @var InstanceRisk $instanceRisk */
+        $instanceRisk = $this->get('table')->getEntity($id);
+        if (!$instanceRisk) {
+            throw new Exception('Entity does not exist', 412);
         }
 
         /** @var InstanceRiskTable $instanceRiskTable */
@@ -289,92 +329,121 @@ class InstanceRiskService extends AbstractService
 
         //if object is global, impact modifications to brothers
         if ($manageGlobal) {
-            $object = $entity->instance->object;
-            if ($object->scope == MonarcObject::SCOPE_GLOBAL) {
-
+            $object = $instanceRisk->getInstance()->getObject();
+            if ($object->getScope() === MonarcObject::SCOPE_GLOBAL) {
                 //retrieve brothers instances
                 /** @var InstanceTable $instanceTable */
                 $instanceTable = $this->get('instanceTable');
-                try{
-                  $instances = $instanceTable->getEntityByFields(['anr' => $entity->anr->id, 'object' => is_string($object->uuid)?$object->uuid:$object->uuid->toString()]);
-                }catch(QueryException $e){
-                  $instances = $instanceTable->getEntityByFields(['anr' => $entity->anr->id, 'object' => ['anr' => $entity->anr->id, 'uuid' => is_string($object->uuid)?$object->uuid:$object->uuid->toString()]]);
-                } catch (MappingException $e) {
-                    $instances = $instanceTable->getEntityByFields(['anr' => $entity->anr->id, 'object' => ['anr' => $entity->anr->id, 'uuid' => is_string($object->uuid)?$object->uuid:$object->uuid->toString()]]);
+                try {
+                    $instances = $instanceTable->getEntityByFields([
+                        'anr' => $instanceRisk->getAnr()->getId(),
+                        'object' => (string)$object->getUuid(),
+                    ]);
+                } catch (QueryException | MappingException $e) {
+                    $instances = $instanceTable->getEntityByFields([
+                        'anr' => $instanceRisk->getAnr()->getId(),
+                        'object' => [
+                            'anr' => $instanceRisk->getAnr()->getId(),
+                            'uuid' => (string)$object->getUuid(),
+                        ]
+                    ]);
                 }
 
+                /** @var Instance $instance */
                 foreach ($instances as $instance) {
-                    if ($instance !== $entity->instance) {
-                        if ($entity->specific == 0) {
-                            if ($entity->amv) {
-                                try{
-                                  $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $instance->id, 'amv' => is_string($entity->amv->uuid)?$entity->amv->uuid:$entity->amv->uuid->toString()]);
-                                }catch(QueryException $e){
-                                  $instancesRisks = $instanceRiskTable->getEntityByFields([ 'amv' => ['anr' =>$entity->anr->id ,'uuid' => is_string($entity->amv->uuid)?$entity->amv->uuid:$entity->amv->uuid->toString()], 'instance' => $instance->id]);
-                                } catch (MappingException $e) {
-                                    $instancesRisks = $instanceRiskTable->getEntityByFields([ 'amv' => ['anr' =>$entity->anr->id ,'uuid' => is_string($entity->amv->uuid)?$entity->amv->uuid:$entity->amv->uuid->toString()], 'instance' => $instance->id]);
+                    if ($instance !== $instanceRisk->getInstance()) {
+                        if ($instanceRisk->getSpecific() === 0) {
+                            if ($instanceRisk->getAmv()) {
+                                try {
+                                    $instancesRisks = $instanceRiskTable->getEntityByFields([
+                                        'instance' => $instance->getId(),
+                                        'amv' => (string)$instanceRisk->getAmv()->getUuid(),
+                                    ]);
+                                } catch (QueryException | MappingException $e) {
+                                    $instancesRisks = $instanceRiskTable->getEntityByFields([
+                                        'amv' => [
+                                            'anr' => $instanceRisk->getAnr()->getId(),
+                                            'uuid' => (string)$instanceRisk->getAmv()->getUuid(),
+                                        ],
+                                        'instance' => $instance->getId(),
+                                    ]);
                                 }
                             } else {
-                                try{
-                                  $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $instance->id, 'threat' => $entity->threat->uuid->toString(), 'vulnerability' => $entity->vulnerability->uuid->toString()]);
-                                }
-                                  catch(QueryException $e){
+                                try {
                                     $instancesRisks = $instanceRiskTable->getEntityByFields([
-                                    'threat' => ['anr' => $entity->anr->id, 'uuid' => $entity->threat->uuid->toString()],
-                                    'vulnerability' => ['anr' => $entity->anr->id, 'uuid' => $entity->vulnerability->uuid->toString()],
-                                    'instance' => $instance->id,]);
-                                  } catch (MappingException $e) {
-                                      $instancesRisks = $instanceRiskTable->getEntityByFields([
-                                      'threat' => ['anr' => $entity->anr->id, 'uuid' => $entity->threat->uuid->toString()],
-                                      'vulnerability' => ['anr' => $entity->anr->id, 'uuid' => $entity->vulnerability->uuid->toString()],
-                                      'instance' => $instance->id,]);
-                                  }
+                                        'instance' => $instance->getId(),
+                                        'threat' => (string)$instanceRisk->getThreat()->getUuid(),
+                                        'vulnerability' => (string)$instanceRisk->getVulnerability()->getUuid(),
+                                    ]);
+                                } catch (QueryException | MappingException $e) {
+                                    $instancesRisks = $instanceRiskTable->getEntityByFields([
+                                        'threat' => [
+                                            'anr' => $instanceRisk->getAnr()->getId(),
+                                            'uuid' => (string)$instanceRisk->getThreat()->getUuid(),
+                                        ],
+                                        'vulnerability' => [
+                                            'anr' => $instanceRisk->getAnr()->getId(),
+                                            'uuid' => (string)$instanceRisk->getVulnerability()->getUuid(),
+                                        ],
+                                        'instance' => $instance->getId(),
+                                    ]);
                                 }
+                            }
                         } else {
-                            try{
-                              $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $instance->id, 'specific' => 1, 'threat' => $entity->threat->uuid->toString(), 'vulnerability' => $entity->vulnerability->uuid->toString()]);
-                            }catch(QueryException $e){
+                            try {
                                 $instancesRisks = $instanceRiskTable->getEntityByFields([
-                                'threat' => ['anr' => $entity->anr->id, 'uuid' => $entity->threat->uuid->toString()],
-                                'vulnerability' => ['anr' => $entity->anr->id, 'uuid' => $entity->vulnerability->uuid->toString()],
-                                'instance' => $instance->id,
-                                'specific' => 1]);
-                              } catch (MappingException $e) {
-                                  $instancesRisks = $instanceRiskTable->getEntityByFields([
-                                  'threat' => ['anr' => $entity->anr->id, 'uuid' => $entity->threat->uuid->toString()],
-                                  'vulnerability' => ['anr' => $entity->anr->id, 'uuid' => $entity->vulnerability->uuid->toString()],
-                                  'instance' => $instance->id,
-                                  'specific' => 1]);
-                              }
+                                    'instance' => $instance->getId(),
+                                    'specific' => 1,
+                                    'threat' => (string)$instanceRisk->getThreat()->getUuid(),
+                                    'vulnerability' => (string)$instanceRisk->getVulnerability()->getUuid(),
+                                ]);
+                            } catch (QueryException | MappingException $e) {
+                                $instancesRisks = $instanceRiskTable->getEntityByFields([
+                                    'threat' => [
+                                        'anr' => $instanceRisk->getAnr()->getId(),
+                                        'uuid' => (string)$instanceRisk->getThreat()->getUuid(),
+                                    ],
+                                    'vulnerability' => [
+                                        'anr' => $instanceRisk->getAnr()->getId(),
+                                        'uuid' => (string)$instanceRisk->getVulnerability()->getUuid(),
+                                    ],
+                                    'instance' => $instance->getId(),
+                                    'specific' => 1,
+                                ]);
+                            }
                         }
                         foreach ($instancesRisks as $instanceRisk) {
-                            $initialData['id'] = $instanceRisk->id;
-                            $initialData['instance'] = $instance->id;
-                            $this->update($instanceRisk->id, $initialData, false);
+                            $initialData['id'] = $instanceRisk->getId();
+                            $initialData['instance'] = $instance->getId();
+                            $this->update($instanceRisk->getId(), $initialData, false);
                         }
                     }
                 }
             }
         }
 
-        $this->filterPostFields($data, $entity);
+        $this->filterPostFields($data, $instanceRisk);
 
-        $entity->setDbAdapter($this->get('table')->getDb());
-        $entity->setLanguage($this->getLanguage());
+        $instanceRisk->setDbAdapter($this->get('table')->getDb());
+        $instanceRisk->setLanguage($this->getLanguage());
 
         if (empty($data)) {
-            throw new \Monarc\Core\Exception\Exception('Data missing', 412);
+            throw new Exception('Data missing', 412);
         }
 
-        $entity->exchangeArray($data);
+        $instanceRisk->exchangeArray($data);
 
-        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($entity, $dependencies);
+        $dependencies = property_exists($this, 'dependencies') ? $this->dependencies : [];
+        $this->setDependencies($instanceRisk, $dependencies);
 
-        $instanceRiskTable->save($entity);
+        $instanceRisk->setUpdater(
+            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+        );
+
+        $instanceRiskTable->save($instanceRisk);
 
         $this->updateRisks($id);
-        $this->updateRecoRisks($entity);
+        $this->updateRecoRisks($instanceRisk);
 
         return $id;
     }

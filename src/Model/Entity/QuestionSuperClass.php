@@ -8,15 +8,21 @@
 namespace Monarc\Core\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
+use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 
 /**
  * Question
  *
  * @ORM\Table(name="questions")
  * @ORM\MappedSuperclass
+ * @ORM\HasLifecycleCallbacks()
  */
 class QuestionSuperClass extends AbstractEntity
 {
+    use CreateEntityTrait;
+    use UpdateEntityTrait;
+
     /**
      * @var integer
      *
@@ -27,7 +33,7 @@ class QuestionSuperClass extends AbstractEntity
     protected $id;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="type", type="smallint", options={"unsigned":true})
      */
@@ -62,46 +68,18 @@ class QuestionSuperClass extends AbstractEntity
     protected $label4;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="multichoice", type="smallint", options={"unsigned":true})
      */
     protected $multichoice;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="position", type="smallint", options={"unsigned":true})
      */
     protected $position;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="creator", type="string", length=255, nullable=true)
-     */
-    protected $creator;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="created_at", type="datetime", nullable=true)
-     */
-    protected $createdAt;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="updater", type="string", length=255, nullable=true)
-     */
-    protected $updater;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
-     */
-    protected $updatedAt;
 
     /**
      * @return int

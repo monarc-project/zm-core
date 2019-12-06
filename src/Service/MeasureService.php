@@ -7,6 +7,8 @@
 
 namespace Monarc\Core\Service;
 
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
+
 /**
  * Measure Service
  *
@@ -29,13 +31,11 @@ class MeasureService extends AbstractService
      */
     public function create($data, $last = true)
     {
-        try{
-          $uuid = parent::create($data, $last);
-        }
-        catch(\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e) // we check if the uuid id already existing
-        {
-          unset($data['uuid']); //if the uuid exist create a new one
-          $uuid = parent::create($data, $last);
+        try {
+            return parent::create($data, $last);
+        } catch(UniqueConstraintViolationException $e) { // we check if the uuid id is already exist
+            unset($data['uuid']); //if the uuid exist create a new one
+            return parent::create($data, $last);
         }
     }
 

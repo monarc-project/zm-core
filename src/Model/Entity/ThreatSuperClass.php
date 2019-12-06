@@ -8,7 +8,9 @@
 namespace Monarc\Core\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Ramsey\Uuid\UuidInterface;
+use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
+use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
+use Ramsey\Uuid\Uuid;
 
 /**
  * Threat
@@ -19,11 +21,15 @@ use Ramsey\Uuid\UuidInterface;
  *      @ORM\Index(name="theme_id", columns={"theme_id"})
  * })
  * @ORM\MappedSuperclass
+ * @ORM\HasLifecycleCallbacks()
  */
 class ThreatSuperClass extends AbstractEntity
 {
+    use CreateEntityTrait;
+    use UpdateEntityTrait;
+
     /**
-    * @var integer
+    * @var Uuid
     *
     * @ORM\Column(name="uuid", type="uuid", nullable=false)
     * @ORM\Id
@@ -107,14 +113,14 @@ class ThreatSuperClass extends AbstractEntity
     protected $description4;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="status", type="smallint", options={"unsigned":true, "default":1})
      */
     protected $status = 1;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="mode", type="smallint", options={"unsigned":true, "default":0})
      */
@@ -128,77 +134,49 @@ class ThreatSuperClass extends AbstractEntity
     protected $code;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="trend", type="smallint", options={"unsigned":true, "default":0})
      */
     protected $trend = 0;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="qualification", type="smallint", options={"unsigned":false, "default":-1})
      */
     protected $qualification = -1;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="c", type="smallint", options={"unsigned":true, "default":0})
      */
     protected $c = 1;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="i", type="smallint", options={"unsigned":true, "default":0})
      */
     protected $i = 1;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="a", type="smallint", options={"unsigned":true, "default":0})
      */
     protected $a = 1;
 
     /**
-     * @var text
+     * @var string
      *
      * @ORM\Column(name="comment", type="text", nullable=true)
      */
     protected $comment;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="creator", type="string", length=255, nullable=true)
-     */
-    protected $creator;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="created_at", type="datetime", nullable=true)
-     */
-    protected $createdAt;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="updater", type="string", length=255, nullable=true)
-     */
-    protected $updater;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
-     */
-    protected $updatedAt;
-
-    /**
-     * @return int
+     * @return Uuid
      */
     public function getUuid()
     {
@@ -206,7 +184,7 @@ class ThreatSuperClass extends AbstractEntity
     }
 
     /**
-     * @param int $id
+     * @param Uuid $id
      * @return Threat
      */
     public function setUuid($id)
@@ -236,10 +214,9 @@ class ThreatSuperClass extends AbstractEntity
     /**
      * Set theme
      *
-     * @param key
      * @param Theme $theme
      */
-    public function setTheme(ThemeSuperclass $theme)
+    public function setTheme(ThemeSuperClass $theme)
     {
         $this->theme = $theme;
     }

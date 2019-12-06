@@ -65,26 +65,28 @@ class AmvService extends AbstractService
         //security
         $this->filterPatchFields($data);
 
-        $entity = $this->get('table')->getEntity($id);
+        /** @var Amv $amv */
+        $amv = $this->get('table')->getEntity($id);
 
         //manage the measures separatly because it's the slave of the relation amv<-->measures
         foreach ($data['measures'] as $measure) {
             $measureEntity =  $this->get('measureTable')->getEntity($measure);
-            $measureEntity->addAmv($entity);
+            $measureEntity->addAmv($amv);
         }
 
-        foreach ($entity->measures as $m) {
-            if(false === array_search($m->uuid->toString(), $data['measures'],true)){
-              $m->deleteAmv($entity);
+        foreach ($amv->measures as $m) {
+            if (!\in_array($m->uuid->toString(), $data['measures'], true)) {
+                $m->deleteAmv($amv);
             }
         }
         unset($data['measures']);
 
-        if($entity->changeUuid($data)) //check if we need a new uuid
-          $data['uuid'] = Uuid::uuid4()->toString();
-        $entity->exchangeArray($data, true);
+        if ($amv->changeUuid($data)) {//check if we need a new uuid
+            $data['uuid'] = Uuid::uuid4()->toString();
+        }
+        $amv->exchangeArray($data, true);
 
-        $this->setDependencies($entity, $this->dependencies);
+        $this->setDependencies($amv, $this->dependencies);
 
         parent::patch($id, $data);
     }
@@ -109,26 +111,29 @@ class AmvService extends AbstractService
      */
     public function create($data, $last = true)
     {
-        $entity = $this->get('entity');
+        /** @var Amv $amv */
+        $amv = $this->get('entity');
         //manage the measures separatly because it's the slave of the relation amv<-->measures
         foreach ($data['measures'] as $measure) {
             $measureEntity =  $this->get('measureTable')->getEntity($measure);
-            $measureEntity->addAmv($entity);
+            $measureEntity->addAmv($amv);
         }
         unset($data['measures']);
 
-        $entity->exchangeArray($data);
+        $amv->exchangeArray($data);
 
         $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($entity, $dependencies);
+        $this->setDependencies($amv, $dependencies);
 
-        $authorized = $this->compliesRequirement($entity);
+        $authorized = $this->compliesRequirement($amv);
 
         if (!$authorized) {
             throw new \Monarc\Core\Exception\Exception($this->errorMessage);
         }
 
-        $id = $this->get('table')->save($entity);
+        $amv->setCreator($this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname());
+
+        $id = $this->get('table')->save($amv);
 
         //historisation
         $newEntity = $this->getEntity($id);
@@ -178,22 +183,23 @@ class AmvService extends AbstractService
             throw new \Monarc\Core\Exception\Exception('Data missing', 412);
         }
 
-        $entity = $this->get('table')->getEntity($id);
-        $entity->setDbAdapter($this->get('table')->getDb());
+        /** @var Amv $amv */
+        $amv = $this->get('table')->getEntity($id);
+        $amv->setDbAdapter($this->get('table')->getDb());
 
         //clone current entity for retrieve difference with new
-        $oldEntity = clone $entity;
+        $oldEntity = clone $amv;
 
         //virtual name for historisation
         $name = [];
-        if ($entity->get('asset')->get('code')) {
-            $name[] = $entity->get('asset')->get('code');
+        if ($amv->get('asset')->get('code')) {
+            $name[] = $amv->get('asset')->get('code');
         }
-        if ($entity->get('threat')->get('code')) {
-            $name[] = $entity->get('threat')->get('code');
+        if ($amv->get('threat')->get('code')) {
+            $name[] = $amv->get('threat')->get('code');
         }
-        if ($entity->get('vulnerability')->get('code')) {
-            $name[] = $entity->get('vulnerability')->get('code');
+        if ($amv->get('vulnerability')->get('code')) {
+            $name[] = $amv->get('vulnerability')->get('code');
         }
         $name = implode(' - ', $name);
         $this->label = [$name, $name, $name, $name];
@@ -201,29 +207,31 @@ class AmvService extends AbstractService
         //manage the measures separatly because it's the slave of the relation amv<-->measures
         foreach ($data['measures'] as $measure) {
             $measureEntity =  $this->get('measureTable')->getEntity($measure);
-            $measureEntity->addAmv($entity);
+            $measureEntity->addAmv($amv);
         }
 
-        foreach ($entity->measures as $m) {
+        foreach ($amv->measures as $m) {
             if(false === array_search($m->uuid->toString(), $data['measures'],true)){
-              $m->deleteAmv($entity);
+              $m->deleteAmv($amv);
             }
         }
         unset($data['measures']);
-        $entity->exchangeArray($data);
+        $amv->exchangeArray($data);
 
-        $this->setDependencies($entity, $this->dependencies);
+        $this->setDependencies($amv, $this->dependencies);
 
-        $authorized = $this->compliesRequirement($entity);
+        $authorized = $this->compliesRequirement($amv);
 
         if (!$authorized) {
             throw new \Monarc\Core\Exception\Exception($this->errorMessage);
         }
 
         //historisation
-        $this->historizeUpdate('amv', $entity, $oldEntity);
+        $this->historizeUpdate('amv', $amv, $oldEntity);
 
-        return $this->get('table')->save($entity);
+        $amv->setUpdater($this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname());
+
+        return $this->get('table')->save($amv);
     }
 
     /**
@@ -326,7 +334,7 @@ class AmvService extends AbstractService
         $measures_dest = $this->get('referentialTable')->getEntity($destination)->getMeasures();
         foreach ($measures_dest as $md) {
           foreach ($md->getMeasuresLinked() as $measureLink) {
-            if($measureLink->getReferential()->getuuid()->toString()==$source_uuid ){
+            if($measureLink->getReferential()->getUuid()->toString()==$source_uuid ){
               foreach ($measureLink->amvs as $amv) {
                 $md->addAmv($amv);
               }

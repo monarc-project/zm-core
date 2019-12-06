@@ -7,7 +7,10 @@
 
 namespace Monarc\Core\Model\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
+use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 use Zend\Validator\Uuid as ValidatorUuid;
 use Ramsey\Uuid\Uuid;
 
@@ -21,11 +24,15 @@ use Ramsey\Uuid\Uuid;
  *      @ORM\Index(name="vulnerability", columns={"vulnerability_id"}),
  * })
  * @ORM\MappedSuperclass
+ * @ORM\HasLifecycleCallbacks()
  */
-class AmvSuperclass extends AbstractEntity
+class AmvSuperClass extends AbstractEntity
 {
+    use CreateEntityTrait;
+    use UpdateEntityTrait;
+
     /**
-     * @var integer
+     * @var Uuid
      *
      * @ORM\Column(name="uuid", type="uuid", nullable=false)
      * @ORM\Id
@@ -33,9 +40,9 @@ class AmvSuperclass extends AbstractEntity
     protected $uuid;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Anr
+     * @var AnrSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Anr", )
+     * @ORM\ManyToOne(targetEntity="Anr")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
      * })
@@ -43,9 +50,9 @@ class AmvSuperclass extends AbstractEntity
     protected $anr;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Asset
+     * @var AssetSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Asset", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Asset", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="asset_id", referencedColumnName="uuid", nullable=true)
      * })
@@ -53,9 +60,9 @@ class AmvSuperclass extends AbstractEntity
     protected $asset;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Threat
+     * @var ThreatSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Threat", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Threat", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="threat_id", referencedColumnName="uuid", nullable=true)
      * })
@@ -63,9 +70,9 @@ class AmvSuperclass extends AbstractEntity
     protected $threat;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Vulnerability
+     * @var VulnerabilitySuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Vulnerability", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Vulnerability", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="vulnerability_id", referencedColumnName="uuid", nullable=true)
      * })
@@ -73,8 +80,8 @@ class AmvSuperclass extends AbstractEntity
     protected $vulnerability;
 
     /**
-     * @var \Doctrine\Common\Collections\Collection
-     * @ORM\ManyToMany(targetEntity="Monarc\Core\Model\Entity\Measure", mappedBy="amvs", cascade={"persist"})
+     * @var ArrayCollection|MeasureSuperClass[]
+     * @ORM\ManyToMany(targetEntity="Measure", mappedBy="amvs", cascade={"persist"})
      * @ORM\JoinTable(name="measures_amvs",
      *  joinColumns={@ORM\JoinColumn(name="amv_id", referencedColumnName="id")},
      *  inverseJoinColumns={@ORM\JoinColumn(name="measure_id", referencedColumnName="uuid")}
@@ -83,164 +90,18 @@ class AmvSuperclass extends AbstractEntity
     protected $measures;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="position", type="smallint", options={"unsigned":true, "default":1})
      */
     protected $position = 1;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="status", type="smallint", options={"unsigned":true, "default":1})
      */
     protected $status = 1;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="creator", type="string", length=255, nullable=true)
-     */
-    protected $creator;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="created_at", type="datetime", nullable=true)
-     */
-    protected $createdAt;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="updater", type="string", length=255, nullable=true)
-     */
-    protected $updater;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
-     */
-    protected $updatedAt;
-
-    /**
-     * @return int
-     */
-    public function getUuid()
-    {
-        return $this->uuid;
-    }
-
-    /**
-     * @param int $id
-     * @return Model
-     */
-    public function setUuid($id)
-    {
-        $this->uuid = $id;
-        return $this;
-    }
-
-    /**
-     * @return int
-     */
-    public function getAnr()
-    {
-        return $this->anr;
-    }
-
-    /**
-     * @param int $anr
-     * @return Amv
-     */
-    public function setAnr($anr)
-    {
-        $this->anr = $anr;
-        return $this;
-    }
-
-    /**
-     * @return Threat
-     */
-    public function getThreat()
-    {
-        return $this->threat;
-    }
-
-    /**
-     * @param Threat $threat
-     * @return Amv
-     */
-    public function setThreat($threat)
-    {
-        $this->threat = $threat;
-        return $this;
-    }
-
-    /**
-     * @return Asset
-     */
-    public function getAsset()
-    {
-        return $this->asset;
-    }
-
-    /**
-     * @param Asset $asset
-     * @return Amv
-     */
-    public function setAsset($asset)
-    {
-        $this->asset = $asset;
-        return $this;
-    }
-
-    /**
-     * @return Vulnerability
-     */
-    public function getVulnerability()
-    {
-        return $this->vulnerability;
-    }
-
-    /**
-     * @param Vulnerability $vulnerability
-     * @return Amv
-     */
-    public function setVulnerability($vulnerability)
-    {
-        $this->vulnerability = $vulnerability;
-        return $this;
-    }
-
-    /**
-     * @return Measures
-     */
-    public function getMeasures()
-    {
-        return $this->measures;
-    }
-
-    /**
-     * @param Measure $measures
-     * @return Amv
-     */
-    public function setMeasures($measures)
-    {
-        $this->measures = $measures;
-        return $this;
-    }
-
-    /**
-     * @param Measure $measure
-     * @return Amv
-     */
-    public function addMeasure($measure)
-    {
-        $this->measures[] = $measure;
-        return $this;
-    }
 
     protected $parameters = array(
         'implicitPosition' => array(
@@ -249,21 +110,135 @@ class AmvSuperclass extends AbstractEntity
     );
 
     /**
-      * Check if we need to change the uuid if asset or threat or vulnerability is not the same as before
-     * @param Array $context
+     * @return Uuid
+     */
+    public function getUuid()
+    {
+        return $this->uuid;
+    }
+
+    /**
+     * @param Uuid $id
+     */
+    public function setUuid($id)
+    {
+        $this->uuid = $id;
+        return $this;
+    }
+
+    /**
+     * @return Anr
+     */
+    public function getAnr()
+    {
+        return $this->anr;
+    }
+
+    /**
+     * @param Anr $anr
+     */
+    public function setAnr($anr)
+    {
+        $this->anr = $anr;
+        return $this;
+    }
+
+    /**
+     * @return ThreatSuperClass
+     */
+    public function getThreat()
+    {
+        return $this->threat;
+    }
+
+    /**
+     * @param ThreatSuperClass $threat
+     */
+    public function setThreat($threat)
+    {
+        $this->threat = $threat;
+        return $this;
+    }
+
+    /**
+     * @return AssetSuperClass
+     */
+    public function getAsset()
+    {
+        return $this->asset;
+    }
+
+    /**
+     * @param AssetSuperClass $asset
+     */
+    public function setAsset($asset)
+    {
+        $this->asset = $asset;
+        return $this;
+    }
+
+    /**
+     * @return VulnerabilitySuperClass
+     */
+    public function getVulnerability()
+    {
+        return $this->vulnerability;
+    }
+
+    /**
+     * @param Vulnerability $vulnerability
+     */
+    public function setVulnerability($vulnerability)
+    {
+        $this->vulnerability = $vulnerability;
+        return $this;
+    }
+
+    /**
+     * @return MeasureSuperClass[]
+     */
+    public function getMeasures()
+    {
+        return $this->measures;
+    }
+
+    /**
+     * @param MeasureSuperClass[] $measures
+     */
+    public function setMeasures($measures)
+    {
+        $this->measures = $measures;
+        return $this;
+    }
+
+    /**
+     * @param MeasureSuperClass $measure
+     */
+    public function addMeasure($measure)
+    {
+        $this->measures[] = $measure;
+        return $this;
+    }
+
+    /**
+     * Check if we need to change the uuid if asset or threat or vulnerability is not the same as before
+     * @param array $context
      * @return boolean
      */
-    public function changeUuid($context)
+    public function changeUuid($context): bool
     {
-      if(!isset($context['uuid']))
-        return false;
-      $threat = !is_array($context['threat'])?$context['threat']:$context['threat']['uuid'];
-      $vuln = !is_array($context['vulnerability'])?$context['vulnerability']:$context['vulnerability']['uuid'];
-      $asset = !is_array($context['asset'])?$context['asset']:$context['asset']['uuid'];
-      if($this->threat->uuid->toString() != $threat || $this->vulnerability->uuid->toString() != $vuln || $this->asset->uuid->toString() != $asset) { //the amv doesnt exist and it's an edition we have to set new uuid
-          return true;
-      }
-      return false;
+        if (!isset($context['uuid'])) {
+            return false;
+        }
+
+        $threatUuid = !\is_array($context['threat']) ? $context['threat'] : $context['threat']['uuid'];
+        $vulnUuid = !\is_array($context['vulnerability']) ? $context['vulnerability'] : $context['vulnerability']['uuid'];
+        $assetUuid = !\is_array($context['asset']) ? $context['asset'] : $context['asset']['uuid'];
+
+        // If the expression is true then amv doesnt exist and it's an edition we have to set new uuid.
+        return $this->threat->getUuid()->toString() !== $threatUuid
+            || $this->vulnerability->getUuid()->toString() !== $vulnUuid
+            || $this->asset->getUuid()->toString() !== $assetUuid;
     }
 
 

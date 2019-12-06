@@ -479,11 +479,8 @@ class ObjectService extends AbstractService
      */
     public function create($data, $last = true, $context = AbstractEntity::BACK_OFFICE)
     {
-        //create object
-        $class = $this->get('entity');
-        $object = new $class;
-        $object->setLanguage($this->getLanguage());
-        $object->setDbAdapter($this->get('table')->getDb());
+        /** @var MonarcObject $monarcObject */
+        $monarcObject = $this->get('entity');
 
         //in FO, all objects are generics
         if ($context == AbstractEntity::FRONT_OFFICE) {
@@ -506,7 +503,7 @@ class ObjectService extends AbstractService
             if (!$anr) {
                 throw new \Monarc\Core\Exception\Exception('This risk analysis does not exist', 412);
             }
-            $object->setAnr($anr);
+            $monarcObject->setAnr($anr);
         }
 
         // Si asset secondaire, pas de rolfTag
@@ -519,15 +516,19 @@ class ObjectService extends AbstractService
             }
         }
 
-        $object->setDbAdapter($this->get('table')->getDb());
-        $object->exchangeArray($data);
+        $monarcObject->setDbAdapter($this->get('table')->getDb());
+        $monarcObject->exchangeArray($data);
 
         //object dependencies
-        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($object, $dependencies);
+        $dependencies = property_exists($this, 'dependencies') ? $this->dependencies : [];
+        $this->setDependencies($monarcObject, $dependencies);
+
+        $monarcObject->setCreator(
+            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+        );
 
         if ($setRolfTagNull) {
-            $object->set('rolfTag', null);
+            $monarcObject->set('rolfTag', null);
         }
 
         if (empty($data['category'])) {
@@ -535,43 +536,42 @@ class ObjectService extends AbstractService
         }
 
         if (isset($data['source'])) {
-            $object->source = $this->get('table')->getEntity($data['source']);
+            $monarcObject->source = $this->get('table')->getEntity($data['source']);
         }
 
         //security
         if ($context == AbstractEntity::BACK_OFFICE &&
-            $object->mode == MonarcObject::MODE_GENERIC && $object->asset->mode == MonarcObject::MODE_SPECIFIC) {
+            $monarcObject->mode == MonarcObject::MODE_GENERIC && $monarcObject->asset->mode == MonarcObject::MODE_SPECIFIC) {
             throw new \Monarc\Core\Exception\Exception("You can't have a generic object based on a specific asset", 412);
         }
         if (isset($data['modelId'])) {
-            $this->get('modelTable')->canAcceptObject($data['modelId'], $object, $context);
+            $this->get('modelTable')->canAcceptObject($data['modelId'], $monarcObject, $context);
         }
 
-        if (($object->asset->type == Asset::TYPE_PRIMARY) && ($object->scope == MonarcObject::SCOPE_GLOBAL)) {
+        if (($monarcObject->asset->type == Asset::TYPE_PRIMARY) && ($monarcObject->scope == MonarcObject::SCOPE_GLOBAL)) {
             throw new \Monarc\Core\Exception\Exception('You cannot create an object that is both global and primary', 412);
         }
 
 
         if ($context == MonarcObject::BACK_OFFICE) {
             //create object type bdc
-            $id = $this->get('table')->save($object);
+            $id = $this->get('table')->save($monarcObject);
 
             //attach object to anr
             if (isset($data['modelId'])) {
-
                 $model = $this->get('modelService')->getEntity($data['modelId']);
 
                 if (!$model['anr']) {
                     throw new \Monarc\Core\Exception\Exception('No anr associated to this model', 412);
                 }
 
-                $id = $this->attachObjectToAnr($object, $model['anr']->id);
+                $id = $this->attachObjectToAnr($monarcObject, $model['anr']->id);
             }
-        } else if ($anr) {
-            $id = $this->attachObjectToAnr($object, $anr, null, null, $context);
+        } elseif ($anr) {
+            $id = $this->attachObjectToAnr($monarcObject, $anr, null, null, $context);
         } else {
             //create object type anr
-            $id = $this->get('table')->save($object);
+            $id = $this->get('table')->save($monarcObject);
         }
 
         return $id;
@@ -598,17 +598,18 @@ class ObjectService extends AbstractService
         }
 
         try{
-            $object = $this->get('table')->getEntity($id);
+            /** @var MonarcObject $monarcObject */
+            $monarcObject = $this->get('table')->getEntity($id);
         }catch(QueryException $e){
-            $object = $this->get('table')->getEntity(['uuid' => $id, 'anr' => $data['anr']]);
+            $monarcObject = $this->get('table')->getEntity(['uuid' => $id, 'anr' => $data['anr']]);
         } catch (MappingException $e) {
-            $object = $this->get('table')->getEntity(['uuid' => $id, 'anr' => $data['anr']]);
+            $monarcObject = $this->get('table')->getEntity(['uuid' => $id, 'anr' => $data['anr']]);
         }
-        if (!$object) {
+        if (!$monarcObject) {
             throw new \Monarc\Core\Exception\Exception('Entity `id` not found.');
         }
-        $object->setDbAdapter($this->get('table')->getDb());
-        $object->setLanguage($this->getLanguage());
+        $monarcObject->setDbAdapter($this->get('table')->getDb());
+        $monarcObject->setLanguage($this->getLanguage());
 
         $setRolfTagNull = false;
         if (empty($data['rolfTag'])) {
@@ -616,28 +617,28 @@ class ObjectService extends AbstractService
             $setRolfTagNull = true;
         }
 
-        if (isset($data['scope']) && $data['scope'] != $object->scope) {
+        if (isset($data['scope']) && $data['scope'] != $monarcObject->scope) {
             throw new \Monarc\Core\Exception\Exception('You cannot change the scope of an existing object.', 412);
         }
 
-        if (isset($data['asset']) && $data['asset'] != $object->asset->uuid) {
+        if (isset($data['asset']) && $data['asset'] != $monarcObject->asset->uuid) {
             throw new \Monarc\Core\Exception\Exception('You cannot change the asset type of an existing object.', 412);
         }
 
-        if (isset($data['mode']) && $data['mode'] != $object->get('mode') &&
-            !$this->checkModeIntegrity($object->get('id'), $object->get('mode'))) {
+        if (isset($data['mode']) && $data['mode'] != $monarcObject->get('mode') &&
+            !$this->checkModeIntegrity($monarcObject->get('id'), $monarcObject->get('mode'))) {
             /* on test:
             - que l'on a pas de parents GENERIC quand on passe de GENERIC à SPECIFIC
             - que l'on a pas de fils SPECIFIC quand on passe de SPECIFIC à GENERIC
             */
-            if ($object->get('mode') == MonarcObject::MODE_GENERIC) {
+            if ($monarcObject->get('mode') == MonarcObject::MODE_GENERIC) {
                 throw new \Monarc\Core\Exception\Exception('You cannot set this object to specific mode because one of its parents is in generic mode.', 412);
             } else {
                 throw new \Monarc\Core\Exception\Exception('You cannot set this object to generic mode because one of its children is in specific mode.', 412);
             }
         }
 
-        $currentRootCategory = ($object->category && $object->category->root) ? $object->category->root : $object->category;
+        $currentRootCategory = ($monarcObject->category && $monarcObject->category->root) ? $monarcObject->category->root : $monarcObject->category;
 
         // Si asset secondaire, pas de rolfTag
         if (!empty($data['asset']) && !empty($data['rolfTag'])) {
@@ -653,40 +654,41 @@ class ObjectService extends AbstractService
             }
         }
 
-        $rolfTagId = ($object->rolfTag) ? $object->rolfTag->id : null;
+        $rolfTagId = ($monarcObject->rolfTag) ? $monarcObject->rolfTag->id : null;
 
-        $object->exchangeArray($data, true);
+        $monarcObject->exchangeArray($data, true);
 
-        if ($object->rolfTag) {
-            $newRolfTagId = (is_int($object->rolfTag)) ? $object->rolfTag : $object->rolfTag->id;
-            $newRolfTag = ($rolfTagId == $newRolfTagId) ? false : $object->rolfTag;
+        if ($monarcObject->rolfTag) {
+            $newRolfTagId = (is_int($monarcObject->rolfTag)) ? $monarcObject->rolfTag : $monarcObject->rolfTag->id;
+            $newRolfTag = ($rolfTagId == $newRolfTagId) ? false : $monarcObject->rolfTag;
         } else {
             $newRolfTag = false;
         }
 
 
         $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($object, $dependencies);
+        $this->setDependencies($monarcObject, $dependencies);
 
         if ($setRolfTagNull) {
-            $object->set('rolfTag', null);
+            $monarcObject->set('rolfTag', null);
         }
 
-        $objectRootCategory = ($object->category->root) ? $object->category->root : $object->category;
+        $objectRootCategory = ($monarcObject->category->root) ? $monarcObject->category->root : $monarcObject->category;
 
         if ($currentRootCategory && $objectRootCategory && $currentRootCategory->id != $objectRootCategory->id) {
 
             //retrieve anrs for object
-            foreach ($object->anrs as $anr) {
+            foreach ($monarcObject->anrs as $anr) {
 
                 //retrieve number anr objects with the same root category than current object
                 $nbObjectsSameOldRootCategory = 0;
                 foreach ($anr->objects as $anrObject) {
                     $anrObjectCategory = ($anrObject->category->root) ? $anrObject->category->root : $anrObject->category;
-                    if (($anrObjectCategory->id == $currentRootCategory->id)
-                    && ($anrObject->uuid->toString() != (is_string($object->uuid)) ? $object->uuid->toString() : $object->uuid)) {
+                    if ($anrObjectCategory->id === $currentRootCategory->id
+                        && $anrObject->uuid->toString() !== (string)$monarcObject->uuid
+                    ) {
                         $nbObjectsSameOldRootCategory++;
-                        break; // no need to go further
+                        break;
                     }
                 }
                 if (!$nbObjectsSameOldRootCategory) {
@@ -705,10 +707,11 @@ class ObjectService extends AbstractService
                 $nbObjectsSameNewRootCategory = 0;
                 foreach ($anr->objects as $anrObject) {
                     $anrObjectCategory = ($anrObject->category->root) ? $anrObject->category->root : $anrObject->category;
-                    if (($anrObjectCategory->id == $objectRootCategory->id)
-                    && ($anrObject->uuid->toString() != (is_string($object->uuid)) ? $object->uuid->toString() : $object->uuid)) {
+                    if ($anrObjectCategory->id === $objectRootCategory->id
+                        && $anrObject->uuid->toString() !== (string)$monarcObject->uuid
+                    ) {
                         $nbObjectsSameNewRootCategory++;
-                        break; // no need to go further
+                        break;
                     }
                 }
                 if (!$nbObjectsSameNewRootCategory) {
@@ -730,9 +733,13 @@ class ObjectService extends AbstractService
             }
         }
 
-        $this->get('table')->save($object);
+        $monarcObject->setUpdater(
+            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+        );
 
-        $this->instancesImpacts($object, $newRolfTag, $setRolfTagNull);
+        $this->get('table')->save($monarcObject);
+
+        $this->instancesImpacts($monarcObject, $newRolfTag, $setRolfTagNull);
 
         return $id;
     }
@@ -760,30 +767,35 @@ class ObjectService extends AbstractService
         // }
 
         try{
-            $object = $this->get('table')->getEntity($id);
+            /** @var MonarcObject $monarcObject */
+            $monarcObject = $this->get('table')->getEntity($id);
         }catch(MappingException $e){
-            $object = $this->get('table')->getEntity(['uuid'=>$id, 'anr' => $data['anr']]);
+            $monarcObject = $this->get('table')->getEntity(['uuid'=>$id, 'anr' => $data['anr']]);
         }
-        $object->setLanguage($this->getLanguage());
+        $monarcObject->setLanguage($this->getLanguage());
         unset($data['anr']);
 
-        $rolfTagId = ($object->rolfTag) ? $object->rolfTag->id : null;
+        $rolfTagId = ($monarcObject->rolfTag) ? $monarcObject->rolfTag->id : null;
 
-        $object->exchangeArray($data, true);
+        $monarcObject->exchangeArray($data, true);
 
-        if ($object->rolfTag) {
-            $newRolfTagId = (is_int($object->rolfTag)) ? $object->rolfTag : $object->rolfTag->id;
-            $newRolfTag = ($rolfTagId == $newRolfTagId) ? false : $object->rolfTag;
+        if ($monarcObject->rolfTag) {
+            $newRolfTagId = (is_int($monarcObject->rolfTag)) ? $monarcObject->rolfTag : $monarcObject->rolfTag->id;
+            $newRolfTag = ($rolfTagId == $newRolfTagId) ? false : $monarcObject->rolfTag;
         } else {
             $newRolfTag = false;
         }
 
         $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($object, $dependencies);
+        $this->setDependencies($monarcObject, $dependencies);
 
-        $this->get('table')->save($object);
+        $monarcObject->setUpdater(
+            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+        );
 
-        $this->instancesImpacts($object, $newRolfTag, $setRolfTagNull);
+        $this->get('table')->save($monarcObject);
+
+        $this->instancesImpacts($monarcObject, $newRolfTag, $setRolfTagNull);
 
         return $id;
     }

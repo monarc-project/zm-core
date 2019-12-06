@@ -7,6 +7,8 @@
 
 namespace Monarc\Core\Service;
 
+use Monarc\Core\Model\Entity\ScaleComment;
+
 /**
  * Scale Comment Service
  *
@@ -43,20 +45,25 @@ class ScaleCommentService extends AbstractService
      */
     public function create($data, $last = true)
     {
-        $entity = $this->get('entity');
+        /** @var ScaleComment $scaleComment */
+        $scaleComment = $this->get('entity');
         if (isset($data['scale'])) {
             $scale = $this->get('scaleTable')->getEntity($data['scale']);
-            $entity->setScale($scale);
+            $scaleComment->setScale($scale);
             if ($scale->type != 1) {
                 unset($data['scaleImpactType']);
             }
         }
-        $entity->exchangeArray($data);
+        $scaleComment->exchangeArray($data);
 
         $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($entity, $dependencies);
+        $this->setDependencies($scaleComment, $dependencies);
 
-        return $this->get('table')->save($entity);
+        $scaleComment->setCreator(
+            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+        );
+
+        return $this->get('table')->save($scaleComment);
     }
 
     /**
@@ -64,20 +71,25 @@ class ScaleCommentService extends AbstractService
      */
     public function update($id, $data)
     {
-        $entity = $this->get('table')->getEntity($id);
+        /** @var ScaleComment $scaleComment */
+        $scaleComment = $this->get('table')->getEntity($id);
         if (isset($data['scale'])) {
             $scale = $this->get('scaleTable')->getEntity($data['scale']);
-            $entity->setScale($scale);
+            $scaleComment->setScale($scale);
             if ($scale->type != 1) {
                 unset($data['scaleImpactType']);
             }
         }
-        $entity->exchangeArray($data);
+        $scaleComment->exchangeArray($data);
 
         $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($entity, $dependencies);
+        $this->setDependencies($scaleComment, $dependencies);
 
-        return $this->get('table')->save($entity);
+        $scaleComment->setUpdater(
+            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+        );
+
+        return $this->get('table')->save($scaleComment);
     }
 
     /**

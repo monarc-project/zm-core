@@ -79,10 +79,6 @@ class ModelService extends AbstractService
      */
     public function create($data, $last = true)
     {
-        $entity = $this->get('entity');
-        $entity->setLanguage($this->getLanguage());
-
-        //anr
         $dataAnr = [
             'label1' => $data['label1'],
             'label2' => $data['label2'],
@@ -99,11 +95,13 @@ class ModelService extends AbstractService
 
         $data['anr'] = $anrId;
 
-        //model
-        $entity->exchangeArray($data);
+        /** @var Model $model */
+        $model = $this->get('entity');
+
+        $model->exchangeArray($data);
 
         $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($entity, $dependencies);
+        $this->setDependencies($model, $dependencies);
 
         // If we reached here, our object is ready to be saved.
         // If we're the new default model, remove the previous one (if any)
@@ -111,7 +109,11 @@ class ModelService extends AbstractService
             $this->resetCurrentDefault();
         }
 
-        return $this->get('table')->save($entity);
+        $model->setCreator(
+            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+        );
+
+        return $this->get('table')->save($model);
     }
 
     /**
@@ -136,6 +138,7 @@ class ModelService extends AbstractService
      */
     public function update($id, $data)
     {
+        /** @var Model $model */
         $model = $this->get('table')->getEntity($id);
         if (!$model) {
             throw new \Monarc\Core\Exception\Exception('Entity does not exist', 412);
@@ -161,6 +164,10 @@ class ModelService extends AbstractService
 
         $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($model, $dependencies);
+
+        $model->setUpdater(
+            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+        );
 
         return $this->get('table')->save($model);
     }

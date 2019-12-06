@@ -7,6 +7,8 @@
 
 namespace Monarc\Core\Service;
 
+use Monarc\Core\Model\Entity\GuideItem;
+
 /**
  * Guide Item Service
  *
@@ -25,14 +27,18 @@ class GuideItemService extends AbstractService
     {
         $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
 
-        $entity = $this->get('entity');
-        $entity->setDbAdapter($this->table->getDb());
+        /** @var GuideItem $guideItem */
+        $guideItem = $this->get('entity');
 
-        $entity->exchangeArray($data);
+        $guideItem->exchangeArray($data);
 
-        $this->setDependencies($entity, $dependencies);
+        $this->setDependencies($guideItem, $dependencies);
 
-        return $this->get('table')->save($entity);
+        $guideItem->setCreator(
+            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+        );
+
+        return $this->get('table')->save($guideItem);
     }
 
     /**
@@ -40,14 +46,19 @@ class GuideItemService extends AbstractService
      */
     public function update($id, $data)
     {
-        $entity = $this->get('table')->getEntity($id);
-        $entity->setDbAdapter($this->table->getDb());
-        $entity->exchangeArray($data);
+        /** @var GuideItem $guideItem */
+        $guideItem = $this->get('table')->getEntity($id);
+        $guideItem->setDbAdapter($this->table->getDb());
+        $guideItem->exchangeArray($data);
 
-        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($entity, $dependencies);
+        $dependencies = property_exists($this, 'dependencies') ? $this->dependencies : [];
+        $this->setDependencies($guideItem, $dependencies);
 
-        return $this->get('table')->save($entity);
+        $guideItem->setUpdater(
+            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+        );
+
+        return $this->get('table')->save($guideItem);
     }
 
     /**
@@ -57,5 +68,4 @@ class GuideItemService extends AbstractService
     {
         $this->get('table')->delete($id);
     }
-
 }

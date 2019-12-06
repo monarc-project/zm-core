@@ -35,7 +35,7 @@ class GuideService extends AbstractService
     /**
      * @inheritdoc
      */
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $options = [])
+    public function getList($page = 1, $limit = 25, $order = null, $filter = null)
     {
         $guides = parent::getList($page, $limit, $order, $filter);
 
@@ -68,7 +68,7 @@ class GuideService extends AbstractService
         $table = $this->get('table');
         $currentGuide = $table->getEntityByFields(['type' => $data['type']]);
 
-        if (count($currentGuide)) {
+        if (!empty($currentGuide)) {
             throw new \Monarc\Core\Exception\Exception('Only one guide by category', 412);
         }
 

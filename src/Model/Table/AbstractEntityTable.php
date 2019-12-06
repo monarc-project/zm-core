@@ -238,8 +238,6 @@ abstract class AbstractEntityTable
     }
 
     /**
-     * TODO: refactor the massive method.
-     *
      * @param AbstractEntity $entity
      * @param bool $last
      *
@@ -249,28 +247,19 @@ abstract class AbstractEntityTable
      */
     public function save(AbstractEntity $entity, $last = true)
     {
-        if (!empty($this->connectedUser) && isset($this->connectedUser['firstname']) && isset($this->connectedUser['lastname'])) {
-            $id = $entity->get('id');
-            if (empty($id)) {
-                $id = $entity->get('uuid'); //manage the case where the id field doesn't exist
-            }
-            if (empty($id)) {
-                if ($entity->__isset('creator')) {
-                    $entity->set('creator', trim($this->connectedUser['firstname'] . " " . $this->connectedUser['lastname']));
-                }
-                if ($entity->__isset('createdAt')) {
-                    $entity->set('createdAt', new \DateTime());
-                }
-            } else {
-                if ($entity->__isset('updater')) {
-                    $entity->set('updater', trim($this->connectedUser['firstname'] . " " . $this->connectedUser['lastname']));
-                }
-                if ($entity->__isset('updatedAt')) {
-                    $entity->set('updatedAt', new \DateTime());
-                }
+        $ids = $this->getClassMetadata()->getIdentifierFieldNames(); // fetch for the composite key
+
+        if ($this->getConnectedUser()) {
+            if (method_exists($entity, 'setCreator') && !$this->getDb()->getEntityManager()->contains($entity)) {
+                $entity->setCreator(
+                    $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+                );
+            } elseif (method_exists($entity, 'setUpdater') && $this->getDb()->getEntityManager()->contains($entity)) {
+                $entity->setUpdater(
+                    $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+                );
             }
         }
-        $ids = $this->getClassMetadata()->getIdentifierFieldNames(); // fetch for the composite key
 
         $params = $entity->get('parameters');
         $clean_params = false;
@@ -312,18 +301,17 @@ abstract class AbstractEntityTable
 
         if ($this->getClassMetadata()->getIdentifierFieldNames()) {
             foreach ($ids as $key => $value) {
-                if ($value === 'uuid' && !$entity->get('uuid')) //uuid have to be generated and setted
+                if ($value === 'uuid' && !$entity->get('uuid')) { //uuid have to be generated and setted
                     $entity->set('uuid', Uuid::uuid4());
+                }
             }
         }
 
         $id = $this->getDb()->save($entity, $last); // standard stuff for normal AI id
-        if ($entity->get('id'))
-            $entity->set('id', $id);
+
         $entity->initParametersChanges();
         if ($entity->get('uuid')) {
-            is_string($entity->get('uuid')) ? $uuid = $entity->get('uuid') : $uuid = $entity->get('uuid')->toString();
-            return $uuid;
+            return (string)$entity->get('uuid');
         }
 
         return $id;
