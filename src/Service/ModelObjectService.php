@@ -7,6 +7,8 @@
 
 namespace Monarc\Core\Service;
 
+use Monarc\Core\Model\Entity\MonarcObject;
+
 /**
  * Model Service
  *
@@ -76,13 +78,19 @@ class ModelObjectService extends AbstractService
             }
             unset($data['id']);
         }
-        $entity = $this->get('entity');
-        $entity->exchangeArray($data);
 
-        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($entity, $dependencies);
+        /** @var MonarcObject $monarcObject */
+        $monarcObject = $this->get('entity');
+        $monarcObject->exchangeArray($data);
 
-        return $this->get('table')->save($entity);
+        $dependencies = property_exists($this, 'dependencies') ? $this->dependencies : [];
+        $this->setDependencies($monarcObject, $dependencies);
+
+        $monarcObject->setCreator(
+            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+        );
+
+        return $this->get('table')->save($monarcObject);
     }
 
     /**
@@ -90,24 +98,29 @@ class ModelObjectService extends AbstractService
      */
     public function update($id, $data)
     {
-        $entity = $this->get('table')->getEntity($id);
+        /** @var MonarcObject $monarcObject */
+        $monarcObject = $this->get('table')->getEntity($id);
 
-        if (empty($data['model']) || $entity->get('model') != $data['model'] || $entity->get('type') != 'anr') {
+        if (empty($data['model']) || $monarcObject->get('model') != $data['model'] || $monarcObject->get('type') != 'anr') {
             throw new \Monarc\Core\Exception\Exception('Entity `id` not found.');
         }
 
-        $entity->setDbAdapter($this->get('table')->getDb());
-        $entity->setLanguage($this->getLanguage());
+        $monarcObject->setDbAdapter($this->get('table')->getDb());
+        $monarcObject->setLanguage($this->getLanguage());
 
         if (empty($data)) {
             throw new \Monarc\Core\Exception\Exception('Data missing', 412);
         }
-        $entity->exchangeArray($data);
+        $monarcObject->exchangeArray($data);
 
-        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($entity, $dependencies);
+        $dependencies = property_exists($this, 'dependencies') ? $this->dependencies : [];
+        $this->setDependencies($monarcObject, $dependencies);
 
-        return $this->get('table')->save($entity);
+        $monarcObject->setUpdater(
+            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+        );
+
+        return $this->get('table')->save($monarcObject);
     }
 
 

@@ -35,21 +35,6 @@ class UserRoleService
     }
 
     /**
-     * @inheritdoc
-     */
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $options = [], $filterJoin = null)
-    {
-        return $this->userRoleTable
-            ->getRepository()
-            ->createQueryBuilder('t')
-            ->select(['t.id', 't.role'])
-            ->where('t.user = :id')
-            ->setParameter(':id', $filter)
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
      * TODO: it doesn't really return the entity but an array or false.
      * @inheritdoc
      */
@@ -70,7 +55,7 @@ class UserRoleService
             ->createQueryBuilder('t')
             ->select(['t.id', 't.role'])
             ->where('t.user = :id')
-            ->setParameter(':id', $userId)
+            ->setParameter('id', $userId)
             ->getQuery()
             ->getResult();
     }
@@ -103,11 +88,11 @@ class UserRoleService
             ->createQueryBuilder('t')
             ->select(['t.id', 'IDENTITY(t.user) as userId', 't.token', 't.dateEnd'])
             ->where('t.token = :token')
-            ->setParameter(':token', $token)
+            ->setParameter('token', $token)
             ->getQuery()
             ->getResult();
 
-        if (!count($userToken)) {
+        if (empty($userToken)) {
             throw new Exception('User with the token is not found');
         }
 

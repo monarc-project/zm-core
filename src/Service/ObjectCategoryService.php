@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Service;
 
+use Monarc\Core\Model\Entity\ObjectCategory;
 use Monarc\Core\Model\Table\AnrObjectCategoryTable;
 
 /**
@@ -124,16 +125,20 @@ class ObjectCategoryService extends AbstractService
      */
     public function create($data, $last = true)
     {
-        $entity = $this->get('entity');
-        $entity->setLanguage($this->getLanguage());
-        $entity->setDbAdapter($this->table->getDb());
-        $entity->exchangeArray($data);
+        /** @var ObjectCategory $objectCategory */
+        $objectCategory = $this->get('entity');
 
-        $this->setDependencies($entity, $this->dependencies);
+        $objectCategory->exchangeArray($data);
 
-        $this->get('table')->save($entity);
-        return $entity->getJsonArray();
+        $this->setDependencies($objectCategory, $this->dependencies);
 
+        $objectCategory->setCreator(
+            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+        );
+
+        $this->get('table')->save($objectCategory);
+
+        return $objectCategory->getJsonArray();
     }
 
     /**
@@ -141,16 +146,21 @@ class ObjectCategoryService extends AbstractService
      */
     public function update($id, $data)
     {
-        $entity = $this->get('table')->getEntity($id);
-        $entity->setLanguage($this->getLanguage());
-        $entity->setDbAdapter($this->table->getDb());
-        $entity->exchangeArray($data);
+        /** @var ObjectCategory $objectCategory */
+        $objectCategory = $this->get('table')->getEntity($id);
+        $objectCategory->setLanguage($this->getLanguage());
+        $objectCategory->setDbAdapter($this->table->getDb());
+        $objectCategory->exchangeArray($data);
 
-        $this->setDependencies($entity, $this->dependencies);
+        $this->setDependencies($objectCategory, $this->dependencies);
 
+        $objectCategory->setUpdater(
+            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+        );
 
-        $this->get('table')->save($entity);
-        return $entity->getJsonArray();
+        $this->get('table')->save($objectCategory);
+
+        return $objectCategory->getJsonArray();
     }
 
     /**

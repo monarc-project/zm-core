@@ -8,6 +8,8 @@
 namespace Monarc\Core\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
+use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 use Ramsey\Uuid\UuidInterface;
 
 /**
@@ -15,9 +17,13 @@ use Ramsey\Uuid\UuidInterface;
  *
  * @ORM\Table(name="referentials")
  * @ORM\MappedSuperclass
+ * @ORM\HasLifecycleCallbacks()
  */
 class ReferentialSuperClass extends AbstractEntity
 {
+    use CreateEntityTrait;
+    use UpdateEntityTrait;
+
     /**
      * The uuid or the referential.
      *
@@ -71,39 +77,9 @@ class ReferentialSuperClass extends AbstractEntity
     protected $categories;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="creator", type="string", length=255, nullable=true)
-     */
-    protected $creator;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="created_at", type="datetime", nullable=true)
-     */
-    protected $createdAt;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="updater", type="string", length=255, nullable=true)
-     */
-    protected $updater;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
-     */
-    protected $updatedAt;
-
-
-
-    /**
      * @return UuidInterface
      */
-    public function getuuid(): UuidInterface
+    public function getUuid(): UuidInterface
     {
         return $this->uuid;
     }
@@ -112,7 +88,7 @@ class ReferentialSuperClass extends AbstractEntity
      * @param UuidInterface $uuid
      * @return Referential
      */
-    public function setuuid($uuid)
+    public function setUuid($uuid)
     {
         $this->uuid = $uuid;
         return $this;
@@ -145,7 +121,7 @@ class ReferentialSuperClass extends AbstractEntity
             foreach ($texts as $text) {
                 $this->inputFilter->add(array(
                     'name' => $text,
-                    'required' => ((strchr($text, (string)$this->getLanguage())) && (!$partial)) ? true : false,
+                    'required' => strpos($text, (string)$this->getLanguage()) !== false && !$partial,
                     'allow_empty' => false,
                     'filters' => array(),
                     'validators' => array(),

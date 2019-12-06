@@ -8,6 +8,8 @@
 namespace Monarc\Core\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
+use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 
 /**
  * Scale Comment Super Class
@@ -18,9 +20,13 @@ use Doctrine\ORM\Mapping as ORM;
  *      @ORM\Index(name="scale_type_impact_id", columns={"scale_type_impact_id"})
  * })
  * @ORM\MappedSuperclass
+ * @ORM\HasLifecycleCallbacks()
  */
 class ScaleCommentSuperClass extends AbstractEntity
 {
+    use CreateEntityTrait;
+    use UpdateEntityTrait;
+
     /**
      * @var integer
      *
@@ -68,60 +74,32 @@ class ScaleCommentSuperClass extends AbstractEntity
     protected $val;
 
     /**
-     * @var text
+     * @var string
      *
      * @ORM\Column(name="comment1", type="text", length=255, nullable=true)
      */
     protected $comment1;
 
     /**
-     * @var text
+     * @var string
      *
      * @ORM\Column(name="comment2", type="text", length=255, nullable=true)
      */
     protected $comment2;
 
     /**
-     * @var text
+     * @var string
      *
      * @ORM\Column(name="comment3", type="text", length=255, nullable=true)
      */
     protected $comment3;
 
     /**
-     * @var text
+     * @var string
      *
      * @ORM\Column(name="comment4", type="text", length=255, nullable=true)
      */
     protected $comment4;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="creator", type="string", length=255, nullable=true)
-     */
-    protected $creator;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="created_at", type="datetime", nullable=true)
-     */
-    protected $createdAt;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="updater", type="string", length=255, nullable=true)
-     */
-    protected $updater;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
-     */
-    protected $updatedAt;
 
     /**
      * @return int
@@ -200,7 +178,6 @@ class ScaleCommentSuperClass extends AbstractEntity
      */
     public function getValValues()
     {
-
         $values = [-1];
 
         for ($i = $this->getScale()->min; $i <= $this->getScale()->max; $i++) {

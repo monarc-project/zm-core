@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Service;
 
+use Monarc\Core\Model\Entity\ScaleImpactType;
 use Monarc\Core\Model\Table\InstanceTable;
 
 /**
@@ -84,15 +85,20 @@ class ScaleImpactTypeService extends AbstractService
         }
 
         $class = $this->get('entity');
-        $entity = new $class();
-        $entity->setDbAdapter($this->get('table')->getDb());
+        /** @var ScaleImpactType $scaleImpactType */
+        $scaleImpactType = new $class();
+        $scaleImpactType->setDbAdapter($this->get('table')->getDb());
 
-        $entity->exchangeArray($data);
+        $scaleImpactType->exchangeArray($data);
 
         $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($entity, $dependencies);
+        $this->setDependencies($scaleImpactType, $dependencies);
 
-        $id = $this->get('table')->save($entity);
+        $scaleImpactType->setCreator(
+            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+        );
+
+        $id = $this->get('table')->save($scaleImpactType);
 
         //retrieve all instances for current anr
         /** @var InstanceTable $instanceTable */
@@ -125,17 +131,22 @@ class ScaleImpactTypeService extends AbstractService
         $data['isSys'] = 0;
         $data['type'] = 9;
 
-        $entity = $this->get('table')->getEntity($id);
-        $entity->setDbAdapter($this->get('table')->getDb());
+        /** @var ScaleImpactType $scaleImpactType */
+        $scaleImpactType = $this->get('table')->getEntity($id);
+        $scaleImpactType->setDbAdapter($this->get('table')->getDb());
         //security
-        $this->filterPostFields($data, $entity);
+        $this->filterPostFields($data, $scaleImpactType);
 
-        $entity->exchangeArray($data);
+        $scaleImpactType->exchangeArray($data);
 
         $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($entity, $dependencies);
+        $this->setDependencies($scaleImpactType, $dependencies);
 
-        return $this->get('table')->save($entity);
+        $scaleImpactType->setUpdater(
+            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+        );
+
+        return $this->get('table')->save($scaleImpactType);
     }
 
     /**

@@ -113,14 +113,17 @@ class ObjectObjectService extends AbstractService
         }
 
         /** @var ObjectObjectSuperClass $entity */
-        $entity = $this->get('entity');
+        $objectObject = $this->get('entity');
 
-        $entity->setDbAdapter($this->get('table')->getDb());
-        $entity->exchangeArray($data);
+        $objectObject->exchangeArray($data);
 
-        $this->setDependencies($entity, $this->dependencies);
+        $this->setDependencies($objectObject, $this->dependencies);
 
-        $id = $objectObjectTable->save($entity);
+        $objectObject->setCreator(
+            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+        );
+
+        $id = $objectObjectTable->save($objectObject);
 
         //link to anr
         $parentAnrs = [];
@@ -212,15 +215,15 @@ class ObjectObjectService extends AbstractService
         if (is_object($objectId)) {
             $objectId = $objectId->uuid->toString();
         }
-        if ($objectId != null) {
+        if ($objectId !== null) {
             try {
                 return $table->getEntityByFields(['father' => $objectId], ['position' => 'DESC']);
             } catch (MappingException | QueryException $e) {
                 return $table->getEntityByFields(['father' => ['uuid' => $objectId, 'anr' => $anrId]], ['position' => 'DESC']);
             }
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**

@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Service;
 
+use Monarc\Core\Model\Entity\InstanceConsequence;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Table\InstanceConsequenceTable;
 use Monarc\Core\Model\Table\InstanceTable;
@@ -102,19 +103,24 @@ class InstanceConsequenceService extends AbstractService
 
         /** @var InstanceConsequenceTable $table */
         $table = $this->get('table');
-        $entity = $table->getEntity($id);
+        /** @var InstanceConsequence $instanceConsequence */
+        $instanceConsequence = $table->getEntity($id);
 
-        $this->filterPostFields($data, $entity, ['anr', 'instance', 'object', 'scaleImpactType', 'ch', 'ih', 'dh']);
+        $this->filterPostFields($data, $instanceConsequence, ['anr', 'instance', 'object', 'scaleImpactType', 'ch', 'ih', 'dh']);
 
-        $entity->setDbAdapter($this->get('table')->getDb());
-        $entity->setLanguage($this->getLanguage());
+        $instanceConsequence->setDbAdapter($this->get('table')->getDb());
+        $instanceConsequence->setLanguage($this->getLanguage());
 
-        $entity->exchangeArray($data);
+        $instanceConsequence->exchangeArray($data);
 
         $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($entity, $dependencies);
+        $this->setDependencies($instanceConsequence, $dependencies);
 
-        $id = $this->get('table')->save($entity);
+        $instanceConsequence->setUpdater(
+            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+        );
+
+        $id = $this->get('table')->save($instanceConsequence);
 
         $this->updateBrothersConsequences($anrId, $id);
 
@@ -204,6 +210,7 @@ class InstanceConsequenceService extends AbstractService
 
         /** @var InstanceConsequenceTable $table */
         $table = $this->get('table');
+        /** @var InstanceConsequence $instanceCurrentConsequence */
         $instanceCurrentConsequence = $table->getEntity($instanceConsequencesId);
 
         $instanceC = [];

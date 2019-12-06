@@ -8,7 +8,9 @@
 namespace Monarc\Core\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Ramsey\Uuid\UuidInterface;
+use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
+use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
+use Ramsey\Uuid\Uuid;
 
 /**
  * Asset
@@ -18,11 +20,15 @@ use Ramsey\Uuid\UuidInterface;
  *      @ORM\Index(name="anr_id2", columns={"anr_id"})
  * })
  * @ORM\MappedSuperclass
+ * @ORM\HasLifecycleCallbacks()
  */
 class AssetSuperClass extends AbstractEntity
 {
+    use CreateEntityTrait;
+    use UpdateEntityTrait;
+
     /**
-    * @var integer
+    * @var Uuid
     *
     * @ORM\Column(name="uuid", type="uuid", nullable=false)
     * @ORM\Id
@@ -96,21 +102,21 @@ class AssetSuperClass extends AbstractEntity
     protected $description4;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="status", type="smallint", options={"unsigned":true, "default":1})
      */
     protected $status = 1;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="mode", type="smallint", options={"unsigned":true, "default":0})
      */
     protected $mode = 0;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="type", type="smallint", options={"unsigned":true, "default":1})
      */
@@ -124,35 +130,7 @@ class AssetSuperClass extends AbstractEntity
     protected $code;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="creator", type="string", length=255, nullable=true)
-     */
-    protected $creator;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="created_at", type="datetime", nullable=true)
-     */
-    protected $createdAt;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="updater", type="string", length=255, nullable=true)
-     */
-    protected $updater;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
-     */
-    protected $updatedAt;
-
-    /**
-     * @return int
+     * @return Uuid
      */
     public function getUuid()
     {
@@ -160,7 +138,7 @@ class AssetSuperClass extends AbstractEntity
     }
 
     /**
-     * @param int $id
+     * @param Uuid $id
      * @return Asset
      */
     public function setUuid($id)

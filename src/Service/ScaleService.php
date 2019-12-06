@@ -77,18 +77,22 @@ class ScaleService extends AbstractService
 
         //scale
         $class = $this->get('entity');
-        $entity = new $class();
-
-        $entity->exchangeArray($data);
-        $entity->setId(null);
+        /** @var Scale $scale */
+        $scale = new $class();
+        $scale->exchangeArray($data);
+        $scale->setId(null);
 
         $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($entity, $dependencies);
+        $this->setDependencies($scale, $dependencies);
 
-        $scaleId = $this->get('table')->save($entity);
+        $scale->setCreator(
+            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+        );
+
+        $scaleId = $this->get('table')->save($scale);
 
         //scale type
-        if ($entity->type == Scale::TYPE_IMPACT) {
+        if ($scale->type == Scale::TYPE_IMPACT) {
             $langs = $this->get('entity')->getImpactLangues();
 
             $configLangStruct = $this->config->getLanguage();

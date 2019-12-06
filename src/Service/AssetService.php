@@ -38,11 +38,8 @@ class AssetService extends AbstractService
      */
     public function create($data, $last = true)
     {
-
-        $class = $this->get('entity');
-        $entity = new $class();
-        $entity->setLanguage($this->getLanguage());
-        $entity->setDbAdapter($this->get('table')->getDb());
+        /** @var Asset $asset */
+        $asset = $this->get('entity');
 
         if (isset($data['anr']) && strlen($data['anr'])) {
             /** @var AnrTable $anrTable */
@@ -52,16 +49,18 @@ class AssetService extends AbstractService
             if (!$anr) {
                 throw new \Monarc\Core\Exception\Exception('This risk analysis does not exist', 412);
             }
-            $entity->setAnr($anr);
+            $asset->setAnr($anr);
         }
-        $entity->exchangeArray($data);
+        $asset->exchangeArray($data);
 
         $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($entity, $dependencies);
+        $this->setDependencies($asset, $dependencies);
 
-        $entity->status = 1;
+        $asset->status = 1;
 
-        return $this->get('table')->save($entity);
+        $asset->setCreator($this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname());
+
+        return $this->get('table')->save($asset);
     }
 
     /**
@@ -71,11 +70,12 @@ class AssetService extends AbstractService
     {
         $this->filterPatchFields($data);
 
-        $entity = $this->get('table')->getEntity($id);
-        $entity->setDbAdapter($this->get('table')->getDb());
-        $entity->setLanguage($this->getLanguage());
+        /** @var Asset $asset */
+        $asset = $this->get('table')->getEntity($id);
+        $asset->setDbAdapter($this->get('table')->getDb());
+        $asset->setLanguage($this->getLanguage());
 
-        if (($entity->mode == Asset::MODE_SPECIFIC) && ($data['mode'] == Asset::MODE_GENERIC)) {
+        if (($asset->mode == Asset::MODE_SPECIFIC) && ($data['mode'] == Asset::MODE_GENERIC)) {
             //delete models
             unset($data['models']);
         }
@@ -85,61 +85,61 @@ class AssetService extends AbstractService
         unset($data['models']);
         unset($data['follow']);
 
-        $entity->exchangeArray($data);
-        if ($entity->get('models')) {
-            $entity->get('models')->initialize();
+        $asset->exchangeArray($data);
+        if ($asset->get('models')) {
+            $asset->get('models')->initialize();
         }
 
         /** @var AmvService $amvService */
         $amvService = $this->get('amvService');
-        if (!$amvService->checkAMVIntegrityLevel($models, $entity, null, null, $follow)) {
+        if (!$amvService->checkAMVIntegrityLevel($models, $asset, null, null, $follow)) {
             throw new \Monarc\Core\Exception\Exception('Integrity AMV links violation', 412);
         }
 
-        if ($entity->mode == Asset::MODE_SPECIFIC) {
-            $associateObjects = $this->get('MonarcObjectTable')->getGenericByAssetId($entity->getUuid());
+        if ($asset->mode == Asset::MODE_SPECIFIC) {
+            $associateObjects = $this->get('MonarcObjectTable')->getGenericByAssetId($asset->getUuid());
             if (count($associateObjects)) {
                 throw new \Monarc\Core\Exception\Exception('Integrity AMV links violation', 412);
             }
         }
 
-        if (!$amvService->checkModelsInstantiation($entity, $models)) {
+        if (!$amvService->checkModelsInstantiation($asset, $models)) {
             throw new \Monarc\Core\Exception\Exception('This type of asset is used in a model that is no longer part of the list', 412);
         }
 
-        switch ($entity->get('mode')) {
+        switch ($asset->get('mode')) {
             case Asset::MODE_SPECIFIC:
                 if (empty($models)) {
-                    $entity->set('models', []);
+                    $asset->set('models', []);
                 } else {
                     $modelsObj = [];
                     foreach ($models as $mid) {
                         $modelsObj[] = $this->get('modelTable')->getEntity($mid);
                     }
-                    $entity->set('models', $modelsObj);
+                    $asset->set('models', $modelsObj);
                 }
                 if ($follow) {
-                    $amvService->enforceAMVtoFollow($entity->get('models'), $entity, null, null);
+                    $amvService->enforceAMVtoFollow($asset->get('models'), $asset, null, null);
                 }
                 break;
             case Asset::MODE_GENERIC:
-                $entity->set('models', []);
+                $asset->set('models', []);
                 break;
         }
 
-        $objects = $this->get('MonarcObjectTable')->getEntityByFields(['asset' => $entity->get('id')]);
+        $objects = $this->get('MonarcObjectTable')->getEntityByFields(['asset' => $asset->get('id')]);
         if (!empty($objects)) {
             $oids = [];
             foreach ($objects as $o) {
                 $oids[$o->id] = $o->id;
             }
-            if (!empty($entity->models)) {
+            if (!empty($asset->models)) {
                 //We need to check if the asset is compliant with reg/spec model when they are used as fathers
                 //not already used in models
                 $olinks = $this->get('objectObjectTable')->getEntityByFields(['father' => $oids]);
                 if (!empty($olinks)) {
                     foreach ($olinks as $ol) {
-                        foreach ($entity->models as $m) {
+                        foreach ($asset->models as $m) {
                             $this->get('modelTable')->canAcceptObject($m->id, $ol->child);
                         }
                     }
@@ -154,14 +154,16 @@ class AssetService extends AbstractService
                 foreach ($olinks as $ol) {
                     if (!empty($ol->father->asset->models)) {
                         foreach ($ol->father->asset->models as $m) {
-                            $this->get('modelTable')->canAcceptObject($m->id, $ol->child, null, $entity);
+                            $this->get('modelTable')->canAcceptObject($m->id, $ol->child, null, $asset);
                         }
                     }
                 }
             }
         }
 
-        return $this->get('table')->save($entity);
+        $asset->setUpdater($this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname());
+
+        return $this->get('table')->save($asset);
     }
 
     /**

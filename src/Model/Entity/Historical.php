@@ -8,15 +8,19 @@
 namespace Monarc\Core\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 
 /**
  * Historical
  *
  * @ORM\Table(name="historicals")
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks()
  */
 class Historical extends AbstractEntity
 {
+    use CreateEntityTrait;
+
     /**
      * @var integer
      *
@@ -76,26 +80,11 @@ class Historical extends AbstractEntity
     protected $label4;
 
     /**
-     * @var text
+     * @var string
      *
      * @ORM\Column(name="details", type="text", nullable=true)
      */
     protected $details;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="creator", type="string", length=255, nullable=true)
-     */
-    protected $creator;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="created_at", type="datetime", nullable=true)
-     */
-    protected $createdAt;
-
 
     /**
      * @return int

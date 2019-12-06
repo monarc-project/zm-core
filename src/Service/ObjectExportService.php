@@ -216,7 +216,7 @@ class ObjectExportService extends AbstractService
                                 foreach ($toExchange['measures'] as $m) {
                                   try {
                                     $measure = $this->get('measureTable')->getEntity(['anr'=>$anr->id,'uuid'=>$m]);
-                                    $measure->AddOpRisk($risk);
+                                    $measure->addOpRisk($risk);
                                   } catch (\Monarc\Core\Exception\Exception $e) { }
                                 }
                                 unset($toExchange['measures']);

@@ -47,17 +47,24 @@ class InstanceRiskOpService extends AbstractService
     {
         if (isset($object->asset) &&
             $object->asset->type == Asset::TYPE_PRIMARY &&
-            !is_null($object->rolfTag)
+            $object->rolfTag !== null
         ) {
             //retrieve brothers instances
             /** @var InstanceTable $instanceTable */
             $instanceTable = $this->get('instanceTable');
-            try{
-              $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $object->uuid->toString()]);
-            }catch(QueryException $e){
-              $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => ['anr' => $anrId ,'uuid' => $object->uuid->toString()]]);
-            } catch (MappingException $e) {
-                $instances = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => ['anr' => $anrId ,'uuid' => $object->uuid->toString()]]);
+            try {
+                $instances = $instanceTable->getEntityByFields([
+                    'anr' => $anrId,
+                    'object' => (string)$object->uuid,
+                ]);
+            } catch (QueryException | MappingException $e) {
+                $instances = $instanceTable->getEntityByFields([
+                    'anr' => $anrId,
+                    'object' => [
+                        'anr' => $anrId,
+                        'uuid' => (string)$object->uuid,
+                    ]
+                ]);
             }
 
             if ($object->scope == MonarcObject::SCOPE_GLOBAL && count($instances) > 1) {
@@ -72,16 +79,21 @@ class InstanceRiskOpService extends AbstractService
                     if ($instance->id != $instanceId) {
                         $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['instance' => $instance->id]);
                         foreach ($instancesRisksOp as $instanceRiskOp) {
+                            /** @var InstanceRiskOp $newInstanceRiskOp */
                             $newInstanceRiskOp = clone $instanceRiskOp;
                             $newInstanceRiskOp->setId(null);
                             $newInstanceRiskOp->setInstance($currentInstance);
+
+                            $newInstanceRiskOp->setCreator(
+                                $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+                            );
+
                             $instanceRiskOpTable->save($newInstanceRiskOp);
                         }
                     }
                     break;
                 }
             } else {
-
                 //retrieve rolf risks
                 /** @var RolfTagTable $rolfTagTable */
                 $rolfTagTable = $this->get('rolfTagTable');
@@ -195,6 +207,7 @@ class InstanceRiskOpService extends AbstractService
      */
     public function update($id, $data)
     {
+        /** @var InstanceRiskOp $risk */
         $risk = $this->get('table')->getEntity($id);
 
         if (!$risk) {
@@ -244,8 +257,12 @@ class InstanceRiskOpService extends AbstractService
             $risk->$cache = $max;
         }
 
+        $risk->setUpdater($this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname());
+
         $this->get('table')->save($risk);
+
         $this->updateRecoRisksOp($risk);
+
         return $risk->getJsonArray();
     }
 

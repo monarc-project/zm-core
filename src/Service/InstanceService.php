@@ -10,6 +10,7 @@ namespace Monarc\Core\Service;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Asset;
 use Monarc\Core\Model\Entity\Instance;
+use Monarc\Core\Model\Entity\InstanceConsequenceSuperClass;
 use Monarc\Core\Model\Entity\InstanceRiskOp;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Table\AnrTable;
@@ -187,6 +188,7 @@ class InstanceService extends AbstractService
         }
 
         // create instance
+        /** @var Instance $instance */
         $instance = $this->get('entity');
         if ($instance->get('id')) {
             $c = get_class($instance);
@@ -203,6 +205,10 @@ class InstanceService extends AbstractService
 
         //level
         $this->updateInstanceLevels($rootLevel, $data['object'], $instance, $mode, $anrId);
+
+        $instance->setCreator(
+            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+        );
 
         $id = $this->get('table')->save($instance);
 
@@ -272,6 +278,7 @@ class InstanceService extends AbstractService
         //retrieve instance
         /** @var InstanceTable $table */
         $table = $this->get('table');
+        /** @var Instance $instance */
         $instance = $table->getEntity($id);
         if (!$instance) {
             throw new Exception('Instance does not exist', 412);
@@ -357,6 +364,10 @@ class InstanceService extends AbstractService
 
         $this->setDependencies($instance, $this->dependencies);
 
+        $instance->setUpdater(
+            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+        );
+
         $id = $this->get('table')->save($instance);
 
         if ($dataConsequences) {
@@ -398,6 +409,7 @@ class InstanceService extends AbstractService
         //retrieve instance
         /** @var InstanceTable $table */
         $table = $this->get('table');
+        /** @var Instance $instance */
         $instance = $table->getEntity($id);
         if (!$instance) {
             throw new Exception('Instance does not exist', 412);
@@ -488,6 +500,10 @@ class InstanceService extends AbstractService
         $instance->exchangeArray($data, true);
 
         $this->setDependencies($instance, $this->dependencies);
+
+        $instance->setUpdater(
+            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+        );
 
         $id = $table->save($instance);
 
@@ -1370,12 +1386,16 @@ class InstanceService extends AbstractService
             /** @var InstanceTable $instanceTable */
             $instanceTable = $this->get('instanceTable');
 
-            try{
-              $brothers = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => is_string($object->uuid)?$object->uuid:$object->uuid->toString()]);
-            }catch(MappingException $e){
-              $brothers = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => ['uuid' => is_string($object->uuid)?$object->uuid:$object->uuid->toString(),'anr' =>$anrId]]);
-            } catch (QueryException $e) {
-                $brothers = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => ['uuid' => is_string($object->uuid)?$object->uuid:$object->uuid->toString(),'anr' =>$anrId]]);
+            try {
+                $brothers = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => (string)$object->uuid]);
+            } catch(MappingException | QueryException $e) {
+                $brothers = $instanceTable->getEntityByFields([
+                    'anr' => $anrId,
+                    'object' => [
+                        'uuid' => (string)$object->uuid,
+                        'anr' => $anrId
+                    ],
+                ]);
             }
         }
 
@@ -1394,7 +1414,6 @@ class InstanceService extends AbstractService
             $i = 1;
             $nbInstancesConsequences = count($instancesConsequences);
             foreach ($instancesConsequences as $instanceConsequence) {
-
                 $data = [
                     'anr' => $this->get('anrTable')->getEntity($anrId),
                     'instance' => $this->get('instanceTable')->getEntity($instanceId),
@@ -1408,10 +1427,15 @@ class InstanceService extends AbstractService
                 ];
 
                 $class = $this->get('instanceConsequenceEntity');
+                /** @var InstanceConsequenceSuperClass $instanceConsequenceEntity */
                 $instanceConsequenceEntity = new $class();
                 $instanceConsequenceEntity->setLanguage($this->getLanguage());
                 $instanceConsequenceEntity->setDbAdapter($this->get('instanceConsequenceTable')->getDb());
                 $instanceConsequenceEntity->exchangeArray($data);
+                $instanceConsequenceEntity->setCreator(
+                    $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+                );
+
                 $instanceConsequenceTable->save($instanceConsequenceEntity, ($i == $nbInstancesConsequences));
 
                 $i++;
@@ -1436,11 +1460,16 @@ class InstanceService extends AbstractService
                     'isHidden' => $scalesImpactType->isHidden,
                 ];
                 $class = $this->get('instanceConsequenceEntity');
+                /** @var InstanceConsequenceSuperClass $instanceConsequenceEntity */
                 $instanceConsequenceEntity = new $class();
                 $instanceConsequenceEntity->setLanguage($this->getLanguage());
                 $instanceConsequenceEntity->setDbAdapter($this->get('instanceConsequenceTable')->getDb());
                 $instanceConsequenceEntity->exchangeArray($data);
-                $instanceConsequenceTable->save($instanceConsequenceEntity, ($i == $nbScalesImpactTypes));
+                $instanceConsequenceEntity->setCreator(
+                    $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+                );
+
+                $instanceConsequenceTable->save($instanceConsequenceEntity, $i === $nbScalesImpactTypes);
                 $i++;
             }
         }

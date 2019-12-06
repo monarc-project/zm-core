@@ -211,17 +211,27 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     public function create($data, $last = true)
     {
-        $class = $this->get('entity');
+        $entity = $this->get('entity');
 
         /** @var AnrTable $table */
         $table = $this->get('table');
 
-        /** @var AbstractEntity $entity */
-        $entity = new $class();
+        // $class is already an entity instance created in AbstractServiceModelEntity.
+        if (!$entity instanceof AbstractEntity) {
+            /** @var AbstractEntity $entity */
+            $entity = new $entity();
 
-        $entity->setLanguage($this->getLanguage());
-        $entity->setDbAdapter($table->getDb());
+            $entity->setLanguage($this->getLanguage());
+            $entity->setDbAdapter($table->getDb());
+        }
+
         $entity->exchangeArray($data);
+
+        if (method_exists($entity, 'setCreator')) {
+            $entity->setCreator(
+                $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+            );
+        }
 
         $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
@@ -287,6 +297,12 @@ abstract class AbstractService extends AbstractServiceFactory
         // Pass our new data to the entity. This might throw an exception if some data is invalid.
         $entity->exchangeArray($data);
 
+        if (method_exists($entity, 'setUpdater')) {
+            $entity->setUpdater(
+                $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+            );
+        }
+
         $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
 
@@ -351,6 +367,12 @@ abstract class AbstractService extends AbstractServiceFactory
 
         $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
+
+        if (method_exists($entity, 'setUpdater')) {
+            $entity->setUpdater(
+                $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+            );
+        }
 
         return $this->get('table')->save($entity);
     }
@@ -894,7 +916,7 @@ abstract class AbstractService extends AbstractServiceFactory
         }
     }
 
-    private function getConnectedUser(): UserSuperClass
+    protected function getConnectedUser(): UserSuperClass
     {
         return $this->get('table')->getConnectedUser();
     }
