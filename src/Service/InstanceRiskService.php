@@ -81,8 +81,8 @@ class InstanceRiskService extends AbstractService
             $instanceRiskTable = $this->get('table');
 
             foreach ($instances as $instance) {
-                if ($instance->id != $instanceId) {
-                    $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $instance->id]);
+                if ($instance->getId() != $instanceId) {
+                    $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $instance->getId()]);
                     foreach ($instancesRisks as $instanceRisk) {
                         /** @var InstanceRisk $newInstanceRisk */
                         $newInstanceRisk = clone $instanceRisk;
@@ -251,6 +251,7 @@ class InstanceRiskService extends AbstractService
                     ]);
                 }
 
+                /** @var Instance $instance */
                 foreach ($instances as $instance) {
                     if ($instance != $instanceRisk->getInstance()) {
                         $instancesRisks = $instanceRiskTable->getEntityByFields([
@@ -258,11 +259,11 @@ class InstanceRiskService extends AbstractService
                                 'anr' => $instanceRisk->getAnr()->getId(),
                                 'uuid' => (string)$instanceRisk->getAmv()->getUuid()
                             ],
-                            'instance' => $instance->id
+                            'instance' => $instance->getId()
                         ]);
                         foreach ($instancesRisks as $instanceRisk) {
                             $initialData['id'] = $instanceRisk->getId();
-                            $initialData['instance'] = $instance->id;
+                            $initialData['instance'] = $instance->getId();
                             $this->patch($instanceRisk->getId(), $initialData, false);
                         }
                     }

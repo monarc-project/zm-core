@@ -216,7 +216,7 @@ class ThreatSuperClass extends AbstractEntity
      *
      * @param Theme $theme
      */
-    public function setTheme(ThemeSuperclass $theme)
+    public function setTheme(ThemeSuperClass $theme)
     {
         $this->theme = $theme;
     }
