@@ -47,7 +47,7 @@ class ObjectObjectSuperClass extends AbstractEntity
     protected $anr;
 
     /**
-     * @var ObjectObjectSuperClass
+     * @var ObjectSuperClass
      *
      * @ORM\ManyToOne(targetEntity="MonarcObject", cascade={"persist"})
      * @ORM\JoinColumns({
@@ -57,7 +57,7 @@ class ObjectObjectSuperClass extends AbstractEntity
     protected $father;
 
     /**
-     * @var ObjectObjectSuperClass
+     * @var ObjectSuperClass
      *
      * @ORM\ManyToOne(targetEntity="MonarcObject", cascade={"persist"})
      * @ORM\JoinColumns({
@@ -116,7 +116,7 @@ class ObjectObjectSuperClass extends AbstractEntity
     }
 
     /**
-     * @return ObjectObjectSuperClass
+     * @return ObjectSuperClass
      */
     public function getFather()
     {
@@ -124,7 +124,7 @@ class ObjectObjectSuperClass extends AbstractEntity
     }
 
     /**
-     * @param ObjectObjectSuperClass $father
+     * @param ObjectSuperClass $father
      */
     public function setFather($father): self
     {
@@ -134,7 +134,7 @@ class ObjectObjectSuperClass extends AbstractEntity
     }
 
     /**
-     * @return ObjectObjectSuperClass
+     * @return ObjectSuperClass
      */
     public function getChild()
     {
@@ -142,7 +142,7 @@ class ObjectObjectSuperClass extends AbstractEntity
     }
 
     /**
-     * @param ObjectObjectSuperClass $child
+     * @param ObjectSuperClass $child
      */
     public function setChild($child): self
     {
