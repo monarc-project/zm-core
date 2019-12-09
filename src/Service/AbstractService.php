@@ -213,11 +213,11 @@ abstract class AbstractService extends AbstractServiceFactory
     {
         $entity = $this->get('entity');
 
-        /** @var AnrTable $table */
+        /** @var AbstractEntityTable $table */
         $table = $this->get('table');
 
         // $class is already an entity instance created in AbstractServiceModelEntity.
-        if (!$entity instanceof AbstractEntity) {
+        if (!$entity instanceof AbstractEntity || $table->getDb()->getEntityManager()->contains($entity)) {
             /** @var AbstractEntity $entity */
             $entity = new $entity();
 
@@ -233,7 +233,7 @@ abstract class AbstractService extends AbstractServiceFactory
             );
         }
 
-        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = property_exists($this, 'dependencies') ? $this->dependencies : [];
         $this->setDependencies($entity, $dependencies);
 
         return $table->save($entity, $last);
