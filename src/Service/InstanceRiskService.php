@@ -142,7 +142,7 @@ class InstanceRiskService extends AbstractService
                 $instanceRisk = new $instanceRiskEntityClassName($data);
                 $instanceRiskTable->save($instanceRisk);
 
-                $this->updateRisks($instanceRisk);
+                $this->updateRisks($instanceRisk, ($num + 1) === $amvsCount);
             }
         }
     }

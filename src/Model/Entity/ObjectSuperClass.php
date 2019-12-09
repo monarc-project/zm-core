@@ -297,7 +297,7 @@ class ObjectSuperClass extends AbstractEntity
     }
 
     /**
-     * @param AnrSuperClass[] $anrs
+     * @param ArrayCollection|AnrSuperClass[] $anrs
      */
     public function setAnrs($anrs): self
     {
@@ -311,19 +311,12 @@ class ObjectSuperClass extends AbstractEntity
      */
     public function addAnr(AnrSuperClass $anr)
     {
-        $currentAnrs = $this->anrs;
-
-        $errors = false;
-        if ($currentAnrs) {
-            foreach ($currentAnrs as $currentAnr) {
-                if ($currentAnr->id == $anr->id) {
-                    $errors = true;
-                }
-            }
+        if ($this->anrs === null) {
+            $this->anrs = new ArrayCollection();
         }
 
-        if (!$errors) {
-            $this->anrs[] = $anr;
+        if (!$this->anrs->contains($anr)) {
+            $this->anrs->add($anr);
         }
 
         return $this;
