@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Model\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
@@ -43,9 +44,9 @@ class ObjectSuperClass extends AbstractEntity
     protected $uuid;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Anr
+     * @var AnrSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Anr", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Anr", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true)
      * })
@@ -53,8 +54,9 @@ class ObjectSuperClass extends AbstractEntity
     protected $anr;
 
     /**
-     * @var \Doctrine\Common\Collections\Collection
-     * @ORM\ManyToMany(targetEntity="Monarc\Core\Model\Entity\Anr", inversedBy="objects", cascade={"persist"})
+     * @var ArrayCollection|AnrSuperClass[]
+     *
+     * @ORM\ManyToMany(targetEntity="Anr", inversedBy="objects", cascade={"persist"})
      * @ORM\JoinTable(name="anrs_objects",
      *  joinColumns={@ORM\JoinColumn(name="object_id", referencedColumnName="uuid")},
      *  inverseJoinColumns={@ORM\JoinColumn(name="anr_id", referencedColumnName="id")}
@@ -63,9 +65,9 @@ class ObjectSuperClass extends AbstractEntity
     protected $anrs;
 
     /**
-     * @var \Monarc\Core\Model\Entity\ObjectCategory
+     * @var ObjectCategorySuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\ObjectCategory", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="ObjectCategory", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="object_category_id", referencedColumnName="id", nullable=true)
      * })
@@ -73,9 +75,9 @@ class ObjectSuperClass extends AbstractEntity
     protected $category;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Asset
+     * @var AssetSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Asset", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Asset", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="asset_id", referencedColumnName="uuid", nullable=true, onDelete="SET NULL")
      * })
@@ -83,9 +85,9 @@ class ObjectSuperClass extends AbstractEntity
     protected $asset;
 
     /**
-     * @var \Monarc\Core\Model\Entity\RolfTag
+     * @var RolfTagSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\RolfTag", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="RolfTag", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="rolf_tag_id", referencedColumnName="id", nullable=true)
      * })
@@ -174,7 +176,7 @@ class ObjectSuperClass extends AbstractEntity
      *
      * @ORM\Column(name="position", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $position = '0';
+    protected $position = 0;
 
     /**
      * @var string
@@ -190,6 +192,12 @@ class ObjectSuperClass extends AbstractEntity
      */
     protected $originalName;
 
+    protected $parameters = array(
+        'implicitPosition' => array(
+            'field' => 'category',
+        ),
+    );
+
     /**
      * @return Uuid
      */
@@ -200,16 +208,16 @@ class ObjectSuperClass extends AbstractEntity
 
     /**
      * @param Uuid $id
-     * @return Object
      */
-    public function setUuid($id)
+    public function setUuid($uuid): self
     {
-        $this->uuid = $id;
+        $this->uuid = $uuid;
+
         return $this;
     }
 
     /**
-     * @return Anr
+     * @return AnrSuperClass
      */
     public function getAnr()
     {
@@ -217,17 +225,17 @@ class ObjectSuperClass extends AbstractEntity
     }
 
     /**
-     * @param Anr $anr
-     * @return Asset
+     * @param AnrSuperClass $anr
      */
-    public function setAnr($anr)
+    public function setAnr($anr): self
     {
         $this->anr = $anr;
+
         return $this;
     }
 
     /**
-     * @return ObjectCategory
+     * @return ObjectCategorySuperClass
      */
     public function getCategory()
     {
@@ -235,17 +243,17 @@ class ObjectSuperClass extends AbstractEntity
     }
 
     /**
-     * @param ObjectCategory $category
-     * @return Object
+     * @param ObjectCategorySuperClass $category
      */
-    public function setCategory($category)
+    public function setCategory($category): self
     {
         $this->category = $category;
+
         return $this;
     }
 
     /**
-     * @return Asset
+     * @return AssetSuperClass
      */
     public function getAsset()
     {
@@ -253,17 +261,17 @@ class ObjectSuperClass extends AbstractEntity
     }
 
     /**
-     * @param Asset $asset
-     * @return Object
+     * @param AssetSuperClass $asset
      */
-    public function setAsset($asset)
+    public function setAsset($asset): self
     {
         $this->asset = $asset;
+
         return $this;
     }
 
     /**
-     * @return RolfTag
+     * @return RolfTagSuperClass
      */
     public function getRolfTag()
     {
@@ -271,17 +279,17 @@ class ObjectSuperClass extends AbstractEntity
     }
 
     /**
-     * @param RolfTag $rolfTag
-     * @return Object
+     * @param RolfTagSuperClass $rolfTag
      */
-    public function setRolfTag($rolfTag)
+    public function setRolfTag($rolfTag): self
     {
         $this->rolfTag = $rolfTag;
+
         return $this;
     }
 
     /**
-     * @return Anr
+     * @return AnrSuperClass[]
      */
     public function getAnrs()
     {
@@ -289,37 +297,29 @@ class ObjectSuperClass extends AbstractEntity
     }
 
     /**
-     * @param Anr $anrs
-     * @return Object
+     * @param ArrayCollection|AnrSuperClass[] $anrs
      */
-    public function setAnrs($anrs)
+    public function setAnrs($anrs): self
     {
         $this->anrs = $anrs;
+
         return $this;
     }
 
     /**
-     * Add Anr
-     *
-     * @param Anr $anr
-     * @throws \Exception
+     * @param AnrSuperClass $anr
      */
     public function addAnr(AnrSuperClass $anr)
     {
-        $currentAnrs = $this->anrs;
-
-        $errors = false;
-        if ($currentAnrs) {
-            foreach ($currentAnrs as $currentAnr) {
-                if ($currentAnr->id == $anr->id) {
-                    $errors = true;
-                }
-            }
+        if ($this->anrs === null) {
+            $this->anrs = new ArrayCollection();
         }
 
-        if (!$errors) {
-            $this->anrs[] = $anr;
+        if (!$this->anrs->contains($anr)) {
+            $this->anrs->add($anr);
         }
+
+        return $this;
     }
 
     public function getScope(): int
@@ -327,15 +327,8 @@ class ObjectSuperClass extends AbstractEntity
         return $this->scope;
     }
 
-    protected $parameters = array(
-        'implicitPosition' => array(
-            'field' => 'category',
-        ),
-    );
-
     public function getInputFilter($partial = false)
     {
-
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);
 
@@ -459,7 +452,8 @@ class ObjectSuperClass extends AbstractEntity
         return $this->inputFilter;
     }
 
-    public function getFiltersForService(){
+    public function getFiltersForService()
+    {
         $filterJoin = [
             [
                 'as' => 'a',
@@ -472,6 +466,7 @@ class ObjectSuperClass extends AbstractEntity
         $filtersCol = [
 
         ];
-        return [$filterJoin,$filterLeft,$filtersCol];
+
+        return [$filterJoin, $filterLeft, $filtersCol];
     }
 }

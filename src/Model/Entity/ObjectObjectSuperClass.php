@@ -37,9 +37,9 @@ class ObjectObjectSuperClass extends AbstractEntity
     protected $id;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Anr
+     * @var AnrSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Anr", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Anr", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true)
      * })
@@ -47,9 +47,9 @@ class ObjectObjectSuperClass extends AbstractEntity
     protected $anr;
 
     /**
-     * @var \Monarc\Core\Model\Entity\MonarcObject
+     * @var ObjectSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\MonarcObject", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="MonarcObject", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="father_id", referencedColumnName="uuid", nullable=true)
      * })
@@ -57,9 +57,9 @@ class ObjectObjectSuperClass extends AbstractEntity
     protected $father;
 
     /**
-     * @var \Monarc\Core\Model\Entity\MonarcObject
+     * @var ObjectSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\MonarcObject", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="MonarcObject", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="child_id", referencedColumnName="uuid", nullable=true)
      * })
@@ -73,6 +73,12 @@ class ObjectObjectSuperClass extends AbstractEntity
      */
     protected $position = 1;
 
+    protected $parameters = array(
+        'implicitPosition' => array(
+            'field' => 'father',
+        ),
+    );
+
     /**
      * @return int
      */
@@ -83,16 +89,16 @@ class ObjectObjectSuperClass extends AbstractEntity
 
     /**
      * @param int $id
-     * @return Model
      */
-    public function setId($id)
+    public function setId($id): self
     {
         $this->id = $id;
+
         return $this;
     }
 
     /**
-     * @return int
+     * @return AnrSuperClass
      */
     public function getAnr()
     {
@@ -100,17 +106,17 @@ class ObjectObjectSuperClass extends AbstractEntity
     }
 
     /**
-     * @param int $anr
-     * @return ObjectObject
+     * @param Anr $anr
      */
-    public function setAnr($anr)
+    public function setAnr($anr): self
     {
         $this->anr = $anr;
+
         return $this;
     }
 
     /**
-     * @return Object
+     * @return ObjectSuperClass
      */
     public function getFather()
     {
@@ -118,17 +124,17 @@ class ObjectObjectSuperClass extends AbstractEntity
     }
 
     /**
-     * @param Object $father
-     * @return ObjectObject
+     * @param ObjectSuperClass $father
      */
-    public function setFather($father)
+    public function setFather($father): self
     {
         $this->father = $father;
+
         return $this;
     }
 
     /**
-     * @return Object
+     * @return ObjectSuperClass
      */
     public function getChild()
     {
@@ -136,16 +142,16 @@ class ObjectObjectSuperClass extends AbstractEntity
     }
 
     /**
-     * @param Object $child
-     * @return ObjectObject
+     * @param ObjectSuperClass $child
      */
-    public function setChild($child)
+    public function setChild($child): self
     {
         $this->child = $child;
+
         return $this;
     }
 
-    public function getPosition()
+    public function getPosition(): int
     {
         return $this->position;
     }
@@ -153,19 +159,15 @@ class ObjectObjectSuperClass extends AbstractEntity
     /**
      * @param int $position
      */
-    public function setPosition($position)
+    public function setPosition($position): self
     {
         $this->position = $position;
+
         return $this;
     }
 
-    protected $parameters = array(
-        'implicitPosition' => array(
-            'field' => 'father',
-        ),
-    );
-
-    public function getFiltersForService(){
+    public function getFiltersForService()
+    {
         $filterJoin = [
             [
                 'as' => 'f',
