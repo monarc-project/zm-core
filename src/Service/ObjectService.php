@@ -583,6 +583,7 @@ class ObjectService extends AbstractService
 
     public function update($id, $data, $context = AbstractEntity::BACK_OFFICE)
     {
+        $anrIds = $data['anrs'];
         unset($data['anrs']);
         if (empty($data)) {
             throw new Exception('Data missing', 412);
@@ -691,14 +692,21 @@ class ObjectService extends AbstractService
              * but seems it works well without status.
              */
             $anr = $monarcObject->getAnr();
-            // We pass anr_id parameter for Backoffice to be able to find an anr.
-            if ($anr === null && !empty($data['anr_id'])) {
-                $anr = $this->get('anrTable')->getEntity($data['anr_id']);
+            /*
+             * For Backoffice we should fetch all the Models (but as they are linked with Anr OneToOne we go for them),
+             * and update the links for every Anr relation.
+             */
+            if ($anr === null && !empty($anrIds)) {
+                $anrs = $this->get('anrTable')->findByIds(array_column($anrIds, 'id'));
+            } else {
+                $anrs = [$anr];
             }
 
-            $this->unlinkCategoryFromAnrIfNoObjectsOrChildrenLeft($oldRootCategory, $anr);
+            foreach ($anrs as $anr) {
+                $this->unlinkCategoryFromAnrIfNoObjectsOrChildrenLeft($oldRootCategory, $anr);
 
-            $this->linkCategoryWithAnrIfNotLinked($newRootCategory, $anr);
+                $this->linkCategoryWithAnrIfNotLinked($newRootCategory, $anr);
+            }
         }
 
         $this->instancesImpacts($monarcObject, $newRolfTag, $setRolfTagNull);
@@ -1484,6 +1492,7 @@ class ObjectService extends AbstractService
 
         /** @var AnrObjectCategory $anrObjectCategory */
         $anrObjectCategory = $this->get('anrObjectCategoryEntity');
+        $anrObjectCategory = new $anrObjectCategory;
         $anrObjectCategory->setAnr($anr)->setCategory($objectCategory);
 
         /** @var AnrObjectCategoryTable $anrObjectCategoryTable */
