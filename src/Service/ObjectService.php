@@ -691,8 +691,9 @@ class ObjectService extends AbstractService
              * but seems it works well without status.
              */
             $anr = $monarcObject->getAnr();
-            if ($anr === null && !empty($data['anr'])) {
-                $anr = $this->get('anrTable')->getEntity($data['anr']);
+            // We pass anr_id parameter for Backoffice to be able to find an anr.
+            if ($anr === null && !empty($data['anr_id'])) {
+                $anr = $this->get('anrTable')->getEntity($data['anr_id']);
             }
 
             $this->unlinkCategoryFromAnrIfNoObjectsOrChildrenLeft($oldRootCategory, $anr);
