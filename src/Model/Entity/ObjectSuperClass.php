@@ -67,7 +67,7 @@ class ObjectSuperClass extends AbstractEntity
     /**
      * @var ObjectCategorySuperClass
      *
-     * @ORM\ManyToOne(targetEntity="ObjectCategory", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="ObjectCategory", cascade={"persist", "remove"}, inversedBy="objects")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="object_category_id", referencedColumnName="id", nullable=true)
      * })
@@ -217,15 +217,15 @@ class ObjectSuperClass extends AbstractEntity
     }
 
     /**
-     * @return AnrSuperClass
+     * @return AnrSuperClass|null
      */
-    public function getAnr()
+    public function getAnr(): ?AnrSuperClass
     {
         return $this->anr;
     }
 
     /**
-     * @param AnrSuperClass $anr
+     * @param AnrSuperClass|null $anr
      */
     public function setAnr($anr): self
     {

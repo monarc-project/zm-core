@@ -229,7 +229,7 @@ class ObjectObjectService extends AbstractService
     /**
      * Recursively fetches and return the children
      *
-     * @param int $fatherId The parent object ID
+     * @param string|array $fatherId The parent object ID
      * @param int $anrId The ANR ID
      *
      * @return array The children
@@ -292,7 +292,7 @@ class ObjectObjectService extends AbstractService
     /**
      * Recursively fetches and returns the parent objects
      *
-     * @param int $parent_id The parent object ID
+     * @param string $parent_id The parent object ID
      *
      * @return array The parents
      */

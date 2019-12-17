@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Model\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits;
 
@@ -32,9 +33,9 @@ class AnrSuperClass extends AbstractEntity
     protected $id;
 
     /**
-     * @var \Monarc\Core\Model\Entity\MonarcObject
+     * @var ArrayCollection|ObjectSuperClass[]
      *
-     * @ORM\ManyToMany(targetEntity="Monarc\Core\Model\Entity\MonarcObject", mappedBy="anrs")
+     * @ORM\ManyToMany(targetEntity="MonarcObject", mappedBy="anrs")
      */
     protected $objects;
 
@@ -263,7 +264,7 @@ class AnrSuperClass extends AbstractEntity
     }
 
     /**
-     * @return Object
+     * @return ArrayCollection|ObjectSuperClass[]
      */
     public function getObjects()
     {
@@ -271,7 +272,7 @@ class AnrSuperClass extends AbstractEntity
     }
 
     /**
-     * @param Object $objects
+     * @param ObjectSuperClass[] $objects
      * @return Anr
      */
     public function setObjects($objects): self

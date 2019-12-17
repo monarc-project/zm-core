@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Model\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
@@ -38,9 +39,9 @@ class ObjectCategorySuperClass extends AbstractEntity
     protected $id;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Anr
+     * @var AnrSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Anr", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Anr", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true)
      * })
@@ -48,9 +49,9 @@ class ObjectCategorySuperClass extends AbstractEntity
     protected $anr;
 
     /**
-     * @var \Monarc\Core\Model\Entity\ObjectCategory
+     * @var ObjectCategorySuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\ObjectCategory", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="ObjectCategory", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="root_id", referencedColumnName="id", nullable=true)
      * })
@@ -58,14 +59,38 @@ class ObjectCategorySuperClass extends AbstractEntity
     protected $root;
 
     /**
-     * @var \Monarc\Core\Model\Entity\ObjectCategory
+     * @var ObjectCategorySuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\ObjectCategory", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="ObjectCategory", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="parent_id", referencedColumnName="id", nullable=true)
      * })
      */
     protected $parent;
+
+    /**
+     * @var ObjectCategorySuperClass[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="ObjectCategory", mappedBy="parent")
+     */
+    protected $children;
+
+    /**
+     * @var ArrayCollection|ObjectSuperClass[]
+     *
+     * @ORM\OneToMany(targetEntity="MonarcObject", orphanRemoval=true, mappedBy="category",
+     *   cascade={"persist", "remove"}
+     * )
+     */
+    protected $objects;
+
+    /**
+     * @return ArrayCollection|ObjectCategorySuperClass[]
+     */
+    public function getChildren()
+    {
+        return $this->children;
+    }
 
     /**
      * @var string
@@ -102,6 +127,14 @@ class ObjectCategorySuperClass extends AbstractEntity
      */
     protected $position = 1;
 
+    protected $parameters = [
+        'implicitPosition' => [
+            'field' => 'parent',
+            'root' => 'root',
+            'subField' => ['anr']
+        ],
+    ];
+
     /**
      * @return int
      */
@@ -112,16 +145,18 @@ class ObjectCategorySuperClass extends AbstractEntity
 
     /**
      * @param int $id
-     * @return Model
+     *
+     * @return self
      */
-    public function setId($id)
+    public function setId($id): self
     {
         $this->id = $id;
+
         return $this;
     }
 
     /**
-     * @return Anr
+     * @return AnrSuperClass
      */
     public function getAnr()
     {
@@ -129,17 +164,19 @@ class ObjectCategorySuperClass extends AbstractEntity
     }
 
     /**
-     * @param Anr $anr
-     * @return ObjectCategory
+     * @param AnrSuperClass $anr
+     *
+     * @return self
      */
-    public function setAnr($anr)
+    public function setAnr($anr): self
     {
         $this->anr = $anr;
+
         return $this;
     }
 
     /**
-     * @return ObjectCategory
+     * @return ObjectCategorySuperClass|null
      */
     public function getParent()
     {
@@ -147,17 +184,19 @@ class ObjectCategorySuperClass extends AbstractEntity
     }
 
     /**
-     * @param ObjectCategory $parent
-     * @return ObjectCategory
+     * @param ObjectCategorySuperClass $parent
+     *
+     * @return self
      */
-    public function setParent($parent)
+    public function setParent($parent): self
     {
         $this->parent = $parent;
+
         return $this;
     }
 
     /**
-     * @return ObjectCategory
+     * @return ObjectCategorySuperClass|null
      */
     public function getRoot()
     {
@@ -165,52 +204,29 @@ class ObjectCategorySuperClass extends AbstractEntity
     }
 
     /**
-     * @param ObjectCategory $root
-     * @return ObjectCategory
+     * @param ObjectCategorySuperClass $root
+     *
+     * @return self
      */
-    public function setRoot($root)
+    public function setRoot($root): self
     {
         $this->root = $root;
+
         return $this;
     }
 
     /**
-     * @return \Doctrine\Common\Collections\Collection
+     * @return ArrayCollection|ObjectSuperClass[]
      */
-    public function getAnrs()
+    public function getObjects()
     {
-        return $this->anrs;
+        return $this->objects;
     }
 
-    /**
-     * Add Anr
-     *
-     * @param Anr $anr
-     * @throws \Exception
-     */
-    public function addAnr(AnrSuperClass $anr)
+    public function hasObjects(): bool
     {
-        $currentAnrs = $this->anrs;
-
-        $alreadyUsed = false;
-        foreach ($currentAnrs as $currentAnr) {
-            if ($currentAnr->id == $anr->id) {
-                $alreadyUsed = true;
-            }
-        }
-
-        if (!$alreadyUsed) {
-            $this->anrs[] = $anr;
-        }
+        return (bool)\count($this->objects);
     }
-
-    protected $parameters = array(
-        'implicitPosition' => array(
-            'field' => 'parent',
-            'root' => 'root',
-            'subField' => ['anr']
-        ),
-    );
 
     public function getInputFilter($partial = false)
     {
@@ -231,4 +247,3 @@ class ObjectCategorySuperClass extends AbstractEntity
         return $this->inputFilter;
     }
 }
-

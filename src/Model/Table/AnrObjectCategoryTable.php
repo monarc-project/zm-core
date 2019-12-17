@@ -9,6 +9,8 @@ namespace Monarc\Core\Model\Table;
 
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\AnrObjectCategory;
+use Monarc\Core\Model\Entity\AnrSuperClass;
+use Monarc\Core\Model\Entity\ObjectCategorySuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**
@@ -20,5 +22,21 @@ class AnrObjectCategoryTable extends AbstractEntityTable
     public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
     {
         parent::__construct($dbService, AnrObjectCategory::class, $connectedUserService);
+    }
+
+    // TODO: in order to specify return object type we need to create a superclass for AnrObjectCategory.
+    public function findOneByAnrAndObjectCategory(AnrSuperClass $anr, ObjectCategorySuperClass $objectCategory)
+    {
+        $result = $this->getRepository()
+            ->createQueryBuilder('aoc')
+            ->where('aoc.anr = :anr')
+            ->andWhere('aoc.category = :category')
+            ->setParameter('anr', $anr)
+            ->setParameter('category', $objectCategory)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getResult();
+
+        return $result[0] ?? null;
     }
 }

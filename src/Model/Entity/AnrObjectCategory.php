@@ -81,7 +81,7 @@ class AnrObjectCategory extends AbstractEntity
     }
 
     /**
-     * @return Anr
+     * @return AnrSuperClass
      */
     public function getAnr()
     {
@@ -89,17 +89,19 @@ class AnrObjectCategory extends AbstractEntity
     }
 
     /**
-     * @param Anr $anr
-     * @return AnrObjectCategory
+     * @param AnrSuperClass $anr
+     *
+     * @return self
      */
     public function setAnr($anr)
     {
         $this->anr = $anr;
+
         return $this;
     }
 
     /**
-     * @return ObjectCategory
+     * @return ObjectCategorySuperClass
      */
     public function getCategory()
     {
@@ -107,12 +109,14 @@ class AnrObjectCategory extends AbstractEntity
     }
 
     /**
-     * @param ObjectCategory $category
-     * @return AnrObjectCategory
+     * @param ObjectCategorySuperClass $category
+     *
+     * @return self
      */
     public function setCategory($category)
     {
         $this->category = $category;
+
         return $this;
     }
 
@@ -121,6 +125,7 @@ class AnrObjectCategory extends AbstractEntity
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);
         }
+
         return $this->inputFilter;
     }
 

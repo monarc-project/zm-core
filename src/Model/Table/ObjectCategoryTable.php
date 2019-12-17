@@ -23,22 +23,4 @@ class ObjectCategoryTable extends AbstractEntityTable
     {
         parent::__construct($dbService, ObjectCategory::class, $connectedUserService);
     }
-
-    /**
-     * Get Child
-     *
-     * @param $id
-     * @return array
-     */
-    public function getChild($id)
-    {
-        $child = $this->getRepository()->createQueryBuilder('t')
-            ->select(array('t.id'))
-            ->where('t.parent = :parent')
-            ->setParameter(':parent', $id)
-            ->getQuery()
-            ->getResult();
-
-        return $child;
-    }
 }
