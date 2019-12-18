@@ -98,7 +98,7 @@ abstract class UserSuperClass
     protected $language = 1;
 
     /**
-     * @var ArrayCollection
+     * @var ArrayCollection|UserRoleSuperClass[]
      *
      * @ORM\OneToMany(targetEntity="UserRole", orphanRemoval=true, mappedBy="user", cascade={"persist", "remove"})
      */

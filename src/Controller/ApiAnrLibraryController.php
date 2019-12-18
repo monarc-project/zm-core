@@ -105,6 +105,5 @@ class ApiAnrLibraryController extends AbstractController
                 'status' => 'ok'
             )
         );
-
     }
 }
