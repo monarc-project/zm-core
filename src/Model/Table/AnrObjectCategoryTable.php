@@ -24,7 +24,14 @@ class AnrObjectCategoryTable extends AbstractEntityTable
         parent::__construct($dbService, AnrObjectCategory::class, $connectedUserService);
     }
 
-    // TODO: in order to specify return object type we need to create a superclass for AnrObjectCategory.
+    /**
+     * TODO: in order to specify return object type we need to create a superclass for AnrObjectCategory.
+     *
+     * @param AnrSuperClass $anr
+     * @param ObjectCategorySuperClass $objectCategory
+     *
+     * @return AnrObjectCategory|null
+     */
     public function findOneByAnrAndObjectCategory(AnrSuperClass $anr, ObjectCategorySuperClass $objectCategory)
     {
         $result = $this->getRepository()

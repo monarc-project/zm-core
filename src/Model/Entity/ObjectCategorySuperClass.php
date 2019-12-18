@@ -69,30 +69,6 @@ class ObjectCategorySuperClass extends AbstractEntity
     protected $parent;
 
     /**
-     * @var ObjectCategorySuperClass[]|ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="ObjectCategory", mappedBy="parent")
-     */
-    protected $children;
-
-    /**
-     * @var ArrayCollection|ObjectSuperClass[]
-     *
-     * @ORM\OneToMany(targetEntity="MonarcObject", orphanRemoval=true, mappedBy="category",
-     *   cascade={"persist", "remove"}
-     * )
-     */
-    protected $objects;
-
-    /**
-     * @return ArrayCollection|ObjectCategorySuperClass[]
-     */
-    public function getChildren()
-    {
-        return $this->children;
-    }
-
-    /**
      * @var string
      *
      * @ORM\Column(name="label1", type="string", length=255, nullable=true)
@@ -213,19 +189,6 @@ class ObjectCategorySuperClass extends AbstractEntity
         $this->root = $root;
 
         return $this;
-    }
-
-    /**
-     * @return ArrayCollection|ObjectSuperClass[]
-     */
-    public function getObjects()
-    {
-        return $this->objects;
-    }
-
-    public function hasObjects(): bool
-    {
-        return (bool)\count($this->objects);
     }
 
     public function getInputFilter($partial = false)

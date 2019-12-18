@@ -1465,14 +1465,18 @@ class ObjectService extends AbstractService
         ObjectCategorySuperClass $objectCategory,
         AnrSuperClass $anr
     ): void {
-        // Check if there are no more objects left under the category or its children ones.
-        if ($this->hasObjectsInsideOrUnderChildren($objectCategory)) {
+        /** @var MonarcObjectTable $monarcObjectTable */
+        $monarcObjectTable = $this->get('table');
+        // Check if there are no more objects left under the root category or its children ones.
+        $rootCategory = $objectCategory->getRoot() ?: $objectCategory;
+        if ($monarcObjectTable->hasObjectsUnderRootCategory($rootCategory)) {
             return;
         }
 
-        // Remove the relation with Anr (AnrObjectCategory) if exists.
         /** @var AnrObjectCategoryTable $anrObjectCategoryTable */
         $anrObjectCategoryTable = $this->get('anrObjectCategoryTable');
+
+        // Remove the relation with Anr (AnrObjectCategory) if exists.
         $anrObjectCategory = $anrObjectCategoryTable->findOneByAnrAndObjectCategory($anr, $objectCategory);
         if ($anrObjectCategory !== null) {
             $anrObjectCategoryTable->delete($anrObjectCategory->getId());
@@ -1503,19 +1507,4 @@ class ObjectService extends AbstractService
         $anrObjectCategoryTable->save($anrObjectCategory);
     }
 
-    private function hasObjectsInsideOrUnderChildren(ObjectCategorySuperClass $objectCategory): bool
-    {
-        if ($objectCategory->hasObjects()) {
-            return true;
-        }
-
-        foreach ($objectCategory->getChildren() as $childCategory) {
-            $result = $this->hasObjectsInsideOrUnderChildren($childCategory);
-            if ($result) {
-                return true;
-            }
-        }
-
-        return false;
-    }
 }
