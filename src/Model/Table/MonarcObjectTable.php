@@ -7,8 +7,10 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Doctrine\ORM\Query\Expr;
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\MonarcObject;
+use Monarc\Core\Model\Entity\ObjectCategorySuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**
@@ -40,6 +42,18 @@ class MonarcObjectTable extends AbstractEntityTable
             ->getResult();
 
         return $objects;
+    }
+
+    public function hasObjectsUnderRootCategory(ObjectCategorySuperClass $rootCategory): bool
+    {
+        return (bool)$this->getRepository()
+            ->createQueryBuilder('o')
+            ->select('COUNT(o.uuid)')
+            ->join('o.category', 'oc', Expr\Join::WITH, 'o.category = oc')
+            ->where('oc.root = :rootCategory OR oc = :rootCategory')
+            ->setParameter('rootCategory', $rootCategory)
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 
     /**
