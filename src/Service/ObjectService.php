@@ -1142,6 +1142,7 @@ class ObjectService extends AbstractService
         //verify object exist
         /** @var MonarcObjectTable $table */
         $table = $this->get('table');
+        /** @var ObjectSuperClass $object */
         $object = $table->getEntity($objectId);
         if (!$object) {
             throw new Exception('Object does not exist', 412);
@@ -1201,25 +1202,22 @@ class ObjectService extends AbstractService
         }
 
         //retrieve number anr objects with the same root category than current objet
-        $nbObjectsSameRootCategory = 0;
-        if ($object->category) {
-            $objectRootCategory = ($object->category->root) ? $object->category->root : $object->category;
-            foreach ($anr->objects as $anrObject) {
-                $anrObjectRootCategory = ($anrObject->category->root) ? $anrObject->category->root : $anrObject->category;
-                if (($anrObjectRootCategory->id == $objectRootCategory->id) && ($anrObject->uuid->toString() != $object->uuid->toString())) {
-                    $nbObjectsSameRootCategory++;
-                }
-            }
-        } else {
-            $objectRootCategory = null;
+        $areObjectsUnderTheRootCategory = false;
+        $objectRootCategory = null;
+        if ($object->getCategory()) {
+            $objectRootCategory = $object->getCategory()->getRoot() ?: $object->getCategory();
+            $areObjectsUnderTheRootCategory = $table->hasObjectsUnderRootCategoryExcludeObject($objectRootCategory, $object);
         }
 
         //if the last object of the category in the anr, delete category from anr
-        if (!$nbObjectsSameRootCategory && $objectRootCategory) {
+        if (!$areObjectsUnderTheRootCategory && $objectRootCategory) {
             //anrs objects categories
             /** @var AnrObjectCategoryTable $anrObjectCategoryTable */
             $anrObjectCategoryTable = $this->get('anrObjectCategoryTable');
-            $anrObjectCategories = $anrObjectCategoryTable->getEntityByFields(['anr' => $anrId, 'category' => $objectRootCategory->id]);
+            $anrObjectCategories = $anrObjectCategoryTable->getEntityByFields([
+                'anr' => $anrId,
+                'category' => $objectRootCategory->getId(),
+            ]);
             $i = 1;
             $nbAnrObjectCategories = count($anrObjectCategories);
             foreach ($anrObjectCategories as $anrObjectCategory) {
@@ -1476,7 +1474,7 @@ class ObjectService extends AbstractService
         $monarcObjectTable = $this->get('table');
         // Check if there are no more objects left under the root category or its children ones.
         $rootCategory = $objectCategory->getRoot() ?: $objectCategory;
-        if ($monarcObjectTable->hasObjectsUnderRootCategory($rootCategory)) {
+        if ($monarcObjectTable->hasObjectsUnderRootCategoryExcludeObject($rootCategory)) {
             return;
         }
 

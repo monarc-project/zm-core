@@ -67,7 +67,7 @@ class ObjectSuperClass extends AbstractEntity
     /**
      * @var ObjectCategorySuperClass
      *
-     * @ORM\ManyToOne(targetEntity="ObjectCategory", cascade={"persist", "remove"}, inversedBy="objects")
+     * @ORM\ManyToOne(targetEntity="ObjectCategory", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="object_category_id", referencedColumnName="id", nullable=true)
      * })
