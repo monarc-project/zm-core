@@ -655,7 +655,11 @@ class ObjectService extends AbstractService
 
         $rolfTagId = $monarcObject->getRolfTag() ? $monarcObject->getRolfTag()->getId() : null;
 
-        $oldRootCategory = $monarcObject->getCategory()->getRoot() ?: $monarcObject->getCategory();
+        // As a temporary solution to allow moving objects out from "uncategorised" category.
+        $oldRootCategory = null;
+        if ($monarcObject->getCategory() !== null) {
+            $oldRootCategory = $monarcObject->getCategory()->getRoot() ?: $monarcObject->getCategory();
+        }
 
         $monarcObject->exchangeArray($data, true);
 
@@ -703,7 +707,10 @@ class ObjectService extends AbstractService
             }
 
             foreach ($anrs as $anr) {
-                $this->unlinkCategoryFromAnrIfNoObjectsOrChildrenLeft($oldRootCategory, $anr);
+                // As a temporary solution to allow moving objects out from "uncategorised" category.
+                if ($oldRootCategory !== null) {
+                    $this->unlinkCategoryFromAnrIfNoObjectsOrChildrenLeft($oldRootCategory, $anr);
+                }
 
                 $this->linkCategoryWithAnrIfNotLinked($newRootCategory, $anr);
             }
