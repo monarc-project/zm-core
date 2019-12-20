@@ -11,6 +11,7 @@ use Doctrine\ORM\Query\Expr;
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Entity\ObjectCategorySuperClass;
+use Monarc\Core\Model\Entity\ObjectSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**
@@ -44,14 +45,22 @@ class MonarcObjectTable extends AbstractEntityTable
         return $objects;
     }
 
-    public function hasObjectsUnderRootCategory(ObjectCategorySuperClass $rootCategory): bool
-    {
-        return (bool)$this->getRepository()
+    public function hasObjectsUnderRootCategoryExcludeObject(
+        ObjectCategorySuperClass $rootCategory,
+        ObjectSuperClass $excludeObject = null
+    ): bool {
+        $queryBuilder = $this->getRepository()
             ->createQueryBuilder('o')
             ->select('COUNT(o.uuid)')
             ->join('o.category', 'oc', Expr\Join::WITH, 'o.category = oc')
             ->where('oc.root = :rootCategory OR oc = :rootCategory')
-            ->setParameter('rootCategory', $rootCategory)
+            ->setParameter('rootCategory', $rootCategory);
+        if ($excludeObject !== null) {
+            $queryBuilder->andWhere('o <> :excludeObject')
+                ->setParameter('excludeObject', $excludeObject);
+        }
+
+        return (bool)$queryBuilder
             ->getQuery()
             ->getSingleScalarResult();
     }
