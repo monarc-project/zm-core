@@ -358,12 +358,22 @@ class InstanceRiskService extends AbstractService
                                     $instancesRisks = $instanceRiskTable->getEntityByFields([
                                         'instance' => $instance->getId(),
                                         'amv' => (string)$instanceRisk->getAmv()->getUuid(),
+                                        'threat' => (string)$instanceRisk->getThreat()->getUuid(),
+                                        'vulnerability' => (string)$instanceRisk->getVulnerability()->getUuid(),
                                     ]);
                                 } catch (QueryException | MappingException $e) {
                                     $instancesRisks = $instanceRiskTable->getEntityByFields([
                                         'amv' => [
                                             'anr' => $instanceRisk->getAnr()->getId(),
                                             'uuid' => (string)$instanceRisk->getAmv()->getUuid(),
+                                        ],
+                                        'threat' => [
+                                            'anr' => $instanceRisk->getAnr()->getId(),
+                                            'uuid' => (string)$instanceRisk->getThreat()->getUuid(),
+                                        ],
+                                        'vulnerability' => [
+                                            'anr' => $instanceRisk->getAnr()->getId(),
+                                            'uuid' => (string)$instanceRisk->getVulnerability()->getUuid(),
                                         ],
                                         'instance' => $instance->getId(),
                                     ]);
