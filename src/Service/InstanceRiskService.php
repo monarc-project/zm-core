@@ -441,6 +441,7 @@ class InstanceRiskService extends AbstractService
             throw new Exception('Data missing', 412);
         }
 
+        unset($data['instance']);
         $instanceRisk->exchangeArray($data);
 
         $dependencies = property_exists($this, 'dependencies') ? $this->dependencies : [];
