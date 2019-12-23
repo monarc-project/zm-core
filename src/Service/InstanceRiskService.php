@@ -351,7 +351,7 @@ class InstanceRiskService extends AbstractService
 
                 /** @var Instance $instance */
                 foreach ($instances as $instance) {
-                    if ($instance !== $instanceRisk->getInstance()) {
+                  //  if ($instance !== $instanceRisk->getInstance()) {
                         if ($instanceRisk->getSpecific() === 0) {
                             if ($instanceRisk->getAmv()) {
                                 try {
@@ -427,7 +427,7 @@ class InstanceRiskService extends AbstractService
                             $initialData['instance'] = $instance->getId();
                             $this->update($instanceRisk->getId(), $initialData, false);
                         }
-                    }
+                    //}
                 }
             }
         }
