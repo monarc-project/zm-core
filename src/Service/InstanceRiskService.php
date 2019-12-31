@@ -351,83 +351,16 @@ class InstanceRiskService extends AbstractService
 
                 /** @var Instance $instance */
                 foreach ($instances as $instance) {
-                  //  if ($instance !== $instanceRisk->getInstance()) {
-                        if ($instanceRisk->getSpecific() === 0) {
-                            if ($instanceRisk->getAmv()) {
-                                try {
-                                    $instancesRisks = $instanceRiskTable->getEntityByFields([
-                                        'instance' => $instance->getId(),
-                                        'amv' => (string)$instanceRisk->getAmv()->getUuid(),
-                                        'threat' => (string)$instanceRisk->getThreat()->getUuid(),
-                                        'vulnerability' => (string)$instanceRisk->getVulnerability()->getUuid(),
-                                    ]);
-                                } catch (QueryException | MappingException $e) {
-                                    $instancesRisks = $instanceRiskTable->getEntityByFields([
-                                        'amv' => [
-                                            'anr' => $instanceRisk->getAnr()->getId(),
-                                            'uuid' => (string)$instanceRisk->getAmv()->getUuid(),
-                                        ],
-                                        'threat' => [
-                                            'anr' => $instanceRisk->getAnr()->getId(),
-                                            'uuid' => (string)$instanceRisk->getThreat()->getUuid(),
-                                        ],
-                                        'vulnerability' => [
-                                            'anr' => $instanceRisk->getAnr()->getId(),
-                                            'uuid' => (string)$instanceRisk->getVulnerability()->getUuid(),
-                                        ],
-                                        'instance' => $instance->getId(),
-                                    ]);
-                                }
-                            } else {
-                                try {
-                                    $instancesRisks = $instanceRiskTable->getEntityByFields([
-                                        'instance' => $instance->getId(),
-                                        'threat' => (string)$instanceRisk->getThreat()->getUuid(),
-                                        'vulnerability' => (string)$instanceRisk->getVulnerability()->getUuid(),
-                                    ]);
-                                } catch (QueryException | MappingException $e) {
-                                    $instancesRisks = $instanceRiskTable->getEntityByFields([
-                                        'threat' => [
-                                            'anr' => $instanceRisk->getAnr()->getId(),
-                                            'uuid' => (string)$instanceRisk->getThreat()->getUuid(),
-                                        ],
-                                        'vulnerability' => [
-                                            'anr' => $instanceRisk->getAnr()->getId(),
-                                            'uuid' => (string)$instanceRisk->getVulnerability()->getUuid(),
-                                        ],
-                                        'instance' => $instance->getId(),
-                                    ]);
-                                }
-                            }
-                        } else {
-                            try {
-                                $instancesRisks = $instanceRiskTable->getEntityByFields([
-                                    'instance' => $instance->getId(),
-                                    'specific' => 1,
-                                    'threat' => (string)$instanceRisk->getThreat()->getUuid(),
-                                    'vulnerability' => (string)$instanceRisk->getVulnerability()->getUuid(),
-                                ]);
-                            } catch (QueryException | MappingException $e) {
-                                $instancesRisks = $instanceRiskTable->getEntityByFields([
-                                    'threat' => [
-                                        'anr' => $instanceRisk->getAnr()->getId(),
-                                        'uuid' => (string)$instanceRisk->getThreat()->getUuid(),
-                                    ],
-                                    'vulnerability' => [
-                                        'anr' => $instanceRisk->getAnr()->getId(),
-                                        'uuid' => (string)$instanceRisk->getVulnerability()->getUuid(),
-                                    ],
-                                    'instance' => $instance->getId(),
-                                    'specific' => 1,
-                                ]);
-                            }
-                        }
-                        foreach ($instancesRisks as $instanceRisk) {
-                            $initialData['id'] = $instanceRisk->getId();
-                            $initialData['instance'] = $instance->getId();
-                            $this->update($instanceRisk->getId(), $initialData, false);
-                        }
-                    //}
+                    $instancesRisks = $instanceRiskTable->findByInstanceAndInstanceRiskRelations(
+                        $instance,
+                        $instanceRisk
+                    );
+
+                    foreach ($instancesRisks as $instanceRisk) {
+                        $initialData['id'] = $instanceRisk->getId();
+                        $initialData['instance'] = $instance->getId();
+                        $this->update($instanceRisk->getId(), $initialData, false);
+                    }
                 }
             }
         }

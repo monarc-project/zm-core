@@ -36,6 +36,8 @@ class InstanceRiskSuperClass extends AbstractEntity
     const KIND_PARTAGE = 4;
     const KIND_NOT_TREATED = 5;
 
+    public const TYPE_SPECIFIC = 1;
+
     /**
      * @var integer
      *
@@ -110,7 +112,7 @@ class InstanceRiskSuperClass extends AbstractEntity
      *
      * @ORM\Column(name="`specific`", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $specific = '0';
+    protected $specific = 0;
 
     /**
      * @var int
@@ -345,6 +347,11 @@ class InstanceRiskSuperClass extends AbstractEntity
         return $this->specific;
     }
 
+    public function isSpecific(): bool
+    {
+        return $this->specific === self::TYPE_SPECIFIC;
+    }
+
     public function getInputFilter($partial = false)
     {
         if (!$this->inputFilter) {
@@ -396,14 +403,14 @@ class InstanceRiskSuperClass extends AbstractEntity
             ],
         ];
         $filterLeft = [
-          [
-              'as' => 'th1',
-              'rel' => 'threat',
-          ],
-          [
-              'as' => 'v1',
-              'rel' => 'vulnerability',
-          ],
+            [
+                'as' => 'th1',
+                'rel' => 'threat',
+            ],
+            [
+                'as' => 'v1',
+                'rel' => 'vulnerability',
+            ],
 
         ];
         $filtersCol = [
