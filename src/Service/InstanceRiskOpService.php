@@ -9,10 +9,10 @@ namespace Monarc\Core\Service;
 
 use Monarc\Core\Model\Entity\Asset;
 use Monarc\Core\Model\Entity\InstanceRiskOp;
+use Monarc\Core\Model\Entity\InstanceRiskOpSuperClass;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Table\InstanceRiskOpTable;
 use Monarc\Core\Model\Table\RolfTagTable;
-
 use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\Mapping\MappingException;
 
@@ -136,12 +136,10 @@ class InstanceRiskOpService extends AbstractService
     {
         $risks = $this->getInstanceRisksOp($instanceId, $anrId);
         $table = $this->get('table');
-        $nb = count($risks);
+        $nb = \count($risks);
         $i = 1;
         foreach ($risks as $r) {
-            $r->set('kindOfMeasure', -1);
-            $this->updateRecoRisksOp($r);
-            $table->delete($r->id, ($i == $nb));
+            $table->delete($r->id, $i === $nb);
             $i++;
         }
     }
@@ -275,130 +273,16 @@ class InstanceRiskOpService extends AbstractService
         $InstanceRiskOpTable = $this->get('table');
         $instanceRisk = $InstanceRiskOpTable->getEntity($id);
         $this->updateRecoRisksOp($instanceRisk);
+
         return parent::delete($id);
     }
 
     /**
-     * Updates recommandation operational risk position
-     * @param $entity InstanceRiskOp
+     * TODO: This method is used only on FO side. Has to be removed from core together with refactoring of the service.
+     *
+     * Updates recommendation operational risks positions.
      */
-    public function updateRecoRisksOp($entity)
+    public function updateRecoRisksOp(InstanceRiskOpSuperClass $instanceRiskOp)
     {
-        if (!empty($this->get('recommandationTable'))) {
-            switch ($entity->get('kindOfMeasure')) {
-                case \Monarc\Core\Model\Entity\InstanceRiskOp::KIND_REDUCTION:
-                case \Monarc\Core\Model\Entity\InstanceRiskOp::KIND_REFUS:
-                case \Monarc\Core\Model\Entity\InstanceRiskOp::KIND_ACCEPTATION:
-                case \Monarc\Core\Model\Entity\InstanceRiskOp::KIND_PARTAGE:
-                    $sql = "SELECT recommandation_id
-                            FROM recommandations_risks
-                            WHERE instance_risk_op_id = :id
-                            GROUP BY recommandation_id";
-                    $res = $this->get('table')->getDb()->getEntityManager()->getConnection()
-                        ->fetchAll($sql, [':id' => $entity->get('id')]);
-                    $ids = [];
-                    foreach ($res as $r) {
-                        $ids[$r['recommandation_id']] = $r['recommandation_id'];
-                    }
-                    $recos = $this->get('recommandationTable')->getEntityByFields(['anr' => $entity->get('anr')->get('id')], ['position' => 'ASC', 'importance' => 'DESC', 'code' => 'ASC']);
-                    $i = 0;
-                    $hasSave = false;
-                    foreach ($recos as &$r) {
-                        if (($r->get('position') == null || $r->get('position') <= 0) && isset($ids[$r->get('uuid')])) {
-                            $i++;
-                            $r->set('position', $i);
-                            $this->get('recommandationTable')->save($r, false);
-                            $hasSave = true;
-                        } elseif ($i > 0 && $r->get('position') > 0) {
-                            $r->set('position', $r->get('position') + $i);
-                            $this->get('recommandationTable')->save($r, false);
-                            $hasSave = true;
-                        }
-                    }
-                    if ($hasSave && !empty($r)) {
-                        $this->get('recommandationTable')->save($r);
-                    }
-                    break;
-                case -1: // cas particulier, on supprime l'instanceRiskOp
-                    $sql = "SELECT rr.recommandation_id
-                            FROM recommandations_risks rr
-                            LEFT JOIN instances_risks ir
-                            ON ir.id = rr.instance_risk_id
-                            LEFT JOIN instances_risks_op iro
-                            ON iro.id = rr.instance_risk_op_id
-                            WHERE rr.anr_id = :anr
-                            AND (rr.instance_risk_op_id IS NOT NULL OR rr.instance_risk_id IS NOT NULL)
-                            AND rr.instance_id != :id
-                            GROUP BY rr.recommandation_id";
-                    $res = $this->get('table')->getDb()->getEntityManager()->getConnection()
-                        ->fetchAll($sql, [':anr' => $entity->get('anr')->get('id'), ':id' => $entity->get('instance')->get('id')]);
-                    $ids = [];
-                    foreach ($res as $r) {
-                        $ids[$r['recommandation_id']] = $r['recommandation_id'];
-                    }
-                    $recos = $this->get('recommandationTable')->getEntityByFields(['anr' => $entity->get('anr')->get('id')], ['position' => 'ASC']);
-                    $i = 0;
-                    $hasSave = false;
-                    $last = null;
-                    foreach ($recos as &$r) {
-                        if (!isset($ids[$r->get('uuid')])) {
-                            if ($r->get('position') == null || $r->get('position') <= 0) {
-                            } else {
-                                $i++;
-                            }
-                            $hasSave = true;
-                            $this->get('recommandationTable')->delete(['anr'=> $r->get('anr'), 'uuid' => $r->get('uuid')], false);
-                        } elseif ($i > 0 && $r->get('position') > 0) {
-                            $r->set('position', $r->get('position') - $i);
-                            $this->get('recommandationTable')->save($r, false);
-                            $hasSave = true;
-                            $last = $r;
-                        }
-                    }
-                    if ($hasSave && !empty($last)) {
-                        $this->get('recommandationTable')->save($last);
-                    }
-                    break;
-                case \Monarc\Core\Model\Entity\InstanceRiskOp::KIND_NOT_TREATED:
-                default:
-                    $sql = "SELECT rr.recommandation_id
-                            FROM recommandations_risks rr
-                            LEFT JOIN instances_risks ir
-                            ON ir.id = rr.instance_risk_id
-                            LEFT JOIN instances_risks_op iro
-                            ON iro.id = rr.instance_risk_op_id
-                            AND rr.instance_risk_op_id != :id
-                            WHERE ((ir.kind_of_measure IS NOT NULL AND ir.kind_of_measure < " . \Monarc\Core\Model\Entity\InstanceRisk::KIND_NOT_TREATED . ")
-                                OR (iro.kind_of_measure IS NOT NULL AND iro.kind_of_measure < " . \Monarc\Core\Model\Entity\InstanceRiskOp::KIND_NOT_TREATED . "))
-                            AND (rr.instance_risk_op_id IS NOT NULL OR rr.instance_risk_id IS NOT NULL)
-                            AND rr.anr_id = :anr
-                            GROUP BY rr.recommandation_id";
-                    $res = $this->get('table')->getDb()->getEntityManager()->getConnection()
-                        ->fetchAll($sql, [':anr' => $entity->get('anr')->get('id'), ':id' => $entity->get('id')]);
-                    $ids = [];
-                    foreach ($res as $r) {
-                        $ids[$r['recommandation_id']] = $r['recommandation_id'];
-                    }
-                    $recos = $this->get('recommandationTable')->getEntityByFields(['anr' => $entity->get('anr')->get('id'), 'position' => ['op' => 'IS NOT', 'value' => null]], ['position' => 'ASC']);
-                    $i = 0;
-                    $hasSave = false;
-                    foreach ($recos as &$r) {
-                        if ($r->get('position') > 0 && !isset($ids[$r->get('uuid')])) {
-                            $i++;
-                            $r->set('position', null);
-                            $this->get('recommandationTable')->save($r, false);
-                            $hasSave = true;
-                        } elseif ($i > 0 && $r->get('position') > 0) {
-                            $r->set('position', $r->get('position') - $i);
-                            $this->get('recommandationTable')->save($r, false);
-                            $hasSave = true;
-                        }
-                    }
-                    if ($hasSave && !empty($r)) {
-                        $this->get('recommandationTable')->save($r);
-                    }
-                    break;
-            }
-        }
     }
 }
