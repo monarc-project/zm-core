@@ -282,7 +282,7 @@ class InstanceRiskOpService extends AbstractService
      *
      * Updates recommendation operational risks positions.
      */
-    public function updateRecoRisksOp(InstanceRiskOpSuperClass $instanceRiskOp)
+    public function updateRecoRisksOp(InstanceRiskOpSuperClass $instanceRiskOp): void
     {
     }
 }
