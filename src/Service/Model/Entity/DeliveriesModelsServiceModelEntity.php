@@ -7,10 +7,15 @@
 
 namespace Monarc\Core\Service\Model\Entity;
 
+use Monarc\Core\Model\DbCli;
+
 /**
  * Class DeliveriesModelsServiceModelEntity
  * @package Monarc\Core\Service\Model\Entity
  */
 class DeliveriesModelsServiceModelEntity extends AbstractServiceModelEntity
 {
+    protected $ressources = [
+        'setDbAdapter' => DbCli::class,
+    ];
 }
