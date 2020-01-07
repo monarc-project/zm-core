@@ -87,7 +87,7 @@ class InstanceTable extends AbstractEntityTable
                 }
             }
         }
-        return $arbo;
+        return array_reverse($arbo);
     }
 
     /**
