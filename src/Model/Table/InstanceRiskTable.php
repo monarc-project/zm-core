@@ -1,7 +1,7 @@
 <?php
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2019  SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -10,6 +10,8 @@ namespace Monarc\Core\Model\Table;
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\AbstractEntity;
 use Monarc\Core\Model\Entity\InstanceRisk;
+use Monarc\Core\Model\Entity\InstanceRiskSuperClass;
+use Monarc\Core\Model\Entity\InstanceSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**
@@ -112,40 +114,40 @@ class InstanceRiskTable extends AbstractEntityTable
 
             // Fill in the lines then
             foreach ($risks as $risk) {
-              foreach ($fields as $k => $v) {
-                  if ($k == 'kindOfMeasure'){
-                    switch ($risk[$k]) {
-                      case 1:
-                          $array_values[] = $translate->translate('Reduction', $lang);
-                          break;
-                      case 2:
-                          $array_values[] = $translate->translate('Denied', $lang);;
-                          break;
-                      case 3:
-                          $array_values[] = $translate->translate('Accepted', $lang);
-                          break;
-                      case 4:
-                          $array_values[] = $translate->translate('Shared', $lang);
-                          break;
-                      default:
-                        $array_values[] = $translate->translate('Not treated', $lang);
+                foreach ($fields as $k => $v) {
+                    if ($k == 'kindOfMeasure'){
+                        switch ($risk[$k]) {
+                            case 1:
+                                $array_values[] = $translate->translate('Reduction', $lang);
+                                break;
+                            case 2:
+                                $array_values[] = $translate->translate('Denied', $lang);;
+                                break;
+                            case 3:
+                                $array_values[] = $translate->translate('Accepted', $lang);
+                                break;
+                            case 4:
+                                $array_values[] = $translate->translate('Shared', $lang);
+                                break;
+                            default:
+                                $array_values[] = $translate->translate('Not treated', $lang);
+                        }
                     }
-                  }
-                  elseif ($k == 'c_risk' && $risk[c_risk_enabled] == '0') {
-                    $array_values[] = null;
-                  }
-                  elseif ($k == 'i_risk' && $risk[i_risk_enabled] == '0') {
-                    $array_values[] = null;
-                  }
-                  elseif ($k == 'd_risk' && $risk[d_risk_enabled] == '0') {
-                    $array_values[] = null;
-                  }
-                  elseif ($risk[$k] == '-1'){
-                    $array_values[] = null;
-                  }
-                  else {
-                    $array_values[] = $risk[$k];
-                  }
+                    elseif ($k == 'c_risk' && $risk[c_risk_enabled] == '0') {
+                        $array_values[] = null;
+                    }
+                    elseif ($k == 'i_risk' && $risk[i_risk_enabled] == '0') {
+                        $array_values[] = null;
+                    }
+                    elseif ($k == 'd_risk' && $risk[d_risk_enabled] == '0') {
+                        $array_values[] = null;
+                    }
+                    elseif ($risk[$k] == '-1'){
+                        $array_values[] = null;
+                    }
+                    else {
+                        $array_values[] = $risk[$k];
+                    }
                 }
                 $output .= '"';
                 $search = ['"',"\n"];
@@ -232,7 +234,7 @@ class InstanceRiskTable extends AbstractEntityTable
 
         //TO DO : if we want to keep the specific models, make an if on it
         if($context == AbstractEntity::BACK_OFFICE){
-          $sql = "
+            $sql = "
               SELECT      " . implode(',', $arraySelect) . "
               FROM        instances_risks AS ir
               INNER JOIN  instances i
@@ -249,7 +251,7 @@ class InstanceRiskTable extends AbstractEntityTable
               ON          i.object_id = o.uuid
               WHERE       ir.cache_max_risk >= -1";
         }else{
-        $sql = "
+            $sql = "
             SELECT      " . implode(',', $arraySelect) . "
             FROM        instances_risks AS ir
             INNER JOIN  instances i
@@ -271,7 +273,7 @@ class InstanceRiskTable extends AbstractEntityTable
             and         i.anr_id = o.anr_id
             WHERE       ir.cache_max_risk >= -1
             AND         ir.anr_id = :anrid ";
-          }
+        }
         $queryParams = [
             ':anrid' => $anrId,
         ];
@@ -312,12 +314,12 @@ class InstanceRiskTable extends AbstractEntityTable
 
         // FILTER: amvs ==
         if (isset($params['amvs'])) {
-          if (!is_array($params['amvs'])) {
-            $params['amvs'] = explode(',', substr($params['amvs'],1,-1));
-          }
-          $sql .= " AND a.uuid IN (:amvIds) ";
-          $queryParams[':amvIds'] = $params['amvs'];
-          $typeParams[':amvIds'] = \Doctrine\DBAL\Connection::PARAM_INT_ARRAY;
+            if (!is_array($params['amvs'])) {
+                $params['amvs'] = explode(',', substr($params['amvs'],1,-1));
+            }
+            $sql .= " AND a.uuid IN (:amvIds) ";
+            $queryParams[':amvIds'] = $params['amvs'];
+            $typeParams[':amvIds'] = \Doctrine\DBAL\Connection::PARAM_INT_ARRAY;
         }
         // FILTER: kind_of_measure ==
         if (isset($params['kindOfMeasure'])) {
@@ -413,5 +415,31 @@ class InstanceRiskTable extends AbstractEntityTable
             }
         }
         return array_values($lst);
+    }
+
+    public function findByInstanceAndInstanceRiskRelations(
+        InstanceSuperClass $instance,
+        InstanceRiskSuperClass $instanceRisk
+    ) {
+        $queryBuilder = $this->getRepository()
+            ->createQueryBuilder('ir')
+            ->where('ir.instance = :instance')
+            ->setParameter('instance', $instance);
+
+        if ($instanceRisk->getAmv() !== null) {
+            $queryBuilder->andWhere('ir.amv = :amv')->setParameter('amv', $instanceRisk->getAmv());
+        }
+
+        $queryBuilder
+            ->andWhere('ir.threat = :threat')
+            ->andWhere('ir.vulnerability = :vulnerability')
+            ->setParameter('threat', $instanceRisk->getThreat())
+            ->setParameter('vulnerability', $instanceRisk->getVulnerability());
+
+        if ($instanceRisk->isSpecific()) {
+            $queryBuilder->andWhere('ir.specific = ' . InstanceRiskSuperClass::TYPE_SPECIFIC);
+        }
+
+        return $queryBuilder->getQuery()->getResult();
     }
 }

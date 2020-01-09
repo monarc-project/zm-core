@@ -1,7 +1,7 @@
 <?php
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2019  SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -45,5 +45,21 @@ class AnrObjectCategoryTable extends AbstractEntityTable
             ->getResult();
 
         return $result[0] ?? null;
+    }
+
+
+    /**
+     * @param ObjectCategorySuperClass $objectCategory
+     *
+     * @return AnrObjectCategory[]
+     */
+    public function findByObjectCategory(ObjectCategorySuperClass $objectCategory)
+    {
+        return $this->getRepository()
+            ->createQueryBuilder('aoc')
+            ->andWhere('aoc.category = :category')
+            ->setParameter('category', $objectCategory)
+            ->getQuery()
+            ->getResult();
     }
 }

@@ -1,7 +1,7 @@
 <?php
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2019  SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -11,6 +11,7 @@ use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Amv;
 use Monarc\Core\Model\Entity\Instance;
 use Monarc\Core\Model\Entity\InstanceRisk;
+use Monarc\Core\Model\Entity\InstanceRiskSuperClass;
 use Monarc\Core\Model\Entity\InstanceSuperClass;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Entity\ObjectSuperClass;
@@ -142,7 +143,7 @@ class InstanceRiskService extends AbstractService
                 $instanceRisk = new $instanceRiskEntityClassName($data);
                 $instanceRiskTable->save($instanceRisk);
 
-                $this->updateRisks($instanceRisk, ($num + 1) === $amvsCount);
+                $this->updateRisks($instanceRisk);
             }
         }
     }
@@ -156,12 +157,10 @@ class InstanceRiskService extends AbstractService
     {
         $risks = $this->getInstanceRisks($instanceId, $anrId);
         $table = $this->get('table');
-        $nb = count($risks);
+        $nb = \count($risks);
         $i = 1;
         foreach ($risks as $r) {
-            $r->set('kindOfMeasure',-1);
-            $this->updateRecoRisks($r);
-            $table->delete($r->id,($i == $nb));
+            $table->delete($r->id, $i === $nb);
             $i++;
         }
     }
@@ -290,7 +289,6 @@ class InstanceRiskService extends AbstractService
         $instanceRiskTable->save($instanceRisk);
 
         $this->updateRisks($id);
-        $this->updateRecoRisks($instanceRisk);
 
         return $id;
     }
@@ -351,72 +349,15 @@ class InstanceRiskService extends AbstractService
 
                 /** @var Instance $instance */
                 foreach ($instances as $instance) {
-                    if ($instance !== $instanceRisk->getInstance()) {
-                        if ($instanceRisk->getSpecific() === 0) {
-                            if ($instanceRisk->getAmv()) {
-                                try {
-                                    $instancesRisks = $instanceRiskTable->getEntityByFields([
-                                        'instance' => $instance->getId(),
-                                        'amv' => (string)$instanceRisk->getAmv()->getUuid(),
-                                    ]);
-                                } catch (QueryException | MappingException $e) {
-                                    $instancesRisks = $instanceRiskTable->getEntityByFields([
-                                        'amv' => [
-                                            'anr' => $instanceRisk->getAnr()->getId(),
-                                            'uuid' => (string)$instanceRisk->getAmv()->getUuid(),
-                                        ],
-                                        'instance' => $instance->getId(),
-                                    ]);
-                                }
-                            } else {
-                                try {
-                                    $instancesRisks = $instanceRiskTable->getEntityByFields([
-                                        'instance' => $instance->getId(),
-                                        'threat' => (string)$instanceRisk->getThreat()->getUuid(),
-                                        'vulnerability' => (string)$instanceRisk->getVulnerability()->getUuid(),
-                                    ]);
-                                } catch (QueryException | MappingException $e) {
-                                    $instancesRisks = $instanceRiskTable->getEntityByFields([
-                                        'threat' => [
-                                            'anr' => $instanceRisk->getAnr()->getId(),
-                                            'uuid' => (string)$instanceRisk->getThreat()->getUuid(),
-                                        ],
-                                        'vulnerability' => [
-                                            'anr' => $instanceRisk->getAnr()->getId(),
-                                            'uuid' => (string)$instanceRisk->getVulnerability()->getUuid(),
-                                        ],
-                                        'instance' => $instance->getId(),
-                                    ]);
-                                }
-                            }
-                        } else {
-                            try {
-                                $instancesRisks = $instanceRiskTable->getEntityByFields([
-                                    'instance' => $instance->getId(),
-                                    'specific' => 1,
-                                    'threat' => (string)$instanceRisk->getThreat()->getUuid(),
-                                    'vulnerability' => (string)$instanceRisk->getVulnerability()->getUuid(),
-                                ]);
-                            } catch (QueryException | MappingException $e) {
-                                $instancesRisks = $instanceRiskTable->getEntityByFields([
-                                    'threat' => [
-                                        'anr' => $instanceRisk->getAnr()->getId(),
-                                        'uuid' => (string)$instanceRisk->getThreat()->getUuid(),
-                                    ],
-                                    'vulnerability' => [
-                                        'anr' => $instanceRisk->getAnr()->getId(),
-                                        'uuid' => (string)$instanceRisk->getVulnerability()->getUuid(),
-                                    ],
-                                    'instance' => $instance->getId(),
-                                    'specific' => 1,
-                                ]);
-                            }
-                        }
-                        foreach ($instancesRisks as $instanceRisk) {
-                            $initialData['id'] = $instanceRisk->getId();
-                            $initialData['instance'] = $instance->getId();
-                            $this->update($instanceRisk->getId(), $initialData, false);
-                        }
+                    $instancesRisks = $instanceRiskTable->findByInstanceAndInstanceRiskRelations(
+                        $instance,
+                        $instanceRisk
+                    );
+
+                    foreach ($instancesRisks as $instanceRisk) {
+                        $initialData['id'] = $instanceRisk->getId();
+                        $initialData['instance'] = $instance->getId();
+                        $this->update($instanceRisk->getId(), $initialData, false);
                     }
                 }
             }
@@ -431,6 +372,7 @@ class InstanceRiskService extends AbstractService
             throw new Exception('Data missing', 412);
         }
 
+        unset($data['instance']);
         $instanceRisk->exchangeArray($data);
 
         $dependencies = property_exists($this, 'dependencies') ? $this->dependencies : [];
@@ -443,7 +385,6 @@ class InstanceRiskService extends AbstractService
         $instanceRiskTable->save($instanceRisk);
 
         $this->updateRisks($id);
-        $this->updateRecoRisks($instanceRisk);
 
         return $id;
     }
@@ -531,129 +472,16 @@ class InstanceRiskService extends AbstractService
         $instanceRiskTable = $this->get('table');
         $instanceRisk = $instanceRiskTable->getEntity($id);
         $this->updateRecoRisks($instanceRisk);
+
         return parent::delete($id);
     }
 
     /**
-     * Update recommandation risk position
-     * @param InstanceRisk $entity The entity to update
+     * TODO: This method is used only on FO side. Has to be removed from core together with refactoring of the service.
+     *
+     * Updates recommandation risk position.
      */
-    public function updateRecoRisks($entity){
-        if(!empty($this->get('recommandationTable'))){
-            switch($entity->get('kindOfMeasure')){
-                case InstanceRisk::KIND_REDUCTION:
-                case InstanceRisk::KIND_REFUS:
-                case InstanceRisk::KIND_ACCEPTATION:
-                case InstanceRisk::KIND_PARTAGE:
-                    $sql = "SELECT recommandation_id
-                            FROM recommandations_risks
-                            WHERE instance_risk_id = :id
-                            GROUP BY recommandation_id";
-                    $res = $this->get('table')->getDb()->getEntityManager()->getConnection()
-                        ->fetchAll($sql, [':id'=>$entity->get('id')]);
-                    $ids = [];
-                    foreach($res as $r){
-                        $ids[$r['recommandation_id']] = $r['recommandation_id'];
-                    }
-                    $recos = $this->get('recommandationTable')->getEntityByFields(['anr'=>$entity->get('anr')->get('id')],['position'=>'ASC','importance'=>'DESC','code'=>'ASC']);
-                    $i = 0;
-                    $hasSave = false;
-                    foreach($recos as &$r){
-                        if(($r->get('position') == null || $r->get('position') <= 0) && isset($ids[$r->get('uuid')])){
-                            $i++;
-                            $r->set('position',$i);
-                            $this->get('recommandationTable')->save($r,false);
-                            $hasSave = true;
-                        }elseif($i > 0 && $r->get('position') > 0){
-                            $r->set('position',$r->get('position')+$i);
-                            $this->get('recommandationTable')->save($r,false);
-                            $hasSave = true;
-                        }
-                    }
-                    if($hasSave && !empty($r)){
-                        $this->get('recommandationTable')->save($r);
-                    }
-                    break;
-                case -1: // cas particulier, on supprime l'instanceRisk
-                    $sql = "SELECT rr.recommandation_id
-                            FROM recommandations_risks rr
-                            LEFT JOIN instances_risks ir
-                            ON ir.id = rr.instance_risk_id
-                            LEFT JOIN instances_risks_op iro
-                            ON iro.id = rr.instance_risk_op_id
-                            WHERE rr.anr_id = :anr
-                            AND (rr.instance_risk_op_id IS NOT NULL OR rr.instance_risk_id IS NOT NULL)
-                            AND rr.instance_id != :id
-                            GROUP BY rr.recommandation_id";
-                    $res = $this->get('table')->getDb()->getEntityManager()->getConnection()
-                        ->fetchAll($sql, [':anr'=>$entity->get('anr')->get('id'), ':id'=>$entity->get('instance')->get('id')]);
-                    $ids = [];
-                    foreach($res as $r){
-                        $ids[$r['recommandation_id']] = $r['recommandation_id'];
-                    }
-                    $recos = $this->get('recommandationTable')->getEntityByFields(['anr'=>$entity->get('anr')->get('id')],['position'=>'ASC']);
-                    $i = 0;
-                    $hasSave = false;
-                    $last = null;
-                    foreach($recos as &$r){
-                        if(!isset($ids[$r->get('uuid')])){
-                            if($r->get('position') == null || $r->get('position') <= 0){
-                            }else{
-                                $i++;
-                            }
-                            $hasSave = true;
-                            $this->get('recommandationTable')->delete(['anr'=> $r->get('anr'), 'uuid' => $r->get('uuid')]);
-                        }elseif($i > 0 && $r->get('position') > 0){
-                            $r->set('position',$r->get('position')-$i);
-                            $this->get('recommandationTable')->save($r,false);
-                            $hasSave = true;
-                            $last = $r;
-                        }
-                    }
-                    if($hasSave && !empty($last)){
-                        $this->get('recommandationTable')->save($last);
-                    }
-                    break;
-                case InstanceRisk::KIND_NOT_TREATED:
-                default:
-                    $sql = "SELECT rr.recommandation_id
-                            FROM recommandations_risks rr
-                            LEFT JOIN instances_risks ir
-                            ON ir.id = rr.instance_risk_id
-                            AND rr.instance_risk_id != :id
-                            LEFT JOIN instances_risks_op iro
-                            ON iro.id = rr.instance_risk_op_id
-                            WHERE ((ir.kind_of_measure IS NOT NULL AND ir.kind_of_measure < ".InstanceRisk::KIND_NOT_TREATED.")
-                                OR (iro.kind_of_measure IS NOT NULL AND iro.kind_of_measure < ".\Monarc\Core\Model\Entity\InstanceRiskOp::KIND_NOT_TREATED."))
-                            AND (rr.instance_risk_op_id IS NOT NULL OR rr.instance_risk_id IS NOT NULL)
-                            AND rr.anr_id = :anr
-                            GROUP BY rr.recommandation_id";
-                    $res = $this->get('table')->getDb()->getEntityManager()->getConnection()
-                        ->fetchAll($sql, [':anr'=>$entity->get('anr')->get('id'), ':id'=>$entity->get('id')]);
-                    $ids = [];
-                    foreach($res as $r){
-                        $ids[$r['recommandation_id']] = $r['recommandation_id'];
-                    }
-                    $recos = $this->get('recommandationTable')->getEntityByFields(['anr'=>$entity->get('anr')->get('id'), 'position' => ['op'=>'IS NOT', 'value'=>null]],['position'=>'ASC']);
-                    $i = 0;
-                    $hasSave = false;
-                    foreach($recos as &$r){
-                        if($r->get('position') > 0 && !isset($ids[$r->get('uuid')])){
-                            $i++;
-                            $r->set('position',null);
-                            $this->get('recommandationTable')->save($r,false);
-                            $hasSave = true;
-                        }elseif($i > 0 && $r->get('position') > 0){
-                            $r->set('position',$r->get('position')-$i);
-                            $this->get('recommandationTable')->save($r,false);
-                            $hasSave = true;
-                        }
-                    }
-                    if($hasSave && !empty($r)){
-                        $this->get('recommandationTable')->save($r);
-                    }
-                    break;
-            }
-        }
+    public function updateRecoRisks(InstanceRiskSuperClass $instanceRisk): void
+    {
     }
 }
