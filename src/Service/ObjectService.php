@@ -1418,15 +1418,13 @@ class ObjectService extends AbstractService
         return $objectObjectTable->getDirectParentsInfos($object_id->toString(), $anrId);
     }
 
-    private function getChildren(
-        array $parentObjectCategory,
-        array &$objectsCategories
-    ): array {
+    private function getChildren(array $parentObjectCategory, array &$objectsCategories): array
+    {
         $currentObjectCategory = $parentObjectCategory;
         unset($objectsCategories[$parentObjectCategory['id']]);
 
         foreach ($objectsCategories as $objectsCategory) {
-            if ($objectsCategory && $objectsCategory['parent']->id === $parentObjectCategory['id']) {
+            if ($objectsCategory['parent'] && $objectsCategory['parent']->getId() === $parentObjectCategory['id']) {
                 $objectsCategory = $this->getChildren($objectsCategory, $objectsCategories);
                 $currentObjectCategory['child'][] = $objectsCategory;
             }
