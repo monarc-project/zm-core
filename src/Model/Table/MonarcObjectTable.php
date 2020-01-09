@@ -65,21 +65,6 @@ class MonarcObjectTable extends AbstractEntityTable
             ->getSingleScalarResult();
     }
 
-
-    /**
-     * @return ObjectSuperClass[]
-     */
-    public function getObjectsUnderRootCategory(ObjectCategorySuperClass $rootCategory): array
-    {
-        return $this->getRepository()
-            ->createQueryBuilder('o')
-            ->join('o.category', 'oc')
-            ->where('oc.root = :rootCategory OR oc = :rootCategory')
-            ->setParameter('rootCategory', $rootCategory)
-            ->getQuery()
-            ->getResult();
-    }
-
     /**
      * Check In Anr
      *

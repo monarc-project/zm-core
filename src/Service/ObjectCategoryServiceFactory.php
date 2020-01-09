@@ -7,9 +7,6 @@
 
 namespace Monarc\Core\Service;
 
-use Monarc\Core\Model\Entity\ObjectCategory;
-use Monarc\Core\Model\Table;
-
 /**
  * Object Category Service Factory
  *
@@ -19,10 +16,12 @@ use Monarc\Core\Model\Table;
 class ObjectCategoryServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = [
-        'table' => Table\ObjectCategoryTable::class,
-        'entity' => ObjectCategory::class,
-        'anrObjectCategoryTable' => Table\AnrObjectCategoryTable::class,
-        'monarcObjectTable' => Table\MonarcObjectTable::class,
-        'anrTable' => Table\AnrTable::class,
+        'table' => 'Monarc\Core\Model\Table\ObjectCategoryTable',
+        'entity' => 'Monarc\Core\Model\Entity\ObjectCategory',
+        'anrObjectCategoryTable' => 'Monarc\Core\Model\Table\AnrObjectCategoryTable',
+        'MonarcObjectTable' => 'Monarc\Core\Model\Table\MonarcObjectTable',
+        'rootTable' => 'Monarc\Core\Model\Table\ObjectCategoryTable',
+        'parentTable' => 'Monarc\Core\Model\Table\ObjectCategoryTable',
+        'anrTable' => 'Monarc\Core\Model\Table\AnrTable',
     ];
 }

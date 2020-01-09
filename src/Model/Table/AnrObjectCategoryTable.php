@@ -46,20 +46,4 @@ class AnrObjectCategoryTable extends AbstractEntityTable
 
         return $result[0] ?? null;
     }
-
-
-    /**
-     * @param ObjectCategorySuperClass $objectCategory
-     *
-     * @return AnrObjectCategory[]
-     */
-    public function findByObjectCategory(ObjectCategorySuperClass $objectCategory)
-    {
-        return $this->getRepository()
-            ->createQueryBuilder('aoc')
-            ->andWhere('aoc.category = :category')
-            ->setParameter('category', $objectCategory)
-            ->getQuery()
-            ->getResult();
-    }
 }

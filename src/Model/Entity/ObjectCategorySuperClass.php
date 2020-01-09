@@ -191,11 +191,6 @@ class ObjectCategorySuperClass extends AbstractEntity
         return $this;
     }
 
-    public function isCategoryRoot(): bool
-    {
-        return $this->root === null;
-    }
-
     public function getInputFilter($partial = false)
     {
         if (!$this->inputFilter) {
