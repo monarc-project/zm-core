@@ -936,7 +936,7 @@ class InstanceService extends AbstractService
                 'name4' => $anr['label4'],//." > ".$r->get('name4'),
             ];
 
-            $asc = array_reverse($this->get('table')->getAscendance($r));
+            $asc = $this->get('table')->getAscendance($r);
             foreach ($asc as $a) {
                 $names['name1'] .= ' > ' . $a['name1'];
                 $names['name2'] .= ' > ' . $a['name2'];
