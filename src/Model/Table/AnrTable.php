@@ -8,6 +8,7 @@ namespace Monarc\Core\Model\Table;
 
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\Anr;
+use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**
@@ -28,5 +29,13 @@ class AnrTable extends AbstractEntityTable
         return $queryBuilder->where($queryBuilder->expr()->in('a.id', array_map('\intval', $ids)))
             ->getQuery()
             ->getResult();
+    }
+
+    public function findById(int $id): ?AnrSuperClass
+    {
+        /** @var Anr|null $anr */
+        $anr = $this->getRepository()->find($id);
+
+        return $anr;
     }
 }

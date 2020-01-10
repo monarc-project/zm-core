@@ -7,8 +7,11 @@
 
 namespace Monarc\Core\Service;
 
+use Monarc\Core\Model\Entity\AnrObjectCategory;
 use Monarc\Core\Model\Entity\ObjectCategory;
+use Monarc\Core\Model\Entity\ObjectCategorySuperClass;
 use Monarc\Core\Model\Table\AnrObjectCategoryTable;
+use Monarc\Core\Model\Table\MonarcObjectTable;
 
 /**
  * Object Category Service
@@ -19,9 +22,7 @@ use Monarc\Core\Model\Table\AnrObjectCategoryTable;
 class ObjectCategoryService extends AbstractService
 {
     protected $anrObjectCategoryTable;
-    protected $MonarcObjectTable;
-    protected $rootTable;//required for autopositionning
-    protected $parentTable;//required for autopositionning
+    protected $monarcObjectTable;
     protected $anrTable;//required for autopositionning of anrobjectcategories
     protected $userAnrTable;
     protected $filterColumns = ['label1', 'label2', 'label3', 'label4'];
@@ -146,10 +147,13 @@ class ObjectCategoryService extends AbstractService
      */
     public function update($id, $data)
     {
-        /** @var ObjectCategory $objectCategory */
+        /** @var ObjectCategorySuperClass $objectCategory */
         $objectCategory = $this->get('table')->getEntity($id);
         $objectCategory->setLanguage($this->getLanguage());
         $objectCategory->setDbAdapter($this->table->getDb());
+
+        $isRootCategoryBeforeUpdated = $objectCategory->isCategoryRoot();
+        $previousRootCategory = $objectCategory->getRoot();
 
         $objectCategory->exchangeArray($data);
 
@@ -160,6 +164,21 @@ class ObjectCategoryService extends AbstractService
         );
 
         $this->get('table')->save($objectCategory);
+
+        // Perform operations to link/unlink the category and its root one to/from Anr.
+        if ($isRootCategoryBeforeUpdated && !$objectCategory->isCategoryRoot()) {
+            $this->unlinkCategoryFromAnr($objectCategory);
+            $this->linkCategoryToAnr($objectCategory->getRoot());
+        } elseif (!$isRootCategoryBeforeUpdated && $objectCategory->isCategoryRoot()) {
+            $this->linkCategoryToAnr($objectCategory);
+            /** @var MonarcObjectTable $monarcObjectTable */
+            $monarcObjectTable = $this->get('monarcObjectTable');
+            if ($previousRootCategory !== null
+                && !$monarcObjectTable->hasObjectsUnderRootCategoryExcludeObject($previousRootCategory)
+            ) {
+                $this->unlinkCategoryFromAnr($previousRootCategory);
+            }
+        }
 
         return $objectCategory->getJsonArray();
     }
@@ -181,7 +200,7 @@ class ObjectCategoryService extends AbstractService
             $i++;
         }
 
-        $this->get('MonarcObjectTable')->getRepository()->createQueryBuilder('t')
+        $this->get('monarcObjectTable')->getRepository()->createQueryBuilder('t')
             ->update()
             ->set('t.category', ':categ')
             ->setParameter(':categ', null)
@@ -205,6 +224,7 @@ class ObjectCategoryService extends AbstractService
         /** @var AnrObjectCategoryTable $anrObjectCategoryTable */
         $anrObjectCategoryTable = $this->get('anrObjectCategoryTable');
 
+        /** @var ObjectCategorySuperClass $anrObjectCategory */
         $anrObjectCategory = $anrObjectCategoryTable->getEntityByFields(['anr' => $anrId, 'category' => $categoryId])[0];
         $anrObjectCategory->setDbAdapter($anrObjectCategoryTable->getDb());
 
@@ -223,5 +243,48 @@ class ObjectCategoryService extends AbstractService
         $anrObjectCategory->exchangeArray($data);
         $this->setDependencies($anrObjectCategory, ['anr']);
         return $anrObjectCategoryTable->save($anrObjectCategory);
+    }
+
+    protected function unlinkCategoryFromAnr(ObjectCategorySuperClass $objectCategory): void
+    {
+        /** @var AnrObjectCategoryTable $anrObjectCategoryTable */
+        $anrObjectCategoryTable = $this->get('anrObjectCategoryTable');
+
+        $anrObjectCategories = $anrObjectCategoryTable->findByObjectCategory($objectCategory);
+        foreach ($anrObjectCategories as $anrObjectCategory) {
+            $anrObjectCategoryTable->delete($anrObjectCategory->getId());
+        }
+    }
+
+    /**
+     * We need to link every Anr of Objects which are under the root category or it's children.
+     */
+    protected function linkCategoryToAnr(ObjectCategorySuperClass $objectCategory): void
+    {
+        /** @var MonarcObjectTable $monarcObjectTable */
+        $monarcObjectTable = $this->get('monarcObjectTable');
+        $objects = $monarcObjectTable->getObjectsUnderRootCategory($objectCategory);
+
+        /** @var AnrObjectCategoryTable $anrObjectCategoryTable */
+        $anrObjectCategoryTable = $this->get('anrObjectCategoryTable');
+
+        foreach ($objects as $object) {
+            foreach ($object->getAnrs() as $anr) {
+                if (isset($anrs[$anr->getId()])
+                    || $anrObjectCategoryTable->findOneByAnrAndObjectCategory($anr, $objectCategory) !== null
+                ) {
+                    continue;
+                }
+
+                $anrObjectCategory = new AnrObjectCategory();
+                $anrObjectCategory->setAnr($anr)->setCategory($objectCategory);
+                $anrObjectCategory->setDbAdapter($anrObjectCategoryTable->getDb());
+                $anrObjectCategory->exchangeArray(['implicitPosition' => 2]);
+
+                $anrObjectCategoryTable->save($anrObjectCategory);
+
+                $anrs[$anr->getId()] = true;
+            }
+        }
     }
 }

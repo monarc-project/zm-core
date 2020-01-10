@@ -185,9 +185,9 @@ class ObjectService extends AbstractService
             $filterAnd['uuid'] = ['op' => 'IN', 'value' => $value];
 
         }
-        /** @var MonarcObjectTable $MonarcObjectTable */
-        $MonarcObjectTable = $this->get('table');
-        return $MonarcObjectTable->fetchAllFiltered(
+        /** @var MonarcObjectTable $monarcObjectTable */
+        $monarcObjectTable = $this->get('table');
+        return $monarcObjectTable->fetchAllFiltered(
             array_keys($this->get('entity')->getJsonArray()),
             $page,
             $limit,
@@ -1269,15 +1269,16 @@ class ObjectService extends AbstractService
         $anrObjects = [];
         $objectsCategories = [];
 
-        /** @var MonarcObjectTable $MonarcObjectTable */
-        $MonarcObjectTable = $this->get('table');
-        $objects = $MonarcObjectTable->getEntityByFields(['anrs' => $anrId]);
+        /** @var MonarcObjectTable $monarcObjectTable */
+        $monarcObjectTable = $this->get('table');
+        /** @var ObjectSuperClass[] $objects */
+        $objects = $monarcObjectTable->getEntityByFields(['anrs' => $anrId]);
 
         foreach ($objects as $object) {
-            if ($object->get('category')) {
-                $anrObjects[$object->get('category')->get('id')][] = $object->getJsonArray();
-                if (!isset($objectsCategories[$object->get('category')->get('id')])) {
-                    $objectsCategories[$object->get('category')->get('id')] = $object->get('category')->getJsonArray();
+            if ($object->getCategory()) {
+                $anrObjects[$object->getCategory()->getId()][] = $object->getJsonArray();
+                if (!isset($objectsCategories[$object->getCategory()->getId()])) {
+                    $objectsCategories[$object->getCategory()->getId()] = $object->getCategory()->getJsonArray();
                 }
             } else {
                 $anrObjects[-1][] = $object->getJsonArray();
@@ -1318,8 +1319,11 @@ class ObjectService extends AbstractService
 
         // Retrieve ANR's categories mapping as root categories can be sorted
         $anrObjectsCategories = [];
+        /** @var AnrTable $anrTable */
+        /** @var AnrObjectCategoryTable $anrObjectCategoryTable */
+        $anrTable = $this->get('anrTable');
         $anrObjectCategoryTable = $this->get('anrObjectCategoryTable');
-        $anrObjectCategories = $anrObjectCategoryTable->getEntityByFields(['anr' => $anrId], ['position' => 'ASC']);
+        $anrObjectCategories = $anrObjectCategoryTable->findByAnrOrderedByPosititon($anrTable->findById($anrId));
 
         foreach ($anrObjectCategories as $anrObjectCategory) {
             $anrObjectsCategories[$anrObjectCategory->id] = $this->getChildren($anrObjectCategory->category->getJsonArray(), $objectsCategories);
@@ -1342,9 +1346,6 @@ class ObjectService extends AbstractService
         unset($objectsCategories);
 
         // Order categories by position
-        usort($anrObjectsCategories, function ($a, $b) {
-            return $this->sortCategories($a, $b);
-        });
         foreach ($anrObjectsCategories as &$cat) {
             if (isset($cat['child']) && is_array($cat['child'])) {
                 usort($cat['child'], function ($a, $b) {
@@ -1417,26 +1418,21 @@ class ObjectService extends AbstractService
         return $objectObjectTable->getDirectParentsInfos($object_id->toString(), $anrId);
     }
 
-    /**
-     * Get Children
-     *
-     * @param $parentObjectCategory
-     * @param $objectsCategories
-     * @return mixed
-     */
-    public function getChildren($parentObjectCategory, &$objectsCategories)
+    private function getChildren(array $parentObjectCategory, array &$objectsCategories): array
     {
         $currentObjectCategory = $parentObjectCategory;
         unset($objectsCategories[$parentObjectCategory['id']]);
 
         foreach ($objectsCategories as $objectsCategory) {
-            if ($objectsCategory['parent'] && $objectsCategory['parent']->id == $parentObjectCategory['id']) {
+            if ($objectsCategory['parent'] && $objectsCategory['parent']->getId() === $parentObjectCategory['id']) {
                 $objectsCategory = $this->getChildren($objectsCategory, $objectsCategories);
-                unset($objectsCategory['__initializer__']);
-                unset($objectsCategory['__cloner__']);
-                unset($objectsCategory['__isInitialized__']);
                 $currentObjectCategory['child'][] = $objectsCategory;
             }
+            unset(
+                $objectsCategory['__initializer__'],
+                $objectsCategory['__cloner__'],
+                $objectsCategory['__isInitialized__']
+            );
         }
 
         return $currentObjectCategory;
@@ -1511,5 +1507,4 @@ class ObjectService extends AbstractService
 
         $anrObjectCategoryTable->save($anrObjectCategory);
     }
-
 }

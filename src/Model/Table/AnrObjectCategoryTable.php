@@ -46,4 +46,32 @@ class AnrObjectCategoryTable extends AbstractEntityTable
 
         return $result[0] ?? null;
     }
+
+    /**
+     * @return AnrObjectCategory[]
+     */
+    public function findByAnrOrderedByPosititon(AnrSuperClass $anr)
+    {
+        return $this->getRepository()
+            ->createQueryBuilder('aoc')
+            ->innerJoin('aoc.category', 'cat')
+            ->where('aoc.anr = :anr')
+            ->setParameter('anr', $anr)
+            ->orderBy('cat.position')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return AnrObjectCategory[]
+     */
+    public function findByObjectCategory(ObjectCategorySuperClass $objectCategory)
+    {
+        return $this->getRepository()
+            ->createQueryBuilder('aoc')
+            ->where('aoc.category = :category')
+            ->setParameter('category', $objectCategory)
+            ->getQuery()
+            ->getResult();
+    }
 }
