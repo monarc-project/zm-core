@@ -185,9 +185,9 @@ class ObjectService extends AbstractService
             $filterAnd['uuid'] = ['op' => 'IN', 'value' => $value];
 
         }
-        /** @var MonarcObjectTable $MonarcObjectTable */
-        $MonarcObjectTable = $this->get('table');
-        return $MonarcObjectTable->fetchAllFiltered(
+        /** @var MonarcObjectTable $monarcObjectTable */
+        $monarcObjectTable = $this->get('table');
+        return $monarcObjectTable->fetchAllFiltered(
             array_keys($this->get('entity')->getJsonArray()),
             $page,
             $limit,
@@ -1269,10 +1269,10 @@ class ObjectService extends AbstractService
         $anrObjects = [];
         $objectsCategories = [];
 
-        /** @var MonarcObjectTable $MonarcObjectTable */
-        $MonarcObjectTable = $this->get('table');
+        /** @var MonarcObjectTable $monarcObjectTable */
+        $monarcObjectTable = $this->get('table');
         /** @var ObjectSuperClass[] $objects */
-        $objects = $MonarcObjectTable->getEntityByFields(['anrs' => $anrId]);
+        $objects = $monarcObjectTable->getEntityByFields(['anrs' => $anrId]);
 
         foreach ($objects as $object) {
             if ($object->getCategory()) {
@@ -1319,8 +1319,11 @@ class ObjectService extends AbstractService
 
         // Retrieve ANR's categories mapping as root categories can be sorted
         $anrObjectsCategories = [];
+        /** @var AnrTable $anrTable */
+        /** @var AnrObjectCategoryTable $anrObjectCategoryTable */
+        $anrTable = $this->get('anrTable');
         $anrObjectCategoryTable = $this->get('anrObjectCategoryTable');
-        $anrObjectCategories = $anrObjectCategoryTable->getEntityByFields(['anr' => $anrId], ['position' => 'ASC']);
+        $anrObjectCategories = $anrObjectCategoryTable->findByAnrOrderedByPosititon($anrTable->findById($anrId));
 
         foreach ($anrObjectCategories as $anrObjectCategory) {
             $anrObjectsCategories[$anrObjectCategory->id] = $this->getChildren($anrObjectCategory->category->getJsonArray(), $objectsCategories);
@@ -1343,9 +1346,6 @@ class ObjectService extends AbstractService
         unset($objectsCategories);
 
         // Order categories by position
-        usort($anrObjectsCategories, function ($a, $b) {
-            return $this->sortCategories($a, $b);
-        });
         foreach ($anrObjectsCategories as &$cat) {
             if (isset($cat['child']) && is_array($cat['child'])) {
                 usort($cat['child'], function ($a, $b) {
