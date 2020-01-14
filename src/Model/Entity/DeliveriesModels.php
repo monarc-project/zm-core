@@ -71,28 +71,28 @@ class DeliveriesModels extends AbstractEntity
     /**
      * @var string
      *
-     * @ORM\Column(name="path1", type="text", length=255, nullable=true)
+     * @ORM\Column(name="path1", type="string", length=255, nullable=true)
      */
     protected $path1;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="path2", type="text", length=255, nullable=true)
+     * @ORM\Column(name="path2", type="string", length=255, nullable=true)
      */
     protected $path2;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="path3", type="text", length=255, nullable=true)
+     * @ORM\Column(name="path3", type="string", length=255, nullable=true)
      */
     protected $path3;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="path4", type="text", length=255, nullable=true)
+     * @ORM\Column(name="path4", type="string", length=255, nullable=true)
      */
     protected $path4;
 

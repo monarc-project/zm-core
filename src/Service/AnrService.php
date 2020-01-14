@@ -274,6 +274,7 @@ class AnrService extends AbstractService
 
 
         if ($with_eval) {
+            // TODO: Soa functionality is related only to FrontOffice.
             if ($with_soas) {
                 // referentials
                 $return['referentials'] = [];
