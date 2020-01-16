@@ -134,6 +134,26 @@ EMAIL_MESSAGE;
     }
 
     /**
+     * Changes the password for the specified user ID.
+     *
+     * @param int $userId
+     * @param string $newPassword
+     *
+     * @throws Exception If the user does not exist
+     * @throws ORMException
+     * @throws EntityNotFoundException
+     */
+    public function changePasswordWithoutOldPassword(int $userId, string $newPassword): void
+    {
+        /** @var User $user */
+        $user = $this->userTable->findById($userId);
+
+        $this->validatePassword($newPassword);
+
+        $this->userTable->saveEntity($user->setPassword($newPassword));
+    }
+
+    /**
      * TODO: Move to the Controller action validation.
      *
      * Validates that the password matches the required strength policy (special chars, lower/uppercase, number)
