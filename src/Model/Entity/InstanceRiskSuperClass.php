@@ -315,7 +315,7 @@ class InstanceRiskSuperClass extends AbstractEntity
     }
 
     /**
-     * @param Vulnerability $vulnerability
+     * @param VulnerabilitySuperClass $vulnerability
      */
     public function setVulnerability($vulnerability): self
     {

@@ -206,8 +206,9 @@ class MeasureSuperClass extends AbstractEntity
      */
     public function addAmv($amv): self
     {
-        if (!$this->getAmvs()->contains($amv)) {
+        if (!$this->amvs->contains($amv)) {
             $this->amvs->add($amv);
+            $amv->addMeasure($this);
         }
 
         return $this;
@@ -225,12 +226,12 @@ class MeasureSuperClass extends AbstractEntity
         return $this;
     }
 
-    /**
-     * @param Amv $amv
-     */
-    public function deleteAmv($amv): self
+    public function removeAmv(AmvSuperClass $amv): self
     {
-        $this->amvs->removeElement($amv);
+        if ($this->amvs->contains($amv)) {
+            $this->amvs->removeElement($amv);
+            $amv->removeMeasure($this);
+        }
 
         return $this;
     }

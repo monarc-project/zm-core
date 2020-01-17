@@ -9,6 +9,7 @@ namespace Monarc\Core\Service;
 
 use Monarc\Core\Model\Entity\AbstractEntity;
 use Monarc\Core\Model\Entity\Amv;
+use Monarc\Core\Model\Entity\AmvSuperClass;
 use Monarc\Core\Model\Entity\Asset;
 use Monarc\Core\Model\Entity\Model;
 use Monarc\Core\Model\Entity\Threat;
@@ -76,14 +77,15 @@ class AmvService extends AbstractService
 
         foreach ($amv->measures as $m) {
             if (!\in_array($m->uuid->toString(), $data['measures'], true)) {
-                $m->deleteAmv($amv);
+                $m->removeAmv($amv);
             }
         }
         unset($data['measures']);
 
-        if ($amv->changeUuid($data)) {//check if we need a new uuid
+        if ($this->isThreatChanged($data, $amv) || $this->isVulnerabilityChanged($data, $amv)) {
             $data['uuid'] = Uuid::uuid4()->toString();
         }
+        // TODO: check getInputFilter if we are gonna remove exchangeArray.
         $amv->exchangeArray($data, true);
 
         $this->setDependencies($amv, $this->dependencies);
@@ -212,7 +214,7 @@ class AmvService extends AbstractService
 
         foreach ($amv->measures as $m) {
             if(false === array_search($m->uuid->toString(), $data['measures'],true)){
-              $m->deleteAmv($amv);
+                $m->removeAmv($amv);
             }
         }
         unset($data['measures']);
@@ -329,21 +331,21 @@ class AmvService extends AbstractService
     /*
     * Function to link automatically the amv of the destination from the source depending of the measures_measures
     */
-      public function createLinkedAmvs($source_uuid, $destination)
-      {
+    public function createLinkedAmvs($source_uuid, $destination)
+    {
         $measures_dest = $this->get('referentialTable')->getEntity($destination)->getMeasures();
         foreach ($measures_dest as $md) {
-          foreach ($md->getMeasuresLinked() as $measureLink) {
-            if($measureLink->getReferential()->getUuid()->toString()==$source_uuid ){
-              foreach ($measureLink->amvs as $amv) {
-                $md->addAmv($amv);
-              }
-              $this->get('measureTable')->save($md,false);
+            foreach ($md->getMeasuresLinked() as $measureLink) {
+                if($measureLink->getReferential()->getUuid()->toString()==$source_uuid ){
+                    foreach ($measureLink->amvs as $amv) {
+                        $md->addAmv($amv);
+                    }
+                    $this->get('measureTable')->save($md,false);
+                }
             }
-          }
         }
         $this->get('measureTable')->getDb()->flush();
-      }
+    }
 
     /**
      * Checks whether or not the specified theoretical AMV link complies with the behavioral requirements
@@ -792,14 +794,14 @@ class AmvService extends AbstractService
                             case 'measures':
                                 $measuresList = $amv->get($k);
                                 if(count($measuresList)>0){
-                                  foreach ($measuresList  as $m) {
-                                    $measures[$m->uuid->toString()] = $m->getJsonArray($measuresObj);
-                                    $measures[$m->uuid->toString()]['category'] = $m->category->getJsonArray($soacategoriesObj);
-                                    $measures[$m->uuid->toString()]['referential'] = $m->referential->uuid->toString();
-                                    $amvs[$k][] = $m->uuid->toString();
-                                  }
+                                    foreach ($measuresList  as $m) {
+                                        $measures[$m->uuid->toString()] = $m->getJsonArray($measuresObj);
+                                        $measures[$m->uuid->toString()]['category'] = $m->category->getJsonArray($soacategoriesObj);
+                                        $measures[$m->uuid->toString()]['referential'] = $m->referential->uuid->toString();
+                                        $amvs[$k][] = $m->uuid->toString();
+                                    }
                                 }
-                            break;
+                                break;
                         }
                     }
                     break;
@@ -884,5 +886,15 @@ class AmvService extends AbstractService
         /** @var HistoricalService $historicalService */
         $historicalService = $this->get('historicalService');
         $historicalService->create($data);
+    }
+
+    protected function isThreatChanged(array $data, AmvSuperClass $amv): bool
+    {
+        return (string)$amv->getThreat()->getUuid() !== $data['threat'];
+    }
+
+    protected function isVulnerabilityChanged(array $data, AmvSuperClass $amv): bool
+    {
+        return (string)$amv->getVulnerability()->getUuid() !== $data['vulnerability'];
     }
 }
