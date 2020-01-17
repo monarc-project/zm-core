@@ -150,9 +150,18 @@ class UserService
     {
         $user = $this->userTable->findById($userId);
 
-        $user->setFirstname($data['firstname']);
-        $user->setLastname($data['lastname']);
-        $user->setEmail($data['email']);
+        if (isset($data['firstname'])) {
+            $user->setFirstname($data['firstname']);
+        }
+        if (isset($data['lastname'])) {
+            $user->setLastname($data['lastname']);
+        }
+        if (isset($data['email'])) {
+            $user->setEmail($data['email']);
+        }
+        if (isset($data['status'])) {
+            $user->setStatus($data['status']);
+        }
         $user->setUpdater($this->userTable->getConnectedUser()->getFirstname() . ' '
             . $this->userTable->getConnectedUser()->getLastname());
 

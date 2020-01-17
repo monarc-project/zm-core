@@ -58,7 +58,7 @@ abstract class UserSuperClass
     /**
      * @var int
      *
-     * @ORM\Column(name="status", type="smallint", nullable=true)
+     * @ORM\Column(name="status", type="integer", nullable=true)
      */
     protected $status;
 
@@ -231,6 +231,13 @@ abstract class UserSuperClass
     public function getStatus(): int
     {
         return $this->status;
+    }
+
+    public function setStatus(int $status): self
+    {
+        $this->status = $status;
+
+        return $this;
     }
 
     public function isSystemUser(): bool
