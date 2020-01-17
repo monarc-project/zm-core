@@ -58,7 +58,7 @@ abstract class UserSuperClass
     /**
      * @var int
      *
-     * @ORM\Column(name="status", type="integer", nullable=true)
+     * @ORM\Column(name="status", type="smallint", nullable=true)
      */
     protected $status;
 
