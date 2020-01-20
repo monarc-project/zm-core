@@ -171,6 +171,13 @@ abstract class UserSuperClass
         return $this;
     }
 
+    public function resetPassword(): self
+    {
+        $this->password = '';
+
+        return $this;
+    }
+
     public function setLanguage(int $language): self
     {
         $this->language = $language;

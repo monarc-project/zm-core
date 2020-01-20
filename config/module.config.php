@@ -516,6 +516,7 @@ return [
         'auth',
         'monarc_api_admin_roles',
         'monarc_api_admin_passwords',
+        'monarc_api_admin_user_reset_password',
         'monarc_api_user_password',
         'monarc_api_config',
     ],
