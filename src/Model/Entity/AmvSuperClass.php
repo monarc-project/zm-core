@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Model\Entity;
 
+use ArrayIterator;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
@@ -82,10 +83,6 @@ class AmvSuperClass extends AbstractEntity
     /**
      * @var ArrayCollection|MeasureSuperClass[]
      * @ORM\ManyToMany(targetEntity="Measure", mappedBy="amvs", cascade={"persist"})
-     * @ORM\JoinTable(name="measures_amvs",
-     *  joinColumns={@ORM\JoinColumn(name="amv_id", referencedColumnName="id")},
-     *  inverseJoinColumns={@ORM\JoinColumn(name="measure_id", referencedColumnName="uuid")}
-     * )
      */
     protected $measures;
 
@@ -205,42 +202,69 @@ class AmvSuperClass extends AbstractEntity
     /**
      * @param MeasureSuperClass[] $measures
      */
-    public function setMeasures($measures)
+    public function setMeasures($measures): self
     {
-        $this->measures = $measures;
-        return $this;
-    }
-
-    /**
-     * @param MeasureSuperClass $measure
-     */
-    public function addMeasure($measure)
-    {
-        $this->measures[] = $measure;
-        return $this;
-    }
-
-    /**
-     * Check if we need to change the uuid if asset or threat or vulnerability is not the same as before
-     * @param array $context
-     * @return boolean
-     */
-    public function changeUuid($context): bool
-    {
-        if (!isset($context['uuid'])) {
-            return false;
+        // TODO: change when AnrService will be refactored.
+        if ($measures === null) {
+            $this->measures = new ArrayCollection();
+        } else {
+            foreach ($measures as $measure) {
+                $this->addMeasure($measure);
+            }
         }
 
-        $threatUuid = !\is_array($context['threat']) ? $context['threat'] : $context['threat']['uuid'];
-        $vulnUuid = !\is_array($context['vulnerability']) ? $context['vulnerability'] : $context['vulnerability']['uuid'];
-        $assetUuid = !\is_array($context['asset']) ? $context['asset'] : $context['asset']['uuid'];
-
-        // If the expression is true then amv doesnt exist and it's an edition we have to set new uuid.
-        return $this->threat->getUuid()->toString() !== $threatUuid
-            || $this->vulnerability->getUuid()->toString() !== $vulnUuid
-            || $this->asset->getUuid()->toString() !== $assetUuid;
+        return $this;
     }
 
+    public function addMeasure(MeasureSuperClass $measure): self
+    {
+        // TODO: move to the constructor, after Anr duplication is refactored.
+        if ($this->measures === null) {
+            $this->measures = new ArrayCollection();
+        }
+
+        if (!$this->measures->contains($measure)) {
+            $this->measures->add($measure);
+
+            $measure->addAmv($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMeasure(MeasureSuperClass $measure): self
+    {
+        if ($this->measures->contains($measure)) {
+            $this->measures->removeElement($measure);
+            $measure->removeAmv($this);
+        }
+
+        return $this;
+    }
+
+    public function getPosition(): int
+    {
+        return $this->position;
+    }
+
+    public function setPosition(int $position): AmvSuperClass
+    {
+        $this->position = $position;
+
+        return $this;
+    }
+
+    public function getStatus(): int
+    {
+        return $this->status;
+    }
+
+    public function setStatus(int $status): AmvSuperClass
+    {
+        $this->status = $status;
+
+        return $this;
+    }
 
     public function getFiltersForService()
     {
@@ -350,9 +374,9 @@ class AmvSuperClass extends AbstractEntity
                                             return false;
                                         }
                                         return true;
-                                    } else {
-                                        return true;
                                     }
+
+                                    return true;
                                 },
                             ),
                         ),
@@ -413,19 +437,19 @@ class AmvSuperClass extends AbstractEntity
                                             ->getResult();
                                         $amvUuid= empty($context['uuid']) ? $this->get('uuid') : $context['uuid'];
                                         if(empty($context['uuid'])){ //creation
-                                          if (!empty($res) && $amvUuid != $res[0]['uuid']) {
-                                              return false;
-                                          }
+                                            if (!empty($res) && $amvUuid != $res[0]['uuid']) {
+                                                return false;
+                                            }
                                         }else { //edition
-                                          if (!empty($res) && $amvUuid != $res[0]['uuid']) { //the amv link is existing
-                                              return false;
-                                          }
+                                            if (!empty($res) && $amvUuid != $res[0]['uuid']) { //the amv link is existing
+                                                return false;
+                                            }
                                         }
                                     }
                                     return true;
-                                } else {
-                                    return true;
                                 }
+
+                                return true;
                             },
                         ),
                     ),

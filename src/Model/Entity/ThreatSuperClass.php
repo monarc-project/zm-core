@@ -229,6 +229,11 @@ class ThreatSuperClass extends AbstractEntity
         return $this->theme;
     }
 
+    public function getCode(): ?string
+    {
+        return $this->code;
+    }
+
     public function getInputFilter($partial = false)
     {
         if (!$this->inputFilter) {

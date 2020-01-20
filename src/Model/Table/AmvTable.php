@@ -7,8 +7,10 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\Amv;
+use Monarc\Core\Model\Entity\AmvSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**
@@ -66,5 +68,20 @@ class AmvTable extends AbstractEntityTable
         }
 
         return $amvs->getQuery()->getResult();
+    }
+
+    /**
+     * @return AmvSuperClass[]
+     */
+    public function findByUuid(string $uuid)
+    {
+        return $this->getRepository()
+            ->createQueryBuilder('a')
+            ->select('a', 'm')
+            ->leftJoin('a.measures', 'm')
+            ->where('a.uuid = :uuid')
+            ->setParameter('uuid', $uuid)
+            ->getQuery()
+            ->getResult();
     }
 }
