@@ -1,39 +1,38 @@
 <?php
 /**
-* @link      https://github.com/monarc-project for the canonical source repository
-* @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
-* @license   MONARC is licensed under GNU Affero General Public License version 3
-*/
+ * @link      https://github.com/monarc-project for the canonical source repository
+ * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @license   MONARC is licensed under GNU Affero General Public License version 3
+ */
 
 namespace Monarc\Core\Model\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
-use Monarc\Core\Model\Entity\AbstractEntity;
-
 
 /**
-* CategoriesSuperClass
-*
-* @ORM\Table(name="soacategory", indexes={
-*       @ORM\Index(name="referential", columns={"referential_uuid"})
-* })
-* @ORM\MappedSuperclass
-*/
+ * CategoriesSuperClass
+ *
+ * @ORM\Table(name="soacategory", indexes={
+ *       @ORM\Index(name="referential", columns={"referential_uuid"})
+ * })
+ * @ORM\MappedSuperclass
+ */
 class SoaCategorySuperClass extends AbstractEntity
 {
     /**
-    * @var integer
-    *
-    * @ORM\Column(name="id", type="integer", nullable=false)
-    * @ORM\Id
-    * @ORM\GeneratedValue(strategy="IDENTITY")
-    */
+     * @var integer
+     *
+     * @ORM\Column(name="id", type="integer", nullable=false)
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="IDENTITY")
+     */
     protected $id;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Referential
+     * @var Referential
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Referential", inversedBy="categories", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Referential", inversedBy="categories", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="referential_uuid", referencedColumnName="uuid", nullable=true)
      * })
@@ -41,85 +40,85 @@ class SoaCategorySuperClass extends AbstractEntity
     protected $referential;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Measure
+     * @var MeasureSuperClass[]|ArrayCollection
      *
-     * @ORM\OneToMany(targetEntity="Monarc\Core\Model\Entity\Measure", mappedBy="category")
+     * @ORM\OneToMany(targetEntity="Measure", mappedBy="category")
      */
     protected $measures;
 
     /**
-    * @var text
-    *
-    * @ORM\Column(name="label1", type="text", length=255, nullable=true)
-    */
+     * @var string
+     *
+     * @ORM\Column(name="label1", type="text", nullable=true)
+     */
     protected $label1;
 
     /**
-    * @var text
-    *
-    * @ORM\Column(name="label2", type="text", length=255, nullable=true)
-    */
+     * @var string
+     *
+     * @ORM\Column(name="label2", type="text", nullable=true)
+     */
     protected $label2;
 
     /**
-    * @var text
-    *
-    * @ORM\Column(name="label3", type="text", length=255, nullable=true)
-    */
+     * @var string
+     *
+     * @ORM\Column(name="label3", type="text", nullable=true)
+     */
     protected $label3;
 
     /**
-    * @var text
-    *
-    * @ORM\Column(name="label4", type="text", length=255, nullable=true)
-    */
+     * @var string
+     *
+     * @ORM\Column(name="label4", type="text", nullable=true)
+     */
     protected $label4;
 
     /**
-    * @var smallint
-    *
-    * @ORM\Column(name="status", type="smallint", options={"unsigned":true, "default":1})
-    */
-    protected $status = '1';
+     * @var int
+     *
+     * @ORM\Column(name="status", type="smallint", options={"unsigned":true, "default":1})
+     */
+    protected $status = 1;
 
     /**
-    * @return int
-    */
+     * @return int
+     */
     public function getId()
     {
         return $this->id;
     }
 
     /**
-    * @param int $id
-    * @return Model
-    */
-    public function setId($id)
+     * @param int $id
+     */
+    public function setId($id): self
     {
         $this->id = $id;
+
         return $this;
     }
 
     /**
-    * @return measures
-    */
+     * @return MeasureSuperClass[]
+     */
     public function getMeasures()
     {
         return $this->measures;
     }
 
     /**
-    * @param int $measures
-    * @return Model
-    */
-    public function setMeasures($measures)
+     * @param ArrayCollection|MeasureSuperClass[] $measures
+     */
+    public function setMeasures($measures): self
     {
         $this->measures = $measures;
+
         return $this;
     }
 
     /**
-     * @return UuidInterface
+     * @return ReferentialSuperClass
      */
     public function getReferential()
     {
@@ -127,81 +126,85 @@ class SoaCategorySuperClass extends AbstractEntity
     }
 
     /**
-    * @param Referential $referential
-    * @return Model
-    */
-    public function setReferential($referential)
+     * @param ReferentialSuperClass $referential
+     */
+    public function setReferential($referential): self
     {
         $this->referential = $referential;
+
         return $this;
     }
 
     /**
-    * @return TEXT_LONG
-    */
+     * @return string
+     */
     public function getlabel1()
     {
         return $this->label1;
     }
 
     /**
-    * @param TEXT_LONG $label1
-    *
-    */
-    public function setlabel1($label1)
+     * @param string $label1
+     */
+    public function setlabel1($label1): self
     {
         $this->label1 = $label1;
+
+        return $this;
     }
 
     /**
-    * @return TEXT_LONG
-    */
+     * @return string
+     */
     public function getlabel2()
     {
         return $this->label2;
     }
 
     /**
-    * @param TEXT_LONG $label2
-    *
-    */
-    public function setlabel2($label2)
+     * @param string $label2
+     */
+    public function setlabel2($label2): self
     {
         $this->label2 = $label2;
+
+        return $this;
     }
 
     /**
-    * @return TEXT_LONG
-    */
+     * @return string
+     */
     public function getlabel3()
     {
         return $this->label3;
     }
 
     /**
-    * @param TEXT_LONG $label3
-    *
-    */
-    public function setlabel3($label3)
+     * @param string $label3
+     */
+    public function setlabel3($label3): self
     {
         $this->label3 = $label3;
+
+        return $this;
     }
 
     /**
-    * @return TEXT_LONG
-    */
+     * @return string
+     */
     public function getlabel4()
     {
         return $this->label4;
     }
 
     /**
-    * @param TEXT_LONG $label4
-    *
-    */
-    public function setlabel4($label4)
+     * @param string $label4
+     */
+    public function setlabel4($label4): self
     {
         $this->label4 = $label4;
+
+        return $this;
     }
 
     public function getInputFilter($partial = false)
@@ -212,36 +215,38 @@ class SoaCategorySuperClass extends AbstractEntity
             $texts = ['label1', 'label2', 'label3', 'label4'];
 
             foreach ($texts as $text) {
-                $this->inputFilter->add(array(
+                $this->inputFilter->add([
                     'name' => $text,
                     'required' => ((strchr($text, (string)$this->getLanguage())) && (!$partial)) ? true : false,
                     'allow_empty' => false,
-                    'filters' => array(),
-                    'validators' => array(),
-                ));
+                    'filters' => [],
+                    'validators' => [],
+                ]);
             }
 
-            $this->inputFilter->add(array(
+            $this->inputFilter->add([
                 'name' => 'status',
                 'required' => false,
                 'allow_empty' => false,
-                'filters' => array(
-                    array('name' => 'ToInt'),
-                ),
-                'validators' => array(
-                    array(
+                'filters' => [
+                    ['name' => 'ToInt'],
+                ],
+                'validators' => [
+                    [
                         'name' => 'InArray',
-                        'options' => array(
-                            'haystack' => array(self::STATUS_INACTIVE, self::STATUS_ACTIVE),
-                        ),
-                    ),
-                ),
-            ));
+                        'options' => [
+                            'haystack' => [static::STATUS_INACTIVE, static::STATUS_ACTIVE],
+                        ],
+                    ],
+                ],
+            ]);
         }
+
         return $this->inputFilter;
     }
 
-    public function getFiltersForService(){
+    public function getFiltersForService()
+    {
         $filterJoin = [
             [
                 'as' => 'r',
@@ -261,6 +266,7 @@ class SoaCategorySuperClass extends AbstractEntity
             'r.label4',
             'r.uuid',
         ];
-        return [$filterJoin,$filterLeft,$filtersCol];
+
+        return [$filterJoin, $filterLeft, $filtersCol];
     }
 }

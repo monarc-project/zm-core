@@ -121,28 +121,28 @@ class InstanceRiskOpSuperClass extends AbstractEntity
     /**
      * @var string
      *
-     * @ORM\Column(name="risk_cache_description1", type="text", length=255, nullable=true)
+     * @ORM\Column(name="risk_cache_description1", type="text", nullable=true)
      */
     protected $riskCacheDescription1;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="risk_cache_description2", type="text", length=255, nullable=true)
+     * @ORM\Column(name="risk_cache_description2", type="text", nullable=true)
      */
     protected $riskCacheDescription2;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="risk_cache_description3", type="text", length=255, nullable=true)
+     * @ORM\Column(name="risk_cache_description3", type="text", nullable=true)
      */
     protected $riskCacheDescription3;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="risk_cache_description4", type="text", length=255, nullable=true)
+     * @ORM\Column(name="risk_cache_description4", type="text", nullable=true)
      */
     protected $riskCacheDescription4;
 
@@ -303,14 +303,14 @@ class InstanceRiskOpSuperClass extends AbstractEntity
     /**
      * @var string
      *
-     * @ORM\Column(name="comment", type="text", length=255, nullable=true)
+     * @ORM\Column(name="comment", type="text", nullable=true)
      */
     protected $comment;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="mitigation", type="text", length=255, nullable=true)
+     * @ORM\Column(name="mitigation", type="text", nullable=true)
      */
     protected $mitigation;
 

@@ -152,14 +152,14 @@ class InstanceRiskSuperClass extends AbstractEntity
     /**
      * @var string
      *
-     * @ORM\Column(name="comment", type="text", length=255, nullable=true)
+     * @ORM\Column(name="comment", type="text", nullable=true)
      */
     protected $comment;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="comment_after", type="text", length=255, nullable=true)
+     * @ORM\Column(name="comment_after", type="text", nullable=true)
      */
     protected $commentAfter;
 

@@ -76,28 +76,28 @@ class ScaleCommentSuperClass extends AbstractEntity
     /**
      * @var string
      *
-     * @ORM\Column(name="comment1", type="text", length=255, nullable=true)
+     * @ORM\Column(name="comment1", type="text", nullable=true)
      */
     protected $comment1;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="comment2", type="text", length=255, nullable=true)
+     * @ORM\Column(name="comment2", type="text", nullable=true)
      */
     protected $comment2;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="comment3", type="text", length=255, nullable=true)
+     * @ORM\Column(name="comment3", type="text", nullable=true)
      */
     protected $comment3;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="comment4", type="text", length=255, nullable=true)
+     * @ORM\Column(name="comment4", type="text", nullable=true)
      */
     protected $comment4;
 

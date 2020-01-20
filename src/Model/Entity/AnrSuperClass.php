@@ -70,28 +70,28 @@ class AnrSuperClass extends AbstractEntity
     /**
      * @var string
      *
-     * @ORM\Column(name="description1", type="text", length=255, nullable=true)
+     * @ORM\Column(name="description1", type="text", nullable=true)
      */
     protected $description1;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="description2", type="text", length=255, nullable=true)
+     * @ORM\Column(name="description2", type="text", nullable=true)
      */
     protected $description2;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="description3", type="text", length=255, nullable=true)
+     * @ORM\Column(name="description3", type="text", nullable=true)
      */
     protected $description3;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="description4", type="text", length=255, nullable=true)
+     * @ORM\Column(name="description4", type="text", nullable=true)
      */
     protected $description4;
 
@@ -211,28 +211,28 @@ class AnrSuperClass extends AbstractEntity
     /**
      * @var string
      *
-     * @ORM\Column(name="context_ana_risk", type="text", length=255, nullable=true)
+     * @ORM\Column(name="context_ana_risk", type="text", nullable=true)
      */
     protected $contextAnaRisk;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="context_gest_risk", type="text", length=255, nullable=true)
+     * @ORM\Column(name="context_gest_risk", type="text", nullable=true)
      */
     protected $contextGestRisk;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="synth_threat", type="text", length=255, nullable=true)
+     * @ORM\Column(name="synth_threat", type="text", nullable=true)
      */
     protected $synthThreat;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="synth_act", type="text", length=255, nullable=true)
+     * @ORM\Column(name="synth_act", type="text", nullable=true)
      */
     protected $synthAct;
 
