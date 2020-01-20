@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Service;
 
+use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\AbstractEntity;
 use Monarc\Core\Model\Entity\Amv;
 use Monarc\Core\Model\Entity\AmvSuperClass;
@@ -14,7 +15,9 @@ use Monarc\Core\Model\Entity\Asset;
 use Monarc\Core\Model\Entity\Model;
 use Monarc\Core\Model\Entity\Threat;
 use Monarc\Core\Model\Entity\Vulnerability;
+use Monarc\Core\Model\Table\AmvTable;
 use Monarc\Core\Model\Table\InstanceTable;
+use Monarc\Core\Model\Table\MeasureTable;
 use Monarc\Core\Model\Table\ModelTable;
 
 /**
@@ -130,7 +133,7 @@ class AmvService extends AbstractService
         $authorized = $this->compliesRequirement($amv);
 
         if (!$authorized) {
-            throw new \Monarc\Core\Exception\Exception($this->errorMessage);
+            throw new Exception($this->errorMessage);
         }
 
         $amv->setCreator($this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname());
@@ -140,20 +143,7 @@ class AmvService extends AbstractService
         //historisation
         $newEntity = $this->getEntity($id);
 
-        //virtual name for historisation
-        $name = [];
-        $lab = 'code';
-        if ($newEntity['asset']->$lab) {
-            $name[] = $newEntity['asset']->$lab;
-        }
-        if ($newEntity['threat']->$lab) {
-            $name[] = $newEntity['threat']->$lab;
-        }
-        if ($newEntity['vulnerability']->$lab) {
-            $name[] = $newEntity['vulnerability']->$lab;
-        }
-        $name = implode(' - ', $name);
-        $this->label = [$name, $name, $name, $name];
+        $this->prepareHistoryRecordLabel($amv);
 
         //details
         $fields = [
@@ -182,58 +172,56 @@ class AmvService extends AbstractService
         $this->filterPatchFields($data);
 
         if (empty($data)) {
-            throw new \Monarc\Core\Exception\Exception('Data missing', 412);
+            throw new Exception('Data missing', 412);
         }
 
+        /** @var AmvTable $amvTable */
         /** @var Amv $amv */
-        $amv = $this->get('table')->getEntity($id);
-        $amv->setDbAdapter($this->get('table')->getDb());
-
-        //clone current entity for retrieve difference with new
-        $oldEntity = clone $amv;
-
-        //virtual name for historisation
-        $name = [];
-        if ($amv->get('asset')->get('code')) {
-            $name[] = $amv->get('asset')->get('code');
-        }
-        if ($amv->get('threat')->get('code')) {
-            $name[] = $amv->get('threat')->get('code');
-        }
-        if ($amv->get('vulnerability')->get('code')) {
-            $name[] = $amv->get('vulnerability')->get('code');
-        }
-        $name = implode(' - ', $name);
-        $this->label = [$name, $name, $name, $name];
-
-        //manage the measures separatly because it's the slave of the relation amv<-->measures
-        foreach ($data['measures'] as $measure) {
-            $measureEntity =  $this->get('measureTable')->getEntity($measure);
-            $measureEntity->addAmv($amv);
+        $amvTable = $this->get('table');
+        $amvs = $amvTable->findByUuid($id);
+        if (!\count($amvs)) {
+            throw new Exception(sprintf('Amv(s) with uuid "%s" are not found', $id), 412);
         }
 
-        foreach ($amv->measures as $m) {
-            if(false === array_search($m->uuid->toString(), $data['measures'],true)){
-                $m->removeAmv($amv);
+        foreach ($amvs as $amv) {
+            $amv->setDbAdapter($this->get('table')->getDb());
+
+            //clone current entity for retrieve difference with new
+            $oldEntity = clone $amv;
+
+            $this->prepareHistoryRecordLabel($amv);
+
+            foreach ($amv->getMeasures() as $measure) {
+                $linkedMeasuresUuidKey = array_search((string)$measure->getUuid(), $data['measures'], true);
+                if ($linkedMeasuresUuidKey === false) {
+                    $amv->removeMeasure($measure);
+                    continue;
+                }
+                unset($data['measures'][$linkedMeasuresUuidKey]);
             }
+            /** @var MeasureTable $measureTable */
+            $measureTable = $this->get('measureTable');
+            foreach ($data['measures'] as $measure) {
+                $amv->addMeasure($measureTable->getEntity($measure));
+            }
+
+            unset($data['measures']);
+
+            $amv->exchangeArray($data);
+
+            $this->setDependencies($amv, $this->dependencies);
+
+            $authorized = $this->compliesRequirement($amv);
+            if (!$authorized) {
+                throw new Exception($this->errorMessage);
+            }
+
+            $this->historizeUpdate('amv', $amv, $oldEntity);
+
+            $amv->setUpdater($this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname());
+
+            $this->get('table')->save($amv);
         }
-        unset($data['measures']);
-        $amv->exchangeArray($data);
-
-        $this->setDependencies($amv, $this->dependencies);
-
-        $authorized = $this->compliesRequirement($amv);
-
-        if (!$authorized) {
-            throw new \Monarc\Core\Exception\Exception($this->errorMessage);
-        }
-
-        //historisation
-        $this->historizeUpdate('amv', $amv, $oldEntity);
-
-        $amv->setUpdater($this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname());
-
-        return $this->get('table')->save($amv);
     }
 
     /**
@@ -288,26 +276,11 @@ class AmvService extends AbstractService
      */
     public function delete($id)
     {
-        //historisation
-        $entity = $this->get('table')->getEntity($id);
+        /** @var  $amv */
+        $amv = $this->get('table')->getEntity($id);
 
-        if ($entity) {
-
-            //virtual name for historisation
-            $name = [];
-
-            if ($entity->get('asset')->get('code')) {
-                $name[] = $entity->get('asset')->get('code');
-            }
-            if ($entity->get('threat')->get('code')) {
-                $name[] = $entity->get('threat')->get('code');
-            }
-            if ($entity->get('vulnerability')->get('code')) {
-                $name[] = $entity->get('vulnerability')->get('code');
-            }
-
-            $name = implode(' - ', $name);
-            $this->label = [$name, $name, $name, $name];
+        if ($amv) {
+            $this->prepareHistoryRecordLabel($amv);
 
             //details
             $fields = [
@@ -318,12 +291,13 @@ class AmvService extends AbstractService
             ];
             $details = [];
             foreach ($fields as $key => $field) {
-                if ($entity->$key) {
-                    $details[] = $key . ' => ' . $entity->$key->$field;
+                if ($amv->$key) {
+                    $details[] = $key . ' => ' . $amv->$key->$field;
                 }
             }
 
-            //$this->historizeDelete('amv', $entity, $details);
+            $this->historizeDelete('amv', $entity, $details);
+
             $this->get('table')->delete($id);
         }
     }
@@ -349,6 +323,7 @@ class AmvService extends AbstractService
 
     /**
      * Checks whether or not the specified theoretical AMV link complies with the behavioral requirements
+     *
      * @param Amv $amv The AMV link to check
      * @param Asset|null $asset The asset
      * @param Model[]|null $assetModels The asset's model
@@ -356,15 +331,16 @@ class AmvService extends AbstractService
      * @param Model[]|null $threatModels The threat's model
      * @param Vulnerability|null $vulnerability The vulnerability
      * @param Model[]|null $vulnerabilityModels The vulnerability's models
+     *
      * @return bool True if the AMV link is valid, false otherwise
-     * @throws \Monarc\Core\Exception\Exception If there are behavioral issues
+     * @throws Exception If there are behavioral issues
      */
     public function compliesRequirement($amv, $asset = null, $assetModels = null, $threat = null, $threatModels = null, $vulnerability = null, $vulnerabilityModels = null)
     {
         //asset
         $asset = (is_null($asset)) ? $amv->getAsset() : $asset;
         if ($asset->get('type') == 1) {
-            throw new \Monarc\Core\Exception\Exception('Asset can\'t be primary', 412);
+            throw new Exception('Asset can\'t be primary', 412);
         }
 
         $assetMode = $asset->mode;
@@ -405,7 +381,7 @@ class AmvService extends AbstractService
         $result = $this->compliesControl($assetMode, $threatMode, $vulnerabilityMode, $assetModelsIds, $threatModelsIds, $vulnerabilityModelsIds, $assetModelsIsRegulator);
 
         if (strlen($this->errorMessage)) {
-            throw new \Monarc\Core\Exception\Exception($this->errorMessage, 412);
+            throw new Exception($this->errorMessage, 412);
         }
 
         return $result;
@@ -413,6 +389,7 @@ class AmvService extends AbstractService
 
     /**
      * Checks whether or not the A/M/V combo is compatible to build a link
+     *
      * @param $assetMode
      * @param $threatMode
      * @param $vulnerabilityMode
@@ -420,8 +397,9 @@ class AmvService extends AbstractService
      * @param $threatModelsIds
      * @param $vulnerabilityModelsIds
      * @param $assetModelsIsRegulator
+     *
      * @return bool
-     * @throws \Monarc\Core\Exception\Exception
+     * @throws Exception
      */
     public function compliesControl($assetMode, $threatMode, $vulnerabilityMode, $assetModelsIds, $threatModelsIds, $vulnerabilityModelsIds, $assetModelsIsRegulator)
     {
@@ -862,7 +840,7 @@ class AmvService extends AbstractService
      * @param string $verb The event kind (create, delete, update)
      * @param string $details The event description / details
      */
-    public function historize($entity, $type, $verb, $details)
+    protected function historize($entity, $type, $verb, $details)
     {
         $entityId = null;
 
@@ -896,5 +874,21 @@ class AmvService extends AbstractService
     protected function isVulnerabilityChanged(array $data, AmvSuperClass $amv): bool
     {
         return (string)$amv->getVulnerability()->getUuid() !== $data['vulnerability'];
+    }
+
+    private function prepareHistoryRecordLabel(AmvSuperClass $amv): void
+    {
+        $labelParts = [];
+        if ($amv->getAsset()->getCode()) {
+            $labelParts[] = $amv->getAsset()->getCode();
+        }
+        if ($amv->getThreat()->getCode()) {
+            $labelParts[] = $amv->getThreat()->getCode();
+        }
+        if ($amv->getVulnerability()->getCode()) {
+            $labelParts[] = $amv->getVulnerability()->getCode();
+        }
+        $labelParts = implode(' - ', $labelParts);
+        $this->label = [$labelParts, $labelParts, $labelParts, $labelParts];
     }
 }
