@@ -286,6 +286,7 @@ class InstanceSuperClass extends AbstractEntity
         return $this->object;
     }
 
+
     public function setObject(?ObjectSuperClass $object): self
     {
         $this->object = $object;
@@ -316,10 +317,7 @@ class InstanceSuperClass extends AbstractEntity
         return $this;
     }
 
-    /**
-     * @return int
-     */
-    public function getLevel()
+    public function getLevel(): int
     {
         return $this->level;
     }
@@ -331,6 +329,96 @@ class InstanceSuperClass extends AbstractEntity
         return $this;
     }
 
+    public function getName1(): string
+    {
+        return (string)$this->name1;
+    }
+
+    public function getName2(): string
+    {
+        return (string)$this->name2;
+    }
+
+    public function getName3(): string
+    {
+        return (string)$this->name3;
+    }
+
+    public function getName4(): string
+    {
+        return (string)$this->name4;
+    }
+
+    public function getLabel1(): string
+    {
+        return (string)$this->label1;
+    }
+
+    public function getLabel2(): string
+    {
+        return (string)$this->label2;
+    }
+
+    public function getLabel3(): string
+    {
+        return (string)$this->label3;
+    }
+
+    public function getLabel4(): string
+    {
+        return (string)$this->label4;
+    }
+
+    public function getDisponibility(): float
+    {
+        return $this->disponibility;
+    }
+
+    public function getAssetType(): int
+    {
+        return $this->assetType;
+    }
+
+    public function getExportable(): int
+    {
+        return $this->exportable;
+    }
+
+    public function getConfidentiality(): int
+    {
+        return $this->c;
+    }
+
+    public function getIntegrity(): int
+    {
+        return $this->i;
+    }
+
+    public function getAvailability(): int
+    {
+        return $this->d;
+    }
+
+    public function getInheritedConfidentiality(): int
+    {
+        return $this->ch;
+    }
+
+    public function getInheritedIntegrity(): int
+    {
+        return $this->ih;
+    }
+
+    public function getInheritedAvailability(): int
+    {
+        return $this->dh;
+    }
+
+    public function getPosition(): int
+    {
+        return $this->position;
+    }
+
     protected $parameters = array(
         'implicitPosition' => array(
             'field' => 'parent',
@@ -340,7 +428,6 @@ class InstanceSuperClass extends AbstractEntity
             ],
         ),
     );
-
     public function getInputFilter($partial = false)
     {
         parent::getInputFilter($partial);
@@ -381,11 +468,5 @@ class InstanceSuperClass extends AbstractEntity
             ));
         }
         return $this->inputFilter;
-    }
-
-    public function __construct($obj = null)
-    {
-        $this->instances = new ArrayCollection();
-        parent::__construct($obj);
     }
 }

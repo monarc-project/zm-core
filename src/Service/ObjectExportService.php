@@ -7,9 +7,10 @@
 
 namespace Monarc\Core\Service;
 
+use Doctrine\ORM\Mapping\MappingException;
+use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Anr;
 use Doctrine\ORM\Query\QueryException;
-use Doctrine\ORM\Query\MappingException;
 
 /**
  * Object Service Export
@@ -35,24 +36,21 @@ class ObjectExportService extends AbstractService
      * @param int $id The object to export
      * @param string $filename Reference to the string holding the filename
      * @return array The data
-     * @throws \Monarc\Core\Exception\Exception If the object is erroneous
+     * @throws Exception If the object is erroneous
      */
-    public function generateExportArray($id,  $anr = null, &$filename = "")
+    public function generateExportArray($id, $anr = null, &$filename = "")
     {
         if (empty($id)) {
-            throw new \Monarc\Core\Exception\Exception('Object to export is required', 412);
+            throw new Exception('Object to export is required', 412);
         }
-        try{
-          $entity = $this->get('table')->getEntity(['uuid' => $id, "anr" => $anr]);
-        }
-        catch(MappingException $e){
+        try {
+          $entity = $this->get('table')->getEntity(['uuid' => $id, 'anr' => $anr]);
+        } catch (QueryException | MappingException $e) {
           $entity = $this->get('table')->getEntity($id);
-        } catch (QueryException $e) {
-            $entity = $this->get('table')->getEntity($id);
         }
 
         if (!$entity) {
-            throw new \Monarc\Core\Exception\Exception('Entity `id` not found.');
+            throw new Exception('Entity `id` not found.');
         }
 
         $objectObj = [
@@ -218,7 +216,7 @@ class ObjectExportService extends AbstractService
                                   try {
                                     $measure = $this->get('measureTable')->getEntity(['anr'=>$anr->id,'uuid'=>$m]);
                                     $measure->addOpRisk($risk);
-                                  } catch (\Monarc\Core\Exception\Exception $e) { }
+                                  } catch (Exception $e) { }
                                 }
                                 unset($toExchange['measures']);
                                 unset($toExchange['id']);
@@ -291,7 +289,7 @@ class ObjectExportService extends AbstractService
                             $this->get('table')->getEntity(['uuid' => $toExchange['uuid'], 'anr' => $anr->get('id')]);
                             unset($toExchange['uuid']);
                         } //if the uuid is in the DB drop it to have a new one and avoid conflict
-                    } catch (\Monarc\Core\Exception\Exception $e) {}
+                    } catch (Exception $e) {}
                     $class = $this->get('table')->getEntityClass();
                     $object = new $class();
                     $object->setDbAdapter($this->get('table')->getDb());

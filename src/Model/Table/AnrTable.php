@@ -6,6 +6,7 @@
  */
 namespace Monarc\Core\Model\Table;
 
+use Doctrine\ORM\EntityNotFoundException;
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\Anr;
 use Monarc\Core\Model\Entity\AnrSuperClass;
@@ -31,10 +32,16 @@ class AnrTable extends AbstractEntityTable
             ->getResult();
     }
 
-    public function findById(int $id): ?AnrSuperClass
+    /**
+     * @throws EntityNotFoundException
+     */
+    public function findById(int $id): AnrSuperClass
     {
         /** @var Anr|null $anr */
         $anr = $this->getRepository()->find($id);
+        if ($anr === null) {
+            throw EntityNotFoundException::fromClassNameAndIdentifier(\get_class($this), [$id]);
+        }
 
         return $anr;
     }

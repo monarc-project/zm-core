@@ -9,10 +9,12 @@ namespace Monarc\Core\Model\Table;
 
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\AbstractEntity;
+use Monarc\Core\Model\Entity\AssetSuperClass;
 use Monarc\Core\Model\Entity\InstanceRisk;
 use Monarc\Core\Model\Entity\InstanceRiskSuperClass;
 use Monarc\Core\Model\Entity\InstanceSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
+use Monarc\Core\Service\TranslateService;
 
 /**
  * Class InstanceRiskTable
@@ -20,55 +22,30 @@ use Monarc\Core\Service\ConnectedUserService;
  */
 class InstanceRiskTable extends AbstractEntityTable
 {
-
-    /** @var ConnectedUserService */
-    protected $connectedUserService;
-
     public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
     {
         parent::__construct($dbService, InstanceRisk::class, $connectedUserService);
     }
 
     /**
-     * Get Instances Risks
-     *
-     * @param $anrId
-     * @param $instancesIds
-     * @return array
-     */
-    public function getInstancesRisks($anrId, $instancesIds)
-    {
-        $qb = $this->getRepository()->createQueryBuilder('ir');
-
-        if (empty($instancesIds)) {
-            $instancesIds[] = 0;
-        }
-
-        return $qb
-            ->select()
-            ->where($qb->expr()->in('ir.instance', $instancesIds))
-            ->andWhere('ir.anr = :anr ')
-            ->setParameter(':anr', $anrId)
-            ->getQuery()
-            ->getResult();
-    }
-
+     * TODO: remove the method and pass the value from the calling service.
+    */
     protected function getContextLanguage($anrId, $context = AbstractEntity::BACK_OFFICE)
     {
-        if($context == AbstractEntity::BACK_OFFICE){
-            $user = $this->getConnectedUser();
-            $l = $user->getLanguage();
-        }else{
-            $anr = new \Monarc\FrontOffice\Model\Entity\Anr();
-            $anr->setDbAdapter($this->getDb());
-            $anr->set('id', $anrId);
-            $anr = $this->getDb()->fetch($anr);
-            if (!$anr) {
-                throw new \Monarc\Core\Exception\Exception('Entity does not exist', 412);
-            }
-            $l = $anr->get('language');
+        if ($context === AbstractEntity::BACK_OFFICE) {
+            return $this->getConnectedUser()->getLanguage();
         }
-        return $l;
+
+        // TODO: perform lang detection to the FO side and pass here IF NEEDED (imho not needed).
+        $anr = new \Monarc\FrontOffice\Model\Entity\Anr();
+        $anr->setDbAdapter($this->getDb());
+        $anr->set('id', $anrId);
+        $anr = $this->getDb()->fetch($anr);
+        if (!$anr) {
+            throw new \Monarc\Core\Exception\Exception('Entity does not exist', 412);
+        }
+
+        return $anr->get('language');
     }
 
     /**
@@ -78,32 +55,32 @@ class InstanceRiskTable extends AbstractEntityTable
      * @param null $instanceId
      * @param $params
      * @param TranslateService $translate
-     * @param string $context
+     * @param int $language
      * @return string
      */
     public function getCsvRisks($anrId, $instanceId = null, $params, $translate, $context = AbstractEntity::BACK_OFFICE)
     {
         $risks = $this->getFilteredInstancesRisks($anrId, $instanceId, $params, $context);
 
-        $lang = $this->getContextLanguage($anrId,$context);
+        $language = $this->getContextLanguage($anrId, $context);
 
         $output = '';
         if (count($risks) > 0) {
             $fields = [
-                'instanceName' . $lang => $translate->translate('Asset', $lang),
-                'c_impact' => $translate->translate('C Impact', $lang),
-                'i_impact' => $translate->translate('I Impact', $lang),
-                'd_impact' => $translate->translate('A Impact', $lang),
-                'threatLabel' . $lang => $translate->translate('Threat', $lang),
-                'threatRate' => $translate->translate('Prob.', $lang),
-                'vulnLabel' . $lang => $translate->translate('Vulnerability', $lang),
-                'comment' => $translate->translate('Existing controls', $lang),
-                'vulnerabilityRate' => $translate->translate('Qualif.', $lang),
-                'c_risk' => $translate->translate('Current risk', $lang). " C",
-                'i_risk' => $translate->translate('Current risk', $lang) . " I",
-                'd_risk' => $translate->translate('Current risk', $lang) . " " . $translate->translate('A', $lang),
-                'kindOfMeasure' => $translate->translate('Treatment', $lang),
-                'target_risk' => $translate->translate('Residual risk', $lang),
+                'instanceName' . $language => $translate->translate('Asset', $language),
+                'c_impact' => $translate->translate('C Impact', $language),
+                'i_impact' => $translate->translate('I Impact', $language),
+                'd_impact' => $translate->translate('A Impact', $language),
+                'threatLabel' . $language => $translate->translate('Threat', $language),
+                'threatRate' => $translate->translate('Prob.', $language),
+                'vulnLabel' . $language => $translate->translate('Vulnerability', $language),
+                'comment' => $translate->translate('Existing controls', $language),
+                'vulnerabilityRate' => $translate->translate('Qualif.', $language),
+                'c_risk' => $translate->translate('Current risk', $language). " C",
+                'i_risk' => $translate->translate('Current risk', $language) . " I",
+                'd_risk' => $translate->translate('Current risk', $language) . " " . $translate->translate('A', $language),
+                'kindOfMeasure' => $translate->translate('Treatment', $language),
+                'target_risk' => $translate->translate('Residual risk', $language),
 
             ];
 
@@ -118,28 +95,28 @@ class InstanceRiskTable extends AbstractEntityTable
                     if ($k == 'kindOfMeasure'){
                         switch ($risk[$k]) {
                             case 1:
-                                $array_values[] = $translate->translate('Reduction', $lang);
+                                $array_values[] = $translate->translate('Reduction', $language);
                                 break;
                             case 2:
-                                $array_values[] = $translate->translate('Denied', $lang);;
+                                $array_values[] = $translate->translate('Denied', $language);
                                 break;
                             case 3:
-                                $array_values[] = $translate->translate('Accepted', $lang);
+                                $array_values[] = $translate->translate('Accepted', $language);
                                 break;
                             case 4:
-                                $array_values[] = $translate->translate('Shared', $lang);
+                                $array_values[] = $translate->translate('Shared', $language);
                                 break;
                             default:
-                                $array_values[] = $translate->translate('Not treated', $lang);
+                                $array_values[] = $translate->translate('Not treated', $language);
                         }
                     }
-                    elseif ($k == 'c_risk' && $risk[c_risk_enabled] == '0') {
+                    elseif ($k == 'c_risk' && $risk['c_risk_enabled'] == '0') {
                         $array_values[] = null;
                     }
-                    elseif ($k == 'i_risk' && $risk[i_risk_enabled] == '0') {
+                    elseif ($k == 'i_risk' && $risk['i_risk_enabled'] == '0') {
                         $array_values[] = null;
                     }
-                    elseif ($k == 'd_risk' && $risk[d_risk_enabled] == '0') {
+                    elseif ($k == 'd_risk' && $risk['d_risk_enabled'] == '0') {
                         $array_values[] = null;
                     }
                     elseif ($risk[$k] == '-1'){
@@ -226,7 +203,7 @@ class InstanceRiskTable extends AbstractEntityTable
             'ir.comment as comment',
             'o.scope as scope',
             'ir.kind_of_measure as kindOfMeasure',
-            'IF(ir.kind_of_measure IS NULL OR ir.kind_of_measure = ' . \Monarc\Core\Model\Entity\InstanceRiskSuperClass::KIND_NOT_TREATED . ', false, true) as t',
+            'IF(ir.kind_of_measure IS NULL OR ir.kind_of_measure = ' . InstanceRiskSuperClass::KIND_NOT_TREATED . ', false, true) as t',
             'ir.threat_id as tid',
             'ir.vulnerability_id as vid',
             'i.name' . $l . ' as instanceName' . $l . '',
@@ -281,13 +258,16 @@ class InstanceRiskTable extends AbstractEntityTable
         // Find instance(s) id
         if (empty($instance)) {
             // On prend toutes les instances, on est sur l'anr
-        } elseif ($instance->get('asset') && $instance->get('asset')->get('type') == \Monarc\Core\Model\Entity\AssetSuperClass::TYPE_PRIMARY) {
+        } elseif ($instance->get('asset') && $instance->get('asset')->get('type') == AssetSuperClass::TYPE_PRIMARY) {
             $instanceIds = [];
             $instanceIds[$instance->get('id')] = $instance->get('id');
 
+            /**
+             * TODO: - Inject dependencies if needed, a new class should not be created inside!
+             * TODO: - Remove the dependency of FO, create and move the implementation to FO!
+            */
             if ($context == AbstractEntity::BACK_OFFICE) {
-                // TODO: this woun't work for BackOffice, we need to refactor this calls and inject the object.
-                $instanceTable = new InstanceTable($this->getDb());
+                $instanceTable = new InstanceTable($this->getDb(), $this->connectedUserService);
             } else {
                 $instanceTable = new \Monarc\FrontOffice\Model\Table\InstanceTable($this->getDb(), $this->connectedUserService);
             }
@@ -317,15 +297,15 @@ class InstanceRiskTable extends AbstractEntityTable
             if (!is_array($params['amvs'])) {
                 $params['amvs'] = explode(',', substr($params['amvs'],1,-1));
             }
-            $sql .= " AND a.uuid IN (:amvIds) ";
+            $sql .= ' AND a.uuid IN (:amvIds)';
             $queryParams[':amvIds'] = $params['amvs'];
             $typeParams[':amvIds'] = \Doctrine\DBAL\Connection::PARAM_INT_ARRAY;
         }
         // FILTER: kind_of_measure ==
         if (isset($params['kindOfMeasure'])) {
-            if ($params['kindOfMeasure'] == \Monarc\Core\Model\Entity\InstanceRiskSuperClass::KIND_NOT_TREATED) {
+            if ($params['kindOfMeasure'] == InstanceRiskSuperClass::KIND_NOT_TREATED) {
                 $sql .= " AND (ir.kind_of_measure IS NULL OR ir.kind_of_measure = :kom) ";
-                $queryParams[':kom'] = \Monarc\Core\Model\Entity\InstanceRiskSuperClass::KIND_NOT_TREATED;
+                $queryParams[':kom'] = InstanceRiskSuperClass::KIND_NOT_TREATED;
             } else {
                 $sql .= " AND ir.kind_of_measure = :kom ";
                 $queryParams[':kom'] = $params['kindOfMeasure'];
@@ -441,5 +421,18 @@ class InstanceRiskTable extends AbstractEntityTable
         }
 
         return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @return InstanceRiskSuperClass[]
+     */
+    public function findByInstance(InstanceSuperClass $instance)
+    {
+        return $this->getRepository()
+            ->createQueryBuilder('ir')
+            ->where('ir.instance = :instance')
+            ->setParameter('instance', $instance)
+            ->getQuery()
+            ->getResult();
     }
 }

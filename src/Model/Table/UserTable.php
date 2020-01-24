@@ -87,15 +87,14 @@ class UserTable extends AbstractEntityTable
 
     /**
      * @throws EntityNotFoundException
-     * @throws ORMException
      */
-    public function findById(int $userId): UserSuperClass
+    public function findById(int $id): UserSuperClass
     {
         // TODO: EntityManager has to be injected instead of the db class, we need to remove db classes at all.
         /** @var UserSuperClass|null $user */
-        $user = $this->getRepository()->find($userId);
+        $user = $this->getRepository()->find($id);
         if ($user === null) {
-            throw new EntityNotFoundException(sprintf('User with id "%s" could not be found.', $userId));
+            throw EntityNotFoundException::fromClassNameAndIdentifier(\get_class($this), [$id]);
         }
 
         return $user;
