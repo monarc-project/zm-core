@@ -35,12 +35,12 @@ class ApiAnrExportController extends AbstractController
 	public function create($data){
         $output = $this->getService()->exportAnr($data);
 
-				if (empty($data['password'])) {
-          $contentType = 'application/json; charset=utf-8';
-          $extension = '.json';
+        if (empty($data['password'])) {
+            $contentType = 'application/json; charset=utf-8';
+            $extension = '.json';
         } else {
-          $contentType = 'text/plain; charset=utf-8';
-          $extension = '.bin';
+            $contentType = 'text/plain; charset=utf-8';
+            $extension = '.bin';
         }
 
         $this->getResponse()
