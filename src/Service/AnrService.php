@@ -258,6 +258,7 @@ class AnrService extends AbstractService
             'type' => 'anr',
             //'version' => $this->getVersion(),
             'monarc_version' => $this->get('configService')->getAppVersion()['appVersion'],
+            'export_timestamp' => time(),
             'instances' => [],
             'with_eval' => $with_eval,
             //'with_controls_reco' => $with_controls_reco,
