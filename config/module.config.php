@@ -487,8 +487,8 @@ return [
             // TODO: replace to AutowireFactory before refactor the service injection.
             Controller\IndexController::class => InvokableFactory::class,
             Controller\AuthenticationController::class => AutowireFactory::class,
-            Controller\ApiAnrRisksController::class => AutowireFactory::class,
             Controller\ApiAnrController::class => Controller\ApiAnrControllerFactory::class,
+            Controller\ApiAnrRisksController::class => AutowireFactory::class,
             Controller\ApiAnrRisksOpController::class => Controller\ApiAnrRisksOpControllerFactory::class,
             Controller\ApiAnrExportController::class => Controller\ApiAnrExportControllerFactory::class,
             Controller\ApiAnrInstancesController::class => Controller\ApiAnrInstancesControllerFactory::class,
