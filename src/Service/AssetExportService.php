@@ -72,6 +72,10 @@ class AssetExportService extends AbstractService
             'asset' => $entity->getJsonArray($assetObj),
             'version' => $this->getVersion(),
             'amvs' => [],
+            'threats' => [],
+            'themes' => [],
+            'vuls' => [],
+            'measures' => [],
         ];
         $amvService = $this->get('amvService');
         $amvTable = $amvService->get('table');
@@ -89,10 +93,10 @@ class AssetExportService extends AbstractService
                 $vulnerabilities,
                 $themes,
                 $measures) = $amvService->generateExportArray($amv, $anrId);
-            $return['threats'][] = $threats;
-            $return['themes'][] = $themes;
-            $return['vuls'][] = $vulnerabilities;
-            $return['measures'][] = $measures;
+            $return['threats'] += $threats;
+            $return['themes'] += $themes;
+            $return['vuls'] += $vulnerabilities;
+            $return['measures'] += $measures;
         }
 
         return $return;

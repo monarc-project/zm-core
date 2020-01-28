@@ -235,10 +235,4 @@ class DeliveriesModels extends AbstractEntity
 
         return $this;
     }
-
-    public function getJsonArray($fields = array())
-    {
-        $res = parent::getJsonArray($fields);
-        return $res;
-    }
 }

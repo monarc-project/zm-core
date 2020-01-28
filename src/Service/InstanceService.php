@@ -1624,14 +1624,23 @@ class InstanceService extends AbstractService
                         $instanceRisk->getAnr() !== null ? $instanceRisk->getAnr()->getId() : null
                     );
                 $return['amvs'][$instanceRisk->get('amv')->get('uuid')->toString()] = $amv;
-                $return['threats'][] = $threats;
-                $return['vuls'][] = $vulns;
-                $return['measures'][] = $measures;
+                if (empty($return['threats'])) {
+                    $return['threats'] = [];
+                }
+                if (empty($return['vuls'])) {
+                    $return['vuls'] = [];
+                }
+                if (empty($return['measures'])) {
+                    $return['measures'] = [];
+                }
+                $return['threats'] += $threats;
+                $return['vuls'] += $vulns;
+                $return['measures'] += $measures;
             }
 
-            $threat = $instanceRisk->get('threat');
+            $threat = $instanceRisk->getThreat();
             if (!empty($threat)) {
-                if (empty($return['threats'][$instanceRisk->get('threat')->get('uuid')->toString()])) {
+                if (empty($return['threats'][(string)$threat->getUuid()])) {
                     $return['threats'][$instanceRisk->get('threat')->get('uuid')->toString()] = $instanceRisk->get('threat')->getJsonArray($treatsObj);
                 }
                 $return['risks'][$instanceRisk->get('id')]['threat'] = $instanceRisk->get('threat')->get('uuid')->toString();
@@ -1650,7 +1659,7 @@ class InstanceService extends AbstractService
             }
         }
 
-        //Recommandations Sets
+        //Recommendations Sets
         if ($withEval && $withRecommendations) {
             $recsSetsObj = [
                 'uuid' => 'uuid',

@@ -388,8 +388,6 @@ class AnrService extends AbstractService
                     $scaleComment = $scaleCommentTable->getEntityByFields(['anr' => $entity->get('id') , 'val' => $i , 'scale' => $return['scales'][$s]['id']]);
                     $scalesCommentArray = [
                         'id' => 'id',
-                        'scale' => [],
-                        'scaleImpactType' => [],
                         'val' => 'val',
                         'comment1' => 'comment1',
                         'comment2' => 'comment2',
