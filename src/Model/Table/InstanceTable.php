@@ -7,8 +7,10 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Doctrine\ORM\EntityNotFoundException;
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\Instance;
+use Monarc\Core\Model\Entity\InstanceSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**
@@ -23,26 +25,17 @@ class InstanceTable extends AbstractEntityTable
     }
 
     /**
-     * Find By Anr
-     *
-     * @param $anrId
-     * @return array
+     * @throws EntityNotFoundException
      */
-    public function findByAnr($anrId)
+    public function findById(int $id): InstanceSuperClass
     {
-        return $this->getRepository()->createQueryBuilder('i')
-            ->select(array(
-                'i.id', 'i.level', 'IDENTITY(i.parent) as parentId',
-                'i.c', 'i.i', 'i.d', 'i.ch', 'i.ih', 'i.dh',
-                'i.name1', 'i.name2', 'i.name3', 'i.name4',
-                'i.label1', 'i.label2', 'i.label3', 'i.label4'
-            ))
-            ->where('i.anr = :anrId')
-            ->setParameter(':anrId', $anrId)
-            ->orderBy('i.parent', 'ASC')
-            ->orderBy('i.position', 'ASC')
-            ->getQuery()
-            ->getResult();
+        /** @var InstanceSuperClass|null $instance */
+        $instance = $this->getRepository()->find($id);
+        if ($instance === null) {
+            throw EntityNotFoundException::fromClassNameAndIdentifier(\get_class($this), [$id]);
+        }
+
+        return $instance;
     }
 
     /**
@@ -148,8 +141,6 @@ class InstanceTable extends AbstractEntityTable
             $return = $return->where('t.position >= :pos');
         }
         $return = $return->setParameter(':pos', $entity->get('position'));
-         // file_put_contents('php://stderr', print_r($return->getQuery()->getSQL(), TRUE).PHP_EOL);
-         // file_put_contents('php://stderr', print_r($return->getQuery()->getParameters(), TRUE).PHP_EOL);
         $return->getQuery()->getResult();
     }
 

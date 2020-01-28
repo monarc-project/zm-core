@@ -179,19 +179,6 @@ class InstanceRiskService extends AbstractService
     }
 
     /**
-     * Retrieves and returns the risks of multiple instances
-     * @param int[] $instancesIds An array of instance IDs
-     * @param int $anrId The ANR ID
-     * @return array The instances risks
-     */
-    public function getInstancesRisks($instancesIds, $anrId)
-    {
-        /** @var InstanceRiskTable $table */
-        $table = $this->get('table');
-        return $table->getInstancesRisks($anrId, $instancesIds);
-    }
-
-    /**
      * @inheritdoc
      */
     public function patch($id, $data, $manageGlobal = true)
@@ -439,28 +426,6 @@ class InstanceRiskService extends AbstractService
         $instanceRiskTable->save($instanceRisk, $last);
 
         $this->updateRecoRisks($instanceRisk);
-    }
-
-    /**
-     * Updates this risk  from the Risk Table
-     * @param int $id The ID
-     * @param array $data The new data to update
-     * @return mixed
-     */
-    public function updateFromRiskTable($id, $data)
-    {
-        /** @var InstanceRiskTable $instanceRiskTable */
-        $instanceRiskTable = $this->get('table');
-        $instanceRisk = $instanceRiskTable->getEntity($id);
-
-        //security
-        $data['specific'] = $instanceRisk->get('specific');
-
-        if ($instanceRisk->threatRate != $data['threatRate']) {
-            $data['mh'] = 0;
-        }
-
-        return $this->update($id, $data);
     }
 
     /**

@@ -8,6 +8,9 @@
 namespace Monarc\Core\Service;
 
 use Interop\Container\ContainerInterface;
+use Monarc\Core\Model\Entity;
+use Monarc\Core\Model\Table;
+use Monarc\Core\Service;
 
 /**
  * Instance Service Factory
@@ -18,25 +21,25 @@ use Interop\Container\ContainerInterface;
 class InstanceServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = [
-        'table' => 'Monarc\Core\Model\Table\InstanceTable',
-        'assetTable' => 'Monarc\Core\Model\Table\AssetTable',
-        'entity' => 'Monarc\Core\Model\Entity\Instance',
-        'instanceConsequenceEntity' => 'Monarc\Core\Model\Entity\InstanceConsequence',
-        'anrTable' => 'Monarc\Core\Model\Table\AnrTable',
-        'amvTable' => 'Monarc\Core\Model\Table\AmvTable',
-        'instanceTable' => 'Monarc\Core\Model\Table\InstanceTable',
-        'instanceConsequenceTable' => 'Monarc\Core\Model\Table\InstanceConsequenceTable',
-        'objectTable' => 'Monarc\Core\Model\Table\MonarcObjectTable',
-        'scaleTable' => 'Monarc\Core\Model\Table\ScaleTable',
-        'scaleCommentTable' => 'Monarc\Core\Model\Table\ScaleCommentTable',
-        'scaleImpactTypeTable' => 'Monarc\Core\Model\Table\ScaleImpactTypeTable',
-        'instanceConsequenceService' => 'Monarc\Core\Service\InstanceConsequenceService',
-        'instanceRiskService' => 'Monarc\Core\Service\InstanceRiskService',
-        'instanceRiskOpService' => 'Monarc\Core\Service\InstanceRiskOpService',
-        'objectObjectService' => 'Monarc\Core\Service\ObjectObjectService',
-        'objectExportService' => 'Monarc\Core\Service\ObjectExportService',
-        'amvService' => 'Monarc\Core\Service\AmvService',
-        'translateService' => 'Monarc\Core\Service\TranslateService',
+        'table' => Table\InstanceTable::class,
+        'assetTable' => Table\AssetTable::class,
+        'entity' => Entity\Instance::class,
+        'instanceConsequenceEntity' => Entity\InstanceConsequence::class,
+        'anrTable' => Table\AnrTable::class,
+        'amvTable' => Table\AmvTable::class,
+        'instanceConsequenceTable' => Table\InstanceConsequenceTable::class,
+        'objectTable' => Table\MonarcObjectTable::class,
+        'scaleTable' => Table\ScaleTable::class,
+        'scaleCommentTable' => Table\ScaleCommentTable::class,
+        'scaleImpactTypeTable' => Table\ScaleImpactTypeTable::class,
+        'instanceConsequenceService' => Service\InstanceConsequenceService::class,
+        'instanceRiskService' => Service\InstanceRiskService::class,
+        'instanceRiskOpService' => Service\InstanceRiskOpService::class,
+        'objectObjectService' => Service\ObjectObjectService::class,
+        'objectExportService' => Service\ObjectExportService::class,
+        'amvService' => Service\AmvService::class,
+        'translateService' => Service\TranslateService::class,
+        'configService' => ConfigService::class,
     ];
 
     // TODO: A temporary solution to inject SharedEventManager. All the factories classes will be removed.

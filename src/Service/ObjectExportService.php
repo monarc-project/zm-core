@@ -7,9 +7,11 @@
 
 namespace Monarc\Core\Service;
 
-use Monarc\Core\Model\Entity\Anr;
+use Doctrine\ORM\Mapping\MappingException;
 use Doctrine\ORM\Query\QueryException;
-use Doctrine\ORM\Query\MappingException;
+use Monarc\Core\Exception\Exception;
+use Monarc\Core\Model\Entity\Anr;
+use Monarc\Core\Model\Entity\ObjectSuperClass;
 
 /**
  * Object Service Export
@@ -35,24 +37,21 @@ class ObjectExportService extends AbstractService
      * @param int $id The object to export
      * @param string $filename Reference to the string holding the filename
      * @return array The data
-     * @throws \Monarc\Core\Exception\Exception If the object is erroneous
+     * @throws Exception If the object is erroneous
      */
-    public function generateExportArray($id,  $anr = null, &$filename = "")
+    public function generateExportArray($id, $anr = null, &$filename = "")
     {
         if (empty($id)) {
-            throw new \Monarc\Core\Exception\Exception('Object to export is required', 412);
+            throw new Exception('Object to export is required', 412);
         }
-        try{
-          $entity = $this->get('table')->getEntity(['uuid' => $id, "anr" => $anr]);
-        }
-        catch(MappingException $e){
-          $entity = $this->get('table')->getEntity($id);
-        } catch (QueryException $e) {
+        try {
+            $entity = $this->get('table')->getEntity(['uuid' => $id, 'anr' => $anr]);
+        } catch (QueryException | MappingException $e) {
             $entity = $this->get('table')->getEntity($id);
         }
 
         if (!$entity) {
-            throw new \Monarc\Core\Exception\Exception('Entity `id` not found.');
+            throw new Exception('Entity `id` not found.');
         }
 
         $objectObj = [
@@ -119,7 +118,7 @@ class ObjectExportService extends AbstractService
         if (!empty($asset)) {
             $asset = $asset->getJsonArray(['uuid']);
             $return['object']['asset'] = $asset['uuid'];
-            $return['asset'] = $this->get('assetExportService')->generateExportArray($asset['uuid'],$anr);
+            $return['asset'] = $this->get('assetExportService')->generateExportArray($asset['uuid'], $anr);
         }
 
         // Recovery of operational risks
@@ -136,7 +135,7 @@ class ObjectExportService extends AbstractService
                     $risk = $r->getJsonArray(['id', 'code', 'label1', 'label2', 'label3', 'label4', 'description1', 'description2', 'description3', 'description4']);
                     $risk['measures'] = array();
                     foreach ($r->measures as $m) {
-                      $risk['measures'][] = $m->uuid;
+                        $risk['measures'][] = $m->uuid;
                     }
                     $return['rolfTags'][$rolfTag['id']]['risks'][$risk['id']] = $risk['id'];
                     $return['rolfRisks'][$risk['id']] = $risk;
@@ -152,9 +151,12 @@ class ObjectExportService extends AbstractService
         $return['children'] = null;
         if (!empty($children)) {
             $return['children'] = [];
-            $place =1;
+            $place = 1;
             foreach ($children as $child) {
-                $return['children'][$child->get('child')->get('uuid')->toString()] = $this->generateExportArray($child->get('child')->get('uuid')->toString(),$anr);
+                $return['children'][$child->get('child')->get('uuid')->toString()] = $this->generateExportArray(
+                    (string)$child->get('child')->get('uuid'),
+                    $anr
+                );
                 $return['children'][$child->get('child')->get('uuid')->toString()]['object']['position'] = $place;
                 $place ++;
             }
@@ -175,12 +177,15 @@ class ObjectExportService extends AbstractService
     {
         if (isset($data['type']) && $data['type'] == 'object'
         ) {
-          $monarc_version = $data['monarc_version']?$data['monarc_version']:""; //set the version of monarc to choose the right algo
-            if (isset($data['object']['name' . $this->getLanguage()]) && isset($objectsCache['objects'][$data['object']['name' . $this->getLanguage()]])) {
+            $monarcVersion = $data['monarcVersion'] ? $data['monarcVersion'] : ''; //set the version of monarc to choose the right algo
+            if (isset(
+                $data['object']['name' . $this->getLanguage()],
+                $objectsCache['objects'][$data['object']['name' . $this->getLanguage()]]
+            )) {
                 return $objectsCache['objects'][$data['object']['name' . $this->getLanguage()]];
             }
             // import asset
-            $assetId = $this->get('assetService')->importFromArray($monarc_version,$data['asset'], $anr, $objectsCache);
+            $assetId = $this->get('assetService')->importFromArray($monarcVersion, $data['asset'], $anr, $objectsCache);
 
             if ($assetId) {
                 // import categories
@@ -214,19 +219,22 @@ class ObjectExportService extends AbstractService
                                 $risk->setDbAdapter($this->get('rolfRiskTable')->getDb());
                                 $risk->setLanguage($this->getLanguage());
                                 $toExchange = $data['rolfRisks'][$k];
-                                foreach ($toExchange['measures'] as $m) {
-                                  try {
-                                    $measure = $this->get('measureTable')->getEntity(['anr'=>$anr->id,'uuid'=>$m]);
-                                    $measure->addOpRisk($risk);
-                                  } catch (\Monarc\Core\Exception\Exception $e) { }
+                                foreach ($toExchange['measures'] as $measureUuid) {
+                                    try {
+                                        $measure = $this->get('measureTable')->getEntity([
+                                            'anr' => $anr->getId(),
+                                            'uuid' => $measureUuid
+                                        ]);
+                                        $measure->addOpRisk($risk);
+                                    } catch (Exception $e) {
+                                    }
                                 }
                                 unset($toExchange['measures']);
                                 unset($toExchange['id']);
                                 $toExchange['anr'] = $anr->get('id');
                                 $risk->exchangeArray($toExchange);
                                 $this->setDependencies($risk, ['anr']);
-                                $objectsCache['rolfRisks'][$data['rolfRisks'][$k]['id']] = $idRt = $this->get('rolfRiskTable')->save($risk);
-                                $risks[] = $idRt;
+                                $risks[] = $objectsCache['rolfRisks'][$data['rolfRisks'][$k]['id']] = $this->get('rolfRiskTable')->save($risk);
                             }
                         }
                         $data['rolfTags'][$data['object']['rolfTag']]['risks'] = $risks;
@@ -254,7 +262,7 @@ class ObjectExportService extends AbstractService
                  * Seul un objet SCOPE_GLOBAL (scope) pourra être dupliqué par défaut
                  * Sinon c'est automatiquement un test de fusion, en cas d'échec de fusion on part sur une "duplication" (création)
                  */
-                if ($data['object']['scope'] == \Monarc\Core\Model\Entity\ObjectSuperClass::SCOPE_GLOBAL &&
+                if ($data['object']['scope'] == ObjectSuperClass::SCOPE_GLOBAL &&
                     $modeImport == 'duplicate'
                 ) {
                     // Cela sera traité après le "else"
@@ -287,11 +295,12 @@ class ObjectExportService extends AbstractService
                 $toExchange = $data['object'];
                 if (empty($object)) {
                     try {
-                        if(isset($toExchange['uuid']) && !is_null($toExchange['uuid'])){
+                        if (isset($toExchange['uuid']) && !is_null($toExchange['uuid'])) {
                             $this->get('table')->getEntity(['uuid' => $toExchange['uuid'], 'anr' => $anr->get('id')]);
                             unset($toExchange['uuid']);
                         } //if the uuid is in the DB drop it to have a new one and avoid conflict
-                    } catch (\Monarc\Core\Exception\Exception $e) {}
+                    } catch (Exception $e) {
+                    }
                     $class = $this->get('table')->getEntityClass();
                     $object = new $class();
                     $object->setDbAdapter($this->get('table')->getDb());
@@ -320,7 +329,10 @@ class ObjectExportService extends AbstractService
                     // Si l'objet existe déjà, on risque de lui recréer des fils qu'il a déjà, dans ce cas faut détacher tous ses fils avant de lui re-rattacher (après import)
                     $links = $this->get('objectObjectService')->get('table')->getEntityByFields([
                         'anr' => $anr->get('id'),
-                        'father' => ['anr' => $anr->get('id'),'uuid' => is_string($object->get('uuid'))?$object->get('uuid'):$object->get('uuid')->toString()]
+                        'father' => [
+                            'anr' => $anr->getId(),
+                            'uuid' => (string)$object->get('uuid'),
+                        ],
                     ], ['position' => 'DESC']);
                     foreach ($links as $l) {
                         if (!empty($l)) {
@@ -334,9 +346,8 @@ class ObjectExportService extends AbstractService
                 $toExchange['category'] = $idCateg;
                 // unset the unright langue To modify when issue#7 is corrected
                 for ($i = 1; $i <= 4; $i++) {
-                    if ($i != $this->getLanguage()) {
-                        unset($toExchange['name' . $i]);
-                        unset($toExchange['label' . $i]);
+                    if ($i !== $this->getLanguage()) {
+                        unset($toExchange['name' . $i], $toExchange['label' . $i]);
                     }
                 }
                 $object->exchangeArray($toExchange);
@@ -348,13 +359,14 @@ class ObjectExportService extends AbstractService
 
                 // going through the childrens
                 if (!empty($data['children'])) {
-                    usort($data['children'], function($a, $b) {
-                        if (array_key_exists('position', $a['object']) && array_key_exists('position', $b['object'])) {
+                    usort($data['children'], function ($a, $b) {
+                        if (\array_key_exists('position', $a['object'])
+                            && \array_key_exists('position', $b['object'])
+                        ) {
                             return $a['object']['position'] <=> $b['object']['position'];
                         }
                     });
                     foreach ($data['children'] as $c) {
-
                         $child = $this->importFromArray($c, $anr, $modeImport, $objectsCache);
 
                         if ($child) {
@@ -373,9 +385,11 @@ class ObjectExportService extends AbstractService
                         }
                     }
                 }
+
                 return $idObj;
             }
         }
+
         return false;
     }
 
