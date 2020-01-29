@@ -490,7 +490,7 @@ return [
             Controller\ApiAnrController::class => Controller\ApiAnrControllerFactory::class,
             Controller\ApiAnrRisksController::class => AutowireFactory::class,
             Controller\ApiAnrRisksOpController::class => Controller\ApiAnrRisksOpControllerFactory::class,
-            Controller\ApiAnrExportController::class => Controller\ApiAnrExportControllerFactory::class,
+            Controller\ApiAnrExportController::class => AutowireFactory::class,
             Controller\ApiAnrInstancesController::class => Controller\ApiAnrInstancesControllerFactory::class,
             Controller\ApiAnrInstancesConsequencesController::class => Controller\ApiAnrInstancesConsequencesControllerFactory::class,
             Controller\ApiAnrInstancesRisksController::class => Controller\ApiAnrInstancesRisksControllerFactory::class,

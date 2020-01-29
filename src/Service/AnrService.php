@@ -7,6 +7,8 @@
 
 namespace Monarc\Core\Service;
 
+use DateTime;
+use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Anr;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\MonarcObjectTable;
@@ -204,12 +206,12 @@ class AnrService extends AbstractService
     * Exports an ANR, optionaly encrypted, for later re-import
     * @param array $data An array with the ANR 'id' and 'password' for encryption
     * @return string JSON file, optionaly encrypted
-    * @throws \Monarc\Core\Exception\Exception If the ANR is invalid
+    * @throws Exception If the ANR is invalid
     */
     public function exportAnr(&$data)
     {
         if (empty($data['id'])) {
-            throw new \Monarc\Core\Exception\Exception('Anr to export is required', 412);
+            throw new Exception('Anr to export is required', 412);
         }
 
         $filename = "";
@@ -239,28 +241,22 @@ class AnrService extends AbstractService
     * @param string $filename The output filename
     * @param bool $with_eval If true, exports evaluations as well
     * @return array The data array that should be saved
-    * @throws \Monarc\Core\Exception\Exception If the ANR or an entity is not found
+    * @throws Exception If the ANR or an entity is not found
     */
     public function generateExportArray($id, &$filename = "", $with_eval = false, $with_controls = false, $with_recommendations = false, $with_methodSteps = false, $with_interviews = false, $with_soas = false, $with_records = false)
     {
-        if (empty($id)) {
-            throw new \Monarc\Core\Exception\Exception('Anr to export is required', 412);
-        }
-        $entity = $this->get('table')->getEntity($id);
-
-        if (!$entity) {
-            throw new \Monarc\Core\Exception\Exception('Entity `id` not found.');
-        }
+        /** @var AnrTable $anrTable */
+        $anrTable = $this->get('table');
+        $entity = $anrTable->findById($id);
 
         $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $entity->get('label' . $this->getLanguage()));
 
         $return = [
             'type' => 'anr',
-            //'version' => $this->getVersion(),
             'monarc_version' => $this->get('configService')->getAppVersion()['appVersion'],
+            'export_datetime' => (new DateTime())->format('Y-m-d H:i:s'),
             'instances' => [],
             'with_eval' => $with_eval,
-            //'with_controls_reco' => $with_controls_reco,
         ];
 
         $instanceService = $this->get('instanceService');
