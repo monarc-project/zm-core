@@ -177,7 +177,7 @@ class ObjectExportService extends AbstractService
     {
         if (isset($data['type']) && $data['type'] == 'object'
         ) {
-            $monarcVersion = $data['monarcVersion'] ? $data['monarcVersion'] : ''; //set the version of monarc to choose the right algo
+            $monarcVersion = $data['monarc_version'] ?? ''; //set the version of monarc to choose the right algo
             if (isset(
                 $data['object']['name' . $this->getLanguage()],
                 $objectsCache['objects'][$data['object']['name' . $this->getLanguage()]]
