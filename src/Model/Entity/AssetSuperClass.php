@@ -170,6 +170,11 @@ class AssetSuperClass extends AbstractEntity
         return $this->code;
     }
 
+    public function getType(): int
+    {
+        return $this->type;
+    }
+
     public function getInputFilter($partial = true)
     {
         if (!$this->inputFilter) {

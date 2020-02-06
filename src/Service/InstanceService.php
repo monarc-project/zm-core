@@ -199,7 +199,7 @@ class InstanceService extends AbstractService
         $instance->exchangeArray($data, false);
 
         //instance dependencies
-        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = property_exists($this, 'dependencies') ? $this->dependencies : [];
         $this->setDependencies($instance, $dependencies);
 
         //level
@@ -214,12 +214,12 @@ class InstanceService extends AbstractService
         //instances risk
         /** @var InstanceRiskService $instanceRiskService */
         $instanceRiskService = $this->get('instanceRiskService');
-        $instanceRiskService->createInstanceRisks($id, $anrId, $object);
+        $instanceRiskService->createInstanceRisks($instance, $instance->getAnr(), $object);
 
         //instances risks op
         /** @var InstanceRiskOpService $instanceRiskOpService */
         $instanceRiskOpService = $this->get('instanceRiskOpService');
-        $instanceRiskOpService->createInstanceRisksOp($id, $anrId, $object);
+        $instanceRiskOpService->createInstanceRisksOp($instance, $object);
 
         //instances consequences
         $instanceConsequenceId = $this->createInstanceConsequences($id, $anrId, $object);
@@ -373,13 +373,13 @@ class InstanceService extends AbstractService
             $this->updateConsequences($anrId, ['consequences' => $dataConsequences], true);
         }
 
-        $this->updateRisks($anrId, $id);
+        $this->updateRisks($instance);
 
         $this->updateChildrenImpacts($instance);
 
         $this->updateBrothers($anrId, $instance, $initialData, $historic);
 
-        if (count($historic) == 1) {
+        if (\count($historic) === 1) {
             $this->objectImpacts($instance);
         }
 
@@ -506,10 +506,9 @@ class InstanceService extends AbstractService
 
         $id = $table->save($instance);
 
-        $parentId = ($instance->parent) ? $instance->parent->id : null;
-        $this->refreshImpactsInherited($anrId, $parentId, $instance);
+        $this->refreshImpactsInherited($instance);
 
-        $this->updateRisks($anrId, $id);
+        $this->updateRisks($instance);
 
         $this->updateChildrenImpacts($instance);
 
@@ -539,15 +538,15 @@ class InstanceService extends AbstractService
     {
         /** @var InstanceTable $table */
         $table = $this->get('table');
-        $instance = $table->getEntity($id);
+        $instance = $table->findById($id);
 
         // only root instance can be delete
-        if ($instance->level != Instance::LEVEL_ROOT) {
+        if ($instance->getLevel() !== Instance::LEVEL_ROOT) {
             throw new Exception('This is not a root instance', 412);
         }
 
-        $this->get('instanceRiskService')->deleteInstanceRisks($id, $instance->anr->id);
-        $this->get('instanceRiskOpService')->deleteInstanceRisksOp($id, $instance->anr->id);
+        $this->get('instanceRiskService')->deleteInstanceRisks($instance);
+        $this->get('instanceRiskOpService')->deleteInstanceRisksOp($id, $instance->getAnr()->getId());
 
         $table->delete($id);
     }
@@ -716,20 +715,21 @@ class InstanceService extends AbstractService
         if (!$instance instanceof \Monarc\Core\Model\Entity\InstanceSuperClass) {
             $instance = $this->get('table')->getEntity($instance);
         }
-        $children = $table->getEntityByFields(['parent' => $instance->id]);
+        /** @var InstanceSuperClass[] $children */
+        $children = $table->getEntityByFields(['parent' => $instance->getId()]);
 
         foreach ($children as $child) {
 
-            if ($child->ch) {
-                $child->c = $instance->c;
+            if ($child->getInheritedConfidentiality()) {
+                $child->c = $instance->getConfidentiality();
             }
 
-            if ($child->ih) {
-                $child->i = $instance->i;
+            if ($child->getInheritedIntegrity()) {
+                $child->i = $instance->getIntegrity();
             }
 
-            if ($child->dh) {
-                $child->d = $instance->d;
+            if ($child->getInheritedAvailability()) {
+                $child->d = $instance->getAvailability();
             }
 
             $table->save($child);
@@ -737,8 +737,8 @@ class InstanceService extends AbstractService
             //update children
             $this->updateChildrenImpacts($child);
 
-            if ($child->anr) {
-                $this->updateRisks($child->anr->id, $child->id);
+            if ($child->getAnr()) {
+                $this->updateRisks($child);
             }
         }
     }
@@ -819,10 +819,10 @@ class InstanceService extends AbstractService
 
                 $dataConsequences = [
                     'anr' => $anrId,
-                    'c' => intval($consequence['c_risk']),
-                    'i' => intval($consequence['i_risk']),
-                    'd' => intval($consequence['d_risk']),
-                    'isHidden' => intval($consequence['isHidden']),
+                    'c' => (int)$consequence['c_risk'],
+                    'i' => (int)$consequence['i_risk'],
+                    'd' => (int)$consequence['d_risk'],
+                    'isHidden' => (int)$consequence['isHidden'],
                 ];
 
                 /** @var InstanceConsequenceService $instanceConsequenceService */
@@ -834,62 +834,40 @@ class InstanceService extends AbstractService
         }
     }
 
-    /**
-     * Update Risks
-     *
-     * @param $anrId
-     * @param $instanceId
-     */
-    protected function updateRisks($anrId, $instanceId)
+    protected function updateRisks(InstanceSuperClass $instance)
     {
-        //instances risk
         /** @var InstanceRiskService $instanceRiskService */
         $instanceRiskService = $this->get('instanceRiskService');
-        $instanceRisks = $instanceRiskService->getInstanceRisks($instanceId, $anrId);
+        $instanceRisks = $instanceRiskService->getInstanceRisks($instance);
 
-        $nb = count($instanceRisks);
+        $nb = \count($instanceRisks);
         foreach ($instanceRisks as $i => $instanceRisk) {
-            $instanceRiskService->updateRisks($instanceRisk->id, $i + 1 >= $nb);
+            $instanceRiskService->updateRisks($instanceRisk, ($i + 1) >= $nb);
         }
     }
 
-    /**
-     * Refresh Impacts Inherited
-     *
-     * @param $anrId
-     * @param $parentId
-     * @param $instance
-     */
-    protected function refreshImpactsInherited($anrId, $parentId, $instance)
+    protected function refreshImpactsInherited(InstanceSuperClass $instance)
     {
-        $parent = ($parentId > 0) ? $this->getEntityByIdAndAnr($parentId, $anrId) : null;
-
         //for cid, if value is inherited, retrieve value of parent
         //if there is no parent and value is inherited, value is equal to -1
-        if ($instance->ch || $instance->ih || $instance->dh) {
-            if ($parent) {
-                if ($instance->ch) {
-                    $instance->c = $parent['c'];
-                }
-                if ($instance->ih) {
-                    $instance->i = $parent['i'];
-                }
-                if ($instance->dh) {
-                    $instance->d = $parent['d'];
-                }
-            } else {
-                if ($instance->ch) {
-                    $instance->c = -1;
-                }
-                if ($instance->ih) {
-                    $instance->i = -1;
-                }
-                if ($instance->dh) {
-                    $instance->d = -1;
-                }
+        if ($instance->getInheritedConfidentiality()
+            || $instance->getInheritedIntegrity()
+            || $instance->getInheritedAvailability()
+        ) {
+            if ($instance->getInheritedConfidentiality()) {
+                $instance->c = $instance->getParent() !== null ? $instance->getParent()->getConfidentiality() : -1;
+            }
+            if ($instance->getInheritedIntegrity()) {
+                $instance->i = $instance->getParent() !== null ? $instance->getParent()->getIntegrity() : -1;
+            }
+            if ($instance->getInheritedAvailability()) {
+                $instance->d = $instance->getParent() !== null ? $instance->getParent()->getAvailability() : -1;
             }
 
-            $this->get('table')->save($instance);
+            /** @var InstanceTable $instanceTable */
+            $instanceTable = $this->get('table');
+
+            $instanceTable->save($instance);
         }
     }
 

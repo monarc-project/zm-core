@@ -234,6 +234,21 @@ class ThreatSuperClass extends AbstractEntity
         return $this->code;
     }
 
+    public function getConfidentiality(): int
+    {
+        return $this->c;
+    }
+
+    public function getIntegrity(): int
+    {
+        return $this->i;
+    }
+
+    public function getAvailability(): int
+    {
+        return $this->a;
+    }
+
     public function getInputFilter($partial = false)
     {
         if (!$this->inputFilter) {

@@ -79,16 +79,16 @@ class ScaleSuperClass extends AbstractEntity
 
     /**
      * @param int $id
-     * @return Asset
      */
-    public function setId($id)
+    public function setId($id): self
     {
         $this->id = $id;
+
         return $this;
     }
 
     /**
-     * @return Anr
+     * @return AnrSuperClass
      */
     public function getAnr()
     {
@@ -96,13 +96,28 @@ class ScaleSuperClass extends AbstractEntity
     }
 
     /**
-     * @param Anr $anr
-     * @return Scale
+     * @param AnrSuperClass $anr
      */
-    public function setAnr($anr)
+    public function setAnr($anr): self
     {
         $this->anr = $anr;
+
         return $this;
+    }
+
+    public function getType(): int
+    {
+        return (int)$this->type;
+    }
+
+    public function getMin(): int
+    {
+        return (int)$this->min;
+    }
+
+    public function getMax(): int
+    {
+        return (int)$this->max;
     }
 
     public function getInputFilter($partial = false)

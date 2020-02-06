@@ -119,21 +119,21 @@ class InstanceRiskSuperClass extends AbstractEntity
      *
      * @ORM\Column(name="mh", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $mh = '1';
+    protected $mh = 1;
 
     /**
      * @var int
      *
      * @ORM\Column(name="threat_rate", type="smallint", options={"unsigned":false, "default":-1})
      */
-    protected $threatRate = '-1';
+    protected $threatRate = -1;
 
     /**
      * @var int
      *
      * @ORM\Column(name="vulnerability_rate", type="smallint", options={"unsigned":false, "default":-1})
      */
-    protected $vulnerabilityRate = '-1';
+    protected $vulnerabilityRate = -1;
 
     /**
      * @var int
@@ -147,7 +147,7 @@ class InstanceRiskSuperClass extends AbstractEntity
      *
      * @ORM\Column(name="reduction_amount", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $reductionAmount = '0';
+    protected $reductionAmount = 0;
 
     /**
      * @var string
@@ -350,6 +350,63 @@ class InstanceRiskSuperClass extends AbstractEntity
     public function isSpecific(): bool
     {
         return $this->specific === self::TYPE_SPECIFIC;
+    }
+
+    public function getThreatRate(): int
+    {
+        return $this->threatRate;
+    }
+
+    public function getVulnerabilityRate(): int
+    {
+        return $this->vulnerabilityRate;
+    }
+
+    public function setRiskConfidentiality(int $riskC): InstanceRiskSuperClass
+    {
+        $this->riskC = $riskC;
+
+        return $this;
+    }
+
+    public function setRiskIntegrity(int $riskI): InstanceRiskSuperClass
+    {
+        $this->riskI = $riskI;
+
+        return $this;
+    }
+
+    public function setRiskAvailability(int $riskD): InstanceRiskSuperClass
+    {
+        $this->riskD = $riskD;
+
+        return $this;
+    }
+
+    public function setCacheMaxRisk(int $cacheMaxRisk): InstanceRiskSuperClass
+    {
+        $this->cacheMaxRisk = $cacheMaxRisk;
+
+        return $this;
+    }
+
+    public function setCacheTargetedRisk(int $cacheTargetedRisk): InstanceRiskSuperClass
+    {
+        $this->cacheTargetedRisk = $cacheTargetedRisk;
+
+        return $this;
+    }
+
+    public function getReductionAmount(): int
+    {
+        return $this->reductionAmount;
+    }
+
+    public function setReductionAmount(int $reductionAmount): InstanceRiskSuperClass
+    {
+        $this->reductionAmount = $reductionAmount;
+
+        return $this;
     }
 
     public function getInputFilter($partial = false)

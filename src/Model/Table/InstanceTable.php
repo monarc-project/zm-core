@@ -8,9 +8,13 @@
 namespace Monarc\Core\Model\Table;
 
 use Doctrine\ORM\EntityNotFoundException;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Monarc\Core\Model\Db;
+use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\Instance;
 use Monarc\Core\Model\Entity\InstanceSuperClass;
+use Monarc\Core\Model\Entity\ObjectSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**
@@ -36,6 +40,34 @@ class InstanceTable extends AbstractEntityTable
         }
 
         return $instance;
+    }
+
+    /**
+     * @return Instance[]
+     */
+    public function findByAnrAndObject(AnrSuperClass $anr, ObjectSuperClass $object)
+    {
+        return $this->getRepository()
+            ->createQueryBuilder('i')
+            ->where('i.anr = :anr')
+            ->andWhere('i.object = :object')
+            ->setParameter('anr', $anr)
+            ->setParameter('object', $object)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function saveEntity(InstanceSuperClass $instance, bool $flushAll = true): void
+    {
+        $em = $this->getDb()->getEntityManager();
+        $em->persist($instance);
+        if ($flushAll) {
+            $em->flush();
+        }
     }
 
     /**

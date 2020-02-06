@@ -9,6 +9,7 @@ namespace Monarc\Core\Service;
 
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Amv;
+use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\Instance;
 use Monarc\Core\Model\Entity\InstanceRisk;
 use Monarc\Core\Model\Entity\InstanceRiskSuperClass;
@@ -50,41 +51,21 @@ class InstanceRiskService extends AbstractService
 
     protected $forbiddenFields = ['anr', 'amv', 'asset', 'threat', 'vulnerability'];
 
-    /**
-     * Creates a new Instance Risk
-     * @param int $instanceId The instance ID
-     * @param int $anrId The ANR ID
-     * @param Object $object The object
-     */
-    public function createInstanceRisks($instanceId, $anrId, $object)
-    {
-        //retrieve brothers instances
+    public function createInstanceRisks(
+        InstanceSuperClass $instance,
+        AnrSuperClass $anr,
+        ObjectSuperClass $object
+    ): void {
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('instanceTable');
-        try {
-            $instances = $instanceTable->getEntityByFields([
-                'anr' => $anrId,
-                'object' => (string)$object->uuid
-            ]);
-        } catch (MappingException | QueryException $e) {
-            $instances = $instanceTable->getEntityByFields([
-                'anr' => $anrId,
-                'object' => [
-                    'uuid' => (string)$object->uuid,
-                    'anr' => $anrId
-                ]
-            ]);
-        }
+        $otherInstances = $instanceTable->findByAnrAndObject($anr, $object);
 
         /** @var InstanceRiskTable $instanceRiskTable */
         $instanceRiskTable = $this->get('table');
-        /** @var InstanceSuperClass $currentInstance */
-        $currentInstance = $instanceTable->getEntity($instanceId);
 
-        if ($object->scope === MonarcObject::SCOPE_GLOBAL && \count($instances) > 1) {
-            /** @var InstanceSuperClass $instance */
-            foreach ($instances as $instance) {
-                if ($instance->getId() === $instanceId) {
+        if ($object->getScope() === MonarcObject::SCOPE_GLOBAL && \count($otherInstances) > 1) {
+            foreach ($otherInstances as $otherInstance) {
+                if ($otherInstance->getId() === $instance->getId()) {
                     break;
                 }
 
@@ -93,7 +74,7 @@ class InstanceRiskService extends AbstractService
                     /** @var InstanceRisk $newInstanceRisk */
                     $newInstanceRisk = clone $instanceRisk;
                     $newInstanceRisk->setId(null);
-                    $newInstanceRisk->setInstance($currentInstance);
+                    $newInstanceRisk->setInstance($instance);
                     $newInstanceRisk->setCreator(
                         $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
                     );
@@ -102,12 +83,15 @@ class InstanceRiskService extends AbstractService
 
                     // This part of the code is related to the FO. Needs to be extracted.
                     if ($this->get('recommandationRiskTable') !== null) {
-                        $recoRisks = $this->get('recommandationRiskTable')->getEntityByFields(['anr' => $anrId, 'instanceRisk' => $instanceRisk->id]);
-                        if (\count($recoRisks) > 0) {
+                        $recoRisks = $this->get('recommandationRiskTable')->getEntityByFields([
+                            'anr' => $anr->getId(),
+                            'instanceRisk' => $instanceRisk->id
+                        ]);
+                        if (\count($recoRisks)) {
                             foreach ($recoRisks as $recoRisk) {
                                 $newRecoRisk = clone $recoRisk;
                                 $newRecoRisk->set('id', null);
-                                $newRecoRisk->set('instance', $currentInstance);
+                                $newRecoRisk->set('instance', $instance);
                                 $newRecoRisk->set('instanceRisk', $newInstanceRisk);
                                 $this->get('recommandationRiskTable')->save($newRecoRisk);
                             }
@@ -121,12 +105,12 @@ class InstanceRiskService extends AbstractService
             if (in_array('anr', $this->get('assetTable')->getClassMetadata()->getIdentifierFieldNames())) {
                 $amvs = $amvTable->getEntityByFields([
                     'asset' => [
-                        'uuid' => (string)$object->asset->uuid,
-                        'anr' => $anrId
+                        'uuid' => (string)$object->getAsset()->getUuid(),
+                        'anr' => $anr->getId()
                     ]
                 ]);
             } else {
-                $amvs = $amvTable->getEntityByFields(['asset' => (string)$object->asset->uuid]);
+                $amvs = $amvTable->getEntityByFields(['asset' => (string)$object->getAsset()->getUuid()]);
             }
 
             /** @var Amv $amv */
@@ -135,47 +119,41 @@ class InstanceRiskService extends AbstractService
                     'anr' => $amv->getAnr(),
                     'amv' => $amv,
                     'asset' => $amv->getAsset(),
-                    'instance' => $currentInstance,
+                    'instance' => $instance,
                     'threat' => $amv->getThreat(),
                     'vulnerability' => $amv->getVulnerability(),
                 ];
                 $instanceRiskEntityClassName = $this->get('table')->getEntityClass();
                 $instanceRisk = new $instanceRiskEntityClassName($data);
-                $instanceRiskTable->save($instanceRisk);
+                $instanceRiskTable->save($instanceRisk, false);
 
-                $this->updateRisks($instanceRisk);
+                $this->updateRisks($instanceRisk, false);
             }
         }
+
+        $instanceRiskTable->getDb()->flush();
     }
 
-    /**
-     * Deletes an Instance Risk
-     * @param int $instanceId The instance ID
-     * @param int $anrId The ANR ID
-     */
-    public function deleteInstanceRisks($instanceId, $anrId)
+    public function deleteInstanceRisks(InstanceSuperClass $instance): void
     {
-        $risks = $this->getInstanceRisks($instanceId, $anrId);
+        $risks = $this->getInstanceRisks($instance);
+        /** @var InstanceRiskTable $table */
         $table = $this->get('table');
         $nb = \count($risks);
-        $i = 1;
-        foreach ($risks as $r) {
-            $table->delete($r->id, $i === $nb);
-            $i++;
+        foreach ($risks as $num => $r) {
+            $table->delete($r->getId(), ($num + 1) === $nb);
         }
     }
 
     /**
-     * Retrieves and returns the risks of the specified instance ID
-     * @param int $instanceId The instance ID
-     * @param int $anrId The ANR ID
-     * @return array|bool
+     * @return InstanceRiskSuperClass[]
      */
-    public function getInstanceRisks($instanceId, $anrId)
+    public function getInstanceRisks(InstanceSuperClass $instance)
     {
         /** @var InstanceRiskTable $table */
         $table = $this->get('table');
-        return $table->getEntityByFields(['anr' => $anrId, 'instance' => $instanceId]);
+
+        return $table->findByInstance($instance);
     }
 
     /**
@@ -275,7 +253,7 @@ class InstanceRiskService extends AbstractService
 
         $instanceRiskTable->save($instanceRisk);
 
-        $this->updateRisks($id);
+        $this->updateRisks($instanceRisk);
 
         return $id;
     }
@@ -371,59 +349,69 @@ class InstanceRiskService extends AbstractService
 
         $instanceRiskTable->save($instanceRisk);
 
-        $this->updateRisks($id);
+        $this->updateRisks($instanceRisk);
 
         return $id;
     }
 
     /**
      * Update the specified instance risk
-     * @param InstanceRisk|int $instanceRisk The instance risk object, or its ID
      * @param bool $last If set to false, database flushes will be suspended until a call to this method with "true"
      */
-    public function updateRisks($instanceRisk, $last = true)
+    public function updateRisks(InstanceRiskSuperClass $instanceRisk, bool $last = true)
     {
-        /** @var InstanceRiskTable $instanceRiskTable */
-        $instanceRiskTable = $this->get('table');
+        $instance = $instanceRisk->getInstance();
 
-        if (!$instanceRisk instanceof InstanceRisk) {
-            //retrieve instance risk
-            $instanceRisk = $instanceRiskTable->getEntity($instanceRisk);
-        }
+        $riskConfidentiality = $this->getRiskC(
+            $instance->getConfidentiality(),
+            $instanceRisk->getThreatRate(),
+            $instanceRisk->getVulnerabilityRate()
+        );
+        $riskIntegrity = $this->getRiskI(
+            $instance->getIntegrity(),
+            $instanceRisk->getThreatRate(),
+            $instanceRisk->getVulnerabilityRate()
+        );
+        $riskAvailability = $this->getRiskD(
+            $instance->getAvailability(),
+            $instanceRisk->getThreatRate(),
+            $instanceRisk->getVulnerabilityRate()
+        );
 
-        //retrieve instance
-        /** @var InstanceTable $instanceTable */
-        $instanceTable = $this->get('instanceTable');
-        $instance = $instanceTable->getEntity($instanceRisk->instance->id);
-
-        $riskC = $this->getRiskC($instance->c, $instanceRisk->threatRate, $instanceRisk->vulnerabilityRate);
-        $riskI = $this->getRiskI($instance->i, $instanceRisk->threatRate, $instanceRisk->vulnerabilityRate);
-        $riskD = $this->getRiskD($instance->d, $instanceRisk->threatRate, $instanceRisk->vulnerabilityRate);
-
-        $instanceRisk->riskC = $riskC;
-        $instanceRisk->riskI = $riskI;
-        $instanceRisk->riskD = $riskD;
+        $instanceRisk
+            ->setRiskConfidentiality($riskConfidentiality)
+            ->setRiskIntegrity($riskIntegrity)
+            ->setRiskAvailability($riskAvailability);
 
         $risks = [];
         $impacts = [];
 
-        if ($instanceRisk->threat->c) {
-            $risks[] = $riskC;
-            $impacts[] = $instance->c;
+        if ($instanceRisk->getThreat()->getConfidentiality()) {
+            $risks[] = $riskConfidentiality;
+            $impacts[] = $instance->getConfidentiality();
         }
-        if ($instanceRisk->threat->i) {
-            $risks[] = $riskI;
-            $impacts[] = $instance->i;
+        if ($instanceRisk->getThreat()->getIntegrity()) {
+            $risks[] = $riskIntegrity;
+            $impacts[] = $instance->getIntegrity();
         }
-        if ($instanceRisk->threat->a) {
-            $risks[] = $riskD;
-            $impacts[] = $instance->d;
+        if ($instanceRisk->getThreat()->getAvailability()) {
+            $risks[] = $riskAvailability;
+            $impacts[] = $instance->getAvailability();
         }
 
-        $instanceRisk->cacheMaxRisk = (count($risks)) ? max($risks) : -1;
-        $instanceRisk->cacheTargetedRisk = $this->getTargetRisk($impacts, $instanceRisk->threatRate, $instanceRisk->vulnerabilityRate, $instanceRisk->reductionAmount);
+        $instanceRisk->setCacheMaxRisk(!empty($risks) ? max($risks) : -1);
+        $instanceRisk->setCacheTargetedRisk(
+            $this->getTargetRisk(
+                $impacts,
+                $instanceRisk->getThreatRate(),
+                $instanceRisk->getVulnerabilityRate(),
+                $instanceRisk->getReductionAmount()
+            )
+        );
 
-        $instanceRiskTable->save($instanceRisk, $last);
+        /** @var InstanceRiskTable $instanceRiskTable */
+        $instanceRiskTable = $this->get('table');
+        $instanceRiskTable->saveEntity($instanceRisk, $last);
 
         $this->updateRecoRisks($instanceRisk);
     }
@@ -435,7 +423,8 @@ class InstanceRiskService extends AbstractService
     {
         /** @var InstanceRiskTable $instanceRiskTable */
         $instanceRiskTable = $this->get('table');
-        $instanceRisk = $instanceRiskTable->getEntity($id);
+        $instanceRisk = $instanceRiskTable->findById($id);
+
         $this->updateRecoRisks($instanceRisk);
 
         return parent::delete($id);

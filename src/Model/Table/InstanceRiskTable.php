@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Doctrine\ORM\EntityNotFoundException;
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\AbstractEntity;
 use Monarc\Core\Model\Entity\AssetSuperClass;
@@ -25,6 +26,20 @@ class InstanceRiskTable extends AbstractEntityTable
     public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
     {
         parent::__construct($dbService, InstanceRisk::class, $connectedUserService);
+    }
+
+    /**
+     * @throws EntityNotFoundException
+     */
+    public function findById(int $id): InstanceRiskSuperClass
+    {
+        /** @var InstanceRiskSuperClass|null $instanceRisk */
+        $instanceRisk = $this->getRepository()->find($id);
+        if ($instanceRisk === null) {
+            throw EntityNotFoundException::fromClassNameAndIdentifier(\get_class($this), [$id]);
+        }
+
+        return $instanceRisk;
     }
 
     /**
@@ -434,5 +449,14 @@ class InstanceRiskTable extends AbstractEntityTable
             ->setParameter('instance', $instance)
             ->getQuery()
             ->getResult();
+    }
+
+    public function saveEntity(InstanceRiskSuperClass $instanceRisk, bool $flushEntity = true): void
+    {
+        $em = $this->getDb()->getEntityManager();
+        $em->persist($instanceRisk);
+        if ($flushEntity) {
+            $em->flush($instanceRisk);
+        }
     }
 }
