@@ -222,8 +222,8 @@ class InstanceService extends AbstractService
         $instanceRiskOpService->createInstanceRisksOp($instance, $object);
 
         //instances consequences
-        $instanceConsequenceId = $this->createInstanceConsequences($id, $anrId, $object);
-        $this->get('instanceConsequenceService')->updateInstanceImpacts($instanceConsequenceId->get('id'));
+        $instanceConsequence = $this->createInstanceConsequences($id, $anrId, $object);
+        $this->get('instanceConsequenceService')->updateInstanceImpacts($instanceConsequence);
 
         // Check if the root element is not the same as current child element to avoid a circular dependency.
         if ($rootLevel

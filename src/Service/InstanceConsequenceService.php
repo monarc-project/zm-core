@@ -8,6 +8,7 @@
 namespace Monarc\Core\Service;
 
 use Monarc\Core\Model\Entity\InstanceConsequence;
+use Monarc\Core\Model\Entity\InstanceConsequenceSuperClass;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Table\InstanceConsequenceTable;
 use Monarc\Core\Model\Table\InstanceTable;
@@ -43,7 +44,8 @@ class InstanceConsequenceService extends AbstractService
         $anrId = $data['anr'];
 
         if (count($data)) {
-            $entity = $this->get('table')->getEntity($id);
+            /** @var InstanceConsequenceSuperClass $instanceConsequence */
+            $instanceConsequence = $this->get('table')->getEntity($id);
 
             if (isset($data['isHidden'])) {
                 if ($data['isHidden']) {
@@ -57,17 +59,15 @@ class InstanceConsequenceService extends AbstractService
                     if ($local) {
                         $data['locallyTouched'] = 0;
                     } else {
-                        if ($entity->locallyTouched) {
+                        if ($instanceConsequence->locallyTouched) {
                             $data['isHidden'] = 1;
                         }
                     }
                 }
-            } else {
-                if ($entity->isHidden) {
-                    $data['c'] = -1;
-                    $data['i'] = -1;
-                    $data['d'] = -1;
-                }
+            } elseif ($instanceConsequence->isHidden) {
+                $data['c'] = -1;
+                $data['i'] = -1;
+                $data['d'] = -1;
             }
 
             $data = $this->updateConsequences($id, $data);
@@ -81,7 +81,7 @@ class InstanceConsequenceService extends AbstractService
             $this->updateBrothersConsequences($anrId, $id);
 
             if ($patchInstance) {
-                $this->updateInstanceImpacts($id, $fromInstance);
+                $this->updateInstanceImpacts($instanceConsequence, $fromInstance);
             }
         }
 
@@ -124,7 +124,7 @@ class InstanceConsequenceService extends AbstractService
 
         $this->updateBrothersConsequences($anrId, $id);
 
-        $this->updateInstanceImpacts($id);
+        $this->updateInstanceImpacts($instanceConsequence);
 
         return $id;
     }
@@ -199,34 +199,27 @@ class InstanceConsequenceService extends AbstractService
         }
     }
 
-    /**
-     * Update Instance Impacts
-     * @param int $instanceConsequencesId The instance consequences ID
-     */
-    public function updateInstanceImpacts($instanceConsequencesId, $fromInstance = false)
+    public function updateInstanceImpacts(InstanceConsequenceSuperClass $instanceConsequence, $fromInstance = false)
     {
         $class = $this->get('scaleImpactTypeTable')->getEntityClass();
         $cidTypes = $class::getScaleImpactTypeCid();
 
-        /** @var InstanceConsequenceTable $table */
-        $table = $this->get('table');
-        /** @var InstanceConsequence $instanceCurrentConsequence */
-        $instanceCurrentConsequence = $table->getEntity($instanceConsequencesId);
-
         $instanceC = [];
         $instanceI = [];
         $instanceD = [];
-        $instanceConsequences = $table->getEntityByFields(['instance' => $instanceCurrentConsequence->get('instance')->get('id')]);
-        foreach ($instanceConsequences as $instanceConsequence) {
-            if (!in_array($instanceConsequence->scaleImpactType->type, $cidTypes)) {
-                $instanceC[] = (int)$instanceConsequence->get('c');
-                $instanceI[] = (int)$instanceConsequence->get('i');
-                $instanceD[] = (int)$instanceConsequence->get('d');
+        /** @var InstanceConsequenceTable $table */
+        $table = $this->get('table');
+        /** @var InstanceConsequenceSuperClass[] $otherInstanceConsequences */
+        $otherInstanceConsequences = $table->getEntityByFields([
+            'instance' => $instanceConsequence->getInstance()->getId()
+        ]);
+        foreach ($otherInstanceConsequences as $otherInstanceConsequence) {
+            if (!in_array($otherInstanceConsequence->getScaleImpactType()->type, $cidTypes)) {
+                $instanceC[] = (int)$otherInstanceConsequence->get('c');
+                $instanceI[] = (int)$otherInstanceConsequence->get('i');
+                $instanceD[] = (int)$otherInstanceConsequence->get('d');
             }
         }
-
-        $anrId = $instanceCurrentConsequence->anr->id;
-        $instanceId = $instanceCurrentConsequence->instance->id;
 
         $data = [
             'c' => max($instanceC),
@@ -234,8 +227,7 @@ class InstanceConsequenceService extends AbstractService
             'd' => max($instanceD),
         ];
 
-
-        $parent = $instanceCurrentConsequence->get('instance')->get('parent');
+        $parent = $instanceConsequence->getInstance()->getParent();
         foreach ($data as $k => $v) {
             $data[$k . 'h'] = ($v == -1) ? 1 : 0;
             if ($data[$k . 'h'] && !empty($parent)) { // hérité: on prend la valeur du parent
@@ -243,17 +235,21 @@ class InstanceConsequenceService extends AbstractService
             }
         }
 
+        $anrId = $instanceConsequence->getAnr()->getId();
         $data['anr'] = $anrId;
 
         if (!$fromInstance) {
             //if father instance exist, create instance for child
             $eventManager = new EventManager($this->sharedManager, ['instance']);
+            $instanceId = $instanceConsequence->getInstance()->getId();
             $eventManager->trigger('patch', $this, compact(['anrId', 'instanceId', 'data']));
-        } else {
-            $instance = $instanceCurrentConsequence->get('instance')->initialize();
-            $instance->exchangeArray($data);
-            $this->get('instanceTable')->save($instance);
+
+            return;
         }
+
+        $instance = $instanceConsequence->getInstance()->initialize();
+        $instance->exchangeArray($data);
+        $this->get('instanceTable')->save($instance);
     }
 
     public function setSharedManager(SharedEventManager $sharedManager)
@@ -270,22 +266,21 @@ class InstanceConsequenceService extends AbstractService
     {
         /** @var InstanceConsequenceTable $instanceConsequenceTable */
         $instanceConsequenceTable = $this->get('table');
-        $instancesConsequences = $instanceConsequenceTable->getEntityByFields(['scaleImpactType' => $scaleImpactTypeId]);
+        /** @var InstanceConsequenceSuperClass[] $instancesConsequences */
+        $instancesConsequences = $instanceConsequenceTable->getEntityByFields([
+            'scaleImpactType' => $scaleImpactTypeId
+        ]);
 
-        $consequencesIds = [];
-
-        $i = 1;
-        $nbInstancesConsequences = count($instancesConsequences);
+        $consequences = [];
         foreach ($instancesConsequences as $instanceConsequence) {
-            $this->patchConsequence($instanceConsequence->id, $data, ($i == $nbInstancesConsequences), false);
-            $consequencesIds[$instanceConsequence->id] = $instanceConsequence->id;
-            $i++;
+            $this->patchConsequence($instanceConsequence->getId(), $data, false, false);
+            $consequences[] = $instanceConsequence;
         }
 
-        if (!empty($consequencesIds)) {
-            foreach ($consequencesIds as $idc) {
-                $this->updateInstanceImpacts($idc);
-            }
+        foreach ($consequences as $consequence) {
+            $this->updateInstanceImpacts($consequence);
         }
+
+        unset($consequences);
     }
 }

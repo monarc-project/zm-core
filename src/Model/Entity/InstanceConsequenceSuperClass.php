@@ -122,16 +122,16 @@ class InstanceConsequenceSuperClass extends AbstractEntity
 
     /**
      * @param int $id
-     * @return Instance
      */
-    public function setId($id)
+    public function setId($id): self
     {
         $this->id = $id;
+
         return $this;
     }
 
     /**
-     * @return int
+     * @return AnrSuperClass
      */
     public function getAnr()
     {
@@ -139,12 +139,12 @@ class InstanceConsequenceSuperClass extends AbstractEntity
     }
 
     /**
-     * @param int $anr
-     * @return Instance
+     * @param AnrSuperClass $anr
      */
-    public function setAnr($anr)
+    public function setAnr($anr): self
     {
         $this->anr = $anr;
+
         return $this;
     }
 
