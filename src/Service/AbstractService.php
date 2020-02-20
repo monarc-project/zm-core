@@ -292,7 +292,10 @@ abstract class AbstractService extends AbstractServiceFactory
         $this->filterPostFields($data, $entity);
 
         $entity->setDbAdapter($this->get('table')->getDb());
-        $entity->setLanguage($this->getLanguage());
+        // TODO: Temporarily added hack to prevent the Anr lang change.
+        if (!$entity instanceof AnrSuperClass) {
+            $entity->setLanguage($this->getLanguage());
+        }
 
         // Pass our new data to the entity. This might throw an exception if some data is invalid.
         $entity->exchangeArray($data);
@@ -352,7 +355,10 @@ abstract class AbstractService extends AbstractServiceFactory
         }
 
         $entity->setDbAdapter($this->get('table')->getDb());
-        $entity->setLanguage($this->getLanguage());
+        // TODO: Temporarily added hack to prevent the Anr lang change.
+        if (!$entity instanceof AnrSuperClass) {
+            $entity->setLanguage($this->getLanguage());
+        }
         foreach ($this->dependencies as $dependency) {
             if ((!isset($data[$dependency])) && ($entity->$dependency)) {
               if($entity->$dependency->uuid)
