@@ -9,9 +9,9 @@ namespace Monarc\Core\Model\Entity;
 
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\GetAndSet;
-use Zend\InputFilter\InputFilter;
-use Zend\InputFilter\InputFilterAwareInterface;
-use Zend\InputFilter\InputFilterInterface;
+use Laminas\InputFilter\InputFilter;
+use Laminas\InputFilter\InputFilterAwareInterface;
+use Laminas\InputFilter\InputFilterInterface;
 use Doctrine\Common\Util\ClassUtils;
 
 /**

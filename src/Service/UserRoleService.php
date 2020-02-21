@@ -10,7 +10,7 @@ namespace Monarc\Core\Service;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Table\UserRoleTable;
 use Monarc\Core\Model\Table\UserTokenTable;
-use Zend\Http\Header\GenericHeader;
+use Laminas\Http\Header\GenericHeader;
 
 /**
  * User Role Service

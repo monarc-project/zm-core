@@ -20,10 +20,10 @@ use Monarc\Core\Model\Table\InstanceRiskTable;
 use Monarc\Core\Model\Table\InstanceTable;
 use Monarc\Core\Model\Table\ScaleCommentTable;
 use Monarc\Core\Model\Table\ScaleImpactTypeTable;
-use Zend\EventManager\EventManager;
+use Laminas\EventManager\EventManager;
 use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\Mapping\MappingException;
-use Zend\EventManager\SharedEventManager;
+use Laminas\EventManager\SharedEventManager;
 
 /**
  * Instance Service

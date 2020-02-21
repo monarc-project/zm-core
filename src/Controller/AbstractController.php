@@ -7,12 +7,12 @@
 
 namespace Monarc\Core\Controller;
 
-use Zend\Http\Response;
+use Laminas\Http\Response;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\AbstractEntity;
 use Monarc\Core\Service\AbstractServiceFactory;
-use Zend\Mvc\Controller\AbstractRestfulController;
-use Zend\View\Model\JsonModel;
+use Laminas\Mvc\Controller\AbstractRestfulController;
+use Laminas\View\Model\JsonModel;
 
 /**
  * Abstract Controller used on every REST API controllers

@@ -11,10 +11,10 @@ use Monarc\Core\Model\Entity\InstanceConsequence;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Table\InstanceConsequenceTable;
 use Monarc\Core\Model\Table\InstanceTable;
-use Zend\EventManager\EventManager;
+use Laminas\EventManager\EventManager;
 
 use Doctrine\ORM\Query\QueryException;
-use Zend\EventManager\SharedEventManager;
+use Laminas\EventManager\SharedEventManager;
 
 /**
  * Instance Consequence Service

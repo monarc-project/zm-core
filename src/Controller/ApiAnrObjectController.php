@@ -9,7 +9,7 @@ namespace Monarc\Core\Controller;
 
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Service\ObjectService;
-use Zend\View\Model\JsonModel;
+use Laminas\View\Model\JsonModel;
 
 /**
  * Api Anr Object Controller

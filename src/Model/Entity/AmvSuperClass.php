@@ -12,7 +12,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
-use Zend\Validator\Uuid as ValidatorUuid;
+use Laminas\Validator\Uuid as ValidatorUuid;
 use Ramsey\Uuid\Uuid;
 
 /**
@@ -338,7 +338,7 @@ class AmvSuperClass extends AbstractEntity
                         'name' => 'Callback', //'Monarc\Core\Validator\Uuid',
                         'options' => array(
                             'messages' => array(
-                                \Zend\Validator\Callback::INVALID_VALUE => 'an uuid is missing or incorrect',
+                                \Laminas\Validator\Callback::INVALID_VALUE => 'an uuid is missing or incorrect',
                             ),
                             'callback' => function ($value, $context = array()) use ($partial) {
                                 if (!$partial) {
@@ -366,7 +366,7 @@ class AmvSuperClass extends AbstractEntity
                             'name' => 'Callback', //'Monarc\Core\Validator\Uuid',
                             'options' => array(
                                 'messages' => array(
-                                    \Zend\Validator\Callback::INVALID_VALUE => 'an uuid is missing or incorrect',
+                                    \Laminas\Validator\Callback::INVALID_VALUE => 'an uuid is missing or incorrect',
                                 ),
                                 'callback' => function ($value, $context = array()) use ($partial) {
                                     if (!$partial) {
@@ -393,7 +393,7 @@ class AmvSuperClass extends AbstractEntity
                         'name' => 'Callback', //'Monarc\Core\Validator\UniqueAMV',
                         'options' => array(
                             'messages' => array(
-                                \Zend\Validator\Callback::INVALID_VALUE => 'This AMV link is already used',
+                                \Laminas\Validator\Callback::INVALID_VALUE => 'This AMV link is already used',
                             ),
                             'callback' => function ($value, $context = array()) use ($partial) {
                                 if (!$partial) {

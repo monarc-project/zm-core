@@ -9,7 +9,7 @@ namespace Monarc\Core\Service\Model\Entity;
 
 use Interop\Container\ContainerInterface;
 use Monarc\Core\Model\Db;
-use Zend\ServiceManager\Factory\FactoryInterface;
+use Laminas\ServiceManager\Factory\FactoryInterface;
 
 /**
  * Class AbstractServiceModelEntity

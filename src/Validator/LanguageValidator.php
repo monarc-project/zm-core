@@ -2,7 +2,7 @@
 
 namespace Monarc\Core\Validator;
 
-use Zend\Validator\AbstractValidator;
+use Laminas\Validator\AbstractValidator;
 
 class LanguageValidator extends AbstractValidator
 {

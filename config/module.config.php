@@ -13,13 +13,13 @@ use Monarc\Core\Service;
 use Monarc\Core\Storage\Authentication as StorageAuthentication;
 use Monarc\Core\Validator\LanguageValidator;
 use Ramsey\Uuid\Doctrine\UuidType;
-use Zend\Di\Container\AutowireFactory;
+use Laminas\Di\Container\AutowireFactory;
 use Monarc\Core\Model\Entity as ModelEntity;
 use Monarc\Core\Model\Table as ModelTable;
 use Monarc\Core\Service\Model\Entity as ServiceModelEntity;
-use Zend\ServiceManager\AbstractFactory\ReflectionBasedAbstractFactory;
-use Zend\ServiceManager\Factory\InvokableFactory;
-use Zend\ServiceManager\Proxy\LazyServiceFactory;
+use Laminas\ServiceManager\AbstractFactory\ReflectionBasedAbstractFactory;
+use Laminas\ServiceManager\Factory\InvokableFactory;
+use Laminas\ServiceManager\Proxy\LazyServiceFactory;
 
 $env = getenv('APPLICATION_ENV') ?: 'production';
 $appConfigDir = getenv('APP_CONF_DIR') ?? '';
@@ -334,11 +334,11 @@ return [
             ModelEntity\QuestionChoice::class => ModelEntity\QuestionChoice::class,
 
             // TODO: fix the classes and dependencies.
-            'Monarc\Core\Service\Mime\Part' => 'Zend\Mime\Part',
-            'Monarc\Core\Service\Mime\Message' => 'Zend\Mime\Message',
-            'Monarc\Core\Service\Mail\Message' => 'Zend\Mail\Message',
-            'Monarc\Core\Service\Mail\Transport\Smtp' => 'Zend\Mail\Transport\Smtp',
-            'Monarc\Core\Service\Mail\Transport\SmtpOptions' => 'Zend\Mail\Transport\SmtpOptions',
+            'Monarc\Core\Service\Mime\Part' => 'Laminas\Mime\Part',
+            'Monarc\Core\Service\Mime\Message' => 'Laminas\Mime\Message',
+            'Monarc\Core\Service\Mail\Message' => 'Laminas\Mail\Message',
+            'Monarc\Core\Service\Mail\Transport\Smtp' => 'Laminas\Mail\Transport\Smtp',
+            'Monarc\Core\Service\Mail\Transport\SmtpOptions' => 'Laminas\Mail\Transport\SmtpOptions',
         ],
         'factories' => [
             Db::class => DbFactory::class,
