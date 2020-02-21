@@ -66,38 +66,43 @@ class InstanceRiskService extends AbstractService
         if ($object->getScope() === MonarcObject::SCOPE_GLOBAL && \count($otherInstances) > 1) {
             foreach ($otherInstances as $otherInstance) {
                 if ($otherInstance->getId() === $instance->getId()) {
-                    break;
+                    continue;
                 }
 
-                $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $instance->getId()]);
+                $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $otherInstance->getId()]);
                 foreach ($instancesRisks as $instanceRisk) {
-                    /** @var InstanceRisk $newInstanceRisk */
+                    /** @var InstanceRiskSuperClass $newInstanceRisk */
                     $newInstanceRisk = clone $instanceRisk;
-                    $newInstanceRisk->setId(null);
-                    $newInstanceRisk->setInstance($instance);
-                    $newInstanceRisk->setCreator(
-                        $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
-                    );
+                    $newInstanceRisk->setId(null)
+                        ->setInstance($instance)
+                        ->setCreator(
+                            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+                        );
 
-                    $instanceRiskTable->save($newInstanceRisk);
+                    $instanceRiskTable->saveEntity($newInstanceRisk, false);
 
                     // This part of the code is related to the FO. Needs to be extracted.
                     if ($this->get('recommandationRiskTable') !== null) {
+                        /** @var RecommandationRiskTable $recommandationRiskTable */
+                        $recommandationRiskTable = $this->get('recommandationRiskTable');
                         $recoRisks = $this->get('recommandationRiskTable')->getEntityByFields([
                             'anr' => $anr->getId(),
                             'instanceRisk' => $instanceRisk->id
                         ]);
                         if (\count($recoRisks)) {
                             foreach ($recoRisks as $recoRisk) {
+                                /** @var RecommandationRisk $newRecoRisk */
                                 $newRecoRisk = clone $recoRisk;
-                                $newRecoRisk->set('id', null);
-                                $newRecoRisk->set('instance', $instance);
-                                $newRecoRisk->set('instanceRisk', $newInstanceRisk);
-                                $this->get('recommandationRiskTable')->save($newRecoRisk);
+                                $newRecoRisk->setId(null);
+                                $newRecoRisk->setInstance($instance);
+                                $newRecoRisk->setInstanceRisk($newInstanceRisk);
+                                $recommandationRiskTable->saveEntity($newRecoRisk, false);
                             }
                         }
                     }
                 }
+
+                break;
             }
         } else {
             /** @var AmvTable $amvTable */

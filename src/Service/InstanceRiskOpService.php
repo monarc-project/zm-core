@@ -17,8 +17,6 @@ use Monarc\Core\Model\Entity\RolfTagSuperClass;
 use Monarc\Core\Model\Table\InstanceRiskOpTable;
 use Monarc\Core\Model\Table\InstanceTable;
 use Monarc\Core\Model\Table\RolfTagTable;
-use Doctrine\ORM\Query\QueryException;
-use Doctrine\ORM\Mapping\MappingException;
 
 /**
  * Instance Risk Service Op
@@ -56,7 +54,7 @@ class InstanceRiskOpService extends AbstractService
                 $instanceRiskOpTable = $this->get('table');
                 foreach ($brotherInstances as $brotherInstance) {
                     if ($brotherInstance->getId() === $instance->getId()) {
-                        break;
+                        continue;
                     }
                     // TODO: replace with the table method.
                     /** @var InstanceRiskOpSuperClass[] $instancesRisksOp */
@@ -74,6 +72,8 @@ class InstanceRiskOpService extends AbstractService
 
                         $instanceRiskOpTable->save($newInstanceRiskOp);
                     }
+
+                    break;
                 }
             } else {
                 /** @var RolfTagTable $rolfTagTable */

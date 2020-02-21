@@ -451,12 +451,12 @@ class InstanceRiskTable extends AbstractEntityTable
             ->getResult();
     }
 
-    public function saveEntity(InstanceRiskSuperClass $instanceRisk, bool $flushEntity = true): void
+    public function saveEntity(InstanceRiskSuperClass $instanceRisk, bool $flush = true): void
     {
         $em = $this->getDb()->getEntityManager();
         $em->persist($instanceRisk);
-        if ($flushEntity) {
-            $em->flush($instanceRisk);
+        if ($flush) {
+            $em->flush();
         }
     }
 }
