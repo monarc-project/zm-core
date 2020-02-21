@@ -55,12 +55,10 @@
         "ocramius/proxy-manager": "<2.3",
         "ocramius/package-versions": "<1.5",
         "laminas/laminas-mail": "^2.10",
-        "laminas/laminas-i18n": "^2.9",
-        "laminas/laminas-dependency-plugin": "^1.0"
+        "laminas/laminas-i18n": "^2.9"
     },
     "require-dev": {
-        "roave/security-advisories": "dev-master",
-        "laminas/laminas-component-installer": "^2.1"
+        "roave/security-advisories": "dev-master"
     },
     "autoload": {
         "psr-4": {
