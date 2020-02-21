@@ -9,8 +9,8 @@ namespace Monarc\Core\Controller;
 
 use Monarc\Core\Model\Entity\User;
 use Monarc\Core\Service\AuthenticationService;
-use Zend\Mvc\Controller\AbstractRestfulController;
-use Zend\View\Model\JsonModel;
+use Laminas\Mvc\Controller\AbstractRestfulController;
+use Laminas\View\Model\JsonModel;
 
 /**
  * Authentication Controller

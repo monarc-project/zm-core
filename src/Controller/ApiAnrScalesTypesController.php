@@ -8,7 +8,7 @@
 namespace Monarc\Core\Controller;
 
 use Monarc\Core\Service\ScaleImpactTypeService;
-use Zend\View\Model\JsonModel;
+use Laminas\View\Model\JsonModel;
 
 /**
  * Api Anr Scales Types Controller

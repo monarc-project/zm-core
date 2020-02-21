@@ -8,7 +8,7 @@
 namespace Monarc\Core\Controller;
 
 use Monarc\Core\Service\AnrService;
-use Zend\Mvc\Controller\AbstractRestfulController;
+use Laminas\Mvc\Controller\AbstractRestfulController;
 
 /**
  * Api Anr Export Controller

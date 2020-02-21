@@ -8,7 +8,7 @@
 namespace Monarc\Core\Service;
 
 use Interop\Container\ContainerInterface;
-use Zend\ServiceManager\Factory\FactoryInterface;
+use Laminas\ServiceManager\Factory\FactoryInterface;
 
 /**
  * TODO: Remove me.
@@ -83,7 +83,7 @@ abstract class AbstractServiceFactory implements FactoryInterface
     public function getDefaultLanguage($sm)
     {
         $request = $sm->get('Request');
-        if(!$request instanceof \Zend\Console\Request){
+        if(!$request instanceof \Laminas\Console\Request){
             /** @var TreeRouteStack $router */
             $router = $sm->get('Router');
             /** @var RouteMatch $match */

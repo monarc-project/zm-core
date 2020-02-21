@@ -9,7 +9,7 @@ namespace Monarc\Core\Validator;
 
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Table\UserTable;
-use Zend\Validator\AbstractValidator;
+use Laminas\Validator\AbstractValidator;
 
 /**
  * Class UniqueEmail is an implementation of AbstractValidator that ensures the unicity of email.

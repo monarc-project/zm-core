@@ -9,7 +9,7 @@ namespace Monarc\Core\Controller;
 
 use Monarc\Core\Model\Entity\Instance;
 use Monarc\Core\Service\InstanceService;
-use Zend\View\Model\JsonModel;
+use Laminas\View\Model\JsonModel;
 
 /**
  * Api Anr Instances Controller
@@ -86,7 +86,7 @@ class ApiAnrInstancesController extends AbstractController
 
     /**
      * Exports an instance in our own custom encrypted format and downloads it to the client browser
-     * @return \Zend\Stdlib\ResponseInterface The file attachment response
+     * @return \Laminas\Stdlib\ResponseInterface The file attachment response
      */
     public function exportAction()
     {

@@ -8,9 +8,9 @@
 namespace Monarc\Core\Controller;
 
 use Monarc\Core\Service\InstanceService;
-use Zend\Http\Response;
-use Zend\Mvc\Controller\AbstractRestfulController;
-use Zend\View\Model\JsonModel;
+use Laminas\Http\Response;
+use Laminas\Mvc\Controller\AbstractRestfulController;
+use Laminas\View\Model\JsonModel;
 
 /**
  * Api Anr Risks Controller

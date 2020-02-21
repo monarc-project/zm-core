@@ -173,7 +173,7 @@ class DeliveriesModels extends AbstractEntity
                     'allow_empty' => false,
                     'filters' => array(
                         array(
-                            'name' => 'Zend\Filter\File\RenameUpload',
+                            'name' => 'Laminas\Filter\File\RenameUpload',
                             'options' => array(
                                 'randomize' => true,
                                 'target' => $dirFile . $this->{"path$i"},

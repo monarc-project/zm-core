@@ -14,10 +14,10 @@ use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\InstanceTable;
 use Monarc\Core\Model\Table\MonarcObjectTable;
 use Monarc\Core\Model\Table\ObjectObjectTable;
-use Zend\EventManager\EventManager;
+use Laminas\EventManager\EventManager;
 use Doctrine\ORM\Mapping\MappingException;
 use Doctrine\ORM\Query\QueryException;
-use Zend\EventManager\SharedEventManager;
+use Laminas\EventManager\SharedEventManager;
 use function in_array;
 use function is_object;
 

@@ -4,7 +4,7 @@ namespace Monarc\Core\Filter;
 
 use Locale;
 use Traversable;
-use Zend\I18n\Filter\AbstractLocale;
+use Laminas\I18n\Filter\AbstractLocale;
 
 /**
  * Class SpecAlnum is a filter that expands the regular Alphanumeric filter by granting the ability to allow
@@ -88,7 +88,7 @@ class SpecAlnum extends AbstractLocale
     }
 
     /**
-     * Defined by Zend\Filter\FilterInterface
+     * Defined by Laminas\Filter\FilterInterface
      *
      * Returns $value as string with all non-alphanumeric characters removed
      *

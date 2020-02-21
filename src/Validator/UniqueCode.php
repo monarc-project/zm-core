@@ -7,7 +7,7 @@
 
 namespace Monarc\Core\Validator;
 
-use Zend\Validator\AbstractValidator;
+use Laminas\Validator\AbstractValidator;
 /**
  * Class UniqueCode is an implementation of AbstractValidator that ensures the unicity of element based on the code field.
  * @package Monarc\Core\Validator

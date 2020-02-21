@@ -7,7 +7,7 @@
 
 namespace Monarc\Core\Controller;
 
-use Zend\View\Model\JsonModel;
+use Laminas\View\Model\JsonModel;
 
 /**
  * Api Anr Scales Controller
