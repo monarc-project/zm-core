@@ -85,7 +85,7 @@ class InstanceRiskService extends AbstractService
             /** @var InstanceSuperClass $instance */
             foreach ($instances as $instance) {
                 if ($instance->getId() === $instanceId) {
-                    break;
+                    continue;
                 }
 
                 $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $instance->getId()]);
@@ -113,6 +113,8 @@ class InstanceRiskService extends AbstractService
                             }
                         }
                     }
+
+                    break;
                 }
             }
         } else {
