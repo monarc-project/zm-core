@@ -76,21 +76,24 @@ class InstanceRiskOpService extends AbstractService
                 /** @var InstanceRiskOpTable $instanceRiskOpTable */
                 $instanceRiskOpTable = $this->get('table');
                 foreach ($instances as $instance) {
-                    if ($instance->id != $instanceId) {
-                        $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['instance' => $instance->id]);
-                        foreach ($instancesRisksOp as $instanceRiskOp) {
-                            /** @var InstanceRiskOp $newInstanceRiskOp */
-                            $newInstanceRiskOp = clone $instanceRiskOp;
-                            $newInstanceRiskOp->setId(null);
-                            $newInstanceRiskOp->setInstance($currentInstance);
-
-                            $newInstanceRiskOp->setCreator(
-                                $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
-                            );
-
-                            $instanceRiskOpTable->save($newInstanceRiskOp);
-                        }
+                    if ($instance->getId() === $instanceId) {
+                        continue;
                     }
+
+                    $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['instance' => $instance->id]);
+                    foreach ($instancesRisksOp as $instanceRiskOp) {
+                        /** @var InstanceRiskOp $newInstanceRiskOp */
+                        $newInstanceRiskOp = clone $instanceRiskOp;
+                        $newInstanceRiskOp->setId(null);
+                        $newInstanceRiskOp->setInstance($currentInstance);
+
+                        $newInstanceRiskOp->setCreator(
+                            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+                        );
+
+                        $instanceRiskOpTable->save($newInstanceRiskOp);
+                    }
+
                     break;
                 }
             } else {
