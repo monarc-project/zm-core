@@ -113,9 +113,9 @@ class InstanceRiskService extends AbstractService
                             }
                         }
                     }
-
-                    break;
                 }
+
+                break;
             }
         } else {
             /** @var AmvTable $amvTable */
