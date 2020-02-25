@@ -27,5 +27,9 @@ class AmvServiceFactory extends AbstractServiceFactory
         'threatTable' => 'Monarc\Core\Model\Table\ThreatTable',
         'vulnerabilityTable' => 'Monarc\Core\Model\Table\VulnerabilityTable',
         'historicalService' => 'Monarc\Core\Service\HistoricalService',
+        'assetService' => 'Monarc\Core\Service\AssetService',
+        'threatService' => 'Monarc\Core\Service\ThreatService',
+        'themeService' => 'Monarc\Core\Service\ThemeService',
+        'vulnerabilityService' => 'Monarc\Core\Service\VulnerabilityService',
     ];
 }

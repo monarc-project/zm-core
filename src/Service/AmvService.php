@@ -30,12 +30,16 @@ class AmvService extends AbstractService
 {
     protected $anrTable;
     protected $assetTable;
+    protected $assetService;
     protected $instanceTable;
     protected $measureTable;
     protected $referentialTable;
     protected $modelTable;
     protected $threatTable;
+    protected $threatService;
+    protected $themeService;
     protected $vulnerabilityTable;
+    protected $vulnerabilityService;
     protected $historicalService;
     protected $errorMessage;
     protected $filterColumns = ['status'];
