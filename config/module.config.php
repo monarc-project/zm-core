@@ -472,12 +472,24 @@ return [
         'lazy_services' => [
             'class_map' => [
                 ModelTable\UserTokenTable::class => ModelTable\UserTokenTable::class,
+                Service\AssetService::class => Service\AssetService::class,
+                Service\ThreatService::class => Service\ThreatService::class,
+                Service\VulnerabilityService::class => Service\VulnerabilityService::class,
             ],
             'proxies_target_dir' => $dataPath . '/LazyServices/Proxy',
             'write_proxy_files' => $env === 'production',
         ],
         'delegators' => [
             ModelTable\UserTokenTable::class => [
+                LazyServiceFactory::class,
+            ],
+            Service\AssetService::class => [
+                LazyServiceFactory::class,
+            ],
+            Service\ThreatService::class => [
+                LazyServiceFactory::class,
+            ],
+            Service\VulnerabilityService::class => [
                 LazyServiceFactory::class,
             ],
         ],

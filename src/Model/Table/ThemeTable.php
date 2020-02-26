@@ -9,6 +9,7 @@ namespace Monarc\Core\Model\Table;
 
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\Theme;
+use Monarc\Core\Model\Entity\ThemeSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**
@@ -20,5 +21,33 @@ class ThemeTable extends AbstractEntityTable
     public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
     {
         parent::__construct($dbService, Theme::class, $connectedUserService);
+    }
+
+    public function findByAnrIdAndLabel(?int $anrId, string $labelKey, string $labelValue): ?ThemeSuperClass
+    {
+        $queryBuilder = $this->getRepository()
+            ->createQueryBuilder('t')
+            ->select('t');
+
+        if ($anrId !== null) {
+            $queryBuilder
+                ->andWhere('t.anr = :anrId')
+                ->setParameter('anrId', $anrId);
+        }
+
+        return $queryBuilder
+            ->andWhere('t.' . $labelKey . ' = :' . $labelKey)
+            ->setParameter($labelKey, $labelValue)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    public function saveEntity(ThemeSuperClass $theme, bool $flushAll = true): void
+    {
+        $em = $this->getDb()->getEntityManager();
+        $em->persist($theme);
+        if ($flushAll) {
+            $em->flush();
+        }
     }
 }

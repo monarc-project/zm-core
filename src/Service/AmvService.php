@@ -13,12 +13,15 @@ use Monarc\Core\Model\Entity\Amv;
 use Monarc\Core\Model\Entity\AmvSuperClass;
 use Monarc\Core\Model\Entity\Asset;
 use Monarc\Core\Model\Entity\Model;
+use Monarc\Core\Model\Entity\ThemeSuperClass;
 use Monarc\Core\Model\Entity\Threat;
 use Monarc\Core\Model\Entity\Vulnerability;
 use Monarc\Core\Model\Table\AmvTable;
+use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\InstanceTable;
 use Monarc\Core\Model\Table\MeasureTable;
 use Monarc\Core\Model\Table\ModelTable;
+use Monarc\Core\Model\Table\ThemeTable;
 
 /**
  * Amv Service
@@ -37,7 +40,7 @@ class AmvService extends AbstractService
     protected $modelTable;
     protected $threatTable;
     protected $threatService;
-    protected $themeService;
+    protected $themeTable;
     protected $vulnerabilityTable;
     protected $vulnerabilityService;
     protected $historicalService;
@@ -122,12 +125,14 @@ class AmvService extends AbstractService
     {
         /** @var Amv $amv */
         $amv = $this->get('entity');
-        //manage the measures separatly because it's the slave of the relation amv<-->measures
-        foreach ($data['measures'] as $measure) {
-            $measureEntity =  $this->get('measureTable')->getEntity($measure);
-            $measureEntity->addAmv($amv);
+        //manage the measures separately because it's the slave of the relation amv<-->measures
+        if (!empty($data['measures'])) {
+            foreach ($data['measures'] as $measure) {
+                $measureEntity = $this->get('measureTable')->getEntity($measure);
+                $measureEntity->addAmv($amv);
+            }
+            unset($data['measures']);
         }
-        unset($data['measures']);
 
         $amv->exchangeArray($data);
 
@@ -835,6 +840,57 @@ class AmvService extends AbstractService
     public function historizeDelete($type, $entity, $details)
     {
         $this->historize($entity, $type, 'delete', implode(' / ', $details));
+    }
+
+    public function createAmvsItems(?int $anrId, array $data)
+    {
+        $createdItems = [];
+        /** @var AssetService $assetService */
+        $assetService = $this->get('assetService');
+        /** @var ThreatService $threatService */
+        $threatService = $this->get('threatService');
+        /** @var VulnerabilityService $vulnerabilityService */
+        $vulnerabilityService = $this->get('vulnerabilityService');
+        /** @var ThemeTable $themeTable */
+        $themeTable = $this->get('themeTable');
+
+        $extraCreationParams = [];
+        if ($anrId !== null) {
+            /** @var AnrTable $anrTable */
+            $anrTable = $this->get('anrTable');
+            $anr = $anrTable->findById($anrId);
+            $extraCreationParams = ['anr' => $anrId];
+        }
+
+        foreach ($data as $amvItem) {
+            if (isset($amvItem['threat']['theme']) && \is_array($amvItem['threat']['theme'])) {
+                $labelKey = array_key_first($amvItem['threat']['theme']);
+                $labelValue = array_shift($amvItem['threat']['theme']);
+                $theme = $themeTable->findByAnrIdAndLabel($anrId, $labelKey, $labelValue);
+                if ($theme === null) {
+                    $themeClass = $themeTable->getEntityClass();
+                    /** @var ThemeSuperClass $theme */
+                    $theme = new $themeClass;
+                    $theme->setAnr($anr);
+                    $labelSetterName = 'set' . ucfirst($labelKey);
+                    $theme->{$labelSetterName}($labelValue);
+                    $themeTable->saveEntity($theme);
+                }
+
+                $amvItem['threat']['theme'] = $theme->getId();
+            }
+
+            $createdItems[] = [
+                'asset' => $amvItem['asset']['uuid'] ?:
+                    $assetService->create(array_merge($amvItem['asset'], $extraCreationParams)),
+                'vulnerability' => $amvItem['vulnerability']['uuid'] ?:
+                    $vulnerabilityService->create(array_merge($amvItem['vulnerability'], $extraCreationParams)),
+                'threat' => $amvItem['threat']['uuid'] ?:
+                    $threatService->create(array_merge($amvItem['threat'], $extraCreationParams)),
+            ];
+        }
+
+        return $createdItems;
     }
 
     /**
