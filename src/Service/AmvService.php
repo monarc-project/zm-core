@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Service;
 
+use Doctrine\ORM\EntityNotFoundException;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\AbstractEntity;
 use Monarc\Core\Model\Entity\Amv;
@@ -48,6 +49,9 @@ class AmvService extends AbstractService
     protected $filterColumns = ['status'];
     protected $dependencies = ['anr', 'asset', 'threat', 'vulnerability', 'measures'];
     protected $forbiddenFields = ['anr'];
+
+    /** @var array List of Amv items (asset, threat, vulnerability) grouped by code. */
+    private $amvItemsByCode = [];
 
     /**
      * @inheritdoc
@@ -842,7 +846,14 @@ class AmvService extends AbstractService
         $this->historize($entity, $type, 'delete', implode(' / ', $details));
     }
 
-    public function createAmvsItems(?int $anrId, array $data)
+    /**
+     * Creates the amv items (assets, threats, vulnerabilities) to use them for amvs creation later.
+     * On BackOffice side the $anrId param is null.
+     *
+     * @throws Exception
+     * @throws EntityNotFoundException
+     */
+    public function createAmvsItems(?int $anrId, array $data): array
     {
         $createdItems = [];
         /** @var AssetService $assetService */
@@ -853,6 +864,8 @@ class AmvService extends AbstractService
         $vulnerabilityService = $this->get('vulnerabilityService');
         /** @var ThemeTable $themeTable */
         $themeTable = $this->get('themeTable');
+        /** @var AmvTable $amvTable */
+        $amvTable = $this->get('table');
 
         $extraCreationParams = [];
         if ($anrId !== null) {
@@ -863,6 +876,19 @@ class AmvService extends AbstractService
         }
 
         foreach ($data as $amvItem) {
+            if ($amvItem['asset']['uuid'] !== null
+                && $amvItem['threat']['uuid'] !== null
+                && $amvItem['vulnerability']['uuid'] !== null
+                && $amvTable->findByAmvItemsUuidAndAnrId(
+                    $amvItem['asset']['uuid'],
+                    $amvItem['threat']['uuid'],
+                    $amvItem['vulnerability']['uuid'],
+                    $anrId
+                )
+            ) {
+                continue;
+            }
+
             if (isset($amvItem['threat']['theme']) && \is_array($amvItem['threat']['theme'])) {
                 $labelKey = array_key_first($amvItem['threat']['theme']);
                 $labelValue = array_shift($amvItem['threat']['theme']);
@@ -881,16 +907,38 @@ class AmvService extends AbstractService
             }
 
             $createdItems[] = [
-                'asset' => $amvItem['asset']['uuid'] ?:
-                    $assetService->create(array_merge($amvItem['asset'], $extraCreationParams)),
-                'vulnerability' => $amvItem['vulnerability']['uuid'] ?:
-                    $vulnerabilityService->create(array_merge($amvItem['vulnerability'], $extraCreationParams)),
-                'threat' => $amvItem['threat']['uuid'] ?:
-                    $threatService->create(array_merge($amvItem['threat'], $extraCreationParams)),
+                'asset' => $this->createAmvItemOrGetUuid(
+                    $assetService,
+                    array_merge($amvItem['asset'], $extraCreationParams),
+                    'asset'
+                ),
+                'threat' => $this->createAmvItemOrGetUuid(
+                    $threatService,
+                    array_merge($amvItem['threat'], $extraCreationParams),
+                    'threat'
+                ),
+                'vulnerability' => $this->createAmvItemOrGetUuid(
+                    $vulnerabilityService,
+                    array_merge($amvItem['vulnerability'], $extraCreationParams),
+                    'vulnerability'
+                ),
             ];
         }
 
         return $createdItems;
+    }
+
+    private function createAmvItemOrGetUuid(AbstractService $service, array $data, string $itemType): string
+    {
+        if ($data['uuid'] !== null) {
+            return $data['uuid'];
+        }
+
+        if (!isset($this->amvItemsByCode[$itemType][$data['code']])) {
+            $this->amvItemsByCode[$itemType][$data['code']] = $service->create($data);
+        }
+
+        return $this->amvItemsByCode[$itemType][$data['code']];
     }
 
     /**
