@@ -127,8 +127,15 @@ class AmvService extends AbstractService
      */
     public function create($data, $last = true)
     {
+        /** @var AmvTable $amvTable */
+        $amvTable = $this->get('table');
+        $entityClass = $amvTable->getEntityClass();
+
         /** @var Amv $amv */
-        $amv = $this->get('entity');
+        $amv = new $entityClass();
+        $amv->setLanguage($this->getLanguage());
+        $amv->setDbAdapter($amvTable->getDb());
+
         //manage the measures separately because it's the slave of the relation amv<-->measures
         if (!empty($data['measures'])) {
             foreach ($data['measures'] as $measure) {

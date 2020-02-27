@@ -43,6 +43,8 @@ class ThreatService extends AbstractService
 
         /** @var Threat $threat */
         $threat = new $entityClass();
+        $threat->setLanguage($this->getLanguage());
+        $threat->setDbAdapter($threatTable->getDb());
 
         if (!empty($data['anr'])) {
             /** @var AnrTable $anrTable */

@@ -42,6 +42,8 @@ class AssetService extends AbstractService
 
         /** @var Asset $asset */
         $asset = new $entityClass();
+        $asset->setLanguage($this->getLanguage());
+        $asset->setDbAdapter($assetTable->getDb());
 
         if (!empty($data['anr'])) {
             /** @var AnrTable $anrTable */
