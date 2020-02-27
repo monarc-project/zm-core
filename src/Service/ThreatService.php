@@ -10,6 +10,7 @@ namespace Monarc\Core\Service;
 use Monarc\Core\Model\Entity\Threat;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\InstanceRiskTable;
+use Monarc\Core\Model\Table\ThreatTable;
 
 /**
  * Threat Service
@@ -34,40 +35,31 @@ class ThreatService extends AbstractService
     protected $dependencies = ['anr', 'theme', 'model[s]()'];
     protected $forbiddenFields = ['anr'];
 
-    /**
-     * @inheritdoc
-     */
     public function create($data, $last = true)
     {
-        /** @var Threat $threat */
-        $threat = $this->get('entity');
+        /** @var ThreatTable $threatTable */
+        $threatTable = $this->get('table');
+        $entityClass = $threatTable->getEntityClass();
 
-        if (isset($data['anr']) && strlen($data['anr'])) {
+        /** @var Threat $threat */
+        $threat = new $entityClass();
+
+        if (!empty($data['anr'])) {
             /** @var AnrTable $anrTable */
             $anrTable = $this->get('anrTable');
-            $anr = $anrTable->getEntity($data['anr']);
+            $anr = $anrTable->findById($data['anr']);
 
-            if (!$anr) {
-                throw new \Monarc\Core\Exception\Exception('This risk analysis does not exist', 412);
-            }
             $threat->setAnr($anr);
         }
+
         $threat->exchangeArray($data);
+        $this->setDependencies($threat, $this->dependencies);
 
-        $dependencies = property_exists($this, 'dependencies') ? $this->dependencies : [];
-        $this->setDependencies($threat, $dependencies);
+        $threat->setCreator(
+            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+        );
 
-        $themeId = $threat->get('theme');
-        if (!empty($themeId)) {
-            $theme = $this->get('themeTable')->getEntity($themeId);
-            $threat->setTheme($theme);
-        }
-
-        $threat->status = 1;
-
-        $threat->setCreator($this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname());
-
-        return $this->get('table')->save($threat);
+        return $threatTable->save($threat, $last);
     }
 
     /**

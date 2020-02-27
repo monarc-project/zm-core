@@ -36,9 +36,9 @@ class AssetSuperClass extends AbstractEntity
     protected $uuid;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Anr
+     * @var AnrSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Anr", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Anr", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true)
      * })
@@ -139,16 +139,16 @@ class AssetSuperClass extends AbstractEntity
 
     /**
      * @param Uuid $id
-     * @return Asset
      */
-    public function setUuid($id)
+    public function setUuid($id): self
     {
         $this->uuid = $id;
+
         return $this;
     }
 
     /**
-     * @return Anr
+     * @return AnrSuperClass
      */
     public function getAnr()
     {
@@ -156,10 +156,9 @@ class AssetSuperClass extends AbstractEntity
     }
 
     /**
-     * @param Anr $anr
-     * @return Asset
+     * @param AnrSuperClass $anr
      */
-    public function setAnr($anr)
+    public function setAnr($anr): self
     {
         $this->anr = $anr;
         return $this;

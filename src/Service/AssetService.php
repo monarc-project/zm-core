@@ -9,6 +9,7 @@ namespace Monarc\Core\Service;
 
 use Monarc\Core\Model\Entity\Asset;
 use Monarc\Core\Model\Table\AnrTable;
+use Monarc\Core\Model\Table\AssetTable;
 
 /**
  * Asset Service
@@ -33,34 +34,31 @@ class AssetService extends AbstractService
         'code',
     ];
 
-    /**
-     * @inheritdoc
-     */
     public function create($data, $last = true)
     {
-        /** @var Asset $asset */
-        $asset = $this->get('entity');
+        /** @var AssetTable $assetTable */
+        $assetTable = $this->get('table');
+        $entityClass = $assetTable->getEntityClass();
 
-        if (isset($data['anr']) && strlen($data['anr'])) {
+        /** @var Asset $asset */
+        $asset = new $entityClass();
+
+        if (!empty($data['anr'])) {
             /** @var AnrTable $anrTable */
             $anrTable = $this->get('anrTable');
-            $anr = $anrTable->getEntity($data['anr']);
+            $anr = $anrTable->findById($data['anr']);
 
-            if (!$anr) {
-                throw new \Monarc\Core\Exception\Exception('This risk analysis does not exist', 412);
-            }
             $asset->setAnr($anr);
         }
+
         $asset->exchangeArray($data);
+        $this->setDependencies($asset, $this->dependencies);
 
-        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($asset, $dependencies);
+        $asset->setCreator(
+            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+        );
 
-        $asset->status = 1;
-
-        $asset->setCreator($this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname());
-
-        return $this->get('table')->save($asset);
+        return $assetTable->save($asset, $last);
     }
 
     /**

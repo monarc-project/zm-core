@@ -876,9 +876,9 @@ class AmvService extends AbstractService
         }
 
         foreach ($data as $amvItem) {
-            if ($amvItem['asset']['uuid'] !== null
-                && $amvItem['threat']['uuid'] !== null
-                && $amvItem['vulnerability']['uuid'] !== null
+            if (!empty($amvItem['asset']['uuid'])
+                && !empty($amvItem['threat']['uuid'])
+                && !empty($amvItem['vulnerability']['uuid'])
                 && $amvTable->findByAmvItemsUuidAndAnrId(
                     $amvItem['asset']['uuid'],
                     $amvItem['threat']['uuid'],
@@ -930,7 +930,7 @@ class AmvService extends AbstractService
 
     private function createAmvItemOrGetUuid(AbstractService $service, array $data, string $itemType): string
     {
-        if ($data['uuid'] !== null) {
+        if (!empty($data['uuid'])) {
             return $data['uuid'];
         }
 
