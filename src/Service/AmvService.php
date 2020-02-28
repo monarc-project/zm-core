@@ -316,7 +316,7 @@ class AmvService extends AbstractService
                 }
             }
 
-            $this->historizeDelete('amv', $entity, $details);
+            $this->historizeDelete('amv', $amv, $details);
 
             $this->get('table')->delete($id);
         }
@@ -904,7 +904,9 @@ class AmvService extends AbstractService
                     $themeClass = $themeTable->getEntityClass();
                     /** @var ThemeSuperClass $theme */
                     $theme = new $themeClass;
-                    $theme->setAnr($anr);
+                    if (isset($anr)) {
+                        $theme->setAnr($anr);
+                    }
                     $labelSetterName = 'set' . ucfirst($labelKey);
                     $theme->{$labelSetterName}($labelValue);
                     $themeTable->saveEntity($theme);
