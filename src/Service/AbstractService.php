@@ -881,9 +881,8 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     protected function encrypt($data, $key)
     {
-        // TODO: Replace mcrypt_encrypt with openssl_encrypt
-        # return mcrypt_encrypt(MCRYPT_RIJNDAEL_256, md5($key), $data, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND));
-        return openssl_encrypt($data,'AES-256-ECB',md5($key));
+        $encrypted = openssl_encrypt($data, 'AES-256-CBC', hash('sha512', $key));
+        return $encrypted;
     }
 
     /**
@@ -895,9 +894,11 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     protected function decrypt($data, $key)
     {
-        // TODO: Replace mcrypt_decrypt with openssl_decrypt
-        # return mcrypt_decrypt(MCRYPT_RIJNDAEL_256, md5($key), $data, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND));
-        return openssl_decrypt($data,'AES-256-ECB',md5($key));
+        $decrypted = openssl_decrypt($data, 'AES-256-CBC', hash('sha512', $key));
+        if (! $decrypted) {
+            $decrypted = openssl_decrypt($data, 'AES-256-ECB', hash('md5', $key));
+        }
+        return $decrypted;
     }
 
     /**
