@@ -6,7 +6,7 @@
  */
 namespace Monarc\Core\Validator;
 
-use Zend\Validator\AbstractValidator;
+use Laminas\Validator\AbstractValidator;
 
 /**
  * Class PasswordStrength is an implementation of AbstractValidator that ensures the strength of passwords.

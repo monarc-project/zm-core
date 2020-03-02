@@ -7,7 +7,7 @@
 
 namespace Monarc\Core\Validator;
 
-use Zend\Validator\AbstractValidator;
+use Laminas\Validator\AbstractValidator;
 /**
  * Class UniqueDeliveryModel is an implementation of AbstractValidator that ensures the unicity of DeliveriesModels based on the category.
  * @package Monarc\Core\Validator

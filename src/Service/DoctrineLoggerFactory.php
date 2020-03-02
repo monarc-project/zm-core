@@ -4,9 +4,9 @@ namespace Monarc\Core\Service;
 use Interop\Container\ContainerInterface;
 use Monarc\Core\Log\SqlLogger;
 use RuntimeException;
-use Zend\Log\Logger;
-use Zend\Log\Writer\Stream;
-use Zend\ServiceManager\Factory\FactoryInterface;
+use Laminas\Log\Logger;
+use Laminas\Log\Writer\Stream;
+use Laminas\ServiceManager\Factory\FactoryInterface;
 
 /**
  * TODO: refactor the class, inject all the required things in the factory: config, environment.

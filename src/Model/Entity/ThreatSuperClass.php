@@ -37,9 +37,9 @@ class ThreatSuperClass extends AbstractEntity
     protected $uuid;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Anr
+     * @var AnrSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Anr", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Anr", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true)
      * })
@@ -47,9 +47,9 @@ class ThreatSuperClass extends AbstractEntity
     protected $anr;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Theme
+     * @var ThemeSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Theme", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Theme", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="theme_id", referencedColumnName="id", nullable=true)
      * })
@@ -185,16 +185,16 @@ class ThreatSuperClass extends AbstractEntity
 
     /**
      * @param Uuid $id
-     * @return Threat
      */
-    public function setUuid($id)
+    public function setUuid($id): self
     {
         $this->uuid = $id;
+
         return $this;
     }
 
     /**
-     * @return Anr
+     * @return AnrSuperClass
      */
     public function getAnr()
     {
@@ -202,27 +202,22 @@ class ThreatSuperClass extends AbstractEntity
     }
 
     /**
-     * @param Anr $anr
-     * @return Threat
+     * @param AnrSuperClass $anr
      */
-    public function setAnr($anr)
+    public function setAnr($anr): self
     {
         $this->anr = $anr;
+
         return $this;
     }
 
-    /**
-     * Set theme
-     *
-     * @param Theme $theme
-     */
     public function setTheme(ThemeSuperClass $theme)
     {
         $this->theme = $theme;
     }
 
     /**
-     * @return Theme
+     * @return ThemeSuperClass
      */
     public function getTheme()
     {

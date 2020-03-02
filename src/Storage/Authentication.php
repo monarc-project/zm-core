@@ -6,7 +6,7 @@ use DateTime;
 use Monarc\Core\Model\Entity\UserToken;
 
 use Monarc\Core\Model\Table\UserTokenTable;
-use Zend\Authentication\Storage\StorageInterface;
+use Laminas\Authentication\Storage\StorageInterface;
 
 class Authentication implements StorageInterface
 {

@@ -10,7 +10,7 @@ namespace Monarc\Core\Service;
 use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Model\Entity\UserTokenSuperClass;
 use Monarc\Core\Storage\Authentication as AuthenticationStorage;
-use Zend\Http\PhpEnvironment\Request;
+use Laminas\Http\PhpEnvironment\Request;
 
 /**
  * Determines and returns the system logged in user.

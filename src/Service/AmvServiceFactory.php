@@ -7,6 +7,10 @@
 
 namespace Monarc\Core\Service;
 
+use Monarc\Core\Model\Table;
+use Monarc\Core\Service;
+use Monarc\Core\Model\Entity\Amv;
+
 /**
  * Amv Service Factory
  *
@@ -16,16 +20,20 @@ namespace Monarc\Core\Service;
 class AmvServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = [
-        'table' => 'Monarc\Core\Model\Table\AmvTable',
-        'entity' => 'Monarc\Core\Model\Entity\Amv',
-        'anrTable' => 'Monarc\Core\Model\Table\AnrTable',
-        'assetTable' => 'Monarc\Core\Model\Table\AssetTable',
-        'instanceTable' => 'Monarc\Core\Model\Table\InstanceTable',
-        'measureTable' => 'Monarc\Core\Model\Table\MeasureTable',
-        'referentialTable' => 'Monarc\Core\Model\Table\ReferentialTable',
-        'modelTable' => 'Monarc\Core\Model\Table\ModelTable',
-        'threatTable' => 'Monarc\Core\Model\Table\ThreatTable',
-        'vulnerabilityTable' => 'Monarc\Core\Model\Table\VulnerabilityTable',
-        'historicalService' => 'Monarc\Core\Service\HistoricalService',
+        'table' => Table\AmvTable::class,
+        'entity' => Amv::class,
+        'anrTable' => Table\AnrTable::class,
+        'assetTable' => Table\AssetTable::class,
+        'instanceTable' => Table\InstanceTable::class,
+        'measureTable' => Table\MeasureTable::class,
+        'referentialTable' => Table\ReferentialTable::class,
+        'modelTable' => Table\ModelTable::class,
+        'threatTable' => Table\ThreatTable::class,
+        'vulnerabilityTable' => Table\VulnerabilityTable::class,
+        'historicalService' => Service\HistoricalService::class,
+        'assetService' => Service\AssetService::class,
+        'threatService' => Service\ThreatService::class,
+        'vulnerabilityService' => Service\VulnerabilityService::class,
+        'themeTable' => Table\ThemeTable::class,
     ];
 }

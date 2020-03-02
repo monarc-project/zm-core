@@ -208,4 +208,18 @@ class InstanceTable extends AbstractEntityTable
         $id = $entity->get('id');
         return $return->getQuery()->getSingleScalarResult() + ($id ? 0 : 1);
     }
+
+    /**
+     * @return InstanceSuperClass[]
+     */
+    public function findByAnrId(int $anrId)
+    {
+        return $this->getRepository()
+            ->createQueryBuilder('i')
+            ->innerJoin('i.anr', 'anr')
+            ->where('anr.id = :anrId')
+            ->setParameter('anrId', $anrId)
+            ->getQuery()
+            ->getResult();
+    }
 }

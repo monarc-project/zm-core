@@ -7,7 +7,7 @@
 
 namespace Monarc\Core\Controller;
 
-use Zend\Mvc\Controller\AbstractRestfulController;
+use Laminas\Mvc\Controller\AbstractRestfulController;
 
 /**
  * Index Controller to load the Homepage. This is pretty much the only non-REST-API page since the app in an SPA, which

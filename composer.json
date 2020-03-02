@@ -3,15 +3,42 @@
     "description": "Core for monarc/monarc application",
     "license": "AGPL-3.0",
     "authors": [
-        {"name": "Cyril Rouyer", "email": "cyril@netlor.fr"},
-        {"name": "Guillaume Lesniak", "email": "guillaume@netlor.fr"},
-        {"name": "Jerôme De Almeida", "email": "jerome.dealmeida@vesperiagroup.com"},
-        {"name": "Benjamin Ganivet", "email": "benjamin@netlor.fr"},
-        {"name": "Thomas Metois", "email": "thomas@netlor.fr"},
-        {"name": "Jérôme Lombardi", "email": "jerome.lombardi@cases.lu"},
-        {"name": "Juan Rocha", "email": "juan.rocha@cases.lu"},
-        {"name": "Cédric Bonhomme", "email": "cedric.bonhomme@cases.lu"},
-        {"name": "Ruslan Baidan", "email": "ruslan.baidan@cases.lu"}
+        {
+            "name": "Cyril Rouyer",
+            "email": "cyril@netlor.fr"
+        },
+        {
+            "name": "Guillaume Lesniak",
+            "email": "guillaume@netlor.fr"
+        },
+        {
+            "name": "Jérôme De Almeida",
+            "email": "jerome.dealmeida@vesperiagroup.com"
+        },
+        {
+            "name": "Benjamin Ganivet",
+            "email": "benjamin@netlor.fr"
+        },
+        {
+            "name": "Thomas Metois",
+            "email": "thomas@netlor.fr"
+        },
+        {
+            "name": "Jérôme Lombardi",
+            "email": "jerome.lombardi@cases.lu"
+        },
+        {
+            "name": "Juan Rocha",
+            "email": "juan.rocha@cases.lu"
+        },
+        {
+            "name": "Cédric Bonhomme",
+            "email": "cedric.bonhomme@cases.lu"
+        },
+        {
+            "name": "Ruslan Baidan",
+            "email": "ruslan.baidan@cases.lu"
+        }
     ],
     "require": {
         "php": "^7.1",
@@ -19,20 +46,22 @@
         "ext-openssl": "*",
         "ext-intl": "*",
         "robmorgan/phinx": "^0.11.1",
-        "zendframework/zend-mvc": "^3.1",
-        "zendframework/zend-di": "^3.1",
+        "laminas/laminas-mvc": "^3.1",
+        "laminas/laminas-di": "^3.1",
         "doctrine/doctrine-orm-module": "^2.1",
         "ramsey/uuid-doctrine": "^1.5",
-        "zendframework/zend-log": "^2.11",
-        "zendframework/zend-console": "^2.8",
+        "laminas/laminas-log": "^2.11",
+        "laminas/laminas-console": "^2.8",
         "ocramius/proxy-manager": "<2.3",
         "ocramius/package-versions": "<1.5",
-        "zendframework/zend-mail": "^2.10",
-        "zendframework/zend-i18n": "^2.9"
+        "laminas/laminas-mail": "^2.10",
+        "laminas/laminas-i18n": "^2.9",
+        "laminas/laminas-filter": "^2.9",
+        "laminas/laminas-inputfilter": "^2.10",
+        "laminas/laminas-dependency-plugin": "^1.0"
     },
     "require-dev": {
-        "roave/security-advisories": "dev-master",
-        "zendframework/zend-component-installer": "^2.1"
+        "roave/security-advisories": "dev-master"
     },
     "autoload": {
         "psr-4": {

@@ -8,8 +8,8 @@
 namespace Monarc\Core\Service;
 
 use Interop\Container\ContainerInterface;
-use Zend\ServiceManager\Factory\FactoryInterface;
-use Zend\I18n\Translator\Translator;
+use Laminas\ServiceManager\Factory\FactoryInterface;
+use Laminas\I18n\Translator\Translator;
 
 /**
  * Translate Service Factory

@@ -7,7 +7,7 @@
 
 namespace Monarc\Core\Validator;
 
-use Zend\Validator\AbstractValidator;
+use Laminas\Validator\AbstractValidator;
 
 /**
  * Class UniqueName is an implementation of AbstractValidator that ensures the unicity of name.

@@ -3,12 +3,12 @@ namespace Monarc\Core\Adapter;
 
 use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Model\Table\UserTable;
-use Zend\Authentication\Adapter\AbstractAdapter;
-use Zend\Authentication\Result;
+use Laminas\Authentication\Adapter\AbstractAdapter;
+use Laminas\Authentication\Result;
 
 /**
  * Class Authentication is an implementation of AbstractAdapter that takes care of authenticating an user.
- * This is heavily inspired from Zend Auth.
+ * This is heavily inspired from Laminas Auth.
  *
  * @package Monarc\Core\Adapter
  */

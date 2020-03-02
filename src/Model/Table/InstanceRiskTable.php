@@ -8,12 +8,16 @@
 namespace Monarc\Core\Model\Table;
 
 use Doctrine\ORM\EntityNotFoundException;
+use Doctrine\DBAL\Connection;
+use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\AbstractEntity;
 use Monarc\Core\Model\Entity\AssetSuperClass;
+use Monarc\Core\Model\Entity\Instance;
 use Monarc\Core\Model\Entity\InstanceRisk;
 use Monarc\Core\Model\Entity\InstanceRiskSuperClass;
 use Monarc\Core\Model\Entity\InstanceSuperClass;
+use Monarc\Core\Model\Entity\ObjectSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 use Monarc\Core\Service\TranslateService;
 
@@ -44,7 +48,7 @@ class InstanceRiskTable extends AbstractEntityTable
 
     /**
      * TODO: remove the method and pass the value from the calling service.
-    */
+     */
     protected function getContextLanguage($anrId, $context = AbstractEntity::BACK_OFFICE)
     {
         if ($context === AbstractEntity::BACK_OFFICE) {
@@ -57,7 +61,7 @@ class InstanceRiskTable extends AbstractEntityTable
         $anr->set('id', $anrId);
         $anr = $this->getDb()->fetch($anr);
         if (!$anr) {
-            throw new \Monarc\Core\Exception\Exception('Entity does not exist', 412);
+            throw new Exception('Entity does not exist', 412);
         }
 
         return $anr->get('language');
@@ -160,27 +164,28 @@ class InstanceRiskTable extends AbstractEntityTable
      * @param null $instanceId
      * @param array $params
      * @param string $context
-     * @return int
-     * @throws \Monarc\Core\Exception\Exception
+     * @return array
+     * @throws Exception
      */
     public function getFilteredInstancesRisks($anrId, $instanceId = null, $params = [], $context = AbstractEntity::BACK_OFFICE)
     {
-        $params['order'] = isset($params['order']) ? $params['order'] : 'maxRisk';
+        $params['order'] = $params['order'] ?? 'maxRisk';
 
+        $instance = null;
         if (!empty($instanceId)) {
-            if($context == AbstractEntity::BACK_OFFICE){
-                $instance = new \Monarc\Core\Model\Entity\Instance();
-            }else{
+            if ($context == AbstractEntity::BACK_OFFICE) {
+                $instance = new Instance();
+            } else {
                 $instance = new \Monarc\FrontOffice\Model\Entity\Instance();
             }
             $instance->setDbAdapter($this->getDb());
             $instance->set('id', $instanceId);
             $instance = $this->getDb()->fetch($instance);
             if (!$instance) {
-                throw new \Monarc\Core\Exception\Exception('Entity does not exist', 412);
+                throw new Exception('Entity does not exist', 412);
             }
             if ($instance->get('anr')->get('id') != $anrId) {
-                throw new \Monarc\Core\Exception\Exception('Anr ids differents', 412);
+                throw new Exception('Anr ids differents', 412);
             }
         }
         $l = $this->getContextLanguage($anrId, $context);
@@ -218,61 +223,77 @@ class InstanceRiskTable extends AbstractEntityTable
             'ir.comment as comment',
             'o.scope as scope',
             'ir.kind_of_measure as kindOfMeasure',
-            'IF(ir.kind_of_measure IS NULL OR ir.kind_of_measure = ' . InstanceRiskSuperClass::KIND_NOT_TREATED . ', false, true) as t',
+            'IF(ir.kind_of_measure IS NULL OR ir.kind_of_measure = '
+                . InstanceRiskSuperClass::KIND_NOT_TREATED . ', false, true) as t',
             'ir.threat_id as tid',
             'ir.vulnerability_id as vid',
             'i.name' . $l . ' as instanceName' . $l . '',
         ];
 
-        //TO DO : if we want to keep the specific models, make an if on it
-        if($context == AbstractEntity::BACK_OFFICE){
-            $sql = "
-              SELECT      " . implode(',', $arraySelect) . "
-              FROM        instances_risks AS ir
-              INNER JOIN  instances i
-              ON          ir.instance_id = i.id
-              LEFT JOIN   amvs AS a
-              ON          ir.amv_id = a.uuid
-              INNER JOIN  threats AS t
-              ON          ir.threat_id = t.uuid
-              INNER JOIN  vulnerabilities AS v
-              ON          ir.vulnerability_id = v.uuid
-              LEFT JOIN   assets AS ass
-              ON          ir.asset_id = ass.uuid
-              INNER JOIN  objects AS o
-              ON          i.object_id = o.uuid
-              WHERE       ir.cache_max_risk >= -1";
-        }else{
-            $sql = "
-            SELECT      " . implode(',', $arraySelect) . "
-            FROM        instances_risks AS ir
-            INNER JOIN  instances i
-            ON          ir.instance_id = i.id
-            LEFT JOIN   amvs AS a
-            ON          ir.amv_id = a.uuid
-            and         ir.anr_id = a.anr_id
-            INNER JOIN  threats AS t
-            ON          ir.threat_id = t.uuid
-            and         ir.anr_id = t.anr_id
-            INNER JOIN  vulnerabilities AS v
-            ON          ir.vulnerability_id = v.uuid
-            and         ir.anr_id = v.anr_id
-            LEFT JOIN   assets AS ass
-            ON          ir.asset_id = ass.uuid
-            and         ir.anr_id = ass.anr_id
-            INNER JOIN  objects AS o
-            ON          i.object_id = o.uuid
-            and         i.anr_id = o.anr_id
-            WHERE       ir.cache_max_risk >= -1
-            AND         ir.anr_id = :anrid ";
+        $queryParams = [];
+        if ($context === AbstractEntity::BACK_OFFICE) {
+            $sql = 'SELECT ' . implode(',', $arraySelect) . '
+                FROM       instances_risks AS ir
+                INNER JOIN instances i
+                ON         ir.instance_id = i.id
+                LEFT JOIN  amvs AS a
+                ON         ir.amv_id = a.uuid
+                INNER JOIN threats AS t
+                ON         ir.threat_id = t.uuid
+                INNER JOIN vulnerabilities AS v
+                ON         ir.vulnerability_id = v.uuid
+                LEFT JOIN  assets AS ass
+                ON         ir.asset_id = ass.uuid
+                INNER JOIN objects AS o
+                ON         i.object_id = o.uuid
+                WHERE      ir.cache_max_risk >= -1';
+        } else {
+            $sql = 'SELECT ' . implode(',', $arraySelect) . '
+                FROM       instances_risks AS ir
+                INNER JOIN instances i
+                ON         ir.instance_id = i.id
+                LEFT JOIN  amvs AS a
+                ON         ir.amv_id = a.uuid
+                AND        ir.anr_id = a.anr_id
+                INNER JOIN threats AS t
+                ON         ir.threat_id = t.uuid
+                AND        ir.anr_id = t.anr_id
+                INNER JOIN vulnerabilities AS v
+                ON         ir.vulnerability_id = v.uuid
+                AND        ir.anr_id = v.anr_id
+                LEFT JOIN  assets AS ass
+                ON         ir.asset_id = ass.uuid
+                AND        ir.anr_id = ass.anr_id
+                INNER JOIN objects AS o
+                ON         i.object_id = o.uuid
+                AND        i.anr_id = o.anr_id
+                WHERE      ir.cache_max_risk >= -1
+                AND        ir.anr_id = :anrid';
+            $queryParams = [
+                ':anrid' => $anrId,
+            ];
         }
-        $queryParams = [
-            ':anrid' => $anrId,
-        ];
+
         $typeParams = [];
         // Find instance(s) id
-        if (empty($instance)) {
+        if ($instance === null) {
             // On prend toutes les instances, on est sur l'anr
+            if ($context === AbstractEntity::BACK_OFFICE) {
+                $instanceIds = [];
+                $instanceTable = new InstanceTable($this->getDb(), $this->connectedUserService);
+                $instances = $instanceTable->findByAnrId($anrId);
+                if (count($instances) === 0) {
+                    return [];
+                }
+                foreach ($instances as $instance) {
+                    $instanceIds[] = $instance->getId();
+                }
+                if (!empty($instanceIds)) {
+                    $sql .= ' AND i.id IN (:ids) ';
+                    $queryParams[':ids'] = $instanceIds;
+                    $typeParams[':ids'] = Connection::PARAM_INT_ARRAY;
+                }
+            }
         } elseif ($instance->get('asset') && $instance->get('asset')->get('type') == AssetSuperClass::TYPE_PRIMARY) {
             $instanceIds = [];
             $instanceIds[$instance->get('id')] = $instance->get('id');
@@ -280,7 +301,7 @@ class InstanceRiskTable extends AbstractEntityTable
             /**
              * TODO: - Inject dependencies if needed, a new class should not be created inside!
              * TODO: - Remove the dependency of FO, create and move the implementation to FO!
-            */
+             */
             if ($context == AbstractEntity::BACK_OFFICE) {
                 $instanceTable = new InstanceTable($this->getDb(), $this->connectedUserService);
             } else {
@@ -299,30 +320,30 @@ class InstanceRiskTable extends AbstractEntityTable
                 }
             }
 
-            $sql .= " AND i.id IN (:ids) ";
+            $sql .= ' AND i.id IN (:ids) ';
             $queryParams[':ids'] = $instanceIds;
-            $typeParams[':ids'] = \Doctrine\DBAL\Connection::PARAM_INT_ARRAY;
+            $typeParams[':ids'] = Connection::PARAM_INT_ARRAY;
         } else {
-            $sql .= " AND i.id = :id ";
+            $sql .= ' AND i.id = :id ';
             $queryParams[':id'] = $instance->get('id');
         }
 
         // FILTER: amvs ==
         if (isset($params['amvs'])) {
             if (!is_array($params['amvs'])) {
-                $params['amvs'] = explode(',', substr($params['amvs'],1,-1));
+                $params['amvs'] = explode(',', substr($params['amvs'], 1, -1));
             }
             $sql .= ' AND a.uuid IN (:amvIds)';
             $queryParams[':amvIds'] = $params['amvs'];
-            $typeParams[':amvIds'] = \Doctrine\DBAL\Connection::PARAM_INT_ARRAY;
+            $typeParams[':amvIds'] = Connection::PARAM_INT_ARRAY;
         }
         // FILTER: kind_of_measure ==
         if (isset($params['kindOfMeasure'])) {
             if ($params['kindOfMeasure'] == InstanceRiskSuperClass::KIND_NOT_TREATED) {
-                $sql .= " AND (ir.kind_of_measure IS NULL OR ir.kind_of_measure = :kom) ";
+                $sql .= ' AND (ir.kind_of_measure IS NULL OR ir.kind_of_measure = :kom) ';
                 $queryParams[':kom'] = InstanceRiskSuperClass::KIND_NOT_TREATED;
             } else {
-                $sql .= " AND ir.kind_of_measure = :kom ";
+                $sql .= ' AND ir.kind_of_measure = :kom ';
                 $queryParams[':kom'] = $params['kindOfMeasure'];
             }
         }
@@ -339,35 +360,36 @@ class InstanceRiskTable extends AbstractEntityTable
             $orFilter = [];
             foreach ($filters as $f) {
                 $k = str_replace('.', '', $f);
-                $orFilter[] = $f . " LIKE :" . $k;
+                $orFilter[] = $f . ' LIKE :' . $k;
                 $queryParams[":$k"] = '%' . $params['keywords'] . '%';
             }
-            $sql .= " AND (" . implode(' OR ', $orFilter) . ") ";
+            $sql .= ' AND (' . implode(' OR ', $orFilter) . ')';
         }
         // FILTER: cache_max_risk (min)
         if (isset($params['thresholds']) && $params['thresholds'] > 0) {
-            $sql .= " AND ir.cache_max_risk > :min ";
+            $sql .= ' AND ir.cache_max_risk > :min';
             $queryParams[':min'] = $params['thresholds'];
         }
 
         // ORDER
-        $params['order_direction'] = isset($params['order_direction']) && strtolower(trim($params['order_direction'])) != 'asc' ? 'DESC' : 'ASC';
-        $sql .= " ORDER BY ";
+        $params['order_direction'] = isset($params['order_direction'])
+            && strtolower(trim($params['order_direction'])) !== 'asc' ? 'DESC' : 'ASC';
+        $sql .= ' ORDER BY ';
         switch ($params['order']) {
             case 'instance':
                 $sql .= " i.name$l ";
                 break;
             case 'auditOrder':
-                $sql .= " a.position ";
+                $sql .= ' a.position ';
                 break;
             case 'c_impact':
-                $sql .= " i.c ";
+                $sql .= ' i.c ';
                 break;
             case 'i_impact':
-                $sql .= " i.i ";
+                $sql .= ' i.i ';
                 break;
             case 'd_impact':
-                $sql .= " i.d ";
+                $sql .= ' i.d ';
                 break;
             case 'threat':
                 $sql .= " t.label$l ";
@@ -376,37 +398,36 @@ class InstanceRiskTable extends AbstractEntityTable
                 $sql .= " v.label$l ";
                 break;
             case 'vulnerabilityRate':
-                $sql .= " ir.vulnerability_rate ";
+                $sql .= ' ir.vulnerability_rate ';
                 break;
             case 'threatRate':
-                $sql .= " ir.threat_rate ";
+                $sql .= ' ir.threat_rate ';
                 break;
             case 'targetRisk':
-                $sql .= " ir.cache_targeted_risk ";
+                $sql .= ' ir.cache_targeted_risk ';
                 break;
             default:
             case 'maxRisk':
-                $sql .= " ir.cache_max_risk ";
+                $sql .= ' ir.cache_max_risk ';
                 break;
         }
-        $sql .= " " . $params['order_direction'] . " ";
+        $sql .= ' ' . $params['order_direction'] . ' ';
         if ($params['order'] != 'instance') {
             $sql .= " , i.name$l ASC ";
         }
-        $sql .= " , t.code ASC , v.code ASC ";
+        $sql .= ' , t.code ASC , v.code ASC ';
 
-        $res = $this->getDb()->getEntityManager()->getConnection()
-            ->fetchAll($sql, $queryParams, $typeParams);
+        $res = $this->getDb()->getEntityManager()->getConnection()->fetchAll($sql, $queryParams, $typeParams);
         $lst = [];
-        foreach($res as $r){
+        foreach ($res as $r) {
             // GROUP BY if scope = GLOBAL
-            if($r['scope'] == \Monarc\Core\Model\Entity\ObjectSuperClass::SCOPE_GLOBAL){
-                $key = 'o'.$r['oid'].'-'.$r['tid'].'-'.$r['vid'];
-                if(!isset($lst[$key]) || $lst[$key]['max_risk'] < $r['max_risk']){
+            if ($r['scope'] == ObjectSuperClass::SCOPE_GLOBAL) {
+                $key = 'o' . $r['oid'] . '-' . $r['tid'] . '-' . $r['vid'];
+                if (!isset($lst[$key]) || $lst[$key]['max_risk'] < $r['max_risk']) {
                     $lst[$key] = $r;
                 }
-            }else{
-                $lst['r'.$r['id']] = $r;
+            } else {
+                $lst['r' . $r['id']] = $r;
             }
         }
         return array_values($lst);

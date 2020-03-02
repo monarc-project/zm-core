@@ -7,18 +7,19 @@ use Monarc\Core\Service\InstanceService;
 use Monarc\Core\Service\ObjectService;
 use Monarc\FrontOffice\Service\AnrInstanceService;
 use Monarc\FrontOffice\Service\AnrObjectService;
-use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Console\Output\NullOutput;
-use Zend\Console\Request;
-use Zend\Mvc\MvcEvent;
-use Zend\View\Model\JsonModel;
-use Zend\Router\RouteMatch;
+use Laminas\Http\Request;
+use Laminas\Mvc\MvcEvent;
+use Laminas\View\Model\JsonModel;
+use Laminas\Router\RouteMatch;
+use Monarc\Core\Validator\UniqueEmail;
+use Monarc\Core\Validator\UniqueDeliveryModel;
+use Monarc\Core\Filter\SpecAlnum;
 
 class Module
 {
     public function onBootstrap(MvcEvent $e)
     {
-        if (!$e->getRequest() instanceof Request) {
+        if ($e->getRequest() instanceof Request) {
             $eventManager = $e->getApplication()->getEventManager();
 
             $sm = $e->getApplication()->getServiceManager();
@@ -64,37 +65,6 @@ class Module
                 $result = $objectService->patch($params['objectId'], $params['data']);
                 return $result;
             }, 100);
-
-            if (file_exists('./data/cache/upgrade')) {
-                // Clear caches
-                $appConf = file_exists('./config/application.config.php') ? include './config/application.config.php' : [];
-                $cacheDir = isset($appConf['module_listener_options']['cache_dir']) ? $appConf['module_listener_options']['cache_dir'] : "";
-                if (isset($appConf['module_listener_options']['config_cache_key']) &&
-                    file_exists($cacheDir . "module-config-cache." . $appConf['module_listener_options']['config_cache_key'] . ".php")) {
-                    unlink($cacheDir . "module-config-cache." . $appConf['module_listener_options']['config_cache_key'] . ".php");
-                }
-                if (isset($appConf['module_listener_options']['module_map_cache_key']) &&
-                    file_exists($cacheDir . "module-classmap-cache." . $appConf['module_listener_options']['module_map_cache_key'] . ".php")) {
-                    unlink($cacheDir . "module-classmap-cache." . $appConf['module_listener_options']['module_map_cache_key'] . ".php");
-                }
-
-                $output = new NullOutput();
-                $inputMetadata = new ArrayInput(array(
-                    'command' => 'orm:clear-cache:metadata',
-                ));
-                $sm->get('doctrine.cli')->get('orm:clear-cache:metadata')->run($inputMetadata, $output);
-                $inputQuery = new ArrayInput(array(
-                    'command' => 'orm:clear-cache:query',
-                ));
-                $sm->get('doctrine.cli')->get('orm:clear-cache:query')->run($inputQuery, $output);
-                $inputResult = new ArrayInput(array(
-                    'command' => 'orm:clear-cache:result',
-                ));
-                $sm->get('doctrine.cli')->get('orm:clear-cache:result')->run($inputResult, $output);
-
-                // Rm cache doctrine
-                unlink('./data/cache/upgrade');
-            }
         }
     }
 
@@ -112,22 +82,23 @@ class Module
         return $defaultLanguageIndex;
     }
 
-    public function getInputFilterConfig(){
-        return array(
-            'invokables' => array(
-                '\Monarc\Core\Filter\Password' => '\Monarc\Core\Filter\Password',
-                '\Monarc\Core\Filter\SpecAlnum' => '\Monarc\Core\Filter\SpecAlnum',
-            ),
-        );
+    public function getInputFilterConfig()
+    {
+        return [
+            'invokables' => [
+                SpecAlnum::class => SpecAlnum::class,
+            ],
+        ];
     }
 
-    public function getValidatorConfig(){
-        return array(
-            'invokables' => array(
-                '\Monarc\Core\Validator\UniqueEmail' => '\Monarc\Core\Validator\UniqueEmail',
-                '\Monarc\Core\Validator\UniqueDeliveryModel' => '\Monarc\Core\Validator\UniqueDeliveryModel',
-            ),
-        );
+    public function getValidatorConfig()
+    {
+        return [
+            'invokables' => [
+                UniqueEmail::class => UniqueEmail::class,
+                UniqueDeliveryModel::class => UniqueDeliveryModel::class,
+            ],
+        ];
     }
 
     public function onDispatchError($e)

@@ -2,7 +2,7 @@
 
 namespace Monarc\Core\Log;
 
-use Zend\Log\Logger;
+use Laminas\Log\Logger;
 use Doctrine\DBAL\Logging\DebugStack;
 
 class SqlLogger extends DebugStack

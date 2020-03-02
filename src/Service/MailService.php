@@ -7,10 +7,10 @@
 
 namespace Monarc\Core\Service;
 
-use Zend\Mail\Message;
-use Zend\Mail\Transport\Sendmail;
-use Zend\Mime\Message as MimeMessage;
-use Zend\Mime\Part;
+use Laminas\Mail\Message;
+use Laminas\Mail\Transport\Sendmail;
+use Laminas\Mime\Message as MimeMessage;
+use Laminas\Mime\Part;
 
 /**
  * Mail Service
