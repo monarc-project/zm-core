@@ -35,9 +35,9 @@ class ThemeSuperClass extends AbstractEntity
     protected $id;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Anr
+     * @var AnrSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Anr", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Anr", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true)
      * })
@@ -82,16 +82,16 @@ class ThemeSuperClass extends AbstractEntity
 
     /**
      * @param int $id
-     * @return Model
      */
-    public function setId($id)
+    public function setId($id): self
     {
         $this->id = $id;
+
         return $this;
     }
 
     /**
-     * @return Anr
+     * @return AnrSuperClass
      */
     public function getAnr()
     {
@@ -99,12 +99,40 @@ class ThemeSuperClass extends AbstractEntity
     }
 
     /**
-     * @param Anr $anr
-     * @return Theme
+     * @param AnrSuperClass $anr
      */
-    public function setAnr($anr)
+    public function setAnr($anr): self
     {
         $this->anr = $anr;
+
+        return $this;
+    }
+
+    public function setLabel1(string $label1): ThemeSuperClass
+    {
+        $this->label1 = $label1;
+
+        return $this;
+    }
+
+    public function setLabel2(string $label2): ThemeSuperClass
+    {
+        $this->label2 = $label2;
+
+        return $this;
+    }
+
+    public function setLabel3(string $label3): ThemeSuperClass
+    {
+        $this->label3 = $label3;
+
+        return $this;
+    }
+
+    public function setLabel4(string $label4): ThemeSuperClass
+    {
+        $this->label4 = $label4;
+
         return $this;
     }
 

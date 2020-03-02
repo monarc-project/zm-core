@@ -25,12 +25,10 @@ class AmvTable extends AbstractEntityTable
     }
 
     /**
-     * Find By AMV
-     *
      * @param $asset
      * @param $threat
      * @param $vulnerability
-     * @return array
+     * @return AmvSuperClass[]
      */
     public function findByAMV($asset, $threat, $vulnerability)
     {
@@ -83,5 +81,31 @@ class AmvTable extends AbstractEntityTable
             ->setParameter('uuid', $uuid)
             ->getQuery()
             ->getResult();
+    }
+
+    public function findByAmvItemsUuidAndAnrId(
+        string $assetUuid,
+        string $threatUuid,
+        string $vulnerabilityUuid,
+        ?int $anrId = null
+    ): ?AmvSuperClass {
+        $queryBuilder = $this->getRepository()->createQueryBuilder('amv');
+
+        if ($anrId !== null) {
+            $queryBuilder->andWhere('amv.anr = :anrId')->setParameter('anrId', $anrId);
+        }
+
+        return $queryBuilder
+            ->innerJoin('amv.asset', 'a')
+            ->innerJoin('amv.threat', 't')
+            ->innerJoin('amv.vulnerability', 'v')
+            ->andWhere('a.uuid = :asset_uuid')
+            ->andWhere('t.uuid = :threat_uuid')
+            ->andWhere('v.uuid = :vulnerability_uuid')
+            ->setParameter('asset_uuid', $assetUuid)
+            ->setParameter('threat_uuid', $threatUuid)
+            ->setParameter('vulnerability_uuid', $vulnerabilityUuid)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 }
