@@ -44,9 +44,9 @@ class InstanceRiskOpSuperClass extends AbstractEntity
     protected $id;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Anr
+     * @var AnrSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Anr", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Anr", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
      * })
@@ -54,9 +54,9 @@ class InstanceRiskOpSuperClass extends AbstractEntity
     protected $anr;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Instance
+     * @var InstanceSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Instance", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Instance", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="instance_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
      * })
@@ -64,9 +64,9 @@ class InstanceRiskOpSuperClass extends AbstractEntity
     protected $instance;
 
     /**
-     * @var \Monarc\Core\Model\Entity\MonarcObject
+     * @var ObjectSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\MonarcObject", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="MonarcObject", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="object_id", referencedColumnName="uuid", nullable=true)
      * })
@@ -74,9 +74,9 @@ class InstanceRiskOpSuperClass extends AbstractEntity
     protected $object;
 
     /**
-     * @var \Monarc\Core\Model\Entity\RolfRisk
+     * @var RolfRiskSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\RolfRisk", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="RolfRisk", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="rolf_risk_id", referencedColumnName="id", nullable=true)
      * })
@@ -331,7 +331,7 @@ class InstanceRiskOpSuperClass extends AbstractEntity
 
     /**
      * @param int $id
-     * @return Instance
+     * @return InstanceRiskOpSuperClass
      */
     public function setId($id)
     {
@@ -340,7 +340,7 @@ class InstanceRiskOpSuperClass extends AbstractEntity
     }
 
     /**
-     * @return int
+     * @return AnrSuperClass
      */
     public function getAnr()
     {
@@ -348,8 +348,8 @@ class InstanceRiskOpSuperClass extends AbstractEntity
     }
 
     /**
-     * @param int $anr
-     * @return Instance
+     * @param AnrSuperClass $anr
+     * @return InstanceRiskOp
      */
     public function setAnr($anr)
     {
@@ -358,7 +358,7 @@ class InstanceRiskOpSuperClass extends AbstractEntity
     }
 
     /**
-     * @return Instance
+     * @return InstanceSuperClass
      */
     public function getInstance()
     {
@@ -366,7 +366,7 @@ class InstanceRiskOpSuperClass extends AbstractEntity
     }
 
     /**
-     * @param Instance $instance
+     * @param InstanceSuperClass $instance
      * @return InstanceRiskOp
      */
     public function setInstance($instance)
@@ -384,7 +384,7 @@ class InstanceRiskOpSuperClass extends AbstractEntity
     }
 
     /**
-     * @param Object $object
+     * @param ObjectSuperClass $object
      * @return InstanceRiskOp
      */
     public function setObject($object)
@@ -394,7 +394,7 @@ class InstanceRiskOpSuperClass extends AbstractEntity
     }
 
     /**
-     * @return RolfRisk
+     * @return RolfRiskSuperClass
      */
     public function getRolfRisk()
     {
@@ -402,13 +402,18 @@ class InstanceRiskOpSuperClass extends AbstractEntity
     }
 
     /**
-     * @param RolfRisk $rolfRisk
+     * @param RolfRiskSuperClass $rolfRisk
      * @return InstanceRiskOp
      */
     public function setRolfRisk($rolfRisk)
     {
         $this->rolfRisk = $rolfRisk;
         return $this;
+    }
+
+    public function isTreated(): bool
+    {
+        return $this->kindOfMeasure !== self::KIND_NOT_TREATED;
     }
 
     public function getInputFilter($partial = false)

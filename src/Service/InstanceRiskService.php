@@ -11,6 +11,7 @@ use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Amv;
 use Monarc\Core\Model\Entity\Instance;
 use Monarc\Core\Model\Entity\InstanceRisk;
+use Monarc\Core\Model\Entity\InstanceRiskSuperClass;
 use Monarc\Core\Model\Entity\InstanceSuperClass;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Entity\ObjectSuperClass;
@@ -425,5 +426,17 @@ class InstanceRiskService extends AbstractService
         $instanceRisk->cacheTargetedRisk = $this->getTargetRisk($impacts, $instanceRisk->threatRate, $instanceRisk->vulnerabilityRate, $instanceRisk->reductionAmount);
 
         $instanceRiskTable->save($instanceRisk, $last);
+
+        $this->updateRecoRisks($instanceRisk);
     }
+
+    /**
+     * TODO: This method is used only on FO side. Has to be removed from core together with refactoring of the service.
+     *
+     * Updates recommandation risk position.
+     */
+    public function updateRecoRisks(InstanceRiskSuperClass $instanceRisk): void
+    {
+    }
+
 }

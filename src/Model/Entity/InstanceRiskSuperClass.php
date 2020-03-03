@@ -352,6 +352,11 @@ class InstanceRiskSuperClass extends AbstractEntity
         return $this->specific === self::TYPE_SPECIFIC;
     }
 
+    public function isTreated(): bool
+    {
+        return $this->kindOfMeasure !== self::KIND_NOT_TREATED;
+    }
+
     public function getInputFilter($partial = false)
     {
         if (!$this->inputFilter) {

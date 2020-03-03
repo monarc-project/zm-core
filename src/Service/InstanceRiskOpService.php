@@ -9,6 +9,7 @@ namespace Monarc\Core\Service;
 
 use Monarc\Core\Model\Entity\Asset;
 use Monarc\Core\Model\Entity\InstanceRiskOp;
+use Monarc\Core\Model\Entity\InstanceRiskOpSuperClass;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Table\InstanceRiskOpTable;
 use Monarc\Core\Model\Table\RolfTagTable;
@@ -199,6 +200,8 @@ class InstanceRiskOpService extends AbstractService
 
         $r = parent::patch($id, $data);
 
+        $this->updateRecoRisksOp($entity);
+
         return $r;
     }
 
@@ -261,6 +264,17 @@ class InstanceRiskOpService extends AbstractService
 
         $this->get('table')->save($risk);
 
+        $this->updateRecoRisksOp($risk);
+
         return $risk->getJsonArray();
+    }
+
+    /**
+     * TODO: This method is used only on FO side. Has to be removed from core together with refactoring of the service.
+     *
+     * Updates recommendation operational risks positions.
+     */
+    public function updateRecoRisksOp(InstanceRiskOpSuperClass $instanceRiskOp): void
+    {
     }
 }
