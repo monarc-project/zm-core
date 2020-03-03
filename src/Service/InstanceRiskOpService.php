@@ -9,7 +9,6 @@ namespace Monarc\Core\Service;
 
 use Monarc\Core\Model\Entity\Asset;
 use Monarc\Core\Model\Entity\InstanceRiskOp;
-use Monarc\Core\Model\Entity\InstanceRiskOpSuperClass;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Table\InstanceRiskOpTable;
 use Monarc\Core\Model\Table\RolfTagTable;
