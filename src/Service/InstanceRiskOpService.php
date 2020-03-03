@@ -199,7 +199,7 @@ class InstanceRiskOpService extends AbstractService
         $this->filterPatchFields($data);
 
         $r = parent::patch($id, $data);
-        $this->updateRecoRisksOp($entity);
+
         return $r;
     }
 
@@ -262,30 +262,6 @@ class InstanceRiskOpService extends AbstractService
 
         $this->get('table')->save($risk);
 
-        $this->updateRecoRisksOp($risk);
-
         return $risk->getJsonArray();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function delete($id)
-    {
-        /** @var InstanceRiskOpTable $instanceRiskOpTable */
-        $InstanceRiskOpTable = $this->get('table');
-        $instanceRisk = $InstanceRiskOpTable->getEntity($id);
-        $this->updateRecoRisksOp($instanceRisk);
-
-        return parent::delete($id);
-    }
-
-    /**
-     * TODO: This method is used only on FO side. Has to be removed from core together with refactoring of the service.
-     *
-     * Updates recommendation operational risks positions.
-     */
-    public function updateRecoRisksOp(InstanceRiskOpSuperClass $instanceRiskOp): void
-    {
     }
 }
