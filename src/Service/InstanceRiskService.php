@@ -430,6 +430,15 @@ class InstanceRiskService extends AbstractService
         $this->updateRecoRisks($instanceRisk);
     }
 
+    public function delete($id)
+    {
+        /** @var InstanceRiskTable $instanceRiskTable */
+        $instanceRiskTable = $this->get('table');
+        $this->updateRecoRisks($instanceRiskTable->findById($id));
+
+        return parent::delete($id);
+    }
+
     /**
      * TODO: This method is used only on FO side. Has to be removed from core together with refactoring of the service.
      *

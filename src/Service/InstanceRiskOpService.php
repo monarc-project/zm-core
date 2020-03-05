@@ -12,6 +12,7 @@ use Monarc\Core\Model\Entity\InstanceRiskOp;
 use Monarc\Core\Model\Entity\InstanceRiskOpSuperClass;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Table\InstanceRiskOpTable;
+use Monarc\Core\Model\Table\InstanceRiskTable;
 use Monarc\Core\Model\Table\RolfTagTable;
 use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\Mapping\MappingException;
@@ -200,7 +201,7 @@ class InstanceRiskOpService extends AbstractService
 
         $r = parent::patch($id, $data);
 
-        $this->updateRecoRisksOp($entity);
+        $this->updateRecoRisks($entity);
 
         return $r;
     }
@@ -264,17 +265,25 @@ class InstanceRiskOpService extends AbstractService
 
         $this->get('table')->save($risk);
 
-        $this->updateRecoRisksOp($risk);
+        $this->updateRecoRisks($risk);
 
         return $risk->getJsonArray();
     }
 
+    public function delete($id)
+    {
+        /** @var InstanceRiskOpTable $instanceRiskOpTable */
+        $instanceRiskOpTable = $this->get('table');
+        $this->updateRecoRisks($instanceRiskOpTable->findById($id));
+
+        return parent::delete($id);
+    }
     /**
      * TODO: This method is used only on FO side. Has to be removed from core together with refactoring of the service.
      *
      * Updates recommendation operational risks positions.
      */
-    public function updateRecoRisksOp(InstanceRiskOpSuperClass $instanceRiskOp): void
+    public function updateRecoRisks(InstanceRiskOpSuperClass $instanceRiskOp): void
     {
     }
 }
