@@ -35,11 +35,12 @@ class ObjectExportService extends AbstractService
     /**
      * Generates an array to export into a filename
      * @param int $id The object to export
+     * @param bool $withEval
      * @param string $filename Reference to the string holding the filename
      * @return array The data
      * @throws Exception If the object is erroneous
      */
-    public function generateExportArray($id, $anr = null, &$filename = "")
+    public function generateExportArray($id, $anr = null, $withEval = false, &$filename = "")
     {
         if (empty($id)) {
             throw new Exception('Object to export is required', 412);
@@ -118,7 +119,7 @@ class ObjectExportService extends AbstractService
         if (!empty($asset)) {
             $asset = $asset->getJsonArray(['uuid']);
             $return['object']['asset'] = $asset['uuid'];
-            $return['asset'] = $this->get('assetExportService')->generateExportArray($asset['uuid'], $anr);
+            $return['asset'] = $this->get('assetExportService')->generateExportArray($asset['uuid'], $anr, $withEval);
         }
 
         // Recovery of operational risks
