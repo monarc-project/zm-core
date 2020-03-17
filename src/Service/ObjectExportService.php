@@ -156,7 +156,8 @@ class ObjectExportService extends AbstractService
             foreach ($children as $child) {
                 $return['children'][$child->get('child')->get('uuid')->toString()] = $this->generateExportArray(
                     (string)$child->get('child')->get('uuid'),
-                    $anr
+                    $anr,
+                    $withEval
                 );
                 $return['children'][$child->get('child')->get('uuid')->toString()]['object']['position'] = $place;
                 $place ++;
