@@ -132,6 +132,7 @@ class RolfRiskService extends AbstractService
         $opId = $this->get('table')->save($rolfRisk);
 
         $data = [
+            'anr' => $data['anr'],
             'rolfRisk' => $opId,
             'riskCacheCode' => $rolfRisk->code,
             'riskCacheLabel1' => $rolfRisk->label1,
@@ -165,7 +166,6 @@ class RolfRiskService extends AbstractService
                 $nbInstances = \count($instances);
 
                 $data['object'] = (string)$object->uuid;
-                $data['anr'] = $object->anr->id;
 
                 foreach ($instances as $i => $instance) {
                     $data['instance'] = $instance->id;
