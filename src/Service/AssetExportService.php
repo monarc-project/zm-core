@@ -29,12 +29,13 @@ class AssetExportService extends AbstractService
      *
      * @param int $id The asset ID
      * @param AnrSuperClass $anr
+     * @param bool $withEval
      * @param string $filename The filename to put into
      *
      * @return array The exported data
      * @throws Exception
      */
-    public function generateExportArray($id, $anr = null, &$filename = '')
+    public function generateExportArray($id, $anr = null, $withEval = false, &$filename = '')
     {
         if (empty($id)) {
             throw new Exception('Asset to export is required', 412);
@@ -92,7 +93,7 @@ class AssetExportService extends AbstractService
                 $threats,
                 $vulnerabilities,
                 $themes,
-                $measures) = $amvService->generateExportArray($amv, $anrId);
+                $measures) = $amvService->generateExportArray($amv, $anrId, $withEval);
             $return['threats'] += $threats;
             $return['themes'] += $themes;
             $return['vuls'] += $vulnerabilities;
