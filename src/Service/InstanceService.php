@@ -1509,7 +1509,8 @@ class InstanceService extends AbstractService
             ],
             'object' => $objectExportService->generateExportArray(
                 (string)$instance->getObject()->getUuid(),
-                $instance->getObject()->getAnr() !== null ? $instance->getObject()->getAnr()->getId() : null
+                $instance->getObject()->getAnr() !== null ? $instance->getObject()->getAnr()->getId() : null,
+                $withEval
             ),
         ];
 
@@ -1567,12 +1568,19 @@ class InstanceService extends AbstractService
             'description4' => 'description4',
             'c' => 'c',
             'i' => 'i',
-            'd' => 'd',
+            'a' => 'a',
             'status' => 'status',
+        ];
+        if ($withEval) {
+          $treatsObj = array_merge(
+            $treatsObj,
+            [
             'trend' => 'trend',
             'comment' => 'comment',
-            'qualification' => 'qualification',
-        ];
+            'qualification' => 'qualification'
+            ]
+          );
+        };
         $vulsObj = [
             'uuid' => 'uuid',
             'mode' => 'mode',
@@ -1591,10 +1599,12 @@ class InstanceService extends AbstractService
         foreach ($instanceRisks as $instanceRisk) {
             $riskIds[$instanceRisk->getId()] = $instanceRisk->getId();
             if (!$withEval) {
-                $instanceRisk->set('vulnerabilityRate', '-1');
-                $instanceRisk->set('threatRate', '-1');
+                $instanceRisk->set('vulnerabilityRate', -1);
+                $instanceRisk->set('threatRate', -1);
                 $instanceRisk->set('kindOfMeasure', 0);
                 $instanceRisk->set('reductionAmount', 0);
+                $instanceRisk->set('cacheMaxRisk', -1);
+                $instanceRisk->set('cacheTargetedRisk', -1);
                 $instanceRisk->set('comment', '');
                 $instanceRisk->set('commentAfter', '');
                 $instanceRisk->set('mh', 1);
@@ -1604,9 +1614,9 @@ class InstanceService extends AbstractService
                 $instanceRisk->set('commentAfter', '');
             }
 
-            $instanceRisk->set('riskC', '-1');
-            $instanceRisk->set('riskI', '-1');
-            $instanceRisk->set('riskD', '-1');
+            $instanceRisk->set('riskC', -1);
+            $instanceRisk->set('riskI', -1);
+            $instanceRisk->set('riskD', -1);
             $return['risks'][$instanceRisk->get('id')] = $instanceRisk->getJsonArray($instanceRiskArray);
 
             $irAmv = $instanceRisk->get('amv');
@@ -1621,7 +1631,8 @@ class InstanceService extends AbstractService
                     $themes,
                     $measures) = $this->get('amvService')->generateExportArray(
                         $instanceRisk->get('amv'),
-                        $instanceRisk->getAnr() !== null ? $instanceRisk->getAnr()->getId() : null
+                        $instanceRisk->getAnr() !== null ? $instanceRisk->getAnr()->getId() : null,
+                        $withEval
                     );
                 $return['amvs'][$instanceRisk->get('amv')->get('uuid')->toString()] = $amv;
                 if (empty($return['threats'])) {
