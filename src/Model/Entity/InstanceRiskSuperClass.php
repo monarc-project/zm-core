@@ -357,6 +357,22 @@ class InstanceRiskSuperClass extends AbstractEntity
         return $this->kindOfMeasure !== self::KIND_NOT_TREATED;
     }
 
+    public function getTreatmentName(): string
+    {
+        switch ($this->kindOfMeasure) {
+            case static::KIND_REDUCTION:
+                return 'Reduction';
+            case static::KIND_REFUS:
+                return 'Denied';
+            case static::KIND_ACCEPTATION:
+                return 'Accepted';
+            case static::KIND_PARTAGE:
+                return 'Shared';
+            default:
+                return 'Not treated';
+        }
+    }
+
     public function getMh(): int
     {
         return $this->mh;
@@ -385,6 +401,11 @@ class InstanceRiskSuperClass extends AbstractEntity
     public function getCacheTargetedRisk(): int
     {
         return $this->cacheTargetedRisk;
+    }
+
+    public function getComment(): string
+    {
+        return (string)$this->comment;
     }
 
     public function getInputFilter($partial = false)

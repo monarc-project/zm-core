@@ -184,7 +184,20 @@ class InstanceRiskOpService extends AbstractService
             throw new \Monarc\Core\Exception\Exception('Entity does not exist', 412);
         }
 
-        $toFilter = ['brutProb', 'brutR', 'brutO', 'brutL', 'brutF', 'brutP', 'netProb', 'netR', 'netO', 'netL', 'netF', 'netP'];
+        $toFilter = [
+            'brutProb',
+            'brutR',
+            'brutO',
+            'brutL',
+            'brutF',
+            'brutP',
+            'netProb',
+            'netR',
+            'netO',
+            'netL',
+            'netF',
+            'netP'
+        ];
 
         // CLean up the values to avoid empty values or dashes
         foreach ($toFilter as $k) {
@@ -199,11 +212,7 @@ class InstanceRiskOpService extends AbstractService
         // Filter out fields we don't want to update
         $this->filterPatchFields($data);
 
-        $r = parent::patch($id, $data);
-
-        $this->updateRecoRisks($entity);
-
-        return $r;
+        return parent::patch($id, $data);
     }
 
     /**
@@ -265,25 +274,6 @@ class InstanceRiskOpService extends AbstractService
 
         $this->get('table')->save($risk);
 
-        $this->updateRecoRisks($risk);
-
         return $risk->getJsonArray();
-    }
-
-    public function delete($id)
-    {
-        /** @var InstanceRiskOpTable $instanceRiskOpTable */
-        $instanceRiskOpTable = $this->get('table');
-        $this->updateRecoRisks($instanceRiskOpTable->findById($id));
-
-        return parent::delete($id);
-    }
-    /**
-     * TODO: This method is used only on FO side. Has to be removed from core together with refactoring of the service.
-     *
-     * Updates recommendation operational risks positions.
-     */
-    public function updateRecoRisks(InstanceRiskOpSuperClass $instanceRiskOp): void
-    {
     }
 }

@@ -388,15 +388,11 @@ class InstanceRiskService extends AbstractService
         /** @var InstanceRiskTable $instanceRiskTable */
         $instanceRiskTable = $this->get('table');
 
-        if (!$instanceRisk instanceof InstanceRisk) {
-            //retrieve instance risk
-            $instanceRisk = $instanceRiskTable->getEntity($instanceRisk);
+        if (!$instanceRisk instanceof InstanceRiskSuperClass) {
+            $instanceRisk = $instanceRiskTable->findById($instanceRisk);
         }
 
-        //retrieve instance
-        /** @var InstanceTable $instanceTable */
-        $instanceTable = $this->get('instanceTable');
-        $instance = $instanceTable->getEntity($instanceRisk->instance->id);
+        $instance = $instanceRisk->getInstance();
 
         $riskC = $this->getRiskC($instance->c, $instanceRisk->threatRate, $instanceRisk->vulnerabilityRate);
         $riskI = $this->getRiskI($instance->i, $instanceRisk->threatRate, $instanceRisk->vulnerabilityRate);
@@ -426,26 +422,5 @@ class InstanceRiskService extends AbstractService
         $instanceRisk->cacheTargetedRisk = $this->getTargetRisk($impacts, $instanceRisk->threatRate, $instanceRisk->vulnerabilityRate, $instanceRisk->reductionAmount);
 
         $instanceRiskTable->save($instanceRisk, $last);
-
-        $this->updateRecoRisks($instanceRisk);
     }
-
-    public function delete($id)
-    {
-        /** @var InstanceRiskTable $instanceRiskTable */
-        $instanceRiskTable = $this->get('table');
-        $this->updateRecoRisks($instanceRiskTable->findById($id));
-
-        return parent::delete($id);
-    }
-
-    /**
-     * TODO: This method is used only on FO side. Has to be removed from core together with refactoring of the service.
-     *
-     * Updates recommandation risk position.
-     */
-    public function updateRecoRisks(InstanceRiskSuperClass $instanceRisk): void
-    {
-    }
-
 }

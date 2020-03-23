@@ -215,7 +215,9 @@ abstract class AbstractEntity implements InputFilterAwareInterface
         if (!$this->squeezeAutoPositionning && isset($this->parameters['implicitPosition']['field'])) {
             $parent_before = $this->get($this->parameters['implicitPosition']['field']);
             if (is_object($parent_before)) {
-                $parent_before = !is_null($parent_before->get('uuid'))?$parent_before->get('uuid')->toString():$parent_before->get('id');
+                $parent_before = $parent_before->get('uuid') !== null
+                    ? (string)$parent_before->get('uuid')
+                    : $parent_before->get('id');
             }
             $parent_after = array_key_exists($this->parameters['implicitPosition']['field'], $options) ? $options[$this->parameters['implicitPosition']['field']] : null;
 
@@ -307,7 +309,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
                 if ($isParentable) {
                     $identifiers = is_null($prec->get($this->parameters['implicitPosition']['field'])) ? [] : $this->getDbAdapter()->getClassMetadata(ClassUtils::getRealClass(get_class($prec->get($this->parameters['implicitPosition']['field']))))->getIdentifierFieldNames();
                     if (in_array('uuid', $identifiers)) {
-                        $prec_parent_id = is_null($prec->get($this->parameters['implicitPosition']['field'])) ? null : $prec->get($this->parameters['implicitPosition']['field'])->getUuid()->toString();
+                        $prec_parent_id = is_null($prec->get($this->parameters['implicitPosition']['field'])) ? null : (string)$prec->get($this->parameters['implicitPosition']['field'])->getUuid();
                     } else {
                         $prec_parent_id = is_null($prec->get($this->parameters['implicitPosition']['field'])) ? null : $prec->get($this->parameters['implicitPosition']['field'])->get('id');
                     }
