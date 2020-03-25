@@ -376,7 +376,7 @@ class InstanceRiskOpSuperClass extends AbstractEntity
     }
 
     /**
-     * @return Object
+     * @return ObjectSuperClass
      */
     public function getObject()
     {
