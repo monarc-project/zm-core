@@ -408,7 +408,7 @@ abstract class AbstractEntityTable
                         if (count($implicitPositionFieldIds) > 1) {
                             $subquery->andWhere($entity->parameters['implicitPosition']['field'] . '.anr = :implicitPositionFieldAnr')
                                 ->andWhere($entity->parameters['implicitPosition']['field'] . '.uuid = :implicitPositionFieldUuid')
-                                ->setParameter(':implicitPositionFieldUuid', is_string($entity->get($entity->parameters['implicitPosition']['field'])->get('uuid')) ? $entity->get($entity->parameters['implicitPosition']['field'])->get('uuid') : (string)$entity->get($entity->parameters['implicitPosition']['field'])->get('uuid'))
+                                ->setParameter(':implicitPositionFieldUuid', (string)$entity->get($entity->parameters['implicitPosition']['field'])->get('uuid'))
                                 ->setParameter(':implicitPositionFieldAnr', $entity->get('anr')->get('id'));
                         } else {
                             $bros->where('bro.' . $entity->parameters['implicitPosition']['field'] . ' = :parentid');
@@ -637,8 +637,6 @@ abstract class AbstractEntityTable
                         ->andWhere($params['field'] . '.uuid = :fieldUuid')
                         ->setParameter(':fieldAnr', $entity->get($params['field'])->getAnr()->getId())
                         ->setParameter(':fieldUuid', (string)$entity->get($params['field'])->getUuid());
-
-
                 } else {
                     $return = $return->andWhere('t.' . $params['field'] . ' = :' . $params['field'])
                         ->setParameter(':' . $params['field'], $entity->get($params['field']));

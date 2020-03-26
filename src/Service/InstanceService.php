@@ -292,7 +292,7 @@ class InstanceService extends AbstractService
         if (isset($data['parent']) && empty($data['parent'])) {
             $data['parent'] = null;
         } elseif (!empty($data['parent'])) {
-            $parent = $this->get('table')->getEntity(isset($data['parent']['id']) ? $data['parent']['id'] : $data['parent']);
+            $parent = $table->getEntity(isset($data['parent']['id']) ? $data['parent']['id'] : $data['parent']);
             if (!$parent) {
                 $data['parent'] = null;
                 unset($parent);
@@ -308,7 +308,7 @@ class InstanceService extends AbstractService
             if ($data['position'] <= 1) {
                 $data['implicitPosition'] = 1;
             } else {
-                $return = $this->get('table')->getRepository()->createQueryBuilder('t')
+                $return = $table->getRepository()->createQueryBuilder('t')
                     ->select('COUNT(t.id)');
                 if (isset($parent)) {
                     $return = $return->where('t.parent = :parent')
@@ -327,30 +327,30 @@ class InstanceService extends AbstractService
                 if ($data['position'] == $return) {
                     $data['implicitPosition'] = 2;
                 } else {
-                    $return = $this->get('table')->getRepository()->createQueryBuilder('t')
+                    $queryBuilder = $table->getRepository()->createQueryBuilder('t')
                         ->select('t.id');
                     if (isset($parent)) {
-                        $return = $return->where('t.parent = :parent')
+                        $queryBuilder->where('t.parent = :parent')
                             ->setParameter(':parent', $parent->get('id'));
                     } else {
-                        $return = $return->where('t.parent IS NULL');
+                        $queryBuilder->where('t.parent IS NULL');
                     }
-                    $anr = $instance->get('anr');
+                    $anr = $instance->getAnr();
                     if ($anr) {
-                        $return = $return->andWhere('t.anr = :anr')
-                            ->setParameter(':anr', is_object($anr) ? $anr->get('id') : $anr);
+                        $queryBuilder->andWhere('t.anr = :anr')->setParameter('anr', $anr);
                     } else {
-                        $return = $return->andWhere('t.anr IS NULL');
+                        $queryBuilder->andWhere('t.anr IS NULL');
                     }
-                    $return = $return->andWhere('t.position = :pos')
+                    /** @var Instance $result */
+                    $result = $queryBuilder->andWhere('t.position = :pos')
                         ->setParameter(':pos', $data['position'] + ($data['position'] < $instance->get('position') ? -1 : 0))
                         ->setMaxResults(1)
-                        ->getQuery()->getSingleScalarResult();
-                    if ($return) {
+                        ->getQuery()
+                        ->getOneOrNullResult();
+                    $data['implicitPosition'] = 2;
+                    if ($result !== null) {
                         $data['implicitPosition'] = 3;
-                        $data['previous'] = $return;
-                    } else {
-                        $data['implicitPosition'] = 2;
+                        $data['previous'] = $result['id'];
                     }
                 }
             }
@@ -417,7 +417,7 @@ class InstanceService extends AbstractService
         if (isset($data['parent']) && empty($data['parent'])) {
             $data['parent'] = null;
         } elseif (!empty($data['parent'])) {
-            $parent = $this->get('table')->getEntity($data['parent']);
+            $parent = $table->getEntity($data['parent']);
             if (!$parent) {
                 $data['parent'] = null;
                 unset($parent);
@@ -430,8 +430,7 @@ class InstanceService extends AbstractService
             if ($data['position'] <= 1) {
                 $data['implicitPosition'] = 1;
             } else {
-                $return = $this->get('table')->getRepository()->createQueryBuilder('t')
-                    ->select('COUNT(t.id)');
+                $return = $table->getRepository()->createQueryBuilder('t')->select('COUNT(t.id)');
                 if (isset($parent)) {
                     $return = $return->where('t.parent = :parent')
                         ->setParameter(':parent', $parent->get('id'));
@@ -452,30 +451,30 @@ class InstanceService extends AbstractService
                 if ($data['position'] == $return) {
                     $data['implicitPosition'] = 2;
                 } else {
-                    $return = $this->get('table')->getRepository()->createQueryBuilder('t')
+                    $queryBuilder = $table->getRepository()->createQueryBuilder('t')
                         ->select('t.id');
                     if (isset($parent)) {
-                        $return = $return->where('t.parent = :parent')
+                        $queryBuilder->where('t.parent = :parent')
                             ->setParameter(':parent', $parent->get('id'));
                     } else {
-                        $return = $return->where('t.parent IS NULL');
+                        $queryBuilder->where('t.parent IS NULL');
                     }
-                    $anr = $instance->get('anr');
+                    $anr = $instance->getAnr();
                     if ($anr) {
-                        $return = $return->andWhere('t.anr = :anr')
-                            ->setParameter(':anr', is_object($anr) ? $anr->get('id') : $anr);
+                        $queryBuilder->andWhere('t.anr = :anr')->setParameter('anr', $anr);
                     } else {
-                        $return = $return->andWhere('t.anr IS NULL');
+                        $queryBuilder->andWhere('t.anr IS NULL');
                     }
-                    $return = $return->andWhere('t.position = :pos')
-                        ->setParameter(':pos', $data['position'] + ($data['position'] < $instance->get('position') || $data['parent'] != $instance->get('parent') ? -1 : 0))
+                    /** @var Instance $result */
+                    $result = $queryBuilder->andWhere('t.position = :pos')
+                        ->setParameter(':pos', $data['position'] + ($data['position'] < $instance->getPosition() || $data['parent'] != $instance->getParent() ? -1 : 0))
                         ->setMaxResults(1)
-                        ->getQuery()->getSingleScalarResult();
-                    if ($return) {
+                        ->getQuery()
+                        ->getOneOrNullResult();
+                    $data['implicitPosition'] = 2;
+                    if ($result !== null) {
                         $data['implicitPosition'] = 3;
-                        $data['previous'] = $return;
-                    } else {
-                        $data['implicitPosition'] = 2;
+                        $data['previous'] = $result['id'];
                     }
                 }
             }
@@ -1572,14 +1571,14 @@ class InstanceService extends AbstractService
             'status' => 'status',
         ];
         if ($withEval) {
-          $treatsObj = array_merge(
-            $treatsObj,
-            [
-            'trend' => 'trend',
-            'comment' => 'comment',
-            'qualification' => 'qualification'
-            ]
-          );
+            $treatsObj = array_merge(
+                $treatsObj,
+                [
+                    'trend' => 'trend',
+                    'comment' => 'comment',
+                    'qualification' => 'qualification'
+                ]
+            );
         };
         $vulsObj = [
             'uuid' => 'uuid',
@@ -1630,10 +1629,10 @@ class InstanceService extends AbstractService
                     $vulns,
                     $themes,
                     $measures) = $this->get('amvService')->generateExportArray(
-                        $instanceRisk->get('amv'),
-                        $instanceRisk->getAnr() !== null ? $instanceRisk->getAnr()->getId() : null,
-                        $withEval
-                    );
+                    $instanceRisk->get('amv'),
+                    $instanceRisk->getAnr() !== null ? $instanceRisk->getAnr()->getId() : null,
+                    $withEval
+                );
                 $return['amvs'][$instanceRisk->get('amv')->get('uuid')->toString()] = $amv;
                 if (empty($return['threats'])) {
                     $return['threats'] = [];
