@@ -7,12 +7,13 @@
 
 namespace Monarc\Core\Service;
 
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Monarc\Core\Model\Entity\Asset;
 use Monarc\Core\Model\Entity\InstanceRiskOp;
-use Monarc\Core\Model\Entity\InstanceRiskOpSuperClass;
+use Monarc\Core\Model\Entity\InstanceSuperClass;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Table\InstanceRiskOpTable;
-use Monarc\Core\Model\Table\InstanceRiskTable;
 use Monarc\Core\Model\Table\RolfTagTable;
 use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\Mapping\MappingException;
@@ -132,20 +133,18 @@ class InstanceRiskOpService extends AbstractService
     }
 
     /**
-     * Deletes the operational risk from the instance
-     * @param int $instanceId The instance ID
-     * @param int $anrId The anr ID
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
-    public function deleteInstanceRisksOp($instanceId, $anrId)
+    public function deleteOperationalRisks(InstanceSuperClass $instance): void
     {
-        $risks = $this->getInstanceRisksOp($instanceId, $anrId);
-        $table = $this->get('table');
-        $nb = \count($risks);
-        $i = 1;
-        foreach ($risks as $r) {
-            $table->delete($r->id, $i === $nb);
-            $i++;
+        /** @var InstanceRiskOpTable $operationalRiskTable */
+        $operationalRiskTable = $this->get('table');
+        $operationalRisks = $operationalRiskTable->findByInstance($instance);
+        foreach ($operationalRisks as $operationalRisk) {
+            $operationalRiskTable->deleteEntity($operationalRisk, false);
         }
+        $operationalRiskTable->getDb()->flush();
     }
 
     /**

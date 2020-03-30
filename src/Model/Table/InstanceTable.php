@@ -8,6 +8,8 @@
 namespace Monarc\Core\Model\Table;
 
 use Doctrine\ORM\EntityNotFoundException;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\Instance;
 use Monarc\Core\Model\Entity\InstanceSuperClass;
@@ -189,5 +191,16 @@ class InstanceTable extends AbstractEntityTable
             ->setParameter('anrId', $anrId)
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function deleteEntity(InstanceSuperClass $instance): void
+    {
+        $em = $this->getDb()->getEntityManager();
+        $em->remove($instance);
+        $em->flush();
     }
 }

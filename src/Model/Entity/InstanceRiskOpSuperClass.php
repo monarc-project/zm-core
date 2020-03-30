@@ -34,6 +34,8 @@ class InstanceRiskOpSuperClass extends AbstractEntity
     const KIND_PARTAGE = 4;
     const KIND_NOT_TREATED = 5;
 
+    public const TYPE_SPECIFIC = 1;
+
     /**
      * @var integer
      *
@@ -409,6 +411,11 @@ class InstanceRiskOpSuperClass extends AbstractEntity
     {
         $this->rolfRisk = $rolfRisk;
         return $this;
+    }
+
+    public function isSpecific(): bool
+    {
+        return $this->specific === self::TYPE_SPECIFIC;
     }
 
     public function isTreated(): bool

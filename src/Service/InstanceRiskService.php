@@ -7,6 +7,8 @@
 
 namespace Monarc\Core\Service;
 
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Amv;
 use Monarc\Core\Model\Entity\Instance;
@@ -151,20 +153,18 @@ class InstanceRiskService extends AbstractService
     }
 
     /**
-     * Deletes an Instance Risk
-     * @param int $instanceId The instance ID
-     * @param int $anrId The ANR ID
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
-    public function deleteInstanceRisks($instanceId, $anrId)
+    public function deleteInstanceRisks(InstanceSuperClass $instance): void
     {
-        $risks = $this->getInstanceRisks($instanceId, $anrId);
-        $table = $this->get('table');
-        $nb = \count($risks);
-        $i = 1;
-        foreach ($risks as $r) {
-            $table->delete($r->id, $i === $nb);
-            $i++;
+        /** @var InstanceRiskTable $instanceRiskTable */
+        $instanceRiskTable = $this->get('table');
+        $instanceRisks = $instanceRiskTable->findByInstance($instance);
+        foreach ($instanceRisks as $instanceRisk) {
+            $instanceRiskTable->deleteEntity($instanceRisk, false);
         }
+        $instanceRiskTable->getDb()->flush();
     }
 
     /**

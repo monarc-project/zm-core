@@ -7,6 +7,9 @@
 
 namespace Monarc\Core\Service;
 
+use Doctrine\ORM\EntityNotFoundException;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Asset;
 use Monarc\Core\Model\Entity\Instance;
@@ -529,26 +532,35 @@ class InstanceService extends AbstractService
     }
 
     /**
-     * Delete
+     * @param int $id
      *
-     * @param $id
+     * @return void
+     *
+     * @throws EntityNotFoundException
      * @throws Exception
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
     public function delete($id)
     {
         /** @var InstanceTable $table */
         $table = $this->get('table');
-        $instance = $table->getEntity($id);
+        $instance = $table->findById($id);
 
         // only root instance can be delete
-        if ($instance->level != Instance::LEVEL_ROOT) {
+        if (!$instance->isLevelRoot()) {
             throw new Exception('This is not a root instance', 412);
         }
 
-        $this->get('instanceRiskService')->deleteInstanceRisks($id, $instance->anr->id);
-        $this->get('instanceRiskOpService')->deleteInstanceRisksOp($id, $instance->anr->id);
+        /** @var InstanceRiskService $instanceRiskService */
+        $instanceRiskService = $this->get('instanceRiskService');
+        $instanceRiskService->deleteInstanceRisks($instance);
 
-        $table->delete($id);
+        /** @var InstanceRiskOpService $operationalRiskService */
+        $operationalRiskService = $this->get('instanceRiskOpService');
+        $operationalRiskService->deleteOperationalRisks($instance);
+
+        $table->deleteEntity($instance);
     }
 
     /**
