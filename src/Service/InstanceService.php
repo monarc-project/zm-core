@@ -1681,7 +1681,7 @@ class InstanceService extends AbstractService
             }
         }
 
-        //Recommendations Sets
+        // Recommendations Sets. TODO: move this part to FO.
         if ($withEval && $withRecommendations) {
             $recsSetsObj = [
                 'uuid' => 'uuid',
@@ -1693,12 +1693,12 @@ class InstanceService extends AbstractService
 
             $return['recSets'] = [];
             $recommandationsSets = $this->get('recommandationSetTable')->getEntityByFields(['anr' => $instance->get('anr')->get('id')]);
-            foreach ($recommandationsSets as $recommandationSet){
-                $return['recSets'][$recommandationSet->get('uuid')->toString()] = $recommandationSet->getJsonArray($recsSetsObj);
+            foreach ($recommandationsSets as $recommandationSet) {
+                $return['recSets'][$recommandationSet->getUuid()] = $recommandationSet->getJsonArray($recsSetsObj);
             }
         }
 
-        // Recommandation
+        // TODO: move this part to FO.
         $recoIds = [];
         if ($withEval && $withRecommendations && !empty($riskIds) && $this->get('recommandationRiskTable')) {
             $recosObj = [
@@ -1717,10 +1717,11 @@ class InstanceService extends AbstractService
             $recoRisk = $this->get('recommandationRiskTable')->getEntityByFields(['anr' => $instance->get('anr')->get('id'), 'instanceRisk' => $riskIds], ['id' => 'ASC']);
             foreach ($recoRisk as $rr) {
                 if (!empty($rr)) {
-                    $return['recos'][$rr->get('instanceRisk')->get('id')][$rr->get('recommandation')->get('uuid')->toString()] = $rr->get('recommandation')->getJsonArray($recosObj);
-                    $return['recos'][$rr->get('instanceRisk')->get('id')][$rr->get('recommandation')->get('uuid')->toString()]['recommandationSet'] = $rr->get('recommandation')->getRecommandationSet()->getUuid()->toString();
-                    $return['recos'][$rr->get('instanceRisk')->get('id')][$rr->get('recommandation')->get('uuid')->toString()]['commentAfter'] = $rr->get('commentAfter');
-                    $recoIds[$rr->get('recommandation')->get('uuid')->toString()] = $rr->get('recommandation')->get('uuid')->toString();
+                    $recommendationUuid = $rr->getRecommandation()->getUuid();
+                    $return['recos'][$rr->get('instanceRisk')->get('id')][$recommendationUuid] = $rr->get('recommandation')->getJsonArray($recosObj);
+                    $return['recos'][$rr->get('instanceRisk')->get('id')][$recommendationUuid]['recommandationSet'] = $rr->getRecommandation()->getRecommandationSet()->getUuid();
+                    $return['recos'][$rr->get('instanceRisk')->get('id')][$recommendationUuid]['commentAfter'] = $rr->get('commentAfter');
+                    $recoIds[$recommendationUuid] = $recommendationUuid;
                 }
             }
         }
@@ -1825,10 +1826,11 @@ class InstanceService extends AbstractService
             $recoRisk = $this->get('recommandationRiskTable')->getEntityByFields(['anr' => $instance->get('anr')->get('id'), 'instanceRiskOp' => $riskOpIds], ['id' => 'ASC']);
             foreach ($recoRisk as $rr) {
                 if (!empty($rr)) {
-                    $return['recosop'][$rr->get('instanceRiskOp')->get('id')][$rr->get('recommandation')->get('uuid')->toString()] = $rr->get('recommandation')->getJsonArray($recosObj);
-                    $return['recosop'][$rr->get('instanceRiskOp')->get('id')][$rr->get('recommandation')->get('uuid')->toString()]['recommandationSet'] = $rr->get('recommandation')->getRecommandationSet()->getUuid()->toString();
-                    $return['recosop'][$rr->get('instanceRiskOp')->get('id')][$rr->get('recommandation')->get('uuid')->toString()]['commentAfter'] = $rr->get('commentAfter');
-                    $recoIds[$rr->get('recommandation')->get('uuid')->toString()] = $rr->get('recommandation')->get('uuid')->toString();
+                    $recommendationUuid = $rr->getRecommandation()->getUuid();
+                    $return['recosop'][$rr->get('instanceRiskOp')->get('id')][$recommendationUuid] = $rr->get('recommandation')->getJsonArray($recosObj);
+                    $return['recosop'][$rr->get('instanceRiskOp')->get('id')][$recommendationUuid]['recommandationSet'] = $rr->getRecommandation()->getRecommandationSet()->getUuid();
+                    $return['recosop'][$rr->get('instanceRiskOp')->get('id')][$recommendationUuid]['commentAfter'] = $rr->get('commentAfter');
+                    $recoIds[$recommendationUuid] = $recommendationUuid;
                 }
             }
         }
@@ -1850,10 +1852,10 @@ class InstanceService extends AbstractService
             $return['recs'] = [];
             $recommandations = $this->get('recommandationTable')->getEntityByFields(['anr' => $instance->get('anr')->get('id')]);
             foreach ($recommandations as $rec){
-                if(!isset($recoIds[$rec->getUuid()->toString()])){
-                    $return['recs'][$rec->getUuid()->toString()] = $rec->getJsonArray($recosObj);
-                    $return['recs'][$rec->getUuid()->toString()]['recommandationSet'] = $rec->getRecommandationSet()->getUuid()->toString();
-                    $recoIds[$rec->getUuid()->toString()] = $rec->getUuid()->toString();
+                if(!isset($recoIds[$rec->getUuid()])){
+                    $return['recs'][$rec->getUuid()] = $rec->getJsonArray($recosObj);
+                    $return['recs'][$rec->getUuid()]['recommandationSet'] = $rec->getRecommandationSet()->getUuid();
+                    $recoIds[$rec->getUuid()] = $rec->getUuid();
                 }
             }
         }
