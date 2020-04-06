@@ -375,32 +375,32 @@ class InstanceRiskSuperClass extends AbstractEntity
 
     public function getMh(): int
     {
-        return $this->mh;
+        return (int)$this->mh;
     }
 
     public function getRiskConfidentiality(): int
     {
-        return $this->riskC;
+        return (int)$this->riskC;
     }
 
     public function getRiskIntegrity(): int
     {
-        return $this->riskI;
+        return (int)$this->riskI;
     }
 
     public function getRiskAvailability(): int
     {
-        return $this->riskD;
+        return (int)$this->riskD;
     }
 
     public function getCacheMaxRisk(): int
     {
-        return $this->cacheMaxRisk;
+        return (int)$this->cacheMaxRisk;
     }
 
     public function getCacheTargetedRisk(): int
     {
-        return $this->cacheTargetedRisk;
+        return (int)$this->cacheTargetedRisk;
     }
 
     public function getComment(): string
