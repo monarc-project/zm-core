@@ -7,8 +7,13 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Doctrine\ORM\EntityNotFoundException;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\InstanceRiskOp;
+use Monarc\Core\Model\Entity\InstanceRiskOpSuperClass;
+use Monarc\Core\Model\Entity\InstanceSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**
@@ -80,5 +85,45 @@ class InstanceRiskOpTable extends AbstractEntityTable
         return $return->orderBy('iro.' . $params['order'], $params['order_direction'])
                       ->getQuery()
                       ->getResult();
+    }
+
+    /**
+     * @throws EntityNotFoundException
+     */
+    public function findById(int $id): InstanceRiskOpSuperClass
+    {
+        /** @var InstanceRiskOpSuperClass|null $instanceRiskOp */
+        $instanceRiskOp = $this->getRepository()->find($id);
+        if ($instanceRiskOp === null) {
+            throw EntityNotFoundException::fromClassNameAndIdentifier(\get_class($this), [$id]);
+        }
+
+        return $instanceRiskOp;
+    }
+
+    /**
+     * @return InstanceRiskOpSuperClass[]
+     */
+    public function findByInstance(InstanceSuperClass $instance)
+    {
+        return $this->getRepository()
+            ->createQueryBuilder('oprisk')
+            ->where('oprisk.instance = :instance')
+            ->setParameter('instance', $instance)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function deleteEntity(InstanceRiskOpSuperClass $operationalRisk, bool $flush = true): void
+    {
+        $em = $this->getDb()->getEntityManager();
+        $em->remove($operationalRisk);
+        if ($flush) {
+            $em->flush();
+        }
     }
 }

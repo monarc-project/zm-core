@@ -329,6 +329,11 @@ class InstanceSuperClass extends AbstractEntity
         return $this;
     }
 
+    public function isLevelRoot(): bool
+    {
+        return $this->level === static::LEVEL_ROOT;
+    }
+
     public function getName1(): string
     {
         return (string)$this->name1;

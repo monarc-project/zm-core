@@ -222,4 +222,15 @@ class InstanceTable extends AbstractEntityTable
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function deleteEntity(InstanceSuperClass $instance): void
+    {
+        $em = $this->getDb()->getEntityManager();
+        $em->remove($instance);
+        $em->flush();
+    }
 }

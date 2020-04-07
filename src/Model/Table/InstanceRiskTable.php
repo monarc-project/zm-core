@@ -7,8 +7,10 @@
 
 namespace Monarc\Core\Model\Table;
 
-use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\DBAL\Connection;
+use Doctrine\ORM\EntityNotFoundException;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\AbstractEntity;
@@ -476,6 +478,19 @@ class InstanceRiskTable extends AbstractEntityTable
     {
         $em = $this->getDb()->getEntityManager();
         $em->persist($instanceRisk);
+        if ($flush) {
+            $em->flush();
+        }
+    }
+
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function deleteEntity(InstanceRiskSuperClass $instanceRisk, bool $flush = true): void
+    {
+        $em = $this->getDb()->getEntityManager();
+        $em->remove($instanceRisk);
         if ($flush) {
             $em->flush();
         }

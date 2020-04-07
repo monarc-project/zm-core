@@ -7,6 +7,9 @@
 
 namespace Monarc\Core\Service;
 
+use Doctrine\ORM\EntityNotFoundException;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Asset;
 use Monarc\Core\Model\Entity\Instance;
@@ -292,7 +295,7 @@ class InstanceService extends AbstractService
         if (isset($data['parent']) && empty($data['parent'])) {
             $data['parent'] = null;
         } elseif (!empty($data['parent'])) {
-            $parent = $this->get('table')->getEntity(isset($data['parent']['id']) ? $data['parent']['id'] : $data['parent']);
+            $parent = $table->getEntity(isset($data['parent']['id']) ? $data['parent']['id'] : $data['parent']);
             if (!$parent) {
                 $data['parent'] = null;
                 unset($parent);
@@ -308,7 +311,7 @@ class InstanceService extends AbstractService
             if ($data['position'] <= 1) {
                 $data['implicitPosition'] = 1;
             } else {
-                $return = $this->get('table')->getRepository()->createQueryBuilder('t')
+                $return = $table->getRepository()->createQueryBuilder('t')
                     ->select('COUNT(t.id)');
                 if (isset($parent)) {
                     $return = $return->where('t.parent = :parent')
@@ -327,30 +330,30 @@ class InstanceService extends AbstractService
                 if ($data['position'] == $return) {
                     $data['implicitPosition'] = 2;
                 } else {
-                    $return = $this->get('table')->getRepository()->createQueryBuilder('t')
+                    $queryBuilder = $table->getRepository()->createQueryBuilder('t')
                         ->select('t.id');
                     if (isset($parent)) {
-                        $return = $return->where('t.parent = :parent')
+                        $queryBuilder->where('t.parent = :parent')
                             ->setParameter(':parent', $parent->get('id'));
                     } else {
-                        $return = $return->where('t.parent IS NULL');
+                        $queryBuilder->where('t.parent IS NULL');
                     }
-                    $anr = $instance->get('anr');
+                    $anr = $instance->getAnr();
                     if ($anr) {
-                        $return = $return->andWhere('t.anr = :anr')
-                            ->setParameter(':anr', is_object($anr) ? $anr->get('id') : $anr);
+                        $queryBuilder->andWhere('t.anr = :anr')->setParameter('anr', $anr);
                     } else {
-                        $return = $return->andWhere('t.anr IS NULL');
+                        $queryBuilder->andWhere('t.anr IS NULL');
                     }
-                    $return = $return->andWhere('t.position = :pos')
+                    /** @var Instance $result */
+                    $result = $queryBuilder->andWhere('t.position = :pos')
                         ->setParameter(':pos', $data['position'] + ($data['position'] < $instance->get('position') ? -1 : 0))
                         ->setMaxResults(1)
-                        ->getQuery()->getSingleScalarResult();
-                    if ($return) {
+                        ->getQuery()
+                        ->getOneOrNullResult();
+                    $data['implicitPosition'] = 2;
+                    if ($result !== null) {
                         $data['implicitPosition'] = 3;
-                        $data['previous'] = $return;
-                    } else {
-                        $data['implicitPosition'] = 2;
+                        $data['previous'] = $result['id'];
                     }
                 }
             }
@@ -417,7 +420,7 @@ class InstanceService extends AbstractService
         if (isset($data['parent']) && empty($data['parent'])) {
             $data['parent'] = null;
         } elseif (!empty($data['parent'])) {
-            $parent = $this->get('table')->getEntity($data['parent']);
+            $parent = $table->getEntity($data['parent']);
             if (!$parent) {
                 $data['parent'] = null;
                 unset($parent);
@@ -430,8 +433,7 @@ class InstanceService extends AbstractService
             if ($data['position'] <= 1) {
                 $data['implicitPosition'] = 1;
             } else {
-                $return = $this->get('table')->getRepository()->createQueryBuilder('t')
-                    ->select('COUNT(t.id)');
+                $return = $table->getRepository()->createQueryBuilder('t')->select('COUNT(t.id)');
                 if (isset($parent)) {
                     $return = $return->where('t.parent = :parent')
                         ->setParameter(':parent', $parent->get('id'));
@@ -452,30 +454,30 @@ class InstanceService extends AbstractService
                 if ($data['position'] == $return) {
                     $data['implicitPosition'] = 2;
                 } else {
-                    $return = $this->get('table')->getRepository()->createQueryBuilder('t')
+                    $queryBuilder = $table->getRepository()->createQueryBuilder('t')
                         ->select('t.id');
                     if (isset($parent)) {
-                        $return = $return->where('t.parent = :parent')
+                        $queryBuilder->where('t.parent = :parent')
                             ->setParameter(':parent', $parent->get('id'));
                     } else {
-                        $return = $return->where('t.parent IS NULL');
+                        $queryBuilder->where('t.parent IS NULL');
                     }
-                    $anr = $instance->get('anr');
+                    $anr = $instance->getAnr();
                     if ($anr) {
-                        $return = $return->andWhere('t.anr = :anr')
-                            ->setParameter(':anr', is_object($anr) ? $anr->get('id') : $anr);
+                        $queryBuilder->andWhere('t.anr = :anr')->setParameter('anr', $anr);
                     } else {
-                        $return = $return->andWhere('t.anr IS NULL');
+                        $queryBuilder->andWhere('t.anr IS NULL');
                     }
-                    $return = $return->andWhere('t.position = :pos')
-                        ->setParameter(':pos', $data['position'] + ($data['position'] < $instance->get('position') || $data['parent'] != $instance->get('parent') ? -1 : 0))
+                    /** @var Instance $result */
+                    $result = $queryBuilder->andWhere('t.position = :pos')
+                        ->setParameter(':pos', $data['position'] + ($data['position'] < $instance->getPosition() || $data['parent'] != $instance->getParent() ? -1 : 0))
                         ->setMaxResults(1)
-                        ->getQuery()->getSingleScalarResult();
-                    if ($return) {
+                        ->getQuery()
+                        ->getOneOrNullResult();
+                    $data['implicitPosition'] = 2;
+                    if ($result !== null) {
                         $data['implicitPosition'] = 3;
-                        $data['previous'] = $return;
-                    } else {
-                        $data['implicitPosition'] = 2;
+                        $data['previous'] = $result['id'];
                     }
                 }
             }
@@ -529,10 +531,14 @@ class InstanceService extends AbstractService
     }
 
     /**
-     * Delete
+     * @param int $id
      *
-     * @param $id
+     * @return void
+     *
+     * @throws EntityNotFoundException
      * @throws Exception
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
     public function delete($id)
     {
@@ -541,14 +547,19 @@ class InstanceService extends AbstractService
         $instance = $table->findById($id);
 
         // only root instance can be delete
-        if ($instance->getLevel() !== Instance::LEVEL_ROOT) {
+        if (!$instance->isLevelRoot()) {
             throw new Exception('This is not a root instance', 412);
         }
 
-        $this->get('instanceRiskService')->deleteInstanceRisks($instance);
-        $this->get('instanceRiskOpService')->deleteInstanceRisksOp($id, $instance->getAnr()->getId());
+        /** @var InstanceRiskService $instanceRiskService */
+        $instanceRiskService = $this->get('instanceRiskService');
+        $instanceRiskService->deleteInstanceRisks($instance);
 
-        $table->delete($id);
+        /** @var InstanceRiskOpService $operationalRiskService */
+        $operationalRiskService = $this->get('instanceRiskOpService');
+        $operationalRiskService->deleteOperationalRisks($instance);
+
+        $table->deleteEntity($instance);
     }
 
     /**
@@ -1487,7 +1498,8 @@ class InstanceService extends AbstractService
             ],
             'object' => $objectExportService->generateExportArray(
                 (string)$instance->getObject()->getUuid(),
-                $instance->getObject()->getAnr() !== null ? $instance->getObject()->getAnr()->getId() : null
+                $instance->getObject()->getAnr() !== null ? $instance->getObject()->getAnr()->getId() : null,
+                $withEval
             ),
         ];
 
@@ -1545,12 +1557,19 @@ class InstanceService extends AbstractService
             'description4' => 'description4',
             'c' => 'c',
             'i' => 'i',
-            'd' => 'd',
+            'a' => 'a',
             'status' => 'status',
-            'trend' => 'trend',
-            'comment' => 'comment',
-            'qualification' => 'qualification',
         ];
+        if ($withEval) {
+            $treatsObj = array_merge(
+                $treatsObj,
+                [
+                    'trend' => 'trend',
+                    'comment' => 'comment',
+                    'qualification' => 'qualification'
+                ]
+            );
+        };
         $vulsObj = [
             'uuid' => 'uuid',
             'mode' => 'mode',
@@ -1569,10 +1588,12 @@ class InstanceService extends AbstractService
         foreach ($instanceRisks as $instanceRisk) {
             $riskIds[$instanceRisk->getId()] = $instanceRisk->getId();
             if (!$withEval) {
-                $instanceRisk->set('vulnerabilityRate', '-1');
-                $instanceRisk->set('threatRate', '-1');
+                $instanceRisk->set('vulnerabilityRate', -1);
+                $instanceRisk->set('threatRate', -1);
                 $instanceRisk->set('kindOfMeasure', 0);
                 $instanceRisk->set('reductionAmount', 0);
+                $instanceRisk->set('cacheMaxRisk', -1);
+                $instanceRisk->set('cacheTargetedRisk', -1);
                 $instanceRisk->set('comment', '');
                 $instanceRisk->set('commentAfter', '');
                 $instanceRisk->set('mh', 1);
@@ -1582,9 +1603,9 @@ class InstanceService extends AbstractService
                 $instanceRisk->set('commentAfter', '');
             }
 
-            $instanceRisk->set('riskC', '-1');
-            $instanceRisk->set('riskI', '-1');
-            $instanceRisk->set('riskD', '-1');
+            $instanceRisk->set('riskC', -1);
+            $instanceRisk->set('riskI', -1);
+            $instanceRisk->set('riskD', -1);
             $return['risks'][$instanceRisk->get('id')] = $instanceRisk->getJsonArray($instanceRiskArray);
 
             $irAmv = $instanceRisk->get('amv');
@@ -1598,9 +1619,10 @@ class InstanceService extends AbstractService
                     $vulns,
                     $themes,
                     $measures) = $this->get('amvService')->generateExportArray(
-                        $instanceRisk->get('amv'),
-                        $instanceRisk->getAnr() !== null ? $instanceRisk->getAnr()->getId() : null
-                    );
+                    $instanceRisk->get('amv'),
+                    $instanceRisk->getAnr() !== null ? $instanceRisk->getAnr()->getId() : null,
+                    $withEval
+                );
                 $return['amvs'][$instanceRisk->get('amv')->get('uuid')->toString()] = $amv;
                 if (empty($return['threats'])) {
                     $return['threats'] = [];
@@ -1637,7 +1659,7 @@ class InstanceService extends AbstractService
             }
         }
 
-        //Recommendations Sets
+        // Recommendations Sets. TODO: move this part to FO.
         if ($withEval && $withRecommendations) {
             $recsSetsObj = [
                 'uuid' => 'uuid',
@@ -1649,12 +1671,12 @@ class InstanceService extends AbstractService
 
             $return['recSets'] = [];
             $recommandationsSets = $this->get('recommandationSetTable')->getEntityByFields(['anr' => $instance->get('anr')->get('id')]);
-            foreach ($recommandationsSets as $recommandationSet){
-                $return['recSets'][$recommandationSet->get('uuid')->toString()] = $recommandationSet->getJsonArray($recsSetsObj);
+            foreach ($recommandationsSets as $recommandationSet) {
+                $return['recSets'][$recommandationSet->getUuid()] = $recommandationSet->getJsonArray($recsSetsObj);
             }
         }
 
-        // Recommandation
+        // TODO: move this part to FO.
         $recoIds = [];
         if ($withEval && $withRecommendations && !empty($riskIds) && $this->get('recommandationRiskTable')) {
             $recosObj = [
@@ -1673,10 +1695,11 @@ class InstanceService extends AbstractService
             $recoRisk = $this->get('recommandationRiskTable')->getEntityByFields(['anr' => $instance->get('anr')->get('id'), 'instanceRisk' => $riskIds], ['id' => 'ASC']);
             foreach ($recoRisk as $rr) {
                 if (!empty($rr)) {
-                    $return['recos'][$rr->get('instanceRisk')->get('id')][$rr->get('recommandation')->get('uuid')->toString()] = $rr->get('recommandation')->getJsonArray($recosObj);
-                    $return['recos'][$rr->get('instanceRisk')->get('id')][$rr->get('recommandation')->get('uuid')->toString()]['recommandationSet'] = $rr->get('recommandation')->getRecommandationSet()->getUuid()->toString();
-                    $return['recos'][$rr->get('instanceRisk')->get('id')][$rr->get('recommandation')->get('uuid')->toString()]['commentAfter'] = $rr->get('commentAfter');
-                    $recoIds[$rr->get('recommandation')->get('uuid')->toString()] = $rr->get('recommandation')->get('uuid')->toString();
+                    $recommendationUuid = $rr->getRecommandation()->getUuid();
+                    $return['recos'][$rr->get('instanceRisk')->get('id')][$recommendationUuid] = $rr->get('recommandation')->getJsonArray($recosObj);
+                    $return['recos'][$rr->get('instanceRisk')->get('id')][$recommendationUuid]['recommandationSet'] = $rr->getRecommandation()->getRecommandationSet()->getUuid();
+                    $return['recos'][$rr->get('instanceRisk')->get('id')][$recommendationUuid]['commentAfter'] = $rr->get('commentAfter');
+                    $recoIds[$recommendationUuid] = $recommendationUuid;
                 }
             }
         }
@@ -1781,10 +1804,11 @@ class InstanceService extends AbstractService
             $recoRisk = $this->get('recommandationRiskTable')->getEntityByFields(['anr' => $instance->get('anr')->get('id'), 'instanceRiskOp' => $riskOpIds], ['id' => 'ASC']);
             foreach ($recoRisk as $rr) {
                 if (!empty($rr)) {
-                    $return['recosop'][$rr->get('instanceRiskOp')->get('id')][$rr->get('recommandation')->get('uuid')->toString()] = $rr->get('recommandation')->getJsonArray($recosObj);
-                    $return['recosop'][$rr->get('instanceRiskOp')->get('id')][$rr->get('recommandation')->get('uuid')->toString()]['recommandationSet'] = $rr->get('recommandation')->getRecommandationSet()->getUuid()->toString();
-                    $return['recosop'][$rr->get('instanceRiskOp')->get('id')][$rr->get('recommandation')->get('uuid')->toString()]['commentAfter'] = $rr->get('commentAfter');
-                    $recoIds[$rr->get('recommandation')->get('uuid')->toString()] = $rr->get('recommandation')->get('uuid')->toString();
+                    $recommendationUuid = $rr->getRecommandation()->getUuid();
+                    $return['recosop'][$rr->get('instanceRiskOp')->get('id')][$recommendationUuid] = $rr->get('recommandation')->getJsonArray($recosObj);
+                    $return['recosop'][$rr->get('instanceRiskOp')->get('id')][$recommendationUuid]['recommandationSet'] = $rr->getRecommandation()->getRecommandationSet()->getUuid();
+                    $return['recosop'][$rr->get('instanceRiskOp')->get('id')][$recommendationUuid]['commentAfter'] = $rr->get('commentAfter');
+                    $recoIds[$recommendationUuid] = $recommendationUuid;
                 }
             }
         }
@@ -1806,10 +1830,10 @@ class InstanceService extends AbstractService
             $return['recs'] = [];
             $recommandations = $this->get('recommandationTable')->getEntityByFields(['anr' => $instance->get('anr')->get('id')]);
             foreach ($recommandations as $rec){
-                if(!isset($recoIds[$rec->getUuid()->toString()])){
-                    $return['recs'][$rec->getUuid()->toString()] = $rec->getJsonArray($recosObj);
-                    $return['recs'][$rec->getUuid()->toString()]['recommandationSet'] = $rec->getRecommandationSet()->getUuid()->toString();
-                    $recoIds[$rec->getUuid()->toString()] = $rec->getUuid()->toString();
+                if(!isset($recoIds[$rec->getUuid()])){
+                    $return['recs'][$rec->getUuid()] = $rec->getJsonArray($recosObj);
+                    $return['recs'][$rec->getUuid()]['recommandationSet'] = $rec->getRecommandationSet()->getUuid();
+                    $recoIds[$rec->getUuid()] = $rec->getUuid();
                 }
             }
         }

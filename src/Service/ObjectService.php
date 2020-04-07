@@ -1451,8 +1451,9 @@ class ObjectService extends AbstractService
             throw new Exception('Object to export is required', 412);
         }
         $filename = '';
+        $withEval = false;
 
-        $exported = json_encode($this->get('objectExportService')->generateExportArray($data['id'], $data['anr'], $filename));
+        $exported = json_encode($this->get('objectExportService')->generateExportArray($data['id'], $data['anr'],$withEval, $filename));
         $data['filename'] = $filename;
 
         if (! empty($data['password'])) {

@@ -681,9 +681,10 @@ class AmvService extends AbstractService
     /**
      * Generate an array ready for export
      * @param Amv $amv The AMV entity to export
+     * @param bool $withEval
      * @return array The exported array
      */
-    public function generateExportArray($amv, $anrId)
+    public function generateExportArray($amv, $anrId, $withEval = false)
     {
         $amvObj = [
             'uuid' => 'v',
@@ -710,10 +711,17 @@ class AmvService extends AbstractService
             'i' => 'i',
             'a' => 'a',
             'status' => 'status',
+        ];
+        if ($withEval) {
+          $treatsObj = array_merge(
+            $treatsObj,
+            [
             'trend' => 'trend',
             'comment' => 'comment',
-            'qualification' => 'qualification',
-        ];
+            'qualification' => 'qualification'
+            ]
+          );
+        };
         $vulsObj = [
             'uuid' => 'uuid',
             'mode' => 'mode',
@@ -959,6 +967,13 @@ class AmvService extends AbstractService
      */
     protected function historize($entity, $type, $verb, $details)
     {
+        /** @var HistoricalService $historicalService */
+        $historicalService = $this->get('historicalService');
+        // There is no history table on FO side.
+        if ($historicalService === null) {
+            return;
+        }
+
         $entityId = null;
 
         if (is_object($entity) && (property_exists($entity, 'id'))) {
@@ -978,8 +993,6 @@ class AmvService extends AbstractService
             'details' => $details,
         ];
 
-        /** @var HistoricalService $historicalService */
-        $historicalService = $this->get('historicalService');
         $historicalService->create($data);
     }
 

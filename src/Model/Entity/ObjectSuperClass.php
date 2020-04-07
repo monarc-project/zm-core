@@ -327,6 +327,16 @@ class ObjectSuperClass extends AbstractEntity
         return $this->scope;
     }
 
+    public function isScopeGlobal(): bool
+    {
+        return $this->scope === static::SCOPE_GLOBAL;
+    }
+
+    public function isEqualTo(ObjectSuperClass $object): bool
+    {
+        return (string)$this->uuid === (string)$object->getUuid();
+    }
+
     public function getInputFilter($partial = false)
     {
         if (!$this->inputFilter) {

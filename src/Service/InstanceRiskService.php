@@ -7,6 +7,8 @@
 
 namespace Monarc\Core\Service;
 
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Amv;
 use Monarc\Core\Model\Entity\AnrSuperClass;
@@ -139,15 +141,19 @@ class InstanceRiskService extends AbstractService
         $instanceRiskTable->getDb()->flush();
     }
 
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
     public function deleteInstanceRisks(InstanceSuperClass $instance): void
     {
-        $risks = $this->getInstanceRisks($instance);
-        /** @var InstanceRiskTable $table */
-        $table = $this->get('table');
-        $nb = \count($risks);
-        foreach ($risks as $num => $r) {
-            $table->delete($r->getId(), ($num + 1) === $nb);
+        /** @var InstanceRiskTable $instanceRiskTable */
+        $instanceRiskTable = $this->get('table');
+        $instanceRisks = $instanceRiskTable->findByInstance($instance);
+        foreach ($instanceRisks as $instanceRisk) {
+            $instanceRiskTable->deleteEntity($instanceRisk, false);
         }
+        $instanceRiskTable->getDb()->flush();
     }
 
     /**
@@ -417,30 +423,5 @@ class InstanceRiskService extends AbstractService
         /** @var InstanceRiskTable $instanceRiskTable */
         $instanceRiskTable = $this->get('table');
         $instanceRiskTable->saveEntity($instanceRisk, $last);
-
-        $this->updateRecoRisks($instanceRisk);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function delete($id)
-    {
-        /** @var InstanceRiskTable $instanceRiskTable */
-        $instanceRiskTable = $this->get('table');
-        $instanceRisk = $instanceRiskTable->findById($id);
-
-        $this->updateRecoRisks($instanceRisk);
-
-        return parent::delete($id);
-    }
-
-    /**
-     * TODO: This method is used only on FO side. Has to be removed from core together with refactoring of the service.
-     *
-     * Updates recommandation risk position.
-     */
-    public function updateRecoRisks(InstanceRiskSuperClass $instanceRisk): void
-    {
     }
 }
