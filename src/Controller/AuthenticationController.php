@@ -49,7 +49,7 @@ class AuthenticationController extends AbstractRestfulController
             ]);
         }
 
-        $this->getResponse()->setStatusCode(405);
+        $this->getResponse()->setStatusCode(401);
 
         return new JsonModel([]);
     }
