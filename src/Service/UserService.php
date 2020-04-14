@@ -85,9 +85,9 @@ class UserService
     /**
      * @throws Exception
      */
-    public function getByEmail(string $email): UserSuperClass
+    public function findByEmail(string $email): UserSuperClass
     {
-        return $this->userTable->getByEmail($email);
+        return $this->userTable->findByEmail($email);
     }
 
     /**

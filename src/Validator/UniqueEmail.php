@@ -7,15 +7,10 @@
 
 namespace Monarc\Core\Validator;
 
-use Monarc\Core\Exception\Exception;
+use Doctrine\ORM\EntityNotFoundException;
 use Monarc\Core\Model\Table\UserTable;
 use Laminas\Validator\AbstractValidator;
 
-/**
- * Class UniqueEmail is an implementation of AbstractValidator that ensures the unicity of email.
- * @package Monarc\Core\Validator
- * @see Monarc\Core\Model\Entity\User
- */
 class UniqueEmail extends AbstractValidator
 {
     private const ALREADYUSED = "ALREADYUSED";
@@ -33,8 +28,8 @@ class UniqueEmail extends AbstractValidator
         $userTable = $this->getOptions()['userTable'];
 
         try {
-            $userTable->getByEmailAndNotUserId($value, $this->getOptions()['currentUserId']);
-        } catch (Exception $e) {
+            $userTable->findByEmail($value);
+        } catch (EntityNotFoundException $e) {
             return true;
         }
 
