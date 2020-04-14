@@ -135,77 +135,77 @@ class AnrSuperClass extends AbstractEntity
      *
      * @ORM\Column(name="init_anr_context", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $initAnrContext = '0';
+    protected $initAnrContext = 0;
 
     /**
      * @var int
      *
      * @ORM\Column(name="init_eval_context", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $initEvalContext = '0';
+    protected $initEvalContext = 0;
 
     /**
      * @var int
      *
      * @ORM\Column(name="init_risk_context", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $initRiskContext = '0';
+    protected $initRiskContext = 0;
 
     /**
      * @var int
      *
      * @ORM\Column(name="init_def_context", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $initDefContext = '0';
+    protected $initDefContext = 0;
 
     /**
      * @var int
      *
      * @ORM\Column(name="init_livrable_done", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $initLivrableDone = '0';
+    protected $initLivrableDone = 0;
 
     /**
      * @var int
      *
      * @ORM\Column(name="model_summary", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $modelSummary = '0';
+    protected $modelSummary = 0;
 
     /**
      * @var int
      *
      * @ORM\Column(name="model_livrable_done", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $modelLivrableDone = '0';
+    protected $modelLivrableDone = 0;
 
     /**
      * @var int
      *
      * @ORM\Column(name="eval_risks", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $evalRisks = '0';
+    protected $evalRisks = 0;
 
     /**
      * @var int
      *
      * @ORM\Column(name="eval_plan_risks", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $evalPlanRisks = '0';
+    protected $evalPlanRisks = 0;
 
     /**
      * @var int
      *
      * @ORM\Column(name="eval_livrable_done", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $evalLivrableDone = '0';
+    protected $evalLivrableDone = 0;
 
     /**
      * @var int
      *
      * @ORM\Column(name="manage_risks", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $manageRisks = '0';
+    protected $manageRisks = 0;
 
 
     /**
@@ -241,14 +241,14 @@ class AnrSuperClass extends AbstractEntity
      *
      * @ORM\Column(name="cache_model_show_rolf_brut", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $cacheModelShowRolfBrut = '0';
+    protected $cacheModelShowRolfBrut = 0;
 
     /**
      * @var int
      *
      * @ORM\Column(name="show_rolf_brut", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $showRolfBrut = '0';
+    protected $showRolfBrut = 0;
 
     public function getId(): int
     {
@@ -280,5 +280,15 @@ class AnrSuperClass extends AbstractEntity
         $this->objects = $objects;
 
         return $this;
+    }
+
+    public function getSeuilRolf1(): int
+    {
+        return $this->seuilRolf1;
+    }
+
+    public function getSeuilRolf2(): int
+    {
+        return $this->seuilRolf2;
     }
 }

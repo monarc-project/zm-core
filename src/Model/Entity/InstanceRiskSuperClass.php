@@ -119,21 +119,21 @@ class InstanceRiskSuperClass extends AbstractEntity
      *
      * @ORM\Column(name="mh", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $mh = '1';
+    protected $mh = 1;
 
     /**
      * @var int
      *
      * @ORM\Column(name="threat_rate", type="smallint", options={"unsigned":false, "default":-1})
      */
-    protected $threatRate = '-1';
+    protected $threatRate = -1;
 
     /**
      * @var int
      *
      * @ORM\Column(name="vulnerability_rate", type="smallint", options={"unsigned":false, "default":-1})
      */
-    protected $vulnerabilityRate = '-1';
+    protected $vulnerabilityRate = -1;
 
     /**
      * @var int
@@ -147,7 +147,7 @@ class InstanceRiskSuperClass extends AbstractEntity
      *
      * @ORM\Column(name="reduction_amount", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $reductionAmount = '0';
+    protected $reductionAmount = 0;
 
     /**
      * @var string
@@ -168,35 +168,35 @@ class InstanceRiskSuperClass extends AbstractEntity
      *
      * @ORM\Column(name="risk_c", type="smallint", options={"unsigned":false, "default":-1})
      */
-    protected $riskC = '-1';
+    protected $riskC = -1;
 
     /**
      * @var int
      *
      * @ORM\Column(name="risk_i", type="smallint", options={"unsigned":false, "default":-1})
      */
-    protected $riskI = '-1';
+    protected $riskI = -1;
 
     /**
      * @var int
      *
      * @ORM\Column(name="risk_d", type="smallint", options={"unsigned":false, "default":-1})
      */
-    protected $riskD = '-1';
+    protected $riskD = -1;
 
     /**
      * @var int
      *
      * @ORM\Column(name="cache_max_risk", type="smallint", options={"unsigned":false, "default":-1})
      */
-    protected $cacheMaxRisk = '-1';
+    protected $cacheMaxRisk = -1;
 
     /**
      * @var int
      *
      * @ORM\Column(name="cache_targeted_risk", type="smallint", options={"unsigned":false, "default":-1})
      */
-    protected $cacheTargetedRisk = '-1';
+    protected $cacheTargetedRisk = -1;
 
     /**
      * @return int
@@ -350,6 +350,62 @@ class InstanceRiskSuperClass extends AbstractEntity
     public function isSpecific(): bool
     {
         return $this->specific === self::TYPE_SPECIFIC;
+    }
+
+    public function isTreated(): bool
+    {
+        return $this->kindOfMeasure !== self::KIND_NOT_TREATED;
+    }
+
+    public function getTreatmentName(): string
+    {
+        switch ($this->kindOfMeasure) {
+            case static::KIND_REDUCTION:
+                return 'Reduction';
+            case static::KIND_REFUS:
+                return 'Denied';
+            case static::KIND_ACCEPTATION:
+                return 'Accepted';
+            case static::KIND_PARTAGE:
+                return 'Shared';
+            default:
+                return 'Not treated';
+        }
+    }
+
+    public function getMh(): int
+    {
+        return (int)$this->mh;
+    }
+
+    public function getRiskConfidentiality(): int
+    {
+        return (int)$this->riskC;
+    }
+
+    public function getRiskIntegrity(): int
+    {
+        return (int)$this->riskI;
+    }
+
+    public function getRiskAvailability(): int
+    {
+        return (int)$this->riskD;
+    }
+
+    public function getCacheMaxRisk(): int
+    {
+        return (int)$this->cacheMaxRisk;
+    }
+
+    public function getCacheTargetedRisk(): int
+    {
+        return (int)$this->cacheTargetedRisk;
+    }
+
+    public function getComment(): string
+    {
+        return (string)$this->comment;
     }
 
     public function getInputFilter($partial = false)

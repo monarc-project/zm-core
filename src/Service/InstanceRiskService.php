@@ -7,6 +7,8 @@
 
 namespace Monarc\Core\Service;
 
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Amv;
 use Monarc\Core\Model\Entity\Instance;
@@ -151,20 +153,18 @@ class InstanceRiskService extends AbstractService
     }
 
     /**
-     * Deletes an Instance Risk
-     * @param int $instanceId The instance ID
-     * @param int $anrId The ANR ID
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
-    public function deleteInstanceRisks($instanceId, $anrId)
+    public function deleteInstanceRisks(InstanceSuperClass $instance): void
     {
-        $risks = $this->getInstanceRisks($instanceId, $anrId);
-        $table = $this->get('table');
-        $nb = \count($risks);
-        $i = 1;
-        foreach ($risks as $r) {
-            $table->delete($r->id, $i === $nb);
-            $i++;
+        /** @var InstanceRiskTable $instanceRiskTable */
+        $instanceRiskTable = $this->get('table');
+        $instanceRisks = $instanceRiskTable->findByInstance($instance);
+        foreach ($instanceRisks as $instanceRisk) {
+            $instanceRiskTable->deleteEntity($instanceRisk, false);
         }
+        $instanceRiskTable->getDb()->flush();
     }
 
     /**
@@ -388,15 +388,11 @@ class InstanceRiskService extends AbstractService
         /** @var InstanceRiskTable $instanceRiskTable */
         $instanceRiskTable = $this->get('table');
 
-        if (!$instanceRisk instanceof InstanceRisk) {
-            //retrieve instance risk
-            $instanceRisk = $instanceRiskTable->getEntity($instanceRisk);
+        if (!$instanceRisk instanceof InstanceRiskSuperClass) {
+            $instanceRisk = $instanceRiskTable->findById($instanceRisk);
         }
 
-        //retrieve instance
-        /** @var InstanceTable $instanceTable */
-        $instanceTable = $this->get('instanceTable');
-        $instance = $instanceTable->getEntity($instanceRisk->instance->id);
+        $instance = $instanceRisk->getInstance();
 
         $riskC = $this->getRiskC($instance->c, $instanceRisk->threatRate, $instanceRisk->vulnerabilityRate);
         $riskI = $this->getRiskI($instance->i, $instanceRisk->threatRate, $instanceRisk->vulnerabilityRate);
@@ -426,29 +422,5 @@ class InstanceRiskService extends AbstractService
         $instanceRisk->cacheTargetedRisk = $this->getTargetRisk($impacts, $instanceRisk->threatRate, $instanceRisk->vulnerabilityRate, $instanceRisk->reductionAmount);
 
         $instanceRiskTable->save($instanceRisk, $last);
-
-        $this->updateRecoRisks($instanceRisk);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function delete($id)
-    {
-        /** @var InstanceRiskTable $instanceRiskTable */
-        $instanceRiskTable = $this->get('table');
-        $instanceRisk = $instanceRiskTable->getEntity($id);
-        $this->updateRecoRisks($instanceRisk);
-
-        return parent::delete($id);
-    }
-
-    /**
-     * TODO: This method is used only on FO side. Has to be removed from core together with refactoring of the service.
-     *
-     * Updates recommandation risk position.
-     */
-    public function updateRecoRisks(InstanceRiskSuperClass $instanceRisk): void
-    {
     }
 }

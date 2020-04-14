@@ -7,9 +7,11 @@
 
 namespace Monarc\Core\Service;
 
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Monarc\Core\Model\Entity\Asset;
 use Monarc\Core\Model\Entity\InstanceRiskOp;
-use Monarc\Core\Model\Entity\InstanceRiskOpSuperClass;
+use Monarc\Core\Model\Entity\InstanceSuperClass;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Table\InstanceRiskOpTable;
 use Monarc\Core\Model\Table\RolfTagTable;
@@ -131,20 +133,18 @@ class InstanceRiskOpService extends AbstractService
     }
 
     /**
-     * Deletes the operational risk from the instance
-     * @param int $instanceId The instance ID
-     * @param int $anrId The anr ID
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
-    public function deleteInstanceRisksOp($instanceId, $anrId)
+    public function deleteOperationalRisks(InstanceSuperClass $instance): void
     {
-        $risks = $this->getInstanceRisksOp($instanceId, $anrId);
-        $table = $this->get('table');
-        $nb = \count($risks);
-        $i = 1;
-        foreach ($risks as $r) {
-            $table->delete($r->id, $i === $nb);
-            $i++;
+        /** @var InstanceRiskOpTable $operationalRiskTable */
+        $operationalRiskTable = $this->get('table');
+        $operationalRisks = $operationalRiskTable->findByInstance($instance);
+        foreach ($operationalRisks as $operationalRisk) {
+            $operationalRiskTable->deleteEntity($operationalRisk, false);
         }
+        $operationalRiskTable->getDb()->flush();
     }
 
     /**
@@ -183,7 +183,20 @@ class InstanceRiskOpService extends AbstractService
             throw new \Monarc\Core\Exception\Exception('Entity does not exist', 412);
         }
 
-        $toFilter = ['brutProb', 'brutR', 'brutO', 'brutL', 'brutF', 'brutP', 'netProb', 'netR', 'netO', 'netL', 'netF', 'netP'];
+        $toFilter = [
+            'brutProb',
+            'brutR',
+            'brutO',
+            'brutL',
+            'brutF',
+            'brutP',
+            'netProb',
+            'netR',
+            'netO',
+            'netL',
+            'netF',
+            'netP'
+        ];
 
         // CLean up the values to avoid empty values or dashes
         foreach ($toFilter as $k) {
@@ -198,9 +211,7 @@ class InstanceRiskOpService extends AbstractService
         // Filter out fields we don't want to update
         $this->filterPatchFields($data);
 
-        $r = parent::patch($id, $data);
-        $this->updateRecoRisksOp($entity);
-        return $r;
+        return parent::patch($id, $data);
     }
 
     /**
@@ -262,30 +273,6 @@ class InstanceRiskOpService extends AbstractService
 
         $this->get('table')->save($risk);
 
-        $this->updateRecoRisksOp($risk);
-
         return $risk->getJsonArray();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function delete($id)
-    {
-        /** @var InstanceRiskOpTable $instanceRiskOpTable */
-        $InstanceRiskOpTable = $this->get('table');
-        $instanceRisk = $InstanceRiskOpTable->getEntity($id);
-        $this->updateRecoRisksOp($instanceRisk);
-
-        return parent::delete($id);
-    }
-
-    /**
-     * TODO: This method is used only on FO side. Has to be removed from core together with refactoring of the service.
-     *
-     * Updates recommendation operational risks positions.
-     */
-    public function updateRecoRisksOp(InstanceRiskOpSuperClass $instanceRiskOp): void
-    {
     }
 }

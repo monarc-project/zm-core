@@ -124,7 +124,7 @@ class AmvSuperClass extends AbstractEntity
     }
 
     /**
-     * @return Anr
+     * @return AnrSuperClass
      */
     public function getAnr()
     {
@@ -132,7 +132,7 @@ class AmvSuperClass extends AbstractEntity
     }
 
     /**
-     * @param Anr $anr
+     * @param AnrSuperClass $anr
      */
     public function setAnr($anr)
     {
@@ -183,7 +183,7 @@ class AmvSuperClass extends AbstractEntity
     }
 
     /**
-     * @param Vulnerability $vulnerability
+     * @param VulnerabilitySuperClass $vulnerability
      */
     public function setVulnerability($vulnerability)
     {

@@ -967,6 +967,13 @@ class AmvService extends AbstractService
      */
     protected function historize($entity, $type, $verb, $details)
     {
+        /** @var HistoricalService $historicalService */
+        $historicalService = $this->get('historicalService');
+        // There is no history table on FO side.
+        if ($historicalService === null) {
+            return;
+        }
+
         $entityId = null;
 
         if (is_object($entity) && (property_exists($entity, 'id'))) {
@@ -986,8 +993,6 @@ class AmvService extends AbstractService
             'details' => $details,
         ];
 
-        /** @var HistoricalService $historicalService */
-        $historicalService = $this->get('historicalService');
         $historicalService->create($data);
     }
 
