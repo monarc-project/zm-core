@@ -583,7 +583,7 @@ abstract class AbstractService extends AbstractServiceFactory
                     }
 
                     if (!is_array($value) || isset($value['id']) || isset($value['uuid'])) {
-                        if (isset($value['uuid']) || Uuid::isValid($value)) {
+                        if (isset($value['uuid']) || (\is_string($value) && Uuid::isValid($value))) {
                             if (in_array('anr', $valueIdentifier, true)) {
                                 if (isset($value['anr'])
                                     && (is_int($value['anr']) || $value['anr'] instanceof AnrSuperClass)
