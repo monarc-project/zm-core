@@ -483,11 +483,13 @@ class ObjectService extends AbstractService
      */
     public function create($data, $last = true, $context = AbstractEntity::BACK_OFFICE)
     {
-        $entity = $this->get('entity');
+        /** @var MonarcObjectTable $monarcObjectTable */
+        $monarcObjectTable = $this->get('table');
+        $entity = $monarcObjectTable->getEntityClass();
         /** @var MonarcObject $monarcObject */
         $monarcObject = new $entity;
         $monarcObject->setLanguage($this->getLanguage());
-        $monarcObject->setDbAdapter($this->get('table')->getDb());
+        $monarcObject->setDbAdapter($monarcObjectTable->getDb());
 
         //in FO, all objects are generics
         if ($context == AbstractEntity::FRONT_OFFICE) {
@@ -523,7 +525,7 @@ class ObjectService extends AbstractService
             }
         }
 
-        $monarcObject->setDbAdapter($this->get('table')->getDb());
+        $monarcObject->setDbAdapter($monarcObjectTable->getDb());
         $monarcObject->exchangeArray($data);
 
         //object dependencies
@@ -543,7 +545,7 @@ class ObjectService extends AbstractService
         }
 
         if (isset($data['source'])) {
-            $monarcObject->source = $this->get('table')->getEntity($data['source']);
+            $monarcObject->source = $monarcObjectTable->getEntity($data['source']);
         }
 
         //security
@@ -561,7 +563,7 @@ class ObjectService extends AbstractService
 
         if ($context === MonarcObject::BACK_OFFICE) {
             //create object type bdc
-            $id = $this->get('table')->save($monarcObject);
+            $id = $monarcObjectTable->save($monarcObject);
 
             //attach object to anr
             if (isset($data['modelId'])) {
@@ -577,7 +579,7 @@ class ObjectService extends AbstractService
             $id = $this->attachObjectToAnr($monarcObject, $anr, null, null, $context);
         } else {
             //create object type anr
-            $id = $this->get('table')->save($monarcObject);
+            $id = $monarcObjectTable->save($monarcObject);
         }
 
         return $id;
