@@ -282,6 +282,16 @@ class AnrSuperClass extends AbstractEntity
         return $this;
     }
 
+    public function getSeuil1(): int
+    {
+        return $this->seuil1;
+    }
+
+    public function getSeuil2(): int
+    {
+        return $this->seuil2;
+    }
+
     public function getSeuilRolf1(): int
     {
         return $this->seuilRolf1;
