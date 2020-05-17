@@ -14,7 +14,6 @@ use Monarc\Core\Model\Entity\Scale;
 use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Model\GetAndSet;
 use Monarc\Core\Model\Table\AbstractEntityTable;
-use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\ObjectObjectTable;
 use Monarc\Core\Model\Table\ScaleTable;
 use Monarc\Core\Traits\RiskTrait;
@@ -175,11 +174,10 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
     {
-      $filterJoin = $filterLeft = null;
-      if(is_callable(array($this->get('entity'), 'getFiltersForService'),false,$name))
-      {
-          list($filterJoin,$filterLeft,$filtersColumns) = $this->get('entity')->getFiltersForService();
-      }
+        $filterJoin = $filterLeft = null;
+        if (\is_callable(array($this->get('entity'), 'getFiltersForService'), false, $name)) {
+            list($filterJoin,$filterLeft,$filtersColumns) = $this->get('entity')->getFiltersForService();
+        }
         return $this->get('table')->fetchAllFiltered(
             array_keys($this->get('entity')->getJsonArray()),
             $page,
@@ -361,10 +359,11 @@ abstract class AbstractService extends AbstractServiceFactory
         }
         foreach ($this->dependencies as $dependency) {
             if ((!isset($data[$dependency])) && ($entity->$dependency)) {
-              if($entity->$dependency->uuid)
-                $data[$dependency] = (string)$entity->$dependency->uuid;
-              else
-                $data[$dependency] = $entity->$dependency->id;
+                if ($dependency !== 'anr' && $entity->$dependency->uuid) {
+                    $data[$dependency] = (string)$entity->$dependency->uuid;
+                } else {
+                    $data[$dependency] = $entity->$dependency->id;
+                }
             }
         }
 
@@ -583,7 +582,7 @@ abstract class AbstractService extends AbstractServiceFactory
                     }
 
                     if (!is_array($value) || isset($value['id']) || isset($value['uuid'])) {
-                        if (isset($value['uuid']) || Uuid::isValid($value)) {
+                        if ($valueIdentifier !== null && (isset($value['uuid']) || Uuid::isValid($value))) {
                             if (in_array('anr', $valueIdentifier, true)) {
                                 if (isset($value['anr'])
                                     && (is_int($value['anr']) || $value['anr'] instanceof AnrSuperClass)
@@ -671,11 +670,11 @@ abstract class AbstractService extends AbstractServiceFactory
         $table = $this->get('table');
 
         if ($direction == 'up') {
-          try{
-            $entityAbove = $table->getEntityByFields([$field => $entity->$field, 'position' => $entity->position - 1]);
-          }catch(QueryException $e){
-            $entityAbove = $table->getEntityByFields([$field => ['uuid' => (string)$entity->$field->uuid, 'anr'=>$entity->$field->anr->id], 'position' => $entity->position - 1]);
-          }
+            try{
+                $entityAbove = $table->getEntityByFields([$field => $entity->$field, 'position' => $entity->position - 1]);
+            }catch(QueryException $e){
+                $entityAbove = $table->getEntityByFields([$field => ['uuid' => (string)$entity->$field->uuid, 'anr'=>$entity->$field->anr->id], 'position' => $entity->position - 1]);
+            }
             if (count($entityAbove) == 1) {
                 $entityAbove = $entityAbove[0];
                 $entityAbove->position = $entityAbove->position + 1;
@@ -685,11 +684,11 @@ abstract class AbstractService extends AbstractServiceFactory
             $entity->position = $entity->position - 1;
             $table->save($entity);
         } else if ($direction == 'down') {
-          try{
-            $entityBelow = $table->getEntityByFields([$field => $entity->$field, 'position' => $entity->position + 1]);
-          }catch(QueryException $e){
-            $entityBelow = $table->getEntityByFields([$field => ['uuid' => (string)$entity->$field->uuid, 'anr'=>$entity->$field->anr->id], 'position' => $entity->position + 1]);
-          }
+            try{
+                $entityBelow = $table->getEntityByFields([$field => $entity->$field, 'position' => $entity->position + 1]);
+            }catch(QueryException $e){
+                $entityBelow = $table->getEntityByFields([$field => ['uuid' => (string)$entity->$field->uuid, 'anr'=>$entity->$field->anr->id], 'position' => $entity->position + 1]);
+            }
             if (count($entityBelow) == 1) {
                 $entityBelow = $entityBelow[0];
                 //file_put_contents('php://stderr', print_r(count($entityBelow), TRUE).PHP_EOL);
@@ -718,7 +717,7 @@ abstract class AbstractService extends AbstractServiceFactory
     }
 
 
-	/**
+    /**
      * Filter fields for a patch request by removing the forbidden fields list
      * @param array $data The fields data
      */
@@ -746,19 +745,27 @@ abstract class AbstractService extends AbstractServiceFactory
             foreach (array_keys($data) as $key) {
                 if (in_array($key, $forbiddenFields)) {
                     if (is_object($entity->$key)) {
-                      if($entity->$key->uuid != null){
-                      //file_put_contents('php://stderr', print_r($this->get('table'), TRUE).PHP_EOL);
-                        if(in_array('anr',$this->get($key.'Table')->getClassMetadata()->getIdentifierFieldNames())){
-                          if(isset($data['anr']) && $data['anr'] != null) // TO IMPROVE fo with uuid
-                            $data[$key] = ($entity->$key) ? ['uuid' => (string)$entity->$key->uuid, 'anr' => $data['anr'] ] : null;
-                          else if($entity->$key->anr !=null && $entity->$key->anr->id !=null )
-                            $data[$key] = ($entity->$key) ? ['uuid' => (string)$entity->$key->uuid, 'anr' => $entity->$key->anr->id ] : null;
-                          }
-                          else // bo with uuid
-                            $data[$key] = ($entity->$key) ? (string)$entity->$key->uuid : null;
+                        if ($key !== 'anr' && $entity->$key->uuid != null) {
+                            if (in_array('anr', $this->get($key . 'Table')->getClassMetadata()->getIdentifierFieldNames())) {
+                                if (isset($data['anr']) && $data['anr'] != null) { // TO IMPROVE fo with uuid
+                                    $data[$key] = ($entity->$key) ? [
+                                        'uuid' => (string)$entity->$key->uuid,
+                                        'anr' => $data['anr']
+                                    ] : null;
+                                } else {
+                                    if ($entity->$key->anr != null && $entity->$key->anr->id != null) {
+                                        $data[$key] = ($entity->$key) ? [
+                                            'uuid' => (string)$entity->$key->uuid,
+                                            'anr' => $entity->$key->anr->id
+                                        ] : null;
+                                    }
+                                }
+                            } else { // bo with uuid
+                                $data[$key] = ($entity->$key) ? (string)$entity->$key->uuid : null;
+                            }
+                        } else { //standard case
+                            $data[$key] = ($entity->$key) ? $entity->$key->id : null;
                         }
-                      else //standard case
-                        $data[$key] = ($entity->$key) ? $entity->$key->id : null;
                     } else {
                         $data[$key] = $entity->$key;
                     }
