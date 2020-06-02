@@ -173,7 +173,7 @@ class RolfRiskSuperClass extends AbstractEntity
      * @param $id
      * @param RolfTagSuperclass $rolfTag
      */
-    public function setTag($id, $rolfTag)
+    public function setTag($id, RolfTagSuperclass $rolfTag)
     {
         $this->tags[$id] = $rolfTag;
     }
