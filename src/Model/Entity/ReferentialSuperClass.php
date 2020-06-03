@@ -63,14 +63,14 @@ class ReferentialSuperClass extends AbstractEntity
     protected $label4;
 
     /**
-     * @var Measure
+     * @var MeasureSuperClass[]
      *
      * @ORM\OneToMany(targetEntity="Measure", mappedBy="referential", cascade={"persist"})
      */
     protected $measures;
 
     /**
-     * @var SoaCategory
+     * @var SoaCategorySuperClass[]
      *
      * @ORM\OneToMany(targetEntity="SoaCategory", mappedBy="referential", cascade={"persist"})
      */
@@ -95,7 +95,7 @@ class ReferentialSuperClass extends AbstractEntity
     }
 
     /**
-     * @return Measure
+     * @return MeasureSuperClass[]
      */
     public function getMeasures()
     {
@@ -103,11 +103,29 @@ class ReferentialSuperClass extends AbstractEntity
     }
 
     /**
-     * @param Measure $measures
+     * @param MeasureSuperClass[] $measures
      */
     public function setMeasures($measures): self
     {
         $this->measures = $measures;
+
+        return $this;
+    }
+
+    /**
+     * @return SoaCategorySuperClass[]
+     */
+    public function getCategories()
+    {
+        return $this->categories;
+    }
+
+    /**
+     * @param SoaCategorySuperClass[] $categories
+     */
+    public function setCategories($categories): self
+    {
+        $this->categories = $categories;
 
         return $this;
     }
@@ -127,25 +145,6 @@ class ReferentialSuperClass extends AbstractEntity
                     'validators' => array(),
                 ));
             }
-            // $validatorsCode = [];
-            // if (!$partial) {
-            //     $validatorsCode = array(
-            //         array(
-            //             'name' => 'Monarc\Core\Validator\UniqueCode',
-            //             'options' => array(
-            //                 'entity' => $this
-            //             ),
-            //         ),
-            //     );
-            // }
-
-            // $this->inputFilter->add(array(
-            //     'name' => 'uuid',
-            //     'required' => true,
-            //     'allow_empty' => false,
-            //     'filters' => array(),
-            //     // 'validators' => $validatorsCode
-            // ));
         }
         return $this->inputFilter;
     }
