@@ -802,7 +802,7 @@ class AmvService extends AbstractService
                                 if(count($measuresList)>0){
                                     foreach ($measuresList  as $m) {
                                         $measures[$m->uuid->toString()] = $m->getJsonArray($measuresObj);
-                                        $measures[$m->uuid->toString()]['category'] = $m->category->getJsonArray($soacategoriesObj);
+                                        $measures[$m->uuid->toString()]['category'] = $m->category ? $m->category->getJsonArray($soacategoriesObj) : '';
                                         $measures[$m->uuid->toString()]['referential'] = $m->referential->uuid->toString();
                                         $amvs[$k][] = $m->uuid->toString();
                                     }

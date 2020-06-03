@@ -305,7 +305,7 @@ class AnrService extends AbstractService
                 foreach ($measures as $m) {
                     $newMeasure = $m->getJsonArray($measuresArray);
                     $newMeasure['referential'] = $m->getReferential()->getUuid()->toString();
-                    $newMeasure['category'] = $m->getCategory()->get('label' . $this->getLanguage());
+                    $newMeasure['category'] = $m->getCategory() ? $m->getCategory()->get('label' . $this->getLanguage()) : '';
                     $return['measures'][$m->getUuid()->toString()] = $newMeasure;
                 }
 
