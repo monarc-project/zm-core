@@ -10,7 +10,7 @@ namespace Monarc\Core\Model\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
-use Ramsey\Uuid\UuidInterface;
+use Ramsey\Uuid\Uuid;
 
 /**
  * ReferentialSuperClass
@@ -27,7 +27,7 @@ class ReferentialSuperClass extends AbstractEntity
     /**
      * The uuid or the referential.
      *
-     * @var \Ramsey\Uuid\UuidInterface
+     * @var Uuid
      *
      * @ORM\Id
      * @ORM\Column(name="uuid", type="uuid", unique=true)
@@ -63,34 +63,34 @@ class ReferentialSuperClass extends AbstractEntity
     protected $label4;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Measure
+     * @var Measure
      *
-     * @ORM\OneToMany(targetEntity="Monarc\Core\Model\Entity\Measure", mappedBy="referential", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="Measure", mappedBy="referential", cascade={"persist"})
      */
     protected $measures;
 
     /**
-     * @var \Monarc\Core\Model\Entity\SoaCategory
+     * @var SoaCategory
      *
-     * @ORM\OneToMany(targetEntity="Monarc\Core\Model\Entity\SoaCategory", mappedBy="referential", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="SoaCategory", mappedBy="referential", cascade={"persist"})
      */
     protected $categories;
 
     /**
-     * @return UuidInterface
+     * @return Uuid|string
      */
-    public function getUuid(): UuidInterface
+    public function getUuid()
     {
         return $this->uuid;
     }
 
     /**
-     * @param UuidInterface $uuid
-     * @return Referential
+     * @param Uuid $uuid
      */
-    public function setUuid($uuid)
+    public function setUuid($uuid): self
     {
         $this->uuid = $uuid;
+
         return $this;
     }
 
@@ -103,12 +103,12 @@ class ReferentialSuperClass extends AbstractEntity
     }
 
     /**
-     * @param \Monarc\Core\Model\Entity\Measure $measures
-     * @return Referential
+     * @param Measure $measures
      */
-    public function setMeasures($measures)
+    public function setMeasures($measures): self
     {
         $this->measures = $measures;
+
         return $this;
     }
 
