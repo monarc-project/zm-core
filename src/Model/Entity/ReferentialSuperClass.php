@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Model\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
@@ -63,14 +64,14 @@ class ReferentialSuperClass extends AbstractEntity
     protected $label4;
 
     /**
-     * @var MeasureSuperClass[]
+     * @var MeasureSuperClass[]|ArrayCollection
      *
      * @ORM\OneToMany(targetEntity="Measure", mappedBy="referential", cascade={"persist"})
      */
     protected $measures;
 
     /**
-     * @var SoaCategorySuperClass[]
+     * @var SoaCategorySuperClass[]|ArrayCollection
      *
      * @ORM\OneToMany(targetEntity="SoaCategory", mappedBy="referential", cascade={"persist"})
      */
@@ -110,6 +111,11 @@ class ReferentialSuperClass extends AbstractEntity
         $this->measures = $measures;
 
         return $this;
+    }
+
+    public function hasMeasures(): bool
+    {
+        return $this->measures !== null && !$this->measures->isEmpty();
     }
 
     /**
