@@ -95,6 +95,26 @@ class ReferentialSuperClass extends AbstractEntity
         return $this;
     }
 
+    public function getLabel1(): string
+    {
+        return (string)$this->label1;
+    }
+
+    public function getLabel2(): string
+    {
+        return (string)$this->label2;
+    }
+
+    public function getLabel3(): string
+    {
+        return (string)$this->label3;
+    }
+
+    public function getLabel4(): string
+    {
+        return (string)$this->label4;
+    }
+
     /**
      * @return MeasureSuperClass[]
      */
@@ -111,11 +131,6 @@ class ReferentialSuperClass extends AbstractEntity
         $this->measures = $measures;
 
         return $this;
-    }
-
-    public function hasMeasures(): bool
-    {
-        return $this->measures !== null && !$this->measures->isEmpty();
     }
 
     /**
