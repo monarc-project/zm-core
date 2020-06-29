@@ -23,6 +23,7 @@ class UserRoleSuperClass
 
     public const SUPER_ADMIN_FO = 'superadminfo';
     public const USER_FO = 'userfo';
+    public const USER_ROLE_CEO = 'ceo';
 
     /**
      * @var integer
@@ -63,5 +64,10 @@ class UserRoleSuperClass
     public function getRole(): string
     {
         return $this->role;
+    }
+
+    public static function getAvailableRoles(): array
+    {
+        return [static::SUPER_ADMIN_FO, static::USER_FO, static::USER_ROLE_CEO];
     }
 }

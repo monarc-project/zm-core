@@ -33,7 +33,6 @@ class AuthenticationService
         $this->authenticationAdapter = $authenticationAdapter;
     }
 
-
     /**
      * @param array $data The posted data (login/password)
      *
