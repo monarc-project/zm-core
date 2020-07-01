@@ -7,8 +7,13 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Monarc\Core\Model\DbCli;
+use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Model\Entity\UserToken;
+use Monarc\Core\Model\Entity\UserTokenSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**
@@ -35,5 +40,51 @@ class UserTokenTable extends AbstractEntityTable
             ->setParameter(':user', $userId)
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * @throws NonUniqueResultException
+     */
+    public function findByToken(string $token): ?UserToken
+    {
+        return $this->getRepository()
+            ->createQueryBuilder('ut')
+            ->where('ut.token = :token')
+            ->setParameter('token', $token)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    public function findByUser(UserSuperClass $user): array
+    {
+        return $this->getRepository()
+            ->createQueryBuilder('t')
+            ->where('t.user = :user')
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @throws ORMException
+     */
+    public function saveEntity(UserTokenSuperClass $userToken): void
+    {
+        $this->db->getEntityManager()->persist($userToken);
+        $this->db->getEntityManager()->flush();
+    }
+
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function deleteEntity(UserTokenSuperClass $userToken, bool $flush = true): void
+    {
+        $em = $this->getDb()->getEntityManager();
+        $em->remove($userToken);
+        if ($flush) {
+            $em->flush();
+        }
     }
 }

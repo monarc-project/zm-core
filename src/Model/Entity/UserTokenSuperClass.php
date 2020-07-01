@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Model\Entity;
 
+use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -36,9 +37,9 @@ class UserTokenSuperClass extends AbstractEntity
     protected $token;
 
     /**
-     * @var \Monarc\Core\Model\Entity\User
+     * @var UserSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\User")
+     * @ORM\ManyToOne(targetEntity="User")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="user_id", referencedColumnName="id", nullable=true)
      * })
@@ -46,7 +47,7 @@ class UserTokenSuperClass extends AbstractEntity
     protected $user;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      *
      * @ORM\Column(name="date_end", type="datetime", precision=0, scale=0, nullable=true, unique=false)
      */
@@ -55,5 +56,31 @@ class UserTokenSuperClass extends AbstractEntity
     public function getUser(): UserSuperClass
     {
         return $this->user;
+    }
+
+    public function setToken(string $token): self
+    {
+        $this->token = $token;
+
+        return $this;
+    }
+
+    public function setUser(UserSuperClass $user): self
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
+    public function getDateEnd(): DateTime
+    {
+        return $this->dateEnd;
+    }
+
+    public function setDateEnd(DateTime $dateEnd): self
+    {
+        $this->dateEnd = $dateEnd;
+
+        return $this;
     }
 }
