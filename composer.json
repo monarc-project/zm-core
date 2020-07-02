@@ -52,12 +52,13 @@
         "ramsey/uuid-doctrine": "^1.5",
         "laminas/laminas-log": "^2.11",
         "laminas/laminas-console": "^2.8",
+        "ocramius/proxy-manager": "<2.3",
+        "ocramius/package-versions": "<1.5",
         "laminas/laminas-mail": "^2.10",
         "laminas/laminas-i18n": "^2.9",
         "laminas/laminas-filter": "^2.9",
         "laminas/laminas-inputfilter": "^2.10",
-        "laminas/laminas-dependency-plugin": "^1.0",
-        "ocramius/proxy-manager": "^2.8"
+        "laminas/laminas-dependency-plugin": "^1.0"
     },
     "require-dev": {
         "roave/security-advisories": "dev-master"
