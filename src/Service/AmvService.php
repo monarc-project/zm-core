@@ -90,7 +90,7 @@ class AmvService extends AbstractService
         }
 
         foreach ($amv->measures as $m) {
-            if (!\in_array($m->uuid->toString(), $data['measures'], true)) {
+            if (!\in_array($m->getUuid(), $data['measures'], true)) {
                 $m->removeAmv($amv);
             }
         }
@@ -212,7 +212,7 @@ class AmvService extends AbstractService
             $this->prepareHistoryRecordLabel($amv);
 
             foreach ($amv->getMeasures() as $measure) {
-                $linkedMeasuresUuidKey = array_search((string)$measure->getUuid(), $data['measures'], true);
+                $linkedMeasuresUuidKey = array_search($measure->getUuid(), $data['measures'], true);
                 if ($linkedMeasuresUuidKey === false) {
                     $amv->removeMeasure($measure);
                     continue;
@@ -801,10 +801,10 @@ class AmvService extends AbstractService
                                 $measuresList = $amv->get($k);
                                 if(count($measuresList)>0){
                                     foreach ($measuresList  as $m) {
-                                        $measures[$m->uuid->toString()] = $m->getJsonArray($measuresObj);
-                                        $measures[$m->uuid->toString()]['category'] = $m->category ? $m->category->getJsonArray($soacategoriesObj) : '';
-                                        $measures[$m->uuid->toString()]['referential'] = $m->referential->uuid->toString();
-                                        $amvs[$k][] = $m->uuid->toString();
+                                        $measures[$m->getUuid()] = $m->getJsonArray($measuresObj);
+                                        $measures[$m->getUuid()]['category'] = $m->category ? $m->category->getJsonArray($soacategoriesObj) : '';
+                                        $measures[$m->getUuid()]['referential'] = (string)$m->referential->uuid;
+                                        $amvs[$k][] = $m->getUuid();
                                     }
                                 }
                                 break;
