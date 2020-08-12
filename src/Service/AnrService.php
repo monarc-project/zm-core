@@ -304,9 +304,9 @@ class AnrService extends AbstractService
                 ];
                 foreach ($measures as $m) {
                     $newMeasure = $m->getJsonArray($measuresArray);
-                    $newMeasure['referential'] = $m->getReferential()->getUuid()->toString();
+                    $newMeasure['referential'] = (string)$m->getReferential()->getUuid();
                     $newMeasure['category'] = $m->getCategory() ? $m->getCategory()->get('label' . $this->getLanguage()) : '';
-                    $return['measures'][$m->getUuid()->toString()] = $newMeasure;
+                    $return['measures'][$m->getUuid()] = $newMeasure;
                 }
 
                 // measures-measures
@@ -359,7 +359,7 @@ class AnrService extends AbstractService
                 ];
                 foreach ($soas as $s) {
                     $newSoas = $s->getJsonArray($soasArray);
-                    $newSoas['measure_id'] = $s->getMeasure()->getUuid()->toString();
+                    $newSoas['measure_id'] = $s->getMeasure()->getUuid();
                     $return['soas'][] = $newSoas;
                 }
             }

@@ -141,9 +141,9 @@ class MeasureSuperClass extends AbstractEntity
         parent::__construct($obj);
     }
 
-    public function getUuid(): Uuid
+    public function getUuid(): string
     {
-        return $this->uuid;
+        return (string)$this->uuid;
     }
 
     /**
