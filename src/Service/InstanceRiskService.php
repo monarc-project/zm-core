@@ -93,13 +93,13 @@ class InstanceRiskService extends AbstractService
                 $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $instance->getId()]);
                 foreach ($instancesRisks as $instanceRisk) {
                     /** @var InstanceRisk $newInstanceRisk */
-                    $newInstanceRisk = clone $instanceRisk;
-                    $newInstanceRisk->setId(null);
-                    $newInstanceRisk->setInstance($currentInstance);
-                    $newInstanceRisk->setCreator(
-                        $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
-                    );
-
+                    $newInstanceRisk = (clone $instanceRisk)
+                        ->setId(null)
+                        ->setAnr($instance->getAnr())
+                        ->setInstance($currentInstance)
+                        ->setCreator(
+                            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+                        );
                     $instanceRiskTable->save($newInstanceRisk);
 
                     // This part of the code is related to the FO. Needs to be extracted.
@@ -136,7 +136,7 @@ class InstanceRiskService extends AbstractService
             /** @var Amv $amv */
             foreach ($amvs as $amv) {
                 $data = [
-                    'anr' => $amv->getAnr(),
+                    'anr' => $currentInstance->getAnr(),
                     'amv' => $amv,
                     'asset' => $amv->getAsset(),
                     'instance' => $currentInstance,
