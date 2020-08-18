@@ -937,7 +937,7 @@ class InstanceService extends AbstractService
             ->innerJoin('t.object','object')
             ->where("t.anr = :anr")
             ->andWhere("object.uuid = :object_uuid")
-            ->setParameter('anr', $instance['anr'])
+            ->setParameter('anr', $instance['anr']->getId())
             ->setParameter('object_uuid', $instance['object']->getUuid())
             ->getQuery()->getResult();
         $anr = $instance['anr']->getJsonArray();

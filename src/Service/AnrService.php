@@ -315,8 +315,8 @@ class AnrService extends AbstractService
                 $measuresMeasures = $measureMeasureTable->getEntityByFields(['anr' => $entity->get('id')]);
                 foreach ($measuresMeasures as $mm) {
                     $newMeasureMeasure = [];
-                    $newMeasureMeasure['father'] = $mm->getFather()->getUuid();
-                    $newMeasureMeasure['child'] = $mm->getChild()->getUuid();
+                    $newMeasureMeasure['father'] = $mm->getFather();
+                    $newMeasureMeasure['child'] = $mm->getChild();
                     $return['measuresMeasures'][] = $newMeasureMeasure;
                 }
 
