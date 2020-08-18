@@ -8,21 +8,21 @@
 namespace Monarc\Core\Validator;
 
 use Laminas\Validator\AbstractValidator;
+
 /**
- * Class UniqueCode is an implementation of AbstractValidator that ensures the unicity of element based on the code field.
+ * Class UniqueCode is an implementation of AbstractValidator that ensures the unicity of element based on the code
+ * field.
  * @package Monarc\Core\Validator
- * @see Monarc\Core\Model\Entity\Asset
- * @see Monarc\Core\Model\Entity\Measure
- * @see Monarc\Core\Model\Entity\RolfRisk
- * @see Monarc\Core\Model\Entity\RolfTag
- * @see Monarc\Core\Model\Entity\Threat
- * @see Monarc\Core\Model\Entity\Vulnerability
+ * @see \Monarc\Core\Model\Entity\Asset
+ * @see \Monarc\Core\Model\Entity\Measure
+ * @see \Monarc\Core\Model\Entity\RolfRisk
+ * @see \Monarc\Core\Model\Entity\RolfTag
+ * @see \Monarc\Core\Model\Entity\Threat
+ * @see \Monarc\Core\Model\Entity\Vulnerability
  */
 class UniqueCode extends AbstractValidator
 {
-    protected $options = array(
-
-    );
+    protected $options = array();
 
     const ALREADYUSED = "ALREADYUSED";
 
@@ -33,42 +33,47 @@ class UniqueCode extends AbstractValidator
     /**
      * @inheritdoc
      */
-    public function isValid($value, $context=null){ //we put the context option which correspond to the submitted form values
-      $identifier[] = null;
-        if(empty($this->options['entity'])){
+    public function isValid($value, $context = null)
+    { //we put the context option which correspond to the submitted form values
+        $identifier[] = null;
+        if (empty($this->options['entity'])) {
             return false;
-        }else{
-          $referential = null;
-          $identifier = $this->options['entity']->getDbAdapter()->getClassMetadata(get_class($this->options['entity']))->getIdentifierFieldNames();
-          $fields = [
-                'code' => $value,
-            ];
-
-            if(isset($context['anr'])) //allow to pass in all cases the anr_id in the case of the entity is empty (create)
-              $fields['anr'] = $context['anr'];
-            if(isset($this->options['entity']->anr->id)){ //if we fetch an anr_id we are updating and not creating
-                 $fields['anr'] = (isset($this->options['entity']->anr->id)) ? $this->options['entity']->anr->id : null;
-             }
-            if(isset($context['referential']['uuid']))
-              $referential = $context['referential']['uuid'];
-            if(isset($context['referential']) && !isset($context['anr'])) {//BO
-              $referential = $context['referential'];
-            }
-
-            $result = $this->options['entity']->getDbAdapter()->getRepository(get_class($this->options['entity']))->findBy($fields);
-
-            foreach ($result as $res){
-              foreach ($identifier as $key => $value) {
-                if($this->options['entity']->get($value) != $res->get($value)){
-                  if($referential != null && $referential == $res->get('referential')->uuid ){
-                    $this->error(self::ALREADYUSED);
-                    return false;
-                  }
-                }
-              }
-            }
-
         }
+
+        $referential = null;
+        $identifier = $this->options['entity']->getDbAdapter()->getClassMetadata(get_class($this->options['entity']))->getIdentifierFieldNames();
+        $fields = [
+            'code' => $value,
+        ];
+
+        if (isset($context['anr'])) //allow to pass in all cases the anr_id in the case of the entity is empty (create)
+        {
+            $fields['anr'] = $context['anr'];
+        }
+        if (isset($this->options['entity']->anr->id)) { //if we fetch an anr_id we are updating and not creating
+            $fields['anr'] = (isset($this->options['entity']->anr->id)) ? $this->options['entity']->anr->id : null;
+        }
+        if (isset($context['referential']['uuid'])) {
+            $referential = $context['referential']['uuid'];
+        }
+        if (isset($context['referential']) && !isset($context['anr'])) {//BO
+            $referential = $context['referential'];
+        }
+
+        $result = $this->options['entity']->getDbAdapter()->getRepository(get_class($this->options['entity']))->findBy($fields);
+
+        foreach ($result as $res) {
+            foreach ($identifier as $key => $val) {
+                if ($this->options['entity']->get($val) != $res->get($val)) {
+                    if ($referential != null && $referential == $res->getReferential()->getUuid()) {
+                        $this->error(self::ALREADYUSED);
+
+                        return false;
+                    }
+                }
+            }
+        }
+
         return true;
     }
 }

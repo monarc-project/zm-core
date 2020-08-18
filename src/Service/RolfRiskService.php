@@ -153,19 +153,19 @@ class RolfRiskService extends AbstractService
                 /** @var InstanceTable $instanceTable */
                 $instanceTable = $this->get('instanceTable');
                 try {
-                    $instances = $instanceTable->getEntityByFields(['object' => (string)$object->uuid]);
+                    $instances = $instanceTable->getEntityByFields(['object' => $object->getUuid()]);
                 } catch (QueryException | MappingException $e) {
                     $instances = $instanceTable->getEntityByFields([
                         'object' => [
                             'anr' => $data['anr'],
-                            'uuid' => (string)$object->uuid
+                            'uuid' => $object->getUuid()
                         ]
                     ]);
                 }
 
                 $nbInstances = \count($instances);
 
-                $data['object'] = (string)$object->uuid;
+                $data['object'] = $object->getUuid();
 
                 foreach ($instances as $i => $instance) {
                     $data['instance'] = $instance->id;
@@ -222,7 +222,7 @@ class RolfRiskService extends AbstractService
             $this->get('measureTable')->getEntity($measure)->addOpRisk($rolfRisk);
         }
         foreach ($rolfRisk->getMeasures() as $m) {
-            if (!\in_array($m->uuid->toString(), array_column($data['measures'], 'uuid'), true)) {
+            if (!\in_array($m->getUuid(), array_column($data['measures'], 'uuid'), true)) {
                 $m->deleteOpRisk($rolfRisk);
             }
         }
@@ -288,14 +288,14 @@ class RolfRiskService extends AbstractService
                 $instanceRiskOpTable = $this->get('instanceRiskOpTable');
                 try {
                     $instancesRisksOp = $instanceRiskOpTable->getEntityByFields([
-                        'object' => (string)$object->uuid,
+                        'object' => $object->getUuid(),
                         'rolfRisk' => $id,
                     ]);
                 } catch (QueryException | MappingException $e) {
                     $instancesRisksOp = $instanceRiskOpTable->getEntityByFields([
                         'object' => [
                             'anr' => $data['anr'],
-                            'uuid' => (string)$object->uuid
+                            'uuid' => $object->getUuid()
                         ],
                         'rolfRisk' => $id
                     ]);
@@ -333,12 +333,12 @@ class RolfRiskService extends AbstractService
                 /** @var InstanceTable $instanceTable */
                 $instanceTable = $this->get('instanceTable');
                 try {
-                    $instances = $instanceTable->getEntityByFields(['object' => (string)$object->uuid]);
+                    $instances = $instanceTable->getEntityByFields(['object' => $object->getUuid()]);
                 } catch (QueryException | MappingException $e) {
                     $instances = $instanceTable->getEntityByFields([
                         'object' => [
                             'anr' => $data['anr'],
-                            'uuid' => $object->uuid->toString()
+                            'uuid' => $object->getUuid()
                         ]
                     ]);
                 }
@@ -346,7 +346,7 @@ class RolfRiskService extends AbstractService
                 $i = 1;
                 $nbInstances = \count($instances);
 
-                $data['object'] = $object->uuid->toString();
+                $data['object'] = $object->getUuid();
 
                 foreach ($instances as $instance) {
                     $data['instance'] = $instance->id;
@@ -367,20 +367,20 @@ class RolfRiskService extends AbstractService
                 $instanceRiskOpTable = $this->get('instanceRiskOpTable');
                 try {
                     $instancesRisksOp = $instanceRiskOpTable->getEntityByFields([
-                        'object' => $object->uuid->toString(),
+                        'object' => $object->getUuid(),
                         'rolfRisk' => $id,
                     ]);
                 } catch (QueryException | MappingException $e) {
                     $instancesRisksOp = $instanceRiskOpTable->getEntityByFields([
                         'object' => [
                             'anr' => $data['anr'],
-                            'uuid' => $object->uuid->toString(),
+                            'uuid' => $object->getUuid(),
                         ],
                         'rolfRisk' => $id,
                     ]);
                 }
 
-                $data['object'] = $object->uuid->toString();
+                $data['object'] = $object->getUuid();
 
                 //update label
                 foreach ($instancesRisksOp as $instance) {
@@ -405,7 +405,7 @@ class RolfRiskService extends AbstractService
         $measuresDest = $this->get('referentialTable')->getEntity($destination)->getMeasures();
         foreach ($measuresDest as $md) {
             foreach ($md->getMeasuresLinked() as $measureLink) {
-                if ((string)$measureLink->getReferential()->getUuid() === (string)$source_uuid) {
+                if ($measureLink->getReferential()->getUuid() === $source_uuid) {
                     foreach ($measureLink->rolfRisks as $risk) {
                         $md->addOpRisk($risk);
                     }

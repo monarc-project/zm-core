@@ -10,7 +10,7 @@ namespace Monarc\Core\Model\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
-use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\Lazy\LazyUuidFromString;
 
 /**
  * ReferentialSuperClass
@@ -25,9 +25,7 @@ class ReferentialSuperClass extends AbstractEntity
     use UpdateEntityTrait;
 
     /**
-     * The uuid or the referential.
-     *
-     * @var Uuid
+     * @var LazyUuidFromString|string
      *
      * @ORM\Id
      * @ORM\Column(name="uuid", type="uuid", unique=true)
@@ -76,16 +74,15 @@ class ReferentialSuperClass extends AbstractEntity
      */
     protected $categories;
 
-    /**
-     * @return Uuid|string
-     */
-    public function getUuid()
+    public function getUuid(): ?string
     {
         return $this->uuid;
     }
 
     /**
-     * @param Uuid $uuid
+     * @param string $uuid
+     *
+     * @return self
      */
     public function setUuid($uuid): self
     {

@@ -23,6 +23,7 @@ use Monarc\Core\Model\Table\InstanceTable;
 use Monarc\Core\Model\Table\MeasureTable;
 use Monarc\Core\Model\Table\ModelTable;
 use Monarc\Core\Model\Table\ThemeTable;
+use Ramsey\Uuid\Uuid;
 
 /**
  * Amv Service
@@ -330,7 +331,7 @@ class AmvService extends AbstractService
         $measures_dest = $this->get('referentialTable')->getEntity($destination)->getMeasures();
         foreach ($measures_dest as $md) {
             foreach ($md->getMeasuresLinked() as $measureLink) {
-                if($measureLink->getReferential()->getUuid()->toString()==$source_uuid ){
+                if ($measureLink->getReferential()->getUuid() == $source_uuid) {
                     foreach ($measureLink->amvs as $amv) {
                         $md->addAmv($amv);
                     }
@@ -591,7 +592,7 @@ class AmvService extends AbstractService
 
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('instanceTable');
-        $instances = $instanceTable->getEntityByFields(['asset' => is_string($asset->get('uuid'))?$asset->get('uuid'):$asset->get('uuid')->toString()]);
+        $instances = $instanceTable->getEntityByFields(['asset' => $asset->getUuid()]);
 
         if (!empty($instances)) {
             $anrs = [];
@@ -637,13 +638,13 @@ class AmvService extends AbstractService
                 $amvVulnerabilitiesIds[$amv['vulnerabilityId']] = $amv['vulnerabilityId'];
             }
             if (!is_null($asset)) {
-                unset($amvAssetsIds[is_string($asset->get('uuid'))?$asset->get('uuid'):$asset->get('uuid')->toString()]);
+                unset($amvAssetsIds[$asset->getUuid()]);
             }
             if (!is_null($threat)) {
-                unset($amvThreatsIds[is_string($threat->get('uuid'))?$threat->get('uuid'):$threat->get('uuid')->toString()]);
+                unset($amvThreatsIds[$threat->getUuid()]);
             }
             if (!is_null($vulnerability)) {
-                unset($amvVulnerabilitiesIds[is_string($vulnerability->get('uuid'))?$vulnerability->get('uuid'):$vulnerability->get('uuid')->toString()]);
+                unset($amvVulnerabilitiesIds[$vulnerability->getUuid()]);
             }
 
             if (count($amvAssetsIds)) {
@@ -765,7 +766,7 @@ class AmvService extends AbstractService
             'label4' => 'label4',
         ];
 
-        $amvs = $threats = $vulns = $themes = $measures = $soacategories = [];
+        $amvs = $threats = $vulns = $themes = $measures = [];
 
         foreach ($amvObj as $k => $v) {
             switch ($v) {
@@ -779,32 +780,34 @@ class AmvService extends AbstractService
                     } else {
                         switch ($k) {
                             case 'threat':
-                                $o = $amv->get($k);
-                                $amvs[$k] = $o->uuid->toString();
-                                $threats[$o->uuid->toString()] = $amv->get($k)->getJsonArray($treatsObj);
-                                if (!empty($threats[$o->uuid->toString()]['theme'])) {
-                                    $threats[$o->uuid->toString()]['theme'] = $threats[$o->uuid->toString()]['theme']->getJsonArray($themesObj);
-                                    $themes[$threats[$o->uuid->toString()]['theme']['id']] = $threats[$o->uuid->toString()]['theme'];
-                                    $threats[$o->uuid->toString()]['theme'] = $threats[$o->uuid->toString()]['theme']['id'];
+                                $threatUuid = $amv->getThreat()->getUuid();
+                                $amvs[$k] = $threatUuid;
+                                $threats[$threatUuid] = $amv->get($k)->getJsonArray($treatsObj);
+                                if (!empty($threats[$threatUuid]['theme'])) {
+                                    $threats[$threatUuid]['theme'] = $threats[$threatUuid]['theme']->getJsonArray($themesObj);
+                                    $themes[$threats[$threatUuid]['theme']['id']] = $threats[$threatUuid]['theme'];
+                                    $threats[$threatUuid]['theme'] = $threats[$threatUuid]['theme']['id'];
                                 }
                                 break;
                             case 'vulnerability':
-                                $o = $amv->get($k);
-                                $amvs[$k] = $o->uuid->toString();
-                                $vulns[$o->uuid->toString()] = $amv->get($k)->getJsonArray($vulsObj);
+                                $vulnerabilityUuid = $amv->getVulnerability()->getUuid();
+                                $amvs[$k] = $vulnerabilityUuid;
+                                $vulns[$vulnerabilityUuid] = $amv->get($k)->getJsonArray($vulsObj);
                                 break;
                             case 'asset':
-                                $o = $amv->get($k);
-                                $amvs[$k] = $o->uuid->toString();
+                                $amvs[$k] = $amv->getAsset()->getUuid();
                                 break;
                             case 'measures':
-                                $measuresList = $amv->get($k);
-                                if(count($measuresList)>0){
-                                    foreach ($measuresList  as $m) {
-                                        $measures[$m->getUuid()] = $m->getJsonArray($measuresObj);
-                                        $measures[$m->getUuid()]['category'] = $m->category ? $m->category->getJsonArray($soacategoriesObj) : '';
-                                        $measures[$m->getUuid()]['referential'] = (string)$m->referential->uuid;
-                                        $amvs[$k][] = $m->getUuid();
+                                $measuresList = $amv->getMeasures();
+                                if (\count($measuresList) > 0) {
+                                    foreach ($measuresList as $measure) {
+                                        $measureUuid = $measure->getUuid();
+                                        $measures[$measureUuid] = $measure->getJsonArray($measuresObj);
+                                        $measures[$measureUuid]['category'] = $measure->getCategory()
+                                            ? $measure->getCategory()->getJsonArray($soacategoriesObj)
+                                            : '';
+                                        $measures[$measureUuid]['referential'] = $measure->getReferential()->getUuid();
+                                        $amvs[$k][] = $measureUuid;
                                     }
                                 }
                                 break;
@@ -998,12 +1001,12 @@ class AmvService extends AbstractService
 
     protected function isThreatChanged(array $data, AmvSuperClass $amv): bool
     {
-        return (string)$amv->getThreat()->getUuid() !== $data['threat'];
+        return $amv->getThreat()->getUuid() !== $data['threat'];
     }
 
     protected function isVulnerabilityChanged(array $data, AmvSuperClass $amv): bool
     {
-        return (string)$amv->getVulnerability()->getUuid() !== $data['vulnerability'];
+        return $amv->getVulnerability()->getUuid() !== $data['vulnerability'];
     }
 
     private function prepareHistoryRecordLabel(AmvSuperClass $amv): void

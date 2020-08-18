@@ -124,9 +124,9 @@ class InstanceService extends AbstractService
         //asset
         if (isset($object->asset)) {
             if (in_array('anr', $this->get('assetTable')->getClassMetadata()->getIdentifierFieldNames())) {
-                $data['asset'] = ['uuid' => $object->asset->uuid->toString(), 'anr' => $anrId];
+                $data['asset'] = ['uuid' => $object->getAsset()->getUuid(), 'anr' => $anrId];
             } else {
-                $data['asset'] = $object->asset->uuid->toString();
+                $data['asset'] = $object->getAsset()->getUuid();
             }
         }
         //manage position
@@ -515,10 +515,10 @@ class InstanceService extends AbstractService
 
         $this->updateChildrenImpacts($instance);
 
-        $data['asset'] = ['uuid' => $instance->object->asset->uuid->toString(), 'anr' => $anrId];
-        $data['object'] = $instance->object->uuid->toString();
-        $data['name1'] = $instance->name1;
-        $data['label1'] = $instance->label1;
+        $data['asset'] = ['uuid' => $instance->getObject()->getAsset()->getUuid(), 'anr' => $anrId];
+        $data['object'] = $instance->getObject()->getUuid();
+        $data['name1'] = $instance->getName1();
+        $data['label1'] = $instance->getLabel1();
 
         unset($data['implicitPosition']);
         unset($data['previous']);
@@ -566,26 +566,25 @@ class InstanceService extends AbstractService
     /**
      * Object Impacts
      *
-     * @param $instance
+     * @param InstanceSuperClass $instance
      */
     protected function objectImpacts($instance)
     {
-        $objectId = $instance->object->uuid->toString();
-
-        $data = [
-            'name1' => $instance->name1,
-            'name2' => $instance->name2,
-            'name3' => $instance->name3,
-            'name4' => $instance->name4,
-            'label1' => $instance->label1,
-            'label2' => $instance->label2,
-            'label3' => $instance->label3,
-            'label4' => $instance->label4,
-            'anr' => $instance->anr->id,
-        ];
-
         $eventManager = new EventManager($this->sharedManager, ['object']);
-        $eventManager->trigger('patch', $this, compact(['objectId', 'data']));
+        $eventManager->trigger('patch', $this, [
+            'objectId' => $instance->getObject()->getUuid(),
+            'data' => [
+                'name1' => $instance->getName1(),
+                'name2' => $instance->getName2(),
+                'name3' => $instance->getName3(),
+                'name4' => $instance->getName4(),
+                'label1' => $instance->getLabel1(),
+                'label2' => $instance->getLabel2(),
+                'label3' => $instance->getLabel3(),
+                'label4' => $instance->getLabel4(),
+                'anr' => $instance->getAnr()->getId(),
+            ],
+        ]);
     }
 
     public function setSharedManager(SharedEventManager $sharedManager)
@@ -605,10 +604,10 @@ class InstanceService extends AbstractService
         //retrieve object children and create instance for each child
         /** @var ObjectObjectService $objectObjectService */
         $objectObjectService = $this->get('objectObjectService');
-        $children = $objectObjectService->getChildren($object,$anrId);
+        $children = $objectObjectService->getChildren($object, $anrId);
         foreach ($children as $child) {
             $data = [
-                'object' => $child->child->uuid->toString(),
+                'object' => $child->getChild()->getUuid(),
                 'parent' => $parentId,
                 'position' => $child->position,
                 'c' => '-1',
@@ -771,9 +770,14 @@ class InstanceService extends AbstractService
             /** @var InstanceTable $table */
             $table = $this->get('table');
             try{
-                $brothers = $table->getEntityByFields(['object' => $instance->object->uuid->toString()]);
-            }catch(QueryException $e){
-                $brothers = $table->getEntityByFields(['object' => ['uuid' => $instance->object->uuid->toString(), 'anr' => $anrId]]);
+                $brothers = $table->getEntityByFields(['object' => $instance->getObject()->getUuid()]);
+            } catch (QueryException|MappingException $e) {
+                $brothers = $table->getEntityByFields([
+                    'object' => [
+                        'uuid' => $instance->getObject()->getUuid(),
+                        'anr' => $anrId
+                    ]
+                ]);
             }
             foreach ($brothers as $brother) {
                 if (($brother->id != $instance->id) && (!in_array($brother->id, $historic))) {
@@ -931,10 +935,10 @@ class InstanceService extends AbstractService
         $result = $this->get('table')->getRepository()
             ->createQueryBuilder('t')
             ->innerJoin('t.object','object')
-            ->where("t.anr = ?1")
-            ->andWhere("object.uuid = ?2")
-            ->setParameter(1, $instance['anr']->id)
-            ->setParameter(2, $instance['object']->uuid)
+            ->where("t.anr = :anr")
+            ->andWhere("object.uuid = :object_uuid")
+            ->setParameter('anr', $instance['anr'])
+            ->setParameter('object_uuid', $instance['object']->getUuid())
             ->getQuery()->getResult();
         $anr = $instance['anr']->getJsonArray();
 
@@ -1333,12 +1337,12 @@ class InstanceService extends AbstractService
             $instanceTable = $this->get('table');
 
             try {
-                $brothers = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => (string)$object->uuid]);
+                $brothers = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $object->getUuid()]);
             } catch(MappingException | QueryException $e) {
                 $brothers = $instanceTable->getEntityByFields([
                     'anr' => $anrId,
                     'object' => [
-                        'uuid' => (string)$object->uuid,
+                        'uuid' => $object->getUuid(),
                         'anr' => $anrId
                     ],
                 ]);
@@ -1513,13 +1517,13 @@ class InstanceService extends AbstractService
                 'ch' => $withEval ? $instance->getInheritedConfidentiality() : 1,
                 'ih' => $withEval ? $instance->getInheritedIntegrity() : 1,
                 'dh' => $withEval ? $instance->getInheritedAvailability() : 1,
-                'asset' => (string)$instance->getAsset()->getUuid(),
-                'object' => (string)$instance->getObject()->getUuid(),
+                'asset' => $instance->getAsset()->getUuid(),
+                'object' => $instance->getObject()->getUuid(),
                 'root' => 0,
                 'parent' => $instance->getParent() ? $instance->getParent()->getId() : 0,
             ],
             'object' => $objectExportService->generateExportArray(
-                (string)$instance->getObject()->getUuid(),
+                $instance->getObject()->getUuid(),
                 $instance->getObject()->getAnr() !== null ? $instance->getObject()->getAnr()->getId() : null,
                 $withEval
             ),
@@ -1631,9 +1635,9 @@ class InstanceService extends AbstractService
             $return['risks'][$instanceRisk->get('id')] = $instanceRisk->getJsonArray($instanceRiskArray);
 
             $irAmv = $instanceRisk->get('amv');
-            $return['risks'][$instanceRisk->get('id')]['amv'] = is_null($irAmv) ? null : $irAmv->get('uuid')->toString();
+            $return['risks'][$instanceRisk->get('id')]['amv'] = is_null($irAmv) ? null : $irAmv->getUuid();
             if (!empty($return['risks'][$instanceRisk->get('id')]['amv'])
-                && empty($return['amvs'][$instanceRisk->get('amv')->get('uuid')->toString()])
+                && empty($return['amvs'][$instanceRisk->getAmv()->getUuid()])
             ) {
                 list(
                     $amv,
@@ -1645,7 +1649,7 @@ class InstanceService extends AbstractService
                     $instanceRisk->getAnr() !== null ? $instanceRisk->getAnr()->getId() : null,
                     $withEval
                 );
-                $return['amvs'][$instanceRisk->get('amv')->get('uuid')->toString()] = $amv;
+                $return['amvs'][$instanceRisk->getAmv()->getUuid()] = $amv;
                 if (empty($return['threats'])) {
                     $return['threats'] = [];
                 }
@@ -1662,20 +1666,20 @@ class InstanceService extends AbstractService
 
             $threat = $instanceRisk->getThreat();
             if (!empty($threat)) {
-                if (empty($return['threats'][(string)$threat->getUuid()])) {
-                    $return['threats'][$instanceRisk->get('threat')->get('uuid')->toString()] = $instanceRisk->get('threat')->getJsonArray($treatsObj);
+                if (empty($return['threats'][$threat->getUuid()])) {
+                    $return['threats'][$instanceRisk->getThreat()->getUuid()] = $instanceRisk->get('threat')->getJsonArray($treatsObj);
                 }
-                $return['risks'][$instanceRisk->get('id')]['threat'] = $instanceRisk->get('threat')->get('uuid')->toString();
+                $return['risks'][$instanceRisk->get('id')]['threat'] = $instanceRisk->getThreat()->getUuid();
             } else {
                 $return['risks'][$instanceRisk->get('id')]['threat'] = null;
             }
 
             $vulnerability = $instanceRisk->get('vulnerability');
             if (!empty($vulnerability)) {
-                if (empty($return['vuls'][$instanceRisk->get('vulnerability')->get('uuid')->toString()])) {
-                    $return['vuls'][$instanceRisk->get('vulnerability')->get('uuid')->toString()] = $instanceRisk->get('vulnerability')->getJsonArray($vulsObj);
+                if (empty($return['vuls'][$instanceRisk->getVulnerability()->getUuid()])) {
+                    $return['vuls'][$instanceRisk->getVulnerability()->getUuid()] = $instanceRisk->get('vulnerability')->getJsonArray($vulsObj);
                 }
-                $return['risks'][$instanceRisk->get('id')]['vulnerability'] = $instanceRisk->get('vulnerability')->get('uuid')->toString();
+                $return['risks'][$instanceRisk->get('id')]['vulnerability'] = $instanceRisk->getVulnerability()->getUuid();
             } else {
                 $return['risks'][$instanceRisk->get('id')]['vulnerability'] = null;
             }

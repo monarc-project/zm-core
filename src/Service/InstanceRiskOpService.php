@@ -58,14 +58,14 @@ class InstanceRiskOpService extends AbstractService
             try {
                 $instances = $instanceTable->getEntityByFields([
                     'anr' => $anrId,
-                    'object' => (string)$object->uuid,
+                    'object' => $object->getUuid(),
                 ]);
             } catch (QueryException | MappingException $e) {
                 $instances = $instanceTable->getEntityByFields([
                     'anr' => $anrId,
                     'object' => [
                         'anr' => $anrId,
-                        'uuid' => (string)$object->uuid,
+                        'uuid' => $object->getUuid(),
                     ]
                 ]);
             }
@@ -111,7 +111,7 @@ class InstanceRiskOpService extends AbstractService
                     $data = [
                         'anr' => $anrId,
                         'instance' => $instanceId,
-                        'object' => $object->uuid->toString(),
+                        'object' => $object->getUuid(),
                         'rolfRisk' => $rolfRisk->id,
                         'riskCacheCode' => $rolfRisk->code,
                         'riskCacheLabel1' => $rolfRisk->label1,

@@ -7,12 +7,12 @@
 
 namespace Monarc\Core\Service;
 
+use Doctrine\ORM\Mapping\MappingException;
 use Monarc\Core\Model\Entity\InstanceConsequence;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Table\InstanceConsequenceTable;
 use Monarc\Core\Model\Table\InstanceTable;
 use Laminas\EventManager\EventManager;
-
 use Doctrine\ORM\Query\QueryException;
 use Laminas\EventManager\SharedEventManager;
 
@@ -156,19 +156,22 @@ class InstanceConsequenceService extends AbstractService
         $table = $this->get('table');
         $instanceConsequence = $table->getEntity($id);
 
-        if ($instanceConsequence->object->scope == MonarcObject::SCOPE_GLOBAL) {
+        if ($instanceConsequence->getObject()->isScopeGlobal()) {
             /** @var InstanceTable $instanceTable */
             $instanceTable = $this->get('instanceTable');
-            try{
+            try {
                 $brothers = $instanceTable->getEntityByFields([
-                  'anr' => $anrId,
-                  'object' => is_string($instanceConsequence->object->uuid)?$instanceConsequence->object->uuid:$instanceConsequence->object->uuid->toString()
-              ]);
-            }catch(QueryException $e){
+                    'anr' => $anrId,
+                    'object' => $instanceConsequence->getObject()->getUuid(),
+                ]);
+            } catch (QueryException|MappingException $e) {
                 $brothers = $instanceTable->getEntityByFields([
-                  'anr' => $anrId,
-                  'object' => ['uuid' => is_string($instanceConsequence->object->uuid)?$instanceConsequence->object->uuid:$instanceConsequence->object->uuid->toString(),'anr' => $anrId,]
-              ]);
+                    'anr' => $anrId,
+                    'object' => [
+                        'uuid' => $instanceConsequence->getObject()->getUuid(),
+                        'anr' => $anrId,
+                    ]
+                ]);
             }
 
             if (count($brothers) > 1) {
