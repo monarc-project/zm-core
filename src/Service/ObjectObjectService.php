@@ -153,9 +153,9 @@ class ObjectObjectService extends AbstractService
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('instanceTable');
         try {
-            $instancesParent = $instanceTable->getEntityByFields(['object' => $father->uuid->toString()]);
-        } catch (QueryException $e) {
-            $instancesParent = $instanceTable->getEntityByFields(['object' => ['uuid' => $father->uuid->toString(), 'anr' => $data['anr']]]);
+            $instancesParent = $instanceTable->getEntityByFields(['object' => $father->getUuid()]);
+        } catch (QueryException | MappingException $e) {
+            $instancesParent = $instanceTable->getEntityByFields(['object' => ['uuid' => $father->getUuid(), 'anr' => $data['anr']]]);
         }
 
         foreach ($instancesParent as $instanceParent) {
@@ -165,9 +165,15 @@ class ObjectObjectService extends AbstractService
             if ($data['implicitPosition'] == 3) {
                 $previousObject = $objectObjectTable->get($data['previous'])['child'];
                 try {
-                    $instances = $instanceTable->getEntityByFields(['anr' => $data['anr'], 'object' => $previousObject->uuid->toString()]);
-                } catch (QueryException $e) {
-                    $instances = $instanceTable->getEntityByFields(['anr' => $data['anr'], 'object' => ['uuid' => $previousObject->uuid->toString(), 'anr' => $data['anr']]]);
+                    $instances = $instanceTable->getEntityByFields(['anr' => $data['anr'], 'object' => $previousObject->getUuid()]);
+                } catch (QueryException | MappingException $e) {
+                    $instances = $instanceTable->getEntityByFields([
+                        'anr' => $data['anr'],
+                        'object' => [
+                            'uuid' => $previousObject->getUuid(),
+                            'anr' => $data['anr']
+                        ]
+                    ]);
                 }
                 foreach ($instances as $instance) {
                     $previousInstance = $instance->id;
@@ -175,7 +181,7 @@ class ObjectObjectService extends AbstractService
             }
 
             $dataInstance = [
-                'object' => $child->uuid->toString(),
+                'object' => $child->getUuid(),
                 'parent' => $instanceParent->id,
                 'root' => ($instanceParent->root) ? $instanceParent->root->id : $instanceParent->id,
                 'implicitPosition' => $data['implicitPosition'],
@@ -213,7 +219,7 @@ class ObjectObjectService extends AbstractService
         /** @var ObjectObjectTable $table */
         $table = $this->get('table');
         if (is_object($objectId)) {
-            $objectId = $objectId->uuid->toString();
+            $objectId = $objectId->getUuid();
         }
         if ($objectId !== null) {
             try {
@@ -267,7 +273,7 @@ class ObjectObjectService extends AbstractService
         /** @var ObjectObjectSuperClass $child */
         foreach ($children as $child) {
             $queryParams = [
-                'uuid' => $child->getChild()->getUuid()->toString(),
+                'uuid' => $child->getChild()->getUuid(),
             ];
             if ($child->getChild()->getAnr() !== null) {
                 $queryParams['anr'] = $child->getChild()->getAnr();
@@ -277,7 +283,7 @@ class ObjectObjectService extends AbstractService
             /** Infinite loop prevention. */
             if (!in_array($child->getId(), $excludeParentRelationObjectObjectIds, true)) {
                 $objectChild['children'] = $this->getRecursiveChildren(
-                    $child->getChild()->getUuid()->toString(),
+                    $child->getChild()->getUuid(),
                     $child->getChild()->getAnr() ? $child->getChild()->getAnr()->getId() : null,
                     $excludeParentRelationObjectObjectIds
                 );
@@ -323,11 +329,11 @@ class ObjectObjectService extends AbstractService
     private function getRecursiveParentsListId($parent, $anrId = null)
     {
         if ($anrId !== null && isset($parent['uuid'])) {
-            $parentIds[(string)$parent['uuid']] = (string)$parent['uuid'];
+            $parentIds[$parent['uuid']] = $parent['uuid'];
             $queryParams = ['child' => $parent];
         } else {
-            $parentIds[(string)$parent] = (string)$parent;
-            $queryParams = ['child' => (string)$parent];
+            $parentIds[$parent] = $parent;
+            $queryParams = ['child' => $parent];
         }
 
         if ($anrId !== null) {
@@ -388,11 +394,21 @@ class ObjectObjectService extends AbstractService
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('instanceTable');
         try {
-            $childInstances = $instanceTable->getEntityByFields(['object' => $objectObject->child->uuid->toString()]);
-            $fatherInstances = $instanceTable->getEntityByFields(['object' => $objectObject->father->uuid->toString()]);
-        } catch (QueryException $e) {
-            $childInstances = $instanceTable->getEntityByFields(['object' => ['uuid' => $objectObject->child->uuid->toString(), 'anr' => $objectObject->anr->id]]);
-            $fatherInstances = $instanceTable->getEntityByFields(['object' => ['uuid' => $objectObject->father->uuid->toString(), 'anr' => $objectObject->anr->id]]);
+            $childInstances = $instanceTable->getEntityByFields(['object' => $objectObject->getChild()->getUuid()]);
+            $fatherInstances = $instanceTable->getEntityByFields(['object' => $objectObject->getFather()->getUuid()]);
+        } catch (QueryException | MappingException $e) {
+            $childInstances = $instanceTable->getEntityByFields([
+                'object' => [
+                    'uuid' => $objectObject->getChild()->getUuid(),
+                    'anr' => $objectObject->anr->id
+                ]
+            ]);
+            $fatherInstances = $instanceTable->getEntityByFields([
+                'object' => [
+                    'uuid' => $objectObject->getFather()->getUuid(),
+                    'anr' => $objectObject->anr->id
+                ]
+            ]);
         }
 
         foreach ($childInstances as $childInstance) {

@@ -7,12 +7,12 @@
 
 namespace Monarc\Core\Model\Entity;
 
-use ArrayIterator;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 use Laminas\Validator\Uuid as ValidatorUuid;
+use Ramsey\Uuid\Lazy\LazyUuidFromString;
 use Ramsey\Uuid\Uuid;
 
 /**
@@ -33,7 +33,7 @@ class AmvSuperClass extends AbstractEntity
     use UpdateEntityTrait;
 
     /**
-     * @var Uuid
+     * @var LazyUuidFromString|string
      *
      * @ORM\Column(name="uuid", type="uuid", nullable=false)
      * @ORM\Id
@@ -106,20 +106,20 @@ class AmvSuperClass extends AbstractEntity
         ),
     );
 
-    /**
-     * @return Uuid
-     */
-    public function getUuid()
+    public function getUuid(): ?string
     {
         return $this->uuid;
     }
 
     /**
-     * @param Uuid $id
+     * @param string $uuid
+     *
+     * @return self
      */
-    public function setUuid($id)
+    public function setUuid($uuid): self
     {
-        $this->uuid = $id;
+        $this->uuid = $uuid;
+
         return $this;
     }
 
@@ -370,10 +370,8 @@ class AmvSuperClass extends AbstractEntity
                                 ),
                                 'callback' => function ($value, $context = array()) use ($partial) {
                                     if (!$partial) {
-                                        if (!preg_match(ValidatorUuid::REGEX_UUID, is_array($value) ? $value['uuid'] : $value)) {
-                                            return false;
-                                        }
-                                        return true;
+                                        return Uuid::isValid(\is_array($value) ? $value['uuid'] : $value);
+
                                     }
 
                                     return true;
@@ -435,7 +433,7 @@ class AmvSuperClass extends AbstractEntity
                                         }
                                         $res = $res->getQuery()
                                             ->getResult();
-                                        $amvUuid= empty($context['uuid']) ? $this->get('uuid') : $context['uuid'];
+                                        $amvUuid = empty($context['uuid']) ? $this->getUuid() : $context['uuid'];
                                         if(empty($context['uuid'])){ //creation
                                             if (!empty($res) && $amvUuid != $res[0]['uuid']) {
                                                 return false;

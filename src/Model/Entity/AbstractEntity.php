@@ -216,7 +216,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
             $parent_before = $this->get($this->parameters['implicitPosition']['field']);
             if (is_object($parent_before)) {
                 $parent_before = $parent_before->get('uuid') !== null
-                    ? (string)$parent_before->get('uuid')
+                    ? $parent_before->getUuid()
                     : $parent_before->get('id');
             }
             $parent_after = array_key_exists($this->parameters['implicitPosition']['field'], $options) ? $options[$this->parameters['implicitPosition']['field']] : null;
@@ -309,7 +309,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
                 if ($isParentable) {
                     $identifiers = $prec->get($this->parameters['implicitPosition']['field']) === null ? [] : $this->getDbAdapter()->getClassMetadata(ClassUtils::getRealClass(get_class($prec->get($this->parameters['implicitPosition']['field']))))->getIdentifierFieldNames();
                     if (in_array('uuid', $identifiers)) {
-                        $prec_parent_id = $prec->get($this->parameters['implicitPosition']['field']) === null ? null : (string)$prec->get($this->parameters['implicitPosition']['field'])->getUuid();
+                        $prec_parent_id = $prec->get($this->parameters['implicitPosition']['field']) === null ? null : $prec->get($this->parameters['implicitPosition']['field'])->getUuid();
                     } else {
                         $prec_parent_id = $prec->get($this->parameters['implicitPosition']['field']) === null ? null : $prec->get($this->parameters['implicitPosition']['field'])->get('id');
                     }
@@ -317,7 +317,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
                 $parent_after_id = (is_array($parent_after)&&array_key_exists('uuid', $parent_after))?$parent_after['uuid']:$parent_after;
                 if ($parent_after_id == $prec_parent_id || !$isParentable) {
                     $prec_position = $prec->get('position');
-                    $this->set('position', ((!$this->id  && !$this->uuid)|| $parent_before != $parent_after_id || $this->get('position') > $prec_position) ? $prec_position + 1 : $prec_position);
+                    $this->set('position', ((!$this->id  && !$this->get('uuid'))|| $parent_before != $parent_after_id || $this->get('position') > $prec_position) ? $prec_position + 1 : $prec_position);
                 } else $fallback = true;//end
             } else $fallback = true;//end
         } else $fallback = true;//end
@@ -366,7 +366,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
             $max = $qb->getQuery()->getSingleScalarResult();
             $parent_after_id = (is_array($parent_after)&&array_key_exists('uuid', $parent_after))?$parent_after['uuid']:$parent_after; //in case of uuid to compare just on the uuid
 
-            if ((!$this->id && !$this->uuid)  || $parent_before != $parent_after_id) {
+            if ((!$this->id && !$this->get('uuid'))  || $parent_before != $parent_after_id) {
                 $this->set('position', $max + 1);
             } else {//internal movement
                 $this->set('position', $max);//in this case we're not adding something, no +1

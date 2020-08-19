@@ -136,7 +136,7 @@ class ObjectExportService extends AbstractService
                     $risk = $r->getJsonArray(['id', 'code', 'label1', 'label2', 'label3', 'label4', 'description1', 'description2', 'description3', 'description4']);
                     $risk['measures'] = array();
                     foreach ($r->measures as $m) {
-                        $risk['measures'][] = $m->uuid;
+                        $risk['measures'][] = $m->getUuid();
                     }
                     $return['rolfTags'][$rolfTag['id']]['risks'][$risk['id']] = $risk['id'];
                     $return['rolfRisks'][$risk['id']] = $risk;
@@ -146,7 +146,7 @@ class ObjectExportService extends AbstractService
 
         // Recovery children(s)
         $children = array_reverse($this->get('objectObjectService')->getChildren(
-            $entity->get('uuid')->toString(),
+            $entity->getUuid(),
             is_null($entity->get('anr'))?null:$entity->get('anr')->get('id')
         )); // Le tri de cette fonction est "position DESC"
         $return['children'] = null;
@@ -154,12 +154,12 @@ class ObjectExportService extends AbstractService
             $return['children'] = [];
             $place = 1;
             foreach ($children as $child) {
-                $return['children'][$child->get('child')->get('uuid')->toString()] = $this->generateExportArray(
-                    (string)$child->get('child')->get('uuid'),
+                $return['children'][$child->getChild()->getUuid()] = $this->generateExportArray(
+                    $child->getChild()->getUuid(),
                     $anr,
                     $withEval
                 );
-                $return['children'][$child->get('child')->get('uuid')->toString()]['object']['position'] = $place;
+                $return['children'][$child->getChild()->getUuid()]['object']['position'] = $place;
                 $place ++;
             }
         }
@@ -333,7 +333,7 @@ class ObjectExportService extends AbstractService
                         'anr' => $anr->get('id'),
                         'father' => [
                             'anr' => $anr->getId(),
-                            'uuid' => (string)$object->get('uuid'),
+                            'uuid' => $object->getUuid(),
                         ],
                     ], ['position' => 'DESC']);
                     foreach ($links as $l) {
