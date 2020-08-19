@@ -117,7 +117,7 @@ class ObjectService extends AbstractService
             if (!empty($object['category'])) {
                 $object['category'] = $categoryTable->get($object['category']->getId());
             }
-            $rootArray[$object['uuid']] = $object;
+            $rootArray[(string)$object['uuid']] = $object;
         }
         return array_values($rootArray);
     }
@@ -224,15 +224,15 @@ class ObjectService extends AbstractService
         /** @var ObjectObjectService $objectObjectService */
         $objectObjectService = $this->get('objectObjectService');
         if ($object->getAnr() == null) {
-            $objectArr['children'] = $objectObjectService->getRecursiveChildren($objectArr['uuid'], null);
+            $objectArr['children'] = $objectObjectService->getRecursiveChildren((string)$objectArr['uuid'], null);
         } else {
-            $objectArr['children'] = $objectObjectService->getRecursiveChildren($objectArr['uuid'], $anr);
+            $objectArr['children'] = $objectObjectService->getRecursiveChildren((string)$objectArr['uuid'], $anr);
         }
 
         // Calculate the risks table
         $objectArr['risks'] = $this->getRisks($object);
         $objectArr['oprisks'] = $this->getRisksOp($object);
-        $objectArr['parents'] = $this->getDirectParents($objectArr['uuid'], $anr);
+        $objectArr['parents'] = $this->getDirectParents((string)$objectArr['uuid'], $anr);
 
         // Retrieve parent recursively
         if ($anrContext == MonarcObject::CONTEXT_ANR) {
