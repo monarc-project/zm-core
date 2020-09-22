@@ -284,7 +284,7 @@ class AnrService extends AbstractService
                     'label4' => 'label4'
                 ];
                 foreach ($referentials as $r) {
-                    $return['referentials'][$r->getUuid()->toString()] = $r->getJsonArray($referentialsArray);
+                    $return['referentials'][$r->getUuid()] = $r->getJsonArray($referentialsArray);
                 }
 
                 // measures
@@ -304,7 +304,7 @@ class AnrService extends AbstractService
                 ];
                 foreach ($measures as $m) {
                     $newMeasure = $m->getJsonArray($measuresArray);
-                    $newMeasure['referential'] = (string)$m->getReferential()->getUuid();
+                    $newMeasure['referential'] = $m->getReferential()->getUuid();
                     $newMeasure['category'] = $m->getCategory() ? $m->getCategory()->get('label' . $this->getLanguage()) : '';
                     $return['measures'][$m->getUuid()] = $newMeasure;
                 }
@@ -313,13 +313,10 @@ class AnrService extends AbstractService
                 $return['measuresMeasures'] = [];
                 $measureMeasureTable = $this->get('measureMeasureTable');
                 $measuresMeasures = $measureMeasureTable->getEntityByFields(['anr' => $entity->get('id')]);
-                $measuresMeasuresArray = [
-                    'uuid' => 'uuid'
-                ];
                 foreach ($measuresMeasures as $mm) {
                     $newMeasureMeasure = [];
-                    $newMeasureMeasure['father'] = $mm->getFather()->toString();
-                    $newMeasureMeasure['child'] = $mm->getChild()->toString();
+                    $newMeasureMeasure['father'] = $mm->getFather();
+                    $newMeasureMeasure['child'] = $mm->getChild();
                     $return['measuresMeasures'][] = $newMeasureMeasure;
                 }
 
@@ -337,7 +334,7 @@ class AnrService extends AbstractService
                 ];
                 foreach ($soaCategories as $c) {
                     $newSoaCategory = $c->getJsonArray($soaCategoriesArray);
-                    $newSoaCategory['referential'] = $c->getReferential()->getUuid()->toString();
+                    $newSoaCategory['referential'] = $c->getReferential()->getUuid();
                     $return['soacategories'][] = $newSoaCategory;
                 }
 
@@ -526,20 +523,21 @@ class AnrService extends AbstractService
 
 
             foreach ($threats as $t) {
-                $return['method']['threats'][$t->uuid->toString()] = $t->getJsonArray($threatArray);
+                $threatUuid = $t->getUuid();
+                $return['method']['threats'][$threatUuid] = $t->getJsonArray($threatArray);
                 if (isset($t->theme->id)) {
-                    $return['method']['threats'][$t->uuid->toString()]['theme']['id'] = $t->theme->id;
-                    $return['method']['threats'][$t->uuid->toString()]['theme']['label' . $this->getLanguage()] = $t->theme->get('label' . $this->getLanguage());
-                    $return['method']['threats'][$t->uuid->toString()]['theme']['label1'] = $t->theme->label1;
-                    $return['method']['threats'][$t->uuid->toString()]['theme']['label2'] = $t->theme->label2;
-                    $return['method']['threats'][$t->uuid->toString()]['theme']['label3'] = $t->theme->label3;
-                    $return['method']['threats'][$t->uuid->toString()]['theme']['label4'] = $t->theme->label4;
+                    $return['method']['threats'][$threatUuid]['theme']['id'] = $t->theme->id;
+                    $return['method']['threats'][$threatUuid]['theme']['label' . $this->getLanguage()] =
+                        $t->theme->get('label' . $this->getLanguage());
+                    $return['method']['threats'][$threatUuid]['theme']['label1'] = $t->theme->label1;
+                    $return['method']['threats'][$threatUuid]['theme']['label2'] = $t->theme->label2;
+                    $return['method']['threats'][$threatUuid]['theme']['label3'] = $t->theme->label3;
+                    $return['method']['threats'][$threatUuid]['theme']['label4'] = $t->theme->label4;
                 }
             }
 
             // manage the GDPR records
-            if($with_records)
-            {
+            if($with_records) {
                 $recordService = $this->get('recordService');
                 $table = $this->get('recordTable');
                 $records = $table->getEntityByFields(['anr' => $entity->get('id')], ['id'=>'ASC']);

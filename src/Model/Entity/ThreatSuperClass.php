@@ -10,7 +10,7 @@ namespace Monarc\Core\Model\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
-use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\Lazy\LazyUuidFromString;
 
 /**
  * Threat
@@ -29,7 +29,7 @@ class ThreatSuperClass extends AbstractEntity
     use UpdateEntityTrait;
 
     /**
-    * @var Uuid
+    * @var LazyUuidFromString|string
     *
     * @ORM\Column(name="uuid", type="uuid", nullable=false)
     * @ORM\Id
@@ -175,20 +175,19 @@ class ThreatSuperClass extends AbstractEntity
      */
     protected $comment;
 
-    /**
-     * @return Uuid
-     */
-    public function getUuid()
+    public function getUuid(): ?string
     {
         return $this->uuid;
     }
 
     /**
-     * @param Uuid $id
+     * @param string $uuid
+     *
+     * @return self
      */
-    public function setUuid($id): self
+    public function setUuid($uuid): self
     {
-        $this->uuid = $id;
+        $this->uuid = $uuid;
 
         return $this;
     }

@@ -66,13 +66,13 @@ class InstanceRiskService extends AbstractService
         try {
             $instances = $instanceTable->getEntityByFields([
                 'anr' => $anrId,
-                'object' => (string)$object->uuid
+                'object' => $object->getUuid()
             ]);
         } catch (MappingException | QueryException $e) {
             $instances = $instanceTable->getEntityByFields([
                 'anr' => $anrId,
                 'object' => [
-                    'uuid' => (string)$object->uuid,
+                    'uuid' => $object->getUuid(),
                     'anr' => $anrId
                 ]
             ]);
@@ -93,13 +93,13 @@ class InstanceRiskService extends AbstractService
                 $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $instance->getId()]);
                 foreach ($instancesRisks as $instanceRisk) {
                     /** @var InstanceRisk $newInstanceRisk */
-                    $newInstanceRisk = clone $instanceRisk;
-                    $newInstanceRisk->setId(null);
-                    $newInstanceRisk->setInstance($currentInstance);
-                    $newInstanceRisk->setCreator(
-                        $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
-                    );
-
+                    $newInstanceRisk = (clone $instanceRisk)
+                        ->setId(null)
+                        ->setAnr($instance->getAnr())
+                        ->setInstance($currentInstance)
+                        ->setCreator(
+                            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+                        );
                     $instanceRiskTable->save($newInstanceRisk);
 
                     // This part of the code is related to the FO. Needs to be extracted.
@@ -125,18 +125,18 @@ class InstanceRiskService extends AbstractService
             if (in_array('anr', $this->get('assetTable')->getClassMetadata()->getIdentifierFieldNames())) {
                 $amvs = $amvTable->getEntityByFields([
                     'asset' => [
-                        'uuid' => (string)$object->asset->uuid,
+                        'uuid' => $object->getAsset()->getUuid(),
                         'anr' => $anrId
                     ]
                 ]);
             } else {
-                $amvs = $amvTable->getEntityByFields(['asset' => (string)$object->asset->uuid]);
+                $amvs = $amvTable->getEntityByFields(['asset' => $object->getAsset()->getUuid()]);
             }
 
             /** @var Amv $amv */
             foreach ($amvs as $amv) {
                 $data = [
-                    'anr' => $amv->getAnr(),
+                    'anr' => $currentInstance->getAnr(),
                     'amv' => $amv,
                     'asset' => $amv->getAsset(),
                     'instance' => $currentInstance,
@@ -226,14 +226,14 @@ class InstanceRiskService extends AbstractService
                 try {
                     $instances = $instanceTable->getEntityByFields([
                         'anr' => $instanceRisk->getAnr()->getId(),
-                        'object' => (string)$object->getUuid(),
+                        'object' => $object->getUuid(),
                     ]);
                 } catch (QueryException | MappingException $e) {
                     $instances = $instanceTable->getEntityByFields([
                         'anr' => $instanceRisk->getAnr()->getId(),
                         'object' => [
                             'anr' => $instanceRisk->getAnr()->getId(),
-                            'uuid' => (string)$object->getUuid(),
+                            'uuid' => $object->getUuid(),
                         ]
                     ]);
                 }
@@ -244,7 +244,7 @@ class InstanceRiskService extends AbstractService
                         $instancesRisks = $instanceRiskTable->getEntityByFields([
                             'amv' => [
                                 'anr' => $instanceRisk->getAnr()->getId(),
-                                'uuid' => (string)$instanceRisk->getAmv()->getUuid()
+                                'uuid' => $instanceRisk->getAmv()->getUuid()
                             ],
                             'instance' => $instance->getId()
                         ]);
@@ -324,14 +324,14 @@ class InstanceRiskService extends AbstractService
                 try {
                     $instances = $instanceTable->getEntityByFields([
                         'anr' => $instanceRisk->getAnr()->getId(),
-                        'object' => (string)$object->getUuid(),
+                        'object' => $object->getUuid(),
                     ]);
                 } catch (QueryException | MappingException $e) {
                     $instances = $instanceTable->getEntityByFields([
                         'anr' => $instanceRisk->getAnr()->getId(),
                         'object' => [
                             'anr' => $instanceRisk->getAnr()->getId(),
-                            'uuid' => (string)$object->getUuid(),
+                            'uuid' => $object->getUuid(),
                         ]
                     ]);
                 }

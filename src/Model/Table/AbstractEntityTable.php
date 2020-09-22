@@ -312,7 +312,7 @@ abstract class AbstractEntityTable
 
         $entity->initParametersChanges();
         if ($entity->get('uuid')) {
-            return (string)$entity->get('uuid');
+            return $entity->getUuid();
         }
 
         return $id;
@@ -389,7 +389,7 @@ abstract class AbstractEntityTable
         }
 
         if ($was_new || $force_new) {
-            $idParam = $idName === 'uuid' ? (string)$entity->get($idName) : $entity->get($idName) ?? 0;
+            $idParam = $idName === 'uuid' ? $entity->getUuid() : $entity->get($idName) ?? 0;
             $params = [
                 ':position' => (int)$entity->get('position'),
                 ':id' => $idParam //specific to the TIPs below
@@ -409,7 +409,7 @@ abstract class AbstractEntityTable
                         if (count($implicitPositionFieldIds) > 1) {
                             $subquery->andWhere($entity->parameters['implicitPosition']['field'] . '.anr = :implicitPositionFieldAnr')
                                 ->andWhere($entity->parameters['implicitPosition']['field'] . '.uuid = :implicitPositionFieldUuid')
-                                ->setParameter(':implicitPositionFieldUuid', (string)$entity->get($entity->parameters['implicitPosition']['field'])->get('uuid'))
+                                ->setParameter(':implicitPositionFieldUuid', $entity->get($entity->parameters['implicitPosition']['field'])->getUuid())
                                 ->setParameter(':implicitPositionFieldAnr', $entity->get('anr')->get('id'));
                         } else {
                             $bros->where('bro.' . $entity->parameters['implicitPosition']['field'] . ' = :parentid');
@@ -445,7 +445,7 @@ abstract class AbstractEntityTable
             $bros->getQuery()->getResult();
 
         } else if (!empty($changes['parent']) && $changes['parent']['before'] != $changes['parent']['after']) {//this is somewhat like we was new but we need to redistribute brothers
-            $idParam = $idName === 'uuid' ? (string)$entity->get($idName) : $entity->get($idName);
+            $idParam = $idName === 'uuid' ? $entity->getUuid() : $entity->get($idName);
             $params = [
                 ':position' => !empty($changes['position']['before']) ? $changes['position']['before'] : $entity->get('position'),
                 ':id' => $idParam
@@ -497,7 +497,7 @@ abstract class AbstractEntityTable
         } else {//we're not new, the parent is the same, so we "just" have to change internal positions
             $avant = $changes['position']['before'];
             $apres = $changes['position']['after'];// == $entity->get('position')
-            $idParam = $idName === 'uuid' ? (string)$entity->get($idName) : $entity->get($idName);
+            $idParam = $idName === 'uuid' ? $entity->getUuid() : $entity->get($idName);
             $params = [
                 ':apres' => $apres,
                 ':avant' => $avant,
@@ -637,7 +637,7 @@ abstract class AbstractEntityTable
                     $subquery = $subquery->andWhere($params['field'] . '.anr = :fieldAnr')
                         ->andWhere($params['field'] . '.uuid = :fieldUuid')
                         ->setParameter(':fieldAnr', $entity->get($params['field'])->getAnr()->getId())
-                        ->setParameter(':fieldUuid', (string)$entity->get($params['field'])->getUuid());
+                        ->setParameter(':fieldUuid', $entity->get($params['field'])->getUuid());
                 } else {
                     $return = $return->andWhere('t.' . $params['field'] . ' = :' . $params['field'])
                         ->setParameter(':' . $params['field'], $entity->get($params['field']));

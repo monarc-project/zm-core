@@ -164,10 +164,10 @@ class Db
     {
         if (!$entity->get('id')) {
           if ($entity->get('anr')){ // cas du FO
-            return $this->getEntityManager()->find(get_class($entity), ['anr' => $entity->get('anr'),'uuid'=>$entity->get('uuid')]);
+            return $this->getEntityManager()->find(get_class($entity), ['anr' => $entity->get('anr'),'uuid'=>$entity->getUuid()]);
           }  //throw new \Monarc\Core\Exception\Exception('Entity `id` not found.');
           else{ // BO
-            return $this->getEntityManager()->find(get_class($entity), ['uuid'=>$entity->get('uuid')]);
+            return $this->getEntityManager()->find(get_class($entity), ['uuid'=>$entity->getUuid()]);
           }
         }
 

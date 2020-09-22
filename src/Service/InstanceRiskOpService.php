@@ -14,6 +14,7 @@ use Monarc\Core\Model\Entity\InstanceRiskOp;
 use Monarc\Core\Model\Entity\InstanceSuperClass;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Table\InstanceRiskOpTable;
+use Monarc\Core\Model\Table\InstanceTable;
 use Monarc\Core\Model\Table\RolfTagTable;
 use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\Mapping\MappingException;
@@ -57,20 +58,19 @@ class InstanceRiskOpService extends AbstractService
             try {
                 $instances = $instanceTable->getEntityByFields([
                     'anr' => $anrId,
-                    'object' => (string)$object->uuid,
+                    'object' => $object->getUuid(),
                 ]);
             } catch (QueryException | MappingException $e) {
                 $instances = $instanceTable->getEntityByFields([
                     'anr' => $anrId,
                     'object' => [
                         'anr' => $anrId,
-                        'uuid' => (string)$object->uuid,
+                        'uuid' => $object->getUuid(),
                     ]
                 ]);
             }
 
             if ($object->scope == MonarcObject::SCOPE_GLOBAL && count($instances) > 1) {
-
                 /** @var InstanceTable $instanceTable */
                 $instanceTable = $this->get('instanceTable');
                 $currentInstance = $instanceTable->getEntity($instanceId);
@@ -85,14 +85,12 @@ class InstanceRiskOpService extends AbstractService
                     $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['instance' => $instance->id]);
                     foreach ($instancesRisksOp as $instanceRiskOp) {
                         /** @var InstanceRiskOp $newInstanceRiskOp */
-                        $newInstanceRiskOp = clone $instanceRiskOp;
-                        $newInstanceRiskOp->setId(null);
-                        $newInstanceRiskOp->setInstance($currentInstance);
-
-                        $newInstanceRiskOp->setCreator(
-                            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
-                        );
-
+                        $newInstanceRiskOp = (clone $instanceRiskOp)
+                            ->setId(null)
+                            ->setAnr($instance->getAnr)
+                            ->setInstance($currentInstance)
+                            ->setCreator($this->getConnectedUser()->getFirstname() . ' '
+                                . $this->getConnectedUser()->getLastname());
                         $instanceRiskOpTable->save($newInstanceRiskOp);
                     }
 
@@ -113,7 +111,7 @@ class InstanceRiskOpService extends AbstractService
                     $data = [
                         'anr' => $anrId,
                         'instance' => $instanceId,
-                        'object' => $object->uuid->toString(),
+                        'object' => $object->getUuid(),
                         'rolfRisk' => $rolfRisk->id,
                         'riskCacheCode' => $rolfRisk->code,
                         'riskCacheLabel1' => $rolfRisk->label1,
