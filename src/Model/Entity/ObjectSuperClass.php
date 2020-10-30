@@ -333,7 +333,7 @@ class ObjectSuperClass extends AbstractEntity
 
     public function isEqualTo(ObjectSuperClass $object): bool
     {
-        return $this->uuid === $object->getUuid();
+        return $this->getUuid() === $object->getUuid();
     }
 
     public function getInputFilter($partial = false)
