@@ -55,7 +55,7 @@ class PasswordService
      */
     public function passwordForgotten(string $email)
     {
-        $user = $this->userTable->getByEmail($email);
+        $user = $this->userTable->findByEmail($email);
         $token = uniqid(bin2hex(random_bytes(random_int(20, 40))), true);
 
         $passwordToken = new PasswordToken($token, $user, new DateTime('+1 day'));

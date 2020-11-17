@@ -111,7 +111,7 @@ class UserTable extends AbstractEntityTable
         $this->db->getEntityManager()->flush();
     }
 
-    public function getByEmail(string $email): UserSuperClass
+    public function findByEmail(string $email): UserSuperClass
     {
         $users = $this->getRepository()->createQueryBuilder('u')
             ->where('u.email = :email')

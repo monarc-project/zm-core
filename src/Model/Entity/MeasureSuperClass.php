@@ -398,4 +398,9 @@ class MeasureSuperClass extends AbstractEntity
 
         return $this;
     }
+
+    public function getCode(): string
+    {
+        return $this->code;
+    }
 }

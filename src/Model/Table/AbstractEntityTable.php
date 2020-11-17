@@ -16,6 +16,7 @@ use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\AbstractEntity;
 use Monarc\Core\Model\Entity\User;
+use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\Exception\InvalidUuidStringException;
@@ -78,7 +79,7 @@ abstract class AbstractEntityTable
         return $this->entityClass;
     }
 
-    public function getConnectedUser(): ?User
+    public function getConnectedUser(): ?UserSuperClass
     {
         return $this->connectedUserService->getConnectedUser();
     }
