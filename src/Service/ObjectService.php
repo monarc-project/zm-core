@@ -515,6 +515,10 @@ class ObjectService extends AbstractService
             $monarcObject->setAnr($anr);
         }
 
+        if (isset($data['mosp']) && $data['mosp']) {
+          return $this->get('objectExportService')->importFromArray($data, $anr, isset($data['mode']) ? $data['mode'] : 'merge');
+        }
+
         // Si asset secondaire, pas de rolfTag
         if (!empty($data['asset']) && !empty($data['rolfTag'])) {
             $assetTable = $this->get('assetTable');
