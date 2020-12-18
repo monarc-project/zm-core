@@ -1493,9 +1493,14 @@ class ObjectService extends AbstractService
         $filename = '';
         $withEval = false;
 
-        $exported = json_encode(
-            $this->get('objectExportService')->generateExportArray($data['id'], $data['anr'], $withEval, $filename)
-        );
+        if ($data['mosp']) {
+          $object['object'] = $this->get('objectExportService')->generateExportMospArray($data['id'], $data['anr'], $withEval, $filename);
+        }else {
+          $object = $this->get('objectExportService')->generateExportArray($data['id'], $data['anr'], $withEval, $filename);
+        }
+
+        $exported = json_encode($object);
+
         $data['filename'] = $filename;
 
         if (! empty($data['password'])) {

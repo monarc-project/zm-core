@@ -826,6 +826,117 @@ class AmvService extends AbstractService
         ];
     }
 
+    /**
+     * Generate an array ready for export
+     * @param Amv $amv The AMV entity to export
+     * @return array The exported array
+     */
+    public function generateExportMospArray($amv, $anrId, $languageCode)
+    {
+        $language = $this->getLanguage();
+
+        $amvObj = [
+            'uuid' => 'v',
+            'threat' => 'o',
+            'asset' => 'o',
+            'vulnerability' => 'o',
+            'measures' => 'o',
+        ];
+        $treatsObj = [
+            'uuid' => 'uuid',
+            'theme' => 'theme',
+            'code' => 'code',
+            'label' => 'label' . $language,
+            'description' => 'description' . $language,
+            'c' => 'c',
+            'i' => 'i',
+            'a' => 'a',
+        ];
+        $vulsObj = [
+            'uuid' => 'uuid',
+            'mode' => 'mode',
+            'code' => 'code',
+            'label' => 'label' . $language,
+            'description' => 'description' . $language,
+        ];
+        $measuresObj = [
+            'uuid' => 'uuid',
+            'category' => 'category',
+            'referential' => 'referential',
+            'code' => 'code',
+            'status' => 'status',
+            'label' => 'label' . $language,
+        ];
+
+        $amvs = $threats = $vulns = $measures = [];
+
+        foreach ($amvObj as $k => $v) {
+            switch ($v) {
+                case 'v':
+                    $amvs[$k] = $amv->get($k);
+                    break;
+                case 'o':
+                    $o = $amv->get($k);
+                    if (empty($o)) {
+                        $amvs[$k] = null;
+                    } else {
+                        switch ($k) {
+                            case 'threat':
+                                $threatUuid = $amv->getThreat()->getUuid();
+                                $amvs[$k] = $threatUuid;
+                                $threats[$threatUuid] = $amv->get($k)->getJsonArray($treatsObj);
+                                if (!empty($threats[$threatUuid]['theme'])) {
+                                    $threats[$threatUuid]['theme'] = $threats[$threatUuid]['theme']->getJsonArray();
+                                    $threats[$threatUuid]['theme'] = $threats[$threatUuid]['theme']['label' . $language];
+                                    $threats[$threatUuid]['label'] = $threats[$threatUuid]['label' . $language];
+                                    $threats[$threatUuid]['description'] = $threats[$threatUuid]['description' . $language];
+                                    $threats[$threatUuid]['language'] = $languageCode;
+                                    unset($threats[$threatUuid]['label' . $language ]);
+                                    unset($threats[$threatUuid]['description' . $language ]);
+
+                                }
+                                break;
+                            case 'vulnerability':
+                                $vulnerabilityUuid = $amv->getVulnerability()->getUuid();
+                                $amvs[$k] = $vulnerabilityUuid;
+                                $vulns[$vulnerabilityUuid] = $amv->get($k)->getJsonArray($vulsObj);
+                                $vulns[$vulnerabilityUuid]['label'] = $vulns[$vulnerabilityUuid]['label' . $language];
+                                $vulns[$vulnerabilityUuid]['description'] = $vulns[$vulnerabilityUuid]['description' . $language];
+                                $vulns[$vulnerabilityUuid]['language'] = $languageCode;
+                                unset($vulns[$vulnerabilityUuid]['label' . $language ]);
+                                unset($vulns[$vulnerabilityUuid]['description' . $language ]);
+                                break;
+                            case 'asset':
+                                $amvs[$k] = $amv->getAsset()->getUuid();
+                                break;
+                            // case 'measures':
+                            //     $measuresList = $amv->getMeasures();
+                            //     if (\count($measuresList) > 0) {
+                            //         foreach ($measuresList as $measure) {
+                            //             $measureUuid = $measure->getUuid();
+                            //             $measures[$measureUuid] = $measure->getJsonArray($measuresObj);
+                            //             $measures[$measureUuid]['category'] = $measure->getCategory()
+                            //                 ? $measure->getCategory()->getJsonArray($soacategoriesObj)
+                            //                 : '';
+                            //             $measures[$measureUuid]['referential'] = $measure->getReferential()->getUuid();
+                            //             $amvs[$k][] = $measureUuid;
+                            //         }
+                            //     }
+                            //     break;
+                        }
+                    }
+                    break;
+            }
+        }
+
+        return [
+            $amvs,
+            $threats,
+            $vulns,
+            $measures = [],
+        ];
+    }
+
 
     /**
      * Compares and stores differences between two entities in the history (if there are any) as an update event.

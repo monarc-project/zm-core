@@ -168,6 +168,112 @@ class ObjectExportService extends AbstractService
     }
 
     /**
+     * Generates an array to export into a filename
+     * @param int $id The object to export
+     * @param string $filename Reference to the string holding the filename
+     * @return array The data
+     * @throws Exception If the object is erroneous
+     */
+    public function generateExportMospArray($id, $anr = null, &$filename = "")
+    {
+        $language = $this->getLanguage();
+        switch($language) {
+          case 1:
+            $languageCode = 'FR';
+            break;
+          case 2:
+            $languageCode = 'EN';
+            break;
+          case 3:
+            $languageCode = 'DE';
+            break;
+          case 4:
+            $languageCode = 'NL';
+            break;
+        }
+        if (empty($id)) {
+            throw new Exception('Object to export is required', 412);
+        }
+        try {
+            $entity = $this->get('table')->getEntity(['uuid' => $id, 'anr' => $anr]);
+        } catch (QueryException | MappingException $e) {
+            $entity = $this->get('table')->getEntity($id);
+        }
+
+        if (!$entity) {
+            throw new Exception('Entity `id` not found.');
+        }
+
+        $objectObj = [
+            'uuid' => 'uuid',
+            'scope' => 'scope',
+            'name' => 'name' . $language,
+            'label' => 'label' . $language,
+        ];
+
+        $return = [
+            'object' => $entity->getJsonArray($objectObj)
+        ];
+
+        $return['object']['name'] = $return['object']['name' . $language];
+        $return['object']['label'] = $return['object']['label' . $language];
+        $return['object']['scope'] = $return['object']['scope'] == 1 ? 'local' : 'global';
+        $return['object']['language'] = $languageCode;
+        unset($return['object']['name' . $language]);
+        unset($return['object']['label' . $language]);
+
+        $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $entity->get('name' . $this->getLanguage()));
+
+        // Recovery asset
+        $asset = $entity->get('asset');
+        $return['asset'] = null;
+        if (!empty($asset)) {
+            $asset = $asset->getJsonArray(['uuid']);
+            $return['asset'] = $this->get('assetExportService')->generateExportMospArray($asset['uuid'], $anr, $languageCode);
+        }
+
+        // // Recovery of operational risks
+        // $rolfTag = $entity->get('rolfTag');
+        // $return['object']['rolfTag'] = null;
+        // if (!empty($rolfTag)) {
+        //     $risks = $rolfTag->get('risks');
+        //     $rolfTag = $rolfTag->getJsonArray(['id', 'code', 'label1', 'label2', 'label3', 'label4']);
+        //     $return['object']['rolfTag'] = $rolfTag['id'];
+        //     $return['rolfTags'][$rolfTag['id']] = $rolfTag;
+        //     $return['rolfTags'][$rolfTag['id']]['risks'] = [];
+        //     if (!empty($risks)) {
+        //         foreach ($risks as $r) {
+        //             $risk = $r->getJsonArray(['id', 'code', 'label1', 'label2', 'label3', 'label4', 'description1', 'description2', 'description3', 'description4']);
+        //             $risk['measures'] = array();
+        //             foreach ($r->measures as $m) {
+        //                 $risk['measures'][] = $m->getUuid();
+        //             }
+        //             $return['rolfTags'][$rolfTag['id']]['risks'][$risk['id']] = $risk['id'];
+        //             $return['rolfRisks'][$risk['id']] = $risk;
+        //         }
+        //     }
+        // }
+
+        // Recovery children(s)
+        $children = array_reverse($this->get('objectObjectService')->getChildren(
+            $entity->getUuid(),
+            is_null($entity->get('anr'))?null:$entity->get('anr')->get('id')
+        )); // Le tri de cette fonction est "position DESC"
+        $return['children'] = [];
+        if (!empty($children)) {
+            $return['children'] = [];
+            foreach ($children as $child) {
+                $return['children'][] = $this->generateExportMospArray(
+                    $child->getChild()->getUuid(),
+                    $anr
+                );
+            }
+        }
+
+        return $return;
+    }
+
+    /**
      * Imports an object from an array
      * @param array $data The object data
      * @param Anr $anr The ANR object
