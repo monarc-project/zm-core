@@ -222,7 +222,7 @@ class ObjectExportService extends AbstractService
         unset($return['object']['name' . $language]);
         unset($return['object']['label' . $language]);
 
-        $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $entity->get('name' . $this->getLanguage()));
+        $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $entity->get('name' . $this->getLanguage())) . '_MOSP';
 
         // Recovery asset
         $asset = $entity->get('asset');
