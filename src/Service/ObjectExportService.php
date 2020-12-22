@@ -232,27 +232,30 @@ class ObjectExportService extends AbstractService
             $return['asset'] = $this->get('assetExportService')->generateExportMospArray($asset['uuid'], $anr, $languageCode);
         }
 
-        // // Recovery of operational risks
-        // $rolfTag = $entity->get('rolfTag');
-        // $return['object']['rolfTag'] = null;
-        // if (!empty($rolfTag)) {
-        //     $risks = $rolfTag->get('risks');
-        //     $rolfTag = $rolfTag->getJsonArray(['id', 'code', 'label1', 'label2', 'label3', 'label4']);
-        //     $return['object']['rolfTag'] = $rolfTag['id'];
-        //     $return['rolfTags'][$rolfTag['id']] = $rolfTag;
-        //     $return['rolfTags'][$rolfTag['id']]['risks'] = [];
-        //     if (!empty($risks)) {
-        //         foreach ($risks as $r) {
-        //             $risk = $r->getJsonArray(['id', 'code', 'label1', 'label2', 'label3', 'label4', 'description1', 'description2', 'description3', 'description4']);
-        //             $risk['measures'] = array();
-        //             foreach ($r->measures as $m) {
-        //                 $risk['measures'][] = $m->getUuid();
-        //             }
-        //             $return['rolfTags'][$rolfTag['id']]['risks'][$risk['id']] = $risk['id'];
-        //             $return['rolfRisks'][$risk['id']] = $risk;
-        //         }
-        //     }
-        // }
+        // Recovery of operational risks
+        $rolfTag = $entity->get('rolfTag');
+        if (!empty($rolfTag)) {
+            $risks = $rolfTag->get('risks');
+            $rolfTag = $rolfTag->getJsonArray(['code', 'label' . $language]);
+            $rolfTag['label'] = $rolfTag['label' . $language];
+            unset($rolfTag['label' . $language]);
+            $return['rolfTags'][] = $rolfTag;
+            if (!empty($risks)) {
+                foreach ($risks as $r) {
+                    $risk = $r->getJsonArray(['code', 'label' . $language, 'description' . $language]);
+                    $risk['label'] = $risk['label' . $language];
+                    $risk['description'] = $risk['description' . $language];
+                    unset($risk['label' . $language]);
+                    unset($risk['description' . $language]);
+
+                    $risk['measures'] = array();
+                    foreach ($r->measures as $m) {
+                        $risk['measures'][] = $m->getUuid();
+                    }
+                    $return['rolfRisks'][] = $risk;
+                }
+            }
+        }
 
         // Recovery children(s)
         $children = array_reverse($this->get('objectObjectService')->getChildren(
