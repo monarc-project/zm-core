@@ -556,6 +556,10 @@ return [
             'index' => 4,
             'label' => 'Nederlands'
         ],
+        'es' => [
+            'index' => 5,
+            'label' => 'Spanish'
+        ],
     ],
 
     'dependencies' => [
