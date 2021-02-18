@@ -560,6 +560,14 @@ return [
             'index' => 5,
             'label' => 'Spanish'
         ],
+        'it' => [
+            'index' => 6,
+            'label' => 'Italien'
+        ],
+        'ru' => [
+            'index' => 7,
+            'label' => 'Russian'
+        ],
     ],
 
     'dependencies' => [
