@@ -1453,7 +1453,8 @@ class InstanceService extends AbstractService
             $with_eval,
             $with_scale,
             $with_controls,
-            $with_recommendations
+            $with_recommendations,
+            false
         ));
         $data['filename'] = $filename;
 
@@ -1471,8 +1472,10 @@ class InstanceService extends AbstractService
      * @param bool $withScale
      * @param bool $withControls
      * @param bool $withRecommendations
+     * @param bool $withUnlinkedRecommendations If we want to include all the unlinked (all the linked to the analyse).
      *
      * @return array
+     * @throws EntityNotFoundException
      * @throws Exception
      */
     public function generateExportArray(
@@ -1481,7 +1484,8 @@ class InstanceService extends AbstractService
         $withEval = false,
         &$withScale = true,
         $withControls = false,
-        $withRecommendations = false
+        $withRecommendations = false,
+        $withUnlinkedRecommendations = true
     ) {
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('table');
@@ -1840,7 +1844,7 @@ class InstanceService extends AbstractService
         }
 
         //Recommandation unlinked to recommandations-risks
-        if ($withEval && $withRecommendations){
+        if ($withUnlinkedRecommendations && $withEval && $withRecommendations){
             $recosObj = [
                 'uuid' => 'uuid',
                 'recommandationSet' => 'recommandationSet',
