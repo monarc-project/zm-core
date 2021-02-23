@@ -1722,13 +1722,21 @@ class InstanceService extends AbstractService
                 'counterTreated' => 'counterTreated',
             ];
             $return['recos'] = [];
+            if (!$withUnlinkedRecommendations) {
+                $return['recs'] = [];
+            }
             $recoRisk = $this->get('recommandationRiskTable')->getEntityByFields(['anr' => $instance->get('anr')->get('id'), 'instanceRisk' => $riskIds], ['id' => 'ASC']);
             foreach ($recoRisk as $rr) {
                 if (!empty($rr)) {
-                    $recommendationUuid = $rr->getRecommandation()->getUuid();
+                    $recommendation = $rr->getRecommandation();
+                    $recommendationUuid = $recommendation->getUuid();
                     $return['recos'][$rr->get('instanceRisk')->get('id')][$recommendationUuid] = $rr->get('recommandation')->getJsonArray($recosObj);
                     $return['recos'][$rr->get('instanceRisk')->get('id')][$recommendationUuid]['recommandationSet'] = $rr->getRecommandation()->getRecommandationSet()->getUuid();
                     $return['recos'][$rr->get('instanceRisk')->get('id')][$recommendationUuid]['commentAfter'] = $rr->get('commentAfter');
+                    if (!$withUnlinkedRecommendations && !isset($recoIds[$recommendationUuid])) {
+                        $return['recs'][$recommendationUuid] = $recommendation->getJsonArray($recosObj);
+                        $return['recs'][$recommendationUuid]['recommandationSet'] = $recommendation->getRecommandationSet()->getUuid();
+                    }
                     $recoIds[$recommendationUuid] = $recommendationUuid;
                 }
             }
@@ -1831,13 +1839,21 @@ class InstanceService extends AbstractService
                 'counterTreated' => 'counterTreated',
             ];
             $return['recosop'] = [];
+            if (!$withUnlinkedRecommendations) {
+                $return['recs'] = [];
+            }
             $recoRisk = $this->get('recommandationRiskTable')->getEntityByFields(['anr' => $instance->get('anr')->get('id'), 'instanceRiskOp' => $riskOpIds], ['id' => 'ASC']);
             foreach ($recoRisk as $rr) {
                 if (!empty($rr)) {
-                    $recommendationUuid = $rr->getRecommandation()->getUuid();
+                    $recommendation = $rr->getRecommandation();
+                    $recommendationUuid = $recommendation->getUuid();
                     $return['recosop'][$rr->get('instanceRiskOp')->get('id')][$recommendationUuid] = $rr->get('recommandation')->getJsonArray($recosObj);
                     $return['recosop'][$rr->get('instanceRiskOp')->get('id')][$recommendationUuid]['recommandationSet'] = $rr->getRecommandation()->getRecommandationSet()->getUuid();
                     $return['recosop'][$rr->get('instanceRiskOp')->get('id')][$recommendationUuid]['commentAfter'] = $rr->get('commentAfter');
+                    if (!$withUnlinkedRecommendations && !isset($recoIds[$recommendationUuid])) {
+                        $return['recs'][$recommendationUuid] = $recommendation->getJsonArray($recosObj);
+                        $return['recs'][$recommendationUuid]['recommandationSet'] = $recommendation->getRecommandationSet()->getUuid();
+                    }
                     $recoIds[$recommendationUuid] = $recommendationUuid;
                 }
             }
