@@ -1927,7 +1927,7 @@ class InstanceService extends AbstractService
         $return['children'] = [];
         $f = '';
         foreach ($instanceTableResults as $i) {
-            $return['children'][$i->get('id')] = $this->generateExportArray($i->get('id'), $f, $withEval, $withScale, $withControls, $withRecommendations);
+            $return['children'][$i->get('id')] = $this->generateExportArray($i->get('id'), $f, $withEval, $withScale, $withControls, $withRecommendations, $withUnlinkedRecommendations);
         }
 
         return $return;
