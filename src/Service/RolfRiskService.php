@@ -100,7 +100,12 @@ class RolfRiskService extends AbstractService
     {
         $addedTags = [];
         /** @var RolfRiskSuperClass $rolfRisk */
-        $rolfRisk = $this->get('entity');
+        $rolfRiskTable = $this->get('table');
+        $entityClass = $rolfRiskTable->getEntityClass();
+
+        $rolfRisk = new $entityClass();
+        $rolfRisk->setLanguage($this->getLanguage());
+        $rolfRisk->setDbAdapter($rolfRiskTable->getDb());
 
         if (isset($data['anr']) && is_numeric($data['anr'])) {
             $data['anr'] = $this->get('anrTable')->getEntity($data['anr']);

@@ -1453,7 +1453,8 @@ class InstanceService extends AbstractService
             $with_eval,
             $with_scale,
             $with_controls,
-            $with_recommendations
+            $with_recommendations,
+            false
         ));
         $data['filename'] = $filename;
 
@@ -1471,8 +1472,10 @@ class InstanceService extends AbstractService
      * @param bool $withScale
      * @param bool $withControls
      * @param bool $withRecommendations
+     * @param bool $withUnlinkedRecommendations If we want to include all the unlinked (all the linked to the analyse).
      *
      * @return array
+     * @throws EntityNotFoundException
      * @throws Exception
      */
     public function generateExportArray(
@@ -1481,7 +1484,8 @@ class InstanceService extends AbstractService
         $withEval = false,
         &$withScale = true,
         $withControls = false,
-        $withRecommendations = false
+        $withRecommendations = false,
+        $withUnlinkedRecommendations = true
     ) {
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('table');
@@ -1718,13 +1722,21 @@ class InstanceService extends AbstractService
                 'counterTreated' => 'counterTreated',
             ];
             $return['recos'] = [];
+            if (!$withUnlinkedRecommendations) {
+                $return['recs'] = [];
+            }
             $recoRisk = $this->get('recommandationRiskTable')->getEntityByFields(['anr' => $instance->get('anr')->get('id'), 'instanceRisk' => $riskIds], ['id' => 'ASC']);
             foreach ($recoRisk as $rr) {
                 if (!empty($rr)) {
-                    $recommendationUuid = $rr->getRecommandation()->getUuid();
+                    $recommendation = $rr->getRecommandation();
+                    $recommendationUuid = $recommendation->getUuid();
                     $return['recos'][$rr->get('instanceRisk')->get('id')][$recommendationUuid] = $rr->get('recommandation')->getJsonArray($recosObj);
                     $return['recos'][$rr->get('instanceRisk')->get('id')][$recommendationUuid]['recommandationSet'] = $rr->getRecommandation()->getRecommandationSet()->getUuid();
                     $return['recos'][$rr->get('instanceRisk')->get('id')][$recommendationUuid]['commentAfter'] = $rr->get('commentAfter');
+                    if (!$withUnlinkedRecommendations && !isset($recoIds[$recommendationUuid])) {
+                        $return['recs'][$recommendationUuid] = $recommendation->getJsonArray($recosObj);
+                        $return['recs'][$recommendationUuid]['recommandationSet'] = $recommendation->getRecommandationSet()->getUuid();
+                    }
                     $recoIds[$recommendationUuid] = $recommendationUuid;
                 }
             }
@@ -1827,20 +1839,28 @@ class InstanceService extends AbstractService
                 'counterTreated' => 'counterTreated',
             ];
             $return['recosop'] = [];
+            if (!$withUnlinkedRecommendations) {
+                $return['recs'] = [];
+            }
             $recoRisk = $this->get('recommandationRiskTable')->getEntityByFields(['anr' => $instance->get('anr')->get('id'), 'instanceRiskOp' => $riskOpIds], ['id' => 'ASC']);
             foreach ($recoRisk as $rr) {
                 if (!empty($rr)) {
-                    $recommendationUuid = $rr->getRecommandation()->getUuid();
+                    $recommendation = $rr->getRecommandation();
+                    $recommendationUuid = $recommendation->getUuid();
                     $return['recosop'][$rr->get('instanceRiskOp')->get('id')][$recommendationUuid] = $rr->get('recommandation')->getJsonArray($recosObj);
                     $return['recosop'][$rr->get('instanceRiskOp')->get('id')][$recommendationUuid]['recommandationSet'] = $rr->getRecommandation()->getRecommandationSet()->getUuid();
                     $return['recosop'][$rr->get('instanceRiskOp')->get('id')][$recommendationUuid]['commentAfter'] = $rr->get('commentAfter');
+                    if (!$withUnlinkedRecommendations && !isset($recoIds[$recommendationUuid])) {
+                        $return['recs'][$recommendationUuid] = $recommendation->getJsonArray($recosObj);
+                        $return['recs'][$recommendationUuid]['recommandationSet'] = $recommendation->getRecommandationSet()->getUuid();
+                    }
                     $recoIds[$recommendationUuid] = $recommendationUuid;
                 }
             }
         }
 
         //Recommandation unlinked to recommandations-risks
-        if ($withEval && $withRecommendations){
+        if ($withUnlinkedRecommendations && $withEval && $withRecommendations){
             $recosObj = [
                 'uuid' => 'uuid',
                 'recommandationSet' => 'recommandationSet',
@@ -1907,7 +1927,7 @@ class InstanceService extends AbstractService
         $return['children'] = [];
         $f = '';
         foreach ($instanceTableResults as $i) {
-            $return['children'][$i->get('id')] = $this->generateExportArray($i->get('id'), $f, $withEval, $withScale, $withControls, $withRecommendations);
+            $return['children'][$i->get('id')] = $this->generateExportArray($i->get('id'), $f, $withEval, $withScale, $withControls, $withRecommendations, $withUnlinkedRecommendations);
         }
 
         return $return;
