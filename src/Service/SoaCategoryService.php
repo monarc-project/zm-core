@@ -8,6 +8,7 @@
 namespace Monarc\Core\Service;
 
 use Monarc\Core\Model\Entity\SoaCategory;
+use Monarc\Core\Model\Table\SoaCategoryTable;
 
 /**
  * SoaCategory Service
@@ -23,18 +24,22 @@ class SoaCategoryService extends AbstractService
 
     public function create($data, $last = true)
     {
-        /** @var SoaCategory $soaCategory */
-        $soaCategory = $this->get('entity');
-
         $referentialTable = $this->get('referentialTable');
         $data['referential'] = $referentialTable->getEntity($data['referential']);
 
+        /** @var SoaCategoryTable $soaCategoryTable */
+        $soaCategoryTable = $this->get('table');
+        $entityClass = $soaCategoryTable->getEntityClass();
+        /** @var SoaCategory $soaCategory */
+        $soaCategory = new $entityClass();
+        $soaCategory->setLanguage($this->getLanguage());
+        $soaCategory->setDbAdapter($soaCategoryTable->getDb());
         $soaCategory->exchangeArray($data);
 
         $dependencies = property_exists($this, 'dependencies') ? $this->dependencies : [];
         $this->setDependencies($soaCategory, $dependencies);
 
-        return $this->get('table')->save($soaCategory, $last);
+        return $soaCategoryTable->save($soaCategory, $last);
     }
 
     public function delete($id)

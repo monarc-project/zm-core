@@ -14,6 +14,7 @@ use Monarc\Core\Model\Table\InstanceTable;
 use Monarc\Core\Model\Table\MonarcObjectTable;
 use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\Mapping\MappingException;
+use Monarc\Core\Model\Table\RolfRiskTable;
 
 /**
  * Rolf Risk Service
@@ -99,8 +100,14 @@ class RolfRiskService extends AbstractService
     public function create($data, $last = true)
     {
         $addedTags = [];
+        /** @var RolfRiskTable $rolfRiskTable */
+        $rolfRiskTable = $this->get('table');
+        $entityClass = $rolfRiskTable->getEntityClass();
+
         /** @var RolfRiskSuperClass $rolfRisk */
-        $rolfRisk = $this->get('entity');
+        $rolfRisk = new $entityClass();
+        $rolfRisk->setLanguage($this->getLanguage());
+        $rolfRisk->setDbAdapter($rolfRiskTable->getDb());
 
         if (isset($data['anr']) && is_numeric($data['anr'])) {
             $data['anr'] = $this->get('anrTable')->getEntity($data['anr']);
@@ -129,7 +136,7 @@ class RolfRiskService extends AbstractService
             $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
         );
 
-        $opId = $this->get('table')->save($rolfRisk);
+        $opId = $rolfRiskTable->save($rolfRisk);
 
         $data = [
             'anr' => $data['anr'],
