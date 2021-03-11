@@ -765,6 +765,13 @@ class AmvService extends AbstractService
             'label3' => 'label3',
             'label4' => 'label4',
         ];
+        $referentialObj = [
+            'uuid' => 'uuid',
+            'label1' => 'label1',
+            'label2' => 'label2',
+            'label3' => 'label3',
+            'label4' => 'label4',
+        ];
 
         $amvs = $threats = $vulns = $themes = $measures = [];
 
@@ -806,7 +813,7 @@ class AmvService extends AbstractService
                                         $measures[$measureUuid]['category'] = $measure->getCategory()
                                             ? $measure->getCategory()->getJsonArray($soacategoriesObj)
                                             : '';
-                                        $measures[$measureUuid]['referential'] = $measure->getReferential()->getUuid();
+                                        $measures[$measureUuid]['referential'] = $measure->getReferential()->getJsonArray($referentialObj);
                                         $amvs[$k][] = $measureUuid;
                                     }
                                 }
@@ -863,8 +870,12 @@ class AmvService extends AbstractService
             'uuid' => 'uuid',
             'category' => 'category',
             'referential' => 'referential',
+            'referential_label' => 'referential_label',
             'code' => 'code',
-            'status' => 'status',
+            'label' => 'label' . $language,
+        ];
+
+        $soacategoriesObj = [
             'label' => 'label' . $language,
         ];
 
@@ -909,20 +920,24 @@ class AmvService extends AbstractService
                             case 'asset':
                                 $amvs[$k] = $amv->getAsset()->getUuid();
                                 break;
-                            // case 'measures':
-                            //     $measuresList = $amv->getMeasures();
-                            //     if (\count($measuresList) > 0) {
-                            //         foreach ($measuresList as $measure) {
-                            //             $measureUuid = $measure->getUuid();
-                            //             $measures[$measureUuid] = $measure->getJsonArray($measuresObj);
-                            //             $measures[$measureUuid]['category'] = $measure->getCategory()
-                            //                 ? $measure->getCategory()->getJsonArray($soacategoriesObj)
-                            //                 : '';
-                            //             $measures[$measureUuid]['referential'] = $measure->getReferential()->getUuid();
-                            //             $amvs[$k][] = $measureUuid;
-                            //         }
-                            //     }
-                            //     break;
+                            case 'measures':
+                                $measuresList = $amv->getMeasures();
+                                if (\count($measuresList) > 0) {
+                                    foreach ($measuresList as $measure) {
+                                        $measureUuid = $measure->getUuid();
+                                        $measures[$measureUuid] = $measure->getJsonArray($measuresObj);
+                                        $measures[$measureUuid]['label'] = $measures[$measureUuid]['label' . $language];
+                                        unset($measures[$measureUuid]['label' . $language]);
+                                        $measures[$measureUuid]['category'] = $measure->getCategory()
+                                            ? array_shift($measure->getCategory()->getJsonArray($soacategoriesObj))
+                                            : '';
+                                        $measures[$measureUuid]['referential'] = $measure->getReferential()->getUuid();
+                                        $getLabel = 'getLabel' . $language;
+                                        $measures[$measureUuid]['referential_label'] = $measure->getReferential()->$getLabel();
+                                        $amvs[$k][] = $measureUuid;
+                                    }
+                                }
+                                break;
                         }
                     }
                     break;
@@ -933,10 +948,9 @@ class AmvService extends AbstractService
             $amvs,
             $threats,
             $vulns,
-            $measures = [],
+            $measures,
         ];
     }
-
 
     /**
      * Compares and stores differences between two entities in the history (if there are any) as an update event.
