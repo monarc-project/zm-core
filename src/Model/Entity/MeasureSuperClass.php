@@ -158,6 +158,24 @@ class MeasureSuperClass extends AbstractEntity
         return $this;
     }
 
+    public function setCode(string $code): self
+    {
+        $this->code = $code;
+
+        return $this;
+    }
+
+    public function setLabels(array $labels): self
+    {
+        foreach ([1, 2, 3, 4] as $labelKey) {
+            if (isset($labels['label' . $labelKey])) {
+                $this->{'label' . $labelKey} = $labels['label' . $labelKey];
+            }
+        }
+
+        return $this;
+    }
+
     public function getCategory()
     {
         return $this->category;
