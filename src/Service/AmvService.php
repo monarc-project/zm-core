@@ -59,7 +59,7 @@ class AmvService extends AbstractService
      */
     public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null, $filterJoin = null)
     {
-        list($filterJoin,$filterLeft,$filtersCol) = $this->get('entity')->getFiltersForService();
+        list($filterJoin, $filterLeft, $filtersCol) = $this->get('entity')->getFiltersForService();
 
         return $this->get('table')->fetchAllFiltered(
             array_keys($this->get('entity')->getJsonArray()),
@@ -86,7 +86,7 @@ class AmvService extends AbstractService
 
         //manage the measures separatly because it's the slave of the relation amv<-->measures
         foreach ($data['measures'] as $measure) {
-            $measureEntity =  $this->get('measureTable')->getEntity($measure);
+            $measureEntity = $this->get('measureTable')->getEntity($measure);
             $measureEntity->addAmv($amv);
         }
 
@@ -113,7 +113,7 @@ class AmvService extends AbstractService
      */
     public function getFilteredCount($filter = null, $filterAnd = null)
     {
-        list($filterJoin,$filterLeft,$filtersCol) = $this->get('entity')->getFiltersForService();
+        list($filterJoin, $filterLeft, $filtersCol) = $this->get('entity')->getFiltersForService();
 
         return $this->get('table')->countFiltered(
             $this->parseFrontendFilter($filter, $filtersCol),
@@ -171,7 +171,7 @@ class AmvService extends AbstractService
             'anr' => 'code',
             'asset' => 'code',
             'threat' => 'code',
-            'vulnerability' => 'code'
+            'vulnerability' => 'code',
         ];
         $details = [];
         foreach ($fields as $key => $field) {
@@ -261,7 +261,16 @@ class AmvService extends AbstractService
             $deps[$propertyname] = $propertyname;
         }
 
-        $exceptions = ['creator', 'created_at', 'updater', 'updated_at', 'inputFilter', 'dbadapter', 'parameters', 'language'];
+        $exceptions = [
+            'creator',
+            'created_at',
+            'updater',
+            'updated_at',
+            'inputFilter',
+            'dbadapter',
+            'parameters',
+            'language',
+        ];
 
         $diff = [];
         foreach ($newEntity->getJsonArray() as $key => $value) {
@@ -308,7 +317,7 @@ class AmvService extends AbstractService
                 'anr' => 'code',
                 'asset' => 'code',
                 'threat' => 'code',
-                'vulnerability' => 'code'
+                'vulnerability' => 'code',
             ];
             $details = [];
             foreach ($fields as $key => $field) {
@@ -335,7 +344,7 @@ class AmvService extends AbstractService
                     foreach ($measureLink->amvs as $amv) {
                         $md->addAmv($amv);
                     }
-                    $this->get('measureTable')->save($md,false);
+                    $this->get('measureTable')->save($md, false);
                 }
             }
         }
@@ -430,6 +439,7 @@ class AmvService extends AbstractService
             return true;
         } elseif (!$assetMode && ($threatMode || $vulnerabilityMode)) { // 0 0 1 || 0 1 0 || 0 1 1
             $this->errorMessage = 'The tuple asset / threat / vulnerability is invalid';
+
             return false;
         } elseif ($assetMode && (!$threatMode || !$vulnerabilityMode)) { // 1 0 0 || 1 0 1 || 1 1 0
             if (!$assetModelsIsRegulator) { // & si et seulement s'il n'y a aucun modèle régulateur pour l'asset
@@ -465,10 +475,12 @@ class AmvService extends AbstractService
                         }
                     }
                     $this->errorMessage = 'All models must be common to asset and ' . $vulnerabilityMode ? 'vulnerability' : 'threat';
+
                     return false;
                 }
             } else {
                 $this->errorMessage = 'Asset\'s model must not be regulator';
+
                 return false;
             }
         } elseif ($assetMode && $threatMode && $vulnerabilityMode) { // 1 1 1 & on doit tester les modèles
@@ -501,20 +513,24 @@ class AmvService extends AbstractService
                 }
             }
             $this->errorMessage = 'All models must be common to asset, threat and vulnerability';
+
             return false;
         } else {
             $this->errorMessage = 'Missing datas';
+
             return false;
         }
     }
 
     /**
      * Checks the AMV Integrity Level
+     *
      * @param Model[] $models The models in which the AMV link will be applicable
      * @param Asset|null $asset The asset
      * @param Threat|null $threat The threat
      * @param Vulnerability|null $vulnerability The vulnerability
      * @param bool $follow Whether or not the AMV link follows changes
+     *
      * @return bool
      */
     public function checkAMVIntegrityLevel($models, $asset = null, $threat = null, $vulnerability = null, $follow = false)
@@ -537,10 +553,12 @@ class AmvService extends AbstractService
 
     /**
      * Ensure Assets Integrity If Enforced
+     *
      * @param Model[] $models The models in which the AMV link will be applicable
      * @param Asset|null $asset The asset
      * @param Asset|null $threat The threat
      * @param Asset|null $vulnerability The vulnerability
+     *
      * @return bool
      */
     public function ensureAssetsIntegrityIfEnforced($models, $asset = null, $threat = null, $vulnerability = null)
@@ -582,8 +600,10 @@ class AmvService extends AbstractService
     /**
      * Check Models Instantiation: Don't remove to an asset of specific model if it is linked to asset by an instance
      * in an anr (by object)
+     *
      * @param Asset $asset The asset to check
      * @param array $newModelsIds The IDs of the models
+     *
      * @return bool True if valid, false otherwise
      */
     public function checkModelsInstantiation($asset, $newModelsIds)
@@ -617,6 +637,7 @@ class AmvService extends AbstractService
 
     /**
      * Enforces Amv To Follow evolution
+     *
      * @param Model[] $models Models
      * @param Asset|null $asset Asset
      * @param Threat|null $threat Threat
@@ -661,6 +682,7 @@ class AmvService extends AbstractService
 
     /**
      * Enforce the entities to follow the model
+     *
      * @param array $entitiesIds IDs of entities
      * @param array $models The models the entities should follow
      * @param string $type The type of the entities
@@ -681,8 +703,10 @@ class AmvService extends AbstractService
 
     /**
      * Generate an array ready for export
+     *
      * @param Amv $amv The AMV entity to export
      * @param bool $withEval
+     *
      * @return array The exported array
      */
     public function generateExportArray($amv, $anrId, $withEval = false)
@@ -714,14 +738,14 @@ class AmvService extends AbstractService
             'status' => 'status',
         ];
         if ($withEval) {
-          $treatsObj = array_merge(
-            $treatsObj,
-            [
-            'trend' => 'trend',
-            'comment' => 'comment',
-            'qualification' => 'qualification'
-            ]
-          );
+            $treatsObj = array_merge(
+                $treatsObj,
+                [
+                    'trend' => 'trend',
+                    'comment' => 'comment',
+                    'qualification' => 'qualification',
+                ]
+            );
         };
         $vulsObj = [
             'uuid' => 'uuid',
@@ -835,7 +859,9 @@ class AmvService extends AbstractService
 
     /**
      * Generate an array ready for export
+     *
      * @param Amv $amv The AMV entity to export
+     *
      * @return array The exported array
      */
     public function generateExportMospArray($amv, $anrId, $languageCode)
@@ -902,8 +928,8 @@ class AmvService extends AbstractService
                                     $threats[$threatUuid]['label'] = $threats[$threatUuid]['label' . $language];
                                     $threats[$threatUuid]['description'] = $threats[$threatUuid]['description' . $language];
                                     $threats[$threatUuid]['language'] = $languageCode;
-                                    unset($threats[$threatUuid]['label' . $language ]);
-                                    unset($threats[$threatUuid]['description' . $language ]);
+                                    unset($threats[$threatUuid]['label' . $language]);
+                                    unset($threats[$threatUuid]['description' . $language]);
 
                                 }
                                 break;
@@ -914,8 +940,8 @@ class AmvService extends AbstractService
                                 $vulns[$vulnerabilityUuid]['label'] = $vulns[$vulnerabilityUuid]['label' . $language];
                                 $vulns[$vulnerabilityUuid]['description'] = $vulns[$vulnerabilityUuid]['description' . $language];
                                 $vulns[$vulnerabilityUuid]['language'] = $languageCode;
-                                unset($vulns[$vulnerabilityUuid]['label' . $language ]);
-                                unset($vulns[$vulnerabilityUuid]['description' . $language ]);
+                                unset($vulns[$vulnerabilityUuid]['label' . $language]);
+                                unset($vulns[$vulnerabilityUuid]['description' . $language]);
                                 break;
                             case 'asset':
                                 $amvs[$k] = $amv->getAsset()->getUuid();
@@ -954,6 +980,7 @@ class AmvService extends AbstractService
 
     /**
      * Compares and stores differences between two entities in the history (if there are any) as an update event.
+     *
      * @param string $type The entity type
      * @param AbstractEntity $entity The new entity (post-changes)
      * @param AbstractEntity $oldEntity The old entity (pre-changes)
@@ -969,6 +996,7 @@ class AmvService extends AbstractService
 
     /**
      * Stores an object creation event in the history
+     *
      * @param string $type The entity type
      * @param AbstractEntity $entity The entity that has been created
      * @param array $details An array of changes details
@@ -980,6 +1008,7 @@ class AmvService extends AbstractService
 
     /**
      * Stores an object deletion event in the history
+     *
      * @param string $type The entity type
      * @param AbstractEntity $entity The entity that has been deleted
      * @param array $details An array of changes details
@@ -1088,6 +1117,7 @@ class AmvService extends AbstractService
 
     /**
      * Stores an event into the history
+     *
      * @param AbstractEntity|array $entity The affected entity
      * @param string $type The event type
      * @param string $verb The event kind (create, delete, update)
@@ -1106,7 +1136,7 @@ class AmvService extends AbstractService
 
         if (is_object($entity) && (property_exists($entity, 'id'))) {
             $entityId = $entity->id;
-        } else if (is_array($entity) && (isset($entity['id']))) {
+        } elseif (is_array($entity) && (isset($entity['id']))) {
             $entityId = $entity['id'];
         }
 
