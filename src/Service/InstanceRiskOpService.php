@@ -87,7 +87,7 @@ class InstanceRiskOpService extends AbstractService
                         /** @var InstanceRiskOp $newInstanceRiskOp */
                         $newInstanceRiskOp = (clone $instanceRiskOp)
                             ->setId(null)
-                            ->setAnr($instance->getAnr)
+                            ->setAnr($instance->getAnr())
                             ->setInstance($currentInstance)
                             ->setCreator($this->getConnectedUser()->getFirstname() . ' '
                                 . $this->getConnectedUser()->getLastname());
