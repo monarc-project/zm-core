@@ -7,10 +7,11 @@
 
 namespace Monarc\Core\Model\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
-use Ramsey\Uuid\UuidInterface;
+use Ramsey\Uuid\Lazy\LazyUuidFromString;
 
 /**
  * ReferentialSuperClass
@@ -25,9 +26,7 @@ class ReferentialSuperClass extends AbstractEntity
     use UpdateEntityTrait;
 
     /**
-     * The uuid or the referential.
-     *
-     * @var \Ramsey\Uuid\UuidInterface
+     * @var LazyUuidFromString|string
      *
      * @ORM\Id
      * @ORM\Column(name="uuid", type="uuid", unique=true)
@@ -63,39 +62,58 @@ class ReferentialSuperClass extends AbstractEntity
     protected $label4;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Measure
+     * @var MeasureSuperClass[]|ArrayCollection
      *
-     * @ORM\OneToMany(targetEntity="Monarc\Core\Model\Entity\Measure", mappedBy="referential", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="Measure", mappedBy="referential", cascade={"persist"})
      */
     protected $measures;
 
     /**
-     * @var \Monarc\Core\Model\Entity\SoaCategory
+     * @var SoaCategorySuperClass[]|ArrayCollection
      *
-     * @ORM\OneToMany(targetEntity="Monarc\Core\Model\Entity\SoaCategory", mappedBy="referential", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="SoaCategory", mappedBy="referential", cascade={"persist"})
      */
     protected $categories;
 
-    /**
-     * @return UuidInterface
-     */
-    public function getUuid(): UuidInterface
+    public function getUuid(): ?string
     {
         return $this->uuid;
     }
 
     /**
-     * @param UuidInterface $uuid
-     * @return Referential
+     * @param string $uuid
+     *
+     * @return self
      */
-    public function setUuid($uuid)
+    public function setUuid($uuid): self
     {
         $this->uuid = $uuid;
+
         return $this;
     }
 
+    public function getLabel1(): string
+    {
+        return (string)$this->label1;
+    }
+
+    public function getLabel2(): string
+    {
+        return (string)$this->label2;
+    }
+
+    public function getLabel3(): string
+    {
+        return (string)$this->label3;
+    }
+
+    public function getLabel4(): string
+    {
+        return (string)$this->label4;
+    }
+
     /**
-     * @return Measure
+     * @return MeasureSuperClass[]
      */
     public function getMeasures()
     {
@@ -103,12 +121,30 @@ class ReferentialSuperClass extends AbstractEntity
     }
 
     /**
-     * @param \Monarc\Core\Model\Entity\Measure $measures
-     * @return Referential
+     * @param MeasureSuperClass[] $measures
      */
-    public function setMeasures($measures)
+    public function setMeasures($measures): self
     {
         $this->measures = $measures;
+
+        return $this;
+    }
+
+    /**
+     * @return SoaCategorySuperClass[]
+     */
+    public function getCategories()
+    {
+        return $this->categories;
+    }
+
+    /**
+     * @param SoaCategorySuperClass[] $categories
+     */
+    public function setCategories($categories): self
+    {
+        $this->categories = $categories;
+
         return $this;
     }
 
@@ -127,25 +163,6 @@ class ReferentialSuperClass extends AbstractEntity
                     'validators' => array(),
                 ));
             }
-            // $validatorsCode = [];
-            // if (!$partial) {
-            //     $validatorsCode = array(
-            //         array(
-            //             'name' => 'Monarc\Core\Validator\UniqueCode',
-            //             'options' => array(
-            //                 'entity' => $this
-            //             ),
-            //         ),
-            //     );
-            // }
-
-            // $this->inputFilter->add(array(
-            //     'name' => 'uuid',
-            //     'required' => true,
-            //     'allow_empty' => false,
-            //     'filters' => array(),
-            //     // 'validators' => $validatorsCode
-            // ));
         }
         return $this->inputFilter;
     }

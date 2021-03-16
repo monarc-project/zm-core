@@ -82,14 +82,14 @@ class AssetExportService extends AbstractService
         $amvTable = $amvService->get('table');
         $anrId = $entity->get('anr');
         try {
-            $amvResults = $amvTable->getEntityByFields(['asset' => ['uuid' => (string)$entity->getUuid(), 'anr' => $anrId]]);
+            $amvResults = $amvTable->getEntityByFields(['asset' => ['uuid' => $entity->getUuid(), 'anr' => $anrId]]);
         } catch (QueryException | MappingException | DriverException $e) {
-            $amvResults = $amvTable->getEntityByFields(['asset' => (string)$entity->getUuid(), 'anr' => $anrId]);
+            $amvResults = $amvTable->getEntityByFields(['asset' => $entity->getUuid(), 'anr' => $anrId]);
         }
 
         /** @var AmvSuperClass $amv */
         foreach ($amvResults as $amv) {
-            list($return['amvs'][(string)$amv->getUuid()],
+            list($return['amvs'][$amv->getUuid()],
                 $threats,
                 $vulnerabilities,
                 $themes,

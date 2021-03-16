@@ -11,7 +11,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
-use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\Lazy\LazyUuidFromString;
 
 /**
  * ObjectSuperClass
@@ -36,7 +36,7 @@ class ObjectSuperClass extends AbstractEntity
     const SCOPE_GLOBAL = 2;
 
     /**
-     * @var Uuid
+     * @var LazyUuidFromString|string
      *
      * @ORM\Column(name="uuid", type="uuid", nullable=false)
      * @ORM\Id
@@ -198,16 +198,15 @@ class ObjectSuperClass extends AbstractEntity
         ),
     );
 
-    /**
-     * @return Uuid
-     */
-    public function getUuid()
+    public function getUuid(): ?string
     {
         return $this->uuid;
     }
 
     /**
-     * @param Uuid $id
+     * @param string $uuid
+     *
+     * @return self
      */
     public function setUuid($uuid): self
     {
@@ -334,7 +333,7 @@ class ObjectSuperClass extends AbstractEntity
 
     public function isEqualTo(ObjectSuperClass $object): bool
     {
-        return (string)$this->uuid === (string)$object->getUuid();
+        return $this->getUuid() === $object->getUuid();
     }
 
     public function getInputFilter($partial = false)

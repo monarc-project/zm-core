@@ -9,6 +9,7 @@ namespace Monarc\Core\Model\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use LogicException;
 use Monarc\Core\Model\Entity\Traits;
 
 /**
@@ -282,6 +283,16 @@ class AnrSuperClass extends AbstractEntity
         return $this;
     }
 
+    public function getSeuil1(): int
+    {
+        return $this->seuil1;
+    }
+
+    public function getSeuil2(): int
+    {
+        return $this->seuil2;
+    }
+
     public function getSeuilRolf1(): int
     {
         return $this->seuilRolf1;
@@ -290,5 +301,21 @@ class AnrSuperClass extends AbstractEntity
     public function getSeuilRolf2(): int
     {
         return $this->seuilRolf2;
+    }
+
+    /**
+     * On BO side there is no language field in the Anr entity, so user's language is used.
+     * On FO side there is a language field, so Anr's lang is used.
+     *
+     * @return string
+     */
+    public function getLabel(): string
+    {
+        $languageNumber = $this->getLanguage();
+        if (!property_exists(\get_class($this), 'label' . $languageNumber)) {
+            throw new LogicException(sprintf('Language number %d does not exist.', $languageNumber));
+        }
+
+        return (string)$this->{'label' . $languageNumber};
     }
 }

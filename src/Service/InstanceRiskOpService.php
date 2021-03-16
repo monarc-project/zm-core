@@ -64,14 +64,13 @@ class InstanceRiskOpService extends AbstractService
                         'instance' => $brotherInstance->getId()
                     ]);
                     foreach ($instancesRisksOp as $instanceRiskOp) {
-                        $newInstanceRiskOp = clone $instanceRiskOp;
-                        $newInstanceRiskOp->setId(null);
-                        $newInstanceRiskOp->setInstance($instance);
-
-                        $newInstanceRiskOp->setCreator(
-                            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
-                        );
-
+                        /** @var InstanceRiskOp $newInstanceRiskOp */
+                        $newInstanceRiskOp = (clone $instanceRiskOp)
+                            ->setId(null)
+                            ->setAnr($instance->getAnr())
+                            ->setInstance($instance)
+                            ->setCreator($this->getConnectedUser()->getFirstname() . ' '
+                                . $this->getConnectedUser()->getLastname());
                         $instanceRiskOpTable->save($newInstanceRiskOp);
                     }
 
@@ -90,7 +89,7 @@ class InstanceRiskOpService extends AbstractService
                     $data = [
                         'anr' => $instance->getAnr() ? $instance->getAnr()->getId() : null,
                         'instance' => $instance->getId(),
-                        'object' => (string)$object->getUuid(),
+                        'object' => $object->getUuid(),
                         'rolfRisk' => $rolfRisk->id,
                         'riskCacheCode' => $rolfRisk->code,
                         'riskCacheLabel1' => $rolfRisk->label1,
@@ -148,6 +147,7 @@ class InstanceRiskOpService extends AbstractService
     {
         /** @var InstanceRiskOpTable $table */
         $table = $this->get('table');
+
         return $table->getInstancesRisksOp($anrId, $instancesIds, $params);
     }
 

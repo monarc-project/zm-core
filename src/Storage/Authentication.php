@@ -1,12 +1,11 @@
 <?php
 namespace Monarc\Core\Storage;
 
-use Countable;
 use DateTime;
-use Monarc\Core\Model\Entity\UserToken;
-
-use Monarc\Core\Model\Table\UserTokenTable;
 use Laminas\Authentication\Storage\StorageInterface;
+use Monarc\Core\Model\Entity\UserSuperClass;
+use Monarc\Core\Model\Entity\UserToken;
+use Monarc\Core\Model\Table\UserTokenTable;
 
 class Authentication implements StorageInterface
 {
@@ -24,17 +23,17 @@ class Authentication implements StorageInterface
         $this->authTtl = $config['monarc']['ttl'] ?? static::DEFAULT_TTL;
     }
 
-    public function addItem($key, $value)
+    public function addUserToken(string $token, UserSuperClass $user): bool
     {
-        $this->clearItems();
-        if (!$this->hasItem($key) && !empty($value)) {
-            $tt = new UserToken();
-            $tt->exchangeArray([
-                'token' => $key,
-                'user' => $value,
-                'dateEnd' => new DateTime(sprintf('+%d min', $this->authTtl)),
-            ]);
-            $this->userTokenTable->save($tt);
+        $this->clearUserTokens($user);
+
+        if (!$this->hasUserToken($token)) {
+            $userToken = (new UserToken())
+                ->setUser($user)
+                ->setToken($token)
+                ->setDateEnd(new DateTime(sprintf('+%d min', $this->authTtl)));
+
+            $this->userTokenTable->saveEntity($userToken);
 
             return true;
         }
@@ -42,21 +41,28 @@ class Authentication implements StorageInterface
         return false;
     }
 
-    public function getItem($key)
+    public function getUserToken(string $token): ?UserToken
     {
-        if ($this->hasItem($key)) {
-            return $this->userTokenTable->getRepository()->findOneByToken($key);
-        }
-
-        return null;
+        return $this->userTokenTable->findByToken($token);
     }
 
-    public function replaceItem($key, $value)
+    public function refreshUserToken(UserToken $userToken): void
     {
-        $item = $this->getItem($key);
-        if ($item) {
-            $item->set('dateEnd', new DateTime(sprintf('+%d min', $this->authTtl)));
-            $this->userTokenTable->save($item);
+        $userToken->setDateEnd(new DateTime(sprintf('+%d min', $this->authTtl)));
+
+        $this->userTokenTable->saveEntity($userToken);
+    }
+
+    public function hasUserToken($key): bool
+    {
+        return $this->userTokenTable->findByToken($key) !== null;
+    }
+
+    public function removeUserToken(string $token)
+    {
+        $userToken = $this->getUserToken($token);
+        if ($userToken !== null) {
+            $this->userTokenTable->deleteEntity($userToken);
 
             return true;
         }
@@ -64,48 +70,14 @@ class Authentication implements StorageInterface
         return false;
     }
 
-    public function hasItem($key)
+    protected function clearUserTokens(UserSuperClass $user): void
     {
-        $token = $this->userTokenTable->getRepository()->findOneByToken($key);
-        if (null === $token) {
-            return false;
-        }
-        if (is_scalar($token)) {
-            return $token !== '';
-        }
-        if (is_object($token) && !$token instanceof Countable && method_exists($token, '__toString')) {
-            return (string)$token !== '';
-        }
-        if ($token instanceof Countable || is_array($token)) {
-            return count($token) > 0;
+        $tokens = $this->userTokenTable->findByUser($user);
+        foreach ($tokens as $token) {
+            $this->userTokenTable->deleteEntity($token, false);
         }
 
-        return true;
-    }
-
-    public function removeItem($key)
-    {
-        $item = $this->getItem($key);
-        if ($item) {
-            $this->userTokenTable->delete($item->get('id'));
-
-            return true;
-        }
-
-        return false;
-    }
-
-    protected function clearItems()
-    {
-        $tokenIds = $this->userTokenTable->getRepository()->createQueryBuilder('t')
-            ->select('t.id')
-            ->where('t.dateEnd < :d')
-            ->setParameter(':d', date('Y-m-d H:i:s'))
-            ->getQuery()->getResult();
-
-        foreach ($tokenIds as $i) {
-            $this->userTokenTable->delete($i['id']);
-        }
+        $this->userTokenTable->getDb()->flush();
     }
 
     public function isEmpty(){}

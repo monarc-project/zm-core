@@ -116,12 +116,10 @@ class UserTable extends AbstractEntityTable
     }
 
     /**
-     * TODO: move it to an abstract table class (also rename the method to save) when we remove AbstractEntityTable.
      * @throws ORMException
      */
     public function saveEntity(UserSuperClass $user): void
     {
-        // TODO: EntityManager has to be injected instead of the db class, actually we can remove db classes at all.
         $em = $this->db->getEntityManager();
         $em->persist($user);
         $em->flush();

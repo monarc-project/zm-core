@@ -30,7 +30,7 @@ class ScaleSuperClass extends AbstractEntity
     const TYPE_VULNERABILITY = 3;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer", nullable=false)
      * @ORM\Id
@@ -39,9 +39,9 @@ class ScaleSuperClass extends AbstractEntity
     protected $id;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Anr
+     * @var AnrSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Anr", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Anr", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
      * })
@@ -125,36 +125,33 @@ class ScaleSuperClass extends AbstractEntity
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);
 
-            $this->inputFilter->add(array(
+            $this->inputFilter->add([
                 'name' => 'min',
                 'required' => true,
                 'allow_empty' => false,
                 'continue_if_empty' => false,
-                'filters' => array(),
-                'validators' => array(
-                    array(
-                        'name' => 'IsInt',
-                    ),
-                ),
-            ));
+                'filters' => [],
+                'validators' => [
+                    ['name' => 'IsInt'],
+                ],
+            ]);
 
-            $this->inputFilter->add(array(
+            $this->inputFilter->add([
                 'name' => 'max',
                 'required' => true,
                 'allow_empty' => false,
                 'continue_if_empty' => false,
-                'filters' => array(),
-                'validators' => array(
-                    array(
-                        'name' => 'IsInt',
-                    ),
-                ),
-            ));
+                'filters' => [],
+                'validators' => [
+                    ['name' => 'IsInt']
+                ],
+            ]);
         }
         return $this->inputFilter;
     }
 
-    public function getImpactLangues(){
+    public function getImpactLangues()
+    {
         return [
             'fr' => [
                 'C' => 'Confidentialité',

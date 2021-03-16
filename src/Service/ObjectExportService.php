@@ -12,6 +12,7 @@ use Doctrine\ORM\Query\QueryException;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Anr;
 use Monarc\Core\Model\Entity\ObjectSuperClass;
+use Monarc\Core\Model\Table\MonarcObjectTable;
 
 /**
  * Object Service Export
@@ -136,7 +137,7 @@ class ObjectExportService extends AbstractService
                     $risk = $r->getJsonArray(['id', 'code', 'label1', 'label2', 'label3', 'label4', 'description1', 'description2', 'description3', 'description4']);
                     $risk['measures'] = array();
                     foreach ($r->measures as $m) {
-                        $risk['measures'][] = $m->uuid;
+                        $risk['measures'][] = $m->getUuid();
                     }
                     $return['rolfTags'][$rolfTag['id']]['risks'][$risk['id']] = $risk['id'];
                     $return['rolfRisks'][$risk['id']] = $risk;
@@ -146,7 +147,7 @@ class ObjectExportService extends AbstractService
 
         // Recovery children(s)
         $children = array_reverse($this->get('objectObjectService')->getChildren(
-            $entity->get('uuid')->toString(),
+            $entity->getUuid(),
             is_null($entity->get('anr'))?null:$entity->get('anr')->get('id')
         )); // Le tri de cette fonction est "position DESC"
         $return['children'] = null;
@@ -154,12 +155,12 @@ class ObjectExportService extends AbstractService
             $return['children'] = [];
             $place = 1;
             foreach ($children as $child) {
-                $return['children'][$child->get('child')->get('uuid')->toString()] = $this->generateExportArray(
-                    (string)$child->get('child')->get('uuid'),
+                $return['children'][$child->getChild()->getUuid()] = $this->generateExportArray(
+                    $child->getChild()->getUuid(),
                     $anr,
                     $withEval
                 );
-                $return['children'][$child->get('child')->get('uuid')->toString()]['object']['position'] = $place;
+                $return['children'][$child->getChild()->getUuid()]['object']['position'] = $place;
                 $place ++;
             }
         }
@@ -173,7 +174,7 @@ class ObjectExportService extends AbstractService
      * @param Anr $anr The ANR object
      * @param string $modeImport The import mode, either 'merge' or 'duplicate'
      * @param array $objectsCache The objects cache reference array
-     * @return bool
+     * @return bool|int
      */
     public function importFromArray($data, $anr, $modeImport = 'merge', &$objectsCache = [])
     {
@@ -184,6 +185,8 @@ class ObjectExportService extends AbstractService
         $monarcVersion = $data['monarc_version'] ?? ''; //set the version of monarc to choose the right algo
 
         $nameFiledKey = 'name' . $this->getLanguage();
+        /** @var MonarcObjectTable $objectTable */
+        $objectTable = $this->get('table');
 
         /*
          * TODO: Remove passing the &$objectsCache param and add the class property for the purpose.
@@ -196,8 +199,10 @@ class ObjectExportService extends AbstractService
 
         // import asset
         $assetId = $this->get('assetService')->importFromArray($monarcVersion, $data['asset'], $anr, $objectsCache);
+        if (!$assetId) {
+            return false;
+        }
 
-        if ($assetId) {
             // import categories
             $idCateg = $this->importFromArrayCategories($data['categories'], $data['object']['category'], $anr->get('id'));
 
@@ -284,7 +289,7 @@ class ObjectExportService extends AbstractService
                  * 3. Même type d'actif
                  * 4. Même scope
                  */
-                $object = current($this->get('table')->getEntityByFields([
+                $object = current($objectTable->getEntityByFields([
                     'anr' => $anr->get('id'),
                     $nameFiledKey => $data['object'][$nameFiledKey],
                     // il faut que le scope soit le même sinon souci potentiel sur l'impact des valeurs dans les instances (ex : on passe de local à global, toutes les instances choperaient la valeur globale)
@@ -294,7 +299,7 @@ class ObjectExportService extends AbstractService
                     'category' => $idCateg
                 ]));
                 if (!empty($object)) {
-                    $object->setDbAdapter($this->get('table')->getDb());
+                    $object->setDbAdapter($objectTable->getDb());
                     $object->setLanguage($this->getLanguage());
                     unset($data['object']['uuid']); //we keep the uuid of the original anr
                 }
@@ -305,26 +310,26 @@ class ObjectExportService extends AbstractService
             $toExchange = $data['object'];
             if (empty($object)) {
                 try {
-                    if (isset($toExchange['uuid']) && !is_null($toExchange['uuid'])) {
-                        $this->get('table')->getEntity(['uuid' => $toExchange['uuid'], 'anr' => $anr->get('id')]);
+                    if (!empty($toExchange['uuid'])) {
+                        $objectTable->getEntity(['uuid' => $toExchange['uuid'], 'anr' => $anr->getId()]);
                         unset($toExchange['uuid']);
                     } //if the uuid is in the DB drop it to have a new one and avoid conflict
                 } catch (Exception $e) {
                 }
-                $class = $this->get('table')->getEntityClass();
+                $class = $objectTable->getEntityClass();
                 $object = new $class();
-                $object->setDbAdapter($this->get('table')->getDb());
+                $object->setDbAdapter($objectTable->getDb());
                 $object->setLanguage($this->getLanguage());
                 // Si on passe ici, c'est qu'on est en mode "duplication", il faut donc vérifier qu'on n'est pas plusieurs fois le même "name"
                 $suffixe = 0;
-                $current = current($this->get('table')->getEntityByFields([
-                    'anr' => $anr->get('id'),
+                $current = current($objectTable->getEntityByFields([
+                    'anr' => $anr->getId(),
                     $nameFiledKey => $toExchange[$nameFiledKey]
                 ]));
                 while (!empty($current)) {
                     $suffixe++;
-                    $current = current($this->get('table')->getEntityByFields([
-                        'anr' => $anr->get('id'),
+                    $current = current($objectTable->getEntityByFields([
+                        'anr' => $anr->getId(),
                         $nameFiledKey => $toExchange[$nameFiledKey] . ' - Imp. #' . $suffixe
                     ]));
                 }
@@ -338,15 +343,15 @@ class ObjectExportService extends AbstractService
             } else {
                 // Si l'objet existe déjà, on risque de lui recréer des fils qu'il a déjà, dans ce cas faut détacher tous ses fils avant de lui re-rattacher (après import)
                 $links = $this->get('objectObjectService')->get('table')->getEntityByFields([
-                    'anr' => $anr->get('id'),
+                    'anr' => $anr->getId(),
                     'father' => [
                         'anr' => $anr->getId(),
-                        'uuid' => (string)$object->get('uuid'),
+                        'uuid' => $object->getUuid(),
                     ],
                 ], ['position' => 'DESC']);
                 foreach ($links as $l) {
                     if (!empty($l)) {
-                        $this->get('objectObjectService')->get('table')->delete($l->get('id'));
+                        $this->get('objectObjectService')->get('table')->delete($l->getId());
                     }
                 }
             }
@@ -354,7 +359,7 @@ class ObjectExportService extends AbstractService
             $toExchange['anr'] = $anr->get('id');
             $toExchange['asset'] = $assetId;
             $toExchange['category'] = $idCateg;
-            // unset the unright langue To modify when issue#7 is corrected
+            // TODO: unset the unright langue To modify when issue#7 is corrected
             for ($i = 1; $i <= 4; $i++) {
                 if ($i !== $this->getLanguage()) {
                     unset($toExchange['name' . $i], $toExchange['label' . $i]);
@@ -363,11 +368,11 @@ class ObjectExportService extends AbstractService
             $object->exchangeArray($toExchange);
             $this->setDependencies($object, ['anr', 'category', 'asset', 'rolfTag']);
             $object->addAnr($anr);
-            $idObj = $this->get('table')->save($object);
+            $idObj = $objectTable->save($object);
 
             $objectsCache['objects'][$data['object'][$nameFiledKey]] = $idObj;
 
-            // going through the childrens
+            // going through the children
             if (!empty($data['children'])) {
                 usort($data['children'], function ($a, $b) {
                     if (\array_key_exists('position', $a['object'])
@@ -375,6 +380,8 @@ class ObjectExportService extends AbstractService
                     ) {
                         return $a['object']['position'] <=> $b['object']['position'];
                     }
+
+                    return 0;
                 });
                 foreach ($data['children'] as $c) {
                     $child = $this->importFromArray($c, $anr, $modeImport, $objectsCache);
@@ -397,7 +404,6 @@ class ObjectExportService extends AbstractService
             }
 
             return $idObj;
-        }
     }
 
     /**

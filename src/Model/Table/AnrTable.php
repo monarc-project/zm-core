@@ -23,7 +23,10 @@ class AnrTable extends AbstractEntityTable
         parent::__construct($dbService, Anr::class, $connectedUserService);
     }
 
-    public function findByIds(array $ids)
+    /**
+     * @return AnrSuperClass[]
+     */
+    public function findByIds(array $ids): array
     {
         $queryBuilder = $this->getRepository()->createQueryBuilder('a');
 

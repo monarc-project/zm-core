@@ -44,7 +44,7 @@ class ConnectedUserService
             $token = $this->request->getHeader('token');
             if (!empty($token)) {
                 /** @var UserTokenSuperClass $userToken */
-                $userToken = $this->authenticationStorage->getItem($token->getFieldValue());
+                $userToken = $this->authenticationStorage->getUserToken($token->getFieldValue());
                 if ($userToken) {
                     $this->connectedUser = $userToken->getUser();
                 }

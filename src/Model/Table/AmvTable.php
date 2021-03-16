@@ -34,13 +34,13 @@ class AmvTable extends AbstractEntityTable
     {
         $parameters = [];
         if (!is_null($asset)) {
-            $parameters['asset'] = is_string($asset->getUuid())?$asset->getUuid():$asset->getUuid()->toString();
+            $parameters['asset'] = $asset->getUuid();
         }
         if (!is_null($threat)) {
-            $parameters['threat'] = is_string($threat->getUuid())?$threat->getUuid():$threat->getUuid()->toString();
+            $parameters['threat'] = $threat->getUuid();
         }
         if (!is_null($vulnerability)) {
-            $parameters['vulnerability'] = is_string($vulnerability->getUuid())?$vulnerability->getUuid():$vulnerability->getUuid()->toString();
+            $parameters['vulnerability'] = $vulnerability->getUuid();
         }
 
         $amvs = $this->getRepository()->createQueryBuilder('amv')

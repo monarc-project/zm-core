@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Service;
 
+use DateTime;
 use Exception;
 use Monarc\Core\Adapter\Authentication as AuthenticationAdapter;
 use Monarc\Core\Storage\Authentication as AuthenticationStorage;
@@ -33,7 +34,6 @@ class AuthenticationService
         $this->authenticationAdapter = $authenticationAdapter;
     }
 
-
     /**
      * @param array $data The posted data (login/password)
      *
@@ -52,7 +52,7 @@ class AuthenticationService
             if ($res->isValid()) {
                 $user = $this->authenticationAdapter->getUser();
                 $token = uniqid(bin2hex(random_bytes(random_int(20, 40))), true);
-                $this->authenticationStorage->addItem($token, $user);
+                $this->authenticationStorage->addUserToken($token, $user);
 
                 return compact('token', 'user');
             }
@@ -70,8 +70,8 @@ class AuthenticationService
      */
     public function logout($data)
     {
-        if (!empty($data['token']) && $this->authenticationStorage->hasItem($data['token'])) {
-            $this->authenticationStorage->removeItem($data['token']);
+        if (!empty($data['token']) && $this->authenticationStorage->hasUserToken($data['token'])) {
+            $this->authenticationStorage->removeUserToken($data['token']);
 
             return true;
         }
@@ -88,16 +88,19 @@ class AuthenticationService
      */
     public function checkConnect($data)
     {
-        if (!empty($data['token']) && $this->authenticationStorage->hasItem($data['token'])) {
-            $dd = $this->authenticationStorage->getItem($data['token']);
-            if ($dd->get('dateEnd')->getTimestamp() < time()) {
-                $this->logout($data);
-                return false;
-            }
+        if (empty($data['token'])) {
+            return false;
+        }
 
-            $this->authenticationStorage->replaceItem($data['token'], $dd);
+        $userToken = $this->authenticationStorage->getUserToken($data['token']);
+        if ($userToken !== null && $userToken->getDateEnd() > new DateTime()) {
+            $this->authenticationStorage->refreshUserToken($userToken);
 
             return true;
+        }
+
+        if ($userToken !== null) {
+            $this->authenticationStorage->removeUserToken($data['token']);
         }
 
         return false;

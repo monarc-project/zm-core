@@ -333,11 +333,12 @@ class InstanceRiskOpSuperClass extends AbstractEntity
 
     /**
      * @param int $id
-     * @return InstanceRiskOpSuperClass
+     * @return self
      */
-    public function setId($id)
+    public function setId($id): self
     {
         $this->id = $id;
+
         return $this;
     }
 
@@ -351,11 +352,12 @@ class InstanceRiskOpSuperClass extends AbstractEntity
 
     /**
      * @param AnrSuperClass $anr
-     * @return InstanceRiskOp
+     * @return self
      */
-    public function setAnr($anr)
+    public function setAnr($anr): self
     {
         $this->anr = $anr;
+
         return $this;
     }
 
@@ -369,11 +371,12 @@ class InstanceRiskOpSuperClass extends AbstractEntity
 
     /**
      * @param InstanceSuperClass $instance
-     * @return InstanceRiskOp
+     * @return self
      */
-    public function setInstance($instance)
+    public function setInstance($instance): self
     {
         $this->instance = $instance;
+
         return $this;
     }
 
@@ -387,11 +390,12 @@ class InstanceRiskOpSuperClass extends AbstractEntity
 
     /**
      * @param ObjectSuperClass $object
-     * @return InstanceRiskOp
+     * @return self
      */
-    public function setObject($object)
+    public function setObject($object): self
     {
         $this->object = $object;
+
         return $this;
     }
 
@@ -405,11 +409,12 @@ class InstanceRiskOpSuperClass extends AbstractEntity
 
     /**
      * @param RolfRiskSuperClass $rolfRisk
-     * @return InstanceRiskOp
+     * @return self
      */
-    public function setRolfRisk($rolfRisk)
+    public function setRolfRisk($rolfRisk): self
     {
         $this->rolfRisk = $rolfRisk;
+
         return $this;
     }
 

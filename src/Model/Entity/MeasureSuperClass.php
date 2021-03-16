@@ -1,9 +1,9 @@
 <?php
 /**
-* @link      https://github.com/monarc-project for the canonical source repository
-* @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
-* @license   MONARC is licensed under GNU Affero General Public License version 3
-*/
+ * @link      https://github.com/monarc-project for the canonical source repository
+ * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @license   MONARC is licensed under GNU Affero General Public License version 3
+ */
 
 namespace Monarc\Core\Model\Entity;
 
@@ -12,7 +12,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
-use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\Lazy\LazyUuidFromString;
 
 /**
  * Measure
@@ -23,14 +23,14 @@ use Ramsey\Uuid\Uuid;
  * })
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
-*/
+ */
 class MeasureSuperClass extends AbstractEntity
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
 
     /**
-     * @var Uuid
+     * @var LazyUuidFromString|string
      *
      * @ORM\Column(name="uuid", type="uuid", nullable=false)
      * @ORM\Id
@@ -38,13 +38,13 @@ class MeasureSuperClass extends AbstractEntity
     protected $uuid;
 
     /**
-      * @var ReferentialSuperClass
-      *
-      * @ORM\ManyToOne(targetEntity="Referential", inversedBy="measures", cascade={"persist"})
-      * @ORM\JoinColumns({
-      *   @ORM\JoinColumn(name="referential_uuid", referencedColumnName="uuid", nullable=true)
-      * })
-      */
+     * @var ReferentialSuperClass
+     *
+     * @ORM\ManyToOne(targetEntity="Referential", inversedBy="measures", cascade={"persist"})
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="referential_uuid", referencedColumnName="uuid", nullable=true)
+     * })
+     */
     protected $referential;
 
     /**
@@ -141,13 +141,15 @@ class MeasureSuperClass extends AbstractEntity
         parent::__construct($obj);
     }
 
-    public function getUuid(): Uuid
+    public function getUuid(): ?string
     {
         return $this->uuid;
     }
 
     /**
-     * @param Uuid $uuid
+     * @param string $uuid
+     *
+     * @return self
      */
     public function setUuid($uuid): self
     {
@@ -174,8 +176,8 @@ class MeasureSuperClass extends AbstractEntity
     }
 
     /**
-    * @param Referential $referential
-    */
+     * @param Referential $referential
+     */
     public function setReferential($referential): self
     {
         $this->referential = $referential;
@@ -269,8 +271,8 @@ class MeasureSuperClass extends AbstractEntity
     }
 
     /**
-    * @param MeasureSuperClass[] $measuresLinked
-    */
+     * @param MeasureSuperClass[] $measuresLinked
+     */
     public function setMeasuresLinked($measuresLinked)
     {
         $this->measuresLinked = $measuresLinked;
@@ -395,5 +397,10 @@ class MeasureSuperClass extends AbstractEntity
         $this->rolfRisks = $rolfRisks;
 
         return $this;
+    }
+
+    public function getCode(): string
+    {
+        return $this->code;
     }
 }

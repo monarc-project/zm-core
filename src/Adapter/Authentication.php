@@ -52,7 +52,7 @@ class Authentication extends AbstractAdapter
     {
         $identity = $this->getIdentity();
         $credential = $this->getCredential();
-        $users = $this->userTable->getRepository()->findByEmail($identity);
+        $users = $this->userTable->findByEmail($identity);
         switch (count($users)) {
             case 0:
                 return new Result(Result::FAILURE_IDENTITY_NOT_FOUND, $this->getIdentity());

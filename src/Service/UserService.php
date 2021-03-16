@@ -83,14 +83,6 @@ class UserService
     }
 
     /**
-     * @throws Exception
-     */
-    public function findByEmail(string $email): UserSuperClass
-    {
-        return $this->userTable->findByEmail($email);
-    }
-
-    /**
      * TODO: The following code is copied from AbstractService. To be cleaned up.
      */
 

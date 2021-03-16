@@ -118,6 +118,8 @@ class DeliveriesModels extends AbstractEntity
     const MODEL_RISK_ANALYSIS = 3; // Document model for Risk analysis
     const MODEL_IMPLEMENTATION_PLAN = 4; // Document model for implementation plan
     const MODEL_STATEMENT_OF_APPLICABILITY = 5; // Document model for Statement of applicability
+    const MODEL_RECORD_OF_PROCESSING_ACTIVITIES = 6; // Document model for Record of processing activities
+    const MODEL_ALL_RECORD_OF_PROCESSING_ACTIVITIES = 7; // Document model for all Record of processing activities
 
 
     public function getInputFilter($partial = false)
@@ -151,7 +153,15 @@ class DeliveriesModels extends AbstractEntity
                     array(
                         'name' => 'InArray',
                         'options' => array(
-                            'haystack' => array(self::MODEL_CONTEXT_VALIDATION, self::MODEL_ASSETS_AND_MODELS_VALIDATION, self::MODEL_RISK_ANALYSIS, self::MODEL_IMPLEMENTATION_PLAN, self::MODEL_STATEMENT_OF_APPLICABILITY),
+                            'haystack' => array(
+                              self::MODEL_CONTEXT_VALIDATION,
+                              self::MODEL_ASSETS_AND_MODELS_VALIDATION,
+                              self::MODEL_RISK_ANALYSIS,
+                              self::MODEL_IMPLEMENTATION_PLAN,
+                              self::MODEL_STATEMENT_OF_APPLICABILITY,
+                              self::MODEL_RECORD_OF_PROCESSING_ACTIVITIES,
+                              self::MODEL_ALL_RECORD_OF_PROCESSING_ACTIVITIES
+                            ),
                         ),
                     ),
                     array(
