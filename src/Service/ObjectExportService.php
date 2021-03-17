@@ -162,9 +162,8 @@ class ObjectExportService extends AbstractService
             $entity->getUuid(),
             is_null($entity->get('anr')) ? null : $entity->get('anr')->get('id')
         )); // Le tri de cette fonction est "position DESC"
-        $return['children'] = null;
+        $return['children'] = [];
         if (!empty($children)) {
-            $return['children'] = [];
             $place = 1;
             foreach ($children as $child) {
                 $return['children'][$child->getChild()->getUuid()] = $this->generateExportArray(
@@ -234,6 +233,7 @@ class ObjectExportService extends AbstractService
         $return['object']['label'] = $return['object']['label' . $language];
         $return['object']['scope'] = $return['object']['scope'] == 1 ? 'local' : 'global';
         $return['object']['language'] = $languageCode;
+        $return['object']['version'] = 1;
         unset($return['object']['name' . $language]);
         unset($return['object']['label' . $language]);
 
@@ -248,6 +248,8 @@ class ObjectExportService extends AbstractService
         }
 
         // Recovery of operational risks
+        $return['rolfRisks'] = [];
+        $return['rolfTags'] = [];
         $rolfTag = $entity->get('rolfTag');
         if (!empty($rolfTag)) {
             $risks = $rolfTag->get('risks');
@@ -259,7 +261,7 @@ class ObjectExportService extends AbstractService
                 foreach ($risks as $r) {
                     $risk = $r->getJsonArray(['code', 'label' . $language, 'description' . $language]);
                     $risk['label'] = $risk['label' . $language];
-                    $risk['description'] = $risk['description' . $language];
+                    $risk['description'] = $risk['description' . $language] ?? '';
                     unset($risk['label' . $language]);
                     unset($risk['description' . $language]);
 

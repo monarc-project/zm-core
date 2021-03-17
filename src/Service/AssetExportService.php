@@ -151,6 +151,7 @@ class AssetExportService extends AbstractService
         $return['asset']['description'] = $return['asset']['description' . $language];
         $return['asset']['type'] = $return['asset']['type'] == 1 ? 'Primary' : 'Secondary';
         $return['asset']['language'] = $languageCode;
+        $return['asset']['version'] = 1;
         unset($return['asset']['label' . $language]);
         unset($return['asset']['description' . $language]);
 

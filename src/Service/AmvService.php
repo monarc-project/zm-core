@@ -778,7 +778,6 @@ class AmvService extends AbstractService
             'label2' => 'label2',
             'label3' => 'label3',
             'label4' => 'label4',
-
         ];
         $soacategoriesObj = [
             'id' => 'id',
@@ -887,7 +886,6 @@ class AmvService extends AbstractService
         ];
         $vulsObj = [
             'uuid' => 'uuid',
-            'mode' => 'mode',
             'code' => 'code',
             'label' => 'label' . $language,
             'description' => 'description' . $language,
@@ -898,11 +896,7 @@ class AmvService extends AbstractService
             'referential' => 'referential',
             'referential_label' => 'referential_label',
             'code' => 'code',
-            'label' => 'label' . $language,
-        ];
-
-        $soacategoriesObj = [
-            'label' => 'label' . $language,
+            'label' => 'label',
         ];
 
         $amvs = $threats = $vulns = $measures = [];
@@ -926,7 +920,10 @@ class AmvService extends AbstractService
                                     $threats[$threatUuid]['theme'] = $threats[$threatUuid]['theme']->getJsonArray();
                                     $threats[$threatUuid]['theme'] = $threats[$threatUuid]['theme']['label' . $language];
                                     $threats[$threatUuid]['label'] = $threats[$threatUuid]['label' . $language];
-                                    $threats[$threatUuid]['description'] = $threats[$threatUuid]['description' . $language];
+                                    $threats[$threatUuid]['description'] = $threats[$threatUuid]['description' . $language] ?? '';
+                                    $threats[$threatUuid]['c'] = boolval($threats[$threatUuid]['c']);
+                                    $threats[$threatUuid]['i'] = boolval($threats[$threatUuid]['i']);
+                                    $threats[$threatUuid]['a'] = boolval($threats[$threatUuid]['a']);
                                     $threats[$threatUuid]['language'] = $languageCode;
                                     unset($threats[$threatUuid]['label' . $language]);
                                     unset($threats[$threatUuid]['description' . $language]);
@@ -938,7 +935,7 @@ class AmvService extends AbstractService
                                 $amvs[$k] = $vulnerabilityUuid;
                                 $vulns[$vulnerabilityUuid] = $amv->get($k)->getJsonArray($vulsObj);
                                 $vulns[$vulnerabilityUuid]['label'] = $vulns[$vulnerabilityUuid]['label' . $language];
-                                $vulns[$vulnerabilityUuid]['description'] = $vulns[$vulnerabilityUuid]['description' . $language];
+                                $vulns[$vulnerabilityUuid]['description'] = $vulns[$vulnerabilityUuid]['description' . $language] ?? '';
                                 $vulns[$vulnerabilityUuid]['language'] = $languageCode;
                                 unset($vulns[$vulnerabilityUuid]['label' . $language]);
                                 unset($vulns[$vulnerabilityUuid]['description' . $language]);
@@ -951,14 +948,11 @@ class AmvService extends AbstractService
                                 if (\count($measuresList) > 0) {
                                     foreach ($measuresList as $measure) {
                                         $measureUuid = $measure->getUuid();
-                                        $measures[$measureUuid] = $measure->getJsonArray($measuresObj);
-                                        $measures[$measureUuid]['label'] = $measures[$measureUuid]['label' . $language];
-                                        unset($measures[$measureUuid]['label' . $language]);
-                                        $measures[$measureUuid]['category'] = $measure->getCategory()
-                                            ? array_shift($measure->getCategory()->getJsonArray($soacategoriesObj))
-                                            : '';
-                                        $measures[$measureUuid]['referential'] = $measure->getReferential()->getUuid();
                                         $getLabel = 'getLabel' . $language;
+                                        $measures[$measureUuid] = $measure->getJsonArray($measuresObj);
+                                        $measures[$measureUuid]['label'] = $measure->$getLabel();
+                                        $measures[$measureUuid]['category'] = $measure->getCategory()->$getLabel() ?? '';
+                                        $measures[$measureUuid]['referential'] = $measure->getReferential()->getUuid();
                                         $measures[$measureUuid]['referential_label'] = $measure->getReferential()->$getLabel();
                                         $amvs[$k][] = $measureUuid;
                                     }
