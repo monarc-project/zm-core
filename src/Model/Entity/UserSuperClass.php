@@ -98,6 +98,13 @@ abstract class UserSuperClass
     protected $language = 1;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(name="mosp_api_key", type="string", length=255, nullable=true)
+     */
+    protected $mospApiKey;
+
+    /**
      * @var ArrayCollection|UserRoleSuperClass[]
      *
      * @ORM\OneToMany(targetEntity="UserRole", orphanRemoval=true, mappedBy="user", cascade={"persist", "remove"})
@@ -113,6 +120,7 @@ abstract class UserSuperClass
             $this->setPassword($data['password']);
         }
         $this->language = $data['language'];
+        $this->mospApiKey = $data['mospApiKey'];
         $this->status = $data['status'] ?? self::STATUS_ACTIVE;
         $this->creator = $data['creator'];
         $this->setRoles($data['role']);
@@ -243,6 +251,18 @@ abstract class UserSuperClass
     public function setStatus(int $status): self
     {
         $this->status = $status;
+
+        return $this;
+    }
+
+    public function getMospApiKey(): ?string
+    {
+        return $this->mospApiKey;
+    }
+
+    public function setMospApiKey(string $mospApiKey): self
+    {
+        $this->mospApiKey = $mospApiKey;
 
         return $this;
     }
