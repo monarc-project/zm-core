@@ -11,7 +11,12 @@ use Doctrine\ORM\Mapping\MappingException;
 use Doctrine\ORM\Query\QueryException;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Anr;
+use Monarc\FrontOffice\Model\Entity\Measure;
+use Monarc\FrontOffice\Model\Entity\Referential;
+use Monarc\FrontOffice\Model\Entity\SoaCategory;
 use Monarc\Core\Model\Entity\ObjectSuperClass;
+use Monarc\FrontOffice\Model\Table\ReferentialTable;
+use Monarc\FrontOffice\Model\Table\SoaCategoryTable;
 
 /**
  * Object Service Export
@@ -29,6 +34,8 @@ class ObjectExportService extends AbstractService
     protected $rolfTagTable;
     protected $rolfRiskTable;
     protected $measureTable;
+    protected $referentialTable;
+    protected $soaCategoryTable;
     /** @var  ConfigService */
     protected $configService;
 
@@ -134,6 +141,33 @@ class ObjectExportService extends AbstractService
             $return['rolfTags'][$rolfTag['id']] = $rolfTag;
             $return['rolfTags'][$rolfTag['id']]['risks'] = [];
             if (!empty($risks)) {
+                $measuresObj = [
+                    'uuid' => 'uuid',
+                    'category' => 'category',
+                    'referential' => 'referential',
+                    'code' => 'code',
+                    'label1' => 'label1',
+                    'label2' => 'label2',
+                    'label3' => 'label3',
+                    'label4' => 'label4',
+                ];
+                $soacategoriesObj = [
+                    'id' => 'id',
+                    'code' => 'code',
+                    'status' => 'status',
+                    'label1' => 'label1',
+                    'label2' => 'label2',
+                    'label3' => 'label3',
+                    'label4' => 'label4',
+                ];
+                $referentialObj = [
+                    'uuid' => 'uuid',
+                    'label1' => 'label1',
+                    'label2' => 'label2',
+                    'label3' => 'label3',
+                    'label4' => 'label4',
+                ];
+
                 foreach ($risks as $r) {
                     $risk = $r->getJsonArray([
                         'id',
@@ -148,8 +182,13 @@ class ObjectExportService extends AbstractService
                         'description4',
                     ]);
                     $risk['measures'] = [];
-                    foreach ($r->measures as $m) {
-                        $risk['measures'][] = $m->getUuid();
+                    foreach ($r->measures as $measure) {
+                        $newMeasure = $measure->getJsonArray($measuresObj);
+                        $newMeasure['category'] = $measure->getCategory()
+                            ? $measure->getCategory()->getJsonArray($soacategoriesObj)
+                            : '';
+                        $newMeasure['referential'] = $measure->getReferential()->getJsonArray($referentialObj);
+                        $risk['measures'][] = $newMeasure;
                     }
                     $return['rolfTags'][$rolfTag['id']]['risks'][$risk['id']] = $risk['id'];
                     $return['rolfRisks'][$risk['id']] = $risk;
@@ -266,8 +305,16 @@ class ObjectExportService extends AbstractService
                     unset($risk['description' . $language]);
 
                     $risk['measures'] = [];
-                    foreach ($r->measures as $m) {
-                        $risk['measures'][] = $m->getUuid();
+                    $getLabel = 'getLabel' . $language;
+                    foreach ($r->measures as $measure) {
+                        $risk['measures'][] = [
+                          'uuid' => $measure->getUuid(),
+                          'code' => $measure->getCode(),
+                          'label' => $measure->$getLabel(),
+                          'category' => $measure->getCategory()->$getLabel() ?? '',
+                          'referential' => $measure->getReferential()->getUuid(),
+                          'referential_label' => $measure->getReferential()->$getLabel(),
+                        ];
                     }
                     $return['rolfRisks'][] = $risk;
                 }
@@ -281,7 +328,6 @@ class ObjectExportService extends AbstractService
         )); // Le tri de cette fonction est "position DESC"
         $return['children'] = [];
         if (!empty($children)) {
-            $return['children'] = [];
             foreach ($children as $child) {
                 $return['children'][] = $this->generateExportMospArray(
                     $child->getChild()->getUuid(),
@@ -349,15 +395,56 @@ class ObjectExportService extends AbstractService
                                 $risk->setDbAdapter($this->get('rolfRiskTable')->getDb());
                                 $risk->setLanguage($this->getLanguage());
                                 $toExchange = $data['rolfRisks'][$k];
-                                foreach ($toExchange['measures'] as $measureUuid) {
-                                    try {
-                                        $measure = $this->get('measureTable')->getEntity([
-                                            'anr' => $anr->getId(),
-                                            'uuid' => $measureUuid,
-                                        ]);
-                                        $measure->addOpRisk($risk);
-                                    } catch (Exception $e) {
-                                    }
+                                /** @var MeasureTable $measureTable */
+                                $measureTable = $this->get('measureTable');
+                                /** @var ReferentialTable $referentialTable */
+                                $referentialTable = $this->get('referentialTable');
+                                /** @var SoaCategoryTable $soaCategoryTable */
+                                $soaCategoryTable = $this->get('soaCategoryTable');
+                                foreach ($toExchange['measures'] as $newMeasure) {
+                                  $measure = $measureTable->findByAnrAndUuid($anr, $newMeasure['uuid']);
+                                  if ($measure === null) {
+                                      $referential = $referentialTable->findByAnrAndUuid(
+                                          $anr,
+                                          $newMeasure['referential']['uuid']
+                                      );
+                                      if ($referential === null) {
+                                          $referential = (new Referential())
+                                              ->setAnr($anr)
+                                              ->setUuid($newMeasure['referential']['uuid'])
+                                              ->{'setLabel' . $this->getLanguage()}($newMeasure['referential']['label' . $this->getLanguage()]);
+                                          $referentialTable->saveEntity($referential);
+                                      }
+
+                                      $category = $soaCategoryTable->getEntityByFields([
+                                          'anr' => $anr->getId(),
+                                          'label' . $this->getLanguage() => $newMeasure['category']['label' . $this->getLanguage()],
+                                          'referential' => [
+                                              'anr' => $anr->getId(),
+                                              'uuid' => $referential->getUuid()
+                                          ]
+                                      ]);
+                                      if (empty($category)) {
+                                          $category = (new SoaCategory())
+                                              ->setAnr($anr)
+                                              ->setReferential($referential)
+                                              ->{'setLabel' . $this->getLanguage()}($newMeasure['category']['label' . $this->getLanguage()]);
+                                          $soaCategoryTable->saveEntity($category);
+                                      } else {
+                                          $category = current($category);
+                                      }
+
+                                      $measure = (new Measure())
+                                          ->setAnr($anr)
+                                          ->setUuid($newMeasure['uuid'])
+                                          ->setCategory($category)
+                                          ->setReferential($referential)
+                                          ->setCode($newMeasure['code'])
+                                          ->setLabels($newMeasure);
+                                      $measureTable->saveEntity($measure, false);
+                                  }
+
+                                $measure->addOpRisk($risk);
                                 }
                                 unset($toExchange['measures']);
                                 unset($toExchange['id']);
