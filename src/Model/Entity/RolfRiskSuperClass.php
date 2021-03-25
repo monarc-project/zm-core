@@ -11,7 +11,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
-use Laminas\InputFilter\InputFilter;
 
 /**
  * RolfRisk
@@ -37,9 +36,9 @@ class RolfRiskSuperClass extends AbstractEntity
     protected $id;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Anr
+     * @var AnrSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Anr", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Anr", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true)
      * })
@@ -47,15 +46,25 @@ class RolfRiskSuperClass extends AbstractEntity
     protected $anr;
 
     /**
-     * @var \Monarc\Core\Model\Entity\RolfTag
+     * @var RolfTagSuperClass[]|ArrayCollection
      *
-     * @ORM\ManyToMany(targetEntity="Monarc\Core\Model\Entity\RolfTag", inversedBy="risks", cascade={"persist"})
+     * @ORM\ManyToMany(targetEntity="RolfTag", inversedBy="risks", cascade={"persist"})
      * @ORM\JoinTable(name="rolf_risks_tags",
      *  joinColumns={@ORM\JoinColumn(name="rolf_risk_id", referencedColumnName="id")},
      *  inverseJoinColumns={@ORM\JoinColumn(name="rolf_tag_id", referencedColumnName="id")}
      * )
      */
     protected $tags;
+
+    /**
+     * @var MeasureSuperClass[]|ArrayCollection
+     * @ORM\ManyToMany(targetEntity="Measure", mappedBy="rolfRisks", cascade={"persist"})
+     * @ORM\JoinTable(name="measures_rolf_risks",
+     *  joinColumns={@ORM\JoinColumn(name="rolf_risk_id", referencedColumnName="id")},
+     *  inverseJoinColumns={@ORM\JoinColumn(name="measure_id", referencedColumnName="uuid")}
+     * )
+     */
+    protected $measures;
 
     /**
      * @var string
@@ -121,17 +130,6 @@ class RolfRiskSuperClass extends AbstractEntity
     protected $description4;
 
     /**
-     * @var \Doctrine\Common\Collections\Collection
-     * @ORM\ManyToMany(targetEntity="Monarc\Core\Model\Entity\Measure", mappedBy="rolfRisks", cascade={"persist"})
-     * @ORM\JoinTable(name="measures_rolf_risks",
-     *  joinColumns={@ORM\JoinColumn(name="rolf_risk_id", referencedColumnName="id")},
-     *  inverseJoinColumns={@ORM\JoinColumn(name="measure_id", referencedColumnName="uuid")}
-     * )
-     */
-    protected $measures;
-
-
-    /**
      * @return int
      */
     public function getId()
@@ -143,27 +141,22 @@ class RolfRiskSuperClass extends AbstractEntity
      * @param int $id
      * @return RolfRisk
      */
-    public function setId($id)
+    public function setId($id): self
     {
         $this->id = $id;
+
         return $this;
     }
 
-    /**
-     * @return Anr
-     */
-    public function getAnr()
+    public function getAnr(): AnrSuperClass
     {
         return $this->anr;
     }
 
-    /**
-     * @param Anr $anr
-     * @return RolfRisk
-     */
-    public function setAnr($anr)
+    public function setAnr($anr): self
     {
         $this->anr = $anr;
+
         return $this;
     }
 
@@ -181,6 +174,50 @@ class RolfRiskSuperClass extends AbstractEntity
     public function setTags($rolfTags)
     {
         $this->tags = $rolfTags;
+    }
+
+    /**
+     * @return RolfTagSuperClass[]
+     */
+    public function getTags()
+    {
+        return $this->tags;
+    }
+
+    public function getCode(): string
+    {
+        return (string)$this->code;
+    }
+
+    public function setCode(string $code): self
+    {
+        $this->code = $code;
+
+        return $this;
+    }
+
+    public function setLabels(array $labels): self
+    {
+        foreach (range(1, 4) as $index) {
+            $key = 'label' . $index;
+            if (isset($labels[$key])) {
+                $this->{$key} = $labels[$key];
+            }
+        }
+
+        return $this;
+    }
+
+    public function setDescriptions(array $descriptions): self
+    {
+        foreach (range(1, 4) as $index) {
+            $key = 'description' . $index;
+            if (isset($descriptions[$key])) {
+                $this->{$key} = $descriptions[$key];
+            }
+        }
+
+        return $this;
     }
 
     public function getInputFilter($partial = false)
@@ -242,9 +279,7 @@ class RolfRiskSuperClass extends AbstractEntity
 
 
     /**
-     * Get the value of Measures
-     *
-     * @return \Doctrine\Common\Collections\Collection
+     * @return MeasureSuperClass[]
      */
     public function getMeasures()
     {
@@ -253,13 +288,11 @@ class RolfRiskSuperClass extends AbstractEntity
 
 
     /**
-     * Set the value of Measures
-     *
-     * @param \Doctrine\Common\Collections\Collection measures
+     * @param MeasureSuperClass[] measures
      *
      * @return self
      */
-    public function setMeasures(\Doctrine\Common\Collections\Collection $measures)
+    public function setMeasures($measures): self
     {
         $this->measures = $measures;
 

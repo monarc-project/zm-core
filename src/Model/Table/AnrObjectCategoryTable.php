@@ -34,7 +34,7 @@ class AnrObjectCategoryTable extends AbstractEntityTable
      */
     public function findOneByAnrAndObjectCategory(AnrSuperClass $anr, ObjectCategorySuperClass $objectCategory)
     {
-        $result = $this->getRepository()
+        return $this->getRepository()
             ->createQueryBuilder('aoc')
             ->where('aoc.anr = :anr')
             ->andWhere('aoc.category = :category')
@@ -42,9 +42,7 @@ class AnrObjectCategoryTable extends AbstractEntityTable
             ->setParameter('category', $objectCategory)
             ->setMaxResults(1)
             ->getQuery()
-            ->getResult();
-
-        return $result[0] ?? null;
+            ->getOneOrNullResult();
     }
 
     /**
