@@ -948,12 +948,11 @@ class AmvService extends AbstractService
                                 if (\count($measuresList) > 0) {
                                     foreach ($measuresList as $measure) {
                                         $measureUuid = $measure->getUuid();
-                                        $getLabel = 'getLabel' . $language;
                                         $measures[$measureUuid] = $measure->getJsonArray($measuresObj);
-                                        $measures[$measureUuid]['label'] = $measure->$getLabel();
-                                        $measures[$measureUuid]['category'] = $measure->getCategory()->$getLabel() ?? '';
+                                        $measures[$measureUuid]['label'] = $measure->{'getLabel' . $language}();
+                                        $measures[$measureUuid]['category'] = $measure->getCategory()->{'getLabel' . $language}();
                                         $measures[$measureUuid]['referential'] = $measure->getReferential()->getUuid();
-                                        $measures[$measureUuid]['referential_label'] = $measure->getReferential()->$getLabel();
+                                        $measures[$measureUuid]['referential_label'] = $measure->getReferential()->{'getLabel' . $language}();
                                         $amvs[$k][] = $measureUuid;
                                     }
                                 }
