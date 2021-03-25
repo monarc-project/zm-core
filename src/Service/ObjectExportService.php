@@ -308,12 +308,12 @@ class ObjectExportService extends AbstractService
                     $getLabel = 'getLabel' . $language;
                     foreach ($r->getMeasures() as $measure) {
                         $risk['measures'][] = [
-                          'uuid' => $measure->getUuid(),
-                          'code' => $measure->getCode(),
-                          'label' => $measure->{'getLabel' . $language}(),
-                          'category' => $measure->getCategory()->{'getLabel' . $language}(),
-                          'referential' => $measure->getReferential()->getUuid(),
-                          'referential_label' => $measure->getReferential()->{'getLabel' . $language}(),
+                            'uuid' => $measure->getUuid(),
+                            'code' => $measure->getCode(),
+                            'label' => $measure->{'getLabel' . $language}(),
+                            'category' => $measure->getCategory()->{'getLabel' . $language}(),
+                            'referential' => $measure->getReferential()->getUuid(),
+                            'referential_label' => $measure->getReferential()->{'getLabel' . $language}(),
                         ];
                     }
                     $return['rolfRisks'][] = $risk;
@@ -402,49 +402,53 @@ class ObjectExportService extends AbstractService
                                 /** @var SoaCategoryTable $soaCategoryTable */
                                 $soaCategoryTable = $this->get('soaCategoryTable');
                                 foreach ($toExchange['measures'] as $newMeasure) {
-                                  $measure = $measureTable->findByAnrAndUuid($anr, $newMeasure['uuid']);
-                                  if ($measure === null) {
-                                      $referential = $referentialTable->findByAnrAndUuid(
-                                          $anr,
-                                          $newMeasure['referential']['uuid']
-                                      );
-                                      if ($referential === null) {
-                                          $referential = (new Referential())
-                                              ->setAnr($anr)
-                                              ->setUuid($newMeasure['referential']['uuid'])
-                                              ->{'setLabel' . $this->getLanguage()}($newMeasure['referential']['label' . $this->getLanguage()]);
-                                          $referentialTable->saveEntity($referential);
-                                      }
+                                    $measureUuid = $newMeasure['uuid'] ?? $newMeasure;
+                                    $measure = $measureTable->findByAnrAndUuid($anr, $measureUuid);
+                                    if ($measure === null
+                                        && isset($newMeasure['referential'], $newMeasure['category'])
+                                    ) {
+                                        $referential = $referentialTable->findByAnrAndUuid(
+                                            $anr,
+                                            $newMeasure['referential']['uuid']
+                                        );
+                                        if ($referential === null) {
+                                            $referential = (new Referential())
+                                                ->setAnr($anr)
+                                                ->setUuid($newMeasure['referential']['uuid'])
+                                                ->{'setLabel' . $this->getLanguage()}($newMeasure['referential']['label' . $this->getLanguage()]);
+                                            $referentialTable->saveEntity($referential);
+                                        }
 
-                                      $category = $soaCategoryTable->getEntityByFields([
-                                          'anr' => $anr->getId(),
-                                          'label' . $this->getLanguage() => $newMeasure['category']['label' . $this->getLanguage()],
-                                          'referential' => [
-                                              'anr' => $anr->getId(),
-                                              'uuid' => $referential->getUuid()
-                                          ]
-                                      ]);
-                                      if (empty($category)) {
-                                          $category = (new SoaCategory())
-                                              ->setAnr($anr)
-                                              ->setReferential($referential)
-                                              ->{'setLabel' . $this->getLanguage()}($newMeasure['category']['label' . $this->getLanguage()]);
-                                          $soaCategoryTable->saveEntity($category);
-                                      } else {
-                                          $category = current($category);
-                                      }
+                                        $category = $soaCategoryTable->getEntityByFields([
+                                            'anr' => $anr->getId(),
+                                            'label' . $this->getLanguage() => $newMeasure['category']['label' . $this->getLanguage()],
+                                            'referential' => [
+                                                'anr' => $anr->getId(),
+                                                'uuid' => $referential->getUuid(),
+                                            ],
+                                        ]);
+                                        if (empty($category)) {
+                                            $category = (new SoaCategory())
+                                                ->setAnr($anr)
+                                                ->setReferential($referential)
+                                                ->{'setLabel' . $this->getLanguage()}($newMeasure['category']['label' . $this->getLanguage()]);
+                                            $soaCategoryTable->saveEntity($category);
+                                        } else {
+                                            $category = current($category);
+                                        }
 
-                                      $measure = (new Measure())
-                                          ->setAnr($anr)
-                                          ->setUuid($newMeasure['uuid'])
-                                          ->setCategory($category)
-                                          ->setReferential($referential)
-                                          ->setCode($newMeasure['code'])
-                                          ->setLabels($newMeasure);
-                                      $measureTable->saveEntity($measure, false);
-                                  }
-
-                                $measure->addOpRisk($risk);
+                                        $measure = (new Measure())
+                                            ->setAnr($anr)
+                                            ->setUuid($measureUuid)
+                                            ->setCategory($category)
+                                            ->setReferential($referential)
+                                            ->setCode($newMeasure['code'])
+                                            ->setLabels($newMeasure);
+                                        $measureTable->saveEntity($measure, false);
+                                    }
+                                    if ($measure !== null) {
+                                        $measure->addOpRisk($risk);
+                                    }
                                 }
                                 unset($toExchange['measures']);
                                 unset($toExchange['id']);
