@@ -305,7 +305,6 @@ class ObjectExportService extends AbstractService
                     unset($risk['description' . $language]);
 
                     $risk['measures'] = [];
-                    $getLabel = 'getLabel' . $language;
                     foreach ($r->getMeasures() as $measure) {
                         $risk['measures'][] = [
                             'uuid' => $measure->getUuid(),
