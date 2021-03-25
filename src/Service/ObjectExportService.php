@@ -306,14 +306,14 @@ class ObjectExportService extends AbstractService
 
                     $risk['measures'] = [];
                     $getLabel = 'getLabel' . $language;
-                    foreach ($r->measures as $measure) {
+                    foreach ($r->getMeasures() as $measure) {
                         $risk['measures'][] = [
                           'uuid' => $measure->getUuid(),
                           'code' => $measure->getCode(),
-                          'label' => $measure->$getLabel(),
-                          'category' => $measure->getCategory()->$getLabel() ?? '',
+                          'label' => $measure->{'getLabel' . $language}(),
+                          'category' => $measure->getCategory()->{'getLabel' . $language}(),
                           'referential' => $measure->getReferential()->getUuid(),
-                          'referential_label' => $measure->getReferential()->$getLabel(),
+                          'referential_label' => $measure->getReferential()->{'getLabel' . $language}(),
                         ];
                     }
                     $return['rolfRisks'][] = $risk;
@@ -321,7 +321,7 @@ class ObjectExportService extends AbstractService
             }
         }
 
-        // Recovery children(s)
+        // Recover children
         $children = array_reverse($this->get('objectObjectService')->getChildren(
             $entity->getUuid(),
             is_null($entity->get('anr')) ? null : $entity->get('anr')->get('id')

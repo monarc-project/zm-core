@@ -140,7 +140,7 @@ class SoaCategorySuperClass extends AbstractEntity
      */
     public function getlabel1()
     {
-        return $this->label1;
+        return (string)$this->label1;
     }
 
     /**
@@ -158,7 +158,7 @@ class SoaCategorySuperClass extends AbstractEntity
      */
     public function getlabel2()
     {
-        return $this->label2;
+        return (string)$this->label2;
     }
 
     /**
@@ -176,7 +176,7 @@ class SoaCategorySuperClass extends AbstractEntity
      */
     public function getlabel3()
     {
-        return $this->label3;
+        return (string)$this->label3;
     }
 
     /**
@@ -194,7 +194,7 @@ class SoaCategorySuperClass extends AbstractEntity
      */
     public function getlabel4()
     {
-        return $this->label4;
+        return (string)$this->label4;
     }
 
     /**
