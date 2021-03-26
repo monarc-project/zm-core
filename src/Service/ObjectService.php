@@ -1534,7 +1534,7 @@ class ObjectService extends AbstractService
         $filename = '';
         $withEval = false;
 
-        if ($data['mosp']) {
+        if (!empty($data['mosp'])) {
             $object['object'] = $this->get('objectExportService')->generateExportMospArray($data['id'], $data['anr'], $filename);
         } else {
             $object = $this->get('objectExportService')->generateExportArray($data['id'], $data['anr'], $withEval, $filename);
