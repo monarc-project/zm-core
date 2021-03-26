@@ -175,9 +175,6 @@ class MeasureSuperClass extends AbstractEntity
         return $this->referential;
     }
 
-    /**
-     * @param Referential $referential
-     */
     public function setReferential($referential): self
     {
         $this->referential = $referential;
@@ -185,16 +182,13 @@ class MeasureSuperClass extends AbstractEntity
         return $this;
     }
 
-    /**
-     * @return Amv[]
-     */
     public function getAmvs()
     {
         return $this->amvs;
     }
 
     /**
-     * @param Amv[] $amvs
+     * @param AmvSuperClass[] $amvs
      */
     public function setAmvs($amvs): self
     {
@@ -203,10 +197,7 @@ class MeasureSuperClass extends AbstractEntity
         return $this;
     }
 
-    /**
-     * @param Amv $amv
-     */
-    public function addAmv($amv): self
+    public function addAmv(AmvSuperClass $amv): self
     {
         if (!$this->amvs->contains($amv)) {
             $this->amvs->add($amv);
@@ -216,13 +207,11 @@ class MeasureSuperClass extends AbstractEntity
         return $this;
     }
 
-    /**
-     * @param RolfRiskSuperClass $riskInput
-     */
-    public function addOpRisk($riskInput): self
+    public function addOpRisk(RolfRiskSuperClass $riskInput): self
     {
-        if (!$this->getRolfRisks()->contains($riskInput)) {
+        if (!$this->rolfRisks->contains($riskInput)) {
             $this->rolfRisks->add($riskInput);
+            $riskInput->addMeasure($this);
         }
 
         return $this;
@@ -238,33 +227,37 @@ class MeasureSuperClass extends AbstractEntity
         return $this;
     }
 
-    /**
-     * @param RolfRisk $riskInput
-     * @return Measure
-     */
-    public function deleteOpRisk($riskInput): self
+    public function deleteOpRisk(RolfRiskSuperClass $riskInput): self
     {
-        $this->rolfRisks->removeElement($riskInput);
+        if ($this->rolfRisks->contains($riskInput)) {
+            $this->rolfRisks->removeElement($riskInput);
+            $riskInput->removeMeasure($this);
+        }
 
         return $this;
     }
 
-    public function addLinkedMeasure(MeasureSuperClass $measure)
+    public function addLinkedMeasure(MeasureSuperClass $measure): self
     {
         if (!$this->measuresLinked->contains($measure)) {
             $this->measuresLinked->add($measure);
             $measure->addLinkedMeasure($this);
         }
+
+        return $this;
     }
 
-    public function deleteLinkedMeasure(MeasureSuperClass $measure)
+    public function deleteLinkedMeasure(MeasureSuperClass $measure): self
     {
         if ($this->measuresLinked->contains($measure)) {
             $this->measuresLinked->removeElement($measure);
             $measure->deleteLinkedMeasure($this);
         }
+
+        return $this;
     }
 
+    // TODO: rename to getLinkedMeasures, and variable name to linkedMeasures.
     public function getMeasuresLinked()
     {
         return $this->measuresLinked;
@@ -278,6 +271,33 @@ class MeasureSuperClass extends AbstractEntity
         $this->measuresLinked = $measuresLinked;
 
         return $this;
+    }
+
+    public function getRolfRisks()
+    {
+        return $this->rolfRisks;
+    }
+
+    public function addRolfRisk(RolfRiskSuperClass $rolfRisk): self
+    {
+        if (!$this->rolfRisks->contains($rolfRisk)) {
+            $this->rolfRisks->add($rolfRisk);
+            $rolfRisk->addMeasure($this);
+        }
+
+        return $this;
+    }
+
+    public function setRolfRisks($rolfRisks): self
+    {
+        $this->rolfRisks = $rolfRisks;
+
+        return $this;
+    }
+
+    public function getCode(): string
+    {
+        return $this->code;
     }
 
     public function getInputFilter($partial = false)
@@ -373,34 +393,5 @@ class MeasureSuperClass extends AbstractEntity
         ];
 
         return [$filterJoin, $filterLeft, $filtersCol];
-    }
-
-    /**
-     * Get the value of Rolf Risks
-     *
-     * @return Collection
-     */
-    public function getRolfRisks()
-    {
-        return $this->rolfRisks;
-    }
-
-    /**
-     * Set the value of Rolf Risks
-     *
-     * @param Collection rolfRisks
-     *
-     * @return self
-     */
-    public function setRolfRisks(Collection $rolfRisks)
-    {
-        $this->rolfRisks = $rolfRisks;
-
-        return $this;
-    }
-
-    public function getCode(): string
-    {
-        return $this->code;
     }
 }

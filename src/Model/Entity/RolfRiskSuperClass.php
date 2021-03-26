@@ -129,6 +129,14 @@ class RolfRiskSuperClass extends AbstractEntity
      */
     protected $description4;
 
+    public function __construct($obj = null)
+    {
+        $this->tags = new ArrayCollection();
+        $this->measures = new ArrayCollection();
+
+        parent::__construct($obj);
+    }
+
     /**
      * @return int
      */
@@ -161,6 +169,8 @@ class RolfRiskSuperClass extends AbstractEntity
     }
 
     /**
+     * TODO: replace all the method usage as well as setTags() to addTag().
+     *
      * Set Rolf Tag
      *
      * @param $id
@@ -169,6 +179,16 @@ class RolfRiskSuperClass extends AbstractEntity
     public function setTag($id, $rolfTag)
     {
         $this->tags[$id] = $rolfTag;
+    }
+
+    public function addTag(RolfTagSuperClass $rolfTag): self
+    {
+        if (!$this->tags->contains($rolfTag)) {
+            $this->tags->add($rolfTag);
+            $rolfTag->addRisk($this);
+        }
+
+        return $this;
     }
 
     public function setTags($rolfTags)
@@ -182,6 +202,48 @@ class RolfRiskSuperClass extends AbstractEntity
     public function getTags()
     {
         return $this->tags;
+    }
+
+    /**
+     * @return MeasureSuperClass[]
+     */
+    public function getMeasures()
+    {
+        return $this->measures;
+    }
+
+    /**
+     * TODO: remove and use addMeasure instead
+     *
+     * @param MeasureSuperClass[] measures
+     *
+     * @return self
+     */
+    public function setMeasures($measures): self
+    {
+        $this->measures = $measures;
+
+        return $this;
+    }
+
+    public function addMeasure(MeasureSuperClass $measure): self
+    {
+        if (!$this->measures->contains($measure)) {
+            $this->measures->add($measure);
+            $measure->addRolfRisk($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMeasure(MeasureSuperClass $measure): self
+    {
+        if ($this->measures->contains($measure)) {
+            $this->measures->removeElement($measure);
+            $measure->deleteOpRisk($this);
+        }
+
+        return $this;
     }
 
     public function getCode(): string
@@ -270,33 +332,4 @@ class RolfRiskSuperClass extends AbstractEntity
 
         return $this->inputFilter;
     }
-
-    public function __construct($obj = null)
-    {
-        $this->tags = new ArrayCollection();
-        parent::__construct($obj);
-    }
-
-
-    /**
-     * @return MeasureSuperClass[]
-     */
-    public function getMeasures()
-    {
-        return $this->measures;
-    }
-
-
-    /**
-     * @param MeasureSuperClass[] measures
-     *
-     * @return self
-     */
-    public function setMeasures($measures): self
-    {
-        $this->measures = $measures;
-
-        return $this;
-    }
-
 }
