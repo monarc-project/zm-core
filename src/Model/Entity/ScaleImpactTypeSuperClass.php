@@ -35,26 +35,6 @@ class ScaleImpactTypeSuperClass extends AbstractEntity
     const SCALE_TYPE_F = 7;
     const SCALE_TYPE_P = 8;
 
-    static function getScaleImpactTypeRolfp()
-    {
-        return [
-            self::SCALE_TYPE_R,
-            self::SCALE_TYPE_O,
-            self::SCALE_TYPE_L,
-            self::SCALE_TYPE_F,
-            self::SCALE_TYPE_P,
-        ];
-    }
-
-    static function getScaleImpactTypeCid()
-    {
-        return [
-            self::SCALE_TYPE_C,
-            self::SCALE_TYPE_I,
-            self::SCALE_TYPE_D,
-        ];
-    }
-
     /**
      * @var integer
      *
@@ -65,9 +45,7 @@ class ScaleImpactTypeSuperClass extends AbstractEntity
     protected $id;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Anr
-     *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Anr", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Anr", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
      * })
@@ -75,9 +53,9 @@ class ScaleImpactTypeSuperClass extends AbstractEntity
     protected $anr;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Scale
+     * @var ScaleSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Scale", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Scale", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="scale_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
      * })
@@ -150,48 +128,72 @@ class ScaleImpactTypeSuperClass extends AbstractEntity
 
     /**
      * @param int $id
-     * @return Asset
      */
-    public function setId($id)
+    public function setId($id): self
     {
         $this->id = $id;
+
         return $this;
     }
 
-    /**
-     * @return Scale
-     */
-    public function getScale()
-    {
-        return $this->scale;
-    }
-
-    /**
-     * @return Anr
-     */
-    public function getAnr()
+    public function getAnr(): AmvSuperClass
     {
         return $this->anr;
     }
 
-    /**
-     * @param Anr $anr
-     * @return ScaleImpactType
-     */
-    public function setAnr($anr)
+    public function setAnr(AnrSuperClass $anr): self
     {
         $this->anr = $anr;
+
         return $this;
     }
 
-    /**
-     * @param Scale $scale
-     * @return ScaleImpactType
-     */
-    public function setScale($scale)
+    public function getScale(): ScaleSuperClass
+    {
+        return $this->scale;
+    }
+
+    public function setScale(ScaleSuperClass $scale): self
     {
         $this->scale = $scale;
+
         return $this;
+    }
+
+    public function getLabel($labelKey): string
+    {
+        if (\in_array($labelKey, ['label1', 'label2', 'label3', 'label4'], true)) {
+            return (string)$this->{$labelKey};
+        }
+
+        return '';
+    }
+
+    public function setPosition(int $position): self
+    {
+        $this->position = $position;
+
+        return $this;
+    }
+
+    public static function getScaleImpactTypeRolfp()
+    {
+        return [
+            self::SCALE_TYPE_R,
+            self::SCALE_TYPE_O,
+            self::SCALE_TYPE_L,
+            self::SCALE_TYPE_F,
+            self::SCALE_TYPE_P,
+        ];
+    }
+
+    public static function getScaleImpactTypeCid()
+    {
+        return [
+            self::SCALE_TYPE_C,
+            self::SCALE_TYPE_I,
+            self::SCALE_TYPE_D,
+        ];
     }
 
     protected $parameters = array(
@@ -249,4 +251,3 @@ class ScaleImpactTypeSuperClass extends AbstractEntity
         return $this->inputFilter;
     }
 }
-

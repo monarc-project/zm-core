@@ -38,9 +38,9 @@ class InstanceConsequenceSuperClass extends AbstractEntity
     protected $id;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Anr
+     * @var AnrSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Anr", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Anr", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
      * })
@@ -48,9 +48,9 @@ class InstanceConsequenceSuperClass extends AbstractEntity
     protected $anr;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Instance
+     * @var InstanceSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Instance", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Instance", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="instance_id", referencedColumnName="id", nullable=true)
      * })
@@ -58,9 +58,9 @@ class InstanceConsequenceSuperClass extends AbstractEntity
     protected $instance;
 
     /**
-     * @var \Monarc\Core\Model\Entity\MonarcObject
+     * @var ObjectSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\MonarcObject", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="MonarcObject", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="object_id", referencedColumnName="uuid", nullable=true)
      * })
@@ -68,9 +68,9 @@ class InstanceConsequenceSuperClass extends AbstractEntity
     protected $object;
 
     /**
-     * @var \Monarc\Core\Model\Entity\ScaleImpactType
+     * @var ScaleImpactTypeSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\ScaleImpactType", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="ScaleImpactType", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="scale_impact_type_id", referencedColumnName="id", nullable=true)
      * })
@@ -78,35 +78,35 @@ class InstanceConsequenceSuperClass extends AbstractEntity
     protected $scaleImpactType;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="is_hidden", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $isHidden = '0';
+    protected $isHidden = 0;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="locally_touched", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $locallyTouched = '0';
+    protected $locallyTouched = 0;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="c", type="smallint", options={"unsigned":true, "default":-1})
      */
     protected $c = -1;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="i", type="smallint", options={"unsigned":true, "default":-1})
      */
     protected $i = -1;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="d", type="smallint", options={"unsigned":true, "default":-1})
      */
@@ -156,49 +156,34 @@ class InstanceConsequenceSuperClass extends AbstractEntity
         return $this->instance;
     }
 
-    /**
-     * @param Instance $instance
-     * @return InstanceConsequence
-     */
-    public function setInstance($instance)
+    public function setInstance(InstanceSuperClass $instance): self
     {
         $this->instance = $instance;
+
         return $this;
     }
 
-    /**
-     * @return Object
-     */
-    public function getObject()
+    public function getObject(): ObjectSuperClass
     {
         return $this->object;
     }
 
-    /**
-     * @param Object $object
-     * @return InstanceConsequence
-     */
-    public function setObject($object)
+    public function setObject(ObjectSuperClass $object): self
     {
         $this->object = $object;
+
         return $this;
     }
 
-    /**
-     * @return ScaleImpactType
-     */
-    public function getScaleImpactType()
+    public function getScaleImpactType(): ScaleImpactTypeSuperClass
     {
         return $this->scaleImpactType;
     }
 
-    /**
-     * @param ScaleImpactType $scaleImpactType
-     * @return InstanceConsequence
-     */
-    public function setScaleImpactType($scaleImpactType)
+    public function setScaleImpactType(ScaleImpactTypeSuperClass $scaleImpactType): self
     {
         $this->scaleImpactType = $scaleImpactType;
+
         return $this;
     }
 
