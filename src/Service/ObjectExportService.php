@@ -401,6 +401,10 @@ class ObjectExportService extends AbstractService
                                 /** @var SoaCategoryTable $soaCategoryTable */
                                 $soaCategoryTable = $this->get('soaCategoryTable');
                                 foreach ($toExchange['measures'] as $newMeasure) {
+                                    /*
+                                     * Backward compatibility.
+                                     * Prior v2.10.3 we did not set the measures data when exported.
+                                     */
                                     $measureUuid = $newMeasure['uuid'] ?? $newMeasure;
                                     $measure = $measureTable->findByAnrAndUuid($anr, $measureUuid);
                                     if ($measure === null
