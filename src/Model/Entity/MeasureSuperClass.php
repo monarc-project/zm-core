@@ -201,9 +201,9 @@ class MeasureSuperClass extends AbstractEntity
     }
 
     /**
-     * @param Amv $amv
+     * @param AmvSuperClass $amv
      */
-    public function addAmv($amv): self
+    public function addAmv(AmvSuperClass $amv): self
     {
         if (!$this->amvs->contains($amv)) {
             $this->amvs->add($amv);

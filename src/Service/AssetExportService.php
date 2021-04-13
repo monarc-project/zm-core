@@ -78,6 +78,7 @@ class AssetExportService extends AbstractService
             'vuls' => [],
             'measures' => [],
         ];
+        /** @var AmvService $amvService */
         $amvService = $this->get('amvService');
         $amvTable = $amvService->get('table');
         $anrId = $entity->get('anr');
