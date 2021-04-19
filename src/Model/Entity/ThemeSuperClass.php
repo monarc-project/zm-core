@@ -136,6 +136,15 @@ class ThemeSuperClass extends AbstractEntity
         return $this;
     }
 
+    public function getLabel(int $languageIndex): string
+    {
+        if (!\in_array($languageIndex, range(1, 4), true)) {
+            return '';
+        }
+
+        return (string)$this->{'label' . $languageIndex};
+    }
+
     public function getInputFilter($partial = false)
     {
         if (!$this->inputFilter) {

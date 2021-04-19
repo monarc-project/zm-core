@@ -37,6 +37,7 @@ class InstanceRiskSuperClass extends AbstractEntity
     const KIND_NOT_TREATED = 5;
 
     public const TYPE_SPECIFIC = 1;
+    public const TYPE_NOT_SPECIFIC = 0;
 
     /**
      * @var integer
@@ -345,6 +346,13 @@ class InstanceRiskSuperClass extends AbstractEntity
     public function getSpecific(): int
     {
         return $this->specific;
+    }
+
+    public function setSpecific(int $specific): self
+    {
+        $this->specific = $specific;
+
+        return $this;
     }
 
     public function isSpecific(): bool

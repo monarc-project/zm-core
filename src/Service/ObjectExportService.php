@@ -7,15 +7,10 @@
 
 namespace Monarc\Core\Service;
 
-use Doctrine\ORM\Mapping\MappingException;
-use Doctrine\ORM\Query\QueryException;
+use Doctrine\ORM\EntityNotFoundException;
+use Doctrine\ORM\NonUniqueResultException;
 use Monarc\Core\Exception\Exception;
-use Monarc\Core\Model\Entity\Anr;
-use Monarc\Core\Model\Entity\AnrSuperClass;
-use Monarc\Core\Model\Entity\ObjectCategorySuperClass;
-use Monarc\Core\Model\Entity\ObjectSuperClass;
 use Monarc\Core\Model\Table\MonarcObjectTable;
-use Monarc\Core\Model\Table\ObjectCategoryTable;
 
 /**
  * Object Service Export
@@ -27,37 +22,27 @@ class ObjectExportService extends AbstractService
 {
     protected $assetExportService;
     protected $objectObjectService;
-    protected $categoryTable;
     protected $assetService;
-    protected $anrObjectCategoryTable;
-    protected $rolfTagTable;
-    protected $rolfRiskTable;
-    protected $measureTable;
+
     /** @var  ConfigService */
     protected $configService;
 
     /**
-     * Generates an array to export into a filename
-     * @param int $id The object to export
-     * @param bool $withEval
-     * @param string $filename Reference to the string holding the filename
-     * @return array The data
-     * @throws Exception If the object is erroneous
+     * NOTE: this method is not used on the FO side, only for BO.
+     *
+     * @throws EntityNotFoundException
+     * @throws Exception
+     * @throws NonUniqueResultException
      */
-    public function generateExportArray($id, $anr = null, $withEval = false, &$filename = "")
+    public function generateExportArray(string $uuid, $withEval = false): array
     {
-        if (empty($id)) {
+        if (empty($uuid)) {
             throw new Exception('Object to export is required', 412);
         }
-        try {
-            $entity = $this->get('table')->getEntity(['uuid' => $id, 'anr' => $anr]);
-        } catch (QueryException | MappingException $e) {
-            $entity = $this->get('table')->getEntity($id);
-        }
 
-        if (!$entity) {
-            throw new Exception('Entity `id` not found.');
-        }
+        /** @var MonarcObjectTable $monarcObjectTable */
+        $monarcObjectTable = $this->get('table');
+        $monarcObject = $monarcObjectTable->findByUuid($uuid);
 
         $objectObj = [
             'uuid' => 'uuid',
@@ -77,14 +62,13 @@ class ObjectExportService extends AbstractService
 
         $return = [
             'type' => 'object',
-            'object' => $entity->getJsonArray($objectObj),
+            'object' => $monarcObject->getJsonArray($objectObj),
             'version' => $this->getVersion(),
             'monarc_version' => $this->configService->getAppVersion()['appVersion'],
         ];
-        $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $entity->get('name' . $this->getLanguage()));
 
         // Recovery categories
-        $categ = $entity->get('category');
+        $categ = $monarcObject->get('category');
         if (!empty($categ)) {
             $categObj = [
                 'id' => 'id',
@@ -117,17 +101,17 @@ class ObjectExportService extends AbstractService
         }
 
         // Recovery asset
-        $asset = $entity->get('asset');
+        $asset = $monarcObject->get('asset');
         $return['asset'] = null;
         $return['object']['asset'] = null;
         if (!empty($asset)) {
             $asset = $asset->getJsonArray(['uuid']);
             $return['object']['asset'] = $asset['uuid'];
-            $return['asset'] = $this->get('assetExportService')->generateExportArray($asset['uuid'], $anr, $withEval);
+            $return['asset'] = $this->get('assetExportService')->generateExportArray($asset['uuid'], null, $withEval);
         }
 
         // Recovery of operational risks
-        $rolfTag = $entity->get('rolfTag');
+        $rolfTag = $monarcObject->get('rolfTag');
         $return['object']['rolfTag'] = null;
         if (!empty($rolfTag)) {
             $risks = $rolfTag->get('risks');
@@ -136,11 +120,53 @@ class ObjectExportService extends AbstractService
             $return['rolfTags'][$rolfTag['id']] = $rolfTag;
             $return['rolfTags'][$rolfTag['id']]['risks'] = [];
             if (!empty($risks)) {
+                $measuresObj = [
+                    'uuid' => 'uuid',
+                    'category' => 'category',
+                    'referential' => 'referential',
+                    'code' => 'code',
+                    'label1' => 'label1',
+                    'label2' => 'label2',
+                    'label3' => 'label3',
+                    'label4' => 'label4',
+                ];
+                $soacategoriesObj = [
+                    'id' => 'id',
+                    'status' => 'status',
+                    'label1' => 'label1',
+                    'label2' => 'label2',
+                    'label3' => 'label3',
+                    'label4' => 'label4',
+                ];
+                $referentialObj = [
+                    'uuid' => 'uuid',
+                    'label1' => 'label1',
+                    'label2' => 'label2',
+                    'label3' => 'label3',
+                    'label4' => 'label4',
+                ];
+
                 foreach ($risks as $r) {
-                    $risk = $r->getJsonArray(['id', 'code', 'label1', 'label2', 'label3', 'label4', 'description1', 'description2', 'description3', 'description4']);
-                    $risk['measures'] = array();
-                    foreach ($r->measures as $m) {
-                        $risk['measures'][] = $m->getUuid();
+                    $risk = $r->getJsonArray([
+                        'id',
+                        'code',
+                        'label1',
+                        'label2',
+                        'label3',
+                        'label4',
+                        'description1',
+                        'description2',
+                        'description3',
+                        'description4',
+                    ]);
+                    $risk['measures'] = [];
+                    foreach ($r->measures as $measure) {
+                        $newMeasure = $measure->getJsonArray($measuresObj);
+                        $newMeasure['category'] = $measure->getCategory()
+                            ? $measure->getCategory()->getJsonArray($soacategoriesObj)
+                            : '';
+                        $newMeasure['referential'] = $measure->getReferential()->getJsonArray($referentialObj);
+                        $risk['measures'][] = $newMeasure;
                     }
                     $return['rolfTags'][$rolfTag['id']]['risks'][$risk['id']] = $risk['id'];
                     $return['rolfRisks'][$risk['id']] = $risk;
@@ -150,24 +176,132 @@ class ObjectExportService extends AbstractService
 
         // Recovery children(s)
         $children = array_reverse($this->get('objectObjectService')->getChildren(
-            $entity->getUuid(),
-            is_null($entity->get('anr'))?null:$entity->get('anr')->get('id')
+            $monarcObject->getUuid(),
+            null
         )); // Le tri de cette fonction est "position DESC"
-        $return['children'] = null;
+        $return['children'] = [];
         if (!empty($children)) {
-            $return['children'] = [];
             $place = 1;
             foreach ($children as $child) {
                 $return['children'][$child->getChild()->getUuid()] = $this->generateExportArray(
                     $child->getChild()->getUuid(),
-                    $anr,
+                    null,
                     $withEval
                 );
                 $return['children'][$child->getChild()->getUuid()]['object']['position'] = $place;
-                $place ++;
+                $place++;
             }
         }
 
         return $return;
+    }
+
+    /**
+     * NOTE: this method is not used on the FO side, only for BO.
+     *
+     * @throws EntityNotFoundException
+     * @throws NonUniqueResultException
+     */
+    public function generateExportMospArray(string $uuid): array
+    {
+        $language = $this->getLanguage();
+        $languageCode = $this->configService->getLanguageCodes()[$language];
+
+        /** @var MonarcObjectTable $monarcObjectTable */
+        $monarcObjectTable = $this->get('table');
+        $monarcObject = $monarcObjectTable->findByUuid($uuid);
+
+        $objectObj = [
+            'uuid' => 'uuid',
+            'scope' => 'scope',
+            'name' => 'name' . $language,
+            'label' => 'label' . $language,
+        ];
+
+        $return = [
+            'object' => $monarcObject->getJsonArray($objectObj),
+        ];
+
+        $return['object']['name'] = $return['object']['name' . $language];
+        $return['object']['label'] = $return['object']['label' . $language];
+        $return['object']['scope'] = $return['object']['scope'] == 1 ? 'local' : 'global';
+        $return['object']['language'] = $languageCode;
+        $return['object']['version'] = 1;
+        unset($return['object']['name' . $language]);
+        unset($return['object']['label' . $language]);
+
+        // Recovery asset
+        $asset = $monarcObject->get('asset');
+        $return['asset'] = null;
+        if (!empty($asset)) {
+            $asset = $asset->getJsonArray(['uuid']);
+            $return['asset'] = $this->get('assetExportService')
+                ->generateExportMospArray($asset['uuid'], null, $languageCode);
+        }
+
+        // Recovery of operational risks
+        $return['rolfRisks'] = [];
+        $return['rolfTags'] = [];
+        $rolfTag = $monarcObject->get('rolfTag');
+        if (!empty($rolfTag)) {
+            $risks = $rolfTag->get('risks');
+            $rolfTag = $rolfTag->getJsonArray(['code', 'label' . $language]);
+            $rolfTag['label'] = $rolfTag['label' . $language];
+            unset($rolfTag['label' . $language]);
+            $return['rolfTags'][] = $rolfTag;
+            if (!empty($risks)) {
+                foreach ($risks as $r) {
+                    $risk = $r->getJsonArray(['code', 'label' . $language, 'description' . $language]);
+                    $risk['label'] = $risk['label' . $language];
+                    $risk['description'] = $risk['description' . $language] ?? '';
+                    unset($risk['label' . $language]);
+                    unset($risk['description' . $language]);
+
+                    $risk['measures'] = [];
+                    foreach ($r->getMeasures() as $measure) {
+                        $risk['measures'][] = [
+                            'uuid' => $measure->getUuid(),
+                            'code' => $measure->getCode(),
+                            'label' => $measure->{'getLabel' . $language}(),
+                            'category' => $measure->getCategory()->{'getLabel' . $language}(),
+                            'referential' => $measure->getReferential()->getUuid(),
+                            'referential_label' => $measure->getReferential()->{'getLabel' . $language}(),
+                        ];
+                    }
+                    $return['rolfRisks'][] = $risk;
+                }
+            }
+        }
+
+        // Recover children
+        $children = array_reverse($this->get('objectObjectService')->getChildren(
+            $monarcObject->getUuid(),
+            is_null($monarcObject->get('anr')) ? null : $monarcObject->get('anr')->get('id')
+        )); // Le tri de cette fonction est "position DESC"
+        $return['children'] = [];
+        if (!empty($children)) {
+            foreach ($children as $child) {
+                $return['children'][] = $this->generateExportMospArray($child->getChild()->getUuid());
+            }
+        }
+
+        return ['object' => $return];
+    }
+
+    /**
+     * @throws EntityNotFoundException
+     * @throws NonUniqueResultException
+     */
+    public function generateExportFileName(string $uuid, bool $isForMosp = false): string
+    {
+        /** @var MonarcObjectTable $monarcObjectTable */
+        $monarcObjectTable = $this->get('table');
+        $monarcObject = $monarcObjectTable->findByUuid($uuid);
+
+        return preg_replace(
+            "/[^a-z0-9\._-]+/i",
+            '',
+            $monarcObject->getName($this->getLanguage()) . $isForMosp ? '_MOSP' : ''
+        );
     }
 }

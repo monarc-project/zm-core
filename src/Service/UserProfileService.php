@@ -49,6 +49,9 @@ class UserProfileService
         if (isset($data['language'])) {
             $user->setLanguage((int)$data['language']);
         }
+        if (isset($data['mospApiKey'])) {
+            $user->setMospApiKey($data['mospApiKey']);
+        }
 
         $user->setUpdater($this->userTable->getConnectedUser()->getFirstname() . ' '
             . $this->userTable->getConnectedUser()->getLastname());

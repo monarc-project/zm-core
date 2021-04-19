@@ -1472,6 +1472,7 @@ class InstanceService extends AbstractService
         $instanceNameBasedOnLanguage = 'getName' . $this->getLanguage();
         $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $instance->{$instanceNameBasedOnLanguage}());
 
+        // TODO: ObjectExportService can be a class from client or core.
         /** @var ObjectExportService $objectExportService */
         $objectExportService = $this->get('objectExportService');
         $return = [
@@ -1506,7 +1507,7 @@ class InstanceService extends AbstractService
             ],
             'object' => $objectExportService->generateExportArray(
                 $instance->getObject()->getUuid(),
-                $instance->getObject()->getAnr() !== null ? $instance->getObject()->getAnr()->getId() : null,
+                $instance->getObject()->getAnr(),
                 $withEval
             ),
         ];

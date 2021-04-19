@@ -7,6 +7,8 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Doctrine\ORM\EntityNotFoundException;
+use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\Query\Expr;
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\MonarcObject;
@@ -23,6 +25,27 @@ class MonarcObjectTable extends AbstractEntityTable
     public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
     {
         parent::__construct($dbService, MonarcObject::class, $connectedUserService);
+    }
+
+    /**
+     * @throws EntityNotFoundException
+     * @throws NonUniqueResultException
+     */
+    public function findByUuid(string $uuid): ObjectSuperClass
+    {
+        /** @var ObjectSuperClass $object */
+        $object = $this->getRepository()->createQueryBuilder('o')
+            ->where('o.uuid = :uuid')
+            ->setParameter('uuid', $uuid)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if ($object == null) {
+            throw EntityNotFoundException::fromClassNameAndIdentifier(\get_class($this), [$uuid]);
+        }
+
+        return $object;
     }
 
     /**

@@ -270,6 +270,15 @@ class RolfRiskSuperClass extends AbstractEntity
         return $this;
     }
 
+    public function getLabel(int $languageIndex): string
+    {
+        if (!\in_array($languageIndex, range(1, 4), true)) {
+            return '';
+        }
+
+        return (string)$this->{'label' . $languageIndex};
+    }
+
     public function setDescriptions(array $descriptions): self
     {
         foreach (range(1, 4) as $index) {
@@ -280,6 +289,15 @@ class RolfRiskSuperClass extends AbstractEntity
         }
 
         return $this;
+    }
+
+    public function getDescription(int $languageIndex): string
+    {
+        if (!\in_array($languageIndex, range(1, 4), true)) {
+            return '';
+        }
+
+        return (string)$this->{'description' . $languageIndex};
     }
 
     public function getInputFilter($partial = false)

@@ -264,10 +264,7 @@ class ObjectSuperClass extends AbstractEntity
         return $this;
     }
 
-    /**
-     * @return AssetSuperClass
-     */
-    public function getAsset()
+    public function getAsset(): ?AssetSuperClass
     {
         return $this->asset;
     }
@@ -282,10 +279,7 @@ class ObjectSuperClass extends AbstractEntity
         return $this;
     }
 
-    /**
-     * @return RolfTagSuperClass
-     */
-    public function getRolfTag()
+    public function getRolfTag(): ?RolfTagSuperClass
     {
         return $this->rolfTag;
     }
@@ -352,6 +346,24 @@ class ObjectSuperClass extends AbstractEntity
         return $this;
     }
 
+    public function getName(int $languageIndex): string
+    {
+        if (!in_array($languageIndex, range(1, 4), true)) {
+            return '';
+        }
+
+        return (string)$this->{'name' . $languageIndex};
+    }
+
+    public function getLabel(int $languageIndex): string
+    {
+        if (!in_array($languageIndex, range(1, 4), true)) {
+            return '';
+        }
+
+        return (string)$this->{'label' . $languageIndex};
+    }
+
     public function getScope(): int
     {
         return $this->scope;
@@ -364,11 +376,21 @@ class ObjectSuperClass extends AbstractEntity
         return $this;
     }
 
+    public function getScopeName(): string
+    {
+        return $this->scope === static::SCOPE_LOCAL ? 'local' : 'global';
+    }
+
     public function setDisponibility(float $disponibility): self
     {
         $this->disponibility = $disponibility;
 
         return $this;
+    }
+
+    public function getDisponibility(): float
+    {
+        return $this->disponibility;
     }
 
     public function setPosition(int $position): self
@@ -378,11 +400,22 @@ class ObjectSuperClass extends AbstractEntity
         return $this;
     }
 
+
+    public function getPosition(): int
+    {
+        return $this->position;
+    }
+
     public function setMode(int $mode): self
     {
         $this->mode = $mode;
 
         return $this;
+    }
+
+    public function getMode(): int
+    {
+        return $this->mode;
     }
 
     public function isScopeGlobal(): bool
@@ -421,7 +454,7 @@ class ObjectSuperClass extends AbstractEntity
                     'required' => false,
                     'allow_empty' => false,
                     'filters' => array(),
-                  //  'validators' => $validatorsName,
+                    //  'validators' => $validatorsName,
                 ));
             }
 

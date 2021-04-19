@@ -175,7 +175,7 @@ class MeasureSuperClass extends AbstractEntity
         return $this->referential;
     }
 
-    public function setReferential($referential): self
+    public function setReferential(ReferentialSuperClass $referential): self
     {
         $this->referential = $referential;
 
@@ -278,6 +278,13 @@ class MeasureSuperClass extends AbstractEntity
         return $this->rolfRisks;
     }
 
+    public function setRolfRisks($rolfRisks): self
+    {
+        $this->rolfRisks = $rolfRisks;
+
+        return $this;
+    }
+
     public function addRolfRisk(RolfRiskSuperClass $rolfRisk): self
     {
         if (!$this->rolfRisks->contains($rolfRisk)) {
@@ -288,16 +295,48 @@ class MeasureSuperClass extends AbstractEntity
         return $this;
     }
 
-    public function setRolfRisks($rolfRisks): self
+    public function getCode(): string
     {
-        $this->rolfRisks = $rolfRisks;
+        return $this->code;
+    }
+
+    public function setCode(string $code): self
+    {
+        $this->code = $code;
 
         return $this;
     }
 
-    public function getCode(): string
+    public function getLabel1(): string
     {
-        return $this->code;
+        return (string)$this->label1;
+    }
+
+    public function getLabel2(): string
+    {
+        return (string)$this->label2;
+    }
+
+    public function getLabel3(): string
+    {
+        return (string)$this->label3;
+    }
+
+    public function getLabel4(): string
+    {
+        return (string)$this->label4;
+    }
+
+    public function setLabels(array $labels): self
+    {
+        foreach ([1, 2, 3, 4] as $labelIndex) {
+            $labelKey = 'label' . $labelIndex;
+            if (isset($labels[$labelKey])) {
+                $this->{$labelKey} = $labels[$labelKey];
+            }
+        }
+
+        return $this;
     }
 
     public function getInputFilter($partial = false)

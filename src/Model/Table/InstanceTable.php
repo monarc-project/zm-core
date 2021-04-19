@@ -43,9 +43,9 @@ class InstanceTable extends AbstractEntityTable
     }
 
     /**
-     * @return Instance[]
+     * @return InstanceSuperClass[]
      */
-    public function findByAnrAndObject(AnrSuperClass $anr, ObjectSuperClass $object)
+    public function findByAnrAndObject(AnrSuperClass $anr, ObjectSuperClass $object): array
     {
         return $this->getRepository()
             ->createQueryBuilder('i')

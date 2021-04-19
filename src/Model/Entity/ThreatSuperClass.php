@@ -215,10 +215,7 @@ class ThreatSuperClass extends AbstractEntity
         $this->theme = $theme;
     }
 
-    /**
-     * @return ThemeSuperClass
-     */
-    public function getTheme()
+    public function getTheme(): ?ThemeSuperClass
     {
         return $this->theme;
     }

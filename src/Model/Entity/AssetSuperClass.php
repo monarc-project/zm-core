@@ -163,9 +163,89 @@ class AssetSuperClass extends AbstractEntity
         return $this;
     }
 
-    public function getCode(): ?string
+    public function getLabel(int $languageIndex): string
     {
-        return $this->code;
+        if (!\in_array($languageIndex, range(1, 4), true)) {
+            return '';
+        }
+
+        return (string)$this->{'label' . $languageIndex};
+    }
+
+    public function setLabels(array $labels): self
+    {
+        foreach (range(1, 4) as $index) {
+            $key = 'label' . $index;
+            if (isset($labels[$key])) {
+                $this->{$key} = $labels[$key];
+            }
+        }
+
+        return $this;
+    }
+
+    public function getDescription(int $languageIndex): string
+    {
+        if (!\in_array($languageIndex, range(1, 4), true)) {
+            return '';
+        }
+
+        return (string)$this->{'description' . $languageIndex};
+    }
+
+    public function setDescriptions(array $descriptions): self
+    {
+        foreach (range(1, 4) as $index) {
+            $key = 'description' . $index;
+            if (isset($descriptions[$key])) {
+                $this->{$key} = $descriptions[$key];
+            }
+        }
+
+        return $this;
+    }
+
+    public function setStatus(int $status): self
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
+    public function getStatus(): int
+    {
+        return $this->status;
+    }
+
+    public function setMode(int $mode): self
+    {
+        $this->mode = $mode;
+
+        return $this;
+    }
+
+    public function getMode(): int
+    {
+        return $this->mode;
+    }
+
+    public function setCode(string $code): self
+    {
+        $this->code = $code;
+
+        return $this;
+    }
+
+    public function getCode(): string
+    {
+        return (string)$this->code;
+    }
+
+    public function setType(int $type): self
+    {
+        $this->type = $type;
+
+        return $this;
     }
 
     public function getType(): int
