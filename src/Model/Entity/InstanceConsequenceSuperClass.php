@@ -187,6 +187,71 @@ class InstanceConsequenceSuperClass extends AbstractEntity
         return $this;
     }
 
+    public function setConfidentiality(int $c): self
+    {
+        $this->c = $c;
+
+        return $this;
+    }
+
+    public function getConfidentiality(): int
+    {
+        return $this->c;
+    }
+
+    public function setIntegrity(int $i): self
+    {
+        $this->i = $i;
+
+        return $this;
+    }
+
+    public function getIntegrity(): int
+    {
+        return $this->i;
+    }
+
+    public function setAvailability(int $d): self
+    {
+        $this->d = $d;
+
+        return $this;
+    }
+
+    public function getAvailability(): int
+    {
+        return $this->d;
+    }
+
+    public static function getAvailableScalesCriteria(): array
+    {
+        return ['Confidentiality', 'Integrity', 'Availability'];
+    }
+
+    public function isHidden(): bool
+    {
+        return (bool)$this->isHidden;
+    }
+
+    public function setIsHidden(bool $isHidden): self
+    {
+        $this->isHidden = (int)$isHidden;
+
+        return $this;
+    }
+
+    public function getLocallyTouched(): int
+    {
+        return (int)$this->locallyTouched;
+    }
+
+    public function setLocallyTouched(int $locallyTouched): self
+    {
+        $this->locallyTouched = $locallyTouched;
+
+        return $this;
+    }
+
     public function getInputFilter($partial = false)
     {
         if (!$this->inputFilter) {

@@ -473,6 +473,30 @@ class InstanceRiskSuperClass extends AbstractEntity
         return (string)$this->comment;
     }
 
+    public function getKindOfMeasure(): int
+    {
+        return $this->kindOfMeasure;
+    }
+
+    public function setKindOfMeasure(int $kindOfMeasure): self
+    {
+        $this->kindOfMeasure = $kindOfMeasure;
+
+        return $this;
+    }
+
+    public function getCommentAfter(): string
+    {
+        return (string)$this->commentAfter;
+    }
+
+    public function setCommentAfter(string $commentAfter): self
+    {
+        $this->commentAfter = $commentAfter;
+
+        return $this;
+    }
+
     public function getInputFilter($partial = false)
     {
         if (!$this->inputFilter) {

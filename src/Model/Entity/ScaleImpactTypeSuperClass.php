@@ -160,6 +160,18 @@ class ScaleImpactTypeSuperClass extends AbstractEntity
         return $this;
     }
 
+    public function setLabels(array $labels): self
+    {
+        foreach (range(1, 4) as $index) {
+            $key = 'label' . $index;
+            if (isset($labels[$key])) {
+                $this->{$key} = $labels[$key];
+            }
+        }
+
+        return $this;
+    }
+
     public function getLabel($labelKey): string
     {
         if (\in_array($labelKey, ['label1', 'label2', 'label3', 'label4'], true)) {
@@ -172,6 +184,45 @@ class ScaleImpactTypeSuperClass extends AbstractEntity
     public function setPosition(int $position): self
     {
         $this->position = $position;
+
+        return $this;
+    }
+
+    public function getType(): int
+    {
+        return (int)$this->type;
+    }
+
+    public function setType(int $type): self
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    public function isSys(): bool
+    {
+        return (bool)$this->isSys;
+    }
+
+    public function setIsSys(bool $isSys): self
+    {
+        $this->isSys = (int)$isSys;
+
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function isHidden(): bool
+    {
+        return (bool)$this->isHidden;
+    }
+
+    public function setIsHidden(bool $isHidden): self
+    {
+        $this->isHidden = (int)$isHidden;
 
         return $this;
     }

@@ -849,7 +849,7 @@ class InstanceService extends AbstractService
         }
     }
 
-    protected function updateRisks(InstanceSuperClass $instance)
+    public function updateRisks(InstanceSuperClass $instance)
     {
         /** @var InstanceRiskService $instanceRiskService */
         $instanceRiskService = $this->get('instanceRiskService');
@@ -861,7 +861,7 @@ class InstanceService extends AbstractService
         }
     }
 
-    protected function refreshImpactsInherited(InstanceSuperClass $instance)
+    public function refreshImpactsInherited(InstanceSuperClass $instance)
     {
         //for cid, if value is inherited, retrieve value of parent
         //if there is no parent and value is inherited, value is equal to -1
@@ -870,19 +870,25 @@ class InstanceService extends AbstractService
             || $instance->getInheritedAvailability()
         ) {
             if ($instance->getInheritedConfidentiality()) {
-                $instance->c = $instance->getParent() !== null ? $instance->getParent()->getConfidentiality() : -1;
+                $instance->setConfidentiality(
+                    $instance->getParent() !== null ? $instance->getParent()->getConfidentiality() : -1
+                );
             }
             if ($instance->getInheritedIntegrity()) {
-                $instance->i = $instance->getParent() !== null ? $instance->getParent()->getIntegrity() : -1;
+                $instance->setIntegrity(
+                    $instance->getParent() !== null ? $instance->getParent()->getIntegrity() : -1
+                );
             }
             if ($instance->getInheritedAvailability()) {
-                $instance->d = $instance->getParent() !== null ? $instance->getParent()->getAvailability() : -1;
+                $instance->setAvailability(
+                    $instance->getParent() !== null ? $instance->getParent()->getAvailability() : -1
+                );
             }
 
             /** @var InstanceTable $instanceTable */
             $instanceTable = $this->get('table');
 
-            $instanceTable->save($instance);
+            $instanceTable->saveEntity($instance);
         }
     }
 

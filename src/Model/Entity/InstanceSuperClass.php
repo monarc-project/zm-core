@@ -334,6 +334,18 @@ class InstanceSuperClass extends AbstractEntity
         return $this->level === static::LEVEL_ROOT;
     }
 
+    public function setNames(array $names): self
+    {
+        foreach (range(1, 4) as $index) {
+            $key = 'label' . $index;
+            if (isset($names[$key])) {
+                $this->{$key} = $names[$key];
+            }
+        }
+
+        return $this;
+    }
+
     public function getName1(): string
     {
         return (string)$this->name1;
@@ -352,6 +364,18 @@ class InstanceSuperClass extends AbstractEntity
     public function getName4(): string
     {
         return (string)$this->name4;
+    }
+
+    public function setLabels(array $labels): self
+    {
+        foreach (range(1, 4) as $index) {
+            $key = 'label' . $index;
+            if (isset($labels[$key])) {
+                $this->{$key} = $labels[$key];
+            }
+        }
+
+        return $this;
     }
 
     public function getLabel1(): string
@@ -374,9 +398,23 @@ class InstanceSuperClass extends AbstractEntity
         return (string)$this->label4;
     }
 
+    public function setDisponibility(float $disponibility): self
+    {
+        $this->disponibility = $disponibility;
+
+        return $this;
+    }
+
     public function getDisponibility(): float
     {
         return $this->disponibility;
+    }
+
+    public function setAssetType(int $assetType): self
+    {
+        $this->assetType = $assetType;
+
+        return $this;
     }
 
     public function getAssetType(): int
@@ -384,9 +422,23 @@ class InstanceSuperClass extends AbstractEntity
         return $this->assetType;
     }
 
+    public function setExportable(int $exportable): self
+    {
+        $this->exportable = $exportable;
+
+        return $this;
+    }
+
     public function getExportable(): int
     {
         return $this->exportable;
+    }
+
+    public function setConfidentiality(int $c): self
+    {
+        $this->c = $c;
+
+        return $this;
     }
 
     public function getConfidentiality(): int
@@ -394,9 +446,23 @@ class InstanceSuperClass extends AbstractEntity
         return $this->c;
     }
 
+    public function setIntegrity(int $i): self
+    {
+        $this->i = $i;
+
+        return $this;
+    }
+
     public function getIntegrity(): int
     {
         return $this->i;
+    }
+
+    public function setAvailability(int $d): self
+    {
+        $this->d = $d;
+
+        return $this;
     }
 
     public function getAvailability(): int
@@ -404,9 +470,23 @@ class InstanceSuperClass extends AbstractEntity
         return $this->d;
     }
 
+    public function setInheritedConfidentiality(int $ch): self
+    {
+        $this->ch = $ch;
+
+        return $this;
+    }
+
     public function getInheritedConfidentiality(): int
     {
         return $this->ch;
+    }
+
+    public function setInheritedIntegrity(int $ih): self
+    {
+        $this->ih = $ih;
+
+        return $this;
     }
 
     public function getInheritedIntegrity(): int
@@ -414,14 +494,33 @@ class InstanceSuperClass extends AbstractEntity
         return $this->ih;
     }
 
+    public function setInheritedAvailability(int $dh): self
+    {
+        $this->dh = $dh;
+
+        return $this;
+    }
+
     public function getInheritedAvailability(): int
     {
         return $this->dh;
     }
 
+    public static function getAvailableScalesCriteria(): array
+    {
+        return ['Confidentiality', 'Integrity', 'Availability'];
+    }
+
     public function getPosition(): int
     {
         return $this->position;
+    }
+
+    public function setPosition(int $position): self
+    {
+        $this->position = $position;
+
+        return $this;
     }
 
     protected $parameters = array(

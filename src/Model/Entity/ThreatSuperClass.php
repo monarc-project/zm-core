@@ -225,9 +225,72 @@ class ThreatSuperClass extends AbstractEntity
         return $this->code;
     }
 
+    public function setCode(string $code): self
+    {
+        $this->code = $code;
+
+        return $this;
+    }
+
+    public function setLabels(array $labels): self
+    {
+        foreach (range(1, 4) as $index) {
+            $key = 'label' . $index;
+            if (isset($labels[$key])) {
+                $this->{$key} = $labels[$key];
+            }
+        }
+
+        return $this;
+    }
+
+    public function getLabel($labelKey): string
+    {
+        if (\in_array($labelKey, ['label1', 'label2', 'label3', 'label4'], true)) {
+            return (string)$this->{$labelKey};
+        }
+
+        return '';
+    }
+
+    public function setDescriptions(array $descriptions): self
+    {
+        foreach (range(1, 4) as $index) {
+            $key = 'label' . $index;
+            if (isset($descriptions[$key])) {
+                $this->{$key} = $descriptions[$key];
+            }
+        }
+
+        return $this;
+    }
+
+    public function getDescription($descriptionKey): string
+    {
+        if (\in_array($descriptionKey, ['label1', 'label2', 'label3', 'label4'], true)) {
+            return (string)$this->{$descriptionKey};
+        }
+
+        return '';
+    }
+
+    public function setConfidentiality(int $c): self
+    {
+        $this->c = $c;
+
+        return $this;
+    }
+
     public function getConfidentiality(): int
     {
         return $this->c;
+    }
+
+    public function setIntegrity(int $i): self
+    {
+        $this->i = $i;
+
+        return $this;
     }
 
     public function getIntegrity(): int
@@ -235,9 +298,79 @@ class ThreatSuperClass extends AbstractEntity
         return $this->i;
     }
 
+    public function setAvailability(int $a): self
+    {
+        $this->a= $a;
+
+        return $this;
+    }
+
     public function getAvailability(): int
     {
         return $this->a;
+    }
+
+    public function getStatus(): int
+    {
+        return (int)$this->status;
+    }
+
+    public function setStatus(int $status): self
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getMode(): int
+    {
+        return (int)$this->mode;
+    }
+
+    public function setMode(int $mode): self
+    {
+        $this->mode = $mode;
+
+        return $this;
+    }
+
+    public function getTrend(): int
+    {
+        return (int)$this->trend;
+    }
+
+    public function setTrend(int $trend): self
+    {
+        $this->trend = $trend;
+
+        return $this;
+    }
+
+    public function getQualification(): int
+    {
+        return (int)$this->qualification;
+    }
+
+    public function setQualification(int $qualification): self
+    {
+        $this->qualification = $qualification;
+
+        return $this;
+    }
+
+    public function getComment(): string
+    {
+        return (string)$this->comment;
+    }
+
+    public function setComment(string $comment): self
+    {
+        $this->comment = $comment;
+
+        return $this;
     }
 
     public function getInputFilter($partial = false)
