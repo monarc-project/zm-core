@@ -172,6 +172,6 @@ class Module
             }
         }
 
-        return $event->getResponse()->setStatusCode(401);
+        return $event->getResponse()->setStatusCode(403);
     }
 }
