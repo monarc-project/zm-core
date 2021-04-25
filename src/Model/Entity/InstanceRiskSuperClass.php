@@ -360,9 +360,23 @@ class InstanceRiskSuperClass extends AbstractEntity
         return $this->specific === self::TYPE_SPECIFIC;
     }
 
+    public function setThreatRate(int $threatRate): self
+    {
+        $this->threatRate = $threatRate;
+
+        return $this;
+    }
+
     public function getThreatRate(): int
     {
         return $this->threatRate;
+    }
+
+    public function setVulnerabilityRate(int $vulnerabilityRate): self
+    {
+        $this->vulnerabilityRate = $vulnerabilityRate;
+
+        return $this;
     }
 
     public function getVulnerabilityRate(): int
@@ -453,6 +467,13 @@ class InstanceRiskSuperClass extends AbstractEntity
         }
     }
 
+    public function setMh(int $mh): self
+    {
+        $this->mh = $mh;
+
+        return $this;
+    }
+
     public function getMh(): int
     {
         return (int)$this->mh;
@@ -466,6 +487,13 @@ class InstanceRiskSuperClass extends AbstractEntity
     public function getCacheTargetedRisk(): int
     {
         return (int)$this->cacheTargetedRisk;
+    }
+
+    public function setComment(string $comment): self
+    {
+        $this->comment = $comment;
+
+        return $this;
     }
 
     public function getComment(): string

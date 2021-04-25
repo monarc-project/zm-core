@@ -11,6 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 use Ramsey\Uuid\Lazy\LazyUuidFromString;
+use Ramsey\Uuid\Uuid;
 
 /**
  * Threat
@@ -174,6 +175,18 @@ class ThreatSuperClass extends AbstractEntity
      * @ORM\Column(name="comment", type="text", nullable=true)
      */
     protected $comment;
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function generateAndSetUuid(): self
+    {
+        if ($this->uuid === null) {
+            $this->uuid = Uuid::uuid4();
+        }
+
+        return $this;
+    }
 
     public function getUuid(): ?string
     {
