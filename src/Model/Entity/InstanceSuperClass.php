@@ -59,7 +59,7 @@ class InstanceSuperClass extends AbstractEntity
     /**
      * @var AssetSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Asset", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Asset", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="asset_id", referencedColumnName="uuid", nullable=true)
      * })
@@ -69,7 +69,7 @@ class InstanceSuperClass extends AbstractEntity
     /**
      * @var ObjectSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\MonarcObject", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="MonarcObject", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="object_id", referencedColumnName="uuid", nullable=true)
      * })
@@ -79,7 +79,7 @@ class InstanceSuperClass extends AbstractEntity
     /**
      * @var InstanceSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Instance", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Instance", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="root_id", referencedColumnName="id", nullable=true)
      * })
@@ -89,12 +89,19 @@ class InstanceSuperClass extends AbstractEntity
     /**
      * @var InstanceSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Instance", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Instance", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="parent_id", referencedColumnName="id", nullable=true)
      * })
      */
     protected $parent;
+
+    /**
+     * @var InstanceConsequenceSuperClass[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="InstanceConsequence", mappedBy="instance")
+     */
+    protected $instanceConsequences;
 
     /**
      * @var string
@@ -228,6 +235,13 @@ class InstanceSuperClass extends AbstractEntity
      * @ORM\Column(name="position", type="smallint", options={"unsigned":true, "default":1})
      */
     protected $position = 1;
+
+    public function __construct($obj = null)
+    {
+        $this->instanceConsequences = new ArrayCollection();
+
+        parent::__construct($obj);
+    }
 
     /**
      * @return int
@@ -521,6 +535,14 @@ class InstanceSuperClass extends AbstractEntity
         $this->position = $position;
 
         return $this;
+    }
+
+    /**
+     * @return InstanceConsequenceSuperClass[]
+     */
+    public function getInstanceConsequences(): array
+    {
+        return $this->instanceConsequences;
     }
 
     protected $parameters = array(
