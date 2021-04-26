@@ -77,7 +77,7 @@ class InstanceRiskService extends AbstractService
                     $newInstanceRisk = (clone $instanceRisk)
                         ->setId(null)
                         ->setAnr($instance->getAnr())
-                        ->setInstance($currentInstance)
+                        ->setInstance($instance)
                         ->setCreator(
                             $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
                         );
@@ -113,7 +113,7 @@ class InstanceRiskService extends AbstractService
                 $amvs = $amvTable->getEntityByFields([
                     'asset' => [
                         'uuid' => $object->getAsset()->getUuid(),
-                        'anr' => $anrId
+                        'anr' => $anr->getId(),
                     ]
                 ]);
             } else {
@@ -123,7 +123,7 @@ class InstanceRiskService extends AbstractService
             /** @var Amv $amv */
             foreach ($amvs as $amv) {
                 $data = [
-                    'anr' => $currentInstance->getAnr(),
+                    'anr' => $anr,
                     'amv' => $amv,
                     'asset' => $amv->getAsset(),
                     'instance' => $instance,
@@ -132,7 +132,7 @@ class InstanceRiskService extends AbstractService
                 ];
                 $instanceRiskEntityClassName = $this->get('table')->getEntityClass();
                 $instanceRisk = new $instanceRiskEntityClassName($data);
-                $instanceRiskTable->save($instanceRisk, false);
+                $instanceRiskTable->saveEntity($instanceRisk, false);
 
                 $this->updateRisks($instanceRisk, false);
             }
