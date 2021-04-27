@@ -257,19 +257,19 @@ class ThreatSuperClass extends AbstractEntity
         return $this;
     }
 
-    public function getLabel($labelKey): string
+    public function getLabel(int $languageIndex): string
     {
-        if (\in_array($labelKey, ['label1', 'label2', 'label3', 'label4'], true)) {
-            return (string)$this->{$labelKey};
+        if (!\in_array($languageIndex, range(1, 4), true)) {
+            return '';
         }
 
-        return '';
+        return (string)$this->{'label' . $languageIndex};
     }
 
     public function setDescriptions(array $descriptions): self
     {
         foreach (range(1, 4) as $index) {
-            $key = 'label' . $index;
+            $key = 'description' . $index;
             if (isset($descriptions[$key])) {
                 $this->{$key} = $descriptions[$key];
             }
@@ -278,13 +278,13 @@ class ThreatSuperClass extends AbstractEntity
         return $this;
     }
 
-    public function getDescription($descriptionKey): string
+    public function getDescription(int $languageIndex): string
     {
-        if (\in_array($descriptionKey, ['label1', 'label2', 'label3', 'label4'], true)) {
-            return (string)$this->{$descriptionKey};
+        if (!\in_array($languageIndex, range(1, 4), true)) {
+            return '';
         }
 
-        return '';
+        return (string)$this->{'description' . $languageIndex};
     }
 
     public function setConfidentiality(int $c): self

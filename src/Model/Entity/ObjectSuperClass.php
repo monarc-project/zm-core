@@ -337,15 +337,6 @@ class ObjectSuperClass extends AbstractEntity
         return $this;
     }
 
-    public function setLabel(string $labelKey, string $labelValue): self
-    {
-        if (in_array($labelKey, ['label1', 'label2', 'label3', 'label4'], true)) {
-            $this->{$labelKey} = $labelValue;
-        }
-
-        return $this;
-    }
-
     public function getName(int $languageIndex): string
     {
         if (!in_array($languageIndex, range(1, 4), true)) {
@@ -355,9 +346,18 @@ class ObjectSuperClass extends AbstractEntity
         return (string)$this->{'name' . $languageIndex};
     }
 
+    public function setLabel(string $labelKey, string $labelValue): self
+    {
+        if (in_array($labelKey, ['label1', 'label2', 'label3', 'label4'], true)) {
+            $this->{$labelKey} = $labelValue;
+        }
+
+        return $this;
+    }
+
     public function getLabel(int $languageIndex): string
     {
-        if (!in_array($languageIndex, range(1, 4), true)) {
+        if (!\in_array($languageIndex, range(1, 4), true)) {
             return '';
         }
 

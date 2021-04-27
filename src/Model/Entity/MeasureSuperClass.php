@@ -329,7 +329,7 @@ class MeasureSuperClass extends AbstractEntity
 
     public function setLabels(array $labels): self
     {
-        foreach ([1, 2, 3, 4] as $labelIndex) {
+        foreach (range(1, 4) as $labelIndex) {
             $labelKey = 'label' . $labelIndex;
             if (isset($labels[$labelKey])) {
                 $this->{$labelKey} = $labels[$labelKey];

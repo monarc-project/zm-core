@@ -162,7 +162,7 @@ class RolfTagSuperClass extends AbstractEntity
 
     public function getLabel(int $languageIndex): string
     {
-        if (!in_array($languageIndex, range(1, 4), true)) {
+        if (!\in_array($languageIndex, range(1, 4), true)) {
             return '';
         }
 

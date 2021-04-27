@@ -351,7 +351,7 @@ class InstanceSuperClass extends AbstractEntity
     public function setNames(array $names): self
     {
         foreach (range(1, 4) as $index) {
-            $key = 'label' . $index;
+            $key = 'name' . $index;
             if (isset($names[$key])) {
                 $this->{$key} = $names[$key];
             }

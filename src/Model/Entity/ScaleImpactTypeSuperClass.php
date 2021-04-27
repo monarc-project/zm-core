@@ -172,13 +172,13 @@ class ScaleImpactTypeSuperClass extends AbstractEntity
         return $this;
     }
 
-    public function getLabel($labelKey): string
+    public function getLabel(int $languageIndex): string
     {
-        if (\in_array($labelKey, ['label1', 'label2', 'label3', 'label4'], true)) {
-            return (string)$this->{$labelKey};
+        if (!\in_array($languageIndex, range(1, 4), true)) {
+            return '';
         }
 
-        return '';
+        return (string)$this->{'label' . $languageIndex};
     }
 
     public function setPosition(int $position): self
