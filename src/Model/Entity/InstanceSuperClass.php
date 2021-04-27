@@ -522,7 +522,11 @@ class InstanceSuperClass extends AbstractEntity
 
     public static function getAvailableScalesCriteria(): array
     {
-        return ['Confidentiality', 'Integrity', 'Availability'];
+        return [
+            'c' => 'Confidentiality',
+            'i' => 'Integrity',
+            'd' => 'Availability'
+        ];
     }
 
     public function getPosition(): int
@@ -540,7 +544,7 @@ class InstanceSuperClass extends AbstractEntity
     /**
      * @return InstanceConsequenceSuperClass[]
      */
-    public function getInstanceConsequences(): array
+    public function getInstanceConsequences()
     {
         return $this->instanceConsequences;
     }
