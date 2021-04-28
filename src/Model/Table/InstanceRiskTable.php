@@ -464,14 +464,18 @@ class InstanceRiskTable extends AbstractEntityTable
     /**
      * @return InstanceRiskSuperClass[]
      */
-    public function findByInstance(InstanceSuperClass $instance)
+    public function findByInstance(InstanceSuperClass $instance, bool $onlySpecific = false)
     {
-        return $this->getRepository()
+        $queryBuilder = $this->getRepository()
             ->createQueryBuilder('ir')
             ->where('ir.instance = :instance')
-            ->setParameter('instance', $instance)
-            ->getQuery()
-            ->getResult();
+            ->setParameter('instance', $instance);
+
+        if ($onlySpecific) {
+            $queryBuilder->andWhere('ir.specific = ' . InstanceRiskSuperClass::TYPE_SPECIFIC);
+        }
+
+        return $queryBuilder->getQuery()->getResult();
     }
 
     public function saveEntity(InstanceRiskSuperClass $instanceRisk, bool $flush = true): void
