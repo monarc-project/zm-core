@@ -718,7 +718,7 @@ class InstanceService extends AbstractService
      *
      * @param $instance
      */
-    protected function updateChildrenImpacts($instance)
+    public function updateChildrenImpacts($instance)
     {
         /** @var InstanceTable $table */
         $table = $this->get('table');
