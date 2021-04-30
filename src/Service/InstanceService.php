@@ -1513,7 +1513,7 @@ class InstanceService extends AbstractService
             ],
             'object' => $objectExportService->generateExportArray(
                 $instance->getObject()->getUuid(),
-                $instance->getObject()->getAnr(),
+                $instance->getAnr(),
                 $withEval
             ),
         ];
