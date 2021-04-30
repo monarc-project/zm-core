@@ -193,14 +193,9 @@ class InstanceRiskService extends AbstractService
 
         $this->verifyRates($anrId, $data, $this->getEntity($id));
 
-        /** @var InstanceRisk $instanceRisk */
-        $instanceRisk = $this->get('table')->getEntity($id);
-        if (!$instanceRisk) {
-            throw new Exception('Entity does not exist', 412);
-        }
-
         /** @var InstanceRiskTable $instanceRiskTable */
         $instanceRiskTable = $this->get('table');
+        $instanceRisk = $instanceRiskTable->findById($id);
 
         //if object is global, impact modifications to brothers
         if ($manageGlobal) {
@@ -262,7 +257,7 @@ class InstanceRiskService extends AbstractService
             $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
         );
 
-        $instanceRiskTable->save($instanceRisk);
+        $instanceRiskTable->saveEntity($instanceRisk);
 
         $this->updateRisks($instanceRisk);
 
@@ -292,14 +287,9 @@ class InstanceRiskService extends AbstractService
 
         $this->verifyRates($anrId, $data, $this->getEntity($id));
 
-        /** @var InstanceRisk $instanceRisk */
-        $instanceRisk = $this->get('table')->getEntity($id);
-        if (!$instanceRisk) {
-            throw new Exception('Entity does not exist', 412);
-        }
-
         /** @var InstanceRiskTable $instanceRiskTable */
         $instanceRiskTable = $this->get('table');
+        $instanceRisk = $instanceRiskTable->findById($id);
 
         //if object is global, impact modifications to brothers
         if ($manageGlobal) {
@@ -341,7 +331,7 @@ class InstanceRiskService extends AbstractService
 
         $this->filterPostFields($data, $instanceRisk);
 
-        $instanceRisk->setDbAdapter($this->get('table')->getDb());
+        $instanceRisk->setDbAdapter($instanceRiskTable->getDb());
         $instanceRisk->setLanguage($this->getLanguage());
 
         if (empty($data)) {
@@ -358,7 +348,7 @@ class InstanceRiskService extends AbstractService
             $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
         );
 
-        $instanceRiskTable->save($instanceRisk);
+        $instanceRiskTable->saveEntity($instanceRisk);
 
         $this->updateRisks($instanceRisk);
 
