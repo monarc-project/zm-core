@@ -13,7 +13,6 @@ use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Amv;
 use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\Instance;
-use Monarc\Core\Model\Entity\InstanceRisk;
 use Monarc\Core\Model\Entity\InstanceRiskSuperClass;
 use Monarc\Core\Model\Entity\InstanceSuperClass;
 use Monarc\Core\Model\Entity\MonarcObject;
@@ -58,12 +57,12 @@ class InstanceRiskService extends AbstractService
         AnrSuperClass $anr,
         ObjectSuperClass $object
     ): void {
+        /** @var InstanceRiskTable $instanceRiskTable */
+        $instanceRiskTable = $this->get('table');
+
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('instanceTable');
         $otherInstances = $instanceTable->findByAnrAndObject($anr, $object);
-
-        /** @var InstanceRiskTable $instanceRiskTable */
-        $instanceRiskTable = $this->get('table');
 
         if ($object->getScope() === MonarcObject::SCOPE_GLOBAL && \count($otherInstances) > 1) {
             foreach ($otherInstances as $otherInstance) {
@@ -71,8 +70,7 @@ class InstanceRiskService extends AbstractService
                     continue;
                 }
 
-                $instancesRisks = $instanceRiskTable->getEntityByFields(['instance' => $otherInstance->getId()]);
-                foreach ($instancesRisks as $instanceRisk) {
+                foreach ($instanceRiskTable->findByInstance($otherInstance) as $instanceRisk) {
                     /** @var InstanceRiskSuperClass $newInstanceRisk */
                     $newInstanceRisk = (clone $instanceRisk)
                         ->setId(null)
@@ -83,25 +81,7 @@ class InstanceRiskService extends AbstractService
                         );
                     $instanceRiskTable->saveEntity($newInstanceRisk, false);
 
-                    // This part of the code is related to the FO. Needs to be extracted.
-                    if ($this->get('recommandationRiskTable') !== null) {
-                        /** @var RecommandationRiskTable $recommandationRiskTable */
-                        $recommandationRiskTable = $this->get('recommandationRiskTable');
-                        $recoRisks = $this->get('recommandationRiskTable')->getEntityByFields([
-                            'anr' => $anr->getId(),
-                            'instanceRisk' => $instanceRisk->id
-                        ]);
-                        if (\count($recoRisks)) {
-                            foreach ($recoRisks as $recoRisk) {
-                                /** @var RecommandationRisk $newRecoRisk */
-                                $newRecoRisk = clone $recoRisk;
-                                $newRecoRisk->setId(null);
-                                $newRecoRisk->setInstance($instance);
-                                $newRecoRisk->setInstanceRisk($newInstanceRisk);
-                                $recommandationRiskTable->saveEntity($newRecoRisk, false);
-                            }
-                        }
-                    }
+                    $this->duplicateRecommendationRisk($instanceRisk, $newInstanceRisk);
                 }
 
                 break;
@@ -109,29 +89,18 @@ class InstanceRiskService extends AbstractService
         } else {
             /** @var AmvTable $amvTable */
             $amvTable = $this->get('amvTable');
-            if (in_array('anr', $this->get('assetTable')->getClassMetadata()->getIdentifierFieldNames())) {
-                $amvs = $amvTable->getEntityByFields([
-                    'asset' => [
-                        'uuid' => $object->getAsset()->getUuid(),
-                        'anr' => $anr->getId(),
-                    ]
-                ]);
-            } else {
-                $amvs = $amvTable->getEntityByFields(['asset' => $object->getAsset()->getUuid()]);
-            }
-
-            /** @var Amv $amv */
+            $amvs = $amvTable->findByAsset($object->getAsset());
             foreach ($amvs as $amv) {
-                $data = [
-                    'anr' => $anr,
-                    'amv' => $amv,
-                    'asset' => $amv->getAsset(),
-                    'instance' => $instance,
-                    'threat' => $amv->getThreat(),
-                    'vulnerability' => $amv->getVulnerability(),
-                ];
-                $instanceRiskEntityClassName = $this->get('table')->getEntityClass();
-                $instanceRisk = new $instanceRiskEntityClassName($data);
+                $instanceRiskEntityClassName = $instanceRiskTable->getEntityClass();
+                /** @var InstanceRiskSuperClass $instanceRisk */
+                $instanceRisk = new $instanceRiskEntityClassName();
+                $instanceRisk->setAnr($anr)
+                    ->setAmv($amv)
+                    ->setAsset($amv->getAsset())
+                    ->setInstance($instance)
+                    ->setThreat($amv->getThreat())
+                    ->setVulnerability($amv->getVulnerability());
+
                 $instanceRiskTable->saveEntity($instanceRisk, false);
 
                 $this->updateRisks($instanceRisk, false);
@@ -414,4 +383,9 @@ class InstanceRiskService extends AbstractService
         $instanceRiskTable = $this->get('table');
         $instanceRiskTable->saveEntity($instanceRisk, $last);
     }
+
+    protected function duplicateRecommendationRisk(
+        InstanceRiskSuperClass $instanceRisk,
+        InstanceRiskSuperClass $newInstanceRisk
+    ): void {}
 }
