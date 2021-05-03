@@ -112,6 +112,34 @@ class ReferentialSuperClass extends AbstractEntity
         return (string)$this->label4;
     }
 
+    public function setLabel1(string $label): self
+    {
+        $this->label1 = $label;
+
+        return $this;
+    }
+
+    public function setLabel2(string $label): self
+    {
+        $this->label2 = $label;
+
+        return $this;
+    }
+
+    public function setLabel3(string $label): self
+    {
+        $this->label3 = $label;
+
+        return $this;
+    }
+
+    public function setLabel4(string $label): self
+    {
+        $this->label4 = $label;
+
+        return $this;
+    }
+
     /**
      * @return MeasureSuperClass[]
      */

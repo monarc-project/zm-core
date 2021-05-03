@@ -78,6 +78,7 @@ class AssetExportService extends AbstractService
             'vuls' => [],
             'measures' => [],
         ];
+        /** @var AmvService $amvService */
         $amvService = $this->get('amvService');
         $amvTable = $amvService->get('table');
         $anrId = $entity->get('anr');
@@ -99,6 +100,85 @@ class AssetExportService extends AbstractService
             $return['vuls'] += $vulnerabilities;
             $return['measures'] += $measures;
         }
+
+        return $return;
+    }
+
+    /**
+     * Generates the array to be exported into a file
+     *
+     * @param int $id The asset ID
+     * @param AnrSuperClass $anr
+     * @param string $filename The filename to put into
+     *
+     * @return array The exported data
+     * @throws Exception
+     */
+    public function generateExportMospArray($id, $anr = null, $languageCode, &$filename = '')
+    {
+        $language = $this->getLanguage();
+        if (empty($id)) {
+            throw new Exception('Asset to export is required', 412);
+        }
+
+        try {
+            $entity = $this->get('table')->getEntity(['uuid' => $id, 'anr' => $anr]);
+        } catch (MappingException | QueryException $e) {
+            $entity = $this->get('table')->getEntity($id);
+        }
+
+        if (empty($entity)) {
+            throw new Exception('Asset not found', 412);
+        }
+
+        $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $entity->get('code'));
+
+        $assetObj = [
+            'uuid' => 'uuid',
+            'label' => 'label' . $language,
+            'description' => 'description' . $language,
+            'type' => 'type',
+            'code' => 'code',
+        ];
+        $return = [
+            'asset' => $entity->getJsonArray($assetObj),
+            'amvs' => [],
+            'threats' => [],
+            'vuls' => [],
+            'measures' => [],
+        ];
+
+        $return['asset']['label'] = $return['asset']['label' . $language];
+        $return['asset']['description'] = $return['asset']['description' . $language];
+        $return['asset']['type'] = $return['asset']['type'] == 1 ? 'Primary' : 'Secondary';
+        $return['asset']['language'] = $languageCode;
+        $return['asset']['version'] = 1;
+        unset($return['asset']['label' . $language]);
+        unset($return['asset']['description' . $language]);
+
+        $amvService = $this->get('amvService');
+        $amvTable = $amvService->get('table');
+        $anrId = $entity->get('anr');
+        try {
+            $amvResults = $amvTable->getEntityByFields(['asset' => ['uuid' => $entity->getUuid(), 'anr' => $anrId]]);
+        } catch (QueryException | MappingException | DriverException $e) {
+            $amvResults = $amvTable->getEntityByFields(['asset' => $entity->getUuid(), 'anr' => $anrId]);
+        }
+
+        /** @var AmvSuperClass $amv */
+        foreach ($amvResults as $amv) {
+            list($return['amvs'][$amv->getUuid()],
+                $threats,
+                $vulnerabilities,
+                $measures) = $amvService->generateExportMospArray($amv, $anrId, $languageCode);
+            $return['threats'] += $threats;
+            $return['vuls'] += $vulnerabilities;
+            $return['measures'] += $measures;
+        }
+        $return['amvs'] = array_values($return['amvs']);
+        $return['threats'] = array_values($return['threats']);
+        $return['vuls'] = array_values($return['vuls']);
+        $return['measures'] = array_values($return['measures']);
 
         return $return;
     }

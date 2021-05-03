@@ -11,7 +11,12 @@ use Doctrine\ORM\Mapping\MappingException;
 use Doctrine\ORM\Query\QueryException;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Anr;
+use Monarc\FrontOffice\Model\Entity\Measure;
+use Monarc\FrontOffice\Model\Entity\Referential;
+use Monarc\FrontOffice\Model\Entity\SoaCategory;
 use Monarc\Core\Model\Entity\ObjectSuperClass;
+use Monarc\FrontOffice\Model\Table\ReferentialTable;
+use Monarc\FrontOffice\Model\Table\SoaCategoryTable;
 
 /**
  * Object Service Export
@@ -29,14 +34,18 @@ class ObjectExportService extends AbstractService
     protected $rolfTagTable;
     protected $rolfRiskTable;
     protected $measureTable;
+    protected $referentialTable;
+    protected $soaCategoryTable;
     /** @var  ConfigService */
     protected $configService;
 
     /**
      * Generates an array to export into a filename
+     *
      * @param int $id The object to export
      * @param bool $withEval
      * @param string $filename Reference to the string holding the filename
+     *
      * @return array The data
      * @throws Exception If the object is erroneous
      */
@@ -132,11 +141,54 @@ class ObjectExportService extends AbstractService
             $return['rolfTags'][$rolfTag['id']] = $rolfTag;
             $return['rolfTags'][$rolfTag['id']]['risks'] = [];
             if (!empty($risks)) {
+                $measuresObj = [
+                    'uuid' => 'uuid',
+                    'category' => 'category',
+                    'referential' => 'referential',
+                    'code' => 'code',
+                    'label1' => 'label1',
+                    'label2' => 'label2',
+                    'label3' => 'label3',
+                    'label4' => 'label4',
+                ];
+                $soacategoriesObj = [
+                    'id' => 'id',
+                    'code' => 'code',
+                    'status' => 'status',
+                    'label1' => 'label1',
+                    'label2' => 'label2',
+                    'label3' => 'label3',
+                    'label4' => 'label4',
+                ];
+                $referentialObj = [
+                    'uuid' => 'uuid',
+                    'label1' => 'label1',
+                    'label2' => 'label2',
+                    'label3' => 'label3',
+                    'label4' => 'label4',
+                ];
+
                 foreach ($risks as $r) {
-                    $risk = $r->getJsonArray(['id', 'code', 'label1', 'label2', 'label3', 'label4', 'description1', 'description2', 'description3', 'description4']);
-                    $risk['measures'] = array();
-                    foreach ($r->measures as $m) {
-                        $risk['measures'][] = $m->getUuid();
+                    $risk = $r->getJsonArray([
+                        'id',
+                        'code',
+                        'label1',
+                        'label2',
+                        'label3',
+                        'label4',
+                        'description1',
+                        'description2',
+                        'description3',
+                        'description4',
+                    ]);
+                    $risk['measures'] = [];
+                    foreach ($r->measures as $measure) {
+                        $newMeasure = $measure->getJsonArray($measuresObj);
+                        $newMeasure['category'] = $measure->getCategory()
+                            ? $measure->getCategory()->getJsonArray($soacategoriesObj)
+                            : '';
+                        $newMeasure['referential'] = $measure->getReferential()->getJsonArray($referentialObj);
+                        $risk['measures'][] = $newMeasure;
                     }
                     $return['rolfTags'][$rolfTag['id']]['risks'][$risk['id']] = $risk['id'];
                     $return['rolfRisks'][$risk['id']] = $risk;
@@ -147,11 +199,10 @@ class ObjectExportService extends AbstractService
         // Recovery children(s)
         $children = array_reverse($this->get('objectObjectService')->getChildren(
             $entity->getUuid(),
-            is_null($entity->get('anr'))?null:$entity->get('anr')->get('id')
+            is_null($entity->get('anr')) ? null : $entity->get('anr')->get('id')
         )); // Le tri de cette fonction est "position DESC"
-        $return['children'] = null;
+        $return['children'] = [];
         if (!empty($children)) {
-            $return['children'] = [];
             $place = 1;
             foreach ($children as $child) {
                 $return['children'][$child->getChild()->getUuid()] = $this->generateExportArray(
@@ -160,7 +211,127 @@ class ObjectExportService extends AbstractService
                     $withEval
                 );
                 $return['children'][$child->getChild()->getUuid()]['object']['position'] = $place;
-                $place ++;
+                $place++;
+            }
+        }
+
+        return $return;
+    }
+
+    /**
+     * Generates an array to export into a filename
+     *
+     * @param int $id The object to export
+     * @param string $filename Reference to the string holding the filename
+     *
+     * @return array The data
+     * @throws Exception If the object is erroneous
+     */
+    public function generateExportMospArray($id, $anr = null, &$filename = "")
+    {
+        $language = $this->getLanguage();
+        switch ($language) {
+            case 1:
+                $languageCode = 'FR';
+                break;
+            case 2:
+                $languageCode = 'EN';
+                break;
+            case 3:
+                $languageCode = 'DE';
+                break;
+            case 4:
+                $languageCode = 'NL';
+                break;
+        }
+        if (empty($id)) {
+            throw new Exception('Object to export is required', 412);
+        }
+        try {
+            $entity = $this->get('table')->getEntity(['uuid' => $id, 'anr' => $anr]);
+        } catch (QueryException | MappingException $e) {
+            $entity = $this->get('table')->getEntity($id);
+        }
+
+        if (!$entity) {
+            throw new Exception('Entity `id` not found.');
+        }
+
+        $objectObj = [
+            'uuid' => 'uuid',
+            'scope' => 'scope',
+            'name' => 'name' . $language,
+            'label' => 'label' . $language,
+        ];
+
+        $return = [
+            'object' => $entity->getJsonArray($objectObj),
+        ];
+
+        $return['object']['name'] = $return['object']['name' . $language];
+        $return['object']['label'] = $return['object']['label' . $language];
+        $return['object']['scope'] = $return['object']['scope'] == 1 ? 'local' : 'global';
+        $return['object']['language'] = $languageCode;
+        $return['object']['version'] = 1;
+        unset($return['object']['name' . $language]);
+        unset($return['object']['label' . $language]);
+
+        $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $entity->get('name' . $this->getLanguage())) . '_MOSP';
+
+        // Recovery asset
+        $asset = $entity->get('asset');
+        $return['asset'] = null;
+        if (!empty($asset)) {
+            $asset = $asset->getJsonArray(['uuid']);
+            $return['asset'] = $this->get('assetExportService')->generateExportMospArray($asset['uuid'], $anr, $languageCode);
+        }
+
+        // Recovery of operational risks
+        $return['rolfRisks'] = [];
+        $return['rolfTags'] = [];
+        $rolfTag = $entity->get('rolfTag');
+        if (!empty($rolfTag)) {
+            $risks = $rolfTag->get('risks');
+            $rolfTag = $rolfTag->getJsonArray(['code', 'label' . $language]);
+            $rolfTag['label'] = $rolfTag['label' . $language];
+            unset($rolfTag['label' . $language]);
+            $return['rolfTags'][] = $rolfTag;
+            if (!empty($risks)) {
+                foreach ($risks as $r) {
+                    $risk = $r->getJsonArray(['code', 'label' . $language, 'description' . $language]);
+                    $risk['label'] = $risk['label' . $language];
+                    $risk['description'] = $risk['description' . $language] ?? '';
+                    unset($risk['label' . $language]);
+                    unset($risk['description' . $language]);
+
+                    $risk['measures'] = [];
+                    foreach ($r->getMeasures() as $measure) {
+                        $risk['measures'][] = [
+                            'uuid' => $measure->getUuid(),
+                            'code' => $measure->getCode(),
+                            'label' => $measure->{'getLabel' . $language}(),
+                            'category' => $measure->getCategory()->{'getLabel' . $language}(),
+                            'referential' => $measure->getReferential()->getUuid(),
+                            'referential_label' => $measure->getReferential()->{'getLabel' . $language}(),
+                        ];
+                    }
+                    $return['rolfRisks'][] = $risk;
+                }
+            }
+        }
+
+        // Recover children
+        $children = array_reverse($this->get('objectObjectService')->getChildren(
+            $entity->getUuid(),
+            is_null($entity->get('anr')) ? null : $entity->get('anr')->get('id')
+        )); // Le tri de cette fonction est "position DESC"
+        $return['children'] = [];
+        if (!empty($children)) {
+            foreach ($children as $child) {
+                $return['children'][] = $this->generateExportMospArray(
+                    $child->getChild()->getUuid(),
+                    $anr
+                );
             }
         }
 
@@ -169,10 +340,12 @@ class ObjectExportService extends AbstractService
 
     /**
      * Imports an object from an array
+     *
      * @param array $data The object data
      * @param Anr $anr The ANR object
      * @param string $modeImport The import mode, either 'merge' or 'duplicate'
      * @param array $objectsCache The objects cache reference array
+     *
      * @return bool
      */
     public function importFromArray($data, $anr, $modeImport = 'merge', &$objectsCache = [])
@@ -221,14 +394,63 @@ class ObjectExportService extends AbstractService
                                 $risk->setDbAdapter($this->get('rolfRiskTable')->getDb());
                                 $risk->setLanguage($this->getLanguage());
                                 $toExchange = $data['rolfRisks'][$k];
-                                foreach ($toExchange['measures'] as $measureUuid) {
-                                    try {
-                                        $measure = $this->get('measureTable')->getEntity([
+                                /** @var MeasureTable $measureTable */
+                                $measureTable = $this->get('measureTable');
+                                /** @var ReferentialTable $referentialTable */
+                                $referentialTable = $this->get('referentialTable');
+                                /** @var SoaCategoryTable $soaCategoryTable */
+                                $soaCategoryTable = $this->get('soaCategoryTable');
+                                foreach ($toExchange['measures'] as $newMeasure) {
+                                    /*
+                                     * Backward compatibility.
+                                     * Prior v2.10.3 we did not set the measures data when exported.
+                                     */
+                                    $measureUuid = $newMeasure['uuid'] ?? $newMeasure;
+                                    $measure = $measureTable->findByAnrAndUuid($anr, $measureUuid);
+                                    if ($measure === null
+                                        && isset($newMeasure['referential'], $newMeasure['category'])
+                                    ) {
+                                        $referential = $referentialTable->findByAnrAndUuid(
+                                            $anr,
+                                            $newMeasure['referential']['uuid']
+                                        );
+                                        if ($referential === null) {
+                                            $referential = (new Referential())
+                                                ->setAnr($anr)
+                                                ->setUuid($newMeasure['referential']['uuid'])
+                                                ->{'setLabel' . $this->getLanguage()}($newMeasure['referential']['label' . $this->getLanguage()]);
+                                            $referentialTable->saveEntity($referential);
+                                        }
+
+                                        $category = $soaCategoryTable->getEntityByFields([
                                             'anr' => $anr->getId(),
-                                            'uuid' => $measureUuid
+                                            'label' . $this->getLanguage() => $newMeasure['category']['label' . $this->getLanguage()],
+                                            'referential' => [
+                                                'anr' => $anr->getId(),
+                                                'uuid' => $referential->getUuid(),
+                                            ],
                                         ]);
+                                        if (empty($category)) {
+                                            $category = (new SoaCategory())
+                                                ->setAnr($anr)
+                                                ->setReferential($referential)
+                                                ->{'setLabel' . $this->getLanguage()}($newMeasure['category']['label' . $this->getLanguage()]);
+                                            $soaCategoryTable->saveEntity($category);
+                                        } else {
+                                            $category = current($category);
+                                        }
+
+                                        $measure = (new Measure())
+                                            ->setAnr($anr)
+                                            ->setUuid($measureUuid)
+                                            ->setCategory($category)
+                                            ->setReferential($referential)
+                                            ->setCode($newMeasure['code'])
+                                            ->setLabels($newMeasure);
+                                        $measureTable->saveEntity($measure, false);
+                                    }
+                                    if ($measure !== null) {
                                         $measure->addOpRisk($risk);
-                                    } catch (Exception $e) {
                                     }
                                 }
                                 unset($toExchange['measures']);
@@ -283,7 +505,7 @@ class ObjectExportService extends AbstractService
                         'scope' => $data['object']['scope'],
                         // il faut bien sûr que le type d'actif soit identique sinon on mergerait des torchons et des serviettes, ça donne des torchettes et c'est pas cool
                         'asset' => ['anr' => $anr->get('id'), 'uuid' => $assetId],
-                        'category' => $idCateg
+                        'category' => $idCateg,
                     ]));
                     if (!empty($object)) {
                         $object->setDbAdapter($this->get('table')->getDb());
@@ -311,13 +533,13 @@ class ObjectExportService extends AbstractService
                     $suffixe = 0;
                     $current = current($this->get('table')->getEntityByFields([
                         'anr' => $anr->get('id'),
-                        'name' . $this->getLanguage() => $toExchange['name' . $this->getLanguage()]
+                        'name' . $this->getLanguage() => $toExchange['name' . $this->getLanguage()],
                     ]));
                     while (!empty($current)) {
                         $suffixe++;
                         $current = current($this->get('table')->getEntityByFields([
                             'anr' => $anr->get('id'),
-                            'name' . $this->getLanguage() => $toExchange['name' . $this->getLanguage()] . ' - Imp. #' . $suffixe
+                            'name' . $this->getLanguage() => $toExchange['name' . $this->getLanguage()] . ' - Imp. #' . $suffixe,
                         ]));
                     }
                     if ($suffixe > 0) { // sinon inutile de modifier le nom, on garde celui de la source
@@ -380,7 +602,7 @@ class ObjectExportService extends AbstractService
                                 'anr' => $anr->get('id'),
                                 'father' => ['anr' => $anr->get('id'), 'uuid' => $idObj],
                                 'child' => ['anr' => $anr->get('id'), 'uuid' => $child],
-                                'implicitPosition' => 2
+                                'implicitPosition' => 2,
                             ]);
                             $this->setDependencies($oo, ['father', 'child', 'anr']);
                             $this->get('objectObjectService')->get('table')->save($oo);
@@ -397,9 +619,11 @@ class ObjectExportService extends AbstractService
 
     /**
      * Import categories from an exported array
+     *
      * @param array $data The imported data
      * @param int $idCateg The category ID
      * @param int $anrId The ANR ID
+     *
      * @return null|int The category ID or null
      */
     protected function importFromArrayCategories($data, $idCateg, $anrId)
@@ -412,7 +636,7 @@ class ObjectExportService extends AbstractService
             $categ = current($this->get('categoryTable')->getEntityByFields([
                 'anr' => $anrId,
                 'parent' => $idParent,
-                'label' . $this->getLanguage() => $data[$idCateg]['label' . $this->getLanguage()]
+                'label' . $this->getLanguage() => $data[$idCateg]['label' . $this->getLanguage()],
             ]));
             $checkLink = null;
             if (empty($categ)) { // on crée une nouvelle catégorie
@@ -454,13 +678,14 @@ class ObjectExportService extends AbstractService
                     $link->exchangeArray([
                         'anr' => $anrId,
                         'category' => $checkLink,
-                        'implicitPosition' => 2
+                        'implicitPosition' => 2,
                     ]);
                     $this->setDependencies($link, ['category', 'anr']);
                     $this->get('anrObjectCategoryTable')->save($link);
                 }
             }
         }
+
         return $return;
     }
 }

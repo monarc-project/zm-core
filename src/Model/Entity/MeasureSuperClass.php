@@ -176,7 +176,7 @@ class MeasureSuperClass extends AbstractEntity
     }
 
     /**
-     * @param Referential $referential
+     * @param ReferentialSuperClass $referential
      */
     public function setReferential($referential): self
     {
@@ -185,9 +185,6 @@ class MeasureSuperClass extends AbstractEntity
         return $this;
     }
 
-    /**
-     * @return Amv[]
-     */
     public function getAmvs()
     {
         return $this->amvs;
@@ -204,9 +201,9 @@ class MeasureSuperClass extends AbstractEntity
     }
 
     /**
-     * @param Amv $amv
+     * @param AmvSuperClass $amv
      */
-    public function addAmv($amv): self
+    public function addAmv(AmvSuperClass $amv): self
     {
         if (!$this->amvs->contains($amv)) {
             $this->amvs->add($amv);
@@ -402,5 +399,44 @@ class MeasureSuperClass extends AbstractEntity
     public function getCode(): string
     {
         return $this->code;
+    }
+
+    public function setCode(string $code): self
+    {
+        $this->code = $code;
+
+        return $this;
+    }
+
+    public function getLabel1(): string
+    {
+        return (string)$this->label1;
+    }
+
+    public function getLabel2(): string
+    {
+        return (string)$this->label2;
+    }
+
+    public function getLabel3(): string
+    {
+        return (string)$this->label3;
+    }
+
+    public function getLabel4(): string
+    {
+        return (string)$this->label4;
+    }
+
+    public function setLabels(array $labels): self
+    {
+        foreach ([1, 2, 3, 4] as $labelIndex) {
+            $labelKey = 'label' . $labelIndex;
+            if (isset($labels[$labelKey])) {
+                $this->{$labelKey} = $labels[$labelKey];
+            }
+        }
+
+        return $this;
     }
 }
