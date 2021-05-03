@@ -40,7 +40,7 @@ class InstanceRiskSuperClass extends AbstractEntity
     public const TYPE_NOT_SPECIFIC = 0;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer", nullable=false)
      * @ORM\Id
@@ -199,17 +199,11 @@ class InstanceRiskSuperClass extends AbstractEntity
      */
     protected $cacheTargetedRisk = -1;
 
-    /**
-     * @return int
-     */
     public function getId()
     {
         return $this->id;
     }
 
-    /**
-     * @param int $id
-     */
     public function setId($id): self
     {
         $this->id = $id;
@@ -217,18 +211,14 @@ class InstanceRiskSuperClass extends AbstractEntity
         return $this;
     }
 
-    /**
-     * @return AnrSuperClass
-     */
-    public function getAnr()
+    // TODO: the nullable value is added for the multi-fields relation issue (when we remove a relation, e.g. amv).
+    // TODO: remove when #240 is done.
+    public function getAnr(): ?AnrSuperClass
     {
         return $this->anr;
     }
 
-    /**
-     * @param AnrSuperClass $anr
-     */
-    public function setAnr($anr): self
+    public function setAnr(?AnrSuperClass $anr): self
     {
         $this->anr = $anr;
 
