@@ -518,7 +518,7 @@ class ObjectService extends AbstractService
         }
 
 
-        $anr = false;
+        $anr = null;
         if (!empty($data['anr'])) {
             /** @var AnrTable $anrTable */
             $anrTable = $this->get('anrTable');
@@ -599,8 +599,9 @@ class ObjectService extends AbstractService
         return $id;
     }
 
-    protected function importFromMosp(array $data, AnrSuperClass $anr): ?ObjectSuperClass
+    protected function importFromMosp(array $data, ?AnrSuperClass $anr): ?ObjectSuperClass
     {
+        return null;
     }
 
     public function update($id, $data, $context = AbstractEntity::BACK_OFFICE)
