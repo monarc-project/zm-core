@@ -37,7 +37,7 @@ class Authentication extends AbstractAdapter
     }
 
     /**
-     * @return User The current logged-in user
+     * @return UserSuperClass The current logged-in user
      */
     public function getUser(): UserSuperClass
     {

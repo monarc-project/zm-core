@@ -66,7 +66,7 @@ class ApiAnrRisksOpController extends AbstractController
      * @inheritdoc
      */
 	public function delete($id){
-		$this->methodNotAllowed($id);
+		$this->methodNotAllowed();
 	}
 
     /**

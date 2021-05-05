@@ -8,6 +8,12 @@ namespace Monarc\Core\Model;
 
 use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
+use Doctrine\ORM\ORMInvalidArgumentException;
+use Doctrine\ORM\TransactionRequiredException;
+use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\AbstractEntity;
 use Ramsey\Uuid\Uuid;
 
@@ -45,8 +51,10 @@ class Db
 
     /**
      * Finds all objects in the repository.
-     * @param  \Monarc\Core\Model\Entity\AbstractEntity $entity An entity from Monarc
-     * @return \Monarc\Core\Model\Entity\AbstractEntity[] All entities stored in database
+     *
+     * @param AbstractEntity $entity An entity from Monarc
+     *
+     * @return AbstractEntity[] All entities stored in database
      */
     public function fetchAll($entity)
     {
@@ -60,7 +68,7 @@ class Db
      *
      * @param string $class The name of the entity.
      *
-     * @return \Doctrine\ORM\EntityRepository The repository class.
+     * @return EntityRepository The repository class.
      */
     public function getRepository($class){
         return $this->getEntityManager()->getRepository($class);
@@ -121,7 +129,9 @@ class Db
 
     /**
      * Count number of elements in repository
-     * @param \Monarc\Core\Model\Entity\AbstractEntity $entity
+     *
+     * @param AbstractEntity $entity
+     *
      * @return int Number of elements
      */
     public function count($entity) {
@@ -133,11 +143,12 @@ class Db
      * Count number of elements in repository who matches with filters.
      * Apply order and limit for pagination.
      *
-     * @param \Monarc\Core\Model\Entity\AbstractEntity $entity
+     * @param AbstractEntity $entity
      * @param array|null $filter
      * @param array|null $filterAnd
      * @param array|null $filterJoin
      * @param array|null $filterLeft
+     *
      * @return int Number of elements
      */
     public function countFiltered($entity, $filter = null, $filterAnd = null, $filterJoin = null, $filterLeft = null) {
@@ -151,14 +162,15 @@ class Db
     /**
      * Finds an Entity by its identifier.
      *
-     * @param \Monarc\Core\Model\Entity\AbstractEntity $entity
-     * @return \Monarc\Core\Model\Entity\AbstractEntity The entity instance.
+     * @param AbstractEntity $entity
+     *
+     * @return AbstractEntity The entity instance.
      *
      * @throws OptimisticLockException
      * @throws ORMInvalidArgumentException
      * @throws TransactionRequiredException
      * @throws ORMException
-     * @throws \Monarc\Core\Exception\Exception
+     * @throws Exception
      */
     public function fetch($entity)
     {
@@ -180,7 +192,8 @@ class Db
      * @param string $entityClass
      * @param array $fields List of conditions ([key=>value,...] or [key=>[op=>operator,value=>value]...])
      * @param string[] $orderBy Order by [field=>DESC/ASC,...]
-     * @return \Monarc\Core\Model\Entity\AbstractEntity[] List of entities.
+     *
+     * @return AbstractEntity[] List of entities.
      */
     public function fetchByFields(string $entityClass, $fields, $orderBy)
     {
@@ -275,7 +288,7 @@ class Db
     /**
      * Delete Entities.
      *
-     * @param \Monarc\Core\Model\Entity\AbstractEntity[] $entities
+     * @param AbstractEntity[] $entities
      *
      * @throws \Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException
      */
@@ -286,14 +299,14 @@ class Db
             }
             $this->getEntityManager()->flush();
         } catch (ForeignKeyConstraintViolationException $e) {
-            throw new \Monarc\Core\Exception\Exception('Foreign key violation', '400');
+            throw new Exception('Foreign key violation', '400');
         }
     }
 
     /**
      * Delete Entity.
      *
-     * @param \Monarc\Core\Model\Entity\AbstractEntity $entity
+     * @param AbstractEntity $entity
      * @param boolean $last If true, flush entity in the repository
      *
      * @throws \Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException
@@ -306,14 +319,14 @@ class Db
                 $this->getEntityManager()->flush();
             }
         } catch (ForeignKeyConstraintViolationException $e) {
-            throw new \Monarc\Core\Exception\Exception('Foreign key violation', '400');
+            throw new Exception('Foreign key violation', '400');
         }
     }
 
     /**
      * Save Entity.
      *
-     * @param \Monarc\Core\Model\Entity\AbstractEntity $entity
+     * @param AbstractEntity $entity
      * @param boolean $last If true, flush entity in the repository
      * @return int identifier of the entity
      */
@@ -381,7 +394,7 @@ class Db
      * @param null $filterJoin
      * @param null $filterLeft
      * @return mixed
-     * @throws \Monarc\Core\Exception\Exception
+     * @throws Exception
      */
     private function buildFilteredQuery($repository, $page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null, $filterJoin = null, $filterLeft = null)
     {
@@ -390,7 +403,7 @@ class Db
         if (!is_null($filterJoin) && is_array($filterJoin)) {
             foreach ($filterJoin as $join) {
                 if ($join['as'] == 't') {
-                    throw new \Monarc\Core\Exception\Exception('Cannot use "t" as a table alias');
+                    throw new Exception('Cannot use "t" as a table alias');
                 }
 
                 $qb->innerJoin('t.' . $join['rel'], $join['as']);
@@ -401,7 +414,7 @@ class Db
         if (!is_null($filterLeft) && is_array($filterLeft)) {
             foreach ($filterLeft as $left) {
                 if ($left['as'] == 't') {
-                    throw new \Monarc\Core\Exception\Exception('Cannot use "t" as a table alias');
+                    throw new Exception('Cannot use "t" as a table alias');
                 }
 
                 $qb->leftJoin('t.' . $left['rel'], $left['as']);

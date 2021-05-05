@@ -34,7 +34,7 @@ class ObjectExportService extends AbstractService
      * @throws Exception
      * @throws NonUniqueResultException
      */
-    public function generateExportArray(string $uuid, $withEval = false): array
+    public function generateExportArray(string $uuid, $anr = null, $withEval = false): array
     {
         if (empty($uuid)) {
             throw new Exception('Object to export is required', 412);

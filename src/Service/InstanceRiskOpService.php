@@ -11,7 +11,6 @@ use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Monarc\Core\Model\Entity\Asset;
 use Monarc\Core\Model\Entity\InstanceRiskOp;
-use Monarc\Core\Model\Entity\InstanceRiskOpSuperClass;
 use Monarc\Core\Model\Entity\InstanceSuperClass;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Entity\ObjectSuperClass;
@@ -58,11 +57,7 @@ class InstanceRiskOpService extends AbstractService
                     if ($brotherInstance->getId() === $instance->getId()) {
                         continue;
                     }
-                    // TODO: replace with the table method.
-                    /** @var InstanceRiskOpSuperClass[] $instancesRisksOp */
-                    $instancesRisksOp = $instanceRiskOpTable->getEntityByFields([
-                        'instance' => $brotherInstance->getId()
-                    ]);
+                    $instancesRisksOp = $instanceRiskOpTable->findByInstance($brotherInstance);
                     foreach ($instancesRisksOp as $instanceRiskOp) {
                         /** @var InstanceRiskOp $newInstanceRiskOp */
                         $newInstanceRiskOp = (clone $instanceRiskOp)
