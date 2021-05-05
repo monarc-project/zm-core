@@ -11,6 +11,7 @@ use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\Amv;
 use Monarc\Core\Model\Entity\AmvSuperClass;
+use Monarc\Core\Model\Entity\AssetSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**
@@ -22,6 +23,18 @@ class AmvTable extends AbstractEntityTable
     public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
     {
         parent::__construct($dbService, Amv::class, $connectedUserService);
+    }
+
+    /**
+     * @return AmvSuperClass[]
+     */
+    public function findByAsset(AssetSuperClass $asset)
+    {
+        return $this->getRepository()->createQueryBuilder('amv')
+            ->where('amv.asset = :asset')
+            ->setParameter('asset', $asset)
+            ->getQuery()
+            ->getResult();
     }
 
     /**

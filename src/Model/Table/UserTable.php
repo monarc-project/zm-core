@@ -90,7 +90,6 @@ class UserTable extends AbstractEntityTable
      */
     public function findById(int $id): UserSuperClass
     {
-        // TODO: EntityManager has to be injected instead of the db class, we need to remove db classes at all.
         /** @var UserSuperClass|null $user */
         $user = $this->getRepository()->find($id);
         if ($user === null) {
@@ -100,50 +99,30 @@ class UserTable extends AbstractEntityTable
         return $user;
     }
 
+    public function findByEmail(string $email): UserSuperClass
+    {
+        $user = $this->getRepository()->createQueryBuilder('u')
+            ->where('u.email = :email')
+            ->setParameter(':email', $email)
+            ->getQuery()
+            ->setMaxResults(1)
+            ->getOneOrNullResult();
+
+        if ($user === null) {
+            throw new EntityNotFoundException(sprintf('User with email "%s" does not exist', $email));
+        }
+
+        return $user;
+    }
+
     /**
-     * TODO: move it to an abstract table class (also rename the method to save) when we remove AbstractEntityTable.
      * @throws ORMException
      */
     public function saveEntity(UserSuperClass $user): void
     {
-        // TODO: EntityManager has to be injected instead of the db class, actually we can remove db classes at all.
-        $this->db->getEntityManager()->persist($user);
-        $this->db->getEntityManager()->flush();
-    }
-
-    public function findByEmail(string $email): UserSuperClass
-    {
-        $users = $this->getRepository()->createQueryBuilder('u')
-            ->where('u.email = :email')
-            ->setParameter(':email', $email)
-            ->getQuery()
-            ->setMaxResults(1)
-            ->getResult();
-
-        if (!count($users)) {
-            throw new Exception('Entity does not exist', 422);
-        }
-
-        return $users[0];
-    }
-
-
-    public function getByEmailAndNotUserId(string $email, int $userId): UserSuperClass
-    {
-        $users = $this->getRepository()->createQueryBuilder('u')
-            ->where('u.email = :email')
-            ->andWhere('u.id <> :id')
-            ->setParameter(':email', $email)
-            ->setParameter(':id', $userId)
-            ->getQuery()
-            ->setMaxResults(1)
-            ->getResult();
-
-        if (!count($users)) {
-            throw new Exception('Record has not fount', 422);
-        }
-
-        return $users[0];
+        $em = $this->db->getEntityManager();
+        $em->persist($user);
+        $em->flush();
     }
 
     /**
@@ -158,8 +137,9 @@ class UserTable extends AbstractEntityTable
             $this->userTokenTable->deleteByUser($user->getId());
             $this->passwordTokenTable->deleteByUser($user->getId());
 
-            $this->db->getEntityManager()->remove($user);
-            $this->db->getEntityManager()->flush();
+            $em = $this->getDb()->getEntityManager();
+            $em->remove($user);
+            $em->flush();
 
             $this->getDb()->commit();
         } catch (Throwable $e) {
@@ -168,7 +148,7 @@ class UserTable extends AbstractEntityTable
             throw $e;
         }
 
-        // TODO: we will remove when abstract implementation is removed.
+        // TODO: Should be void, we will remove when abstract implementation is removed.
         return true;
     }
 }

@@ -18,6 +18,9 @@ class ConfigService
     /** @var array */
     protected $config;
 
+    /** @var array */
+    private $languageCodes = [];
+
     public function __construct(array $config)
     {
         $this->config = $config;
@@ -47,6 +50,17 @@ class ConfigService
             'languages' => $l,
             'defaultLanguageIndex' => $defaultLanguageIndex,
         ];
+    }
+
+    public function getLanguageCodes(): array
+    {
+        if (empty($this->languageCodes)) {
+            foreach ($this->config['languages'] as $languageCode => $languageData) {
+                $this->languageCodes[$languageData['index']] = strtoupper($languageCode);
+            }
+        }
+
+        return $this->languageCodes;
     }
 
     public function getHost(): string

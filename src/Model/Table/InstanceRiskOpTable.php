@@ -114,6 +114,15 @@ class InstanceRiskOpTable extends AbstractEntityTable
             ->getResult();
     }
 
+    public function saveEntity(InstanceRiskOpSuperClass $instanceRiskOp, bool $flush = true): void
+    {
+        $em = $this->getDb()->getEntityManager();
+        $em->persist($instanceRiskOp);
+        if ($flush) {
+            $em->flush();
+        }
+    }
+
     /**
      * @throws ORMException
      * @throws OptimisticLockException

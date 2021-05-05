@@ -73,23 +73,17 @@ class ObjectObjectSuperClass extends AbstractEntity
      */
     protected $position = 1;
 
-    protected $parameters = array(
-        'implicitPosition' => array(
+    protected $parameters = [
+        'implicitPosition' => [
             'field' => 'father',
-        ),
-    );
+        ],
+    ];
 
-    /**
-     * @return int
-     */
     public function getId()
     {
         return $this->id;
     }
 
-    /**
-     * @param int $id
-     */
     public function setId($id): self
     {
         $this->id = $id;
@@ -97,54 +91,36 @@ class ObjectObjectSuperClass extends AbstractEntity
         return $this;
     }
 
-    /**
-     * @return AnrSuperClass
-     */
-    public function getAnr()
+    public function getAnr(): AnrSuperClass
     {
         return $this->anr;
     }
 
-    /**
-     * @param Anr $anr
-     */
-    public function setAnr($anr): self
+    public function setAnr(AnrSuperClass $anr): self
     {
         $this->anr = $anr;
 
         return $this;
     }
 
-    /**
-     * @return ObjectSuperClass
-     */
-    public function getFather()
+    public function getFather(): ObjectSuperClass
     {
         return $this->father;
     }
 
-    /**
-     * @param ObjectSuperClass $father
-     */
-    public function setFather($father): self
+    public function setFather(ObjectSuperClass $father): self
     {
         $this->father = $father;
 
         return $this;
     }
 
-    /**
-     * @return ObjectSuperClass
-     */
-    public function getChild()
+    public function getChild(): ObjectSuperClass
     {
         return $this->child;
     }
 
-    /**
-     * @param ObjectSuperClass $child
-     */
-    public function setChild($child): self
+    public function setChild(ObjectSuperClass $child): self
     {
         $this->child = $child;
 
@@ -156,10 +132,7 @@ class ObjectObjectSuperClass extends AbstractEntity
         return $this->position;
     }
 
-    /**
-     * @param int $position
-     */
-    public function setPosition($position): self
+    public function setPosition(int $position): self
     {
         $this->position = $position;
 
@@ -180,6 +153,7 @@ class ObjectObjectSuperClass extends AbstractEntity
         $filtersCol = [
 
         ];
-        return [$filterJoin,$filterLeft,$filtersCol];
+
+        return [$filterJoin, $filterLeft, $filtersCol];
     }
 }

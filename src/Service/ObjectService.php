@@ -7,6 +7,8 @@
 
 namespace Monarc\Core\Service;
 
+use Doctrine\ORM\EntityNotFoundException;
+use Doctrine\ORM\NonUniqueResultException;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\AbstractEntity;
 use Monarc\Core\Model\Entity\AnrObjectCategory;
@@ -517,20 +519,15 @@ class ObjectService extends AbstractService
 
 
         $anr = false;
-        if (isset($data['anr']) && strlen($data['anr'])) {
+        if (!empty($data['anr'])) {
             /** @var AnrTable $anrTable */
             $anrTable = $this->get('anrTable');
-            $anr = $anrTable->getEntity($data['anr']);
+            $anr = $anrTable->findById((int)$data['anr']);
 
-            if (!$anr) {
-                throw new Exception('This risk analysis does not exist', 412);
-            }
             $monarcObject->setAnr($anr);
         }
 
-        if (isset($data['mosp']) && $data['mosp']) {
-            return $this->get('objectExportService')->importFromArray($data, $anr, isset($data['mode']) ? $data['mode'] : 'merge');
-        }
+        $this->importFromMosp($data, $anr);
 
         // Si asset secondaire, pas de rolfTag
         if (!empty($data['asset']) && !empty($data['rolfTag'])) {
@@ -600,6 +597,10 @@ class ObjectService extends AbstractService
         }
 
         return $id;
+    }
+
+    protected function importFromMosp(array $data, AnrSuperClass $anr): ?ObjectSuperClass
+    {
     }
 
     public function update($id, $data, $context = AbstractEntity::BACK_OFFICE)
@@ -1519,30 +1520,31 @@ class ObjectService extends AbstractService
     }
 
     /**
-     * Export
-     *
      * @param $data
      *
-     * @return string
+     * @return false|string
      * @throws Exception
+     * @throws EntityNotFoundException
+     * @throws NonUniqueResultException
      */
     public function export(&$data)
     {
         if (empty($data['id'])) {
             throw new Exception('Object to export is required', 412);
         }
-        $filename = '';
-        $withEval = false;
 
-        if (!empty($data['mosp'])) {
-            $object['object'] = $this->get('objectExportService')->generateExportMospArray($data['id'], $data['anr'], $filename);
+        /** @var ObjectExportService $objectExportService */
+        $objectExportService = $this->get('objectExportService');
+        $isForMosp = !empty($data['mosp']);
+        if ($isForMosp) {
+            $object = $objectExportService->generateExportMospArray($data['id']);
         } else {
-            $object = $this->get('objectExportService')->generateExportArray($data['id'], $data['anr'], $withEval, $filename);
+            $object = $objectExportService->generateExportArray($data['id'], false);
         }
 
         $exported = json_encode($object);
 
-        $data['filename'] = $filename;
+        $data['filename'] = $objectExportService->generateExportFileName($data['id'], $isForMosp);
 
         if (!empty($data['password'])) {
             $exported = $this->encrypt($exported, $data['password']);

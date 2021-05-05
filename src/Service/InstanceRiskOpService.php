@@ -13,11 +13,11 @@ use Monarc\Core\Model\Entity\Asset;
 use Monarc\Core\Model\Entity\InstanceRiskOp;
 use Monarc\Core\Model\Entity\InstanceSuperClass;
 use Monarc\Core\Model\Entity\MonarcObject;
+use Monarc\Core\Model\Entity\ObjectSuperClass;
+use Monarc\Core\Model\Entity\RolfTagSuperClass;
 use Monarc\Core\Model\Table\InstanceRiskOpTable;
 use Monarc\Core\Model\Table\InstanceTable;
 use Monarc\Core\Model\Table\RolfTagTable;
-use Doctrine\ORM\Query\QueryException;
-use Doctrine\ORM\Mapping\MappingException;
 
 /**
  * Instance Risk Service Op
@@ -40,55 +40,30 @@ class InstanceRiskOpService extends AbstractService
     protected $forbiddenFields = ['anr', 'instance', 'object'];
     protected $recommandationTable;
 
-    /**
-     * Creates a new instance operational risk
-     * @param int $instanceId The ID of the instance
-     * @param int $anrId The ANR ID
-     * @param Object $object The affected object
-     */
-    public function createInstanceRisksOp($instanceId, $anrId, $object)
+    public function createInstanceRisksOp(InstanceSuperClass $instance, ObjectSuperClass $object)
     {
-        if (isset($object->asset) &&
-            $object->asset->type == Asset::TYPE_PRIMARY &&
-            $object->rolfTag !== null
+        if ($object->getAsset() !== null
+            && $object->getRolfTag() !== null
+            && $object->getAsset()->getType() === Asset::TYPE_PRIMARY
         ) {
-            //retrieve brothers instances
             /** @var InstanceTable $instanceTable */
             $instanceTable = $this->get('instanceTable');
-            try {
-                $instances = $instanceTable->getEntityByFields([
-                    'anr' => $anrId,
-                    'object' => $object->getUuid(),
-                ]);
-            } catch (QueryException | MappingException $e) {
-                $instances = $instanceTable->getEntityByFields([
-                    'anr' => $anrId,
-                    'object' => [
-                        'anr' => $anrId,
-                        'uuid' => $object->getUuid(),
-                    ]
-                ]);
-            }
+            $brotherInstances = $instanceTable->findByAnrAndObject($instance->getAnr(), $object);
 
-            if ($object->scope == MonarcObject::SCOPE_GLOBAL && count($instances) > 1) {
-                /** @var InstanceTable $instanceTable */
-                $instanceTable = $this->get('instanceTable');
-                $currentInstance = $instanceTable->getEntity($instanceId);
-
+            if ($object->getScope() === MonarcObject::SCOPE_GLOBAL && \count($brotherInstances) > 1) {
                 /** @var InstanceRiskOpTable $instanceRiskOpTable */
                 $instanceRiskOpTable = $this->get('table');
-                foreach ($instances as $instance) {
-                    if ($instance->getId() === $instanceId) {
+                foreach ($brotherInstances as $brotherInstance) {
+                    if ($brotherInstance->getId() === $instance->getId()) {
                         continue;
                     }
-
-                    $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['instance' => $instance->id]);
+                    $instancesRisksOp = $instanceRiskOpTable->findByInstance($brotherInstance);
                     foreach ($instancesRisksOp as $instanceRiskOp) {
                         /** @var InstanceRiskOp $newInstanceRiskOp */
                         $newInstanceRiskOp = (clone $instanceRiskOp)
                             ->setId(null)
                             ->setAnr($instance->getAnr())
-                            ->setInstance($currentInstance)
+                            ->setInstance($instance)
                             ->setCreator($this->getConnectedUser()->getFirstname() . ' '
                                 . $this->getConnectedUser()->getLastname());
                         $instanceRiskOpTable->save($newInstanceRiskOp);
@@ -97,20 +72,18 @@ class InstanceRiskOpService extends AbstractService
                     break;
                 }
             } else {
-                //retrieve rolf risks
                 /** @var RolfTagTable $rolfTagTable */
                 $rolfTagTable = $this->get('rolfTagTable');
-                $rolfTag = $rolfTagTable->getEntity($object->rolfTag->id);
+                /** @var RolfTagSuperClass $rolfTag */
+                $rolfTag = $rolfTagTable->getEntity($object->getRolfTag()->getId());
 
                 $rolfRisks = $rolfTag->risks;
 
-                $nbRolfRisks = count($rolfRisks);
-                $i = 1;
-                $nbRolfRisks = count($rolfRisks);
-                foreach ($rolfRisks as $rolfRisk) {
+                $nbRolfRisks = \count($rolfRisks);
+                foreach ($rolfRisks as $i => $rolfRisk) {
                     $data = [
-                        'anr' => $anrId,
-                        'instance' => $instanceId,
+                        'anr' => $instance->getAnr() ? $instance->getAnr()->getId() : null,
+                        'instance' => $instance->getId(),
                         'object' => $object->getUuid(),
                         'rolfRisk' => $rolfRisk->id,
                         'riskCacheCode' => $rolfRisk->code,
@@ -123,8 +96,7 @@ class InstanceRiskOpService extends AbstractService
                         'riskCacheDescription3' => $rolfRisk->description3,
                         'riskCacheDescription4' => $rolfRisk->description4,
                     ];
-                    $this->create($data, ($i == $nbRolfRisks));
-                    $i++;
+                    $this->create($data, ($i + 1) === $nbRolfRisks);
                 }
             }
         }
@@ -155,7 +127,9 @@ class InstanceRiskOpService extends AbstractService
     {
         /** @var InstanceRiskOpTable $table */
         $table = $this->get('table');
-        return $table->getEntityByFields(['anr' => $anrId, 'instance' => $instanceId]);
+
+        // TODO: getInstanceRisksOp by instance, anr is an extra. Use the table method directly (add findByInstance)!!!
+        return $table->findByInstance(['anr' => $anrId, 'instance' => $instanceId]);
     }
 
     /**
@@ -168,6 +142,7 @@ class InstanceRiskOpService extends AbstractService
     {
         /** @var InstanceRiskOpTable $table */
         $table = $this->get('table');
+
         return $table->getInstancesRisksOp($anrId, $instancesIds, $params);
     }
 

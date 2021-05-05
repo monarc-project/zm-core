@@ -207,6 +207,11 @@ class SoaCategorySuperClass extends AbstractEntity
         return $this;
     }
 
+    public function getStatus(): int
+    {
+        return $this->status;
+    }
+
     public function getInputFilter($partial = false)
     {
         if (!$this->inputFilter) {

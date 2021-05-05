@@ -93,10 +93,17 @@ class QuestionSuperClass extends AbstractEntity
      * @param int $id
      * @return Question
      */
-    public function setId($id)
+    public function setId($id): self
     {
         $this->id = $id;
+
         return $this;
+    }
+
+
+    public function isMultiChoice(): bool
+    {
+        return $this->multichoice === 1;
     }
 
     protected $parameters = array(

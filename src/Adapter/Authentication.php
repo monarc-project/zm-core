@@ -1,6 +1,7 @@
 <?php
 namespace Monarc\Core\Adapter;
 
+use Doctrine\ORM\EntityNotFoundException;
 use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Model\Table\UserTable;
 use Laminas\Authentication\Adapter\AbstractAdapter;
@@ -36,7 +37,7 @@ class Authentication extends AbstractAdapter
     }
 
     /**
-     * @return User The current logged-in user
+     * @return UserSuperClass The current logged-in user
      */
     public function getUser(): UserSuperClass
     {
@@ -52,26 +53,21 @@ class Authentication extends AbstractAdapter
     {
         $identity = $this->getIdentity();
         $credential = $this->getCredential();
-        $users = $this->userTable->getRepository()->findByEmail($identity);
-        switch (count($users)) {
-            case 0:
-                return new Result(Result::FAILURE_IDENTITY_NOT_FOUND, $this->getIdentity());
-            case 1:
-                $user = current($users);
-                // TODO: faire le test sur dateStart && dateEnd
-                if ($user->isActive()) {
-                    if (password_verify($credential, $user->getPassword())) {
-                        $this->setUser($user);
+        try {
+            $user = $this->userTable->findByEmail($identity);
+        } catch (EntityNotFoundException $e) {
+            return new Result(Result::FAILURE_IDENTITY_NOT_FOUND, $this->getIdentity());
+        }
 
-                        return new Result(Result::SUCCESS, $this->getIdentity());
-                    }
+        // TODO: faire le test sur dateStart && dateEnd
+        if ($user->isActive()) {
+            if (password_verify($credential, $user->getPassword())) {
+                $this->setUser($user);
 
-                    return new Result(Result::FAILURE_CREDENTIAL_INVALID, $this->getIdentity());
-                }
+                return new Result(Result::SUCCESS, $this->getIdentity());
+            }
 
-                return new Result(Result::FAILURE_UNCATEGORIZED, $this->getIdentity());
-            default:
-                return new Result(Result::FAILURE_IDENTITY_AMBIGUOUS, $this->getIdentity());
+            return new Result(Result::FAILURE_CREDENTIAL_INVALID, $this->getIdentity());
         }
     }
 }

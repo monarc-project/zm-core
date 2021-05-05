@@ -37,9 +37,10 @@ class InstanceRiskSuperClass extends AbstractEntity
     const KIND_NOT_TREATED = 5;
 
     public const TYPE_SPECIFIC = 1;
+    public const TYPE_NOT_SPECIFIC = 0;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer", nullable=false)
      * @ORM\Id
@@ -198,17 +199,11 @@ class InstanceRiskSuperClass extends AbstractEntity
      */
     protected $cacheTargetedRisk = -1;
 
-    /**
-     * @return int
-     */
     public function getId()
     {
         return $this->id;
     }
 
-    /**
-     * @param int $id
-     */
     public function setId($id): self
     {
         $this->id = $id;
@@ -216,18 +211,14 @@ class InstanceRiskSuperClass extends AbstractEntity
         return $this;
     }
 
-    /**
-     * @return AnrSuperClass
-     */
-    public function getAnr()
+    // TODO: the nullable value is added for the multi-fields relation issue (when we remove a relation, e.g. amv).
+    // TODO: remove when #240 is done.
+    public function getAnr(): ?AnrSuperClass
     {
         return $this->anr;
     }
 
-    /**
-     * @param AnrSuperClass $anr
-     */
-    public function setAnr($anr): self
+    public function setAnr(?AnrSuperClass $anr): self
     {
         $this->anr = $anr;
 
@@ -347,9 +338,102 @@ class InstanceRiskSuperClass extends AbstractEntity
         return $this->specific;
     }
 
+    public function setSpecific(int $specific): self
+    {
+        $this->specific = $specific;
+
+        return $this;
+    }
+
     public function isSpecific(): bool
     {
         return $this->specific === self::TYPE_SPECIFIC;
+    }
+
+    public function setThreatRate(int $threatRate): self
+    {
+        $this->threatRate = $threatRate;
+
+        return $this;
+    }
+
+    public function getThreatRate(): int
+    {
+        return $this->threatRate;
+    }
+
+    public function setVulnerabilityRate(int $vulnerabilityRate): self
+    {
+        $this->vulnerabilityRate = $vulnerabilityRate;
+
+        return $this;
+    }
+
+    public function getVulnerabilityRate(): int
+    {
+        return $this->vulnerabilityRate;
+    }
+
+    public function getRiskConfidentiality(): int
+    {
+        return (int)$this->riskC;
+    }
+
+    public function setRiskConfidentiality(int $riskC): InstanceRiskSuperClass
+    {
+        $this->riskC = $riskC;
+
+        return $this;
+    }
+
+    public function getRiskIntegrity(): int
+    {
+        return (int)$this->riskI;
+    }
+
+    public function setRiskIntegrity(int $riskI): InstanceRiskSuperClass
+    {
+        $this->riskI = $riskI;
+
+        return $this;
+    }
+
+    public function getRiskAvailability(): int
+    {
+        return (int)$this->riskD;
+    }
+
+    public function setRiskAvailability(int $riskD): InstanceRiskSuperClass
+    {
+        $this->riskD = $riskD;
+
+        return $this;
+    }
+
+    public function setCacheMaxRisk(int $cacheMaxRisk): InstanceRiskSuperClass
+    {
+        $this->cacheMaxRisk = $cacheMaxRisk;
+
+        return $this;
+    }
+
+    public function setCacheTargetedRisk(int $cacheTargetedRisk): InstanceRiskSuperClass
+    {
+        $this->cacheTargetedRisk = $cacheTargetedRisk;
+
+        return $this;
+    }
+
+    public function getReductionAmount(): int
+    {
+        return $this->reductionAmount;
+    }
+
+    public function setReductionAmount(int $reductionAmount): InstanceRiskSuperClass
+    {
+        $this->reductionAmount = $reductionAmount;
+
+        return $this;
     }
 
     public function isTreated(): bool
@@ -373,24 +457,16 @@ class InstanceRiskSuperClass extends AbstractEntity
         }
     }
 
+    public function setMh(int $mh): self
+    {
+        $this->mh = $mh;
+
+        return $this;
+    }
+
     public function getMh(): int
     {
         return (int)$this->mh;
-    }
-
-    public function getRiskConfidentiality(): int
-    {
-        return (int)$this->riskC;
-    }
-
-    public function getRiskIntegrity(): int
-    {
-        return (int)$this->riskI;
-    }
-
-    public function getRiskAvailability(): int
-    {
-        return (int)$this->riskD;
     }
 
     public function getCacheMaxRisk(): int
@@ -403,9 +479,40 @@ class InstanceRiskSuperClass extends AbstractEntity
         return (int)$this->cacheTargetedRisk;
     }
 
+    public function setComment(string $comment): self
+    {
+        $this->comment = $comment;
+
+        return $this;
+    }
+
     public function getComment(): string
     {
         return (string)$this->comment;
+    }
+
+    public function getKindOfMeasure(): int
+    {
+        return $this->kindOfMeasure;
+    }
+
+    public function setKindOfMeasure(int $kindOfMeasure): self
+    {
+        $this->kindOfMeasure = $kindOfMeasure;
+
+        return $this;
+    }
+
+    public function getCommentAfter(): string
+    {
+        return (string)$this->commentAfter;
+    }
+
+    public function setCommentAfter(string $commentAfter): self
+    {
+        $this->commentAfter = $commentAfter;
+
+        return $this;
     }
 
     public function getInputFilter($partial = false)

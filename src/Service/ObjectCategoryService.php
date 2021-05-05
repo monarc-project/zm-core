@@ -193,11 +193,8 @@ class ObjectCategoryService extends AbstractService
             ->where('t.parent = :parent')
             ->setParameter(':parent', $id)
             ->getQuery()->getResult();
-        $i = 1;
-        $nbChildren = count($children);
         foreach ($children as $c) {
-            $this->delete($c->id, ($i == $nbChildren));
-            $i++;
+            $this->delete($c->getId());
         }
 
         $this->get('monarcObjectTable')->getRepository()->createQueryBuilder('t')

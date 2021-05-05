@@ -175,10 +175,7 @@ class MeasureSuperClass extends AbstractEntity
         return $this->referential;
     }
 
-    /**
-     * @param ReferentialSuperClass $referential
-     */
-    public function setReferential($referential): self
+    public function setReferential(ReferentialSuperClass $referential): self
     {
         $this->referential = $referential;
 
@@ -191,7 +188,7 @@ class MeasureSuperClass extends AbstractEntity
     }
 
     /**
-     * @param Amv[] $amvs
+     * @param AmvSuperClass[] $amvs
      */
     public function setAmvs($amvs): self
     {
@@ -200,9 +197,6 @@ class MeasureSuperClass extends AbstractEntity
         return $this;
     }
 
-    /**
-     * @param AmvSuperClass $amv
-     */
     public function addAmv(AmvSuperClass $amv): self
     {
         if (!$this->amvs->contains($amv)) {
@@ -213,13 +207,11 @@ class MeasureSuperClass extends AbstractEntity
         return $this;
     }
 
-    /**
-     * @param RolfRisk $riskInput
-     */
-    public function addOpRisk($riskInput): self
+    public function addOpRisk(RolfRiskSuperClass $riskInput): self
     {
-        if (!$this->getRolfRisks()->contains($riskInput)) {
+        if (!$this->rolfRisks->contains($riskInput)) {
             $this->rolfRisks->add($riskInput);
+            $riskInput->addMeasure($this);
         }
 
         return $this;
@@ -235,33 +227,37 @@ class MeasureSuperClass extends AbstractEntity
         return $this;
     }
 
-    /**
-     * @param RolfRisk $riskInput
-     * @return Measure
-     */
-    public function deleteOpRisk($riskInput): self
+    public function deleteOpRisk(RolfRiskSuperClass $riskInput): self
     {
-        $this->rolfRisks->removeElement($riskInput);
+        if ($this->rolfRisks->contains($riskInput)) {
+            $this->rolfRisks->removeElement($riskInput);
+            $riskInput->removeMeasure($this);
+        }
 
         return $this;
     }
 
-    public function addLinkedMeasure(MeasureSuperClass $measure)
+    public function addLinkedMeasure(MeasureSuperClass $measure): self
     {
         if (!$this->measuresLinked->contains($measure)) {
             $this->measuresLinked->add($measure);
             $measure->addLinkedMeasure($this);
         }
+
+        return $this;
     }
 
-    public function deleteLinkedMeasure(MeasureSuperClass $measure)
+    public function deleteLinkedMeasure(MeasureSuperClass $measure): self
     {
         if ($this->measuresLinked->contains($measure)) {
             $this->measuresLinked->removeElement($measure);
             $measure->deleteLinkedMeasure($this);
         }
+
+        return $this;
     }
 
+    // TODO: rename to getLinkedMeasures, and variable name to linkedMeasures.
     public function getMeasuresLinked()
     {
         return $this->measuresLinked;
@@ -273,6 +269,72 @@ class MeasureSuperClass extends AbstractEntity
     public function setMeasuresLinked($measuresLinked)
     {
         $this->measuresLinked = $measuresLinked;
+
+        return $this;
+    }
+
+    public function getRolfRisks()
+    {
+        return $this->rolfRisks;
+    }
+
+    public function setRolfRisks($rolfRisks): self
+    {
+        $this->rolfRisks = $rolfRisks;
+
+        return $this;
+    }
+
+    public function addRolfRisk(RolfRiskSuperClass $rolfRisk): self
+    {
+        if (!$this->rolfRisks->contains($rolfRisk)) {
+            $this->rolfRisks->add($rolfRisk);
+            $rolfRisk->addMeasure($this);
+        }
+
+        return $this;
+    }
+
+    public function getCode(): string
+    {
+        return $this->code;
+    }
+
+    public function setCode(string $code): self
+    {
+        $this->code = $code;
+
+        return $this;
+    }
+
+    public function getLabel1(): string
+    {
+        return (string)$this->label1;
+    }
+
+    public function getLabel2(): string
+    {
+        return (string)$this->label2;
+    }
+
+    public function getLabel3(): string
+    {
+        return (string)$this->label3;
+    }
+
+    public function getLabel4(): string
+    {
+        return (string)$this->label4;
+    }
+
+    public function setLabels(array $labels): self
+    {
+        foreach (range(1, 4) as $labelIndex) {
+            $labelKey = 'label' . $labelIndex;
+            if (isset($labels[$labelKey])) {
+                $this->{$labelKey} = $labels[$labelKey];
+            }
+        }
 
         return $this;
     }
@@ -370,73 +432,5 @@ class MeasureSuperClass extends AbstractEntity
         ];
 
         return [$filterJoin, $filterLeft, $filtersCol];
-    }
-
-    /**
-     * Get the value of Rolf Risks
-     *
-     * @return Collection
-     */
-    public function getRolfRisks()
-    {
-        return $this->rolfRisks;
-    }
-
-    /**
-     * Set the value of Rolf Risks
-     *
-     * @param Collection rolfRisks
-     *
-     * @return self
-     */
-    public function setRolfRisks(Collection $rolfRisks)
-    {
-        $this->rolfRisks = $rolfRisks;
-
-        return $this;
-    }
-
-    public function getCode(): string
-    {
-        return $this->code;
-    }
-
-    public function setCode(string $code): self
-    {
-        $this->code = $code;
-
-        return $this;
-    }
-
-    public function getLabel1(): string
-    {
-        return (string)$this->label1;
-    }
-
-    public function getLabel2(): string
-    {
-        return (string)$this->label2;
-    }
-
-    public function getLabel3(): string
-    {
-        return (string)$this->label3;
-    }
-
-    public function getLabel4(): string
-    {
-        return (string)$this->label4;
-    }
-
-    public function setLabels(array $labels): self
-    {
-        foreach ([1, 2, 3, 4] as $labelIndex) {
-            $labelKey = 'label' . $labelIndex;
-            if (isset($labels[$labelKey])) {
-                $this->{$labelKey} = $labels[$labelKey];
-            }
-        }
-
-        return $this;
     }
 }

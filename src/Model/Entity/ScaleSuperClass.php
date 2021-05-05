@@ -107,17 +107,17 @@ class ScaleSuperClass extends AbstractEntity
 
     public function getType(): int
     {
-        return $this->type;
+        return (int)$this->type;
     }
 
     public function getMin(): int
     {
-        return $this->min;
+        return (int)$this->min;
     }
 
     public function getMax(): int
     {
-        return $this->max;
+        return (int)$this->max;
     }
 
     public function getInputFilter($partial = false)

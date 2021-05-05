@@ -59,7 +59,7 @@ class InstanceSuperClass extends AbstractEntity
     /**
      * @var AssetSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Asset", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Asset", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="asset_id", referencedColumnName="uuid", nullable=true)
      * })
@@ -69,7 +69,7 @@ class InstanceSuperClass extends AbstractEntity
     /**
      * @var ObjectSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\MonarcObject", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="MonarcObject", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="object_id", referencedColumnName="uuid", nullable=true)
      * })
@@ -79,7 +79,7 @@ class InstanceSuperClass extends AbstractEntity
     /**
      * @var InstanceSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Instance", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Instance", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="root_id", referencedColumnName="id", nullable=true)
      * })
@@ -89,12 +89,19 @@ class InstanceSuperClass extends AbstractEntity
     /**
      * @var InstanceSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Instance", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Instance", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="parent_id", referencedColumnName="id", nullable=true)
      * })
      */
     protected $parent;
+
+    /**
+     * @var InstanceConsequenceSuperClass[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="InstanceConsequence", mappedBy="instance")
+     */
+    protected $instanceConsequences;
 
     /**
      * @var string
@@ -229,6 +236,13 @@ class InstanceSuperClass extends AbstractEntity
      */
     protected $position = 1;
 
+    public function __construct($obj = null)
+    {
+        $this->instanceConsequences = new ArrayCollection();
+
+        parent::__construct($obj);
+    }
+
     /**
      * @return int
      */
@@ -334,6 +348,18 @@ class InstanceSuperClass extends AbstractEntity
         return $this->level === static::LEVEL_ROOT;
     }
 
+    public function setNames(array $names): self
+    {
+        foreach (range(1, 4) as $index) {
+            $key = 'name' . $index;
+            if (isset($names[$key])) {
+                $this->{$key} = $names[$key];
+            }
+        }
+
+        return $this;
+    }
+
     public function getName1(): string
     {
         return (string)$this->name1;
@@ -352,6 +378,18 @@ class InstanceSuperClass extends AbstractEntity
     public function getName4(): string
     {
         return (string)$this->name4;
+    }
+
+    public function setLabels(array $labels): self
+    {
+        foreach (range(1, 4) as $index) {
+            $key = 'label' . $index;
+            if (isset($labels[$key])) {
+                $this->{$key} = $labels[$key];
+            }
+        }
+
+        return $this;
     }
 
     public function getLabel1(): string
@@ -374,9 +412,23 @@ class InstanceSuperClass extends AbstractEntity
         return (string)$this->label4;
     }
 
+    public function setDisponibility(float $disponibility): self
+    {
+        $this->disponibility = $disponibility;
+
+        return $this;
+    }
+
     public function getDisponibility(): float
     {
         return $this->disponibility;
+    }
+
+    public function setAssetType(int $assetType): self
+    {
+        $this->assetType = $assetType;
+
+        return $this;
     }
 
     public function getAssetType(): int
@@ -384,9 +436,23 @@ class InstanceSuperClass extends AbstractEntity
         return $this->assetType;
     }
 
+    public function setExportable(int $exportable): self
+    {
+        $this->exportable = $exportable;
+
+        return $this;
+    }
+
     public function getExportable(): int
     {
         return $this->exportable;
+    }
+
+    public function setConfidentiality(int $c): self
+    {
+        $this->c = $c;
+
+        return $this;
     }
 
     public function getConfidentiality(): int
@@ -394,9 +460,23 @@ class InstanceSuperClass extends AbstractEntity
         return $this->c;
     }
 
+    public function setIntegrity(int $i): self
+    {
+        $this->i = $i;
+
+        return $this;
+    }
+
     public function getIntegrity(): int
     {
         return $this->i;
+    }
+
+    public function setAvailability(int $d): self
+    {
+        $this->d = $d;
+
+        return $this;
     }
 
     public function getAvailability(): int
@@ -404,9 +484,23 @@ class InstanceSuperClass extends AbstractEntity
         return $this->d;
     }
 
+    public function setInheritedConfidentiality(int $ch): self
+    {
+        $this->ch = $ch;
+
+        return $this;
+    }
+
     public function getInheritedConfidentiality(): int
     {
         return $this->ch;
+    }
+
+    public function setInheritedIntegrity(int $ih): self
+    {
+        $this->ih = $ih;
+
+        return $this;
     }
 
     public function getInheritedIntegrity(): int
@@ -414,14 +508,45 @@ class InstanceSuperClass extends AbstractEntity
         return $this->ih;
     }
 
+    public function setInheritedAvailability(int $dh): self
+    {
+        $this->dh = $dh;
+
+        return $this;
+    }
+
     public function getInheritedAvailability(): int
     {
         return $this->dh;
     }
 
+    public static function getAvailableScalesCriteria(): array
+    {
+        return [
+            'c' => 'Confidentiality',
+            'i' => 'Integrity',
+            'd' => 'Availability'
+        ];
+    }
+
     public function getPosition(): int
     {
         return $this->position;
+    }
+
+    public function setPosition(int $position): self
+    {
+        $this->position = $position;
+
+        return $this;
+    }
+
+    /**
+     * @return InstanceConsequenceSuperClass[]
+     */
+    public function getInstanceConsequences()
+    {
+        return $this->instanceConsequences;
     }
 
     protected $parameters = array(

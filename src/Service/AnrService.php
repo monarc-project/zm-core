@@ -214,7 +214,7 @@ class AnrService extends AbstractService
             throw new Exception('Anr to export is required', 412);
         }
 
-        $filename = "";
+        $filename = '';
 
         $with_eval = isset($data['assessments']) && $data['assessments'];
         //$with_controls_reco = isset($data['controls_reco']) && $data['controls_reco'];

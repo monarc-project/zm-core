@@ -12,6 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 use Ramsey\Uuid\Lazy\LazyUuidFromString;
+use Ramsey\Uuid\Uuid;
 
 /**
  * ObjectSuperClass
@@ -216,6 +217,18 @@ class ObjectSuperClass extends AbstractEntity
     }
 
     /**
+     * @ORM\PrePersist
+     */
+    public function generateAndSetUuid(): self
+    {
+        if ($this->uuid === null) {
+            $this->uuid = Uuid::uuid4();
+        }
+
+        return $this;
+    }
+
+    /**
      * @return AnrSuperClass|null
      */
     public function getAnr(): ?AnrSuperClass
@@ -251,10 +264,7 @@ class ObjectSuperClass extends AbstractEntity
         return $this;
     }
 
-    /**
-     * @return AssetSuperClass
-     */
-    public function getAsset()
+    public function getAsset(): ?AssetSuperClass
     {
         return $this->asset;
     }
@@ -269,10 +279,7 @@ class ObjectSuperClass extends AbstractEntity
         return $this;
     }
 
-    /**
-     * @return RolfTagSuperClass
-     */
-    public function getRolfTag()
+    public function getRolfTag(): ?RolfTagSuperClass
     {
         return $this->rolfTag;
     }
@@ -280,7 +287,7 @@ class ObjectSuperClass extends AbstractEntity
     /**
      * @param RolfTagSuperClass $rolfTag
      */
-    public function setRolfTag($rolfTag): self
+    public function setRolfTag(?RolfTagSuperClass $rolfTag): self
     {
         $this->rolfTag = $rolfTag;
 
@@ -308,7 +315,7 @@ class ObjectSuperClass extends AbstractEntity
     /**
      * @param AnrSuperClass $anr
      */
-    public function addAnr(AnrSuperClass $anr)
+    public function addAnr(AnrSuperClass $anr): self
     {
         if ($this->anrs === null) {
             $this->anrs = new ArrayCollection();
@@ -321,9 +328,94 @@ class ObjectSuperClass extends AbstractEntity
         return $this;
     }
 
+    public function setName(string $nameKey, string $nameValue): self
+    {
+        if (in_array($nameKey, ['name1', 'name2', 'name3', 'name4'], true)) {
+            $this->{$nameKey} = $nameValue;
+        }
+
+        return $this;
+    }
+
+    public function getName(int $languageIndex): string
+    {
+        if (!in_array($languageIndex, range(1, 4), true)) {
+            return '';
+        }
+
+        return (string)$this->{'name' . $languageIndex};
+    }
+
+    public function setLabel(string $labelKey, string $labelValue): self
+    {
+        if (in_array($labelKey, ['label1', 'label2', 'label3', 'label4'], true)) {
+            $this->{$labelKey} = $labelValue;
+        }
+
+        return $this;
+    }
+
+    public function getLabel(int $languageIndex): string
+    {
+        if (!\in_array($languageIndex, range(1, 4), true)) {
+            return '';
+        }
+
+        return (string)$this->{'label' . $languageIndex};
+    }
+
     public function getScope(): int
     {
         return $this->scope;
+    }
+
+    public function setScope(int $scope): self
+    {
+        $this->scope = $scope;
+
+        return $this;
+    }
+
+    public function getScopeName(): string
+    {
+        return $this->scope === static::SCOPE_LOCAL ? 'local' : 'global';
+    }
+
+    public function setDisponibility(float $disponibility): self
+    {
+        $this->disponibility = $disponibility;
+
+        return $this;
+    }
+
+    public function getDisponibility(): float
+    {
+        return $this->disponibility;
+    }
+
+    public function setPosition(int $position): self
+    {
+        $this->position = $position;
+
+        return $this;
+    }
+
+
+    public function getPosition(): int
+    {
+        return $this->position;
+    }
+
+    public function setMode(int $mode): self
+    {
+        $this->mode = $mode;
+
+        return $this;
+    }
+
+    public function getMode(): int
+    {
+        return $this->mode;
     }
 
     public function isScopeGlobal(): bool
@@ -362,7 +454,7 @@ class ObjectSuperClass extends AbstractEntity
                     'required' => false,
                     'allow_empty' => false,
                     'filters' => array(),
-                  //  'validators' => $validatorsName,
+                    //  'validators' => $validatorsName,
                 ));
             }
 

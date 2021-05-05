@@ -11,6 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 use Ramsey\Uuid\Lazy\LazyUuidFromString;
+use Ramsey\Uuid\Uuid;
 
 /**
  * Threat
@@ -175,6 +176,18 @@ class ThreatSuperClass extends AbstractEntity
      */
     protected $comment;
 
+    /**
+     * @ORM\PrePersist
+     */
+    public function generateAndSetUuid(): self
+    {
+        if ($this->uuid === null) {
+            $this->uuid = Uuid::uuid4();
+        }
+
+        return $this;
+    }
+
     public function getUuid(): ?string
     {
         return $this->uuid;
@@ -215,10 +228,7 @@ class ThreatSuperClass extends AbstractEntity
         $this->theme = $theme;
     }
 
-    /**
-     * @return ThemeSuperClass
-     */
-    public function getTheme()
+    public function getTheme(): ?ThemeSuperClass
     {
         return $this->theme;
     }
@@ -226,6 +236,154 @@ class ThreatSuperClass extends AbstractEntity
     public function getCode(): ?string
     {
         return $this->code;
+    }
+
+    public function setCode(string $code): self
+    {
+        $this->code = $code;
+
+        return $this;
+    }
+
+    public function setLabels(array $labels): self
+    {
+        foreach (range(1, 4) as $index) {
+            $key = 'label' . $index;
+            if (isset($labels[$key])) {
+                $this->{$key} = $labels[$key];
+            }
+        }
+
+        return $this;
+    }
+
+    public function getLabel(int $languageIndex): string
+    {
+        if (!\in_array($languageIndex, range(1, 4), true)) {
+            return '';
+        }
+
+        return (string)$this->{'label' . $languageIndex};
+    }
+
+    public function setDescriptions(array $descriptions): self
+    {
+        foreach (range(1, 4) as $index) {
+            $key = 'description' . $index;
+            if (isset($descriptions[$key])) {
+                $this->{$key} = $descriptions[$key];
+            }
+        }
+
+        return $this;
+    }
+
+    public function getDescription(int $languageIndex): string
+    {
+        if (!\in_array($languageIndex, range(1, 4), true)) {
+            return '';
+        }
+
+        return (string)$this->{'description' . $languageIndex};
+    }
+
+    public function setConfidentiality(int $c): self
+    {
+        $this->c = $c;
+
+        return $this;
+    }
+
+    public function getConfidentiality(): int
+    {
+        return $this->c;
+    }
+
+    public function setIntegrity(int $i): self
+    {
+        $this->i = $i;
+
+        return $this;
+    }
+
+    public function getIntegrity(): int
+    {
+        return $this->i;
+    }
+
+    public function setAvailability(int $a): self
+    {
+        $this->a= $a;
+
+        return $this;
+    }
+
+    public function getAvailability(): int
+    {
+        return $this->a;
+    }
+
+    public function getStatus(): int
+    {
+        return (int)$this->status;
+    }
+
+    public function setStatus(int $status): self
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getMode(): int
+    {
+        return (int)$this->mode;
+    }
+
+    public function setMode(int $mode): self
+    {
+        $this->mode = $mode;
+
+        return $this;
+    }
+
+    public function getTrend(): int
+    {
+        return (int)$this->trend;
+    }
+
+    public function setTrend(int $trend): self
+    {
+        $this->trend = $trend;
+
+        return $this;
+    }
+
+    public function getQualification(): int
+    {
+        return (int)$this->qualification;
+    }
+
+    public function setQualification(int $qualification): self
+    {
+        $this->qualification = $qualification;
+
+        return $this;
+    }
+
+    public function getComment(): string
+    {
+        return (string)$this->comment;
+    }
+
+    public function setComment(string $comment): self
+    {
+        $this->comment = $comment;
+
+        return $this;
     }
 
     public function getInputFilter($partial = false)

@@ -35,6 +35,20 @@ class InstanceRiskTable extends AbstractEntityTable
     }
 
     /**
+     * @throws EntityNotFoundException
+     */
+    public function findById(int $id): InstanceRiskSuperClass
+    {
+        /** @var InstanceRiskSuperClass|null $instanceRisk */
+        $instanceRisk = $this->getRepository()->find($id);
+        if ($instanceRisk === null) {
+            throw EntityNotFoundException::fromClassNameAndIdentifier(\get_class($this), [$id]);
+        }
+
+        return $instanceRisk;
+    }
+
+    /**
      * TODO: remove the method and pass the value from the calling service.
      */
     protected function getContextLanguage($anrId, $context = AbstractEntity::BACK_OFFICE)
@@ -450,28 +464,27 @@ class InstanceRiskTable extends AbstractEntityTable
     /**
      * @return InstanceRiskSuperClass[]
      */
-    public function findByInstance(InstanceSuperClass $instance)
+    public function findByInstance(InstanceSuperClass $instance, bool $onlySpecific = false)
     {
-        return $this->getRepository()
+        $queryBuilder = $this->getRepository()
             ->createQueryBuilder('ir')
             ->where('ir.instance = :instance')
-            ->setParameter('instance', $instance)
-            ->getQuery()
-            ->getResult();
-    }
+            ->setParameter('instance', $instance);
 
-    /**
-     * @throws EntityNotFoundException
-     */
-    public function findById(int $id): InstanceRiskSuperClass
-    {
-        /** @var InstanceRiskSuperClass|null $instanceRisk */
-        $instanceRisk = $this->getRepository()->find($id);
-        if ($instanceRisk === null) {
-            throw EntityNotFoundException::fromClassNameAndIdentifier(\get_class($this), [$id]);
+        if ($onlySpecific) {
+            $queryBuilder->andWhere('ir.specific = ' . InstanceRiskSuperClass::TYPE_SPECIFIC);
         }
 
-        return $instanceRisk;
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    public function saveEntity(InstanceRiskSuperClass $instanceRisk, bool $flush = true): void
+    {
+        $em = $this->getDb()->getEntityManager();
+        $em->persist($instanceRisk);
+        if ($flush) {
+            $em->flush();
+        }
     }
 
     /**

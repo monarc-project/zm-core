@@ -45,7 +45,7 @@ class InstanceTable extends AbstractEntityTable
     /**
      * @return InstanceSuperClass[]
      */
-    public function findByAnrAndObject(AnrSuperClass $anr, ObjectSuperClass $object)
+    public function findByAnrAndObject(AnrSuperClass $anr, ObjectSuperClass $object): array
     {
         return $this->getRepository()
             ->createQueryBuilder('i')
@@ -55,6 +55,19 @@ class InstanceTable extends AbstractEntityTable
             ->setParameter('object', $object)
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function saveEntity(InstanceSuperClass $instance, bool $flushAll = true): void
+    {
+        $em = $this->getDb()->getEntityManager();
+        $em->persist($instance);
+        if ($flushAll) {
+            $em->flush();
+        }
     }
 
     /**

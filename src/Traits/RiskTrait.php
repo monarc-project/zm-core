@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Traits;
 
+// TODO: use bcmath lib for the calculations.
 trait RiskTrait
 {
     /**
@@ -18,7 +19,9 @@ trait RiskTrait
      */
     protected function getRiskC($c, $tRate, $vRate)
     {
-        return (($c != -1) && ($tRate != -1) && ($vRate != -1)) ? $c * $tRate * $vRate : -1;
+        return $c !== -1 && $tRate !== -1 && $vRate !== -1
+            ? $c * $tRate * $vRate
+            : -1;
     }
 
     /**
@@ -30,7 +33,9 @@ trait RiskTrait
      */
     protected function getRiskI($i, $tRate, $vRate)
     {
-        return (($i != -1) && ($tRate != -1) && ($vRate != -1)) ? $i * $tRate * $vRate : -1;
+        return $i !== -1 && $tRate !== -1 && $vRate !== -1
+            ? $i * $tRate * $vRate
+            : -1;
     }
 
     /**
@@ -42,7 +47,9 @@ trait RiskTrait
      */
     protected function getRiskD($d, $tRate, $vRate)
     {
-        return (($d != -1) && ($tRate != -1) && ($vRate != -1)) ? $d * $tRate * $vRate : -1;
+        return $d !== -1 && $tRate !== -1 && $vRate !== -1
+            ? $d * $tRate * $vRate
+            : -1;
     }
 
     /**
@@ -55,7 +62,8 @@ trait RiskTrait
      */
     protected function getTargetRisk($impacts, $tRate, $vRate, $vRateReduc)
     {
-        return ((max($impacts) != -1) && ($tRate != -1) && ($vRate != -1))
-            ? max($impacts) * $tRate * ($vRate - $vRateReduc) : -1;
+        return max($impacts) !== -1 && $tRate !== -1 && $vRate !== -1
+            ? max($impacts) * $tRate * ($vRate - $vRateReduc)
+            : -1;
     }
 }
