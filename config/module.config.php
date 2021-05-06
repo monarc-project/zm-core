@@ -542,19 +542,47 @@ return [
     'languages' => [
         'fr' => [
             'index' => 1,
-            'label' => 'Français'
+            'label' => 'Français',
         ],
         'en' => [
             'index' => 2,
-            'label' => 'English'
+            'label' => 'English',
         ],
         'de' => [
             'index' => 3,
-            'label' => 'Deutsch'
+            'label' => 'Deutsch',
         ],
         'nl' => [
             'index' => 4,
-            'label' => 'Nederlands'
+            'label' => 'Nederlands',
+        ],
+        'es' => [
+            'index' => 5,
+            'label' => 'Spanish',
+        ],
+        'it' => [
+            'index' => 6,
+            'label' => 'Italian',
+        ],
+        'ja' => [
+            'index' => 7,
+            'label' => 'Japanese',
+        ],
+        'pl' => [
+            'index' => 8,
+            'label' => 'Polish',
+        ],
+        'pt' => [
+            'index' => 9,
+            'label' => 'Portuguese',
+        ],
+        'ru' => [
+            'index' => 10,
+            'label' => 'Russian',
+        ],
+        'zh' => [
+            'index' => 11,
+            'label' => 'Chinese',
         ],
     ],
 
