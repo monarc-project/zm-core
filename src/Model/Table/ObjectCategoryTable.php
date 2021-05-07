@@ -9,6 +9,7 @@ namespace Monarc\Core\Model\Table;
 
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\ObjectCategory;
+use Monarc\Core\Model\Entity\ObjectCategorySuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**
@@ -22,5 +23,10 @@ class ObjectCategoryTable extends AbstractEntityTable
     public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
     {
         parent::__construct($dbService, ObjectCategory::class, $connectedUserService);
+    }
+
+    public function findById(int $id): ObjectCategorySuperClass
+    {
+        return $this->getRepository()->find($id);
     }
 }

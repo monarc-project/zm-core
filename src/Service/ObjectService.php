@@ -527,7 +527,11 @@ class ObjectService extends AbstractService
             $monarcObject->setAnr($anr);
         }
 
-        $this->importFromMosp($data, $anr);
+        if (empty($data['mosp'])) {
+            $monarcObject = $this->importFromMosp($data, $anr);
+
+            return $monarcObject ? $monarcObject->getUuid() : null;
+        }
 
         // Si asset secondaire, pas de rolfTag
         if (!empty($data['asset']) && !empty($data['rolfTag'])) {
@@ -599,9 +603,15 @@ class ObjectService extends AbstractService
         return $id;
     }
 
+    /**
+     * TODO: We are not going to implement it now.
+     */
     protected function importFromMosp(array $data, ?AnrSuperClass $anr): ?ObjectSuperClass
     {
         return null;
+        ///** @var ObjectImportService $objectImportService */
+        //$objectImportService = $this->get('objectImportService');
+        //$objectImportService->importFromMosp($data);
     }
 
     public function update($id, $data, $context = AbstractEntity::BACK_OFFICE)

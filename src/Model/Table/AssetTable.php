@@ -21,4 +21,23 @@ class AssetTable extends AbstractEntityTable
     {
         parent::__construct($dbService, Asset::class, $connectedUserService);
     }
+
+    public function findByUuid(string $uuid): ?Asset
+    {
+        return $this->getRepository()->createQueryBuilder('a')
+            ->where('a.uuid = :uuid')
+            ->setParameter('uuid', $uuid)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    public function saveEntity(Asset $asset, bool $flushAll = true): void
+    {
+        $em = $this->getDb()->getEntityManager();
+        $em->persist($asset);
+        if ($flushAll) {
+            $em->flush();
+        }
+    }
 }

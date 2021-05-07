@@ -386,6 +386,8 @@ return [
             Service\DeliveriesModelsService::class => Service\DeliveriesModelsServiceFactory::class,
             Service\ModelObjectService::class => Service\ModelObjectServiceFactory::class,
             Service\AnrObjectService::class => Service\AnrObjectServiceFactory::class,
+            Service\AssetImportService::class => AutowireFactory::class,
+            Service\ObjectImportService::class => AutowireFactory::class,
 
             // TODO: Entities are created from the code. Should be removed.
             ModelEntity\DeliveriesModels::class => ServiceModelEntity\DeliveriesModelsServiceModelEntity::class,
