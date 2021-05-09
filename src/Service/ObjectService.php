@@ -527,7 +527,7 @@ class ObjectService extends AbstractService
             $monarcObject->setAnr($anr);
         }
 
-        if (empty($data['mosp'])) {
+        if (!empty($data['mosp'])) {
             $monarcObject = $this->importFromMosp($data, $anr);
 
             return $monarcObject ? $monarcObject->getUuid() : null;
