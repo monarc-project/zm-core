@@ -170,7 +170,7 @@ class ObjectSuperClass extends AbstractEntity
      *
      * @ORM\Column(name="disponibility", type="decimal", options={"unsigned":true, "default":0})
      */
-    protected $disponibility = '0';
+    protected $disponibility = 0;
 
     /**
      * @var int

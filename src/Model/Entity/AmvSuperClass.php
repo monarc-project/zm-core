@@ -322,6 +322,10 @@ class AmvSuperClass extends AbstractEntity
         return [$filterJoin, $filterLeft, $filtersCol];
     }
 
+    /**
+     * TODO: Remove the business logic from the entity.
+     * It brakes the responsibility principles and hide the logic.
+     */
     public function getInputFilter($partial = false)
     {
         if (!$this->inputFilter) {
