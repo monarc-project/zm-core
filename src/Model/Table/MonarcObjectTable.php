@@ -57,7 +57,7 @@ class MonarcObjectTable extends AbstractEntityTable
     public function getGenericByAssetId($assetId)
     {
         $objects = $this->getRepository()->createQueryBuilder('o')
-            ->select(array('o.id'))
+            ->select(array('o.uuid'))
             ->where('o.asset = :assetId')
             ->andWhere('o.mode = :mode')
             ->setParameter(':assetId', $assetId)
