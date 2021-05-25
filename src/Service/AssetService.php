@@ -9,7 +9,6 @@ namespace Monarc\Core\Service;
 
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Asset;
-use Monarc\Core\Model\Entity\AssetSuperClass;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\AssetTable;
 
@@ -72,9 +71,11 @@ class AssetService extends AbstractService
     {
         $this->filterPatchFields($data);
 
+        /** @var AssetTable $assetTable */
+        $assetTable = $this->get('table');
         /** @var Asset $asset */
-        $asset = $this->get('table')->getEntity($id);
-        $asset->setDbAdapter($this->get('table')->getDb());
+        $asset = $assetTable->getEntity($id);
+        $asset->setDbAdapter($assetTable->getDb());
         $asset->setLanguage($this->getLanguage());
 
         if ($data['mode'] === Asset::MODE_GENERIC && $asset->getMode() === Asset::MODE_SPECIFIC) {
@@ -103,9 +104,7 @@ class AssetService extends AbstractService
             }
         }
 
-        if (!$this->isSomethingChangedExceptOfLabelsAndDescriptions($asset)
-            && !$amvService->checkModelsInstantiation($asset, $models)
-        ) {
+        if (!$amvService->checkModelsInstantiation($asset, $models)) {
             throw new Exception('This type of asset is used in a model that is no longer part of the list', 412);
         }
 
@@ -165,7 +164,9 @@ class AssetService extends AbstractService
 
         $asset->setUpdater($this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname());
 
-        return $this->get('table')->save($asset);
+        $assetTable->saveEntity($asset);
+
+        return $asset->getUuid();
     }
 
     /**
@@ -200,19 +201,5 @@ class AssetService extends AbstractService
         }
 
         return $exportedAsset;
-    }
-
-    private function isSomethingChangedExceptOfLabelsAndDescriptions(AssetSuperClass $asset): bool
-    {
-        /** @var AssetTable $assetTable */
-        $assetTable = $this->get('table');
-        $unitOfWOrk = $assetTable->getDb()->getEntityManager()->getUnitOfWork();
-        $unitOfWOrk->computeChangeSets();
-        $assetChangeSet = $unitOfWOrk->getEntityChangeSet($asset);
-
-        return empty(array_diff(
-            array_keys($assetChangeSet),
-            ['label1', 'label2', 'label3', 'label4', 'description1', 'description2', 'description3', 'description4']
-        ));
     }
 }

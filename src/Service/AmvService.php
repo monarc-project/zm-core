@@ -608,6 +608,10 @@ class AmvService extends AbstractService
      */
     public function checkModelsInstantiation($asset, $newModelsIds)
     {
+        if ($asset->getMode() !== Asset::MODE_SPECIFIC || $asset->getModels()->isEmpty()) {
+            return true;
+        }
+
         $modelsIds = array_combine($newModelsIds, $newModelsIds);//clefs = valeurs
 
         /** @var InstanceTable $instanceTable */
