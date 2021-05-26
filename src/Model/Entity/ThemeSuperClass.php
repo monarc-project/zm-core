@@ -108,30 +108,14 @@ class ThemeSuperClass extends AbstractEntity
         return $this;
     }
 
-    public function setLabel1(string $label1): ThemeSuperClass
+    public function setLabels(array $labels): self
     {
-        $this->label1 = $label1;
-
-        return $this;
-    }
-
-    public function setLabel2(string $label2): ThemeSuperClass
-    {
-        $this->label2 = $label2;
-
-        return $this;
-    }
-
-    public function setLabel3(string $label3): ThemeSuperClass
-    {
-        $this->label3 = $label3;
-
-        return $this;
-    }
-
-    public function setLabel4(string $label4): ThemeSuperClass
-    {
-        $this->label4 = $label4;
+        foreach (range(1, 4) as $index) {
+            $key = 'label' . $index;
+            if (isset($labels[$key])) {
+                $this->{$key} = $labels[$key];
+            }
+        }
 
         return $this;
     }
