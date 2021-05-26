@@ -209,6 +209,8 @@ class InstanceRiskTable extends AbstractEntityTable
             'v.label' . $l . ' as vulnLabel' . $l . '',
             'v.description' . $l . ' as vulnDescription' . $l . '',
             'ir.vulnerability_rate as vulnerabilityRate',
+            'ir.`owner` as `owner`',
+            'ir.`context` as `context`',
             'ir.`specific` as `specific`',
             'ir.reduction_amount as reductionAmount',
             'i.c as c_impact',
