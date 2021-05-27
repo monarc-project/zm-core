@@ -12,7 +12,7 @@ use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 
 /**
- * Scale Super Class
+ * Scale Op Super Class
  *
  * @ORM\Table(name="scales_op", indexes={
  *      @ORM\Index(name="anr", columns={"anr_id"})

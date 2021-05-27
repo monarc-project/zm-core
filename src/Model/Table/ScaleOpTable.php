@@ -12,7 +12,7 @@ use Monarc\Core\Model\Entity\ScaleOp;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**
- * Class ScaleTable
+ * Class ScaleOpTable
  * @package Monarc\Core\Model\Table
  */
 class ScaleOpTable extends AbstractEntityTable
