@@ -109,14 +109,14 @@ class InstanceRiskSuperClass extends AbstractEntity
     protected $instance;
 
     /**
-     * @var String
+     * @var string
      *
      * @ORM\Column(name="owner", type="string", length=255, nullable=true)
      */
     protected $owner;
 
     /**
-     * @var String
+     * @var string
      *
      * @ORM\Column(name="context", type="string", length=255, nullable=true)
      */

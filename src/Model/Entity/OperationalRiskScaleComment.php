@@ -10,14 +10,11 @@ namespace Monarc\Core\Model\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Scale Comment Op
- *
- * @ORM\Table(name="scales_comments_op", indexes={
- *      @ORM\Index(name="anr", columns={"anr_id"}),
+ * @ORM\Table(name="operational_risks_scales_comments", indexes={
  *      @ORM\Index(name="scale_id", columns={"scale_id"})
  * })
  * @ORM\Entity
  */
-class ScaleCommentOp extends ScaleCommentSuperClass
+class OperationalRiskScaleComment extends OperationalRiskScaleCommentSuperClass
 {
 }

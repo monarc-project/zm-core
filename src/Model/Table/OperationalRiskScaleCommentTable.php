@@ -7,18 +7,17 @@
 
 namespace Monarc\Core\Model\Table;
 
-use Monarc\Core\Model\Db;
-use Monarc\Core\Model\Entity\ScaleOp;
-use Monarc\Core\Service\ConnectedUserService;
+use Doctrine\ORM\EntityManager;
+use Monarc\Core\Model\Entity\OperationalRiskScaleComment;
 
 /**
- * Class ScaleOpTable
+ * Class ScaleCommentOpTable
  * @package Monarc\Core\Model\Table
  */
-class ScaleOpTable extends AbstractEntityTable
+class OperationalRiskScaleCommentTable extends AbstractTable
 {
-    public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
+    public function __construct(EntityManager $entityManager)
     {
-        parent::__construct($dbService, Scale::class, $connectedUserService);
+        parent::__construct($entityManager, OperationalRiskScaleComment::class);
     }
 }

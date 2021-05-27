@@ -10,13 +10,9 @@ namespace Monarc\Core\Model\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Scale Op
- *
- * @ORM\Table(name="scales_op", indexes={
- *      @ORM\Index(name="anr", columns={"anr_id"})
- * })
+ * @ORM\Table(name="operational_risks_scales")
  * @ORM\Entity
  */
-class ScaleOp extends ScaleOpSuperClass
+class OperationalRiskScale extends OperationalRiskScaleSuperClass
 {
 }
