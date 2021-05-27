@@ -66,6 +66,20 @@ class InstanceRiskOpSuperClass extends AbstractEntity
     protected $instance;
 
     /**
+     * @var String
+     *
+     * @ORM\Column(name="owner", type="string", length=255, nullable=true)
+     */
+    protected $owner;
+
+    /**
+     * @var String
+     *
+     * @ORM\Column(name="context", type="string", length=255, nullable=true)
+     */
+    protected $context;
+
+    /**
      * @var ObjectSuperClass
      *
      * @ORM\ManyToOne(targetEntity="MonarcObject", cascade={"persist"})
@@ -378,6 +392,23 @@ class InstanceRiskOpSuperClass extends AbstractEntity
         $this->instance = $instance;
 
         return $this;
+    }
+
+    public function getOwner(): string
+    {
+        return $this->owner;
+    }
+
+    public function setOwner(string $owner): self
+    {
+        $this->owner = $owner;
+
+        return $this;
+    }
+
+    public function getContext(): string
+    {
+        return $this->context;
     }
 
     /**
