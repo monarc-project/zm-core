@@ -26,6 +26,16 @@ class OperationalInstanceRiskScaleSuperClass
     protected $id;
 
     /**
+     * @var AnrSuperClass
+     *
+     * @ORM\ManyToOne(targetEntity="Anr", cascade={"persist"})
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
+     * })
+     */
+    protected $anr;
+
+    /**
      * @var InstanceRiskOpSuperClass
      *
      * @ORM\ManyToOne(targetEntity="InstanceRiskOp", cascade={"persist"})
