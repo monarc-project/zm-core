@@ -56,16 +56,6 @@ class OperationalInstanceRiskScaleSuperClass
     protected $scaleImpactTypeId;
 
     /**
-     * @var OperationalRiskScaleSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="OperationalRiskScale", cascade={"persist"})
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="operational_risk_scale_id", referencedColumnName="id", onDelete="CASCADE")
-     * })
-     */
-    protected $operationalRiskScaleId;
-
-    /**
      * @var int
      *
      * @ORM\Column(name="brut_value", type="integer", options={"default": -1})

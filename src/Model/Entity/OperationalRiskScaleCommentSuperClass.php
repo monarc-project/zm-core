@@ -45,10 +45,10 @@ class OperationalRiskScaleCommentSuperClass
      *
      * @ORM\ManyToOne(targetEntity="OperationalRiskScale", cascade={"persist"})
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="scale_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
+     *   @ORM\JoinColumn(name="operational_risk_scale_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
      * })
      */
-    protected $scale;
+    protected $operationalRiskScale;
 
     /**
      * @var int
@@ -91,14 +91,14 @@ class OperationalRiskScaleCommentSuperClass
         return $this;
     }
 
-    public function getScale(): OperationalRiskScaleSuperClass
+    public function getOperationalRiskScale(): OperationalRiskScaleSuperClass
     {
-        return $this->scale;
+        return $this->operationalRiskScale;
     }
 
-    public function setScale(OperationalRiskScaleSuperClass $scale): self
+    public function setOperationalRiskScale(OperationalRiskScaleSuperClass $operationalRiskScale): self
     {
-        $this->scale = $scale;
+        $this->operationalRiskScale = $operationalRiskScale;
 
         return $this;
     }
