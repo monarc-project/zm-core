@@ -549,6 +549,23 @@ class InstanceSuperClass extends AbstractEntity
         return $this->instanceConsequences;
     }
 
+    public function addInstanceConsequence(InstanceConsequenceSuperClass $instanceConsequence): self
+    {
+        if (!$this->instanceConsequences->contains($instanceConsequence)) {
+            $this->instanceConsequences->add($instanceConsequence);
+            $instanceConsequence->setInstance($this);
+        }
+
+        return $this;
+    }
+
+    public function resetInstanceConsequences(): self
+    {
+        $this->instanceConsequences = new ArrayCollection();
+
+        return $this;
+    }
+
     protected $parameters = array(
         'implicitPosition' => array(
             'field' => 'parent',
