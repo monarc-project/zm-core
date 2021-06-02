@@ -159,6 +159,7 @@ class InstanceConsequenceSuperClass extends AbstractEntity
     public function setInstance(InstanceSuperClass $instance): self
     {
         $this->instance = $instance;
+        $this->instance->addInstanceConsequence($this);
 
         return $this;
     }

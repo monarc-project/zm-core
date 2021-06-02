@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Service;
 
+use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Asset;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\AssetTable;
@@ -70,41 +71,41 @@ class AssetService extends AbstractService
     {
         $this->filterPatchFields($data);
 
+        /** @var AssetTable $assetTable */
+        $assetTable = $this->get('table');
         /** @var Asset $asset */
-        $asset = $this->get('table')->getEntity($id);
-        $asset->setDbAdapter($this->get('table')->getDb());
+        $asset = $assetTable->getEntity($id);
+        $asset->setDbAdapter($assetTable->getDb());
         $asset->setLanguage($this->getLanguage());
 
-        if (($asset->mode == Asset::MODE_SPECIFIC) && ($data['mode'] == Asset::MODE_GENERIC)) {
-            //delete models
+        if ($data['mode'] === Asset::MODE_GENERIC && $asset->getMode() === Asset::MODE_SPECIFIC) {
             unset($data['models']);
         }
 
-        $models = isset($data['models']) ? $data['models'] : [];
-        $follow = isset($data['follow']) ? $data['follow'] : null;
-        unset($data['models']);
-        unset($data['follow']);
+        $models = $data['models'] ?? [];
+        $follow = $data['follow'] ?? null;
+        unset($data['models'], $data['follow'], $data['uuid']);
 
         $asset->exchangeArray($data);
-        if ($asset->get('models')) {
-            $asset->get('models')->initialize();
+        if ($asset->getModels()) {
+            $asset->getModels()->initialize();
         }
 
         /** @var AmvService $amvService */
         $amvService = $this->get('amvService');
         if (!$amvService->checkAMVIntegrityLevel($models, $asset, null, null, $follow)) {
-            throw new \Monarc\Core\Exception\Exception('Integrity AMV links violation', 412);
+            throw new Exception('Integrity AMV links violation', 412);
         }
 
-        if ($asset->mode == Asset::MODE_SPECIFIC) {
+        if ($asset->getMode() === Asset::MODE_SPECIFIC) {
             $associateObjects = $this->get('MonarcObjectTable')->getGenericByAssetId($asset->getUuid());
-            if (count($associateObjects)) {
-                throw new \Monarc\Core\Exception\Exception('Integrity AMV links violation', 412);
+            if (\count($associateObjects)) {
+                throw new Exception('Integrity AMV links violation', 412);
             }
         }
 
         if (!$amvService->checkModelsInstantiation($asset, $models)) {
-            throw new \Monarc\Core\Exception\Exception('This type of asset is used in a model that is no longer part of the list', 412);
+            throw new Exception('This type of asset is used in a model that is no longer part of the list', 412);
         }
 
         switch ($asset->get('mode')) {
@@ -163,7 +164,9 @@ class AssetService extends AbstractService
 
         $asset->setUpdater($this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname());
 
-        return $this->get('table')->save($asset);
+        $assetTable->saveEntity($asset);
+
+        return $asset->getUuid();
     }
 
     /**
@@ -186,7 +189,7 @@ class AssetService extends AbstractService
     public function exportAsset(&$data)
     {
         if (empty($data['id'])) {
-            throw new \Monarc\Core\Exception\Exception('Asset to export is required', 412);
+            throw new Exception('Asset to export is required', 412);
         }
         $filename = "";
 

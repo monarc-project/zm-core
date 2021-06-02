@@ -32,7 +32,7 @@ class Asset extends AssetSuperClass
     protected $models;
 
     /**
-     * @return Model
+     * @return Model[]|ArrayCollection
      */
     public function getModels()
     {
