@@ -300,26 +300,6 @@ class AssetSuperClass extends AbstractEntity
             ),
         ));
 
-        $validatorsCode = [];
-        if (!$partial) {
-            $validatorsCode = array(
-                array(
-                    'name' => 'Monarc\Core\Validator\UniqueCode',
-                    'options' => array(
-                        'entity' => $this
-                    ),
-                ),
-            );
-        }
-
-        $this->inputFilter->add(array(
-            'name' => 'code',
-            'required' => ($partial) ? false : true,
-            'allow_empty' => false,
-            'filters' => array(),
-            'validators' => $validatorsCode
-        ));
-
         $this->inputFilter->add(array(
             'name' => 'type',
             'required' => false,

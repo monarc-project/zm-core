@@ -8,7 +8,6 @@
 namespace Monarc\Core\Model\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
@@ -356,25 +355,6 @@ class MeasureSuperClass extends AbstractEntity
                     'validators' => array(),
                 ));
             }
-            $validatorsCode = [];
-            if (!$partial) {
-                $validatorsCode = array(
-                    array(
-                        'name' => 'Monarc\Core\Validator\UniqueCode',
-                        'options' => array(
-                            'entity' => $this
-                        ),
-                    ),
-                );
-            }
-
-            $this->inputFilter->add(array(
-                'name' => 'code',
-                'required' => $partial ? false : true,
-                'allow_empty' => false,
-                'filters' => array(),
-                'validators' => $validatorsCode
-            ));
 
             $this->inputFilter->add(array(
                 'name' => 'status',

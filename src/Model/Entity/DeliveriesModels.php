@@ -165,6 +165,7 @@ class DeliveriesModels extends AbstractEntity
                         ),
                     ),
                     array(
+                        // TODO: move the validator in the creation part, as it requires a db connection.
                         'name' => 'Monarc\Core\Validator\UniqueDeliveryModel',
                         'options' => array(
                             'adapter' => $this->getDbAdapter(),
