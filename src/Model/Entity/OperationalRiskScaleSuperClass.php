@@ -17,7 +17,7 @@ class OperationalRiskScaleSuperClass
     use UpdateEntityTrait;
 
     public const TYPE_IMPACT = 1;
-    public const TYPE_PROBABILITY = 2;
+    public const TYPE_LIKELIHOOD = 2;
 
     /**
      * @var int

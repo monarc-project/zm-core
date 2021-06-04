@@ -74,7 +74,6 @@ class ScaleService extends AbstractService
      */
     public function create($data, $last = true)
     {
-
         //scale
         $class = $this->get('entity');
         /** @var Scale $scale */
