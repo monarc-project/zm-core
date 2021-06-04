@@ -25,6 +25,7 @@ class AssetImportService
         }
 
         $asset = $this->assetTable->findByUuid($data['asset']['uuid']);
+        // TODO: validate if the code exists.
         if ($asset === null) {
             $asset = (new Asset())
                 ->setUuid($data['asset']['uuid'])
