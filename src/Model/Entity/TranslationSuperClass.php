@@ -9,11 +9,8 @@ use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 /**
  * @ORM\Table(name="translations",
  *   uniqueConstraints={
- *     @ORM\UniqueConstraint(name="type_key_lang_unq", columns={"type", "key", "lang"})
- *   },
-,   indexes={
- *    @ORM\Index(name="type_key_indx", columns={"type", "key"})
- *  }
+ *     @ORM\UniqueConstraint(name="key_lang_unq", columns={"key", "lang"})
+ *   }
  * )
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
