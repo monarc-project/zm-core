@@ -101,7 +101,7 @@ class ChangeableOperationalImpact extends AbstractMigration
                 PRIMARY KEY (`id`),
                 INDEX `translations_key_indx` (`key`),
                 INDEX `translations_type_indx` (`type`),
-                UNIQUE `translations_key_lang_unq` (`key`, `lang`);
+                UNIQUE `translations_key_lang_unq` (`key`, `lang`)
             );'
         );
 
