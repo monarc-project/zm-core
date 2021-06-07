@@ -99,6 +99,7 @@ class OperationalRiskScaleCommentSuperClass
     public function setOperationalRiskScale(OperationalRiskScaleSuperClass $operationalRiskScale): self
     {
         $this->operationalRiskScale = $operationalRiskScale;
+        $operationalRiskScale->addOperationalRiskScaleComments($this);
 
         return $this;
     }

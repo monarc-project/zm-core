@@ -2,6 +2,7 @@
 
 namespace Monarc\Core\Model\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
@@ -37,6 +38,13 @@ class OperationalRiskScaleSuperClass
      * })
      */
     protected $anr;
+
+    /**
+     * @var OperationalRiskScaleCommentSuperClass[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="OperationalRiskScaleComment", mappedBy="operationalRiskScale")
+     */
+    protected $operationalRiskScaleComments;
 
     /**
      * @var int
@@ -112,6 +120,29 @@ class OperationalRiskScaleSuperClass
     public function setLabelTranslationKey(string $labelTranslationKey): self
     {
         $this->labelTranslationKey = $labelTranslationKey;
+
+        return $this;
+    }
+
+    public function getOperationalRiskScaleComments()
+    {
+        return $this->operationalRiskScaleComments;
+    }
+
+    public function addOperationalRiskScaleComments(
+        OperationalRiskScaleCommentSuperClass $operationalRiskScaleComment
+    ): self {
+        if ($this->operationalRiskScaleComments->contains()) {
+            $this->operationalRiskScaleComments->add($operationalRiskScaleComment);
+            $operationalRiskScaleComment->setOperationalRiskScale($this);
+        }
+
+        return $this;
+    }
+
+    public function setOperationalRiskScaleComments($operationalRiskScaleComments): self
+    {
+        $this->operationalRiskScaleComments = $operationalRiskScaleComments;
 
         return $this;
     }
