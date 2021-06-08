@@ -1059,8 +1059,8 @@ class AmvService extends AbstractService
             }
 
             if (isset($amvItem['threat']['theme']) && \is_array($amvItem['threat']['theme'])) {
-                $labelKey = array_key_first($amvItem['threat']['theme']);
-                $labelValue = array_shift($amvItem['threat']['theme']);
+                $labelKey = 'label' . $this->getLanguage();
+                $labelValue = $amvItem['threat']['theme'][$labelKey];
                 $theme = $themeTable->findByAnrIdAndLabel($anrId, $labelKey, $labelValue);
                 if ($theme === null) {
                     $themeClass = $themeTable->getEntityClass();
@@ -1069,8 +1069,7 @@ class AmvService extends AbstractService
                     if (isset($anr)) {
                         $theme->setAnr($anr);
                     }
-                    $labelSetterName = 'set' . ucfirst($labelKey);
-                    $theme->{$labelSetterName}($labelValue);
+                    $theme->setLabels($amvItem['threat']['theme']);
                     $themeTable->saveEntity($theme);
                 }
 
