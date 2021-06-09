@@ -279,7 +279,7 @@ class ObjectSuperClass extends AbstractEntity
         return $this;
     }
 
-    public function getRolfTag(): ?RolfTagSuperClass
+    public function getRolfTag()
     {
         return $this->rolfTag;
     }
@@ -287,7 +287,7 @@ class ObjectSuperClass extends AbstractEntity
     /**
      * @param RolfTagSuperClass $rolfTag
      */
-    public function setRolfTag(?RolfTagSuperClass $rolfTag): self
+    public function setRolfTag(?RolfTagSuperClass $rolfTag)
     {
         $this->rolfTag = $rolfTag;
 
