@@ -102,14 +102,35 @@ class OperationalRiskScaleSuperClass
         return $this->type;
     }
 
+    public function setType(int $type): self
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
     public function getMin(): int
     {
         return $this->min;
     }
 
+    public function setMin(int $min): self
+    {
+        $this->min = $min;
+
+        return $this;
+    }
+
     public function getMax(): int
     {
         return $this->max;
+    }
+
+    public function setMax(int $max): self
+    {
+        $this->max = $max;
+
+        return $this;
     }
 
     public function getLabelTranslationKey(): string

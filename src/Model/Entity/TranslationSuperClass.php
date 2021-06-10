@@ -39,7 +39,7 @@ class TranslationSuperClass
     /**
      * @var string
      *
-     * @ORM\Column(name="key", type="string", length=255)
+     * @ORM\Column(name="translation_key", type="string", length=255)
      */
     protected $key;
 
