@@ -74,6 +74,11 @@ class OperationalRiskScaleSuperClass
      */
     protected $labelTranslationKey;
 
+
+    public function __construct() {
+        $this->operationalRiskScaleComments = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+
     /**
      * @return int
      */
@@ -153,7 +158,7 @@ class OperationalRiskScaleSuperClass
     public function addOperationalRiskScaleComments(
         OperationalRiskScaleCommentSuperClass $operationalRiskScaleComment
     ): self {
-        if ($this->operationalRiskScaleComments->contains()) {
+        if (!$this->operationalRiskScaleComments->contains($operationalRiskScaleComment)) {
             $this->operationalRiskScaleComments->add($operationalRiskScaleComment);
             $operationalRiskScaleComment->setOperationalRiskScale($this);
         }
