@@ -2,28 +2,30 @@ MONARC Core project
 ===================
 
 
-See example repository for create:
+Development notes concerning the following:
 
 * Entity
-* Entity Table
+* Table
 * Controller
-* Controller Factory
 * Service
-* Service Factory
-* and configure Module.php & module.config.php
+* Container configuration in module.config.php
+* Tests Coverage
 
 Entity
 ------
 
-Create Entity file & class in Model/Entity folder and extend it whith `AbstractEntity`.
+Creation of entities should be performed as a simple object instantiation, e.g.
 
-Define `protected` attributes and use [DoctrineOrm][1] for define table & columns.
+    $myEntityClass = (new MyEntityClass())
+        ->setName('name')
+        ->setCode('codde');
 
-In `Module.php:getServiceConfig()` add in `invokables`:
+The entity should have a single responsibility and do not perform any database related operations itself. 
 
-	'\Monarc\Core\Model\Entity\MyEntity' => '\Monarc\Core\Model\Entity\MyEntity',
+`Note!` The `AbstractEntity` inheritance is going to be removed and the entities filters methods cleaned uo.  
 
-For generating migrating file & migrate DB avec adding/deleting/changing column:
+
+For generating migrating file & migrate DB with adding/deleting/changing column:
 
 	php ./vendor/bin/doctrine-module migrations:diff
 	php ./vendor/bin/doctrine-module migrations:migrate
@@ -32,30 +34,34 @@ For generating migrating file & migrate DB avec adding/deleting/changing column:
 Entity Table
 ------------
 
-Create EntityTable file & class in Model/Table folder and extend it whith `AbstractEntityTable`.
+Implementation of table (repositories) classes are done in Model/Table folder and extend `AbstractTable`.
 
-Define your own functions fo loading entities datas from database.
-AbstractEntityTable has already functions:
+In the table constructor there is mandatory to pass an entity class name that the table is responsible to manage, e.g. 
 
-* getDb: return DB object
-* fetchAll: return all data for entity
-* get: return entity
+    public function __construct(EntityManager $entityManager)
+    {
+        parent::__construct($entityManager, \MyEntityNamespace\MyEntityClass::class);
+    }
+
+The table methods, responsible for fetching data from the DB should start from `findBy` prefix. 
+AbstractTable has methods, which help with the basic entities operations. 
+
 * save
-* delete
+* remove
+* and so on.
 
-In `Module.php:getServiceConfig()` add in `factories`:
+In the module config file there is required to define an way of the table class creation.
+In most of the cases it works well with `Laminas\Di\Container\AutowireFactory`:
 
-	'\Monarc\Core\Model\Table\MyEntityTable' => function($sm){
-        return new Model\Table\MyEntityTable($sm->get('\Monarc\Core\Model\Db'));
-    },
+    \MyEntityNamespace\MyEntityClass::class => AutowireFactory::class,
 
 
 Controller
 ----------
 
-Create Controller file & class in Controller folder and extend it with `AbstractController`.
+Controller should extend `Laminas\Mvc\Controller\AbstractRestfulController`.
 
-Adding function:
+Restful application methods to be defined:
 
 * getList()
 * get($id)
@@ -63,63 +69,34 @@ Adding function:
 * update($id, $data)
 * delete($id)
 
-In `module.config.php`, define route & controller:
+In `module.config.php`, controllers are usually defined in the factories container like:
 
-	'controller' => '\Monarc\Core\Controller\MyIndex',
-
-
-Controller Factory
-------------------
-
-Create Controller Factory file & class in Controller folder and extend it with `AbstractControllerFactory`.
-
-Define `protected $serviceName = '\Monarc\Core\Service\MyService';`.
-
-In `Module.php:getControllerConfig()` add in `factories`:
-
-	'\Monarc\Core\Controller\MyIndex' => '\Monarc\Core\Controller\MyIndexControllerFactory',
+    ControllerNameSpace\MyController::class => AutowireFactory::class,
 
 
 Service
 -------
 
-Create Service file & class in Service folder and extend it with `AbstractService`.
-
-Define attributes ressources used in this service:
-
-	protected $ressource1;
-	protected $ressource2;
-
-And business functions.
-
-For accessing ressource:
-
-	$this->get('ressource1');
-
-Or
-
-	$this->getServiceFactory();
+`Note` New created services classes should not extend `AbstractService`, is going to be be removed in the future.
 
 
-Service Factory
----------------
+In the module config file the services container looks like:  
 
-Create Service file & class in Service Factory folder and extend it with `AbstractServiceFactory`.
+    ServiceNamescpace\MyService::class => Laminas\Di\Container\AutowireFactory::class,
 
-Define ressources to load in Service:
+or, in case if config needs to be injected:
 
-	protected $ressources = array(
-		'ressource1'=> '\Monarc\Core\Model\Table\EntityTable',
-		'ressource2'=> '\Monarc\Core\Model\Entity\Entity',
-	);
+    ServiceNamescpace\MyService::class => Laminas\ServiceManager\AbstractFactory\ReflectionBasedAbstractFactory::class,
 
-Or
 
-	protected $ressources = '\Monarc\Core\Model\Table\EntityTable';
+Tests Coverage
+--------------
 
-In `Module.php:getServiceConfig()` add in `factories`:
+The implementation is partially done on MonarcAppFO side, because integration and functional tests should cover the both Core and FrontOffice modules of the MONARC application.
 
-	'\Monarc\Core\Service\MyIndexService' => '\Monarc\Core\Service\MyIndexServiceFactory',
+Unit tests can be implemented at a particular projects side.
+
+We might move from the current Core/FrontOffice modules approach to a libraries/responsibility specific and the tests will be moved as well. 
 
 
 License
@@ -132,6 +109,7 @@ This software is licensed under
 - Copyright (C) 2016-2020 Juan Rocha - https://github.com/jfrocha
 - Copyright (C) 2016-2020 SMILE gie securitymadein.lu
 - Copyright (C) 2017-2020 Cédric Bonhomme - https://www.cedricbonhomme.org
+- Copyright (C) 2019-2021 Ruslan Baidan
 - Copyright (C) 2016-2017 Guillaume Lesniak
 - Copyright (C) 2016-2017 Thomas Metois
 - Copyright (C) 2016-2017 Jérôme De Almeida
