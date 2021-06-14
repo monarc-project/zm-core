@@ -122,4 +122,13 @@ class MonarcObjectTable extends AbstractEntityTable
 
         return $stmt->rowCount() > 0;
     }
+
+    public function saveEntity(ObjectSuperClass $monarcObject, bool $flushAll = true): void
+    {
+        $em = $this->getDb()->getEntityManager();
+        $em->persist($monarcObject);
+        if ($flushAll) {
+            $em->flush();
+        }
+    }
 }

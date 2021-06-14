@@ -689,38 +689,38 @@ class ObjectService extends AbstractService
             }
         }
 
-        $rolfTagId = $monarcObject->getRolfTag() ? $monarcObject->getRolfTag()->getId() : null;
-
         // As a temporary solution to allow moving objects out from "uncategorised" category.
         $oldRootCategory = null;
         if ($monarcObject->getCategory() !== null) {
             $oldRootCategory = $monarcObject->getCategory()->getRoot() ?: $monarcObject->getCategory();
         }
 
-        $monarcObject->exchangeArray($data, true);
-
         $newRolfTag = false;
-        if ($monarcObject->getRolfTag()) {
-            $newRolfTagId = \is_int($monarcObject->getRolfTag())
-                ? $monarcObject->getRolfTag()
-                : $monarcObject->getRolfTag()->getId();
-            if ($rolfTagId !== $newRolfTagId) {
-                $newRolfTag = $monarcObject->getRolfTag();
-            }
+        if (!empty($data['rolfTag'])
+            && (
+                $monarcObject->getRolfTag() === null
+                || $data['rolfTag'] !== $monarcObject->getRolfTag()->getId()
+            )
+        ) {
+            $newRolfTag = $data['rolfTag'];
         }
+
+        $monarcObject->exchangeArray($data, true);
 
         $dependencies = property_exists($this, 'dependencies') ? $this->dependencies : [];
         $this->setDependencies($monarcObject, $dependencies);
 
         if ($setRolfTagNull) {
-            $monarcObject->set('rolfTag', null);
+            $monarcObject->setRolfTag(null);
         }
 
         $monarcObject->setUpdater(
             $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
         );
 
-        $this->get('table')->save($monarcObject);
+        /** @var MonarcObjectTable $monarcObjectTable */
+        $monarcObjectTable = $this->get('table');
+        $monarcObjectTable->saveEntity($monarcObject);
 
         $newRootCategory = $monarcObject->getCategory()->getRoot() ?: $monarcObject->getCategory();
 
