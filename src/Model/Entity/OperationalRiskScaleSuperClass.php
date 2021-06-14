@@ -75,8 +75,9 @@ class OperationalRiskScaleSuperClass
     protected $labelTranslationKey;
 
 
-    public function __construct() {
-        $this->operationalRiskScaleComments = new \Doctrine\Common\Collections\ArrayCollection();
+    public function __construct()
+    {
+        $this->operationalRiskScaleComments = new ArrayCollection();
     }
 
     /**
