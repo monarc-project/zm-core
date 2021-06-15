@@ -51,6 +51,11 @@ abstract class AbstractTable
         }
     }
 
+    public function findById(int $id): ?object
+    {
+        $this->entityManager->find($this->entityName, $id);
+    }
+
     public function beginTransaction(): void
     {
         $this->entityManager->getConnection()->beginTransaction();
