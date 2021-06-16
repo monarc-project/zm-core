@@ -46,14 +46,14 @@ class OperationalInstanceRiskScaleSuperClass
     protected $operationalInstanceRisk;
 
     /**
-     * @var ScaleImpactTypeSuperClass
+     * @var OperationalRiskScaleSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="ScaleImpactType", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="OperationalRiskScale", cascade={"persist"})
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="scale_impact_type_id", referencedColumnName="id", onDelete="CASCADE")
+     *   @ORM\JoinColumn(name="operational_risk_scale_id", referencedColumnName="id", onDelete="CASCADE")
      * })
      */
-    protected $scaleImpactTypeId;
+    protected $operationalRiskScale;
 
     /**
      * @var int
@@ -100,29 +100,14 @@ class OperationalInstanceRiskScaleSuperClass
         return $this;
     }
 
-    /**
-     * @return ScaleImpactTypeSuperClass
-     */
-    public function getScaleImpactTypeId(): ScaleImpactTypeSuperClass
-    {
-        return $this->scaleImpactTypeId;
-    }
-
-    public function setScaleImpactTypeId(ScaleImpactTypeSuperClass $scaleImpactTypeId): self
-    {
-        $this->scaleImpactTypeId = $scaleImpactTypeId;
-
-        return $this;
-    }
-
     public function getOperationalRiskScaleId(): OperationalRiskScaleSuperClass
     {
-        return $this->operationalRiskScaleId;
+        return $this->operationalRiskScale;
     }
 
-    public function setOperationalRiskScaleId(OperationalRiskScaleSuperClass $operationalRiskScaleId): self
+    public function setOperationalRiskScaleId(OperationalRiskScaleSuperClass $operationalRiskScale): self
     {
-        $this->operationalRiskScaleId = $operationalRiskScaleId;
+        $this->operationalRiskScale = $operationalRiskScale;
 
         return $this;
     }
