@@ -74,6 +74,13 @@ class OperationalRiskScaleSuperClass
      */
     protected $labelTranslationKey;
 
+    /**
+     * @var int
+     *
+     * @ORM\Column(name="is_hidden", type="smallint")
+     */
+    protected $isHidden;
+
 
     public function __construct()
     {
@@ -147,6 +154,18 @@ class OperationalRiskScaleSuperClass
     public function setLabelTranslationKey(string $labelTranslationKey): self
     {
         $this->labelTranslationKey = $labelTranslationKey;
+
+        return $this;
+    }
+
+    public function getIsHidden(): int
+    {
+        return $this->isHidden;
+    }
+
+    public function setIsHidden(int $isHidden): self
+    {
+        $this->isHidden = $isHidden;
 
         return $this;
     }

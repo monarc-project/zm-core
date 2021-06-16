@@ -76,6 +76,13 @@ class OperationalInstanceRiskScaleSuperClass
      */
     protected $targetedValue = -1;
 
+    /**
+     * @var int
+     *
+     * @ORM\Column(name="is_hidden", type="smallint")
+     */
+    protected $isHidden;
+
     public function getId(): int
     {
         return $this->id;
@@ -152,6 +159,18 @@ class OperationalInstanceRiskScaleSuperClass
     public function setTargetedValue(int $targetedValue): self
     {
         $this->targetedValue = $targetedValue;
+
+        return $this;
+    }
+
+    public function getIsHidden(): int
+    {
+        return $this->isHidden;
+    }
+
+    public function setIsHidden(int $isHidden): self
+    {
+        $this->isHidden = $isHidden;
 
         return $this;
     }
