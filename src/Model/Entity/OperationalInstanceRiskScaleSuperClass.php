@@ -40,7 +40,7 @@ class OperationalInstanceRiskScaleSuperClass
      *
      * @ORM\ManyToOne(targetEntity="InstanceRiskOp", cascade={"persist"})
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="operational_instance_risk_id", referencedColumnName="id", onDelete="CASCADE")
+     *   @ORM\JoinColumn(name="instance_risk_op_id", referencedColumnName="id", onDelete="CASCADE")
      * })
      */
     protected $operationalInstanceRisk;
