@@ -79,9 +79,9 @@ class OperationalInstanceRiskScaleSuperClass
     /**
      * @var int
      *
-     * @ORM\Column(name="is_hidden", type="smallint")
+     * @ORM\Column(name="is_hidden", type="smallint", options={"default": 0})
      */
-    protected $isHidden;
+    protected $isHidden = 0;
 
     public function getId(): int
     {
@@ -163,14 +163,14 @@ class OperationalInstanceRiskScaleSuperClass
         return $this;
     }
 
-    public function getIsHidden(): int
+    public function isHidden(): bool
     {
-        return $this->isHidden;
+        return (bool)$this->isHidden;
     }
 
-    public function setIsHidden(int $isHidden): self
+    public function setIsHidden(bool $isHidden): self
     {
-        $this->isHidden = $isHidden;
+        $this->isHidden = (int)$isHidden;
 
         return $this;
     }

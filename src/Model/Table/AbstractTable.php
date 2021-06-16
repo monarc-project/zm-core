@@ -10,11 +10,9 @@ use Doctrine\ORM\ORMException;
 
 abstract class AbstractTable
 {
-    /** @var EntityManager */
-    protected $entityManager;
+    protected EntityManager $entityManager;
 
-    /** @var string */
-    private $entityName;
+    private string $entityName;
 
     public function __construct(EntityManager $entityManager, string $entityName)
     {
