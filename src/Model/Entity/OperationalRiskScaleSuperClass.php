@@ -158,7 +158,7 @@ class OperationalRiskScaleSuperClass
         return $this;
     }
 
-    public function isHidden(): bool
+    public function getIsHidden(): bool
     {
         return (bool)$this->isHidden;
     }
