@@ -17,6 +17,7 @@ use Monarc\Core\Model\Entity\ObjectSuperClass;
 use Monarc\Core\Model\Entity\RolfTagSuperClass;
 use Monarc\Core\Model\Table\InstanceRiskOpTable;
 use Monarc\Core\Model\Table\InstanceTable;
+use Monarc\Core\Model\Table\OperationalInstanceRiskScaleTable;
 use Monarc\Core\Model\Table\RolfTagTable;
 
 /**
@@ -39,6 +40,7 @@ class InstanceRiskOpService extends AbstractService
     protected $scaleTable;
     protected $forbiddenFields = ['anr', 'instance', 'object'];
     protected $recommandationTable;
+    protected $operationalInstanceRiskScaleTable;
 
     public function createInstanceRisksOp(InstanceSuperClass $instance, ObjectSuperClass $object)
     {
@@ -53,6 +55,8 @@ class InstanceRiskOpService extends AbstractService
             if ($object->getScope() === MonarcObject::SCOPE_GLOBAL && \count($brotherInstances) > 1) {
                 /** @var InstanceRiskOpTable $instanceRiskOpTable */
                 $instanceRiskOpTable = $this->get('table');
+                /** @var OperationalInstanceRiskScaleTable $operationalInstanceRiskScaleTable */
+                $operationalInstanceRiskScaleTable = $this->get('operationalInstanceRiskScaleTable');
                 foreach ($brotherInstances as $brotherInstance) {
                     if ($brotherInstance->getId() === $instance->getId()) {
                         continue;
@@ -61,13 +65,21 @@ class InstanceRiskOpService extends AbstractService
                     foreach ($instancesRisksOp as $instanceRiskOp) {
                         /** @var InstanceRiskOp $newInstanceRiskOp */
                         $newInstanceRiskOp = (clone $instanceRiskOp)
-                            ->setId(null)
                             ->setAnr($instance->getAnr())
                             ->setInstance($instance)
-                            ->setCreator($this->getConnectedUser()->getFirstname() . ' '
-                                . $this->getConnectedUser()->getLastname());
-                        $instanceRiskOpTable->save($newInstanceRiskOp);
+                            ->setCreator($this->getConnectedUser()->getEmail());
+                        $instanceRiskOpTable->saveEntity($newInstanceRiskOp, false);
+
+                        $operationalInstanceRiskScales = $operationalInstanceRiskScaleTable->findByInstanceRiskOp(
+                            $instanceRiskOp
+                        );
+                        foreach ($operationalInstanceRiskScales as $operationalInstanceRiskScale) {
+                            $operationalInstanceRiskScaleClone = (clone $operationalInstanceRiskScale)
+                                ->setCreator($this->getConnectedUser()->getEmail());
+                            $operationalInstanceRiskScaleTable->save($operationalInstanceRiskScaleClone, false);
+                        }
                     }
+                    $instanceRiskOpTable->getDb()->flush();
 
                     break;
                 }

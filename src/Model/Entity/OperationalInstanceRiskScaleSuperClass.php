@@ -83,6 +83,12 @@ class OperationalInstanceRiskScaleSuperClass
      */
     protected $isHidden = 0;
 
+    public function __clone()
+    {
+        $this->id = null;
+        $this->setCreatedAtValue();
+    }
+
     public function getId(): int
     {
         return $this->id;

@@ -7,6 +7,8 @@
 
 namespace Monarc\Core\Service;
 
+use Monarc\Core\Model\Table\OperationalInstanceRiskScaleTable;
+
 /**
  * Instance Risk Op Service Factory
  *
@@ -25,5 +27,6 @@ class InstanceRiskOpServiceFactory extends AbstractServiceFactory
         'rolfRiskTable' => 'Monarc\Core\Model\Table\RolfRiskTable',
         'rolfTagTable' => 'Monarc\Core\Model\Table\RolfTagTable',
         'scaleTable' => 'Monarc\Core\Model\Table\ScaleTable',
+        'operationalInstanceRiskScaleTable' => OperationalInstanceRiskScaleTable::class,
     ];
 }
