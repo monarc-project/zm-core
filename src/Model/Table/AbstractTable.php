@@ -49,6 +49,15 @@ abstract class AbstractTable
         }
     }
 
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function flush(): void
+    {
+        $this->entityManager->flush();
+    }
+
     public function findById(int $id): ?object
     {
         return $this->entityManager->find($this->entityName, $id);
