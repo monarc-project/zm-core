@@ -1234,7 +1234,7 @@ class InstanceService extends AbstractService
                     $comments = [];
                     foreach ($scalesComments as $scaleComment) {
                         $comment = 'comment' . $anr->language;
-                        $comments[$scaleComment->val] = $scaleComment->$comment;
+                        $comments[$scaleComment->scaleValue] = $scaleComment->$comment;
                     }
                 }
 
