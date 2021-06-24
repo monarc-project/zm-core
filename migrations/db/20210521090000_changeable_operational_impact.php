@@ -130,7 +130,7 @@ class ChangeableOperationalImpact extends AbstractMigration
        $operationalRisksScalesCommentsTable = $this->table('operational_risks_scales_comments');
        $currentScalesByAnr = [];
        foreach ($scalesQuery->fetchAll() as $scaleData) {
-           $isLikelihoodScale = $scaleData['scale_type'] === OperationalRiskScale::TYPE_LIKELIHOOD;
+           $isLikelihoodScale = (int)$scaleData['scale_type'] === OperationalRiskScale::TYPE_LIKELIHOOD;
            $labelTranslationKey = $isLikelihoodScale ? '' : (string)Uuid::uuid4();
            $operationalRisksScalesTable->insert([
                'anr_id' => $scaleData['anr_id'],
@@ -173,7 +173,7 @@ class ChangeableOperationalImpact extends AbstractMigration
            }
 
            if (!empty($currentScalesByAnr) && array_key_first($currentScalesByAnr) !== $scaleData['anr_id']) {
-               // @jerome: 3:likelihood 4:R 5:O 6:L 7:F 8:P -- easier to migrate instances_risks_op > 8 = custom
+               // @jerome: 2:likelihood 4:R 5:O 6:L 7:F 8:P -- easier to migrate instances_risks_op > 8 = custom
                $this->createOperationalInstaceRisksScales($currentScalesByAnr);
                $currentScalesByAnr = [];
            }
