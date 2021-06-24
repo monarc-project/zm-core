@@ -42,6 +42,6 @@ trait CreateEntityTrait
 
     public function getCreator(): string
     {
-        return $this->creator;
+        return (string)$this->creator;
     }
 }

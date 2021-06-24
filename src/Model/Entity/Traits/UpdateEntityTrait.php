@@ -50,6 +50,6 @@ trait UpdateEntityTrait
 
     public function getUpdater(): string
     {
-        return $this->updater;
+        return (string)$this->updater;
     }
 }
