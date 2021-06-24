@@ -157,6 +157,39 @@ class ScaleCommentSuperClass extends AbstractEntity
         return $this;
     }
 
+    public function getScaleIndex(): int
+    {
+        return $this->scaleIndex;
+    }
+
+    public function setScaleIndex(int $scaleIndex): self
+    {
+        $this->scaleIndex = $scaleIndex;
+
+        return $this;
+    }
+
+    public function getScaleValue(): int
+    {
+        return $this->scaleValue;
+    }
+
+    public function setScaleValue(int $scaleValue): self
+    {
+        $this->scaleValue = $scaleValue;
+
+        return $this;
+    }
+
+    public function getComment(int $languageIndex): string
+    {
+        if (!\in_array($languageIndex, range(1, 4), true)) {
+            return '';
+        }
+
+        return (string)$this->{'comment' . $languageIndex};
+    }
+
     public function getScaleIndexAvailableValues()
     {
         $values = [];

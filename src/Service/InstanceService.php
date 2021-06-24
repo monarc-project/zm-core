@@ -17,6 +17,7 @@ use Monarc\Core\Model\Entity\InstanceConsequenceSuperClass;
 use Monarc\Core\Model\Entity\InstanceRiskOp;
 use Monarc\Core\Model\Entity\InstanceSuperClass;
 use Monarc\Core\Model\Entity\MonarcObject;
+use Monarc\Core\Model\Entity\ScaleCommentSuperClass;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\InstanceConsequenceTable;
 use Monarc\Core\Model\Table\InstanceRiskTable;
@@ -1206,13 +1207,13 @@ class InstanceService extends AbstractService
     {
         $instanceId = $instance['id'];
 
-        /** @var InstanceConsequenceTable $table */
-        $table = $this->get('instanceConsequenceTable');
-        $instanceConsequences = $table->getEntityByFields(['anr' => $anrId, 'instance' => $instanceId]);
+        /** @var InstanceConsequenceTable $instanceConsequenceTable */
+        $instanceConsequenceTable = $this->get('instanceConsequenceTable');
+        $instanceConsequences = $instanceConsequenceTable->getEntityByFields(['anr' => $anrId, 'instance' => $instanceId]);
 
         /** @var AnrTable $anrTable */
         $anrTable = $this->get('anrTable');
-        $anr = $anrTable->getEntity($anrId);
+        $anr = $anrTable->findById($anrId);
 
         $consequences = [];
         foreach ($instanceConsequences as $instanceConsequence) {
@@ -1225,16 +1226,15 @@ class InstanceService extends AbstractService
 
                     /** @var ScaleCommentTable $scaleCommentTable */
                     $scaleCommentTable = $this->get('scaleCommentTable');
+                    /** @var ScaleCommentSuperClass[] $scalesComments */
                     $scalesComments = $scaleCommentTable->getEntityByFields([
                         'anr' => $anrId,
                         'scaleImpactType' => $instanceConsequence->scaleImpactType->id,
                     ]);
 
-
                     $comments = [];
                     foreach ($scalesComments as $scaleComment) {
-                        $comment = 'comment' . $anr->language;
-                        $comments[$scaleComment->scaleValue] = $scaleComment->$comment;
+                        $comments[$scaleComment->getScaleValue()] = $scaleComment->getComment($anr->getLanguage());
                     }
                 }
 
