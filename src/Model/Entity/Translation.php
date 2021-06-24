@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  *   uniqueConstraints={
  *     @ORM\UniqueConstraint(name="type_key_lang_unq", columns={"type", "key", "lang"})
  *   },
-,   indexes={
+ *   indexes={
  *    @ORM\Index(name="type_key_indx", columns={"type", "key"})
  *  }
  * )

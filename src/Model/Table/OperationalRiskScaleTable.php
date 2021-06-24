@@ -3,6 +3,7 @@
 namespace Monarc\Core\Model\Table;
 
 use Doctrine\ORM\EntityManager;
+use Monarc\Core\Model\Entity\Anr;
 use Monarc\Core\Model\Entity\OperationalRiskScale;
 
 class OperationalRiskScaleTable extends AbstractTable
@@ -11,4 +12,17 @@ class OperationalRiskScaleTable extends AbstractTable
     {
         parent::__construct($entityManager, OperationalRiskScale::class);
     }
+
+    /**
+    * @return OperationalRiskScale[]
+    */
+   public function findWithCommentsByAnr(Anr $anr): array
+   {
+       return $this->getRepository()->createQueryBuilder('ors')
+           ->innerJoin('ors.operationalRiskScaleComments', 'orsc')
+           ->where('ors.anr = :anr')
+           ->setParameter('anr', $anr)
+           ->getQuery()
+           ->getResult();
+   }
 }

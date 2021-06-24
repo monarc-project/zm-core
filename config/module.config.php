@@ -293,6 +293,19 @@ return [
                 ],
             ],
 
+            'monarc_api_operational_scales' => [
+                'type' => 'segment',
+                'options' => [
+                    'route' => '/api/anr/:anrId/operational-scales[/:id]',
+                    'constraints' => [
+                        'id' => '[0-9]+',
+                    ],
+                    'defaults' => [
+                        'controller' => Controller\ApiOperationalRisksScalesController::class,
+                    ],
+                ],
+            ],
+
             'monarc_api_scales_comments' => [
                 'type' => 'segment',
                 'options' => [
@@ -521,6 +534,7 @@ return [
             Controller\ApiAnrScalesController::class => Controller\ApiAnrScalesControllerFactory::class,
             Controller\ApiAnrScalesTypesController::class => Controller\ApiAnrScalesTypesControllerFactory::class,
             Controller\ApiAnrScalesCommentsController::class => Controller\ApiAnrScalesCommentsControllerFactory::class,
+            Controller\ApiOperationalRisksScalesController::class => AutowireFactory::class,
         ],
     ],
 

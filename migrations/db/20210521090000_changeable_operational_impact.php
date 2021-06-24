@@ -95,7 +95,7 @@ class ChangeableOperationalImpact extends AbstractMigration
             'CREATE TABLE IF NOT EXISTS `translations` (
                 `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
                 `type` varchar(255) NOT NULL,
-                `key` varchar(255) NOT NULL,
+                `translation_key` varchar(255) NOT NULL,
                 `lang` char(2) NOT NULL,
                 `value` TEXT,
                 `creator` varchar(255) NOT NULL,
@@ -103,9 +103,9 @@ class ChangeableOperationalImpact extends AbstractMigration
                 `updater` varchar(255) DEFAULT NULL,
                 `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
                 PRIMARY KEY (`id`),
-                INDEX `translations_key_indx` (`key`),
+                INDEX `translations_key_indx` (`translation_key`),
                 INDEX `translations_type_indx` (`type`),
-                UNIQUE `translations_key_lang_unq` (`key`, `lang`)
+                UNIQUE `translations_key_lang_unq` (`translation_key`, `lang`)
             );'
         );
 
@@ -224,7 +224,7 @@ class ChangeableOperationalImpact extends AbstractMigration
             if (!empty($data[$fieldName . $langKey])) {
                 $translations[] = [
                     'type' => $type,
-                    'key' => $translationKey,
+                    'translation_key' => $translationKey,
                     'lang' => $langLabel,
                     'value' => $data[$fieldName . $langKey],
                     'creator' => 'Migration script',
