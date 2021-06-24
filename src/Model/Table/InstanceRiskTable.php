@@ -236,7 +236,7 @@ class InstanceRiskTable extends AbstractEntityTable
                 ON         i.object_id = o.uuid
                 WHERE      ir.cache_max_risk >= -1';
         } else {
-            array_push($arraySelect,'rec.recommendations');
+            $arraySelect[] = 'rec.recommendations';
             $sql = 'SELECT ' . implode(',', $arraySelect) . '
                 FROM       instances_risks AS ir
                 INNER JOIN instances i
