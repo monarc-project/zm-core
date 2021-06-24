@@ -28,6 +28,8 @@ class ChangeableOperationalImpact extends AbstractMigration
      * Remember to call "create()" or "update()" and NOT "save()" when working
      * with the Table class.
      */
+
+    // TO DO : be sure that for operational_risks_scales we always go from min = 0. And also that all operational_risks_scales_comments between min and max are created
     public function change()
     {
         $this->execute(
@@ -108,81 +110,80 @@ class ChangeableOperationalImpact extends AbstractMigration
         );
 
         // Migration of scales, impact types and operational risks values.
-//        $scalesQuery = $this->query(
-//            'SELECT s.anr_id, s.type AS scale_type, sit.label1, sit.label2, sit.label3, sit.label4, s.min, s.max,
-//                    GROUP_CONCAT(sc.val SEPARATOR "-----") as scale_values,
-//                    GROUP_CONCAT(sc.comment1 SEPARATOR "-----") comments1,
-//                    GROUP_CONCAT(sc.comment2 SEPARATOR "-----") comments2,
-//                    GROUP_CONCAT(sc.comment3 SEPARATOR "-----") comments3,
-//                    GROUP_CONCAT(sc.comment4 SEPARATOR "-----") comments4,
-//                    sit.type AS scale_impact_type
-//            FROM scales s
-//              INNER JOIN scales_comments sc ON sc.scale_id = s.id
-//              LEFT JOIN scales_impact_types sit ON sit.scale_id = s.id
-//            WHERE s.type = 1 AND sit.type > 3 OR s.type = 2
-//            GROUP BY s.anr_id, s.id, sit.id
-//            ORDER BY s.anr_id, s.id'
-//        );
-//
-//        $operationalRisksScalesTable = $this->table('operational_risks_scales');
-//        $operationalRisksScalesCommentsTable = $this->table('operational_risks_scales_comments');
-//        $currentScalesByAnr = [];
-//        foreach ($scalesQuery->fetchAll() as $scaleData) {
-//            $isLikelihoodScale = $scaleData['scale_type'] === OperationalRiskScale::TYPE_LIKELIHOOD;
-//            $labelTranslationKey = $isLikelihoodScale ? '' : (string)Uuid::uuid4();
-//            $operationalRisksScalesTable->insert([
-//                'anr_id' => $scaleData['anr_id'],
-//                'type' => $isLikelihoodScale ? OperationalRiskScale::TYPE_LIKELIHOOD : OperationalRiskScale::TYPE_IMPACT,
-//                'min' => $scaleData['min'],
-//                'max' => $scaleData['max'],
-//                'label_translation_key' => $labelTranslationKey,
-//                'creator' => 'Migration script',
-//            ])->save();
-//            $operationalRiskScaleId = $this->getAdapter()->getConnection()->lastInsertId();
-//            if (!$isLikelihoodScale) {
-//                $this->createTranslations($scaleData, OperationalRiskScale::class, 'label', $labelTranslationKey);
-//            }
-//            $scaleValues = explode('-----', $scaleData['scale_values']);
-//            $comments1 = explode('-----', $scaleData['comments1']);
-//            $comments2 = explode('-----', $scaleData['comments2']);
-//            $comments3 = explode('-----', $scaleData['comments3']);
-//            $comments4 = explode('-----', $scaleData['comments4']);
-//            foreach ($scaleValues as $valueKey => $scaleValue) {
-//                $commentTranslationKey = Uuid::uuid4();
-//                $operationalRisksScalesCommentsTable->insert([
-//                    'anr_id' => $scaleData['anr_id'],
-//                    'operational_risk_scale_id' => $operationalRiskScaleId,
-//                    'scale_value' => $scaleValue,
-//                    'scale_index' => $scaleValue,
-//                    'comment_translation_key' => $commentTranslationKey,
-//                    'creator' => 'Migration script',
-//                ])->save();
-//                $this->createTranslations(
-//                    [
-//                        'anr_id' => $scaleData['anr_id'],
-//                        'comment1' => $comments1[$valueKey] ?? '',
-//                        'comment2' => $comments2[$valueKey] ?? '',
-//                        'comment3' => $comments3[$valueKey] ?? '',
-//                        'comment4' => $comments4[$valueKey] ?? '',
-//                    ],
-//                    OperationalRiskScaleComment::class,
-//                    'comment',
-//                    $commentTranslationKey
-//                );
-//            }
-//
-//            if (!empty($currentScalesByAnr) && array_key_first($currentScalesByAnr) !== $scaleData['anr_id']) {
-//                // @jerome: 3:likelihood 4:R 5:O 6:L 7:F 8:P -- easier to migrate instances_risks_op > 8 = custom
-//                $this->createOperationalInstaceRisksScales($currentScalesByAnr);
-//                $currentScalesByAnr = [];
-//            }
-//
-//            $currentScalesByAnr[$scaleData['anr_id']][(int)$scaleData['scale_impact_type']] = $operationalRiskScaleId;
-//        }
-//
-//        if (!empty($currentScalesByAnr)) {
-//            $this->createOperationalInstaceRisksScales($currentScalesByAnr);
-//        }
+       $scalesQuery = $this->query(
+           'SELECT s.anr_id, s.type AS scale_type, sit.label1, sit.label2, sit.label3, sit.label4, s.min, s.max,
+                   GROUP_CONCAT(sc.val SEPARATOR "-----") as scale_values,
+                   GROUP_CONCAT(sc.comment1 SEPARATOR "-----") comments1,
+                   GROUP_CONCAT(sc.comment2 SEPARATOR "-----") comments2,
+                   GROUP_CONCAT(sc.comment3 SEPARATOR "-----") comments3,
+                   GROUP_CONCAT(sc.comment4 SEPARATOR "-----") comments4,
+                   sit.type AS scale_impact_type
+           FROM scales s
+             INNER JOIN scales_comments sc ON sc.scale_id = s.id
+             LEFT JOIN scales_impact_types sit ON sit.scale_id = s.id
+           WHERE s.type = 1 AND sit.type > 3 OR s.type = 2
+           GROUP BY s.anr_id, s.id, sit.id
+           ORDER BY s.anr_id, s.id'
+       );
+
+       $operationalRisksScalesTable = $this->table('operational_risks_scales');
+       $operationalRisksScalesCommentsTable = $this->table('operational_risks_scales_comments');
+       $currentScalesByAnr = [];
+       foreach ($scalesQuery->fetchAll() as $scaleData) {
+           $isLikelihoodScale = $scaleData['scale_type'] === OperationalRiskScale::TYPE_LIKELIHOOD;
+           $labelTranslationKey = $isLikelihoodScale ? '' : (string)Uuid::uuid4();
+           $operationalRisksScalesTable->insert([
+               'anr_id' => $scaleData['anr_id'],
+               'type' => $isLikelihoodScale ? OperationalRiskScale::TYPE_LIKELIHOOD : OperationalRiskScale::TYPE_IMPACT,
+               'min' => $scaleData['min'],
+               'max' => $scaleData['max'],
+               'label_translation_key' => $labelTranslationKey,
+               'creator' => 'Migration script',
+           ])->save();
+           $operationalRiskScaleId = $this->getAdapter()->getConnection()->lastInsertId();
+           if (!$isLikelihoodScale) {
+               $this->createTranslations($scaleData, OperationalRiskScale::class, 'label', $labelTranslationKey);
+           }
+           $scaleValues = explode('-----', $scaleData['scale_values']);
+           $comments1 = explode('-----', $scaleData['comments1']);
+           $comments2 = explode('-----', $scaleData['comments2']);
+           $comments3 = explode('-----', $scaleData['comments3']);
+           $comments4 = explode('-----', $scaleData['comments4']);
+           foreach ($scaleValues as $valueKey => $scaleValue) {
+               $commentTranslationKey = Uuid::uuid4();
+               $operationalRisksScalesCommentsTable->insert([
+                   'anr_id' => $scaleData['anr_id'],
+                   'operational_risk_scale_id' => $operationalRiskScaleId,
+                   'scale_value' => $scaleValue,
+                   'scale_index' => $scaleValue,
+                   'comment_translation_key' => $commentTranslationKey,
+                   'creator' => 'Migration script',
+               ])->save();
+               $this->createTranslations(
+                   [
+                       'comment1' => $comments1[$valueKey] ?? '',
+                       'comment2' => $comments2[$valueKey] ?? '',
+                       'comment3' => $comments3[$valueKey] ?? '',
+                       'comment4' => $comments4[$valueKey] ?? '',
+                   ],
+                   OperationalRiskScaleComment::class,
+                   'comment',
+                   $commentTranslationKey
+               );
+           }
+
+           if (!empty($currentScalesByAnr) && array_key_first($currentScalesByAnr) !== $scaleData['anr_id']) {
+               // @jerome: 3:likelihood 4:R 5:O 6:L 7:F 8:P -- easier to migrate instances_risks_op > 8 = custom
+               $this->createOperationalInstaceRisksScales($currentScalesByAnr);
+               $currentScalesByAnr = [];
+           }
+
+           $currentScalesByAnr[$scaleData['anr_id']][(int)$scaleData['scale_impact_type']] = $operationalRiskScaleId;
+       }
+
+       if (!empty($currentScalesByAnr)) {
+           $this->createOperationalInstaceRisksScales($currentScalesByAnr);
+       }
 
         // Migration for table scales_comments
         $table = $this->table('scales_comments');
@@ -222,7 +223,6 @@ class ChangeableOperationalImpact extends AbstractMigration
         foreach ([1 => 'fr', 2 => 'en', 3 => 'de', 4 => 'nl'] as $langKey => $langLabel) {
             if (!empty($data[$fieldName . $langKey])) {
                 $translations[] = [
-                    'anr_id' => $data['anr_id'],
                     'type' => $type,
                     'key' => $translationKey,
                     'lang' => $langLabel,
