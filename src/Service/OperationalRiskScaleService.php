@@ -55,7 +55,7 @@ class OperationalRiskScaleService
     public function createOperationalRiskScale(int $anrId, array $data): int
     {
         $anr = $this->anrTable->findById($anrId);
-        $anrLanguageCode = strtolower($this->configService->getLanguageCodes()[$anr->getLanguage()]);
+        $languages = [];
 
         $operationalRiskScale = (new OperationalRiskScale())
             ->setAnr($anr)
@@ -66,15 +66,18 @@ class OperationalRiskScaleService
             ->setCreator($this->connectedUser->getEmail());
 
         // Create a translation for the scale.
-        $translation = (new Translation())
-            ->setAnr($anr)
-            ->setCreator($this->connectedUser->getEmail())
-            ->setType(OperationalRiskScale::class)
-            ->setKey($operationalRiskScale->getLabelTranslationKey())
-            ->setLang($anrLanguageCode)
-            ->setValue($data['Label']);
+        foreach ($data['Label'] as $label) {
+            $translation = (new Translation())
+                ->setCreator($this->connectedUser->getEmail())
+                ->setType(OperationalRiskScale::class)
+                ->setKey($operationalRiskScale->getLabelTranslationKey())
+                ->setLang(key($label))
+                ->setValue($label[key($label)]);
 
-        $this->translationTable->save($translation, false);
+            $this->translationTable->save($translation, false);
+            $languages[] = key($label);
+        }
+
 
         // Process the scale comments.
         if (!empty($data['comments'])) {
@@ -90,15 +93,16 @@ class OperationalRiskScaleService
                 $this->operationalRiskScaleCommentTable->save($scaleComment, false);
 
                 // Create a translation for the scaleComment (init with blank value).
-                $translation = (new Translation())
-                    ->setAnr($anr)
-                    ->setCreator($this->connectedUser->getEmail())
-                    ->setType(OperationalRiskScaleComment::class)
-                    ->setKey($scaleComment->getCommentTranslationKey())
-                    ->setLang($anrLanguageCode)
-                    ->setValue('');
+                foreach ($languages as $language) {
+                    $translation = (new Translation())
+                        ->setCreator($this->connectedUser->getEmail())
+                        ->setType(OperationalRiskScaleComment::class)
+                        ->setKey($scaleComment->getCommentTranslationKey())
+                        ->setLang($language)
+                        ->setValue('');
 
-                $this->translationTable->save($translation, false);
+                    $this->translationTable->save($translation, false);
+                }
             }
         }
 
