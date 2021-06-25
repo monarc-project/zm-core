@@ -114,14 +114,18 @@ class OperationalRiskScaleService
     /**
      * @throws EntityNotFoundException
      */
-    public function getOperationalRiskScales(int $anrId): array
+    public function getOperationalRiskScales(int $anrId, string $language=null): array
     {
         $anr = $this->anrTable->findById($anrId);
         $operationalRiskScales = $this->operationalRiskScaleTable->findWithCommentsByAnr($anr);
         $result = [];
+
+        if($language==null)
+          $language=strtolower($this->configService->getLanguageCodes()[$anr->getLanguage()]);
+
         $translations = $this->translationTable->findByTypesAndLanguageIndexedByKey(
             [OperationalRiskScale::class, OperationalRiskScaleComment::class],
-            strtolower($this->configService->getLanguageCodes()[$anr->getLanguage()])
+            $language
         );
 
         foreach ($operationalRiskScales as $operationalRiskScale) {
