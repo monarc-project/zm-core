@@ -111,19 +111,19 @@ class ChangeableOperationalImpact extends AbstractMigration
 
         // Migration of scales, impact types and operational risks values.
        $scalesQuery = $this->query(
-           'SELECT s.anr_id, s.type AS scale_type, sit.label1, sit.label2, sit.label3, sit.label4, s.min, s.max,
-                   GROUP_CONCAT(sc.val SEPARATOR "-----") as scale_values,
-                   GROUP_CONCAT(sc.comment1 SEPARATOR "-----") comments1,
-                   GROUP_CONCAT(sc.comment2 SEPARATOR "-----") comments2,
-                   GROUP_CONCAT(sc.comment3 SEPARATOR "-----") comments3,
-                   GROUP_CONCAT(sc.comment4 SEPARATOR "-----") comments4,
-                   sit.type AS scale_impact_type
-           FROM scales s
-             INNER JOIN scales_comments sc ON sc.scale_id = s.id
-             LEFT JOIN scales_impact_types sit ON sit.scale_id = s.id
-           WHERE s.type = 1 AND sit.type > 3 OR s.type = 2
-           GROUP BY s.anr_id, s.id, sit.id
-           ORDER BY s.anr_id, s.id'
+         'SELECT s.anr_id, s.type AS scale_type, sit.label1, sit.label2, sit.label3, sit.label4, s.min, s.max,
+                  GROUP_CONCAT(sc.val SEPARATOR "-----") as scale_values,
+                  GROUP_CONCAT(sc.comment1 SEPARATOR "-----") comments1,
+                  GROUP_CONCAT(sc.comment2 SEPARATOR "-----") comments2,
+                  GROUP_CONCAT(sc.comment3 SEPARATOR "-----") comments3,
+                  GROUP_CONCAT(sc.comment4 SEPARATOR "-----") comments4,
+                  sit.type AS scale_impact_type
+          FROM scales s
+            INNER JOIN scales_comments sc ON sc.scale_id = s.id
+            LEFT JOIN scales_impact_types sit ON sit.scale_id = s.id AND sit.id = sc.scale_type_impact_id
+          WHERE s.type = 1 AND sit.type > 3 OR s.type = 2
+          GROUP BY s.anr_id, s.id, sit.id
+          ORDER BY s.anr_id, s.id'
        );
 
        $operationalRisksScalesTable = $this->table('operational_risks_scales');
