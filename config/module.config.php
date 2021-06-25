@@ -306,6 +306,20 @@ return [
                 ],
             ],
 
+            'monarc_api_operational_scales_comment' => [
+                'type' => 'segment',
+                'options' => [
+                    'route' => '/api/anr/:anrId/operational-scales/:scaleid/comments[/:id]',
+                    'constraints' => [
+                        'id' => '[0-9]+',
+                        'scaleid' => '[0-9]+',
+                    ],
+                    'defaults' => [
+                        'controller' => Controller\ApiOperationalRisksScalesCommentsController::class,
+                    ],
+                ],
+            ],
+
             'monarc_api_scales_comments' => [
                 'type' => 'segment',
                 'options' => [
@@ -535,6 +549,7 @@ return [
             Controller\ApiAnrScalesTypesController::class => Controller\ApiAnrScalesTypesControllerFactory::class,
             Controller\ApiAnrScalesCommentsController::class => Controller\ApiAnrScalesCommentsControllerFactory::class,
             Controller\ApiOperationalRisksScalesController::class => AutowireFactory::class,
+            Controller\ApiOperationalRisksScalesCommentsController::class => AutowireFactory::class,
         ],
     ],
 
