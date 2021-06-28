@@ -205,15 +205,13 @@ class OperationalRiskScaleService
 
         $operationalRiskScale->setIsHidden(!empty($data['isHidden']));
 
-        if (!empty($data['label'])) {
+        if (!empty($data['label']) && !empty($data['language'])) {
             $translationKey = $operationalRiskScale->getLabelTranslationKey();
             if (!empty($translationKey)) {
-                foreach ($data['Label'] as $label) {
-                    $translation = $this->translationTable
-                        ->findByKeyAndLanguage($translationKey, key($label));
-                    $translation->setValue($label[key($label)]);
-                    $this->translationTable->save($translation, false);
-                }
+                $translation = $this->translationTable
+                    ->findByKeyAndLanguage($translationKey, $data['language']);
+                $translation->setValue($data['label']);
+                $this->translationTable->save($translation, false);
             }
         }
         $this->operationalRiskScaleTable->save($operationalRiskScale);
