@@ -202,17 +202,18 @@ class OperationalRiskScaleService
 
         /** @var OperationalRiskScale $operationalRiskScale */
         $operationalRiskScale = $this->operationalRiskScaleTable->findById($id);
-        $anrLanguageCode = strtolower($this->configService->getLanguageCodes()[$anr->getLanguage()]);
 
         $operationalRiskScale->setIsHidden(!empty($data['isHidden']));
 
         if (!empty($data['label'])) {
             $translationKey = $operationalRiskScale->getLabelTranslationKey();
             if (!empty($translationKey)) {
-                $translation = $this->translationTable
-                    ->findByAnrKeyAndLanguage($anr, $translationKey, $anrLanguageCode);
-                $translation->setValue($data['label']);
-                $this->translationTable->save($translation, false);
+                foreach ($data['Label'] as $label) {
+                    $translation = $this->translationTable
+                        ->findByKeyAndLanguage($translationKey, key($label));
+                    $translation->setValue($label[key($label)]);
+                    $this->translationTable->save($translation, false);
+                }
             }
         }
         $this->operationalRiskScaleTable->save($operationalRiskScale);
