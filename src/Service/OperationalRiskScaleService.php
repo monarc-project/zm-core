@@ -72,7 +72,7 @@ class OperationalRiskScaleService
                 ->setType(OperationalRiskScale::class)
                 ->setKey($operationalRiskScale->getLabelTranslationKey())
                 ->setLang($key)
-                ->setValue($label != null ? $label: '');
+                ->setValue($label != null ? $label: '...');
 
             $this->translationTable->save($translation, false);
             $languages[] = $key;
