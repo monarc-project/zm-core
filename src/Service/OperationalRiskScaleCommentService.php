@@ -44,9 +44,9 @@ class OperationalRiskScaleCommentService
         if (isset($data['scaleValue'])) {
             $operationalRiskScaleComment->setScaleValue((int)$data['scaleValue']);
         }
-        if (!empty($data['comment']) && !empty($data['lang'])) {
+        if (!empty($data['comment']) && !empty($data['language'])) {
             $translationKey = $operationalRiskScaleComment->getCommentTranslationKey();
-            $translation = $this->translationTable->findByKeyAndLanguage($translationKey, $data['lang']);
+            $translation = $this->translationTable->findByKeyAndLanguage($translationKey, $data['language']);
             $translation->setValue($data['comment']);
             $this->translationTable->save($translation, false);
         }
