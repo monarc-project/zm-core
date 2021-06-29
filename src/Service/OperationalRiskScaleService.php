@@ -187,9 +187,10 @@ class OperationalRiskScaleService
                 $translationsKeys[] = $operationalRiskScaleComment->getCommentTranslationKey();
             }
 
-            $this->operationalRiskScaleTable->remove($scaleToDelete, true);
+            $this->operationalRiskScaleTable->remove($scaleToDelete, false);
 
         }
+        $this->operationalRiskScaleTable->flush();
 
         if (!empty($translationsKeys)) {
             $this->translationTable->deleteListByKeys($translationsKeys);
