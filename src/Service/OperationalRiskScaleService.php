@@ -339,7 +339,6 @@ class OperationalRiskScaleService
 
                     // Create a translation for the scaleComment (init with blank value).
                     $translation = (new Translation())
-                        ->setAnr($anr)
                         ->setCreator($this->connectedUser->getEmail())
                         ->setType(OperationalRiskScaleComment::class)
                         ->setKey($scaleComment->getCommentTranslationKey())
@@ -363,7 +362,6 @@ class OperationalRiskScaleService
 
                     // Create a translation for the scaleComment (init with blank value).
                     $translation = (new Translation())
-                        ->setAnr($anr)
                         ->setCreator($this->connectedUser->getEmail())
                         ->setType(OperationalRiskScaleComment::class)
                         ->setKey($scaleComment->getCommentTranslationKey())
