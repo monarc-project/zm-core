@@ -366,7 +366,6 @@ class AnrService extends AbstractService
             // operational risk scales
             $return['operationalRiskScale'] = [];
             $operationalRiskScaleTable = $this->get('operationalRiskScaleTable');
-            file_put_contents('php://stderr', print_r(empty($operationalRiskScaleTable), TRUE).PHP_EOL);
 
             $operationalRiskScales = $operationalRiskScaleTable->findWithCommentsByAnr($entity);
 

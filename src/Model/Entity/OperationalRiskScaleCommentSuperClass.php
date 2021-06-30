@@ -13,7 +13,7 @@ use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
-class OperationalRiskScaleCommentSuperClass
+class OperationalRiskScaleCommentSuperClass extends AbstractEntity
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
