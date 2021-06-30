@@ -31,6 +31,8 @@ class AnrService extends AbstractService
     protected $scaleTable;
     protected $scaleImpactTypeTable;
     protected $scaleCommentTable;
+    protected $operationalRiskScaleTable;
+    protected $operationalRiskScaleCommentTable;
     protected $instanceService;
     protected $questionTable;
     protected $questionChoiceTable;
@@ -359,6 +361,23 @@ class AnrService extends AbstractService
                     $newSoas['measure_id'] = $s->getMeasure()->getUuid();
                     $return['soas'][] = $newSoas;
                 }
+            }
+
+            // operational risk scales
+            $return['operationalRiskScale'] = [];
+            $operationalRiskScaleTable = $this->get('operationalRiskScaleTable');
+            file_put_contents('php://stderr', print_r(empty($operationalRiskScaleTable), TRUE).PHP_EOL);
+
+            $operationalRiskScales = $operationalRiskScaleTable->findWithCommentsByAnr($entity);
+
+            $operationalRiskScalesArray = [
+                'id' => 'id',
+                'min' => 'min',
+                'max' => 'max',
+                'type' => 'type',
+            ];
+            foreach ($operationalRiskScales as $s) {
+                $return['operationalRiskScale'][$s->getType()] = $s->getJsonArray($operationalRiskScalesArray);
             }
 
             // scales

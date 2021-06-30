@@ -7,6 +7,8 @@
 
 namespace Monarc\Core\Service;
 
+use Monarc\FrontOffice\Model\Table\OperationalRiskScaleTable;
+
 /**
  * Anr Service Factory
  *
@@ -28,6 +30,8 @@ class AnrServiceFactory extends AbstractServiceFactory
         'scaleTable' => 'Monarc\Core\Model\Table\ScaleTable',
         'scaleImpactTypeTable' => 'Monarc\Core\Model\Table\ScaleImpactTypeTable',
         'scaleCommentTable' => 'Monarc\Core\Model\Table\ScaleCommentTable',
+        'operationalRiskScaleCommentTable' => 'Monarc\Core\Model\Table\OperationalRiskScaleCommentTable',
         'instanceService' => 'Monarc\Core\Service\InstanceService',
+        'operationalRiskScaleTable' => OperationalRiskScaleTable::class,
     ];
 }
