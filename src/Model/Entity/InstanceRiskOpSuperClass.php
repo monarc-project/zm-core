@@ -171,6 +171,27 @@ class InstanceRiskOpSuperClass extends AbstractEntity
     protected $riskCacheDescription4;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(name="brut_prob", type="smallint", options={"unsigned":false, "default":-1})
+     */
+    protected $brutProb = -1;
+
+    /**
+     * @var int
+     *
+     * @ORM\Column(name="net_prob", type="smallint", options={"unsigned":false, "default":-1})
+     */
+    protected $netProb = -1;
+
+    /**
+     * @var int
+     *
+     * @ORM\Column(name="targeted_prob", type="smallint", options={"unsigned":false, "default":-1})
+     */
+    protected $targetedProb = -1;
+
+    /**
      * @var int
      *
      * @ORM\Column(name="cache_brut_risk", type="smallint", options={"unsigned":false, "default":-1})
@@ -466,6 +487,54 @@ class InstanceRiskOpSuperClass extends AbstractEntity
     public function setSpecific(int $specific): self
     {
         $this->specific = $specific;
+
+        return $this;
+    }
+
+    public function getBrutProb(): string
+    {
+        return $this->brutProb;
+    }
+
+    public function setBrutProb(string $brutProb): self
+    {
+        $this->brutProb = $brutProb;
+
+        return $this;
+    }
+
+    public function getNetProb(): int
+    {
+        return $this->netProb;
+    }
+
+    public function setNetProb(int $netProb): self
+    {
+        $this->netProb = $netProb;
+
+        return $this;
+    }
+
+    public function getTargetedProb(): int
+    {
+        return $this->targetedProb;
+    }
+
+    public function setTargetedProb(int $targetedProb): self
+    {
+        $this->targetedProb = $targetedProb;
+
+        return $this;
+    }
+
+    public function getMitigation(): string
+    {
+        return $this->mitigation;
+    }
+
+    public function setMitigation(string $mitigation): self
+    {
+        $this->mitigation = $mitigation;
 
         return $this;
     }

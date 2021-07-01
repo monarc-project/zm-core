@@ -3,8 +3,6 @@
 namespace Monarc\Core\Model\Table;
 
 use Doctrine\ORM\EntityManager;
-use Monarc\Core\Model\Entity\AnrSuperClass;
-use Monarc\Core\Model\Entity\Anr;
 use Monarc\Core\Model\Entity\Translation;
 
 class TranslationTable extends AbstractTable
@@ -42,26 +40,9 @@ class TranslationTable extends AbstractTable
             ->getResult();
     }
 
-    /**
-     * @return Translation[]
-     */
-    public function findByKeysAndLang(array $keys, string $lang): array
-    {
-        $queryBuilder = $this->getRepository()->createQueryBuilder('t');
-
-        return $queryBuilder
-            ->where($queryBuilder->expr()->in('t.key', $keys))
-            ->andWhere('t.lang = :lang')
-            ->setParameter('lang', $lang)
-            ->getQuery()
-            ->getResult();
-    }
-
     public function findByKeyAndLanguage(string $key, string $lang): Translation
     {
-        $queryBuilder = $this->getRepository()->createQueryBuilder('t', 't.key');
-
-        return $queryBuilder
+        return $this->getRepository()->createQueryBuilder('t')
             ->where('t.key = :key')
             ->andWhere('t.lang = :lang')
             ->setParameter('key', $key)
