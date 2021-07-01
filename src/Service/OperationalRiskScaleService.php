@@ -66,7 +66,7 @@ class OperationalRiskScaleService
             ->setCreator($this->connectedUser->getEmail());
 
         // Create a translation for the scale.
-        foreach ($data['Label'] as $key => $label) {
+        foreach ($data['label'] as $key => $label) {
             $translation = (new Translation())
                 ->setCreator($this->connectedUser->getEmail())
                 ->setType(OperationalRiskScale::class)

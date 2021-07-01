@@ -31,7 +31,7 @@ class ScaleCommentTable extends AbstractEntityTable
     public function getByScale($scaleId)
     {
         $comments = $this->getRepository()->createQueryBuilder('s')
-            ->select(array('s.val', 'IDENTITY(s.scaleImpactType) as scaleImpactType', 's.comment1', 's.comment2', 's.comment3', 's.comment4'))
+            ->select(array('s.scaleValue', 'IDENTITY(s.scaleImpactType) as scaleImpactType', 's.comment1', 's.comment2', 's.comment3', 's.comment4'))
             ->where('s.scale = :scaleId')
             ->setParameter(':scaleId', $scaleId)
             ->getQuery()
@@ -51,8 +51,8 @@ class ScaleCommentTable extends AbstractEntityTable
     public function getByScaleAndOutOfRange($scaleId, $min, $max)
     {
         $comments = $this->getRepository()->createQueryBuilder('s')
-            ->select(array('s.id', 's.val', 'IDENTITY(s.scaleImpactType) as scaleImpactType', 's.comment1', 's.comment2', 's.comment3', 's.comment4'))
-            ->where('s.scale = :scaleId AND (s.val > :max OR s.val < :min)')
+            ->select(array('s.id', 's.scaleValue', 'IDENTITY(s.scaleImpactType) as scaleImpactType', 's.comment1', 's.comment2', 's.comment3', 's.comment4'))
+            ->where('s.scale = :scaleId AND (s.scaleValue > :max OR s.scaleValue < :min)')
             ->setParameter(':scaleId', $scaleId)
             ->setParameter(':min', $min)
             ->setParameter(':max', $max)
