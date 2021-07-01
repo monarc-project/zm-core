@@ -102,16 +102,17 @@ class OperationalInstanceRiskScaleSuperClass
     public function setOperationalInstanceRisk(InstanceRiskOpSuperClass $operationalInstanceRisk): self
     {
         $this->operationalInstanceRisk = $operationalInstanceRisk;
+        $this->operationalInstanceRisk->addOperationalInstanceRiskScale($this);
 
         return $this;
     }
 
-    public function getOperationalRiskScaleId(): OperationalRiskScaleSuperClass
+    public function getOperationalRiskScale(): OperationalRiskScaleSuperClass
     {
         return $this->operationalRiskScale;
     }
 
-    public function setOperationalRiskScaleId(OperationalRiskScaleSuperClass $operationalRiskScale): self
+    public function setOperationalRiskScale(OperationalRiskScaleSuperClass $operationalRiskScale): self
     {
         $this->operationalRiskScale = $operationalRiskScale;
 
@@ -162,6 +163,18 @@ class OperationalInstanceRiskScaleSuperClass
     public function setIsHidden(bool $isHidden): self
     {
         $this->isHidden = (int)$isHidden;
+
+        return $this;
+    }
+
+    public function getAnr(): AnrSuperClass
+    {
+        return $this->anr;
+    }
+
+    public function setAnr(AnrSuperClass $anr): self
+    {
+        $this->anr = $anr;
 
         return $this;
     }

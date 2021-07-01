@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Model\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
@@ -98,6 +99,13 @@ class InstanceRiskOpSuperClass extends AbstractEntity
      * })
      */
     protected $rolfRisk;
+
+    /**
+     * @var OperationalInstanceRiskScaleSuperClass[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="OperationalInstanceRiskScale", mappedBy="operationalInstanceRisk")
+     */
+    protected $operationalInstanceRiskScales;
 
     /**
      * @var string
@@ -373,5 +381,92 @@ class InstanceRiskOpSuperClass extends AbstractEntity
     public function getComment(): string
     {
         return (string)$this->comment;
+    }
+
+    public function getRiskCacheCode(): ?string
+    {
+        return $this->riskCacheCode;
+    }
+
+    public function setRiskCacheCode(string $riskCacheCode): self
+    {
+        $this->riskCacheCode = $riskCacheCode;
+
+        return $this;
+    }
+
+    public function getKindOfMeasure(): int
+    {
+        return $this->kindOfMeasure;
+    }
+
+    public function getRiskCacheLabel(int $languageIndex): string
+    {
+        if (!\in_array($languageIndex, range(1, 4), true)) {
+            return '';
+        }
+
+        return (string)$this->{'riskCacheLabel' . $languageIndex};
+    }
+
+    public function setRiskCacheLabels(array $labels): self
+    {
+        foreach (range(1, 4) as $index) {
+            $key = 'riskCacheLabel' . $index;
+            if (isset($labels[$key])) {
+                $this->{$key} = $labels[$key];
+            }
+        }
+
+        return $this;
+    }
+
+    public function getRiskCacheDescription(int $languageIndex): string
+    {
+        if (!\in_array($languageIndex, range(1, 4), true)) {
+            return '';
+        }
+
+        return (string)$this->{'riskCacheDescription' . $languageIndex};
+    }
+
+    public function setRiskCacheDescriptions(array $descriptions): self
+    {
+        foreach (range(1, 4) as $index) {
+            $key = 'riskCacheDescription' . $index;
+            if (isset($descriptions[$key])) {
+                $this->{$key} = $descriptions[$key];
+            }
+        }
+
+        return $this;
+    }
+
+    public function getOperationalInstanceRiskScales()
+    {
+        return $this->operationalInstanceRiskScales;
+    }
+
+    public function addOperationalInstanceRiskScale(
+        OperationalInstanceRiskScaleSuperClass $operationalInstanceRiskScale
+    ): self {
+        if (!$this->operationalInstanceRiskScales->contains($operationalInstanceRiskScale)) {
+            $this->operationalInstanceRiskScales->add($operationalInstanceRiskScale);
+            $operationalInstanceRiskScale->setOperationalInstanceRisk($this);
+        }
+
+        return $this;
+    }
+
+    public function getSpecific(): int
+    {
+        return $this->specific;
+    }
+
+    public function setSpecific(int $specific): self
+    {
+        $this->specific = $specific;
+
+        return $this;
     }
 }

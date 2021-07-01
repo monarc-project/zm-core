@@ -12,6 +12,7 @@ use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Anr;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\MonarcObjectTable;
+use Monarc\Core\Model\Table\OperationalRiskScaleTable;
 
 /**
 * Anr Service
@@ -249,9 +250,9 @@ class AnrService extends AbstractService
     {
         /** @var AnrTable $anrTable */
         $anrTable = $this->get('table');
-        $entity = $anrTable->findById($id);
+        $anr = $anrTable->findById($id);
 
-        $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $entity->get('label' . $this->getLanguage()));
+        $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $anr->get('label' . $this->getLanguage()));
 
         $return = [
             'type' => 'anr',
@@ -263,7 +264,7 @@ class AnrService extends AbstractService
 
         $instanceService = $this->get('instanceService');
         $table = $this->get('instanceTable');
-        $instances = $table->getEntityByFields(['anr' => $entity->get('id'), 'parent' => null], ['position'=>'ASC']);
+        $instances = $table->getEntityByFields(['anr' => $anr->getId(), 'parent' => null], ['position'=>'ASC']);
         $f = '';
         $with_scale = false;
         foreach ($instances as $i) {
@@ -277,7 +278,7 @@ class AnrService extends AbstractService
                 // referentials
                 $return['referentials'] = [];
                 $referentialTable = $this->get('referentialTable');
-                $referentials = $referentialTable->getEntityByFields(['anr' => $entity->get('id')]);
+                $referentials = $referentialTable->getEntityByFields(['anr' => $anr->getId()]);
                 $referentialsArray = [
                     'uuid' => 'uuid',
                     'label1' => 'label1',
@@ -292,7 +293,7 @@ class AnrService extends AbstractService
                 // measures
                 $return['measures'] = [];
                 $measureTable = $this->get('measureTable');
-                $measures = $measureTable->getEntityByFields(['anr' => $entity->get('id')]);
+                $measures = $measureTable->getEntityByFields(['anr' => $anr->getId()]);
                 $measuresArray = [
                     'uuid' => 'uuid',
                     'referential' => 'referential',
@@ -314,7 +315,7 @@ class AnrService extends AbstractService
                 // measures-measures
                 $return['measuresMeasures'] = [];
                 $measureMeasureTable = $this->get('measureMeasureTable');
-                $measuresMeasures = $measureMeasureTable->getEntityByFields(['anr' => $entity->get('id')]);
+                $measuresMeasures = $measureMeasureTable->getEntityByFields(['anr' => $anr->getId()]);
                 foreach ($measuresMeasures as $mm) {
                     $newMeasureMeasure = [];
                     $newMeasureMeasure['father'] = $mm->getFather();
@@ -325,7 +326,7 @@ class AnrService extends AbstractService
                 // soacategories
                 $return['soacategories'] = [];
                 $soaCategoryTable = $this->get('soaCategoryTable');
-                $soaCategories = $soaCategoryTable->getEntityByFields(['anr' => $entity->get('id')]);
+                $soaCategories = $soaCategoryTable->getEntityByFields(['anr' => $anr->getId()]);
                 $soaCategoriesArray = [
                     'referential' => 'referential',
                     'label1' => 'label1',
@@ -343,7 +344,7 @@ class AnrService extends AbstractService
                 // soas
                 $return['soas'] = [];
                 $soaTable = $this->get('soaTable');
-                $soas = $soaTable->getEntityByFields(['anr' => $entity->get('id')]);
+                $soas = $soaTable->getEntityByFields(['anr' => $anr->getId()]);
                 $soasArray = [
                     'remarks' => 'remarks',
                     'evidences' => 'evidences',
@@ -365,24 +366,23 @@ class AnrService extends AbstractService
 
             // operational risk scales
             $return['operationalRiskScale'] = [];
+            /** @var OperationalRiskScaleTable $operationalRiskScaleTable */
             $operationalRiskScaleTable = $this->get('operationalRiskScaleTable');
+            $operationalRiskScales = $operationalRiskScaleTable->findWithCommentsByAnr($anr);
 
-            $operationalRiskScales = $operationalRiskScaleTable->findWithCommentsByAnr($entity);
-
-            $operationalRiskScalesArray = [
-                'id' => 'id',
-                'min' => 'min',
-                'max' => 'max',
-                'type' => 'type',
-            ];
-            foreach ($operationalRiskScales as $s) {
-                $return['operationalRiskScale'][$s->getType()] = $s->getJsonArray($operationalRiskScalesArray);
+            foreach ($operationalRiskScales as $operationalRiskScale) {
+                $return['operationalRiskScale'][$operationalRiskScale->getType()] = [
+                    'id' => $operationalRiskScale->getId(),
+                    'min' => $operationalRiskScale->getMin(),
+                    'max' => $operationalRiskScale->getMax(),
+                    'type' => $operationalRiskScale->getType(),
+                ];
             }
 
             // scales
             $return['scales'] = [];
             $scaleTable = $this->get('scaleTable');
-            $scales = $scaleTable->getEntityByFields(['anr' => $entity->get('id')]);
+            $scales = $scaleTable->getEntityByFields(['anr' => $anr->getId()]);
             $scalesArray = [
                 'id' => 'id',
                 'min' => 'min',
@@ -397,7 +397,7 @@ class AnrService extends AbstractService
             for ($s=1; $s <= 3; $s++) {
                 for ($i = $return['scales'][$s]['min']; $i <= $return['scales'][$s]['max']; $i++) {
                     $scaleComment = $scaleCommentTable->getEntityByFields([
-                        'anr' => $entity->get('id'),
+                        'anr' => $anr->getId(),
                         'scaleIndex' => $i,
                         'scale' => $return['scales'][$s]['id'],
                     ]);
@@ -425,29 +425,29 @@ class AnrService extends AbstractService
             {
                 //Risks analysis method data
                 $return['method']['steps'] = [
-                    'initAnrContext' => $entity->initAnrContext,
-                    'initEvalContext' => $entity->initEvalContext,
-                    'initRiskContext' => $entity->initRiskContext,
-                    'initDefContext' => $entity->initDefContext,
-                    'modelImpacts' => $entity->modelImpacts,
-                    'modelSummary' => $entity->modelSummary,
-                    'evalRisks' => $entity->evalRisks,
-                    'evalPlanRisks' => $entity->evalPlanRisks,
-                    'manageRisks' => $entity->manageRisks,
+                    'initAnrContext' => $anr->initAnrContext,
+                    'initEvalContext' => $anr->initEvalContext,
+                    'initRiskContext' => $anr->initRiskContext,
+                    'initDefContext' => $anr->initDefContext,
+                    'modelImpacts' => $anr->modelImpacts,
+                    'modelSummary' => $anr->modelSummary,
+                    'evalRisks' => $anr->evalRisks,
+                    'evalPlanRisks' => $anr->evalPlanRisks,
+                    'manageRisks' => $anr->manageRisks,
                 ];
 
                 $return['method']['data'] = [
-                    'contextAnaRisk' => $entity->contextAnaRisk,
-                    'contextGestRisk' => $entity->contextGestRisk,
-                    'synthThreat' => $entity->synthThreat,
-                    'synthAct' => $entity->synthAct,
+                    'contextAnaRisk' => $anr->contextAnaRisk,
+                    'contextGestRisk' => $anr->contextGestRisk,
+                    'synthThreat' => $anr->synthThreat,
+                    'synthAct' => $anr->synthAct,
                 ];
 
 
 
                 $deliveryTable = $this->get('deliveryTable');
                 for ($i=0; $i <= 5; $i++) {
-                    $deliveries = $deliveryTable->getEntityByFields(['anr' => $entity->get('id') , 'typedoc' => $i ], ['id'=>'ASC']);
+                    $deliveries = $deliveryTable->getEntityByFields(['anr' => $anr->getId() , 'typedoc' => $i ], ['id'=>'ASC']);
                     $deliveryArray = [
                         'id' => 'id',
                         'typedoc' => 'typedoc',
@@ -464,7 +464,7 @@ class AnrService extends AbstractService
                     }
                 }
                 $questionTable = $this->get('questionTable');
-                $questions = $questionTable->getEntityByFields(['anr' => $entity->get('id')], ['position'=>'ASC']);
+                $questions = $questionTable->getEntityByFields(['anr' => $anr->getId()], ['position'=>'ASC']);
                 $questionArray = [
                     'id' => 'id',
                     'mode' => 'mode',
@@ -484,7 +484,7 @@ class AnrService extends AbstractService
                 }
 
                 $questionChoiceTable = $this->get('questionChoiceTable');
-                $questionsChoices = $questionChoiceTable->getEntityByFields(['anr' => $entity->get('id')]);
+                $questionsChoices = $questionChoiceTable->getEntityByFields(['anr' => $anr->getId()]);
                 $questionChoiceArray = [
                     'question' => 'question',
                     'position' => 'position',
@@ -500,16 +500,16 @@ class AnrService extends AbstractService
             }
             //import thresholds
             $return['method']['thresholds'] = [
-                'seuil1' => $entity->seuil1,
-                'seuil2' => $entity->seuil2,
-                'seuilRolf1' => $entity->seuilRolf1,
-                'seuilRolf2' => $entity->seuilRolf2,
+                'seuil1' => $anr->seuil1,
+                'seuil2' => $anr->seuil2,
+                'seuilRolf1' => $anr->seuilRolf1,
+                'seuilRolf2' => $anr->seuilRolf2,
             ];
             // manage the interviews
             if($with_interviews)
             {
                 $interviewTable = $this->get('interviewTable');
-                $interviews = $interviewTable->getEntityByFields(['anr' => $entity->get('id')], ['id'=>'ASC']);
+                $interviews = $interviewTable->getEntityByFields(['anr' => $anr->getId()], ['id'=>'ASC']);
                 $interviewArray = [
                     'id' => 'id',
                     'date' => 'date',
@@ -524,7 +524,7 @@ class AnrService extends AbstractService
 
 
             $threatTable = $this->get('threatTable');
-            $threats = $threatTable->getEntityByFields(['anr' => $entity->get('id')]);
+            $threats = $threatTable->getEntityByFields(['anr' => $anr->getId()]);
             $threatArray = [
                 'uuid' => 'uuid',
                 'code' => 'code',
@@ -563,7 +563,7 @@ class AnrService extends AbstractService
             if($with_records) {
                 $recordService = $this->get('recordService');
                 $table = $this->get('recordTable');
-                $records = $table->getEntityByFields(['anr' => $entity->get('id')], ['id'=>'ASC']);
+                $records = $table->getEntityByFields(['anr' => $anr->getId()], ['id'=>'ASC']);
                 $f = '';
                 foreach ($records as $r) {
                     $return['records'][$r->id] = $recordService->generateExportArray($r->id, $f);

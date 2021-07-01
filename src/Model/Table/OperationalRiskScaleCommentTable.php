@@ -31,7 +31,9 @@ class OperationalRiskScaleCommentTable extends AbstractTable
     }
 
     /**
-     * If we modify the value which the index correspond to the max of the scale, we have to find the comment with higher index to update them to avoid error
+     * If we modify the value which the index correspond to the max of the scale, we have to find the comment with
+     * higher index to update them to avoid error.
+     *
      * @return OperationalRiskScaleComment[]
      */
     public function findNextCommentsToUpdateByAnrAndIndexAndType(Anr $anr, int $scaleIndex, int $type): array
