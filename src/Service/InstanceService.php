@@ -1734,6 +1734,10 @@ class InstanceService extends AbstractService
             ->createQueryBuilder('t')
             ->where('t.instance = :i')
             ->setParameter(':i', $instance->get('id'))->getQuery()->getResult();
+
+
+        // TODO: refactor the part - add dynamic scales!!!
+
         $instanceRiskOpArray = [
             'id' => 'id',
             'rolfRisk' => 'rolfRisk', // TODO doit-on garder cette donnée ?

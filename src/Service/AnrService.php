@@ -10,9 +10,12 @@ namespace Monarc\Core\Service;
 use DateTime;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Anr;
+use Monarc\Core\Model\Entity\OperationalRiskScale;
+use Monarc\Core\Model\Entity\OperationalRiskScaleComment;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\MonarcObjectTable;
 use Monarc\Core\Model\Table\OperationalRiskScaleTable;
+use Monarc\Core\Model\Table\TranslationTable;
 
 /**
 * Anr Service
@@ -48,7 +51,7 @@ class AnrService extends AbstractService
     protected $recordTable;
     protected $recordService;
     protected $configService;
-
+    protected $translationTable;
 
     /**
     * @inheritdoc
@@ -368,14 +371,33 @@ class AnrService extends AbstractService
             $return['operationalRiskScale'] = [];
             /** @var OperationalRiskScaleTable $operationalRiskScaleTable */
             $operationalRiskScaleTable = $this->get('operationalRiskScaleTable');
-            $operationalRiskScales = $operationalRiskScaleTable->findWithCommentsByAnr($anr);
+            /** @var TranslationTable $translationTable */
+            $translationTable = $this->get('translationTable');
 
+            $operationalRiskScales = $operationalRiskScaleTable->findWithCommentsByAnr($anr);
+            $operationalRisksAndScalesTranslations = $translationTable->findByTypesIndexedByKey(
+                [OperationalRiskScale::class, OperationalRiskScaleComment::class]
+            );
             foreach ($operationalRiskScales as $operationalRiskScale) {
-                $return['operationalRiskScale'][$operationalRiskScale->getType()] = [
+                $operationalScaleComments = [];
+                foreach ($operationalRiskScale->getOperationalRiskScaleComments() as $operationalRiskScaleComment) {
+                    $operationalScaleComments[$operationalRiskScaleComment->get()] = [
+                        'id' => $operationalRiskScaleComment->getId(),
+                        'scaleIndex' => $operationalRiskScaleComment->getScaleIndex(),
+                        'scaleValue' => $operationalRiskScaleComment->getScaleValue(),
+                        'translations' => $operationalRisksAndScalesTranslations[
+                            $operationalRiskScaleComment->getCommentTranslationKey()
+                        ],
+                    ];
+                }
+                $return['operationalRiskScale'][$operationalRiskScale->getType()][$operationalRiskScale->getId()] = [
                     'id' => $operationalRiskScale->getId(),
                     'min' => $operationalRiskScale->getMin(),
                     'max' => $operationalRiskScale->getMax(),
-                    'type' => $operationalRiskScale->getType(),
+                    'translations' => $operationalRisksAndScalesTranslations[
+                        $operationalRiskScale->getLabelTranslationKey()
+                    ],
+                    'operationalScaleComments' => $operationalScaleComments,
                 ];
             }
 

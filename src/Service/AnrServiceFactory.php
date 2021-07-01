@@ -7,6 +7,8 @@
 
 namespace Monarc\Core\Service;
 
+use Monarc\Core\Model\Table\TranslationTable;
+
 /**
  * Anr Service Factory
  *
@@ -29,5 +31,6 @@ class AnrServiceFactory extends AbstractServiceFactory
         'scaleImpactTypeTable' => 'Monarc\Core\Model\Table\ScaleImpactTypeTable',
         'scaleCommentTable' => 'Monarc\Core\Model\Table\ScaleCommentTable',
         'instanceService' => 'Monarc\Core\Service\InstanceService',
+        'translationTable' => TranslationTable::class,
     ];
 }

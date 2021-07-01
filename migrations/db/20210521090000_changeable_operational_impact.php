@@ -173,7 +173,7 @@ class ChangeableOperationalImpact extends AbstractMigration
            }
 
            if (!empty($currentScalesByAnr) && array_key_first($currentScalesByAnr) !== $scaleData['anr_id']) {
-               // @jerome: 2:likelihood 4:R 5:O 6:L 7:F 8:P -- easier to migrate instances_risks_op > 8 = custom
+               // @jerome: 4:R 5:O 6:L 7:F 8:P -- easier to migrate instances_risks_op > 8 = custom
                $this->createOperationalInstaceRisksScales($currentScalesByAnr);
                $currentScalesByAnr = [];
            }
@@ -196,19 +196,16 @@ class ChangeableOperationalImpact extends AbstractMigration
 
         // Remove the deprecated columns from instances_risks_op.
 //        $this->table('instances_risks_op')
-//            ->removeColumn('brut_prob')
 //            ->removeColumn('brut_r')
 //            ->removeColumn('brut_o')
 //            ->removeColumn('brut_l')
 //            ->removeColumn('brut_f')
 //            ->removeColumn('brut_p')
-//            ->removeColumn('net_prob')
 //            ->removeColumn('net_r')
 //            ->removeColumn('net_o')
 //            ->removeColumn('net_l')
 //            ->removeColumn('net_f')
 //            ->removeColumn('net_p')
-//            ->removeColumn('targeted_prob')
 //            ->removeColumn('targeted_r')
 //            ->removeColumn('targeted_o')
 //            ->removeColumn('targeted_l')
@@ -240,14 +237,14 @@ class ChangeableOperationalImpact extends AbstractMigration
         $anrId = array_key_first($currentScalesByAnr);
         $instanceRisksOpSqlWithAnr = sprintf(
             'SELECT id, anr_id,
-                    brut_prob, brut_r, brut_o, brut_l, brut_f, brut_p,
-                    net_prob, net_r, net_o, net_l, net_f, net_p,
-                    targeted_prob, targeted_r, targeted_o, targeted_l, targeted_f, targeted_p
+                    brut_r, brut_o, brut_l, brut_f, brut_p,
+                    net_r, net_o, net_l, net_f, net_p,
+                    targeted_r, targeted_o, targeted_l, targeted_f, targeted_p
             FROM instances_risks_op
             WHERE anr_id = %d',
             $anrId
         );
-        $impactTypes = [0 => '_prob', 4 => '_r', 5 => '_o', 6 => '_l', 7 => '_f', 8 => '_p'];
+        $impactTypes = [4 => '_r', 5 => '_o', 6 => '_l', 7 => '_f', 8 => '_p'];
         foreach ($this->query($instanceRisksOpSqlWithAnr)->fetchAll() as $instancesRisksOp) {
             $operationalInstanceRisksScales = [];
             foreach ($currentScalesByAnr[$anrId] as $scaleImpactType => $operationalRiskScaleId) {
