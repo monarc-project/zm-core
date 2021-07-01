@@ -57,6 +57,24 @@ class InstanceTable extends AbstractEntityTable
             ->getResult();
     }
 
+    public function findOneByAnrAndObjectExcludeInstance(
+        AnrSuperClass $anr,
+        ObjectSuperClass $object,
+        InstanceSuperClass $instanceToExclude
+    ): ?InstanceSuperClass {
+        return $this->getRepository()
+            ->createQueryBuilder('i')
+            ->where('i.anr = :anr')
+            ->andWhere('i.object = :object')
+            ->andWhere('i <> :instance')
+            ->setParameter('anr', $anr)
+            ->setParameter('object', $object)
+            ->setParameter('instance', $instanceToExclude)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     /**
      * @throws ORMException
      * @throws OptimisticLockException

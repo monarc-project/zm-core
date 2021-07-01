@@ -774,8 +774,8 @@ abstract class AbstractEntityTable
      */
     public function initTree($entity, $order_by = null)
     {
-        $rootField = isset($entity->parameters['implicitPosition']['root']) ? $entity->parameters['implicitPosition']['root'] : 'root';
-        $parentField = isset($entity->parameters['implicitPosition']['field']) ? $entity->parameters['implicitPosition']['field'] : 'parent';
+        $rootField = $entity->parameters['implicitPosition']['root'] ?? 'root';
+        $parentField = $entity->parameters['implicitPosition']['field'] ?? 'parent';
 
         $ref = $entity->get($rootField) === null
             ? $entity->get('id')
@@ -806,14 +806,7 @@ abstract class AbstractEntityTable
                 $current = array_shift($temp);
                 if (!empty($family[$current->get('id')])) {
                     foreach ($family[$current->get('id')] as $fam) {
-                        $params = [];
-                        if (!isset($current->parameters['children'])) {
-                            $current->setParameter('children', []);
-                        } else {
-                            $params = $current->parameters['children'];
-                        }
-                        $params[$fam->get('id')] = $fam;
-                        $current->setParameter('children', $params);
+                        $current->addParameterValue('children', $fam->getId(), $fam);
                         array_unshift($temp, $fam);
                     }
                 }

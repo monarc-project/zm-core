@@ -28,13 +28,9 @@ class InstanceRiskOpTable extends AbstractEntityTable
     }
 
     /**
-     * Get Instances Risks Op
-     * @param $anrId
-     * @param $instancesIds
-     * @param array $params
-     * @return array
+     * @return InstanceRiskOp[]
      */
-    public function getInstancesRisksOp($anrId, $instancesIds, $params = [])
+    public function getInstancesRisksOp(int $anrId, array $instancesIds, array $params = []): array
     {
         $qb = $this->getRepository()->createQueryBuilder('iro');
 

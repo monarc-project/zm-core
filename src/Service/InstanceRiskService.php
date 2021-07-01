@@ -10,7 +10,6 @@ namespace Monarc\Core\Service;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Monarc\Core\Exception\Exception;
-use Monarc\Core\Model\Entity\Amv;
 use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\Instance;
 use Monarc\Core\Model\Entity\InstanceRiskSuperClass;
@@ -62,29 +61,20 @@ class InstanceRiskService extends AbstractService
 
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('instanceTable');
-        $otherInstances = $instanceTable->findByAnrAndObject($anr, $object);
+        $otherInstance = $instanceTable->findOneByAnrAndObjectExcludeInstance($anr, $object, $instance);
 
-        if ($object->getScope() === MonarcObject::SCOPE_GLOBAL && \count($otherInstances) > 1) {
-            foreach ($otherInstances as $otherInstance) {
-                if ($otherInstance->getId() === $instance->getId()) {
-                    continue;
-                }
+        if ($otherInstance !== null && $object->isScopeGlobal()) {
+            foreach ($instanceRiskTable->findByInstance($otherInstance) as $instanceRisk) {
+                $newInstanceRisk = (clone $instanceRisk)
+                    ->setId(null)
+                    ->setAnr($instance->getAnr())
+                    ->setInstance($instance)
+                    ->setCreator(
+                        $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+                    );
+                $instanceRiskTable->saveEntity($newInstanceRisk, false);
 
-                foreach ($instanceRiskTable->findByInstance($otherInstance) as $instanceRisk) {
-                    /** @var InstanceRiskSuperClass $newInstanceRisk */
-                    $newInstanceRisk = (clone $instanceRisk)
-                        ->setId(null)
-                        ->setAnr($instance->getAnr())
-                        ->setInstance($instance)
-                        ->setCreator(
-                            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
-                        );
-                    $instanceRiskTable->saveEntity($newInstanceRisk, false);
-
-                    $this->duplicateRecommendationRisk($instanceRisk, $newInstanceRisk);
-                }
-
-                break;
+                $this->duplicateRecommendationRisk($instanceRisk, $newInstanceRisk);
             }
         } else {
             /** @var AmvTable $amvTable */

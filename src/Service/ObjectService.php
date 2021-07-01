@@ -30,6 +30,7 @@ use Monarc\Core\Model\Table\MonarcObjectTable;
 use Doctrine\ORM\Mapping\MappingException;
 use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\ORMException;
+use Monarc\Core\Model\Table\RolfTagTable;
 
 /**
  * Object Service
@@ -379,6 +380,8 @@ class ObjectService extends AbstractService
     }
 
     /**
+     * TODO: check if we need to modify it ???
+     *
      * Get Risks Op
      *
      * @param $object

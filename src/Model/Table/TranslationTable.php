@@ -3,7 +3,7 @@
 namespace Monarc\Core\Model\Table;
 
 use Doctrine\ORM\EntityManager;
-use Monarc\Core\Model\Table\AbstractTable;
+use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\Anr;
 use Monarc\Core\Model\Entity\Translation;
 
@@ -17,14 +17,12 @@ class TranslationTable extends AbstractTable
     /**
      * @return Translation[]
      */
-    public function findByAnrAndTypesIndexedByKey(Anr $anr, array $types): array
+    public function findByTypesIndexedByKey(array $types): array
     {
         $queryBuilder = $this->getRepository()->createQueryBuilder('t', 't.key');
 
         return $queryBuilder
-            ->where('t.anr = :anr')
-            ->andWhere($queryBuilder->expr()->in('t.type', $types))
-            ->setParameter('anr', $anr)
+            ->where($queryBuilder->expr()->in('t.type', $types))
             ->getQuery()
             ->getResult();
     }
