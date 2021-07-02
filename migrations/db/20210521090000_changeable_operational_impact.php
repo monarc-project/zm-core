@@ -248,6 +248,9 @@ class ChangeableOperationalImpact extends AbstractMigration
         foreach ($this->query($instanceRisksOpSqlWithAnr)->fetchAll() as $instancesRisksOp) {
             $operationalInstanceRisksScales = [];
             foreach ($currentScalesByAnr[$anrId] as $scaleImpactType => $operationalRiskScaleId) {
+                if ($scaleImpactType !== OperationalRiskScale::TYPE_IMPACT) {
+                    continue;
+                }
                 $isSystemScaleImpactType = isset($impactTypes[$scaleImpactType]);
                 $operationalInstanceRisksScales[] = [
                     'anr_id' => $anrId,
