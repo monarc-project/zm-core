@@ -10,8 +10,10 @@ namespace Monarc\Core\Service;
 use DateTime;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Anr;
+use Monarc\Core\Model\Entity\OperationalRiskScaleCommentSuperClass;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\MonarcObjectTable;
+use Monarc\Core\Model\Table\OperationalRiskScaleCommentTable;
 use Monarc\Core\Model\Table\OperationalRiskScaleTable;
 use Monarc\Core\Model\Table\TranslationTable;
 
@@ -50,8 +52,6 @@ class AnrService extends AbstractService
     protected $recordService;
     protected $configService;
     protected $translationTable;
-    protected $operationalRiskScale;
-    protected $operationalRiskScaleComment;
 
     /**
     * @inheritdoc
@@ -371,17 +371,16 @@ class AnrService extends AbstractService
             $return['operationalRiskScale'] = [];
             /** @var OperationalRiskScaleTable $operationalRiskScaleTable */
             $operationalRiskScaleTable = $this->get('operationalRiskScaleTable');
+            /** @var OperationalRiskScaleCommentTable $operationalRiskScaleCommentTable */
+            $operationalRiskScaleCommentTable = $this->get('operationalRiskScaleCommentTable');
             /** @var TranslationTable $translationTable */
             $translationTable = $this->get('translationTable');
-            /** @var OperationalRiskScale $operationalRiskScale */
-            $operationalRiskScale = $this->get('operationalRiskScale');
-            /** @var OperationalRiskScaleComment $operationalRiskScaleComment */
-            $operationalRiskScaleComment = $this->get('operationalRiskScaleComment');
+
 
             $operationalRiskScales = $operationalRiskScaleTable->findWithCommentsByAnr($anr);
             $operationalRisksAndScalesTranslations = $translationTable->findByAnrTypesAndLanguageIndexedByKey(
                 $anr,
-                [get_class($operationalRiskScale), get_class($operationalRiskScaleComment)],
+                [$operationalRiskScaleTable->getEntityName(), $operationalRiskScaleCommentTable->getEntityName()],
                 strtolower($this->get('configService')->getLanguageCodes()[$anr->getLanguage()])
             );
 
@@ -401,7 +400,7 @@ class AnrService extends AbstractService
                     'id' => $operationalScale->getId(),
                     'min' => $operationalScale->getMin(),
                     'max' => $operationalScale->getMax(),
-                    'translations' => $operationalScale->getLabelTranslationKey() == null ? '' :
+                    'translations' => $operationalScale->getLabelTranslationKey() === null ? '' :
                         $operationalRisksAndScalesTranslations[
                             $operationalScale->getLabelTranslationKey()
                         ]->getValue(),
