@@ -389,9 +389,23 @@ class InstanceRiskOpSuperClass extends AbstractEntity
         return $this->cacheBrutRisk;
     }
 
+    public function setCacheBrutRisk(int $cacheBrutRisk): self
+    {
+        $this->cacheBrutRisk = $cacheBrutRisk;
+
+        return $this;
+    }
+
     public function getCacheNetRisk(): int
     {
         return $this->cacheNetRisk;
+    }
+
+    public function setCacheNetRisk(int $cacheNetRisk): self
+    {
+        $this->cacheNetRisk = $cacheNetRisk;
+
+        return $this;
     }
 
     public function getCacheTargetedRisk(): int
@@ -399,9 +413,23 @@ class InstanceRiskOpSuperClass extends AbstractEntity
         return $this->cacheTargetedRisk;
     }
 
+    public function setCacheTargetedRisk(int $cacheTargetedRisk): self
+    {
+        $this->cacheTargetedRisk = $cacheTargetedRisk;
+
+        return $this;
+    }
+
     public function getComment(): string
     {
         return (string)$this->comment;
+    }
+
+    public function setComment(string $comment): self
+    {
+        $this->comment = $comment;
+
+        return $this;
     }
 
     public function getRiskCacheCode(): ?string
@@ -419,6 +447,26 @@ class InstanceRiskOpSuperClass extends AbstractEntity
     public function getKindOfMeasure(): int
     {
         return $this->kindOfMeasure;
+    }
+
+    public function setKindOfMeasure(int $kindOfMeasure): self
+    {
+        if (\in_array($kindOfMeasure, self::getAvailableMeasureTypes(), true)) {
+            $this->kindOfMeasure = $kindOfMeasure;
+        }
+
+        return $this;
+    }
+
+    public static function getAvailableMeasureTypes(): array
+    {
+        return [
+            self::KIND_REDUCTION,
+            self::KIND_REFUS,
+            self::KIND_ACCEPTATION,
+            self::KIND_PARTAGE,
+            self::KIND_NOT_TREATED,
+        ];
     }
 
     public function getRiskCacheLabel(int $languageIndex): string
