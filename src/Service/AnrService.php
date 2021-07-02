@@ -10,7 +10,6 @@ namespace Monarc\Core\Service;
 use DateTime;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Anr;
-use Monarc\Core\Model\Entity\OperationalRiskScaleCommentSuperClass;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\MonarcObjectTable;
 use Monarc\Core\Model\Table\OperationalRiskScaleCommentTable;
