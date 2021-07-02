@@ -25,6 +25,11 @@ abstract class AbstractTable
         return $this->entityManager->getRepository($this->entityName);
     }
 
+    public function getEntityName(): string
+    {
+        return $this->entityName;
+    }
+
     /**
      * @throws ORMException
      * @throws OptimisticLockException

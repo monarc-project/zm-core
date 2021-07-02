@@ -10,10 +10,10 @@ namespace Monarc\Core\Service;
 use DateTime;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Anr;
-use Monarc\Core\Model\Entity\OperationalRiskScale;
-use Monarc\Core\Model\Entity\OperationalRiskScaleComment;
+use Monarc\Core\Model\Entity\OperationalRiskScaleCommentSuperClass;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\MonarcObjectTable;
+use Monarc\Core\Model\Table\OperationalRiskScaleCommentTable;
 use Monarc\Core\Model\Table\OperationalRiskScaleTable;
 use Monarc\Core\Model\Table\TranslationTable;
 
@@ -371,32 +371,39 @@ class AnrService extends AbstractService
             $return['operationalRiskScale'] = [];
             /** @var OperationalRiskScaleTable $operationalRiskScaleTable */
             $operationalRiskScaleTable = $this->get('operationalRiskScaleTable');
+            /** @var OperationalRiskScaleCommentTable $operationalRiskScaleCommentTable */
+            $operationalRiskScaleCommentTable = $this->get('operationalRiskScaleCommentTable');
             /** @var TranslationTable $translationTable */
             $translationTable = $this->get('translationTable');
 
+
             $operationalRiskScales = $operationalRiskScaleTable->findWithCommentsByAnr($anr);
-            $operationalRisksAndScalesTranslations = $translationTable->findByTypesIndexedByKey(
-                [OperationalRiskScale::class, OperationalRiskScaleComment::class]
+            $operationalRisksAndScalesTranslations = $translationTable->findByAnrTypesAndLanguageIndexedByKey(
+                $anr,
+                [$operationalRiskScaleTable->getEntityName(), $operationalRiskScaleCommentTable->getEntityName()],
+                strtolower($this->get('configService')->getLanguageCodes()[$anr->getLanguage()])
             );
-            foreach ($operationalRiskScales as $operationalRiskScale) {
+
+            foreach ($operationalRiskScales as $operationalScale) {
                 $operationalScaleComments = [];
-                foreach ($operationalRiskScale->getOperationalRiskScaleComments() as $operationalRiskScaleComment) {
-                    $operationalScaleComments[$operationalRiskScaleComment->get()] = [
-                        'id' => $operationalRiskScaleComment->getId(),
-                        'scaleIndex' => $operationalRiskScaleComment->getScaleIndex(),
-                        'scaleValue' => $operationalRiskScaleComment->getScaleValue(),
+                foreach ($operationalScale->getOperationalRiskScaleComments() as $operationalScaleComment) {
+                    $operationalScaleComments[$operationalScaleComment->getId()] = [
+                        'id' => $operationalScaleComment->getId(),
+                        'scaleIndex' => $operationalScaleComment->getScaleIndex(),
+                        'scaleValue' => $operationalScaleComment->getScaleValue(),
                         'translations' => $operationalRisksAndScalesTranslations[
-                            $operationalRiskScaleComment->getCommentTranslationKey()
-                        ],
+                            $operationalScaleComment->getCommentTranslationKey()
+                        ]->getValue(),
                     ];
                 }
-                $return['operationalRiskScale'][$operationalRiskScale->getType()][$operationalRiskScale->getId()] = [
-                    'id' => $operationalRiskScale->getId(),
-                    'min' => $operationalRiskScale->getMin(),
-                    'max' => $operationalRiskScale->getMax(),
-                    'translations' => $operationalRisksAndScalesTranslations[
-                        $operationalRiskScale->getLabelTranslationKey()
-                    ],
+                $return['operationalRiskScale'][$operationalScale->getType()][$operationalScale->getId()] = [
+                    'id' => $operationalScale->getId(),
+                    'min' => $operationalScale->getMin(),
+                    'max' => $operationalScale->getMax(),
+                    'translations' => $operationalScale->getLabelTranslationKey() === null ? '' :
+                        $operationalRisksAndScalesTranslations[
+                            $operationalScale->getLabelTranslationKey()
+                        ]->getValue(),
                     'operationalScaleComments' => $operationalScaleComments,
                 ];
             }
