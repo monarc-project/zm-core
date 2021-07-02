@@ -10,8 +10,8 @@ namespace Monarc\Core\Service;
 use DateTime;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Anr;
-use Monarc\Core\Model\Entity\OperationalRiskScale;
-use Monarc\Core\Model\Entity\OperationalRiskScaleComment;
+use Monarc\FrontOffice\Model\Entity\OperationalRiskScale as OperationalRiskScaleCli ;
+use Monarc\FrontOffice\Model\Entity\OperationalRiskScaleComment as OperationalRiskScaleCommentCli ;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\MonarcObjectTable;
 use Monarc\Core\Model\Table\OperationalRiskScaleTable;
@@ -375,28 +375,32 @@ class AnrService extends AbstractService
             $translationTable = $this->get('translationTable');
 
             $operationalRiskScales = $operationalRiskScaleTable->findWithCommentsByAnr($anr);
-            $operationalRisksAndScalesTranslations = $translationTable->findByTypesIndexedByKey(
-                [OperationalRiskScale::class, OperationalRiskScaleComment::class]
+            $operationalRisksAndScalesTranslations = $translationTable->findByAnrTypesAndLanguageIndexedByKey(
+                $anr,
+                [OperationalRiskScaleCli::class, OperationalRiskScaleCommentCli::class],
+                strtolower($this->get('configService')->getLanguageCodes()[$anr->getLanguage()])
             );
+            file_put_contents('php://stderr', print_r(count($operationalRisksAndScalesTranslations), TRUE).PHP_EOL);
             foreach ($operationalRiskScales as $operationalRiskScale) {
                 $operationalScaleComments = [];
                 foreach ($operationalRiskScale->getOperationalRiskScaleComments() as $operationalRiskScaleComment) {
-                    $operationalScaleComments[$operationalRiskScaleComment->get()] = [
+                    $operationalScaleComments[$operationalRiskScaleComment->getId()] = [
                         'id' => $operationalRiskScaleComment->getId(),
                         'scaleIndex' => $operationalRiskScaleComment->getScaleIndex(),
                         'scaleValue' => $operationalRiskScaleComment->getScaleValue(),
                         'translations' => $operationalRisksAndScalesTranslations[
                             $operationalRiskScaleComment->getCommentTranslationKey()
-                        ],
+                        ]->getValue(),
                     ];
                 }
                 $return['operationalRiskScale'][$operationalRiskScale->getType()][$operationalRiskScale->getId()] = [
                     'id' => $operationalRiskScale->getId(),
                     'min' => $operationalRiskScale->getMin(),
                     'max' => $operationalRiskScale->getMax(),
-                    'translations' => $operationalRisksAndScalesTranslations[
-                        $operationalRiskScale->getLabelTranslationKey()
-                    ],
+                    'translations' => $operationalRiskScale->getLabelTranslationKey() == null ? '' :
+                        $operationalRisksAndScalesTranslations[
+                            $operationalRiskScale->getLabelTranslationKey()
+                        ]->getValue(),
                     'operationalScaleComments' => $operationalScaleComments,
                 ];
             }
