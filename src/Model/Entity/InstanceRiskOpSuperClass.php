@@ -19,7 +19,8 @@ use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
  *      @ORM\Index(name="anr_id", columns={"anr_id"}),
  *      @ORM\Index(name="instance_id", columns={"instance_id"}),
  *      @ORM\Index(name="object_id", columns={"object_id"}),
- *      @ORM\Index(name="rolf_risk_id", columns={"rolf_risk_id"})
+ *      @ORM\Index(name="rolf_risk_id", columns={"rolf_risk_id"}),
+ *      @ORM\Index(name="owner_id", columns={"owner_id"})
  * })
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()

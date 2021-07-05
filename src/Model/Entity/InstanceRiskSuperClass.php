@@ -20,7 +20,8 @@ use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
  *      @ORM\Index(name="asset_id", columns={"asset_id"}),
  *      @ORM\Index(name="threat_id", columns={"threat_id"}),
  *      @ORM\Index(name="vulnerability_id", columns={"vulnerability_id"}),
- *      @ORM\Index(name="instance_id", columns={"instance_id"})
+ *      @ORM\Index(name="instance_id", columns={"instance_id"}),
+ *      @ORM\Index(name="owner_id", columns={"owner_id"})
  * })
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
