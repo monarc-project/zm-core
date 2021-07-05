@@ -9,9 +9,9 @@ use Monarc\Core\Model\Entity\OperationalInstanceRiskScaleSuperClass;
 
 class OperationalInstanceRiskScaleTable extends AbstractTable
 {
-    public function __construct(EntityManager $entityManager)
+    public function __construct(EntityManager $entityManager, string $entityName = OperationalInstanceRiskScale::class)
     {
-        parent::__construct($entityManager, OperationalInstanceRiskScale::class);
+        parent::__construct($entityManager, $entityName);
     }
 
     /**
