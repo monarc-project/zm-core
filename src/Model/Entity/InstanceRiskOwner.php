@@ -12,7 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * InstanceRisk
  *
- * @ORM\Table(name="instances_risks", indexes={
+ * @ORM\Table(name="instance_risk_owners", indexes={
  *      @ORM\Index(name="anr", columns={"anr_id"}
  * })
  * @ORM\Entity
