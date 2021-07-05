@@ -451,7 +451,7 @@ class InstanceRiskOpSuperClass extends AbstractEntity
 
     public function setKindOfMeasure(int $kindOfMeasure): self
     {
-        if (\in_array($kindOfMeasure, self::getAvailableMeasureTypes(), true)) {
+        if (isset(self::getAvailableMeasureTypes()[$kindOfMeasure])) {
             $this->kindOfMeasure = $kindOfMeasure;
         }
 
@@ -461,11 +461,11 @@ class InstanceRiskOpSuperClass extends AbstractEntity
     public static function getAvailableMeasureTypes(): array
     {
         return [
-            self::KIND_REDUCTION,
-            self::KIND_REFUS,
-            self::KIND_ACCEPTATION,
-            self::KIND_PARTAGE,
-            self::KIND_NOT_TREATED,
+            self::KIND_REDUCTION => 'Reduction',
+            self::KIND_REFUS => 'Denied',
+            self::KIND_ACCEPTATION => 'Accepted',
+            self::KIND_PARTAGE => 'Shared',
+            self::KIND_NOT_TREATED => 'Not treated',
         ];
     }
 
