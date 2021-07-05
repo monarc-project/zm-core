@@ -187,8 +187,8 @@ class InstanceRiskOpService
             $scalesData = [];
             foreach ($operationalInstanceRiskScales as $operationalInstanceRiskScale) {
                 $label = $operationalInstanceRiskScale->getOperationalRiskScale()->getLabelTranslationKey();
-                $scalesData[] = [
-                    'id' => $operationalInstanceRiskScale->getId(),
+                $scalesData[$operationalInstanceRiskScale->getOperationalRiskScale()->getId()] = [
+                    'instanceRiskScaleId' => $operationalInstanceRiskScale->getId(),
                     'label' => $operationalRisksScalesTranslations[$label]->getValue(),
                     'values' => [
                         'net' => $operationalInstanceRiskScale->getNetValue(),
@@ -225,6 +225,7 @@ class InstanceRiskOpService
         return $result;
     }
 
+    // TODO: update the method.
     public function getOperationalRisksInCsv(int $anrId, int $instance = null, array $params = [])
     {
         $risks = $this->getOperationalRisks($anrId, $instance, $params);
