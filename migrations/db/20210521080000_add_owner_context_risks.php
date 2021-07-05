@@ -49,7 +49,7 @@ class AddOwnerContextRisks extends AbstractMigration
         $table
             ->addColumn('owner_id', 'integer', array('null' => true, 'signed' => false, 'after' => 'instance_id'))
             ->addForeignKey('owner_id', 'instance_risk_owners', 'id', ['delete'=> 'CASCADE', 'update'=> 'RESTRICT'])
-            ->addColumn('context', 'text', array('null' => true, 'limit' => MysqlAdapter::TEXT_REGULAR, 'after' => 'owner'))
+            ->addColumn('context', 'text', array('null' => true, 'limit' => MysqlAdapter::TEXT_REGULAR, 'after' => 'owner_id'))
             ->update();
 
         // Migration for table instances_risks_op
@@ -57,7 +57,7 @@ class AddOwnerContextRisks extends AbstractMigration
         $table
             ->addColumn('owner_id', 'integer', array('null' => true, 'signed' => false, 'after' => 'instance_id'))
             ->addForeignKey('owner_id', 'instance_risk_owners', 'id', ['delete'=> 'CASCADE', 'update'=> 'RESTRICT'])
-            ->addColumn('context', 'text', array('null' => true, 'limit' => MysqlAdapter::TEXT_REGULAR, 'after' => 'owner'))
+            ->addColumn('context', 'text', array('null' => true, 'limit' => MysqlAdapter::TEXT_REGULAR, 'after' => 'owner_id'))
             ->update();
     }
 }
