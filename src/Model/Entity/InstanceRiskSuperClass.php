@@ -109,9 +109,12 @@ class InstanceRiskSuperClass extends AbstractEntity
     protected $instance;
 
     /**
-     * @var string
+     * @var InstanceRiskOwnerSuperClass
      *
-     * @ORM\Column(name="owner", type="string", length=255, nullable=true)
+     * @ORM\ManyToOne(targetEntity="InstanceRiskOwner", cascade={"persist"})
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="owner_id", referencedColumnName="id", nullable=true)
+     * })
      */
     protected $owner;
 
@@ -329,12 +332,12 @@ class InstanceRiskSuperClass extends AbstractEntity
         return $this;
     }
 
-    public function getOwner(): string
+    public function getOwner()
     {
         return $this->owner;
     }
 
-    public function setOwner(string $owner): self
+    public function setOwner($owner): self
     {
         $this->owner = $owner;
 
