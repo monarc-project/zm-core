@@ -58,7 +58,6 @@ class ApiAnrInstancesController extends AbstractController
     {
         $anrId = (int) $this->params()->fromRoute('anrid');
         $data['anr'] = $anrId ;
-        file_put_contents('php://stderr', print_r($data, TRUE).PHP_EOL);
         /** @var InstanceService $service */
         $service = $this->getService();
         $service->patchInstance($anrId, $id, $data, [], false);
