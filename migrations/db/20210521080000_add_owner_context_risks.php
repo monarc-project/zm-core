@@ -28,23 +28,35 @@ class AddOwnerContextRisks extends AbstractMigration
      */
     public function change()
     {
+        $this->execute(
+            'CREATE TABLE IF NOT EXISTS `instance_risk_owners` (
+            `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+            `anr_id` int(11) unsigned,
+            `owner` varchar(255) NOT NULL,
+            `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (`id`));'
+        );
+
         // Migration for table instances
         $table = $this->table('instances');
         $table
-            ->addColumn('owner', 'string', array('null' => true, 'limit' => 255, 'after' => 'root_id'))
+            ->addColumn('owner_id', 'integer', array('null' => true, 'signed' => false, 'after' => 'root_id'))
+            ->addForeignKey('owner_id', 'instance_risk_owners', 'id', ['delete'=> 'CASCADE', 'update'=> 'RESTRICT'])
             ->update();
 
         // Migration for table instances_risks
         $table = $this->table('instances_risks');
         $table
-            ->addColumn('owner', 'string', array('null' => true, 'limit' => 255, 'after' => 'instance_id'))
+            ->addColumn('owner_id', 'integer', array('null' => true, 'signed' => false, 'after' => 'instance_id'))
+            ->addForeignKey('owner_id', 'instance_risk_owners', 'id', ['delete'=> 'CASCADE', 'update'=> 'RESTRICT'])
             ->addColumn('context', 'text', array('null' => true, 'limit' => MysqlAdapter::TEXT_REGULAR, 'after' => 'owner'))
             ->update();
 
         // Migration for table instances_risks_op
         $table = $this->table('instances_risks_op');
         $table
-            ->addColumn('owner', 'string', array('null' => true, 'limit' => 255, 'after' => 'instance_id'))
+            ->addColumn('owner_id', 'integer', array('null' => true, 'signed' => false, 'after' => 'instance_id'))
+            ->addForeignKey('owner_id', 'instance_risk_owners', 'id', ['delete'=> 'CASCADE', 'update'=> 'RESTRICT'])
             ->addColumn('context', 'text', array('null' => true, 'limit' => MysqlAdapter::TEXT_REGULAR, 'after' => 'owner'))
             ->update();
     }

@@ -50,7 +50,7 @@ class ApiAnrInstancesRisksController extends AbstractController
     public function patch($id, $data)
     {
         $data['anr'] = (int) $this->params()->fromRoute('anrid');
-
+        file_put_contents('php://stderr', print_r($data, TRUE).PHP_EOL);
         $this->getService()->patch($id, $data);
 
         return new JsonModel(array('status' => 'ok'));
@@ -62,7 +62,7 @@ class ApiAnrInstancesRisksController extends AbstractController
     public function update($id, $data)
     {
         $data['anr'] = (int) $this->params()->fromRoute('anrid');
-
+        file_put_contents('php://stderr', print_r($data, TRUE).PHP_EOL);
         $id = $this->getService()->update($id, $data);
 
         $entity = $this->getService()->getEntity($id);
