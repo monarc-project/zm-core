@@ -188,13 +188,12 @@ class InstanceRiskOpService
             foreach ($operationalInstanceRiskScales as $operationalInstanceRiskScale) {
                 $label = $operationalInstanceRiskScale->getOperationalRiskScale()->getLabelTranslationKey();
                 $scalesData[$operationalInstanceRiskScale->getOperationalRiskScale()->getId()] = [
+                    'operationalInstanceRiskId' => $instanceRiskOp->getId(),
                     'instanceRiskScaleId' => $operationalInstanceRiskScale->getId(),
                     'label' => $operationalRisksScalesTranslations[$label]->getValue(),
-                    'values' => [
-                        'net' => $operationalInstanceRiskScale->getNetValue(),
-                        'brut' => $operationalInstanceRiskScale->getBrutValue(),
-                        'target' => $operationalInstanceRiskScale->getTargetedValue(),
-                    ],
+                    'netValue' => $operationalInstanceRiskScale->getNetValue(),
+                    'brutValue' => $operationalInstanceRiskScale->getBrutValue(),
+                    'targetValue' => $operationalInstanceRiskScale->getTargetedValue(),
                 ];
             }
 

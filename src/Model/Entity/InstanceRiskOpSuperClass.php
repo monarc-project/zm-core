@@ -544,7 +544,7 @@ class InstanceRiskOpSuperClass extends AbstractEntity
         return $this->brutProb;
     }
 
-    public function setBrutProb(string $brutProb): self
+    public function setBrutProb(int $brutProb): self
     {
         $this->brutProb = $brutProb;
 
