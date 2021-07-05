@@ -32,7 +32,7 @@ class AddOwnerContextRisks extends AbstractMigration
             'CREATE TABLE IF NOT EXISTS `instance_risk_owners` (
             `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
             `anr_id` int(11) unsigned,
-            `owner` varchar(255) NOT NULL,
+            `name` varchar(255) NOT NULL,
             `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (`id`));'
         );
