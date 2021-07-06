@@ -8,8 +8,6 @@
 namespace Monarc\Core\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
-use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 
 /**
  * InstanceRisk
@@ -22,9 +20,6 @@ use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
  */
 class InstanceRiskOwnerSuperClass extends AbstractEntity
 {
-    use CreateEntityTrait;
-    use UpdateEntityTrait;
-
     /**
      * @var int
      *
