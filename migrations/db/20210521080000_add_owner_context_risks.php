@@ -33,7 +33,10 @@ class AddOwnerContextRisks extends AbstractMigration
             `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
             `anr_id` int(11) unsigned,
             `name` varchar(255) NOT NULL,
+            `creator` varchar(255) NOT NULL,
             `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+            `updater` varchar(255) DEFAULT NULL,
+            `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (`id`));'
         );
 
