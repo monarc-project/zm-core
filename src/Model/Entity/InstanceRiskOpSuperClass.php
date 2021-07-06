@@ -324,6 +324,13 @@ class InstanceRiskOpSuperClass extends AbstractEntity
         return $this->context;
     }
 
+    public function setContext(string $context): self
+    {
+        $this->context = $context;
+
+        return $this;
+    }
+
     /**
      * @return ObjectSuperClass
      */

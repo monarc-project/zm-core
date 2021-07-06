@@ -484,6 +484,7 @@ return [
             ModelTable\VulnerabilityTable::class => AutowireFactory::class,
             ModelTable\PasswordTokenTable::class => AutowireFactory::class,
             ModelTable\DeliveriesModelsTable::class => AutowireFactory::class,
+            ModelTable\InstanceRiskOwnerTable::class => CoreEntityManagerFactory::class,
 
             /* Authentification */
             StorageAuthentication::class => ReflectionBasedAbstractFactory::class,

@@ -37,6 +37,8 @@ class AddOwnerContextRisks extends AbstractMigration
             `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
             `updater` varchar(255) DEFAULT NULL,
             `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+            INDEX `instance_risk_owners_anr_id_indx` (`anr_id`),
+            UNIQUE `instance_risk_owners_anr_id_name_unq` (`anr_id`, `name`),
             PRIMARY KEY (`id`));'
         );
 
