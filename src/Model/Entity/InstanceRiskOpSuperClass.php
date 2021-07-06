@@ -175,7 +175,7 @@ class InstanceRiskOpSuperClass extends AbstractEntity
     protected $riskCacheDescription4;
 
     /**
-     * @var string
+     * @var int
      *
      * @ORM\Column(name="brut_prob", type="smallint", options={"unsigned":false, "default":-1})
      */
@@ -546,12 +546,12 @@ class InstanceRiskOpSuperClass extends AbstractEntity
         return $this;
     }
 
-    public function getBrutProb(): string
+    public function getBrutProb(): int
     {
         return $this->brutProb;
     }
 
-    public function setBrutProb(string $brutProb): self
+    public function setBrutProb(int $brutProb): self
     {
         $this->brutProb = $brutProb;
 
