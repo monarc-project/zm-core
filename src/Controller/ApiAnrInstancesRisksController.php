@@ -17,7 +17,7 @@ use Laminas\View\Model\JsonModel;
  */
 class ApiAnrInstancesRisksController extends AbstractController
 {
-    protected $dependencies = ['anr','amv', 'asset', 'threat', 'vulnerability', 'instance'];
+    protected $dependencies = ['anr','amv', 'asset', 'threat', 'vulnerability', 'instance', 'owner'];
     protected $name = 'instances-risks';
 
     /**
@@ -50,7 +50,6 @@ class ApiAnrInstancesRisksController extends AbstractController
     public function patch($id, $data)
     {
         $data['anr'] = (int) $this->params()->fromRoute('anrid');
-
         $this->getService()->patch($id, $data);
 
         return new JsonModel(array('status' => 'ok'));
@@ -62,7 +61,6 @@ class ApiAnrInstancesRisksController extends AbstractController
     public function update($id, $data)
     {
         $data['anr'] = (int) $this->params()->fromRoute('anrid');
-
         $id = $this->getService()->update($id, $data);
 
         $entity = $this->getService()->getEntity($id);

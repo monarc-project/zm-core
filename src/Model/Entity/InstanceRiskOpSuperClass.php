@@ -19,7 +19,8 @@ use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
  *      @ORM\Index(name="anr_id", columns={"anr_id"}),
  *      @ORM\Index(name="instance_id", columns={"instance_id"}),
  *      @ORM\Index(name="object_id", columns={"object_id"}),
- *      @ORM\Index(name="rolf_risk_id", columns={"rolf_risk_id"})
+ *      @ORM\Index(name="rolf_risk_id", columns={"rolf_risk_id"}),
+ *      @ORM\Index(name="owner_id", columns={"owner_id"})
  * })
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
@@ -67,9 +68,12 @@ class InstanceRiskOpSuperClass extends AbstractEntity
     protected $instance;
 
     /**
-     * @var string
+     * @var InstanceRiskOwnerSuperClass
      *
-     * @ORM\Column(name="owner", type="string", length=255, nullable=true)
+     * @ORM\ManyToOne(targetEntity="InstanceRiskOwner", cascade={"persist"})
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="owner_id", referencedColumnName="id", nullable=true)
+     * })
      */
     protected $owner;
 
@@ -303,12 +307,15 @@ class InstanceRiskOpSuperClass extends AbstractEntity
         return $this;
     }
 
-    public function getOwner(): string
+    /**
+     * @return InstanceRiskOwnerSuperClass
+     */
+    public function getOwner()
     {
         return $this->owner;
     }
 
-    public function setOwner(string $owner): self
+    public function setOwner($owner): self
     {
         $this->owner = $owner;
 
