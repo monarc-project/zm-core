@@ -8,6 +8,8 @@
 namespace Monarc\Core\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
+use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 
 /**
  * InstanceRisk
@@ -18,8 +20,11 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
-class InstanceRiskOwnerSuperClass extends AbstractEntity
+class InstanceRiskOwnerSuperClass
 {
+    use CreateEntityTrait;
+    use UpdateEntityTrait;
+
     /**
      * @var int
      *
@@ -34,7 +39,7 @@ class InstanceRiskOwnerSuperClass extends AbstractEntity
      *
      * @ORM\ManyToOne(targetEntity="Anr", cascade={"persist"})
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
+     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", onDelete="CASCADE")
      * })
      */
     protected $anr;
@@ -42,7 +47,7 @@ class InstanceRiskOwnerSuperClass extends AbstractEntity
     /**
      * @var string
      *
-     * @ORM\Column(name="name", type="string", length=255, nullable=true)
+     * @ORM\Column(name="name", type="string", length=255)
      */
     protected $name;
 
@@ -51,19 +56,12 @@ class InstanceRiskOwnerSuperClass extends AbstractEntity
         return $this->id;
     }
 
-    public function setId($id): self
-    {
-        $this->id = $id;
-
-        return $this;
-    }
-
-    public function getAnr(): ?AnrSuperClass
+    public function getAnr(): AnrSuperClass
     {
         return $this->anr;
     }
 
-    public function setAnr(?AnrSuperClass $anr): self
+    public function setAnr(AnrSuperClass $anr): self
     {
         $this->anr = $anr;
 
@@ -81,5 +79,4 @@ class InstanceRiskOwnerSuperClass extends AbstractEntity
 
         return $this;
     }
-
 }
