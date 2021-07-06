@@ -307,12 +307,12 @@ class InstanceRiskOpSuperClass extends AbstractEntity
         return $this;
     }
 
-    public function getOwner(): InstanceRiskOwnerSuperClass
+    public function getOwner(): ?InstanceRiskOwnerSuperClass
     {
         return $this->owner;
     }
 
-    public function setOwner(InstanceRiskOwnerSuperClass $owner): self
+    public function setOwner(?InstanceRiskOwnerSuperClass $owner): self
     {
         $this->owner = $owner;
 
