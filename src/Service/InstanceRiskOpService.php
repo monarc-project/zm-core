@@ -218,6 +218,9 @@ class InstanceRiskOpService
                 'kindOfMeasure' => $instanceRiskOp->getKindOfMeasure(),
                 'comment' => $instanceRiskOp->getComment(),
                 't' => $instanceRiskOp->getKindOfMeasure() === InstanceRiskOp::KIND_NOT_TREATED,
+
+                'context' => $instanceRiskOp->getContext(),
+                'owner' => $instanceRiskOp->getOwner() ? $instanceRiskOp->getOwner()->getName() : '',
             ];
         }
 
