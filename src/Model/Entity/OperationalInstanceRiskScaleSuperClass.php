@@ -76,13 +76,6 @@ class OperationalInstanceRiskScaleSuperClass
      */
     protected $targetedValue = -1;
 
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="is_hidden", type="smallint", options={"default": 0})
-     */
-    protected $isHidden = 0;
-
     public function __clone()
     {
         $this->id = null;
@@ -151,18 +144,6 @@ class OperationalInstanceRiskScaleSuperClass
     public function setTargetedValue(int $targetedValue): self
     {
         $this->targetedValue = $targetedValue;
-
-        return $this;
-    }
-
-    public function isHidden(): bool
-    {
-        return (bool)$this->isHidden;
-    }
-
-    public function setIsHidden(bool $isHidden): self
-    {
-        $this->isHidden = (int)$isHidden;
 
         return $this;
     }

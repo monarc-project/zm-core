@@ -77,7 +77,6 @@ class ChangeableOperationalImpact extends AbstractMigration
                 `brut_value` int(11) NOT NULL DEFAULT -1,
                 `net_value` int(11) NOT NULL DEFAULT -1,
                 `targeted_value` int(11) NOT NULL DEFAULT -1,
-                `is_hidden` tinyint(1) NOT NULL DEFAULT 0,
                 `creator` varchar(255) NOT NULL,
                 `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
                 `updater` varchar(255) DEFAULT NULL,
