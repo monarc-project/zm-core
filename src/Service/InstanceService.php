@@ -1464,7 +1464,7 @@ class InstanceService extends AbstractService
             $riskOpIds[$operationalInstanceRiskId] = $operationalInstanceRiskId;
             $return['risksop'][$operationalInstanceRiskId] = [
                 'id' => $operationalInstanceRiskId,
-                'rolfRisk' => $return['risksop'][$operationalInstanceRiskId]['rolfRisk']
+                'rolfRisk' => !empty($return['risksop'][$operationalInstanceRiskId]['rolfRisk'])
                     ? $return['risksop'][$operationalInstanceRiskId]['rolfRisk']->getId() : null,
                 'riskCacheLabel1' => $operationalInstanceRisk->getRiskCacheLabel(1),
                 'riskCacheLabel2' => $operationalInstanceRisk->getRiskCacheLabel(2),
