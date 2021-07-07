@@ -590,7 +590,7 @@ class InstanceRiskOpSuperClass extends AbstractEntity
 
     public function getMitigation(): string
     {
-        return $this->mitigation;
+        return (string)$this->mitigation;
     }
 
     public function setMitigation(string $mitigation): self
