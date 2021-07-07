@@ -1483,9 +1483,9 @@ class InstanceService extends AbstractService
                 'kindOfMeasure' => $withEval
                     ? $operationalInstanceRisk->getKindOfMeasure()
                     : InstanceRiskOp::KIND_NOT_TREATED,
-                'comment' => !$withEval || !$withControls ? '' : $operationalInstanceRisk->getComment(),
+                'comment' => $withEval && $withControls ? $operationalInstanceRisk->getComment() : '',
                 'mitigation' => $withEval ? $operationalInstanceRisk->getMitigation() : '',
-                'specific' => $withEval ? $operationalInstanceRisk->getSpecific() : '',
+                'specific' => $operationalInstanceRisk->getSpecific(),
             ];
             $return['risksop'][$operationalInstanceRiskId]['scales'] = [];
             foreach ($operationalInstanceRisk->getOperationalInstanceRiskScales() as $instanceRiskScale) {
