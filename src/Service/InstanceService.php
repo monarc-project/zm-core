@@ -11,7 +11,6 @@ use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Monarc\Core\Exception\Exception;
-use Monarc\Core\Model\Entity\Asset;
 use Monarc\Core\Model\Entity\Instance;
 use Monarc\Core\Model\Entity\InstanceConsequenceSuperClass;
 use Monarc\Core\Model\Entity\InstanceRiskOp;
@@ -20,6 +19,7 @@ use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Entity\ScaleCommentSuperClass;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\InstanceConsequenceTable;
+use Monarc\Core\Model\Table\InstanceRiskOpTable;
 use Monarc\Core\Model\Table\InstanceRiskTable;
 use Monarc\Core\Model\Table\InstanceTable;
 use Monarc\Core\Model\Table\ScaleCommentTable;
@@ -49,9 +49,7 @@ class InstanceService extends AbstractService
     protected $scaleImpactTypeTable;
     protected $instanceConsequenceTable;
     protected $instanceConsequenceEntity;
-    protected $recommandationRiskTable; // Used for FO
-    protected $recommandationTable; // Used for FO
-    protected $recommandationSetTable; // Used for FO
+    protected $instanceRiskOpTable;
 
     protected $assetTable;
 
@@ -1455,207 +1453,67 @@ class InstanceService extends AbstractService
             }
         }
 
-        // Recommendations Sets. TODO: move this part to FO.
-        if ($withEval && $withRecommendations) {
-            $recsSetsObj = [
-                'uuid' => 'uuid',
-                'label1' => 'label1',
-                'label2' => 'label2',
-                'label3' => 'label3',
-                'label4' => 'label4',
-            ];
-
-            $return['recSets'] = [];
-            $recommandationsSets = $this->get('recommandationSetTable')->getEntityByFields(['anr' => $instance->get('anr')->get('id')]);
-            foreach ($recommandationsSets as $recommandationSet) {
-                $return['recSets'][$recommandationSet->getUuid()] = $recommandationSet->getJsonArray($recsSetsObj);
-            }
-        }
-
-        // TODO: move this part to FO.
-        $recoIds = [];
-        if ($withEval && $withRecommendations && !empty($riskIds) && $this->get('recommandationRiskTable')) {
-            $recosObj = [
-                'uuid' => 'uuid',
-                'recommandationSet' => 'recommandationSet',
-                'code' => 'code',
-                'description' => 'description',
-                'importance' => 'importance',
-                'comment' => 'comment',
-                'status' => 'status',
-                'responsable' => 'responsable',
-                'duedate' => 'duedate',
-                'counterTreated' => 'counterTreated',
-            ];
-            $return['recos'] = [];
-            if (!$withUnlinkedRecommendations) {
-                $return['recs'] = [];
-            }
-            $recoRisk = $this->get('recommandationRiskTable')->getEntityByFields(['anr' => $instance->get('anr')->get('id'), 'instanceRisk' => $riskIds], ['id' => 'ASC']);
-            foreach ($recoRisk as $rr) {
-                if (!empty($rr)) {
-                    $recommendation = $rr->getRecommandation();
-                    $recommendationUuid = $recommendation->getUuid();
-                    $return['recos'][$rr->get('instanceRisk')->get('id')][$recommendationUuid] = $rr->get('recommandation')->getJsonArray($recosObj);
-                    $return['recos'][$rr->get('instanceRisk')->get('id')][$recommendationUuid]['recommandationSet'] = $rr->getRecommandation()->getRecommandationSet()->getUuid();
-                    $return['recos'][$rr->get('instanceRisk')->get('id')][$recommendationUuid]['commentAfter'] = $rr->get('commentAfter');
-                    if (!$withUnlinkedRecommendations && !isset($recoIds[$recommendationUuid])) {
-                        $return['recs'][$recommendationUuid] = $recommendation->getJsonArray($recosObj);
-                        $return['recs'][$recommendationUuid]['recommandationSet'] = $recommendation->getRecommandationSet()->getUuid();
-                    }
-                    $recoIds[$recommendationUuid] = $recommendationUuid;
-                }
-            }
-        }
-
-        //TODO: rewrite the code below...
-
         // Instance risk op
         $return['risksop'] = [];
-        $instanceRiskOpTable = $this->get('instanceRiskOpService')->get('table');
-        $instanceRiskOpResults = $instanceRiskOpTable->getRepository()
-            ->createQueryBuilder('t')
-            ->where('t.instance = :i')
-            ->setParameter(':i', $instance->get('id'))->getQuery()->getResult();
-
-
-        // TODO: refactor the part - add dynamic scales!!!
-
-        $instanceRiskOpArray = [
-            'id' => 'id',
-            'rolfRisk' => 'rolfRisk', // TODO doit-on garder cette donnée ?
-            'riskCacheLabel1' => 'riskCacheLabel1',
-            'riskCacheLabel2' => 'riskCacheLabel2',
-            'riskCacheLabel3' => 'riskCacheLabel3',
-            'riskCacheLabel4' => 'riskCacheLabel4',
-            'riskCacheDescription1' => 'riskCacheDescription1',
-            'riskCacheDescription2' => 'riskCacheDescription2',
-            'riskCacheDescription3' => 'riskCacheDescription3',
-            'riskCacheDescription4' => 'riskCacheDescription4',
-            'brutProb' => 'brutProb',
-            'brutR' => 'brutR',
-            'brutO' => 'brutO',
-            'brutL' => 'brutL',
-            'brutF' => 'brutF',
-            'netProb' => 'netProb',
-            'netR' => 'netR',
-            'netO' => 'netO',
-            'netL' => 'netL',
-            'netF' => 'netF',
-            'targetedProb' => 'targetedProb',
-            'targetedR' => 'targetedR',
-            'targetedO' => 'targetedO',
-            'targetedL' => 'targetedL',
-            'targetedF' => 'targetedF',
-            'cacheTargetedRisk' => 'cacheTargetedRisk',
-            'cacheNetRisk' => 'cacheNetRisk',
-            'cacheBrutRisk' => 'cacheBrutRisk',
-            'kindOfMeasure' => 'kindOfMeasure',
-            'comment' => 'comment',
-            'mitigation' => 'mitigation',
-            'specific' => 'specific',
-            'netP' => 'netP',
-            'targetedP' => 'targetedP',
-            'brutP' => 'brutP',
-        ];
-        $toReset = [
-            'brutProb' => 'brutProb',
-            'brutR' => 'brutR',
-            'brutO' => 'brutO',
-            'brutL' => 'brutL',
-            'brutF' => 'brutF',
-            'netProb' => 'netProb',
-            'netR' => 'netR',
-            'netO' => 'netO',
-            'netL' => 'netL',
-            'netF' => 'netF',
-            'targetedProb' => 'targetedProb',
-            'targetedR' => 'targetedR',
-            'targetedO' => 'targetedO',
-            'targetedL' => 'targetedL',
-            'targetedF' => 'targetedF',
-            'cacheTargetedRisk' => 'cacheTargetedRisk',
-            'cacheNetRisk' => 'cacheNetRisk',
-            'cacheBrutRisk' => 'cacheBrutRisk',
-        ];
+        /** @var InstanceRiskOpTable $instanceRiskOpTable */
+        $instanceRiskOpTable = $this->get('instanceRiskOpTable');
+        $operationalInstanceRisks = $instanceRiskOpTable->findByInstance($instance);
         $riskOpIds = [];
-        foreach ($instanceRiskOpResults as $iro) {
-            $riskOpIds[$iro->get('id')] = $iro->get('id');
-            $return['risksop'][$iro->get('id')] = $iro->getJsonArray($instanceRiskOpArray);
-            if(!empty($return['risksop'][$iro->get('id')]['rolfRisk']->id)){
-                $return['risksop'][$iro->get('id')]['rolfRisk'] = $return['risksop'][$iro->get('id')]['rolfRisk']->id;
-            }
+        foreach ($operationalInstanceRisks as $operationalInstanceRisk) {
+            $operationalInstanceRiskId = $operationalInstanceRisk->getId();
+            $riskOpIds[$operationalInstanceRiskId] = $operationalInstanceRiskId;
+            $return['risksop'][$operationalInstanceRiskId] = [
+                'id' => $operationalInstanceRiskId,
+                'rolfRisk' => $return['risksop'][$operationalInstanceRiskId]['rolfRisk']
+                    ? $return['risksop'][$operationalInstanceRiskId]['rolfRisk']->getId() : null,
+                'riskCacheLabel1' => $operationalInstanceRisk->getRiskCacheLabel(1),
+                'riskCacheLabel2' => $operationalInstanceRisk->getRiskCacheLabel(2),
+                'riskCacheLabel3' => $operationalInstanceRisk->getRiskCacheLabel(3),
+                'riskCacheLabel4' => $operationalInstanceRisk->getRiskCacheLabel(4),
+                'riskCacheDescription1' => $operationalInstanceRisk->getRiskCacheDescription(1),
+                'riskCacheDescription2' => $operationalInstanceRisk->getRiskCacheDescription(2),
+                'riskCacheDescription3' => $operationalInstanceRisk->getRiskCacheDescription(3),
+                'riskCacheDescription4' => $operationalInstanceRisk->getRiskCacheDescription(4),
+                'brutProb' => $operationalInstanceRisk->getBrutProb(),
+                'netProb' => $operationalInstanceRisk->getNetProb(),
+                'targetedProb' => $operationalInstanceRisk->getNetProb(),
+                'cacheTargetedRisk' => $operationalInstanceRisk->getCacheTargetedRisk(),
+                'cacheNetRisk' => $operationalInstanceRisk->getCacheNetRisk(),
+                'cacheBrutRisk' => $operationalInstanceRisk->getCacheBrutRisk(),
+                'kindOfMeasure' => $operationalInstanceRisk->getKindOfMeasure(),
+                'comment' => $operationalInstanceRisk->getComment(),
+                'mitigation' => $operationalInstanceRisk->getMitigation(),
+                'specific' => $operationalInstanceRisk->getSpecific(),
+            ];
             if (!$withEval) {
-                foreach ($toReset as $r) {
-                    $return['risksop'][$iro->get('id')][$r] = '-1';
+                $return['risksop'][$operationalInstanceRiskId]['brutProb'] = -1;
+                $return['risksop'][$operationalInstanceRiskId]['netProb'] = -1;
+                $return['risksop'][$operationalInstanceRiskId]['targetedProb'] = -1;
+                $return['risksop'][$operationalInstanceRiskId]['cacheTargetedRisk'] = -1;
+                $return['risksop'][$operationalInstanceRiskId]['cacheNetRisk'] = -1;
+                $return['risksop'][$operationalInstanceRiskId]['cacheBrutRisk'] = -1;
+                foreach ($operationalInstanceRisk->getOperationalInstanceRiskScales() as $riskScale) {
+                    $riskScale->setNetValue(-1);
+                    $riskScale->setBrutValue(-1);
+                    $riskScale->setTargetedValue(-1);
                 }
-                $return['risksop'][$iro->get('id')]['kindOfMeasure'] = 0;
-                $return['risksop'][$iro->get('id')]['comment'] = '';
-                $return['risksop'][$iro->get('id')]['mitigation'] = '';
+                $return['risksop'][$operationalInstanceRiskId]['kindOfMeasure'] = InstanceRiskOp::KIND_NOT_TREATED;
+                $return['risksop'][$operationalInstanceRiskId]['comment'] = '';
+                $return['risksop'][$operationalInstanceRiskId]['mitigation'] = '';
             }
             if (!$withControls) {
-                $return['risksop'][$iro->get('id')]['comment'] = '';
-            }
-        }
-        // Recommandation RISKOP
-        if ($withEval && $withRecommendations && !empty($riskOpIds) && $this->get('recommandationRiskTable')) {
-            $recosObj = [
-                'uuid' => 'uuid',
-                'recommandationSet' => 'recommandationSet',
-                'code' => 'code',
-                'description' => 'description',
-                'importance' => 'importance',
-                'comment' => 'comment',
-                'status' => 'status',
-                'responsable' => 'responsable',
-                'duedate' => 'duedate',
-                'counterTreated' => 'counterTreated',
-            ];
-            $return['recosop'] = [];
-            if (!$withUnlinkedRecommendations) {
-                $return['recs'] = [];
-            }
-            $recoRisk = $this->get('recommandationRiskTable')->getEntityByFields(['anr' => $instance->get('anr')->get('id'), 'instanceRiskOp' => $riskOpIds], ['id' => 'ASC']);
-            foreach ($recoRisk as $rr) {
-                if (!empty($rr)) {
-                    $recommendation = $rr->getRecommandation();
-                    $recommendationUuid = $recommendation->getUuid();
-                    $return['recosop'][$rr->get('instanceRiskOp')->get('id')][$recommendationUuid] = $rr->get('recommandation')->getJsonArray($recosObj);
-                    $return['recosop'][$rr->get('instanceRiskOp')->get('id')][$recommendationUuid]['recommandationSet'] = $rr->getRecommandation()->getRecommandationSet()->getUuid();
-                    $return['recosop'][$rr->get('instanceRiskOp')->get('id')][$recommendationUuid]['commentAfter'] = $rr->get('commentAfter');
-                    if (!$withUnlinkedRecommendations && !isset($recoIds[$recommendationUuid])) {
-                        $return['recs'][$recommendationUuid] = $recommendation->getJsonArray($recosObj);
-                        $return['recs'][$recommendationUuid]['recommandationSet'] = $recommendation->getRecommandationSet()->getUuid();
-                    }
-                    $recoIds[$recommendationUuid] = $recommendationUuid;
-                }
+                $return['risksop'][$operationalInstanceRiskId]['comment'] = '';
             }
         }
 
-        //Recommandation unlinked to recommandations-risks
-        if ($withUnlinkedRecommendations && $withEval && $withRecommendations){
-            $recosObj = [
-                'uuid' => 'uuid',
-                'recommandationSet' => 'recommandationSet',
-                'code' => 'code',
-                'description' => 'description',
-                'importance' => 'importance',
-                'comment' => 'comment',
-                'status' => 'status',
-                'responsable' => 'responsable',
-                'duedate' => 'duedate',
-                'counterTreated' => 'counterTreated',
-            ];
-            $return['recs'] = [];
-            $recommandations = $this->get('recommandationTable')->getEntityByFields(['anr' => $instance->get('anr')->get('id')]);
-            foreach ($recommandations as $rec){
-                if(!isset($recoIds[$rec->getUuid()])){
-                    $return['recs'][$rec->getUuid()] = $rec->getJsonArray($recosObj);
-                    $return['recs'][$rec->getUuid()]['recommandationSet'] = $rec->getRecommandationSet()->getUuid();
-                    $recoIds[$rec->getUuid()] = $rec->getUuid();
-                }
-            }
-        }
+        $return = array_merge($return, $this->getExportedRecommendationsData(
+            $instance,
+            $withEval,
+            $withRecommendations,
+            $withUnlinkedRecommendations,
+            $riskIds,
+            $riskOpIds
+        ));
 
         // Instance consequence
         if ($withEval) {
@@ -1736,5 +1594,16 @@ class InstanceService extends AbstractService
         }
 
         return $label;
+    }
+
+    protected function getExportedRecommendationsData(
+        InstanceSuperClass $instance,
+        bool $withEval,
+        bool $withRecommendations,
+        bool $withUnlinkedRecommendations,
+        array $riskIds,
+        array $riskOpIds
+    ): array {
+        return [];
     }
 }

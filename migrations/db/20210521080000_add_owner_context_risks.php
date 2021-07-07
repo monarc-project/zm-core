@@ -29,7 +29,7 @@ class AddOwnerContextRisks extends AbstractMigration
     public function change()
     {
         $this->execute(
-            'CREATE TABLE IF NOT EXISTS `instance_risk_owners` (
+            'CREATE TABLE IF NOT EXISTS `instances_risks_owners` (
             `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
             `anr_id` int(11) unsigned,
             `name` varchar(255) NOT NULL,

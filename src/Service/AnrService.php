@@ -375,7 +375,6 @@ class AnrService extends AbstractService
             /** @var TranslationTable $translationTable */
             $translationTable = $this->get('translationTable');
 
-
             $operationalRiskScales = $operationalRiskScaleTable->findWithCommentsByAnr($anr);
             $operationalRisksAndScalesTranslations = $translationTable->findByAnrTypesAndLanguageIndexedByKey(
                 $anr,

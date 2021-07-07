@@ -10,7 +10,7 @@ namespace Monarc\Core\Model\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Table(name="instance_risk_owners",
+ * @ORM\Table(name="instances_risks_owners",
  * uniqueConstraints={@ORM\UniqueConstraint(name="instance_risk_owners_anr_id_name", columns={"anr_id", "name"})},
  * indexes={
  *      @ORM\Index(name="anr", columns={"anr_id"}
