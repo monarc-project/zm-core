@@ -1474,35 +1474,27 @@ class InstanceService extends AbstractService
                 'riskCacheDescription2' => $operationalInstanceRisk->getRiskCacheDescription(2),
                 'riskCacheDescription3' => $operationalInstanceRisk->getRiskCacheDescription(3),
                 'riskCacheDescription4' => $operationalInstanceRisk->getRiskCacheDescription(4),
-                'brutProb' => $operationalInstanceRisk->getBrutProb(),
-                'netProb' => $operationalInstanceRisk->getNetProb(),
-                'targetedProb' => $operationalInstanceRisk->getNetProb(),
-                'cacheTargetedRisk' => $operationalInstanceRisk->getCacheTargetedRisk(),
-                'cacheNetRisk' => $operationalInstanceRisk->getCacheNetRisk(),
-                'cacheBrutRisk' => $operationalInstanceRisk->getCacheBrutRisk(),
-                'kindOfMeasure' => $operationalInstanceRisk->getKindOfMeasure(),
-                'comment' => $operationalInstanceRisk->getComment(),
-                'mitigation' => $operationalInstanceRisk->getMitigation(),
-                'specific' => $operationalInstanceRisk->getSpecific(),
+                'brutProb' => $withEval ? $operationalInstanceRisk->getBrutProb() : -1,
+                'netProb' => $withEval ? $operationalInstanceRisk->getNetProb() : -1,
+                'targetedProb' => $withEval ? $operationalInstanceRisk->getNetProb() : -1,
+                'cacheBrutRisk' => $withEval ? $operationalInstanceRisk->getCacheBrutRisk() : -1,
+                'cacheNetRisk' => $withEval ? $operationalInstanceRisk->getCacheNetRisk() : -1,
+                'cacheTargetedRisk' => $withEval ? $operationalInstanceRisk->getCacheTargetedRisk() : -1,
+                'kindOfMeasure' => $withEval
+                    ? $operationalInstanceRisk->getKindOfMeasure()
+                    : InstanceRiskOp::KIND_NOT_TREATED,
+                'comment' => !$withEval || !$withControls ? '' : $operationalInstanceRisk->getComment(),
+                'mitigation' => $withEval ? $operationalInstanceRisk->getMitigation() : '',
+                'specific' => $withEval ? $operationalInstanceRisk->getSpecific() : '',
             ];
-            if (!$withEval) {
-                $return['risksop'][$operationalInstanceRiskId]['brutProb'] = -1;
-                $return['risksop'][$operationalInstanceRiskId]['netProb'] = -1;
-                $return['risksop'][$operationalInstanceRiskId]['targetedProb'] = -1;
-                $return['risksop'][$operationalInstanceRiskId]['cacheTargetedRisk'] = -1;
-                $return['risksop'][$operationalInstanceRiskId]['cacheNetRisk'] = -1;
-                $return['risksop'][$operationalInstanceRiskId]['cacheBrutRisk'] = -1;
-                foreach ($operationalInstanceRisk->getOperationalInstanceRiskScales() as $riskScale) {
-                    $riskScale->setNetValue(-1);
-                    $riskScale->setBrutValue(-1);
-                    $riskScale->setTargetedValue(-1);
-                }
-                $return['risksop'][$operationalInstanceRiskId]['kindOfMeasure'] = InstanceRiskOp::KIND_NOT_TREATED;
-                $return['risksop'][$operationalInstanceRiskId]['comment'] = '';
-                $return['risksop'][$operationalInstanceRiskId]['mitigation'] = '';
-            }
-            if (!$withControls) {
-                $return['risksop'][$operationalInstanceRiskId]['comment'] = '';
+            $return['risksop'][$operationalInstanceRiskId]['scales'] = [];
+            foreach ($operationalInstanceRisk->getOperationalInstanceRiskScales() as $instanceRiskScale) {
+                $scaleId = $instanceRiskScale->getOperationalRiskScale()->getId();
+                $return['risksop'][$operationalInstanceRiskId]['scales'][$scaleId] = [
+                    'netValue' => $withEval ? $instanceRiskScale->getNetValue() : -1,
+                    'brutValue' => $withEval ? $instanceRiskScale->getBrutValue() : -1,
+                    'targetValue' => $withEval ? $instanceRiskScale->getTargetedValue() : -1,
+                ];
             }
         }
 
