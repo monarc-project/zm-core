@@ -398,7 +398,7 @@ class AnrService extends AbstractService
                     'id' => $operationalScale->getId(),
                     'min' => $operationalScale->getMin(),
                     'max' => $operationalScale->getMax(),
-                    'translations' => $operationalScale->getLabelTranslationKey() === null ? '' :
+                    'translations' => $operationalScale->getLabelTranslationKey() === '' ? '' :
                         $operationalRisksAndScalesTranslations[
                             $operationalScale->getLabelTranslationKey()
                         ]->getValue(),
