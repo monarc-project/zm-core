@@ -60,7 +60,7 @@ class TranslationTable extends AbstractTable
         $queryBuilder = $this->getRepository()->createQueryBuilder('t', 't.key');
 
         return $queryBuilder
-            ->where($queryBuilder->expr()->in('t.keys', $keys))
+            ->where($queryBuilder->expr()->in('t.key', $keys))
             ->andWhere('t.lang = :lang')
             ->setParameter('lang', $lang)
             ->getQuery()
