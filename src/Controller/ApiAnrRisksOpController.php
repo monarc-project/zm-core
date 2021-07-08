@@ -15,7 +15,7 @@ use Monarc\Core\Service\InstanceRiskOpService;
 /**
  * Api Anr Risks Op Controller
  *
- * Class ApiAnrRisksController
+ * Class ApiAnrRisksOpController
  * @package Monarc\Core\Controller
  */
 class ApiAnrRisksOpController extends AbstractRestfulController
