@@ -3,6 +3,7 @@
 namespace Monarc\Core\Model\Table;
 
 use Doctrine\ORM\EntityManager;
+use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\Translation;
 
 class TranslationTable extends AbstractTable
@@ -13,14 +14,16 @@ class TranslationTable extends AbstractTable
     }
 
     /**
-     * @return Translation[]
+     * @return Translation[][]
      */
-    public function findByTypesIndexedByKey(array $types): array
+    public function findByAnrAndTypesIndexedByKey(AnrSuperClass $anr, array $types): array
     {
         $queryBuilder = $this->getRepository()->createQueryBuilder('t', 't.key');
 
         return $queryBuilder
-            ->where($queryBuilder->expr()->in('t.type', $types))
+            ->where('t.anr = :anr')
+            ->andWhere($queryBuilder->expr()->in('t.type', $types))
+            ->setParameter('anr', $anr)
             ->getQuery()
             ->getResult();
     }
@@ -28,13 +31,15 @@ class TranslationTable extends AbstractTable
     /**
      * @return Translation[]
      */
-    public function findByTypesAndLanguageIndexedByKey(array $types, string $lang): array
+    public function findByAnrTypesAndLanguageIndexedByKey(AnrSuperClass $anr, array $types, string $lang): array
     {
         $queryBuilder = $this->getRepository()->createQueryBuilder('t', 't.key');
 
         return $queryBuilder
-            ->where($queryBuilder->expr()->in('t.type', $types))
+            ->where('t.anr = :anr')
+            ->andWhere($queryBuilder->expr()->in('t.type', $types))
             ->andWhere('t.lang = :lang')
+            ->setParameter('anr', $anr)
             ->setParameter('lang', $lang)
             ->getQuery()
             ->getResult();
@@ -55,13 +60,15 @@ class TranslationTable extends AbstractTable
     /**
      * @return Translation[]
      */
-    public function findByKeysAndLanguageIndexedByKey(array $keys, string $lang): array
+    public function findByAnrKeysAndLanguageIndexedByKey(AnrSuperClass $anr, array $keys, string $lang): array
     {
         $queryBuilder = $this->getRepository()->createQueryBuilder('t', 't.key');
 
         return $queryBuilder
-            ->where($queryBuilder->expr()->in('t.key', $keys))
+            ->where('t.anr = :anr')
+            ->andWhere($queryBuilder->expr()->in('t.key', $keys))
             ->andWhere('t.lang = :lang')
+            ->setParameter('anr', $anr)
             ->setParameter('lang', $lang)
             ->getQuery()
             ->getResult();

@@ -3,7 +3,6 @@
 namespace Monarc\Core\Service;
 
 use Doctrine\ORM\EntityNotFoundException;
-use Monarc\Core\Service\ConfigService;
 use Monarc\Core\Model\Entity\OperationalRiskScaleComment;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\OperationalRiskScaleCommentTable;
@@ -17,8 +16,6 @@ class OperationalRiskScaleCommentService
 
     private TranslationTable $translationTable;
 
-    private ConfigService $configService;
-
     public function __construct(
         AnrTable $anrTable,
         OperationalRiskScaleCommentTable $operationalRiskScaleCommentTable,
@@ -28,7 +25,6 @@ class OperationalRiskScaleCommentService
         $this->anrTable = $anrTable;
         $this->operationalRiskScaleCommentTable = $operationalRiskScaleCommentTable;
         $this->translationTable = $translationTable;
-        $this->configService = $configService;
     }
 
     public function update(int $id, array $data): int

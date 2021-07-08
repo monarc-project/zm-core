@@ -174,7 +174,12 @@ class InstanceRiskOpService
             array_keys($instancesInfos),
             $params
         );
-        $operationalRisksScalesTranslations = $this->getTranslationsForOperationalRisksScales();
+        if (!empty($instancesRisksOp)) {
+            $operationalRisksScalesTranslations = $this->translationTable->findByAnrAndTypesIndexedByKey(
+                current($instancesRisksOp)->getAnr(),
+                [OperationalRiskScale::class]
+            );
+        }
         $result = [];
         foreach ($instancesRisksOp as $instanceRiskOp) {
             $operationalInstanceRiskScales = $instanceRiskOp->getOperationalInstanceRiskScales();
@@ -415,14 +420,6 @@ class InstanceRiskOpService
         $this->instanceRiskOpTable->saveEntity($instanceRiskOp);
 
         return $instanceRiskOp->getJsonArray();
-    }
-
-    /**
-     * @return TranslationSuperClass[]
-     */
-    protected function getTranslationsForOperationalRisksScales(): array
-    {
-        $this->translationTable->findByTypesIndexedByKey([OperationalRiskScale::class]);
     }
 
     protected function createInstanceRiskOpObjectFromInstanceObjectAndRolfRisk(

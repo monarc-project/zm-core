@@ -110,7 +110,8 @@ class OperationalRiskScaleService
             $language = strtolower($this->configService->getLanguageCodes()[$anr->getLanguage()]);
         }
 
-        $translations = $this->translationTable->findByTypesAndLanguageIndexedByKey(
+        $translations = $this->translationTable->findByAnrTypesAndLanguageIndexedByKey(
+            $anr,
             [OperationalRiskScale::class, OperationalRiskScaleComment::class],
             $language
         );

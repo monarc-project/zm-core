@@ -85,6 +85,7 @@ class ChangeableOperationalImpact extends AbstractMigration
                 INDEX `oirs_instance_risk_op_id_indx` (`instance_risk_op_id`),
                 INDEX `oirs_op_risk_scale_id_indx` (`operational_risk_scale_id`),
                 UNIQUE `oirs_instance_risk_op_id_op_risk_scale_id_unq` (`instance_risk_op_id`, `operational_risk_scale_id`),
+                CONSTRAINT `op_instance_risks_scales_anr_id_fk` FOREIGN KEY (`anr_id`) REFERENCES anrs (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
                 CONSTRAINT `oirs_instance_risk_op_id_fk` FOREIGN KEY (`instance_risk_op_id`) REFERENCES `instances_risks_op` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
                 CONSTRAINT `oirs_operational_risk_scale_id_fk` FOREIGN KEY (`operational_risk_scale_id`) REFERENCES `operational_risks_scales` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
             );'
@@ -93,6 +94,7 @@ class ChangeableOperationalImpact extends AbstractMigration
         $this->execute(
             'CREATE TABLE IF NOT EXISTS `translations` (
                 `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+                `anr_id` int(11) unsigned,
                 `type` varchar(255) NOT NULL,
                 `translation_key` varchar(255) NOT NULL,
                 `lang` char(2) NOT NULL,
@@ -104,7 +106,8 @@ class ChangeableOperationalImpact extends AbstractMigration
                 PRIMARY KEY (`id`),
                 INDEX `translations_key_indx` (`translation_key`),
                 INDEX `translations_type_indx` (`type`),
-                UNIQUE `translations_key_lang_unq` (`translation_key`, `lang`)
+                UNIQUE `translations_key_lang_unq` (`translation_key`, `lang`),
+                CONSTRAINT `translations_anr_id_fk` FOREIGN KEY (`anr_id`) REFERENCES anrs (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
             );'
         );
 

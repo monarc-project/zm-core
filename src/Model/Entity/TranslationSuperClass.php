@@ -30,6 +30,16 @@ class TranslationSuperClass
     protected $id;
 
     /**
+     * @var AnrSuperClass
+     *
+     * @ORM\ManyToOne(targetEntity="Anr", cascade={"persist"})
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
+     * })
+     */
+    protected $anr;
+
+    /**
      * @var string
      *
      * @ORM\Column(name="type", type="string", length=255)
@@ -56,6 +66,18 @@ class TranslationSuperClass
      * @ORM\Column(name="value", type="text", nullable=false)
      */
     protected $value;
+
+    public function getAnr(): ?AnrSuperClass
+    {
+        return $this->anr;
+    }
+
+    public function setAnr(AnrSuperClass $anr): self
+    {
+        $this->anr = $anr;
+
+        return $this;
+    }
 
     public function getType(): string
     {
