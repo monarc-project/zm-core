@@ -245,6 +245,13 @@ class InstanceRiskOpSuperClass extends AbstractEntity
      */
     protected $specific = 0;
 
+    public function __construct($obj = null)
+    {
+        $this->operationalInstanceRiskScales = new ArrayCollection();
+
+        parent::__construct($obj);
+    }
+
     public function __clone()
     {
         $this->id = null;

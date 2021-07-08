@@ -12,10 +12,14 @@ use Doctrine\ORM\ORMException;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Asset;
 use Monarc\Core\Model\Entity\InstanceRiskOp;
+use Monarc\Core\Model\Entity\InstanceRiskOpSuperClass;
 use Monarc\Core\Model\Entity\InstanceSuperClass;
 use Monarc\Core\Model\Entity\ObjectSuperClass;
 use Monarc\Core\Model\Entity\OperationalInstanceRiskScale;
+use Monarc\Core\Model\Entity\OperationalInstanceRiskScaleSuperClass;
 use Monarc\Core\Model\Entity\OperationalRiskScale;
+use Monarc\Core\Model\Entity\OperationalRiskScaleSuperClass;
+use Monarc\Core\Model\Entity\RolfRiskSuperClass;
 use Monarc\Core\Model\Entity\TranslationSuperClass;
 use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Model\Table\AnrTable;
@@ -28,23 +32,23 @@ use Monarc\Core\Model\Table\TranslationTable;
 
 class InstanceRiskOpService
 {
-    private AnrTable $anrTable;
+    protected AnrTable $anrTable;
 
-    private InstanceTable $instanceTable;
+    protected InstanceTable $instanceTable;
 
-    private InstanceRiskOpTable $instanceRiskOpTable;
+    protected InstanceRiskOpTable $instanceRiskOpTable;
 
-    private RolfTagTable $rolfTagTable;
+    protected RolfTagTable $rolfTagTable;
 
-    private UserSuperClass $connectedUser;
+    protected UserSuperClass $connectedUser;
 
-    private OperationalInstanceRiskScaleTable $operationalInstanceRiskScaleTable;
+    protected OperationalInstanceRiskScaleTable $operationalInstanceRiskScaleTable;
 
-    private TranslationTable $translationTable;
+    protected TranslationTable $translationTable;
 
-    private TranslateService $translateService;
+    protected TranslateService $translateService;
 
-    private OperationalRiskScaleTable $operationalRiskScaleTable;
+    protected OperationalRiskScaleTable $operationalRiskScaleTable;
 
     public function __construct(
         AnrTable $anrTable,
@@ -103,34 +107,24 @@ class InstanceRiskOpService
         } else {
             $rolfTag = $this->rolfTagTable->findById($object->getRolfTag()->getId());
             foreach ($rolfTag->getRisks() as $rolfRisk) {
-                $instanceRiskOp = (new InstanceRiskOp())
-                    ->setAnr($instance->getAnr())
-                    ->setInstance($instance)
-                    ->setObject($object)
-                    ->setRolfRisk($rolfRisk)
-                    ->setRiskCacheCode($rolfRisk->getCode())
-                    ->setRiskCacheLabels([
-                        'riskCacheLabel1' => $rolfRisk->getLabel(1),
-                        'riskCacheLabel2' => $rolfRisk->getLabel(2),
-                        'riskCacheLabel3' => $rolfRisk->getLabel(3),
-                        'riskCacheLabel4' => $rolfRisk->getLabel(4),
-                    ])
-                    ->setRiskCacheDescriptions([
-                        'riskCacheDescription1' => $rolfRisk->getDescription(1),
-                        'riskCacheDescription2' => $rolfRisk->getDescription(2),
-                        'riskCacheDescription3' => $rolfRisk->getDescription(3),
-                        'riskCacheDescription4' => $rolfRisk->getDescription(4),
-                    ]);
+                $instanceRiskOp = $this->createInstanceRiskOpObjectFromInstanceObjectAndRolfRisk(
+                    $instance,
+                    $object,
+                    $rolfRisk
+                );
 
                 $this->instanceRiskOpTable->saveEntity($instanceRiskOp, false);
 
-                $operationalRiskScales = $this->operationalRiskScaleTable->findByAnr($instance->getAnr());
+                $operationalRiskScales = $this->operationalRiskScaleTable->findByAnrAndType(
+                    $instance->getAnr(),
+                    OperationalRiskScale::TYPE_IMPACT
+                );
                 foreach ($operationalRiskScales as $operationalRiskScale) {
-                    $operationalInstanceRiskScale = (new OperationalInstanceRiskScale())
-                        ->setAnr($instance->getAnr())
-                        ->setOperationalInstanceRisk($instanceRiskOp)
-                        ->setOperationalRiskScale($operationalRiskScale)
-                        ->setCreator($this->connectedUser->getEmail());
+                    $operationalInstanceRiskScale = $this->createOperationalInstanceRiskScaleObject(
+                        $instanceRiskOp,
+                        $operationalRiskScale,
+                    );
+
                     $this->operationalInstanceRiskScaleTable->save($operationalInstanceRiskScale, false);
                 }
             }
@@ -354,7 +348,7 @@ class InstanceRiskOpService
     }
 
     // TODO: adjust the code!
-    public function update($id, $data)
+    public function update(int $id, array $data): array
     {
         $instanceRiskOp = $this->instanceRiskOpTable->findById($id);
 
@@ -429,6 +423,42 @@ class InstanceRiskOpService
     protected function getTranslationsForOperationalRisksScales(): array
     {
         $this->translationTable->findByTypesIndexedByKey([OperationalRiskScale::class]);
+    }
+
+    protected function createInstanceRiskOpObjectFromInstanceObjectAndRolfRisk(
+        InstanceSuperClass $instance,
+        ObjectSuperClass $object,
+        RolfRiskSuperClass $rolfRisk
+    ): InstanceRiskOpSuperClass {
+        return (new InstanceRiskOp())
+            ->setAnr($instance->getAnr())
+            ->setInstance($instance)
+            ->setObject($object)
+            ->setRolfRisk($rolfRisk)
+            ->setRiskCacheCode($rolfRisk->getCode())
+            ->setRiskCacheLabels([
+                'riskCacheLabel1' => $rolfRisk->getLabel(1),
+                'riskCacheLabel2' => $rolfRisk->getLabel(2),
+                'riskCacheLabel3' => $rolfRisk->getLabel(3),
+                'riskCacheLabel4' => $rolfRisk->getLabel(4),
+            ])
+            ->setRiskCacheDescriptions([
+                'riskCacheDescription1' => $rolfRisk->getDescription(1),
+                'riskCacheDescription2' => $rolfRisk->getDescription(2),
+                'riskCacheDescription3' => $rolfRisk->getDescription(3),
+                'riskCacheDescription4' => $rolfRisk->getDescription(4),
+            ]);
+    }
+
+    protected function createOperationalInstanceRiskScaleObject(
+        InstanceRiskOpSuperClass $instanceRiskOp,
+        OperationalRiskScaleSuperClass $operationalRiskScale
+    ): OperationalInstanceRiskScaleSuperClass {
+        return (new OperationalInstanceRiskScale())
+            ->setAnr($instanceRiskOp->getAnr())
+            ->setOperationalInstanceRisk($instanceRiskOp)
+            ->setOperationalRiskScale($operationalRiskScale)
+            ->setCreator($this->connectedUser->getEmail());
     }
 
     private function extractInstanceAndChildInstances(InstanceSuperClass $instance): array

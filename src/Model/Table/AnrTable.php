@@ -7,6 +7,8 @@
 namespace Monarc\Core\Model\Table;
 
 use Doctrine\ORM\EntityNotFoundException;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\Anr;
 use Monarc\Core\Model\Entity\AnrSuperClass;
@@ -47,5 +49,31 @@ class AnrTable extends AbstractEntityTable
         }
 
         return $anr;
+    }
+
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function saveEntity(AnrSuperClass $anr, bool $flushAll = true): void
+    {
+        $em = $this->getDb()->getEntityManager();
+        $em->persist($anr);
+        if ($flushAll) {
+            $em->flush();
+        }
+    }
+
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function deleteEntity(AnrSuperClass $anr, bool $flushAll = true): void
+    {
+        $em = $this->getDb()->getEntityManager();
+        $em->remove($anr);
+        if ($flushAll) {
+            $em->flush();
+        }
     }
 }
