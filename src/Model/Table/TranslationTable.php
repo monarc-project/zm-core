@@ -7,9 +7,9 @@ use Monarc\Core\Model\Entity\Translation;
 
 class TranslationTable extends AbstractTable
 {
-    public function __construct(EntityManager $entityManager)
+    public function __construct(EntityManager $entityManager, $entityName = Translation::class)
     {
-        parent::__construct($entityManager, Translation::class);
+        parent::__construct($entityManager, $entityName);
     }
 
     /**
@@ -50,6 +50,21 @@ class TranslationTable extends AbstractTable
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    /**
+     * @return Translation[]
+     */
+    public function findByKeysAndLanguageIndexedByKey(array $keys, string $lang): array
+    {
+        $queryBuilder = $this->getRepository()->createQueryBuilder('t', 't.key');
+
+        return $queryBuilder
+            ->where($queryBuilder->expr()->in('t.keys', $keys))
+            ->andWhere('t.lang = :lang')
+            ->setParameter('lang', $lang)
+            ->getQuery()
+            ->getResult();
     }
 
     public function deleteListByKeys(array $keys): void

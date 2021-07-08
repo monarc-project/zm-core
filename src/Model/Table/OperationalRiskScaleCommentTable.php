@@ -3,20 +3,20 @@
 namespace Monarc\Core\Model\Table;
 
 use Doctrine\ORM\EntityManager;
+use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\OperationalRiskScaleComment;
-use Monarc\Core\Model\Entity\Anr;
 
 class OperationalRiskScaleCommentTable extends AbstractTable
 {
-    public function __construct(EntityManager $entityManager)
+    public function __construct(EntityManager $entityManager, string $entityName = OperationalRiskScaleComment::class)
     {
-        parent::__construct($entityManager, OperationalRiskScaleComment::class);
+        parent::__construct($entityManager, $entityName);
     }
 
     /**
      * @return OperationalRiskScaleComment[]
      */
-    public function findAllByAnrAndIndexAndScaleType(Anr $anr, int $scaleIndex, int $type): array
+    public function findAllByAnrAndIndexAndScaleType(AnrSuperClass $anr, int $scaleIndex, int $type): array
     {
         return $this->getRepository()->createQueryBuilder('t')
             ->innerJoin('t.operationalRiskScale', 'ors')
@@ -36,7 +36,7 @@ class OperationalRiskScaleCommentTable extends AbstractTable
      *
      * @return OperationalRiskScaleComment[]
      */
-    public function findNextCommentsToUpdateByAnrAndIndexAndType(Anr $anr, int $scaleIndex, int $type): array
+    public function findNextCommentsToUpdateByAnrAndIndexAndType(AnrSuperClass $anr, int $scaleIndex, int $type): array
     {
         return $this->getRepository()->createQueryBuilder('t')
             ->innerJoin('t.operationalRiskScale', 'ors')
