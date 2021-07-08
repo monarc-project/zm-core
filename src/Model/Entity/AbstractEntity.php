@@ -99,8 +99,12 @@ abstract class AbstractEntity implements InputFilterAwareInterface
      */
     public function getJsonArray($fields = array())
     {
+        $array = get_object_vars($this);
+        if (isset($array['uuid'])) {
+            $array['uuid'] = (string)$array['uuid'];
+        }
+
         if (empty($fields)) {
-            $array = get_object_vars($this);
             unset(
                 $array['inputFilter'],
                 $array['user_language'],
@@ -115,7 +119,6 @@ abstract class AbstractEntity implements InputFilterAwareInterface
             return $array;
         }
 
-        $array = get_object_vars($this);
         unset($array['password']);
 
         return array_intersect_key($array, array_flip($fields));
