@@ -26,6 +26,19 @@ class InstanceRiskOwnerTable extends AbstractTable
             ->getOneOrNullResult();
     }
 
+    public function findByAnrAndFilterParams(AnrSuperClass $anr, array $params): array
+    {
+        $queryBuilder = $this->getRepository()->createQueryBuilder('iro')
+            ->where('iro.anr = :anr')
+            ->setParameter('anr', $anr);
+
+        if ($params['name']) {
+            $queryBuilder->andWhere('iro.name LIKE :name')->setParameter('name', '%'.$params['name'].'%');
+        }
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
     /**
      * @return InstanceRiskOwnerSuperClass[]
      */
