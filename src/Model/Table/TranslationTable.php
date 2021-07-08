@@ -14,21 +14,6 @@ class TranslationTable extends AbstractTable
     }
 
     /**
-     * @return Translation[][]
-     */
-    public function findByAnrAndTypesIndexedByKey(AnrSuperClass $anr, array $types): array
-    {
-        $queryBuilder = $this->getRepository()->createQueryBuilder('t', 't.key');
-
-        return $queryBuilder
-            ->where('t.anr = :anr')
-            ->andWhere($queryBuilder->expr()->in('t.type', $types))
-            ->setParameter('anr', $anr)
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
      * @return Translation[]
      */
     public function findByAnrTypesAndLanguageIndexedByKey(AnrSuperClass $anr, array $types, string $lang): array

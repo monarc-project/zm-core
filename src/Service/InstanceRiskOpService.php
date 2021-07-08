@@ -50,6 +50,8 @@ class InstanceRiskOpService
 
     protected OperationalRiskScaleTable $operationalRiskScaleTable;
 
+    protected ConfigService $configService;
+
     public function __construct(
         AnrTable $anrTable,
         InstanceTable $instanceTable,
@@ -59,7 +61,8 @@ class InstanceRiskOpService
         ConnectedUserService $connectedUserService,
         TranslationTable $translationTable,
         TranslateService $translateService,
-        OperationalRiskScaleTable $operationalRiskScaleTable
+        OperationalRiskScaleTable $operationalRiskScaleTable,
+        ConfigService $configService
     ) {
         $this->anrTable = $anrTable;
         $this->instanceTable = $instanceTable;
@@ -70,6 +73,7 @@ class InstanceRiskOpService
         $this->translationTable = $translationTable;
         $this->translateService = $translateService;
         $this->operationalRiskScaleTable = $operationalRiskScaleTable;
+        $this->configService = $configService;
     }
 
     public function createInstanceRisksOp(InstanceSuperClass $instance, ObjectSuperClass $object): void
@@ -175,9 +179,11 @@ class InstanceRiskOpService
             $params
         );
         if (!empty($instancesRisksOp)) {
-            $operationalRisksScalesTranslations = $this->translationTable->findByAnrAndTypesIndexedByKey(
-                current($instancesRisksOp)->getAnr(),
-                [OperationalRiskScale::class]
+            $anr = current($instancesRisksOp)->getAnr();
+            $operationalRisksScalesTranslations = $this->translationTable->findByAnrTypesAndLanguageIndexedByKey(
+                $anr,
+                [OperationalRiskScale::class],
+                strtolower($this->configService->getLanguageCodes()[$anr->getLanguage()])
             );
         }
         $result = [];
@@ -349,7 +355,7 @@ class InstanceRiskOpService
         // Filter out fields we don't want to update
         $this->filterPatchFields($data);
 
-        return parent::patch($id, $data);
+//        return parent::patch($id, $data);
     }
 
     // TODO: adjust the code!
