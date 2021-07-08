@@ -385,23 +385,35 @@ class AnrService extends AbstractService
             foreach ($operationalRiskScales as $operationalScale) {
                 $operationalScaleComments = [];
                 foreach ($operationalScale->getOperationalRiskScaleComments() as $operationalScaleComment) {
+                    $commentTranslation = $operationalRisksAndScalesTranslations[
+                        $operationalScaleComment->getCommentTranslationKey()
+                    ];
                     $operationalScaleComments[$operationalScaleComment->getId()] = [
                         'id' => $operationalScaleComment->getId(),
                         'scaleIndex' => $operationalScaleComment->getScaleIndex(),
                         'scaleValue' => $operationalScaleComment->getScaleValue(),
-                        'translations' => $operationalRisksAndScalesTranslations[
-                            $operationalScaleComment->getCommentTranslationKey()
-                        ]->getValue(),
+                        'translation' => [
+                            'key' => $commentTranslation->getKey(),
+                            'lang' => $commentTranslation->getLang(),
+                            'value' => $commentTranslation->getValue(),
+                        ],
                     ];
                 }
-                $return['operationalRiskScale'][$operationalScale->getType()][$operationalScale->getId()] = [
+
+                $scaleTranslation = [];
+                if ($operationalScale->getLabelTranslationKey() !== '') {
+                    $translation = $operationalRisksAndScalesTranslations[$operationalScale->getLabelTranslationKey()];
+                    $scaleTranslation = [
+                            'key' => $translation->getKey(),
+                            'lang' => $translation->getLang(),
+                            'value' => $translation->getValue(),
+                    ];
+                }
+                $return['operationalRiskScales'][$operationalScale->getType()][$operationalScale->getId()] = [
                     'id' => $operationalScale->getId(),
                     'min' => $operationalScale->getMin(),
                     'max' => $operationalScale->getMax(),
-                    'translations' => $operationalScale->getLabelTranslationKey() === '' ? '' :
-                        $operationalRisksAndScalesTranslations[
-                            $operationalScale->getLabelTranslationKey()
-                        ]->getValue(),
+                    'translation' => $scaleTranslation,
                     'operationalScaleComments' => $operationalScaleComments,
                 ];
             }
