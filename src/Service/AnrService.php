@@ -367,7 +367,7 @@ class AnrService extends AbstractService
             }
 
             // operational risk scales
-            $return['operationalRiskScale'] = [];
+            $return['operationalRiskScales'] = [];
             /** @var OperationalRiskScaleTable $operationalRiskScaleTable */
             $operationalRiskScaleTable = $this->get('operationalRiskScaleTable');
             /** @var OperationalRiskScaleCommentTable $operationalRiskScaleCommentTable */

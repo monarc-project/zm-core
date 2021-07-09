@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Model\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
@@ -49,6 +50,13 @@ class ScaleSuperClass extends AbstractEntity
     protected $anr;
 
     /**
+     * @var ScaleCommentSuperClass[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="ScaleComment", mappedBy="scale")
+     */
+    protected $scaleComments;
+
+    /**
      * @var int
      *
      * @ORM\Column(name="type", type="smallint", options={"unsigned":true})
@@ -68,6 +76,13 @@ class ScaleSuperClass extends AbstractEntity
      * @ORM\Column(name="max", type="smallint", options={"unsigned":true})
      */
     protected $max;
+
+    public function __construct($obj = null)
+    {
+        $this->scaleComments = new ArrayCollection();
+
+        parent::__construct($obj);
+    }
 
     /**
      * @return int
@@ -139,6 +154,14 @@ class ScaleSuperClass extends AbstractEntity
         $this->max = $max;
 
         return $this;
+    }
+
+    /**
+     * @return ScaleCommentSuperClass[]
+     */
+    public function getScaleComments()
+    {
+        return $this->scaleComments;
     }
 
     public function getInputFilter($partial = false)
