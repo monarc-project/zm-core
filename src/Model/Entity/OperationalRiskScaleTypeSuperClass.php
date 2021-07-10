@@ -12,19 +12,17 @@ use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 
 /**
- * @ORM\Table(name="operational_risks_scales_comments", indexes={
- *      @ORM\Index(name="scale_id", columns={"scale_id"})
+ * @ORM\Table(name="operational_risks_scales_types", indexes={
+ *     @ORM\Index(name="anr_id", columns={"anr_id"})
+ *     @ORM\Index(name="scale_id", columns={"scale_id"})
  * })
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
-class OperationalRiskScaleCommentSuperClass
+class OperationalRiskScaleTypeSuperClass
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
-
-    // TODO: implement implement the input filed validator for the entity fields, validate scaleIndex (min - max)
-    // TODO: add generation of the commentTranslationKey probably UUID, to discuss.
 
     /**
      * @var int
@@ -56,30 +54,34 @@ class OperationalRiskScaleCommentSuperClass
     protected $operationalRiskScale;
 
     /**
-     * @var int
-     *
-     * @ORM\Column(name="scale_value", type="integer", options={"unsigned": true})
-     */
-    protected $scaleValue;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="scale_index", type="integer", options={"unsigned": true})
-     */
-    protected $scaleIndex;
-
-    /**
      * @var string
      *
-     * @ORM\Column(name="comment_translation_key", type="string", length=255, options={"default": ""})
+     * @ORM\Column(name="label_translation_key", type="string", length=255)
      */
-    protected $commentTranslationKey = '';
+    protected $labelTranslationKey;
 
     /**
-     * @return int
+     * @var int
+     *
+     * @ORM\Column(name="is_hidden", type="smallint", options={"default": 0})
      */
-    public function getId()
+    protected $isHidden = 0;
+
+    /**
+     * @var int
+     *
+     * @ORM\Column(name="is_system", type="smallint")
+     */
+    protected $isSystem;
+
+    /**
+     * @var int
+     *
+     * @ORM\Column(name="position", type="smallint")
+     */
+    protected $position;
+
+    public function getId(): int
     {
         return $this->id;
     }
@@ -104,43 +106,54 @@ class OperationalRiskScaleCommentSuperClass
     public function setOperationalRiskScale(OperationalRiskScaleSuperClass $operationalRiskScale): self
     {
         $this->operationalRiskScale = $operationalRiskScale;
-        $operationalRiskScale->addOperationalRiskScaleComments($this);
 
         return $this;
     }
 
-    public function getScaleIndex(): int
+    public function getLabelTranslationKey(): string
     {
-        return $this->scaleIndex;
+        return $this->labelTranslationKey;
     }
 
-    public function setScaleIndex(int $scaleIndex): self
+    public function setLabelTranslationKey(string $labelTranslationKey): self
     {
-        $this->scaleIndex = $scaleIndex;
+        $this->labelTranslationKey = $labelTranslationKey;
 
         return $this;
     }
 
-    public function getScaleValue(): int
+    public function isHidden(): bool
     {
-        return $this->scaleValue;
+        return (bool)$this->isHidden;
     }
 
-    public function setScaleValue(int $scaleValue): self
+    public function setIsHidden(bool $isHidden): self
     {
-        $this->scaleValue = $scaleValue;
+        $this->isHidden = (int)$isHidden;
 
         return $this;
     }
 
-    public function getCommentTranslationKey(): string
+    public function getIsSystem(): int
     {
-        return $this->commentTranslationKey;
+        return $this->isSystem;
     }
 
-    public function setCommentTranslationKey(string $commentTranslationKey): self
+    public function setIsSystem(int $isSystem): self
     {
-        $this->commentTranslationKey = $commentTranslationKey;
+        $this->isSystem = $isSystem;
+
+        return $this;
+    }
+
+    public function getPosition(): int
+    {
+        return $this->position;
+    }
+
+    public function setPosition(int $position): self
+    {
+        $this->position = $position;
 
         return $this;
     }

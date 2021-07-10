@@ -1,4 +1,9 @@
 <?php declare(strict_types=1);
+/**
+ * @link      https://github.com/monarc-project for the canonical source repository
+ * @copyright Copyright (c) 2016-2021 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @license   MONARC is licensed under GNU Affero General Public License version 3
+ */
 
 namespace Monarc\Core\Model\Entity;
 
@@ -67,20 +72,6 @@ class OperationalRiskScaleSuperClass
      */
     protected $max;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label_translation_key", type="string", length=255)
-     */
-    protected $labelTranslationKey;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="is_hidden", type="smallint", options={"default": 0})
-     */
-    protected $isHidden = 0;
-
 
     public function __construct()
     {
@@ -142,30 +133,6 @@ class OperationalRiskScaleSuperClass
     public function setMax(int $max): self
     {
         $this->max = $max;
-
-        return $this;
-    }
-
-    public function getLabelTranslationKey(): string
-    {
-        return $this->labelTranslationKey;
-    }
-
-    public function setLabelTranslationKey(string $labelTranslationKey): self
-    {
-        $this->labelTranslationKey = $labelTranslationKey;
-
-        return $this;
-    }
-
-    public function isHidden(): bool
-    {
-        return (bool)$this->isHidden;
-    }
-
-    public function setIsHidden(bool $isHidden): self
-    {
-        $this->isHidden = (int)$isHidden;
 
         return $this;
     }

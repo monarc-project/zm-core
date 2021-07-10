@@ -1,4 +1,9 @@
 <?php declare(strict_types=1);
+/**
+ * @link      https://github.com/monarc-project for the canonical source repository
+ * @copyright Copyright (c) 2016-2021 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @license   MONARC is licensed under GNU Affero General Public License version 3
+ */
 
 namespace Monarc\Core\Model\Entity;
 
@@ -46,14 +51,14 @@ class OperationalInstanceRiskScaleSuperClass
     protected $operationalInstanceRisk;
 
     /**
-     * @var OperationalRiskScaleSuperClass
+     * @var OperationalRiskScaleTypeSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="OperationalRiskScale", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="OperationalRiskScaleType", cascade={"persist"})
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="operational_risk_scale_id", referencedColumnName="id", onDelete="CASCADE")
+     *   @ORM\JoinColumn(name="operational_risk_scale_type_id", referencedColumnName="id", onDelete="CASCADE")
      * })
      */
-    protected $operationalRiskScale;
+    protected $operationalRiskScaleType;
 
     /**
      * @var int
@@ -87,6 +92,18 @@ class OperationalInstanceRiskScaleSuperClass
         return $this->id;
     }
 
+    public function getAnr(): AnrSuperClass
+    {
+        return $this->anr;
+    }
+
+    public function setAnr(AnrSuperClass $anr): self
+    {
+        $this->anr = $anr;
+
+        return $this;
+    }
+
     public function getOperationalInstanceRisk(): InstanceRiskOpSuperClass
     {
         return $this->operationalInstanceRisk;
@@ -100,14 +117,14 @@ class OperationalInstanceRiskScaleSuperClass
         return $this;
     }
 
-    public function getOperationalRiskScale(): OperationalRiskScaleSuperClass
+    public function getOperationalRiskScaleType(): OperationalRiskScaleTypeSuperClass
     {
-        return $this->operationalRiskScale;
+        return $this->operationalRiskScaleType;
     }
 
-    public function setOperationalRiskScale(OperationalRiskScaleSuperClass $operationalRiskScale): self
+    public function setOperationalRiskScaleType(OperationalRiskScaleSuperClass $operationalRiskScaleType): self
     {
-        $this->operationalRiskScale = $operationalRiskScale;
+        $this->operationalRiskScaleType = $operationalRiskScaleType;
 
         return $this;
     }
@@ -144,18 +161,6 @@ class OperationalInstanceRiskScaleSuperClass
     public function setTargetedValue(int $targetedValue): self
     {
         $this->targetedValue = $targetedValue;
-
-        return $this;
-    }
-
-    public function getAnr(): AnrSuperClass
-    {
-        return $this->anr;
-    }
-
-    public function setAnr(AnrSuperClass $anr): self
-    {
-        $this->anr = $anr;
 
         return $this;
     }
