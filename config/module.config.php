@@ -416,6 +416,8 @@ return [
             Service\AnrObjectService::class => Service\AnrObjectServiceFactory::class,
             Service\AssetImportService::class => AutowireFactory::class,
             Service\ObjectImportService::class => AutowireFactory::class,
+            Service\OperationalRiskScaleService::class => AutowireFactory::class,
+            Service\OperationalRiskScaleCommentService::class => AutowireFactory::class,
 
             // TODO: Entities are created from the code. Should be removed.
             ModelEntity\DeliveriesModels::class => ServiceModelEntity\DeliveriesModelsServiceModelEntity::class,
@@ -478,6 +480,7 @@ return [
             ModelTable\ScaleTable::class => AutowireFactory::class,
             ModelTable\ScaleCommentTable::class => AutowireFactory::class,
             ModelTable\OperationalRiskScaleTable::class => CoreEntityManagerFactory::class,
+            ModelTable\OperationalRiskScaleTypeTable::class => CoreEntityManagerFactory::class,
             ModelTable\OperationalRiskScaleCommentTable::class => CoreEntityManagerFactory::class,
             ModelTable\OperationalInstanceRiskScaleTable::class => CoreEntityManagerFactory::class,
             ModelTable\ScaleImpactTypeTable::class => AutowireFactory::class,

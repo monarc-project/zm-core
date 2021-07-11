@@ -1,20 +1,27 @@
 <?php declare(strict_types=1);
+/**
+ * @link      https://github.com/monarc-project for the canonical source repository
+ * @copyright Copyright (c) 2016-2021 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @license   MONARC is licensed under GNU Affero General Public License version 3
+ */
 
 namespace Monarc\Core\Service;
 
 use Doctrine\ORM\EntityNotFoundException;
-use Monarc\Core\Model\Entity\OperationalRiskScaleComment;
+use Monarc\Core\Model\Entity\OperationalRiskScaleCommentSuperClass;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\OperationalRiskScaleCommentTable;
 use Monarc\Core\Model\Table\TranslationTable;
 
 class OperationalRiskScaleCommentService
 {
-    private AnrTable $anrTable;
+    protected AnrTable $anrTable;
 
-    private OperationalRiskScaleCommentTable $operationalRiskScaleCommentTable;
+    protected OperationalRiskScaleCommentTable $operationalRiskScaleCommentTable;
 
-    private TranslationTable $translationTable;
+    protected TranslationTable $translationTable;
+
+    protected ConfigService $configService;
 
     public function __construct(
         AnrTable $anrTable,
@@ -25,13 +32,12 @@ class OperationalRiskScaleCommentService
         $this->anrTable = $anrTable;
         $this->operationalRiskScaleCommentTable = $operationalRiskScaleCommentTable;
         $this->translationTable = $translationTable;
+        $this->configService = $configService;
     }
 
     public function update(int $id, array $data): int
     {
-        $anr = $this->anrTable->findById($data['anr']);
-
-        /** @var OperationalRiskScaleComment|null $operationalRiskScaleComment */
+        /** @var OperationalRiskScaleCommentSuperClass|null $operationalRiskScaleComment */
         $operationalRiskScaleComment = $this->operationalRiskScaleCommentTable->findById($id);
         if ($operationalRiskScaleComment === null) {
             throw new EntityNotFoundException(sprintf('Operational risk scale comment ID (%d) does not exist,', $id));
@@ -40,9 +46,14 @@ class OperationalRiskScaleCommentService
         if (isset($data['scaleValue'])) {
             $operationalRiskScaleComment->setScaleValue((int)$data['scaleValue']);
         }
-        if (!empty($data['comment']) && !empty($data['language'])) {
+
+        if (!empty($data['comment'])) {
+            $anr = $this->anrTable->findById($data['anr']);
+            $languageCode = $data['language']
+                ?? strtolower($this->configService->getLanguageCodes()[$anr->getLanguage()]);
+
             $translationKey = $operationalRiskScaleComment->getCommentTranslationKey();
-            $translation = $this->translationTable->findByKeyAndLanguage($translationKey, $data['language']);
+            $translation = $this->translationTable->findByAnrKeyAndLanguage($anr, $translationKey, $languageCode);
             $translation->setValue($data['comment']);
             $this->translationTable->save($translation, false);
         }

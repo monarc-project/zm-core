@@ -24,7 +24,8 @@ class OperationalRiskScaleCommentSuperClass
     use UpdateEntityTrait;
 
     // TODO: implement implement the input filed validator for the entity fields, validate scaleIndex (min - max)
-    // TODO: add generation of the commentTranslationKey probably UUID, to discuss.
+
+    public const TRANSLATION_TYPE_NAME = 'operational-risk-scale-comment';
 
     /**
      * @var int
@@ -54,6 +55,16 @@ class OperationalRiskScaleCommentSuperClass
      * })
      */
     protected $operationalRiskScale;
+
+    /**
+     * @var OperationalRiskScaleTypeSuperClass
+     *
+     * @ORM\ManyToOne(targetEntity="OperationalRiskScaleType", cascade={"persist"})
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="operational_risk_scale_type_id", referencedColumnName="id", onDelete="CASCADE")
+     * })
+     */
+    protected $operationalRiskScaleType;
 
     /**
      * @var int
@@ -105,6 +116,19 @@ class OperationalRiskScaleCommentSuperClass
     {
         $this->operationalRiskScale = $operationalRiskScale;
         $operationalRiskScale->addOperationalRiskScaleComments($this);
+
+        return $this;
+    }
+
+    public function getOperationalRiskScaleType(): OperationalRiskScaleTypeSuperClass
+    {
+        return $this->operationalRiskScaleType;
+    }
+
+    public function setOperationalRiskScaleType(OperationalRiskScaleTypeSuperClass $operationalRiskScaleType): self
+    {
+        $this->operationalRiskScaleType = $operationalRiskScaleType;
+        $operationalRiskScaleType->addOperationalRiskScaleComments($this);
 
         return $this;
     }

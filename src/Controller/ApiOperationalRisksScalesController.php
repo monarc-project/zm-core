@@ -32,7 +32,7 @@ class ApiOperationalRisksScalesController extends AbstractRestfulController
 
         return new JsonModel([
             'status' => 'ok',
-            'id' => $this->operationalRiskScaleService->createOperationalRiskScale($anrId, $data),
+            'id' => $this->operationalRiskScaleService->createOperationalRiskScaleType($anrId, $data),
         ]);
     }
 
@@ -51,7 +51,6 @@ class ApiOperationalRisksScalesController extends AbstractRestfulController
             return new JsonModel(['status' => 'ok']);
         }
 
-        // Not successful
         return new JsonModel(['status' => 'ko']);
     }
 
@@ -70,7 +69,7 @@ class ApiOperationalRisksScalesController extends AbstractRestfulController
                 throw new Exception('Scales level must remain below 20 ', 412);
             }
 
-            $this->operationalRiskScaleService->updateNumberOfLevelForOperationalRiskScale($data);
+            $this->operationalRiskScaleService->updateLevelsNumberOfOperationalRiskScale($data);
         }
 
         if (isset($data['probabilityMin'], $data['probabilityMax'])) {

@@ -1,4 +1,9 @@
 <?php declare(strict_types=1);
+/**
+ * @link      https://github.com/monarc-project for the canonical source repository
+ * @copyright Copyright (c) 2016-2021 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @license   MONARC is licensed under GNU Affero General Public License version 3
+ */
 
 namespace Monarc\Core\Service;
 
@@ -7,6 +12,9 @@ use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\OperationalRiskScaleSuperClass;
+use Monarc\Core\Model\Entity\OperationalRiskScaleType;
+use Monarc\Core\Model\Entity\OperationalRiskScaleTypeSuperClass;
+use Monarc\Core\Model\Entity\TranslationSuperClass;
 use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Model\Entity\OperationalRiskScale;
 use Monarc\Core\Model\Entity\OperationalRiskScaleComment;
@@ -14,27 +22,31 @@ use Monarc\Core\Model\Entity\Translation;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\OperationalRiskScaleCommentTable;
 use Monarc\Core\Model\Table\OperationalRiskScaleTable;
+use Monarc\Core\Model\Table\OperationalRiskScaleTypeTable;
 use Monarc\Core\Model\Table\TranslationTable;
 use Ramsey\Uuid\Uuid;
 
 class OperationalRiskScaleService
 {
-    private AnrTable $anrTable;
+    protected AnrTable $anrTable;
 
-    private UserSuperClass $connectedUser;
+    protected UserSuperClass $connectedUser;
 
-    private OperationalRiskScaleTable $operationalRiskScaleTable;
+    protected OperationalRiskScaleTable $operationalRiskScaleTable;
 
-    private OperationalRiskScaleCommentTable $operationalRiskScaleCommentTable;
+    private OperationalRiskScaleTypeTable $operationalRiskScaleTypeTable;
 
-    private TranslationTable $translationTable;
+    protected OperationalRiskScaleCommentTable $operationalRiskScaleCommentTable;
 
-    private ConfigService $configService;
+    protected TranslationTable $translationTable;
+
+    protected ConfigService $configService;
 
     public function __construct(
         AnrTable $anrTable,
         ConnectedUserService $connectedUserService,
         OperationalRiskScaleTable $operationalRiskScaleTable,
+        OperationalRiskScaleTypeTable $operationalRiskScaleTypeTable,
         OperationalRiskScaleCommentTable $operationalRiskScaleCommentTable,
         TranslationTable $translationTable,
         ConfigService $configService
@@ -42,59 +54,73 @@ class OperationalRiskScaleService
         $this->anrTable = $anrTable;
         $this->connectedUser = $connectedUserService->getConnectedUser();
         $this->operationalRiskScaleTable = $operationalRiskScaleTable;
+        $this->operationalRiskScaleTypeTable = $operationalRiskScaleTypeTable;
         $this->operationalRiskScaleCommentTable = $operationalRiskScaleCommentTable;
         $this->translationTable = $translationTable;
         $this->configService = $configService;
     }
 
     /**
+     * @param int $anrId
+     * @param array $data
+     *
+     * @return int
      * @throws EntityNotFoundException
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function createOperationalRiskScale(int $anrId, array $data): int
+    public function createOperationalRiskScaleType(int $anrId, array $data): int
     {
         $anr = $this->anrTable->findById($anrId);
         $languages = [];
+        $operationalRiskScale = $this->operationalRiskScaleTable->findByAnrAndScaleId($anr, $data['scaleId']);
 
-        $operationalRiskScale = (new OperationalRiskScale())
-            ->setAnr($anr)
-            ->setType($data['type'])
-            ->setMin($data['min'])
-            ->setMax($data['max'])
-            ->setLabelTranslationKey((string)Uuid::uuid4())
-            ->setCreator($this->connectedUser->getEmail());
+        $operationalRiskScaleType = $this->createOperationalRiskScaleTypeObject($anr, $operationalRiskScale);
 
-        // Create a translation for the scale.
-        foreach ($data['label'] as $key => $label) {
-            $translation = (new Translation())
-                ->setCreator($this->connectedUser->getEmail())
-                ->setType(OperationalRiskScale::class)
-                ->setKey($operationalRiskScale->getLabelTranslationKey())
-                ->setLang($key)
-                ->setValue($label ?? '...');
+        // Create a translations for the scale.
+        if (\is_array($data['label'])) {
+            foreach ($data['label'] as $lang => $labelText) {
+                $translation = $this->createTranslationObject(
+                    OperationalRiskScaleType::class,
+                    $operationalRiskScaleType->getLabelTranslationKey(),
+                    $lang,
+                    (string)$labelText
+                );
+                $this->translationTable->save($translation, false);
 
+                $languages[] = $lang;
+            }
+        } else {
+            // Scenario for the frontOffice.
+            $anrLanguageCode = strtolower($this->configService->getLanguageCodes()[$anr->getLanguage()]);
+            $translation = $this->createTranslationObject(
+                OperationalRiskScaleType::class,
+                $operationalRiskScaleType->getLabelTranslationKey(),
+                $anrLanguageCode,
+                $data['label'][$anrLanguageCode]
+            );
             $this->translationTable->save($translation, false);
-            $languages[] = $key;
-        }
 
+            $languages[] = $anrLanguageCode;
+        }
 
         // Process the scale comments.
         if (!empty($data['comments'])) {
             foreach ($data['comments'] as $scaleCommentData) {
                 $this->createScaleComment(
                     $anr,
+                    $operationalRiskScale,
+                    $operationalRiskScaleType,
                     $scaleCommentData['scaleIndex'],
                     $scaleCommentData['scaleValue'],
-                    $operationalRiskScale,
                     $languages
                 );
             }
         }
 
-        $this->operationalRiskScaleTable->save($operationalRiskScale);
+        $this->operationalRiskScaleTypeTable->save($operationalRiskScale);
 
-        return $operationalRiskScale->getId();
+        return $operationalRiskScaleType->getId();
     }
 
     /**
@@ -112,7 +138,7 @@ class OperationalRiskScaleService
 
         $translations = $this->translationTable->findByAnrTypesAndLanguageIndexedByKey(
             $anr,
-            [OperationalRiskScale::class, OperationalRiskScaleComment::class],
+            [OperationalRiskScaleType::TRANSLATION_TYPE_NAME, OperationalRiskScaleComment::TRANSLATION_TYPE_NAME],
             $language
         );
 
@@ -196,7 +222,7 @@ class OperationalRiskScaleService
             $translationKey = $operationalRiskScale->getLabelTranslationKey();
             if (!empty($translationKey)) {
                 $translation = $this->translationTable
-                    ->findByKeyAndLanguage($translationKey, $data['language']);
+                    ->findByAnrKeyAndLanguage($operationalRiskScale->getAnr(), $translationKey, $data['language']);
                 $translation->setValue($data['label']);
                 $this->translationTable->save($translation, false);
             }
@@ -234,15 +260,18 @@ class OperationalRiskScaleService
         $this->operationalRiskScaleCommentTable->flush();
     }
 
-    public function updateNumberOfLevelForOperationalRiskScale(array $data)
+    public function updateLevelsNumberOfOperationalRiskScale(array $data)
     {
         $anr = $this->anrTable->findById($data['anr']);
         $anrLanguageCode = strtolower($this->configService->getLanguageCodes()[$anr->getLanguage()]);
 
-        // Change the number of level in the scale.
+        // Change the levels number of the scale.
         $max = (int)$data['numberOfLevelForOperationalImpact'];
 
-        $operationalRiskScales = $this->operationalRiskScaleTable->findWithCommentsByAnrAndType($anr, 1);
+        $operationalRiskScales = $this->operationalRiskScaleTable->findWithCommentsByAnrAndType(
+            $anr,
+            OperationalRiskScale::TYPE_IMPACT
+        );
 
         foreach ($operationalRiskScales as $operationalRiskScale) {
             $maxScaleValue = 0;
@@ -255,11 +284,13 @@ class OperationalRiskScaleService
                 }
             }
 
+            // TODO: where is removal of existed if needed ????
+
             // Create new operationalScaleComment.
             if ($max > $commentsSize) {
                 for ($i = $commentsSize; $i < $max; $i++) {
                     $maxScaleValue++;
-                    $this->createScaleComment($anr, $i, $maxScaleValue, $operationalRiskScale, [$anrLanguageCode]);
+                    $this->createScaleComment($anr, $operationalRiskScale, $i, $maxScaleValue, [$anrLanguageCode]);
                 }
             }
 
@@ -294,6 +325,8 @@ class OperationalRiskScaleService
                 }
             }
 
+            // TODO: where is the removal ???
+
             if ($probabilityMin < $actualMin) {
                 for ($i = $probabilityMin; $i < $actualMin; $i++) {
                     $this->createScaleComment($anr, $i, $i, $operationalRiskScale, [$anrLanguageCode]);
@@ -310,31 +343,59 @@ class OperationalRiskScaleService
         }
     }
 
-    private function createScaleComment(
+    protected function createOperationalRiskScaleTypeObject(
         AnrSuperClass $anr,
+        OperationalRiskScaleSuperClass $operationalRiskScale
+    ): OperationalRiskScaleTypeSuperClass {
+        return (new OperationalRiskScaleType())
+            ->setAnr($anr)
+            ->setOperationalRiskScale($operationalRiskScale)
+            ->setLabelTranslationKey((string)Uuid::uuid4())
+            ->setIsSystem(0)
+            ->setCreator($this->connectedUser->getEmail());
+    }
+
+    protected function createTranslationObject(
+        string $type,
+        string $key,
+        string $lang,
+        string $value
+    ): TranslationSuperClass {
+        return (new Translation())
+            ->setCreator($this->connectedUser->getEmail())
+            ->setType($type)
+            ->setKey($key)
+            ->setLang($lang)
+            ->setValue($value);
+    }
+
+    protected function createScaleComment(
+        AnrSuperClass $anr,
+        OperationalRiskScaleSuperClass $operationalRiskScale,
+        OperationalRiskScaleTypeSuperClass $operationalRiskScaleType,
         int $scaleIndex,
         int $maxScaleValue,
-        OperationalRiskScaleSuperClass $operationalRiskScale,
         array $anrLanguageCodes
     ): void {
         $scaleComment = (new OperationalRiskScaleComment())
-            ->setCreator($this->connectedUser->getEmail())
             ->setAnr($anr)
+            ->setOperationalRiskScale($operationalRiskScale)
+            ->setOperationalRiskScaleType($operationalRiskScaleType)
             ->setScaleIndex($scaleIndex)
             ->setScaleValue($maxScaleValue)
             ->setCommentTranslationKey((string)Uuid::uuid4())
-            ->setOperationalRiskScale($operationalRiskScale);
+            ->setCreator($this->connectedUser->getEmail());
 
         $this->operationalRiskScaleCommentTable->save($scaleComment, false);
 
         foreach ($anrLanguageCodes as $anrLanguageCode) {
             // Create a translation for the scaleComment (init with blank value).
-            $translation = (new Translation())
-                ->setCreator($this->connectedUser->getEmail())
-                ->setType(OperationalRiskScaleComment::class)
-                ->setKey($scaleComment->getCommentTranslationKey())
-                ->setLang($anrLanguageCode)
-                ->setValue('');
+            $translation = $this->createTranslationObject(
+                OperationalRiskScaleComment::TRANSLATION_TYPE_NAME,
+                $scaleComment->getCommentTranslationKey(),
+                $anrLanguageCode,
+                ''
+            );
 
             $this->translationTable->save($translation, false);
         }

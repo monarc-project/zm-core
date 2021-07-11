@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Model\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
@@ -23,6 +24,8 @@ class OperationalRiskScaleTypeSuperClass
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
+
+    public const TRANSLATION_TYPE_NAME = 'operational-risk-scale-type';
 
     /**
      * @var int
@@ -53,6 +56,14 @@ class OperationalRiskScaleTypeSuperClass
      */
     protected $operationalRiskScale;
 
+
+    /**
+     * @var OperationalRiskScaleCommentSuperClass[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="OperationalRiskScaleComment", mappedBy="operationalRiskScale")
+     */
+    protected $operationalRiskScaleComments;
+
     /**
      * @var string
      *
@@ -73,13 +84,6 @@ class OperationalRiskScaleTypeSuperClass
      * @ORM\Column(name="is_system", type="smallint")
      */
     protected $isSystem;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="position", type="smallint")
-     */
-    protected $position;
 
     public function getId(): int
     {
@@ -106,6 +110,29 @@ class OperationalRiskScaleTypeSuperClass
     public function setOperationalRiskScale(OperationalRiskScaleSuperClass $operationalRiskScale): self
     {
         $this->operationalRiskScale = $operationalRiskScale;
+
+        return $this;
+    }
+
+    public function getOperationalRiskScaleComments()
+    {
+        return $this->operationalRiskScaleComments;
+    }
+
+    public function addOperationalRiskScaleComments(
+        OperationalRiskScaleCommentSuperClass $operationalRiskScaleComment
+    ): self {
+        if (!$this->operationalRiskScaleComments->contains($operationalRiskScaleComment)) {
+            $this->operationalRiskScaleComments->add($operationalRiskScaleComment);
+            $operationalRiskScaleComment->setOperationalRiskScaleType($this);
+        }
+
+        return $this;
+    }
+
+    public function setOperationalRiskScaleComments($operationalRiskScaleComments): self
+    {
+        $this->operationalRiskScaleComments = $operationalRiskScaleComments;
 
         return $this;
     }
@@ -142,18 +169,6 @@ class OperationalRiskScaleTypeSuperClass
     public function setIsSystem(int $isSystem): self
     {
         $this->isSystem = $isSystem;
-
-        return $this;
-    }
-
-    public function getPosition(): int
-    {
-        return $this->position;
-    }
-
-    public function setPosition(int $position): self
-    {
-        $this->position = $position;
 
         return $this;
     }

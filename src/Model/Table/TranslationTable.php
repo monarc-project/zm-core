@@ -35,11 +35,13 @@ class TranslationTable extends AbstractTable
             ->getResult();
     }
 
-    public function findByKeyAndLanguage(string $key, string $lang): Translation
+    public function findByAnrKeyAndLanguage(AnrSuperClass $anr, string $key, string $lang): Translation
     {
         return $this->getRepository()->createQueryBuilder('t')
-            ->where('t.key = :key')
+            ->where('t.anr = :anr')
+            ->andWhere('t.key = :key')
             ->andWhere('t.lang = :lang')
+            ->setParameter('anr', $anr)
             ->setParameter('key', $key)
             ->setParameter('lang', $lang)
             ->setMaxResults(1)

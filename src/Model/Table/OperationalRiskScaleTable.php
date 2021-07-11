@@ -8,6 +8,7 @@
 namespace Monarc\Core\Model\Table;
 
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\PersistentCollection;
 use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\OperationalRiskScale;
@@ -43,6 +44,23 @@ class OperationalRiskScaleTable extends AbstractTable
             ->setParameter('anr', $anr)
             ->getQuery()
             ->getResult();
+    }
+
+    public function findByAnrAndScaleId(AnrSuperClass $anr, int $scaleId): OperationalRiskScaleSuperClass
+    {
+        $scale = $this->getRepository()->createQueryBuilder('ors')
+            ->where('ors.anr = :anr')
+            ->andWhere('ors.id = :scaleId')
+            ->setParameter('anr', $anr)
+            ->setParameter('scaleId', $scaleId)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if ($scale === null) {
+            throw EntityNotFoundException::fromClassNameAndIdentifier(\get_class($this), [$anr->getId(), $scaleId]);
+        }
+
+        return $scale;
     }
 
     /**

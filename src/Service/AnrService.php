@@ -10,6 +10,8 @@ namespace Monarc\Core\Service;
 use DateTime;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Anr;
+use Monarc\Core\Model\Entity\OperationalRiskScaleComment;
+use Monarc\Core\Model\Entity\OperationalRiskScaleType;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\MonarcObjectTable;
 use Monarc\Core\Model\Table\OperationalRiskScaleCommentTable;
@@ -35,7 +37,6 @@ class AnrService extends AbstractService
     protected $scaleImpactTypeTable;
     protected $scaleCommentTable;
     protected $operationalRiskScaleTable;
-    protected $operationalRiskScaleCommentTable;
     protected $instanceService;
     protected $questionTable;
     protected $questionChoiceTable;
@@ -370,15 +371,13 @@ class AnrService extends AbstractService
             $return['operationalRiskScales'] = [];
             /** @var OperationalRiskScaleTable $operationalRiskScaleTable */
             $operationalRiskScaleTable = $this->get('operationalRiskScaleTable');
-            /** @var OperationalRiskScaleCommentTable $operationalRiskScaleCommentTable */
-            $operationalRiskScaleCommentTable = $this->get('operationalRiskScaleCommentTable');
             /** @var TranslationTable $translationTable */
             $translationTable = $this->get('translationTable');
 
             $operationalRiskScales = $operationalRiskScaleTable->findWithCommentsByAnr($anr);
             $operationalRisksAndScalesTranslations = $translationTable->findByAnrTypesAndLanguageIndexedByKey(
                 $anr,
-                [$operationalRiskScaleTable->getEntityName(), $operationalRiskScaleCommentTable->getEntityName()],
+                [OperationalRiskScaleType::TRANSLATION_TYPE_NAME, OperationalRiskScaleComment::TRANSLATION_TYPE_NAME],
                 strtolower($this->get('configService')->getLanguageCodes()[$anr->getLanguage()])
             );
 
