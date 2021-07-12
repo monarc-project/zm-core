@@ -88,6 +88,13 @@ class OperationalRiskScaleCommentSuperClass
     protected $commentTranslationKey = '';
 
     /**
+     * @var int
+     *
+     * @ORM\Column(name="is_hidden", type="smallint", options={"default": 0})
+     */
+    protected $isHidden = 0;
+
+    /**
      * @return int
      */
     public function getId()
@@ -165,6 +172,18 @@ class OperationalRiskScaleCommentSuperClass
     public function setCommentTranslationKey(string $commentTranslationKey): self
     {
         $this->commentTranslationKey = $commentTranslationKey;
+
+        return $this;
+    }
+
+    public function getIsHidden(): int
+    {
+        return $this->isHidden;
+    }
+
+    public function setIsHidden(int $isHidden): self
+    {
+        $this->isHidden = $isHidden;
 
         return $this;
     }

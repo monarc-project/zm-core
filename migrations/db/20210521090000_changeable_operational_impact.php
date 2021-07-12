@@ -77,6 +77,7 @@ class ChangeableOperationalImpact extends AbstractMigration
                 `scale_value` int(11) unsigned NOT NULL,
                 `scale_index` smallint(6) unsigned NOT NULL,
                 `comment_translation_key` varchar(255) NOT NULL,
+                `is_hidden` tinyint(1) NOT NULL DEFAULT 0,
                 `creator` varchar(255) NOT NULL,
                 `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
                 `updater` varchar(255) DEFAULT NULL,
@@ -198,6 +199,7 @@ class ChangeableOperationalImpact extends AbstractMigration
                     'operational_risk_scale_type_id' => $operationalRiskScaleTypeId,
                     'scale_value' => $scaleValue,
                     'scale_index' => $scaleValue,
+                    'is_hidden' => $scaleData['max'] < $scaleValue ? 1 : 0,
                     'comment_translation_key' => $commentTranslationKey,
                     'creator' => 'Migration script',
                 ])->save();

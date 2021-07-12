@@ -151,6 +151,7 @@ class OperationalRiskScaleService
                 $comments[] = [
                     'id' => $operationalRiskScaleComment->getId(),
                     'scaleId' => $operationalRiskScale->getId(),
+                    'scaleTypeId' => null,
                     'scaleIndex' => $operationalRiskScaleComment->getScaleIndex(),
                     'scaleValue' => $operationalRiskScaleComment->getScaleValue(),
                     'comment' => $translationComment !== null ? $translationComment->getValue() : '',
@@ -171,6 +172,7 @@ class OperationalRiskScaleService
                     $commentsOfType[] = [
                         'id' => $commentOfType->getId(),
                         'scaleId' => $operationalRiskScale->getId(),
+                        'scaleTypeId' => $operationalRiskScaleType->getId(),
                         'scaleIndex' => $commentOfType->getScaleIndex(),
                         'scaleValue' => $commentOfType->getScaleValue(),
                         'comment' => $translationComment !== null ? $translationComment->getValue() : '',
@@ -178,8 +180,8 @@ class OperationalRiskScaleService
                 }
 
                 usort($commentsOfType, static function ($a, $b) {
-                return $a['scaleIndex'] <=> $b['scaleIndex'];
-            });
+                    return $a['scaleIndex'] <=> $b['scaleIndex'];
+                });
 
                 $translationLabel = $translations[$operationalRiskScaleType->getLabelTranslationKey()] ?? null;
                 $types[] = [
