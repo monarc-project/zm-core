@@ -370,8 +370,7 @@ class OperationalRiskScaleService
             $operationalRiskScaleComments = $operationalRiskScale->getOperationalRiskScaleComments();
             foreach ($operationalRiskScaleComments as $operationalRiskScaleComment) {
                 $scaleIndex = $operationalRiskScaleComment->getScaleIndex();
-                if ($scaleIndex < $probabilityMin || $scaleIndex > $probabilityMax
-                ) {
+                if ($scaleIndex < $probabilityMin || $scaleIndex > $probabilityMax) {
                     $operationalRiskScaleComment->setIsHidden(true);
                     $this->operationalRiskScaleCommentTable->save($operationalRiskScaleComment, false);
                 }
