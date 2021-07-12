@@ -177,6 +177,10 @@ class OperationalRiskScaleService
                     ];
                 }
 
+                usort($commentsOfType, static function ($a, $b) {
+                return $a['scaleIndex'] <=> $b['scaleIndex'];
+            });
+
                 $translationLabel = $translations[$operationalRiskScaleType->getLabelTranslationKey()] ?? null;
                 $types[] = [
                     'id' => $operationalRiskScaleType->getId(),
