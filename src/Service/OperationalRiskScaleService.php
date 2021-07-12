@@ -11,6 +11,7 @@ use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Monarc\Core\Model\Entity\AnrSuperClass;
+use Monarc\Core\Model\Entity\OperationalRiskScaleCommentSuperClass;
 use Monarc\Core\Model\Entity\OperationalRiskScaleSuperClass;
 use Monarc\Core\Model\Entity\OperationalRiskScaleType;
 use Monarc\Core\Model\Entity\OperationalRiskScaleTypeSuperClass;
@@ -73,7 +74,7 @@ class OperationalRiskScaleService
     {
         $anr = $this->anrTable->findById($anrId);
         $languages = [];
-        $operationalRiskScale = $this->operationalRiskScaleTable->findByAnrAndScaleId($anr, $data['scaleId']);
+        $operationalRiskScale = $this->operationalRiskScaleTable->findByAnrAndScaleId($anr, (int)$data['scaleId']);
 
         $operationalRiskScaleType = $this->createOperationalRiskScaleTypeObject($anr, $operationalRiskScale);
 
@@ -144,7 +145,8 @@ class OperationalRiskScaleService
         foreach ($operationalRiskScales as $operationalRiskScale) {
             $comments = [];
             foreach ($operationalRiskScale->getOperationalRiskScaleComments() as $operationalRiskScaleComment) {
-                if ($operationalRiskScaleComment->getOperationalRiskScaleType() !== null) {
+                if ($operationalRiskScaleComment->isHidden()
+                    || $operationalRiskScaleComment->getOperationalRiskScaleType() !== null) {
                     continue;
                 }
                 $translationComment = $translations[$operationalRiskScaleComment->getCommentTranslationKey()] ?? null;
@@ -168,6 +170,9 @@ class OperationalRiskScaleService
             foreach ($operationalRiskScale->getOperationalRiskScaleTypes() as $operationalRiskScaleType) {
                 $commentsOfType = [];
                 foreach ($operationalRiskScaleType->getOperationalRiskScaleComments() as $commentOfType) {
+                    if ($commentOfType->isHidden()) {
+                        continue;
+                    }
                     $translationComment = $translations[$commentOfType->getCommentTranslationKey()] ?? null;
                     $commentsOfType[] = [
                         'id' => $commentOfType->getId(),
@@ -259,38 +264,40 @@ class OperationalRiskScaleService
     {
         $anr = $this->anrTable->findById($data['anr']);
         $scaleIndex = (int)$data['scaleIndex'];
-
-        // Update the value for all the scales.
         $scaleValue = (int)$data['scaleValue'];
-        $nextCommentValue = $scaleValue;
 
-        $operationalRiskScaleComments = $this->operationalRiskScaleCommentTable
-            ->findAllByAnrScaleIndexAndScaleType($anr, $scaleIndex, OperationalRiskScale::TYPE_IMPACT);
+        $operationalRiskScaleComments = $this->operationalRiskScaleCommentTable->findByAnrAndScaleTypeOrderByIndex(
+            $anr,
+            OperationalRiskScale::TYPE_IMPACT
+        );
 
         foreach ($operationalRiskScaleComments as $operationalRiskScaleComment) {
-            $operationalRiskScaleComment->setScaleValue($scaleValue);
-            $this->operationalRiskScaleCommentTable->save($operationalRiskScaleComment, false);
+            if ($operationalRiskScaleComment->getScaleIndex() < $scaleIndex
+                && $operationalRiskScaleComment->getScaleValue() >= $scaleValue
+            ) {
+                $operationalRiskScaleComment->setScaleValue($scaleValue - 1);
+                $this->operationalRiskScaleCommentTable->save($operationalRiskScaleComment, false);
+            } elseif ($operationalRiskScaleComment->getScaleIndex() > $scaleIndex
+                && $operationalRiskScaleComment->getScaleValue() <= $scaleValue
+            ) {
+                $operationalRiskScaleComment->setScaleValue($scaleValue + 1);
+                $this->operationalRiskScaleCommentTable->save($operationalRiskScaleComment, false);
+            } elseif ($operationalRiskScaleComment->getScaleIndex() === $scaleIndex) {
+                $operationalRiskScaleComment->setScaleValue($scaleValue);
+                $this->operationalRiskScaleCommentTable->save($operationalRiskScaleComment, false);
+            }
         }
-        $this->operationalRiskScaleCommentTable->flush();
 
-        $nextOperationalRiskScaleComments = $this->operationalRiskScaleCommentTable
-            ->findNextCommentsToUpdateByAnrAndIndexAndType($anr, $scaleIndex, OperationalRiskScale::TYPE_IMPACT);
-
-        foreach ($nextOperationalRiskScaleComments as $nextOperationalRiskScaleComment) {
-            $nextCommentValue++;
-            $nextOperationalRiskScaleComment->setScaleValue($nextCommentValue);
-            $this->operationalRiskScaleCommentTable->save($nextOperationalRiskScaleComment, false);
-        }
         $this->operationalRiskScaleCommentTable->flush();
     }
 
     public function updateLevelsNumberOfOperationalRiskScale(array $data)
     {
         $anr = $this->anrTable->findById($data['anr']);
-        $anrLanguageCode = $this->getAnrLanguageCode($anr);
+        $languageCode = $data['language'] ?? $this->getAnrLanguageCode($anr);
 
         // Change the levels number of the scale.
-        $max = (int)$data['numberOfLevelForOperationalImpact'];
+        $levelsNumber = (int)$data['numberOfLevelForOperationalImpact'];
 
         $operationalRiskScales = $this->operationalRiskScaleTable->findWithCommentsByAnrAndType(
             $anr,
@@ -298,26 +305,49 @@ class OperationalRiskScaleService
         );
 
         foreach ($operationalRiskScales as $operationalRiskScale) {
-            $maxScaleValue = 0;
-            $operationalRiskScaleComments = $operationalRiskScale->getOperationalRiskScaleComments();
-            $commentsSize = \count($operationalRiskScaleComments);
-
-            foreach ($operationalRiskScaleComments as $operationalRiskScaleComment) {
-                if ($operationalRiskScaleComment->getScaleValue() > $maxScaleValue) {
-                    $maxScaleValue = $operationalRiskScaleComment->getScaleValue();
-                }
-            }
-
-            // Create new operationalScaleComment.
-            if ($max > $commentsSize) {
-                for ($i = $commentsSize; $i < $max; $i++) {
-                    $maxScaleValue++;
-                    $this->createScaleComment($anr, $operationalRiskScale, $i, $maxScaleValue, [$anrLanguageCode]);
+            foreach ($operationalRiskScale->getOperationalRiskScaleTypes() as $operationalRiskScaleType) {
+                $operationalRiskScaleComments = $operationalRiskScaleType->getOperationalRiskScaleComments();
+                $commentsSize = \count($operationalRiskScaleComments);
+                $currentLevelsNumber = $operationalRiskScale->getMax() + 1;
+                if ($levelsNumber > $currentLevelsNumber) {
+                    // Make the hidden comments visible, increment the current level and determine the max value.
+                    $maxScaleValue = 0;
+                    foreach ($operationalRiskScaleComments as $operationalRiskScaleComment) {
+                        if ($commentsSize > $currentLevelsNumber
+                            && $operationalRiskScaleComment->getScaleIndex() < $levelsNumber
+                        ) {
+                            $operationalRiskScaleComment->setIsHidden(false);
+                            $this->operationalRiskScaleCommentTable->save($operationalRiskScaleComment, false);
+                            $currentLevelsNumber++;
+                        }
+                        if ($operationalRiskScaleComment->getScaleValue() > $maxScaleValue) {
+                            $maxScaleValue = $operationalRiskScaleComment->getScaleValue();
+                        }
+                    }
+                    while ($levelsNumber > $currentLevelsNumber) {
+                        $this->createScaleComment(
+                            $anr,
+                            $operationalRiskScale,
+                            $operationalRiskScaleType,
+                            $currentLevelsNumber,
+                            ++$maxScaleValue,
+                            [$languageCode]
+                        );
+                        $currentLevelsNumber++;
+                    }
+                } elseif ($levelsNumber < $currentLevelsNumber) {
+                    foreach ($operationalRiskScaleComments as $operationalRiskScaleComment) {
+                        // Hide comments out of the max value bound.
+                        if ($operationalRiskScaleComment->getScaleIndex() >= $levelsNumber) {
+                            $operationalRiskScaleComment->setIsHidden(true);
+                            $this->operationalRiskScaleCommentTable->save($operationalRiskScaleComment, false);
+                        }
+                    }
                 }
             }
 
             // Set -1, because in the range we count from 0.
-            $operationalRiskScale->setMax($max - 1);
+            $operationalRiskScale->setMax($levelsNumber - 1);
 
             $this->operationalRiskScaleTable->save($operationalRiskScale);
         }
@@ -329,7 +359,7 @@ class OperationalRiskScaleService
         $probabilityMax = (int)$data['probabilityMax'];
 
         $anr = $this->anrTable->findById($data['anr']);
-        $anrLanguageCode = $this->getAnrLanguageCode($anr);
+        $languageCode = $data['language'] ?? $this->getAnrLanguageCode($anr);
 
         $operationalRiskScales = $this->operationalRiskScaleTable->findWithCommentsByAnrAndType(
             $anr,
@@ -337,32 +367,44 @@ class OperationalRiskScaleService
         );
 
         foreach ($operationalRiskScales as $operationalRiskScale) {
-            $actualMin = 999; //init with a high value
+            $actualMin = 999; // init with a highest value
             $actualMax = 0;
             $operationalRiskScaleComments = $operationalRiskScale->getOperationalRiskScaleComments();
 
             foreach ($operationalRiskScaleComments as $operationalRiskScaleComment) {
-                if ($actualMax <= $operationalRiskScaleComment->getScaleValue()) {
-                    $actualMax = $operationalRiskScaleComment->getScaleValue();
+                if ($actualMax < $operationalRiskScaleComment->getScaleIndex()) {
+                    $actualMax = $operationalRiskScaleComment->getScaleIndex();
                 }
-                if ($actualMin >= $operationalRiskScaleComment->getScaleValue()) {
-                    $actualMin = $operationalRiskScaleComment->getScaleValue();
+                if ($actualMin > $operationalRiskScaleComment->getScaleIndex()) {
+                    $actualMin = $operationalRiskScaleComment->getScaleIndex();
                 }
             }
-
-            // TODO: where is the removal ???
 
             if ($probabilityMin < $actualMin) {
-                for ($i = $probabilityMin; $i < $actualMin; $i++) {
-                    $this->createScaleComment($anr, $i, $i, $operationalRiskScale, [$anrLanguageCode]);
+                for ($index = $probabilityMin; $index < $actualMin; $index++) {
+                    $operationalRiskScaleComment = $this->getCommentByIndexIndex($index, $operationalRiskScaleComments);
+                    if ($operationalRiskScaleComment === null) {
+                        $this->createScaleComment($anr, $operationalRiskScale, null, $index, $index, [$languageCode]);
+                    } else {
+                        $operationalRiskScaleComment->setIsHidden(false);
+                        $this->operationalRiskScaleTable->save($operationalRiskScaleComment, false);
+                    }
                 }
             } elseif ($probabilityMax > $actualMax) {
-                for ($i = $actualMax + 1; $i <= $probabilityMax; $i++) {
-                    $this->createScaleComment($anr, $i, $i, $operationalRiskScale, [$anrLanguageCode]);
+                for ($index = $actualMax + 1; $index <= $probabilityMax; $index++) {
+                    $operationalRiskScaleComment = $this->getCommentByIndexIndex($index, $operationalRiskScaleComments);
+                    if ($operationalRiskScaleComment === null) {
+                        $this->createScaleComment($anr, $operationalRiskScale, null, $index, $index, [$languageCode]);
+                    } else {
+                        $operationalRiskScaleComment->setIsHidden(false);
+                        $this->operationalRiskScaleTable->save($operationalRiskScaleComment, false);
+                    }
                 }
             }
-            $operationalRiskScale->setMin($probabilityMin);
-            $operationalRiskScale->setMax($probabilityMax);
+
+            $operationalRiskScale
+                ->setMin($probabilityMin)
+                ->setMax($probabilityMax);
 
             $this->operationalRiskScaleTable->save($operationalRiskScale);
         }
@@ -397,28 +439,28 @@ class OperationalRiskScaleService
     protected function createScaleComment(
         AnrSuperClass $anr,
         OperationalRiskScaleSuperClass $operationalRiskScale,
-        OperationalRiskScaleTypeSuperClass $operationalRiskScaleType,
+        ?OperationalRiskScaleTypeSuperClass $operationalRiskScaleType,
         int $scaleIndex,
-        int $maxScaleValue,
-        array $anrLanguageCodes
+        int $scaleValue,
+        array $languageCodes
     ): void {
         $scaleComment = (new OperationalRiskScaleComment())
             ->setAnr($anr)
             ->setOperationalRiskScale($operationalRiskScale)
             ->setOperationalRiskScaleType($operationalRiskScaleType)
             ->setScaleIndex($scaleIndex)
-            ->setScaleValue($maxScaleValue)
+            ->setScaleValue($scaleValue)
             ->setCommentTranslationKey((string)Uuid::uuid4())
             ->setCreator($this->connectedUser->getEmail());
 
         $this->operationalRiskScaleCommentTable->save($scaleComment, false);
 
-        foreach ($anrLanguageCodes as $anrLanguageCode) {
+        foreach ($languageCodes as $languageCode) {
             // Create a translation for the scaleComment (init with blank value).
             $translation = $this->createTranslationObject(
                 OperationalRiskScaleComment::TRANSLATION_TYPE_NAME,
                 $scaleComment->getCommentTranslationKey(),
-                $anrLanguageCode,
+                $languageCode,
                 ''
             );
 
@@ -429,5 +471,24 @@ class OperationalRiskScaleService
     protected function getAnrLanguageCode(AnrSuperClass $anr): string
     {
         return strtolower($this->configService->getLanguageCodes()[$anr->getLanguage()]);
+    }
+
+    /**
+     * @param int $index
+     * @param OperationalRiskScaleCommentSuperClass[] $operationalRiskScaleComments
+     *
+     * @return OperationalRiskScaleCommentSuperClass|null
+     */
+    private function getCommentByIndexIndex(
+        int $index,
+        array $operationalRiskScaleComments
+    ): ?OperationalRiskScaleCommentSuperClass {
+        foreach ($operationalRiskScaleComments as $operationalRiskScaleComment) {
+            if ($operationalRiskScaleComment->getScaleIndex() === $index) {
+                return $operationalRiskScaleComment;
+            }
+        }
+
+        return null;
     }
 }

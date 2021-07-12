@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManager;
 use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\OperationalRiskScaleComment;
@@ -21,37 +22,16 @@ class OperationalRiskScaleCommentTable extends AbstractTable
     /**
      * @return OperationalRiskScaleComment[]
      */
-    public function findAllByAnrScaleIndexAndScaleType(AnrSuperClass $anr, int $scaleIndex, int $type): array
+    public function findByAnrAndScaleTypeOrderByIndex(AnrSuperClass $anr, int $scaleType): array
     {
         return $this->getRepository()->createQueryBuilder('orsc')
             ->innerJoin('orsc.operationalRiskScale', 'ors')
             ->where('orsc.anr = :anr')
             ->andWhere('ors.type = :type')
-            ->andWhere('orsc.scaleIndex = :scaleIndex')
             ->setParameter('anr', $anr)
-            ->setParameter('type', $type)
-            ->setParameter('scaleIndex', $scaleIndex)
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
-     * If we modify the value which the index correspond to the max of the scale, we have to find the comment with
-     * higher index to update them to avoid error.
-     *
-     * @return OperationalRiskScaleComment[]
-     */
-    public function findNextCommentsToUpdateByAnrAndIndexAndType(AnrSuperClass $anr, int $scaleIndex, int $type): array
-    {
-        return $this->getRepository()->createQueryBuilder('orsc')
-            ->innerJoin('orsc.operationalRiskScale', 'ors')
-            ->where('orsc.anr = :anr')
-            ->andWhere('ors.type = :type')
-            ->andWhere('orsc.scaleIndex > :scaleIndex')
-            ->andWhere('ors.max = :scaleIndex')
-            ->setParameter('anr', $anr)
-            ->setParameter('type', $type)
-            ->setParameter('scaleIndex', $scaleIndex)
+            ->setParameter('type', $scaleType)
+            ->orderBy('ors.type', Criteria::ASC)
+            ->addOrderBy('orsc.scaleIndex', Criteria::ASC)
             ->getQuery()
             ->getResult();
     }

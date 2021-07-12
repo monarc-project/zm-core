@@ -192,7 +192,7 @@ class InstanceRiskOpService
             $operationalInstanceRiskScales = $instanceRiskOp->getOperationalInstanceRiskScales();
             $scalesData = [];
             foreach ($operationalInstanceRiskScales as $operationalInstanceRiskScale) {
-                $riskScale = $operationalInstanceRiskScale->getOperationalRiskScale();
+                $riskScale = $operationalInstanceRiskScale->getOperationalRiskScaleType();
                 $scalesData[$operationalInstanceRiskScale->getOperationalRiskScale()->getId()] = [
                     'instanceRiskScaleId' => $operationalInstanceRiskScale->getId(),
                     'label' => $operationalRisksScalesTranslations[$riskScale->getLabelTranslationKey()]->getValue(),
