@@ -367,44 +367,23 @@ class OperationalRiskScaleService
         );
 
         foreach ($operationalRiskScales as $operationalRiskScale) {
-            $actualMin = 999; // init with a highest value
-            $actualMax = 0;
             $operationalRiskScaleComments = $operationalRiskScale->getOperationalRiskScaleComments();
-
             foreach ($operationalRiskScaleComments as $operationalRiskScaleComment) {
-                if ($actualMax < $operationalRiskScaleComment->getScaleIndex()) {
-                    $actualMax = $operationalRiskScaleComment->getScaleIndex();
+                $scaleIndex = $operationalRiskScaleComment->getScaleIndex();
+                if ($scaleIndex < $probabilityMin || $scaleIndex > $probabilityMax
+                ) {
+                    $operationalRiskScaleComment->setIsHidden(true);
+                    $this->operationalRiskScaleCommentTable->save($operationalRiskScaleComment, false);
                 }
-                if ($actualMin > $operationalRiskScaleComment->getScaleIndex()) {
-                    $actualMin = $operationalRiskScaleComment->getScaleIndex();
+            }
+            for ($index = $probabilityMin; $index <= $probabilityMax; $index++) {
+                $operationalRiskScaleComment = $this->getCommentByIndex($index, $operationalRiskScaleComments);
+                if ($operationalRiskScaleComment === null) {
+                    $this->createScaleComment($anr, $operationalRiskScale, null, $index, $index, [$languageCode]);
                 }
             }
 
-            if ($probabilityMin < $actualMin) {
-                for ($index = $probabilityMin; $index < $actualMin; $index++) {
-                    $operationalRiskScaleComment = $this->getCommentByIndexIndex($index, $operationalRiskScaleComments);
-                    if ($operationalRiskScaleComment === null) {
-                        $this->createScaleComment($anr, $operationalRiskScale, null, $index, $index, [$languageCode]);
-                    } else {
-                        $operationalRiskScaleComment->setIsHidden(false);
-                        $this->operationalRiskScaleTable->save($operationalRiskScaleComment, false);
-                    }
-                }
-            } elseif ($probabilityMax > $actualMax) {
-                for ($index = $actualMax + 1; $index <= $probabilityMax; $index++) {
-                    $operationalRiskScaleComment = $this->getCommentByIndexIndex($index, $operationalRiskScaleComments);
-                    if ($operationalRiskScaleComment === null) {
-                        $this->createScaleComment($anr, $operationalRiskScale, null, $index, $index, [$languageCode]);
-                    } else {
-                        $operationalRiskScaleComment->setIsHidden(false);
-                        $this->operationalRiskScaleTable->save($operationalRiskScaleComment, false);
-                    }
-                }
-            }
-
-            $operationalRiskScale
-                ->setMin($probabilityMin)
-                ->setMax($probabilityMax);
+            $operationalRiskScale->setMin($probabilityMin)->setMax($probabilityMax);
 
             $this->operationalRiskScaleTable->save($operationalRiskScale);
         }
@@ -479,7 +458,7 @@ class OperationalRiskScaleService
      *
      * @return OperationalRiskScaleCommentSuperClass|null
      */
-    private function getCommentByIndexIndex(
+    private function getCommentByIndex(
         int $index,
         array $operationalRiskScaleComments
     ): ?OperationalRiskScaleCommentSuperClass {
