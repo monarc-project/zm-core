@@ -120,7 +120,7 @@ class OperationalRiskScaleCommentSuperClass
         return $this;
     }
 
-    public function getOperationalRiskScaleType(): OperationalRiskScaleTypeSuperClass
+    public function getOperationalRiskScaleType(): ?OperationalRiskScaleTypeSuperClass
     {
         return $this->operationalRiskScaleType;
     }

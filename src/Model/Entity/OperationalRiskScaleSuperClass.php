@@ -52,6 +52,13 @@ class OperationalRiskScaleSuperClass
     protected $operationalRiskScaleComments;
 
     /**
+     * @var OperationalRiskScaleTypeSuperClass[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="OperationalRiskScaleType", mappedBy="operationalRiskScale")
+     */
+    protected $operationalRiskScaleTypes;
+
+    /**
      * @var int
      *
      * @ORM\Column(name="type", type="smallint", options={"unsigned":true})
@@ -75,6 +82,7 @@ class OperationalRiskScaleSuperClass
 
     public function __construct()
     {
+        $this->operationalRiskScaleTypes = new ArrayCollection();
         $this->operationalRiskScaleComments = new ArrayCollection();
     }
 
@@ -153,9 +161,41 @@ class OperationalRiskScaleSuperClass
         return $this;
     }
 
+    /**
+     * @param OperationalRiskScaleCommentSuperClass[] $operationalRiskScaleComments
+     *
+     * @return OperationalRiskScaleSuperClass
+     */
     public function setOperationalRiskScaleComments($operationalRiskScaleComments): self
     {
         $this->operationalRiskScaleComments = $operationalRiskScaleComments;
+
+        return $this;
+    }
+
+    public function getOperationalRiskScaleTypes()
+    {
+        return $this->operationalRiskScaleTypes;
+    }
+
+    public function addOperationalRiskScaleTypes(OperationalRiskScaleTypeSuperClass $operationalRiskScaleType): self
+    {
+        if (!$this->operationalRiskScaleTypes->contains($operationalRiskScaleType)) {
+            $this->operationalRiskScaleTypes->add($operationalRiskScaleType);
+            $operationalRiskScaleType->setOperationalRiskScale($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param OperationalRiskScaleTypeSuperClass[] $operationalRiskScaleTypes
+     *
+     * @return OperationalRiskScaleSuperClass
+     */
+    public function setOperationalRiskScaleTypes($operationalRiskScaleTypes): self
+    {
+        $this->operationalRiskScaleTypes = $operationalRiskScaleTypes;
 
         return $this;
     }

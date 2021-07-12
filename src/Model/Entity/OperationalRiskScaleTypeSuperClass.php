@@ -14,7 +14,7 @@ use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 
 /**
  * @ORM\Table(name="operational_risks_scales_types", indexes={
- *     @ORM\Index(name="anr_id", columns={"anr_id"})
+ *     @ORM\Index(name="anr_id", columns={"anr_id"}),
  *     @ORM\Index(name="scale_id", columns={"scale_id"})
  * })
  * @ORM\MappedSuperclass
@@ -60,7 +60,7 @@ class OperationalRiskScaleTypeSuperClass
     /**
      * @var OperationalRiskScaleCommentSuperClass[]|ArrayCollection
      *
-     * @ORM\OneToMany(targetEntity="OperationalRiskScaleComment", mappedBy="operationalRiskScale")
+     * @ORM\OneToMany(targetEntity="OperationalRiskScaleComment", mappedBy="operationalRiskScaleType")
      */
     protected $operationalRiskScaleComments;
 

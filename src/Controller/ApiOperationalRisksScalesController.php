@@ -59,7 +59,7 @@ class ApiOperationalRisksScalesController extends AbstractRestfulController
         $data['anr'] = (int)$this->params()->fromRoute('anrId');
 
         if (isset($data['scaleValue'], $data['scaleIndex'])) {
-            $this->operationalRiskScaleService->updateValueForAllScale($data);
+            $this->operationalRiskScaleService->updateValueForAllScales($data);
         }
 
         if (isset($data['numberOfLevelForOperationalImpact'])) {

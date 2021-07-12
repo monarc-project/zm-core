@@ -24,19 +24,6 @@ class OperationalRiskScaleTable extends AbstractTable
     /**
      * @return OperationalRiskScaleSuperClass[]
      */
-    public function findWithCommentsByAnr(AnrSuperClass $anr): array
-    {
-        return $this->getRepository()->createQueryBuilder('ors')
-            ->innerJoin('ors.operationalRiskScaleComments', 'orsc')
-            ->where('ors.anr = :anr')
-            ->setParameter('anr', $anr)
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
-     * @return OperationalRiskScaleSuperClass[]
-     */
     public function findByAnr(AnrSuperClass $anr): array
     {
         return $this->getRepository()->createQueryBuilder('ors')
