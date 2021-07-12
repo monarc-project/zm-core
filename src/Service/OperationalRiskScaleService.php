@@ -188,36 +188,36 @@ class OperationalRiskScaleService
                 ];
             }
 
-            $result[] = [
+            $result[$operationalRiskScale->getType()] = [
                 'id' => $operationalRiskScale->getId(),
                 'max' => $operationalRiskScale->getMax(),
                 'min' => $operationalRiskScale->getMin(),
                 'type' => $operationalRiskScale->getType(),
                 'comments' => $comments,
-                'types' => $types,
+                'scaleTypes' => $types,
             ];
         }
 
         return $result;
     }
 
-    public function deleteOperationalRiskScales(array $data): void
+    public function deleteOperationalRiskScaleTypes(array $data): void
     {
         $translationsKeys = [];
 
         foreach ($data as $id) {
-            /** @var OperationalRiskScale $scaleToDelete */
-            $scaleToDelete = $this->operationalRiskScaleTable->findById($id);
-            if ($scaleToDelete === null) {
-                throw new EntityNotFoundException(sprintf('Scale with ID %d is not found', $id));
+            /** @var OperationalRiskScaleType $scaleTypeToDelete */
+            $scaleTypeToDelete = $this->operationalRiskScaleTypeTable->findById($id);
+            if ($scaleTypeToDelete === null) {
+                throw new EntityNotFoundException(sprintf('Scale type with ID %d is not found', $id));
             }
-            $translationsKeys[] = $scaleToDelete->getLabelTranslationKey();
+            $translationsKeys[] = $scaleTypeToDelete->getLabelTranslationKey();
 
-            foreach ($scaleToDelete->getOperationalRiskScaleComments() as $operationalRiskScaleComment) {
+            foreach ($scaleTypeToDelete->getOperationalRiskScaleComments() as $operationalRiskScaleComment) {
                 $translationsKeys[] = $operationalRiskScaleComment->getCommentTranslationKey();
             }
 
-            $this->operationalRiskScaleTable->remove($scaleToDelete, false);
+            $this->operationalRiskScaleTable->remove($scaleTypeToDelete, false);
 
         }
         $this->operationalRiskScaleTable->flush();
@@ -249,7 +249,6 @@ class OperationalRiskScaleService
         return $operationalRiskScaleType->getId();
     }
 
-    // TODO
     public function updateValueForAllScales(array $data): void
     {
         $anr = $this->anrTable->findById($data['anr']);
@@ -260,15 +259,16 @@ class OperationalRiskScaleService
         $nextCommentValue = $scaleValue;
 
         $operationalRiskScaleComments = $this->operationalRiskScaleCommentTable
-            ->findAllByAnrAndIndexAndScaleType($anr, $scaleIndex, 1);
+            ->findAllByAnrScaleIndexAndScaleType($anr, $scaleIndex, OperationalRiskScale::TYPE_IMPACT);
 
         foreach ($operationalRiskScaleComments as $operationalRiskScaleComment) {
             $operationalRiskScaleComment->setScaleValue($scaleValue);
-            $this->operationalRiskScaleCommentTable->save($operationalRiskScaleComment);
+            $this->operationalRiskScaleCommentTable->save($operationalRiskScaleComment, false);
         }
+        $this->operationalRiskScaleCommentTable->flush();
 
         $nextOperationalRiskScaleComments = $this->operationalRiskScaleCommentTable
-            ->findNextCommentsToUpdateByAnrAndIndexAndType($anr, $scaleIndex, 1);
+            ->findNextCommentsToUpdateByAnrAndIndexAndType($anr, $scaleIndex, OperationalRiskScale::TYPE_IMPACT);
 
         foreach ($nextOperationalRiskScaleComments as $nextOperationalRiskScaleComment) {
             $nextCommentValue++;
@@ -302,8 +302,6 @@ class OperationalRiskScaleService
                 }
             }
 
-            // TODO: where is removal of existed if needed ????
-
             // Create new operationalScaleComment.
             if ($max > $commentsSize) {
                 for ($i = $commentsSize; $i < $max; $i++) {
@@ -327,7 +325,10 @@ class OperationalRiskScaleService
         $anr = $this->anrTable->findById($data['anr']);
         $anrLanguageCode = $this->getAnrLanguageCode($anr);
 
-        $operationalRiskScales = $this->operationalRiskScaleTable->findWithCommentsByAnrAndType($anr, 2);
+        $operationalRiskScales = $this->operationalRiskScaleTable->findWithCommentsByAnrAndType(
+            $anr,
+            OperationalRiskScale::TYPE_LIKELIHOOD
+        );
 
         foreach ($operationalRiskScales as $operationalRiskScale) {
             $actualMin = 999; //init with a high value

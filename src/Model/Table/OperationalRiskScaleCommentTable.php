@@ -21,13 +21,13 @@ class OperationalRiskScaleCommentTable extends AbstractTable
     /**
      * @return OperationalRiskScaleComment[]
      */
-    public function findAllByAnrAndIndexAndScaleType(AnrSuperClass $anr, int $scaleIndex, int $type): array
+    public function findAllByAnrScaleIndexAndScaleType(AnrSuperClass $anr, int $scaleIndex, int $type): array
     {
-        return $this->getRepository()->createQueryBuilder('t')
-            ->innerJoin('t.operationalRiskScale', 'ors')
-            ->where('t.anr = :anr')
-            ->andWhere('t.scaleIndex = :scaleIndex')
+        return $this->getRepository()->createQueryBuilder('orsc')
+            ->innerJoin('orsc.operationalRiskScale', 'ors')
+            ->where('orsc.anr = :anr')
             ->andWhere('ors.type = :type')
+            ->andWhere('orsc.scaleIndex = :scaleIndex')
             ->setParameter('anr', $anr)
             ->setParameter('type', $type)
             ->setParameter('scaleIndex', $scaleIndex)
@@ -43,11 +43,11 @@ class OperationalRiskScaleCommentTable extends AbstractTable
      */
     public function findNextCommentsToUpdateByAnrAndIndexAndType(AnrSuperClass $anr, int $scaleIndex, int $type): array
     {
-        return $this->getRepository()->createQueryBuilder('t')
-            ->innerJoin('t.operationalRiskScale', 'ors')
-            ->where('t.anr = :anr')
-            ->andWhere('t.scaleIndex > :scaleIndex')
+        return $this->getRepository()->createQueryBuilder('orsc')
+            ->innerJoin('orsc.operationalRiskScale', 'ors')
+            ->where('orsc.anr = :anr')
             ->andWhere('ors.type = :type')
+            ->andWhere('orsc.scaleIndex > :scaleIndex')
             ->andWhere('ors.max = :scaleIndex')
             ->setParameter('anr', $anr)
             ->setParameter('type', $type)
