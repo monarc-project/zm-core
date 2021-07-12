@@ -192,7 +192,7 @@ class OperationalRiskScaleService
                 ];
             }
 
-            $result[$operationalRiskScale->getType()] = [
+            $result[] = [
                 'id' => $operationalRiskScale->getId(),
                 'max' => $operationalRiskScale->getMax(),
                 'min' => $operationalRiskScale->getMin(),
