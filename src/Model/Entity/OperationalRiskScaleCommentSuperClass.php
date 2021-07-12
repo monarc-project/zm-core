@@ -176,14 +176,14 @@ class OperationalRiskScaleCommentSuperClass
         return $this;
     }
 
-    public function getIsHidden(): int
+    public function isHidden(): bool
     {
-        return $this->isHidden;
+        return (bool)$this->isHidden;
     }
 
-    public function setIsHidden(int $isHidden): self
+    public function setIsHidden(bool $isHidden): self
     {
-        $this->isHidden = $isHidden;
+        $this->isHidden = (int)$isHidden;
 
         return $this;
     }

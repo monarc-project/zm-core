@@ -34,7 +34,6 @@ class AnrServiceFactory extends AbstractServiceFactory
         'scaleCommentTable' => 'Monarc\Core\Model\Table\ScaleCommentTable',
         'instanceService' => 'Monarc\Core\Service\InstanceService',
         'operationalRiskScaleTable' => OperationalRiskScaleTable::class,
-        'operationalRiskScaleCommentTable' => OperationalRiskScaleCommentTable::class,
         'translationTable' => TranslationTable::class,
     ];
 }

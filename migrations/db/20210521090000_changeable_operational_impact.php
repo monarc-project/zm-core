@@ -199,7 +199,7 @@ class ChangeableOperationalImpact extends AbstractMigration
                     'operational_risk_scale_type_id' => $operationalRiskScaleTypeId,
                     'scale_value' => $scaleValue,
                     'scale_index' => $scaleValue,
-                    'is_hidden' => $scaleData['max'] < $scaleValue ? 1 : 0,
+                    'is_hidden' => $scaleData['min'] > $scaleValue || $scaleData['max'] < $scaleValue ? 1 : 0,
                     'comment_translation_key' => $commentTranslationKey,
                     'creator' => 'Migration script',
                 ])->save();
