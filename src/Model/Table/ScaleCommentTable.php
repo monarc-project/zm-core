@@ -67,7 +67,7 @@ class ScaleCommentTable extends AbstractEntityTable
     public function saveEntity(ScaleCommentSuperClass $comment, bool $flushAll = true): void
     {
         $em = $this->getDb()->getEntityManager();
-        $em->persist($theme);
+        $em->persist($comment);
         if ($flushAll) {
             $em->flush();
         }

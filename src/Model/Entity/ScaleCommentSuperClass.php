@@ -145,7 +145,7 @@ class ScaleCommentSuperClass extends AbstractEntity
         return $this;
     }
 
-    public function getScaleImpactType(): ScaleImpactTypeSuperClass
+    public function getScaleImpactType(): ?ScaleImpactTypeSuperClass
     {
         return $this->scaleImpactType;
     }
