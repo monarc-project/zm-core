@@ -67,6 +67,7 @@ class ScaleImpactTypeSuperClass extends AbstractEntity
      * @var ScaleCommentSuperClass[]|ArrayCollection
      *
      * @ORM\OneToMany(targetEntity="ScaleComment", mappedBy="scaleImpactType")
+     * @ORM\OrderBy({"scaleIndex" = "ASC"})
      */
     protected $scaleComments;
 

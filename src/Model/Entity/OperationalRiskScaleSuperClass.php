@@ -48,6 +48,7 @@ class OperationalRiskScaleSuperClass
      * @var OperationalRiskScaleCommentSuperClass[]|ArrayCollection
      *
      * @ORM\OneToMany(targetEntity="OperationalRiskScaleComment", mappedBy="operationalRiskScale")
+     * @ORM\OrderBy({"scaleIndex" = "ASC"})
      */
     protected $operationalRiskScaleComments;
 

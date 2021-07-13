@@ -161,9 +161,6 @@ class OperationalRiskScaleService
                     'comment' => $translationComment !== null ? $translationComment->getValue() : '',
                 ];
             }
-            usort($comments, static function ($a, $b) {
-                return $a['scaleIndex'] <=> $b['scaleIndex'];
-            });
 
             $types = [];
             foreach ($operationalRiskScale->getOperationalRiskScaleTypes() as $operationalRiskScaleType) {
@@ -182,9 +179,6 @@ class OperationalRiskScaleService
                         'comment' => $translationComment !== null ? $translationComment->getValue() : '',
                     ];
                 }
-                usort($commentsOfType, static function ($a, $b) {
-                    return $a['scaleIndex'] <=> $b['scaleIndex'];
-                });
 
                 $translationLabel = $translations[$operationalRiskScaleType->getLabelTranslationKey()] ?? null;
                 $types[] = [
@@ -305,47 +299,39 @@ class OperationalRiskScaleService
         foreach ($operationalRiskScales as $operationalRiskScale) {
             foreach ($operationalRiskScale->getOperationalRiskScaleTypes() as $operationalRiskScaleType) {
                 $operationalRiskScaleComments = $operationalRiskScaleType->getOperationalRiskScaleComments();
-                $commentsSize = \count($operationalRiskScaleComments);
-                $currentLevelsNumber = $operationalRiskScale->getMax() + 1;
-                if ($levelsNumber > $currentLevelsNumber) {
-                    // Make the hidden comments visible, increment the current level and determine the max value.
-                    $maxScaleValue = 0;
-                    foreach ($operationalRiskScaleComments as $operationalRiskScaleComment) {
-                        if ($commentsSize > $currentLevelsNumber
-                            && $operationalRiskScaleComment->getScaleIndex() < $levelsNumber
-                        ) {
-                            $operationalRiskScaleComment->setIsHidden(false);
-                            $this->operationalRiskScaleCommentTable->save($operationalRiskScaleComment, false);
-                            $currentLevelsNumber++;
+
+                $maxScaleValue = 0;
+                foreach ($operationalRiskScaleComments as $operationalRiskScaleComment) {
+                    if ($operationalRiskScaleComment->getScaleIndex() < $levelsNumber) {
+                        $operationalRiskScaleComment->setIsHidden(false);
+                        $this->operationalRiskScaleCommentTable->save($operationalRiskScaleComment, false);
+                    } else {
+                        $operationalRiskScaleComment->setIsHidden(true);
+                        if ($operationalRiskScaleComment->getScaleValue() <= $maxScaleValue) {
+                            $operationalRiskScaleComment->setScaleValue(++$maxScaleValue);
                         }
-                        if ($operationalRiskScaleComment->getScaleValue() > $maxScaleValue) {
-                            $maxScaleValue = $operationalRiskScaleComment->getScaleValue();
-                        }
+                        $this->operationalRiskScaleCommentTable->save($operationalRiskScaleComment, false);
                     }
-                    while ($levelsNumber > $currentLevelsNumber) {
+                    if ($operationalRiskScaleComment->getScaleValue() > $maxScaleValue) {
+                        $maxScaleValue = $operationalRiskScaleComment->getScaleValue();
+                    }
+                }
+
+                // Set -1, because the range is counted from 0.
+                $operationalRiskScale->setMax($levelsNumber - 1);
+
+                for ($index = $operationalRiskScale->getMin(); $index <= $operationalRiskScale->getMax(); $index++) {
+                    if ($this->getCommentByIndex($index, $operationalRiskScaleComments) === null) {
                         $this->createScaleComment(
                             $anr,
                             $operationalRiskScale,
                             $operationalRiskScaleType,
-                            $currentLevelsNumber,
+                            $index,
                             ++$maxScaleValue,
-                            [$languageCode]
-                        );
-                        $currentLevelsNumber++;
-                    }
-                } elseif ($levelsNumber < $currentLevelsNumber) {
-                    foreach ($operationalRiskScaleComments as $operationalRiskScaleComment) {
-                        // Hide comments out of the max value bound.
-                        if ($operationalRiskScaleComment->getScaleIndex() >= $levelsNumber) {
-                            $operationalRiskScaleComment->setIsHidden(true);
-                            $this->operationalRiskScaleCommentTable->save($operationalRiskScaleComment, false);
-                        }
+                            [$languageCode]);
                     }
                 }
             }
-
-            // Set -1, because the range is counted from 0.
-            $operationalRiskScale->setMax($levelsNumber - 1);
 
             $this->operationalRiskScaleTable->save($operationalRiskScale);
         }
@@ -376,8 +362,7 @@ class OperationalRiskScaleService
                 $this->operationalRiskScaleCommentTable->save($operationalRiskScaleComment, false);
             }
             for ($index = $probabilityMin; $index <= $probabilityMax; $index++) {
-                $operationalRiskScaleComment = $this->getCommentByIndex($index, $operationalRiskScaleComments);
-                if ($operationalRiskScaleComment === null) {
+                if ($this->getCommentByIndex($index, $operationalRiskScaleComments) === null) {
                     $this->createScaleComment($anr, $operationalRiskScale, null, $index, $index, [$languageCode]);
                 }
             }
