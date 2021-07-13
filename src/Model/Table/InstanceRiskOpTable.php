@@ -11,6 +11,7 @@ use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Monarc\Core\Model\Db;
+use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\InstanceRiskOp;
 use Monarc\Core\Model\Entity\InstanceRiskOpSuperClass;
 use Monarc\Core\Model\Entity\InstanceSuperClass;
@@ -25,6 +26,18 @@ class InstanceRiskOpTable extends AbstractEntityTable
     public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
     {
         parent::__construct($dbService, InstanceRiskOp::class, $connectedUserService);
+    }
+
+    /**
+     * @return InstanceRiskOpSuperClass[]
+     */
+    public function findByAnr(AnrSuperClass $anr): array
+    {
+        return $this->getRepository()->createQueryBuilder('oprisk')
+            ->where('oprisk.anr = :anr')
+            ->setParameter(':anr', $anr)
+            ->getQuery()
+            ->getResult();
     }
 
     /**

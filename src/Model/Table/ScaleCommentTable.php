@@ -9,6 +9,7 @@ namespace Monarc\Core\Model\Table;
 
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\ScaleComment;
+use Monarc\Core\Model\Entity\ScaleCommentSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**
@@ -21,6 +22,7 @@ class ScaleCommentTable extends AbstractEntityTable
     {
         parent::__construct($dbService, ScaleComment::class, $connectedUserService);
     }
+
     /**
      * Get By Scale
      *
@@ -60,5 +62,14 @@ class ScaleCommentTable extends AbstractEntityTable
             ->getResult();
 
         return $comments;
+    }
+
+    public function saveEntity(ScaleCommentSuperClass $comment, bool $flushAll = true): void
+    {
+        $em = $this->getDb()->getEntityManager();
+        $em->persist($theme);
+        if ($flushAll) {
+            $em->flush();
+        }
     }
 }

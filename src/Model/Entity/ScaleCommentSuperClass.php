@@ -190,6 +190,18 @@ class ScaleCommentSuperClass extends AbstractEntity
         return (string)$this->{'comment' . $languageIndex};
     }
 
+    public function setComments(array $comments): self
+    {
+        foreach (range(1, 4) as $index) {
+            $key = 'comment' . $index;
+            if (isset($comments[$key])) {
+                $this->{$key} = $comments[$key];
+            }
+        }
+
+        return $this;
+    }
+
     public function getScaleIndexAvailableValues()
     {
         $values = [];

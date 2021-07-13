@@ -82,7 +82,8 @@ class OperationalRiskScaleService
         if (\is_array($data['label'])) {
             foreach ($data['label'] as $lang => $labelText) {
                 $translation = $this->createTranslationObject(
-                    OperationalRiskScaleType::class,
+                    $anr,
+                    OperationalRiskScaleType::TRANSLATION_TYPE_NAME,
                     $operationalRiskScaleType->getLabelTranslationKey(),
                     $lang,
                     (string)$labelText
@@ -95,7 +96,8 @@ class OperationalRiskScaleService
             // Scenario for the frontOffice.
             $anrLanguageCode = $this->getAnrLanguageCode($anr);
             $translation = $this->createTranslationObject(
-                OperationalRiskScaleType::class,
+                $anr,
+                OperationalRiskScaleType::TRANSLATION_TYPE_NAME,
                 $operationalRiskScaleType->getLabelTranslationKey(),
                 $anrLanguageCode,
                 $data['label'][$anrLanguageCode]
@@ -194,7 +196,7 @@ class OperationalRiskScaleService
                     'scaleId' => $operationalRiskScale->getId(),
                     'label' => $translationLabel->getValue(),
                     'isHidden' => $operationalRiskScaleType->isHidden(),
-                    'isSystem' => $operationalRiskScaleType->getIsSystem(),
+                    'isSystem' => $operationalRiskScaleType->isSystem(),
                     'comments' => $commentsOfType,
                 ];
             }
@@ -240,7 +242,7 @@ class OperationalRiskScaleService
 
     public function update(int $id, array $data): int
     {
-        /** @var OperationalRiskScaleType $operationalRiskScaleType */
+        /** @var OperationalRiskScaleTypeSuperClass $operationalRiskScaleType */
         $operationalRiskScaleType = $this->operationalRiskScaleTypeTable->findById($id);
 
         $operationalRiskScaleType->setIsHidden(!empty($data['isHidden']));
@@ -401,17 +403,19 @@ class OperationalRiskScaleService
     }
 
     protected function createTranslationObject(
+        AnrSuperClass $anr,
         string $type,
         string $key,
         string $lang,
         string $value
     ): TranslationSuperClass {
         return (new Translation())
-            ->setCreator($this->connectedUser->getEmail())
+            ->setAnr($anr)
             ->setType($type)
             ->setKey($key)
             ->setLang($lang)
-            ->setValue($value);
+            ->setValue($value)
+            ->setCreator($this->connectedUser->getEmail());
     }
 
     protected function createScaleComment(
@@ -425,17 +429,20 @@ class OperationalRiskScaleService
         $scaleComment = (new OperationalRiskScaleComment())
             ->setAnr($anr)
             ->setOperationalRiskScale($operationalRiskScale)
-            ->setOperationalRiskScaleType($operationalRiskScaleType)
             ->setScaleIndex($scaleIndex)
             ->setScaleValue($scaleValue)
             ->setCommentTranslationKey((string)Uuid::uuid4())
             ->setCreator($this->connectedUser->getEmail());
+        if ($operationalRiskScaleType !== null) {
+            $scaleComment->setOperationalRiskScaleType($operationalRiskScaleType);
+        }
 
         $this->operationalRiskScaleCommentTable->save($scaleComment, false);
 
         foreach ($languageCodes as $languageCode) {
             // Create a translation for the scaleComment (init with blank value).
             $translation = $this->createTranslationObject(
+                $anr,
                 OperationalRiskScaleComment::TRANSLATION_TYPE_NAME,
                 $scaleComment->getCommentTranslationKey(),
                 $languageCode,

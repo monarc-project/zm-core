@@ -181,6 +181,11 @@ class ScaleImpactTypeSuperClass extends AbstractEntity
         return (string)$this->{'label' . $languageIndex};
     }
 
+    public function getPosition(): int
+    {
+        return $this->position;
+    }
+
     public function setPosition(int $position): self
     {
         $this->position = $position;
@@ -212,9 +217,6 @@ class ScaleImpactTypeSuperClass extends AbstractEntity
         return $this;
     }
 
-    /**
-     * @return int
-     */
     public function isHidden(): bool
     {
         return (bool)$this->isHidden;

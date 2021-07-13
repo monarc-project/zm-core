@@ -57,6 +57,13 @@ class ScaleSuperClass extends AbstractEntity
     protected $scaleComments;
 
     /**
+     * @var ScaleImpactTypeSuperClass[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="ScaleImpactType", mappedBy="scale")
+     */
+    protected $scaleImpactTypes;
+
+    /**
      * @var int
      *
      * @ORM\Column(name="type", type="smallint", options={"unsigned":true})
@@ -80,6 +87,7 @@ class ScaleSuperClass extends AbstractEntity
     public function __construct($obj = null)
     {
         $this->scaleComments = new ArrayCollection();
+        $this->scaleImpactTypes = new ArrayCollection();
 
         parent::__construct($obj);
     }
@@ -162,6 +170,14 @@ class ScaleSuperClass extends AbstractEntity
     public function getScaleComments()
     {
         return $this->scaleComments;
+    }
+
+    /**
+     * @return ScaleImpactTypeSuperClass[]
+     */
+    public function getScaleImpactTypes()
+    {
+        return $this->scaleImpactTypes;
     }
 
     public function getInputFilter($partial = false)

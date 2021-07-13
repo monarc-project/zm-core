@@ -85,6 +85,11 @@ class OperationalRiskScaleTypeSuperClass
      */
     protected $isSystem;
 
+    public function __construct()
+    {
+        $this->operationalRiskScaleComments = new ArrayCollection();
+    }
+
     public function getId(): int
     {
         return $this->id;
@@ -161,7 +166,7 @@ class OperationalRiskScaleTypeSuperClass
         return $this;
     }
 
-    public function getIsSystem(): int
+    public function isSystem(): int
     {
         return $this->isSystem;
     }
