@@ -267,6 +267,7 @@ class ChangeableOperationalImpact extends AbstractMigration
         foreach ([1 => 'fr', 2 => 'en', 3 => 'de', 4 => 'nl'] as $langKey => $langLabel) {
             if (!empty($data[$fieldName . $langKey])) {
                 $translations[] = [
+                    'anr_id' => $data['anr_id'],
                     'type' => $type,
                     'translation_key' => $translationKey,
                     'lang' => $langLabel,
