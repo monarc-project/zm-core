@@ -160,9 +160,6 @@ class OperationalRiskScaleService
                     'scaleValue' => $operationalRiskScaleComment->getScaleValue(),
                     'comment' => $translationComment !== null ? $translationComment->getValue() : '',
                 ];
-                if (\count($comments) === $operationalRiskScale->getMax()) {
-                    break;
-                }
             }
             usort($comments, static function ($a, $b) {
                 return $a['scaleIndex'] <=> $b['scaleIndex'];
@@ -185,7 +182,6 @@ class OperationalRiskScaleService
                         'comment' => $translationComment !== null ? $translationComment->getValue() : '',
                     ];
                 }
-
                 usort($commentsOfType, static function ($a, $b) {
                     return $a['scaleIndex'] <=> $b['scaleIndex'];
                 });
@@ -374,8 +370,10 @@ class OperationalRiskScaleService
                 $scaleIndex = $operationalRiskScaleComment->getScaleIndex();
                 if ($scaleIndex < $probabilityMin || $scaleIndex > $probabilityMax) {
                     $operationalRiskScaleComment->setIsHidden(true);
-                    $this->operationalRiskScaleCommentTable->save($operationalRiskScaleComment, false);
+                } else {
+                    $operationalRiskScaleComment->setIsHidden(false);
                 }
+                $this->operationalRiskScaleCommentTable->save($operationalRiskScaleComment, false);
             }
             for ($index = $probabilityMin; $index <= $probabilityMax; $index++) {
                 $operationalRiskScaleComment = $this->getCommentByIndex($index, $operationalRiskScaleComments);
