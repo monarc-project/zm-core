@@ -153,6 +153,7 @@ class ScaleCommentSuperClass extends AbstractEntity
     public function setScaleImpactType(ScaleImpactTypeSuperClass $scaleImpactType): self
     {
         $this->scaleImpactType = $scaleImpactType;
+        $scaleImpactType->addScaleComment($this);
 
         return $this;
     }

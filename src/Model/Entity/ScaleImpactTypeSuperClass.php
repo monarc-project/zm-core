@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Model\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
@@ -61,6 +62,13 @@ class ScaleImpactTypeSuperClass extends AbstractEntity
      * })
      */
     protected $scale;
+
+    /**
+     * @var ScaleCommentSuperClass[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="ScaleComment", mappedBy="scaleImpactType")
+     */
+    protected $scaleComments;
 
     /**
      * @var int
@@ -118,6 +126,13 @@ class ScaleImpactTypeSuperClass extends AbstractEntity
      */
     protected $position;
 
+    public function __construct($obj = null)
+    {
+        $this->scaleComments = new ArrayCollection();
+
+        parent::__construct($obj);
+    }
+
     /**
      * @return int
      */
@@ -156,6 +171,21 @@ class ScaleImpactTypeSuperClass extends AbstractEntity
     public function setScale(ScaleSuperClass $scale): self
     {
         $this->scale = $scale;
+
+        return $this;
+    }
+
+    public function getScaleComments()
+    {
+        return $this->scaleComments;
+    }
+
+    public function addScaleComment(ScaleCommentSuperClass $scaleComment): self
+    {
+        if (!$this->scaleComments->contains($scaleComment)) {
+            $this->scaleComments->add($scaleComment);
+            $scaleComment->setScaleImpactType($this);
+        }
 
         return $this;
     }
