@@ -10,6 +10,7 @@ namespace Monarc\Core\Service;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Monarc\Core\Exception\Exception;
+use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\Asset;
 use Monarc\Core\Model\Entity\InstanceRiskOp;
 use Monarc\Core\Model\Entity\InstanceRiskOpSuperClass;
@@ -18,15 +19,15 @@ use Monarc\Core\Model\Entity\ObjectSuperClass;
 use Monarc\Core\Model\Entity\OperationalInstanceRiskScale;
 use Monarc\Core\Model\Entity\OperationalInstanceRiskScaleSuperClass;
 use Monarc\Core\Model\Entity\OperationalRiskScale;
-use Monarc\Core\Model\Entity\OperationalRiskScaleSuperClass;
 use Monarc\Core\Model\Entity\OperationalRiskScaleType;
+use Monarc\Core\Model\Entity\OperationalRiskScaleTypeSuperClass;
 use Monarc\Core\Model\Entity\RolfRiskSuperClass;
 use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\InstanceRiskOpTable;
 use Monarc\Core\Model\Table\InstanceTable;
 use Monarc\Core\Model\Table\OperationalInstanceRiskScaleTable;
-use Monarc\Core\Model\Table\OperationalRiskScaleTable;
+use Monarc\Core\Model\Table\OperationalRiskScaleTypeTable;
 use Monarc\Core\Model\Table\RolfTagTable;
 use Monarc\Core\Model\Table\TranslationTable;
 
@@ -48,9 +49,9 @@ class InstanceRiskOpService
 
     protected TranslateService $translateService;
 
-    protected OperationalRiskScaleTable $operationalRiskScaleTable;
-
     protected ConfigService $configService;
+
+    protected OperationalRiskScaleTypeTable $operationalRiskScaleTypeTable;
 
     public function __construct(
         AnrTable $anrTable,
@@ -61,7 +62,7 @@ class InstanceRiskOpService
         ConnectedUserService $connectedUserService,
         TranslationTable $translationTable,
         TranslateService $translateService,
-        OperationalRiskScaleTable $operationalRiskScaleTable,
+        OperationalRiskScaleTypeTable $operationalRiskScaleTypeTable,
         ConfigService $configService
     ) {
         $this->anrTable = $anrTable;
@@ -72,7 +73,7 @@ class InstanceRiskOpService
         $this->connectedUser = $connectedUserService->getConnectedUser();
         $this->translationTable = $translationTable;
         $this->translateService = $translateService;
-        $this->operationalRiskScaleTable = $operationalRiskScaleTable;
+        $this->operationalRiskScaleTypeTable = $operationalRiskScaleTypeTable;
         $this->configService = $configService;
     }
 
@@ -119,14 +120,14 @@ class InstanceRiskOpService
 
                 $this->instanceRiskOpTable->saveEntity($instanceRiskOp, false);
 
-                $operationalRiskScales = $this->operationalRiskScaleTable->findByAnrAndType(
+                $operationalRiskScaleTypes = $this->operationalRiskScaleTypeTable->findByAnrAndScaleType(
                     $instance->getAnr(),
                     OperationalRiskScale::TYPE_IMPACT
                 );
-                foreach ($operationalRiskScales as $operationalRiskScale) {
+                foreach ($operationalRiskScaleTypes as $operationalRiskScaleType) {
                     $operationalInstanceRiskScale = $this->createOperationalInstanceRiskScaleObject(
                         $instanceRiskOp,
-                        $operationalRiskScale,
+                        $operationalRiskScaleType,
                     );
 
                     $this->operationalInstanceRiskScaleTable->save($operationalInstanceRiskScale, false);
@@ -134,19 +135,6 @@ class InstanceRiskOpService
             }
         }
 
-        $this->instanceRiskOpTable->getDb()->flush();
-    }
-
-    /**
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
-    public function deleteOperationalRisks(InstanceSuperClass $instance): void
-    {
-        $operationalRisks = $this->instanceRiskOpTable->findByInstance($instance);
-        foreach ($operationalRisks as $operationalRisk) {
-            $this->instanceRiskOpTable->deleteEntity($operationalRisk, false);
-        }
         $this->instanceRiskOpTable->getDb()->flush();
     }
 
@@ -178,13 +166,13 @@ class InstanceRiskOpService
             array_keys($instancesInfos),
             $params
         );
-        $operationalRisksScalesTranslations = [];
+        $scaleTypesTranslations = [];
         if (!empty($instancesRisksOp)) {
             $anr = current($instancesRisksOp)->getAnr();
-            $operationalRisksScalesTranslations = $this->translationTable->findByAnrTypesAndLanguageIndexedByKey(
+            $scaleTypesTranslations = $this->translationTable->findByAnrTypesAndLanguageIndexedByKey(
                 $anr,
                 [OperationalRiskScaleType::TRANSLATION_TYPE_NAME],
-                strtolower($this->configService->getLanguageCodes()[$anr->getLanguage()])
+                $this->getAnrLanguageCode($anr)
             );
         }
         $result = [];
@@ -192,20 +180,19 @@ class InstanceRiskOpService
             $operationalInstanceRiskScales = $instanceRiskOp->getOperationalInstanceRiskScales();
             $scalesData = [];
             foreach ($operationalInstanceRiskScales as $operationalInstanceRiskScale) {
-                $riskScale = $operationalInstanceRiskScale->getOperationalRiskScaleType();
-                $scalesData[$operationalInstanceRiskScale->getOperationalRiskScale()->getId()] = [
+                $scaleType = $operationalInstanceRiskScale->getOperationalRiskScaleType();
+                $scalesData[$scaleType->getId()] = [
                     'instanceRiskScaleId' => $operationalInstanceRiskScale->getId(),
-                    'label' => $operationalRisksScalesTranslations[$riskScale->getLabelTranslationKey()]->getValue(),
+                    'label' => $scaleTypesTranslations[$scaleType->getLabelTranslationKey()]->getValue(),
                     'netValue' => $operationalInstanceRiskScale->getNetValue(),
                     'brutValue' => $operationalInstanceRiskScale->getBrutValue(),
                     'targetValue' => $operationalInstanceRiskScale->getTargetedValue(),
-                    'isHidden' => $riskScale->isHidden(),
+                    'isHidden' => $scaleType->isHidden(),
                 ];
             }
 
             $result[] = [
                 'id' => $instanceRiskOp->getId(),
-                'instanceInfos' => $instancesInfos[$instanceRiskOp->getInstance()->getId()] ?? [],
                 'label1' => $instanceRiskOp->getRiskCacheLabel(1),
                 'label2' => $instanceRiskOp->getRiskCacheLabel(2),
                 'label3' => $instanceRiskOp->getRiskCacheLabel(3),
@@ -225,12 +212,27 @@ class InstanceRiskOpService
                 'comment' => $instanceRiskOp->getComment(),
                 't' => $instanceRiskOp->getKindOfMeasure() === InstanceRiskOp::KIND_NOT_TREATED,
 
+                'instanceInfos' => $instancesInfos[$instanceRiskOp->getInstance()->getId()] ?? [],
+
                 'context' => $instanceRiskOp->getContext(),
                 'owner' => $instanceRiskOp->getOwner() ? $instanceRiskOp->getOwner()->getName() : '',
             ];
         }
 
         return $result;
+    }
+
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function deleteOperationalRisks(InstanceSuperClass $instance): void
+    {
+        $operationalRisks = $this->instanceRiskOpTable->findByInstance($instance);
+        foreach ($operationalRisks as $operationalRisk) {
+            $this->instanceRiskOpTable->deleteEntity($operationalRisk, false);
+        }
+        $this->instanceRiskOpTable->getDb()->flush();
     }
 
     // TODO: update the method.
@@ -456,20 +458,25 @@ class InstanceRiskOpService
 
     protected function createOperationalInstanceRiskScaleObject(
         InstanceRiskOpSuperClass $instanceRiskOp,
-        OperationalRiskScaleSuperClass $operationalRiskScale
+        OperationalRiskScaleTypeSuperClass $operationalRiskScaleType
     ): OperationalInstanceRiskScaleSuperClass {
         return (new OperationalInstanceRiskScale())
             ->setAnr($instanceRiskOp->getAnr())
             ->setOperationalInstanceRisk($instanceRiskOp)
-            ->setOperationalRiskScale($operationalRiskScale)
+            ->setOperationalRiskScaleType($operationalRiskScaleType)
             ->setCreator($this->connectedUser->getEmail());
+    }
+
+    protected function getAnrLanguageCode(AnrSuperClass $anr): string
+    {
+        return strtolower($this->configService->getLanguageCodes()[$anr->getLanguage()]);
     }
 
     private function extractInstanceAndChildInstances(InstanceSuperClass $instance): array
     {
         $childInstances = [];
         foreach ($instance->getParameterValues('children') as $childInstance) {
-            $childInstances = array_merge($childInstances, $this->extractInstanceAndChildInstances($childInstance));
+            $childInstances = array_merge($childInstances, $this->  extractInstanceAndChildInstances($childInstance));
         }
 
         return array_merge([$instance], $childInstances);

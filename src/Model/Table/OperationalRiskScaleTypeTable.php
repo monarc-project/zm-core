@@ -8,12 +8,29 @@
 namespace Monarc\Core\Model\Table;
 
 use Doctrine\ORM\EntityManager;
+use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\OperationalRiskScaleType;
+use Monarc\Core\Model\Entity\OperationalRiskScaleTypeSuperClass;
 
 class OperationalRiskScaleTypeTable extends AbstractTable
 {
     public function __construct(EntityManager $entityManager, string $entityName = OperationalRiskScaleType::class)
     {
         parent::__construct($entityManager, $entityName);
+    }
+
+    /**
+     * @return OperationalRiskScaleTypeSuperClass[]
+     */
+    public function findByAnrAndScaleType(AnrSuperClass $anr, int $scaleType): array
+    {
+        $this->getRepository()->createQueryBuilder('orst')
+            ->innerJoin('orst.operationalRiskScale', 'ors')
+            ->where('orst.anr = :anr')
+            ->andWhere('ors.type = :scaleType')
+            ->setParameter('anr', $anr)
+            ->setParameter('scaleType', $scaleType)
+            ->getQuery()
+            ->getResult();
     }
 }

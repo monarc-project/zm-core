@@ -346,7 +346,7 @@ class OperationalRiskScaleService
                 }
             }
 
-            // Set -1, because in the range we count from 0.
+            // Set -1, because the range is counted from 0.
             $operationalRiskScale->setMax($levelsNumber - 1);
 
             $this->operationalRiskScaleTable->save($operationalRiskScale);
