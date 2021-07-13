@@ -466,7 +466,7 @@ class OperationalRiskScaleService
      */
     private function getCommentByIndex(
         int $index,
-        array $operationalRiskScaleComments
+        iterable $operationalRiskScaleComments
     ): ?OperationalRiskScaleCommentSuperClass {
         foreach ($operationalRiskScaleComments as $operationalRiskScaleComment) {
             if ($operationalRiskScaleComment->getScaleIndex() === $index) {
