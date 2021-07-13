@@ -10,6 +10,7 @@ namespace Monarc\Core\Model\Table;
 use Doctrine\ORM\EntityManager;
 use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\Translation;
+use Monarc\Core\Model\Entity\TranslationSuperClass;
 
 class TranslationTable extends AbstractTable
 {
@@ -35,7 +36,7 @@ class TranslationTable extends AbstractTable
             ->getResult();
     }
 
-    public function findByAnrKeyAndLanguage(AnrSuperClass $anr, string $key, string $lang): Translation
+    public function findByAnrKeyAndLanguage(AnrSuperClass $anr, string $key, string $lang): TranslationSuperClass
     {
         return $this->getRepository()->createQueryBuilder('t')
             ->where('t.anr = :anr')
