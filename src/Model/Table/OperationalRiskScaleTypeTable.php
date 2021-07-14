@@ -24,7 +24,7 @@ class OperationalRiskScaleTypeTable extends AbstractTable
      */
     public function findByAnrAndScaleType(AnrSuperClass $anr, int $scaleType): array
     {
-        $this->getRepository()->createQueryBuilder('orst')
+        return $this->getRepository()->createQueryBuilder('orst')
             ->innerJoin('orst.operationalRiskScale', 'ors')
             ->where('orst.anr = :anr')
             ->andWhere('ors.type = :scaleType')

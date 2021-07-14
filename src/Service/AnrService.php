@@ -579,13 +579,14 @@ class AnrService extends AbstractService
         /** @var TranslationTable $translationTable */
         $translationTable = $this->get('translationTable');
 
-        $operationalRiskScales = $operationalRiskScaleTable->findByAnr($anr);
+        // TODO: we need to fetch the translations without language code for BO and handle it differently later on.
         $operationalRisksAndScalesTranslations = $translationTable->findByAnrTypesAndLanguageIndexedByKey(
             $anr,
             [OperationalRiskScaleType::TRANSLATION_TYPE_NAME, OperationalRiskScaleComment::TRANSLATION_TYPE_NAME],
             $this->getAnrLanguageCode($anr)
         );
 
+        $operationalRiskScales = $operationalRiskScaleTable->findByAnr($anr);
         foreach ($operationalRiskScales as $scale) {
             $scaleTypes = [];
             foreach ($scale->getOperationalRiskScaleTypes() as $scaleType) {
@@ -593,7 +594,6 @@ class AnrService extends AbstractService
                 foreach ($scaleType->getOperationalRiskScaleComments() as $scaleTypeComment) {
                     $scaleTypeComments[$scaleTypeComment->getId()] = $this->getOperationalRiskScaleCommentData(
                         $scaleTypeComment,
-                        $scaleType,
                         $operationalRisksAndScalesTranslations
                     );
                 }
@@ -621,7 +621,6 @@ class AnrService extends AbstractService
 
                 $scaleComments[$scaleComment->getId()] = $this->getOperationalRiskScaleCommentData(
                     $scaleComment,
-                    null,
                     $operationalRisksAndScalesTranslations
                 );
             }
@@ -641,7 +640,6 @@ class AnrService extends AbstractService
 
     private function getOperationalRiskScaleCommentData(
         OperationalRiskScaleCommentSuperClass $scaleComment,
-        ?OperationalRiskScaleTypeSuperClass $scaleType,
         array $operationalRisksAndScalesTranslations
     ): array {
         $commentTranslation = $operationalRisksAndScalesTranslations[$scaleComment->getCommentTranslationKey()];
@@ -651,7 +649,6 @@ class AnrService extends AbstractService
             'scaleIndex' => $scaleComment->getScaleIndex(),
             'scaleValue' => $scaleComment->getScaleValue(),
             'isHidden' => $scaleComment->isHidden(),
-            'scaleType' => $scaleType,
             'commentTranslationKey' => $scaleComment->getCommentTranslationKey(),
             'translation' => [
                 'key' => $commentTranslation->getKey(),
