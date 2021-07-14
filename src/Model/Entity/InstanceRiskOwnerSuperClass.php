@@ -52,6 +52,20 @@ class InstanceRiskOwnerSuperClass
      */
     protected $name;
 
+    /**
+     * @var InstanceRiskSuperClass[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="InstanceRisk", mappedBy="instanceRiskOwner")
+     */
+    protected $instanceRisks;
+
+    /**
+     * @var InstanceRiskOpSuperClass[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="InstanceRiskOp", mappedBy="instanceRiskOwner")
+     */
+    protected $operationalInstanceRisks;
+
     public function getId()
     {
         return $this->id;
