@@ -164,8 +164,8 @@ class ChangeableOperationalImpact extends AbstractMigration
                 $operationalRisksScalesTable->insert([
                     'anr_id' => $scaleData['anr_id'],
                     'type' => $scaleType,
-                    'min' => $scaleData['min'],
-                    'max' => $scaleData['max'],
+                    'min' => 0,
+                    'max' => (int)$scaleData['max'] - (int)$scaleData['min'],
                     'creator' => 'Migration script',
                 ])->save();
                 $currentScalesByAnrAndType[$scaleData['anr_id']][$scaleType] = $this->getAdapter()->getConnection()->lastInsertId();
@@ -191,30 +191,35 @@ class ChangeableOperationalImpact extends AbstractMigration
             $comments2 = explode('-----', $scaleData['comments2']);
             $comments3 = explode('-----', $scaleData['comments3']);
             $comments4 = explode('-----', $scaleData['comments4']);
+            $index = 0;
             foreach ($scaleValues as $valueKey => $scaleValue) {
-                $commentTranslationKey = Uuid::uuid4();
-                $operationalRisksScalesCommentsTable->insert([
-                    'anr_id' => $scaleData['anr_id'],
-                    'operational_risk_scale_id' => $currentScalesByAnrAndType[$scaleData['anr_id']][$scaleType],
-                    'operational_risk_scale_type_id' => $operationalRiskScaleTypeId,
-                    'scale_value' => $scaleValue,
-                    'scale_index' => $scaleValue,
-                    'is_hidden' => $scaleData['min'] > $scaleValue || $scaleData['max'] < $scaleValue ? 1 : 0,
-                    'comment_translation_key' => $commentTranslationKey,
-                    'creator' => 'Migration script',
-                ])->save();
-                $this->createTranslations(
-                    [
+                if($scaleData['min'] <= $scaleValue)
+                {
+                    $commentTranslationKey = Uuid::uuid4();
+                    $operationalRisksScalesCommentsTable->insert([
                         'anr_id' => $scaleData['anr_id'],
-                        'comment1' => $comments1[$valueKey] ?? '',
-                        'comment2' => $comments2[$valueKey] ?? '',
-                        'comment3' => $comments3[$valueKey] ?? '',
-                        'comment4' => $comments4[$valueKey] ?? '',
-                    ],
-                    OperationalRiskScaleComment::TRANSLATION_TYPE_NAME,
-                    'comment',
-                    $commentTranslationKey
-                );
+                        'operational_risk_scale_id' => $currentScalesByAnrAndType[$scaleData['anr_id']][$scaleType],
+                        'operational_risk_scale_type_id' => $operationalRiskScaleTypeId,
+                        'scale_value' => $scaleValue,
+                        'scale_index' => $index,
+                        'is_hidden' => $scaleData['max'] < $scaleValue ? 1 : 0,
+                        'comment_translation_key' => $commentTranslationKey,
+                        'creator' => 'Migration script',
+                    ])->save();
+                    $index++;
+                    $this->createTranslations(
+                        [
+                            'anr_id' => $scaleData['anr_id'],
+                            'comment1' => $comments1[$valueKey] ?? '',
+                            'comment2' => $comments2[$valueKey] ?? '',
+                            'comment3' => $comments3[$valueKey] ?? '',
+                            'comment4' => $comments4[$valueKey] ?? '',
+                        ],
+                        OperationalRiskScaleComment::TRANSLATION_TYPE_NAME,
+                        'comment',
+                        $commentTranslationKey
+                    );
+                }
             }
 
             if (!empty($currentScaleTypesByAnr) && array_key_first($currentScaleTypesByAnr) !== $scaleData['anr_id']) {
