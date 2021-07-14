@@ -27,4 +27,12 @@ class ApiAnrInstancesRisksOpController extends AbstractRestfulController
 
         return new JsonModel($risk);
     }
+
+    public function patch($id, $data)
+    {
+        $risk = $this->instanceRiskOpService->updateScaleValue((int)$id, $data);
+        unset($risk['anr'], $risk['instance'], $risk['object'], $risk['rolfRisk']);
+
+        return new JsonModel($risk);
+    }
 }
