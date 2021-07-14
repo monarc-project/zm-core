@@ -12,6 +12,8 @@ use Doctrine\ORM\ORMException;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\Instance;
+use Monarc\Core\Model\Entity\InstanceRiskOwner;
+use Monarc\Core\Model\Entity\InstanceRiskOwnerSuperClass;
 use Monarc\Core\Model\Entity\InstanceRiskSuperClass;
 use Monarc\Core\Model\Entity\InstanceSuperClass;
 use Monarc\Core\Model\Entity\MonarcObject;
@@ -397,7 +399,10 @@ class InstanceRiskService extends AbstractService
         if (empty($ownerName)) {
             $instanceRisk->setOwner(null);
         } else {
-            $instanceRiskOwner = $this->instanceRiskOwnerTable->findByAnrAndName(
+            /** @var InstanceRiskOwnerTable $instanceRiskOwnerTable */
+            $instanceRiskOwnerTable = $this->get('instanceRiskOwnerTable');
+
+            $instanceRiskOwner = $instanceRiskOwnerTable->findByAnrAndName(
                 $instanceRisk->getAnr(),
                 $ownerName
             );
@@ -418,6 +423,6 @@ class InstanceRiskService extends AbstractService
         return (new InstanceRiskOwner())
             ->setAnr($anr)
             ->setName($ownerName)
-            ->setCreator($this->connectedUser->getEmail());
+            ->setCreator($this->getConnectedUser()->getEmail());
     }
 }
