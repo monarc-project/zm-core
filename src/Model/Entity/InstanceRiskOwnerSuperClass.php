@@ -66,6 +66,13 @@ class InstanceRiskOwnerSuperClass
      */
     protected $operationalInstanceRisks;
 
+    // public function __construct($obj = null) {
+    //     $this->instanceRisks = new ArrayCollection();
+    //     $this->operationalInstanceRisks = new ArrayCollection();
+    // 
+    //     // parent::__construct($obj);
+    // }
+
     public function getId()
     {
         return $this->id;
@@ -94,4 +101,31 @@ class InstanceRiskOwnerSuperClass
 
         return $this;
     }
+
+    /**
+     * @return InstanceRiskSuperClass[]
+     */
+    public function getInstanceRisks()
+    {
+        return $this->instanceRisks;
+    }
+    
+    public function setInstanceRisk($instanceRisks): self
+    {
+        $this->instanceRisks = $instanceRisks;
+    }
+    
+    /**
+     * @return InstanceRiskOpSuperClass[]
+     */
+    public function getOperationalInstanceRisks()
+    {
+        return $this->operationalInstanceRiskScales;
+    }
+    
+    public function setOperationalInstanceRisks($operationalInstanceRisks): self
+    {
+        $this->instanceRisks = $operationalInstanceRisks;
+    }
+    
 }
