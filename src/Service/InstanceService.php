@@ -1489,8 +1489,10 @@ class InstanceService extends AbstractService
             ];
             $return['risksop'][$operationalInstanceRiskId]['scales'] = [];
             foreach ($operationalInstanceRisk->getOperationalInstanceRiskScales() as $instanceRiskScale) {
-                $scaleId = $instanceRiskScale->getOperationalRiskScale()->getId();
-                $return['risksop'][$operationalInstanceRiskId]['scales'][$scaleId] = [
+                $scaleType = $instanceRiskScale->getOperationalRiskScaleType();
+                $return['risksop'][$operationalInstanceRiskId]['scalesValues'] = [
+                    'scaleType' => $scaleType->getOperationalRiskScale()->getType(),
+                    'operationalRiskScaleTypeId' => $scaleType->getId(),
                     'netValue' => $withEval ? $instanceRiskScale->getNetValue() : -1,
                     'brutValue' => $withEval ? $instanceRiskScale->getBrutValue() : -1,
                     'targetValue' => $withEval ? $instanceRiskScale->getTargetedValue() : -1,
@@ -1498,7 +1500,7 @@ class InstanceService extends AbstractService
             }
         }
 
-        $return = array_merge($return, $this->getExportedRecommendationsData(
+        $return = array_merge($return, $this->generateExportArrayOfRecommendations(
             $instance,
             $withEval,
             $withRecommendations,
@@ -1588,7 +1590,7 @@ class InstanceService extends AbstractService
         return $label;
     }
 
-    protected function getExportedRecommendationsData(
+    protected function generateExportArrayOfRecommendations(
         InstanceSuperClass $instance,
         bool $withEval,
         bool $withRecommendations,

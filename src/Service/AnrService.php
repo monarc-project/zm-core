@@ -10,8 +10,11 @@ namespace Monarc\Core\Service;
 use DateTime;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Anr;
+use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\OperationalRiskScaleComment;
+use Monarc\Core\Model\Entity\OperationalRiskScaleCommentSuperClass;
 use Monarc\Core\Model\Entity\OperationalRiskScaleType;
+use Monarc\Core\Model\Entity\OperationalRiskScaleTypeSuperClass;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\MonarcObjectTable;
 use Monarc\Core\Model\Table\OperationalRiskScaleTable;
@@ -367,54 +370,7 @@ class AnrService extends AbstractService
             }
 
             // operational risk scales
-            $return['operationalRiskScales'] = [];
-            /** @var OperationalRiskScaleTable $operationalRiskScaleTable */
-            $operationalRiskScaleTable = $this->get('operationalRiskScaleTable');
-            /** @var TranslationTable $translationTable */
-            $translationTable = $this->get('translationTable');
-
-            $operationalRiskScales = $operationalRiskScaleTable->findByAnr($anr);
-            $operationalRisksAndScalesTranslations = $translationTable->findByAnrTypesAndLanguageIndexedByKey(
-                $anr,
-                [OperationalRiskScaleType::TRANSLATION_TYPE_NAME, OperationalRiskScaleComment::TRANSLATION_TYPE_NAME],
-                strtolower($this->get('configService')->getLanguageCodes()[$anr->getLanguage()])
-            );
-
-            foreach ($operationalRiskScales as $operationalScale) {
-                $operationalScaleComments = [];
-                foreach ($operationalScale->getOperationalRiskScaleComments() as $operationalScaleComment) {
-                    $commentTranslation = $operationalRisksAndScalesTranslations[
-                        $operationalScaleComment->getCommentTranslationKey()
-                    ];
-                    $operationalScaleComments[$operationalScaleComment->getId()] = [
-                        'id' => $operationalScaleComment->getId(),
-                        'scaleIndex' => $operationalScaleComment->getScaleIndex(),
-                        'scaleValue' => $operationalScaleComment->getScaleValue(),
-                        'translation' => [
-                            'key' => $commentTranslation->getKey(),
-                            'lang' => $commentTranslation->getLang(),
-                            'value' => $commentTranslation->getValue(),
-                        ],
-                    ];
-                }
-
-                $scaleTranslation = [];
-                if ($operationalScale->getLabelTranslationKey() !== '') {
-                    $translation = $operationalRisksAndScalesTranslations[$operationalScale->getLabelTranslationKey()];
-                    $scaleTranslation = [
-                            'key' => $translation->getKey(),
-                            'lang' => $translation->getLang(),
-                            'value' => $translation->getValue(),
-                    ];
-                }
-                $return['operationalRiskScales'][$operationalScale->getType()][$operationalScale->getId()] = [
-                    'id' => $operationalScale->getId(),
-                    'min' => $operationalScale->getMin(),
-                    'max' => $operationalScale->getMax(),
-                    'translation' => $scaleTranslation,
-                    'operationalScaleComments' => $operationalScaleComments,
-                ];
-            }
+            $return['operationalRiskScales'] = $this->generateExportArrayOfOperationalRiskScales($anr);
 
             // scales
             $return['scales'] = [];
@@ -431,7 +387,7 @@ class AnrService extends AbstractService
             }
 
             $scaleCommentTable = $this->get('scaleCommentTable');
-            for ($s=1; $s <= 3; $s++) {
+            for ($s = 1; $s <= 3; $s++) {
                 for ($i = $return['scales'][$s]['min']; $i <= $return['scales'][$s]['max']; $i++) {
                     $scaleComment = $scaleCommentTable->getEntityByFields([
                         'anr' => $anr->getId(),
@@ -483,7 +439,7 @@ class AnrService extends AbstractService
 
 
                 $deliveryTable = $this->get('deliveryTable');
-                for ($i=0; $i <= 5; $i++) {
+                for ($i = 0; $i <= 5; $i++) {
                     $deliveries = $deliveryTable->getEntityByFields(['anr' => $anr->getId() , 'typedoc' => $i ], ['id'=>'ASC']);
                     $deliveryArray = [
                         'id' => 'id',
@@ -608,5 +564,100 @@ class AnrService extends AbstractService
             }
         }
         return $return;
+    }
+
+    protected function getAnrLanguageCode(AnrSuperClass $anr): string
+    {
+        return strtolower($this->get('configService')->getLanguageCodes()[$anr->getLanguage()]);
+    }
+
+    private function generateExportArrayOfOperationalRiskScales(AnrSuperClass $anr): array
+    {
+        $result = [];
+        /** @var OperationalRiskScaleTable $operationalRiskScaleTable */
+        $operationalRiskScaleTable = $this->get('operationalRiskScaleTable');
+        /** @var TranslationTable $translationTable */
+        $translationTable = $this->get('translationTable');
+
+        $operationalRiskScales = $operationalRiskScaleTable->findByAnr($anr);
+        $operationalRisksAndScalesTranslations = $translationTable->findByAnrTypesAndLanguageIndexedByKey(
+            $anr,
+            [OperationalRiskScaleType::TRANSLATION_TYPE_NAME, OperationalRiskScaleComment::TRANSLATION_TYPE_NAME],
+            $this->getAnrLanguageCode($anr)
+        );
+
+        foreach ($operationalRiskScales as $scale) {
+            $scaleTypes = [];
+            foreach ($scale->getOperationalRiskScaleTypes() as $scaleType) {
+                $scaleTypeComments = [];
+                foreach ($scaleType->getOperationalRiskScaleComments() as $scaleTypeComment) {
+                    $scaleTypeComments[$scaleTypeComment->getId()] = $this->getOperationalRiskScaleCommentData(
+                        $scaleTypeComment,
+                        $scaleType,
+                        $operationalRisksAndScalesTranslations
+                    );
+                }
+
+                $typeTranslation = $operationalRisksAndScalesTranslations[$scaleType->getLabelTranslationKey()];
+                $scaleTypes[$scaleType->getId()] = [
+                    'id' => $scaleType->getId(),
+                    'isSystem' => $scaleType->isSystem(),
+                    'isHidden' => $scaleType->isHidden(),
+                    'labelTranslationKey' => $scaleType->getLabelTranslationKey(),
+                    'translation' => [
+                        'key' => $typeTranslation->getKey(),
+                        'lang' => $typeTranslation->getLang(),
+                        'value' => $typeTranslation->getValue(),
+                    ],
+                    'operationalRiskScaleTypeComments' => $scaleTypeComments,
+                ];
+            }
+
+            $scaleComments = [];
+            foreach ($scale->getOperationalRiskScaleComments() as $scaleComment) {
+                if ($scaleComment->getOperationalRiskScaleType() !== null) {
+                    continue;
+                }
+
+                $scaleComments[$scaleComment->getId()] = $this->getOperationalRiskScaleCommentData(
+                    $scaleComment,
+                    null,
+                    $operationalRisksAndScalesTranslations
+                );
+            }
+
+            $result[$scale->getType()] = [
+                'id' => $scale->getId(),
+                'min' => $scale->getMin(),
+                'max' => $scale->getMax(),
+                'type' => $scale->getType(),
+                'operationalRiskScaleTypes' => $scaleTypes,
+                'operationalRiskScaleComments' => $scaleComments,
+            ];
+        }
+
+        return $result;
+    }
+
+    private function getOperationalRiskScaleCommentData(
+        OperationalRiskScaleCommentSuperClass $scaleComment,
+        ?OperationalRiskScaleTypeSuperClass $scaleType,
+        array $operationalRisksAndScalesTranslations
+    ): array {
+        $commentTranslation = $operationalRisksAndScalesTranslations[$scaleComment->getCommentTranslationKey()];
+
+        return [
+            'id' => $scaleComment->getId(),
+            'scaleIndex' => $scaleComment->getScaleIndex(),
+            'scaleValue' => $scaleComment->getScaleValue(),
+            'isHidden' => $scaleComment->isHidden(),
+            'scaleType' => $scaleType,
+            'commentTranslationKey' => $scaleComment->getCommentTranslationKey(),
+            'translation' => [
+                'key' => $commentTranslation->getKey(),
+                'lang' => $commentTranslation->getLang(),
+                'value' => $commentTranslation->getValue(),
+            ],
+        ];
     }
 }
