@@ -165,18 +165,8 @@ class ChangeableOperationalImpact extends AbstractMigration
                 $operationalRisksScalesTable->insert([
                     'anr_id' => $scaleData['anr_id'],
                     'type' => $scaleType,
-                    'min' => 0,
-                    'max' => (int)$scaleData['max'] - (int)$scaleData['min'],
-                    'creator' => 'Migration script',
-                ])->save();
-                $currentScalesByAnrAndType[$scaleData['anr_id']][$scaleType] = $this->getAdapter()->getConnection()->lastInsertId();
-            }
-            if (!isset($currentScalesByAnrAndType[$scaleData['anr_id']][$scaleType]) && $scaleType == OperationalRiskScale::TYPE_LIKELIHOOD) {
-                $operationalRisksScalesTable->insert([
-                    'anr_id' => $scaleData['anr_id'],
-                    'type' => $scaleType,
-                    'min' => $scaleData['min'],
-                    'max' => $scaleData['max'],
+                    'min' => $isLikelihoodScale ? $scaleData['min'] : 0,
+                    'max' => $isLikelihoodScale ? $scaleData['max'] : (int)$scaleData['max'] - (int)$scaleData['min'],
                     'creator' => 'Migration script',
                 ])->save();
                 $currentScalesByAnrAndType[$scaleData['anr_id']][$scaleType] = $this->getAdapter()->getConnection()->lastInsertId();
