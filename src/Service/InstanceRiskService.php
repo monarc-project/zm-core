@@ -298,7 +298,7 @@ class InstanceRiskService extends AbstractService
         if (empty($data)) {
             throw new Exception('Data missing', 412);
         }
-         if (isset($data['owner'])) {
+        if (isset($data['owner'])) {
             $this->processRiskOwnerName((string)$data['owner'], $instanceRisk);
             unset($data['owner']);
         }
@@ -387,37 +387,22 @@ class InstanceRiskService extends AbstractService
     ): void {}
 
     /**
-     * @param string $riskOwnerName
-     * @param InstanceRisk $instanceRisk
-     *
-     * @return string
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    private function processRiskOwnerName(string $riskOwnerName, InstanceRisk $instanceRisk): void
-    {
-
-        $this->instanceRiskOwnerTable = $this->get('instanceRiskOwnerTable');
-
-        if (empty($riskOwnerName)) {
-                // delete the InstanceRiskOwner object
-                if ($instanceRisk->getOwner()) {
-                    $this->instanceRiskOwnerTable->remove($instanceRisk->getOwner());
-                }
-                // unset the owner of the instance risk
-                $instanceRisk->setOwner(null);
-
+    protected function processRiskOwnerName(
+        string $ownerName,
+        InstanceRiskSuperClass $instanceRisk
+    ): void {
+        if (empty($ownerName)) {
+            $instanceRisk->setOwner(null);
         } else {
-
             $instanceRiskOwner = $this->instanceRiskOwnerTable->findByAnrAndName(
                 $instanceRisk->getAnr(),
-                $riskOwnerName
+                $ownerName
             );
             if ($instanceRiskOwner === null) {
-                $instanceRiskOwner = (new InstanceRiskOwner())
-                    ->setAnr($instanceRisk->getAnr())
-                    ->setName($riskOwnerName)
-                    ->setCreator($this->connectedUser->getEmail());
+                $this->createInstanceRiskOwnerObject($instanceRisk->getAnr(), $ownerName);
 
                 $this->instanceRiskOwnerTable->save($instanceRiskOwner, false);
 
@@ -426,5 +411,13 @@ class InstanceRiskService extends AbstractService
                 $instanceRisk->setOwner($instanceRiskOwner);
             }
         }
+    }
+
+    protected function createInstanceRiskOwnerObject(AnrSuperClass $anr, string $ownerName): InstanceRiskOwnerSuperClass
+    {
+        return (new InstanceRiskOwner())
+            ->setAnr($anr)
+            ->setName($ownerName)
+            ->setCreator($this->connectedUser->getEmail());
     }
 }
