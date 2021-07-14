@@ -1,7 +1,7 @@
 <?php
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2021 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -18,6 +18,7 @@ use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Entity\ObjectSuperClass;
 use Monarc\Core\Model\Table\AmvTable;
 use Monarc\Core\Model\Table\InstanceRiskTable;
+use Monarc\Core\Model\Table\InstanceRiskOwnerTable;
 use Monarc\Core\Model\Table\InstanceTable;
 use Monarc\Core\Traits\RiskTrait;
 use Doctrine\ORM\Query\QueryException;
@@ -39,6 +40,7 @@ class InstanceRiskService extends AbstractService
     protected $userAnrTable;
     protected $amvTable;
     protected $instanceTable;
+    protected $instanceRiskOwnerTable;
     protected $recommandationTable;
     protected $recommandationRiskTable;
 
@@ -296,9 +298,14 @@ class InstanceRiskService extends AbstractService
         if (empty($data)) {
             throw new Exception('Data missing', 412);
         }
+         if (isset($data['owner'])) {
+            $this->processRiskOwnerName((string)$data['owner'], $instanceRisk);
+            unset($data['owner']);
+        }
 
         unset($data['instance']);
         $instanceRisk->exchangeArray($data);
+
 
         $dependencies = property_exists($this, 'dependencies') ? $this->dependencies : [];
         $this->setDependencies($instanceRisk, $dependencies);
@@ -378,4 +385,46 @@ class InstanceRiskService extends AbstractService
         InstanceRiskSuperClass $instanceRisk,
         InstanceRiskSuperClass $newInstanceRisk
     ): void {}
+
+    /**
+     * @param string $riskOwnerName
+     * @param InstanceRisk $instanceRisk
+     *
+     * @return string
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    private function processRiskOwnerName(string $riskOwnerName, InstanceRisk $instanceRisk): void
+    {
+
+        $this->instanceRiskOwnerTable = $this->get('instanceRiskOwnerTable');
+
+        if (empty($riskOwnerName)) {
+                // delete the InstanceRiskOwner object
+                if ($instanceRisk->getOwner()) {
+                    $this->instanceRiskOwnerTable->remove($instanceRisk->getOwner());
+                }
+                // unset the owner of the instance risk
+                $instanceRisk->setOwner(null);
+
+        } else {
+
+            $instanceRiskOwner = $this->instanceRiskOwnerTable->findByAnrAndName(
+                $instanceRisk->getAnr(),
+                $riskOwnerName
+            );
+            if ($instanceRiskOwner === null) {
+                $instanceRiskOwner = (new InstanceRiskOwner())
+                    ->setAnr($instanceRisk->getAnr())
+                    ->setName($riskOwnerName)
+                    ->setCreator($this->connectedUser->getEmail());
+
+                $this->instanceRiskOwnerTable->save($instanceRiskOwner, false);
+
+                $instanceRisk->setOwner($instanceRiskOwner);
+            } elseif ($instanceRisk->getOwner() !== $instanceRiskOwner) {
+                $instanceRisk->setOwner($instanceRiskOwner);
+            }
+        }
+    }
 }
