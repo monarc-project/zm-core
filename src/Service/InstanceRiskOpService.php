@@ -476,7 +476,10 @@ class InstanceRiskOpService
                 $ownerName
             );
             if ($instanceRiskOwner === null) {
-                $this->createInstanceRiskOwnerObject($operationalInstanceRisk->getAnr(), $ownerName);
+                $instanceRiskOwner = $this->createInstanceRiskOwnerObject(
+                    $operationalInstanceRisk->getAnr(),
+                    $ownerName
+                );
 
                 $this->instanceRiskOwnerTable->save($instanceRiskOwner, false);
 
