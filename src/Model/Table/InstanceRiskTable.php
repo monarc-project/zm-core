@@ -210,6 +210,7 @@ class InstanceRiskTable extends AbstractEntityTable
             'v.description' . $l . ' as vulnDescription' . $l . '',
             'ir.vulnerability_rate as vulnerabilityRate',
             'ir.`context` as `context`',
+            'iro.name as owner',
             'ir.`specific` as `specific`',
             'ir.reduction_amount as reductionAmount',
             'i.c as c_impact',
@@ -271,6 +272,9 @@ class InstanceRiskTable extends AbstractEntityTable
                 INNER JOIN objects AS o
                 ON         i.object_id = o.uuid
                 AND        i.anr_id = o.anr_id
+                LEFT JOIN instance_risk_owners AS iro
+                ON         ir.owner_id = iro.id
+                AND        ir.anr_id = iro.anr_id
                 LEFT JOIN  (SELECT rr.instance_risk_id, rr.anr_id,
                     GROUP_CONCAT(rr.recommandation_id) AS recommendations
                     FROM   recommandations_risks AS rr
