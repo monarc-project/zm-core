@@ -276,7 +276,6 @@ class AnrService extends AbstractService
             $return['instances'][$i->id] = $instanceService->generateExportArray($i->id, $f, $with_eval, $with_scale, $with_controls, $with_recommendations);
         }
 
-
         if ($with_eval) {
             // TODO: Soa functionality is related only to FrontOffice.
             if ($with_soas) {

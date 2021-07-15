@@ -484,7 +484,10 @@ class InstanceRiskOpService
                 $this->instanceRiskOwnerTable->save($instanceRiskOwner, false);
 
                 $operationalInstanceRisk->setOwner($instanceRiskOwner);
-            } elseif ($operationalInstanceRisk->getOwner() !== $instanceRiskOwner) {
+            } elseif (
+                $operationalInstanceRisk->getOwner() === null
+                || $operationalInstanceRisk->getOwner()->getId() !== $instanceRiskOwner->getId()
+            ) {
                 $operationalInstanceRisk->setOwner($instanceRiskOwner);
             }
         }

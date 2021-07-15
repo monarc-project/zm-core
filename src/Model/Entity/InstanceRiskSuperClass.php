@@ -338,9 +338,16 @@ class InstanceRiskSuperClass extends AbstractEntity
         return $this->owner;
     }
 
-    public function setOwner($owner): self
+    public function setOwner(?InstanceRiskOwnerSuperClass $owner): self
     {
-        $this->owner = $owner;
+        if ($owner === null) {
+            if ($this->owner !== null) {
+                $this->owner->removeInstanceRisk($this);
+            }
+        } else {
+            $this->owner = $owner;
+            $owner->addInstanceRisk($this);
+        }
 
         return $this;
     }

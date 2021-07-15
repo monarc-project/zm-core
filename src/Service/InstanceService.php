@@ -1451,6 +1451,10 @@ class InstanceService extends AbstractService
             } else {
                 $return['risks'][$instanceRisk->get('id')]['vulnerability'] = null;
             }
+
+            $return['risks'][$instanceRisk->get('id')]['owner'] = $instanceRisk->getOwner()
+                ? $instanceRisk->getOwner()->getName()
+                : '';
         }
 
         // Instance risk op
@@ -1486,6 +1490,10 @@ class InstanceService extends AbstractService
                 'comment' => $withEval && $withControls ? $operationalInstanceRisk->getComment() : '',
                 'mitigation' => $withEval ? $operationalInstanceRisk->getMitigation() : '',
                 'specific' => $operationalInstanceRisk->getSpecific(),
+                'context' => $operationalInstanceRisk->getContext(),
+                'riskOwner' => $operationalInstanceRisk->getOwner()
+                    ? $operationalInstanceRisk->getOwner()->getName()
+                    : '',
             ];
             $return['risksop'][$operationalInstanceRiskId]['scales'] = [];
             foreach ($operationalInstanceRisk->getOperationalInstanceRiskScales() as $instanceRiskScale) {

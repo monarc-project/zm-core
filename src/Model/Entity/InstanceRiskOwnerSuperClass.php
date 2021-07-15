@@ -46,13 +46,6 @@ class InstanceRiskOwnerSuperClass
     protected $anr;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="name", type="string", length=255)
-     */
-    protected $name;
-
-    /**
      * @var InstanceRiskSuperClass[]|ArrayCollection
      *
      * @ORM\OneToMany(targetEntity="InstanceRisk", mappedBy="instanceRiskOwner")
@@ -66,14 +59,17 @@ class InstanceRiskOwnerSuperClass
      */
     protected $operationalInstanceRisks;
 
-    public function __construct($obj = null) {
-        if (empty($this->instanceRisks) && empty($this->operationalInstanceRiskScales)) {
-            $this->instanceRisks = new ArrayCollection();
-            $this->operationalInstanceRiskScales = new ArrayCollection();
-        }
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="name", type="string", length=255)
+     */
+    protected $name;
 
-        // $this->anr = $anr;
-        // $this->name = $name;
+    public function __construct()
+    {
+        $this->instanceRisks = new ArrayCollection();
+        $this->operationalInstanceRisks = new ArrayCollection();
     }
 
     public function getId()
@@ -112,23 +108,51 @@ class InstanceRiskOwnerSuperClass
     {
         return $this->instanceRisks;
     }
-    
-    public function setInstanceRisk($instanceRisks): self
+
+    public function addInstanceRisk(InstanceRiskSuperClass $instanceRisk): self
     {
-        $this->instanceRisks = $instanceRisks;
+        if (!$this->instanceRisks->contains($instanceRisk)) {
+            $this->instanceRisks->add($instanceRisk);
+            $instanceRisk->setOwner($this);
+        }
+
+        return $this;
     }
-    
+
+    public function removeInstanceRisk(InstanceRiskSuperClass $instanceRisk): self
+    {
+        if ($this->instanceRisks->contains($instanceRisk)) {
+            $this->instanceRisks->remove($instanceRisk);
+        }
+
+        return $this;
+    }
+
     /**
      * @return InstanceRiskOpSuperClass[]
      */
     public function getOperationalInstanceRisks()
     {
-        return $this->operationalInstanceRiskScales;
+        return $this->operationalInstanceRisks;
     }
-    
-    public function setOperationalInstanceRisks($operationalInstanceRisks): self
+
+    public function addOperationalInstanceRisk(InstanceRiskOpSuperClass $operationalInstanceRisk): self
     {
-        $this->instanceRisks = $operationalInstanceRisks;
+        if (!$this->operationalInstanceRisks->contains($operationalInstanceRisk)) {
+            $this->operationalInstanceRisks->add($operationalInstanceRisk);
+            $operationalInstanceRisk->setOwner($this);
+        }
+
+        return $this;
     }
-    
+
+
+    public function removeOperationalInstanceRisk(InstanceRiskOpSuperClass $operationalInstanceRisk): self
+    {
+        if ($this->operationalInstanceRisks->contains($operationalInstanceRisk)) {
+            $this->operationalInstanceRisks->remove($operationalInstanceRisk);
+        }
+
+        return $this;
+    }
 }

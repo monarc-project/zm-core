@@ -412,7 +412,10 @@ class InstanceRiskService extends AbstractService
                 $this->instanceRiskOwnerTable->save($instanceRiskOwner, false);
 
                 $instanceRisk->setOwner($instanceRiskOwner);
-            } elseif ($instanceRisk->getOwner() !== $instanceRiskOwner) {
+            } elseif (
+                $instanceRisk->getOwner() === null
+                || $instanceRisk->getOwner()->getId() !== $instanceRiskOwner->getId()
+            ) {
                 $instanceRisk->setOwner($instanceRiskOwner);
             }
         }
