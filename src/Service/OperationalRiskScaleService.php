@@ -186,7 +186,6 @@ class OperationalRiskScaleService
                     'scaleId' => $operationalRiskScale->getId(),
                     'label' => $translationLabel->getValue(),
                     'isHidden' => $operationalRiskScaleType->isHidden(),
-                    'isSystem' => $operationalRiskScaleType->isSystem(),
                     'comments' => $commentsOfType,
                 ];
             }
@@ -381,7 +380,6 @@ class OperationalRiskScaleService
             ->setAnr($anr)
             ->setOperationalRiskScale($operationalRiskScale)
             ->setLabelTranslationKey((string)Uuid::uuid4())
-            ->setIsSystem(0)
             ->setCreator($this->connectedUser->getEmail());
     }
 
