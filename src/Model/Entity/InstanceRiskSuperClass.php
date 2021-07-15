@@ -117,7 +117,7 @@ class InstanceRiskSuperClass extends AbstractEntity
      *   @ORM\JoinColumn(name="owner_id", referencedColumnName="id", nullable=true)
      * })
      */
-    protected $owner;
+    protected $instanceRiskOwner;
 
     /**
      * @var string
@@ -333,20 +333,21 @@ class InstanceRiskSuperClass extends AbstractEntity
         return $this;
     }
 
-    public function getOwner()
+    public function getInstanceRiskOwner()
     {
-        return $this->owner;
+        return $this->instanceRiskOwner;
     }
 
-    public function setOwner(?InstanceRiskOwnerSuperClass $owner): self
+    public function setInstanceRiskOwner(?InstanceRiskOwnerSuperClass $instanceRiskOwner): self
     {
-        if ($owner === null) {
-            if ($this->owner !== null) {
-                $this->owner->removeInstanceRisk($this);
+        if ($instanceRiskOwner === null) {
+            if ($this->instanceRiskOwner !== null) {
+                $this->instanceRiskOwner->removeInstanceRisk($this);
+                $this->instanceRiskOwner = null;
             }
         } else {
-            $this->owner = $owner;
-            $owner->addInstanceRisk($this);
+            $this->instanceRiskOwner = $instanceRiskOwner;
+            $instanceRiskOwner->addInstanceRisk($this);
         }
 
         return $this;

@@ -231,7 +231,7 @@ class InstanceRiskOpService
                 'instanceInfos' => $instancesInfos[$instanceRiskOp->getInstance()->getId()] ?? [],
 
                 'context' => $instanceRiskOp->getContext(),
-                'owner' => $instanceRiskOp->getOwner() ? $instanceRiskOp->getOwner()->getName() : '',
+                'owner' => $instanceRiskOp->getInstanceRiskOwner() ? $instanceRiskOp->getInstanceRiskOwner()->getName() : '',
             ];
         }
 
@@ -324,7 +324,7 @@ class InstanceRiskOpService
             $this->verifyScaleProbabilityValue($operationalInstanceRisk->getAnr(), (int)$data['targetedProb']);
             $operationalInstanceRisk->setTargetedProb((int)$data['targetedProb']);
         }
-        if (isset($data['owner'])) {
+        if (\array_key_exists('owner', $data)) {
             $this->processRiskOwnerName((string)$data['owner'], $operationalInstanceRisk);
         }
         if (isset($data['context'])) {
@@ -469,7 +469,7 @@ class InstanceRiskOpService
         InstanceRiskOpSuperClass $operationalInstanceRisk
     ): void {
         if (empty($ownerName)) {
-            $operationalInstanceRisk->setOwner(null);
+            $operationalInstanceRisk->setInstanceRiskOwner(null);
         } else {
             $instanceRiskOwner = $this->instanceRiskOwnerTable->findByAnrAndName(
                 $operationalInstanceRisk->getAnr(),
@@ -483,12 +483,12 @@ class InstanceRiskOpService
 
                 $this->instanceRiskOwnerTable->save($instanceRiskOwner, false);
 
-                $operationalInstanceRisk->setOwner($instanceRiskOwner);
+                $operationalInstanceRisk->setInstanceRiskOwner($instanceRiskOwner);
             } elseif (
-                $operationalInstanceRisk->getOwner() === null
-                || $operationalInstanceRisk->getOwner()->getId() !== $instanceRiskOwner->getId()
+                $operationalInstanceRisk->getInstanceRiskOwner() === null
+                || $operationalInstanceRisk->getInstanceRiskOwner()->getId() !== $instanceRiskOwner->getId()
             ) {
-                $operationalInstanceRisk->setOwner($instanceRiskOwner);
+                $operationalInstanceRisk->setInstanceRiskOwner($instanceRiskOwner);
             }
         }
     }
@@ -505,7 +505,7 @@ class InstanceRiskOpService
     {
         $childInstances = [];
         foreach ($instance->getParameterValues('children') as $childInstance) {
-            $childInstances = array_merge($childInstances, $this->  extractInstanceAndChildInstances($childInstance));
+            $childInstances = array_merge($childInstances, $this->extractInstanceAndChildInstances($childInstance));
         }
 
         return array_merge([$instance], $childInstances);

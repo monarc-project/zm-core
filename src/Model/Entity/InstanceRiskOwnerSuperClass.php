@@ -113,7 +113,7 @@ class InstanceRiskOwnerSuperClass
     {
         if (!$this->instanceRisks->contains($instanceRisk)) {
             $this->instanceRisks->add($instanceRisk);
-            $instanceRisk->setOwner($this);
+            $instanceRisk->setInstanceRiskOwner($this);
         }
 
         return $this;
@@ -122,7 +122,7 @@ class InstanceRiskOwnerSuperClass
     public function removeInstanceRisk(InstanceRiskSuperClass $instanceRisk): self
     {
         if ($this->instanceRisks->contains($instanceRisk)) {
-            $this->instanceRisks->remove($instanceRisk);
+            $this->instanceRisks->removeElement($instanceRisk);
         }
 
         return $this;
@@ -140,7 +140,7 @@ class InstanceRiskOwnerSuperClass
     {
         if (!$this->operationalInstanceRisks->contains($operationalInstanceRisk)) {
             $this->operationalInstanceRisks->add($operationalInstanceRisk);
-            $operationalInstanceRisk->setOwner($this);
+            $operationalInstanceRisk->setInstanceRiskOwner($this);
         }
 
         return $this;
@@ -150,7 +150,7 @@ class InstanceRiskOwnerSuperClass
     public function removeOperationalInstanceRisk(InstanceRiskOpSuperClass $operationalInstanceRisk): self
     {
         if ($this->operationalInstanceRisks->contains($operationalInstanceRisk)) {
-            $this->operationalInstanceRisks->remove($operationalInstanceRisk);
+            $this->operationalInstanceRisks->removeElement($operationalInstanceRisk);
         }
 
         return $this;

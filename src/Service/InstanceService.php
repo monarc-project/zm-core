@@ -1452,8 +1452,8 @@ class InstanceService extends AbstractService
                 $return['risks'][$instanceRisk->get('id')]['vulnerability'] = null;
             }
 
-            $return['risks'][$instanceRisk->get('id')]['owner'] = $instanceRisk->getOwner()
-                ? $instanceRisk->getOwner()->getName()
+            $return['risks'][$instanceRisk->get('id')]['owner'] = $instanceRisk->getInstanceRiskOwner()
+                ? $instanceRisk->getInstanceRiskOwner()->getName()
                 : '';
         }
 
@@ -1491,8 +1491,8 @@ class InstanceService extends AbstractService
                 'mitigation' => $withEval ? $operationalInstanceRisk->getMitigation() : '',
                 'specific' => $operationalInstanceRisk->getSpecific(),
                 'context' => $operationalInstanceRisk->getContext(),
-                'riskOwner' => $operationalInstanceRisk->getOwner()
-                    ? $operationalInstanceRisk->getOwner()->getName()
+                'riskOwner' => $operationalInstanceRisk->getInstanceRiskOwner()
+                    ? $operationalInstanceRisk->getInstanceRiskOwner()->getName()
                     : '',
             ];
             $return['risksop'][$operationalInstanceRiskId]['scales'] = [];
