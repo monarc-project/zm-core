@@ -160,7 +160,7 @@ class ChangeableOperationalImpact extends AbstractMigration
         foreach ($scalesQuery->fetchAll() as $scaleData) {
             $isLikelihoodScale = (int)$scaleData['scale_type'] === OperationalRiskScale::TYPE_LIKELIHOOD;
             $scaleType = $isLikelihoodScale ? OperationalRiskScale::TYPE_LIKELIHOOD : OperationalRiskScale::TYPE_IMPACT;
-            if (!isset($currentScalesByAnrAndType[$scaleData['anr_id']][$scaleType]) && $scaleType == OperationalRiskScale::TYPE_IMPACT) {
+            if (!isset($currentScalesByAnrAndType[$scaleData['anr_id']][$scaleType])) {
                 $operationalRisksScalesTable->insert([
                     'anr_id' => $scaleData['anr_id'],
                     'type' => $scaleType,
