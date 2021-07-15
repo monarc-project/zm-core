@@ -10,7 +10,6 @@ namespace Monarc\Core\Service;
 use Monarc\Core\Model\Entity\Scale;
 use Monarc\Core\Model\Entity\ScaleComment;
 use Monarc\Core\Model\Table\InstanceConsequenceTable;
-use Monarc\Core\Model\Table\InstanceRiskOpTable;
 use Monarc\Core\Model\Table\InstanceRiskTable;
 use Monarc\Core\Model\Table\ScaleCommentTable;
 use Monarc\Core\Model\Table\ScaleImpactTypeTable;
@@ -28,8 +27,6 @@ class ScaleService extends AbstractService
     protected $anrTable;
     protected $instanceConsequenceService;
     protected $instanceConsequenceTable;
-    protected $instanceRiskOpService;
-    protected $instanceRiskOpTable;
     protected $instanceRiskService;
     protected $instanceRiskTable;
     protected $scaleImpactTypeService;
@@ -233,28 +230,6 @@ class ScaleService extends AbstractService
                         $instanceConsequenceService->patchConsequence($instanceConsequence->id, $dataConsequences);
                     }
                 }
-
-                //update instances risks op associated
-                /** @var InstanceRiskOpTable $instanceRiskOpTable */
-                $instanceRiskOpTable = $this->get('instanceRiskOpTable');
-                $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['anr' => $anrId]);
-                $fields = ['netR', 'netO', 'netL', 'netP', 'brutR', 'brutO', 'brutL', 'brutP'];
-                foreach ($instancesRisksOp as $instanceRiskOp) {
-                    $dataRisksOp = [];
-                    foreach ($fields as $field) {
-                        if (($instanceRiskOp->$field != -1) && ($instanceRiskOp->$field < $data['min'])) {
-                            $dataRisksOp[$field] = $data['min'];
-                        } else if (($instanceRiskOp->$field != -1) && ($instanceRiskOp->$field > $data['max'])) {
-                            $dataRisksOp[$field] = $data['max'];
-                        }
-                    }
-
-                    if (count($dataRisksOp)) {
-                        /** @var InstanceRiskOpService $instanceRiskOpService */
-                        $instanceRiskOpService = $this->get('instanceRiskOpService');
-                        $instanceRiskOpService->update($instanceRiskOp->id, $dataRisksOp);
-                    }
-                }
             } else if ($scale->type == Scale::TYPE_THREAT) {
 
                 //update instances risks associated
@@ -279,27 +254,6 @@ class ScaleService extends AbstractService
                     }
                 }
 
-                //update instances risks op associated
-                /** @var InstanceRiskOpTable $instanceRiskOpTable */
-                $instanceRiskOpTable = $this->get('instanceRiskOpTable');
-                $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['anr' => $anrId]);
-                $fields = ['brutProb', 'netProb', 'targetedProb'];
-                foreach ($instancesRisksOp as $instanceRiskOp) {
-                    $dataRisksOp = [];
-                    foreach ($fields as $field) {
-                        if (($instanceRiskOp->$field != -1) && ($instanceRiskOp->$field < $data['min'])) {
-                            $dataRisksOp[$field] = $data['min'];
-                        } else if (($instanceRiskOp->$field != -1) && ($instanceRiskOp->$field > $data['max'])) {
-                            $dataRisksOp[$field] = $data['max'];
-                        }
-                    }
-
-                    if (count($dataRisksOp)) {
-                        /** @var InstanceRiskOpService $instanceRiskOpService */
-                        $instanceRiskOpService = $this->get('instanceRiskOpService');
-                        $instanceRiskOpService->update($instanceRiskOp->id, $dataRisksOp);
-                    }
-                }
             } else if ($scale->type == Scale::TYPE_VULNERABILITY) {
 
                 //update instances risks associated

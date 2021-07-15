@@ -22,8 +22,6 @@ class ScaleServiceFactory extends AbstractServiceFactory
         'anrTable' => 'Monarc\Core\Model\Table\AnrTable',
         'instanceConsequenceTable' => 'Monarc\Core\Model\Table\InstanceConsequenceTable',
         'instanceConsequenceService' => 'Monarc\Core\Service\InstanceConsequenceService',
-        'instanceRiskOpTable' => 'Monarc\Core\Model\Table\InstanceRiskOpTable',
-        'instanceRiskOpService' => 'Monarc\Core\Service\InstanceRiskOpService',
         'instanceRiskTable' => 'Monarc\Core\Model\Table\InstanceRiskTable',
         'instanceRiskService' => 'Monarc\Core\Service\InstanceRiskService',
         'scaleImpactTypeTable' => 'Monarc\Core\Model\Table\ScaleImpactTypeTable',
