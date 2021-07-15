@@ -66,12 +66,15 @@ class InstanceRiskOwnerSuperClass
      */
     protected $operationalInstanceRisks;
 
-    // public function __construct($obj = null) {
-    //     $this->instanceRisks = new ArrayCollection();
-    //     $this->operationalInstanceRisks = new ArrayCollection();
-    // 
-    //     // parent::__construct($obj);
-    // }
+    public function __construct($obj = null) {
+        if (empty($this->instanceRisks) && empty($this->operationalInstanceRiskScales)) {
+            $this->instanceRisks = new ArrayCollection();
+            $this->operationalInstanceRiskScales = new ArrayCollection();
+        }
+
+        // $this->anr = $anr;
+        // $this->name = $name;
+    }
 
     public function getId()
     {
