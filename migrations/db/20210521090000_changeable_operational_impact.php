@@ -56,7 +56,6 @@ class ChangeableOperationalImpact extends AbstractMigration
                 `operational_risk_scale_id` int(11) unsigned NOT NULL,
                 `label_translation_key` varchar(255) NOT NULL,
                 `is_hidden` tinyint(1) NOT NULL DEFAULT 0,
-                `is_system` tinyint(1) NOT NULL DEFAULT 0,
                 `creator` varchar(255) NOT NULL,
                 `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
                 `updater` varchar(255) DEFAULT NULL,
@@ -144,7 +143,7 @@ class ChangeableOperationalImpact extends AbstractMigration
                   GROUP_CONCAT(sc.comment2 SEPARATOR "-----") comments2,
                   GROUP_CONCAT(sc.comment3 SEPARATOR "-----") comments3,
                   GROUP_CONCAT(sc.comment4 SEPARATOR "-----") comments4,
-                  sit.type AS scale_impact_type, sit.is_sys, sit.is_hidden
+                  sit.type AS scale_impact_type, sit.is_hidden
           FROM scales s
             INNER JOIN scales_comments sc ON sc.scale_id = s.id
             LEFT JOIN scales_impact_types sit ON sit.scale_id = s.id AND sit.id = sc.scale_type_impact_id
@@ -161,7 +160,7 @@ class ChangeableOperationalImpact extends AbstractMigration
         foreach ($scalesQuery->fetchAll() as $scaleData) {
             $isLikelihoodScale = (int)$scaleData['scale_type'] === OperationalRiskScale::TYPE_LIKELIHOOD;
             $scaleType = $isLikelihoodScale ? OperationalRiskScale::TYPE_LIKELIHOOD : OperationalRiskScale::TYPE_IMPACT;
-            if (!isset($currentScalesByAnrAndType[$scaleData['anr_id']][$scaleType]) && $scaleType == OperationalRiskScale::TYPE_IMPACT) {
+            if (!isset($currentScalesByAnrAndType[$scaleData['anr_id']][$scaleType])) {
                 $operationalRisksScalesTable->insert([
                     'anr_id' => $scaleData['anr_id'],
                     'type' => $scaleType,
@@ -179,7 +178,6 @@ class ChangeableOperationalImpact extends AbstractMigration
                     'anr_id' => $scaleData['anr_id'],
                     'operational_risk_scale_id' => $currentScalesByAnrAndType[$scaleData['anr_id']][$scaleType],
                     'label_translation_key' => $labelTranslationKey,
-                    'is_system' => $scaleData['is_sys'],
                     'is_hidden' => $scaleData['is_hidden'],
                     'creator' => 'Migration script',
                 ])->save();

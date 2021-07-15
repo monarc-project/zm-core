@@ -601,7 +601,6 @@ class AnrService extends AbstractService
                 $typeTranslation = $operationalRisksAndScalesTranslations[$scaleType->getLabelTranslationKey()];
                 $scaleTypes[$scaleType->getId()] = [
                     'id' => $scaleType->getId(),
-                    'isSystem' => $scaleType->isSystem(),
                     'isHidden' => $scaleType->isHidden(),
                     'labelTranslationKey' => $scaleType->getLabelTranslationKey(),
                     'translation' => [

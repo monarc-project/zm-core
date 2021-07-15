@@ -79,13 +79,6 @@ class OperationalRiskScaleTypeSuperClass
      */
     protected $isHidden = 0;
 
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="is_system", type="smallint")
-     */
-    protected $isSystem;
-
     public function __construct()
     {
         $this->operationalRiskScaleComments = new ArrayCollection();
@@ -163,18 +156,6 @@ class OperationalRiskScaleTypeSuperClass
     public function setIsHidden(bool $isHidden): self
     {
         $this->isHidden = (int)$isHidden;
-
-        return $this;
-    }
-
-    public function isSystem(): int
-    {
-        return $this->isSystem;
-    }
-
-    public function setIsSystem(int $isSystem): self
-    {
-        $this->isSystem = $isSystem;
 
         return $this;
     }
