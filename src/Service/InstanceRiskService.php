@@ -300,7 +300,7 @@ class InstanceRiskService extends AbstractService
         if (empty($data)) {
             throw new Exception('Data missing', 412);
         }
-        if (isset($data['owner'])) {
+        if (\array_key_exists('owner', $data)) {
             $this->processRiskOwnerName((string)$data['owner'], $instanceRisk);
             unset($data['owner']);
         }
