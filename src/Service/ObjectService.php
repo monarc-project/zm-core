@@ -410,15 +410,6 @@ class ObjectService extends AbstractService
                         'description2' => $rolfRisk->description2,
                         'description3' => $rolfRisk->description3,
                         'description4' => $rolfRisk->description4,
-                        'prob' => '-',
-                        'r' => '-',
-                        'o' => '-',
-                        'l' => '-',
-                        'p' => '-',
-                        'risk' => '-',
-                        'comment' => '',
-                        't' => '',
-                        'target' => '-',
                     ];
                 }
             }
