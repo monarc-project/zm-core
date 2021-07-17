@@ -1452,62 +1452,14 @@ class InstanceService extends AbstractService
                 $return['risks'][$instanceRisk->get('id')]['vulnerability'] = null;
             }
 
-            $return['risks'][$instanceRisk->get('id')]['owner'] = $instanceRisk->getInstanceRiskOwner()
+            $return['risks'][$instanceRisk->getId()]['context'] = $instanceRisk->getContext();
+            $return['risks'][$instanceRisk->getId()]['riskOwner'] = $instanceRisk->getInstanceRiskOwner()
                 ? $instanceRisk->getInstanceRiskOwner()->getName()
                 : '';
         }
 
-        // Instance risk op
-        $return['risksop'] = [];
-        /** @var InstanceRiskOpTable $instanceRiskOpTable */
-        $instanceRiskOpTable = $this->get('instanceRiskOpTable');
-        $operationalInstanceRisks = $instanceRiskOpTable->findByInstance($instance);
-        $riskOpIds = [];
-        foreach ($operationalInstanceRisks as $operationalInstanceRisk) {
-            $operationalInstanceRiskId = $operationalInstanceRisk->getId();
-            $riskOpIds[$operationalInstanceRiskId] = $operationalInstanceRiskId;
-            $return['risksop'][$operationalInstanceRiskId] = [
-                'id' => $operationalInstanceRiskId,
-                'rolfRisk' => !empty($return['risksop'][$operationalInstanceRiskId]['rolfRisk'])
-                    ? $return['risksop'][$operationalInstanceRiskId]['rolfRisk']->getId() : null,
-                'riskCacheLabel1' => $operationalInstanceRisk->getRiskCacheLabel(1),
-                'riskCacheLabel2' => $operationalInstanceRisk->getRiskCacheLabel(2),
-                'riskCacheLabel3' => $operationalInstanceRisk->getRiskCacheLabel(3),
-                'riskCacheLabel4' => $operationalInstanceRisk->getRiskCacheLabel(4),
-                'riskCacheDescription1' => $operationalInstanceRisk->getRiskCacheDescription(1),
-                'riskCacheDescription2' => $operationalInstanceRisk->getRiskCacheDescription(2),
-                'riskCacheDescription3' => $operationalInstanceRisk->getRiskCacheDescription(3),
-                'riskCacheDescription4' => $operationalInstanceRisk->getRiskCacheDescription(4),
-                'brutProb' => $withEval ? $operationalInstanceRisk->getBrutProb() : -1,
-                'netProb' => $withEval ? $operationalInstanceRisk->getNetProb() : -1,
-                'targetedProb' => $withEval ? $operationalInstanceRisk->getNetProb() : -1,
-                'cacheBrutRisk' => $withEval ? $operationalInstanceRisk->getCacheBrutRisk() : -1,
-                'cacheNetRisk' => $withEval ? $operationalInstanceRisk->getCacheNetRisk() : -1,
-                'cacheTargetedRisk' => $withEval ? $operationalInstanceRisk->getCacheTargetedRisk() : -1,
-                'kindOfMeasure' => $withEval
-                    ? $operationalInstanceRisk->getKindOfMeasure()
-                    : InstanceRiskOp::KIND_NOT_TREATED,
-                'comment' => $withEval && $withControls ? $operationalInstanceRisk->getComment() : '',
-                'mitigation' => $withEval ? $operationalInstanceRisk->getMitigation() : '',
-                'specific' => $operationalInstanceRisk->getSpecific(),
-                'context' => $operationalInstanceRisk->getContext(),
-                'riskOwner' => $operationalInstanceRisk->getInstanceRiskOwner()
-                    ? $operationalInstanceRisk->getInstanceRiskOwner()->getName()
-                    : '',
-            ];
-            $return['risksop'][$operationalInstanceRiskId]['scalesValues'] = [];
-            if ($withEval) {
-                foreach ($operationalInstanceRisk->getOperationalInstanceRiskScales() as $instanceRiskScale) {
-                    $scaleType = $instanceRiskScale->getOperationalRiskScaleType();
-                    $return['risksop'][$operationalInstanceRiskId]['scalesValues'][] = [
-                        'operationalRiskScaleTypeId' => $scaleType->getId(),
-                        'netValue' => $instanceRiskScale->getNetValue(),
-                        'brutValue' => $instanceRiskScale->getBrutValue(),
-                        'targetValue' => $instanceRiskScale->getTargetedValue(),
-                    ];
-                }
-            }
-        }
+        // Operational instance risks.
+        $return['risksop'] = $this->generateExportArrayOfOperationalInstanceRisks($instance, $withEval, $withControls);
 
         $return = array_merge($return, $this->generateExportArrayOfRecommendations(
             $instance,
@@ -1515,7 +1467,7 @@ class InstanceService extends AbstractService
             $withRecommendations,
             $withUnlinkedRecommendations,
             $riskIds,
-            $riskOpIds
+            !empty($return['risksop']) ? array_keys($return['risksop']) : []
         ));
 
         // Instance consequence
@@ -1597,6 +1549,63 @@ class InstanceService extends AbstractService
         }
 
         return $label;
+    }
+
+    protected function generateExportArrayOfOperationalInstanceRisks(
+        InstanceSuperClass $instance,
+        bool $withEval,
+        bool $withControls
+    ): array {
+        $result = [];
+
+        /** @var InstanceRiskOpTable $instanceRiskOpTable */
+        $instanceRiskOpTable = $this->get('instanceRiskOpTable');
+        $operationalInstanceRisks = $instanceRiskOpTable->findByInstance($instance);
+        foreach ($operationalInstanceRisks as $operationalInstanceRisk) {
+            $operationalInstanceRiskId = $operationalInstanceRisk->getId();
+            $result[$operationalInstanceRiskId] = [
+                'id' => $operationalInstanceRiskId,
+                'rolfRisk' => $operationalInstanceRisk->getRolfRisk()->getId(),
+                'riskCacheLabel1' => $operationalInstanceRisk->getRiskCacheLabel(1),
+                'riskCacheLabel2' => $operationalInstanceRisk->getRiskCacheLabel(2),
+                'riskCacheLabel3' => $operationalInstanceRisk->getRiskCacheLabel(3),
+                'riskCacheLabel4' => $operationalInstanceRisk->getRiskCacheLabel(4),
+                'riskCacheDescription1' => $operationalInstanceRisk->getRiskCacheDescription(1),
+                'riskCacheDescription2' => $operationalInstanceRisk->getRiskCacheDescription(2),
+                'riskCacheDescription3' => $operationalInstanceRisk->getRiskCacheDescription(3),
+                'riskCacheDescription4' => $operationalInstanceRisk->getRiskCacheDescription(4),
+                'brutProb' => $withEval ? $operationalInstanceRisk->getBrutProb() : -1,
+                'netProb' => $withEval ? $operationalInstanceRisk->getNetProb() : -1,
+                'targetedProb' => $withEval ? $operationalInstanceRisk->getNetProb() : -1,
+                'cacheBrutRisk' => $withEval ? $operationalInstanceRisk->getCacheBrutRisk() : -1,
+                'cacheNetRisk' => $withEval ? $operationalInstanceRisk->getCacheNetRisk() : -1,
+                'cacheTargetedRisk' => $withEval ? $operationalInstanceRisk->getCacheTargetedRisk() : -1,
+                'kindOfMeasure' => $withEval
+                    ? $operationalInstanceRisk->getKindOfMeasure()
+                    : InstanceRiskOp::KIND_NOT_TREATED,
+                'comment' => $withEval && $withControls ? $operationalInstanceRisk->getComment() : '',
+                'mitigation' => $withEval ? $operationalInstanceRisk->getMitigation() : '',
+                'specific' => $operationalInstanceRisk->getSpecific(),
+                'context' => $operationalInstanceRisk->getContext(),
+                'riskOwner' => $operationalInstanceRisk->getInstanceRiskOwner()
+                    ? $operationalInstanceRisk->getInstanceRiskOwner()->getName()
+                    : '',
+            ];
+            $result[$operationalInstanceRiskId]['scalesValues'] = [];
+            if ($withEval) {
+                foreach ($operationalInstanceRisk->getOperationalInstanceRiskScales() as $instanceRiskScale) {
+                    $scaleType = $instanceRiskScale->getOperationalRiskScaleType();
+                    $result[$operationalInstanceRiskId]['scalesValues'][] = [
+                        'operationalRiskScaleTypeId' => $scaleType->getId(),
+                        'netValue' => $instanceRiskScale->getNetValue(),
+                        'brutValue' => $instanceRiskScale->getBrutValue(),
+                        'targetValue' => $instanceRiskScale->getTargetedValue(),
+                    ];
+                }
+            }
+        }
+
+        return $result;
     }
 
     protected function generateExportArrayOfRecommendations(
