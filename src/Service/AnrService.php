@@ -591,14 +591,14 @@ class AnrService extends AbstractService
             foreach ($scale->getOperationalRiskScaleTypes() as $scaleType) {
                 $scaleTypeComments = [];
                 foreach ($scaleType->getOperationalRiskScaleComments() as $scaleTypeComment) {
-                    $scaleTypeComments[$scaleTypeComment->getId()] = $this->getOperationalRiskScaleCommentData(
+                    $scaleTypeComments[] = $this->getOperationalRiskScaleCommentData(
                         $scaleTypeComment,
                         $operationalRisksAndScalesTranslations
                     );
                 }
 
                 $typeTranslation = $operationalRisksAndScalesTranslations[$scaleType->getLabelTranslationKey()];
-                $scaleTypes[$scaleType->getId()] = [
+                $scaleTypes[] = [
                     'id' => $scaleType->getId(),
                     'isHidden' => $scaleType->isHidden(),
                     'labelTranslationKey' => $scaleType->getLabelTranslationKey(),
@@ -617,7 +617,7 @@ class AnrService extends AbstractService
                     continue;
                 }
 
-                $scaleComments[$scaleComment->getId()] = $this->getOperationalRiskScaleCommentData(
+                $scaleComments[] = $this->getOperationalRiskScaleCommentData(
                     $scaleComment,
                     $operationalRisksAndScalesTranslations
                 );

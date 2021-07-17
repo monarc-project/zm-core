@@ -1495,16 +1495,17 @@ class InstanceService extends AbstractService
                     ? $operationalInstanceRisk->getInstanceRiskOwner()->getName()
                     : '',
             ];
-            $return['risksop'][$operationalInstanceRiskId]['scales'] = [];
-            foreach ($operationalInstanceRisk->getOperationalInstanceRiskScales() as $instanceRiskScale) {
-                $scaleType = $instanceRiskScale->getOperationalRiskScaleType();
-                $return['risksop'][$operationalInstanceRiskId]['scalesValues'] = [
-                    'scaleType' => $scaleType->getOperationalRiskScale()->getType(),
-                    'operationalRiskScaleTypeId' => $scaleType->getId(),
-                    'netValue' => $withEval ? $instanceRiskScale->getNetValue() : -1,
-                    'brutValue' => $withEval ? $instanceRiskScale->getBrutValue() : -1,
-                    'targetValue' => $withEval ? $instanceRiskScale->getTargetedValue() : -1,
-                ];
+            $return['risksop'][$operationalInstanceRiskId]['scalesValues'] = [];
+            if ($withEval) {
+                foreach ($operationalInstanceRisk->getOperationalInstanceRiskScales() as $instanceRiskScale) {
+                    $scaleType = $instanceRiskScale->getOperationalRiskScaleType();
+                    $return['risksop'][$operationalInstanceRiskId]['scalesValues'][] = [
+                        'operationalRiskScaleTypeId' => $scaleType->getId(),
+                        'netValue' => $instanceRiskScale->getNetValue(),
+                        'brutValue' => $instanceRiskScale->getBrutValue(),
+                        'targetValue' => $instanceRiskScale->getTargetedValue(),
+                    ];
+                }
             }
         }
 
