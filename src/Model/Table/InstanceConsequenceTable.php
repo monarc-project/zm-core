@@ -8,7 +8,9 @@
 namespace Monarc\Core\Model\Table;
 
 use Monarc\Core\Model\Db;
+use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\InstanceConsequence;
+use Monarc\Core\Model\Entity\InstanceConsequenceSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**
@@ -44,5 +46,26 @@ class InstanceConsequenceTable extends AbstractEntityTable
             ->setParameter(':anr', $anrId)
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * @return InstanceConsequence[]
+     */
+    public function findByAnr(AnrSuperClass $anr): array
+    {
+        return $this->getRepository()->createQueryBuilder('ic')
+            ->where('ic.anr = :anr')
+            ->setParameter('anr', $anr)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function saveEntity(InstanceConsequenceSuperClass $instanceConsequence, bool $flushAll = true): void
+    {
+        $em = $this->getDb()->getEntityManager();
+        $em->persist($instanceConsequence);
+        if ($flushAll) {
+            $em->flush();
+        }
     }
 }

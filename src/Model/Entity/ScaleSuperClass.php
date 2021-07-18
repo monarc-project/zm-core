@@ -181,6 +181,15 @@ class ScaleSuperClass extends AbstractEntity
         return $this->scaleImpactTypes;
     }
 
+    public static function getAvailableTypes(): array
+    {
+        return [
+            Scale::TYPE_IMPACT => 'impact',
+            Scale::TYPE_THREAT => 'threat',
+            Scale::TYPE_VULNERABILITY => 'vulnerability',
+        ];
+    }
+
     public function getInputFilter($partial = false)
     {
         if (!$this->inputFilter) {

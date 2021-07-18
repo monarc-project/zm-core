@@ -9,6 +9,7 @@ namespace Monarc\Core\Service;
 
 use Monarc\Core\Model\Entity\Scale;
 use Monarc\Core\Model\Entity\ScaleComment;
+use Monarc\Core\Model\Entity\ScaleSuperClass;
 use Monarc\Core\Model\Table\InstanceConsequenceTable;
 use Monarc\Core\Model\Table\InstanceRiskTable;
 use Monarc\Core\Model\Table\ScaleCommentTable;
@@ -35,29 +36,15 @@ class ScaleService extends AbstractService
     protected $commentTable;
     protected $dependencies = ['anr'];
     protected $forbiddenFields = ['anr'];
-    protected $types = [
-        Scale::TYPE_IMPACT => 'impact',
-        Scale::TYPE_THREAT => 'threat',
-        Scale::TYPE_VULNERABILITY => 'vulnerability',
-    ];
-
-    /**
-     * @return array
-     */
-    public function getTypes()
-    {
-        return $this->types;
-    }
 
     /**
      * @inheritdoc
      */
     public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
     {
-
         $scales = parent::getList($page, $limit, $order, $filter, $filterAnd);
 
-        $types = $this->getTypes();
+        $types = ScaleSuperClass::getAvailableTypes();
 
         foreach ($scales as $key => $scale) {
             $scales[$key]['type'] = $types[$scale['type']];
