@@ -260,7 +260,7 @@ class ScaleImpactTypeSuperClass extends AbstractEntity
         return $this;
     }
 
-    public static function getScaleImpactTypeRolfp()
+    public static function getScaleImpactTypesRolfp(): array
     {
         return [
             self::SCALE_TYPE_R,
@@ -271,7 +271,7 @@ class ScaleImpactTypeSuperClass extends AbstractEntity
         ];
     }
 
-    public static function getScaleImpactTypeCid()
+    public static function getScaleImpactTypesCid(): array
     {
         return [
             self::SCALE_TYPE_C,

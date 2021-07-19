@@ -192,7 +192,8 @@ class ChangeableOperationalImpact extends AbstractMigration
             $comments4 = explode('-----', $scaleData['comments4']);
 
             foreach ($scaleValues as $valueKey => $scaleValue) {
-                if($scaleType == OperationalRiskScale::TYPE_IMPACT && ($scaleValue >= $scaleData['min'] )){
+                $commentTranslationKey = '';
+                if ($scaleType === OperationalRiskScale::TYPE_IMPACT && $scaleValue >= $scaleData['min']) {
                     $commentTranslationKey = Uuid::uuid4();
                     $operationalRisksScalesCommentsTable->insert([
                         'anr_id' => $scaleData['anr_id'],
@@ -204,20 +205,7 @@ class ChangeableOperationalImpact extends AbstractMigration
                         'comment_translation_key' => $commentTranslationKey,
                         'creator' => 'Migration script',
                     ])->save();
-                    $this->createTranslations(
-                        [
-                            'anr_id' => $scaleData['anr_id'],
-                            'comment1' => $comments1[$valueKey] ?? '',
-                            'comment2' => $comments2[$valueKey] ?? '',
-                            'comment3' => $comments3[$valueKey] ?? '',
-                            'comment4' => $comments4[$valueKey] ?? '',
-                        ],
-                        OperationalRiskScaleComment::TRANSLATION_TYPE_NAME,
-                        'comment',
-                        $commentTranslationKey
-                    );
-                }
-                else if($scaleType == OperationalRiskScale::TYPE_LIKELIHOOD){
+                } elseif ($scaleType === OperationalRiskScale::TYPE_LIKELIHOOD) {
                     $commentTranslationKey = Uuid::uuid4();
                     $operationalRisksScalesCommentsTable->insert([
                         'anr_id' => $scaleData['anr_id'],
@@ -229,6 +217,8 @@ class ChangeableOperationalImpact extends AbstractMigration
                         'comment_translation_key' => $commentTranslationKey,
                         'creator' => 'Migration script',
                     ])->save();
+                }
+                if ($commentTranslationKey !== '') {
                     $this->createTranslations(
                         [
                             'anr_id' => $scaleData['anr_id'],
