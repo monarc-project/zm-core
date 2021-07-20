@@ -20,7 +20,7 @@ class TranslationTable extends AbstractTable
     }
 
     /**
-     * @return Translation[]
+     * @return TranslationSuperClass[]
      */
     public function findByAnrTypesAndLanguageIndexedByKey(AnrSuperClass $anr, array $types, string $lang): array
     {
@@ -51,7 +51,7 @@ class TranslationTable extends AbstractTable
     }
 
     /**
-     * @return Translation[]
+     * @return TranslationSuperClass[]
      */
     public function findByAnrKeysAndLanguageIndexedByKey(AnrSuperClass $anr, array $keys, string $lang): array
     {
