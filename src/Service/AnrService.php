@@ -607,7 +607,7 @@ class AnrService extends AbstractService
                         'lang' => $typeTranslation->getLang(),
                         'value' => $typeTranslation->getValue(),
                     ],
-                    'operationalRiskScaleTypeComments' => $scaleTypeComments,
+                    'operationalRiskScaleComments' => $scaleTypeComments,
                 ];
             }
 
