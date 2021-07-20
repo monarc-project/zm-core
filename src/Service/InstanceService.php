@@ -1599,7 +1599,7 @@ class InstanceService extends AbstractService
                         'operationalRiskScaleTypeId' => $scaleType->getId(),
                         'netValue' => $instanceRiskScale->getNetValue(),
                         'brutValue' => $instanceRiskScale->getBrutValue(),
-                        'targetValue' => $instanceRiskScale->getTargetedValue(),
+                        'targetedValue' => $instanceRiskScale->getTargetedValue(),
                     ];
                 }
             }

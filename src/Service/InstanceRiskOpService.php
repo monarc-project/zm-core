@@ -202,7 +202,7 @@ class InstanceRiskOpService
                     'label' => $scaleTypesTranslations[$scaleType->getLabelTranslationKey()]->getValue(),
                     'netValue' => $operationalInstanceRiskScale->getNetValue(),
                     'brutValue' => $operationalInstanceRiskScale->getBrutValue(),
-                    'targetValue' => $operationalInstanceRiskScale->getTargetedValue(),
+                    'targetedValue' => $operationalInstanceRiskScale->getTargetedValue(),
                     'isHidden' => $scaleType->isHidden(),
                 ];
             }
@@ -276,16 +276,15 @@ class InstanceRiskOpService
             $this->verifyScaleValue($operationInstanceRiskScale, (int)$data['brutValue']);
             $operationInstanceRiskScale->setBrutValue((int)$data['brutValue']);
         }
-        if (isset($data['targetValue'])
-            && $operationInstanceRiskScale->getTargetedValue() !== (int)$data['targetValue']
+        if (isset($data['targetedValue'])
+            && $operationInstanceRiskScale->getTargetedValue() !== (int)$data['targetedValue']
         ) {
-            $this->verifyScaleValue($operationInstanceRiskScale, (int)$data['targetValue']);
-            $operationInstanceRiskScale->setTargetedValue((int)$data['targetValue']);
+            $this->verifyScaleValue($operationInstanceRiskScale, (int)$data['targetedValue']);
+            $operationInstanceRiskScale->setTargetedValue((int)$data['targetedValue']);
         }
 
         $operationInstanceRiskScale->setUpdater($this->connectedUser->getEmail());
 
-        /** @var InstanceRiskOpSuperClass $operationalInstanceRisk */
         $operationalInstanceRisk = $this->instanceRiskOpTable->findById($id);
 
         $this->updateRiskCacheValues($operationalInstanceRisk);
