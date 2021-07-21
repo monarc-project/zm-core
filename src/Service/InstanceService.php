@@ -1595,7 +1595,7 @@ class InstanceService extends AbstractService
             if ($withEval) {
                 foreach ($operationalInstanceRisk->getOperationalInstanceRiskScales() as $instanceRiskScale) {
                     $scaleType = $instanceRiskScale->getOperationalRiskScaleType();
-                    $result[$operationalInstanceRiskId]['scalesValues'][] = [
+                    $result[$operationalInstanceRiskId]['scalesValues'][$scaleType->getId()] = [
                         'operationalRiskScaleTypeId' => $scaleType->getId(),
                         'netValue' => $instanceRiskScale->getNetValue(),
                         'brutValue' => $instanceRiskScale->getBrutValue(),
