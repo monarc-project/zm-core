@@ -418,6 +418,7 @@ return [
             Service\ObjectImportService::class => AutowireFactory::class,
             Service\OperationalRiskScaleService::class => AutowireFactory::class,
             Service\OperationalRiskScaleCommentService::class => AutowireFactory::class,
+            Service\OperationalRiskScalesExportService::class => AutowireFactory::class,
 
             // TODO: Entities are created from the code. Should be removed.
             ModelEntity\DeliveriesModels::class => ServiceModelEntity\DeliveriesModelsServiceModelEntity::class,

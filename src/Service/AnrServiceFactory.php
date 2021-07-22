@@ -32,7 +32,7 @@ class AnrServiceFactory extends AbstractServiceFactory
         'scaleTable' => Table\ScaleTable::class,
         'scaleImpactTypeTable' => Table\ScaleImpactTypeTable::class,
         'scaleCommentTable' => Table\ScaleCommentTable::class,
-        'operationalRiskScaleTable' => Table\OperationalRiskScaleTable::class,
-        'translationTable' => Table\TranslationTable::class,
+        'configService' => ConfigService::class,
+        'operationalRiskScalesExportService' => OperationalRiskScalesExportService::class,
     ];
 }

@@ -11,6 +11,7 @@ use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Monarc\Core\Exception\Exception;
+use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\Instance;
 use Monarc\Core\Model\Entity\InstanceConsequenceSuperClass;
 use Monarc\Core\Model\Entity\InstanceRiskOp;
@@ -28,6 +29,7 @@ use Laminas\EventManager\EventManager;
 use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\Mapping\MappingException;
 use Laminas\EventManager\SharedEventManager;
+use Monarc\Core\Model\Table\ScaleTable;
 
 /**
  * Instance Service
@@ -60,6 +62,7 @@ class InstanceService extends AbstractService
     protected $objectObjectService;
     protected $translateService;
     protected $configService;
+    protected $operationalRiskScalesExportService;
 
     // Export (Services)
     protected $objectExportService;
@@ -1204,18 +1207,18 @@ class InstanceService extends AbstractService
 
         $filename = '';
 
-        $with_eval = isset($data['assessments']) && $data['assessments'];
-        $with_controls = isset($data['controls']) && $data['controls'];
-        $with_recommendations = isset($data['recommendations']) && $data['recommendations'];
-        $with_scale = true;
+        $withEval = isset($data['assessments']) && $data['assessments'];
+        $withControls = isset($data['controls']) && $data['controls'];
+        $withRecommendations = isset($data['recommendations']) && $data['recommendations'];
+        $withScale = true;
 
         $exportedInstance = json_encode($this->generateExportArray(
             (int)$data['id'],
             $filename,
-            $with_eval,
-            $with_scale,
-            $with_controls,
-            $with_recommendations,
+            $withEval,
+            $withScale,
+            $withControls,
+            $withRecommendations,
             false
         ));
         $data['filename'] = $filename;
@@ -1244,7 +1247,7 @@ class InstanceService extends AbstractService
         $id,
         &$filename = "",
         $withEval = false,
-        &$withScale = true,
+        $withScale = true,
         $withControls = false,
         $withRecommendations = false,
         $withUnlinkedRecommendations = true
@@ -1299,18 +1302,12 @@ class InstanceService extends AbstractService
 
         // Scales
         if ($withEval && $withScale) {
-            $withScale = false;
-            $return['scales'] = [];
-            $scaleTable = $this->get('scaleTable');
-            $scales = $scaleTable->getEntityByFields(['anr' => $instance->getAnr()->getId()]);
-            $scalesArray = [
-                'min' => 'min',
-                'max' => 'max',
-                'type' => 'type',
-            ];
-            foreach ($scales as $s) {
-                $return['scales'][$s->type] = $s->getJsonArray($scalesArray);
-            }
+            $return['scales'] = $this->generateExportArrayOfScales($instance->getAnr());
+            /** @var OperationalRiskScalesExportService $operationalRiskScalesExportService */
+            $operationalRiskScalesExportService = $this->get('operationalRiskScalesExportService');
+            $return['operationalRiskScales'] = $operationalRiskScalesExportService->generateExportArray(
+                $instance->getAnr()
+            );
         }
 
         // Instance risk
@@ -1407,12 +1404,12 @@ class InstanceService extends AbstractService
             if (!empty($return['risks'][$instanceRisk->get('id')]['amv'])
                 && empty($return['amvs'][$instanceRisk->getAmv()->getUuid()])
             ) {
-                list(
+                [
                     $amv,
                     $threats,
                     $vulns,
                     $themes,
-                    $measures) = $this->get('amvService')->generateExportArray(
+                    $measures] = $this->get('amvService')->generateExportArray(
                     $instanceRisk->get('amv'),
                     $instanceRisk->getAnr() !== null ? $instanceRisk->getAnr()->getId() : null,
                     $withEval
@@ -1504,16 +1501,16 @@ class InstanceService extends AbstractService
             }
         }
 
-        /** @var InstanceSuperClass[] $instanceTableResults */
-        $instanceTableResults = $instanceTable->getRepository()
+        /** @var InstanceSuperClass[] $childrenInstances */
+        $childrenInstances = $instanceTable->getRepository()
             ->createQueryBuilder('t')
             ->where('t.parent = :p')
             ->setParameter(':p', $instance->get('id'))
             ->orderBy('t.position','ASC')->getQuery()->getResult();
         $return['children'] = [];
         $f = '';
-        foreach ($instanceTableResults as $i) {
-            $return['children'][$i->get('id')] = $this->generateExportArray($i->get('id'), $f, $withEval, $withScale, $withControls, $withRecommendations, $withUnlinkedRecommendations);
+        foreach ($childrenInstances as $i) {
+            $return['children'][$i->get('id')] = $this->generateExportArray($i->get('id'), $f, $withEval, false, $withControls, $withRecommendations, $withUnlinkedRecommendations);
         }
 
         return $return;
@@ -1592,7 +1589,7 @@ class InstanceService extends AbstractService
                     : '',
             ];
             $result[$operationalInstanceRiskId]['scalesValues'] = [];
-            if ($withEval) {
+            if ($withEval)   {
                 foreach ($operationalInstanceRisk->getOperationalInstanceRiskScales() as $instanceRiskScale) {
                     $scaleType = $instanceRiskScale->getOperationalRiskScaleType();
                     $result[$operationalInstanceRiskId]['scalesValues'][$scaleType->getId()] = [
@@ -1603,6 +1600,23 @@ class InstanceService extends AbstractService
                     ];
                 }
             }
+        }
+
+        return $result;
+    }
+
+    private function generateExportArrayOfScales(AnrSuperClass $anr): array
+    {
+        $result = [];
+        /** @var ScaleTable $scaleTable */
+        $scaleTable = $this->get('scaleTable');
+        $scales = $scaleTable->findByAnr($anr);
+        foreach ($scales as $scale) {
+            $result[$scale->getType()] = [
+                'min' => $scale->getMin(),
+                'max' => $scale->getMax(),
+                'type' => $scale->getType(),
+            ];
         }
 
         return $result;

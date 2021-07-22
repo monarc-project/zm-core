@@ -10,15 +10,8 @@ namespace Monarc\Core\Service;
 use DateTime;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Anr;
-use Monarc\Core\Model\Entity\AnrSuperClass;
-use Monarc\Core\Model\Entity\OperationalRiskScaleComment;
-use Monarc\Core\Model\Entity\OperationalRiskScaleCommentSuperClass;
-use Monarc\Core\Model\Entity\OperationalRiskScaleType;
-use Monarc\Core\Model\Entity\OperationalRiskScaleTypeSuperClass;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\MonarcObjectTable;
-use Monarc\Core\Model\Table\OperationalRiskScaleTable;
-use Monarc\Core\Model\Table\TranslationTable;
 
 /**
 * Anr Service
@@ -38,7 +31,6 @@ class AnrService extends AbstractService
     protected $scaleTable;
     protected $scaleImpactTypeTable;
     protected $scaleCommentTable;
-    protected $operationalRiskScaleTable;
     protected $instanceService;
     protected $questionTable;
     protected $questionChoiceTable;
@@ -53,7 +45,7 @@ class AnrService extends AbstractService
     protected $recordTable;
     protected $recordService;
     protected $configService;
-    protected $translationTable;
+    protected $operationalRiskScalesExportService;
 
     /**
     * @inheritdoc
@@ -224,18 +216,17 @@ class AnrService extends AbstractService
 
         $filename = '';
 
-        $with_eval = isset($data['assessments']) && $data['assessments'];
-        //$with_controls_reco = isset($data['controls_reco']) && $data['controls_reco'];
-        $with_controls = isset($data['controls']) && $data['controls'];
-        $with_recommendations = isset($data['recommendations']) && $data['recommendations'];
-        $with_methodSteps = isset($data['methodSteps']) && $data['methodSteps'];
-        $with_interviews = isset($data['interviews']) && $data['interviews'];
-        $with_soas = isset($data['soas']) && $data['soas'];
-        $with_records = isset($data['records']) && $data['records'];
-        $exportedAnr = json_encode($this->generateExportArray($data['id'], $filename, $with_eval, $with_controls, $with_recommendations, $with_methodSteps, $with_interviews, $with_soas, $with_records));
+        $withEval = isset($data['assessments']) && $data['assessments'];
+        $withControls = isset($data['controls']) && $data['controls'];
+        $withRecommendations = isset($data['recommendations']) && $data['recommendations'];
+        $withMethodSteps = isset($data['methodSteps']) && $data['methodSteps'];
+        $withInterviews = isset($data['interviews']) && $data['interviews'];
+        $withSoas = isset($data['soas']) && $data['soas'];
+        $withRecords = isset($data['records']) && $data['records'];
+        $exportedAnr = json_encode($this->generateExportArray($data['id'], $filename, $withEval, $withControls, $withRecommendations, $withMethodSteps, $withInterviews, $withSoas, $withRecords));
         $data['filename'] = $filename;
 
-        if (! empty($data['password'])) {
+        if (!empty($data['password'])) {
             $exportedAnr = $this->encrypt($exportedAnr, $data['password']);
         }
 
@@ -245,13 +236,15 @@ class AnrService extends AbstractService
     /**
     * Generates the array to be exported into a file when calling {#exportAnr}
     * @see #exportAnr
+    *
     * @param int $id The ANR id
     * @param string $filename The output filename
-    * @param bool $with_eval If true, exports evaluations as well
+    * @param bool $withEval If true, exports evaluations as well
+    *
     * @return array The data array that should be saved
     * @throws Exception If the ANR or an entity is not found
     */
-    public function generateExportArray($id, &$filename = "", $with_eval = false, $with_controls = false, $with_recommendations = false, $with_methodSteps = false, $with_interviews = false, $with_soas = false, $with_records = false)
+    public function generateExportArray($id, &$filename = "", $withEval = false, $withControls = false, $withRecommendations = false, $withMethodSteps = false, $withInterviews = false, $withSoas = false, $withRecords = false)
     {
         /** @var AnrTable $anrTable */
         $anrTable = $this->get('table');
@@ -264,21 +257,28 @@ class AnrService extends AbstractService
             'monarc_version' => $this->get('configService')->getAppVersion()['appVersion'],
             'export_datetime' => (new DateTime())->format('Y-m-d H:i:s'),
             'instances' => [],
-            'with_eval' => $with_eval,
+            'with_eval' => $withEval,
         ];
 
+        /** @var InstanceService $instanceService */
         $instanceService = $this->get('instanceService');
         $table = $this->get('instanceTable');
         $instances = $table->getEntityByFields(['anr' => $anr->getId(), 'parent' => null], ['position'=>'ASC']);
         $f = '';
-        $with_scale = false;
-        foreach ($instances as $i) {
-            $return['instances'][$i->id] = $instanceService->generateExportArray($i->id, $f, $with_eval, $with_scale, $with_controls, $with_recommendations);
+        foreach ($instances as $instance) {
+            $return['instances'][$instance->getId()] = $instanceService->generateExportArray(
+                $instance->getId(),
+                $f,
+                $withEval,
+                false,
+                $withControls,
+                $withRecommendations
+            );
         }
 
-        if ($with_eval) {
+        if ($withEval) {
             // TODO: Soa functionality is related only to FrontOffice.
-            if ($with_soas) {
+            if ($withSoas) {
                 // referentials
                 $return['referentials'] = [];
                 $referentialTable = $this->get('referentialTable');
@@ -369,7 +369,9 @@ class AnrService extends AbstractService
             }
 
             // operational risk scales
-            $return['operationalRiskScales'] = $this->generateExportArrayOfOperationalRiskScales($anr);
+            /** @var OperationalRiskScalesExportService $operationalRiskScalesExportService */
+            $operationalRiskScalesExportService = $this->get('operationalRiskScalesExportService');
+            $return['operationalRiskScales'] = $operationalRiskScalesExportService->generateExportArray($anr);
 
             // scales
             $return['scales'] = [];
@@ -413,8 +415,7 @@ class AnrService extends AbstractService
                     }
                 }
             }
-            if($with_methodSteps)
-            {
+            if ($withMethodSteps) {
                 //Risks analysis method data
                 $return['method']['steps'] = [
                     'initAnrContext' => $anr->initAnrContext,
@@ -498,8 +499,7 @@ class AnrService extends AbstractService
                 'seuilRolf2' => $anr->seuilRolf2,
             ];
             // manage the interviews
-            if($with_interviews)
-            {
+            if ($withInterviews) {
                 $interviewTable = $this->get('interviewTable');
                 $interviews = $interviewTable->getEntityByFields(['anr' => $anr->getId()], ['id'=>'ASC']);
                 $interviewArray = [
@@ -513,7 +513,6 @@ class AnrService extends AbstractService
                     $return['method']['interviews'][$i->id] = $i->getJsonArray($interviewArray);
                 }
             }
-
 
             $threatTable = $this->get('threatTable');
             $threats = $threatTable->getEntityByFields(['anr' => $anr->getId()]);
@@ -552,7 +551,7 @@ class AnrService extends AbstractService
             }
 
             // manage the GDPR records
-            if($with_records) {
+            if ($withRecords) {
                 $recordService = $this->get('recordService');
                 $table = $this->get('recordTable');
                 $records = $table->getEntityByFields(['anr' => $anr->getId()], ['id'=>'ASC']);
@@ -563,96 +562,5 @@ class AnrService extends AbstractService
             }
         }
         return $return;
-    }
-
-    protected function getAnrLanguageCode(AnrSuperClass $anr): string
-    {
-        return strtolower($this->get('configService')->getLanguageCodes()[$anr->getLanguage()]);
-    }
-
-    private function generateExportArrayOfOperationalRiskScales(AnrSuperClass $anr): array
-    {
-        $result = [];
-        /** @var OperationalRiskScaleTable $operationalRiskScaleTable */
-        $operationalRiskScaleTable = $this->get('operationalRiskScaleTable');
-        /** @var TranslationTable $translationTable */
-        $translationTable = $this->get('translationTable');
-
-        // TODO: we need to fetch the translations without language code for BO and handle it differently later on.
-        $operationalRisksAndScalesTranslations = $translationTable->findByAnrTypesAndLanguageIndexedByKey(
-            $anr,
-            [OperationalRiskScaleType::TRANSLATION_TYPE_NAME, OperationalRiskScaleComment::TRANSLATION_TYPE_NAME],
-            $this->getAnrLanguageCode($anr)
-        );
-
-        $operationalRiskScales = $operationalRiskScaleTable->findByAnr($anr);
-        foreach ($operationalRiskScales as $scale) {
-            $scaleTypes = [];
-            foreach ($scale->getOperationalRiskScaleTypes() as $scaleType) {
-                $scaleTypeComments = [];
-                foreach ($scaleType->getOperationalRiskScaleComments() as $scaleTypeComment) {
-                    $scaleTypeComments[] = $this->getOperationalRiskScaleCommentData(
-                        $scaleTypeComment,
-                        $operationalRisksAndScalesTranslations
-                    );
-                }
-
-                $typeTranslation = $operationalRisksAndScalesTranslations[$scaleType->getLabelTranslationKey()];
-                $scaleTypes[] = [
-                    'id' => $scaleType->getId(),
-                    'isHidden' => $scaleType->isHidden(),
-                    'labelTranslationKey' => $scaleType->getLabelTranslationKey(),
-                    'translation' => [
-                        'key' => $typeTranslation->getKey(),
-                        'lang' => $typeTranslation->getLang(),
-                        'value' => $typeTranslation->getValue(),
-                    ],
-                    'operationalRiskScaleComments' => $scaleTypeComments,
-                ];
-            }
-
-            $scaleComments = [];
-            foreach ($scale->getOperationalRiskScaleComments() as $scaleComment) {
-                if ($scaleComment->getOperationalRiskScaleType() !== null) {
-                    continue;
-                }
-
-                $scaleComments[] = $this->getOperationalRiskScaleCommentData(
-                    $scaleComment,
-                    $operationalRisksAndScalesTranslations
-                );
-            }
-
-            $result[$scale->getType()] = [
-                'id' => $scale->getId(),
-                'min' => $scale->getMin(),
-                'max' => $scale->getMax(),
-                'type' => $scale->getType(),
-                'operationalRiskScaleTypes' => $scaleTypes,
-                'operationalRiskScaleComments' => $scaleComments,
-            ];
-        }
-
-        return $result;
-    }
-
-    private function getOperationalRiskScaleCommentData(
-        OperationalRiskScaleCommentSuperClass $scaleComment,
-        array $operationalRisksAndScalesTranslations
-    ): array {
-        $commentTranslation = $operationalRisksAndScalesTranslations[$scaleComment->getCommentTranslationKey()];
-
-        return [
-            'id' => $scaleComment->getId(),
-            'scaleIndex' => $scaleComment->getScaleIndex(),
-            'scaleValue' => $scaleComment->getScaleValue(),
-            'isHidden' => $scaleComment->isHidden(),
-            'commentTranslationKey' => $scaleComment->getCommentTranslationKey(),
-            'translation' => [
-                'key' => $commentTranslation->getKey(),
-                'lang' => $commentTranslation->getLang(),
-                'value' => $commentTranslation->getValue(),
-            ],
-        ];
     }
 }
