@@ -109,6 +109,7 @@ class OperationalRiskScaleTypeSuperClass
     public function setOperationalRiskScale(OperationalRiskScaleSuperClass $operationalRiskScale): self
     {
         $this->operationalRiskScale = $operationalRiskScale;
+        $operationalRiskScale->addOperationalRiskScaleTypes($this);
 
         return $this;
     }

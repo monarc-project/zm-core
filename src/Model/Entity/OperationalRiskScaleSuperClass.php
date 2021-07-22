@@ -55,7 +55,7 @@ class OperationalRiskScaleSuperClass
     /**
      * @var OperationalRiskScaleTypeSuperClass[]|ArrayCollection
      *
-     * @ORM\OneToMany(targetEntity="OperationalRiskScaleType", mappedBy="operationalRiskScale")
+     * @ORM\OneToMany(targetEntity="OperationalRiskScaleType", mappedBy="operationalRiskScale", fetch="EAGER")
      */
     protected $operationalRiskScaleTypes;
 
