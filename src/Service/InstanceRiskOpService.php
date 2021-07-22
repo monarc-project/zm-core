@@ -350,6 +350,9 @@ class InstanceRiskOpService
             $probVal = $operationalInstanceRisk->{'get' . $valueType . 'Prob'}();
             if ($probVal !== -1) {
                 foreach ($operationalInstanceRisk->getOperationalInstanceRiskScales() as $riskScale) {
+                    if ($riskScale->getOperationalRiskScaleType()->isHidden()) {
+                        continue;
+                    }
                     $scaleValue = $riskScale->{'get' . $valueType . 'Value'}();
                     if ($scaleValue > -1 && ($probVal * $scaleValue) > $max) {
                         $max = $probVal * $scaleValue;
