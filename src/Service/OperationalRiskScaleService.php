@@ -246,9 +246,9 @@ class OperationalRiskScaleService
 
         if (isset($data['isHidden'])) {
             $operationalRiskScaleType->setIsHidden(!empty($data['isHidden']));
-            $operationalInstanceRisksScales = $this->operationalInstanceRiskScaleTable->findByScaleType($operationalRiskScaleType);
-            foreach ($operationalInstanceRisksScales as $operationalInstanceRisksScale) {
-                $operationalInstanceRisk = $operationalInstanceRisksScale->getOperationalInstanceRisk();
+            $operationalInstanceRiskScales = $this->operationalInstanceRiskScaleTable->findByScaleType($operationalRiskScaleType);
+            foreach ($operationalInstanceRiskScales as $operationalInstanceRiskScale) {
+                $operationalInstanceRisk = $operationalInstanceRiskScale->getOperationalInstanceRisk();
                 foreach (['Brut', 'Net', 'Targeted'] as $valueType) {
                     $max = -1;
                     $probVal = $operationalInstanceRisk->{'get' . $valueType . 'Prob'}();
