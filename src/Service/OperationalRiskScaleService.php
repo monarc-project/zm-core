@@ -21,9 +21,11 @@ use Monarc\Core\Model\Entity\OperationalRiskScale;
 use Monarc\Core\Model\Entity\OperationalRiskScaleComment;
 use Monarc\Core\Model\Entity\Translation;
 use Monarc\Core\Model\Table\AnrTable;
+use Monarc\Core\Model\Table\InstanceRiskOpTable;
 use Monarc\Core\Model\Table\OperationalRiskScaleCommentTable;
 use Monarc\Core\Model\Table\OperationalRiskScaleTable;
 use Monarc\Core\Model\Table\OperationalRiskScaleTypeTable;
+use Monarc\Core\Model\Table\OperationalInstanceRiskScaleTable;
 use Monarc\Core\Model\Table\TranslationTable;
 use Ramsey\Uuid\Uuid;
 
@@ -33,11 +35,15 @@ class OperationalRiskScaleService
 
     protected UserSuperClass $connectedUser;
 
+    protected InstanceRiskOpTable $instanceRiskOpTable;
+
     protected OperationalRiskScaleTable $operationalRiskScaleTable;
 
     protected OperationalRiskScaleTypeTable $operationalRiskScaleTypeTable;
 
     protected OperationalRiskScaleCommentTable $operationalRiskScaleCommentTable;
+
+    protected OperationalInstanceRiskScaleTable $operationalInstanceRiskScaleTable;
 
     protected TranslationTable $translationTable;
 
@@ -46,17 +52,21 @@ class OperationalRiskScaleService
     public function __construct(
         AnrTable $anrTable,
         ConnectedUserService $connectedUserService,
+        InstanceRiskOpTable $instanceRiskOpTable,
         OperationalRiskScaleTable $operationalRiskScaleTable,
         OperationalRiskScaleTypeTable $operationalRiskScaleTypeTable,
         OperationalRiskScaleCommentTable $operationalRiskScaleCommentTable,
+        OperationalInstanceRiskScaleTable $operationalInstanceRiskScaleTable,
         TranslationTable $translationTable,
         ConfigService $configService
     ) {
         $this->anrTable = $anrTable;
         $this->connectedUser = $connectedUserService->getConnectedUser();
+        $this->instanceRiskOpTable = $instanceRiskOpTable;
         $this->operationalRiskScaleTable = $operationalRiskScaleTable;
         $this->operationalRiskScaleTypeTable = $operationalRiskScaleTypeTable;
         $this->operationalRiskScaleCommentTable = $operationalRiskScaleCommentTable;
+        $this->operationalInstanceRiskScaleTable = $operationalInstanceRiskScaleTable;
         $this->translationTable = $translationTable;
         $this->configService = $configService;
     }
@@ -234,7 +244,36 @@ class OperationalRiskScaleService
         /** @var OperationalRiskScaleTypeSuperClass $operationalRiskScaleType */
         $operationalRiskScaleType = $this->operationalRiskScaleTypeTable->findById($id);
 
-        $operationalRiskScaleType->setIsHidden(!empty($data['isHidden']));
+        if (isset($data['isHidden'])) {
+            $operationalRiskScaleType->setIsHidden(!empty($data['isHidden']));
+            $operationalInstanceRisksScales = $this->operationalInstanceRiskScaleTable->findByScaleType($operationalRiskScaleType);
+            foreach ($operationalInstanceRisksScales as $operationalInstanceRisksScale) {
+                $operationalInstanceRisk = $operationalInstanceRisksScale->getOperationalInstanceRisk();
+                foreach (['Brut', 'Net', 'Targeted'] as $valueType) {
+                    $max = -1;
+                    $probVal = $operationalInstanceRisk->{'get' . $valueType . 'Prob'}();
+                    if ($probVal !== -1) {
+                        foreach ($operationalInstanceRisk->getOperationalInstanceRiskScales() as $riskScale) {
+
+                            if ($riskScale->getOperationalRiskScaleType()->isHidden()) {
+                                continue;
+                            }
+                            $scaleValue = $riskScale->{'get' . $valueType . 'Value'}();
+                            if ($scaleValue > -1 && ($probVal * $scaleValue) > $max) {
+                                $max = $probVal * $scaleValue;
+                            }
+                        }
+                    }
+
+                    if ($operationalInstanceRisk->{'getCache' . $valueType . 'Risk'}() !== $max) {
+                        $operationalInstanceRisk
+                            ->setUpdater($this->connectedUser->getFirstname() . ' ' . $this->connectedUser->getLastname())
+                            ->{'setCache' . $valueType . 'Risk'}($max);
+                        $this->instanceRiskOpTable->saveEntity($operationalInstanceRisk, false);
+                    }
+                }
+            }
+        }
 
         if (!empty($data['label'])) {
             $languageCode = $data['language'] ?? $this->getAnrLanguageCode($operationalRiskScaleType->getAnr());
