@@ -77,9 +77,10 @@ class InstanceRiskOpTable extends AbstractEntityTable
             $l = $anr->get('language');
 
             $fields = [
-            'riskCacheLabel' .$l,
-            'riskCacheDescription' . $l,
-            'comment'];
+                'riskCacheLabel' .$l,
+                'riskCacheDescription' . $l,
+                'comment'
+            ];
 
             $query = [];
             foreach ($fields as $f) {
@@ -92,8 +93,8 @@ class InstanceRiskOpTable extends AbstractEntityTable
 
         $params['order_direction'] = isset($params['order_direction']) && strtolower(trim($params['order_direction'])) != 'asc' ? 'DESC' : 'ASC';
         return $return->orderBy('iro.' . $params['order'], $params['order_direction'])
-                      ->getQuery()
-                      ->getResult();
+            ->getQuery()
+            ->getResult();
     }
 
     /**
@@ -118,6 +119,21 @@ class InstanceRiskOpTable extends AbstractEntityTable
         return $this->getRepository()
             ->createQueryBuilder('oprisk')
             ->where('oprisk.instance = :instance')
+            ->setParameter('instance', $instance)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return InstanceRiskOpSuperClass[]
+     */
+    public function findByAnrAndInstance(AnrSuperClass $anr, InstanceSuperClass $instance)
+    {
+        return $this->getRepository()
+            ->createQueryBuilder('oprisk')
+            ->where('oprisk.anr = :anr')
+            ->andWhere('oprisk.instance = :instance')
+            ->setParameter('anr', $anr)
             ->setParameter('instance', $instance)
             ->getQuery()
             ->getResult();
