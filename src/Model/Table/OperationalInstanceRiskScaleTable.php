@@ -11,7 +11,6 @@ use Doctrine\ORM\EntityManager;
 use Monarc\Core\Model\Entity\InstanceRiskOpSuperClass;
 use Monarc\Core\Model\Entity\OperationalInstanceRiskScale;
 use Monarc\Core\Model\Entity\OperationalInstanceRiskScaleSuperClass;
-use Monarc\Core\Model\Entity\OperationalRiskScaleTypeSuperClass;
 
 class OperationalInstanceRiskScaleTable extends AbstractTable
 {
@@ -30,13 +29,5 @@ class OperationalInstanceRiskScaleTable extends AbstractTable
             ->setParameter('instanceRiskOp', $instanceRiskOp)
             ->getQuery()
             ->getSQL();
-    }
-    public function findByScaleType(OperationalRiskScaleTypeSuperClass $operationalRiskScaleType): array
-    {
-        return $this->getRepository()->createQueryBuilder('oirs')
-            ->where('oirs.operationalRiskScaleType = :operationalRiskScaleType')
-            ->setParameter('operationalRiskScaleType', $operationalRiskScaleType)
-            ->getQuery()
-            ->getResult();
     }
 }

@@ -66,6 +66,13 @@ class OperationalRiskScaleTypeSuperClass
     protected $operationalRiskScaleComments;
 
     /**
+     * @var OperationalInstanceRiskScale[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="OperationalInstanceRiskScale", mappedBy="operationalRiskScaleType")
+     */
+    protected $operationalInstanceRiskScales;
+
+    /**
      * @var string
      *
      * @ORM\Column(name="label_translation_key", type="string", length=255)
@@ -135,6 +142,11 @@ class OperationalRiskScaleTypeSuperClass
         $this->operationalRiskScaleComments = $operationalRiskScaleComments;
 
         return $this;
+    }
+
+    public function getOperationalInstanceRiskScales()
+    {
+        return $this->operationalInstanceRiskScales;
     }
 
     public function getLabelTranslationKey(): string
