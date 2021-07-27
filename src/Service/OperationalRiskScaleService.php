@@ -259,10 +259,11 @@ class OperationalRiskScaleService
             foreach ($operationalRiskScaleType->getOperationalInstanceRiskScales() as $operationalInstanceRiskScale) {
                 $operationalInstanceRisk = $operationalInstanceRiskScale->getOperationalInstanceRisk();
                 if (!\in_array($operationalInstanceRisk->getId(), $updatedInstanceRiskIds, true)) {
-                    $this->instanceRiskOpService->updateRiskCacheValues($operationalInstanceRisk,true);
+                    $this->instanceRiskOpService->updateRiskCacheValues($operationalInstanceRisk);
                     $updatedInstanceRiskIds[] = $operationalInstanceRisk->getId();
                 }
             }
+            $this->operationalRiskScaleTypeTable->flush();
         }
 
         return $operationalRiskScaleType->getId();
