@@ -179,7 +179,7 @@ class RolfRiskService extends AbstractService
 
                     /** @var InstanceRiskOpService $instanceRiskOpService */
                     $instanceRiskOpService = $this->get('instanceRiskOpService');
-                    $instanceRiskOpService->create($data, ($i + 1) === $nbInstances);
+                    $instanceRiskOpService->createInstanceRisksOp($instance, $object);
                 }
             }
         }
