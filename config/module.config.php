@@ -124,6 +124,19 @@ return [
                 ],
             ],
 
+            'monarc_api_anr_risk_owners' => [
+                'type' => 'segment',
+                'options' => [
+                    'route' => '/api/anr/:anrid/risk-owners[/:id]',
+                    'constraints' => [
+                        'id' => '[0-9]+',
+                    ],
+                    'defaults' => [
+                        'controller' => Controller\ApiAnrRiskOwnersController::class,
+                    ],
+                ],
+            ],
+
             'monarc_api_anr_instances_consequences' => [
                 'type' => 'segment',
                 'options' => [
@@ -538,6 +551,7 @@ return [
             Controller\IndexController::class => InvokableFactory::class,
             Controller\AuthenticationController::class => AutowireFactory::class,
             Controller\ApiAnrController::class => Controller\ApiAnrControllerFactory::class,
+            Controller\ApiAnrRiskOwnersController::class => AutowireFactory::class,
             Controller\ApiAnrRisksController::class => AutowireFactory::class,
             Controller\ApiAnrRisksOpController::class => AutowireFactory::class,
             Controller\ApiAnrExportController::class => AutowireFactory::class,
