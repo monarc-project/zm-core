@@ -156,7 +156,7 @@ return [
                 'options' => [
                     'route' => '/api/anr/:anrid/risksop[/:id]',
                     'defaults' => [
-                        'controller' => Controller\ApiAnrInstancesRisksOpController::class,
+                        'controller' => Controller\ApiAnrRisksOpController::class,
                     ],
                 ],
             ],
