@@ -248,6 +248,9 @@ class InstanceRiskTable extends AbstractEntityTable
                 ON         ir.vulnerability_id = v.uuid
                 LEFT JOIN  assets AS ass
                 ON         ir.asset_id = ass.uuid
+                LEFT JOIN instance_risk_owners AS iro
+                ON         ir.owner_id = iro.id
+                AND        ir.anr_id = iro.anr_id
                 INNER JOIN objects AS o
                 ON         i.object_id = o.uuid
                 WHERE      ir.cache_max_risk >= -1';
