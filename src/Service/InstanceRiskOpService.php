@@ -231,7 +231,9 @@ class InstanceRiskOpService
                 'instanceInfos' => $instancesInfos[$instanceRiskOp->getInstance()->getId()] ?? [],
 
                 'context' => $instanceRiskOp->getContext(),
-                'owner' => $instanceRiskOp->getInstanceRiskOwner() ? $instanceRiskOp->getInstanceRiskOwner()->getName() : '',
+                'owner' => $instanceRiskOp->getInstanceRiskOwner()
+                    ? $instanceRiskOp->getInstanceRiskOwner()->getName()
+                    : '',
             ];
         }
 
@@ -486,8 +488,7 @@ class InstanceRiskOpService
                 $this->instanceRiskOwnerTable->save($instanceRiskOwner, false);
 
                 $operationalInstanceRisk->setInstanceRiskOwner($instanceRiskOwner);
-            } elseif (
-                $operationalInstanceRisk->getInstanceRiskOwner() === null
+            } elseif ($operationalInstanceRisk->getInstanceRiskOwner() === null
                 || $operationalInstanceRisk->getInstanceRiskOwner()->getId() !== $instanceRiskOwner->getId()
             ) {
                 $operationalInstanceRisk->setInstanceRiskOwner($instanceRiskOwner);

@@ -37,18 +37,7 @@ class ApiAnrRisksOpController extends AbstractRestfulController
         $anrId = (int)$this->params()->fromRoute('anrid');
         $params = $this->parseParams();
 
-        if ($this->params()->fromQuery('csv', false)) {
-            /** @var Response $response */
-            $response = $this->getResponse();
-            $response->getHeaders()->addHeaderLine('Content-Type', 'text/csv; charset=utf-8');
-            $response->setContent(
-                $this->instanceRiskOpService->getOperationalRisksInCsv($anrId, $id, $params)
-            );
-
-            return $response;
-        }
-
-        $risks = $this->instanceRiskOpService->getOperationalRisks($anrId,(int) $id, $params);
+        $risks = $this->instanceRiskOpService->getOperationalRisks($anrId, (int)$id, $params);
 
         return new JsonModel([
             'count' => \count($risks),
@@ -60,15 +49,6 @@ class ApiAnrRisksOpController extends AbstractRestfulController
     {
         $anrId = (int)$this->params()->fromRoute('anrid');
         $params = $this->parseParams();
-
-        if ($this->params()->fromQuery('csv', false)) {
-            /** @var Response $response */
-            $response = $this->getResponse();
-            $response->getHeaders()->addHeaderLine('Content-Type', 'text/csv; charset=utf-8');
-            $response->setContent($this->instanceRiskOpService->getOperationalRisksInCsv($anrId, null, $params));
-
-            return $response;
-        }
 
         $risks = $this->instanceRiskOpService->getOperationalRisks($anrId, null, $params);
 

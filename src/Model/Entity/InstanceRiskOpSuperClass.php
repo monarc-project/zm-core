@@ -544,7 +544,7 @@ class InstanceRiskOpSuperClass extends AbstractEntity
         return $this->operationalInstanceRiskScales;
     }
 
-    public function setOperationalInstanceRiskScales($operationalInstanceRiskScales):self
+    public function setOperationalInstanceRiskScales($operationalInstanceRiskScales): self
     {
         $this->operationalInstanceRiskScales = $operationalInstanceRiskScales;
 
