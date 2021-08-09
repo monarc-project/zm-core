@@ -14,6 +14,7 @@ use Doctrine\ORM\ORMException;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\AbstractEntity;
+use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\AssetSuperClass;
 use Monarc\Core\Model\Entity\Instance;
 use Monarc\Core\Model\Entity\InstanceRisk;
@@ -46,6 +47,19 @@ class InstanceRiskTable extends AbstractEntityTable
         }
 
         return $instanceRisk;
+    }
+
+    /**
+     * @return InstanceRiskSuperClass[]
+     */
+    public function findByAnr(AnrSuperClass $anr): array
+    {
+        return $this->getRepository()
+            ->createQueryBuilder('ir')
+            ->where('ir.anr = :anr')
+            ->setParameter('anr', $anr)
+            ->getQuery()
+            ->getResult();
     }
 
     /**
