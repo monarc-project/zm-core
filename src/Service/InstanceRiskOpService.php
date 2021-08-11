@@ -193,9 +193,8 @@ class InstanceRiskOpService
         }
         $result = [];
         foreach ($instancesRisksOp as $instanceRiskOp) {
-            $operationalInstanceRiskScales = $instanceRiskOp->getOperationalInstanceRiskScales();
             $scalesData = [];
-            foreach ($operationalInstanceRiskScales as $operationalInstanceRiskScale) {
+            foreach ($instanceRiskOp->getOperationalInstanceRiskScales() as $operationalInstanceRiskScale) {
                 $scaleType = $operationalInstanceRiskScale->getOperationalRiskScaleType();
                 $scalesData[$scaleType->getId()] = [
                     'instanceRiskScaleId' => $operationalInstanceRiskScale->getId(),
@@ -209,27 +208,27 @@ class InstanceRiskOpService
 
             $result[] = [
                 'id' => $instanceRiskOp->getId(),
+                'rolfRisk' => $instanceRiskOp->getRolfRisk() ? $instanceRiskOp->getRolfRisk()->getId() : null,
                 'label1' => $instanceRiskOp->getRiskCacheLabel(1),
                 'label2' => $instanceRiskOp->getRiskCacheLabel(2),
                 'label3' => $instanceRiskOp->getRiskCacheLabel(3),
                 'label4' => $instanceRiskOp->getRiskCacheLabel(4),
-
                 'description1' => $instanceRiskOp->getRiskCacheDescription(1),
                 'description2' => $instanceRiskOp->getRiskCacheDescription(2),
                 'description3' => $instanceRiskOp->getRiskCacheDescription(3),
                 'description4' => $instanceRiskOp->getRiskCacheDescription(4),
-
+                'netProb' => $instanceRiskOp->getNetProb(),
+                'brutProb' => $instanceRiskOp->getBrutProb(),
+                'targetedProb' => $instanceRiskOp->getTargetedProb(),
                 'cacheNetRisk' => $instanceRiskOp->getCacheNetRisk(),
                 'cacheBrutRisk' => $instanceRiskOp->getCacheBrutRisk(),
                 'cacheTargetedRisk' => $instanceRiskOp->getCacheTargetedRisk(),
                 'scales' => $scalesData,
-
                 'kindOfMeasure' => $instanceRiskOp->getKindOfMeasure(),
                 'comment' => $instanceRiskOp->getComment(),
                 't' => $instanceRiskOp->getKindOfMeasure() === InstanceRiskOp::KIND_NOT_TREATED,
-
+                'position' => $instanceRiskOp->getInstance()->getPosition(),
                 'instanceInfos' => $instancesInfos[$instanceRiskOp->getInstance()->getId()] ?? [],
-
                 'context' => $instanceRiskOp->getContext(),
                 'owner' => $instanceRiskOp->getInstanceRiskOwner()
                     ? $instanceRiskOp->getInstanceRiskOwner()->getName()
