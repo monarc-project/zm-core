@@ -25,6 +25,8 @@ use Monarc\Core\Model\Table\OperationalRiskScaleCommentTable;
 use Monarc\Core\Model\Table\OperationalRiskScaleTable;
 use Monarc\Core\Model\Table\OperationalRiskScaleTypeTable;
 use Monarc\Core\Model\Table\TranslationTable;
+use Monarc\Core\Model\Table\InstanceRiskOpTable;
+use Monarc\Core\Model\Table\OperationalInstanceRiskScaleTable;
 use Ramsey\Uuid\Uuid;
 
 class OperationalRiskScaleService
@@ -41,6 +43,10 @@ class OperationalRiskScaleService
 
     protected TranslationTable $translationTable;
 
+    protected InstanceRiskOpTable $instanceRiskOpTable;
+
+    protected OperationalInstanceRiskScaleTable $operationalInstanceRiskScaleTable;
+
     protected ConfigService $configService;
 
     private InstanceRiskOpService $instanceRiskOpService;
@@ -52,6 +58,8 @@ class OperationalRiskScaleService
         OperationalRiskScaleTypeTable $operationalRiskScaleTypeTable,
         OperationalRiskScaleCommentTable $operationalRiskScaleCommentTable,
         TranslationTable $translationTable,
+        InstanceRiskOpTable $instanceRiskOpTable,
+        OperationalInstanceRiskScaleTable $operationalInstanceRiskScaleTable,
         ConfigService $configService,
         InstanceRiskOpService $instanceRiskOpService
     ) {
@@ -61,6 +69,8 @@ class OperationalRiskScaleService
         $this->operationalRiskScaleTypeTable = $operationalRiskScaleTypeTable;
         $this->operationalRiskScaleCommentTable = $operationalRiskScaleCommentTable;
         $this->translationTable = $translationTable;
+        $this->instanceRiskOpTable = $instanceRiskOpTable;
+        $this->operationalInstanceRiskScaleTable = $operationalInstanceRiskScaleTable;
         $this->configService = $configService;
         $this->instanceRiskOpService = $instanceRiskOpService;
     }

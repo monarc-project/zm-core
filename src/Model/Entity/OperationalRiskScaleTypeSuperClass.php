@@ -149,6 +149,13 @@ class OperationalRiskScaleTypeSuperClass
         return $this->operationalInstanceRiskScales;
     }
 
+    public function setOperationalInstanceRiskScales($operationalInstanceRiskScales): self
+    {
+        $this->operationalInstanceRiskScales = $operationalInstanceRiskScales;
+
+        return $this;
+    }
+
     public function getLabelTranslationKey(): string
     {
         return $this->labelTranslationKey;
