@@ -374,7 +374,7 @@ class InstanceRiskOpService
         }
     }
 
-    protected function createInstanceRiskOpObjectFromInstanceObjectAndRolfRisk(
+    public function createInstanceRiskOpObjectFromInstanceObjectAndRolfRisk(
         InstanceSuperClass $instance,
         ObjectSuperClass $object,
         RolfRiskSuperClass $rolfRisk
