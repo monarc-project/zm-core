@@ -66,7 +66,7 @@ class OperationalRiskScaleTypeSuperClass
     protected $operationalRiskScaleComments;
 
     /**
-     * @var OperationalInstanceRiskScale[]|ArrayCollection
+     * @var OperationalInstanceRiskScaleSuperClass[]|ArrayCollection
      *
      * @ORM\OneToMany(targetEntity="OperationalInstanceRiskScale", mappedBy="operationalRiskScaleType")
      */
@@ -147,13 +147,6 @@ class OperationalRiskScaleTypeSuperClass
     public function getOperationalInstanceRiskScales()
     {
         return $this->operationalInstanceRiskScales;
-    }
-
-    public function setOperationalInstanceRiskScales($operationalInstanceRiskScales): self
-    {
-        $this->operationalInstanceRiskScales = $operationalInstanceRiskScales;
-
-        return $this;
     }
 
     public function getLabelTranslationKey(): string

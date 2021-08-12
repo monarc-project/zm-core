@@ -21,12 +21,12 @@ use Monarc\Core\Model\Entity\OperationalRiskScale;
 use Monarc\Core\Model\Entity\OperationalRiskScaleComment;
 use Monarc\Core\Model\Entity\Translation;
 use Monarc\Core\Model\Table\AnrTable;
+use Monarc\Core\Model\Table\InstanceRiskOpTable;
+use Monarc\Core\Model\Table\OperationalInstanceRiskScaleTable;
 use Monarc\Core\Model\Table\OperationalRiskScaleCommentTable;
 use Monarc\Core\Model\Table\OperationalRiskScaleTable;
 use Monarc\Core\Model\Table\OperationalRiskScaleTypeTable;
 use Monarc\Core\Model\Table\TranslationTable;
-use Monarc\Core\Model\Table\InstanceRiskOpTable;
-use Monarc\Core\Model\Table\OperationalInstanceRiskScaleTable;
 use Ramsey\Uuid\Uuid;
 
 class OperationalRiskScaleService
@@ -43,13 +43,13 @@ class OperationalRiskScaleService
 
     protected TranslationTable $translationTable;
 
-    protected InstanceRiskOpTable $instanceRiskOpTable;
-
-    protected OperationalInstanceRiskScaleTable $operationalInstanceRiskScaleTable;
-
     protected ConfigService $configService;
 
     private InstanceRiskOpService $instanceRiskOpService;
+
+    private InstanceRiskOpTable $instanceRiskOpTable;
+
+    private OperationalInstanceRiskScaleTable $operationalInstanceRiskScaleTable;
 
     public function __construct(
         AnrTable $anrTable,
@@ -58,10 +58,10 @@ class OperationalRiskScaleService
         OperationalRiskScaleTypeTable $operationalRiskScaleTypeTable,
         OperationalRiskScaleCommentTable $operationalRiskScaleCommentTable,
         TranslationTable $translationTable,
-        InstanceRiskOpTable $instanceRiskOpTable,
-        OperationalInstanceRiskScaleTable $operationalInstanceRiskScaleTable,
         ConfigService $configService,
-        InstanceRiskOpService $instanceRiskOpService
+        InstanceRiskOpService $instanceRiskOpService,
+        InstanceRiskOpTable $instanceRiskOpTable,
+        OperationalInstanceRiskScaleTable $operationalInstanceRiskScaleTable
     ) {
         $this->anrTable = $anrTable;
         $this->connectedUser = $connectedUserService->getConnectedUser();
@@ -69,10 +69,10 @@ class OperationalRiskScaleService
         $this->operationalRiskScaleTypeTable = $operationalRiskScaleTypeTable;
         $this->operationalRiskScaleCommentTable = $operationalRiskScaleCommentTable;
         $this->translationTable = $translationTable;
-        $this->instanceRiskOpTable = $instanceRiskOpTable;
-        $this->operationalInstanceRiskScaleTable = $operationalInstanceRiskScaleTable;
         $this->configService = $configService;
         $this->instanceRiskOpService = $instanceRiskOpService;
+        $this->instanceRiskOpTable = $instanceRiskOpTable;
+        $this->operationalInstanceRiskScaleTable = $operationalInstanceRiskScaleTable;
     }
 
     /**
@@ -107,7 +107,7 @@ class OperationalRiskScaleService
                 $languages[] = $lang;
             }
         } else {
-            // Scenario for the frontOffice.
+            // FrontOffice scenario.
             $anrLanguageCode = $this->getAnrLanguageCode($anr);
             $translation = $this->createTranslationObject(
                 $anr,
@@ -135,7 +135,16 @@ class OperationalRiskScaleService
             }
         }
 
-        $this->operationalRiskScaleTypeTable->save($operationalRiskScale);
+        /* Link the new type with all the existed operational risks. */
+        foreach ($this->instanceRiskOpTable->findByAnr($anr) as $operationalInstanceRisk) {
+            $operationalInstanceRiskScale = $this->instanceRiskOpService->createOperationalInstanceRiskScaleObject(
+                $operationalInstanceRisk,
+                $operationalRiskScaleType
+            );
+            $this->operationalInstanceRiskScaleTable->save($operationalInstanceRiskScale, false);
+        }
+
+        $this->operationalRiskScaleTypeTable->save($operationalRiskScaleType);
 
         return $operationalRiskScaleType->getId();
     }

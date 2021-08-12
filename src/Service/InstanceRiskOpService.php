@@ -399,7 +399,7 @@ class InstanceRiskOpService
             ]);
     }
 
-    protected function createOperationalInstanceRiskScaleObject(
+    public function createOperationalInstanceRiskScaleObject(
         InstanceRiskOpSuperClass $instanceRiskOp,
         OperationalRiskScaleTypeSuperClass $operationalRiskScaleType
     ): OperationalInstanceRiskScaleSuperClass {
