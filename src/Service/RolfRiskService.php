@@ -179,11 +179,14 @@ class RolfRiskService extends AbstractService
 
                     /** @var InstanceRiskOpService $instanceRiskOpService */
                     $instanceRiskOpService = $this->get('instanceRiskOpService');
-                    $instanceRiskOpService->createInstanceRiskOpObjectFromInstanceObjectAndRolfRisk(
+                    $instanceRiskOp = $instanceRiskOpService->createInstanceRiskOpObjectFromInstanceObjectAndRolfRisk(
                         $instance,
                         $object,
                         $rolfRisk
                     );
+                    /** @var InstanceRiskOpTable $instanceRiskOpTable */
+                    $instanceRiskOpTable = $this->get('instanceRiskOpTable');
+                    $instanceRiskOpTable->saveEntity($instanceRiskOp);
                 }
             }
         }
