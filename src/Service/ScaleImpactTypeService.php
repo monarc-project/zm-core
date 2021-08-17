@@ -95,15 +95,9 @@ class ScaleImpactTypeService extends AbstractService
         $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($scaleImpactType, $dependencies);
 
-        if (!isset($data['labels'])) {
-            $data['labels'] = [
-                'label1' => $data['label1'] ?? '',
-                'label2' => $data['label2'] ?? '',
-                'label3' => $data['label3'] ?? '',
-                'label4' => $data['label4'] ?? '',
-            ];
+        if (!empty($data['labels'])) {
+            $scaleImpactType->setLabels($data['labels']);
         }
-        $scaleImpactType->setLabels($data['labels']);
 
         $scaleImpactType->setCreator(
             $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
