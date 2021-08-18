@@ -12,6 +12,8 @@ use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Anr;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\MonarcObjectTable;
+use Monarc\Core\Model\Table\ScaleCommentTable;
+use Monarc\Core\Model\Table\ScaleTable;
 
 /**
 * Anr Service
@@ -375,46 +377,53 @@ class AnrService extends AbstractService
 
             // scales
             $return['scales'] = [];
+            /** @var ScaleTable $scaleTable */
             $scaleTable = $this->get('scaleTable');
-            $scales = $scaleTable->getEntityByFields(['anr' => $anr->getId()]);
-            $scalesArray = [
-                'id' => 'id',
-                'min' => 'min',
-                'max' => 'max',
-                'type' => 'type',
-            ];
-            foreach ($scales as $s) {
-                $return['scales'][$s->type] = $s->getJsonArray($scalesArray);
+            $scales = $scaleTable->findByAnr($anr);
+            foreach ($scales as $scale) {
+                $return['scales'][$scale->getType()] = [
+                    'id' => $scale->getId(),
+                    'min' => $scale->getMin(),
+                    'max' => $scale->getMax(),
+                    'type' => $scale->getType(),
+                ];
             }
 
+            /** @var ScaleCommentTable $scaleCommentTable */
             $scaleCommentTable = $this->get('scaleCommentTable');
-            for ($s = 1; $s <= 3; $s++) {
-                for ($i = $return['scales'][$s]['min']; $i <= $return['scales'][$s]['max']; $i++) {
-                    $scaleComment = $scaleCommentTable->getEntityByFields([
-                        'anr' => $anr->getId(),
-                        'scaleIndex' => $i,
-                        'scale' => $return['scales'][$s]['id'],
-                    ]);
-                    $scalesCommentArray = [
-                        'id' => 'id',
-                        'scaleIndex' => 'scaleIndex',
-                        'scaleValue' => 'scaleValue',
-                        'comment1' => 'comment1',
-                        'comment2' => 'comment2',
-                        'comment3' => 'comment3',
-                        'comment4' => 'comment4',
+            $scaleComments = $scaleCommentTable->findByAnr($anr);
+            foreach ($scaleComments as $scaleComment) {
+                $scaleCommentId = $scaleComment->getId();
+                $return['scalesComments'][$scaleCommentId] = [
+                    'id' => $scaleCommentId,
+                    'scaleIndex' => $scaleComment->getScaleIndex(),
+                    'scaleValue' => $scaleComment->getScaleValue(),
+                    'comment1' => $scaleComment->getComment(1),
+                    'comment2' => $scaleComment->getComment(2),
+                    'comment3' => $scaleComment->getComment(3),
+                    'comment4' => $scaleComment->getComment(4),
+                    'scale' => [
+                        'id' => $scaleComment->getScale()->getId(),
+                        'type' => $scaleComment->getScale()->getType()
+                    ],
+                ];
+                if ($scaleComment->getScaleImpactType() !== null) {
+                    $return['scalesComments'][$scaleCommentId]['scaleImpactType'] = [
+                        'id' => $scaleComment->getScaleImpactType()->getId(),
+                        'type' => $scaleComment->getScaleImpactType()->getType(),
+                        'position' => $scaleComment->getScaleImpactType()->getPosition(),
+                        'labels' => [
+                            'label1' => $scaleComment->getScaleImpactType()->getLabel(1),
+                            'label2' => $scaleComment->getScaleImpactType()->getLabel(2),
+                            'label3' => $scaleComment->getScaleImpactType()->getLabel(3),
+                            'label4' => $scaleComment->getScaleImpactType()->getLabel(4),
+                        ],
+                        'isSys' => $scaleComment->getScaleImpactType()->isSys(),
+                        'isHidden' => $scaleComment->getScaleImpactType()->isHidden(),
                     ];
-                    foreach ($scaleComment as $sc) {
-                        $return['scalesComments'][$sc->id] = $sc->getJsonArray($scalesCommentArray);
-                        $return['scalesComments'][$sc->id]['scale']['id'] = $sc->scale->id;
-                        $return['scalesComments'][$sc->id]['scale']['type'] = $sc->scale->type;
-                        if (null !== $sc->scaleImpactType) {
-                            $return['scalesComments'][$sc->id]['scaleImpactType']['id'] = $sc->scaleImpactType->id;
-                            $return['scalesComments'][$sc->id]['scaleImpactType']['position'] = $sc->scaleImpactType->position;
-                        }
-                    }
                 }
             }
+
             if ($withMethodSteps) {
                 //Risks analysis method data
                 $return['method']['steps'] = [
