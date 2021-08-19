@@ -152,6 +152,8 @@ class RolfRiskService extends AbstractService
             'riskCacheDescription4' => $rolfRisk->description4,
         ];
         //manage the addition of tags
+        /** @var InstanceRiskOpTable $instanceRiskOpTable */
+        $instanceRiskOpTable = $this->get('instanceRiskOpTable');
         foreach ($addedTags as $addedTag) {
             /** @var MonarcObjectTable $monarcObjectTable */
             $monarcObjectTable = $this->get('MonarcObjectTable');
@@ -184,10 +186,11 @@ class RolfRiskService extends AbstractService
                         $object,
                         $rolfRisk
                     );
-                    /** @var InstanceRiskOpTable $instanceRiskOpTable */
-                    $instanceRiskOpTable = $this->get('instanceRiskOpTable');
-                    $instanceRiskOpTable->saveEntity($instanceRiskOp);
+
+                    $instanceRiskOpTable->saveEntity($instanceRiskOp, false);
                 }
+
+                $instanceRiskOpTable->getDb()->flush();
             }
         }
 
@@ -339,6 +342,8 @@ class RolfRiskService extends AbstractService
             'riskCacheDescription4' => $rolfRisk->description4,
         ];
 
+        /** @var InstanceRiskOpTable $instanceRiskOpTable */
+        $instanceRiskOpTable = $this->get('instanceRiskOpTable');
         foreach ($addedTags as $addedTag) {
             /** @var MonarcObjectTable $MonarcObjectTable */
             $monarcObjectTable = $this->get('MonarcObjectTable');
@@ -357,9 +362,6 @@ class RolfRiskService extends AbstractService
                     ]);
                 }
 
-                $i = 1;
-                $nbInstances = \count($instances);
-
                 $data['object'] = $object->getUuid();
 
                 foreach ($instances as $instance) {
@@ -367,9 +369,16 @@ class RolfRiskService extends AbstractService
 
                     /** @var InstanceRiskOpService $instanceRiskOpService */
                     $instanceRiskOpService = $this->get('instanceRiskOpService');
-                    $instanceRiskOpService->create($data, $i === $nbInstances);
-                    $i++;
+                    $instanceRiskOp = $instanceRiskOpService->createInstanceRiskOpObjectFromInstanceObjectAndRolfRisk(
+                        $instance,
+                        $object,
+                        $rolfRisk
+                    );
+
+                    $instanceRiskOpTable->saveEntity($instanceRiskOp, false);
                 }
+
+                $instanceRiskOpTable->getDb()->flush();
             }
         }
 
