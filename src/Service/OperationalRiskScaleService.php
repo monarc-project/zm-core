@@ -322,7 +322,7 @@ class OperationalRiskScaleService
     public function updateLevelsNumberOfOperationalRiskScale(array $data)
     {
         $anr = $this->anrTable->findById($data['anr']);
-        $languageCode = $data['language'] ?? $this->getAnrLanguageCode($anr);
+        $languageCodes = $this->getLanguageCodesForTranslations($anr);
 
         // Change the levels number of the scale.
         $levelsNumber = (int)$data['numberOfLevelForOperationalImpact'];
@@ -364,7 +364,7 @@ class OperationalRiskScaleService
                             $operationalRiskScaleType,
                             $index,
                             ++$maxScaleValue,
-                            [$languageCode]
+                            $languageCodes
                         );
                     }
                 }
@@ -380,7 +380,7 @@ class OperationalRiskScaleService
         $probabilityMax = (int)$data['probabilityMax'];
 
         $anr = $this->anrTable->findById($data['anr']);
-        $languageCode = $data['language'] ?? $this->getAnrLanguageCode($anr);
+        $languageCodes = $this->getLanguageCodesForTranslations($anr);
 
         $operationalRiskScales = $this->operationalRiskScaleTable->findWithCommentsByAnrAndType(
             $anr,
@@ -400,7 +400,7 @@ class OperationalRiskScaleService
             }
             for ($index = $probabilityMin; $index <= $probabilityMax; $index++) {
                 if ($this->getCommentByIndex($index, $operationalRiskScaleComments) === null) {
-                    $this->createScaleComment($anr, $operationalRiskScale, null, $index, $index, [$languageCode]);
+                    $this->createScaleComment($anr, $operationalRiskScale, null, $index, $index, $languageCodes);
                 }
             }
 
@@ -474,7 +474,12 @@ class OperationalRiskScaleService
 
     protected function getAnrLanguageCode(AnrSuperClass $anr): string
     {
-        return strtolower($this->configService->getLanguageCodes()[$anr->getLanguage()]);
+        return $this->configService->getActiveLanguageCodes()[$anr->getLanguage()];
+    }
+
+    protected function getLanguageCodesForTranslations(AnrSuperClass $anr): array
+    {
+        return $this->configService->getActiveLanguageCodes();
     }
 
     /**

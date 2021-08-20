@@ -18,8 +18,9 @@ class ConfigService
     /** @var array */
     protected $config;
 
-    /** @var array */
-    private $languageCodes = [];
+    private array $languageCodes = [];
+
+    private array $activeLanguageCodes = [];
 
     public function __construct(array $config)
     {
@@ -61,6 +62,20 @@ class ConfigService
         }
 
         return $this->languageCodes;
+    }
+
+    public function getActiveLanguageCodes(): array
+    {
+        if (empty($this->activeLanguageCodes)) {
+            $activeLanguages = $this->config['activeLanguages'] ?? [];
+            foreach ($this->config['languages'] as $languageCode => $languageData) {
+                if (\in_array($languageCode, $activeLanguages, true)) {
+                    $this->activeLanguageCodes[$languageData['index']] = $languageCode;
+                }
+            }
+        }
+
+        return $this->activeLanguageCodes;
     }
 
     public function getHost(): string
