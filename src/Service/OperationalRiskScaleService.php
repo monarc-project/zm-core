@@ -207,7 +207,7 @@ class OperationalRiskScaleService
                 $types[] = [
                     'id' => $operationalRiskScaleType->getId(),
                     'scaleId' => $operationalRiskScale->getId(),
-                    'label' => $translationLabel->getValue(),
+                    'label' => $translationLabel !== null ? $translationLabel->getValue() : '',
                     'isHidden' => $operationalRiskScaleType->isHidden(),
                     'comments' => $commentsOfType,
                 ];

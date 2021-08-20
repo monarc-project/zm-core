@@ -49,8 +49,7 @@ class OperationalRiskScaleCommentService
 
         if (!empty($data['comment'])) {
             $anr = $this->anrTable->findById($data['anr']);
-            $languageCode = $data['language']
-                ?? strtolower($this->configService->getLanguageCodes()[$anr->getLanguage()]);
+            $languageCode = $data['language'] ?? $this->configService->getActiveLanguageCodes()[$anr->getLanguage()];
 
             $translationKey = $operationalRiskScaleComment->getCommentTranslationKey();
             $translation = $this->translationTable->findByAnrKeyAndLanguage($anr, $translationKey, $languageCode);
