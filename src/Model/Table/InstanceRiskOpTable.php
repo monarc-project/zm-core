@@ -162,7 +162,7 @@ class InstanceRiskOpTable extends AbstractEntityTable
                 ->setParameter('objectUuid', $object->getUuid());
         }
 
-        $queryBuilder
+        return $queryBuilder
             ->andWhere('oprisk.rolfRisk = :rolfRisk')
             ->setParameter('rolfRisk', $rolfRisk)
             ->getQuery()
