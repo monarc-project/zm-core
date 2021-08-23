@@ -15,6 +15,8 @@ use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\InstanceRiskOp;
 use Monarc\Core\Model\Entity\InstanceRiskOpSuperClass;
 use Monarc\Core\Model\Entity\InstanceSuperClass;
+use Monarc\Core\Model\Entity\ObjectSuperClass;
+use Monarc\Core\Model\Entity\RolfRiskSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**
@@ -135,6 +137,34 @@ class InstanceRiskOpTable extends AbstractEntityTable
             ->andWhere('oprisk.instance = :instance')
             ->setParameter('anr', $anr)
             ->setParameter('instance', $instance)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return InstanceRiskOpSuperClass[]
+     */
+    public function findByObjectAndRolfRisk(ObjectSuperClass $object, RolfRiskSuperClass $rolfRisk)
+    {
+        $queryBuilder = $this->getRepository()->createQueryBuilder('oprisk')
+            ->innerJoin('oprisk.object', 'o');
+
+        if ($object->getAnr() !== null) {
+            $queryBuilder
+                ->where('oprisk.anr = :anr')
+                ->andWhere('o.uuid = :objectUuid')
+                ->andWhere('o.anr = :anr')
+                ->setParameter('objectUuid', $object->getUuid())
+                ->setParameter('anr', $object->getAnr());
+        } else {
+            $queryBuilder
+                ->where('o.uuid = :objectUuid')
+                ->setParameter('objectUuid', $object->getUuid());
+        }
+
+        $queryBuilder
+            ->andWhere('oprisk.rolfRisk = :rolfRisk')
+            ->setParameter('rolfRisk', $rolfRisk)
             ->getQuery()
             ->getResult();
     }
