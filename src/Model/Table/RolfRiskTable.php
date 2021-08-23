@@ -7,8 +7,11 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Doctrine\ORM\EntityNotFoundException;
+use Doctrine\ORM\NonUniqueResultException;
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\RolfRisk;
+use Monarc\Core\Model\Entity\RolfRiskSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**
@@ -20,5 +23,35 @@ class RolfRiskTable extends AbstractEntityTable
     public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
     {
         parent::__construct($dbService, RolfRisk::class, $connectedUserService);
+    }
+
+    /**
+     * @throws NonUniqueResultException
+     * @throws EntityNotFoundException
+     */
+    public function findById(int $id): RolfRiskSuperClass
+    {
+        $rolfRisk = $this->getRepository()
+            ->createQueryBuilder('rr')
+            ->where('rr.id = :id')
+            ->setParameter('id', $id)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if ($rolfRisk === null) {
+            throw EntityNotFoundException::fromClassNameAndIdentifier(\get_class($this), [$id]);
+        }
+
+        return $rolfRisk;
+    }
+
+    public function saveEntity(RolfRiskSuperClass $rolfRisk, bool $flushAll = true): void
+    {
+        $em = $this->getDb()->getEntityManager();
+        $em->persist($rolfRisk);
+        if ($flushAll) {
+            $em->flush();
+        }
     }
 }
