@@ -231,7 +231,7 @@ class RolfRiskService extends AbstractService
 
         $currentTagId = [];
         foreach ($rolfRisk->getTags() as $tag) {
-            $currentTagId[] = $tag->getId;
+            $currentTagId[] = $tag->getId();
         }
 
         $rolfRisk->get('tags')->initialize();
