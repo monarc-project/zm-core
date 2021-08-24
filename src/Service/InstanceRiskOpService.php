@@ -389,6 +389,8 @@ class InstanceRiskOpService
         if ($flushChanges) {
             $this->instanceRiskOpTable->getDb()->flush();
         }
+
+        return $instanceRiskOp;
     }
 
     protected function createInstanceRiskOpObjectFromInstanceObjectAndRolfRisk(
