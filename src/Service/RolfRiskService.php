@@ -135,6 +135,8 @@ class RolfRiskService extends AbstractService
         //manage the addition of tags
         /** @var InstanceRiskOpTable $instanceRiskOpTable */
         $instanceRiskOpTable = $this->get('instanceRiskOpTable');
+        /** @var InstanceRiskOpService $instanceRiskOpService */
+        $instanceRiskOpService = $this->get('instanceRiskOpService');
         foreach ($addedTags as $addedTag) {
             /** @var MonarcObjectTable $monarcObjectTable */
             $monarcObjectTable = $this->get('MonarcObjectTable');
@@ -154,15 +156,11 @@ class RolfRiskService extends AbstractService
                 }
 
                 foreach ($instances as $i => $instance) {
-                    /** @var InstanceRiskOpService $instanceRiskOpService */
-                    $instanceRiskOpService = $this->get('instanceRiskOpService');
-                    $instanceRiskOp = $instanceRiskOpService->createInstanceRiskOpObjectFromInstanceObjectAndRolfRisk(
+                    $instanceRiskOpService->createInstanceRiskOpWithScales(
                         $instance,
                         $object,
                         $rolfRisk
                     );
-
-                    $instanceRiskOpTable->saveEntity($instanceRiskOp, false);
                 }
 
                 $instanceRiskOpTable->getDb()->flush();
@@ -312,13 +310,11 @@ class RolfRiskService extends AbstractService
                 }
 
                 foreach ($instances as $instance) {
-                    $instanceRiskOp = $instanceRiskOpService->createInstanceRiskOpObjectFromInstanceObjectAndRolfRisk(
+                    $instanceRiskOpService->createInstanceRiskOpWithScales(
                         $instance,
                         $object,
                         $rolfRisk
                     );
-
-                    $instanceRiskOpTable->saveEntity($instanceRiskOp, false);
                 }
 
                 $instanceRiskOpTable->getDb()->flush();

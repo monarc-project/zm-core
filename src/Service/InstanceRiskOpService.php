@@ -128,26 +128,11 @@ class InstanceRiskOpService
         } else {
             $rolfTag = $this->rolfTagTable->findById($object->getRolfTag()->getId());
             foreach ($rolfTag->getRisks() as $rolfRisk) {
-                $instanceRiskOp = $this->createInstanceRiskOpObjectFromInstanceObjectAndRolfRisk(
+                $this->createInstanceRiskOpWithScales(
                     $instance,
                     $object,
                     $rolfRisk
                 );
-
-                $this->instanceRiskOpTable->saveEntity($instanceRiskOp, false);
-
-                $operationalRiskScaleTypes = $this->operationalRiskScaleTypeTable->findByAnrAndScaleType(
-                    $instance->getAnr(),
-                    OperationalRiskScale::TYPE_IMPACT
-                );
-                foreach ($operationalRiskScaleTypes as $operationalRiskScaleType) {
-                    $operationalInstanceRiskScale = $this->createOperationalInstanceRiskScaleObject(
-                        $instanceRiskOp,
-                        $operationalRiskScaleType,
-                    );
-
-                    $this->operationalInstanceRiskScaleTable->save($operationalInstanceRiskScale, false);
-                }
             }
         }
 
@@ -374,7 +359,39 @@ class InstanceRiskOpService
         }
     }
 
-    public function createInstanceRiskOpObjectFromInstanceObjectAndRolfRisk(
+    public function createInstanceRiskOpWithScales(
+        InstanceSuperClass $instance,
+        ObjectSuperClass $object,
+        RolfRiskSuperClass $rolfRisk,
+        $flushChanges = false
+    ): InstanceRiskOpSuperClass {
+        $instanceRiskOp = $this->createInstanceRiskOpObjectFromInstanceObjectAndRolfRisk(
+            $instance,
+            $object,
+            $rolfRisk
+        );
+
+        $this->instanceRiskOpTable->saveEntity($instanceRiskOp, false);
+
+        $operationalRiskScaleTypes = $this->operationalRiskScaleTypeTable->findByAnrAndScaleType(
+            $instance->getAnr(),
+            OperationalRiskScale::TYPE_IMPACT
+        );
+        foreach ($operationalRiskScaleTypes as $operationalRiskScaleType) {
+            $operationalInstanceRiskScale = $this->createOperationalInstanceRiskScaleObject(
+                $instanceRiskOp,
+                $operationalRiskScaleType,
+            );
+
+            $this->operationalInstanceRiskScaleTable->save($operationalInstanceRiskScale, false);
+        }
+
+        if ($flushChanges) {
+            $this->instanceRiskOpTable->getDb()->flush();
+        }
+    }
+
+    protected function createInstanceRiskOpObjectFromInstanceObjectAndRolfRisk(
         InstanceSuperClass $instance,
         ObjectSuperClass $object,
         RolfRiskSuperClass $rolfRisk
