@@ -102,7 +102,7 @@ class InstanceRiskService extends AbstractService
                 if (!empty($params['risks'])) {
                     $riskKey = array_search($amv->getUuid(), array_column($params['risks'], 'amv'), true);
                     if ($riskKey !== false) {
-                        $instanceRiskData = $params['risks'][$riskKey];
+                        $instanceRiskData = array_values($params['risks'])[$riskKey];
                         $instanceRisk->setContext($instanceRiskData['context'] ?? '');
                         if (!empty($instanceRiskData['riskOwner'])) {
                             $instanceRiskOwner = $this->getOrCreateInstanceRiskOwner(
