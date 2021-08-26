@@ -55,10 +55,13 @@ class InstanceRiskService extends AbstractService
 
     protected $forbiddenFields = ['anr', 'amv', 'asset', 'threat', 'vulnerability'];
 
+    protected array $cachedData = [];
+
     public function createInstanceRisks(
         InstanceSuperClass $instance,
         AnrSuperClass $anr,
-        ObjectSuperClass $object
+        ObjectSuperClass $object,
+        array $params = []
     ): void {
         /** @var InstanceRiskTable $instanceRiskTable */
         $instanceRiskTable = $this->get('table');
@@ -94,6 +97,22 @@ class InstanceRiskService extends AbstractService
                     ->setInstance($instance)
                     ->setThreat($amv->getThreat())
                     ->setVulnerability($amv->getVulnerability());
+
+                /* Set risk owner and context during the import. */
+                if (!empty($params['risks'])) {
+                    $riskKey = array_search($amv->getUuid(), array_column($params['risks'], 'amv'), true);
+                    if ($riskKey !== false) {
+                        $instanceRiskData = $params['risks'][$riskKey];
+                        $instanceRisk->setContext($instanceRiskData['context'] ?? '');
+                        if (!empty($instanceRiskData['riskOwner'])) {
+                            $instanceRiskOwner = $this->getOrCreateInstanceRiskOwner(
+                                $anr,
+                                $instanceRiskData['riskOwner']
+                            );
+                            $instanceRisk->setInstanceRiskOwner($instanceRiskOwner);
+                        }
+                    }
+                }
 
                 $instanceRiskTable->saveEntity($instanceRisk, false);
 
@@ -383,10 +402,27 @@ class InstanceRiskService extends AbstractService
         $instanceRiskTable->saveEntity($instanceRisk, $last);
     }
 
+    public function getOrCreateInstanceRiskOwner(AnrSuperClass $anr, string $ownerName): InstanceRiskOwner
+    {
+        if (!isset($this->cachedData['instanceRiskOwners'][$ownerName])) {
+            $instanceRiskOwner = $this->instanceRiskOwnerTable->findByAnrAndName($anr, $ownerName);
+            if ($instanceRiskOwner === null) {
+                $instanceRiskOwner = $this->createInstanceRiskOwnerObject($anr, $ownerName);
+
+                $this->instanceRiskOwnerTable->save($instanceRiskOwner, false);
+            }
+
+            $this->cachedData['instanceRiskOwners'][$ownerName] = $instanceRiskOwner;
+        }
+
+        return $this->cachedData['instanceRiskOwners'][$ownerName];
+    }
+
     protected function duplicateRecommendationRisk(
         InstanceRiskSuperClass $instanceRisk,
         InstanceRiskSuperClass $newInstanceRisk
-    ): void {}
+    ): void {
+    }
 
     /**
      * @throws ORMException
@@ -412,8 +448,7 @@ class InstanceRiskService extends AbstractService
                 $this->instanceRiskOwnerTable->save($instanceRiskOwner, false);
 
                 $instanceRisk->setInstanceRiskOwner($instanceRiskOwner);
-            } elseif (
-                $instanceRisk->getInstanceRiskOwner() === null
+            } elseif ($instanceRisk->getInstanceRiskOwner() === null
                 || $instanceRisk->getInstanceRiskOwner()->getId() !== $instanceRiskOwner->getId()
             ) {
                 $instanceRisk->setInstanceRiskOwner($instanceRiskOwner);
