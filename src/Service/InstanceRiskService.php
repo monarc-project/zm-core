@@ -402,7 +402,7 @@ class InstanceRiskService extends AbstractService
         $instanceRiskTable->saveEntity($instanceRisk, $last);
     }
 
-    public function getOrCreateInstanceRiskOwner(AnrSuperClass $anr, string $ownerName): InstanceRiskOwner
+    public function getOrCreateInstanceRiskOwner(AnrSuperClass $anr, string $ownerName): InstanceRiskOwnerSuperClass
     {
         if (!isset($this->cachedData['instanceRiskOwners'][$ownerName])) {
             $instanceRiskOwner = $this->instanceRiskOwnerTable->findByAnrAndName($anr, $ownerName);
