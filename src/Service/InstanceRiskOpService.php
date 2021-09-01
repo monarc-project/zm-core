@@ -444,7 +444,9 @@ class InstanceRiskOpService
         $operationalRiskScaleType = $operationalInstanceRiskScale->getOperationalRiskScaleType();
         $allowedValues = [];
         foreach ($operationalRiskScaleType->getOperationalRiskScaleComments() as $operationalRiskScaleComment) {
-            $allowedValues[] = $operationalRiskScaleComment->getScaleValue();
+            if (!$operationalRiskScaleComment->isHidden() {
+                $allowedValues[] = $operationalRiskScaleComment->getScaleValue();
+            }
         }
 
         if ($scaleValue !== -1 && !\in_array($scaleValue, $allowedValues, true)) {
