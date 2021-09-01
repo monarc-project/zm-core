@@ -33,6 +33,7 @@ class AnrService extends AbstractService
     protected $scaleTable;
     protected $scaleImpactTypeTable;
     protected $scaleCommentTable;
+    protected $operationalRiskScaleService;
     protected $instanceService;
     protected $questionTable;
     protected $questionChoiceTable;
@@ -88,6 +89,15 @@ class AnrService extends AbstractService
             $scaleService = $this->get('scaleService');
             $scaleService->create($scale, ($i == $nbScales));
             $i++;
+        }
+
+        for($type = 1; $type <= 2; $type++){
+            $this->operationalRiskScaleService->createScale(
+                $anr,
+                $type,
+                0,
+                4
+            );
         }
 
         return $anrId;

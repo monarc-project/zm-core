@@ -75,6 +75,50 @@ class OperationalRiskScaleService
         $this->operationalInstanceRiskScaleTable = $operationalInstanceRiskScaleTable;
     }
 
+    public function createScale(
+        AnrSuperClass $anr,
+        int $type,
+        int $min,
+        int $max
+    ): void {
+        $scale = (new OperationalRiskScale())
+            ->setAnr($anr)
+            ->setType($type)
+            ->setMin($min)
+            ->setMax($max)
+            ->setCreator($this->connectedUser->getEmail());
+
+        $this->operationalRiskScaleTable->save($scale);
+
+        $languageCodes = $this->getLanguageCodesForTranslations($anr);
+
+        if ($type == OperationalRiskScale:: TYPE_IMPACT) {
+            $scaleType = $this->createOperationalRiskScaleTypeObject($anr, $scale);
+            foreach ($languageCodes as $languageCode) {
+                $translation = $this->createTranslationObject(
+                    $anr,
+                    OperationalRiskScaleType::TRANSLATION_TYPE_NAME,
+                    $scaleType->getLabelTranslationKey(),
+                    $languageCode,
+                    ''
+                );
+                $this->translationTable->save($translation, false);
+            }
+
+        }
+
+        for ($index = $min; $index <= $max; $index++) {
+            $this->createScaleComment(
+                $anr,
+                $scale,
+                $scaleType ?? null,
+                $index,
+                $index,
+                $languageCodes
+            );
+        }
+    }
+
     /**
      * @param int $anrId
      * @param array $data
