@@ -33,4 +33,16 @@ class OperationalRiskScaleTypeTable extends AbstractTable
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @return OperationalRiskScaleTypeSuperClass[]
+     */
+    public function findByAnr(AnrSuperClass $anr): array
+    {
+        return $this->getRepository()->createQueryBuilder('orst')
+            ->where('orst.anr = :anr')
+            ->setParameter('anr', $anr)
+            ->getQuery()
+            ->getResult();
+    }
 }

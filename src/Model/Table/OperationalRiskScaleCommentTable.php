@@ -35,4 +35,16 @@ class OperationalRiskScaleCommentTable extends AbstractTable
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @return OperationalRiskScaleComment[]
+     */
+    public function findByAnr(AnrSuperClass $anr): array
+    {
+        return $this->getRepository()->createQueryBuilder('orsc')
+            ->where('orsc.anr = :anr')
+            ->setParameter('anr', $anr)
+            ->getQuery()
+            ->getResult();
+    }
 }

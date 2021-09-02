@@ -67,6 +67,14 @@ class TranslationSuperClass
      */
     protected $value;
 
+    /**
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
     public function getAnr(): ?AnrSuperClass
     {
         return $this->anr;

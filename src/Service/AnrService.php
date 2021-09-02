@@ -33,6 +33,10 @@ class AnrService extends AbstractService
     protected $scaleTable;
     protected $scaleImpactTypeTable;
     protected $scaleCommentTable;
+    protected $operationalRiskScaleTable;
+    protected $operationalRiskScaleTypeTable;
+    protected $operationalRiskScaleCommentTable;
+    protected $translationTable;
     protected $operationalRiskScaleService;
     protected $instanceService;
     protected $questionTable;
@@ -137,7 +141,20 @@ class AnrService extends AbstractService
 
         //duplicate object categories, instances, instances consequences, instances risks, instances risks op
         $clones = [];
-        $array = ['scale', 'scaleImpactType', 'scaleComment', 'anrObjectCategory', 'instance', 'instanceConsequence', 'instanceRisk', 'instanceRiskOp'];
+        $array = [
+            'scale',
+            'scaleImpactType',
+            'scaleComment',
+            'operationalRiskScale',
+            'operationalRiskScaleType',
+            'operationalRiskScaleComment',
+            'translation',
+            'anrObjectCategory',
+            'instance',
+            'instanceConsequence',
+            'instanceRisk',
+            'instanceRiskOp'
+        ];
         foreach ($array as $value) {
             $table = $this->get($value . 'Table');
             $order = [];
@@ -146,10 +163,15 @@ class AnrService extends AbstractService
                 $order['level'] = 'ASC';
                 break;
             }
-            $entities = $table->getEntityByFields(['anr' => $anr->id], $order);
+
+            $entities = method_exists($table,'getEntityByFields') ?
+                $table->getEntityByFields(['anr' => $anr->id], $order) :
+                $table->findByAnr($anr);
             foreach ($entities as $entity) {
                 $newEntity = clone $entity;
-                $newEntity->set('id', null);
+                if (method_exists($newEntity,'set')) {
+                    $newEntity->set('id', null);
+                }
                 $newEntity->setAnr($newAnr);
 
                 switch ($value) {
@@ -204,11 +226,29 @@ class AnrService extends AbstractService
                         $newEntity->set('scaleImpactType', null);
                     }
                     break;
+                    case 'operationalRiskScaleType':
+                    if (!empty($entity->getOperationalRiskScale()->getId()) && !empty($clones['operationalRiskScale'][$entity->getOperationalRiskScale()->getId()])) {
+                        $newEntity->setOperationalRiskScale($clones['operationalRiskScale'][$entity->getOperationalRiskScale()->getId()]);
+                    }
+                    break;
+                    case 'operationalRiskScaleComment':
+                    if (!empty($entity->getOperationalRiskScale()->getId()) && !empty($clones['operationalRiskScale'][$entity->getOperationalRiskScale()->getId()])) {
+                        $newEntity->setOperationalRiskScale($clones['operationalRiskScale'][$entity->getOperationalRiskScale()->getId()]);
+                    }
+                    if (!empty($entity->getOperationalRiskScaleType()) && !empty($clones['operationalRiskScaleType'][$entity->getOperationalRiskScaleType()->getId()])) {
+                        $newEntity->setOperationalRiskScaleType($clones['operationalRiskScaleType'][$entity->getOperationalRiskScaleType()->getId()]);
+                    }
+                    break;
                 }
 
                 $table->save($newEntity);
 
-                $clones[$value][$entity->get('id')] = $newEntity;
+                if (method_exists($newEntity,'get')) {
+                    $clones[$value][$entity->get('id')] = $newEntity;
+                } else {
+                    $clones[$value][$entity->getId()] = $newEntity;
+                }
+
             }
         }
         return $newAnr;
