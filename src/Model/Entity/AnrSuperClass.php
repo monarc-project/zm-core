@@ -303,6 +303,11 @@ class AnrSuperClass extends AbstractEntity
         return $this->seuilRolf2;
     }
 
+    public function getShowRolfBrut(): int
+    {
+        return $this->showRolfBrut;
+    }
+
     /**
      * On BO side there is no language field in the Anr entity, so user's language is used.
      * On FO side there is a language field, so Anr's lang is used.

@@ -851,6 +851,7 @@ abstract class AbstractService extends AbstractServiceFactory
             }
         }
 
+        // TODO: Remove the part of the Operational risks scales.
         // If we have C/I/D or R/O/L/F/P values, ensure they are within the min/max bounds of the corresponding scale impact
         if (isset($data['c']) || isset($data['i']) || isset($data['d'])
             || isset($data['brutR']) || isset($data['brutO']) || isset($data['brutL']) || isset($data['brutF']) || isset($data['brutP'])

@@ -11,9 +11,12 @@ use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Monarc\Core\Model\Db;
+use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\InstanceRiskOp;
 use Monarc\Core\Model\Entity\InstanceRiskOpSuperClass;
 use Monarc\Core\Model\Entity\InstanceSuperClass;
+use Monarc\Core\Model\Entity\ObjectSuperClass;
+use Monarc\Core\Model\Entity\RolfRiskSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**
@@ -28,13 +31,21 @@ class InstanceRiskOpTable extends AbstractEntityTable
     }
 
     /**
-     * Get Instances Risks Op
-     * @param $anrId
-     * @param $instancesIds
-     * @param array $params
-     * @return array
+     * @return InstanceRiskOpSuperClass[]
      */
-    public function getInstancesRisksOp($anrId, $instancesIds, $params = [])
+    public function findByAnr(AnrSuperClass $anr): array
+    {
+        return $this->getRepository()->createQueryBuilder('oprisk')
+            ->where('oprisk.anr = :anr')
+            ->setParameter(':anr', $anr)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return InstanceRiskOp[]
+     */
+    public function getInstancesRisksOp(int $anrId, array $instancesIds, array $params = []): array
     {
         $qb = $this->getRepository()->createQueryBuilder('iro');
 
@@ -68,9 +79,10 @@ class InstanceRiskOpTable extends AbstractEntityTable
             $l = $anr->get('language');
 
             $fields = [
-            'riskCacheLabel' .$l,
-            'riskCacheDescription' . $l,
-            'comment'];
+                'riskCacheLabel' .$l,
+                'riskCacheDescription' . $l,
+                'comment'
+            ];
 
             $query = [];
             foreach ($fields as $f) {
@@ -83,8 +95,8 @@ class InstanceRiskOpTable extends AbstractEntityTable
 
         $params['order_direction'] = isset($params['order_direction']) && strtolower(trim($params['order_direction'])) != 'asc' ? 'DESC' : 'ASC';
         return $return->orderBy('iro.' . $params['order'], $params['order_direction'])
-                      ->getQuery()
-                      ->getResult();
+            ->getQuery()
+            ->getResult();
     }
 
     /**
@@ -110,6 +122,49 @@ class InstanceRiskOpTable extends AbstractEntityTable
             ->createQueryBuilder('oprisk')
             ->where('oprisk.instance = :instance')
             ->setParameter('instance', $instance)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return InstanceRiskOpSuperClass[]
+     */
+    public function findByAnrAndInstance(AnrSuperClass $anr, InstanceSuperClass $instance)
+    {
+        return $this->getRepository()
+            ->createQueryBuilder('oprisk')
+            ->where('oprisk.anr = :anr')
+            ->andWhere('oprisk.instance = :instance')
+            ->setParameter('anr', $anr)
+            ->setParameter('instance', $instance)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return InstanceRiskOpSuperClass[]
+     */
+    public function findByObjectAndRolfRisk(ObjectSuperClass $object, RolfRiskSuperClass $rolfRisk)
+    {
+        $queryBuilder = $this->getRepository()->createQueryBuilder('oprisk')
+            ->innerJoin('oprisk.object', 'o');
+
+        if ($object->getAnr() !== null) {
+            $queryBuilder
+                ->where('oprisk.anr = :anr')
+                ->andWhere('o.uuid = :objectUuid')
+                ->andWhere('o.anr = :anr')
+                ->setParameter('objectUuid', $object->getUuid())
+                ->setParameter('anr', $object->getAnr());
+        } else {
+            $queryBuilder
+                ->where('o.uuid = :objectUuid')
+                ->setParameter('objectUuid', $object->getUuid());
+        }
+
+        return $queryBuilder
+            ->andWhere('oprisk.rolfRisk = :rolfRisk')
+            ->setParameter('rolfRisk', $rolfRisk)
             ->getQuery()
             ->getResult();
     }

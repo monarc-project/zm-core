@@ -32,6 +32,7 @@ class InstanceServiceFactory extends AbstractServiceFactory
         'scaleTable' => Table\ScaleTable::class,
         'scaleCommentTable' => Table\ScaleCommentTable::class,
         'scaleImpactTypeTable' => Table\ScaleImpactTypeTable::class,
+        'instanceRiskOpTable' => Table\InstanceRiskOpTable::class,
         'instanceConsequenceService' => Service\InstanceConsequenceService::class,
         'instanceRiskService' => Service\InstanceRiskService::class,
         'instanceRiskOpService' => Service\InstanceRiskOpService::class,
@@ -40,6 +41,7 @@ class InstanceServiceFactory extends AbstractServiceFactory
         'amvService' => Service\AmvService::class,
         'translateService' => Service\TranslateService::class,
         'configService' => ConfigService::class,
+        'operationalRiskScalesExportService' => OperationalRiskScalesExportService::class,
     ];
 
     // TODO: A temporary solution to inject SharedEventManager. All the factories classes will be removed.

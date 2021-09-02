@@ -205,7 +205,7 @@ class InstanceConsequenceService extends AbstractService
     public function updateInstanceImpacts(InstanceConsequenceSuperClass $instanceConsequence, $fromInstance = false)
     {
         $class = $this->get('scaleImpactTypeTable')->getEntityClass();
-        $cidTypes = $class::getScaleImpactTypeCid();
+        $cidTypes = $class::getScaleImpactTypesCid();
 
         $instanceC = [];
         $instanceI = [];

@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Model\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
@@ -61,6 +62,14 @@ class ScaleImpactTypeSuperClass extends AbstractEntity
      * })
      */
     protected $scale;
+
+    /**
+     * @var ScaleCommentSuperClass[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="ScaleComment", mappedBy="scaleImpactType")
+     * @ORM\OrderBy({"scaleIndex" = "ASC"})
+     */
+    protected $scaleComments;
 
     /**
      * @var int
@@ -118,6 +127,13 @@ class ScaleImpactTypeSuperClass extends AbstractEntity
      */
     protected $position;
 
+    public function __construct($obj = null)
+    {
+        $this->scaleComments = new ArrayCollection();
+
+        parent::__construct($obj);
+    }
+
     /**
      * @return int
      */
@@ -160,6 +176,21 @@ class ScaleImpactTypeSuperClass extends AbstractEntity
         return $this;
     }
 
+    public function getScaleComments()
+    {
+        return $this->scaleComments;
+    }
+
+    public function addScaleComment(ScaleCommentSuperClass $scaleComment): self
+    {
+        if (!$this->scaleComments->contains($scaleComment)) {
+            $this->scaleComments->add($scaleComment);
+            $scaleComment->setScaleImpactType($this);
+        }
+
+        return $this;
+    }
+
     public function setLabels(array $labels): self
     {
         foreach (range(1, 4) as $index) {
@@ -179,6 +210,11 @@ class ScaleImpactTypeSuperClass extends AbstractEntity
         }
 
         return (string)$this->{'label' . $languageIndex};
+    }
+
+    public function getPosition(): int
+    {
+        return $this->position;
     }
 
     public function setPosition(int $position): self
@@ -212,9 +248,6 @@ class ScaleImpactTypeSuperClass extends AbstractEntity
         return $this;
     }
 
-    /**
-     * @return int
-     */
     public function isHidden(): bool
     {
         return (bool)$this->isHidden;
@@ -227,7 +260,7 @@ class ScaleImpactTypeSuperClass extends AbstractEntity
         return $this;
     }
 
-    public static function getScaleImpactTypeRolfp()
+    public static function getScaleImpactTypesRolfp(): array
     {
         return [
             self::SCALE_TYPE_R,
@@ -238,7 +271,7 @@ class ScaleImpactTypeSuperClass extends AbstractEntity
         ];
     }
 
-    public static function getScaleImpactTypeCid()
+    public static function getScaleImpactTypesCid(): array
     {
         return [
             self::SCALE_TYPE_C,

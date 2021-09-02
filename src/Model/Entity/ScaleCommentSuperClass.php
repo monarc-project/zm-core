@@ -12,8 +12,6 @@ use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 
 /**
- * Scale Comment Super Class
- *
  * @ORM\Table(name="scales_comments", indexes={
  *      @ORM\Index(name="anr", columns={"anr_id"}),
  *      @ORM\Index(name="scale_id", columns={"scale_id"}),
@@ -37,9 +35,9 @@ class ScaleCommentSuperClass extends AbstractEntity
     protected $id;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Anr
+     * @var AnrSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Anr", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Anr", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
      * })
@@ -47,9 +45,9 @@ class ScaleCommentSuperClass extends AbstractEntity
     protected $anr;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Scale
+     * @var ScaleSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Scale", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Scale", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="scale_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
      * })
@@ -57,9 +55,9 @@ class ScaleCommentSuperClass extends AbstractEntity
     protected $scale;
 
     /**
-     * @var \Monarc\Core\Model\Entity\ScaleImpactType
+     * @var ScaleImpactTypeSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\ScaleImpactType", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="ScaleImpactType", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="scale_type_impact_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
      * })
@@ -67,11 +65,18 @@ class ScaleCommentSuperClass extends AbstractEntity
     protected $scaleImpactType;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="val", type="integer", options={"unsigned":true})
+     * @ORM\Column(name="scale_index", type="integer", options={"unsigned":true})
      */
-    protected $val;
+    protected $scaleIndex;
+
+    /**
+     * @var int
+     *
+     * @ORM\Column(name="scale_value", type="integer", options={"unsigned":true})
+     */
+    protected $scaleValue;
 
     /**
      * @var string
@@ -109,78 +114,100 @@ class ScaleCommentSuperClass extends AbstractEntity
         return $this->id;
     }
 
-    /**
-     * @param int $id
-     * @return Asset
-     */
-    public function setId($id)
+    public function setId(int $id): self
     {
         $this->id = $id;
+
         return $this;
     }
 
-    /**
-     * @return int
-     */
-    public function getAnr()
+    public function getAnr(): ?AnrSuperClass
     {
         return $this->anr;
     }
 
-    /**
-     * @param int $anr
-     * @return ScaleComment
-     */
-    public function setAnr($anr)
+    public function setAnr(AnrSuperClass $anr): self
     {
         $this->anr = $anr;
+
         return $this;
     }
 
-    /**
-     * @return Scale
-     */
-    public function getScale()
+    public function getScale(): ScaleSuperClass
     {
         return $this->scale;
     }
 
-    /**
-     * @param Scale $scale
-     * @return ScaleImpactType
-     */
-    public function setScale($scale)
+    public function setScale(ScaleSuperClass $scale): self
     {
         $this->scale = $scale;
+
         return $this;
     }
 
-    /**
-     * @return ScaleImpactType
-     */
-    public function getScaleImpactType()
+    public function getScaleImpactType(): ?ScaleImpactTypeSuperClass
     {
         return $this->scaleImpactType;
     }
 
-    /**
-     * @param ScaleImpactType $scaleImpactType
-     */
-    public function setScaleImpactType($scaleImpactType)
+    public function setScaleImpactType(ScaleImpactTypeSuperClass $scaleImpactType): self
     {
         $this->scaleImpactType = $scaleImpactType;
+        $scaleImpactType->addScaleComment($this);
+
+        return $this;
     }
 
-    /**
-     * Get Val Values
-     *
-     * @return array
-     */
-    public function getValValues()
+    public function getScaleIndex(): int
     {
-        $values = [-1];
+        return $this->scaleIndex;
+    }
 
-        for ($i = $this->getScale()->min; $i <= $this->getScale()->max; $i++) {
+    public function setScaleIndex(int $scaleIndex): self
+    {
+        $this->scaleIndex = $scaleIndex;
+
+        return $this;
+    }
+
+    public function getScaleValue(): int
+    {
+        return $this->scaleValue;
+    }
+
+    public function setScaleValue(int $scaleValue): self
+    {
+        $this->scaleValue = $scaleValue;
+
+        return $this;
+    }
+
+    public function getComment(int $languageIndex): string
+    {
+        if (!\in_array($languageIndex, range(1, 4), true)) {
+            return '';
+        }
+
+        return (string)$this->{'comment' . $languageIndex};
+    }
+
+    public function setComments(array $comments): self
+    {
+        foreach (range(1, 4) as $index) {
+            $key = 'comment' . $index;
+            if (isset($comments[$key])) {
+                $this->{$key} = $comments[$key];
+            }
+        }
+
+        return $this;
+    }
+
+    public function getScaleIndexAvailableValues()
+    {
+        $values = [];
+
+        for ($i = $this->scale->getMin(); $i <= $this->scale->getMax(); $i++) {
             $values[] = $i;
         }
 
@@ -192,64 +219,52 @@ class ScaleCommentSuperClass extends AbstractEntity
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);
 
-            $texts = ['comment1', 'comment2', 'comment3', 'comment4'];
-
-            foreach ($texts as $text) {
-                $this->inputFilter->add(array(
-                    'name' => $text,
-                    'required' => false,
-                    'allow_empty' => true,
-                    'filters' => array(),
-                    'validators' => array(),
-                ));
-            }
-
-            $this->inputFilter->add(array(
-                'name' => 'val',
+            $this->inputFilter->add([
+                'name' => 'scaleIndex',
                 'required' => true,
                 'allow_empty' => false,
                 'continue_if_empty' => false,
-                'filters' => array(),
-                'validators' => array(
-                    array(
+                'filters' => [],
+                'validators' => [
+                    [
                         'name' => 'InArray',
-                        'options' => array(
-                            'haystack' => $this->getValValues(),
-                        ),
-                    ),
-                ),
-            ));
+                        'options' => [
+                            'haystack' => $this->getScaleIndexAvailableValues(),
+                        ],
+                    ],
+                ],
+            ]);
 
-            $this->inputFilter->add(array(
+            $this->inputFilter->add([
                 'name' => 'scale',
                 'required' => true,
                 'allow_empty' => false,
                 'continue_if_empty' => false,
-                'filters' => array(),
-                'validators' => array(
-                    array(
+                'filters' => [],
+                'validators' => [
+                    [
                         'name' => 'IsInt',
-                    ),
-                ),
-            ));
+                    ],
+                ],
+            ]);
 
-            if ($this->getScale()->type == 1) {
-                $this->inputFilter->add(array(
+            if ($this->getScale()->getType() === 1) {
+                $this->inputFilter->add([
                     'name' => 'scaleImpactType',
                     'required' => true,
                     'allow_empty' => false,
                     'continue_if_empty' => false,
-                    'filters' => array(),
-                    'validators' => array(
-
-                        array(
+                    'filters' => [],
+                    'validators' => [
+                        [
                             'name' => 'IsInt',
-                        ),
-                    ),
-                ));
+                        ],
+                    ],
+                ]);
             }
 
         }
+
         return $this->inputFilter;
     }
 }

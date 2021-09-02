@@ -7,8 +7,10 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Doctrine\ORM\EntityNotFoundException;
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\RolfTag;
+use Monarc\Core\Model\Entity\RolfTagSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**
@@ -20,5 +22,19 @@ class RolfTagTable extends AbstractEntityTable
     public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
     {
         parent::__construct($dbService, RolfTag::class, $connectedUserService);
+    }
+
+    /**
+     * @throws EntityNotFoundException
+     */
+    public function findById(int $id): RolfTagSuperClass
+    {
+        /** @var RolfTagSuperClass|null $rolfTag */
+        $rolfTag = $this->getRepository()->find($id);
+        if ($rolfTag === null) {
+            throw EntityNotFoundException::fromClassNameAndIdentifier(\get_class($this), [$id]);
+        }
+
+        return $rolfTag;
     }
 }

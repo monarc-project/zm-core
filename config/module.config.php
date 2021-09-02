@@ -12,6 +12,7 @@ use Monarc\Core\Service\Model\DbFactory;
 use Monarc\Core\Service;
 use Monarc\Core\Storage\Authentication as StorageAuthentication;
 use Monarc\Core\Validator\LanguageValidator;
+use Monarc\FrontOffice\Model\Table\Factory\CoreEntityManagerFactory;
 use Ramsey\Uuid\Doctrine\UuidType;
 use Laminas\Di\Container\AutowireFactory;
 use Monarc\Core\Model\Entity as ModelEntity;
@@ -119,6 +120,19 @@ return [
                     'route' => '/api/anr-export',
                     'defaults' => [
                         'controller' => Controller\ApiAnrExportController::class,
+                    ],
+                ],
+            ],
+
+            'monarc_api_anr_risk_owners' => [
+                'type' => 'segment',
+                'options' => [
+                    'route' => '/api/anr/:anrid/risk-owners[/:id]',
+                    'constraints' => [
+                        'id' => '[0-9]+',
+                    ],
+                    'defaults' => [
+                        'controller' => Controller\ApiAnrRiskOwnersController::class,
                     ],
                 ],
             ],
@@ -292,6 +306,33 @@ return [
                 ],
             ],
 
+            'monarc_api_operational_scales' => [
+                'type' => 'segment',
+                'options' => [
+                    'route' => '/api/anr/:anrId/operational-scales[/:id]',
+                    'constraints' => [
+                        'id' => '[0-9]+',
+                    ],
+                    'defaults' => [
+                        'controller' => Controller\ApiOperationalRisksScalesController::class,
+                    ],
+                ],
+            ],
+
+            'monarc_api_operational_scales_comment' => [
+                'type' => 'segment',
+                'options' => [
+                    'route' => '/api/anr/:anrId/operational-scales/:scaleid/comments[/:id]',
+                    'constraints' => [
+                        'id' => '[0-9]+',
+                        'scaleid' => '[0-9]+',
+                    ],
+                    'defaults' => [
+                        'controller' => Controller\ApiOperationalRisksScalesCommentsController::class,
+                    ],
+                ],
+            ],
+
             'monarc_api_scales_comments' => [
                 'type' => 'segment',
                 'options' => [
@@ -360,7 +401,7 @@ return [
             Service\HistoricalService::class => Service\HistoricalServiceFactory::class,
             Service\InstanceService::class => Service\InstanceServiceFactory::class,
             Service\InstanceRiskService::class => Service\InstanceRiskServiceFactory::class,
-            Service\InstanceRiskOpService::class => Service\InstanceRiskOpServiceFactory::class,
+            Service\InstanceRiskOpService::class => AutowireFactory::class,
             Service\InstanceConsequenceService::class => Service\InstanceConsequenceServiceFactory::class,
             Service\MailService::class => AutowireFactory::class,
             Service\ReferentialService::class => Service\ReferentialServiceFactory::class,
@@ -388,6 +429,9 @@ return [
             Service\AnrObjectService::class => Service\AnrObjectServiceFactory::class,
             Service\AssetImportService::class => AutowireFactory::class,
             Service\ObjectImportService::class => AutowireFactory::class,
+            Service\OperationalRiskScaleService::class => AutowireFactory::class,
+            Service\OperationalRiskScaleCommentService::class => AutowireFactory::class,
+            Service\OperationalRiskScalesExportService::class => AutowireFactory::class,
 
             // TODO: Entities are created from the code. Should be removed.
             ModelEntity\DeliveriesModels::class => ServiceModelEntity\DeliveriesModelsServiceModelEntity::class,
@@ -422,37 +466,42 @@ return [
             ModelTable\UserTable::class => AutowireFactory::class,
             ModelTable\UserTokenTable::class => AutowireFactory::class,
             ModelTable\UserRoleTable::class => AutowireFactory::class,
-            ModelTable\ModelTable::class =>  AutowireFactory::class,
-            ModelTable\AnrTable::class =>  AutowireFactory::class,
-            ModelTable\AnrObjectCategoryTable::class =>  AutowireFactory::class,
-            ModelTable\QuestionTable::class =>  AutowireFactory::class,
-            ModelTable\QuestionChoiceTable::class =>  AutowireFactory::class,
-            ModelTable\GuideTable::class =>  AutowireFactory::class,
-            ModelTable\GuideItemTable::class =>  AutowireFactory::class,
-            ModelTable\ReferentialTable::class =>  AutowireFactory::class,
-            ModelTable\MeasureTable::class =>  AutowireFactory::class,
-            ModelTable\MeasureMeasureTable::class =>  AutowireFactory::class,
-            ModelTable\SoaCategoryTable::class =>  AutowireFactory::class,
-            ModelTable\MonarcObjectTable::class =>  AutowireFactory::class,
-            ModelTable\InstanceTable::class =>  AutowireFactory::class,
-            ModelTable\InstanceConsequenceTable::class =>  AutowireFactory::class,
-            ModelTable\InstanceRiskTable::class =>  AutowireFactory::class,
-            ModelTable\InstanceRiskOpTable::class =>  AutowireFactory::class,
-            ModelTable\ObjectCategoryTable::class =>  AutowireFactory::class,
-            ModelTable\ObjectObjectTable::class =>  AutowireFactory::class,
-            ModelTable\ThemeTable::class =>  AutowireFactory::class,
-            ModelTable\HistoricalTable::class =>  AutowireFactory::class,
-            ModelTable\AssetTable::class =>  AutowireFactory::class,
+            ModelTable\ModelTable::class => AutowireFactory::class,
+            ModelTable\AnrTable::class => AutowireFactory::class,
+            ModelTable\AnrObjectCategoryTable::class => AutowireFactory::class,
+            ModelTable\QuestionTable::class => AutowireFactory::class,
+            ModelTable\QuestionChoiceTable::class => AutowireFactory::class,
+            ModelTable\GuideTable::class => AutowireFactory::class,
+            ModelTable\GuideItemTable::class => AutowireFactory::class,
+            ModelTable\ReferentialTable::class => AutowireFactory::class,
+            ModelTable\MeasureTable::class => AutowireFactory::class,
+            ModelTable\MeasureMeasureTable::class => AutowireFactory::class,
+            ModelTable\SoaCategoryTable::class => AutowireFactory::class,
+            ModelTable\MonarcObjectTable::class => AutowireFactory::class,
+            ModelTable\InstanceTable::class => AutowireFactory::class,
+            ModelTable\InstanceConsequenceTable::class => AutowireFactory::class,
+            ModelTable\InstanceRiskTable::class => AutowireFactory::class,
+            ModelTable\InstanceRiskOpTable::class => AutowireFactory::class,
+            ModelTable\ObjectCategoryTable::class => AutowireFactory::class,
+            ModelTable\ObjectObjectTable::class => AutowireFactory::class,
+            ModelTable\ThemeTable::class => AutowireFactory::class,
+            ModelTable\HistoricalTable::class => AutowireFactory::class,
+            ModelTable\AssetTable::class => AutowireFactory::class,
             ModelTable\AmvTable::class => AutowireFactory::class,
-            ModelTable\ThreatTable::class =>  AutowireFactory::class,
-            ModelTable\RolfTagTable::class =>  AutowireFactory::class,
-            ModelTable\RolfRiskTable::class =>  AutowireFactory::class,
-            ModelTable\ScaleTable::class =>  AutowireFactory::class,
-            ModelTable\ScaleCommentTable::class =>  AutowireFactory::class,
-            ModelTable\ScaleImpactTypeTable::class =>  AutowireFactory::class,
-            ModelTable\VulnerabilityTable::class =>  AutowireFactory::class,
-            ModelTable\PasswordTokenTable::class =>  AutowireFactory::class,
-            ModelTable\DeliveriesModelsTable::class =>  AutowireFactory::class,
+            ModelTable\ThreatTable::class => AutowireFactory::class,
+            ModelTable\RolfTagTable::class => AutowireFactory::class,
+            ModelTable\RolfRiskTable::class => AutowireFactory::class,
+            ModelTable\ScaleTable::class => AutowireFactory::class,
+            ModelTable\ScaleCommentTable::class => AutowireFactory::class,
+            ModelTable\OperationalRiskScaleTable::class => CoreEntityManagerFactory::class,
+            ModelTable\OperationalRiskScaleTypeTable::class => CoreEntityManagerFactory::class,
+            ModelTable\OperationalRiskScaleCommentTable::class => CoreEntityManagerFactory::class,
+            ModelTable\OperationalInstanceRiskScaleTable::class => CoreEntityManagerFactory::class,
+            ModelTable\ScaleImpactTypeTable::class => AutowireFactory::class,
+            ModelTable\VulnerabilityTable::class => AutowireFactory::class,
+            ModelTable\PasswordTokenTable::class => AutowireFactory::class,
+            ModelTable\DeliveriesModelsTable::class => AutowireFactory::class,
+            ModelTable\InstanceRiskOwnerTable::class => CoreEntityManagerFactory::class,
 
             /* Authentification */
             StorageAuthentication::class => ReflectionBasedAbstractFactory::class,
@@ -502,13 +551,14 @@ return [
             Controller\IndexController::class => InvokableFactory::class,
             Controller\AuthenticationController::class => AutowireFactory::class,
             Controller\ApiAnrController::class => Controller\ApiAnrControllerFactory::class,
+            Controller\ApiAnrRiskOwnersController::class => AutowireFactory::class,
             Controller\ApiAnrRisksController::class => AutowireFactory::class,
-            Controller\ApiAnrRisksOpController::class => Controller\ApiAnrRisksOpControllerFactory::class,
+            Controller\ApiAnrRisksOpController::class => AutowireFactory::class,
             Controller\ApiAnrExportController::class => AutowireFactory::class,
             Controller\ApiAnrInstancesController::class => Controller\ApiAnrInstancesControllerFactory::class,
             Controller\ApiAnrInstancesConsequencesController::class => Controller\ApiAnrInstancesConsequencesControllerFactory::class,
             Controller\ApiAnrInstancesRisksController::class => Controller\ApiAnrInstancesRisksControllerFactory::class,
-            Controller\ApiAnrInstancesRisksOpController::class => Controller\ApiAnrInstancesRisksOpControllerFactory::class,
+            Controller\ApiAnrInstancesRisksOpController::class => AutowireFactory::class,
             Controller\ApiAnrLibraryController::class => Controller\ApiAnrLibraryControllerFactory::class,
             Controller\ApiAnrLibraryCategoryController::class => Controller\ApiAnrLibraryCategoryControllerFactory::class,
             Controller\ApiAnrObjectController::class => Controller\ApiAnrObjectControllerFactory::class,
@@ -517,6 +567,8 @@ return [
             Controller\ApiAnrScalesController::class => Controller\ApiAnrScalesControllerFactory::class,
             Controller\ApiAnrScalesTypesController::class => Controller\ApiAnrScalesTypesControllerFactory::class,
             Controller\ApiAnrScalesCommentsController::class => Controller\ApiAnrScalesCommentsControllerFactory::class,
+            Controller\ApiOperationalRisksScalesController::class => AutowireFactory::class,
+            Controller\ApiOperationalRisksScalesCommentsController::class => AutowireFactory::class,
         ],
     ],
 

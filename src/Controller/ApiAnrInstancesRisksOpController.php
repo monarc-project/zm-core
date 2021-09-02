@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
  * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
@@ -7,51 +7,31 @@
 
 namespace Monarc\Core\Controller;
 
+use Laminas\Mvc\Controller\AbstractRestfulController;
 use Laminas\View\Model\JsonModel;
+use Monarc\Core\Service\InstanceRiskOpService;
 
-/**
- * Api Anr Instances Risks Op Controller
- *
- * Class ApiAnrInstancesRisksOpController
- * @package Monarc\Core\Controller
- */
-class ApiAnrInstancesRisksOpController extends AbstractController
+class ApiAnrInstancesRisksOpController extends AbstractRestfulController
 {
-    protected $name = 'instances-oprisks';
+    private InstanceRiskOpService $instanceRiskOpService;
 
-    /**
-     * @inheritdoc
-     */
-    public function getList()
+    public function __construct(InstanceRiskOpService $instanceRiskOpService)
     {
-        return $this->methodNotAllowed();
+        $this->instanceRiskOpService = $instanceRiskOpService;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function get($id)
+    public function update($id, $data)
     {
-        return $this->methodNotAllowed();
+        $risk = $this->instanceRiskOpService->update((int)$id, $data);
+        unset($risk['anr'], $risk['instance'], $risk['object'], $risk['rolfRisk']);
+
+        return new JsonModel($risk);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function create($data)
+    public function patch($id, $data)
     {
-        return $this->methodNotAllowed();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function update($id, $data){
-        $risk = $this->getService()->update($id, $data);
-        unset($risk['anr']);
-        unset($risk['instance']);
-        unset($risk['object']);
-        unset($risk['rolfRisk']);
+        $risk = $this->instanceRiskOpService->updateScaleValue((int)$id, $data);
+        unset($risk['anr'], $risk['instance'], $risk['object'], $risk['rolfRisk']);
 
         return new JsonModel($risk);
     }

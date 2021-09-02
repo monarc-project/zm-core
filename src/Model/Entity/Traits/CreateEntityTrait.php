@@ -23,9 +23,11 @@ trait CreateEntityTrait
     /**
      * @ORM\PrePersist
      */
-    public function setCreatedAtValue(): void
+    public function setCreatedAtValue(): self
     {
         $this->createdAt = new DateTime();
+
+        return $this;
     }
 
     public function getCreatedAt(): DateTime

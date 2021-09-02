@@ -14,6 +14,7 @@ use Doctrine\ORM\ORMException;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\AbstractEntity;
+use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\AssetSuperClass;
 use Monarc\Core\Model\Entity\Instance;
 use Monarc\Core\Model\Entity\InstanceRisk;
@@ -46,6 +47,19 @@ class InstanceRiskTable extends AbstractEntityTable
         }
 
         return $instanceRisk;
+    }
+
+    /**
+     * @return InstanceRiskSuperClass[]
+     */
+    public function findByAnr(AnrSuperClass $anr): array
+    {
+        return $this->getRepository()
+            ->createQueryBuilder('ir')
+            ->where('ir.anr = :anr')
+            ->setParameter('anr', $anr)
+            ->getQuery()
+            ->getResult();
     }
 
     /**
@@ -209,6 +223,8 @@ class InstanceRiskTable extends AbstractEntityTable
             'v.label' . $l . ' as vulnLabel' . $l . '',
             'v.description' . $l . ' as vulnDescription' . $l . '',
             'ir.vulnerability_rate as vulnerabilityRate',
+            'ir.`context` as `context`',
+            'iro.name as owner',
             'ir.`specific` as `specific`',
             'ir.reduction_amount as reductionAmount',
             'i.c as c_impact',
@@ -246,6 +262,9 @@ class InstanceRiskTable extends AbstractEntityTable
                 ON         ir.vulnerability_id = v.uuid
                 LEFT JOIN  assets AS ass
                 ON         ir.asset_id = ass.uuid
+                LEFT JOIN instance_risk_owners AS iro
+                ON         ir.owner_id = iro.id
+                AND        ir.anr_id = iro.anr_id
                 INNER JOIN objects AS o
                 ON         i.object_id = o.uuid
                 WHERE      ir.cache_max_risk >= -1';
@@ -270,6 +289,9 @@ class InstanceRiskTable extends AbstractEntityTable
                 INNER JOIN objects AS o
                 ON         i.object_id = o.uuid
                 AND        i.anr_id = o.anr_id
+                LEFT JOIN instance_risk_owners AS iro
+                ON         ir.owner_id = iro.id
+                AND        ir.anr_id = iro.anr_id
                 LEFT JOIN  (SELECT rr.instance_risk_id, rr.anr_id,
                     GROUP_CONCAT(rr.recommandation_id) AS recommendations
                     FROM   recommandations_risks AS rr

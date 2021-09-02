@@ -11,14 +11,16 @@ use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Monarc\Core\Exception\Exception;
-use Monarc\Core\Model\Entity\Asset;
+use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\Instance;
 use Monarc\Core\Model\Entity\InstanceConsequenceSuperClass;
 use Monarc\Core\Model\Entity\InstanceRiskOp;
 use Monarc\Core\Model\Entity\InstanceSuperClass;
 use Monarc\Core\Model\Entity\MonarcObject;
+use Monarc\Core\Model\Entity\ScaleCommentSuperClass;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\InstanceConsequenceTable;
+use Monarc\Core\Model\Table\InstanceRiskOpTable;
 use Monarc\Core\Model\Table\InstanceRiskTable;
 use Monarc\Core\Model\Table\InstanceTable;
 use Monarc\Core\Model\Table\ScaleCommentTable;
@@ -27,6 +29,7 @@ use Laminas\EventManager\EventManager;
 use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\Mapping\MappingException;
 use Laminas\EventManager\SharedEventManager;
+use Monarc\Core\Model\Table\ScaleTable;
 
 /**
  * Instance Service
@@ -48,9 +51,7 @@ class InstanceService extends AbstractService
     protected $scaleImpactTypeTable;
     protected $instanceConsequenceTable;
     protected $instanceConsequenceEntity;
-    protected $recommandationRiskTable; // Used for FO
-    protected $recommandationTable; // Used for FO
-    protected $recommandationSetTable; // Used for FO
+    protected $instanceRiskOpTable;
 
     protected $assetTable;
 
@@ -61,6 +62,7 @@ class InstanceService extends AbstractService
     protected $objectObjectService;
     protected $translateService;
     protected $configService;
+    protected $operationalRiskScalesExportService;
 
     // Export (Services)
     protected $objectExportService;
@@ -963,25 +965,6 @@ class InstanceService extends AbstractService
     }
 
     /**
-     * Find In Fields
-     *
-     * @param $obj
-     * @param $search
-     * @param array $fields
-     * @return bool
-     */
-    protected function findInFields($obj, $search, $fields = [])
-    {
-        foreach ($fields as $field) {
-            if (stripos((is_object($obj) ? $obj->{$field} : $obj[$field]), $search) !== false) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * @param $anrId
      * @param null $instance
      * @param array $params
@@ -995,207 +978,6 @@ class InstanceService extends AbstractService
     }
 
     /**
-     * Get Risks Op
-     *
-     * @param $instance
-     * @param $anrId
-     * @return array
-     */
-    public function getRisksOp($anrId, $instance = null, $params = [])
-    {
-        /** @var InstanceTable $instanceTable */
-        $instanceTable = $this->get('table');
-
-        $instancesIds = [];
-        $instancesInfos = [];
-        if ($instance) {
-            $i = $instanceTable->getEntity($instance['id']);
-
-            // Il faut aussi récupérer les fils
-            $instanceTable->initTree($i);
-            $temp = [$i];
-            while (!empty($temp)) {
-                $current = array_shift($temp);
-                if ($current->get('asset')->get('type') == Asset::TYPE_PRIMARY) {
-                    $instancesIds[] = $current->get('id');
-                    $instancesInfos[$current->id] = [
-                        'id' => $current->id,
-                        'scope' => $current->object->scope,
-                        'name1' => $current->name1,
-                        'name2' => $current->name2,
-                        'name3' => $current->name3,
-                        'name4' => $current->name4
-                    ];
-                }
-                $children = $current->getParameter('children');
-                if (!empty($children)) {
-                    foreach ($children as $c) {
-                        array_unshift($temp, $c);
-                    }
-                }
-            }
-        } else {
-            $instances = $instanceTable->getEntityByFields(['anr' => $anrId]);
-            foreach ($instances as $i) {
-                if ($i->get('asset')->get('type') == Asset::TYPE_PRIMARY) {
-                    $instancesIds[] = $i->id;
-                    $instancesInfos[$i->id] = [
-                        'id' => $i->id,
-                        'scope' => $i->object->scope,
-                        'name1' => $i->name1,
-                        'name2' => $i->name2,
-                        'name3' => $i->name3,
-                        'name4' => $i->name4
-                    ];
-                }
-            }
-        }
-
-        //retrieve risks instances
-        /** @var InstanceRiskOpService $instanceRiskServiceOp */
-        $instanceRiskOpService = $this->get('instanceRiskOpService');
-        $instancesRisksOp = $instanceRiskOpService->getInstancesRisksOp($instancesIds, $anrId, $params);
-
-        $riskOps = [];
-        foreach ($instancesRisksOp as $instanceRiskOp) {
-            // Add risk
-            $riskOps[] = [
-                'id' => $instanceRiskOp->id,
-                'instanceInfos' => isset($instancesInfos[$instanceRiskOp->instance->id]) ? $instancesInfos[$instanceRiskOp->instance->id] : [],
-                'label1' => $instanceRiskOp->riskCacheLabel1,
-                'label2' => $instanceRiskOp->riskCacheLabel2,
-                'label3' => $instanceRiskOp->riskCacheLabel3,
-                'label4' => $instanceRiskOp->riskCacheLabel4,
-
-                'description1' => $instanceRiskOp->riskCacheDescription1,
-                'description2' => $instanceRiskOp->riskCacheDescription2,
-                'description3' => $instanceRiskOp->riskCacheDescription3,
-                'description4' => $instanceRiskOp->riskCacheDescription4,
-
-                'netProb' => $instanceRiskOp->netProb,
-                'netR' => $instanceRiskOp->netR,
-                'netO' => $instanceRiskOp->netO,
-                'netL' => $instanceRiskOp->netL,
-                'netF' => $instanceRiskOp->netF,
-                'netP' => $instanceRiskOp->netP,
-                'cacheNetRisk' => $instanceRiskOp->cacheNetRisk,
-
-                'brutProb' => $instanceRiskOp->brutProb,
-                'brutR' => $instanceRiskOp->brutR,
-                'brutO' => $instanceRiskOp->brutO,
-                'brutL' => $instanceRiskOp->brutL,
-                'brutF' => $instanceRiskOp->brutF,
-                'brutP' => $instanceRiskOp->brutP,
-                'cacheBrutRisk' => $instanceRiskOp->cacheBrutRisk,
-
-                'kindOfMeasure' => $instanceRiskOp->kindOfMeasure,
-                'comment' => $instanceRiskOp->comment,
-                't' => $instanceRiskOp->kindOfMeasure === InstanceRiskOp::KIND_NOT_TREATED || !$instanceRiskOp->kindOfMeasure,
-
-                'targetedProb' => $instanceRiskOp->targetedProb,
-                'targetedR' => $instanceRiskOp->targetedR,
-                'targetedO' => $instanceRiskOp->targetedO,
-                'targetedL' => $instanceRiskOp->targetedL,
-                'targetedF' => $instanceRiskOp->targetedF,
-                'targetedP' => $instanceRiskOp->targetedP,
-                'cacheTargetedRisk' => $instanceRiskOp->cacheTargetedRisk,
-            ];
-        }
-
-        return $riskOps;
-    }
-
-    /**
-     * Get Csv Risks Op
-     *
-     * @param $anrId
-     * @param null $instance
-     * @param array $params
-     * @return string
-     */
-    public function getCsvRisksOp($anrId, $instance = null, $params = [])
-    {
-        $translate = $this->get('translateService');
-        $risks = $this->getRisksOp($anrId, $instance, $params);
-        $lang = $this->anrTable->getEntity($anrId)->language;
-        $ShowBrut = $this->anrTable->getEntity($anrId)->showRolfBrut;
-
-        $output = '';
-        if (count($risks) > 0) {
-            $fields_1 = [
-                'instanceInfos' => $translate->translate('Asset', $lang),
-                'label'. $lang => $translate->translate('Risk description', $lang),
-            ];
-            if ($ShowBrut == 1) {
-                $fields_2 = [
-                    'brutProb' =>  $translate->translate('Prob.', $lang) . "(" . $translate->translate('Inherent risk', $lang) . ")",
-                    'brutR' => 'R' . " (" . $translate->translate('Inherent risk', $lang) . ")",
-                    'brutO' => 'O' . " (" . $translate->translate('Inherent risk', $lang) . ")",
-                    'brutL' => 'L' . " (" . $translate->translate('Inherent risk', $lang) . ")",
-                    'brutF' => 'F' . " (" . $translate->translate('Inherent risk', $lang) . ")",
-                    'brutF' => 'P' . " (" . $translate->translate('Inherent risk', $lang) . ")",
-                    'cacheBrutRisk' => $translate->translate('Current risk', $lang) . " (" . $translate->translate('Inherent risk', $lang) . ")",
-                ];
-            }
-            else {
-                $fields_2 = [];
-            }
-            $fields_3 = [
-                'netProb' => $translate->translate('Prob.', $lang) . "(" . $translate->translate('Net risk', $lang) . ")",
-                'netR' => 'R' . " (" . $translate->translate('Net risk', $lang) . ")",
-                'netO' => 'O' . " (" . $translate->translate('Net risk', $lang) . ")",
-                'netL' => 'L' . " (" . $translate->translate('Net risk', $lang) . ")",
-                'netF' => 'F' . " (" . $translate->translate('Net risk', $lang) . ")",
-                'netF' => 'P' . " (" . $translate->translate('Net risk', $lang) . ")",
-                'cacheNetRisk' => $translate->translate('Current risk', $lang) . " (" . $translate->translate('Net risk', $lang) . ")",
-                'comment' => $translate->translate('Existing controls', $lang),
-                'kindOfMeasure' => $translate->translate('Treatment', $lang),
-                'cacheTargetedRisk' => $translate->translate('Residual risk', $lang),
-            ];
-            $fields = $fields_1 + $fields_2 + $fields_3;
-
-            // Fill in the headers
-            $output .= implode(',', array_values($fields)) . "\n";
-            foreach ($risks as $risk) {
-                foreach ($fields as $k => $v) {
-                    if ($k == 'kindOfMeasure'){
-                        switch ($risk[$k]) {
-                            case 1:
-                                $array_values[] = 'Reduction';
-                                break;
-                            case 2:
-                                $array_values[] = 'Denied';
-                                break;
-                            case 3:
-                                $array_values[] = 'Accepted';
-                                break;
-                            default:
-                                $array_values[] = 'Not treated';
-                        }
-                    }
-                    elseif ($k == 'instanceInfos') {
-                        $array_values[] = $risk[$k]['name' . $lang];
-                    }
-                    elseif ($risk[$k] == '-1'){
-                        $array_values[] = null;
-                    }
-                    else {
-                        $array_values[] = $risk[$k];
-                    }
-                }
-                $output .= '"';
-                $search = ['"',"\n"];
-                $replace = ["'",' '];
-                $output .= implode('","', str_replace($search, $replace, $array_values));
-                $output .= "\"\r\n";
-                $array_values = null;
-            }
-        }
-
-        return $output;
-    }
-
-    /**
      * Get Consequences
      *
      * @param $instance
@@ -1206,13 +988,13 @@ class InstanceService extends AbstractService
     {
         $instanceId = $instance['id'];
 
-        /** @var InstanceConsequenceTable $table */
-        $table = $this->get('instanceConsequenceTable');
-        $instanceConsequences = $table->getEntityByFields(['anr' => $anrId, 'instance' => $instanceId]);
+        /** @var InstanceConsequenceTable $instanceConsequenceTable */
+        $instanceConsequenceTable = $this->get('instanceConsequenceTable');
+        $instanceConsequences = $instanceConsequenceTable->getEntityByFields(['anr' => $anrId, 'instance' => $instanceId]);
 
         /** @var AnrTable $anrTable */
         $anrTable = $this->get('anrTable');
-        $anr = $anrTable->getEntity($anrId);
+        $anr = $anrTable->findById($anrId);
 
         $consequences = [];
         foreach ($instanceConsequences as $instanceConsequence) {
@@ -1225,16 +1007,15 @@ class InstanceService extends AbstractService
 
                     /** @var ScaleCommentTable $scaleCommentTable */
                     $scaleCommentTable = $this->get('scaleCommentTable');
+                    /** @var ScaleCommentSuperClass[] $scalesComments */
                     $scalesComments = $scaleCommentTable->getEntityByFields([
                         'anr' => $anrId,
                         'scaleImpactType' => $instanceConsequence->scaleImpactType->id,
                     ]);
 
-
                     $comments = [];
                     foreach ($scalesComments as $scaleComment) {
-                        $comment = 'comment' . $anr->language;
-                        $comments[$scaleComment->val] = $scaleComment->$comment;
+                        $comments[$scaleComment->getScaleValue()] = $scaleComment->getComment($anr->getLanguage());
                     }
                 }
 
@@ -1426,18 +1207,18 @@ class InstanceService extends AbstractService
 
         $filename = '';
 
-        $with_eval = isset($data['assessments']) && $data['assessments'];
-        $with_controls = isset($data['controls']) && $data['controls'];
-        $with_recommendations = isset($data['recommendations']) && $data['recommendations'];
-        $with_scale = true;
+        $withEval = isset($data['assessments']) && $data['assessments'];
+        $withControls = isset($data['controls']) && $data['controls'];
+        $withRecommendations = isset($data['recommendations']) && $data['recommendations'];
+        $withScale = true;
 
         $exportedInstance = json_encode($this->generateExportArray(
             (int)$data['id'],
             $filename,
-            $with_eval,
-            $with_scale,
-            $with_controls,
-            $with_recommendations,
+            $withEval,
+            $withScale,
+            $withControls,
+            $withRecommendations,
             false
         ));
         $data['filename'] = $filename;
@@ -1466,7 +1247,7 @@ class InstanceService extends AbstractService
         $id,
         &$filename = "",
         $withEval = false,
-        &$withScale = true,
+        $withScale = true,
         $withControls = false,
         $withRecommendations = false,
         $withUnlinkedRecommendations = true
@@ -1521,18 +1302,12 @@ class InstanceService extends AbstractService
 
         // Scales
         if ($withEval && $withScale) {
-            $withScale = false;
-            $return['scales'] = [];
-            $scaleTable = $this->get('scaleTable');
-            $scales = $scaleTable->getEntityByFields(['anr' => $instance->getAnr()->getId()]);
-            $scalesArray = [
-                'min' => 'min',
-                'max' => 'max',
-                'type' => 'type',
-            ];
-            foreach ($scales as $s) {
-                $return['scales'][$s->type] = $s->getJsonArray($scalesArray);
-            }
+            $return['scales'] = $this->generateExportArrayOfScales($instance->getAnr());
+            /** @var OperationalRiskScalesExportService $operationalRiskScalesExportService */
+            $operationalRiskScalesExportService = $this->get('operationalRiskScalesExportService');
+            $return['operationalRiskScales'] = $operationalRiskScalesExportService->generateExportArray(
+                $instance->getAnr()
+            );
         }
 
         // Instance risk
@@ -1629,12 +1404,12 @@ class InstanceService extends AbstractService
             if (!empty($return['risks'][$instanceRisk->get('id')]['amv'])
                 && empty($return['amvs'][$instanceRisk->getAmv()->getUuid()])
             ) {
-                list(
+                [
                     $amv,
                     $threats,
                     $vulns,
                     $themes,
-                    $measures) = $this->get('amvService')->generateExportArray(
+                    $measures] = $this->get('amvService')->generateExportArray(
                     $instanceRisk->get('amv'),
                     $instanceRisk->getAnr() !== null ? $instanceRisk->getAnr()->getId() : null,
                     $withEval
@@ -1673,202 +1448,24 @@ class InstanceService extends AbstractService
             } else {
                 $return['risks'][$instanceRisk->get('id')]['vulnerability'] = null;
             }
+
+            $return['risks'][$instanceRisk->getId()]['context'] = $instanceRisk->getContext();
+            $return['risks'][$instanceRisk->getId()]['riskOwner'] = $instanceRisk->getInstanceRiskOwner()
+                ? $instanceRisk->getInstanceRiskOwner()->getName()
+                : '';
         }
 
-        // Recommendations Sets. TODO: move this part to FO.
-        if ($withEval && $withRecommendations) {
-            $recsSetsObj = [
-                'uuid' => 'uuid',
-                'label1' => 'label1',
-                'label2' => 'label2',
-                'label3' => 'label3',
-                'label4' => 'label4',
-            ];
+        // Operational instance risks.
+        $return['risksop'] = $this->generateExportArrayOfOperationalInstanceRisks($instance, $withEval, $withControls);
 
-            $return['recSets'] = [];
-            $recommandationsSets = $this->get('recommandationSetTable')->getEntityByFields(['anr' => $instance->get('anr')->get('id')]);
-            foreach ($recommandationsSets as $recommandationSet) {
-                $return['recSets'][$recommandationSet->getUuid()] = $recommandationSet->getJsonArray($recsSetsObj);
-            }
-        }
-
-        // TODO: move this part to FO.
-        $recoIds = [];
-        if ($withEval && $withRecommendations && !empty($riskIds) && $this->get('recommandationRiskTable')) {
-            $recosObj = [
-                'uuid' => 'uuid',
-                'recommandationSet' => 'recommandationSet',
-                'code' => 'code',
-                'description' => 'description',
-                'importance' => 'importance',
-                'comment' => 'comment',
-                'status' => 'status',
-                'responsable' => 'responsable',
-                'duedate' => 'duedate',
-                'counterTreated' => 'counterTreated',
-            ];
-            $return['recos'] = [];
-            if (!$withUnlinkedRecommendations) {
-                $return['recs'] = [];
-            }
-            $recoRisk = $this->get('recommandationRiskTable')->getEntityByFields(['anr' => $instance->get('anr')->get('id'), 'instanceRisk' => $riskIds], ['id' => 'ASC']);
-            foreach ($recoRisk as $rr) {
-                if (!empty($rr)) {
-                    $recommendation = $rr->getRecommandation();
-                    $recommendationUuid = $recommendation->getUuid();
-                    $return['recos'][$rr->get('instanceRisk')->get('id')][$recommendationUuid] = $rr->get('recommandation')->getJsonArray($recosObj);
-                    $return['recos'][$rr->get('instanceRisk')->get('id')][$recommendationUuid]['recommandationSet'] = $rr->getRecommandation()->getRecommandationSet()->getUuid();
-                    $return['recos'][$rr->get('instanceRisk')->get('id')][$recommendationUuid]['commentAfter'] = $rr->get('commentAfter');
-                    if (!$withUnlinkedRecommendations && !isset($recoIds[$recommendationUuid])) {
-                        $return['recs'][$recommendationUuid] = $recommendation->getJsonArray($recosObj);
-                        $return['recs'][$recommendationUuid]['recommandationSet'] = $recommendation->getRecommandationSet()->getUuid();
-                    }
-                    $recoIds[$recommendationUuid] = $recommendationUuid;
-                }
-            }
-        }
-        // Instance risk op
-        $return['risksop'] = [];
-        $instanceRiskOpTable = $this->get('instanceRiskOpService')->get('table');
-        $instanceRiskOpResults = $instanceRiskOpTable->getRepository()
-            ->createQueryBuilder('t')
-            ->where('t.instance = :i')
-            ->setParameter(':i', $instance->get('id'))->getQuery()->getResult();
-        $instanceRiskOpArray = [
-            'id' => 'id',
-            'rolfRisk' => 'rolfRisk', // TODO doit-on garder cette donnée ?
-            'riskCacheLabel1' => 'riskCacheLabel1',
-            'riskCacheLabel2' => 'riskCacheLabel2',
-            'riskCacheLabel3' => 'riskCacheLabel3',
-            'riskCacheLabel4' => 'riskCacheLabel4',
-            'riskCacheDescription1' => 'riskCacheDescription1',
-            'riskCacheDescription2' => 'riskCacheDescription2',
-            'riskCacheDescription3' => 'riskCacheDescription3',
-            'riskCacheDescription4' => 'riskCacheDescription4',
-            'brutProb' => 'brutProb',
-            'brutR' => 'brutR',
-            'brutO' => 'brutO',
-            'brutL' => 'brutL',
-            'brutF' => 'brutF',
-            'netProb' => 'netProb',
-            'netR' => 'netR',
-            'netO' => 'netO',
-            'netL' => 'netL',
-            'netF' => 'netF',
-            'targetedProb' => 'targetedProb',
-            'targetedR' => 'targetedR',
-            'targetedO' => 'targetedO',
-            'targetedL' => 'targetedL',
-            'targetedF' => 'targetedF',
-            'cacheTargetedRisk' => 'cacheTargetedRisk',
-            'cacheNetRisk' => 'cacheNetRisk',
-            'cacheBrutRisk' => 'cacheBrutRisk',
-            'kindOfMeasure' => 'kindOfMeasure',
-            'comment' => 'comment',
-            'mitigation' => 'mitigation',
-            'specific' => 'specific',
-            'netP' => 'netP',
-            'targetedP' => 'targetedP',
-            'brutP' => 'brutP',
-        ];
-        $toReset = [
-            'brutProb' => 'brutProb',
-            'brutR' => 'brutR',
-            'brutO' => 'brutO',
-            'brutL' => 'brutL',
-            'brutF' => 'brutF',
-            'netProb' => 'netProb',
-            'netR' => 'netR',
-            'netO' => 'netO',
-            'netL' => 'netL',
-            'netF' => 'netF',
-            'targetedProb' => 'targetedProb',
-            'targetedR' => 'targetedR',
-            'targetedO' => 'targetedO',
-            'targetedL' => 'targetedL',
-            'targetedF' => 'targetedF',
-            'cacheTargetedRisk' => 'cacheTargetedRisk',
-            'cacheNetRisk' => 'cacheNetRisk',
-            'cacheBrutRisk' => 'cacheBrutRisk',
-        ];
-        $riskOpIds = [];
-        foreach ($instanceRiskOpResults as $iro) {
-            $riskOpIds[$iro->get('id')] = $iro->get('id');
-            $return['risksop'][$iro->get('id')] = $iro->getJsonArray($instanceRiskOpArray);
-            if(!empty($return['risksop'][$iro->get('id')]['rolfRisk']->id)){
-                $return['risksop'][$iro->get('id')]['rolfRisk'] = $return['risksop'][$iro->get('id')]['rolfRisk']->id;
-            }
-            if (!$withEval) {
-                foreach ($toReset as $r) {
-                    $return['risksop'][$iro->get('id')][$r] = '-1';
-                }
-                $return['risksop'][$iro->get('id')]['kindOfMeasure'] = 0;
-                $return['risksop'][$iro->get('id')]['comment'] = '';
-                $return['risksop'][$iro->get('id')]['mitigation'] = '';
-            }
-            if (!$withControls) {
-                $return['risksop'][$iro->get('id')]['comment'] = '';
-            }
-        }
-        // Recommandation RISKOP
-        if ($withEval && $withRecommendations && !empty($riskOpIds) && $this->get('recommandationRiskTable')) {
-            $recosObj = [
-                'uuid' => 'uuid',
-                'recommandationSet' => 'recommandationSet',
-                'code' => 'code',
-                'description' => 'description',
-                'importance' => 'importance',
-                'comment' => 'comment',
-                'status' => 'status',
-                'responsable' => 'responsable',
-                'duedate' => 'duedate',
-                'counterTreated' => 'counterTreated',
-            ];
-            $return['recosop'] = [];
-            if (!$withUnlinkedRecommendations) {
-                $return['recs'] = [];
-            }
-            $recoRisk = $this->get('recommandationRiskTable')->getEntityByFields(['anr' => $instance->get('anr')->get('id'), 'instanceRiskOp' => $riskOpIds], ['id' => 'ASC']);
-            foreach ($recoRisk as $rr) {
-                if (!empty($rr)) {
-                    $recommendation = $rr->getRecommandation();
-                    $recommendationUuid = $recommendation->getUuid();
-                    $return['recosop'][$rr->get('instanceRiskOp')->get('id')][$recommendationUuid] = $rr->get('recommandation')->getJsonArray($recosObj);
-                    $return['recosop'][$rr->get('instanceRiskOp')->get('id')][$recommendationUuid]['recommandationSet'] = $rr->getRecommandation()->getRecommandationSet()->getUuid();
-                    $return['recosop'][$rr->get('instanceRiskOp')->get('id')][$recommendationUuid]['commentAfter'] = $rr->get('commentAfter');
-                    if (!$withUnlinkedRecommendations && !isset($recoIds[$recommendationUuid])) {
-                        $return['recs'][$recommendationUuid] = $recommendation->getJsonArray($recosObj);
-                        $return['recs'][$recommendationUuid]['recommandationSet'] = $recommendation->getRecommandationSet()->getUuid();
-                    }
-                    $recoIds[$recommendationUuid] = $recommendationUuid;
-                }
-            }
-        }
-
-        //Recommandation unlinked to recommandations-risks
-        if ($withUnlinkedRecommendations && $withEval && $withRecommendations){
-            $recosObj = [
-                'uuid' => 'uuid',
-                'recommandationSet' => 'recommandationSet',
-                'code' => 'code',
-                'description' => 'description',
-                'importance' => 'importance',
-                'comment' => 'comment',
-                'status' => 'status',
-                'responsable' => 'responsable',
-                'duedate' => 'duedate',
-                'counterTreated' => 'counterTreated',
-            ];
-            $return['recs'] = [];
-            $recommandations = $this->get('recommandationTable')->getEntityByFields(['anr' => $instance->get('anr')->get('id')]);
-            foreach ($recommandations as $rec){
-                if(!isset($recoIds[$rec->getUuid()])){
-                    $return['recs'][$rec->getUuid()] = $rec->getJsonArray($recosObj);
-                    $return['recs'][$rec->getUuid()]['recommandationSet'] = $rec->getRecommandationSet()->getUuid();
-                    $recoIds[$rec->getUuid()] = $rec->getUuid();
-                }
-            }
-        }
+        $return = array_merge($return, $this->generateExportArrayOfRecommendations(
+            $instance,
+            $withEval,
+            $withRecommendations,
+            $withUnlinkedRecommendations,
+            $riskIds,
+            !empty($return['risksop']) ? array_keys($return['risksop']) : []
+        ));
 
         // Instance consequence
         if ($withEval) {
@@ -1904,16 +1501,16 @@ class InstanceService extends AbstractService
             }
         }
 
-        /** @var InstanceSuperClass[] $instanceTableResults */
-        $instanceTableResults = $instanceTable->getRepository()
+        /** @var InstanceSuperClass[] $childrenInstances */
+        $childrenInstances = $instanceTable->getRepository()
             ->createQueryBuilder('t')
             ->where('t.parent = :p')
             ->setParameter(':p', $instance->get('id'))
             ->orderBy('t.position','ASC')->getQuery()->getResult();
         $return['children'] = [];
         $f = '';
-        foreach ($instanceTableResults as $i) {
-            $return['children'][$i->get('id')] = $this->generateExportArray($i->get('id'), $f, $withEval, $withScale, $withControls, $withRecommendations, $withUnlinkedRecommendations);
+        foreach ($childrenInstances as $i) {
+            $return['children'][$i->get('id')] = $this->generateExportArray($i->get('id'), $f, $withEval, false, $withControls, $withRecommendations, $withUnlinkedRecommendations);
         }
 
         return $return;
@@ -1949,5 +1546,90 @@ class InstanceService extends AbstractService
         }
 
         return $label;
+    }
+
+    protected function generateExportArrayOfOperationalInstanceRisks(
+        InstanceSuperClass $instance,
+        bool $withEval,
+        bool $withControls
+    ): array {
+        $result = [];
+
+        /** @var InstanceRiskOpTable $instanceRiskOpTable */
+        $instanceRiskOpTable = $this->get('instanceRiskOpTable');
+        $operationalInstanceRisks = $instanceRiskOpTable->findByInstance($instance);
+        foreach ($operationalInstanceRisks as $operationalInstanceRisk) {
+            $operationalInstanceRiskId = $operationalInstanceRisk->getId();
+            $result[$operationalInstanceRiskId] = [
+                'id' => $operationalInstanceRiskId,
+                'rolfRisk' => $operationalInstanceRisk->getRolfRisk()->getId(),
+                'riskCacheLabel1' => $operationalInstanceRisk->getRiskCacheLabel(1),
+                'riskCacheLabel2' => $operationalInstanceRisk->getRiskCacheLabel(2),
+                'riskCacheLabel3' => $operationalInstanceRisk->getRiskCacheLabel(3),
+                'riskCacheLabel4' => $operationalInstanceRisk->getRiskCacheLabel(4),
+                'riskCacheDescription1' => $operationalInstanceRisk->getRiskCacheDescription(1),
+                'riskCacheDescription2' => $operationalInstanceRisk->getRiskCacheDescription(2),
+                'riskCacheDescription3' => $operationalInstanceRisk->getRiskCacheDescription(3),
+                'riskCacheDescription4' => $operationalInstanceRisk->getRiskCacheDescription(4),
+                'brutProb' => $withEval ? $operationalInstanceRisk->getBrutProb() : -1,
+                'netProb' => $withEval ? $operationalInstanceRisk->getNetProb() : -1,
+                'targetedProb' => $withEval ? $operationalInstanceRisk->getNetProb() : -1,
+                'cacheBrutRisk' => $withEval ? $operationalInstanceRisk->getCacheBrutRisk() : -1,
+                'cacheNetRisk' => $withEval ? $operationalInstanceRisk->getCacheNetRisk() : -1,
+                'cacheTargetedRisk' => $withEval ? $operationalInstanceRisk->getCacheTargetedRisk() : -1,
+                'kindOfMeasure' => $withEval
+                    ? $operationalInstanceRisk->getKindOfMeasure()
+                    : InstanceRiskOp::KIND_NOT_TREATED,
+                'comment' => $withEval && $withControls ? $operationalInstanceRisk->getComment() : '',
+                'mitigation' => $withEval ? $operationalInstanceRisk->getMitigation() : '',
+                'specific' => $operationalInstanceRisk->getSpecific(),
+                'context' => $operationalInstanceRisk->getContext(),
+                'riskOwner' => $operationalInstanceRisk->getInstanceRiskOwner()
+                    ? $operationalInstanceRisk->getInstanceRiskOwner()->getName()
+                    : '',
+            ];
+            $result[$operationalInstanceRiskId]['scalesValues'] = [];
+            if ($withEval)   {
+                foreach ($operationalInstanceRisk->getOperationalInstanceRiskScales() as $instanceRiskScale) {
+                    $scaleType = $instanceRiskScale->getOperationalRiskScaleType();
+                    $result[$operationalInstanceRiskId]['scalesValues'][$scaleType->getId()] = [
+                        'operationalRiskScaleTypeId' => $scaleType->getId(),
+                        'netValue' => $instanceRiskScale->getNetValue(),
+                        'brutValue' => $instanceRiskScale->getBrutValue(),
+                        'targetedValue' => $instanceRiskScale->getTargetedValue(),
+                    ];
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    private function generateExportArrayOfScales(AnrSuperClass $anr): array
+    {
+        $result = [];
+        /** @var ScaleTable $scaleTable */
+        $scaleTable = $this->get('scaleTable');
+        $scales = $scaleTable->findByAnr($anr);
+        foreach ($scales as $scale) {
+            $result[$scale->getType()] = [
+                'min' => $scale->getMin(),
+                'max' => $scale->getMax(),
+                'type' => $scale->getType(),
+            ];
+        }
+
+        return $result;
+    }
+
+    protected function generateExportArrayOfRecommendations(
+        InstanceSuperClass $instance,
+        bool $withEval,
+        bool $withRecommendations,
+        bool $withUnlinkedRecommendations,
+        array $riskIds,
+        array $riskOpIds
+    ): array {
+        return [];
     }
 }

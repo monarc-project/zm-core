@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Model\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
@@ -18,7 +19,8 @@ use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
  *      @ORM\Index(name="anr_id", columns={"anr_id"}),
  *      @ORM\Index(name="instance_id", columns={"instance_id"}),
  *      @ORM\Index(name="object_id", columns={"object_id"}),
- *      @ORM\Index(name="rolf_risk_id", columns={"rolf_risk_id"})
+ *      @ORM\Index(name="rolf_risk_id", columns={"rolf_risk_id"}),
+ *      @ORM\Index(name="owner_id", columns={"owner_id"})
  * })
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
@@ -28,6 +30,7 @@ class InstanceRiskOpSuperClass extends AbstractEntity
     use CreateEntityTrait;
     use UpdateEntityTrait;
 
+    const KIND_NOT_SET = 0;
     const KIND_REDUCTION = 1;
     const KIND_REFUS = 2;
     const KIND_ACCEPTATION = 3;
@@ -66,6 +69,23 @@ class InstanceRiskOpSuperClass extends AbstractEntity
     protected $instance;
 
     /**
+     * @var InstanceRiskOwnerSuperClass
+     *
+     * @ORM\ManyToOne(targetEntity="InstanceRiskOwner", cascade={"persist"})
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="owner_id", referencedColumnName="id", nullable=true)
+     * })
+     */
+    protected $instanceRiskOwner;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="context", type="string", length=255, nullable=true)
+     */
+    protected $context;
+
+    /**
      * @var ObjectSuperClass
      *
      * @ORM\ManyToOne(targetEntity="MonarcObject", cascade={"persist"})
@@ -84,6 +104,13 @@ class InstanceRiskOpSuperClass extends AbstractEntity
      * })
      */
     protected $rolfRisk;
+
+    /**
+     * @var OperationalInstanceRiskScaleSuperClass[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="OperationalInstanceRiskScale", mappedBy="operationalInstanceRisk")
+     */
+    protected $operationalInstanceRiskScales;
 
     /**
      * @var string
@@ -149,53 +176,11 @@ class InstanceRiskOpSuperClass extends AbstractEntity
     protected $riskCacheDescription4;
 
     /**
-     * @var string
+     * @var int
      *
      * @ORM\Column(name="brut_prob", type="smallint", options={"unsigned":false, "default":-1})
      */
     protected $brutProb = -1;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="brut_r", type="smallint", options={"unsigned":false, "default":-1})
-     */
-    protected $brutR = -1;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="brut_o", type="smallint", options={"unsigned":false, "default":-1})
-     */
-    protected $brutO = -1;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="brut_l", type="smallint", options={"unsigned":false, "default":-1})
-     */
-    protected $brutL = -1;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="brut_f", type="smallint", options={"unsigned":false, "default":-1})
-     */
-    protected $brutF = -1;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="brut_p", type="smallint", options={"unsigned":false, "default":-1})
-     */
-    protected $brutP = -1;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="cache_brut_risk", type="smallint", options={"unsigned":false, "default":-1})
-     */
-    protected $cacheBrutRisk = -1;
 
     /**
      * @var int
@@ -207,48 +192,6 @@ class InstanceRiskOpSuperClass extends AbstractEntity
     /**
      * @var int
      *
-     * @ORM\Column(name="net_r", type="smallint", options={"unsigned":false, "default":-1})
-     */
-    protected $netR = -1;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="net_o", type="smallint", options={"unsigned":false, "default":-1})
-     */
-    protected $netO = -1;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="net_l", type="smallint", options={"unsigned":false, "default":-1})
-     */
-    protected $netL = -1;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="net_f", type="smallint", options={"unsigned":false, "default":-1})
-     */
-    protected $netF = -1;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="net_p", type="smallint", options={"unsigned":false, "default":-1})
-     */
-    protected $netP = -1;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="cache_net_risk", type="smallint", options={"unsigned":false, "default":-1})
-     */
-    protected $cacheNetRisk = -1;
-
-    /**
-     * @var int
-     *
      * @ORM\Column(name="targeted_prob", type="smallint", options={"unsigned":false, "default":-1})
      */
     protected $targetedProb = -1;
@@ -256,37 +199,16 @@ class InstanceRiskOpSuperClass extends AbstractEntity
     /**
      * @var int
      *
-     * @ORM\Column(name="targeted_r", type="smallint", options={"unsigned":false, "default":-1})
+     * @ORM\Column(name="cache_brut_risk", type="smallint", options={"unsigned":false, "default":-1})
      */
-    protected $targetedR = -1;
+    protected $cacheBrutRisk = -1;
 
     /**
      * @var int
      *
-     * @ORM\Column(name="targeted_o", type="smallint", options={"unsigned":false, "default":-1})
+     * @ORM\Column(name="cache_net_risk", type="smallint", options={"unsigned":false, "default":-1})
      */
-    protected $targetedO = -1;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="targeted_l", type="smallint", options={"unsigned":false, "default":-1})
-     */
-    protected $targetedL = -1;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="targeted_f", type="smallint", options={"unsigned":false, "default":-1})
-     */
-    protected $targetedF = -1;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="targeted_p", type="smallint", options={"unsigned":false, "default":-1})
-     */
-    protected $targetedP = -1;
+    protected $cacheNetRisk = -1;
 
     /**
      * @var int
@@ -322,6 +244,19 @@ class InstanceRiskOpSuperClass extends AbstractEntity
      * @ORM\Column(name="`specific`", type="smallint", options={"unsigned":true, "default":0})
      */
     protected $specific = 0;
+
+    public function __construct($obj = null)
+    {
+        $this->operationalInstanceRiskScales = new ArrayCollection();
+
+        parent::__construct($obj);
+    }
+
+    public function __clone()
+    {
+        $this->id = null;
+        $this->setCreatedAtValue();
+    }
 
     /**
      * @return int
@@ -376,6 +311,38 @@ class InstanceRiskOpSuperClass extends AbstractEntity
     public function setInstance($instance): self
     {
         $this->instance = $instance;
+
+        return $this;
+    }
+
+    public function getInstanceRiskOwner(): ?InstanceRiskOwnerSuperClass
+    {
+        return $this->instanceRiskOwner;
+    }
+
+    public function setInstanceRiskOwner(?InstanceRiskOwnerSuperClass $instanceRiskOwner): self
+    {
+        if ($instanceRiskOwner === null) {
+            if ($this->instanceRiskOwner !== null) {
+                $this->instanceRiskOwner->removeOperationalInstanceRisk($this);
+                $this->instanceRiskOwner = null;
+            }
+        } else {
+            $this->instanceRiskOwner = $instanceRiskOwner;
+            $instanceRiskOwner->addOperationalInstanceRisk($this);
+        }
+
+        return $this;
+    }
+
+    public function getContext(): string
+    {
+        return (string)$this->context;
+    }
+
+    public function setContext(string $context): self
+    {
+        $this->context = $context;
 
         return $this;
     }
@@ -449,9 +416,23 @@ class InstanceRiskOpSuperClass extends AbstractEntity
         return $this->cacheBrutRisk;
     }
 
+    public function setCacheBrutRisk(int $cacheBrutRisk): self
+    {
+        $this->cacheBrutRisk = $cacheBrutRisk;
+
+        return $this;
+    }
+
     public function getCacheNetRisk(): int
     {
         return $this->cacheNetRisk;
+    }
+
+    public function setCacheNetRisk(int $cacheNetRisk): self
+    {
+        $this->cacheNetRisk = $cacheNetRisk;
+
+        return $this;
     }
 
     public function getCacheTargetedRisk(): int
@@ -459,55 +440,178 @@ class InstanceRiskOpSuperClass extends AbstractEntity
         return $this->cacheTargetedRisk;
     }
 
+    public function setCacheTargetedRisk(int $cacheTargetedRisk): self
+    {
+        $this->cacheTargetedRisk = $cacheTargetedRisk;
+
+        return $this;
+    }
+
     public function getComment(): string
     {
         return (string)$this->comment;
     }
 
-    public function getInputFilter($partial = false)
+    public function setComment(string $comment): self
     {
-        if (!$this->inputFilter) {
-            parent::getInputFilter($partial);
+        $this->comment = $comment;
 
-            $integers = [
-                'brutProb',
-                'brutR',
-                'brutO',
-                'brutL',
-                'brutF',
-                'brutP',
-                'cacheBrutRisk',
-                'netProb',
-                'netR',
-                'netO',
-                'netL',
-                'netF',
-                'netP',
-                'cacheNetRisk',
-                'targetedProb',
-                'targetedR',
-                'targetedO',
-                'targetedL',
-                'targetedF',
-                'targetedP',
-                'cacheTargetedRisk',
-                'kindOfMeasure',
-                'specific',
-            ];
-            foreach ($integers as $i) {
-                $this->inputFilter->add(array(
-                    'name' => $i,
-                    'required' => false,
-                    'allow_empty' => false,
-                    'filters' => array(),
-                    'validators' => array(
-                        array(
-                            'name' => 'IsInt',
-                        ),
-                    ),
-                ));
+        return $this;
+    }
+
+    public function getRiskCacheCode(): ?string
+    {
+        return $this->riskCacheCode;
+    }
+
+    public function setRiskCacheCode(string $riskCacheCode): self
+    {
+        $this->riskCacheCode = $riskCacheCode;
+
+        return $this;
+    }
+
+    public function getKindOfMeasure(): int
+    {
+        return $this->kindOfMeasure;
+    }
+
+    public function setKindOfMeasure(int $kindOfMeasure): self
+    {
+        if (isset(self::getAvailableMeasureTypes()[$kindOfMeasure])) {
+            $this->kindOfMeasure = $kindOfMeasure;
+        }
+
+        return $this;
+    }
+
+    public static function getAvailableMeasureTypes(): array
+    {
+        return [
+            self::KIND_NOT_SET => 'Not treated',
+            self::KIND_REDUCTION => 'Reduction',
+            self::KIND_REFUS => 'Denied',
+            self::KIND_ACCEPTATION => 'Accepted',
+            self::KIND_PARTAGE => 'Shared',
+            self::KIND_NOT_TREATED => 'Not treated',
+        ];
+    }
+
+    public function getRiskCacheLabel(int $languageIndex): string
+    {
+        if (!\in_array($languageIndex, range(1, 4), true)) {
+            return '';
+        }
+
+        return (string)$this->{'riskCacheLabel' . $languageIndex};
+    }
+
+    public function setRiskCacheLabels(array $labels): self
+    {
+        foreach (range(1, 4) as $index) {
+            $key = 'riskCacheLabel' . $index;
+            if (isset($labels[$key])) {
+                $this->{$key} = $labels[$key];
             }
         }
-        return $this->inputFilter;
+
+        return $this;
+    }
+
+    public function getRiskCacheDescription(int $languageIndex): string
+    {
+        if (!\in_array($languageIndex, range(1, 4), true)) {
+            return '';
+        }
+
+        return (string)$this->{'riskCacheDescription' . $languageIndex};
+    }
+
+    public function setRiskCacheDescriptions(array $descriptions): self
+    {
+        foreach (range(1, 4) as $index) {
+            $key = 'riskCacheDescription' . $index;
+            if (isset($descriptions[$key])) {
+                $this->{$key} = $descriptions[$key];
+            }
+        }
+
+        return $this;
+    }
+
+    public function getOperationalInstanceRiskScales()
+    {
+        return $this->operationalInstanceRiskScales;
+    }
+
+    public function addOperationalInstanceRiskScale(
+        OperationalInstanceRiskScaleSuperClass $operationalInstanceRiskScale
+    ): self {
+        if (!$this->operationalInstanceRiskScales->contains($operationalInstanceRiskScale)) {
+            $this->operationalInstanceRiskScales->add($operationalInstanceRiskScale);
+            $operationalInstanceRiskScale->setOperationalInstanceRisk($this);
+        }
+
+        return $this;
+    }
+
+    public function getSpecific(): int
+    {
+        return $this->specific;
+    }
+
+    public function setSpecific(int $specific): self
+    {
+        $this->specific = $specific;
+
+        return $this;
+    }
+
+    public function getBrutProb(): int
+    {
+        return $this->brutProb;
+    }
+
+    public function setBrutProb(int $brutProb): self
+    {
+        $this->brutProb = $brutProb;
+
+        return $this;
+    }
+
+    public function getNetProb(): int
+    {
+        return $this->netProb;
+    }
+
+    public function setNetProb(int $netProb): self
+    {
+        $this->netProb = $netProb;
+
+        return $this;
+    }
+
+    public function getTargetedProb(): int
+    {
+        return $this->targetedProb;
+    }
+
+    public function setTargetedProb(int $targetedProb): self
+    {
+        $this->targetedProb = $targetedProb;
+
+        return $this;
+    }
+
+    public function getMitigation(): string
+    {
+        return (string)$this->mitigation;
+    }
+
+    public function setMitigation(string $mitigation): self
+    {
+        $this->mitigation = $mitigation;
+
+        return $this;
     }
 }

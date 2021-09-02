@@ -79,7 +79,7 @@ class ScaleImpactTypeService extends AbstractService
             $data['isSys'] = 0;
         }
         if (!isset($data['isHidden'])) {
-            $data['isSys'] = 0;
+            $data['isHidden'] = 0;
         }
         if (!isset($data['type'])) {
             $data['type'] = count($scales) + 1;
@@ -94,6 +94,10 @@ class ScaleImpactTypeService extends AbstractService
 
         $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($scaleImpactType, $dependencies);
+
+        if (!empty($data['labels'])) {
+            $scaleImpactType->setLabels($data['labels']);
+        }
 
         $scaleImpactType->setCreator(
             $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()

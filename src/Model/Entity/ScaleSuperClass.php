@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Model\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
@@ -49,6 +50,21 @@ class ScaleSuperClass extends AbstractEntity
     protected $anr;
 
     /**
+     * @var ScaleCommentSuperClass[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="ScaleComment", mappedBy="scale")
+     * @ORM\OrderBy({"scaleIndex" = "ASC"})
+     */
+    protected $scaleComments;
+
+    /**
+     * @var ScaleImpactTypeSuperClass[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="ScaleImpactType", mappedBy="scale")
+     */
+    protected $scaleImpactTypes;
+
+    /**
      * @var int
      *
      * @ORM\Column(name="type", type="smallint", options={"unsigned":true})
@@ -68,6 +84,14 @@ class ScaleSuperClass extends AbstractEntity
      * @ORM\Column(name="max", type="smallint", options={"unsigned":true})
      */
     protected $max;
+
+    public function __construct($obj = null)
+    {
+        $this->scaleComments = new ArrayCollection();
+        $this->scaleImpactTypes = new ArrayCollection();
+
+        parent::__construct($obj);
+    }
 
     /**
      * @return int
@@ -110,14 +134,60 @@ class ScaleSuperClass extends AbstractEntity
         return (int)$this->type;
     }
 
+    public function setType(int $type): self
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
     public function getMin(): int
     {
         return (int)$this->min;
     }
 
+    public function setMin(int $min): self
+    {
+        $this->min = $min;
+
+        return $this;
+    }
+
     public function getMax(): int
     {
         return (int)$this->max;
+    }
+
+    public function setMax(int $max): self
+    {
+        $this->max = $max;
+
+        return $this;
+    }
+
+    /**
+     * @return ScaleCommentSuperClass[]
+     */
+    public function getScaleComments()
+    {
+        return $this->scaleComments;
+    }
+
+    /**
+     * @return ScaleImpactTypeSuperClass[]
+     */
+    public function getScaleImpactTypes()
+    {
+        return $this->scaleImpactTypes;
+    }
+
+    public static function getAvailableTypes(): array
+    {
+        return [
+            Scale::TYPE_IMPACT => 'impact',
+            Scale::TYPE_THREAT => 'threat',
+            Scale::TYPE_VULNERABILITY => 'vulnerability',
+        ];
     }
 
     public function getInputFilter($partial = false)

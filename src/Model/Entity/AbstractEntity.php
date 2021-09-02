@@ -29,7 +29,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
     protected $inputFilter;
     protected $user_language;
     protected $dbadapter;
-    protected $parameters = array();
+    protected $parameters = [];
     protected $squeezeAutoPositionning = false;
 
     const STATUS_INACTIVE = 0;
@@ -99,23 +99,33 @@ abstract class AbstractEntity implements InputFilterAwareInterface
      */
     public function getJsonArray($fields = array())
     {
-        if (empty($fields)) {
-            $array = get_object_vars($this);
-            unset($array['inputFilter']);
-            unset($array['user_language']);
-            unset($array['dbadapter']);
-            unset($array['parameters']);
-            unset($array['squeezeAutoPositionning']);
-            return $array;
-        } else {
-            $array = get_object_vars($this);
-            unset($array['password']);
-            return array_intersect_key($array, array_flip($fields));
-            // array_flip — Exchanges all keys with their associated values in
-            // an array
-            // A warning will be emitted if a value has the wrong type,
-            // and the key/value pair in question will not be included in the result.
+        $array = get_object_vars($this);
+        if (isset($array['uuid'])) {
+            $array['uuid'] = (string)$array['uuid'];
         }
+
+        if (empty($fields)) {
+            unset(
+                $array['inputFilter'],
+                $array['user_language'],
+                $array['dbadapter'],
+                $array['parameters'],
+                $array['squeezeAutoPositionning'],
+                $array['__initializer__'],
+                $array['__cloner__'],
+                $array['__isInitialized__']
+            );
+
+            return $array;
+        }
+
+        unset($array['password']);
+
+        return array_intersect_key($array, array_flip($fields));
+        // array_flip — Exchanges all keys with their associated values in
+        // an array
+        // A warning will be emitted if a value has the wrong type,
+        // and the key/value pair in question will not be included in the result.
     }
 
     /**
@@ -479,21 +489,19 @@ abstract class AbstractEntity implements InputFilterAwareInterface
     }
 
     /**
-     * @param $k
-     * @param $v
+     * The method is used in AbstractEntityTable::initTree
      */
-    public function setParameter($k, $v)
+    public function addParameterValue(string $key, int $index, $value)
     {
-        $this->parameters[$k] = $v;
+        $this->parameters[$key][$index] = $value;
     }
 
     /**
-     * @param $k
-     * @return mixed|null
+     * The method is used to get the initialized tree of parent -> children elements.
      */
-    public function getParameter($k)
+    public function getParameterValues(string $name): array
     {
-        return isset($this->parameters[$k]) ? $this->parameters[$k] : null;
+        return $this->parameters[$name] ?? [];
     }
 
     public function initParametersChanges()

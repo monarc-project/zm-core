@@ -575,6 +575,7 @@ class InstanceSuperClass extends AbstractEntity
             ],
         ),
     );
+
     public function getInputFilter($partial = false)
     {
         parent::getInputFilter($partial);
