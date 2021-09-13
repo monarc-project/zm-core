@@ -1562,7 +1562,7 @@ class InstanceService extends AbstractService
             $operationalInstanceRiskId = $operationalInstanceRisk->getId();
             $result[$operationalInstanceRiskId] = [
                 'id' => $operationalInstanceRiskId,
-                'rolfRisk' => $operationalInstanceRisk->getRolfRisk()->getId(),
+                'rolfRisk' => $operationalInstanceRisk->getRolfRisk()? $operationalInstanceRisk->getRolfRisk()->getId() : null,
                 'riskCacheLabel1' => $operationalInstanceRisk->getRiskCacheLabel(1),
                 'riskCacheLabel2' => $operationalInstanceRisk->getRiskCacheLabel(2),
                 'riskCacheLabel3' => $operationalInstanceRisk->getRiskCacheLabel(3),
