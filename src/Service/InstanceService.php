@@ -1562,7 +1562,9 @@ class InstanceService extends AbstractService
             $operationalInstanceRiskId = $operationalInstanceRisk->getId();
             $result[$operationalInstanceRiskId] = [
                 'id' => $operationalInstanceRiskId,
-                'rolfRisk' => $operationalInstanceRisk->getRolfRisk()? $operationalInstanceRisk->getRolfRisk()->getId() : null,
+                'rolfRisk' => $operationalInstanceRisk->getRolfRisk()
+                    ? $operationalInstanceRisk->getRolfRisk()->getId()
+                    : null,
                 'riskCacheLabel1' => $operationalInstanceRisk->getRiskCacheLabel(1),
                 'riskCacheLabel2' => $operationalInstanceRisk->getRiskCacheLabel(2),
                 'riskCacheLabel3' => $operationalInstanceRisk->getRiskCacheLabel(3),
@@ -1589,7 +1591,7 @@ class InstanceService extends AbstractService
                     : '',
             ];
             $result[$operationalInstanceRiskId]['scalesValues'] = [];
-            if ($withEval)   {
+            if ($withEval) {
                 foreach ($operationalInstanceRisk->getOperationalInstanceRiskScales() as $instanceRiskScale) {
                     $scaleType = $instanceRiskScale->getOperationalRiskScaleType();
                     $result[$operationalInstanceRiskId]['scalesValues'][$scaleType->getId()] = [

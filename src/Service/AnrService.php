@@ -10,6 +10,7 @@ namespace Monarc\Core\Service;
 use DateTime;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Anr;
+use Monarc\Core\Model\Entity\OperationalRiskScale;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\MonarcObjectTable;
 use Monarc\Core\Model\Table\ScaleCommentTable;
@@ -37,6 +38,7 @@ class AnrService extends AbstractService
     protected $operationalRiskScaleTypeTable;
     protected $operationalRiskScaleCommentTable;
     protected $translationTable;
+    /** @var OperationalRiskScaleService */
     protected $operationalRiskScaleService;
     protected $instanceService;
     protected $questionTable;
@@ -78,7 +80,7 @@ class AnrService extends AbstractService
             }
         }
         $scales = [];
-        for($i = 1; $i <= 3; $i++){
+        for ($i = 1; $i <= 3; $i++) {
             $scales[] = [
                 'anr' => $anrId,
                 'type' => $i,
@@ -95,7 +97,7 @@ class AnrService extends AbstractService
             $i++;
         }
 
-        for($type = 1; $type <= 2; $type++){
+        foreach ([OperationalRiskScale::TYPE_IMPACT, OperationalRiskScale::TYPE_LIKELIHOOD] as $type) {
             $this->operationalRiskScaleService->createScale(
                 $anr,
                 $type,

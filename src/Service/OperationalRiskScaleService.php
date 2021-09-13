@@ -92,7 +92,7 @@ class OperationalRiskScaleService
 
         $languageCodes = $this->getLanguageCodesForTranslations($anr);
 
-        if ($type == OperationalRiskScale:: TYPE_IMPACT) {
+        if ($type === OperationalRiskScale::TYPE_IMPACT) {
             $scaleType = $this->createOperationalRiskScaleTypeObject($anr, $scale);
             foreach ($languageCodes as $languageCode) {
                 $translation = $this->createTranslationObject(
