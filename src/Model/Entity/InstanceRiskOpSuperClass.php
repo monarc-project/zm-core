@@ -464,7 +464,7 @@ class InstanceRiskOpSuperClass extends AbstractEntity
         return $this->riskCacheCode;
     }
 
-    public function setRiskCacheCode(string $riskCacheCode): self
+    public function setRiskCacheCode(?string $riskCacheCode): self
     {
         $this->riskCacheCode = $riskCacheCode;
 
