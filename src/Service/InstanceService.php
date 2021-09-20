@@ -951,33 +951,6 @@ class InstanceService extends AbstractService
     }
 
     /**
-     * @param $anrId
-     * @param null $instanceId
-     * @param array $params
-     * @return array
-     * @throws Exception
-     */
-    public function getRisks($anrId, $instanceId = null, $params = [])
-    {
-        return $this->get('instanceRiskService')
-            ->get('table') // TODO: inject and directly use the table class here.
-            ->getFilteredInstancesRisks($anrId, $instanceId, $params, \Monarc\Core\Model\Entity\AbstractEntity::BACK_OFFICE); // TODO: remove the context passing.
-    }
-
-    /**
-     * @param $anrId
-     * @param null $instance
-     * @param array $params
-     * @return string
-     */
-    public function getCsvRisks($anrId, $instance = null, $params = [])
-    {
-        // Move the CSV generation here, or to a separate service, fetch getFilteredInstancesRisks instead and process.
-        return $this->get('instanceRiskService')->get('table')->getCsvRisks(
-            $anrId, $instance, $params, $this->get('translateService'), \Monarc\Core\Model\Entity\AbstractEntity::FRONT_OFFICE);
-    }
-
-    /**
      * Get Consequences
      *
      * @param $instance

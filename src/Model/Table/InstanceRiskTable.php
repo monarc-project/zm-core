@@ -15,14 +15,12 @@ use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\AbstractEntity;
 use Monarc\Core\Model\Entity\AnrSuperClass;
-use Monarc\Core\Model\Entity\AssetSuperClass;
 use Monarc\Core\Model\Entity\Instance;
 use Monarc\Core\Model\Entity\InstanceRisk;
 use Monarc\Core\Model\Entity\InstanceRiskSuperClass;
 use Monarc\Core\Model\Entity\InstanceSuperClass;
 use Monarc\Core\Model\Entity\ObjectSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
-use Monarc\Core\Service\TranslateService;
 
 /**
  * Class InstanceRiskTable
@@ -81,96 +79,6 @@ class InstanceRiskTable extends AbstractEntityTable
         }
 
         return $anr->get('language');
-    }
-
-    /**
-     * Get Csv Risks
-     *
-     * @param $anrId
-     * @param null $instanceId
-     * @param $params
-     * @param TranslateService $translate
-     * @param int $language
-     * @return string
-     */
-    public function getCsvRisks($anrId, $instanceId = null, $params, $translate, $context = AbstractEntity::BACK_OFFICE)
-    {
-        $risks = $this->getFilteredInstancesRisks($anrId, $instanceId, $params, $context);
-
-        $language = $this->getContextLanguage($anrId, $context);
-
-        $output = '';
-        if (count($risks) > 0) {
-            $fields = [
-                'instanceName' . $language => $translate->translate('Asset', $language),
-                'c_impact' => $translate->translate('C Impact', $language),
-                'i_impact' => $translate->translate('I Impact', $language),
-                'd_impact' => $translate->translate('A Impact', $language),
-                'threatLabel' . $language => $translate->translate('Threat', $language),
-                'threatRate' => $translate->translate('Prob.', $language),
-                'vulnLabel' . $language => $translate->translate('Vulnerability', $language),
-                'comment' => $translate->translate('Existing controls', $language),
-                'vulnerabilityRate' => $translate->translate('Qualif.', $language),
-                'c_risk' => $translate->translate('Current risk', $language). " C",
-                'i_risk' => $translate->translate('Current risk', $language) . " I",
-                'd_risk' => $translate->translate('Current risk', $language) . " " . $translate->translate('A', $language),
-                'kindOfMeasure' => $translate->translate('Treatment', $language),
-                'target_risk' => $translate->translate('Residual risk', $language),
-
-            ];
-
-            // TODO: why don't use "fputcsv" ?
-
-            // Fill in the header
-            $output .= implode(',', array_values($fields)) . "\n";
-
-            // Fill in the lines then
-            foreach ($risks as $risk) {
-                foreach ($fields as $k => $v) {
-                    if ($k == 'kindOfMeasure'){
-                        switch ($risk[$k]) {
-                            case 1:
-                                $array_values[] = $translate->translate('Reduction', $language);
-                                break;
-                            case 2:
-                                $array_values[] = $translate->translate('Denied', $language);
-                                break;
-                            case 3:
-                                $array_values[] = $translate->translate('Accepted', $language);
-                                break;
-                            case 4:
-                                $array_values[] = $translate->translate('Shared', $language);
-                                break;
-                            default:
-                                $array_values[] = $translate->translate('Not treated', $language);
-                        }
-                    }
-                    elseif ($k == 'c_risk' && $risk['c_risk_enabled'] == '0') {
-                        $array_values[] = null;
-                    }
-                    elseif ($k == 'i_risk' && $risk['i_risk_enabled'] == '0') {
-                        $array_values[] = null;
-                    }
-                    elseif ($k == 'd_risk' && $risk['d_risk_enabled'] == '0') {
-                        $array_values[] = null;
-                    }
-                    elseif ($risk[$k] == '-1'){
-                        $array_values[] = null;
-                    }
-                    else {
-                        $array_values[] = $risk[$k];
-                    }
-                }
-                $output .= '"';
-                $search = ['"',"\n"];
-                $replace = ["'",' '];
-                $output .= implode('","', str_replace($search, $replace, $array_values));
-                $output .= "\"\r\n";
-                $array_values = null;
-            }
-        }
-
-        return $output;
     }
 
     /**
@@ -242,7 +150,7 @@ class InstanceRiskTable extends AbstractEntityTable
             'o.scope as scope',
             'ir.kind_of_measure as kindOfMeasure',
             'IF(ir.kind_of_measure IS NULL OR ir.kind_of_measure = '
-                . InstanceRiskSuperClass::KIND_NOT_TREATED . ', false, true) as t',
+            . InstanceRiskSuperClass::KIND_NOT_TREATED . ', false, true) as t',
             'ir.threat_id as tid',
             'ir.vulnerability_id as vid',
             'i.name' . $l . ' as instanceName' . $l . '',
@@ -325,9 +233,9 @@ class InstanceRiskTable extends AbstractEntityTable
                     $typeParams[':ids'] = Connection::PARAM_INT_ARRAY;
                 }
             }
-        } elseif ($instance->get('asset') && $instance->get('asset')->get('type') == AssetSuperClass::TYPE_PRIMARY) {
+        } elseif ($instance->getAsset()) {
             $instanceIds = [];
-            $instanceIds[$instance->get('id')] = $instance->get('id');
+            $instanceIds[$instance->getId()] = $instance->getId();
 
             /**
              * TODO: - Inject dependencies if needed, a new class should not be created inside!
@@ -356,7 +264,7 @@ class InstanceRiskTable extends AbstractEntityTable
             $typeParams[':ids'] = Connection::PARAM_INT_ARRAY;
         } else {
             $sql .= ' AND i.id = :id ';
-            $queryParams[':id'] = $instance->get('id');
+            $queryParams[':id'] = $instance->getId();
         }
 
         // FILTER: amvs ==

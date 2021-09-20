@@ -31,6 +31,7 @@ class InstanceRiskSuperClass extends AbstractEntity
     use CreateEntityTrait;
     use UpdateEntityTrait;
 
+    const KIND_NOT_SET = 0;
     const KIND_REDUCTION = 1;
     const KIND_REFUS = 2;
     const KIND_ACCEPTATION = 3;
@@ -551,6 +552,18 @@ class InstanceRiskSuperClass extends AbstractEntity
         $this->kindOfMeasure = $kindOfMeasure;
 
         return $this;
+    }
+
+    public static function getAvailableMeasureTypes(): array
+    {
+        return [
+            self::KIND_NOT_SET => 'Not treated',
+            self::KIND_REDUCTION => 'Reduction',
+            self::KIND_REFUS => 'Denied',
+            self::KIND_ACCEPTATION => 'Accepted',
+            self::KIND_PARTAGE => 'Shared',
+            self::KIND_NOT_TREATED => 'Not treated',
+        ];
     }
 
     public function getCommentAfter(): string
