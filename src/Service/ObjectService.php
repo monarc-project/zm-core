@@ -188,9 +188,10 @@ class ObjectService extends AbstractService
             foreach ($objects as $o) { // on en prend que les objets déjà liés (composants)
                 $value[] = $o->getUuid();
             }
-            if (!empty($value)) {
-                $filterAnd['uuid'] = ['op' => 'IN', 'value' => $value];
+            if (empty($value)) {
+                return [];
             }
+            $filterAnd['uuid'] = ['op' => 'IN', 'value' => $value];
         }
 
         /** @var MonarcObjectTable $monarcObjectTable */
