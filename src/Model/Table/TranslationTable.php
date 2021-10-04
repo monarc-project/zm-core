@@ -48,7 +48,7 @@ class TranslationTable extends AbstractTable
             ->getResult();
     }
 
-    public function findByAnrKeyAndLanguage(AnrSuperClass $anr, string $key, string $lang): ?TranslationSuperClass
+    public function findByAnrKeyAndLanguage(AnrSuperClass $anr, string $key, string $lang): TranslationSuperClass
     {
         return $this->getRepository()->createQueryBuilder('t')
             ->where('t.anr = :anr')
