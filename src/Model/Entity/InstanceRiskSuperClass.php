@@ -263,24 +263,6 @@ class InstanceRiskSuperClass extends AbstractEntity
     }
 
     /**
-     * @return ObjectSuperClass
-     */
-    public function getObject()
-    {
-        return $this->object;
-    }
-
-    /**
-     * @param ObjectSuperClass $object
-     */
-    public function setObject($object): self
-    {
-        $this->object = $object;
-
-        return $this;
-    }
-
-    /**
      * @return AmvSuperClass
      */
     public function getAmv()

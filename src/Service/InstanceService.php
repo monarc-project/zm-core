@@ -51,6 +51,7 @@ class InstanceService extends AbstractService
     protected $scaleImpactTypeTable;
     protected $instanceConsequenceTable;
     protected $instanceConsequenceEntity;
+    protected $instanceRiskTable;
     protected $instanceRiskOpTable;
 
     protected $assetTable;
@@ -855,7 +856,9 @@ class InstanceService extends AbstractService
     {
         /** @var InstanceRiskService $instanceRiskService */
         $instanceRiskService = $this->get('instanceRiskService');
-        $instanceRisks = $instanceRiskService->getInstanceRisks($instance);
+        /** @var InstanceRiskTable $instanceRiskTable */
+        $instanceRiskTable = $this->get('instanceRiskTable');
+        $instanceRisks = $instanceRiskTable->findByInstance($instance);
 
         $nb = \count($instanceRisks);
         foreach ($instanceRisks as $i => $instanceRisk) {
@@ -1285,9 +1288,8 @@ class InstanceService extends AbstractService
 
         // Instance risk
         $return['risks'] = [];
-        // TODO: inject the table directly in the service.
         /** @var InstanceRiskTable $instanceRiskTable */
-        $instanceRiskTable = $this->get('instanceRiskService')->get('table');
+        $instanceRiskTable = $this->get('instanceRiskTable');
         $instanceRisks = $instanceRiskTable->findByInstance($instance);
 
         $instanceRiskArray = [

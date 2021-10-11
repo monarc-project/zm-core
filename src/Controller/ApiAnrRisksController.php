@@ -31,7 +31,7 @@ class ApiAnrRisksController extends AbstractRestfulController
         $anrId = (int)$this->params()->fromRoute('anrid');
         $params = $this->prepareParams();
 
-        $risks = $this->instanceRiskService->getRisks($anrId, ['id' => $id], $params);
+        $risks = $this->instanceRiskService->getInstanceRisks($anrId, $id, $params);
 
         return new JsonModel([
             'count' => \count($risks),
@@ -46,7 +46,7 @@ class ApiAnrRisksController extends AbstractRestfulController
         $anrId = (int)$this->params()->fromRoute('anrid');
         $params = $this->prepareParams();
 
-        $risks = $this->instanceRiskService->getRisks($anrId, null, $params);
+        $risks = $this->instanceRiskService->getInstanceRisks($anrId, null, $params);
 
         return new JsonModel([
             'count' => \count($risks),
