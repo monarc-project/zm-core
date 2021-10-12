@@ -223,7 +223,7 @@ class InstanceRiskService extends AbstractService
             }
         }
 
-        return $result;
+        return array_values($result);
     }
 
     /**
