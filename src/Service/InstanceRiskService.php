@@ -174,7 +174,7 @@ class InstanceRiskService extends AbstractService
             if ($object->isScopeGlobal()) {
                 $key = 'o' . $object->getUuid() . '-' . $threat->getUuid() . '-' . $vulnerability->getUuid();
                 if (isset($result[$key])) {
-                    $isInstanceRiskHasToBeSet = $this->isInstanceRiskHasToBeSet($instanceRisk, $result[$key]);
+                    $isInstanceRiskHasToBeSet = $this->shouldInstanceRiskBeSet($instanceRisk, $result[$key]);
                 }
             }
             if (!$object->isScopeGlobal() || $isInstanceRiskHasToBeSet) {
@@ -576,14 +576,14 @@ class InstanceRiskService extends AbstractService
     }
 
     /**
-     * Determines wether or not the instance risk should be added to the list result in case if the object is global.
+     * Determines whether or not the instance risk should be added to the list result in case. Only for global objects.
      *
      * @param InstanceRiskSuperClass $instanceRisk
      * @param array $valuesToCompare
      *
      * @return bool
      */
-    private function isInstanceRiskHasToBeSet(InstanceRiskSuperClass $instanceRisk, array $valuesToCompare): bool
+    private function shouldInstanceRiskBeSet(InstanceRiskSuperClass $instanceRisk, array $valuesToCompare): bool
     {
         $instance = $instanceRisk->getInstance();
         $isMaxRiskSet = false;
