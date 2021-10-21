@@ -54,12 +54,31 @@ class InstanceRiskTable extends AbstractEntityTable
      */
     public function findByAnr(AnrSuperClass $anr): array
     {
-        return $this->getRepository()
-            ->createQueryBuilder('ir')
+        return $this->getRepository()->createQueryBuilder('ir')
             ->where('ir.anr = :anr')
             ->setParameter('anr', $anr)
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * @return InstanceRiskSuperClass[]
+     */
+    public function findByAnrAndOrderByParams(AnrSuperClass $anr, array $orderBy = []): array
+    {
+        $queryBuilder = $this->getRepository()->createQueryBuilder('ir')
+            ->innerJoin('ir.instance', 'i')
+            ->innerJoin('ir.threat', 't')
+            ->innerJoin('ir.vulnerability', 'v')
+            ->innerJoin('i.object', 'o')
+            ->where('ir.anr = :anr')
+            ->setParameter('anr', $anr);
+
+        foreach ($orderBy as $fieldName => $order) {
+            $queryBuilder->addOrderBy($fieldName, $order);
+        }
+
+        return $queryBuilder->getQuery()->getResult();
     }
 
     /**

@@ -13,6 +13,7 @@ use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\ScaleComment;
 use Monarc\Core\Model\Entity\ScaleCommentSuperClass;
+use Monarc\Core\Model\Entity\ScaleImpactTypeSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**
@@ -87,6 +88,20 @@ class ScaleCommentTable extends AbstractEntityTable
         return $this->getRepository()->createQueryBuilder('sc')
             ->where('sc.anr = :anr')
             ->setParameter('anr', $anr)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return ScaleCommentSuperClass[]
+     */
+    public function findByAnrAndScaleImpactType(AnrSuperClass $anr, ScaleImpactTypeSuperClass $scaleImpactType): array
+    {
+        return $this->getRepository()->createQueryBuilder('sc')
+            ->where('sc.anr = :anr')
+            ->andWhere('sc.scaleImpactType = :scaleImpactType')
+            ->setParameter('anr', $anr)
+            ->setParameter('scaleImpactType', $scaleImpactType)
             ->getQuery()
             ->getResult();
     }

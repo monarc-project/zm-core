@@ -308,6 +308,15 @@ class AnrSuperClass extends AbstractEntity
         return $this->showRolfBrut;
     }
 
+    public function getLabelByLanguageIndex(int $languageIndex): string
+    {
+        if (!\in_array($languageIndex, range(1, 4), true)) {
+            return '';
+        }
+
+        return (string)$this->{'label' . $languageIndex};
+    }
+
     /**
      * On BO side there is no language field in the Anr entity, so user's language is used.
      * On FO side there is a language field, so Anr's lang is used.

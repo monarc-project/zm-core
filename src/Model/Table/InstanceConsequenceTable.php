@@ -11,6 +11,7 @@ use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\InstanceConsequence;
 use Monarc\Core\Model\Entity\InstanceConsequenceSuperClass;
+use Monarc\Core\Model\Entity\InstanceSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**
@@ -49,13 +50,25 @@ class InstanceConsequenceTable extends AbstractEntityTable
     }
 
     /**
-     * @return InstanceConsequence[]
+     * @return InstanceConsequenceSuperClass[]
      */
     public function findByAnr(AnrSuperClass $anr): array
     {
         return $this->getRepository()->createQueryBuilder('ic')
             ->where('ic.anr = :anr')
             ->setParameter('anr', $anr)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return InstanceConsequenceSuperClass[]
+     */
+    public function findByInstance(InstanceSuperClass $instance): array
+    {
+        return $this->getRepository()->createQueryBuilder('ic')
+            ->where('ic.instance = :instance')
+            ->setParameter('instance', $instance)
             ->getQuery()
             ->getResult();
     }

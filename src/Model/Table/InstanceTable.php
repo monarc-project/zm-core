@@ -60,6 +60,37 @@ class InstanceTable extends AbstractEntityTable
             ->getResult();
     }
 
+    /**
+     * @return InstanceSuperClass[]
+     */
+    public function findRootsByAnr(AnrSuperClass $anr): array
+    {
+        return $this->getRepository()
+            ->createQueryBuilder('i')
+            ->where('i.anr = :anr')
+            ->andWhere('i.parent is NULL')
+            ->setParameter('anr', $anr)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return InstanceSuperClass[]
+     */
+    public function findByAnrAndOrderByParams(AnrSuperClass $anr, array $orderBy = []): array
+    {
+        $queryBuilder = $this->getRepository()
+            ->createQueryBuilder('i')
+            ->where('i.anr = :anr')
+            ->setParameter('anr', $anr);
+
+        foreach ($orderBy as $fieldName => $order) {
+            $queryBuilder->addOrderBy($fieldName, $order);
+        }
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
     public function findOneByAnrAndObjectExcludeInstance(
         AnrSuperClass $anr,
         ObjectSuperClass $object,
@@ -92,51 +123,6 @@ class InstanceTable extends AbstractEntityTable
         if ($flushAll) {
             $em->flush();
         }
-    }
-
-    /**
-     * Get Ascendance
-     *
-     * @param $instance
-     * @return array
-     */
-    public function getAscendance($instance)
-    {
-        $root = $instance->get('root');
-        $idRoot = null;
-        $arbo[] = $instance->getJsonArray();
-        if (!empty($root)) {
-            $idRoot = $root->get('id');
-        }
-        if (!empty($idRoot)) {
-            $idAnr = $instance->get('anr')->get('id');
-            $result = $this->getRepository()->createQueryBuilder('i')
-                ->where('i.anr = :anrId')
-                ->andWhere('i.root = :rootid')
-                ->setParameter(':anrId', empty($idAnr) ? null : $idAnr)
-                ->setParameter(':rootid', $idRoot)
-                ->getQuery()
-                ->getResult();
-            $family = array();
-            foreach ($result as $r) {
-                $p = $r->get('parent');
-                if (!empty($p)) {//Cyril - Fix Trello [#9KkvKj5M] - not sure it's enough, what if we want the anr itself (null)
-                    $family[$r->get('id')][$r->get('parent')->get('id')] = $r->get('parent')->getJsonArray();
-                }
-            }
-            $temp = array();
-            $temp[] = $instance->getJsonArray();
-            while (count($temp)) {
-                $cur = array_shift($temp);
-                if (isset($family[$cur['id']])) {
-                    foreach ($family[$cur['id']] as $id => $parent) {
-                        $arbo[$id] = $parent;
-                        $temp[] = $parent;
-                    }
-                }
-            }
-        }
-        return array_reverse($arbo);
     }
 
     /**

@@ -70,11 +70,11 @@ class ApiAnrInstancesController extends AbstractController
      */
     public function get($id)
     {
-        $anrId = (int) $this->params()->fromRoute('anrid');
+        $anrId = (int)$this->params()->fromRoute('anrid');
 
         /** @var InstanceService $service */
         $service = $this->getService();
-        $entity = $service->getEntityByIdAndAnr($id, $anrId);
+        $entity = $service->getInstanceData($id, $anrId);
 
         if (count($this->dependencies)) {
             $this->formatDependencies($entity, $this->dependencies);
