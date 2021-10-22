@@ -49,6 +49,7 @@ class InstanceService extends AbstractService
     protected $scaleImpactTypeTable;
     protected $instanceConsequenceTable;
     protected $instanceConsequenceEntity;
+    protected $instanceRiskTable;
     protected $instanceRiskOpTable;
 
     protected $assetTable;
@@ -856,7 +857,9 @@ class InstanceService extends AbstractService
     {
         /** @var InstanceRiskService $instanceRiskService */
         $instanceRiskService = $this->get('instanceRiskService');
-        $instanceRisks = $instanceRiskService->getInstanceRisks($instance);
+        /** @var InstanceRiskTable $instanceRiskTable */
+        $instanceRiskTable = $this->get('instanceRiskTable');
+        $instanceRisks = $instanceRiskTable->findByInstance($instance);
 
         $nb = \count($instanceRisks);
         foreach ($instanceRisks as $i => $instanceRisk) {
@@ -914,33 +917,6 @@ class InstanceService extends AbstractService
         return $result;
     }
 
-    /**
-     * @param $anrId
-     * @param null $instanceId
-     * @param array $params
-     * @return array
-     * @throws Exception
-     */
-    public function getRisks($anrId, $instanceId = null, $params = [])
-    {
-        return $this->get('instanceRiskService')
-            ->get('table') // TODO: inject and directly use the table class here.
-            ->getFilteredInstancesRisks($anrId, $instanceId, $params, \Monarc\Core\Model\Entity\AbstractEntity::BACK_OFFICE); // TODO: remove the context passing.
-    }
-
-    /**
-     * @param $anrId
-     * @param null $instance
-     * @param array $params
-     * @return string
-     */
-    public function getCsvRisks($anrId, $instance = null, $params = [])
-    {
-        // Move the CSV generation here, or to a separate service, fetch getFilteredInstancesRisks instead and process.
-        return $this->get('instanceRiskService')->get('table')->getCsvRisks(
-            $anrId, $instance, $params, $this->get('translateService'), \Monarc\Core\Model\Entity\AbstractEntity::FRONT_OFFICE);
-    }
-
     public function getInstancesData(int $anrId): array
     {
         /** @var AnrTable $anrTable */
@@ -987,6 +963,8 @@ class InstanceService extends AbstractService
     }
 
     /**
+     * TODO: move to InstanceConsequenceService.
+     *
      * Create Instance Consequences
      *
      * @param $instanceId
@@ -1001,7 +979,7 @@ class InstanceService extends AbstractService
 
             try {
                 $brothers = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $object->getUuid()]);
-            } catch(MappingException | QueryException $e) {
+            } catch (MappingException | QueryException $e) {
                 $brothers = $instanceTable->getEntityByFields([
                     'anr' => $anrId,
                     'object' => [
@@ -1210,9 +1188,8 @@ class InstanceService extends AbstractService
 
         // Instance risk
         $return['risks'] = [];
-        // TODO: inject the table directly in the service.
         /** @var InstanceRiskTable $instanceRiskTable */
-        $instanceRiskTable = $this->get('instanceRiskService')->get('table');
+        $instanceRiskTable = $this->get('instanceRiskTable');
         $instanceRisks = $instanceRiskTable->findByInstance($instance);
 
         $instanceRiskArray = [

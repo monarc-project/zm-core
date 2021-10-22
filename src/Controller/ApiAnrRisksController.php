@@ -7,8 +7,7 @@
 
 namespace Monarc\Core\Controller;
 
-use Monarc\Core\Service\InstanceService;
-use Laminas\Http\Response;
+use Monarc\Core\Service\InstanceRiskService;
 use Laminas\Mvc\Controller\AbstractRestfulController;
 use Laminas\View\Model\JsonModel;
 
@@ -20,12 +19,11 @@ use Laminas\View\Model\JsonModel;
  */
 class ApiAnrRisksController extends AbstractRestfulController
 {
-    /** @var InstanceService */
-    private $instanceService;
+    private InstanceRiskService $instanceRiskService;
 
-    public function __construct(InstanceService $instanceService)
+    public function __construct(InstanceRiskService $instanceRiskService)
     {
-        $this->instanceService = $instanceService;
+        $this->instanceRiskService = $instanceRiskService;
     }
 
     public function get($id)
@@ -33,16 +31,7 @@ class ApiAnrRisksController extends AbstractRestfulController
         $anrId = (int)$this->params()->fromRoute('anrid');
         $params = $this->prepareParams();
 
-        if ($this->params()->fromQuery('csv', false)) {
-            /** @var Response $response */
-            $response = $this->getResponse();
-            $response->getHeaders()->addHeaderLine('Content-Type', 'text/csv; charset=utf-8');
-            $response->setContent($this->instanceService->getCsvRisks($anrId, ['id' => $id], $params));
-
-            return $response;
-        }
-
-        $risks = $this->instanceService->getRisks($anrId, ['id' => $id], $params);
+        $risks = $this->instanceRiskService->getInstanceRisks($anrId, $id, $params);
 
         return new JsonModel([
             'count' => \count($risks),
@@ -57,16 +46,7 @@ class ApiAnrRisksController extends AbstractRestfulController
         $anrId = (int)$this->params()->fromRoute('anrid');
         $params = $this->prepareParams();
 
-        if ($this->params()->fromQuery('csv', false)) {
-            /** @var Response $response */
-            $response = $this->getResponse();
-            $response->getHeaders()->addHeaderLine('Content-Type', 'text/csv; charset=utf-8');
-            $response->setContent($this->instanceService->getCsvRisks($anrId, null, $params));
-
-            return $response;
-        }
-
-        $risks = $this->instanceService->getRisks($anrId, null, $params);
+        $risks = $this->instanceRiskService->getInstanceRisks($anrId, null, $params);
 
         return new JsonModel([
             'count' => \count($risks),

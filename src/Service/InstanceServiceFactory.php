@@ -31,6 +31,7 @@ class InstanceServiceFactory extends AbstractServiceFactory
         'objectTable' => Table\MonarcObjectTable::class,
         'scaleTable' => Table\ScaleTable::class,
         'scaleImpactTypeTable' => Table\ScaleImpactTypeTable::class,
+        'instanceRiskTable' => Table\InstanceRiskTable::class,
         'instanceRiskOpTable' => Table\InstanceRiskOpTable::class,
         'instanceConsequenceService' => Service\InstanceConsequenceService::class,
         'instanceRiskService' => Service\InstanceRiskService::class,

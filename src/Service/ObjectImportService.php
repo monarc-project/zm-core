@@ -32,7 +32,7 @@ class ObjectImportService
     /**
      * TODO: we are not going to implement it now.
      */
-    public function importFromMosp(array $data): MonarcObject
+    public function importFromMosp(array $data): ?MonarcObject
     {
         if (!isset($data['type'], $data['object']) || $data['type'] !== 'object') {
             return null;
