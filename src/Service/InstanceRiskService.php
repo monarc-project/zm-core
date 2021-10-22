@@ -19,6 +19,7 @@ use Monarc\Core\Model\Entity\InstanceSuperClass;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Entity\ObjectSuperClass;
 use Monarc\Core\Model\Table\AmvTable;
+use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\InstanceRiskTable;
 use Monarc\Core\Model\Table\InstanceRiskOwnerTable;
 use Monarc\Core\Model\Table\InstanceTable;
@@ -43,12 +44,10 @@ class InstanceRiskService extends AbstractService
     protected $amvTable;
     protected $instanceTable;
     protected $instanceRiskOwnerTable;
-    protected $recommandationTable;
-    protected $recommandationRiskTable;
 
     // only for setDependencies (deprecated)
     protected $assetTable;
-    protected $MonarcObjectTable;
+    protected $monarcObjectTable;
     protected $scaleTable;
     protected $threatTable;
     protected $vulnerabilityTable;
@@ -138,15 +137,93 @@ class InstanceRiskService extends AbstractService
         $instanceRiskTable->getDb()->flush();
     }
 
-    /**
-     * @return InstanceRiskSuperClass[]
-     */
-    public function getInstanceRisks(InstanceSuperClass $instance)
+    public function getInstanceRisks(int $anrId, ?int $instanceId, array $params = [])
     {
-        /** @var InstanceRiskTable $table */
-        $table = $this->get('table');
+        /** @var AnrTable $anrTable */
+        $anrTable = $this->get('anrTable');
+        $anr = $anrTable->findById($anrId);
 
-        return $table->findByInstance($instance);
+        if ($instanceId !== null) {
+            /** @var InstanceTable $instanceTable */
+            $instanceTable = $this->get('instanceTable');
+            $instance = $instanceTable->findById($instanceId);
+
+            if ($instance->getAnr()->getId() !== $anrId) {
+                throw new Exception('Anr ID and instance anr ID are different', 412);
+            }
+
+            $instanceTable->initTree($instance);
+            $params['instanceIds'] = $this->extractInstancesAndTheirChildrenIds([$instance->getId() => $instance]);
+        }
+
+        /** @var InstanceRiskTable $instanceRiskTable */
+        $instanceRiskTable = $this->get('table');
+
+        $languageIndex = $this->getLanguageIndex($anr);
+
+        $instanceRisks = $instanceRiskTable
+            ->findInstancesRisksByParams($anr, $languageIndex, $params);
+
+        $result = [];
+        foreach ($instanceRisks as $instanceRisk) {
+            $object = $instanceRisk->getInstance()->getObject();
+            $threat = $instanceRisk->getThreat();
+            $vulnerability = $instanceRisk->getVulnerability();
+            $key = 'r' . $instanceRisk->getId();
+            if ($object->isScopeGlobal()) {
+                $key = 'o' . $object->getUuid() . '-' . $threat->getUuid() . '-' . $vulnerability->getUuid();
+            }
+            if (!isset($result[$key])
+                || !$object->isScopeGlobal()
+                || $result[$key]['max_risk'] < $instanceRisk->getCacheMaxRisk()
+            ) {
+                $result[$key] = $this->addCustomFieldsToInstanceRiskResult($instanceRisk, [
+                    'id' => $instanceRisk->getId(),
+                    'oid' => $object->getUuid(),
+                    'instance' => $instanceRisk->getInstance()->getId(),
+                    'amv' => $instanceRisk->getAmv() ? $instanceRisk->getAmv()->getUuid() : null,
+                    'asset' => $instanceRisk->getAsset()->getUuid(),
+                    'assetLabel' . $languageIndex => $instanceRisk->getAsset()->getLabel($languageIndex),
+                    'assetDescription' . $languageIndex => $instanceRisk->getAsset()->getDescription($languageIndex),
+                    'threat' => $threat->getUuid(),
+                    'threatCode' => $threat->getCode(),
+                    'threatLabel' . $languageIndex => $threat->getLabel($languageIndex),
+                    'threatDescription' . $languageIndex => $threat->getDescription($languageIndex),
+                    'threatRate' => $instanceRisk->getThreatRate(),
+                    'vulnerability' => $vulnerability->getUuid(),
+                    'vulnCode' => $vulnerability->getCode(),
+                    'vulnLabel' . $languageIndex => $vulnerability->getLabel($languageIndex),
+                    'vulnDescription' . $languageIndex => $vulnerability->getDescription($languageIndex),
+                    'vulnerabilityRate' => $instanceRisk->getVulnerabilityRate(),
+                    'context' => $instanceRisk->getContext(),
+                    'owner' => $instanceRisk->getInstanceRiskOwner()
+                        ? $instanceRisk->getInstanceRiskOwner()->getName()
+                        : '',
+                    'specific' => $instanceRisk->getSpecific(),
+                    'reductionAmount' => $instanceRisk->getReductionAmount(),
+                    'c_impact' => $instanceRisk->getInstance()->getConfidentiality(),
+                    'c_risk' => $instanceRisk->getRiskConfidentiality(),
+                    'c_risk_enabled' => $threat->getConfidentiality(),
+                    'i_impact' => $instanceRisk->getInstance()->getIntegrity(),
+                    'i_risk' => $instanceRisk->getRiskIntegrity(),
+                    'i_risk_enabled' => $threat->getIntegrity(),
+                    'd_impact' => $instanceRisk->getInstance()->getAvailability(),
+                    'd_risk' => $instanceRisk->getRiskAvailability(),
+                    'd_risk_enabled' => $threat->getAvailability(),
+                    'target_risk' => $instanceRisk->getCacheTargetedRisk(),
+                    'max_risk' => $instanceRisk->getCacheMaxRisk(),
+                    'comment' => $instanceRisk->getComment(),
+                    'scope' => $object->getScope(),
+                    'kindOfMeasure' => $instanceRisk->getKindOfMeasure(),
+                    't' => $instanceRisk->isTreated(),
+                    'tid' => $threat->getUuid(),
+                    'vid' => $vulnerability->getUuid(),
+                    'instanceName' . $languageIndex => $instanceRisk->getInstance()->{'getName' . $languageIndex}(),
+                ]);
+            }
+        }
+
+        return array_values($result);
     }
 
     /**
@@ -157,15 +234,18 @@ class InstanceRiskService extends AbstractService
         $initialData = $data;
         $anrId = $data['anr'];
 
-        if(isset($data['threatRate'])){
+        if (isset($data['threatRate'])) {
             $data['threatRate'] = trim($data['threatRate']);
-            if(empty($data['threatRate']) || $data['threatRate'] == '-' || $data['threatRate'] == -1){
+            if (empty($data['threatRate']) || $data['threatRate'] === '-' || (int)$data['threatRate'] === -1) {
                 $data['threatRate'] = -1;
             }
         }
-        if(isset($data['vulnerabilityRate'])){
+        if (isset($data['vulnerabilityRate'])) {
             $data['vulnerabilityRate'] = trim($data['vulnerabilityRate']);
-            if(empty($data['vulnerabilityRate']) || $data['vulnerabilityRate'] == '-' || $data['vulnerabilityRate'] == -1){
+            if (empty($data['vulnerabilityRate'])
+                || $data['vulnerabilityRate'] === '-'
+                || (int)$data['vulnerabilityRate'] === -1
+            ) {
                 $data['vulnerabilityRate'] = -1;
             }
         }
@@ -181,7 +261,6 @@ class InstanceRiskService extends AbstractService
 
         //if object is global, impact modifications to brothers
         if ($manageGlobal) {
-            /** @var ObjectSuperClass $object */
             $object = $instanceRisk->getInstance()->getObject();
             if ($object->getScope() === MonarcObject::SCOPE_GLOBAL) {
                 //retrieve brothers instances
@@ -232,7 +311,7 @@ class InstanceRiskService extends AbstractService
 
         $instanceRisk->exchangeArray($data, true);
 
-        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = property_exists($this, 'dependencies') ? $this->dependencies : [];
         $this->setDependencies($instanceRisk, $dependencies);
 
         $instanceRisk->setUpdater(
@@ -462,5 +541,36 @@ class InstanceRiskService extends AbstractService
             ->setAnr($anr)
             ->setName($ownerName)
             ->setCreator($this->getConnectedUser()->getEmail());
+    }
+
+    protected function getLanguageIndex(AnrSuperClass $anr): int
+    {
+        return $this->getConnectedUser()->getLanguage();
+    }
+
+    /**
+     * @param Instance[] $instances
+     *
+     * @return array
+     */
+    private function extractInstancesAndTheirChildrenIds(array $instances): array
+    {
+        $instancesIds = [];
+        foreach ($instances as $instanceId => $instance) {
+            $instancesIds[] = $instanceId;
+            $instancesIds = array_merge(
+                $instancesIds,
+                $this->extractInstancesAndTheirChildrenIds($instance->getParameterValues('children'))
+            );
+        }
+
+        return $instancesIds;
+    }
+
+    private function addCustomFieldsToInstanceRiskResult(
+        InstanceRiskSuperClass $instanceRisk,
+        array $instanceRiskResult
+    ): array {
+        return $instanceRiskResult;
     }
 }

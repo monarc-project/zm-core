@@ -381,8 +381,6 @@ class ObjectService extends AbstractService
     }
 
     /**
-     * TODO: check if we need to modify it ???
-     *
      * Get Risks Op
      *
      * @param $object
