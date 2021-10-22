@@ -941,27 +941,27 @@ class InstanceService extends AbstractService
             $anrId, $instance, $params, $this->get('translateService'), \Monarc\Core\Model\Entity\AbstractEntity::FRONT_OFFICE);
     }
 
-    /**
-     * Find By Anr
-     *
-     * @param $anrId
-     * @return mixed
-     */
-    public function findByAnr($anrId)
+    public function getInstancesData(int $anrId): array
     {
+        /** @var AnrTable $anrTable */
+        $anrTable = $this->get('anrTable');
+        $anr = $anrTable->findById($anrId);
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('table');
-        $allInstances = $instanceTable->getEntityByFields(['anr' => $anrId], ['parent' => 'DESC', 'position' => 'ASC']);
+        $allInstances = $instanceTable->findByAnrAndOrderByParams(
+            $anr,
+            ['i.parent' => 'DESC', 'i.position' => 'ASC']
+        );
 
         $instances = $temp = [];
         foreach ($allInstances as $instance) {
             $instanceArray = $instance->getJsonArray();
-            $instanceArray['scope'] = $instance->object->scope;
+            $instanceArray['scope'] = $instance->getObject()->getScope();
             $instanceArray['child'] = [];
-            $instanceArray['parent'] = is_null($instance->get('parent')) ? 0 : $instance->get('parent')->get('id');
+            $instanceArray['parent'] = $instance->getParent() === null ? 0 : $instance->getParent()->getId();
 
             $instances[$instanceArray['parent']][$instanceArray['id']] = $instanceArray;
-            if (is_null($instance->get('parent'))) {
+            if ($instance->getParent() === null) {
                 $temp[] = $instanceArray;
             }
         }
@@ -976,7 +976,9 @@ class InstanceService extends AbstractService
                         array_unshift($temp, $fam);
                     }
                     if (isset($instances[$current['parent']][$current['id']]['child'])) {
-                        $instances[$current['parent']][$current['id']]['child'] = array_values($instances[$current['parent']][$current['id']]['child']);
+                        $instances[$current['parent']][$current['id']]['child'] = array_values(
+                            $instances[$current['parent']][$current['id']]['child']
+                        );
                     }
                 }
             }
