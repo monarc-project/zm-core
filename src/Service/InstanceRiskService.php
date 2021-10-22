@@ -576,7 +576,7 @@ class InstanceRiskService extends AbstractService
     }
 
     /**
-     * Determines whether or not the instance risk should be added to the list result in case. Only for global objects.
+     * Determines whether the instance risk should be added to the list result in case. Only for global objects.
      *
      * @param InstanceRiskSuperClass $instanceRisk
      * @param array $valuesToCompare
