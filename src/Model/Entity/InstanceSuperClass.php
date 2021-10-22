@@ -104,13 +104,6 @@ class InstanceSuperClass extends AbstractEntity
     protected $instanceConsequences;
 
     /**
-     * @var InstanceRiskSuperClass[]|ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="InstanceRisk", mappedBy="instance")
-     */
-    protected $instanceRisks;
-
-    /**
      * @var string
      *
      * @ORM\Column(name="name1", type="string", length=255, nullable=true)
@@ -246,7 +239,6 @@ class InstanceSuperClass extends AbstractEntity
     public function __construct($obj = null)
     {
         $this->instanceConsequences = new ArrayCollection();
-        $this->instanceRisks = new ArrayCollection();
 
         parent::__construct($obj);
     }
@@ -570,21 +562,6 @@ class InstanceSuperClass extends AbstractEntity
     public function resetInstanceConsequences(): self
     {
         $this->instanceConsequences = new ArrayCollection();
-
-        return $this;
-    }
-
-    public function getInstanceRisks()
-    {
-        return $this->instanceRisks;
-    }
-
-    public function addInstanceRisk(InstanceRiskSuperClass $instanceRisk): self
-    {
-        if (!$this->instanceRisks->contains($instanceRisk)) {
-            $this->instanceRisks->add($instanceRisk);
-            $instanceRisk->setInstance($this);
-        }
 
         return $this;
     }
