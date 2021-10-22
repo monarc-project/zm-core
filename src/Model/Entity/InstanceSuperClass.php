@@ -566,6 +566,33 @@ class InstanceSuperClass extends AbstractEntity
         return $this;
     }
 
+    /**
+     * Returns the instance hierarchy array ordered from it's root through all the children to the instance itself.
+     * Each element is a normalized array of instance properties.
+     */
+    public function getHierarchyArray(): array
+    {
+        if ($this->root === null || $this->id === $this->root->getId()) {
+            return [$this->getJsonArray()];
+        }
+
+        return $this->getInstanceParents($this);
+    }
+
+    private function getInstanceParents(InstanceSuperClass $instance): array
+    {
+        if ($instance->getRoot() === null || $instance->getId() === $instance->getRoot()->getId()) {
+            return [$instance->getJsonArray()];
+        }
+
+        return array_merge($this->getInstanceParents($instance->getParent()), [$instance->getJsonArray()]);
+    }
+
+    public function getHierarchyString(): string
+    {
+        return implode(' > ', array_column($this->getHierarchyArray(), 'name' . $this->anr->getLanguage()));
+    }
+
     protected $parameters = array(
         'implicitPosition' => array(
             'field' => 'parent',

@@ -137,7 +137,7 @@ class InstanceRiskService extends AbstractService
         $instanceRiskTable->getDb()->flush();
     }
 
-    public function getInstanceRisks(int $anrId, ?int $instanceId, array $params = [])
+    public function getInstanceRisks(int $anrId, ?int $instanceId, array $params = []): array
     {
         /** @var AnrTable $anrTable */
         $anrTable = $this->get('anrTable');

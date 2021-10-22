@@ -10,12 +10,13 @@ namespace Monarc\Core\Service;
 use Doctrine\ORM\Mapping\MappingException;
 use Monarc\Core\Model\Entity\InstanceConsequence;
 use Monarc\Core\Model\Entity\InstanceConsequenceSuperClass;
-use Monarc\Core\Model\Entity\MonarcObject;
+use Monarc\Core\Model\Entity\InstanceSuperClass;
 use Monarc\Core\Model\Table\InstanceConsequenceTable;
 use Monarc\Core\Model\Table\InstanceTable;
 use Laminas\EventManager\EventManager;
 use Doctrine\ORM\Query\QueryException;
 use Laminas\EventManager\SharedEventManager;
+use Monarc\Core\Model\Table\ScaleCommentTable;
 
 /**
  * Instance Consequence Service
@@ -33,8 +34,59 @@ class InstanceConsequenceService extends AbstractService
     protected $scaleImpactTypeTable;
     protected $forbiddenFields = ['anr', 'instance', 'object', 'scaleImpactType'];
 
+    /** @var ScaleCommentTable */
+    protected $scaleCommentTable;
+
     /** @var SharedEventManager */
     private $sharedManager;
+
+    public function getConsequences(InstanceSuperClass $instance, bool $includeScaleComments = false): array
+    {
+        /** @var InstanceConsequenceTable $instanceConsequenceTable */
+        $instanceConsequenceTable = $this->get('table');
+        $instanceConsequences = $instanceConsequenceTable->findByInstance($instance);
+        /** @var ScaleCommentTable $scaleCommentTable */
+        $scaleCommentTable = $this->get('scaleCommentTable');
+
+        $languageNumber = $instance->getAnr()->getLanguage();
+
+        $consequences = [];
+        foreach ($instanceConsequences as $instanceConsequence) {
+            $scaleImpactType = $instanceConsequence->getScaleImpactType();
+            if (!$scaleImpactType->isHidden()) {
+                $consequences[] = [
+                    'id' => $instanceConsequence->getId(),
+                    'scaleImpactTypeId' => $scaleImpactType->getId(),
+                    'scaleImpactType' => $scaleImpactType->getType(),
+                    'scaleImpactTypeDescription1' => $scaleImpactType->getLabel(1),
+                    'scaleImpactTypeDescription2' => $scaleImpactType->getLabel(2),
+                    'scaleImpactTypeDescription3' => $scaleImpactType->getLabel(3),
+                    'scaleImpactTypeDescription4' => $scaleImpactType->getLabel(4),
+                    'c_risk' => $instanceConsequence->getConfidentiality(),
+                    'i_risk' => $instanceConsequence->getIntegrity(),
+                    'd_risk' => $instanceConsequence->getAvailability(),
+                    'isHidden' => $instanceConsequence->isHidden(),
+                    'locallyTouched' => $instanceConsequence->getLocallyTouched(),
+                ];
+
+                if ($includeScaleComments) {
+                    $scalesComments = $scaleCommentTable->findByAnrAndScaleImpactType(
+                        $instance->getAnr(),
+                        $scaleImpactType
+                    );
+
+                    $comments = [];
+                    foreach ($scalesComments as $scaleComment) {
+                        $comments[$scaleComment->getScaleValue()] = $scaleComment->getComment($languageNumber);
+                    }
+
+                    $consequences[array_key_last($consequences)]['comments'] = $comments;
+                }
+            }
+        }
+
+        return $consequences;
+    }
 
     /**
      * @inheritdoc

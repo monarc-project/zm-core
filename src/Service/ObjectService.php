@@ -14,6 +14,7 @@ use Monarc\Core\Model\Entity\AbstractEntity;
 use Monarc\Core\Model\Entity\AnrObjectCategory;
 use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\Asset;
+use Monarc\Core\Model\Entity\InstanceSuperClass;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Entity\ObjectCategorySuperClass;
 use Monarc\Core\Model\Entity\ObjectSuperClass;
@@ -174,7 +175,7 @@ class ObjectService extends AbstractService
                     if (!empty($filterAnd['uuid']['value'])) {
                         $filterAnd['uuid'] = [
                             'op' => 'NOT IN',
-                            'value' => array_values($filterAnd['uuid']['value'])
+                            'value' => array_values($filterAnd['uuid']['value']),
                         ];
                     }
                 }
@@ -250,8 +251,8 @@ class ObjectService extends AbstractService
             //Check if the object is linked to the $anr
             $found = false;
             $anrObject = null;
-            foreach ($object->anrs as $a) {
-                if ($a->id == $anr) {
+            foreach ($object->getAnrs() as $a) {
+                if ($a->getId() === $anr) {
                     $found = true;
                     $anrObject = $a;
                     break;
@@ -279,20 +280,21 @@ class ObjectService extends AbstractService
 
 
             $instances_arr = [];
+            /** @var InstanceSuperClass $instance */
             foreach ($instances as $instance) {
-                $asc = $instanceTable->getAscendance($instance);
+                $instanceHierarchy = $instance->getHierarchyArray();
 
                 $names = [
-                    'name1' => $anrObject->label1,
-                    'name2' => $anrObject->label2,
-                    'name3' => $anrObject->label3,
-                    'name4' => $anrObject->label4,
+                    'name1' => $anrObject->getLabelByLanguageIndex(1),
+                    'name2' => $anrObject->getLabelByLanguageIndex(2),
+                    'name3' => $anrObject->getLabelByLanguageIndex(3),
+                    'name4' => $anrObject->getLabelByLanguageIndex(4),
                 ];
-                foreach ($asc as $a) {
-                    $names['name1'] .= ' > ' . $a['name1'];
-                    $names['name2'] .= ' > ' . $a['name2'];
-                    $names['name3'] .= ' > ' . $a['name3'];
-                    $names['name4'] .= ' > ' . $a['name4'];
+                foreach ($instanceHierarchy as $instanceData) {
+                    $names['name1'] .= ' > ' . $instanceData['name1'];
+                    $names['name2'] .= ' > ' . $instanceData['name2'];
+                    $names['name3'] .= ' > ' . $instanceData['name3'];
+                    $names['name4'] .= ' > ' . $instanceData['name4'];
                 }
                 $names['id'] = $instance->get('id');
                 $instances_arr[] = $names;
@@ -300,7 +302,6 @@ class ObjectService extends AbstractService
 
             $objectArr['replicas'] = $instances_arr;
         } else {
-
             $anrsIds = [];
             foreach ($object->anrs as $item) {
                 $anrsIds[] = $item->id;
@@ -440,18 +441,6 @@ class ObjectService extends AbstractService
         $result = $this->getAnrObjects(1, 0, null, $filter, $filterAnd, $model, $anr, $context);
 
         return count($result);
-    }
-
-    /**
-     * Get generic by asset
-     *
-     * @param $asset
-     *
-     * @return mixed
-     */
-    public function getGenericByAsset($asset)
-    {
-        return $this->get('table')->getGenericByAssetId($asset->getUuid());
     }
 
     /**

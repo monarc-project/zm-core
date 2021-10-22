@@ -8,6 +8,8 @@
 namespace Monarc\Core\Service;
 
 use Interop\Container\ContainerInterface;
+use Monarc\Core\Model\Table;
+use Monarc\Core\Model\Entity\InstanceConsequence;
 
 /**
  * Instance Consequence Service Factory
@@ -18,13 +20,14 @@ use Interop\Container\ContainerInterface;
 class InstanceConsequenceServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = [
-        'table' => 'Monarc\Core\Model\Table\InstanceConsequenceTable',
-        'entity' => 'Monarc\Core\Model\Entity\InstanceConsequence',
-        'anrTable' => 'Monarc\Core\Model\Table\AnrTable',
-        'instanceTable' => 'Monarc\Core\Model\Table\InstanceTable',
-        'MonarcObjectTable' => 'Monarc\Core\Model\Table\MonarcObjectTable',
-        'scaleTable' => 'Monarc\Core\Model\Table\ScaleTable',
-        'scaleImpactTypeTable' => 'Monarc\Core\Model\Table\ScaleImpactTypeTable',
+        'table' => Table\InstanceConsequenceTable::class,
+        'entity' => InstanceConsequence::class,
+        'anrTable' => Table\AnrTable::class,
+        'instanceTable' => Table\InstanceTable::class,
+        'MonarcObjectTable' => Table\MonarcObjectTable::class,
+        'scaleTable' => Table\ScaleTable::class,
+        'scaleImpactTypeTable' => Table\ScaleImpactTypeTable::class,
+        'scaleCommentTable' => Table\ScaleCommentTable::class,
     ];
 
     // TODO: A temporary solution to inject SharedEventManager. All the factories classes will be removed.
