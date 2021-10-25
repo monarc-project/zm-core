@@ -25,8 +25,6 @@ class OperationalRiskScaleCommentSuperClass
 
     // TODO: implement implement the input filed validator for the entity fields, validate scaleIndex (min - max)
 
-    public const TRANSLATION_TYPE_NAME = 'operational-risk-scale-comment';
-
     /**
      * @var int
      *

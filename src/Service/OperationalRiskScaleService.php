@@ -97,7 +97,7 @@ class OperationalRiskScaleService
             foreach ($languageCodes as $languageCode) {
                 $translation = $this->createTranslationObject(
                     $anr,
-                    OperationalRiskScaleType::TRANSLATION_TYPE_NAME,
+                    Translation::OPERATIONAL_RISK_SCALE_TYPE,
                     $scaleType->getLabelTranslationKey(),
                     $languageCode,
                     ''
@@ -141,7 +141,7 @@ class OperationalRiskScaleService
             foreach ($data['label'] as $lang => $labelText) {
                 $translation = $this->createTranslationObject(
                     $anr,
-                    OperationalRiskScaleType::TRANSLATION_TYPE_NAME,
+                    Translation::OPERATIONAL_RISK_SCALE_TYPE,
                     $operationalRiskScaleType->getLabelTranslationKey(),
                     $lang,
                     (string)$labelText
@@ -155,7 +155,7 @@ class OperationalRiskScaleService
             $anrLanguageCode = $this->getAnrLanguageCode($anr);
             $translation = $this->createTranslationObject(
                 $anr,
-                OperationalRiskScaleType::TRANSLATION_TYPE_NAME,
+                Translation::OPERATIONAL_RISK_SCALE_TYPE,
                 $operationalRiskScaleType->getLabelTranslationKey(),
                 $anrLanguageCode,
                 $data['label'][$anrLanguageCode]
@@ -207,7 +207,7 @@ class OperationalRiskScaleService
 
         $translations = $this->translationTable->findByAnrTypesAndLanguageIndexedByKey(
             $anr,
-            [OperationalRiskScaleType::TRANSLATION_TYPE_NAME, OperationalRiskScaleComment::TRANSLATION_TYPE_NAME],
+            [Translation::OPERATIONAL_RISK_SCALE_TYPE, Translation::OPERATIONAL_RISK_SCALE_COMMENT],
             $language
         );
 
@@ -506,7 +506,7 @@ class OperationalRiskScaleService
             // Create a translation for the scaleComment (init with blank value).
             $translation = $this->createTranslationObject(
                 $anr,
-                OperationalRiskScaleComment::TRANSLATION_TYPE_NAME,
+                Translation::OPERATIONAL_RISK_SCALE_COMMENT,
                 $scaleComment->getCommentTranslationKey(),
                 $languageCode,
                 ''

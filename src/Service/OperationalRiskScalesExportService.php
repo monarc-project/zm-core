@@ -10,6 +10,7 @@ namespace Monarc\Core\Service;
 use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\OperationalRiskScaleCommentSuperClass;
 use Monarc\Core\Model\Entity\OperationalRiskScaleTypeSuperClass;
+use Monarc\Core\Model\Entity\Translation;
 use Monarc\Core\Model\Table\OperationalRiskScaleTable;
 use Monarc\Core\Model\Table\TranslationTable;
 
@@ -36,10 +37,7 @@ class OperationalRiskScalesExportService
         // TODO: we need to fetch the translations without language code for BO and handle it differently later on.
         $operationalRisksAndScalesTranslations = $this->translationTable->findByAnrTypesAndLanguageIndexedByKey(
             $anr,
-            [
-                OperationalRiskScaleTypeSuperClass::TRANSLATION_TYPE_NAME,
-                OperationalRiskScaleCommentSuperClass::TRANSLATION_TYPE_NAME
-            ],
+            [Translation::OPERATIONAL_RISK_SCALE_TYPE, Translation::OPERATIONAL_RISK_SCALE_COMMENT],
             $this->getAnrLanguageCode($anr)
         );
 
