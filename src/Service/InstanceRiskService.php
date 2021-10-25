@@ -548,6 +548,13 @@ class InstanceRiskService extends AbstractService
         return $this->getConnectedUser()->getLanguage();
     }
 
+    protected function addCustomFieldsToInstanceRiskResult(
+        InstanceRiskSuperClass $instanceRisk,
+        array $instanceRiskResult
+    ): array {
+        return $instanceRiskResult;
+    }
+
     /**
      * @param Instance[] $instances
      *
@@ -565,12 +572,5 @@ class InstanceRiskService extends AbstractService
         }
 
         return $instancesIds;
-    }
-
-    private function addCustomFieldsToInstanceRiskResult(
-        InstanceRiskSuperClass $instanceRisk,
-        array $instanceRiskResult
-    ): array {
-        return $instanceRiskResult;
     }
 }
