@@ -104,7 +104,7 @@ class InstanceRiskTable extends AbstractEntityTable
             if (\is_string($amvIds)) {
                 $amvIds = explode(',', trim($amvIds), ',');
             }
-            $queryBuilder->andWhere($queryBuilder->expr()->in('ir.amv', $amvIds));
+            $queryBuilder->andWhere($queryBuilder->expr()->in('amv.uuid', $amvIds));
         }
 
         if (isset(
