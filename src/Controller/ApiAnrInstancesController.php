@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Controller;
 
+use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Instance;
 use Monarc\Core\Service\InstanceService;
 use Laminas\View\Model\JsonModel;
@@ -27,11 +28,12 @@ class ApiAnrInstancesController extends AbstractController
      */
     public function getList()
     {
-        $anrId = (int) $this->params()->fromRoute('anrid');
+        $anrId = (int)$this->params()->fromRoute('anrid');
 
         /** @var InstanceService $service */
         $service = $this->getService();
-        $instances = $service->findByAnr($anrId);
+        $instances = $service->getInstancesData($anrId);
+
         return new JsonModel(array(
             $this->name => $instances
         ));
@@ -42,7 +44,7 @@ class ApiAnrInstancesController extends AbstractController
      */
     public function update($id, $data)
     {
-        $anrId = (int) $this->params()->fromRoute('anrid');
+        $anrId = (int)$this->params()->fromRoute('anrid');
 
         /** @var InstanceService $service */
         $service = $this->getService();
@@ -56,7 +58,7 @@ class ApiAnrInstancesController extends AbstractController
      */
     public function patch($id, $data)
     {
-        $anrId = (int) $this->params()->fromRoute('anrid');
+        $anrId = (int)$this->params()->fromRoute('anrid');
         $data['anr'] = $anrId ;
         /** @var InstanceService $service */
         $service = $this->getService();
@@ -70,11 +72,11 @@ class ApiAnrInstancesController extends AbstractController
      */
     public function get($id)
     {
-        $anrId = (int) $this->params()->fromRoute('anrid');
+        $anrId = (int)$this->params()->fromRoute('anrid');
 
         /** @var InstanceService $service */
         $service = $this->getService();
-        $entity = $service->getEntityByIdAndAnr($id, $anrId);
+        $entity = $service->getInstanceData($id, $anrId);
 
         if (count($this->dependencies)) {
             $this->formatDependencies($entity, $this->dependencies);
@@ -84,6 +86,8 @@ class ApiAnrInstancesController extends AbstractController
     }
 
     /**
+     * TODO: the export with password and evals doesn't work as far as we need to get [POST] data, but request is [GET]
+     *
      * Exports an instance in our own custom encrypted format and downloads it to the client browser
      * @return \Laminas\Stdlib\ResponseInterface The file attachment response
      */
@@ -93,25 +97,26 @@ class ApiAnrInstancesController extends AbstractController
         $service = $this->getService();
 
         $id = $this->params()->fromRoute('id');
-        $data = ['id' => $id];
+        $data['id'] = $id;
 
         if (empty($data['password'])) {
-          $contentType = 'application/json; charset=utf-8';
-          $extension = '.json';
+            $contentType = 'application/json; charset=utf-8';
+            $extension = '.json';
         } else {
-          $contentType = 'text/plain; charset=utf-8';
-          $extension = '.bin';
+            $contentType = 'text/plain; charset=utf-8';
+            $extension = '.bin';
         }
 
+        $exportData = $service->export($data);
         $this->getResponse()
-             ->getHeaders()
-             ->clearHeaders()
-             ->addHeaderLine('Content-Type', $contentType)
-             ->addHeaderLine('Content-Disposition', 'attachment; filename="' .
-                              (empty($data['filename']) ? $data['id'] : $data['filename']) . $extension . '"');
+            ->setContent($exportData);
 
         $this->getResponse()
-              ->setContent($service->export($data));
+            ->getHeaders()
+            ->clearHeaders()
+            ->addHeaderLine('Content-Type', $contentType)
+            ->addHeaderLine('Content-Disposition', 'attachment; filename="' .
+                (empty($data['filename']) ? $data['id'] : $data['filename']) . $extension . '"');
 
         return $this->getResponse();
     }
@@ -132,7 +137,7 @@ class ApiAnrInstancesController extends AbstractController
             }
         }
         if (count($missing)) {
-            throw new \Monarc\Core\Exception\Exception(implode(', ', $missing), 412);
+            throw new Exception(implode(', ', $missing), 412);
         }
 
         $data['c'] = isset($data['c'])?$data['c']:'-1';

@@ -20,6 +20,9 @@ class TranslationSuperClass
     use CreateEntityTrait;
     use UpdateEntityTrait;
 
+    public const OPERATIONAL_RISK_SCALE_TYPE = 'operational-risk-scale-type';
+    public const OPERATIONAL_RISK_SCALE_COMMENT = 'operational-risk-scale-comment';
+
     /**
      * @var integer
      *

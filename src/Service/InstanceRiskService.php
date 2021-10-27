@@ -137,7 +137,7 @@ class InstanceRiskService extends AbstractService
         $instanceRiskTable->getDb()->flush();
     }
 
-    public function getInstanceRisks(int $anrId, ?int $instanceId, array $params = [])
+    public function getInstanceRisks(int $anrId, ?int $instanceId, array $params = []): array
     {
         /** @var AnrTable $anrTable */
         $anrTable = $this->get('anrTable');
@@ -174,7 +174,7 @@ class InstanceRiskService extends AbstractService
             if ($object->isScopeGlobal()) {
                 $key = 'o' . $object->getUuid() . '-' . $threat->getUuid() . '-' . $vulnerability->getUuid();
                 if (isset($result[$key])) {
-                    $isInstanceRiskHasToBeSet = $this->shouldInstanceRiskBeSet($instanceRisk, $result[$key]);
+                    $isInstanceRiskHasToBeSet = $this->shouldInstanceRiskBeAddedToResults($instanceRisk, $result[$key]);
                 }
             }
             if (!$object->isScopeGlobal() || $isInstanceRiskHasToBeSet) {
@@ -549,6 +549,13 @@ class InstanceRiskService extends AbstractService
         return $this->getConnectedUser()->getLanguage();
     }
 
+    protected function addCustomFieldsToInstanceRiskResult(
+        InstanceRiskSuperClass $instanceRisk,
+        array $instanceRiskResult
+    ): array {
+        return $instanceRiskResult;
+    }
+
     /**
      * @param Instance[] $instances
      *
@@ -568,13 +575,6 @@ class InstanceRiskService extends AbstractService
         return $instancesIds;
     }
 
-    private function addCustomFieldsToInstanceRiskResult(
-        InstanceRiskSuperClass $instanceRisk,
-        array $instanceRiskResult
-    ): array {
-        return $instanceRiskResult;
-    }
-
     /**
      * Determines whether the instance risk should be added to the list result in case. Only for global objects.
      *
@@ -583,8 +583,10 @@ class InstanceRiskService extends AbstractService
      *
      * @return bool
      */
-    private function shouldInstanceRiskBeSet(InstanceRiskSuperClass $instanceRisk, array $valuesToCompare): bool
-    {
+    private function shouldInstanceRiskBeAddedToResults(
+        InstanceRiskSuperClass $instanceRisk,
+        array $valuesToCompare
+    ): bool {
         $instance = $instanceRisk->getInstance();
         $isMaxRiskSet = false;
         foreach ($instance->getInstanceRisks() as $instanceRiskToValidate) {

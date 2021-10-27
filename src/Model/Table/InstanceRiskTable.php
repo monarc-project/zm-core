@@ -12,12 +12,10 @@ use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Monarc\Core\Model\Db;
-use Monarc\Core\Model\Entity\AbstractEntity;
 use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\InstanceRisk;
 use Monarc\Core\Model\Entity\InstanceRiskSuperClass;
 use Monarc\Core\Model\Entity\InstanceSuperClass;
-use Monarc\Core\Model\Entity\ObjectSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**
@@ -50,12 +48,31 @@ class InstanceRiskTable extends AbstractEntityTable
      */
     public function findByAnr(AnrSuperClass $anr): array
     {
-        return $this->getRepository()
-            ->createQueryBuilder('ir')
+        return $this->getRepository()->createQueryBuilder('ir')
             ->where('ir.anr = :anr')
             ->setParameter('anr', $anr)
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * @return InstanceRiskSuperClass[]
+     */
+    public function findByAnrAndOrderByParams(AnrSuperClass $anr, array $orderBy = []): array
+    {
+        $queryBuilder = $this->getRepository()->createQueryBuilder('ir')
+            ->innerJoin('ir.instance', 'i')
+            ->innerJoin('ir.threat', 't')
+            ->innerJoin('ir.vulnerability', 'v')
+            ->innerJoin('i.object', 'o')
+            ->where('ir.anr = :anr')
+            ->setParameter('anr', $anr);
+
+        foreach ($orderBy as $fieldName => $order) {
+            $queryBuilder->addOrderBy($fieldName, $order);
+        }
+
+        return $queryBuilder->getQuery()->getResult();
     }
 
     /**
@@ -87,7 +104,7 @@ class InstanceRiskTable extends AbstractEntityTable
             if (\is_string($amvIds)) {
                 $amvIds = explode(',', trim($amvIds), ',');
             }
-            $queryBuilder->andWhere($queryBuilder->expr()->in('ir.amv', $amvIds));
+            $queryBuilder->andWhere($queryBuilder->expr()->in('amv.uuid', $amvIds));
         }
 
         if (isset(

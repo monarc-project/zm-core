@@ -169,6 +169,23 @@ class InstanceRiskOpTable extends AbstractEntityTable
             ->getResult();
     }
 
+    /**
+     * @return InstanceRiskOpSuperClass[]
+     */
+    public function findByAnrAndOrderByParams(AnrSuperClass $anr, array $orderBy = []): array
+    {
+        $queryBuilder = $this->getRepository()->createQueryBuilder('oprisk')
+            ->innerJoin('oprisk.instance', 'i')
+            ->where('oprisk.anr = :anr')
+            ->setParameter('anr', $anr);
+
+        foreach ($orderBy as $fieldName => $order) {
+            $queryBuilder->addOrderBy($fieldName, $order);
+        }
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
     public function saveEntity(InstanceRiskOpSuperClass $instanceRiskOp, bool $flush = true): void
     {
         $em = $this->getDb()->getEntityManager();

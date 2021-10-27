@@ -25,8 +25,6 @@ class OperationalRiskScaleTypeSuperClass
     use CreateEntityTrait;
     use UpdateEntityTrait;
 
-    public const TRANSLATION_TYPE_NAME = 'operational-risk-scale-type';
-
     /**
      * @var int
      *

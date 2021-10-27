@@ -23,7 +23,6 @@ use Monarc\Core\Model\Table\InstanceConsequenceTable;
 use Monarc\Core\Model\Table\InstanceRiskOpTable;
 use Monarc\Core\Model\Table\InstanceRiskTable;
 use Monarc\Core\Model\Table\InstanceTable;
-use Monarc\Core\Model\Table\ScaleCommentTable;
 use Monarc\Core\Model\Table\ScaleImpactTypeTable;
 use Laminas\EventManager\EventManager;
 use Doctrine\ORM\Query\QueryException;
@@ -47,7 +46,6 @@ class InstanceService extends AbstractService
     protected $amvTable;
     protected $objectTable;
     protected $scaleTable;
-    protected $scaleCommentTable;
     protected $scaleImpactTypeTable;
     protected $instanceConsequenceTable;
     protected $instanceConsequenceEntity;
@@ -409,6 +407,10 @@ class InstanceService extends AbstractService
             $this->forbiddenFields = ['anr', 'asset',]; //temporary remove object to allow creation
         }
 
+        if (isset($data['parent']) && (int)$id === $data['parent']) {
+            throw new Exception('Instance can not be parent to itself.', 412);
+        }
+
         $this->filterPatchFields($data);
 
         //retrieve instance
@@ -417,7 +419,7 @@ class InstanceService extends AbstractService
         /** @var Instance $instance */
         $instance = $table->getEntity($id);
         if (!$instance) {
-            throw new Exception('Instance does not exist', 412);
+            throw new Exception('Instance does not exist.', 412);
         }
 
         if (isset($data['parent']) && empty($data['parent'])) {
@@ -725,7 +727,7 @@ class InstanceService extends AbstractService
     {
         /** @var InstanceTable $table */
         $table = $this->get('table');
-        if (!$instance instanceof \Monarc\Core\Model\Entity\InstanceSuperClass) {
+        if (!$instance instanceof InstanceSuperClass) {
             $instance = $this->get('table')->getEntity($instance);
         }
         /** @var InstanceSuperClass[] $children */
@@ -800,7 +802,6 @@ class InstanceService extends AbstractService
                     $data['label'.$instance->getLanguage()] = $brother->$tempLabel;
 
                     if (isset($data['consequences'])) {
-
                         //retrieve instance consequence id for the brother instance id ans scale impact type
                         /** @var InstanceConsequenceTable $instanceConsequenceTable */
                         $instanceConsequenceTable = $this->get('instanceConsequenceTable');
@@ -897,151 +898,46 @@ class InstanceService extends AbstractService
         }
     }
 
-    /**
-     * Get Entity
-     *
-     * @param $id
-     * @return array
-     */
-    public function getEntityByIdAndAnr($id, $anrId)
-    {
-        $instance = $this->get('table')->get($id); // pourquoi on n'a pas de contrôle sur $instance['anr']->id == $anrId ?
-        $instance['consequences'] = $this->getConsequences($anrId, $instance);
-        $instance['instances'] = $this->getOtherInstances($instance);
-
-        return $instance;
-    }
-
-    /**
-     * Get Similar Assets to ANR
-     *
-     * @param $instance
-     * @return array
-     */
-    public function getOtherInstances($instance)
-    {
-        $instances = [];
-        $result = $this->get('table')->getRepository()
-            ->createQueryBuilder('t')
-            ->innerJoin('t.object','object')
-            ->where("t.anr = :anr")
-            ->andWhere("object.uuid = :object_uuid")
-            ->setParameter('anr', $instance['anr']->getId())
-            ->setParameter('object_uuid', $instance['object']->getUuid())
-            ->getQuery()->getResult();
-        $anr = $instance['anr']->getJsonArray();
-
-        foreach ($result as $r) {
-            $names = [
-                'name1' => $anr['label1'],//." > ".$r->get('name1'),
-                'name2' => $anr['label2'],//." > ".$r->get('name2'),
-                'name3' => $anr['label3'],//." > ".$r->get('name3'),
-                'name4' => $anr['label4'],//." > ".$r->get('name4'),
-            ];
-
-            $asc = $this->get('table')->getAscendance($r);
-            foreach ($asc as $a) {
-                $names['name1'] .= ' > ' . $a['name1'];
-                $names['name2'] .= ' > ' . $a['name2'];
-                $names['name3'] .= ' > ' . $a['name3'];
-                $names['name4'] .= ' > ' . $a['name4'];
-            }
-
-            $names['id'] = $r->get('id');
-            $instances[] = $names;
-        }
-        return $instances;
-    }
-
-    /**
-     * Get Consequences
-     *
-     * @param $instance
-     * @param $anrId
-     * @return array
-     */
-    public function getConsequences($anrId, $instance, $delivery = false)
-    {
-        $instanceId = $instance['id'];
-
-        /** @var InstanceConsequenceTable $instanceConsequenceTable */
-        $instanceConsequenceTable = $this->get('instanceConsequenceTable');
-        $instanceConsequences = $instanceConsequenceTable->getEntityByFields(['anr' => $anrId, 'instance' => $instanceId]);
-
-        /** @var AnrTable $anrTable */
-        $anrTable = $this->get('anrTable');
-        $anr = $anrTable->findById($anrId);
-
-        $consequences = [];
-        foreach ($instanceConsequences as $instanceConsequence) {
-            /** @var ScaleImpactTypeTable $scaleImpactTypeTable */
-            $scaleImpactTypeTable = $this->get('scaleImpactTypeTable');
-            $scaleImpactType = $scaleImpactTypeTable->getEntity($instanceConsequence->scaleImpactType->id);
-
-            if (!$scaleImpactType->isHidden) {
-                if ($delivery) {
-
-                    /** @var ScaleCommentTable $scaleCommentTable */
-                    $scaleCommentTable = $this->get('scaleCommentTable');
-                    /** @var ScaleCommentSuperClass[] $scalesComments */
-                    $scalesComments = $scaleCommentTable->getEntityByFields([
-                        'anr' => $anrId,
-                        'scaleImpactType' => $instanceConsequence->scaleImpactType->id,
-                    ]);
-
-                    $comments = [];
-                    foreach ($scalesComments as $scaleComment) {
-                        $comments[$scaleComment->getScaleValue()] = $scaleComment->getComment($anr->getLanguage());
-                    }
-                }
-
-                $array = [
-                    'id' => $instanceConsequence->id,
-                    'scaleImpactType' => $scaleImpactType->type,
-                    'scaleImpactTypeId' => $scaleImpactType->id,
-                    'scaleImpactTypeDescription1' => $scaleImpactType->label1,
-                    'scaleImpactTypeDescription2' => $scaleImpactType->label2,
-                    'scaleImpactTypeDescription3' => $scaleImpactType->label3,
-                    'scaleImpactTypeDescription4' => $scaleImpactType->label4,
-                    'c_risk' => $instanceConsequence->c,
-                    'i_risk' => $instanceConsequence->i,
-                    'd_risk' => $instanceConsequence->d,
-                    'isHidden' => $instanceConsequence->isHidden,
-                    'locallyTouched' => $instanceConsequence->locallyTouched,
-                ];
-
-                if ($delivery) {
-                    $array['comments'] = $comments;
-                }
-
-                $consequences[] = $array;
-            }
-        }
-
-        return $consequences;
-    }
-
-    /**
-     * Find By Anr
-     *
-     * @param $anrId
-     * @return mixed
-     */
-    public function findByAnr($anrId)
+    public function getInstanceData($id, $anrId): array
     {
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('table');
-        $allInstances = $instanceTable->getEntityByFields(['anr' => $anrId], ['parent' => 'DESC', 'position' => 'ASC']);
+        $instance = $instanceTable->findById($id);
+        if ($instance->getAnr()->getId() !== $anrId) {
+            throw new Exception(sprintf('The instance ID "%d" belongs to a different analysis.', $id));
+        }
+
+        $result = $instance->getJsonArray();
+
+        /** @var InstanceConsequenceService $instanceConsequenceService */
+        $instanceConsequenceService = $this->get('instanceConsequenceService');
+        $result['consequences'] = $instanceConsequenceService->getConsequences($instance);
+        $result['instances'] = $this->getOtherInstances($instance);
+
+        return $result;
+    }
+
+    public function getInstancesData(int $anrId): array
+    {
+        /** @var AnrTable $anrTable */
+        $anrTable = $this->get('anrTable');
+        $anr = $anrTable->findById($anrId);
+        /** @var InstanceTable $instanceTable */
+        $instanceTable = $this->get('table');
+        $allInstances = $instanceTable->findByAnrAndOrderByParams(
+            $anr,
+            ['i.parent' => 'DESC', 'i.position' => 'ASC']
+        );
 
         $instances = $temp = [];
         foreach ($allInstances as $instance) {
             $instanceArray = $instance->getJsonArray();
-            $instanceArray['scope'] = $instance->object->scope;
+            $instanceArray['scope'] = $instance->getObject()->getScope();
             $instanceArray['child'] = [];
-            $instanceArray['parent'] = is_null($instance->get('parent')) ? 0 : $instance->get('parent')->get('id');
+            $instanceArray['parent'] = $instance->getParent() === null ? 0 : $instance->getParent()->getId();
 
             $instances[$instanceArray['parent']][$instanceArray['id']] = $instanceArray;
-            if (is_null($instance->get('parent'))) {
+            if ($instance->getParent() === null) {
                 $temp[] = $instanceArray;
             }
         }
@@ -1056,7 +952,9 @@ class InstanceService extends AbstractService
                         array_unshift($temp, $fam);
                     }
                     if (isset($instances[$current['parent']][$current['id']]['child'])) {
-                        $instances[$current['parent']][$current['id']]['child'] = array_values($instances[$current['parent']][$current['id']]['child']);
+                        $instances[$current['parent']][$current['id']]['child'] = array_values(
+                            $instances[$current['parent']][$current['id']]['child']
+                        );
                     }
                 }
             }
@@ -1065,6 +963,8 @@ class InstanceService extends AbstractService
     }
 
     /**
+     * TODO: move to InstanceConsequenceService.
+     *
      * Create Instance Consequences
      *
      * @param $instanceId
@@ -1079,7 +979,7 @@ class InstanceService extends AbstractService
 
             try {
                 $brothers = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $object->getUuid()]);
-            } catch(MappingException | QueryException $e) {
+            } catch (MappingException | QueryException $e) {
                 $brothers = $instanceTable->getEntityByFields([
                     'anr' => $anrId,
                     'object' => [
@@ -1491,36 +1391,31 @@ class InstanceService extends AbstractService
         return $return;
     }
 
-    /**
-     * TODO: move to the FrontOffice as it is used only there.
-     * Get Displayed Ascendance
-     *
-     * @param $instance
-     * @param bool $simple
-     * @param null $anr_label
-     * @param bool $ignore_last
-     * @return string
-     */
-    public function getDisplayedAscendance($instance, $simple = false, $anr_label = null, $ignore_last = false)
+    protected function getOtherInstances(InstanceSuperClass $instance): array
     {
-        /** @var InstanceTable $table */
-        $table = $this->get('table');
-        $ascendance = $table->getAscendance($instance);
-
-        $label = '';
-        foreach ($ascendance as $parent) {
-            if (!$ignore_last) {
-                if (!$simple) {
-                    $label .= "<span class=\"superior\"> > </span>" . $parent['name1'] . ' ' . $label;
-                } else {
-                    $label .= " > " . $parent['name1'] . ' ' . $label;
-                }
-            } else {
-                $ignore_last = false;//permet de passer $this mais de continuer ensuite
+        /** @var InstanceTable $instanceTable */
+        $instanceTable = $this->get('table');
+        $otherInstances = $instanceTable->findByAnrAndObject($instance->getAnr(), $instance->getObject());
+        $names = [
+            'name1' => $instance->getAnr()->getLabelByLanguageIndex(1),
+            'name2' => $instance->getAnr()->getLabelByLanguageIndex(2),
+            'name3' => $instance->getAnr()->getLabelByLanguageIndex(3),
+            'name4' => $instance->getAnr()->getLabelByLanguageIndex(4),
+        ];
+        $instances = [];
+        foreach ($otherInstances as $otherInstance) {
+            foreach ($otherInstance->getHierarchyArray() as $instanceFromTheTree) {
+                $names['name1'] .= ' > ' . $instanceFromTheTree['name1'];
+                $names['name2'] .= ' > ' . $instanceFromTheTree['name2'];
+                $names['name3'] .= ' > ' . $instanceFromTheTree['name3'];
+                $names['name4'] .= ' > ' . $instanceFromTheTree['name4'];
             }
+
+            $names['id'] = $otherInstance->getId();
+            $instances[] = $names;
         }
 
-        return $label;
+        return $instances;
     }
 
     protected function generateExportArrayOfOperationalInstanceRisks(

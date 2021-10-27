@@ -3,6 +3,7 @@
 use Monarc\Core\Model\Entity\OperationalRiskScale;
 use Monarc\Core\Model\Entity\OperationalRiskScaleComment;
 use Monarc\Core\Model\Entity\OperationalRiskScaleType;
+use Monarc\Core\Model\Entity\Translation;
 use Phinx\Migration\AbstractMigration;
 use Ramsey\Uuid\Uuid;
 
@@ -168,7 +169,8 @@ class ChangeableOperationalImpact extends AbstractMigration
                     'max' => $isLikelihoodScale ? $scaleData['max'] : (int)$scaleData['max'] - (int)$scaleData['min'],
                     'creator' => 'Migration script',
                 ])->save();
-                $currentScalesByAnrAndType[$scaleData['anr_id']][$scaleType] = $this->getAdapter()->getConnection()->lastInsertId();
+                $currentScalesByAnrAndType[$scaleData['anr_id']][$scaleType] =
+                    $this->getAdapter()->getConnection()->lastInsertId();
             }
 
             $operationalRiskScaleTypeId = null;
@@ -182,7 +184,12 @@ class ChangeableOperationalImpact extends AbstractMigration
                     'creator' => 'Migration script',
                 ])->save();
                 $operationalRiskScaleTypeId = $this->getAdapter()->getConnection()->lastInsertId();
-                $this->createTranslations($scaleData, OperationalRiskScaleType::TRANSLATION_TYPE_NAME, 'label', $labelTranslationKey);
+                $this->createTranslations(
+                    $scaleData,
+                    Translation::OPERATIONAL_RISK_SCALE_TYPE,
+                    'label',
+                    $labelTranslationKey
+                );
             }
 
             $scaleValues = explode('-----', $scaleData['scale_values']);
@@ -227,7 +234,7 @@ class ChangeableOperationalImpact extends AbstractMigration
                             'comment3' => $comments3[$valueKey] ?? '',
                             'comment4' => $comments4[$valueKey] ?? '',
                         ],
-                        OperationalRiskScaleComment::TRANSLATION_TYPE_NAME,
+                        Translation::OPERATIONAL_RISK_SCALE_COMMENT,
                         'comment',
                         $commentTranslationKey
                     );
@@ -241,7 +248,8 @@ class ChangeableOperationalImpact extends AbstractMigration
             }
 
             if ($operationalRiskScaleTypeId !== null) {
-                $currentScaleTypesByAnr[$scaleData['anr_id']][(int)$scaleData['scale_impact_type']] = $operationalRiskScaleTypeId;
+                $currentScaleTypesByAnr[$scaleData['anr_id']][(int)$scaleData['scale_impact_type']] =
+                    $operationalRiskScaleTypeId;
             }
         }
 
@@ -299,7 +307,7 @@ class ChangeableOperationalImpact extends AbstractMigration
     private function createOperationalInstanceRisksScales(array $currentScaleTypesByAnr): void
     {
         $operationalInstanceRisksScalesTable = $this->table('operational_instance_risks_scales');
-        $anrId = array_key_first($currentScaleTypesByAnr);
+        $anrId = (int)array_key_first($currentScaleTypesByAnr);
         $instanceRisksOpSqlWithAnr = sprintf(
             'SELECT id, anr_id,
                     brut_r, brut_o, brut_l, brut_f, brut_p,
