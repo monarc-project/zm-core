@@ -362,6 +362,7 @@ class InstanceRiskSuperClass extends AbstractEntity
     public function setInstance($instance): self
     {
         $this->instance = $instance;
+        $this->instance->addInstanceRisk($this);
 
         return $this;
     }

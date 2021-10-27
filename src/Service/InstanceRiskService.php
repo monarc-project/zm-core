@@ -170,13 +170,14 @@ class InstanceRiskService extends AbstractService
             $threat = $instanceRisk->getThreat();
             $vulnerability = $instanceRisk->getVulnerability();
             $key = 'r' . $instanceRisk->getId();
+            $isInstanceRiskHasToBeSet = true;
             if ($object->isScopeGlobal()) {
                 $key = 'o' . $object->getUuid() . '-' . $threat->getUuid() . '-' . $vulnerability->getUuid();
+                if (isset($result[$key])) {
+                    $isInstanceRiskHasToBeSet = $this->shouldInstanceRiskBeAddedToResults($instanceRisk, $result[$key]);
+                }
             }
-            if (!isset($result[$key])
-                || !$object->isScopeGlobal()
-                || $result[$key]['max_risk'] < $instanceRisk->getCacheMaxRisk()
-            ) {
+            if (!$object->isScopeGlobal() || $isInstanceRiskHasToBeSet) {
                 $result[$key] = $this->addCustomFieldsToInstanceRiskResult($instanceRisk, [
                     'id' => $instanceRisk->getId(),
                     'oid' => $object->getUuid(),
@@ -572,5 +573,42 @@ class InstanceRiskService extends AbstractService
         }
 
         return $instancesIds;
+    }
+
+    /**
+     * Determines whether the instance risk should be added to the list result in case. Only for global objects.
+     *
+     * @param InstanceRiskSuperClass $instanceRisk
+     * @param array $valuesToCompare
+     *
+     * @return bool
+     */
+    private function shouldInstanceRiskBeAddedToResults(
+        InstanceRiskSuperClass $instanceRisk,
+        array $valuesToCompare
+    ): bool {
+        $instance = $instanceRisk->getInstance();
+        $isMaxRiskSet = false;
+        foreach ($instance->getInstanceRisks() as $instanceRiskToValidate) {
+            if ($instanceRiskToValidate->getCacheMaxRisk() !== -1) {
+                $isMaxRiskSet = true;
+                break;
+            }
+        }
+        if ($isMaxRiskSet) {
+            return $valuesToCompare['max_risk'] < $instanceRisk->getCacheMaxRisk();
+        }
+
+        /* We compare CIA criteria in case if max risk value is not set. */
+        $maxExistedCia = max($valuesToCompare['c_impact'], $valuesToCompare['i_impact'], $valuesToCompare['d_impact']);
+        $maxCurrentCia = max($instance->getConfidentiality(), $instance->getIntegrity(), $instance->getAvailability());
+        if ($maxExistedCia === $maxCurrentCia) {
+            $sumExistedCia = $valuesToCompare['c_impact'] + $valuesToCompare['i_impact'] + $valuesToCompare['d_impact'];
+            $sumCurrentCia = $instance->getConfidentiality() + $instance->getIntegrity() + $instance->getAvailability();
+
+            return $sumExistedCia < $sumCurrentCia;
+        }
+
+        return $maxExistedCia < $maxCurrentCia;
     }
 }
