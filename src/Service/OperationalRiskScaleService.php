@@ -22,11 +22,11 @@ use Monarc\Core\Model\Entity\OperationalRiskScaleComment;
 use Monarc\Core\Model\Entity\Translation;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\InstanceRiskOpTable;
-use Monarc\Core\Model\Table\OperationalInstanceRiskScaleTable;
-use Monarc\Core\Model\Table\OperationalRiskScaleCommentTable;
-use Monarc\Core\Model\Table\OperationalRiskScaleTable;
-use Monarc\Core\Model\Table\OperationalRiskScaleTypeTable;
-use Monarc\Core\Model\Table\TranslationTable;
+use Monarc\Core\Table\OperationalInstanceRiskScaleTable;
+use Monarc\Core\Table\OperationalRiskScaleCommentTable;
+use Monarc\Core\Table\OperationalRiskScaleTable;
+use Monarc\Core\Table\OperationalRiskScaleTypeTable;
+use Monarc\Core\Table\TranslationTable;
 use Ramsey\Uuid\Uuid;
 
 class OperationalRiskScaleService

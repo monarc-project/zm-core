@@ -12,7 +12,7 @@ use Monarc\Core\Service\Model\DbFactory;
 use Monarc\Core\Service;
 use Monarc\Core\Storage\Authentication as StorageAuthentication;
 use Monarc\Core\Validator\LanguageValidator;
-use Monarc\FrontOffice\Model\Table\Factory\CoreEntityManagerFactory;
+use Monarc\Core\Table\Factory\CoreEntityManagerFactory;
 use Ramsey\Uuid\Doctrine\UuidType;
 use Laminas\Di\Container\AutowireFactory;
 use Monarc\Core\Model\Entity as ModelEntity;

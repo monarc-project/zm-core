@@ -11,8 +11,8 @@ use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\OperationalRiskScaleCommentSuperClass;
 use Monarc\Core\Model\Entity\OperationalRiskScaleTypeSuperClass;
 use Monarc\Core\Model\Entity\Translation;
-use Monarc\Core\Model\Table\OperationalRiskScaleTable;
-use Monarc\Core\Model\Table\TranslationTable;
+use Monarc\Core\Table\OperationalRiskScaleTable;
+use Monarc\Core\Table\TranslationTable;
 
 class OperationalRiskScalesExportService
 {

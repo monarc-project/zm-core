@@ -8,7 +8,7 @@
 namespace Monarc\Core\Service;
 
 use Monarc\Core\Model\Table\AnrTable;
-use Monarc\Core\Model\Table\InstanceRiskOwnerTable;
+use Monarc\Core\Table\InstanceRiskOwnerTable;
 
 class InstanceRiskOwnerService
 {

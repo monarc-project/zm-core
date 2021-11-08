@@ -21,7 +21,7 @@ use Monarc\Core\Model\Entity\ObjectSuperClass;
 use Monarc\Core\Model\Table\AmvTable;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\InstanceRiskTable;
-use Monarc\Core\Model\Table\InstanceRiskOwnerTable;
+use Monarc\Core\Table\InstanceRiskOwnerTable;
 use Monarc\Core\Model\Table\InstanceTable;
 use Monarc\Core\Traits\RiskTrait;
 use Doctrine\ORM\Query\QueryException;

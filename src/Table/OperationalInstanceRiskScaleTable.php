@@ -5,7 +5,7 @@
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
-namespace Monarc\Core\Model\Table;
+namespace Monarc\Core\Table;
 
 use Doctrine\ORM\EntityManager;
 use Monarc\Core\Model\Entity\InstanceRiskOpSuperClass;

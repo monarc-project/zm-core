@@ -9,7 +9,6 @@ namespace Monarc\Core\Model\Table;
 
 use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\ORMException;
-use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\DbCli;
 use Monarc\Core\Model\Entity\User;
 use Monarc\Core\Model\Entity\UserSuperClass;

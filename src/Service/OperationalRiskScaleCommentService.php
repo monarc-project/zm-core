@@ -10,8 +10,8 @@ namespace Monarc\Core\Service;
 use Doctrine\ORM\EntityNotFoundException;
 use Monarc\Core\Model\Entity\OperationalRiskScaleCommentSuperClass;
 use Monarc\Core\Model\Table\AnrTable;
-use Monarc\Core\Model\Table\OperationalRiskScaleCommentTable;
-use Monarc\Core\Model\Table\TranslationTable;
+use Monarc\Core\Table\OperationalRiskScaleCommentTable;
+use Monarc\Core\Table\TranslationTable;
 
 class OperationalRiskScaleCommentService
 {

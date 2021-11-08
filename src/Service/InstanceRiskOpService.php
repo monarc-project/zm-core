@@ -23,20 +23,19 @@ use Monarc\Core\Model\Entity\OperationalInstanceRiskScale;
 use Monarc\Core\Model\Entity\OperationalInstanceRiskScaleSuperClass;
 use Monarc\Core\Model\Entity\OperationalRiskScale;
 use Monarc\Core\Model\Entity\OperationalRiskScaleSuperClass;
-use Monarc\Core\Model\Entity\OperationalRiskScaleType;
 use Monarc\Core\Model\Entity\OperationalRiskScaleTypeSuperClass;
 use Monarc\Core\Model\Entity\RolfRiskSuperClass;
 use Monarc\Core\Model\Entity\Translation;
 use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\InstanceRiskOpTable;
-use Monarc\Core\Model\Table\InstanceRiskOwnerTable;
+use Monarc\Core\Table\InstanceRiskOwnerTable;
 use Monarc\Core\Model\Table\InstanceTable;
-use Monarc\Core\Model\Table\OperationalInstanceRiskScaleTable;
-use Monarc\Core\Model\Table\OperationalRiskScaleTable;
-use Monarc\Core\Model\Table\OperationalRiskScaleTypeTable;
+use Monarc\Core\Table\OperationalInstanceRiskScaleTable;
+use Monarc\Core\Table\OperationalRiskScaleTable;
+use Monarc\Core\Table\OperationalRiskScaleTypeTable;
 use Monarc\Core\Model\Table\RolfTagTable;
-use Monarc\Core\Model\Table\TranslationTable;
+use Monarc\Core\Table\TranslationTable;
 
 class InstanceRiskOpService
 {
