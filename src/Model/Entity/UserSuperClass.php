@@ -13,11 +13,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits;
 
 /**
- * TODO: move filter functionality to a filter class.
- * TODO: move exchangeArray functionality to a some validator class (what can guess from the first look)
- *
- * User Super Class
- *
  * @ORM\Table(name="users")
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
@@ -105,6 +100,20 @@ abstract class UserSuperClass
     protected $mospApiKey;
 
     /**
+     * @var UserTokenSuperClass[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="UserToken", mappedBy="user", cascade={"persist", "remove"})
+     */
+    protected $userTokens;
+
+    /**
+     * @var PasswordTokenSuperClass[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="PasswordToken", mappedBy="user", cascade={"persist", "remove"}
+     */
+    protected $passwordTokens;
+
+    /**
      * @var ArrayCollection|UserRoleSuperClass[]
      *
      * @ORM\OneToMany(targetEntity="UserRole", orphanRemoval=true, mappedBy="user", cascade={"persist", "remove"})
@@ -124,6 +133,8 @@ abstract class UserSuperClass
         $this->status = $data['status'] ?? self::STATUS_ACTIVE;
         $this->creator = $data['creator'];
         $this->setRoles($data['role']);
+        $this->userTokens = new ArrayCollection();
+        $this->passwordTokens = new ArrayCollection();
     }
 
     public function getId(): int
@@ -198,6 +209,36 @@ abstract class UserSuperClass
         return $this->language;
     }
 
+    public function getUserTokens()
+    {
+        return $this->userTokens;
+    }
+
+    public function addUserToken(UserTokenSuperClass $userToken): self
+    {
+        if (!$this->userTokens->contains($userToken)) {
+            $this->userTokens->add($userToken);
+            $userToken->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function getPasswordTokens()
+    {
+        return $this->passwordTokens;
+    }
+
+    public function addPasswordToken(PasswordTokenSuperClass $passwordToken): self
+    {
+        if (!$this->passwordTokens->contains($passwordToken)) {
+            $this->passwordTokens->add($passwordToken);
+            $passwordToken->setUser($this);
+        }
+
+        return $this;
+    }
+
     abstract protected function createRole(string $role): UserRoleSuperClass;
 
     public function setRoles(array $roles): self
@@ -210,7 +251,7 @@ abstract class UserSuperClass
         return $this;
     }
 
-    public function getRoles(): array
+    public function getRolesArray(): array
     {
         $roles = [];
         foreach ($this->roles as $role) {
@@ -220,9 +261,17 @@ abstract class UserSuperClass
         return $roles;
     }
 
+    public function getRoles()
+    {
+        return $this->roles;
+    }
+
     public function addRole(UserRoleSuperClass $role): self
     {
-        $this->roles->add($role);
+        if (!$this->roles->contains($role)) {
+            $this->roles->add($role);
+            $role->setUser($this);
+        }
 
         return $this;
     }

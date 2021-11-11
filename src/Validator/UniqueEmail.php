@@ -8,7 +8,7 @@
 namespace Monarc\Core\Validator;
 
 use Doctrine\ORM\EntityNotFoundException;
-use Monarc\Core\Model\Table\UserTable;
+use Monarc\Core\Table\UserTable;
 use Laminas\Validator\AbstractValidator;
 
 class UniqueEmail extends AbstractValidator

@@ -1,9 +1,15 @@
-<?php
+<?php declare(strict_types=1);
+/**
+ * @link      https://github.com/monarc-project for the canonical source repository
+ * @copyright Copyright (c) 2016-2021 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @license   MONARC is licensed under GNU Affero General Public License version 3
+ */
+
 namespace Monarc\Core\Adapter;
 
 use Doctrine\ORM\EntityNotFoundException;
 use Monarc\Core\Model\Entity\UserSuperClass;
-use Monarc\Core\Model\Table\UserTable;
+use Monarc\Core\Table\UserTable;
 use Laminas\Authentication\Adapter\AbstractAdapter;
 use Laminas\Authentication\Result;
 
@@ -37,7 +43,7 @@ class Authentication extends AbstractAdapter
     }
 
     /**
-     * @return UserSuperClass The current logged-in user
+     * @return UserSuperClass The current logged-in user.
      */
     public function getUser(): UserSuperClass
     {
@@ -45,9 +51,9 @@ class Authentication extends AbstractAdapter
     }
 
     /**
-     * Authenticates the user from its identity and credential
+     * Authenticates the user from its identity and credential.
      *
-     * @return Result The authentication result
+     * @return Result The authentication result.
      */
     public function authenticate(): Result
     {
@@ -59,7 +65,7 @@ class Authentication extends AbstractAdapter
             return new Result(Result::FAILURE_IDENTITY_NOT_FOUND, $this->getIdentity());
         }
 
-        // TODO: faire le test sur dateStart && dateEnd
+        // TODO: Can be implemented validation of dateStart && dateEnd.
         if ($user->isActive()) {
             if (password_verify($credential, $user->getPassword())) {
                 $this->setUser($user);

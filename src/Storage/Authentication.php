@@ -1,28 +1,41 @@
-<?php
+<?php declare(strict_types=1);
+/**
+ * @link      https://github.com/monarc-project for the canonical source repository
+ * @copyright Copyright (c) 2016-2021 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @license   MONARC is licensed under GNU Affero General Public License version 3
+ */
+
 namespace Monarc\Core\Storage;
 
 use DateTime;
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Laminas\Authentication\Storage\StorageInterface;
 use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Model\Entity\UserToken;
-use Monarc\Core\Model\Table\UserTokenTable;
+use Monarc\Core\Model\Entity\UserTokenSuperClass;
+use Monarc\Core\Table\UserTokenTable;
 
 class Authentication implements StorageInterface
 {
     private const DEFAULT_TTL = 20;
 
-    /** @var UserTokenTable */
-    private $userTokenTable;
+    private UserTokenTable $userTokenTable;
 
-    /** @var int */
-    private $authTtl;
+    private int $authTtl;
 
     public function __construct(UserTokenTable $userTokenTable, array $config)
     {
         $this->userTokenTable = $userTokenTable;
-        $this->authTtl = $config['monarc']['ttl'] ?? static::DEFAULT_TTL;
+        $this->authTtl = (int)($config['monarc']['ttl'] ?? static::DEFAULT_TTL);
     }
 
+    /**
+     * @throws NonUniqueResultException
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
     public function addUserToken(string $token, UserSuperClass $user): bool
     {
         $this->clearUserTokens($user);
@@ -33,7 +46,7 @@ class Authentication implements StorageInterface
                 ->setToken($token)
                 ->setDateEnd(new DateTime(sprintf('+%d min', $this->authTtl)));
 
-            $this->userTokenTable->saveEntity($userToken);
+            $this->userTokenTable->save($userToken);
 
             return true;
         }
@@ -41,28 +54,42 @@ class Authentication implements StorageInterface
         return false;
     }
 
-    public function getUserToken(string $token): ?UserToken
+    /**
+     * @throws NonUniqueResultException
+     */
+    public function getUserToken(string $token): ?UserTokenSuperClass
     {
         return $this->userTokenTable->findByToken($token);
     }
 
-    public function refreshUserToken(UserToken $userToken): void
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function refreshUserToken(UserTokenSuperClass $userToken): void
     {
         $userToken->setDateEnd(new DateTime(sprintf('+%d min', $this->authTtl)));
 
-        $this->userTokenTable->saveEntity($userToken);
+        $this->userTokenTable->save($userToken);
     }
 
+    /**
+     * @throws NonUniqueResultException
+     */
     public function hasUserToken($key): bool
     {
         return $this->userTokenTable->findByToken($key) !== null;
     }
 
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
     public function removeUserToken(string $token)
     {
         $userToken = $this->getUserToken($token);
         if ($userToken !== null) {
-            $this->userTokenTable->deleteEntity($userToken);
+            $this->userTokenTable->remove($userToken);
 
             return true;
         }
@@ -70,14 +97,18 @@ class Authentication implements StorageInterface
         return false;
     }
 
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
     protected function clearUserTokens(UserSuperClass $user): void
     {
         $tokens = $this->userTokenTable->findByUser($user);
         foreach ($tokens as $token) {
-            $this->userTokenTable->deleteEntity($token, false);
+            $this->userTokenTable->remove($token, false);
         }
 
-        $this->userTokenTable->getDb()->flush();
+        $this->userTokenTable->flush();
     }
 
     public function isEmpty(){}

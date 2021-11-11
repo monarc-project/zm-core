@@ -23,7 +23,7 @@ class PasswordTokenSuperClass
     /**
      * @var integer
      *
-     * @ORM\Column(name="id", type="integer", precision=0, scale=0, nullable=false, unique=false)
+     * @ORM\Column(name="id", type="integer", nullable=false)
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
@@ -32,7 +32,7 @@ class PasswordTokenSuperClass
     /**
      * @var string
      *
-     * @ORM\Column(name="token", type="string", length=255, precision=0, scale=0, nullable=true, unique=false)
+     * @ORM\Column(name="token", type="string", length=255, nullable=false)
      */
     protected $token;
 
@@ -41,7 +41,7 @@ class PasswordTokenSuperClass
      *
      * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\User", cascade={"persist"})
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="user_id", referencedColumnName="id", nullable=true)
+     *   @ORM\JoinColumn(name="user_id", referencedColumnName="id", nullable=false)
      * })
      */
     protected $user;
@@ -49,7 +49,7 @@ class PasswordTokenSuperClass
     /**
      * @var DateTime
      *
-     * @ORM\Column(name="date_end", type="datetime", precision=0, scale=0, nullable=true, unique=false)
+     * @ORM\Column(name="date_end", type="datetime", nullable=true)
      */
     protected $dateEnd;
 
@@ -63,6 +63,13 @@ class PasswordTokenSuperClass
     public function getUser(): UserSuperClass
     {
         return $this->user;
+    }
+    public function setUser(UserSuperClass $user): self
+    {
+        $this->user = $user;
+        $user->addPasswordToken($this);
+
+        return $this;
     }
 
     public function getToken(): string

@@ -7,8 +7,10 @@
 
 namespace Monarc\Core\Service;
 
+use Doctrine\ORM\ORMException;
+use Monarc\Core\Exception\UserNotLoggedInException;
 use Monarc\Core\Model\Entity\UserSuperClass;
-use Monarc\Core\Model\Table\UserTable;
+use Monarc\Core\Table\UserTable;
 
 /**
  * User profile Service
@@ -18,53 +20,61 @@ use Monarc\Core\Model\Table\UserTable;
  */
 class UserProfileService
 {
-    /** @var UserTable */
-    private $userTable;
+    private UserTable $userTable;
 
-    public function __construct(UserTable $userTable)
+    private ConnectedUserService $connectedUserService;
+
+    public function __construct(UserTable $userTable, ConnectedUserService $connectedUserService)
     {
         $this->userTable = $userTable;
+        $this->connectedUserService = $connectedUserService;
     }
 
-    public function update(UserSuperClass $user, array $data): UserSuperClass
+    /**
+     * @throws ORMException
+     * @throws UserNotLoggedInException
+     */
+    public function updateMyData(array $data): UserSuperClass
     {
+        $connectedUser = $this->connectedUserService->getConnectedUser();
         if (!empty($data['new'])
             && !empty($data['confirm'])
             && !empty($data['old'])
             && $data['new'] === $data['old']
-            && password_verify($data['confirm'], $user->getPassword())
+            && password_verify($data['confirm'], $connectedUser->getPassword())
         ) {
-            $user->setPassword($data['new']);
+            $connectedUser->setPassword($data['new']);
         }
 
         if (isset($data['firstname'])) {
-            $user->setFirstname($data['firstname']);
+            $connectedUser->setFirstname($data['firstname']);
         }
         if (isset($data['lastname'])) {
-            $user->setLastname($data['lastname']);
+            $connectedUser->setLastname($data['lastname']);
         }
         if (isset($data['email'])) {
-            $user->setEmail($data['email']);
+            $connectedUser->setEmail($data['email']);
         }
         if (isset($data['language'])) {
-            $user->setLanguage((int)$data['language']);
+            $connectedUser->setLanguage((int)$data['language']);
         }
         if (isset($data['mospApiKey'])) {
-            $user->setMospApiKey($data['mospApiKey']);
+            $connectedUser->setMospApiKey($data['mospApiKey']);
         }
 
-        $user->setUpdater($this->userTable->getConnectedUser()->getFirstname() . ' '
-            . $this->userTable->getConnectedUser()->getLastname());
+        $connectedUser->setUpdater($connectedUser->getEmail());
 
-        $this->userTable->saveEntity($user);
+        $this->userTable->save($connectedUser);
 
-        return $user;
+        return $connectedUser;
     }
 
-    public function delete($userId)
+    /**
+     * @throws ORMException
+     * @throws UserNotLoggedInException
+     */
+    public function deleteMe(int $userId): void
     {
-        $user = $this->userTable->findById($userId);
-
-        $this->userTable->deleteEntity($user);
+        $this->userTable->remove($this->connectedUserService->getConnectedUser());
     }
 }

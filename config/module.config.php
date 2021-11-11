@@ -12,11 +12,10 @@ use Monarc\Core\Service\Model\DbFactory;
 use Monarc\Core\Service;
 use Monarc\Core\Storage\Authentication as StorageAuthentication;
 use Monarc\Core\Validator\LanguageValidator;
-use Monarc\Core\Table\Factory\CoreEntityManagerFactory;
 use Ramsey\Uuid\Doctrine\UuidType;
 use Laminas\Di\Container\AutowireFactory;
 use Monarc\Core\Model\Entity as ModelEntity;
-use Monarc\Core\Model\Table as ModelTable;
+use Monarc\Core\Table;
 use Monarc\Core\Service\Model\Entity as ServiceModelEntity;
 use Laminas\ServiceManager\AbstractFactory\ReflectionBasedAbstractFactory;
 use Laminas\ServiceManager\Factory\InvokableFactory;
@@ -463,45 +462,44 @@ return [
             ModelEntity\ScaleComment::class => ServiceModelEntity\ScaleCommentServiceModelEntity::class,
             ModelEntity\ScaleImpactType::class => ServiceModelEntity\ScaleImpactTypeServiceModelEntity::class,
 
-            ModelTable\UserTable::class => AutowireFactory::class,
-            ModelTable\UserTokenTable::class => AutowireFactory::class,
-            ModelTable\UserRoleTable::class => AutowireFactory::class,
-            ModelTable\ModelTable::class => AutowireFactory::class,
-            ModelTable\AnrTable::class => AutowireFactory::class,
-            ModelTable\AnrObjectCategoryTable::class => AutowireFactory::class,
-            ModelTable\QuestionTable::class => AutowireFactory::class,
-            ModelTable\QuestionChoiceTable::class => AutowireFactory::class,
-            ModelTable\GuideTable::class => AutowireFactory::class,
-            ModelTable\GuideItemTable::class => AutowireFactory::class,
-            ModelTable\ReferentialTable::class => AutowireFactory::class,
-            ModelTable\MeasureTable::class => AutowireFactory::class,
-            ModelTable\MeasureMeasureTable::class => AutowireFactory::class,
-            ModelTable\SoaCategoryTable::class => AutowireFactory::class,
-            ModelTable\MonarcObjectTable::class => AutowireFactory::class,
-            ModelTable\InstanceTable::class => AutowireFactory::class,
-            ModelTable\InstanceConsequenceTable::class => AutowireFactory::class,
-            ModelTable\InstanceRiskTable::class => AutowireFactory::class,
-            ModelTable\InstanceRiskOpTable::class => AutowireFactory::class,
-            ModelTable\ObjectCategoryTable::class => AutowireFactory::class,
-            ModelTable\ObjectObjectTable::class => AutowireFactory::class,
-            ModelTable\ThemeTable::class => AutowireFactory::class,
-            ModelTable\HistoricalTable::class => AutowireFactory::class,
-            ModelTable\AssetTable::class => AutowireFactory::class,
-            ModelTable\AmvTable::class => AutowireFactory::class,
-            ModelTable\ThreatTable::class => AutowireFactory::class,
-            ModelTable\RolfTagTable::class => AutowireFactory::class,
-            ModelTable\RolfRiskTable::class => AutowireFactory::class,
-            ModelTable\ScaleTable::class => AutowireFactory::class,
-            ModelTable\ScaleCommentTable::class => AutowireFactory::class,
-            ModelTable\OperationalRiskScaleTable::class => CoreEntityManagerFactory::class,
-            ModelTable\OperationalRiskScaleTypeTable::class => CoreEntityManagerFactory::class,
-            ModelTable\OperationalRiskScaleCommentTable::class => CoreEntityManagerFactory::class,
-            ModelTable\OperationalInstanceRiskScaleTable::class => CoreEntityManagerFactory::class,
-            ModelTable\ScaleImpactTypeTable::class => AutowireFactory::class,
-            ModelTable\VulnerabilityTable::class => AutowireFactory::class,
-            ModelTable\PasswordTokenTable::class => AutowireFactory::class,
-            ModelTable\DeliveriesModelsTable::class => AutowireFactory::class,
-            ModelTable\InstanceRiskOwnerTable::class => CoreEntityManagerFactory::class,
+            Table\UserTable::class => Table\Factory\ClientEntityManagerFactory::class,
+            Table\UserTokenTable::class => Table\Factory\ClientEntityManagerFactory::class,
+            Table\PasswordTokenTable::class => Table\Factory\ClientEntityManagerFactory::class,
+            Table\ModelTable::class => AutowireFactory::class,
+            Table\AnrTable::class => AutowireFactory::class,
+            Table\AnrObjectCategoryTable::class => AutowireFactory::class,
+            Table\QuestionTable::class => AutowireFactory::class,
+            Table\QuestionChoiceTable::class => AutowireFactory::class,
+            Table\GuideTable::class => AutowireFactory::class,
+            Table\GuideItemTable::class => AutowireFactory::class,
+            Table\ReferentialTable::class => AutowireFactory::class,
+            Table\MeasureTable::class => AutowireFactory::class,
+            Table\MeasureMeasureTable::class => AutowireFactory::class,
+            Table\SoaCategoryTable::class => AutowireFactory::class,
+            Table\MonarcObjectTable::class => AutowireFactory::class,
+            Table\InstanceTable::class => AutowireFactory::class,
+            Table\InstanceConsequenceTable::class => AutowireFactory::class,
+            Table\InstanceRiskTable::class => AutowireFactory::class,
+            Table\InstanceRiskOpTable::class => AutowireFactory::class,
+            Table\ObjectCategoryTable::class => AutowireFactory::class,
+            Table\ObjectObjectTable::class => AutowireFactory::class,
+            Table\ThemeTable::class => AutowireFactory::class,
+            Table\HistoricalTable::class => AutowireFactory::class,
+            Table\AssetTable::class => AutowireFactory::class,
+            Table\AmvTable::class => AutowireFactory::class,
+            Table\ThreatTable::class => AutowireFactory::class,
+            Table\RolfTagTable::class => AutowireFactory::class,
+            Table\RolfRiskTable::class => AutowireFactory::class,
+            Table\ScaleTable::class => AutowireFactory::class,
+            Table\ScaleCommentTable::class => AutowireFactory::class,
+            Table\ScaleImpactTypeTable::class => AutowireFactory::class,
+            Table\VulnerabilityTable::class => AutowireFactory::class,
+            Table\DeliveriesModelsTable::class => AutowireFactory::class,
+            Table\OperationalRiskScaleTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\OperationalRiskScaleTypeTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\OperationalRiskScaleCommentTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\OperationalInstanceRiskScaleTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\InstanceRiskOwnerTable::class => Table\Factory\CoreEntityManagerFactory::class,
 
             /* Authentification */
             StorageAuthentication::class => ReflectionBasedAbstractFactory::class,
@@ -522,7 +520,7 @@ return [
         ],
         'lazy_services' => [
             'class_map' => [
-                ModelTable\UserTokenTable::class => ModelTable\UserTokenTable::class,
+                Table\UserTokenTable::class => Table\UserTokenTable::class,
                 Service\AssetService::class => Service\AssetService::class,
                 Service\ThreatService::class => Service\ThreatService::class,
                 Service\VulnerabilityService::class => Service\VulnerabilityService::class,
@@ -531,7 +529,7 @@ return [
             'write_proxy_files' => $env === 'production',
         ],
         'delegators' => [
-            ModelTable\UserTokenTable::class => [
+            Table\UserTokenTable::class => [
                 LazyServiceFactory::class,
             ],
             Service\AssetService::class => [

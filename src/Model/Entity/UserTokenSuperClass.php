@@ -41,7 +41,7 @@ class UserTokenSuperClass extends AbstractEntity
      *
      * @ORM\ManyToOne(targetEntity="User")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="user_id", referencedColumnName="id", nullable=true)
+     *   @ORM\JoinColumn(name="user_id", referencedColumnName="id", nullable=false)
      * })
      */
     protected $user;
@@ -68,6 +68,7 @@ class UserTokenSuperClass extends AbstractEntity
     public function setUser(UserSuperClass $user): self
     {
         $this->user = $user;
+        $user->addUserToken($this);
 
         return $this;
     }

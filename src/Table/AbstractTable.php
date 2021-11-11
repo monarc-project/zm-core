@@ -12,6 +12,8 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
+use Doctrine\ORM\QueryBuilder;
+use LogicException;
 
 abstract class AbstractTable
 {
@@ -92,5 +94,78 @@ abstract class AbstractTable
     public function rollback(): void
     {
         $this->entityManager->getConnection()->rollBack();
+    }
+
+    /**
+     * @param QueryBuilder $queryBuilder
+     * @param array $params Expected format (default operand value is "OR"):
+     *              [
+     *                  'search' => ['fields' = ['{field1}', ...], 'string' = '{my search str}', 'operand' => 'OR|AND'],
+     *                  'filter' => ['{field1}' => '{value1}', ...],
+     *              ].
+     * @param string|null $tableAlias Alias of applicable the field alias prefix.
+     *                                If null, then expected to be set for each filed in params.
+     *
+     * @return $this
+     *
+     * @throws LogicException
+     */
+    protected function applyQueryParams(QueryBuilder $queryBuilder, array $params, string $tableAlias = null): self
+    {
+        $tableAliasPrefix = $tableAlias !== null ? $tableAlias . '.' : '';
+        if (!empty($params['search'])) {
+            $this->validateQueryParamsFormat($params);
+
+            $searchQuery = [];
+            foreach ($params['search']['fields'] as $fieldName) {
+                $searchQuery[] = ' ' . $tableAliasPrefix . $fieldName . ' LIKE :searchString ';
+            }
+            $operand = 'OR';
+            if (isset($params['search']['operand'])  && \in_array($params['search']['operand'], ['OR', 'AND'], true)) {
+                $operand = $params['search']['operand'];
+            }
+
+            $queryBuilder->andWhere(implode($searchQuery, $operand))
+                ->setParameter('searchString', '%' . $params['search']['string'] . '%');
+        }
+
+        if (!empty($params['filter'])) {
+            foreach ($params['filter'] as $field => $value) {
+                $queryBuilder->andWhere($tableAliasPrefix . $field . ' = :value')
+                    ->setParameter('value', $value);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param QueryBuilder $queryBuilder
+     * @param array $order Expected format: ['fieldName' => 'ASC|DESC', ...].
+     * @param string|null $tableAlias Alias of applicable the field alias prefix.
+     *
+     * @return $this
+     */
+    protected function applyQueryOrder(QueryBuilder $queryBuilder, array $order, string $tableAlias = null): self
+    {
+        $tableAliasPrefix = $tableAlias !== null ? $tableAlias . '.' : '';
+        foreach ($order as $field => $direction) {
+            $queryBuilder->addOrderBy($tableAliasPrefix . $field, $direction);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @throws LogicException
+     */
+    private function validateQueryParamsFormat(array $params): void
+    {
+        if (isset($params['search']) && empty($params['search']['fields'])) {
+            throw new LogicException('Search criteria should be applied to field(s).', 412);
+        }
+        if (isset($params['search']) && empty($params['search']['string'])) {
+            throw new LogicException('Search string should be provided to execute the query.', 412);
+        }
     }
 }

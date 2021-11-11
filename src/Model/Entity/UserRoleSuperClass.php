@@ -61,6 +61,14 @@ class UserRoleSuperClass
         return $this->user;
     }
 
+    public function setUser(UserSuperClass $user): self
+    {
+        $this->user = $user;
+        $user->addRole($this);
+
+        return $this;
+    }
+
     public function getRole(): string
     {
         return $this->role;

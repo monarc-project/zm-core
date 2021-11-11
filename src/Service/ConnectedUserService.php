@@ -7,8 +7,8 @@
 
 namespace Monarc\Core\Service;
 
+use Monarc\Core\Exception\UserNotLoggedInException;
 use Monarc\Core\Model\Entity\UserSuperClass;
-use Monarc\Core\Model\Entity\UserTokenSuperClass;
 use Monarc\Core\Storage\Authentication as AuthenticationStorage;
 use Laminas\Http\PhpEnvironment\Request;
 
@@ -36,18 +36,23 @@ class ConnectedUserService
     }
 
     /**
-     * For logged in users it will always return User's object instance.
+     * Returns User's object instance when user is logged-in.
+     *
+     * @throws UserNotLoggedInException
      */
-    public function getConnectedUser(): ?UserSuperClass
+    public function getConnectedUser(): UserSuperClass
     {
         if ($this->connectedUser === null) {
-            $token = $this->request->getHeader('token');
-            if (!empty($token)) {
-                /** @var UserTokenSuperClass $userToken */
+            $token = $this->request->getHeader('token', null);
+            if ($token !== null) {
                 $userToken = $this->authenticationStorage->getUserToken($token->getFieldValue());
-                if ($userToken) {
+                if ($userToken !== null) {
                     $this->connectedUser = $userToken->getUser();
                 }
+            }
+
+            if ($this->connectedUser === null) {
+                throw new UserNotLoggedInException();
             }
         }
 

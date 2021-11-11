@@ -1,28 +1,22 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2021 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
-namespace Monarc\Core\Model\Table;
+namespace Monarc\Core\Table;
 
 use DateTime;
-use Doctrine\ORM\ORMException;
-use Monarc\Core\Model\DbCli;
+use Doctrine\ORM\EntityManager;
 use Monarc\Core\Model\Entity\PasswordToken;
 use Monarc\Core\Model\Entity\PasswordTokenSuperClass;
-use Monarc\Core\Service\ConnectedUserService;
 
-/**
- * Class PasswordTokenTable
- * @package Monarc\Core\Model\Table
- */
-class PasswordTokenTable extends AbstractEntityTable
+class PasswordTokenTable extends AbstractTable
 {
-    public function __construct(DbCli $dbService, ConnectedUserService $connectedUserService)
+    public function __construct(EntityManager $entityManager, $entityName = PasswordToken::class)
     {
-        parent::__construct($dbService, PasswordToken::class, $connectedUserService);
+        parent::__construct($entityManager, $entityName);
     }
 
     public function getByToken(string $token, DateTime $date): ?PasswordTokenSuperClass
@@ -63,31 +57,5 @@ class PasswordTokenTable extends AbstractEntityTable
             ->setParameter(':token', $token)
             ->getQuery()
             ->getResult();
-    }
-
-    /**
-     * Delete By User
-     *
-     * @param $userId
-     */
-    public function deleteByUser(int $userId): void
-    {
-        $this->getRepository()->createQueryBuilder('t')
-            ->delete()
-            ->where('t.user = :user')
-            ->setParameter(':user', $userId)
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
-     * TODO: move it to an abstract table class (also rename the method to save) when we remove AbstractEntityTable.
-     * @throws ORMException
-     */
-    public function saveEntity(PasswordTokenSuperClass $passwordToken): void
-    {
-        // TODO: EntityManager has to be injected instead of the db class, actually we can remove db classes at all.
-        $this->db->getEntityManager()->persist($passwordToken);
-        $this->db->getEntityManager()->flush();
     }
 }

@@ -8,11 +8,13 @@
 namespace Monarc\Core\Service;
 
 use Doctrine\ORM\EntityNotFoundException;
+use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
-use Monarc\Core\Exception\Exception;
+use Monarc\Core\Exception\ActionForbiddenException;
+use Monarc\Core\Exception\UserNotLoggedInException;
 use Monarc\Core\Model\Entity\User;
 use Monarc\Core\Model\Entity\UserSuperClass;
-use Monarc\Core\Model\Table\UserTable;
+use Monarc\Core\Table\UserTable;
 
 /**
  * User Service
@@ -22,24 +24,25 @@ use Monarc\Core\Model\Table\UserTable;
  */
 class UserService
 {
-    protected $filterColumns = ['firstname', 'lastname', 'email'];
+    protected UserTable $userTable;
 
-    /** @var UserTable */
-    protected $userTable;
+    protected ConnectedUserService $connectedUserService;
 
-    /** @var int */
-    protected $defaultLanguageIndex;
+    protected int $defaultLanguageIndex;
 
     public function __construct(
         UserTable $userTable,
+        ConnectedUserService $connectedUserService,
         array $config
     ) {
         $this->userTable = $userTable;
-        $this->defaultLanguageIndex = $config['defaultLanguageIndex'];
+        $this->connectedUserService = $connectedUserService;
+        $this->defaultLanguageIndex = (int)$config['defaultLanguageIndex'];
     }
 
     /**
      * @throws ORMException
+     * @throws UserNotLoggedInException
      */
     public function create(array $data): UserSuperClass
     {
@@ -47,11 +50,11 @@ class UserService
             $data['language'] = $this->defaultLanguageIndex;
         }
 
-        $data['creator'] = $this->userTable->getConnectedUser()->getFirstname() . ' '
-            . $this->userTable->getConnectedUser()->getLastname();
+        $data['creator'] = $this->connectedUserService->getConnectedUser()->getFirstname() . ' '
+            . $this->connectedUserService->getConnectedUser()->getLastname();
 
         $user = new User($data);
-        $this->userTable->saveEntity($user);
+        $this->userTable->save($user);
 
         return $user;
     }
@@ -64,7 +67,7 @@ class UserService
     {
         $user = $this->getUpdatedUser($userId, $data);
 
-        $this->userTable->saveEntity($user);
+        $this->userTable->save($user);
 
         return $user;
     }
@@ -77,61 +80,65 @@ class UserService
     {
         $user = $this->getUpdatedUser($userId, $data);
 
-        $this->userTable->saveEntity($user);
+        $this->userTable->save($user);
 
         return $user;
     }
 
-    /**
-     * TODO: The following code is copied from AbstractService. To be cleaned up.
-     */
-
-    public function getFilteredCount($filter = null, $filterAnd = null)
+    public function getUsersList(string $searchString, ?array $filter, string $orderField): array
     {
-        return count($this->getList(1, null, null, $filter, $filterAnd));
+        $params = [];
+        if ($searchString !== '') {
+            $params['search'] = [
+                'fields' => ['firstname', 'lastname', 'email'],
+                'string' => $searchString,
+                'operand' => 'OR',
+            ];
+        }
+        if ($filter !== null) {
+            $params['filter'] = $filter;
+        }
+        $order = [];
+        if ($orderField !== '') {
+            if (strncmp($orderField, '-', 1) === 0) {
+                $order[ltrim($orderField, '-')] = 'DESC';
+            } else {
+                $order[$orderField] = 'ASC';
+            }
+        }
+
+        $users = $this->userTable->findUsersByParamsAndOrderedBy($params, $order);
+
+        $result = [];
+        foreach ($users as $user) {
+            $result[] = [
+                'id' => $user->getId(),
+                'firstname' => $user->getFirstname(),
+                'lastname' => $user->getLastname(),
+                'email' => $user->getEmail(),
+                'status' => $user->getStatus(),
+                'language' => $user->getLanguage(),
+                'role' => $user->getRolesArray(),
+            ];
+        }
+
+        return $result;
     }
 
     /**
-     * TODO: remove me and use table for filters queries.
-     *
-     * Returns the list of elements based on the provided filters passed in parameters. Results are paginated (using the
-     * $page and $limit combo), except when $limit is <= 0, in which case all results will be returned.
-     *
-     * @param int $page The page number, starting at 1.
-     * @param int $limit The maximum number of elements retrieved, or null to retrieve everything
-     * @param string|null $order The order in which elements should be retrieved (['column' => 'ASC/DESC'])
-     * @param string|null $filter The array of columns => values which should be filtered (in a WHERE.. OR.. fashion)
-     * @param array|null $filterAnd The array of columns => values which should be filtered (in a WHERE.. AND.. fashion)
-     *
-     * @return array An array of elements based on the provided search query
-     */
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
-    {
-        $filterJoin = $filterLeft = null;
-
-        return $this->userTable->fetchAllFiltered(
-            ['id', 'status', 'firstname', 'lastname', 'email', 'language', 'roles'],
-            $page,
-            $limit,
-            $this->parseFrontendOrder($order),
-            $this->parseFrontendFilter($filter, $this->filterColumns),
-            $filterAnd,
-            $filterJoin,
-            $filterLeft
-        );
-    }
-
-    /**
-     * @inheritdoc
+     * @throws ActionForbiddenException
+     * @throws EntityNotFoundException
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
     public function delete(int $userId)
     {
         $user = $this->userTable->findById($userId);
         if ($user->isSystemUser()) {
-            throw new Exception('You can not remove the "System" user', 412);
+            throw new ActionForbiddenException('You can not remove the "System" user');
         }
 
-        $this->userTable->deleteEntity($user);
+        $this->userTable->remove($user);
     }
 
     /**
@@ -154,64 +161,22 @@ class UserService
         if (isset($data['status'])) {
             $user->setStatus($data['status']);
         }
-        $user->setUpdater($this->userTable->getConnectedUser()->getFirstname() . ' '
-            . $this->userTable->getConnectedUser()->getLastname());
+        /*
+         * TODO: We don't use the dateStart and dateEnd for the moment.
+        if (isset($data['dateEnd'])) {
+            $data['dateEnd'] = new DateTime($data['dateEnd']);
+        }
+        if (isset($data['dateStart'])) {
+            $data['dateStart'] = new DateTime($data['dateStart']);
+        }
+        */
+        $user->setUpdater($this->connectedUserService->getConnectedUser()->getFirstname() . ' '
+            . $this->connectedUserService->getConnectedUser()->getLastname());
 
         if (!empty($data['role'])) {
             $user->setRoles($data['role']);
         }
 
         return $user;
-    }
-
-    /**
-     * Parses the filter value coming from the frontend and returns an array of columns to filter. Basically, this
-     * method will construct an array where the keys are the columns, and the value of each key is the filter parameter.
-     * @param string $filter The value to look for
-     * @param array $columns An array of columns in which the value is searched
-     * @return array Key/pair array as per the description
-     */
-    protected function parseFrontendFilter($filter, $columns = [])
-    {
-        $output = [];
-        if ($filter !== null && $columns) {
-            foreach ($columns as $c) {
-                $output[$c] = $filter;
-            }
-        }
-
-        return $output;
-    }
-
-    /**
-     * Parses the order from the frontend in order to build SQL-compliant ORDER BY. The order passed by the frontend
-     * is the name of the column that we should sort the data with, eventually prepended with '-' when we need it in
-     * descending order (ascending otherwise).
-     * @param string $order The order requested by the frontend/API call
-     * @return array|null Returns null if $order is null, otherwise an array ['columnName', 'ASC/DESC']
-     */
-    protected function parseFrontendOrder($order)
-    {
-        // Fields in the ORM are using a CamelCase notation, whereas JSON fields use underscores. Convert it here in
-        // case there's a value not filtered.
-        if (strpos($order, '_') !== false) {
-            $o = explode('_', $order);
-            $order = '';
-            foreach ($o as $n => $oo) {
-                if ($n <= 0) {
-                    $order = $oo;
-                } else {
-                    $order .= ucfirst($oo);
-                }
-            }
-        }
-
-        if ($order === null) {
-            return null;
-        } elseif (strpos($order, '-') === 0) {
-            return [substr($order, 1), 'DESC'];
-        }
-
-        return [$order, 'ASC'];
     }
 }

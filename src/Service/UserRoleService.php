@@ -1,101 +1,60 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2021 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
 namespace Monarc\Core\Service;
 
-use Monarc\Core\Exception\Exception;
-use Monarc\Core\Model\Table\UserRoleTable;
-use Monarc\Core\Model\Table\UserTokenTable;
-use Laminas\Http\Header\GenericHeader;
+use Doctrine\ORM\NonUniqueResultException;
+use Monarc\Core\Exception\UserNotLoggedInException;
+use Monarc\Core\Model\Entity\UserSuperClass;
+use Monarc\Core\Table\UserTable;
+use Monarc\Core\Table\UserTokenTable;
 
-/**
- * User Role Service
- *
- * Class UserRoleService
- * @package Monarc\Core\Service
- */
 class UserRoleService
 {
-    /** @var UserRoleTable */
-    protected $userRoleTable;
+    protected UserTable $userTable;
 
-    /** @var UserTokenTable */
-    protected $userTokenTable;
+    protected UserTokenTable $userTokenTable;
 
     public function __construct(
-        UserRoleTable $userRoleTable,
+        UserTable $userTable,
         UserTokenTable $userTokenTable
     ) {
-        $this->userRoleTable = $userRoleTable;
+        $this->userTable = $userTable;
         $this->userTokenTable = $userTokenTable;
     }
 
     /**
-     * TODO: it doesn't really return the entity but an array or false.
-     * @inheritdoc
+     * @throws UserNotLoggedInException
+     * @throws NonUniqueResultException
      */
-    public function getEntity($id)
+    public function getUserRolesByToken(string $token): array
     {
-        return $this->userRoleTable->get($id);
-    }
-
-    /**
-     * Get roles by user ID
-     * @param int $userId THe user ID
-     * @return array The roles
-     */
-    public function getByUserId($userId)
-    {
-        return $this->userRoleTable
-            ->getRepository()
-            ->createQueryBuilder('t')
-            ->select(['t.id', 't.role'])
-            ->where('t.user = :id')
-            ->setParameter('id', $userId)
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
-     * Get roles by user authentication token
-     * @param string $token The authentication token
-     * @return array The roles
-     * @throws \Exception If token is invalid
-     */
-    public function getByUserToken($token)
-    {
-        return $this->getByUserId($this->getUserIdByToken($token));
-    }
-
-    /**
-     * Get User Id By Token
-     * @param string $token The token
-     * @return int The user ID
-     * @throws \Exception If token is invalid
-     */
-    protected function getUserIdByToken($token)
-    {
-        if ($token instanceof GenericHeader) {
-            $token = $token->getFieldValue();
+        $userToken = $this->userTokenTable->findByToken($token);
+        if ($userToken === null) {
+            throw new UserNotLoggedInException();
         }
 
-        $userToken = $this->userTokenTable
-            ->getRepository()
-            ->createQueryBuilder('t')
-            ->select(['t.id', 'IDENTITY(t.user) as userId', 't.token', 't.dateEnd'])
-            ->where('t.token = :token')
-            ->setParameter('token', $token)
-            ->getQuery()
-            ->getResult();
+        return $this->getUserRolesByUser($userToken->getUser());
+    }
 
-        if (empty($userToken)) {
-            throw new Exception('User with the token is not found');
+    public function getUserRolesByUserId(int $userId): array
+    {
+        $user = $this->userTable->findById($userId);
+
+        return $this->getUserRolesByUser($user);
+    }
+
+    private function getUserRolesByUser(UserSuperClass $user): array
+    {
+        $userRoles = [];
+        foreach ($user->getRoles() as $role) {
+            $userRoles[] = ['id' => $role->getId(), 'role' => $role->getRole()];
         }
 
-        return $userToken[0]['userId'];
+        return $userRoles;
     }
 }
