@@ -11,11 +11,11 @@ class FixOpScalesTranslations extends AbstractMigration
     {
         // Validate and fix scale types translations.
         $scalesTypesQuery = $this->query(
-            'select st.*, count(t.lang) as langs_cnt
+            'select st.label_translation_key, st.anr_id, count(t.lang) as langs_cnt
             from operational_risks_scales_types st
             inner join translations t
                 on st.label_translation_key = t.translation_key
-            group by st.label_translation_key'
+            group by st.label_translation_key, st.anr_id'
         );
         $translationsTable = $this->table('translations');
         foreach ($scalesTypesQuery->fetchAll() as $scaleTypeData) {
@@ -43,11 +43,11 @@ class FixOpScalesTranslations extends AbstractMigration
 
         // Validate and fix scale comments translations.
         $scalesCommentsQuery = $this->query(
-            'select sc.*, count(t.lang) as langs_cnt
+            'select sc.comment_translation_key, sc.anr_id, count(t.lang) as langs_cnt
             from operational_risks_scales_comments sc
             inner join translations t
                 on sc.comment_translation_key = t.translation_key
-            group by sc.comment_translation_key'
+            group by sc.comment_translation_key, sc.anr_id'
         );
         $translationsTable = $this->table('translations');
         foreach ($scalesCommentsQuery->fetchAll() as $scaleCommentData) {
