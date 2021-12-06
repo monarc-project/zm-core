@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManager;
 use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\InstanceRiskOwner;
@@ -38,6 +39,7 @@ class InstanceRiskOwnerTable extends AbstractTable
     {
         $queryBuilder = $this->getRepository()->createQueryBuilder('iro')
             ->where('iro.anr = :anr')
+            ->orderBy('iro.name', Criteria::ASC)
             ->setParameter('anr', $anr);
 
         if (!empty($params['name'])) {
