@@ -1,0 +1,56 @@
+name: PHP Code Sniffer
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0  
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '7.4'
+        extensions: imagick, intl, mysql, bcmath, openssl
+        ini-values: post_max_size=256M, short_open_tag=On
+        tools: pecl, cs2pr, phpcs
+
+    - name: Validate composer.json and composer.lock
+      run: composer validate --strict
+
+    - name: Cache Composer packages
+      id: composer-cache
+      uses: actions/cache@v2
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-php-
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress
+
+    # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
+    # Docs: https://getcomposer.org/doc/articles/scripts.md
+
+    # We need to run to validate only files' changes.
+    - name: Get changed files using a comma separator
+      id: changed-files-comma
+      uses: tj-actions/changed-files@v12.2
+      with:
+        separator: " "
+        files: |
+          .(php)$
+        path: src
+
+    - name: List changed files
+      if: steps.changed-files-comma.outputs.any_changed == 'true'
+      run: |
+        echo ${{ steps.changed-files-comma.outputs.all_changed_files }}
+    - name: Run phpcs
+      if: steps.changed-files-comma.outputs.any_changed == 'true'
+      run: phpcs -q --report=checkstyle ${{ steps.changed-files-comma.outputs.all_changed_files }} | cs2pr
