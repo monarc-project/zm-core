@@ -614,25 +614,25 @@ return [
             'index' => 5,
             'label' => 'Spanish',
         ],
-        'it' => [
+        'ro' => [
             'index' => 6,
+            'label' => 'Romanian',
+        ],
+        'it' => [
+            'index' => 7,
             'label' => 'Italian',
         ],
         'ja' => [
-            'index' => 7,
+            'index' => 8,
             'label' => 'Japanese',
         ],
         'pl' => [
-            'index' => 8,
+            'index' => 9,
             'label' => 'Polish',
         ],
         'pt' => [
-            'index' => 9,
-            'label' => 'Portuguese',
-        ],
-        'ru' => [
             'index' => 10,
-            'label' => 'Russian',
+            'label' => 'Portuguese',
         ],
         'zh' => [
             'index' => 11,
