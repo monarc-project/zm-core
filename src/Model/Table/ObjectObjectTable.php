@@ -66,7 +66,6 @@ class ObjectObjectTable extends AbstractEntityTable
 
         $result = $stmt->execute([':anrid' => $anrid, ':oid' => $child_id]);
         return $result->fetchAllAssociative();
-
     }
 
     /**
@@ -89,6 +88,5 @@ class ObjectObjectTable extends AbstractEntityTable
 
         $result = $stmt->execute([':anrid' => $anrid, ':oid' => $id]);
         return $result->fetchAllAssociative();
-
     }
 }
