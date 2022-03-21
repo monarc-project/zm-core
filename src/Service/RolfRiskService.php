@@ -114,6 +114,9 @@ class RolfRiskService extends AbstractService
 
         /** @var RolfRiskSuperClass $rolfRisk */
         $rolfRisk = new $entityClass();
+        $rolfRisk->setCode($data['code'])
+            ->setLabels($data)
+            ->setDescriptions($data);
 
         $anr = null;
         if (!empty($data['anr'])) {
