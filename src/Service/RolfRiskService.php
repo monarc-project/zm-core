@@ -136,7 +136,7 @@ class RolfRiskService extends AbstractService
             }
         }
 
-        if (!$data['tags']) {
+        if (!empty($data['tags'])) {
             /** @var RolfTagTable $rolfTagTable */
             $rolfTagTable = $this->get('rolfTagTable');
             foreach ($data['tags'] as $rolfTagId) {
