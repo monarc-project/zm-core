@@ -73,8 +73,14 @@ class RolfRiskService extends AbstractService
     /**
      * @inheritdoc
      */
-    public function getFilteredSpecificCount($page = 1, $limit = 25, $order = null, $filter = null, $tag = null, $anr = null)
-    {
+    public function getFilteredSpecificCount(
+        $page = 1,
+        $limit = 25,
+        $order = null,
+        $filter = null,
+        $tag = null,
+        $anr = null
+    ) {
         $filterAnd = [];
         $filterJoin = [];
 
