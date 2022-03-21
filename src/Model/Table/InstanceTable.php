@@ -63,6 +63,19 @@ class InstanceTable extends AbstractEntityTable
     /**
      * @return InstanceSuperClass[]
      */
+    public function findByObject(ObjectSuperClass $object): array
+    {
+        return $this->getRepository()
+            ->createQueryBuilder('i')
+            ->where('i.object = :object')
+            ->setParameter('object', $object)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return InstanceSuperClass[]
+     */
     public function findRootsByAnr(AnrSuperClass $anr): array
     {
         return $this->getRepository()

@@ -64,7 +64,8 @@ class ObjectObjectTable extends AbstractEntityTable
             AND oo.child_id = :oid'
         );
 
-        $result = $stmt->execute([':anrid' => $anrid, ':oid' => $child_id]);
+        $result = $stmt->executeQuery([':anrid' => $anrid, ':oid' => $child_id]);
+
         return $result->fetchAllAssociative();
     }
 
@@ -86,7 +87,8 @@ class ObjectObjectTable extends AbstractEntityTable
             AND oo.child_id = :oid'
         );
 
-        $result = $stmt->execute([':anrid' => $anrid, ':oid' => $id]);
+        $result = $stmt->executeQuery([':anrid' => $anrid, ':oid' => $id]);
+
         return $result->fetchAllAssociative();
     }
 }
