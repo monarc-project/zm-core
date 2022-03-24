@@ -11,9 +11,11 @@ use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\Query\Expr;
 use Monarc\Core\Model\Db;
+use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Entity\ObjectCategorySuperClass;
 use Monarc\Core\Model\Entity\ObjectSuperClass;
+use Monarc\Core\Model\Entity\RolfTagSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**
@@ -121,6 +123,27 @@ class MonarcObjectTable extends AbstractEntityTable
         $stmt->execute([':anrid' => $anrid, ':oid' => $id]);
 
         return $stmt->rowCount() > 0;
+    }
+
+    /**
+     * @return ObjectSuperClass[]
+     */
+    public function findByRolfTag(RolfTagSuperClass $rolfTag): array
+    {
+        return $this->getRepository()
+            ->createQueryBuilder('o')
+            ->where('o.rolfTag = :rolfTag')
+            ->setParameter('rolfTag', $rolfTag)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return ObjectSuperClass[]
+     */
+    public function findByAnrAndRolfTag(AnrSuperClass $anr, RolfTagSuperClass $rolfTag): array
+    {
+        return [];
     }
 
     public function saveEntity(ObjectSuperClass $monarcObject, bool $flushAll = true): void

@@ -11,6 +11,7 @@ use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Monarc\Core\Model\Db;
+use Monarc\Core\Model\Entity\AbstractEntity;
 use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\Instance;
 use Monarc\Core\Model\Entity\InstanceSuperClass;
@@ -56,6 +57,19 @@ class InstanceTable extends AbstractEntityTable
             ->setParameter('anr', $anr)
             ->setParameter('object_uuid', $object->getUuid())
             ->setParameter('object_anr', $anr)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return InstanceSuperClass[]
+     */
+    public function findByObject(ObjectSuperClass $object): array
+    {
+        return $this->getRepository()
+            ->createQueryBuilder('i')
+            ->where('i.object = :object')
+            ->setParameter('object', $object)
             ->getQuery()
             ->getResult();
     }
@@ -130,11 +144,11 @@ class InstanceTable extends AbstractEntityTable
      *
      * @param $params
      * @param $queryBuilder
-     * @param \Monarc\Core\Model\Entity\AbstractEntity $entity
+     * @param AbstractEntity $entity
      * @param string $newOrOld
      * @return mixed
      */
-    protected function buildWhereForPositionCreate($params, $queryBuilder, \Monarc\Core\Model\Entity\AbstractEntity $entity, $newOrOld = 'new')
+    protected function buildWhereForPositionCreate($params, $queryBuilder, AbstractEntity $entity, $newOrOld = 'new')
     {
         $queryBuilder = parent::buildWhereForPositionCreate($params, $queryBuilder, $entity, $newOrOld);
         $anr = $entity->get('anr');
@@ -150,10 +164,10 @@ class InstanceTable extends AbstractEntityTable
     /**
      * Manage Delete Position
      *
-     * @param \Monarc\Core\Model\Entity\AbstractEntity $entity
+     * @param AbstractEntity $entity
      * @param array $params
      */
-    protected function manageDeletePosition(\Monarc\Core\Model\Entity\AbstractEntity $entity, $params = array())
+    protected function manageDeletePosition(AbstractEntity $entity, $params = array())
     {
         $return = $this->getRepository()->createQueryBuilder('t')
             ->update()
@@ -189,11 +203,11 @@ class InstanceTable extends AbstractEntityTable
     /**
      * Count Position Max
      *
-     * @param \Monarc\Core\Model\Entity\AbstractEntity $entity
+     * @param AbstractEntity $entity
      * @param array $params
      * @return mixed
      */
-    protected function countPositionMax(\Monarc\Core\Model\Entity\AbstractEntity $entity, $params = array())
+    protected function countPositionMax(AbstractEntity $entity, $params = array())
     {
         $return = $this->getRepository()->createQueryBuilder('t')
             ->select('COUNT(t.id)');

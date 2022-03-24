@@ -1445,7 +1445,7 @@ class InstanceService extends AbstractService
                 'riskCacheDescription4' => $operationalInstanceRisk->getRiskCacheDescription(4),
                 'brutProb' => $withEval ? $operationalInstanceRisk->getBrutProb() : -1,
                 'netProb' => $withEval ? $operationalInstanceRisk->getNetProb() : -1,
-                'targetedProb' => $withEval ? $operationalInstanceRisk->getNetProb() : -1,
+                'targetedProb' => $withEval ? $operationalInstanceRisk->getTargetedProb() : -1,
                 'cacheBrutRisk' => $withEval ? $operationalInstanceRisk->getCacheBrutRisk() : -1,
                 'cacheNetRisk' => $withEval ? $operationalInstanceRisk->getCacheNetRisk() : -1,
                 'cacheTargetedRisk' => $withEval ? $operationalInstanceRisk->getCacheTargetedRisk() : -1,

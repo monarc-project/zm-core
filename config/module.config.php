@@ -1,6 +1,10 @@
 <?php
 
-use Doctrine\Common\Persistence\Mapping\Driver\MappingDriverChain;
+use Laminas\Mail\Transport\SmtpOptions;
+use Laminas\Mail\Transport\Smtp;
+use Laminas\Mime\Message;
+use Laminas\Mime\Part;
+use Doctrine\Persistence\Mapping\Driver\MappingDriverChain;
 use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
 use Monarc\Core\Adapter\Authentication as AdapterAuthentication;
 use Monarc\Core\Controller;
@@ -374,11 +378,11 @@ return [
             ModelEntity\QuestionChoice::class => ModelEntity\QuestionChoice::class,
 
             // TODO: fix the classes and dependencies.
-            'Monarc\Core\Service\Mime\Part' => 'Laminas\Mime\Part',
-            'Monarc\Core\Service\Mime\Message' => 'Laminas\Mime\Message',
-            'Monarc\Core\Service\Mail\Message' => 'Laminas\Mail\Message',
-            'Monarc\Core\Service\Mail\Transport\Smtp' => 'Laminas\Mail\Transport\Smtp',
-            'Monarc\Core\Service\Mail\Transport\SmtpOptions' => 'Laminas\Mail\Transport\SmtpOptions',
+            'Monarc\Core\Service\Mime\Part' => Part::class,
+            'Monarc\Core\Service\Mime\Message' => Message::class,
+            'Monarc\Core\Service\Mail\Message' => \Laminas\Mail\Message::class,
+            'Monarc\Core\Service\Mail\Transport\Smtp' => Smtp::class,
+            'Monarc\Core\Service\Mail\Transport\SmtpOptions' => SmtpOptions::class,
         ],
         'factories' => [
             Db::class => DbFactory::class,
@@ -554,11 +558,13 @@ return [
             Controller\ApiAnrRisksOpController::class => AutowireFactory::class,
             Controller\ApiAnrExportController::class => AutowireFactory::class,
             Controller\ApiAnrInstancesController::class => Controller\ApiAnrInstancesControllerFactory::class,
-            Controller\ApiAnrInstancesConsequencesController::class => Controller\ApiAnrInstancesConsequencesControllerFactory::class,
+            Controller\ApiAnrInstancesConsequencesController::class
+                => Controller\ApiAnrInstancesConsequencesControllerFactory::class,
             Controller\ApiAnrInstancesRisksController::class => Controller\ApiAnrInstancesRisksControllerFactory::class,
             Controller\ApiAnrInstancesRisksOpController::class => AutowireFactory::class,
             Controller\ApiAnrLibraryController::class => Controller\ApiAnrLibraryControllerFactory::class,
-            Controller\ApiAnrLibraryCategoryController::class => Controller\ApiAnrLibraryCategoryControllerFactory::class,
+            Controller\ApiAnrLibraryCategoryController::class
+                => Controller\ApiAnrLibraryCategoryControllerFactory::class,
             Controller\ApiAnrObjectController::class => Controller\ApiAnrObjectControllerFactory::class,
             Controller\ApiModelsController::class => Controller\ApiModelsControllerFactory::class,
             Controller\ApiModelsDuplicationController::class => Controller\ApiModelsDuplicationControllerFactory::class,
@@ -612,25 +618,25 @@ return [
             'index' => 5,
             'label' => 'Spanish',
         ],
-        'it' => [
+        'ro' => [
             'index' => 6,
+            'label' => 'Romanian',
+        ],
+        'it' => [
+            'index' => 7,
             'label' => 'Italian',
         ],
         'ja' => [
-            'index' => 7,
+            'index' => 8,
             'label' => 'Japanese',
         ],
         'pl' => [
-            'index' => 8,
+            'index' => 9,
             'label' => 'Polish',
         ],
         'pt' => [
-            'index' => 9,
-            'label' => 'Portuguese',
-        ],
-        'ru' => [
             'index' => 10,
-            'label' => 'Russian',
+            'label' => 'Portuguese',
         ],
         'zh' => [
             'index' => 11,

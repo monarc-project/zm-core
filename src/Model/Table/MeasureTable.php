@@ -8,7 +8,9 @@
 namespace Monarc\Core\Model\Table;
 
 use Monarc\Core\Model\Db;
+use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\Measure;
+use Monarc\Core\Model\Entity\MeasureSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**
@@ -20,5 +22,30 @@ class MeasureTable extends AbstractEntityTable
     public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
     {
         parent::__construct($dbService, Measure::class, $connectedUserService);
+    }
+
+    public function findByUuid(string $uuid): ?MeasureSuperClass
+    {
+        return $this->getRepository()
+            ->createQueryBuilder('m')
+            ->where('m.uuid = :uuid')
+            ->setParameter('uuid', $uuid)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    public function findByAnrAndUuid(AnrSuperClass $anr, string $uuid): ?MeasureSuperClass
+    {
+        return null;
+    }
+
+    public function saveEntity(MeasureSuperClass $measure, bool $flushAll = true): void
+    {
+        $em = $this->getDb()->getEntityManager();
+        $em->persist($measure);
+        if ($flushAll) {
+            $em->flush();
+        }
     }
 }
