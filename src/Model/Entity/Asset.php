@@ -22,14 +22,22 @@ use Doctrine\ORM\Mapping as ORM;
 class Asset extends AssetSuperClass
 {
     /**
-     * @var \Doctrine\Common\Collections\Collection
-     * @ORM\ManyToMany(targetEntity="Monarc\Core\Model\Entity\Model", inversedBy="assets", cascade={"persist"})
+     * @var Model[]|ArrayCollection
+     *
+     * @ORM\ManyToMany(targetEntity="MModel", inversedBy="assets", cascade={"persist"})
      * @ORM\JoinTable(name="assets_models",
      *  joinColumns={@ORM\JoinColumn(name="asset_id", referencedColumnName="uuid")},
      *  inverseJoinColumns={@ORM\JoinColumn(name="model_id", referencedColumnName="id")}
      * )
      */
     protected $models;
+
+    public function __construct($obj = null)
+    {
+        $this->models = new ArrayCollection();
+
+        parent::__construct($obj);
+    }
 
     /**
      * @return Model[]|ArrayCollection
@@ -76,11 +84,5 @@ class Asset extends AssetSuperClass
     public function setModel($id, Model $model)
     {
         $this->models[$id] = $model;
-    }
-
-    public function __construct($obj = null)
-    {
-        $this->models = new ArrayCollection();
-        parent::__construct($obj);
     }
 }

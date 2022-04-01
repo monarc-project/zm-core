@@ -50,7 +50,6 @@ class InstanceRiskService extends AbstractService
     protected $monarcObjectTable;
     protected $scaleTable;
     protected $threatTable;
-    protected $vulnerabilityTable;
 
     protected $forbiddenFields = ['anr', 'amv', 'asset', 'threat', 'vulnerability'];
 

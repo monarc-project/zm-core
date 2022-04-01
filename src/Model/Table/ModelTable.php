@@ -7,14 +7,13 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Db;
+use Monarc\Core\Model\Entity\AbstractEntity;
 use Monarc\Core\Model\Entity\Model;
+use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Service\ConnectedUserService;
 
-/**
- * Class ModelTable
- * @package Monarc\Core\Model\Table
- */
 class ModelTable extends AbstractEntityTable
 {
     public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
@@ -31,7 +30,7 @@ class ModelTable extends AbstractEntityTable
 
         // There should only ever be one default model
         if (count($defaults) == 1) {
-            /** @var \Monarc\Core\Model\Entity\Model $def */
+            /** @var Model $def */
             $def = $defaults[0];
 
             $def->set('isDefault', 0);
@@ -66,28 +65,33 @@ class ModelTable extends AbstractEntityTable
      * @param $modelId
      * @param $object
      * @param $context
-     * @throws \Monarc\Core\Exception\Exception
+     * @throws Exception
      */
     public function canAcceptObject($modelId, $object, $context = null, $forceAsset = null)
     {
         //retrieve data
-        if (is_null($context) || $context == \Monarc\Core\Model\Entity\AbstractEntity::BACK_OFFICE) {
+        if (is_null($context) || $context == AbstractEntity::BACK_OFFICE) {
             $model = $this->getEntity($modelId);
 
             $asset_mode = is_null($forceAsset) ? $object->get('asset')->get('mode') : $forceAsset->mode;
 
-            if ($model->get('isGeneric') && $object->get('mode') == \Monarc\Core\Model\Entity\MonarcObject::MODE_SPECIFIC) {
-                throw new \Monarc\Core\Exception\Exception('You cannot add a specific object to a generic model', 412);
+            if ($model->get('isGeneric') && $object->get('mode') == MonarcObject::MODE_SPECIFIC) {
+                throw new Exception('You cannot add a specific object to a generic model', 412);
             } else {
                 if ($model->get('isRegulator')) {
-                    if ($object->get('mode') == \Monarc\Core\Model\Entity\MonarcObject::MODE_GENERIC) {
-                        throw new \Monarc\Core\Exception\Exception('You cannot add a generic object to a regulator model', 412);
-                    } elseif ($object->get('mode') == \Monarc\Core\Model\Entity\MonarcObject::MODE_SPECIFIC && $asset_mode == \Monarc\Core\Model\Entity\MonarcObject::MODE_GENERIC) {
-                        throw new \Monarc\Core\Exception\Exception('You cannot add a specific object with generic asset to a regulator model', 412);
+                    if ($object->get('mode') == MonarcObject::MODE_GENERIC) {
+                        throw new Exception('You cannot add a generic object to a regulator model', 412);
+                    } elseif ($object->get('mode') == MonarcObject::MODE_SPECIFIC
+                        && $asset_mode == MonarcObject::MODE_GENERIC
+                    ) {
+                        throw new Exception(
+                            'You cannot add a specific object with generic asset to a regulator model',
+                            412
+                        );
                     }
                 }
 
-                if (!$model->get('isGeneric') && $asset_mode == \Monarc\Core\Model\Entity\MonarcObject::MODE_SPECIFIC) {
+                if (!$model->get('isGeneric') && $asset_mode == MonarcObject::MODE_SPECIFIC) {
                     $models = is_null($forceAsset) ? $object->get('asset')->get('models') : $forceAsset->models;
                     $found = false;
                     foreach ($models as $m) {
@@ -97,7 +101,11 @@ class ModelTable extends AbstractEntityTable
                         }
                     }
                     if (!$found) {
-                        throw new \Monarc\Core\Exception\Exception('You cannot add an object with specific asset unrelated to a ' . ($model->get('isRegulator') ? 'regulator' : 'specific') . ' model', 412);
+                        throw new Exception(
+                            'You cannot add an object with specific asset unrelated to a '
+                            . ($model->get('isRegulator') ? 'regulator' : 'specific') . ' model',
+                            412
+                        );
                     }
                 }
             }

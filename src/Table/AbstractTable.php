@@ -8,6 +8,7 @@
 namespace Monarc\Core\Table;
 
 use Doctrine\DBAL\ConnectionException;
+use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\OptimisticLockException;
@@ -38,8 +39,7 @@ abstract class AbstractTable
     }
 
     /**
-     * @throws ORMException
-     * @throws OptimisticLockException
+     * @throws ORMException|OptimisticLockException
      */
     public function save(object $entity, bool $flushAll = true): void
     {
@@ -50,8 +50,7 @@ abstract class AbstractTable
     }
 
     /**
-     * @throws ORMException
-     * @throws OptimisticLockException
+     * @throws ORMException|OptimisticLockException
      */
     public function remove(object $entity, bool $flushAll = true): void
     {
@@ -62,8 +61,7 @@ abstract class AbstractTable
     }
 
     /**
-     * @throws ORMException
-     * @throws OptimisticLockException
+     * @throws ORMException|OptimisticLockException
      */
     public function flush(): void
     {
@@ -75,13 +73,16 @@ abstract class AbstractTable
         return $this->entityManager->find($this->entityName, $id);
     }
 
+    /**
+     * @throws DbalException
+     */
     public function beginTransaction(): void
     {
         $this->entityManager->getConnection()->beginTransaction();
     }
 
     /**
-     * @throws ConnectionException
+     * @throws ConnectionException|DbalException
      */
     public function commit(): void
     {
@@ -89,7 +90,7 @@ abstract class AbstractTable
     }
 
     /**
-     * @throws ConnectionException
+     * @throws ConnectionException|DbalException
      */
     public function rollback(): void
     {

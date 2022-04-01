@@ -43,7 +43,6 @@ class AmvService extends AbstractService
     protected $threatTable;
     protected $threatService;
     protected $themeTable;
-    protected $vulnerabilityTable;
     protected $vulnerabilityService;
     protected $historicalService;
     protected $errorMessage;

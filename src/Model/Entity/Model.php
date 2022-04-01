@@ -1,7 +1,7 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -21,13 +21,13 @@ use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks()
  */
-class Model extends AbstractEntity
+class Model
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer", nullable=false)
      * @ORM\Id
@@ -36,9 +36,9 @@ class Model extends AbstractEntity
     protected $id;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Anr
+     * @var Anr
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Anr", cascade={"REMOVE"})
+     * @ORM\ManyToOne(targetEntity="Anr", cascade={"REMOVE"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true)
      * })
@@ -102,127 +102,181 @@ class Model extends AbstractEntity
     protected $description4;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="status", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $status = '1';
+    protected $status = 1;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="is_scales_updatable", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $isScalesUpdatable = '1';
+    protected $isScalesUpdatable = 1;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="is_default", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $isDefault = '0';
+    protected $isDefault = 0;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="is_deleted", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $isDeleted = '0';
+    protected $isDeleted = 0;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="is_generic", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $isGeneric = '1';
+    protected $isGeneric = 1;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="is_regulator", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $isRegulator = '0';
+    protected $isRegulator = 0;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="show_rolf_brut", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $showRolfBrut = '1';
+    protected $showRolfBrut = 1;
 
     /**
-     * @var \Doctrine\Common\Collections\Collection
-     * @ORM\ManyToMany(targetEntity="Monarc\Core\Model\Entity\Asset", mappedBy="models", cascade={"persist"})
+     * @var Asset[]|ArrayCollection
+     * @ORM\ManyToMany(targetEntity="Asset", mappedBy="models", cascade={"persist"})
      */
     protected $assets;
 
     /**
-     * @var \Doctrine\Common\Collections\Collection
-     * @ORM\ManyToMany(targetEntity="Monarc\Core\Model\Entity\Threat", mappedBy="models", cascade={"persist"})
+     * @var Threat[]|ArrayCollection
+     * @ORM\ManyToMany(targetEntity="Threat", mappedBy="models", cascade={"persist"})
      */
     protected $threats;
 
-    public function __construct($obj = null)
+    /**
+     * @var Vulnerability[]|ArrayCollection
+     * @ORM\ManyToMany(targetEntity="Vulnerability", mappedBy="models", cascade={"persist"})
+     */
+    protected $vulnerabilities;
+
+    public function __construct()
     {
         $this->assets = new ArrayCollection();
         $this->threats = new ArrayCollection();
-        parent::__construct($obj);
+        $this->vulnerabilities = new ArrayCollection();
     }
 
-    /**
-     * @return int
-     */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
 
-    /**
-     * @param int $id
-     * @return Model
-     */
-    public function setId($id)
-    {
-        $this->id = $id;
-        return $this;
-    }
-
-    /**
-     * @return Anr
-     */
-    public function getAnr()
+    public function getAnr(): Anr
     {
         return $this->anr;
     }
 
-    /**
-     * @param Anr $anr
-     * @return Model
-     */
-    public function setAnr($anr)
+    public function setAnr(Anr $anr): self
     {
         $this->anr = $anr;
+
+        return $this;
+    }
+
+    public function getLabel(int $languageIndex): string
+    {
+        if (!\in_array($languageIndex, range(1, 4), true)) {
+            return '';
+        }
+
+        return (string)$this->{'label' . $languageIndex};
+    }
+
+    public function getDescription(int $languageIndex): string
+    {
+        if (!\in_array($languageIndex, range(1, 4), true)) {
+            return '';
+        }
+
+        return (string)$this->{'description' . $languageIndex};
+    }
+
+    public function isDeleted(): bool
+    {
+        return (bool)$this->isDeleted;
+    }
+
+    public function setIsDeleted(bool $isDeleted): self
+    {
+        $this->isDeleted = (int)$isDeleted;
+
         return $this;
     }
 
     /**
-     * @return boolean
+     * @return Asset[]
      */
-    public function isIsDeleted()
+    public function getAssets()
     {
-        return $this->isDeleted;
+        return $this->assets;
     }
 
-    /**
-     * @param boolean $isDeleted
-     * @return Model
-     */
-    public function setIsDeleted($isDeleted)
+    public function addAsset(Asset $asset): self
     {
-        $this->isDeleted = $isDeleted;
+        if (!$this->assets->contains($asset)) {
+            $this->assets->add($asset);
+            $asset->addModel($this);
+        }
+
         return $this;
     }
 
+    /**
+     * @return Threat[]
+     */
+    public function getThreats()
+    {
+        return $this->threats;
+    }
+
+    public function addThreat(Threat $threat): self
+    {
+        if (!$this->threats->contains($threat)) {
+            $this->threats->add($threat);
+            $threat->addModel($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Vulnerability[]
+     */
+    public function getVulnerabilities()
+    {
+        return $this->vulnerabilities;
+    }
+
+    public function addVulnerability(Vulnerability $vulnerability): self
+    {
+        if (!$this->vulnerabilities->contains($vulnerability)) {
+            $this->vulnerabilities->add($vulnerability);
+            $vulnerability->addModel($this);
+        }
+
+        return $this;
+    }
+
+    // TODO: replace with the Input filter usage. Drop it after!!!
     public function getInputFilter($partial = false)
     {
         if (!$this->inputFilter) {
@@ -232,7 +286,7 @@ class Model extends AbstractEntity
             foreach ($texts as $text) {
                 $this->inputFilter->add(array(
                     'name' => $text,
-                    'required' => ((strchr($text, (string)$this->getLanguage())) && (!$partial)) ? true : false,
+                    'required' => strpos($text, (string)$this->getLanguage()) !== false && !$partial,
                     'allow_empty' => false,
                     'filters' => array(),
                     'validators' => array(),
