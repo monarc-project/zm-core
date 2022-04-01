@@ -14,10 +14,12 @@ use Monarc\Core\Model\Entity\Scale;
 use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Model\GetAndSet;
 use Monarc\Core\Model\Table\AbstractEntityTable;
+use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\ObjectObjectTable;
 use Monarc\Core\Model\Table\ScaleTable;
 use Monarc\Core\Traits\RiskTrait;
 use Doctrine\Common\Util\ClassUtils;
+
 // TODO: remove the cross projects dependency (long term) or require core for FrontOffice and vice versa (short term).
 use Monarc\FrontOffice\Model\Table\UserAnrTable;
 use Ramsey\Uuid\Uuid;
@@ -69,6 +71,7 @@ abstract class AbstractService extends AbstractServiceFactory
 
     /**
      * Constructor
+     *
      * @param AbstractServiceFactory|array|null $serviceFactory The factory to use for this service, or an array or
      * values to set on the Service variables.
      */
@@ -96,8 +99,10 @@ abstract class AbstractService extends AbstractServiceFactory
     /**
      * Parses the filter value coming from the frontend and returns an array of columns to filter. Basically, this
      * method will construct an array where the keys are the columns, and the value of each key is the filter parameter.
+     *
      * @param string $filter The value to look for
      * @param array $columns An array of columns in which the value is searched
+     *
      * @return array Key/pair array as per the description
      */
     protected function parseFrontendFilter($filter, $columns = [])
@@ -116,7 +121,9 @@ abstract class AbstractService extends AbstractServiceFactory
      * Parses the order from the frontend in order to build SQL-compliant ORDER BY. The order passed by the frontend
      * is the name of the column that we should sort the data with, eventually prepended with '-' when we need it in
      * descending order (ascending otherwise).
+     *
      * @param string $order The order requested by the frontend/API call
+     *
      * @return array|null Returns null if $order is null, otherwise an array ['columnName', 'ASC/DESC']
      */
     protected function parseFrontendOrder($order)
@@ -137,10 +144,12 @@ abstract class AbstractService extends AbstractServiceFactory
 
         if ($order == null) {
             return null;
-        } else if (substr($order, 0, 1) == '-') {
-            return [substr($order, 1), 'DESC'];
         } else {
-            return [$order, 'ASC'];
+            if (substr($order, 0, 1) == '-') {
+                return [substr($order, 1), 'DESC'];
+            } else {
+                return [$order, 'ASC'];
+            }
         }
     }
 
@@ -148,8 +157,10 @@ abstract class AbstractService extends AbstractServiceFactory
      * Counts and returns the number of elements available for the specified query. Page and limit parameters
      * are ignored but kept for compatibility with getList calls. The order parameter is also ignored since it
      * will have no impact on the final count.
+     *
      * @param array|null $filter The array of columns => values which should be filtered (in a WHERE.. OR.. fashion)
      * @param array|null $filterAnd The array of columns => values which should be filtered (in a WHERE.. AND.. fashion)
+     *
      * @return int The number of elements retrieved from the query
      */
     public function getFilteredCount($filter = null, $filterAnd = null)
@@ -165,19 +176,22 @@ abstract class AbstractService extends AbstractServiceFactory
     /**
      * Returns the list of elements based on the provided filters passed in parameters. Results are paginated (using the
      * $page and $limit combo), except when $limit is <= 0, in which case all results will be returned.
+     *
      * @param int $page The page number, starting at 1.
      * @param int $limit The maximum number of elements retrieved, or null to retrieve everything
      * @param array|null $order The order in which elements should be retrieved (['column' => 'ASC/DESC'])
      * @param array|null $filter The array of columns => values which should be filtered (in a WHERE.. OR.. fashion)
      * @param array|null $filterAnd The array of columns => values which should be filtered (in a WHERE.. AND.. fashion)
+     *
      * @return array An array of elements based on the provided search query
      */
     public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
     {
         $filterJoin = $filterLeft = null;
-        if (\is_callable(array($this->get('entity'), 'getFiltersForService'), false, $name)) {
-            list($filterJoin,$filterLeft,$filtersColumns) = $this->get('entity')->getFiltersForService();
+        if (\is_callable([$this->get('entity'), 'getFiltersForService'], false, $name)) {
+            [$filterJoin, $filterLeft, $filtersColumns] = $this->get('entity')->getFiltersForService();
         }
+
         return $this->get('table')->fetchAllFiltered(
             array_keys($this->get('entity')->getJsonArray()),
             $page,
@@ -192,7 +206,9 @@ abstract class AbstractService extends AbstractServiceFactory
 
     /**
      * Fetches and returns a specific entity based on its ID from the database, or null if no item was found.
+     *
      * @param int $id The element'd ID
+     *
      * @return array An associative array of the entity's data
      */
     public function getEntity($id)
@@ -202,9 +218,11 @@ abstract class AbstractService extends AbstractServiceFactory
 
     /**
      * Creates a new entity of the type of this class, where the fields have the value of the $data array.
+     *
      * @param array $data The object's data
      * @param bool $last Whether or not this will be the last element of a batch. Setting this to false will suspend
      *                   flushing to the database to increase performance during batch insertions.
+     *
      * @return object The created entity object
      */
     public function create($data, $last = true)
@@ -240,8 +258,10 @@ abstract class AbstractService extends AbstractServiceFactory
     /**
      * Updates an entity in the database. The entity will be fetched using the provided $id, and data will be reset
      * from $data. If you want to update only specific fields while keeping the existing data untouched, see patch()
+     *
      * @param int $id Entity's ID
      * @param array $data The new entity's data
+     *
      * @return object The new entity's object
      * @throws Exception If the entity does not exist, or doesn't belong to the ANR.
      * @see AbstractService::patch()
@@ -264,26 +284,7 @@ abstract class AbstractService extends AbstractServiceFactory
         // the existing ANR, and that we have the rights to edit it.
         // TODO: this part seems only belongs to FrontOffice as BackOffice doesn't have such functionality.
         if (!empty($data['anr'])) {
-            if ($entity->get('anr')->get('id') != $data['anr']) {
-                throw new Exception('Anr id error', 412);
-            }
-
-            /** @var UserAnrTable $userAnrTable */
-            $userAnrTable = $this->get('userAnrTable');
-            $rights = $userAnrTable->getEntityByFields([
-                'user' => $this->getConnectedUser()->getId(),
-                'anr' => $entity->anr->id,
-            ]);
-            $rwd = 0;
-            foreach ($rights as $right) {
-                if ($right->rwd == 1) {
-                    $rwd = 1;
-                }
-            }
-
-            if (!$rwd) {
-                throw new Exception('You are not authorized to do this action', 412);
-            }
+            $this->validateAnrPermissions($entity->getAnr(), [$data['anr']]);
         }
 
         // Filter fields we don't want to update, ever
@@ -313,8 +314,10 @@ abstract class AbstractService extends AbstractServiceFactory
     /**
      * Patches an entity in the database. This works similarly to the update() method, except that fields that are
      * not inside the $data array won't be touched, and their value will remain unchanged.
+     *
      * @param int $id The entity's ID
      * @param array $data The entity's data
+     *
      * @return object The updated object
      * @throws Exception If the entity does not exist, or doesn't belong to the ANR.
      */
@@ -328,28 +331,7 @@ abstract class AbstractService extends AbstractServiceFactory
         // If we try to override this object's ANR, make some sanity and security checks. Ensure the data's ANR matches
         // the existing ANR, and that we have the rights to edit it.
         if (!empty($data['anr'])) {
-            if ($entity->get('anr')->get('id') != $data['anr']) {
-                throw new Exception('Anr id error', 412);
-            }
-
-            /** @var UserAnrTable $userAnrTable */
-            $userAnrTable = $this->get('userAnrTable');
-            if ($userAnrTable) {
-                $rights = $userAnrTable->getEntityByFields([
-                    'user' => $this->getConnectedUser()->getId(),
-                    'anr' => $entity->anr->id,
-                ]);
-                $rwd = 0;
-                foreach ($rights as $right) {
-                    if ($right->rwd == 1) {
-                        $rwd = 1;
-                    }
-                }
-
-                if (!$rwd) {
-                    throw new Exception('You are not authorized to do this action', 412);
-                }
-            }
+            $this->validateAnrPermissions($entity->getAnr(), [$data['anr']]);
         }
 
         $entity->setDbAdapter($this->get('table')->getDb());
@@ -384,19 +366,24 @@ abstract class AbstractService extends AbstractServiceFactory
 
     /**
      * Deletes an element from the database from its id
+     *
      * @param int $id The object's ID
+     *
      * @return bool True if the deletion is successful, false otherwise
      */
     public function delete($id)
     {
         /** @var AbstractEntityTable $table */
         $table = $this->get('table');
+
         return $table->delete($id);
     }
 
     /**
      * Deletes multiple elements from the database from their IDs
+     *
      * @param array $data The objects to delete, as array
+     *
      * @return bool True if the deletion is successful, false otherwise
      */
     public function deleteList($data)
@@ -407,8 +394,10 @@ abstract class AbstractService extends AbstractServiceFactory
     /**
      * Deletes an element from the database if the ID and the ANR ID matches together, to avoid deleting an
      * item that doesn't belong to the passed ANR ID.
+     *
      * @param int $id The object's ID
      * @param int|null $anrId The ANR ID to filter with
+     *
      * @return bool True if the deletion is successful, false otherwise
      * @throws Exception If the ANR is invalid, or the user has no rights on the ANR, or the object's ANR ID mismatches
      */
@@ -416,26 +405,7 @@ abstract class AbstractService extends AbstractServiceFactory
     {
         if (!is_null($anrId)) {
             $entity = $this->get('table')->getEntity($id);
-            if ($entity->anr->id != $anrId) {
-                throw new Exception('Anr id error', 412);
-            }
-
-            /** @var UserAnrTable $userAnrTable */
-            $userAnrTable = $this->get('userAnrTable');
-            $rights = $userAnrTable->getEntityByFields([
-                'user' => $this->getConnectedUser()->getId(),
-                'anr' => $anrId,
-            ]);
-            $rwd = 0;
-            foreach ($rights as $right) {
-                if ($right->rwd == 1) {
-                    $rwd = 1;
-                }
-            }
-
-            if (!$rwd) {
-                throw new Exception('You are not authorized to do this action', 412);
-            }
+            $this->validateAnrPermissions($entity->getAnr(), [$anrId]);
         }
 
         return $this->delete($id);
@@ -444,37 +414,21 @@ abstract class AbstractService extends AbstractServiceFactory
     /**
      * Deletes multiple elements from the database if the ID and the ANR ID matches together, to avoid deleting an
      * item that doesn't belong to the passed ANR ID.
+     *
      * @param array $data The objects to delete
      * @param int|null $anrId The ANR ID to filter with
+     *
      * @return bool True if the deletion is successful, false otherwise
      * @throws Exception If the ANR is invalid, or the user has no rights on the ANR, or the object's ANR ID mismatches
      */
     public function deleteListFromAnr($data, $anrId = null)
     {
-        if (!is_null($anrId)) {
-            foreach ($data as $id) {
-                $entity = $this->get('table')->getEntity($id);
-                if ($entity->anr->id != $anrId) {
-                    throw new Exception('Anr id error', 412);
-                }
-            }
+        /** @var AnrTable|null $anrTable */
+        $anrTable = $this->get('anrTable');
+        if ($anrId !== null && $anrTable !== null) {
+            $anr = $anrTable->findById($anrId);
 
-            /** @var UserAnrTable $userAnrTable */
-            $userAnrTable = $this->get('userAnrTable');
-            $rights = $userAnrTable->getEntityByFields([
-                'user' => $this->getConnectedUser()->getId(),
-                'anr' => $anrId,
-            ]);
-            $rwd = 0;
-            foreach ($rights as $right) {
-                if ($right->rwd == 1) {
-                    $rwd = 1;
-                }
-            }
-
-            if (!$rwd) {
-                throw new Exception('You are not authorized to do this action', 412);
-            }
+            $this->validateAnrPermissions($anr, $data);
         }
 
         return $this->get('table')->deleteList($data);
@@ -483,25 +437,36 @@ abstract class AbstractService extends AbstractServiceFactory
     /**
      * Compares the fields values of two entities and return their differences. Note that common fields such as
      * creator, created_at, updated_at, ... are filtered out of the diff.
+     *
      * @param AbstractEntity $newEntity The new entity to compare
      * @param AbstractEntity $oldEntity The old entity to compare
+     *
      * @return array An array of strings with the difference in the following format: "key: oldValue => newValue"
      */
     public function compareEntities($newEntity, $oldEntity)
     {
         $deps = [];
         foreach ($this->dependencies as $dep) {
-            $propertyname = $dep;
+            $propertyName = $dep;
             $matching = [];
             if (preg_match("/(\[([a-z0-9]*)\])\(([a-z0-9]*)\)$/", $dep, $matching)) {//si c'est 0 c'est pas bon non plus
-                $propertyname = str_replace($matching[0], $matching[2], $dep);
+                $propertyName = str_replace($matching[0], $matching[2], $dep);
                 $dep = str_replace($matching[0], $matching[3], $dep);
             }
-            $deps[$propertyname] = $propertyname;
+            $deps[$propertyName] = $propertyName;
         }
 
         // Filter out values that will necessarily be different
-        $exceptions = ['creator', 'created_at', 'updater', 'updated_at', 'inputFilter', 'dbadapter', 'parameters', 'language'];
+        $exceptions = [
+            'creator',
+            'created_at',
+            'updater',
+            'updated_at',
+            'inputFilter',
+            'dbadapter',
+            'parameters',
+            'language',
+        ];
 
         $diff = [];
         foreach ($newEntity->getJsonArray() as $key => $value) {
@@ -528,6 +493,7 @@ abstract class AbstractService extends AbstractServiceFactory
 
     /**
      * Format and cleans up entities dependencies (relationships)
+     *
      * @param array $entity The entity data array
      * @param array $dependencies The entity's dependencies
      */
@@ -547,8 +513,10 @@ abstract class AbstractService extends AbstractServiceFactory
 
     /**
      * Defines and loads the entity's dependencies (relationship fields)
+     *
      * @param AbstractEntity $entity The entity to load
      * @param array $dependencies The array of dependencies fields (relationships)
+     *
      * @throws Exception
      */
     public function setDependencies(&$entity, $dependencies)
@@ -563,7 +531,8 @@ abstract class AbstractService extends AbstractServiceFactory
         foreach ($dependencies as $dependency) {
             $deptable = $propertyname = $dependency;
             $matching = [];
-            if (preg_match("/(\[([a-z0-9]*)\])\(([a-z0-9]*)\)$/", $deptable, $matching)) {//si c'est 0 c'est pas bon non plus
+            // si c'est 0 c'est pas bon non plus
+            if (preg_match("/(\[([a-z0-9]*)\])\(([a-z0-9]*)\)$/", $deptable, $matching)) {
                 $propertyname = str_replace($matching[0], $matching[2], $deptable);
                 $deptable = str_replace($matching[0], $matching[3], $deptable);
             }
@@ -573,7 +542,8 @@ abstract class AbstractService extends AbstractServiceFactory
                 if ($metadata->hasAssociation($propertyname)) {
                     $class = $metadata->getAssociationTargetClass($propertyname);
                     // TODO: remove the FrontOffice dependency from Core!
-                    if (ClassUtils::getRealClass($class) != 'Monarc\FrontOffice\Model\Entity\Anr') { //seems to have some bug with getDbadapter and anr and anr mustn t have uniqid or N identifier
+                    // seems to have some bug with getDbadapter and anr and anr mustn t have uniqid or N identifier
+                    if (ClassUtils::getRealClass($class) != 'Monarc\FrontOffice\Model\Entity\Anr') {
                         $valueIdentifier = $entity->getDbAdapter()
                             ->getClassMetadata(ClassUtils::getRealClass($class))
                             ->getIdentifierFieldNames();
@@ -665,6 +635,7 @@ abstract class AbstractService extends AbstractServiceFactory
 
     /**
      * Updates the position field of the element relative to the other elements and the provided direction.
+     *
      * @param string $field The position field name
      * @param AbstractEntity $entity The entity to move
      * @param string $direction The direction in which the entity moves (up / down)
@@ -678,15 +649,15 @@ abstract class AbstractService extends AbstractServiceFactory
             try {
                 $entityAbove = $table->getEntityByFields([
                     $field => $entity->$field,
-                    'position' => $entity->position - 1
+                    'position' => $entity->position - 1,
                 ]);
             } catch (QueryException $e) {
                 $entityAbove = $table->getEntityByFields([
                     $field => [
                         'uuid' => $entity->$field->getUuid(),
-                        'anr' => $entity->$field->anr->id
+                        'anr' => $entity->$field->anr->id,
                     ],
-                    'position' => $entity->position - 1
+                    'position' => $entity->position - 1,
                 ]);
             }
             if (count($entityAbove) == 1) {
@@ -697,37 +668,41 @@ abstract class AbstractService extends AbstractServiceFactory
 
             $entity->position = $entity->position - 1;
             $table->save($entity);
-        } else if ($direction == 'down') {
-            try {
-                $entityBelow = $table->getEntityByFields([
-                    $field => $entity->$field,
-                    'position' => $entity->position + 1
-                ]);
-            } catch (QueryException $e) {
-                $entityBelow = $table->getEntityByFields([
-                    $field => [
-                        'uuid' => $entity->$field->getUuid(),
-                        'anr' => $entity->$field->anr->id
-                    ],
-                    'position' => $entity->position + 1
-                ]);
-            }
-            if (count($entityBelow) == 1) {
-                $entityBelow = $entityBelow[0];
-                //file_put_contents('php://stderr', print_r(count($entityBelow), TRUE).PHP_EOL);
+        } else {
+            if ($direction == 'down') {
+                try {
+                    $entityBelow = $table->getEntityByFields([
+                        $field => $entity->$field,
+                        'position' => $entity->position + 1,
+                    ]);
+                } catch (QueryException $e) {
+                    $entityBelow = $table->getEntityByFields([
+                        $field => [
+                            'uuid' => $entity->$field->getUuid(),
+                            'anr' => $entity->$field->anr->id,
+                        ],
+                        'position' => $entity->position + 1,
+                    ]);
+                }
+                if (count($entityBelow) == 1) {
+                    $entityBelow = $entityBelow[0];
+                    //file_put_contents('php://stderr', print_r(count($entityBelow), TRUE).PHP_EOL);
 
-                $entityBelow->position = $entityBelow->position - 1;
-                $table->save($entityBelow);
+                    $entityBelow->position = $entityBelow->position - 1;
+                    $table->save($entityBelow);
 
-                $entity->position = $entity->position + 1;
-                $table->save($entity);
+                    $entity->position = $entity->position + 1;
+                    $table->save($entity);
+                }
             }
         }
     }
 
     /**
      * Returns the root entity of the provided entity by recursively calling getParent() on it.
+     *
      * @param AbstractEntity $entity
+     *
      * @return AbstractEntity The resulting parent entity, or itself if the entity has no parent
      */
     public function getRoot($entity)
@@ -742,6 +717,7 @@ abstract class AbstractService extends AbstractServiceFactory
 
     /**
      * Filter fields for a patch request by removing the forbidden fields list
+     *
      * @param array $data The fields data
      */
     protected function filterPatchFields(&$data)
@@ -757,6 +733,7 @@ abstract class AbstractService extends AbstractServiceFactory
 
     /**
      * Filter fields for a post/put request by removing the forbidden fields list
+     *
      * @param array $data The fields data
      * @param AbstractEntity $entity The entity
      * @param bool|array $forbiddenFields The fields to remove, or false
@@ -769,11 +746,12 @@ abstract class AbstractService extends AbstractServiceFactory
                 if (in_array($key, $forbiddenFields)) {
                     if (is_object($entity->$key)) {
                         if ($key !== 'anr' && $entity->$key->uuid != null) {
-                            if (in_array('anr', $this->get($key . 'Table')->getClassMetadata()->getIdentifierFieldNames())) {
+                            $properties = $this->get($key . 'Table')->getClassMetadata()->getIdentifierFieldNames();
+                            if (in_array('anr', $properties)) {
                                 if (isset($data['anr']) && $data['anr'] !== null) { // TO IMPROVE fo with uuid
                                     $data[$key] = $entity->$key ? [
                                         'uuid' => $entity->$key->getUuid(),
-                                        'anr' => $data['anr']
+                                        'anr' => $data['anr'],
                                     ] : null;
                                 } else {
                                     if ($entity->$key->anr !== null && $entity->$key->anr->id !== null) {
@@ -799,9 +777,11 @@ abstract class AbstractService extends AbstractServiceFactory
 
     /**
      * Verifies the consequences rates for the provided data and instance risk
+     *
      * @param int $anrId The ANR's ID
      * @param array $data The consequence data array
      * @param array $instanceRisk The instance risk data array
+     *
      * @throws Exception If there are incorrect values, return a comma-separated string of all the errors
      */
     protected function verifyRates($anrId, $data, $instanceRisk = null)
@@ -845,18 +825,24 @@ abstract class AbstractService extends AbstractServiceFactory
         if ($instanceRisk && isset($data['reductionAmount'])) {
             $reductionAmount = (int)$data['reductionAmount'];
 
-            $vulnerabilityRate = (isset($data['vulnerabilityRate'])) ? (int)$data['vulnerabilityRate'] : $instanceRisk['vulnerabilityRate'];
+            $vulnerabilityRate = isset($data['vulnerabilityRate'])
+                ? (int)$data['vulnerabilityRate']
+                : $instanceRisk['vulnerabilityRate'];
             if (($vulnerabilityRate != -1) && (($reductionAmount < 0) || ($reductionAmount > $vulnerabilityRate))) {
-                $errors[] = 'Value for reduction amount is not valid (min '.$data['vulnerabilityRate'].')';
+                $errors[] = 'Value for reduction amount is not valid (min ' . $data['vulnerabilityRate'] . ')';
             }
         }
 
         // TODO: Remove the part of the Operational risks scales.
-        // If we have C/I/D or R/O/L/F/P values, ensure they are within the min/max bounds of the corresponding scale impact
+        // If we have C/I/D or R/O/L/F/P values, ensure they are within the min/max bounds of the corresponding
+        // scale impact
         if (isset($data['c']) || isset($data['i']) || isset($data['d'])
-            || isset($data['brutR']) || isset($data['brutO']) || isset($data['brutL']) || isset($data['brutF']) || isset($data['brutP'])
-            || isset($data['netR']) || isset($data['netO']) || isset($data['netL']) || isset($data['netF']) || isset($data['netP'])
-            || isset($data['targetedR']) || isset($data['targetedO']) || isset($data['targetedL']) || isset($data['targetedF']) || isset($data['targetedP'])
+            || isset($data['brutR']) || isset($data['brutO']) || isset($data['brutL'])
+            || isset($data['brutF']) || isset($data['brutP'])
+            || isset($data['netR']) || isset($data['netO']) || isset($data['netL'])
+            || isset($data['netF']) || isset($data['netP'])
+            || isset($data['targetedR']) || isset($data['targetedO']) || isset($data['targetedL'])
+            || isset($data['targetedF']) || isset($data['targetedP'])
         ) {
             /** @var ScaleTable $scaleTable */
             $scaleTable = $this->get('scaleTable');
@@ -864,7 +850,26 @@ abstract class AbstractService extends AbstractServiceFactory
 
             $scaleImpact = $scaleImpact[0];
 
-            $fields = ['c', 'i', 'd', 'brutR', 'brutO', 'brutL', 'brutF', 'brutP', 'netR', 'netO', 'netL', 'netF', 'netP', 'targetedR', 'targetedO', 'targetedL', 'targetedF', 'targetedP'];
+            $fields = [
+                'c',
+                'i',
+                'd',
+                'brutR',
+                'brutO',
+                'brutL',
+                'brutF',
+                'brutP',
+                'netR',
+                'netO',
+                'netL',
+                'netF',
+                'netP',
+                'targetedR',
+                'targetedO',
+                'targetedL',
+                'targetedF',
+                'targetedP',
+            ];
 
             foreach ($fields as $field) {
                 if (isset($data[$field])) {
@@ -906,35 +911,43 @@ abstract class AbstractService extends AbstractServiceFactory
     /**
      * Encrypt the provided data using the specified key
      * This is used for import and exporting of files mainly
+     *
      * @param string $data The data to encrypt
      * @param string $key The key to use to encrypt the data
+     *
      * @return string The encrypted data
      */
     protected function encrypt($data, $key)
     {
         $encrypted = openssl_encrypt($data, 'AES-256-CBC', hash('sha512', $key));
+
         return $encrypted;
     }
 
     /**
      * Decrypt the provided data using the specified key
      * This is used for import and exporting of files mainly
+     *
      * @param string $data The data to decrypt
      * @param string $key The key to use to decrypt the data
+     *
      * @return string The decrypted data
      */
     protected function decrypt($data, $key)
     {
         $decrypted = openssl_decrypt($data, 'AES-256-CBC', hash('sha512', $key));
-        if (! $decrypted) {
+        if (!$decrypted) {
             $decrypted = openssl_decrypt($data, 'AES-256-ECB', hash('md5', $key));
         }
+
         return $decrypted;
     }
 
     /**
      * Computes and returns the Git version
+     *
      * @param string $type The format of version to retrieve (major / full)
+     *
      * @return string The version string
      */
     protected function getVersion($type = 'major')
@@ -957,5 +970,22 @@ abstract class AbstractService extends AbstractServiceFactory
     protected function getConnectedUser(): ?UserSuperClass
     {
         return $this->get('table')->getConnectedUser();
+    }
+
+    protected function validateAnrPermissions(AnrSuperClass $anr, array $entitiesIds): void
+    {
+        foreach ($entitiesIds as $id) {
+            $entity = $this->get('table')->getEntity($id);
+            if ($entity->getAnr()->getId() !== $anr->getId()) {
+                throw new Exception('Anr id error', 412);
+            }
+        }
+
+        /** @var UserAnrTable $userAnrTable */
+        $userAnrTable = $this->get('userAnrTable');
+        $userAnr = $userAnrTable->findByAnrAndUser($anr, $this->getConnectedUser());
+        if ($userAnr === null || !$userAnr->hasWriteAccess()) {
+            throw new Exception('You are not authorized to do this action', 412);
+        }
     }
 }
