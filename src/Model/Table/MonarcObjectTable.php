@@ -120,9 +120,9 @@ class MonarcObjectTable extends AbstractEntityTable
              WHERE  anr_id = :anrid
              AND    object_id = :oid'
         );
-        $stmt->execute([':anrid' => $anrid, ':oid' => $id]);
+        $count = $stmt->executeStatement([':anrid' => $anrid, ':oid' => $id]);
 
-        return $stmt->rowCount() > 0;
+        return $count > 0;
     }
 
     /**
