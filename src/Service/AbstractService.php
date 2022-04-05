@@ -1,9 +1,9 @@
 <?php
 /**
-* @link      https://github.com/monarc-project for the canonical source repository
-* @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
-* @license   MONARC is licensed under GNU Affero General Public License version 3
-*/
+ * @link      https://github.com/monarc-project for the canonical source repository
+ * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @license   MONARC is licensed under GNU Affero General Public License version 3
+ */
 
 namespace Monarc\Core\Service;
 
@@ -25,55 +25,61 @@ use Ramsey\Uuid\Uuid;
 use Doctrine\ORM\Query\QueryException;
 
 /**
-* TODO: refactor, clean up, but better to remove the class.
-* Abstract Service
-*
-* Class AbstractService
-* @package Monarc\Core\Service
-*/
+ * TODO: refactor, clean up, but better to remove the class.
+ * Abstract Service
+ *
+ * Class AbstractService
+ *
+ * @package Monarc\Core\Service
+ */
 abstract class AbstractService extends AbstractServiceFactory
 {
     use GetAndSet;
     use RiskTrait;
     
     /**
-    * The service factory used in this service
-    * @var AbstractServiceFactory|array|null
-    */
+     * The service factory used in this service
+     *
+     * @var AbstractServiceFactory|array|null
+     */
     protected $serviceFactory;
     
     /**
-    * The default table used in this service
-    * @var AbstractEntityTable
-    */
+     * The default table used in this service
+     *
+     * @var AbstractEntityTable
+     */
     protected $table;
     
     /**
-    * The default entity used in this service
-    * @var AbstractEntity
-    */
+     * The default entity used in this service
+     *
+     * @var AbstractEntity
+     */
     protected $entity;
     
     protected $label;
     
     /**
-    * The list of fields deleted during POST/PUT/PATCH
-    * @var array
-    */
+     * The list of fields deleted during POST/PUT/PATCH
+     *
+     * @var array
+     */
     protected $forbiddenFields = [];
     
     /**
-    * The list of fields corresponding to the entity's dependencies
-    * @var array
-    */
+     * The list of fields corresponding to the entity's dependencies
+     *
+     * @var array
+     */
     protected $dependencies = [];
     
     /**
-    * Constructor
-    *
-    * @param AbstractServiceFactory|array|null $serviceFactory The factory to use for this service, or an array or
-    * values to set on the Service variables.
-    */
+     * Constructor
+     *
+     * @param AbstractServiceFactory|array|null $serviceFactory The factory to use for this service, or an array or
+     *                                                          values to set on the Service variables.
+     */
     public function __construct($serviceFactory = null)
     {
         if (is_array($serviceFactory)) {
@@ -86,24 +92,25 @@ abstract class AbstractService extends AbstractServiceFactory
     }
     
     /**
-    * Returns the ServiceFactory attached to this service. The factory generally has the same name as the class
-    * appended with "Factory".
-    * @see AbstractServiceFactory
-    */
+     * Returns the ServiceFactory attached to this service. The factory generally has the same name as the class
+     * appended with "Factory".
+     *
+     * @see AbstractServiceFactory
+     */
     protected function getServiceFactory()
     {
         return $this->serviceFactory;
     }
     
     /**
-    * Parses the filter value coming from the frontend and returns an array of columns to filter. Basically, this
-    * method will construct an array where the keys are the columns, and the value of each key is the filter parameter.
-    *
-    * @param string $filter The value to look for
-    * @param array $columns An array of columns in which the value is searched
-    *
-    * @return array Key/pair array as per the description
-    */
+     * Parses the filter value coming from the frontend and returns an array of columns to filter. Basically, this
+     * method will construct an array where the keys are the columns, and the value of each key is the filter parameter.
+     *
+     * @param string $filter  The value to look for
+     * @param array  $columns An array of columns in which the value is searched
+     *
+     * @return array Key/pair array as per the description
+     */
     protected function parseFrontendFilter($filter, $columns = [])
     {
         $output = [];
@@ -117,14 +124,14 @@ abstract class AbstractService extends AbstractServiceFactory
     }
     
     /**
-    * Parses the order from the frontend in order to build SQL-compliant ORDER BY. The order passed by the frontend
-    * is the name of the column that we should sort the data with, eventually prepended with '-' when we need it in
-    * descending order (ascending otherwise).
-    *
-    * @param string $order The order requested by the frontend/API call
-    *
-    * @return array|null Returns null if $order is null, otherwise an array ['columnName', 'ASC/DESC']
-    */
+     * Parses the order from the frontend in order to build SQL-compliant ORDER BY. The order passed by the frontend
+     * is the name of the column that we should sort the data with, eventually prepended with '-' when we need it in
+     * descending order (ascending otherwise).
+     *
+     * @param string $order The order requested by the frontend/API call
+     *
+     * @return array|null Returns null if $order is null, otherwise an array ['columnName', 'ASC/DESC']
+     */
     protected function parseFrontendOrder($order)
     {
         // Fields in the ORM are using a CamelCase notation, whereas JSON fields use underscores. Convert it here in
@@ -153,15 +160,15 @@ abstract class AbstractService extends AbstractServiceFactory
     }
     
     /**
-    * Counts and returns the number of elements available for the specified query. Page and limit parameters
-    * are ignored but kept for compatibility with getList calls. The order parameter is also ignored since it
-    * will have no impact on the final count.
-    *
-    * @param array|null $filter The array of columns => values which should be filtered (in a WHERE.. OR.. fashion)
-    * @param array|null $filterAnd The array of columns => values which should be filtered (in a WHERE.. AND.. fashion)
-    *
-    * @return int The number of elements retrieved from the query
-    */
+     * Counts and returns the number of elements available for the specified query. Page and limit parameters
+     * are ignored but kept for compatibility with getList calls. The order parameter is also ignored since it
+     * will have no impact on the final count.
+     *
+     * @param array|null $filter    The array of columns => values which should be filtered (in a WHERE.. OR.. fashion)
+     * @param array|null $filterAnd The array of columns => values which should be filtered (in a WHERE.. AND.. fashion)
+     *
+     * @return int The number of elements retrieved from the query
+     */
     public function getFilteredCount($filter = null, $filterAnd = null)
     {
         // set limit to null because we want to count the total number of objects
@@ -173,17 +180,17 @@ abstract class AbstractService extends AbstractServiceFactory
     }
     
     /**
-    * Returns the list of elements based on the provided filters passed in parameters. Results are paginated (using the
-    * $page and $limit combo), except when $limit is <= 0, in which case all results will be returned.
-    *
-    * @param int $page The page number, starting at 1.
-    * @param int $limit The maximum number of elements retrieved, or null to retrieve everything
-    * @param array|null $order The order in which elements should be retrieved (['column' => 'ASC/DESC'])
-    * @param array|null $filter The array of columns => values which should be filtered (in a WHERE.. OR.. fashion)
-    * @param array|null $filterAnd The array of columns => values which should be filtered (in a WHERE.. AND.. fashion)
-    *
-    * @return array An array of elements based on the provided search query
-    */
+     * Returns the list of elements based on the provided filters passed in parameters. Results are paginated (using the
+     * $page and $limit combo), except when $limit is <= 0, in which case all results will be returned.
+     *
+     * @param int        $page      The page number, starting at 1.
+     * @param int        $limit     The maximum number of elements retrieved, or null to retrieve everything
+     * @param array|null $order     The order in which elements should be retrieved (['column' => 'ASC/DESC'])
+     * @param array|null $filter    The array of columns => values which should be filtered (in a WHERE.. OR.. fashion)
+     * @param array|null $filterAnd The array of columns => values which should be filtered (in a WHERE.. AND.. fashion)
+     *
+     * @return array An array of elements based on the provided search query
+     */
     public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
     {
         $filterJoin = $filterLeft = null;
@@ -204,36 +211,40 @@ abstract class AbstractService extends AbstractServiceFactory
     }
     
     /**
-    * Fetches and returns a specific entity based on its ID from the database, or null if no item was found.
-    *
-    * @param int $id The element'd ID
-    *
-    * @return array An associative array of the entity's data
-    */
+     * Fetches and returns a specific entity based on its ID from the database, or null if no item was found.
+     *
+     * @param int $id The element'd ID
+     *
+     * @return array An associative array of the entity's data
+     */
     public function getEntity($id)
     {
         return $this->get('table')->get($id);
     }
     
     /**
-    * Creates a new entity of the type of this class, where the fields have the value of the $data array.
-    *
-    * @param array $data The object's data
-    * @param bool $last Whether or not this will be the last element of a batch. Setting this to false will suspend
-    *                   flushing to the database to increase performance during batch insertions.
-    *
-    * @return object The created entity object
-    */
+     * Creates a new entity of the type of this class, where the fields have the value of the $data array.
+     *
+     * @param array $data The object's data
+     * @param bool  $last Whether or not this will be the last element of a batch. Setting this to false will suspend
+     *                    flushing to the database to increase performance during batch insertions.     
+     *
+     * @return object The created entity object
+     */
     public function create($data, $last = true)
     {
         $entity = $this->get('entity');
         
-        /** @var AbstractEntityTable $table */
+        /**
+ * @var AbstractEntityTable $table 
+*/
         $table = $this->get('table');
         
         // $class is already an entity instance created in AbstractServiceModelEntity.
         if (!$entity instanceof AbstractEntity || $table->getDb()->getEntityManager()->contains($entity)) {
-            /** @var AbstractEntity $entity */
+            /**
+ * @var AbstractEntity $entity 
+*/
             $entity = new $entity();
             
             $entity->setLanguage($this->getLanguage());
@@ -255,16 +266,16 @@ abstract class AbstractService extends AbstractServiceFactory
     }
     
     /**
-    * Updates an entity in the database. The entity will be fetched using the provided $id, and data will be reset
-    * from $data. If you want to update only specific fields while keeping the existing data untouched, see patch()
-    *
-    * @param int $id Entity's ID
-    * @param array $data The new entity's data
-    *
-    * @return object The new entity's object
-    * @throws Exception If the entity does not exist, or doesn't belong to the ANR.
-    * @see AbstractService::patch()
-    */
+     * Updates an entity in the database. The entity will be fetched using the provided $id, and data will be reset
+     * from $data. If you want to update only specific fields while keeping the existing data untouched, see patch()
+     *
+     * @param int   $id   Entity's ID
+     * @param array $data The new entity's data
+     *
+     * @return object The new entity's object
+     * @throws Exception If the entity does not exist, or doesn't belong to the ANR.
+     * @see    AbstractService::patch()
+     */
     public function update($id, $data)
     {
         // Make sure we have something to update
@@ -273,7 +284,9 @@ abstract class AbstractService extends AbstractServiceFactory
         }
         
         // Fetch the existing entity
-        /** @var AbstractEntity $entity */
+        /**
+ * @var AbstractEntity $entity 
+*/
         $entity = $this->get('table')->getEntity($id);
         if (!$entity) {
             throw new Exception('Entity does not exist', 412);
@@ -311,18 +324,20 @@ abstract class AbstractService extends AbstractServiceFactory
     }
     
     /**
-    * Patches an entity in the database. This works similarly to the update() method, except that fields that are
-    * not inside the $data array won't be touched, and their value will remain unchanged.
-    *
-    * @param int $id The entity's ID
-    * @param array $data The entity's data
-    *
-    * @return object The updated object
-    * @throws Exception If the entity does not exist, or doesn't belong to the ANR.
-    */
+     * Patches an entity in the database. This works similarly to the update() method, except that fields that are
+     * not inside the $data array won't be touched, and their value will remain unchanged.
+     *
+     * @param int   $id   The entity's ID
+     * @param array $data The entity's data
+     *
+     * @return object The updated object
+     * @throws Exception If the entity does not exist, or doesn't belong to the ANR.
+     */
     public function patch($id, $data)
     {
-        /** @var AbstractEntity $entity */
+        /**
+ * @var AbstractEntity $entity 
+*/
         $entity = $this->get('table')->getEntity($id);
         if (!$entity) {
             throw new Exception('Entity does not exist', 412);
@@ -364,42 +379,44 @@ abstract class AbstractService extends AbstractServiceFactory
     }
     
     /**
-    * Deletes an element from the database from its id
-    *
-    * @param int $id The object's ID
-    *
-    * @return bool True if the deletion is successful, false otherwise
-    */
+     * Deletes an element from the database from its id
+     *
+     * @param int $id The object's ID
+     *
+     * @return bool True if the deletion is successful, false otherwise
+     */
     public function delete($id)
     {
-        /** @var AbstractEntityTable $table */
+        /**
+ * @var AbstractEntityTable $table 
+*/
         $table = $this->get('table');
         
         return $table->delete($id);
     }
     
     /**
-    * Deletes multiple elements from the database from their IDs
-    *
-    * @param array $data The objects to delete, as array
-    *
-    * @return bool True if the deletion is successful, false otherwise
-    */
+     * Deletes multiple elements from the database from their IDs
+     *
+     * @param array $data The objects to delete, as array
+     *
+     * @return bool True if the deletion is successful, false otherwise
+     */
     public function deleteList($data)
     {
         return $this->get('table')->deleteList($data);
     }
     
     /**
-    * Deletes an element from the database if the ID and the ANR ID matches together, to avoid deleting an
-    * item that doesn't belong to the passed ANR ID.
-    *
-    * @param int $id The object's ID
-    * @param int|null $anrId The ANR ID to filter with
-    *
-    * @return bool True if the deletion is successful, false otherwise
-    * @throws Exception If the ANR is invalid, or the user has no rights on the ANR, or the object's ANR ID mismatches
-    */
+     * Deletes an element from the database if the ID and the ANR ID matches together, to avoid deleting an
+     * item that doesn't belong to the passed ANR ID.
+     *
+     * @param int      $id    The object's ID
+     * @param int|null $anrId The ANR ID to filter with
+     *
+     * @return bool True if the deletion is successful, false otherwise
+     * @throws Exception If the ANR is invalid, or the user has no rights on the ANR, or the object's ANR ID mismatches
+     */
     public function deleteFromAnr($id, $anrId = null)
     {
         if (!is_null($anrId)) {
@@ -408,12 +425,16 @@ abstract class AbstractService extends AbstractServiceFactory
                 throw new Exception('Anr id error', 412);
             }
             
-            /** @var UserAnrTable $userAnrTable */
+            /**
+ * @var UserAnrTable $userAnrTable 
+*/
             $userAnrTable = $this->get('userAnrTable');
-            $rights = $userAnrTable->getEntityByFields([
+            $rights = $userAnrTable->getEntityByFields(
+                [
                 'user' => $this->getConnectedUser()->getId(),
                 'anr' => $anrId,
-            ]);
+                ]
+            );
             $rwd = 0;
             foreach ($rights as $right) {
                 if ($right->rwd == 1) {
@@ -430,15 +451,15 @@ abstract class AbstractService extends AbstractServiceFactory
     }
     
     /**
-    * Deletes multiple elements from the database if the ID and the ANR ID matches together, to avoid deleting an
-    * item that doesn't belong to the passed ANR ID.
-    *
-    * @param array $data The objects to delete
-    * @param int|null $anrId The ANR ID to filter with
-    *
-    * @return bool True if the deletion is successful, false otherwise
-    * @throws Exception If the ANR is invalid, or the user has no rights on the ANR, or the object's ANR ID mismatches
-    */
+     * Deletes multiple elements from the database if the ID and the ANR ID matches together, to avoid deleting an
+     * item that doesn't belong to the passed ANR ID.
+     *
+     * @param array    $data  The objects to delete
+     * @param int|null $anrId The ANR ID to filter with
+     *
+     * @return bool True if the deletion is successful, false otherwise
+     * @throws Exception If the ANR is invalid, or the user has no rights on the ANR, or the object's ANR ID mismatches
+     */
     public function deleteListFromAnr($data, $anrId = null)
     {
         if (!is_null($anrId)) {
@@ -449,12 +470,16 @@ abstract class AbstractService extends AbstractServiceFactory
                 }
             }
             
-            /** @var UserAnrTable $userAnrTable */
+            /**
+ * @var UserAnrTable $userAnrTable 
+*/
             $userAnrTable = $this->get('userAnrTable');
-            $rights = $userAnrTable->getEntityByFields([
+            $rights = $userAnrTable->getEntityByFields(
+                [
                 'user' => $this->getConnectedUser()->getId(),
                 'anr' => $anrId,
-            ]);
+                ]
+            );
             $rwd = 0;
             foreach ($rights as $right) {
                 if ($right->rwd == 1) {
@@ -471,14 +496,14 @@ abstract class AbstractService extends AbstractServiceFactory
     }
     
     /**
-    * Compares the fields values of two entities and return their differences. Note that common fields such as
-    * creator, created_at, updated_at, ... are filtered out of the diff.
-    *
-    * @param AbstractEntity $newEntity The new entity to compare
-    * @param AbstractEntity $oldEntity The old entity to compare
-    *
-    * @return array An array of strings with the difference in the following format: "key: oldValue => newValue"
-    */
+     * Compares the fields values of two entities and return their differences. Note that common fields such as
+     * creator, created_at, updated_at, ... are filtered out of the diff.
+     *
+     * @param AbstractEntity $newEntity The new entity to compare
+     * @param AbstractEntity $oldEntity The old entity to compare
+     *
+     * @return array An array of strings with the difference in the following format: "key: oldValue => newValue"
+     */
     public function compareEntities($newEntity, $oldEntity)
     {
         $deps = [];
@@ -528,11 +553,11 @@ abstract class AbstractService extends AbstractServiceFactory
     }
     
     /**
-    * Format and cleans up entities dependencies (relationships)
-    *
-    * @param array $entity The entity data array
-    * @param array $dependencies The entity's dependencies
-    */
+     * Format and cleans up entities dependencies (relationships)
+     *
+     * @param array $entity       The entity data array
+     * @param array $dependencies The entity's dependencies
+     */
     protected function formatDependencies(&$entity, $dependencies)
     {
         foreach ($dependencies as $dependency) {
@@ -548,13 +573,13 @@ abstract class AbstractService extends AbstractServiceFactory
     }
     
     /**
-    * Defines and loads the entity's dependencies (relationship fields)
-    *
-    * @param AbstractEntity $entity The entity to load
-    * @param array $dependencies The array of dependencies fields (relationships)
-    *
-    * @throws Exception
-    */
+     * Defines and loads the entity's dependencies (relationship fields)
+     *
+     * @param AbstractEntity $entity       The entity to load
+     * @param array          $dependencies The array of dependencies fields (relationships)
+     *
+     * @throws Exception
+     */
     public function setDependencies(&$entity, $dependencies)
     {
         $db = $entity->getDbAdapter();
@@ -581,209 +606,219 @@ abstract class AbstractService extends AbstractServiceFactory
                     // seems to have some bug with getDbadapter and anr and anr mustn t have uniqid or N identifier
                     if (ClassUtils::getRealClass($class) != 'Monarc\FrontOffice\Model\Entity\Anr') {
                         $valueIdentifier = $entity->getDbAdapter()
-                        ->getClassMetadata(ClassUtils::getRealClass($class))
-                        ->getIdentifierFieldNames();
+                            ->getClassMetadata(ClassUtils::getRealClass($class))
+                            ->getIdentifierFieldNames();
                     } else { //fetch the identifiers of the value to set
                         $valueIdentifier = null;
                     }
                     
                     if (!is_array($value) || isset($value['id']) || isset($value['uuid'])) {
                         if ($valueIdentifier !== null
-                        && (
-                            isset($value['uuid'])
-                            || (\is_string($value) && Uuid::isValid($value))
-                            )
+                            && (isset($value['uuid'])
+                            || (\is_string($value) && Uuid::isValid($value)))
                         ) {
                             if (in_array('anr', $valueIdentifier, true)) {
                                 if (isset($value['anr'])
-                                && (is_int($value['anr']) || $value['anr'] instanceof AnrSuperClass)
-                            ) {
-                                $anrParamValue = $value['anr'];
+                                    && (is_int($value['anr']) || $value['anr'] instanceof AnrSuperClass)
+                                ) {
+                                    $anrParamValue = $value['anr'];
+                                } else {
+                                    $anrParamValue = is_int($entity->anr) ? $entity->anr : $entity->anr->getId();
+                                }
+                                $dep = $db->getReference(
+                                    $class, [
+                                    'uuid' => $value['uuid'] ?? $value,
+                                    'anr' => $anrParamValue,
+                                    ]
+                                );
                             } else {
-                                $anrParamValue = is_int($entity->anr) ? $entity->anr : $entity->anr->getId();
+                                $dep = $db->getReference($class, $value['uuid'] ?? $value);
                             }
-                            $dep = $db->getReference($class, [
-                                'uuid' => $value['uuid'] ?? $value,
-                                'anr' => $anrParamValue,
-                            ]);
                         } else {
-                            $dep = $db->getReference($class, $value['uuid'] ?? $value);
+                            $dep = $db->getReference($class, $value['id'] ?? $value);
                         }
-                    } else {
-                        $dep = $db->getReference($class, $value['id'] ?? $value);
-                    }
                     
-                    if (isset($dep->anr, $entity->anr) && $dep->anr instanceof AnrSuperClass) {
-                        $depAnrId = $dep->anr->id;
-                        $entityAnrId = is_int($entity->anr) ? $entity->anr : $entity->anr->id;
-                        if ($depAnrId !== $entityAnrId) {
-                            throw new Exception('You are not authorized to use this dependency', 412);
+                        if (isset($dep->anr, $entity->anr) && $dep->anr instanceof AnrSuperClass) {
+                            $depAnrId = $dep->anr->id;
+                            $entityAnrId = is_int($entity->anr) ? $entity->anr : $entity->anr->id;
+                            if ($depAnrId !== $entityAnrId) {
+                                throw new Exception('You are not authorized to use this dependency', 412);
+                            }
+                        }
+                        if (!$dep->id && !$dep->uuid) {
+                            throw new Exception('Entity does not exist', 412);
+                        }
+                        $entity->set($propertyname, $dep);
+                    } elseif (!array_key_exists('id', $value)) {
+                        $a_dep = [];
+                        try {
+                            $dep = $db->getReference($class, $value);
+                            $entity->set($propertyname, $dep);
+                        } catch (\Exception $e) {
+                            foreach ($value as $v) {
+                                if ($v !== null && !empty($v) && !is_object($v)) {
+                                    $dep = $db->getReference($class, isset($v['uuid']) ? $v['uuid'] : $v);
+                                    if (!$dep->id && !$dep->uuid) {
+                                        throw new Exception('Entity does not exist', 412);
+                                    }
+                                    $a_dep[] = $dep;
+                                }
+                            }
+                            $entity->set($propertyname, $a_dep);
                         }
                     }
-                    if (!$dep->id && !$dep->uuid) {
-                        throw new Exception('Entity does not exist', 412);
-                    }
-                    $entity->set($propertyname, $dep);
-                } elseif (!array_key_exists('id', $value)) {
-                    $a_dep = [];
-                    try {
-                        $dep = $db->getReference($class, $value);
-                        $entity->set($propertyname, $dep);
-                    } catch (\Exception $e) {
+                } else { // DEPRECATED
+                    $tableName = $deptable . 'Table';
+                    $method = 'set' . ucfirst($propertyname);
+                    if (!is_array($value) || isset($value['id'])) {
+                        $dep = $this->get($tableName)->getReference(isset($value['id']) ? $value['id'] : $value);
+                        if (!$dep->id) {
+                            throw new Exception('Entity does not exist', 412);
+                        }
+                        $entity->$method($dep);
+                    } elseif (!array_key_exists('id', $value)) {
+                        $a_dep = [];
                         foreach ($value as $v) {
                             if ($v !== null && !empty($v) && !is_object($v)) {
-                                $dep = $db->getReference($class, isset($v['uuid']) ? $v['uuid'] : $v);
-                                if (!$dep->id && !$dep->uuid) {
+                                $dep = $this->get($tableName)->getReference($v);
+                                if (!$dep->id) {
                                     throw new Exception('Entity does not exist', 412);
                                 }
                                 $a_dep[] = $dep;
                             }
                         }
-                        $entity->set($propertyname, $a_dep);
+                        $entity->$method($a_dep);
                     }
-                }
-            } else { // DEPRECATED
-                $tableName = $deptable . 'Table';
-                $method = 'set' . ucfirst($propertyname);
-                if (!is_array($value) || isset($value['id'])) {
-                    $dep = $this->get($tableName)->getReference(isset($value['id']) ? $value['id'] : $value);
-                    if (!$dep->id) {
-                        throw new Exception('Entity does not exist', 412);
-                    }
-                    $entity->$method($dep);
-                } elseif (!array_key_exists('id', $value)) {
-                    $a_dep = [];
-                    foreach ($value as $v) {
-                        if ($v !== null && !empty($v) && !is_object($v)) {
-                            $dep = $this->get($tableName)->getReference($v);
-                            if (!$dep->id) {
-                                throw new Exception('Entity does not exist', 412);
-                            }
-                            $a_dep[] = $dep;
-                        }
-                    }
-                    $entity->$method($a_dep);
                 }
             }
         }
     }
-}
 
-/**
-* Updates the position field of the element relative to the other elements and the provided direction.
-*
-* @param string $field The position field name
-* @param AbstractEntity $entity The entity to move
-* @param string $direction The direction in which the entity moves (up / down)
-*/
-protected function manageRelativePositionUpdate($field, $entity, $direction)
-{
-    /** @var ObjectObjectTable $table */
-    $table = $this->get('table');
+    /**
+     Updates the position field of the element relative to the other elements and the provided direction.
     
-    if ($direction == 'up') {
-        try {
-            $entityAbove = $table->getEntityByFields([
-                $field => $entity->$field,
-                'position' => $entity->position - 1,
-            ]);
-        } catch (QueryException $e) {
-            $entityAbove = $table->getEntityByFields([
-                $field => [
+     @param string         $field     The position field name
+     @param AbstractEntity $entity    The entity to move
+     @param string         $direction The direction in which the entity moves (up / down)
+     */
+    protected function manageRelativePositionUpdate($field, $entity, $direction)
+    {
+        /**
+ * @var ObjectObjectTable $table 
+*/
+        $table = $this->get('table');
+    
+        if ($direction == 'up') {
+            try {
+                $entityAbove = $table->getEntityByFields(
+                    [
+                    $field => $entity->$field,
+                    'position' => $entity->position - 1,
+                    ]
+                );
+            } catch (QueryException $e) {
+                $entityAbove = $table->getEntityByFields(
+                    [
+                    $field => [
                     'uuid' => $entity->$field->getUuid(),
                     'anr' => $entity->$field->anr->id,
-                ],
-                'position' => $entity->position - 1,
-            ]);
-        }
-        if (count($entityAbove) == 1) {
-            $entityAbove = $entityAbove[0];
-            $entityAbove->position = $entityAbove->position + 1;
-            $table->save($entityAbove);
-        }
+                    ],
+                    'position' => $entity->position - 1,
+                    ]
+                );
+            }
+            if (count($entityAbove) == 1) {
+                $entityAbove = $entityAbove[0];
+                $entityAbove->position = $entityAbove->position + 1;
+                $table->save($entityAbove);
+            }
         
-        $entity->position = $entity->position - 1;
-        $table->save($entity);
-    } elseif ($direction == 'down') {
-        try {
-            $entityBelow = $table->getEntityByFields([
-                $field => $entity->$field,
-                'position' => $entity->position + 1
-            ]);
-        } catch (QueryException $e) {
-            $entityBelow = $table->getEntityByFields([
-                $field => [
+            $entity->position = $entity->position - 1;
+            $table->save($entity);
+        } elseif ($direction == 'down') {
+            try {
+                $entityBelow = $table->getEntityByFields(
+                    [
+                    $field => $entity->$field,
+                    'position' => $entity->position + 1
+                    ]
+                );
+            } catch (QueryException $e) {
+                $entityBelow = $table->getEntityByFields(
+                    [
+                    $field => [
                     'uuid' => $entity->$field->getUuid(),
                     'anr' => $entity->$field->anr->id
-                ],
-                'position' => $entity->position + 1
-            ]);
-        }
-        if (count($entityBelow) == 1) {
-            $entityBelow = $entityBelow[0];
-            //file_put_contents('php://stderr', print_r(count($entityBelow), TRUE).PHP_EOL);
+                    ],
+                    'position' => $entity->position + 1
+                    ]
+                );
+            }
+            if (count($entityBelow) == 1) {
+                $entityBelow = $entityBelow[0];
+                //file_put_contents('php://stderr', print_r(count($entityBelow), TRUE).PHP_EOL);
             
-            $entityBelow->position = $entityBelow->position - 1;
-            $table->save($entityBelow);
+                $entityBelow->position = $entityBelow->position - 1;
+                $table->save($entityBelow);
             
-            $entity->position = $entity->position + 1;
-            $table->save($entity);
-        }
-    }
-}
-
-/**
-* Returns the root entity of the provided entity by recursively calling getParent() on it.
-*
-* @param AbstractEntity $entity
-*
-* @return AbstractEntity The resulting parent entity, or itself if the entity has no parent
-*/
-public function getRoot($entity)
-{
-    if (!is_null($entity->getParent())) {
-        return $this->getRoot($entity->getParent());
-    } else {
-        return $entity;
-    }
-}
-
-
-/**
-* Filter fields for a patch request by removing the forbidden fields list
-*
-* @param array $data The fields data
-*/
-protected function filterPatchFields(&$data)
-{
-    if (is_array($data)) {
-        foreach (array_keys($data) as $key) {
-            if (in_array($key, $this->forbiddenFields)) {
-                unset($data[$key]);
+                $entity->position = $entity->position + 1;
+                $table->save($entity);
             }
         }
     }
-}
 
-/**
-* Filter fields for a post/put request by removing the forbidden fields list
-*
-* @param array $data The fields data
-* @param AbstractEntity $entity The entity
-* @param bool|array $forbiddenFields The fields to remove, or false
-*/
-protected function filterPostFields(&$data, $entity, $forbiddenFields = false)
-{
-    $forbiddenFields = (!$forbiddenFields) ? $this->forbiddenFields : $forbiddenFields;
-    if (is_array($data)) {
-        foreach (array_keys($data) as $key) {
-            if (in_array($key, $forbiddenFields)) {
-                if (is_object($entity->$key)) {
-                    if ($key !== 'anr' && $entity->$key->uuid != null) {
-                        $properties = $this->get($key . 'Table')->getClassMetadata()->getIdentifierFieldNames();
-                        if (in_array('anr', $properties)) {
-                            if (isset($data['anr']) && $data['anr'] !== null) { // TO IMPROVE fo with uuid
-                                $data[$key] = $entity->$key ? [
+    /**
+     Returns the root entity of the provided entity by recursively calling getParent() on it.
+    
+     @param AbstractEntity $entity
+    
+     @return AbstractEntity The resulting parent entity, or itself if the entity has no parent
+     */
+    public function getRoot($entity)
+    {
+        if (!is_null($entity->getParent())) {
+            return $this->getRoot($entity->getParent());
+        } else {
+            return $entity;
+        }
+    }
+
+
+    /**
+     Filter fields for a patch request by removing the forbidden fields list
+    
+     @param array $data The fields data
+     */
+    protected function filterPatchFields(&$data)
+    {
+        if (is_array($data)) {
+            foreach (array_keys($data) as $key) {
+                if (in_array($key, $this->forbiddenFields)) {
+                    unset($data[$key]);
+                }
+            }
+        }
+    }
+
+    /**
+     Filter fields for a post/put request by removing the forbidden fields list
+    
+     @param array          $data            The fields data
+     @param AbstractEntity $entity          The entity
+     @param bool|array     $forbiddenFields The fields to remove, or false
+     */
+    protected function filterPostFields(&$data, $entity, $forbiddenFields = false)
+    {
+        $forbiddenFields = (!$forbiddenFields) ? $this->forbiddenFields : $forbiddenFields;
+        if (is_array($data)) {
+            foreach (array_keys($data) as $key) {
+                if (in_array($key, $forbiddenFields)) {
+                    if (is_object($entity->$key)) {
+                        if ($key !== 'anr' && $entity->$key->uuid != null) {
+                            $properties = $this->get($key . 'Table')->getClassMetadata()->getIdentifierFieldNames();
+                            if (in_array('anr', $properties)) {
+                                if (isset($data['anr']) && $data['anr'] !== null) { // TO IMPROVE fo with uuid
+                                    $data[$key] = $entity->$key ? [
                                     'uuid' => $entity->$key->getUuid(),
                                     'anr' => $data['anr'],
                                     ] : null;
@@ -793,84 +828,88 @@ protected function filterPostFields(&$data, $entity, $forbiddenFields = false)
                                             'uuid' => $entity->$key->getUuid(),
                                             'anr' => $entity->$key->getAnr()->getId(),
                                             ] : null;
-                                        }
                                     }
-                                } else {// bo with uuid
-                                    $data[$key] = $entity->$key ? $entity->$key->getUuid() : null;
                                 }
-                            } else {//standard case
-                                $data[$key] = $entity->$key ? $entity->$key->getId() : null;
+                            } else {// bo with uuid
+                                $data[$key] = $entity->$key ? $entity->$key->getUuid() : null;
                             }
-                        } else {
-                            $data[$key] = $entity->$key;
+                        } else {//standard case
+                            $data[$key] = $entity->$key ? $entity->$key->getId() : null;
                         }
+                    } else {
+                        $data[$key] = $entity->$key;
                     }
                 }
             }
         }
+    }
         
         /**
-        * Verifies the consequences rates for the provided data and instance risk
-        *
-        * @param int $anrId The ANR's ID
-        * @param array $data The consequence data array
-        * @param array $instanceRisk The instance risk data array
-        *
-        * @throws Exception If there are incorrect values, return a comma-separated string of all the errors
-        */
-        protected function verifyRates($anrId, $data, $instanceRisk = null)
-        {
-            // TODO: Ensure that this method is never called inside a loop
-            // TODO: Optimizations: Fetch all threats directly instead of performing one query for each scale type
-            $errors = [];
-            $scaleThreat = $scaleVul = $scaleImpact = null;
+         * Verifies the consequences rates for the provided data and instance risk
+         *
+         * @param int   $anrId        The ANR's ID
+         * @param array $data         The consequence data array
+         * @param array $instanceRisk The instance risk data array
+         *
+         * @throws Exception If there are incorrect values, return a comma-separated string of all the errors
+         */
+    protected function verifyRates($anrId, $data, $instanceRisk = null)
+    {
+        // TODO: Ensure that this method is never called inside a loop
+        // TODO: Optimizations: Fetch all threats directly instead of performing one query for each scale type
+        $errors = [];
+        $scaleThreat = $scaleVul = $scaleImpact = null;
             
-            // Ensure threat rate is within valid bounds
-            if (isset($data['threatRate'])) {
-                /** @var ScaleTable $scaleTable */
-                $scaleTable = $this->get('scaleTable');
-                $scaleThreat = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => Scale::TYPE_THREAT]);
+        // Ensure threat rate is within valid bounds
+        if (isset($data['threatRate'])) {
+            /**
+ * @var ScaleTable $scaleTable 
+*/
+            $scaleTable = $this->get('scaleTable');
+            $scaleThreat = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => Scale::TYPE_THREAT]);
                 
-                $scaleThreat = $scaleThreat[0];
+            $scaleThreat = $scaleThreat[0];
                 
-                $prob = (int)$data['threatRate'];
+            $prob = (int)$data['threatRate'];
                 
-                if (($prob != -1) && (($prob < $scaleThreat->get('min')) || ($prob > $scaleThreat->get('max')))) {
-                    $errors[] = 'Value for probability is not valid';
-                }
+            if (($prob != -1) && (($prob < $scaleThreat->get('min')) || ($prob > $scaleThreat->get('max')))) {
+                $errors[] = 'Value for probability is not valid';
             }
+        }
             
-            // Ensure vulnerability rate is within valid bounds
-            if (isset($data['vulnerabilityRate'])) {
-                /** @var ScaleTable $scaleTable */
-                $scaleTable = $this->get('scaleTable');
-                $scaleVul = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => Scale::TYPE_VULNERABILITY]);
+        // Ensure vulnerability rate is within valid bounds
+        if (isset($data['vulnerabilityRate'])) {
+            /**
+ * @var ScaleTable $scaleTable 
+*/
+            $scaleTable = $this->get('scaleTable');
+            $scaleVul = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => Scale::TYPE_VULNERABILITY]);
                 
-                $scaleVul = $scaleVul[0];
+            $scaleVul = $scaleVul[0];
                 
-                $prob = (int)$data['vulnerabilityRate'];
+            $prob = (int)$data['vulnerabilityRate'];
                 
-                if (($prob != -1) && (($prob < $scaleVul->get('min')) || ($prob > $scaleVul->get('max')))) {
-                    $errors[] = 'Value for qualification is not valid';
-                }
+            if (($prob != -1) && (($prob < $scaleVul->get('min')) || ($prob > $scaleVul->get('max')))) {
+                $errors[] = 'Value for qualification is not valid';
             }
+        }
             
-            // If an instance risk is passed, make sure the reduction amount is not higher than the vulnerability rate
-            if ($instanceRisk && isset($data['reductionAmount'])) {
-                $reductionAmount = (int)$data['reductionAmount'];
+        // If an instance risk is passed, make sure the reduction amount is not higher than the vulnerability rate
+        if ($instanceRisk && isset($data['reductionAmount'])) {
+            $reductionAmount = (int)$data['reductionAmount'];
                 
-                $vulnerabilityRate = isset($data['vulnerabilityRate'])
-                ? (int)$data['vulnerabilityRate']
-                : $instanceRisk['vulnerabilityRate'];
-                if (($vulnerabilityRate != -1) && (($reductionAmount < 0) || ($reductionAmount > $vulnerabilityRate))) {
-                    $errors[] = 'Value for reduction amount is not valid (min ' . $data['vulnerabilityRate'] . ')';
-                }
+            $vulnerabilityRate = isset($data['vulnerabilityRate'])
+            ? (int)$data['vulnerabilityRate']
+            : $instanceRisk['vulnerabilityRate'];
+            if (($vulnerabilityRate != -1) && (($reductionAmount < 0) || ($reductionAmount > $vulnerabilityRate))) {
+                $errors[] = 'Value for reduction amount is not valid (min ' . $data['vulnerabilityRate'] . ')';
             }
+        }
             
-            // TODO: Remove the part of the Operational risks scales.
-            // If we have C/I/D or R/O/L/F/P values, ensure they are within the min/max bounds of the corresponding
-            // scale impact
-            if (isset($data['c']) || isset($data['i']) || isset($data['d'])
+        // TODO: Remove the part of the Operational risks scales.
+        // If we have C/I/D or R/O/L/F/P values, ensure they are within the min/max bounds of the corresponding
+        // scale impact
+        if (isset($data['c']) || isset($data['i']) || isset($data['d'])
             || isset($data['brutR']) || isset($data['brutO']) || isset($data['brutL'])
             || isset($data['brutF']) || isset($data['brutP'])
             || isset($data['netR']) || isset($data['netO']) || isset($data['netL'])
@@ -878,31 +917,33 @@ protected function filterPostFields(&$data, $entity, $forbiddenFields = false)
             || isset($data['targetedR']) || isset($data['targetedO']) || isset($data['targetedL'])
             || isset($data['targetedF']) || isset($data['targetedP'])
         ) {
-            /** @var ScaleTable $scaleTable */
+            /**
+ * @var ScaleTable $scaleTable 
+*/
             $scaleTable = $this->get('scaleTable');
             $scaleImpact = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => Scale::TYPE_IMPACT]);
             
             $scaleImpact = $scaleImpact[0];
             
             $fields = [
-                'c',
-                'i',
-                'd',
-                'brutR',
-                'brutO',
-                'brutL',
-                'brutF',
-                'brutP',
-                'netR',
-                'netO',
-                'netL',
-                'netF',
-                'netP',
-                'targetedR',
-                'targetedO',
-                'targetedL',
-                'targetedF',
-                'targetedP',
+            'c',
+            'i',
+            'd',
+            'brutR',
+            'brutO',
+            'brutL',
+            'brutF',
+            'brutP',
+            'netR',
+            'netO',
+            'netL',
+            'netF',
+            'netP',
+            'targetedR',
+            'targetedO',
+            'targetedL',
+            'targetedF',
+            'targetedP',
             ];
             
             foreach ($fields as $field) {
@@ -918,7 +959,9 @@ protected function filterPostFields(&$data, $entity, $forbiddenFields = false)
         // If we have raw/net/target probability, ensure the value is within valid bounds
         if (isset($data['brutProb']) || isset($data['netProb']) || isset($data['targetedProb'])) {
             if (is_null($scaleThreat)) {
-                /** @var ScaleTable $scaleTable */
+                /**
+ * @var ScaleTable $scaleTable 
+*/
                 $scaleTable = $this->get('scaleTable');
                 $scaleThreat = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => Scale::TYPE_THREAT]);
                 $scaleThreat = $scaleThreat[0];
@@ -943,14 +986,14 @@ protected function filterPostFields(&$data, $entity, $forbiddenFields = false)
     }
     
     /**
-    * Encrypt the provided data using the specified key
-    * This is used for import and exporting of files mainly
-    *
-    * @param string $data The data to encrypt
-    * @param string $key The key to use to encrypt the data
-    *
-    * @return string The encrypted data
-    */
+     * Encrypt the provided data using the specified key
+     * This is used for import and exporting of files mainly
+     *
+     * @param string $data The data to encrypt
+     * @param string $key  The key to use to encrypt the data
+     *
+     * @return string The encrypted data
+     */
     protected function encrypt($data, $key)
     {
         $encrypted = openssl_encrypt($data, 'AES-256-CBC', hash('sha512', $key));
@@ -959,14 +1002,14 @@ protected function filterPostFields(&$data, $entity, $forbiddenFields = false)
     }
     
     /**
-    * Decrypt the provided data using the specified key
-    * This is used for import and exporting of files mainly
-    *
-    * @param string $data The data to decrypt
-    * @param string $key The key to use to decrypt the data
-    *
-    * @return string The decrypted data
-    */
+     * Decrypt the provided data using the specified key
+     * This is used for import and exporting of files mainly
+     *
+     * @param string $data The data to decrypt
+     * @param string $key  The key to use to decrypt the data
+     *
+     * @return string The decrypted data
+     */
     protected function decrypt($data, $key)
     {
         $decrypted = openssl_decrypt($data, 'AES-256-CBC', hash('sha512', $key));
@@ -978,20 +1021,20 @@ protected function filterPostFields(&$data, $entity, $forbiddenFields = false)
     }
     
     /**
-    * Computes and returns the Git version
-    *
-    * @param string $type The format of version to retrieve (major / full)
-    *
-    * @return string The version string
-    */
+     * Computes and returns the Git version
+     *
+     * @param string $type The format of version to retrieve (major / full)
+     *
+     * @return string The version string
+     */
     protected function getVersion($type = 'major')
     {
         switch (strtolower($type)) {
-            case 'full':
+        case 'full':
             return isset($this->monarcConf['version']) ? $this->monarcConf['version'] : null;
             break;
-            default:
-            case 'major':
+        default:
+        case 'major':
             if (!empty($this->monarcConf['version'])) {
                 return implode('.', array_slice(explode('.', $this->monarcConf['version']), 0, 2));
             } else {
@@ -1015,7 +1058,9 @@ protected function filterPostFields(&$data, $entity, $forbiddenFields = false)
             }
         }
         
-        /** @var UserAnrTable $userAnrTable */
+        /**
+ * @var UserAnrTable $userAnrTable 
+*/
         $userAnrTable = $this->get('userAnrTable');
         $userAnr = $userAnrTable->findByAnrAndUser($anr, $this->getConnectedUser());
         if ($userAnr === null || !$userAnr->hasWriteAccess()) {
