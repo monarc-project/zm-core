@@ -14,7 +14,6 @@ use Monarc\Core\Model\Entity\Scale;
 use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Model\GetAndSet;
 use Monarc\Core\Model\Table\AbstractEntityTable;
-use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\ObjectObjectTable;
 use Monarc\Core\Model\Table\ScaleTable;
 use Monarc\Core\Traits\RiskTrait;
@@ -143,14 +142,14 @@ abstract class AbstractService extends AbstractServiceFactory
         }
 
         if ($order == null) {
-            return null;
-        } else {
-            if (substr($order, 0, 1) == '-') {
-                return [substr($order, 1), 'DESC'];
-            } else {
-                return [$order, 'ASC'];
-            }
-        }
+             return null;
+         } else {
+             if (substr($order, 0, 1) == '-') {
+                 return [substr($order, 1), 'DESC'];
+             } else {
+                 return [$order, 'ASC'];
+             }
+         }
     }
 
     /**
@@ -405,7 +404,26 @@ abstract class AbstractService extends AbstractServiceFactory
     {
         if (!is_null($anrId)) {
             $entity = $this->get('table')->getEntity($id);
-            $this->validateAnrPermissions($entity->getAnr(), [$anrId]);
+            if ($entity->anr->id != $anrId) {
+                throw new Exception('Anr id error', 412);
+            }
+
+            /** @var UserAnrTable $userAnrTable */
+            $userAnrTable = $this->get('userAnrTable');
+            $rights = $userAnrTable->getEntityByFields([
+                'user' => $this->getConnectedUser()->getId(),
+                'anr' => $anrId,
+            ]);
+            $rwd = 0;
+            foreach ($rights as $right) {
+                if ($right->rwd == 1) {
+                    $rwd = 1;
+                }
+            }
+
+            if (!$rwd) {
+                throw new Exception('You are not authorized to do this action', 412);
+            }
         }
 
         return $this->delete($id);
@@ -423,12 +441,30 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     public function deleteListFromAnr($data, $anrId = null)
     {
-        /** @var AnrTable|null $anrTable */
-        $anrTable = $this->get('anrTable');
-        if ($anrId !== null && $anrTable !== null) {
-            $anr = $anrTable->findById($anrId);
+        if (!is_null($anrId)) {
+            foreach ($data as $id) {
+                $entity = $this->get('table')->getEntity($id);
+                if ($entity->anr->id != $anrId) {
+                    throw new Exception('Anr id error', 412);
+                }
+            }
 
-            $this->validateAnrPermissions($anr, $data);
+            /** @var UserAnrTable $userAnrTable */
+            $userAnrTable = $this->get('userAnrTable');
+            $rights = $userAnrTable->getEntityByFields([
+                'user' => $this->getConnectedUser()->getId(),
+                'anr' => $anrId,
+            ]);
+            $rwd = 0;
+            foreach ($rights as $right) {
+                if ($right->rwd == 1) {
+                    $rwd = 1;
+                }
+            }
+
+            if (!$rwd) {
+                throw new Exception('You are not authorized to do this action', 412);
+            }
         }
 
         return $this->get('table')->deleteList($data);
@@ -668,32 +704,30 @@ abstract class AbstractService extends AbstractServiceFactory
 
             $entity->position = $entity->position - 1;
             $table->save($entity);
-        } else {
-            if ($direction == 'down') {
-                try {
-                    $entityBelow = $table->getEntityByFields([
-                        $field => $entity->$field,
-                        'position' => $entity->position + 1,
-                    ]);
-                } catch (QueryException $e) {
-                    $entityBelow = $table->getEntityByFields([
-                        $field => [
-                            'uuid' => $entity->$field->getUuid(),
-                            'anr' => $entity->$field->anr->id,
-                        ],
-                        'position' => $entity->position + 1,
-                    ]);
-                }
-                if (count($entityBelow) == 1) {
-                    $entityBelow = $entityBelow[0];
-                    //file_put_contents('php://stderr', print_r(count($entityBelow), TRUE).PHP_EOL);
+        } else if ($direction == 'down') {
+            try {
+                $entityBelow = $table->getEntityByFields([
+                    $field => $entity->$field,
+                    'position' => $entity->position + 1
+                ]);
+            } catch (QueryException $e) {
+                $entityBelow = $table->getEntityByFields([
+                    $field => [
+                        'uuid' => $entity->$field->getUuid(),
+                        'anr' => $entity->$field->anr->id
+                    ],
+                    'position' => $entity->position + 1
+                ]);
+            }
+            if (count($entityBelow) == 1) {
+                $entityBelow = $entityBelow[0];
+                //file_put_contents('php://stderr', print_r(count($entityBelow), TRUE).PHP_EOL);
 
-                    $entityBelow->position = $entityBelow->position - 1;
-                    $table->save($entityBelow);
+                $entityBelow->position = $entityBelow->position - 1;
+                $table->save($entityBelow);
 
-                    $entity->position = $entity->position + 1;
-                    $table->save($entity);
-                }
+                $entity->position = $entity->position + 1;
+                $table->save($entity);
             }
         }
     }
