@@ -297,7 +297,26 @@ abstract class AbstractService extends AbstractServiceFactory
         // the existing ANR, and that we have the rights to edit it.
         // TODO: this part seems only belongs to FrontOffice as BackOffice doesn't have such functionality.
         if (!empty($data['anr'])) {
-            $this->validateAnrPermissions($entity->getAnr(), [$data['anr']]);
+            if ($entity->get('anr')->get('id') != $data['anr']) {
+                throw new Exception('Anr id error', 412);
+            }
+
+            /** @var UserAnrTable $userAnrTable */
+            $userAnrTable = $this->get('userAnrTable');
+            $rights = $userAnrTable->getEntityByFields([
+                'user' => $this->getConnectedUser()->getId(),
+                'anr' => $entity->anr->id,
+            ]);
+            $rwd = 0;
+            foreach ($rights as $right) {
+                if ($right->rwd == 1) {
+                    $rwd = 1;
+                }
+            }
+
+            if (!$rwd) {
+                throw new Exception('You are not authorized to do this action', 412);
+            }
         }
 
         // Filter fields we don't want to update, ever
@@ -346,7 +365,28 @@ abstract class AbstractService extends AbstractServiceFactory
         // If we try to override this object's ANR, make some sanity and security checks. Ensure the data's ANR matches
         // the existing ANR, and that we have the rights to edit it.
         if (!empty($data['anr'])) {
-            $this->validateAnrPermissions($entity->getAnr(), [$data['anr']]);
+            if ($entity->get('anr')->get('id') != $data['anr']) {
+                throw new Exception('Anr id error', 412);
+            }
+
+            /** @var UserAnrTable $userAnrTable */
+            $userAnrTable = $this->get('userAnrTable');
+            if ($userAnrTable) {
+                $rights = $userAnrTable->getEntityByFields([
+                    'user' => $this->getConnectedUser()->getId(),
+                    'anr' => $entity->anr->id,
+                ]);
+                $rwd = 0;
+                foreach ($rights as $right) {
+                    if ($right->rwd == 1) {
+                        $rwd = 1;
+                    }
+                }
+
+                if (!$rwd) {
+                    throw new Exception('You are not authorized to do this action', 412);
+                }
+            };
         }
 
         $entity->setDbAdapter($this->get('table')->getDb());
