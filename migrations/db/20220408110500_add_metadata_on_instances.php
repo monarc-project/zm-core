@@ -13,10 +13,7 @@ class AddMetadataOnInstances extends AbstractMigration
         $table = $this->table('anr_metadatas_on_instances');
         $table
             ->addColumn('anr_id', 'integer', array('null' => true, 'signed' => false))
-            ->addColumn('label1', 'string', array('null' => true, 'limit' => 255))
-            ->addColumn('label2', 'string', array('null' => true, 'limit' => 255))
-            ->addColumn('label3', 'string', array('null' => true, 'limit' => 255))
-            ->addColumn('label4', 'string', array('null' => true, 'limit' => 255))
+            ->addColumn('label_translation_key', 'string', array('null' => true, 'limit' => 255))
             ->addColumn('creator', 'string', array('null' => true, 'limit' => 255))
             ->addColumn('created_at', 'datetime', array('null' => true))
             ->addColumn('updater', 'string', array('null' => true, 'limit' => 255))
