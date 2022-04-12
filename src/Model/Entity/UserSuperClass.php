@@ -91,6 +91,27 @@ abstract class UserSuperClass
     protected $password;
 
     /**
+     * @var boolean
+     *
+     * @ORM\Column(name="two_factor_enabled", type="boolean", options={"default":true})
+     */
+    protected $twoFactorEnabled;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="secret_key", type="string", length=255, nullable=true)
+     */
+    protected $secretKey;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="recovery_codes", type="string", length=250, nullable=true)
+     */
+    protected $recoveryCodes;
+
+    /**
      * @var integer
      *
      * @ORM\Column(name="language", type="integer", precision=0, scale=0, nullable=false)
@@ -119,6 +140,7 @@ abstract class UserSuperClass
         if (isset($data['password'])) {
             $this->setPassword($data['password']);
         }
+        $this->secretKey = "";
         $this->language = $data['language'];
         $this->mospApiKey = $data['mospApiKey'];
         $this->status = $data['status'] ?? self::STATUS_ACTIVE;
@@ -263,6 +285,18 @@ abstract class UserSuperClass
     public function setMospApiKey(string $mospApiKey): self
     {
         $this->mospApiKey = $mospApiKey;
+
+        return $this;
+    }
+
+    public function getRecoveryCodes(): ?string
+    {
+        return $this->recoveryCodes;
+    }
+
+    public function setRecoveryCodes(string $recoveryCodes): self
+    {
+        $this->recoveryCodes = $recoveryCodes;
 
         return $this;
     }

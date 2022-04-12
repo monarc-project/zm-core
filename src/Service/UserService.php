@@ -9,6 +9,7 @@ namespace Monarc\Core\Service;
 
 use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\ORMException;
+use RobThree\Auth\TwoFactorAuth;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\User;
 use Monarc\Core\Model\Entity\UserSuperClass;
@@ -213,5 +214,15 @@ class UserService
         }
 
         return [$order, 'ASC'];
+    }
+
+    /**
+     * Verify the user's code provided by an authenticator app.
+     */
+    public function verifyCode(int $userId, $data): boolean
+    {
+        $user = $this->userTable->findById($userId);
+        $tfa = new TwoFactorAuth();
+        return $tfa->verifyCode($user->getSecret(), $data);
     }
 }
