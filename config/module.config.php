@@ -364,6 +364,19 @@ return [
                     ],
                 ],
             ],
+
+            'monarc_api_anr_metadatas_on_instances' => [
+                'type' => 'segment',
+                'options' => [
+                    'route' => '/api/anr/:anrid/metadatas-on-instances[/:id]',
+                    'constraints' => [
+                        'id' => '[0-9]+',
+                    ],
+                    'defaults' => [
+                        'controller' => Controller\ApiAnrMetadatasOnInstancesController::class,
+                    ],
+                ],
+            ],
         ],
     ],
 
@@ -436,6 +449,7 @@ return [
             Service\OperationalRiskScaleService::class => AutowireFactory::class,
             Service\OperationalRiskScaleCommentService::class => AutowireFactory::class,
             Service\OperationalRiskScalesExportService::class => AutowireFactory::class,
+            Service\AnrMetadatasOnInstancesService::class => AutowireFactory::class,
 
             // TODO: Entities are created from the code. Should be removed.
             ModelEntity\DeliveriesModels::class => ServiceModelEntity\DeliveriesModelsServiceModelEntity::class,
@@ -466,6 +480,8 @@ return [
             ModelEntity\Scale::class => ServiceModelEntity\ScaleServiceModelEntity::class,
             ModelEntity\ScaleComment::class => ServiceModelEntity\ScaleCommentServiceModelEntity::class,
             ModelEntity\ScaleImpactType::class => ServiceModelEntity\ScaleImpactTypeServiceModelEntity::class,
+            ModelEntity\AnrMetadatasOnInstances::class =>
+                ServiceModelEntity\AnrMetadatasOnInstancesServiceModelEntity::class,
 
             ModelTable\UserTable::class => AutowireFactory::class,
             ModelTable\UserTokenTable::class => AutowireFactory::class,
@@ -506,6 +522,7 @@ return [
             ModelTable\PasswordTokenTable::class => AutowireFactory::class,
             ModelTable\DeliveriesModelsTable::class => AutowireFactory::class,
             ModelTable\InstanceRiskOwnerTable::class => CoreEntityManagerFactory::class,
+            ModelTable\AnrMetadatasOnInstancesTable::class => CoreEntityManagerFactory::class,
 
             /* Authentification */
             StorageAuthentication::class => ReflectionBasedAbstractFactory::class,
@@ -575,6 +592,7 @@ return [
             Controller\ApiAnrScalesCommentsController::class => Controller\ApiAnrScalesCommentsControllerFactory::class,
             Controller\ApiOperationalRisksScalesController::class => AutowireFactory::class,
             Controller\ApiOperationalRisksScalesCommentsController::class => AutowireFactory::class,
+            Controller\ApiAnrMetadatasOnInstancesController::class => AutowireFactory::class,
         ],
     ],
 
