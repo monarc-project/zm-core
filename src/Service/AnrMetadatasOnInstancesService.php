@@ -12,6 +12,7 @@ use Monarc\Core\Model\Entity\AnrMetadatasOnInstancesSuperClass;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\AnrMetadatasOnInstancesTable;
 use Monarc\Core\Model\Table\TranslationTable;
+use Ramsey\Uuid\Uuid;
 
 class AnrMetadatasOnInstancesService
 {
@@ -33,5 +34,46 @@ class AnrMetadatasOnInstancesService
         $this->anrMetadatasOnInstancesTable = $anrMetadatasOnInstancesTable;
         $this->translationTable = $translationTable;
         $this->configService = $configService;
+    }
+
+    /**
+     * @param int $anrId
+     * @param array $data
+     *
+     * @return array
+     * @throws EntityNotFoundException
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function createAnrMetadataOnInstances(int $anrId, array $data): array
+    {
+        $anr = $this->anrTable->findById($anrId);
+        $returnValue = [];
+        $languageCodes = $this->getLanguageCodesForTranslations($anr);
+
+        foreach ($data as $inputMetadata) {
+            $metadata = (new AnrMetadatasOnInstances())
+                ->setAnr($anr)
+                ->setLabelTranslationKey((string)Uuid::uuid4())
+                ->setCreator($this->connectedUser->getEmail());
+
+            $this->anrMetadatasOnInstancesTable->save($metadata);
+            $returnValue[] = $metadata->getId();
+
+            foreach ($languageCodes as $languageCode) {
+                if (isset($inputMetadata[$languageCode])) {
+                    $translation = $this->createTranslationObject(
+                        $anr,
+                        Translation::ANR_METADATAS_ON_INSTANCES,
+                        $metadata->getLabelTranslationKey(),
+                        $languageCode,
+                        $inputMetadata[$languageCode]
+                    );
+                    $this->translationTable->save($translation);
+                }
+            }
+        }
+
+        return $returnValue;
     }
 }

@@ -7,7 +7,10 @@
 
 namespace Monarc\Core\Controller;
 
+use Laminas\Mvc\Controller\AbstractRestfulController;
 use Laminas\View\Model\JsonModel;
+use Monarc\Core\Exception\Exception;
+use Monarc\Core\Service\AnrMetadatasOnInstancesService;
 
 /**
  * Api Anr Metadatas On Instances Controller
@@ -15,6 +18,23 @@ use Laminas\View\Model\JsonModel;
  * Class ApiAnrMetadatasOnInstancesController
  * @package Monarc\Core\Controller
  */
-class ApiAnrMetadatasOnInstancesController extends AbstractController
+class ApiAnrMetadatasOnInstancesController extends AbstractRestfulController
 {
+
+    private AnrMetadatasOnInstancesService $anrMetadatasOnInstancesService;
+
+    public function __construct(AnrMetadatasOnInstancesService $anrMetadatasOnInstancesService)
+    {
+        $this->anrMetadatasOnInstancesService = $anrMetadatasOnInstancesService;
+    }
+
+    public function create($data)
+    {
+        $anrId = (int) $this->params()->fromRoute('anrId');
+
+        return new JsonModel([
+            'status' => 'ok',
+            'id' => $this->anrMetadatasOnInstancesService->createAnrMetadataOnInstances($anrId, $data),
+        ]);
+    }
 }
