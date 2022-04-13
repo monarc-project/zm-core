@@ -45,7 +45,7 @@ class AnrMetadatasOnInstancesService
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function createAnrMetadataOnInstances(int $anrId, array $data): array
+    public function createAnrMetadatasOnInstances(int $anrId, array $data): array
     {
         $anr = $this->anrTable->findById($anrId);
         $returnValue = [];
@@ -75,5 +75,21 @@ class AnrMetadatasOnInstancesService
         }
 
         return $returnValue;
+    }
+
+    /**
+     * @param int $anrId
+     * @param array $data
+     *
+     * @return array
+     * @throws EntityNotFoundException
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function getAnrMetadatasOnInstances($anrId, $language = null): array
+    {
+        $result = [];
+
+        return $result;
     }
 }
