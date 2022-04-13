@@ -79,16 +79,35 @@ class AnrMetadatasOnInstancesService
 
     /**
      * @param int $anrId
-     * @param array $data
+     * @param string $language
      *
      * @return array
      * @throws EntityNotFoundException
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function getAnrMetadatasOnInstances($anrId, $language = null): array
+    public function getAnrMetadatasOnInstances(int $anrId, string $language = null): array
     {
         $result = [];
+        $anr = $this->anrTable->findById($anrId);
+        $metaDatas = $this->anrMetadatasOnInstancesTable->findByAnr($anr);
+        if ($language === null) {
+            $language = $this->getAnrLanguageCode($anr);
+        }
+
+        $translations = $this->translationTable->findByAnrTypesAndLanguageIndexedByKey(
+            $anr,
+            [Translation::ANR_METADATAS_ON_INSTANCES],
+            $language
+        );
+
+        foreach ($metaDatas as $metadata) {
+            $translationComment = $translations[$metadata->getLabelTranslationKey()] ?? null;
+            $result= [
+                'id' => $metaDatas->getId(),
+                'label' => $translationComment !== null ? $translationComment->getValue() : '',
+            ];
+        }
 
         return $result;
     }
