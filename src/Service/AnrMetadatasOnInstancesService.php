@@ -121,7 +121,7 @@ class AnrMetadatasOnInstancesService
     {
         $metadataToDelete = $this->anrMetadatasOnInstancesTable->findById($id);
         if ($metadataToDelete === null) {
-            throw new EntityNotFoundException(sprintf('Scale type with ID %d is not found', $id));
+            throw new EntityNotFoundException(sprintf('Metadata with ID %d is not found', $id));
         }
 
         $this->anrMetadatasOnInstancesTable->remove($metadataToDelete, false);
