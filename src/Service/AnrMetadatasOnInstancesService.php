@@ -111,4 +111,25 @@ class AnrMetadatasOnInstancesService
 
         return $result;
     }
+
+    /**
+     * @param int $id
+     *
+     * @throws EntityNotFoundException
+     */
+    public function deleteMetadataOnInstances(int $id): void
+    {
+        $metadataToDelete = $this->anrMetadatasOnInstancesTable->findById($id);
+        if ($metadataToDelete === null) {
+            throw new EntityNotFoundException(sprintf('Scale type with ID %d is not found', $id));
+        }
+
+        $this->anrMetadatasOnInstancesTable->remove($metadataToDelete, false);
+
+        $translationsKeys[] = $metadataToDelete->getLabelTranslationKey();
+
+        if (!empty($translationsKeys)) {
+            $this->translationTable->deleteListByKeys($translationsKeys);
+        }
+    }
 }

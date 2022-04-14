@@ -47,4 +47,9 @@ class ApiAnrMetadatasOnInstancesController extends AbstractRestfulController
             'data' => $this->anrMetadatasOnInstancesService->getAnrMetadatasOnInstances($anrId, $language),
         ]);
     }
+
+    public function delete($id)
+    {
+        $this->anrMetadatasOnInstancesService->deleteMetadataOnInstances($id);
+    }
 }
