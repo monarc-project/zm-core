@@ -108,10 +108,10 @@ class AnrMetadatasOnInstancesService
         );
 
         foreach ($metaDatas as $metadata) {
-            $translationComment = $translations[$metadata->getLabelTranslationKey()] ?? null;
-            $result= [
-                'id' => $metaDatas->getId(),
-                'label' => $translationComment !== null ? $translationComment->getValue() : '',
+            $translationLabel = $translations[$metadata->getLabelTranslationKey()] ?? null;
+            $result[]= [
+                'id' => $metadata->getId(),
+                'label' => $translationLabel !== null ? $translationLabel->getValue() : '',
             ];
         }
 
@@ -153,5 +153,10 @@ class AnrMetadatasOnInstancesService
             ->setLang($lang)
             ->setValue($value)
             ->setCreator($this->connectedUser->getEmail());
+    }
+
+    protected function getAnrLanguageCode(AnrSuperClass $anr): string
+    {
+        return $this->configService->getActiveLanguageCodes()[$anr->getLanguage()];
     }
 }
