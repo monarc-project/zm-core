@@ -9,6 +9,11 @@ namespace Monarc\Core\Service;
 
 use Doctrine\ORM\EntityNotFoundException;
 use Monarc\Core\Model\Entity\AnrMetadatasOnInstancesSuperClass;
+use Monarc\Core\Model\Entity\AnrMetadatasOnInstances;
+use Monarc\Core\Model\Entity\UserSuperClass;
+use Monarc\Core\Model\Entity\TranslationSuperClass;
+use Monarc\Core\Model\Entity\Translation;
+use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\AnrMetadatasOnInstancesTable;
 use Monarc\Core\Model\Table\TranslationTable;
@@ -24,16 +29,20 @@ class AnrMetadatasOnInstancesService
 
     protected ConfigService $configService;
 
+    protected UserSuperClass $connectedUser;
+
     public function __construct(
         AnrTable $anrTable,
         AnrMetadatasOnInstancesTable $anrMetadatasOnInstancesTable,
         TranslationTable $translationTable,
-        ConfigService $configService
+        ConfigService $configService,
+        ConnectedUserService $connectedUserService
     ) {
         $this->anrTable = $anrTable;
         $this->anrMetadatasOnInstancesTable = $anrMetadatasOnInstancesTable;
         $this->translationTable = $translationTable;
         $this->configService = $configService;
+        $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
     /**
@@ -49,7 +58,6 @@ class AnrMetadatasOnInstancesService
     {
         $anr = $this->anrTable->findById($anrId);
         $returnValue = [];
-        $languageCodes = $this->getLanguageCodesForTranslations($anr);
 
         foreach ($data as $inputMetadata) {
             $metadata = (new AnrMetadatasOnInstances())
@@ -60,17 +68,15 @@ class AnrMetadatasOnInstancesService
             $this->anrMetadatasOnInstancesTable->save($metadata);
             $returnValue[] = $metadata->getId();
 
-            foreach ($languageCodes as $languageCode) {
-                if (isset($inputMetadata[$languageCode])) {
-                    $translation = $this->createTranslationObject(
-                        $anr,
-                        Translation::ANR_METADATAS_ON_INSTANCES,
-                        $metadata->getLabelTranslationKey(),
-                        $languageCode,
-                        $inputMetadata[$languageCode]
-                    );
-                    $this->translationTable->save($translation);
-                }
+            foreach ($inputMetadata as $lang => $labelText) {
+                $translation = $this->createTranslationObject(
+                    $anr,
+                    Translation::ANR_METADATAS_ON_INSTANCES,
+                    $metadata->getLabelTranslationKey(),
+                    $lang,
+                    (string)$labelText
+                );
+                $this->translationTable->save($translation);
             }
         }
 
@@ -131,5 +137,21 @@ class AnrMetadatasOnInstancesService
         if (!empty($translationsKeys)) {
             $this->translationTable->deleteListByKeys($translationsKeys);
         }
+    }
+
+    protected function createTranslationObject(
+        AnrSuperClass $anr,
+        string $type,
+        string $key,
+        string $lang,
+        string $value
+    ): TranslationSuperClass {
+        return (new Translation())
+            ->setAnr($anr)
+            ->setType($type)
+            ->setKey($key)
+            ->setLang($lang)
+            ->setValue($value)
+            ->setCreator($this->connectedUser->getEmail());
     }
 }
