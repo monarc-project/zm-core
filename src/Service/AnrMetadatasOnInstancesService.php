@@ -130,7 +130,7 @@ class AnrMetadatasOnInstancesService
             throw new EntityNotFoundException(sprintf('Metadata with ID %d is not found', $id));
         }
 
-        $this->anrMetadatasOnInstancesTable->remove($metadataToDelete, false);
+        $this->anrMetadatasOnInstancesTable->remove($metadataToDelete);
 
         $translationsKeys[] = $metadataToDelete->getLabelTranslationKey();
 

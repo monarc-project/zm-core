@@ -50,5 +50,7 @@ class ApiAnrMetadatasOnInstancesController extends AbstractRestfulController
     public function delete($id)
     {
         $this->anrMetadatasOnInstancesService->deleteMetadataOnInstances($id);
+
+        return new JsonModel(['status' => 'ok']);
     }
 }
