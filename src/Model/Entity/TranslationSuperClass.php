@@ -23,6 +23,7 @@ class TranslationSuperClass
     public const OPERATIONAL_RISK_SCALE_TYPE = 'operational-risk-scale-type';
     public const OPERATIONAL_RISK_SCALE_COMMENT = 'operational-risk-scale-comment';
     public const ANR_METADATAS_ON_INSTANCES = 'anr-metadatas-on-instances';
+    public const INSTANCE_METADATA = 'instance-metadata';
 
     /**
      * @var integer
