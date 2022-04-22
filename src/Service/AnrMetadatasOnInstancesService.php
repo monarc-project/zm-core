@@ -58,7 +58,7 @@ class AnrMetadatasOnInstancesService
     {
         $anr = $this->anrTable->findById($anrId);
         $returnValue = [];
-
+        $data = (isset($data['metadatas']) ? $data['metadatas'] : $data);
         foreach ($data as $inputMetadata) {
             $metadata = (new AnrMetadatasOnInstances())
                 ->setAnr($anr)
