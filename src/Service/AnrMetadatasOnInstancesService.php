@@ -107,11 +107,12 @@ class AnrMetadatasOnInstancesService
             $language
         );
 
-        foreach ($metaDatas as $metadata) {
+        foreach ($metaDatas as $index => $metadata) {
             $translationLabel = $translations[$metadata->getLabelTranslationKey()] ?? null;
             $result[]= [
                 'id' => $metadata->getId(),
-                'label' => $translationLabel !== null ? $translationLabel->getValue() : '',
+                'index' => $index + 1,
+                $language => $translationLabel !== null ? $translationLabel->getValue() : '',
             ];
         }
 
