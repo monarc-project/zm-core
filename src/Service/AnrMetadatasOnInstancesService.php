@@ -155,6 +155,27 @@ class AnrMetadatasOnInstancesService
             ->setCreator($this->connectedUser->getEmail());
     }
 
+    public function getAnrMetadataOnInstance(int $anrId, int $id, string $language)
+    {
+        $anr = $this->anrTable->findById($anrId);
+        $metaDatas = $this->anrMetadatasOnInstancesTable->findByAnr($anrId, $id);
+        if ($language === null) {
+            $language = $this->getAnrLanguageCode($anr);
+        }
+
+        $translations = $this->translationTable->findByAnrTypesAndLanguageIndexedByKey(
+            $anr,
+            [Translation::ANR_METADATAS_ON_INSTANCES],
+            $language
+        );
+
+        $translationLabel = $translations[$metadata->getLabelTranslationKey()] ?? null;
+        return [
+            'id' => $metadata->getId(),
+            'label' => $translationLabel !== null ? $translationLabel->getValue() : '',
+        ];
+    }
+
     protected function getAnrLanguageCode(AnrSuperClass $anr): string
     {
         return $this->configService->getActiveLanguageCodes()[$anr->getLanguage()];
