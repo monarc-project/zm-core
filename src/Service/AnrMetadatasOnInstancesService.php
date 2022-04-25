@@ -58,7 +58,7 @@ class AnrMetadatasOnInstancesService
     {
         $anr = $this->anrTable->findById($anrId);
         $returnValue = [];
-
+        $data = (isset($data['metadatas']) ? $data['metadatas'] : $data);
         foreach ($data as $inputMetadata) {
             $metadata = (new AnrMetadatasOnInstances())
                 ->setAnr($anr)
@@ -107,11 +107,12 @@ class AnrMetadatasOnInstancesService
             $language
         );
 
-        foreach ($metaDatas as $metadata) {
+        foreach ($metaDatas as $index => $metadata) {
             $translationLabel = $translations[$metadata->getLabelTranslationKey()] ?? null;
             $result[]= [
                 'id' => $metadata->getId(),
-                'label' => $translationLabel !== null ? $translationLabel->getValue() : '',
+                'index' => $index + 1,
+                $language => $translationLabel !== null ? $translationLabel->getValue() : '',
             ];
         }
 
