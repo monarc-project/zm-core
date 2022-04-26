@@ -65,7 +65,7 @@ class Authentication extends AbstractAdapter
         if ($user->isActive()) {
             if (password_verify($credential, $user->getPassword())) {
 
-                if ($user->is2FAEnabled()) {
+                if ($user->isTwoFactorAuthEnabled()) {
                     return new Result(TWO_FA_AUTHENTICATION_REQUIRED, $this->getIdentity());
                 }
 
