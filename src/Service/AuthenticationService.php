@@ -48,7 +48,7 @@ class AuthenticationService
                 ->setIdentity($data['login'])
                 ->setCredential($data['password']);
 
-            if (!empty($data['2FA'])) {
+            if (!empty($data['otp'])) {
                 // check one time token
             }
 
