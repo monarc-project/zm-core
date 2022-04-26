@@ -223,6 +223,7 @@ class UserService
     {
         $user = $this->userTable->findById($userId);
         $tfa = new TwoFactorAuth();
+
         return $tfa->verifyCode($user->getSecret(), $data);
     }
 }

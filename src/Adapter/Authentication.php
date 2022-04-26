@@ -21,6 +21,8 @@ class Authentication extends AbstractAdapter
     /** @var UserSuperClass */
     protected $user;
 
+    const TWO_FA_AUTHENTICATION_REQUIRED = 2;
+
     public function __construct(UserTable $userTable)
     {
         $this->userTable = $userTable;
@@ -59,9 +61,14 @@ class Authentication extends AbstractAdapter
             return new Result(Result::FAILURE_IDENTITY_NOT_FOUND, $this->getIdentity());
         }
 
-        // TODO: faire le test sur dateStart && dateEnd
+        // TODO: make the test on dateStart and dateEnd
         if ($user->isActive()) {
             if (password_verify($credential, $user->getPassword())) {
+
+                if ($user->is2FAEnabled()) {
+                    return new Result(TWO_FA_AUTHENTICATION_REQUIRED, $this->getIdentity());
+                }
+
                 $this->setUser($user);
 
                 return new Result(Result::SUCCESS, $this->getIdentity());

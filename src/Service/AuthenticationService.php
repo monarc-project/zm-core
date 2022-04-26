@@ -46,8 +46,13 @@ class AuthenticationService
         if (!empty($data['login']) && !empty($data['password'])) {
             $res = $this->authenticationAdapter
                 ->setIdentity($data['login'])
-                ->setCredential($data['password'])
-                ->authenticate();
+                ->setCredential($data['password']);
+
+            if (!empty($data['2FA'])) {
+                // check one time token
+            }
+
+            $res->authenticate();
 
             if ($res->isValid()) {
                 $user = $this->authenticationAdapter->getUser();
