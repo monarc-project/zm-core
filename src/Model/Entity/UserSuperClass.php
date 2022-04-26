@@ -93,21 +93,21 @@ abstract class UserSuperClass
     /**
      * @var boolean
      *
-     * @ORM\Column(name="two_factor_enabled", type="boolean", options={"default":true})
+     * @ORM\Column(name="is_two_factor_enabled", type="boolean", options={"default":false})
      */
-    protected $twoFactorEnabled;
+    protected $isTwoFactorAuthEnabled;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="secret_key", type="string", length=255, nullable=true)
+     * @ORM\Column(name="secret_key", type="string", length=255, options={"default":""})
      */
     protected $secretKey;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="recovery_codes", type="string", length=250, nullable=true)
+     * @ORM\Column(name="recovery_codes", type="string", length=250, options={"default":""})
      */
     protected $recoveryCodes;
 
@@ -140,7 +140,7 @@ abstract class UserSuperClass
         if (isset($data['password'])) {
             $this->setPassword($data['password']);
         }
-        $this->secretKey = "";
+        $this->secretKey = '';
         $this->language = $data['language'];
         $this->mospApiKey = $data['mospApiKey'];
         $this->status = $data['status'] ?? self::STATUS_ACTIVE;
@@ -299,6 +299,11 @@ abstract class UserSuperClass
         $this->recoveryCodes = $recoveryCodes;
 
         return $this;
+    }
+
+    public function isTwoFactorAuthEnabled(): bool
+    {
+        return $this->isTwoFactorAuthEnabled;
     }
 
     public function isSystemUser(): bool
