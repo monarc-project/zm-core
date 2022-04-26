@@ -156,7 +156,14 @@ class AnrMetadatasOnInstancesService
             ->setCreator($this->connectedUser->getEmail());
     }
 
-    public function getAnrMetadataOnInstance(int $anrId, int $id, string $language)
+    /**
+     * @param int $anrId
+     * @param int $id
+     * @param string $language
+     *
+     * @throws EntityNotFoundException
+     */
+    public function getAnrMetadataOnInstance(int $anrId, int $id, string $language): array
     {
         $anr = $this->anrTable->findById($anrId);
         $metaDatas = $this->anrMetadatasOnInstancesTable->findByAnr($anrId, $id);
@@ -175,6 +182,26 @@ class AnrMetadatasOnInstancesService
             'id' => $metadata->getId(),
             'label' => $translationLabel !== null ? $translationLabel->getValue() : '',
         ];
+    }
+
+    public function update(int $id, array $data): int
+    {
+        /** @var AnrMetadatasOnInstancesSuperClass $metadata */
+        $metadata = $this->anrMetadatasOnInstancesTable->findById($id);
+
+        if (!empty($data['label'])) {
+            $languageCode = $data['language'] ?? $this->getAnrLanguageCode($metadata->getAnr());
+            $translationKey = $metadata->getLabelTranslationKey();
+            if (!empty($translationKey)) {
+                $translation = $this->translationTable
+                    ->findByAnrKeyAndLanguage($metadata->getAnr(), $translationKey, $languageCode);
+                $translation->setValue($data['label']);
+                $this->translationTable->save($translation, false);
+            }
+        }
+        $this->anrMetadatasOnInstancesTable->save($metadata);
+
+        return $metadata->getId();
     }
 
     protected function getAnrLanguageCode(AnrSuperClass $anr): string

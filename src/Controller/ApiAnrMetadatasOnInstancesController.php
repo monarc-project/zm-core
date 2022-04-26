@@ -60,4 +60,13 @@ class ApiAnrMetadatasOnInstancesController extends AbstractRestfulController
         $language = $this->params()->fromQuery("language");
         return $this->anrMetadatasOnInstancesService->getAnrMetadataOnInstance($anrId, $id, $language);
     }
+
+    public function update($id, $data)
+    {
+        if ($this->anrMetadatasOnInstancesService->update((int)$id, $data)) {
+            return new JsonModel(['status' => 'ok']);
+        }
+
+        return new JsonModel(['status' => 'ko']);
+    }
 }
