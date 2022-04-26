@@ -188,14 +188,13 @@ class AnrMetadatasOnInstancesService
     {
         /** @var AnrMetadatasOnInstancesSuperClass $metadata */
         $metadata = $this->anrMetadatasOnInstancesTable->findById($id);
-
-        if (!empty($data['label'])) {
-            $languageCode = $data['language'] ?? $this->getAnrLanguageCode($metadata->getAnr());
+        $languageCode = $data['language'] ?? $this->getAnrLanguageCode($metadata->getAnr());
+        if (!empty($data[$languageCode])) {
             $translationKey = $metadata->getLabelTranslationKey();
             if (!empty($translationKey)) {
                 $translation = $this->translationTable
                     ->findByAnrKeyAndLanguage($metadata->getAnr(), $translationKey, $languageCode);
-                $translation->setValue($data['label']);
+                $translation->setValue($data[$languageCode]);
                 $this->translationTable->save($translation, false);
             }
         }
