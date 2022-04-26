@@ -44,7 +44,7 @@ class AnrMetadatasOnInstancesTable extends AbstractTable
             ->getOneOrNullResult();
 
         if ($result === null) {
-            throw EntityNotFoundException::fromClassNameAndIdentifier(\get_class($this), [$anr->getId(), $id]);
+            throw EntityNotFoundException::fromClassNameAndIdentifier(\get_class($this), [$id]);
         }
 
         return $result;

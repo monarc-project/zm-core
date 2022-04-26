@@ -58,7 +58,9 @@ class ApiAnrMetadatasOnInstancesController extends AbstractRestfulController
     {
         $anrId = (int) $this->params()->fromRoute('anrid');
         $language = $this->params()->fromQuery("language");
-        return $this->anrMetadatasOnInstancesService->getAnrMetadataOnInstance($anrId, $id, $language);
+        return new JsonModel ([
+            'data' => $this->anrMetadatasOnInstancesService->getAnrMetadataOnInstance($anrId, $id, $language),
+        ]);
     }
 
     public function update($id, $data)
