@@ -159,7 +159,7 @@ class AnrMetadatasOnInstancesService
     public function getAnrMetadataOnInstance(int $anrId, int $id, string $language)
     {
         $anr = $this->anrTable->findById($anrId);
-        $metaDatas = $this->anrMetadatasOnInstancesTable->findByAnr($anrId, $id);
+        $metadata = $this->anrMetadatasOnInstancesTable->findById($id);
         if ($language === null) {
             $language = $this->getAnrLanguageCode($anr);
         }
@@ -173,7 +173,7 @@ class AnrMetadatasOnInstancesService
         $translationLabel = $translations[$metadata->getLabelTranslationKey()] ?? null;
         return [
             'id' => $metadata->getId(),
-            'label' => $translationLabel !== null ? $translationLabel->getValue() : '',
+            $language => $translationLabel !== null ? $translationLabel->getValue() : '',
         ];
     }
 

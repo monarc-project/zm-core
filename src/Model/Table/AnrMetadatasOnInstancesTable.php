@@ -35,18 +35,16 @@ class AnrMetadatasOnInstancesTable extends AbstractTable
     /**
      * @return AnrMetadatasOnInstancesSuperClass
      */
-    public function findById(AnrSuperClass $anr, int $id): AnrMetadatasOnInstancesSuperClass
+    public function findById(int $id): AnrMetadatasOnInstancesSuperClass
     {
         $result = $this->getRepository()->createQueryBuilder('amoi')
             ->where('amoi.id = :id')
-            ->andWhere('amoi.anr = :anr')
             ->setParameter('id', $id)
-            ->setParameter('anr', $anr)
             ->getQuery()
             ->getOneOrNullResult();
 
         if ($result === null) {
-            throw EntityNotFoundException::fromClassNameAndIdentifier(\get_class($this), [$anr->getId(), $id]);
+            throw EntityNotFoundException::fromClassNameAndIdentifier(\get_class($this), [$id]);
         }
 
         return $result;
