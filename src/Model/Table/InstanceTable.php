@@ -64,6 +64,27 @@ class InstanceTable extends AbstractEntityTable
     /**
      * @return InstanceSuperClass[]
      */
+    public function findGlobalBrothersByAnrAndInstance(AnrSuperClass $anr, InstanceSuperClass $instance): array
+    {
+        return $this->getRepository()
+            ->createQueryBuilder('i')
+            ->innerJoin('i.object', 'o')
+            ->where('i.anr = :anr')
+            ->andWhere('o.uuid = :object_uuid')
+            ->andWhere('o.anr = :anr')
+            ->andWhere('i.id != :id')
+            ->andWhere('o.scope = :scopeMode')
+            ->setParameter('anr', $anr)
+            ->setParameter('id', $instance->getId())
+            ->setParameter('object_uuid', $instance->getObject()->getUuid())
+            ->setParameter('scopeMode', ObjectSuperClass::SCOPE_GLOBAL)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return InstanceSuperClass[]
+     */
     public function findByObject(ObjectSuperClass $object): array
     {
         return $this->getRepository()
