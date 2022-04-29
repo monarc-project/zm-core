@@ -62,6 +62,7 @@ class InstanceService extends AbstractService
     protected $translateService;
     protected $configService;
     protected $operationalRiskScalesExportService;
+    protected $anrMetadatasOnInstancesExportService;
 
     // Export (Services)
     protected $objectExportService;
@@ -1190,7 +1191,9 @@ class InstanceService extends AbstractService
                 $withEval
             ),
         ];
-
+        $anrMetadatasOnInstancesExportService = $this->get('anrMetadatasOnInstancesExportService');
+        $return['anrMetadatasOnInstances'] = $anrMetadatasOnInstancesExportService
+            ->generateExportArray($instance->getAnr());
         // Scales
         if ($withEval && $withScale) {
             $return['scales'] = $this->generateExportArrayOfScales($instance->getAnr());

@@ -449,6 +449,7 @@ return [
             Service\OperationalRiskScaleService::class => AutowireFactory::class,
             Service\OperationalRiskScaleCommentService::class => AutowireFactory::class,
             Service\OperationalRiskScalesExportService::class => AutowireFactory::class,
+            Service\AnrMetadatasOnInstancesExportService::class => AutowireFactory::class,
             Service\AnrMetadatasOnInstancesService::class => AutowireFactory::class,
 
             // TODO: Entities are created from the code. Should be removed.
