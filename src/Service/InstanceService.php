@@ -1194,10 +1194,13 @@ class InstanceService extends AbstractService
         $anrMetadatasOnInstancesExportService = $this->get('anrMetadatasOnInstancesExportService');
         $return['anrMetadatasOnInstances'] = $anrMetadatasOnInstancesExportService
             ->generateExportArray($instance->getAnr());
+        if ($withEval) {
+            $return['instancesMetadatas'] = $this->generateExportArrayOfInstancesMetadatas($instance);
+        }
+
         // Scales
         if ($withEval && $withScale) {
             $return['scales'] = $this->generateExportArrayOfScales($instance->getAnr());
-            $return['instancesMetadatas'] = $this->generateExportArrayOfInstancesMetadatas($instance);
             /** @var OperationalRiskScalesExportService $operationalRiskScalesExportService */
             $operationalRiskScalesExportService = $this->get('operationalRiskScalesExportService');
             $return['operationalRiskScales'] = $operationalRiskScalesExportService->generateExportArray(
