@@ -289,6 +289,18 @@ abstract class UserSuperClass
         return $this;
     }
 
+    public function getSecretKey(): ?string
+    {
+        return $this->secretKey;
+    }
+
+    public function setSecretKey(string $secretKey): self
+    {
+        $this->secretKey = $secretKey;
+
+        return $this;
+    }
+
     public function getRecoveryCodes(): ?string
     {
         return $this->recoveryCodes;
@@ -297,6 +309,13 @@ abstract class UserSuperClass
     public function setRecoveryCodes(string $recoveryCodes): self
     {
         $this->recoveryCodes = $recoveryCodes;
+
+        return $this;
+    }
+
+    public function setTwoFactorAuthEnabled(bool $isTwoFactorAuthEnabled): self
+    {
+        $this->isTwoFactorAuthEnabled = $isTwoFactorAuthEnabled;
 
         return $this;
     }

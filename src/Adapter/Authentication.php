@@ -6,6 +6,7 @@ use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Model\Table\UserTable;
 use Laminas\Authentication\Adapter\AbstractAdapter;
 use Laminas\Authentication\Result;
+use RobThree\Auth\TwoFactorAuth;
 
 /**
  * Class Authentication is an implementation of AbstractAdapter that takes care of authenticating an user.
@@ -47,11 +48,11 @@ class Authentication extends AbstractAdapter
     }
 
     /**
-     * Authenticates the user from its identity and credential
-     *
+     * Authenticates the user from its identity and credential.
+     * @param string $token The OTP token submitted by the user.
      * @return Result The authentication result
      */
-    public function authenticate(): Result
+    public function authenticate($token = ''): Result
     {
         $identity = $this->getIdentity();
         $credential = $this->getCredential();
@@ -64,12 +65,22 @@ class Authentication extends AbstractAdapter
         // TODO: make the test on dateStart and dateEnd
         if ($user->isActive()) {
             if (password_verify($credential, $user->getPassword())) {
-
-                if ($user->isTwoFactorAuthEnabled()) {
-                    return new Result(TWO_FA_AUTHENTICATION_REQUIRED, $this->getIdentity());
-                }
-
                 $this->setUser($user);
+                // if the user is using Two Factor Authentication
+                if ($user->isTwoFactorAuthEnabled()) {
+                    // check if the 2FA token has been submitted
+                    if (empty($token)) {
+
+                        return new Result(self::TWO_FA_AUTHENTICATION_REQUIRED, $this->getIdentity());
+                    } else {
+                        // verify the submitted token
+                        $tfa = new TwoFactorAuth('MONARC TwoFactorAuth');
+                        if (! $tfa->verifyCode($user->getSecretKey(), $token)) {
+
+                            return new Result(Result::FAILURE_CREDENTIAL_INVALID, $this->getIdentity());
+                        }
+                    }
+                }
 
                 return new Result(Result::SUCCESS, $this->getIdentity());
             }
