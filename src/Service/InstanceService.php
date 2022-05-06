@@ -221,6 +221,9 @@ class InstanceService extends AbstractService
 
         $id = $this->get('table')->save($instance);
 
+        //instanceMetadata, fetch value for global instance
+        $this->updateInstanceMetadataFromBrothers($instance);
+
         //instances risk
         /** @var InstanceRiskService $instanceRiskService */
         $instanceRiskService = $this->get('instanceRiskService');
@@ -1532,6 +1535,10 @@ class InstanceService extends AbstractService
     protected function generateExportArrayOfInstancesMetadatas(InstanceSuperClass $instance): array
     {
         return [];
+    }
+
+    protected function updateInstanceMetadataFromBrothers(InstanceSuperClass $instance): void
+    {
     }
 
     protected function generateExportArrayOfRecommendations(
