@@ -57,7 +57,7 @@ class SoaScaleCommentService
     {
         $result = [];
         $anr = $this->anrTable->findById($anrId);
-        $soaScale = $this->soaScaleCommentTable->findByAnr($anr);
+        $soaScaleComments = $this->soaScaleCommentTable->findByAnr($anr);
         if ($language === null) {
             $language = $this->getAnrLanguageCode($anr);
         }
@@ -67,6 +67,17 @@ class SoaScaleCommentService
             [Translation::SOA_SCALE_COMMENT],
             $language
         );
+
+        foreach ($soaScaleComments as $comment) {
+            $translationComment = $translations[$comment->getCommentTranslationKey()] ?? null;
+            $result[] = [
+                'id' => $comment->getId(),
+                'scaleIndex' => $comment->getScaleIndex(),
+                'colour' => $comment->getColour(),
+                'comment' => $translationComment !== null ? $translationComment->getValue() : '',
+                'isHidden' => $comment->isHidden(),
+            ];
+        }
 
         return $result;
     }

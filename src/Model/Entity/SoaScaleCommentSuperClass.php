@@ -65,6 +65,13 @@ class SoaScaleCommentSuperClass
     protected $isHidden = 0;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(name="colour", type="string", length=255, options={"default": ""})
+     */
+    protected $colour = '';
+
+    /**
      * @return int
      */
     public function getId()
@@ -129,6 +136,18 @@ class SoaScaleCommentSuperClass
     public function setIsHidden(bool $isHidden): self
     {
         $this->isHidden = (int)$isHidden;
+
+        return $this;
+    }
+
+    public function getColour(): string
+    {
+        return $this->colour;
+    }
+
+    public function setColour(string $colour): self
+    {
+        $this->colour = $colour;
 
         return $this;
     }
