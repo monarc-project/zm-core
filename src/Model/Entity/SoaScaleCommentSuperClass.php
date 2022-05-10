@@ -18,7 +18,7 @@ use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
-class OperationalRiskScaleCommentSuperClass
+class SoaScaleCommentSuperClass
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;

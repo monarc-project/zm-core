@@ -9,6 +9,7 @@ namespace Monarc\Core\Model\Table;
 
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\SoaScale;
+use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**
@@ -19,6 +20,18 @@ class SoaScaleTable extends AbstractEntityTable
 {
     public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
     {
-        parent::__construct($dbService, SoaCategory::class, $connectedUserService);
+        parent::__construct($dbService, SoaScale::class, $connectedUserService);
+    }
+
+    /**
+     * @return SoaScaleSuperClass|null
+     */
+    public function findByAnr(AnrSuperClass $anr)
+    {
+        return $this->getRepository()->createQueryBuilder('ors')
+            ->where('ors.anr = :anr')
+            ->setParameter('anr', $anr)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 }

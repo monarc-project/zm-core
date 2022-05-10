@@ -15,7 +15,7 @@ use Monarc\Core\Service\ConnectedUserService;
  * Class SoaScaleTable
  * @package Monarc\Core\Model\Table
  */
-class SoaScaleTable extends AbstractEntityTable
+class SoaScaleCommentTable extends AbstractEntityTable
 {
     public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
     {
