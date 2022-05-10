@@ -9,20 +9,6 @@ class AddCustomizableSoaScale extends AbstractMigration
      */
     public function change()
     {
-        //create the scale for the SOA with the number of level
-        $table = $this->table('soa_scale');
-        $table
-            ->addColumn('anr_id', 'integer', array('null' => true, 'signed' => false))
-            ->addColumn('number_of_levels', 'integer', array('null' => true, 'limit' => 255))
-            ->addColumn('creator', 'string', array('null' => true, 'limit' => 255))
-            ->addColumn('created_at', 'datetime', array('null' => true))
-            ->addColumn('updater', 'string', array('null' => true, 'limit' => 255))
-            ->addColumn('updated_at', 'datetime', array('null' => true))
-            ->addIndex(array('anr_id'))
-            ->create();
-        $table->changeColumn('id', 'integer', array('identity'=>true, 'signed'=>false))->update();
-        $table->addForeignKey('anr_id', 'anrs', 'id', array('delete' => 'CASCADE','update' => 'RESTRICT'))->update();
-
         //create the comments, one comment by scale_index
         $table = $this->table('soa_scale_comments');
         $table

@@ -365,19 +365,6 @@ return [
                 ],
             ],
 
-            'monarc_api_soa_scale' => [
-                'type' => 'segment',
-                'options' => [
-                    'route' => '/api/anr/:anrId/soa-scale[/:id]',
-                    'constraints' => [
-                        'id' => '[0-9]+',
-                    ],
-                    'defaults' => [
-                        'controller' => Controller\ApiSoaScaleController::class,
-                    ],
-                ],
-            ],
-
             'monarc_api_soa_scale_comment' => [
                 'type' => 'segment',
                 'options' => [
@@ -477,7 +464,6 @@ return [
             Service\OperationalRiskScalesExportService::class => AutowireFactory::class,
             Service\AnrMetadatasOnInstancesExportService::class => AutowireFactory::class,
             Service\AnrMetadatasOnInstancesService::class => AutowireFactory::class,
-            Service\SoaScaleService::class => AutowireFactory::class,
             Service\SoaScaleCommentService::class => AutowireFactory::class,
 
             // TODO: Entities are created from the code. Should be removed.
@@ -511,7 +497,6 @@ return [
             ModelEntity\ScaleImpactType::class => ServiceModelEntity\ScaleImpactTypeServiceModelEntity::class,
             ModelEntity\AnrMetadatasOnInstances::class =>
                 ServiceModelEntity\AnrMetadatasOnInstancesServiceModelEntity::class,
-            ModelEntity\SoaScale::class => ServiceModelEntity\SoaScaleServiceModelEntity::class,
             ModelEntity\SoaScaleComment::class => ServiceModelEntity\SoaScaleServiceModelEntity::class,
 
             ModelTable\UserTable::class => AutowireFactory::class,
@@ -554,7 +539,6 @@ return [
             ModelTable\DeliveriesModelsTable::class => AutowireFactory::class,
             ModelTable\InstanceRiskOwnerTable::class => CoreEntityManagerFactory::class,
             ModelTable\AnrMetadatasOnInstancesTable::class => CoreEntityManagerFactory::class,
-            ModelTable\SoaScaleTable::class => CoreEntityManagerFactory::class,
             ModelTable\SoaScaleCommentTable::class => CoreEntityManagerFactory::class,
 
             /* Authentification */
@@ -626,7 +610,6 @@ return [
             Controller\ApiOperationalRisksScalesController::class => AutowireFactory::class,
             Controller\ApiOperationalRisksScalesCommentsController::class => AutowireFactory::class,
             Controller\ApiAnrMetadatasOnInstancesController::class => AutowireFactory::class,
-            Controller\ApiSoaScaleController::class => AutowireFactory::class,
             Controller\ApiSoaScaleCommentController::class => AutowireFactory::class,
         ],
     ],

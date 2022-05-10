@@ -13,7 +13,7 @@ use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 
 /**
  * @ORM\Table(name="soa_scale_comments", indexes={
- *      @ORM\Index(name="soa_scale_id", columns={"scale_id"})
+ *      @ORM\Index(name="anr", columns={"anr_id"})
  * })
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
@@ -42,17 +42,6 @@ class SoaScaleCommentSuperClass
      * })
      */
     protected $anr;
-
-    /**
-     * @var SoaScaleSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="SoaScale", cascade={"persist"})
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="soa_scale_id", referencedColumnName="id", onDelete="CASCADE")
-     * })
-     */
-    protected $soaScale;
-
 
     /**
      * @var int
