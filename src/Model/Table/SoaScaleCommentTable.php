@@ -10,6 +10,7 @@ namespace Monarc\Core\Model\Table;
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\SoaScaleComment;
 use Monarc\Core\Service\ConnectedUserService;
+use Monarc\Core\Model\Entity\AnrSuperClass;
 
 /**
  * Class SoaScaleTable
@@ -19,6 +20,18 @@ class SoaScaleCommentTable extends AbstractEntityTable
 {
     public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
     {
-        parent::__construct($dbService, SoaCategory::class, $connectedUserService);
+        parent::__construct($dbService, SoaScaleComment::class, $connectedUserService);
+    }
+
+    /**
+     * @return SoaScaleComment[]
+     */
+    public function findByAnr(AnrSuperClass $anr): array
+    {
+        return $this->getRepository()->createQueryBuilder('orsc')
+            ->where('orsc.anr = :anr')
+            ->setParameter('anr', $anr)
+            ->getQuery()
+            ->getResult();
     }
 }

@@ -13,7 +13,7 @@ use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 
 /**
- * @ORM\Table(name="operational_risks_scales")
+ * @ORM\Table(name="soa_scale")
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */

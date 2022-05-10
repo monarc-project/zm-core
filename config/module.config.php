@@ -378,6 +378,19 @@ return [
                 ],
             ],
 
+            'monarc_api_soa_scale_comment' => [
+                'type' => 'segment',
+                'options' => [
+                    'route' => '/api/anr/:anrId/soa-scale-comment[/:id]',
+                    'constraints' => [
+                        'id' => '[0-9]+',
+                    ],
+                    'defaults' => [
+                        'controller' => Controller\ApiSoaScaleCommentController::class,
+                    ],
+                ],
+            ],
+
             'monarc_api_anr_metadatas_on_instances' => [
                 'type' => 'segment',
                 'options' => [
@@ -465,6 +478,7 @@ return [
             Service\AnrMetadatasOnInstancesExportService::class => AutowireFactory::class,
             Service\AnrMetadatasOnInstancesService::class => AutowireFactory::class,
             Service\SoaScaleService::class => AutowireFactory::class,
+            Service\SoaScaleCommentService::class => AutowireFactory::class,
 
             // TODO: Entities are created from the code. Should be removed.
             ModelEntity\DeliveriesModels::class => ServiceModelEntity\DeliveriesModelsServiceModelEntity::class,
@@ -498,6 +512,7 @@ return [
             ModelEntity\AnrMetadatasOnInstances::class =>
                 ServiceModelEntity\AnrMetadatasOnInstancesServiceModelEntity::class,
             ModelEntity\SoaScale::class => ServiceModelEntity\SoaScaleServiceModelEntity::class,
+            ModelEntity\SoaScaleComment::class => ServiceModelEntity\SoaScaleServiceModelEntity::class,
 
             ModelTable\UserTable::class => AutowireFactory::class,
             ModelTable\UserTokenTable::class => AutowireFactory::class,
@@ -612,6 +627,7 @@ return [
             Controller\ApiOperationalRisksScalesCommentsController::class => AutowireFactory::class,
             Controller\ApiAnrMetadatasOnInstancesController::class => AutowireFactory::class,
             Controller\ApiSoaScaleController::class => AutowireFactory::class,
+            Controller\ApiSoaScaleCommentController::class => AutowireFactory::class,
         ],
     ],
 

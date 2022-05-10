@@ -95,12 +95,12 @@ class SoaScaleCommentSuperClass
         return $this;
     }
 
-    public function getSoaScale(): OperationalRiskScaleSuperClass
+    public function getSoaScale(): SoaScaleSuperClass
     {
         return $this->soaScale;
     }
 
-    public function setSoaScale(OperationalRiskScaleSuperClass $soaScale): self
+    public function setSoaScale(SoaScaleSuperClass $soaScale): self
     {
         $this->soaScale = $soaScale;
         $soaScale->addSoaScaleComments($this);

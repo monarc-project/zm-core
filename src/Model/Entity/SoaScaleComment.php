@@ -10,7 +10,7 @@ namespace Monarc\Core\Model\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Table(name="soa_scale")
+ * @ORM\Table(name="soa_scale_comments")
  * @ORM\Entity
  */
 class SoaScaleComment extends SoaScaleCommentSuperClass
