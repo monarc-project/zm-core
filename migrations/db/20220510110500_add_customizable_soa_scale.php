@@ -27,7 +27,7 @@ class AddCustomizableSoaScale extends AbstractMigration
         $table = $this->table('soa_scale_comments');
         $table
             ->addColumn('soa_scale_id', 'integer', array('null' => true, 'signed' => false))
-            ->addColumn('level', 'integer', array('null' => true, 'signed' => false))
+            ->addColumn('scale_index', 'integer', array('null' => true, 'signed' => false))
             ->addColumn('colour', 'string', array('null' => true, 'limit' => 255))
             ->addColumn('comment_translation_key', 'string', array('null' => true, 'limit' => 7))
             ->addColumn('creator', 'string', array('null' => true, 'limit' => 255))
