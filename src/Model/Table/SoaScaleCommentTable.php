@@ -7,7 +7,9 @@
 
 namespace Monarc\Core\Model\Table;
 
-use Monarc\Core\Model\Db;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityNotFoundException;
+use Doctrine\ORM\PersistentCollection;
 use Monarc\Core\Model\Entity\SoaScaleComment;
 use Monarc\Core\Service\ConnectedUserService;
 use Monarc\Core\Model\Entity\AnrSuperClass;
@@ -16,11 +18,11 @@ use Monarc\Core\Model\Entity\AnrSuperClass;
  * Class SoaScaleTable
  * @package Monarc\Core\Model\Table
  */
-class SoaScaleCommentTable extends AbstractEntityTable
+class SoaScaleCommentTable extends AbstractTable
 {
-    public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
+    public function __construct(EntityManager $entityManager, string $entityName = SoaScaleComment::class)
     {
-        parent::__construct($dbService, SoaScaleComment::class, $connectedUserService);
+        parent::__construct($entityManager, $entityName);
     }
 
     /**

@@ -12,15 +12,12 @@ use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\SoaScaleCommentSuperClass;
-use Monarc\Core\Model\Entity\SoaScaleSuperClass;
 use Monarc\Core\Model\Entity\TranslationSuperClass;
 use Monarc\Core\Model\Entity\UserSuperClass;
-use Monarc\Core\Model\Entity\SoaScale;
 use Monarc\Core\Model\Entity\SoaScaleComment;
 use Monarc\Core\Model\Entity\Translation;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\SoaScaleCommentTable;
-use Monarc\Core\Model\Table\SoaScaleTable;
 use Monarc\Core\Model\Table\TranslationTable;
 use Ramsey\Uuid\Uuid;
 
@@ -80,6 +77,77 @@ class SoaScaleCommentService
         }
 
         return $result;
+    }
+
+    public function createOrHideSoaScaleComment(int $anrId, array $data): void
+    {
+        $anr = $this->anrTable->findById($anrId);
+
+        //current scale comments
+        $soaScaleComments = $this->soaScaleCommentTable->findByAnr($anr);
+        $numberOfCurrentComments = count($soaScaleComments);
+
+        if (isset($data['numberOfLevels'])) {
+            $levelsNumber = (int)$data['numberOfLevels'];
+            foreach ($soaScaleComments as $soaScaleComment) {
+                if ($soaScaleComment->getScaleIndex() < $levelsNumber) {
+                    $soaScaleComment->setIsHidden(false);
+                    $this->soaScaleCommentTable->save($soaScaleComment, false);
+                } elseif ($soaScaleComment->getScaleIndex() >= $levelsNumber) {
+                    $soaScaleComment->setIsHidden(true);
+                    $this->soaScaleCommentTable->save($soaScaleComment, false);
+                }
+            }
+            if ($levelsNumber > $numberOfCurrentComments) {
+                $languageCodes = $this->getLanguageCodesForTranslations($anr);
+                for ($i=$numberOfCurrentComments; $i < $levelsNumber; $i++) {
+                    $this->createSoaScaleComment(
+                        $anr,
+                        $i,
+                        $languageCodes
+                    );
+                }
+            }
+            $this->soaScaleCommentTable->flush();
+        }
+    }
+
+    public function update(int $id, array $data)
+    {
+    }
+
+    protected function createSoaScaleComment(
+        AnrSuperClass $anr,
+        int $scaleIndex,
+        array $languageCodes,
+        bool $isFlushable = false
+    ): void {
+        $scaleComment = (new soaScaleComment())
+            ->setAnr($anr)
+            ->setScaleIndex($scaleIndex)
+            ->setColour('')
+            ->setIsHidden(false)
+            ->setCommentTranslationKey((string)Uuid::uuid4())
+            ->setCreator($this->connectedUser->getEmail());
+
+        $this->soaScaleCommentTable->save($scaleComment, false);
+
+        foreach ($languageCodes as $languageCode) {
+            // Create a translation for the scaleComment (init with blank value).
+            $translation = $this->createTranslationObject(
+                $anr,
+                Translation::SOA_SCALE_COMMENT,
+                $scaleComment->getCommentTranslationKey(),
+                $languageCode,
+                ''
+            );
+
+            $this->translationTable->save($translation, false);
+        }
+
+        if ($isFlushable) {
+            $this->soaScaleCommentTable->flush();
+        }
     }
 
     protected function createTranslationObject(
