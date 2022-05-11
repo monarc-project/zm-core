@@ -10,6 +10,7 @@ namespace Monarc\Core\Model\Table;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\PersistentCollection;
+use Doctrine\Common\Collections\Criteria;
 use Monarc\Core\Model\Entity\SoaScaleComment;
 use Monarc\Core\Service\ConnectedUserService;
 use Monarc\Core\Model\Entity\AnrSuperClass;
@@ -33,6 +34,7 @@ class SoaScaleCommentTable extends AbstractTable
         return $this->getRepository()->createQueryBuilder('orsc')
             ->where('orsc.anr = :anr')
             ->setParameter('anr', $anr)
+            ->orderBy('orsc.scaleIndex', Criteria::ASC)
             ->getQuery()
             ->getResult();
     }
