@@ -112,8 +112,25 @@ class SoaScaleCommentService
         }
     }
 
-    public function update(int $id, array $data)
+    public function update(int $id, array $data): void
     {
+        /** @var SoaScaleComment $soaScaleComment */
+        $soaScaleComment = $this->soaScaleCommentTable->findById($id);
+
+        if (!empty($data['comment'])) {
+            $languageCode = $data['language'] ?? $this->getAnrLanguageCode($soaScaleComment->getAnr());
+            $translationKey = $soaScaleComment->getCommentTranslationKey();
+            if (!empty($translationKey)) {
+                $translation = $this->translationTable
+                    ->findByAnrKeyAndLanguage($soaScaleComment->getAnr(), $translationKey, $languageCode);
+                $translation->setValue($data['comment']);
+                $this->translationTable->save($translation, false);
+            }
+        }
+        if (!empty($data['colour'])) {
+            $soaScaleComment->setColour($data['colour']);
+        }
+        $this->soaScaleCommentTable->save($soaScaleComment);
     }
 
     protected function createSoaScaleComment(
