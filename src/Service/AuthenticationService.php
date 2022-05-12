@@ -44,10 +44,18 @@ class AuthenticationService
     public function authenticate($data): array
     {
         if (!empty($data['login']) && !empty($data['password'])) {
+            $token = '';
+            if (isset($data['otp'])) {
+                $token = $data['otp'];
+            } elseif (isset($data['recoveryCode'])) {
+                $token = $data['recoveryCode'];
+            }
+            file_put_contents('php://stderr', print_r('[Recovery code] Token: ', TRUE));
+            file_put_contents('php://stderr', print_r($token, TRUE).PHP_EOL);
             $res = $this->authenticationAdapter
                 ->setIdentity($data['login'])
                 ->setCredential($data['password'])
-                ->authenticate($data['otp']);
+                ->authenticate($token);
 
             if ($res->isValid() && $res->getCode() != 2) {
 

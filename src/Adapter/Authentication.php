@@ -49,7 +49,7 @@ class Authentication extends AbstractAdapter
 
     /**
      * Authenticates the user from its identity and credential.
-     * @param string $token The OTP token submitted by the user.
+     * @param string $token The OTP token submitted by the user or a recovery code.
      * @return Result The authentication result
      */
     public function authenticate($token = ''): Result
@@ -73,16 +73,26 @@ class Authentication extends AbstractAdapter
 
                         return new Result(self::TWO_FA_AUTHENTICATION_REQUIRED, $this->getIdentity());
                     } else {
-                        // verify the submitted token
+                        // verify the submitted OTP token
                         $tfa = new TwoFactorAuth('MONARC TwoFactorAuth');
-                        if (! $tfa->verifyCode($user->getSecretKey(), $token)) {
+                        if ($tfa->verifyCode($user->getSecretKey(), $token)) {
 
-                            return new Result(Result::FAILURE_CREDENTIAL_INVALID, $this->getIdentity());
+                            return new Result(Result::SUCCESS, $this->getIdentity());
+                        }
+
+                        // verify the submitted recovery code
+                        $codes = $user->getRecoveryCodes();
+                        if (($key = array_search($token, $codes)) !== false) {
+                            // a recovery code can be used once
+                            unset($codes[$key]);
+                            $user->setRecoveryCodes($codes);
+                            $this->userTable->saveEntity($user);
+                            return new Result(Result::SUCCESS, $this->getIdentity());
                         }
                     }
                 }
 
-                return new Result(Result::SUCCESS, $this->getIdentity());
+                return new Result(Result::FAILURE_CREDENTIAL_INVALID, $this->getIdentity());
             }
 
             return new Result(Result::FAILURE_CREDENTIAL_INVALID, $this->getIdentity());
