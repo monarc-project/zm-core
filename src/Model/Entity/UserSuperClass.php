@@ -307,7 +307,7 @@ abstract class UserSuperClass
         return $this;
     }
 
-    public function getRecoveryCodes(): ?string
+    public function getRecoveryCodes(): ?array
     {
         return $this->recoveryCodes;
     }
