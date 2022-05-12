@@ -109,6 +109,12 @@ abstract class UserSuperClass
      *
      * @ORM\Column(name="recovery_codes", type="string", length=250, options={"default":""})
      */
+
+    /**
+     * @var ArrayCollection
+     *
+     * @ORM\Column(name="recovery_codes", type="array", length=250, options={"default":""})
+     */
     protected $recoveryCodes;
 
     /**
@@ -294,7 +300,7 @@ abstract class UserSuperClass
         return $this->secretKey;
     }
 
-    public function setSecretKey(string $secretKey): self
+    public function setSecretKey(?string $secretKey): self
     {
         $this->secretKey = $secretKey;
 
@@ -306,7 +312,7 @@ abstract class UserSuperClass
         return $this->recoveryCodes;
     }
 
-    public function setRecoveryCodes(string $recoveryCodes): self
+    public function setRecoveryCodes(?array $recoveryCodes): self
     {
         $this->recoveryCodes = $recoveryCodes;
 
