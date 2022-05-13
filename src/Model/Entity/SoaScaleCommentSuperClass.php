@@ -91,19 +91,6 @@ class SoaScaleCommentSuperClass
         return $this;
     }
 
-    public function getSoaScale(): SoaScaleSuperClass
-    {
-        return $this->soaScale;
-    }
-
-    public function setSoaScale(SoaScaleSuperClass $soaScale): self
-    {
-        $this->soaScale = $soaScale;
-        $soaScale->addSoaScaleComments($this);
-
-        return $this;
-    }
-
     public function getScaleIndex(): int
     {
         return $this->scaleIndex;
