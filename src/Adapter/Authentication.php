@@ -81,13 +81,15 @@ class Authentication extends AbstractAdapter
                         }
 
                         // verify the submitted recovery code
-                        $codes = $user->getRecoveryCodes();
-                        if (($key = array_search($token, $codes)) !== false) {
-                            // a recovery code can be used once
-                            unset($codes[$key]);
-                            $user->setRecoveryCodes($codes);
-                            $this->userTable->saveEntity($user);
-                            return new Result(Result::SUCCESS, $this->getIdentity());
+                        $recoveryCodes = $user->getRecoveryCodes();
+                        foreach ($recoveryCodes as $key=>$recoveryCode) {
+                            if (password_verify($token, $recoveryCode)) {
+                                unset($recoveryCodes[$key]);
+                                $user->setRecoveryCodes($recoveryCodes);
+                                $this->userTable->saveEntity($user);
+
+                                return new Result(Result::SUCCESS, $this->getIdentity());
+                            }
                         }
                     }
                 }
