@@ -105,12 +105,6 @@ abstract class UserSuperClass
     protected $secretKey;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="recovery_codes", type="string", length=250, options={"default":""})
-     */
-
-    /**
      * @var ArrayCollection
      *
      * @ORM\Column(name="recovery_codes", type="array", length=250, options={"default":""})

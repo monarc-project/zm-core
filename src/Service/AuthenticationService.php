@@ -50,8 +50,7 @@ class AuthenticationService
             } elseif (isset($data['recoveryCode'])) {
                 $token = $data['recoveryCode'];
             }
-            file_put_contents('php://stderr', print_r('[Recovery code] Token: ', TRUE));
-            file_put_contents('php://stderr', print_r($token, TRUE).PHP_EOL);
+
             $res = $this->authenticationAdapter
                 ->setIdentity($data['login'])
                 ->setCredential($data['password'])

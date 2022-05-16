@@ -92,6 +92,9 @@ class Authentication extends AbstractAdapter
                             }
                         }
                     }
+                } else {
+
+                    return new Result(Result::SUCCESS, $this->getIdentity());
                 }
 
                 return new Result(Result::FAILURE_CREDENTIAL_INVALID, $this->getIdentity());
