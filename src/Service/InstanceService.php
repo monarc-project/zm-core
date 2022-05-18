@@ -63,6 +63,7 @@ class InstanceService extends AbstractService
     protected $configService;
     protected $operationalRiskScalesExportService;
     protected $anrMetadatasOnInstancesExportService;
+    protected $soaScaleCommentExportService;
 
     // Export (Services)
     protected $objectExportService;
@@ -1207,6 +1208,10 @@ class InstanceService extends AbstractService
             /** @var OperationalRiskScalesExportService $operationalRiskScalesExportService */
             $operationalRiskScalesExportService = $this->get('operationalRiskScalesExportService');
             $return['operationalRiskScales'] = $operationalRiskScalesExportService->generateExportArray(
+                $instance->getAnr()
+            );
+            $soaScaleCommentExportService = $this->get('soaScaleCommentExportService');
+            $return['soaScaleComment'] = $soaScaleCommentExportService->generateExportArray(
                 $instance->getAnr()
             );
         }

@@ -463,6 +463,7 @@ return [
             Service\OperationalRiskScaleCommentService::class => AutowireFactory::class,
             Service\OperationalRiskScalesExportService::class => AutowireFactory::class,
             Service\AnrMetadatasOnInstancesExportService::class => AutowireFactory::class,
+            Service\SoaScaleCommentExportService::class => AutowireFactory::class,
             Service\AnrMetadatasOnInstancesService::class => AutowireFactory::class,
             Service\SoaScaleCommentService::class => AutowireFactory::class,
 
