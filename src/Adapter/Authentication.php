@@ -70,19 +70,17 @@ class Authentication extends AbstractAdapter
                 if ($user->isTwoFactorAuthEnabled()) {
                     // check if the 2FA token has been submitted
                     if (empty($token)) {
-
                         return new Result(self::TWO_FA_AUTHENTICATION_REQUIRED, $this->getIdentity());
                     } else {
                         // verify the submitted OTP token
                         $tfa = new TwoFactorAuth('MONARC TwoFactorAuth');
                         if ($tfa->verifyCode($user->getSecretKey(), $token)) {
-
                             return new Result(Result::SUCCESS, $this->getIdentity());
                         }
 
                         // verify the submitted recovery code
                         $recoveryCodes = $user->getRecoveryCodes();
-                        foreach ($recoveryCodes as $key=>$recoveryCode) {
+                        foreach ($recoveryCodes as $key => $recoveryCode) {
                             if (password_verify($token, $recoveryCode)) {
                                 unset($recoveryCodes[$key]);
                                 $user->setRecoveryCodes($recoveryCodes);
@@ -93,7 +91,6 @@ class Authentication extends AbstractAdapter
                         }
                     }
                 } else {
-
                     return new Result(Result::SUCCESS, $this->getIdentity());
                 }
 
