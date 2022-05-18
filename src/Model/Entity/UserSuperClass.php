@@ -308,7 +308,7 @@ abstract class UserSuperClass
 
     public function setRecoveryCodes(?array $recoveryCodes): self
     {
-        $this->recoveryCodes = array_map('password_hash', $recoveryCodes , [PASSWORD_BCRYPT]);
+        $this->recoveryCodes = array_map('password_hash', $recoveryCodes, [PASSWORD_BCRYPT]);
 
         return $this;
     }

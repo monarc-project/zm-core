@@ -57,7 +57,6 @@ class AuthenticationService
                 ->authenticate($token);
 
             if ($res->isValid() && $res->getCode() != 2) {
-
                 $user = $this->authenticationAdapter->getUser();
                 $token = uniqid(bin2hex(random_bytes(random_int(20, 40))), true);
                 $this->authenticationStorage->addUserToken($token, $user);
