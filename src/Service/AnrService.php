@@ -56,6 +56,7 @@ class AnrService extends AbstractService
     protected $configService;
     protected $operationalRiskScalesExportService;
     protected $anrMetadatasOnInstancesExportService;
+    protected $soaScaleCommentExportService;
 
     /**
     * @inheritdoc
@@ -377,6 +378,12 @@ class AnrService extends AbstractService
         if ($withEval) {
             // TODO: Soa functionality is related only to FrontOffice.
             if ($withSoas) {
+                // soaScaleComment
+                $soaScaleCommentExportService = $this->get('soaScaleCommentExportService');
+                $return['soaScaleComment'] = $soaScaleCommentExportService->generateExportArray(
+                    $anr
+                );
+
                 // referentials
                 $return['referentials'] = [];
                 $referentialTable = $this->get('referentialTable');
@@ -452,7 +459,6 @@ class AnrService extends AbstractService
                     'remarks' => 'remarks',
                     'evidences' => 'evidences',
                     'actions' => 'actions',
-                    'compliance' => 'compliance',
                     'EX' => 'EX',
                     'LR' => 'LR',
                     'CO' => 'CO',
@@ -462,6 +468,7 @@ class AnrService extends AbstractService
                 ];
                 foreach ($soas as $s) {
                     $newSoas = $s->getJsonArray($soasArray);
+                    $newSoas['soaScaleComment'] = $s->getSoaScaleComment()->getId();
                     $newSoas['measure_id'] = $s->getMeasure()->getUuid();
                     $return['soas'][] = $newSoas;
                 }

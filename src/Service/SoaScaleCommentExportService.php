@@ -53,7 +53,7 @@ class SoaScaleCommentExportService
                 'scaleIndex' => $scale->getScaleIndex(),
                 'isHidden' => $scale->isHIdden(),
                 'colour' => $scale->getColour(),
-                'comment' => $translationComment,
+                'comment' => $translationComment !== null ? $translationComment->getValue() : '',
             ];
         }
         return $result;
