@@ -214,5 +214,4 @@ class UserService
 
         return [$order, 'ASC'];
     }
-
 }

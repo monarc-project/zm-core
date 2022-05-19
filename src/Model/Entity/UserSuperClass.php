@@ -105,9 +105,9 @@ abstract class UserSuperClass
     protected $secretKey;
 
     /**
-     * @var string
+     * @var ArrayCollection
      *
-     * @ORM\Column(name="recovery_codes", type="string", length=250, options={"default":""})
+     * @ORM\Column(name="recovery_codes", type="array", length=250, options={"default":""})
      */
     protected $recoveryCodes;
 
@@ -294,21 +294,21 @@ abstract class UserSuperClass
         return $this->secretKey;
     }
 
-    public function setSecretKey(string $secretKey): self
+    public function setSecretKey(?string $secretKey): self
     {
         $this->secretKey = $secretKey;
 
         return $this;
     }
 
-    public function getRecoveryCodes(): ?string
+    public function getRecoveryCodes(): ?array
     {
         return $this->recoveryCodes;
     }
 
-    public function setRecoveryCodes(string $recoveryCodes): self
+    public function setRecoveryCodes(?array $recoveryCodes): self
     {
-        $this->recoveryCodes = $recoveryCodes;
+        $this->recoveryCodes = array_map('password_hash', $recoveryCodes, [PASSWORD_BCRYPT]);
 
         return $this;
     }

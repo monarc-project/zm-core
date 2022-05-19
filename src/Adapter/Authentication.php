@@ -49,7 +49,7 @@ class Authentication extends AbstractAdapter
 
     /**
      * Authenticates the user from its identity and credential.
-     * @param string $token The OTP token submitted by the user.
+     * @param string $token The OTP token submitted by the user or a recovery code.
      * @return Result The authentication result
      */
     public function authenticate($token = ''): Result
@@ -70,19 +70,31 @@ class Authentication extends AbstractAdapter
                 if ($user->isTwoFactorAuthEnabled()) {
                     // check if the 2FA token has been submitted
                     if (empty($token)) {
-
                         return new Result(self::TWO_FA_AUTHENTICATION_REQUIRED, $this->getIdentity());
                     } else {
-                        // verify the submitted token
+                        // verify the submitted OTP token
                         $tfa = new TwoFactorAuth('MONARC TwoFactorAuth');
-                        if (! $tfa->verifyCode($user->getSecretKey(), $token)) {
+                        if ($tfa->verifyCode($user->getSecretKey(), $token)) {
+                            return new Result(Result::SUCCESS, $this->getIdentity());
+                        }
 
-                            return new Result(Result::FAILURE_CREDENTIAL_INVALID, $this->getIdentity());
+                        // verify the submitted recovery code
+                        $recoveryCodes = $user->getRecoveryCodes();
+                        foreach ($recoveryCodes as $key => $recoveryCode) {
+                            if (password_verify($token, $recoveryCode)) {
+                                unset($recoveryCodes[$key]);
+                                $user->setRecoveryCodes($recoveryCodes);
+                                $this->userTable->saveEntity($user);
+
+                                return new Result(Result::SUCCESS, $this->getIdentity());
+                            }
                         }
                     }
+                } else {
+                    return new Result(Result::SUCCESS, $this->getIdentity());
                 }
 
-                return new Result(Result::SUCCESS, $this->getIdentity());
+                return new Result(Result::FAILURE_CREDENTIAL_INVALID, $this->getIdentity());
             }
 
             return new Result(Result::FAILURE_CREDENTIAL_INVALID, $this->getIdentity());
