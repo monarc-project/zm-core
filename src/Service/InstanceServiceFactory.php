@@ -43,7 +43,6 @@ class InstanceServiceFactory extends AbstractServiceFactory
         'configService' => ConfigService::class,
         'operationalRiskScalesExportService' => OperationalRiskScalesExportService::class,
         'anrMetadatasOnInstancesExportService' => AnrMetadatasOnInstancesExportService::class,
-        'soaScaleCommentExportService' =>  SoaScaleCommentExportService::class,
     ];
 
     // TODO: A temporary solution to inject SharedEventManager. All the factories classes will be removed.
