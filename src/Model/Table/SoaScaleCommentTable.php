@@ -31,10 +31,23 @@ class SoaScaleCommentTable extends AbstractTable
      */
     public function findByAnr(AnrSuperClass $anr): array
     {
-        return $this->getRepository()->createQueryBuilder('orsc')
-            ->where('orsc.anr = :anr')
+        return $this->getRepository()->createQueryBuilder('ssc')
+            ->where('ssc.anr = :anr')
             ->setParameter('anr', $anr)
-            ->orderBy('orsc.scaleIndex', Criteria::ASC)
+            ->orderBy('ssc.scaleIndex', Criteria::ASC)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return SoaScaleComment[]
+     */
+    public function findByAnrIndexedByScaleIndex(AnrSuperClass $anr): array
+    {
+        return $this->getRepository()->createQueryBuilder('ssc', 'ssc.scaleIndex')
+            ->where('ssc.anr = :anr')
+            ->setParameter('anr', $anr)
+            ->orderBy('ssc.scaleIndex', Criteria::ASC)
             ->getQuery()
             ->getResult();
     }
