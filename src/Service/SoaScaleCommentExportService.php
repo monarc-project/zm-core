@@ -48,13 +48,15 @@ class SoaScaleCommentExportService
         /** @var SoaScaleCommentTable $soaScaleCommentTable */
         $scales = $this->soaScaleCommentTable->findByAnr($anr);
         foreach ($scales as $scale) {
-            $translationComment = $soaScaleCommentTranslations[$scale->getCommentTranslationKey()] ?? null;
-            $result[$scale->getId()] = [
-                'scaleIndex' => $scale->getScaleIndex(),
-                'isHidden' => $scale->isHIdden(),
-                'colour' => $scale->getColour(),
-                'comment' => $translationComment !== null ? $translationComment->getValue() : '',
-            ];
+            if (!$scale->isHidden()) {
+                $translationComment = $soaScaleCommentTranslations[$scale->getCommentTranslationKey()] ?? null;
+                $result[$scale->getId()] = [
+                    'scaleIndex' => $scale->getScaleIndex(),
+                    'isHidden' => $scale->isHidden(),
+                    'colour' => $scale->getColour(),
+                    'comment' => $translationComment !== null ? $translationComment->getValue() : '',
+                ];
+            }
         }
         return $result;
     }
