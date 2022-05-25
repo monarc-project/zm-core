@@ -140,6 +140,7 @@ abstract class UserSuperClass
         if (isset($data['password'])) {
             $this->setPassword($data['password']);
         }
+        $this->isTwoFactorAuthEnabled = false;
         $this->secretKey = '';
         $this->language = $data['language'];
         $this->mospApiKey = $data['mospApiKey'];
