@@ -1,7 +1,7 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -9,15 +9,13 @@ namespace Monarc\Core\Model\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Monarc\Core\Model\Entity\Interfaces\PositionedEntityInterface;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
-use Laminas\Validator\Uuid as ValidatorUuid;
 use Ramsey\Uuid\Lazy\LazyUuidFromString;
 use Ramsey\Uuid\Uuid;
 
 /**
- * Amv
- *
  * @ORM\Table(name="amvs", indexes={
  *      @ORM\Index(name="anr", columns={"anr_id"}),
  *      @ORM\Index(name="asset", columns={"asset_id"}),
@@ -27,10 +25,13 @@ use Ramsey\Uuid\Uuid;
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
-class AmvSuperClass extends AbstractEntity
+class AmvSuperClass implements PositionedEntityInterface
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
+
+    public const STATUS_ACTIVE = 1;
+    public const STATUS_INACTIVE = 0;
 
     /**
      * @var LazyUuidFromString|string
@@ -55,7 +56,7 @@ class AmvSuperClass extends AbstractEntity
      *
      * @ORM\ManyToOne(targetEntity="Asset", cascade={"persist"})
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="asset_id", referencedColumnName="uuid", nullable=true)
+     *   @ORM\JoinColumn(name="asset_id", referencedColumnName="uuid", nullable=false)
      * })
      */
     protected $asset;
@@ -65,7 +66,7 @@ class AmvSuperClass extends AbstractEntity
      *
      * @ORM\ManyToOne(targetEntity="Threat", cascade={"persist"})
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="threat_id", referencedColumnName="uuid", nullable=true)
+     *   @ORM\JoinColumn(name="threat_id", referencedColumnName="uuid", nullable=false)
      * })
      */
     protected $threat;
@@ -75,13 +76,14 @@ class AmvSuperClass extends AbstractEntity
      *
      * @ORM\ManyToOne(targetEntity="Vulnerability", cascade={"persist"})
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="vulnerability_id", referencedColumnName="uuid", nullable=true)
+     *   @ORM\JoinColumn(name="vulnerability_id", referencedColumnName="uuid", nullable=false)
      * })
      */
     protected $vulnerability;
 
     /**
      * @var ArrayCollection|MeasureSuperClass[]
+     *
      * @ORM\ManyToMany(targetEntity="Measure", mappedBy="amvs", cascade={"persist"})
      */
     protected $measures;
@@ -100,11 +102,22 @@ class AmvSuperClass extends AbstractEntity
      */
     protected $status = 1;
 
-    protected $parameters = array(
-        'implicitPosition' => array(
-            'field' => 'asset',
-        ),
-    );
+    public function __construct()
+    {
+        $this->measures = new ArrayCollection();
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function generateAndSetUuid(): self
+    {
+        if ($this->uuid === null) {
+            $this->uuid = Uuid::uuid4();
+        }
+
+        return $this;
+    }
 
     public function getUuid(): ?string
     {
@@ -123,77 +136,54 @@ class AmvSuperClass extends AbstractEntity
         return $this;
     }
 
-    /**
-     * @return AnrSuperClass
-     */
-    public function getAnr()
+    public function getAnr(): ?AnrSuperClass
     {
         return $this->anr;
     }
 
-    /**
-     * @param AnrSuperClass $anr
-     */
-    public function setAnr($anr)
+    public function setAnr(AnrSuperClass $anr): self
     {
         $this->anr = $anr;
+
         return $this;
     }
 
-    /**
-     * @return ThreatSuperClass
-     */
-    public function getThreat()
+    public function getThreat(): ThreatSuperClass
     {
         return $this->threat;
     }
 
-    /**
-     * @param ThreatSuperClass $threat
-     */
-    public function setThreat($threat)
+    public function setThreat(ThreatSuperClass $threat): self
     {
         $this->threat = $threat;
+
         return $this;
     }
 
-    /**
-     * @return AssetSuperClass
-     */
-    public function getAsset()
+    public function getAsset(): AssetSuperClass
     {
         return $this->asset;
     }
 
-    /**
-     * @param AssetSuperClass $asset
-     */
-    public function setAsset($asset)
+    public function setAsset(AssetSuperClass $asset): self
     {
         $this->asset = $asset;
+
         return $this;
     }
 
-    /**
-     * @return VulnerabilitySuperClass
-     */
-    public function getVulnerability()
+    public function getVulnerability(): VulnerabilitySuperClass
     {
         return $this->vulnerability;
     }
 
-    /**
-     * @param VulnerabilitySuperClass $vulnerability
-     */
-    public function setVulnerability($vulnerability)
+    public function setVulnerability(VulnerabilitySuperClass $vulnerability): self
     {
         $this->vulnerability = $vulnerability;
+
         return $this;
     }
 
-    /**
-     * @return MeasureSuperClass[]
-     */
     public function getMeasures()
     {
         return $this->measures;
@@ -202,15 +192,10 @@ class AmvSuperClass extends AbstractEntity
     /**
      * @param MeasureSuperClass[] $measures
      */
-    public function setMeasures($measures): self
+    public function setMeasures(iterable $measures): self
     {
-        // TODO: change when AnrService will be refactored.
-        if ($measures === null) {
-            $this->measures = new ArrayCollection();
-        } else {
-            foreach ($measures as $measure) {
-                $this->addMeasure($measure);
-            }
+        foreach ($measures as $measure) {
+            $this->addMeasure($measure);
         }
 
         return $this;
@@ -218,14 +203,8 @@ class AmvSuperClass extends AbstractEntity
 
     public function addMeasure(MeasureSuperClass $measure): self
     {
-        // TODO: move to the constructor, after Anr duplication is refactored.
-        if ($this->measures === null) {
-            $this->measures = new ArrayCollection();
-        }
-
         if (!$this->measures->contains($measure)) {
             $this->measures->add($measure);
-
             $measure->addAmv($this);
         }
 
@@ -235,6 +214,16 @@ class AmvSuperClass extends AbstractEntity
     public function removeMeasure(MeasureSuperClass $measure): self
     {
         if ($this->measures->contains($measure)) {
+            $this->measures->removeElement($measure);
+            $measure->removeAmv($this);
+        }
+
+        return $this;
+    }
+
+    public function unlinkMeasures(): self
+    {
+        foreach ($this->measures as $measure) {
             $this->measures->removeElement($measure);
             $measure->removeAmv($this);
         }
@@ -254,6 +243,11 @@ class AmvSuperClass extends AbstractEntity
         return $this;
     }
 
+    public function getImplicitPositionRelationsValues(): array
+    {
+        return ['asset' => $this->asset->getUuid()];
+    }
+
     public function getStatus(): int
     {
         return $this->status;
@@ -264,186 +258,5 @@ class AmvSuperClass extends AbstractEntity
         $this->status = $status;
 
         return $this;
-    }
-
-    public function getFiltersForService()
-    {
-        $filterJoin = [
-            [
-                'as' => 'a',
-                'rel' => 'asset',
-            ],
-            [
-                'as' => 'th',
-                'rel' => 'threat',
-            ],
-            [
-                'as' => 'v',
-                'rel' => 'vulnerability',
-            ],
-        ];
-        $filtersCol = [
-            'a.code',
-            'a.label1',
-            'a.label2',
-            'a.label3',
-            'a.description1',
-            'a.description2',
-            'a.description3',
-            'th.code',
-            'th.label1',
-            'th.label2',
-            'th.label3',
-            'th.description1',
-            'th.description2',
-            'th.description3',
-            'v.code',
-            'v.label1',
-            'v.label2',
-            'v.label3',
-            'v.description1',
-            'v.description2',
-            'v.description3',
-        ];
-        return [$filterJoin, [], $filtersCol];
-    }
-
-    /**
-     * TODO: Remove the business logic from the entity.
-     * It brakes the responsibility principles and hide the logic.
-     */
-    public function getInputFilter($partial = false)
-    {
-        if (!$this->inputFilter) {
-            parent::getInputFilter($partial);
-
-            $this->inputFilter->add(array(
-                'name' => 'uuid',
-                'required' => false,
-                'allow_empty' => true,
-                'continue_if_empty' => true,
-                'filters' => array(),
-                'validators' => array(
-                    array(
-                        'name' => 'Callback', //'Monarc\Core\Validator\Uuid',
-                        'options' => array(
-                            'messages' => array(
-                                \Laminas\Validator\Callback::INVALID_VALUE => 'an uuid is missing or incorrect',
-                            ),
-                            'callback' => function ($value, $context = array()) use ($partial) {
-                                if (!$partial) {
-                                    if (!preg_match(ValidatorUuid::REGEX_UUID, $context['uuid'])) {
-                                        return false;
-                                    }
-                                    return true;
-                                } else {
-                                    return true;
-                                }
-                            },
-                        ),
-                    ),
-                ),
-            ));
-
-            $texts = ['threat', 'vulnerability', 'asset'];
-            foreach ($texts as $text) {
-                $this->inputFilter->add(array(
-                    'name' => $text,
-                    'required' => ($partial) ? false : true,
-                    'allow_empty' => false,
-                    'validators' => array(
-                        array(
-                            'name' => 'Callback', //'Monarc\Core\Validator\Uuid',
-                            'options' => array(
-                                'messages' => array(
-                                    \Laminas\Validator\Callback::INVALID_VALUE => 'an uuid is missing or incorrect',
-                                ),
-                                'callback' => function ($value, $context = array()) use ($partial) {
-                                    if (!$partial) {
-                                        return Uuid::isValid(\is_array($value) ? $value['uuid'] : $value);
-
-                                    }
-
-                                    return true;
-                                },
-                            ),
-                        ),
-                    ),
-                ));
-            }
-
-            $this->inputFilter->add(array(
-                'name' => 'threat',
-                'required' => ($partial) ? false : true,
-                'allow_empty' => false,
-                'validators' => array(
-                    array(
-                        'name' => 'Callback', //'Monarc\Core\Validator\UniqueAMV',
-                        'options' => array(
-                            'messages' => array(
-                                \Laminas\Validator\Callback::INVALID_VALUE => 'This AMV link is already used',
-                            ),
-                            'callback' => function ($value, $context = array()) use ($partial) {
-                                if (!$partial) {
-                                    $adapter = $this->getDbAdapter();
-                                    if (empty($adapter)) {
-                                        return false;
-                                    } else { //BO case
-                                        $res = $adapter->getRepository(get_class($this))->createQueryBuilder('a')
-                                            ->select(array('a.uuid'));
-                                        if (empty($context['anr'])) {
-                                            $res->innerJoin('a.vulnerability', 'vulnerability')
-                                                ->innerJoin('a.threat', 'threat')
-                                                ->innerJoin('a.asset', 'asset')
-                                                ->where('vulnerability.uuid = :vulnerability')
-                                                ->andWhere('asset.uuid = :asset')
-                                                ->andWhere('threat.uuid = :threat')
-                                                ->andWhere('vulnerability.anr IS NULL')
-                                                ->andWhere('asset.anr IS NULL')
-                                                ->andWhere('threat.anr IS NULL ')
-                                                ->andWhere(' a.anr  IS NULL')
-                                                ->setParameter(':vulnerability', $context['vulnerability'])
-                                                ->setParameter(':threat', $context['threat'])
-                                                ->setParameter(':asset', $context['asset']);
-                                        } else { //FO case
-                                            $res->innerJoin('a.vulnerability', 'vulnerability')
-                                                ->innerJoin('a.threat', 'threat')
-                                                ->innerJoin('a.asset', 'asset')
-                                                ->where('vulnerability.uuid = :vulnerability ')
-                                                ->andWhere('asset.uuid = :asset ')
-                                                ->andWhere('threat.uuid = :threat ')
-                                                ->andWhere('vulnerability.anr = :anr ')
-                                                ->andWhere('asset.anr = :anr ')
-                                                ->andWhere('threat.anr = :anr ')
-                                                ->andWhere(' a.anr = :anr ')
-                                                ->setParameter(':vulnerability', !is_array($context['vulnerability'])?$context['vulnerability']:$context['vulnerability']['uuid'])
-                                                ->setParameter(':threat', !is_array($context['threat'])?$context['threat']:$context['threat']['uuid'])
-                                                ->setParameter(':asset', !is_array($context['asset'])?$context['asset']:$context['asset']['uuid'])
-                                                ->setParameter(':anr', $context['anr']);
-                                        }
-                                        $res = $res->getQuery()
-                                            ->getResult();
-                                        $amvUuid = empty($context['uuid']) ? $this->getUuid() : $context['uuid'];
-                                        if(empty($context['uuid'])){ //creation
-                                            if (!empty($res) && $amvUuid != $res[0]['uuid']) {
-                                                return false;
-                                            }
-                                        }else { //edition
-                                            if (!empty($res) && $amvUuid != $res[0]['uuid']) { //the amv link is existing
-                                                return false;
-                                            }
-                                        }
-                                    }
-                                    return true;
-                                }
-
-                                return true;
-                            },
-                        ),
-                    ),
-                ),
-            ));
-        }
-        return $this->inputFilter;
     }
 }

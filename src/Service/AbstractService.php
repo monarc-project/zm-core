@@ -14,14 +14,10 @@ use Monarc\Core\Model\Entity\Scale;
 use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Model\GetAndSet;
 use Monarc\Core\Model\Table\AbstractEntityTable;
-use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\ObjectObjectTable;
 use Monarc\Core\Model\Table\ScaleTable;
 use Monarc\Core\Traits\RiskTrait;
 use Doctrine\Common\Util\ClassUtils;
-
-// TODO: remove the cross projects dependency (long term) or require core for FrontOffice and vice versa (short term).
-use Monarc\FrontOffice\Model\Table\UserAnrTable;
 use Ramsey\Uuid\Uuid;
 use Doctrine\ORM\Query\QueryException;
 
@@ -256,6 +252,8 @@ abstract class AbstractService extends AbstractServiceFactory
     }
 
     /**
+     * TODO: Remove the method and all the calls. All the anr access validation is done in the Middleware.
+     *
      * Updates an entity in the database. The entity will be fetched using the provided $id, and data will be reset
      * from $data. If you want to update only specific fields while keeping the existing data untouched, see patch()
      *
@@ -278,13 +276,6 @@ abstract class AbstractService extends AbstractServiceFactory
         $entity = $this->get('table')->getEntity($id);
         if (!$entity) {
             throw new Exception('Entity does not exist', 412);
-        }
-
-        // If we try to override this object's ANR, make some sanity and security checks. Ensure the data's ANR matches
-        // the existing ANR, and that we have the rights to edit it.
-        // TODO: this part seems only belongs to FrontOffice as BackOffice doesn't have such functionality.
-        if (!empty($data['anr'])) {
-            $this->validateAnrPermissions($entity->getAnr(), [$data['anr']]);
         }
 
         // Filter fields we don't want to update, ever
@@ -312,6 +303,8 @@ abstract class AbstractService extends AbstractServiceFactory
     }
 
     /**
+     * TODO: Remove the method and all the calls. All the anr access validation is done in the Middleware.
+     *
      * Patches an entity in the database. This works similarly to the update() method, except that fields that are
      * not inside the $data array won't be touched, and their value will remain unchanged.
      *
@@ -327,11 +320,6 @@ abstract class AbstractService extends AbstractServiceFactory
         $entity = $this->get('table')->getEntity($id);
         if (!$entity) {
             throw new Exception('Entity does not exist', 412);
-        }
-        // If we try to override this object's ANR, make some sanity and security checks. Ensure the data's ANR matches
-        // the existing ANR, and that we have the rights to edit it.
-        if (!empty($data['anr'])) {
-            $this->validateAnrPermissions($entity->getAnr(), [$data['anr']]);
         }
 
         $entity->setDbAdapter($this->get('table')->getDb());
@@ -392,6 +380,8 @@ abstract class AbstractService extends AbstractServiceFactory
     }
 
     /**
+     * TODO: Remove the method and all the calls. All the anr access validation is done in the Middleware.
+     *
      * Deletes an element from the database if the ID and the ANR ID matches together, to avoid deleting an
      * item that doesn't belong to the passed ANR ID.
      *
@@ -403,15 +393,12 @@ abstract class AbstractService extends AbstractServiceFactory
      */
     public function deleteFromAnr($id, $anrId = null)
     {
-        if (!is_null($anrId)) {
-            $entity = $this->get('table')->getEntity($id);
-            $this->validateAnrPermissions($entity->getAnr(), [$anrId]);
-        }
-
         return $this->delete($id);
     }
 
     /**
+     * TODO: Remove the method and all the calls. All the anr access validation is done in the Middleware.
+     *
      * Deletes multiple elements from the database if the ID and the ANR ID matches together, to avoid deleting an
      * item that doesn't belong to the passed ANR ID.
      *
@@ -419,76 +406,10 @@ abstract class AbstractService extends AbstractServiceFactory
      * @param int|null $anrId The ANR ID to filter with
      *
      * @return bool True if the deletion is successful, false otherwise
-     * @throws Exception If the ANR is invalid, or the user has no rights on the ANR, or the object's ANR ID mismatches
      */
     public function deleteListFromAnr($data, $anrId = null)
     {
-        /** @var AnrTable|null $anrTable */
-        $anrTable = $this->get('anrTable');
-        if ($anrId !== null && $anrTable !== null) {
-            $anr = $anrTable->findById($anrId);
-
-            $this->validateAnrPermissions($anr, $data);
-        }
-
         return $this->get('table')->deleteList($data);
-    }
-
-    /**
-     * Compares the fields values of two entities and return their differences. Note that common fields such as
-     * creator, created_at, updated_at, ... are filtered out of the diff.
-     *
-     * @param AbstractEntity $newEntity The new entity to compare
-     * @param AbstractEntity $oldEntity The old entity to compare
-     *
-     * @return array An array of strings with the difference in the following format: "key: oldValue => newValue"
-     */
-    public function compareEntities($newEntity, $oldEntity)
-    {
-        $deps = [];
-        foreach ($this->dependencies as $dep) {
-            $propertyName = $dep;
-            $matching = [];
-            if (preg_match("/(\[([a-z0-9]*)\])\(([a-z0-9]*)\)$/", $dep, $matching)) {//si c'est 0 c'est pas bon non plus
-                $propertyName = str_replace($matching[0], $matching[2], $dep);
-                $dep = str_replace($matching[0], $matching[3], $dep);
-            }
-            $deps[$propertyName] = $propertyName;
-        }
-
-        // Filter out values that will necessarily be different
-        $exceptions = [
-            'creator',
-            'created_at',
-            'updater',
-            'updated_at',
-            'inputFilter',
-            'dbadapter',
-            'parameters',
-            'language',
-        ];
-
-        $diff = [];
-        foreach ($newEntity->getJsonArray() as $key => $value) {
-            if (!in_array($key, $exceptions)) {
-                if (isset($deps[$key])) {
-                    $oldValue = $oldEntity->get($key);
-                    if (!empty($oldValue) && is_object($oldValue)) {
-                        $oldValue = $oldValue->get('id');
-                    }
-                    if (!empty($value) && is_object($value)) {
-                        $value = $value->get('id');
-                    }
-                    if ($oldValue != $value) {
-                        $diff[] = $key . ': ' . $oldValue . ' => ' . $value;
-                    }
-                } elseif ($oldEntity->get($key) != $value) {
-                    $diff[] = $key . ': ' . $oldEntity->get($key) . ' => ' . $value;
-                }
-            }
-        }
-
-        return $diff;
     }
 
     /**
@@ -970,22 +891,5 @@ abstract class AbstractService extends AbstractServiceFactory
     protected function getConnectedUser(): ?UserSuperClass
     {
         return $this->get('table')->getConnectedUser();
-    }
-
-    protected function validateAnrPermissions(AnrSuperClass $anr, array $entitiesIds): void
-    {
-        foreach ($entitiesIds as $id) {
-            $entity = $this->get('table')->getEntity($id);
-            if ($entity->getAnr()->getId() !== $anr->getId()) {
-                throw new Exception('Anr id error', 412);
-            }
-        }
-
-        /** @var UserAnrTable $userAnrTable */
-        $userAnrTable = $this->get('userAnrTable');
-        $userAnr = $userAnrTable->findByAnrAndUser($anr, $this->getConnectedUser());
-        if ($userAnr === null || !$userAnr->hasWriteAccess()) {
-            throw new Exception('You are not authorized to do this action', 412);
-        }
     }
 }

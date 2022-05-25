@@ -31,15 +31,15 @@ class ApiAnrObjectController extends AbstractController
         $limit = $this->params()->fromQuery('limit');
         $order = $this->params()->fromQuery('order');
         $filter = $this->params()->fromQuery('filter');
-        $asset = (int) $this->params()->fromQuery('asset');
-        $category = (int) $this->params()->fromQuery('category');
-        $model = (int) $this->params()->fromQuery('model');
+        $asset = (int)$this->params()->fromQuery('asset');
+        $category = (int)$this->params()->fromQuery('category');
+        $modelId = (int)$this->params()->fromQuery('model');
         $lock = $this->params()->fromQuery('lock');
-        $anr = (int) $this->params()->fromRoute('anrid');
+        $anr = (int)$this->params()->fromRoute('anrid');
 
         /** @var ObjectService $service */
         $service = $this->getService();
-        $objects =  $service->getListSpecific($page, $limit, $order, $filter, $asset, $category, $model, $anr, $lock);
+        $objects =  $service->getListSpecific($page, $limit, $order, $filter, $asset, $category, $modelId, $anr, $lock);
 
         if ($lock == 'true') {
             foreach($objects as $key => $object){
@@ -48,7 +48,7 @@ class ApiAnrObjectController extends AbstractController
         }
 
         return new JsonModel(array(
-            'count' => $service->getFilteredCount($filter, $asset, $category, $model, $anr),
+            'count' => $service->getFilteredCount($filter, $asset, $category, $modelId, $anr),
             $this->name => $objects
         ));
     }

@@ -106,6 +106,7 @@ class QuestionSuperClass extends AbstractEntity
         return $this->multichoice === 1;
     }
 
+    // TODO: Related to the refactoring of all: questions order is a bit different.
     protected $parameters = array(
         'isParentRelative' => false // for the autopositionner
     );

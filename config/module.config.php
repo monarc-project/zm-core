@@ -389,7 +389,7 @@ return [
             DbCli::class => DbCliFactory::class,
 
             // TODO: replace to autowiring.
-            Service\AmvService::class => Service\AmvServiceFactory::class,
+            Service\AmvService::class => AutowireFactory::class,
             Service\AnrService::class => Service\AnrServiceFactory::class,
             Service\UserRoleService::class => AutowireFactory::class,
             Service\UserProfileService::class => AutowireFactory::class,
@@ -410,7 +410,7 @@ return [
             Service\ReferentialService::class => Service\ReferentialServiceFactory::class,
             Service\MeasureService::class => Service\MeasureServiceFactory::class,
             Service\MeasureMeasureService::class => Service\MeasureMeasureServiceFactory::class,
-            Service\ModelService::class => Service\ModelServiceFactory::class,
+            Service\ModelService::class => AutowireFactory::class,
             Service\ObjectService::class => Service\ObjectServiceFactory::class,
             Service\ObjectExportService::class => Service\ObjectExportServiceFactory::class,
             Service\ObjectCategoryService::class => Service\ObjectCategoryServiceFactory::class,
@@ -454,8 +454,6 @@ return [
             ModelEntity\RolfTag::class => ServiceModelEntity\RolfTagServiceModelEntity::class,
             ModelEntity\Theme::class => ServiceModelEntity\ThemeServiceModelEntity::class,
             ModelEntity\Threat::class => ServiceModelEntity\ThreatServiceModelEntity::class,
-            ModelEntity\Vulnerability::class => ServiceModelEntity\VulnerabilityServiceModelEntity::class,
-            ModelEntity\Amv::class => ServiceModelEntity\AmvServiceModelEntity::class,
             ModelEntity\GuideItem::class => ServiceModelEntity\GuideItemServiceModelEntity::class,
             ModelEntity\Anr::class => ServiceModelEntity\AnrServiceModelEntity::class,
             ModelEntity\AnrObjectCategory::class => ServiceModelEntity\AnrObjectCategoryServiceModelEntity::class,
@@ -566,8 +564,8 @@ return [
             Controller\ApiAnrLibraryCategoryController::class
                 => Controller\ApiAnrLibraryCategoryControllerFactory::class,
             Controller\ApiAnrObjectController::class => Controller\ApiAnrObjectControllerFactory::class,
-            Controller\ApiModelsController::class => Controller\ApiModelsControllerFactory::class,
-            Controller\ApiModelsDuplicationController::class => Controller\ApiModelsDuplicationControllerFactory::class,
+            Controller\ApiModelsController::class => AutowireFactory::class,
+            Controller\ApiModelsDuplicationController::class => AutowireFactory::class,
             Controller\ApiAnrScalesController::class => Controller\ApiAnrScalesControllerFactory::class,
             Controller\ApiAnrScalesTypesController::class => Controller\ApiAnrScalesTypesControllerFactory::class,
             Controller\ApiAnrScalesCommentsController::class => Controller\ApiAnrScalesCommentsControllerFactory::class,

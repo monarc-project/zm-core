@@ -1,7 +1,7 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -14,16 +14,15 @@ use Monarc\Core\Exception\ActionForbiddenException;
 use Monarc\Core\Exception\UserNotLoggedInException;
 use Monarc\Core\Model\Entity\User;
 use Monarc\Core\Model\Entity\UserSuperClass;
+use Monarc\Core\Service\Traits\QueryParamsFormatterTrait;
 use Monarc\Core\Table\UserTable;
 
-/**
- * User Service
- *
- * Class UserService
- * @package Monarc\Core\Service
- */
 class UserService
 {
+    use QueryParamsFormatterTrait;
+
+    protected static array $searchFields = ['firstname', 'lastname', 'email'];
+
     protected UserTable $userTable;
 
     protected ConnectedUserService $connectedUserService;
@@ -85,29 +84,13 @@ class UserService
         return $user;
     }
 
-    public function getUsersList(string $searchString, ?array $filter, string $orderField): array
+    public function getUsersList(string $searchString, array $filter, string $orderField): array
     {
-        $params = [];
-        if ($searchString !== '') {
-            $params['search'] = [
-                'fields' => ['firstname', 'lastname', 'email'],
-                'string' => $searchString,
-                'operand' => 'OR',
-            ];
-        }
-        if ($filter !== null) {
-            $params['filter'] = $filter;
-        }
-        $order = [];
-        if ($orderField !== '') {
-            if (strncmp($orderField, '-', 1) === 0) {
-                $order[ltrim($orderField, '-')] = 'DESC';
-            } else {
-                $order[$orderField] = 'ASC';
-            }
-        }
+        $params = $this->getFormattedFilterParams($searchString, $filter);
+        $order = $this->getFormattedOrder($orderField);
 
-        $users = $this->userTable->findUsersByParamsAndOrderedBy($params, $order);
+        /** @var UserSuperClass[] $users */
+        $users = $this->userTable->findByParams($params, $order);
 
         $result = [];
         foreach ($users as $user) {
@@ -133,6 +116,7 @@ class UserService
      */
     public function delete(int $userId)
     {
+        /** @var UserSuperClass $user */
         $user = $this->userTable->findById($userId);
         if ($user->isSystemUser()) {
             throw new ActionForbiddenException('You can not remove the "System" user');
@@ -147,6 +131,7 @@ class UserService
      */
     protected function getUpdatedUser(int $userId, array $data): UserSuperClass
     {
+        /** @var UserSuperClass $user */
         $user = $this->userTable->findById($userId);
 
         if (isset($data['firstname'])) {

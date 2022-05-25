@@ -25,7 +25,6 @@ class ObjectObjectServiceFactory extends AbstractServiceFactory
         'entity' => 'Monarc\Core\Model\Entity\ObjectObject',
         'childTable' => 'Monarc\Core\Model\Table\MonarcObjectTable',
         'fatherTable' => 'Monarc\Core\Model\Table\MonarcObjectTable',
-        'modelTable' => 'Monarc\Core\Model\Table\ModelTable',
     ];
 
     // TODO: A temporary solution to inject SharedEventManager. All the factories classes will be removed.

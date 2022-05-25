@@ -7,6 +7,8 @@
 
 namespace Monarc\Core\Service;
 
+use Monarc\Core\Table\ModelTable;
+
 /**
  * Asset Service Factory
  *
@@ -19,7 +21,7 @@ class AssetServiceFactory extends AbstractServiceFactory
         'table' => 'Monarc\Core\Model\Table\AssetTable',
         'entity' => 'Monarc\Core\Model\Entity\Asset',
         'anrTable' => 'Monarc\Core\Model\Table\AnrTable',
-        'modelTable' => 'Monarc\Core\Model\Table\ModelTable',
+        'modelTable' => ModelTable::class,
         'amvService' => 'Monarc\Core\Service\AmvService',
         'modelService' => 'Monarc\Core\Service\ModelService',
         'MonarcObjectTable' => 'Monarc\Core\Model\Table\MonarcObjectTable',

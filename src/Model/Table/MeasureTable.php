@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Doctrine\ORM\EntityNotFoundException;
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\Measure;
@@ -24,15 +25,20 @@ class MeasureTable extends AbstractEntityTable
         parent::__construct($dbService, Measure::class, $connectedUserService);
     }
 
-    public function findByUuid(string $uuid): ?MeasureSuperClass
+    public function findByUuid(string $uuid): ?Measure
     {
-        return $this->getRepository()
+        $measure = $this->getRepository()
             ->createQueryBuilder('m')
             ->where('m.uuid = :uuid')
             ->setParameter('uuid', $uuid)
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
+        if ($measure === null) {
+            throw EntityNotFoundException::fromClassNameAndIdentifier(Measure::class, [$uuid]);
+        }
+
+        return $measure;
     }
 
     public function findByAnrAndUuid(AnrSuperClass $anr, string $uuid): ?MeasureSuperClass

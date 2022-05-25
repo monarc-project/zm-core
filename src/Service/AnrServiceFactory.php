@@ -7,7 +7,8 @@
 
 namespace Monarc\Core\Service;
 
-use Monarc\Core\Model\Table;
+use Monarc\Core\Table;
+use Monarc\Core\Model\Table as DeprecatedTable;
 use Monarc\Core\Model\Entity\Anr;
 
 /**
@@ -19,19 +20,19 @@ use Monarc\Core\Model\Entity\Anr;
 class AnrServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = [
-        'table' => Table\AnrTable::class,
+        'table' => DeprecatedTable\AnrTable::class,
         'entity' => Anr::class,
         'scaleService' => ScaleService::class,
         'instanceService' => InstanceService::class,
-        'anrObjectCategoryTable' => Table\AnrObjectCategoryTable::class,
-        'instanceTable' => Table\InstanceTable::class,
-        'instanceConsequenceTable' => Table\InstanceConsequenceTable::class,
-        'instanceRiskTable' => Table\InstanceRiskTable::class,
-        'instanceRiskOpTable' => Table\InstanceRiskOpTable::class,
-        'MonarcObjectTable' => Table\MonarcObjectTable::class,
-        'scaleTable' => Table\ScaleTable::class,
-        'scaleImpactTypeTable' => Table\ScaleImpactTypeTable::class,
-        'scaleCommentTable' => Table\ScaleCommentTable::class,
+        'anrObjectCategoryTable' => DeprecatedTable\AnrObjectCategoryTable::class,
+        'instanceTable' => DeprecatedTable\InstanceTable::class,
+        'instanceConsequenceTable' => DeprecatedTable\InstanceConsequenceTable::class,
+        'instanceRiskTable' => DeprecatedTable\InstanceRiskTable::class,
+        'instanceRiskOpTable' => DeprecatedTable\InstanceRiskOpTable::class,
+        'MonarcObjectTable' => DeprecatedTable\MonarcObjectTable::class,
+        'scaleTable' => DeprecatedTable\ScaleTable::class,
+        'scaleImpactTypeTable' => DeprecatedTable\ScaleImpactTypeTable::class,
+        'scaleCommentTable' => DeprecatedTable\ScaleCommentTable::class,
         'operationalRiskScaleTable' => Table\OperationalRiskScaleTable::class,
         'operationalRiskScaleTypeTable' => Table\OperationalRiskScaleTypeTable::class,
         'operationalRiskScaleCommentTable' => Table\OperationalRiskScaleCommentTable::class,

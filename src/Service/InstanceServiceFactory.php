@@ -9,7 +9,8 @@ namespace Monarc\Core\Service;
 
 use Interop\Container\ContainerInterface;
 use Monarc\Core\Model\Entity;
-use Monarc\Core\Model\Table;
+use Monarc\Core\Model\Table as DeprecatedTable;
+use Monarc\Core\Table;
 use Monarc\Core\Service;
 
 /**
@@ -21,18 +22,18 @@ use Monarc\Core\Service;
 class InstanceServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = [
-        'table' => Table\InstanceTable::class,
-        'assetTable' => Table\AssetTable::class,
+        'table' => DeprecatedTable\InstanceTable::class,
+        'assetTable' => DeprecatedTable\AssetTable::class,
         'entity' => Entity\Instance::class,
         'instanceConsequenceEntity' => Entity\InstanceConsequence::class,
-        'anrTable' => Table\AnrTable::class,
+        'anrTable' => DeprecatedTable\AnrTable::class,
         'amvTable' => Table\AmvTable::class,
-        'instanceConsequenceTable' => Table\InstanceConsequenceTable::class,
-        'objectTable' => Table\MonarcObjectTable::class,
-        'scaleTable' => Table\ScaleTable::class,
-        'scaleImpactTypeTable' => Table\ScaleImpactTypeTable::class,
-        'instanceRiskTable' => Table\InstanceRiskTable::class,
-        'instanceRiskOpTable' => Table\InstanceRiskOpTable::class,
+        'instanceConsequenceTable' => DeprecatedTable\InstanceConsequenceTable::class,
+        'objectTable' => DeprecatedTable\MonarcObjectTable::class,
+        'scaleTable' => DeprecatedTable\ScaleTable::class,
+        'scaleImpactTypeTable' => DeprecatedTable\ScaleImpactTypeTable::class,
+        'instanceRiskTable' => DeprecatedTable\InstanceRiskTable::class,
+        'instanceRiskOpTable' => DeprecatedTable\InstanceRiskOpTable::class,
         'instanceConsequenceService' => Service\InstanceConsequenceService::class,
         'instanceRiskService' => Service\InstanceRiskService::class,
         'instanceRiskOpService' => Service\InstanceRiskOpService::class,

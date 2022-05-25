@@ -1,85 +1,73 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
 namespace Monarc\Core\Service;
 
+use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Model;
 use Monarc\Core\Model\Entity\MonarcObject;
-use Monarc\Core\Model\Table\ModelTable;
+use Monarc\Core\Table\AmvTable;
+use Monarc\Core\Service\Traits\QueryParamsFormatterTrait;
+use Monarc\Core\Table\ModelTable;
 
-/**
- * Model Service
- *
- * Class ModelService
- * @package Monarc\Core\Service
- */
-class ModelService extends AbstractService
+class ModelService
 {
-    protected $dependencies = ['anr'];
-    protected $anrService;
-    protected $anrTable;
-    protected $instanceRiskTable;
-    protected $instanceRiskOpTable;
-    protected $MonarcObjectTable;
-    protected $amvTable;
-    protected $clientTable; // only loaded by Monarc\FrontOffice service factory
-    protected $forbiddenFields = ['anr'];
-    protected $filterColumns = [
-        'label1', 'label2', 'label3', 'label4', 'description1', 'description2', 'description3', 'description4',
+    use QueryParamsFormatterTrait;
+
+    private ModelTable $modelTable;
+
+    private AmvTable $amvTable;
+
+    private AnrService $anrService;
+
+    private ConnectedUserService $connectedUserService;
+
+    protected static array $searchFields = [
+        'label1',
+        'label2',
+        'label3',
+        'label4',
+        'description1',
+        'description2',
+        'description3',
+        'description4',
     ];
 
-    /**
-     * @inheritdoc
-     */
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null, $scope = 'BO')
-    {
-        $joinModel = -1;
-
-        if ($scope == 'FO') {
-            $filterAnd['isGeneric'] = 1;
-            $client = current($this->clientTable->fetchAll());
-
-            if ($client) {
-                $joinModel = $client['model_id'];
-            }
-        }
-
-        $models = $this->get('table')->fetchAllFiltered(
-            array_keys($this->get('entity')->getJsonArray()),
-            $page,
-            $limit,
-            $this->parseFrontendOrder($order),
-            $this->parseFrontendFilter($filter, $this->filterColumns),
-            $filterAnd
-        );
-
-        if ($joinModel > 0) {
-            $filterAnd['id'] = $joinModel;
-            $filterAnd['isGeneric'] = 0;
-
-            $models = array_merge($models, $this->get('table')->fetchAllFiltered(
-                array_keys($this->get('entity')->getJsonArray()),
-                $page,
-                $limit,
-                $this->parseFrontendOrder($order),
-                $this->parseFrontendFilter($filter, $this->filterColumns),
-                $filterAnd
-            ));
-        }
-
-        return $models;
+    public function __construct(
+        ModelTable $modelTable,
+        AmvTable $amvTable,
+        AnrService $anrService,
+        ConnectedUserService $connectedUserService
+    ) {
+        $this->modelTable = $modelTable;
+        $this->amvTable = $amvTable;
+        $this->anrService = $anrService;
+        $this->connectedUserService = $connectedUserService;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function create($data, $last = true)
+    public function getList(string $searchString, array $filter, string $orderField): array
     {
-        $dataAnr = [
+        $result = [];
+
+        $params = $this->getFormattedFilterParams($searchString, $filter);
+        $order = $this->getFormattedOrder($orderField);
+
+        /** @var Model[] $models */
+        $models = $this->modelTable->findByParams($params, $order);
+        foreach ($models as $model) {
+            $result[] = $this->prepareModelDataResult($model);
+        }
+
+        return $result;
+    }
+
+    public function create(array $data): int
+    {
+        $anr = $this->anrService->create([
             'label1' => $data['label1'],
             'label2' => $data['label2'],
             'label3' => $data['label3'],
@@ -88,243 +76,193 @@ class ModelService extends AbstractService
             'description2' => $data['description2'],
             'description3' => $data['description3'],
             'description4' => $data['description4'],
-        ];
-        /** @var AnrService $anrService */
-        $anrService = $this->get('anrService');
-        $anrId = $anrService->create($dataAnr);
+        ], true, true);
 
-        $data['anr'] = $anrId;
+        $model = (new Model())->setAnr($anr);
+        $model = $this->setModelData($model, $data)
+            ->setCreator($this->connectedUserService->getConnectedUser()->getEmail());
 
-        /** @var Model $model */
-        $model = $this->get('entity');
+        $this->modelTable->save($model);
 
-        $model->exchangeArray($data);
-
-        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($model, $dependencies);
-
-        // If we reached here, our object is ready to be saved.
-        // If we're the new default model, remove the previous one (if any)
-        if ($data['isDefault']) {
-            $this->resetCurrentDefault();
-        }
-
-        $model->setCreator(
-            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
-        );
-
-        return $this->get('table')->save($model);
+        return $model->getId();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getModelWithAnr($id)
-    {
-        $model = $this->get('table')->get($id);
-
-        $anrModel = $model['anr']->getJsonArray();
-        unset($anrModel['__initializer__']);
-        unset($anrModel['__cloner__']);
-        unset($anrModel['__isInitialized__']);
-
-        $model['anr'] = $anrModel;
-
-        return $model;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function update($id, $data)
+    public function getModelData(int $id): array
     {
         /** @var Model $model */
-        $model = $this->get('table')->getEntity($id);
-        if (!$model) {
-            throw new \Monarc\Core\Exception\Exception('Entity does not exist', 412);
+        $model = $this->modelTable->findById($id);
+
+        return $this->prepareModelDataResult($model);
+    }
+
+    public function update(int $id, array $data): void
+    {
+        /** @var Model $model */
+        $model = $this->modelTable->findById($id);
+
+        $this->validateBeforeUpdate($model, $data);
+
+        $this->setModelData($model, $data)
+            ->setUpdater($this->connectedUserService->getConnectedUser()->getEmail());
+
+        $this->modelTable->save($model);
+    }
+
+    public function patch(int $id, array $data): void
+    {
+        /** @var Model $model */
+        $model = $this->modelTable->findById($id);
+
+        if (isset($data['status'])) {
+            $model->setStatus($data['status']);
         }
 
-        $this->verifyBeforeUpdate($model, $data);
+        $model->setUpdater($this->connectedUserService->getConnectedUser()->getEmail());
 
-        // If we're the new default model, remove the previous one (if any)
-        if ($data['isDefault']) {
-            $this->resetCurrentDefault();
+        $this->modelTable->save($model);
+    }
+
+    public function duplicate(int $modelId): int
+    {
+        /** @var Model $model */
+        $model = $this->modelTable->findById($modelId);
+        $newAnr = $this->anrService->duplicate($model->getAnr());
+
+        $labelSuffix = ' (copy from ' . date('m/d/Y at H:i') . ')';
+        $newModel = (new Model())
+            ->setAnr($newAnr)
+            ->setLabels([
+                'label1' => $model->getLabel(1) . $labelSuffix,
+                'label2' => $model->getLabel(2) . $labelSuffix,
+                'label3' => $model->getLabel(3) . $labelSuffix,
+                'label4' => $model->getLabel(4) . $labelSuffix,
+            ])
+            ->setDescriptions([
+                'description1' => $model->getDescription(1),
+                'description2' => $model->getDescription(2),
+                'description3' => $model->getDescription(3),
+                'description4' => $model->getDescription(4),
+            ])
+            ->setIsGeneric($model->isGeneric())
+            ->setIsRegulator($model->isRegulator())
+            ->setAreScalesUpdatable($model->areScalesUpdatable())
+            ->setShowRolfBrut($model->getShowRolfBrut())
+            ->setCreator($this->connectedUserService->getConnectedUser()->getEmail());
+
+        $this->modelTable->save($newModel);
+
+        return $newModel->getId();
+    }
+
+    public function delete(int $id): void
+    {
+        /** @var Model $model */
+        $model = $this->modelTable->findById($id);
+        $this->modelTable->remove($model);
+    }
+
+    public function deleteList(array $data): void
+    {
+        foreach ($data as $modelId) {
+            $this->delete((int) $modelId);
         }
-
-        $this->filterPostFields($data, $model);
-
-        $model->setDbAdapter($this->get('table')->getDb());
-        $model->setLanguage($this->getLanguage());
-
-        if (empty($data)) {
-            throw new \Monarc\Core\Exception\Exception('Data missing', 412);
-        }
-
-        $model->exchangeArray($data);
-
-        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($model, $dependencies);
-
-        $model->setUpdater(
-            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
-        );
-
-        return $this->get('table')->save($model);
     }
 
     /**
-     * Verifies the model integrity before updating it
-     * @param Model $model The model to check
-     * @param array $data The new data
-     * @return bool True if it's correct, false otherwise
-     * @throws \Exception
+     * Verifies the model integrity before update.
      */
-    public function verifyBeforeUpdate($model, $data)
+    private function validateBeforeUpdate(Model $model, array $data): void
     {
-        if (isset($data['isRegulator']) && isset($data['isGeneric']) &&
-            $data['isRegulator'] && $data['isGeneric']
-        ) {
-            throw new \Monarc\Core\Exception\Exception("A regulator model may not be generic", 412);
+        if (!empty($data['isRegulator']) && !empty($data['isGeneric'])) {
+            throw new Exception('A regulator model can\'t be generic', 412);
         }
 
         $modeObject = null;
-
-        if (isset($data['isRegulator']) && $data['isRegulator'] && !$model->isRegulator) { // change to regulator
-            //retrieve assets
-            $assetsIds = [];
-            foreach ($model->assets as $asset) {
-                $assetsIds[] = $asset->getUuid();
-            }
-            if (!empty($assetsIds)) {
-                $amvs = $this->get('amvTable')->getEntityByFields(['asset' => $assetsIds]);
+        if (!empty($data['isRegulator']) && !$model->isRegulator()) {
+            /* Changes to regulator */
+            foreach ($model->getAssets() as $asset) {
+                $amvs = $this->amvTable->findByAsset($asset);
                 foreach ($amvs as $amv) {
-                    if ($amv->get('asset')->get('mode') == MonarcObject::MODE_SPECIFIC && $amv->get('threat')->get('mode') == MonarcObject::MODE_GENERIC && $amv->get('vulnerability')->get('mode') == MonarcObject::MODE_GENERIC) {
-                        throw new \Monarc\Core\Exception\Exception('You can not make this change. The level of integrity between the model and its objects would corrupt', 412);
+                    if ($asset->isModeSpecific()
+                        && $amv->getThreat()->isModeGeneric()
+                        && $amv->getVulnerability()->isModeGeneric()
+                    ) {
+                        throw new Exception(
+                            'The modification is forbidden. The level of integrity between the model ' .
+                            'and its objects will be corrupted.',
+                            412
+                        );
                     }
                 }
             }
 
             $modeObject = MonarcObject::MODE_GENERIC;
-        } elseif (isset($data['isGeneric']) && $data['isGeneric'] && !$model->isGeneric) { // change to generic
+        } elseif (!empty($data['isGeneric']) && !$model->isGeneric()) {
+            /* changes to generic */
             $modeObject = MonarcObject::MODE_SPECIFIC;
         }
 
-        if (!is_null($modeObject)) {
-            $objects = $model->get('anr')->get('objects');
-            if (!empty($objects)) {
-                foreach ($objects as $o) {
-                    if ($o->get('mode') == $modeObject) {
-                        throw new \Monarc\Core\Exception\Exception('You can not make this change. The level of integrity between the model and its objects would corrupt', 412);
-                    }
+        if ($modeObject !== null) {
+            foreach ($model->getAnr()->getObjects() as $object) {
+                if ($object->getMode() === $modeObject) {
+                    throw new Exception(
+                        'The modification is forbidden. The level of integrity between the model and its objects ' .
+                        'will be corrupted.',
+                        412
+                    );
                 }
             }
         }
-
-        return true;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function patch($id, $data)
+    private function setModelData(Model $model, array $data): Model
     {
-        //security
-        $this->filterPatchFields($data);
-        return parent::patch($id, $data);
-    }
+        $model->setLabels($data)
+            ->setDescriptions($data);
 
-    /**
-     * Resets the current default model
-     */
-    protected function resetCurrentDefault()
-    {
-        $this->get('table')->resetCurrentDefault();
-    }
-
-    /**
-     * Unset Specific Models from the passed array
-     * @param array $data Models array
-     */
-    public function unsetSpecificModels(&$data)
-    {
-        /** @var ModelTable $modelTable */
-        $modelTable = $this->get('table');
-        foreach ($data['models'] as $key => $modelId) {
-            $model = $modelTable->getEntity($modelId);
-            if (!$model->isGeneric) {
-                unset($data['models'][$key]);
-            }
+        if (isset($data['isDefault'])) {
+            $model->setIsDefault((bool)$data['isDefault']);
         }
-    }
-
-    /**
-     * Duplicates a model
-     * @param int $modelId The model ID to duplicate
-     * @return mixed|null The new model entity
-     */
-    public function duplicate($modelId)
-    {
-        //retrieve model
-        /** @var ModelTable $modelTable */
-        $modelTable = $this->get('table');
-        $model = $modelTable->getEntity($modelId);
-
-        //duplicate model
-        $newModel = clone $model;
-        $newModel->set('id', null);
-        $newModel->set('isDefault', false);
-
-        $suffix = ' (copié le ' . date('m/d/Y à H:i') . ')';
-        for ($i = 1; $i <= 4; $i++) {
-            $newModel->set('label' . $i, $newModel->get('label' . $i) . $suffix);
+        if (isset($data['isGeneric'])) {
+            $model->setIsGeneric((bool)$data['isGeneric']);
+        }
+        if (isset($data['isRegulator'])) {
+            $model->setIsRegulator((bool)$data['isRegulator']);
+        }
+        if (isset($data['areScalesUpdatable'])) {
+            $model->setAreScalesUpdatable((bool)$data['areScalesUpdatable']);
+        }
+        if (isset($data['showRolfBrut'])) {
+            $model->setShowRolfBrut((bool)$data['showRolfBrut']);
         }
 
-        //duplicate anr
-        /** @var AnrService $anrService */
-        $anrService = $this->get('anrService');
-        $newAnr = $anrService->duplicate($newModel->anr);
+        if (!empty($data['isDefault'])) {
+            $this->modelTable->resetCurrentDefault();
+        }
 
-        $newModel->setAnr($newAnr);
-
-        return $modelTable->save($newModel);
+        return $model;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function delete($id)
+    private function prepareModelDataResult(Model $model): array
     {
-        $model = $this->get('table')->getEntity($id);
-        $anr = $model->get('anr');
-        $model->set('anr', null);
-        $model->set('status', \Monarc\Core\Model\Entity\AbstractEntity::STATUS_DELETED);
-        $this->get('table')->save($model);
-
-        if ($anr) {
-            $this->get('anrTable')->delete($anr->get('id'));
-        }
-        return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function deleteList($data)
-    {
-        $nbData = count($data);
-        $i = 1;
-        foreach ($data as $d) {
-            $model = $this->get('table')->getEntity($d);
-            $anr = $model->get('anr');
-            $model->set('anr', null);
-            $model->set('status', \Monarc\Core\Model\Entity\AbstractEntity::STATUS_DELETED);
-            $this->get('table')->save($model, ($i == $nbData));
-            $i++;
-
-            if ($anr) {
-                $this->get('anrTable')->delete($anr->get('id'));
-            }
-        }
-        return true;
+        return [
+            'anr' => [
+                'id' => $model->getAnr()->getId(),
+            ],
+            'label1' => $model->getLabel(1),
+            'label2' => $model->getLabel(2),
+            'label3' => $model->getLabel(3),
+            'label4' => $model->getLabel(4),
+            'description1' => $model->getDescription(1),
+            'description2' => $model->getDescription(2),
+            'description3' => $model->getDescription(3),
+            'description4' => $model->getDescription(4),
+            'isGeneric' => $model->isGeneric(),
+            'isDefault' => $model->isDefault(),
+            'isRegulator' => $model->isRegulator(),
+            'areScalesUpdatable' => $model->areScalesUpdatable(),
+            'showRolfBrut' => $model->getShowRolfBrut(),
+            'status' => $model->getStatus(),
+        ];
     }
 }

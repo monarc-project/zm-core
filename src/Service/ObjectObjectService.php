@@ -8,6 +8,7 @@
 namespace Monarc\Core\Service;
 
 use Monarc\Core\Exception\Exception;
+use Monarc\Core\Model\Entity\Model;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Entity\ObjectObjectSuperClass;
 use Monarc\Core\Model\Table\AnrTable;
@@ -18,6 +19,7 @@ use Laminas\EventManager\EventManager;
 use Doctrine\ORM\Mapping\MappingException;
 use Doctrine\ORM\Query\QueryException;
 use Laminas\EventManager\SharedEventManager;
+use Monarc\Core\Table\ModelTable;
 use function in_array;
 use function is_object;
 
@@ -35,7 +37,6 @@ class ObjectObjectService extends AbstractService
     protected $instanceTable;
     protected $childTable;
     protected $fatherTable;
-    protected $modelTable;
     protected $dependencies = ['[child](object)', '[father](object)', '[anr](object)'];
 
     /** @var SharedEventManager */
@@ -94,9 +95,10 @@ class ObjectObjectService extends AbstractService
 
         // on doit déterminer si par voie de conséquence, cet objet ne va pas se retrouver dans un modèle dans lequel il n'a pas le droit d'être
         if ($context === MonarcObject::BACK_OFFICE) {
-            $models = $father->get('asset')->get('models');
-            foreach ($models as $m) {
-                $this->get('modelTable')->canAcceptObject($m->get('id'), $child, $context);
+            /** @var Model[] $models */
+            $models = $father->getAsset()->getModels();
+            foreach ($models as $model) {
+                $model->validateObjectAcceptance($child);
             }
         }
 

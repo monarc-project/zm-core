@@ -7,7 +7,6 @@
 
 namespace Monarc\Core\Controller;
 
-use Laminas\Http\Response;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\AbstractEntity;
 use Monarc\Core\Service\AbstractServiceFactory;
@@ -187,6 +186,8 @@ abstract class AbstractController extends AbstractRestfulController
     }
 
     /**
+     * TODO: Replace the formatter with a proper data normalisation layer.
+     *
      * Automatically loads the dependencies of the entity based on the class' "dependencies" field
      * @param AbstractEntity $entity The entity for which the deps should be resolved
      * @param array $dependencies The dependencies fields

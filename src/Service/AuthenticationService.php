@@ -43,6 +43,7 @@ class AuthenticationService
      */
     public function authenticate($data): array
     {
+
         if (!empty($data['login']) && !empty($data['password'])) {
             $res = $this->authenticationAdapter
                 ->setIdentity($data['login'])

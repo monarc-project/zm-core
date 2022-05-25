@@ -29,6 +29,9 @@ class ThreatSuperClass extends AbstractEntity
     use CreateEntityTrait;
     use UpdateEntityTrait;
 
+    public const MODE_GENERIC = 0;
+    public const MODE_SPECIFIC = 1;
+
     /**
     * @var LazyUuidFromString|string
     *
@@ -348,6 +351,16 @@ class ThreatSuperClass extends AbstractEntity
         $this->mode = $mode;
 
         return $this;
+    }
+
+    public function isModeSpecific(): bool
+    {
+        return $this->mode === self::MODE_SPECIFIC;
+    }
+
+    public function isModeGeneric(): bool
+    {
+        return $this->mode === self::MODE_GENERIC;
     }
 
     public function getTrend(): int

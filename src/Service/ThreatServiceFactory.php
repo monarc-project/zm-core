@@ -7,6 +7,8 @@
 
 namespace Monarc\Core\Service;
 
+use Monarc\Core\Table\ModelTable;
+
 /**
  * Threat Service Factory
  *
@@ -21,7 +23,7 @@ class ThreatServiceFactory extends AbstractServiceFactory
         'anrTable' => 'Monarc\Core\Model\Table\AnrTable',
         'instanceRiskService' => 'Monarc\Core\Service\InstanceRiskService',
         'instanceRiskTable' => 'Monarc\Core\Model\Table\InstanceRiskTable',
-        'modelTable' => 'Monarc\Core\Model\Table\ModelTable',
+        'modelTable' => ModelTable::class,
         'modelService' => 'Monarc\Core\Service\ModelService',
         'themeTable' => 'Monarc\Core\Model\Table\ThemeTable',
         'amvService' => 'Monarc\Core\Service\AmvService',

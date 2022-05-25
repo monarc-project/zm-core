@@ -42,7 +42,7 @@ class Guide extends AbstractEntity
     protected $anr;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="type", type="smallint", options={"unsigned":true})
      */

@@ -7,6 +7,8 @@
 
 namespace Monarc\Core\Service;
 
+use Monarc\Core\Table\ModelTable;
+
 /**
  * Model Object Service Factory
  *
@@ -22,6 +24,6 @@ class ModelObjectServiceFactory extends AbstractServiceFactory
         'categoryTable' => 'Monarc\Core\Model\Table\ObjectCategoryTable',
         'rolfTagTable' => 'Monarc\Core\Model\Table\RolfTagTable',
         'sourceTable' => 'Monarc\Core\Model\Table\MonarcObjectTable',
-        'modelTable' => 'Monarc\Core\Model\Table\ModelTable',
+        'modelTable' => ModelTable::class,
     ];
 }

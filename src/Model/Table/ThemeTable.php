@@ -23,19 +23,9 @@ class ThemeTable extends AbstractEntityTable
         parent::__construct($dbService, Theme::class, $connectedUserService);
     }
 
-    public function findByAnrIdAndLabel(?int $anrId, string $labelKey, string $labelValue): ?ThemeSuperClass
+    public function findByLabel(string $labelKey, string $labelValue): ?ThemeSuperClass
     {
-        $queryBuilder = $this->getRepository()
-            ->createQueryBuilder('t')
-            ->select('t');
-
-        if ($anrId !== null) {
-            $queryBuilder
-                ->andWhere('t.anr = :anrId')
-                ->setParameter('anrId', $anrId);
-        }
-
-        return $queryBuilder
+        return $this->getRepository()->createQueryBuilder('t')
             ->andWhere('t.' . $labelKey . ' = :' . $labelKey)
             ->setParameter($labelKey, $labelValue)
             ->getQuery()

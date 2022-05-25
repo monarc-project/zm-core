@@ -1,82 +1,37 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
 namespace Monarc\Core\Controller;
 
+use Laminas\Mvc\Controller\AbstractRestfulController;
+use Monarc\Core\Exception\Exception;
 use Monarc\Core\Service\ModelService;
 use Laminas\View\Model\JsonModel;
 
-/**
- * Api Models Duplication Controller
- *
- * Class ApiModelsDupicationController
- * @package Monarc\Core\Controller
- */
-class ApiModelsDuplicationController extends AbstractController
+class ApiModelsDuplicationController extends AbstractRestfulController
 {
-    protected $dependencies = ['anr'];
-    protected $name = 'models';
+    private ModelService $modelService;
 
-    /**
-     * @inheritdoc
-     */
-    public function getList()
+    public function __construct(ModelService $modelService)
     {
-        return $this->methodNotAllowed();
+        $this->modelService = $modelService;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function get($id)
-    {
-        return $this->methodNotAllowed();
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function create($data)
     {
-        if (!isset($data['model'])) {
-            throw new \Monarc\Core\Exception\Exception('Model missing', 412);
+        if (empty($data['model'])) {
+            throw new Exception('"model" param is missing', 412);
         }
 
-        /** @var ModelService $modelService */
-        $modelService = $this->getService();
-        $id = $modelService->duplicate($data['model']);
+        $id = $this->modelService->duplicate((int)$data['model']);
 
         return new JsonModel([
             'status' => 'ok',
             'id' => $id,
         ]);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function delete($id)
-    {
-        return $this->methodNotAllowed();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function patch($id, $data)
-    {
-        return $this->methodNotAllowed();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function update($id, $data)
-    {
-        return $this->methodNotAllowed();
     }
 }

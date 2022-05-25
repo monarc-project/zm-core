@@ -8,20 +8,21 @@
 namespace Monarc\Core\Service;
 
 use Monarc\Core\Model\Entity\InstanceRisk;
+use Monarc\Core\Model\Table as DeprecatedTable;
 use Monarc\Core\Table;
 
 class InstanceRiskServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = [
-        'table' => Table\InstanceRiskTable::class,
+        'table' => DeprecatedTable\InstanceRiskTable::class,
         'entity' => InstanceRisk::class,
         'amvTable' => Table\AmvTable::class,
-        'anrTable' => Table\AnrTable::class,
-        'assetTable' => Table\AssetTable::class,
-        'instanceTable' => Table\InstanceTable::class,
-        'instanceRiskOwnerTable' => InstanceRiskOwnerTable::class,
-        'monarcObjectTable' => Table\MonarcObjectTable::class,
-        'scaleTable' => Table\ScaleTable::class,
-        'threatTable' => Table\ThreatTable::class,
+        'anrTable' => DeprecatedTable\AnrTable::class,
+        'assetTable' => DeprecatedTable\AssetTable::class,
+        'instanceTable' => DeprecatedTable\InstanceTable::class,
+        'instanceRiskOwnerTable' => Table\InstanceRiskOwnerTable::class,
+        'monarcObjectTable' => DeprecatedTable\MonarcObjectTable::class,
+        'scaleTable' => DeprecatedTable\ScaleTable::class,
+        'threatTable' => DeprecatedTable\ThreatTable::class,
     ];
 }

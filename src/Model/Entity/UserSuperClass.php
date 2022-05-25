@@ -95,7 +95,7 @@ abstract class UserSuperClass
     /**
      * @var string
      *
-     * @ORM\Column(name="mosp_api_key", type="string", length=255, nullable=true)
+     * @ORM\Column(name="mosp_api_key", type="string", length=255, nullable=false)
      */
     protected $mospApiKey;
 
@@ -129,7 +129,7 @@ abstract class UserSuperClass
             $this->setPassword($data['password']);
         }
         $this->language = $data['language'];
-        $this->mospApiKey = $data['mospApiKey'];
+        $this->mospApiKey = $data['mospApiKey'] ?? '';
         $this->status = $data['status'] ?? self::STATUS_ACTIVE;
         $this->creator = $data['creator'];
         $this->setRoles($data['role']);

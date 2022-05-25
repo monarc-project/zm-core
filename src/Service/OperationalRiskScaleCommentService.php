@@ -39,9 +39,6 @@ class OperationalRiskScaleCommentService
     {
         /** @var OperationalRiskScaleCommentSuperClass|null $operationalRiskScaleComment */
         $operationalRiskScaleComment = $this->operationalRiskScaleCommentTable->findById($id);
-        if ($operationalRiskScaleComment === null) {
-            throw new EntityNotFoundException(sprintf('Operational risk scale comment ID (%d) does not exist,', $id));
-        }
 
         if (isset($data['scaleValue'])) {
             $operationalRiskScaleComment->setScaleValue((int)$data['scaleValue']);

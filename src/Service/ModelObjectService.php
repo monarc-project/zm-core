@@ -10,10 +10,7 @@ namespace Monarc\Core\Service;
 use Monarc\Core\Model\Entity\MonarcObject;
 
 /**
- * Model Service
- *
- * Class ModelService
- * @package Monarc\Core\Service
+ * TODO: refactor the class. Model table doesn't have methods are called in the AbstractService.
  */
 class ModelObjectService extends AbstractService
 {

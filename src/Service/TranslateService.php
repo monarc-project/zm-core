@@ -7,6 +7,8 @@
 
 namespace Monarc\Core\Service;
 
+use Laminas\I18n\Translator\Translator;
+
 /**
  * Translate Service
  *

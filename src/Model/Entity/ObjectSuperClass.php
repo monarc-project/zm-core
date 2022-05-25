@@ -30,11 +30,11 @@ class ObjectSuperClass extends AbstractEntity
     use CreateEntityTrait;
     use UpdateEntityTrait;
 
-    // Must be 16, 24 or 32 characters
-    const SALT = '__$$00_C4535_5M1L3_00$$__XMP0)XW';
+    public const SCOPE_LOCAL = 1;
+    public const SCOPE_GLOBAL = 2;
 
-    const SCOPE_LOCAL = 1;
-    const SCOPE_GLOBAL = 2;
+    public const MODE_GENERIC = 0;
+    public const MODE_SPECIFIC = 1;
 
     /**
      * @var LazyUuidFromString|string
@@ -397,7 +397,6 @@ class ObjectSuperClass extends AbstractEntity
         return $this;
     }
 
-
     public function getPosition(): int
     {
         return $this->position;
@@ -413,6 +412,16 @@ class ObjectSuperClass extends AbstractEntity
     public function getMode(): int
     {
         return $this->mode;
+    }
+
+    public function isModeSpecific(): bool
+    {
+        return $this->mode === static::MODE_SPECIFIC;
+    }
+
+    public function isModeGeneric(): bool
+    {
+        return $this->mode === static::MODE_GENERIC;
     }
 
     public function isScopeGlobal(): bool

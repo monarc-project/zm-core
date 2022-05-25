@@ -88,7 +88,7 @@ class OperationalRiskScaleService
             ->setMax($max)
             ->setCreator($this->connectedUser->getEmail());
 
-        $this->operationalRiskScaleTable->save($scale);
+        $this->operationalRiskScaleTable->save($scale, false);
 
         $languageCodes = $this->getLanguageCodesForTranslations($anr);
 
@@ -104,7 +104,6 @@ class OperationalRiskScaleService
                 );
                 $this->translationTable->save($translation, false);
             }
-
         }
 
         for ($index = $min; $index <= $max; $index++) {
@@ -117,6 +116,8 @@ class OperationalRiskScaleService
                 $languageCodes
             );
         }
+
+        $this->operationalRiskScaleTable->flush();
     }
 
     /**
@@ -277,9 +278,6 @@ class OperationalRiskScaleService
         foreach ($data as $id) {
             /** @var OperationalRiskScaleType $scaleTypeToDelete */
             $scaleTypeToDelete = $this->operationalRiskScaleTypeTable->findById($id);
-            if ($scaleTypeToDelete === null) {
-                throw new EntityNotFoundException(sprintf('Scale type with ID %d is not found', $id));
-            }
             $translationsKeys[] = $scaleTypeToDelete->getLabelTranslationKey();
 
             foreach ($scaleTypeToDelete->getOperationalRiskScaleComments() as $operationalRiskScaleComment) {

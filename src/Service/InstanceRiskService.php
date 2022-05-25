@@ -18,7 +18,7 @@ use Monarc\Core\Model\Entity\InstanceRiskSuperClass;
 use Monarc\Core\Model\Entity\InstanceSuperClass;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Entity\ObjectSuperClass;
-use Monarc\Core\Model\Table\AmvTable;
+use Monarc\Core\Table\AmvTable;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\InstanceRiskTable;
 use Monarc\Core\Table\InstanceRiskOwnerTable;

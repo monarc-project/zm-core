@@ -13,6 +13,7 @@ use Doctrine\ORM\ORMException;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\PasswordToken;
 use Monarc\Core\Model\Entity\User;
+use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Table\PasswordTokenTable;
 use Monarc\Core\Table\UserTable;
 use Monarc\Core\Validator\PasswordStrength;
@@ -136,6 +137,7 @@ EMAIL_MESSAGE;
      */
     public function changePasswordWithoutOldPassword(int $userId, string $newPassword): void
     {
+        /** @var UserSuperClass $user */
         $user = $this->userTable->findById($userId);
 
         $this->validatePassword($newPassword);
@@ -151,6 +153,7 @@ EMAIL_MESSAGE;
      */
     public function resetPassword(int $userId): void
     {
+        /** @var UserSuperClass $user */
         $user = $this->userTable->findById($userId);
 
         $this->userTable->save($user->resetPassword());

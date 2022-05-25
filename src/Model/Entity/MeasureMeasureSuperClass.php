@@ -1,7 +1,7 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -12,8 +12,6 @@ use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 
 /**
- * Measure Measure
- *
  * @ORM\Table(name="measures_measures", indexes={
  *      @ORM\Index(name="father_id", columns={"father_id"}),
  *      @ORM\Index(name="child_id", columns={"child_id"})
@@ -21,7 +19,7 @@ use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
-class MeasureMeasureSuperClass extends AbstractEntity
+class MeasureMeasureSuperClass
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
@@ -48,42 +46,24 @@ class MeasureMeasureSuperClass extends AbstractEntity
      */
     protected $child;
 
-    /**
-     * TODO: The supporting of the Uuid|string types is added for FrontOffice and has to be refactored in the future.
-     *
-     * @return MeasureSuperClass|Uuid|string
-     */
     public function getFather()
     {
         return $this->father;
     }
 
-    /**
-     * @param MeasureSuperClass|Uuid|string $father
-     *
-     * @return MeasureMeasureSuperClass
-     */
-    public function setFather($father): self
+    public function setFather(MeasureSuperClass $father): self
     {
         $this->father = $father;
 
         return $this;
     }
 
-    /**
-     * @return MeasureSuperClass|Uuid|string
-     */
     public function getChild()
     {
         return $this->child;
     }
 
-    /**
-     * @param MeasureSuperClass|Uuid|string $child
-     *
-     * @return MeasureMeasureSuperClass
-     */
-    public function setChild($child): self
+    public function setChild(MeasureSuperClass $child): self
     {
         $this->child = $child;
 

@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Doctrine\ORM\EntityNotFoundException;
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\Threat;
 use Monarc\Core\Service\ConnectedUserService;
@@ -20,5 +21,20 @@ class ThreatTable extends AbstractEntityTable
     public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
     {
         parent::__construct($dbService, Threat::class, $connectedUserService);
+    }
+
+    public function findByUuid(string $uuid): Threat
+    {
+        $threat = $this->getRepository()->createQueryBuilder('t')
+            ->where('t.uuid = :uuid')
+            ->setParameter('uuid', $uuid)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+        if ($threat === null) {
+            throw EntityNotFoundException::fromClassNameAndIdentifier(Threat::class, [$uuid]);
+        }
+
+        return $threat;
     }
 }

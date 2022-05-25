@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
  * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
@@ -11,8 +11,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Asset
- *
  * @ORM\Table(name="assets", indexes={
  *      @ORM\Index(name="anr_id", columns={"anr_id","code"}),
  *      @ORM\Index(name="anr_id2", columns={"anr_id"})
@@ -24,7 +22,7 @@ class Asset extends AssetSuperClass
     /**
      * @var Model[]|ArrayCollection
      *
-     * @ORM\ManyToMany(targetEntity="MModel", inversedBy="assets", cascade={"persist"})
+     * @ORM\ManyToMany(targetEntity="Model", inversedBy="assets", cascade={"persist"})
      * @ORM\JoinTable(name="assets_models",
      *  joinColumns={@ORM\JoinColumn(name="asset_id", referencedColumnName="uuid")},
      *  inverseJoinColumns={@ORM\JoinColumn(name="model_id", referencedColumnName="id")}
@@ -39,50 +37,38 @@ class Asset extends AssetSuperClass
         parent::__construct($obj);
     }
 
-    /**
-     * @return Model[]|ArrayCollection
-     */
     public function getModels()
     {
         return $this->models;
     }
 
-    /**
-     * @return Model
-     */
-    public function getModel($id)
+    public function addModel(Model $model): self
     {
-        return $this->models[$id];
-    }
+        if (!$this->models->contains($model)) {
+            $this->models->add($model);
+            $model->addAsset($this);
+        }
 
-    /**
-     * @param Model $models
-     * @return Asset
-     */
-    public function setModels($models)
-    {
-        $this->models = $models;
         return $this;
     }
 
-    /**
-     * Add model
-     *
-     * @param Model $model
-     */
-    public function addModel(Model $model)
+    public function removeModel(Model $model): self
     {
-        $this->models[] = $model;
+        if ($this->models->contains($model)) {
+            $this->models->removeElement($model);
+            $model->removeAsset($this);
+        }
+
+        return $this;
     }
 
-    /**
-     * Set model
-     *
-     * @param key
-     * @param Model $model
-     */
-    public function setModel($id, Model $model)
+    public function unlinkModels(): self
     {
-        $this->models[$id] = $model;
+        foreach ($this->models as $model) {
+            $this->models->removeElement($model);
+            $model->removeAsset($this);
+        }
+
+        return $this;
     }
 }

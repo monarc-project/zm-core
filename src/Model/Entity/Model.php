@@ -9,6 +9,7 @@ namespace Monarc\Core\Model\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 
@@ -26,6 +27,9 @@ class Model
     use CreateEntityTrait;
     use UpdateEntityTrait;
 
+    public const STATUS_ACTIVE = 1;
+    public const STATUS_INACTIVE = 0;
+
     /**
      * @var int
      *
@@ -40,7 +44,7 @@ class Model
      *
      * @ORM\ManyToOne(targetEntity="Anr", cascade={"REMOVE"})
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true)
+     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=false)
      * })
      */
     protected $anr;
@@ -111,9 +115,9 @@ class Model
     /**
      * @var int
      *
-     * @ORM\Column(name="is_scales_updatable", type="smallint", options={"unsigned":true, "default":1})
+     * @ORM\Column(name="are_scales_updatable", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $isScalesUpdatable = 1;
+    protected $areScalesUpdatable = 1;
 
     /**
      * @var int
@@ -121,13 +125,6 @@ class Model
      * @ORM\Column(name="is_default", type="smallint", options={"unsigned":true, "default":0})
      */
     protected $isDefault = 0;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="is_deleted", type="smallint", options={"unsigned":true, "default":0})
-     */
-    protected $isDeleted = 0;
 
     /**
      * @var int
@@ -201,6 +198,19 @@ class Model
         return (string)$this->{'label' . $languageIndex};
     }
 
+
+    public function setLabels(array $labels): self
+    {
+        foreach (range(1, 4) as $index) {
+            $key = 'label' . $index;
+            if (isset($labels[$key])) {
+                $this->{$key} = $labels[$key];
+            }
+        }
+
+        return $this;
+    }
+
     public function getDescription(int $languageIndex): string
     {
         if (!\in_array($languageIndex, range(1, 4), true)) {
@@ -210,21 +220,18 @@ class Model
         return (string)$this->{'description' . $languageIndex};
     }
 
-    public function isDeleted(): bool
+    public function setDescriptions(array $descriptions): self
     {
-        return (bool)$this->isDeleted;
-    }
-
-    public function setIsDeleted(bool $isDeleted): self
-    {
-        $this->isDeleted = (int)$isDeleted;
+        foreach (range(1, 4) as $index) {
+            $key = 'description' . $index;
+            if (isset($descriptions[$key])) {
+                $this->{$key} = $descriptions[$key];
+            }
+        }
 
         return $this;
     }
 
-    /**
-     * @return Asset[]
-     */
     public function getAssets()
     {
         return $this->assets;
@@ -240,9 +247,16 @@ class Model
         return $this;
     }
 
-    /**
-     * @return Threat[]
-     */
+    public function removeAsset(AssetSuperClass $asset): self
+    {
+        if ($this->assets->contains($asset)) {
+            $this->assets->removeElement($asset);
+            $asset->removeModel($this);
+        }
+
+        return $this;
+    }
+
     public function getThreats()
     {
         return $this->threats;
@@ -258,9 +272,16 @@ class Model
         return $this;
     }
 
-    /**
-     * @return Vulnerability[]
-     */
+    public function removeThreat(ThreatSuperClass $threat): self
+    {
+        if ($this->threats->contains($threat)) {
+            $this->threats->removeElement($threat);
+            $threat->removeModel($this);
+        }
+
+        return $this;
+    }
+
     public function getVulnerabilities()
     {
         return $this->vulnerabilities;
@@ -276,70 +297,121 @@ class Model
         return $this;
     }
 
-    // TODO: replace with the Input filter usage. Drop it after!!!
-    public function getInputFilter($partial = false)
+    public function removeVulnerability(VulnerabilitySuperClass $vulnerability): self
     {
-        if (!$this->inputFilter) {
-            parent::getInputFilter($partial);
-
-            $texts = ['label1', 'label2', 'label3', 'label4'];
-            foreach ($texts as $text) {
-                $this->inputFilter->add(array(
-                    'name' => $text,
-                    'required' => strpos($text, (string)$this->getLanguage()) !== false && !$partial,
-                    'allow_empty' => false,
-                    'filters' => array(),
-                    'validators' => array(),
-                ));
-            }
-
-            $descriptions = ['description1', 'description2', 'description3', 'description4'];
-            foreach ($descriptions as $description) {
-                $this->inputFilter->add(array(
-                    'name' => $description,
-                    'required' => false,
-                    'allow_empty' => true,
-                    'filters' => array(),
-                    'validators' => array(),
-                ));
-            }
-
-            $booleans = ['isScalesUpdatable', 'isDefault', 'isDeleted', 'isGeneric', 'isRegulator', 'showRolfBrut'];
-            foreach ($booleans as $boolean) {
-                $this->inputFilter->add(array(
-                    'name' => $boolean,
-                    'required' => false,
-                    'allow_empty' => true,
-                    'filters' => array(),
-                    'validators' => array(
-                        array(
-                            'name' => 'InArray',
-                            'options' => array(
-                                'haystack' => [0, 1],
-                            ),
-                        ),
-                    ),
-                ));
-            }
-
-            $this->inputFilter->add(array(
-                'name' => 'status',
-                'required' => false,
-                'allow_empty' => false,
-                'filters' => array(
-                    array('name' => 'ToInt'),
-                ),
-                'validators' => array(
-                    array(
-                        'name' => 'InArray',
-                        'options' => array(
-                            'haystack' => array(self::STATUS_INACTIVE, self::STATUS_ACTIVE, self::STATUS_DELETED),
-                        ),
-                    ),
-                ),
-            ));
+        if ($this->vulnerabilities->contains($vulnerability)) {
+            $this->vulnerabilities->removeElement($vulnerability);
+            $vulnerability->removeModel($this);
         }
-        return $this->inputFilter;
+
+        return $this;
+    }
+
+    public function getStatus(): int
+    {
+        return $this->status;
+    }
+
+    public function setStatus(int $status): self
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->status === static::STATUS_ACTIVE;
+    }
+
+    public function areScalesUpdatable(): bool
+    {
+        return (bool)$this->areScalesUpdatable;
+    }
+
+    public function setAreScalesUpdatable(bool $areScalesUpdatable): self
+    {
+        $this->areScalesUpdatable = (int)$areScalesUpdatable;
+
+        return $this;
+    }
+
+    public function isDefault(): bool
+    {
+        return (bool)$this->isDefault;
+    }
+
+    public function setIsDefault(bool $isDefault): self
+    {
+        $this->isDefault = (int)$isDefault;
+
+        return $this;
+    }
+
+    public function isGeneric(): bool
+    {
+        return (bool)$this->isGeneric;
+    }
+
+    public function setIsGeneric(bool $isGeneric): self
+    {
+        $this->isGeneric = (int)$isGeneric;
+
+        return $this;
+    }
+
+    public function isRegulator(): bool
+    {
+        return (bool)$this->isRegulator;
+    }
+
+    public function setIsRegulator(bool $isRegulator): self
+    {
+        $this->isRegulator = (int)$isRegulator;
+
+        return $this;
+    }
+
+    public function getShowRolfBrut(): bool
+    {
+        return (bool)$this->showRolfBrut;
+    }
+
+    public function setShowRolfBrut(bool $showRolfBrut): self
+    {
+        $this->showRolfBrut = (int)$showRolfBrut;
+
+        return $this;
+    }
+
+    public function validateObjectAcceptance(MonarcObject $object, Asset $forcedAsset = null): void
+    {
+        if ($this->isGeneric() && $object->isModeSpecific()) {
+            throw new Exception('You cannot add a specific object to a generic model', 412);
+        }
+
+        $asset = $forcedAsset ?? $object->getAsset();
+        if ($this->isRegulator()) {
+            if ($object->isModeGeneric()) {
+                throw new Exception('You cannot add a generic object to a regulator model', 412);
+            }
+            if ($asset !== null && $object->isModeSpecific() && $asset->isModeGeneric()) {
+                throw new Exception('You cannot add a specific object with generic asset to a regulator model', 412);
+            }
+        }
+
+        if ($asset !== null && !$this->isGeneric() && $asset->isModeSpecific()) {
+            foreach ($asset->getModels() as $assetModel) {
+                if ($assetModel->getId() === $this->id) {
+                    return;
+                }
+            }
+
+            throw new Exception(
+                'You cannot add an object with specific asset unrelated to a '
+                . ($this->isRegulator() ? 'regulator' : 'specific') . ' model',
+                412
+            );
+        }
     }
 }
-

@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Service;
 
+use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\Scale;
 use Monarc\Core\Model\Entity\ScaleComment;
 use Monarc\Core\Model\Entity\ScaleSuperClass;

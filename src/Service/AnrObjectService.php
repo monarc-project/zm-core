@@ -8,6 +8,7 @@
 namespace Monarc\Core\Service;
 
 use Doctrine\ORM\Mapping\MappingException;
+use Monarc\Core\Model\Entity\MonarcObject;
 
 /**
  * Anr Object Service

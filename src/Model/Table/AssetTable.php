@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Doctrine\ORM\EntityNotFoundException;
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\Asset;
 use Monarc\Core\Service\ConnectedUserService;
@@ -22,14 +23,19 @@ class AssetTable extends AbstractEntityTable
         parent::__construct($dbService, Asset::class, $connectedUserService);
     }
 
-    public function findByUuid(string $uuid): ?Asset
+    public function findByUuid(string $uuid): Asset
     {
-        return $this->getRepository()->createQueryBuilder('a')
+        $asset = $this->getRepository()->createQueryBuilder('a')
             ->where('a.uuid = :uuid')
             ->setParameter('uuid', $uuid)
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
+        if ($asset === null) {
+            throw EntityNotFoundException::fromClassNameAndIdentifier(Asset::class, [$uuid]);
+        }
+
+        return $asset;
     }
 
     public function saveEntity(Asset $asset, bool $flushAll = true): void

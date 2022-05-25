@@ -27,6 +27,9 @@ class AssetSuperClass extends AbstractEntity
     use CreateEntityTrait;
     use UpdateEntityTrait;
 
+    public const MODE_GENERIC = 0;
+    public const MODE_SPECIFIC = 1;
+
     /**
     * @var LazyUuidFromString|string
     *
@@ -227,6 +230,16 @@ class AssetSuperClass extends AbstractEntity
     public function getMode(): int
     {
         return $this->mode;
+    }
+
+    public function isModeSpecific(): bool
+    {
+        return $this->mode === static::MODE_SPECIFIC;
+    }
+
+    public function isModeGeneric(): bool
+    {
+        return $this->mode === static::MODE_GENERIC;
     }
 
     public function setCode(string $code): self

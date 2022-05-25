@@ -11,6 +11,7 @@ use DateTime;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Anr;
 use Monarc\Core\Model\Entity\OperationalRiskScale;
+use Monarc\Core\Model\Entity\Scale;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\MonarcObjectTable;
 use Monarc\Core\Model\Table\ScaleCommentTable;
@@ -24,6 +25,7 @@ use Monarc\Core\Model\Table\ScaleTable;
 */
 class AnrService extends AbstractService
 {
+    /** @var ScaleService */
     protected $scaleService;
     protected $anrObjectCategoryTable;
     protected $MonarcObjectTable;
@@ -57,9 +59,9 @@ class AnrService extends AbstractService
     protected $operationalRiskScalesExportService;
 
     /**
-    * @inheritdoc
-    */
-    public function create($data, $last = true)
+     * TODO: drop the $last param when abstract inheritance is removed. Would be good to always return an abject.
+     */
+    public function create($data, $last = true, $returnObject = false)
     {
         /** @var Anr $anr */
         $anr = $this->get('entity');
@@ -67,46 +69,22 @@ class AnrService extends AbstractService
 
         $anr->setCreator($this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname());
 
-        $anrId = $this->get('table')->save($anr);
+        $this->get('table')->save($anr);
 
-        //scales
-        for ($i = 1; $i <= 3; $i++) {
-            if (isset($data['scales'][$i]['min'])) {
-                if (isset($data['scales'][$i]['max']) && $data['scales'][$i]['min'] > $data['scales'][$i]['max']) {
-                    $data['scales'][$i]['min'] = 0;
-                }
-            } else {
-                $data['scales'][$i]['min'] = 0;
-            }
-        }
-        $scales = [];
-        for ($i = 1; $i <= 3; $i++) {
-            $scales[] = [
-                'anr' => $anrId,
-                'type' => $i,
-                'min' => $data['scales'][$i]['min'],
-                'max' => (isset($data['scales'][$i]['max']) ? $data['scales'][$i]['max'] : ($i == 2?4:3)),
-            ];
-        }
-        $i = 1;
-        $nbScales = count($scales);
-        foreach ($scales as $scale) {
-            /** @var ScaleService $scaleService */
-            $scaleService = $this->get('scaleService');
-            $scaleService->create($scale, ($i == $nbScales));
-            $i++;
+        foreach ([Scale::TYPE_IMPACT, Scale::TYPE_THREAT, Scale::TYPE_VULNERABILITY] as $type) {
+            $this->scaleService->create([
+                'anr' => $anr->getId(),
+                'type' => $type,
+                'min' => 0,
+                'max' => $type === Scale::TYPE_THREAT ? 4 : 3
+            ]);
         }
 
         foreach ([OperationalRiskScale::TYPE_IMPACT, OperationalRiskScale::TYPE_LIKELIHOOD] as $type) {
-            $this->operationalRiskScaleService->createScale(
-                $anr,
-                $type,
-                0,
-                4
-            );
+            $this->operationalRiskScaleService->createScale($anr, $type, 0, 4);
         }
 
-        return $anrId;
+        return $returnObject ? $anr : $anr->getId();
     }
 
     /**
@@ -162,95 +140,94 @@ class AnrService extends AbstractService
             $order = [];
             switch ($value) {
                 case 'instance':
-                $order['level'] = 'ASC';
-                break;
+                    $order['level'] = 'ASC';
+                    break;
             }
 
-            $entities = method_exists($table,'getEntityByFields') ?
+            $entities = method_exists($table, 'getEntityByFields') ?
                 $table->getEntityByFields(['anr' => $anr->id], $order) :
                 $table->findByAnr($anr);
             foreach ($entities as $entity) {
                 $newEntity = clone $entity;
-                if (method_exists($newEntity,'set')) {
+                if (method_exists($newEntity, 'set')) {
                     $newEntity->set('id', null);
                 }
                 $newEntity->setAnr($newAnr);
 
                 switch ($value) {
                     case 'instance':
-                    if (!empty($entity->root->id) && !empty($clones['instance'][$entity->root->id])) {
-                        $newEntity->set('root', $clones['instance'][$entity->root->id]);
-                    } else {
-                        $newEntity->set('root', null);
-                    }
-                    if (!empty($entity->parent->id) && !empty($clones['instance'][$entity->parent->id])) {
-                        $newEntity->set('parent', $clones['instance'][$entity->parent->id]);
-                    } else {
-                        $newEntity->set('parent', null);
-                    }
-                    break;
+                        if (!empty($entity->root->id) && !empty($clones['instance'][$entity->root->id])) {
+                            $newEntity->set('root', $clones['instance'][$entity->root->id]);
+                        } else {
+                            $newEntity->set('root', null);
+                        }
+                        if (!empty($entity->parent->id) && !empty($clones['instance'][$entity->parent->id])) {
+                            $newEntity->set('parent', $clones['instance'][$entity->parent->id]);
+                        } else {
+                            $newEntity->set('parent', null);
+                        }
+                        break;
                     case 'instanceConsequence':
-                    if (!empty($entity->instance->id) && !empty($clones['instance'][$entity->instance->id])) {
-                        $newEntity->set('instance', $clones['instance'][$entity->instance->id]);
-                    } else {
-                        $newEntity->set('instance', null);
-                    }
-                    if (!empty($entity->scaleImpactType->id) && !empty($clones['scaleImpactType'][$entity->scaleImpactType->id])) {
-                        $newEntity->set('scaleImpactType', $clones['scaleImpactType'][$entity->scaleImpactType->id]);
-                    } else {
-                        $newEntity->set('scaleImpactType', null);
-                    }
-                    break;
+                        if (!empty($entity->instance->id) && !empty($clones['instance'][$entity->instance->id])) {
+                            $newEntity->set('instance', $clones['instance'][$entity->instance->id]);
+                        } else {
+                            $newEntity->set('instance', null);
+                        }
+                        if (!empty($entity->scaleImpactType->id) && !empty($clones['scaleImpactType'][$entity->scaleImpactType->id])) {
+                            $newEntity->set('scaleImpactType', $clones['scaleImpactType'][$entity->scaleImpactType->id]);
+                        } else {
+                            $newEntity->set('scaleImpactType', null);
+                        }
+                        break;
                     case 'instanceRisk':
                     case 'instanceRiskOp':
-                    if (!empty($entity->instance->id) && !empty($clones['instance'][$entity->instance->id])) {
-                        $newEntity->set('instance', $clones['instance'][$entity->instance->id]);
-                    } else {
-                        $newEntity->set('instance', null);
-                    }
-                    break;
+                        if (!empty($entity->instance->id) && !empty($clones['instance'][$entity->instance->id])) {
+                            $newEntity->set('instance', $clones['instance'][$entity->instance->id]);
+                        } else {
+                            $newEntity->set('instance', null);
+                        }
+                        break;
                     case 'scaleImpactType':
-                    if (!empty($entity->scale->id) && !empty($clones['scale'][$entity->scale->id])) {
-                        $newEntity->set('scale', $clones['scale'][$entity->scale->id]);
-                    } else {
-                        $newEntity->set('scale', null);
-                    }
-                    break;
+                        if (!empty($entity->scale->id) && !empty($clones['scale'][$entity->scale->id])) {
+                            $newEntity->set('scale', $clones['scale'][$entity->scale->id]);
+                        } else {
+                            $newEntity->set('scale', null);
+                        }
+                        break;
                     case 'scaleComment':
-                    if (!empty($entity->scale->id) && !empty($clones['scale'][$entity->scale->id])) {
-                        $newEntity->set('scale', $clones['scale'][$entity->scale->id]);
-                    } else {
-                        $newEntity->set('scale', null);
-                    }
-                    if (!empty($entity->scaleImpactType->id) && !empty($clones['scaleImpactType'][$entity->scaleImpactType->id])) {
-                        $newEntity->set('scaleImpactType', $clones['scaleImpactType'][$entity->scaleImpactType->id]);
-                    } else {
-                        $newEntity->set('scaleImpactType', null);
-                    }
-                    break;
+                        if (!empty($entity->scale->id) && !empty($clones['scale'][$entity->scale->id])) {
+                            $newEntity->set('scale', $clones['scale'][$entity->scale->id]);
+                        } else {
+                            $newEntity->set('scale', null);
+                        }
+                        if (!empty($entity->scaleImpactType->id) && !empty($clones['scaleImpactType'][$entity->scaleImpactType->id])) {
+                            $newEntity->set('scaleImpactType', $clones['scaleImpactType'][$entity->scaleImpactType->id]);
+                        } else {
+                            $newEntity->set('scaleImpactType', null);
+                        }
+                        break;
                     case 'operationalRiskScaleType':
-                    if (!empty($entity->getOperationalRiskScale()->getId()) && !empty($clones['operationalRiskScale'][$entity->getOperationalRiskScale()->getId()])) {
-                        $newEntity->setOperationalRiskScale($clones['operationalRiskScale'][$entity->getOperationalRiskScale()->getId()]);
-                    }
-                    break;
+                        if (!empty($entity->getOperationalRiskScale()->getId()) && !empty($clones['operationalRiskScale'][$entity->getOperationalRiskScale()->getId()])) {
+                            $newEntity->setOperationalRiskScale($clones['operationalRiskScale'][$entity->getOperationalRiskScale()->getId()]);
+                        }
+                        break;
                     case 'operationalRiskScaleComment':
-                    if (!empty($entity->getOperationalRiskScale()->getId()) && !empty($clones['operationalRiskScale'][$entity->getOperationalRiskScale()->getId()])) {
-                        $newEntity->setOperationalRiskScale($clones['operationalRiskScale'][$entity->getOperationalRiskScale()->getId()]);
-                    }
-                    if (!empty($entity->getOperationalRiskScaleType()) && !empty($clones['operationalRiskScaleType'][$entity->getOperationalRiskScaleType()->getId()])) {
-                        $newEntity->setOperationalRiskScaleType($clones['operationalRiskScaleType'][$entity->getOperationalRiskScaleType()->getId()]);
-                    }
-                    break;
+                        if (!empty($entity->getOperationalRiskScale()->getId()) && !empty($clones['operationalRiskScale'][$entity->getOperationalRiskScale()->getId()])) {
+                            $newEntity->setOperationalRiskScale($clones['operationalRiskScale'][$entity->getOperationalRiskScale()->getId()]);
+                        }
+                        if (!empty($entity->getOperationalRiskScaleType()) && !empty($clones['operationalRiskScaleType'][$entity->getOperationalRiskScaleType()->getId()])) {
+                            $newEntity->setOperationalRiskScaleType($clones['operationalRiskScaleType'][$entity->getOperationalRiskScaleType()->getId()]);
+                        }
+                        break;
                 }
 
                 $table->save($newEntity);
 
-                if (method_exists($newEntity,'get')) {
+                if (method_exists($newEntity, 'get')) {
                     $clones[$value][$entity->get('id')] = $newEntity;
                 } else {
                     $clones[$value][$entity->getId()] = $newEntity;
                 }
-
             }
         }
         return $newAnr;

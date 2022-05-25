@@ -247,12 +247,6 @@ class InstanceRiskOpService
     {
         /** @var OperationalInstanceRiskScale $operationInstanceRiskScale */
         $operationInstanceRiskScale = $this->operationalInstanceRiskScaleTable->findById($data['instanceRiskScaleId']);
-        if ($operationInstanceRiskScale === null) {
-            throw EntityNotFoundException::fromClassNameAndIdentifier(
-                \get_class($this->operationalInstanceRiskScaleTable),
-                $data['instanceRiskScaleId']
-            );
-        }
 
         if (isset($data['netValue']) && $operationInstanceRiskScale->getNetValue() !== (int)$data['netValue']) {
             $this->verifyScaleValue($operationInstanceRiskScale, (int)$data['netValue']);

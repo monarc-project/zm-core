@@ -26,6 +26,7 @@ class AnrTable extends AbstractEntityTable
     }
 
     /**
+     * TODO: can be removed after move...
      * @return AnrSuperClass[]
      */
     public function findByIds(array $ids): array

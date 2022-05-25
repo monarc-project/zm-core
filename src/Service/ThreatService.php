@@ -7,10 +7,13 @@
 
 namespace Monarc\Core\Service;
 
+use Monarc\Core\Exception\Exception;
+use Monarc\Core\Model\Entity\Model;
 use Monarc\Core\Model\Entity\Threat;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\InstanceRiskTable;
 use Monarc\Core\Model\Table\ThreatTable;
+use Monarc\Core\Table\ModelTable;
 
 /**
  * Threat Service
@@ -35,7 +38,7 @@ class ThreatService extends AbstractService
     protected $dependencies = ['anr', 'theme', 'model[s]()'];
     protected $forbiddenFields = ['anr'];
 
-    public function create($data, $last = true)
+    public function create($data, $saveInDb = true)
     {
         /** @var ThreatTable $threatTable */
         $threatTable = $this->get('table');
@@ -57,11 +60,9 @@ class ThreatService extends AbstractService
         $threat->exchangeArray($data);
         $this->setDependencies($threat, $this->dependencies);
 
-        $threat->setCreator(
-            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
-        );
+        $threat->setCreator($this->getConnectedUser()->getEmail());
 
-        return $threatTable->save($threat, $last);
+        return $threatTable->save($threat, $saveInDb);
     }
 
     /**
@@ -84,46 +85,45 @@ class ThreatService extends AbstractService
         }
 
         $models = $data['models'] ?? [];
-        $follow = $data['follow'] ?? null;
+        $follow = $data['follow'] ?? false;
         unset($data['models'], $data['follow']);
 
         $threat->exchangeArray($data);
-        if ($threat->get('models')) {
-            $threat->get('models')->initialize();
+        // TODO: we don't need to do this if set properly before -> change and drop drop.
+        if ($threat->getModels()) {
+            $threat->getModels()->initialize();
         }
 
-        if (!$this->get('amvService')->checkAMVIntegrityLevel($models, null, $threat, null, $follow)) {
-            throw new \Monarc\Core\Exception\Exception('Integrity AMV links violation', 412);
+        /** @var AmvService $amvService */
+        $amvService = $this->get('amvService');
+        if (!$amvService->checkAmvIntegrityLevel($models, null, $threat, null, $follow)) {
+            throw new Exception('Integrity AMV links violation', 412);
         }
 
-        if (($follow) && (!$this->get('amvService')->ensureAssetsIntegrityIfEnforced($models, null, $threat, null))) {
-            throw new \Monarc\Core\Exception\Exception('Assets Integrity', 412);
+        if ($follow && !$amvService->ensureAssetsIntegrityIfEnforced($models, null, $threat)) {
+            throw new Exception('Assets Integrity', 412);
         }
 
-        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = property_exists($this, 'dependencies') ? $this->dependencies : [];
         $this->setDependencies($threat, $dependencies);
 
-        switch ($threat->get('mode')) {
-            case Threat::MODE_SPECIFIC:
-                if (empty($models)) {
-                    $threat->set('models', []);
-                } else {
-                    $modelsObj = [];
-                    foreach ($models as $mid) {
-                        $modelsObj[] = $this->get('modelTable')->getEntity($mid);
-                    }
-                    $threat->set('models', $modelsObj);
+        /** @var ModelTable $modelTable */
+        $modelTable = $this->get('modelTable');
+        $threat->unlinkModels();
+        if ($threat->isModeSpecific()) {
+            if (!empty($models)) {
+                /** @var Model[] $modelsObj */
+                $modelsObj = $modelTable->findByIds($models);
+                foreach ($modelsObj as $model) {
+                    $threat->addModel($model);
                 }
-                if ($follow) {
-                    $this->get('amvService')->enforceAMVtoFollow($threat->get('models'), null, $threat, null);
-                }
-                break;
-            case Threat::MODE_GENERIC:
-                $threat->set('models', []);
-                break;
+            }
+            if ($follow) {
+                $amvService->enforceAmvToFollow($threat->getModels(), null, $threat);
+            }
         }
 
-        $threat->setUpdater($this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname());
+        $threat->setUpdater($this->getConnectedUser()->getEmail());
 
         $id = $this->get('table')->save($threat);
 

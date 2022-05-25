@@ -251,6 +251,13 @@ class AnrSuperClass extends AbstractEntity
      */
     protected $showRolfBrut = 0;
 
+    public function __construct($obj = null)
+    {
+        $this->objects = new ArrayCollection();
+
+        parent::__construct($obj);
+    }
+
     public function getId(): int
     {
         return $this->id;
@@ -325,6 +332,7 @@ class AnrSuperClass extends AbstractEntity
      */
     public function getLabel(): string
     {
+        // TODO: replace it's usage to always pass the lang number (-> like the method above, replace its use).
         $languageNumber = $this->getLanguage();
         if (!property_exists(\get_class($this), 'label' . $languageNumber)) {
             throw new LogicException(sprintf('Language number %d does not exist.', $languageNumber));

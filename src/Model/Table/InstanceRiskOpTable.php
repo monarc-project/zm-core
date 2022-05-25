@@ -68,32 +68,11 @@ class InstanceRiskOpTable extends AbstractEntityTable
                 ->setParameter(':cnr', $params['thresholds']);
         }
 
-        if (isset($params['keywords']) && !empty($params['keywords'])) {
-            $anr = new \Monarc\FrontOffice\Model\Entity\Anr();
-            $anr->setDbAdapter($this->getDb());
-            $anr->set('id', $anrId);
-            $anr = $this->getDb()->fetch($anr);
-            if (!$anr) {
-                throw new \Monarc\Core\Exception\Exception('Entity does not exist', 412);
-            }
-            $l = $anr->get('language');
-
-            $fields = [
-                'riskCacheLabel' .$l,
-                'riskCacheDescription' . $l,
-                'comment'
-            ];
-
-            $query = [];
-            foreach ($fields as $f) {
-                $query[] = $qb->expr()->like('iro.' . $f, "'%" . $params['keywords'] . "%'");
-            }
-            $orX = $qb->expr()->orX();
-            $orX->addMultiple($query);
-            $return->andWhere($orX);
+        $params['order_direction'] = 'ASC';
+        if (isset($params['order_direction']) && strtolower(trim($params['order_direction'])) !== 'asc') {
+            $params['order_direction'] = 'DESC';
         }
 
-        $params['order_direction'] = isset($params['order_direction']) && strtolower(trim($params['order_direction'])) != 'asc' ? 'DESC' : 'ASC';
         return $return->orderBy('iro.' . $params['order'], $params['order_direction'])
             ->getQuery()
             ->getResult();

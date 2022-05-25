@@ -43,6 +43,7 @@ class UserRoleService
 
     public function getUserRolesByUserId(int $userId): array
     {
+        /** @var UserSuperClass $user */
         $user = $this->userTable->findById($userId);
 
         return $this->getUserRolesByUser($user);
