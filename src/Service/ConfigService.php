@@ -127,6 +127,11 @@ class ConfigService
         ];
     }
 
+    public function getInstanceName(): string
+    {
+        return $this->config['instanceName'] ?? '';
+    }
+
     public function getMospApiUrl(): array
     {
         return [

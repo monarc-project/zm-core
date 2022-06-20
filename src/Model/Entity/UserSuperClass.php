@@ -91,6 +91,27 @@ abstract class UserSuperClass
     protected $password;
 
     /**
+     * @var boolean
+     *
+     * @ORM\Column(name="is_two_factor_enabled", type="boolean", options={"default":false})
+     */
+    protected $isTwoFactorAuthEnabled;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="secret_key", type="string", length=255, options={"default":""})
+     */
+    protected $secretKey;
+
+    /**
+     * @var ArrayCollection
+     *
+     * @ORM\Column(name="recovery_codes", type="array", length=250, options={"default":""})
+     */
+    protected $recoveryCodes;
+
+    /**
      * @var integer
      *
      * @ORM\Column(name="language", type="integer", precision=0, scale=0, nullable=false)
@@ -119,6 +140,8 @@ abstract class UserSuperClass
         if (isset($data['password'])) {
             $this->setPassword($data['password']);
         }
+        $this->isTwoFactorAuthEnabled = false;
+        $this->secretKey = '';
         $this->language = $data['language'];
         $this->mospApiKey = $data['mospApiKey'];
         $this->status = $data['status'] ?? self::STATUS_ACTIVE;
@@ -265,6 +288,49 @@ abstract class UserSuperClass
         $this->mospApiKey = $mospApiKey;
 
         return $this;
+    }
+
+    public function getSecretKey(): ?string
+    {
+        return $this->secretKey;
+    }
+
+    public function setSecretKey(?string $secretKey): self
+    {
+        $this->secretKey = $secretKey;
+
+        return $this;
+    }
+
+    public function getRecoveryCodes(): ?array
+    {
+        return $this->recoveryCodes;
+    }
+
+    public function setRecoveryCodes(?array $recoveryCodes): self
+    {
+        $this->recoveryCodes = $recoveryCodes;
+
+        return $this;
+    }
+
+    public function createRecoveryCodes(?array $recoveryCodes): self
+    {
+        $this->recoveryCodes = array_map('password_hash', $recoveryCodes, [PASSWORD_BCRYPT]);
+
+        return $this;
+    }
+
+    public function setTwoFactorAuthEnabled(bool $isTwoFactorAuthEnabled): self
+    {
+        $this->isTwoFactorAuthEnabled = $isTwoFactorAuthEnabled;
+
+        return $this;
+    }
+
+    public function isTwoFactorAuthEnabled(): bool
+    {
+        return $this->isTwoFactorAuthEnabled;
     }
 
     public function isSystemUser(): bool

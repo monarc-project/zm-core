@@ -6,6 +6,7 @@ use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Model\Table\UserTable;
 use Laminas\Authentication\Adapter\AbstractAdapter;
 use Laminas\Authentication\Result;
+use RobThree\Auth\TwoFactorAuth;
 
 /**
  * Class Authentication is an implementation of AbstractAdapter that takes care of authenticating an user.
@@ -20,6 +21,8 @@ class Authentication extends AbstractAdapter
 
     /** @var UserSuperClass */
     protected $user;
+
+    const TWO_FA_AUTHENTICATION_REQUIRED = 2;
 
     public function __construct(UserTable $userTable)
     {
@@ -45,11 +48,11 @@ class Authentication extends AbstractAdapter
     }
 
     /**
-     * Authenticates the user from its identity and credential
-     *
+     * Authenticates the user from its identity and credential.
+     * @param string $token The OTP token submitted by the user or a recovery code.
      * @return Result The authentication result
      */
-    public function authenticate(): Result
+    public function authenticate($token = ''): Result
     {
         $identity = $this->getIdentity();
         $credential = $this->getCredential();
@@ -59,12 +62,39 @@ class Authentication extends AbstractAdapter
             return new Result(Result::FAILURE_IDENTITY_NOT_FOUND, $this->getIdentity());
         }
 
-        // TODO: faire le test sur dateStart && dateEnd
+        // TODO: make the test on dateStart and dateEnd
         if ($user->isActive()) {
             if (password_verify($credential, $user->getPassword())) {
                 $this->setUser($user);
+                // if the user is using Two Factor Authentication
+                if ($user->isTwoFactorAuthEnabled()) {
+                    // check if the 2FA token has been submitted
+                    if (empty($token)) {
+                        return new Result(self::TWO_FA_AUTHENTICATION_REQUIRED, $this->getIdentity());
+                    } else {
+                        // verify the submitted OTP token
+                        $tfa = new TwoFactorAuth('MONARC TwoFactorAuth');
+                        if ($tfa->verifyCode($user->getSecretKey(), $token)) {
+                            return new Result(Result::SUCCESS, $this->getIdentity());
+                        }
 
-                return new Result(Result::SUCCESS, $this->getIdentity());
+                        // verify the submitted recovery code
+                        $recoveryCodes = $user->getRecoveryCodes();
+                        foreach ($recoveryCodes as $key => $recoveryCode) {
+                            if (password_verify($token, $recoveryCode)) {
+                                unset($recoveryCodes[$key]);
+                                $user->setRecoveryCodes($recoveryCodes);
+                                $this->userTable->saveEntity($user);
+
+                                return new Result(Result::SUCCESS, $this->getIdentity());
+                            }
+                        }
+                    }
+                } else {
+                    return new Result(Result::SUCCESS, $this->getIdentity());
+                }
+
+                return new Result(Result::FAILURE_CREDENTIAL_INVALID, $this->getIdentity());
             }
 
             return new Result(Result::FAILURE_CREDENTIAL_INVALID, $this->getIdentity());

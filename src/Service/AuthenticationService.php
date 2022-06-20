@@ -44,16 +44,27 @@ class AuthenticationService
     public function authenticate($data): array
     {
         if (!empty($data['login']) && !empty($data['password'])) {
+            $token = '';
+            if (isset($data['otp'])) {
+                $token = $data['otp'];
+            } elseif (isset($data['recoveryCode'])) {
+                $token = $data['recoveryCode'];
+            }
+
             $res = $this->authenticationAdapter
                 ->setIdentity($data['login'])
                 ->setCredential($data['password'])
-                ->authenticate();
+                ->authenticate($token);
 
-            if ($res->isValid()) {
+            if ($res->isValid() && $res->getCode() != 2) {
                 $user = $this->authenticationAdapter->getUser();
                 $token = uniqid(bin2hex(random_bytes(random_int(20, 40))), true);
                 $this->authenticationStorage->addUserToken($token, $user);
 
+                return compact('token', 'user');
+            } elseif ($res->getCode() == 2) {
+                $user = $this->authenticationAdapter->getUser();
+                $token = "2FARequired";
                 return compact('token', 'user');
             }
         }

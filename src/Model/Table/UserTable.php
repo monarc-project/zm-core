@@ -79,6 +79,7 @@ class UserTable extends AbstractEntityTable
                 'status' => $user->getStatus(),
                 'language' => $user->getLanguage(),
                 'role' => $user->getRoles(),
+                'isTwoFactorAuthEnabled' => $user->isTwoFactorAuthEnabled(),
             ];
         }
 

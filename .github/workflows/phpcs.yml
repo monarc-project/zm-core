@@ -10,7 +10,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        fetch-depth: 0  
+        fetch-depth: 0
 
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
@@ -53,4 +53,4 @@ jobs:
         echo ${{ steps.changed-files-comma.outputs.all_changed_files }}
     - name: Run phpcs
       if: steps.changed-files-comma.outputs.any_changed == 'true'
-      run: phpcs -q --report=checkstyle ${{ steps.changed-files-comma.outputs.all_changed_files }} | cs2pr
+      run: phpcs -q --report=checkstyle --ignore=*/migrations/* ${{ steps.changed-files-comma.outputs.all_changed_files }} | cs2pr
