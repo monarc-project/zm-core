@@ -10,7 +10,6 @@ namespace Monarc\Core\Service;
 use Interop\Container\ContainerInterface;
 use Monarc\Core\Model\Entity;
 use Monarc\Core\Model\Table as DeprecatedTable;
-use Monarc\Core\Table;
 use Monarc\Core\Service;
 
 /**
@@ -27,7 +26,6 @@ class InstanceServiceFactory extends AbstractServiceFactory
         'entity' => Entity\Instance::class,
         'instanceConsequenceEntity' => Entity\InstanceConsequence::class,
         'anrTable' => DeprecatedTable\AnrTable::class,
-        'amvTable' => Table\AmvTable::class,
         'instanceConsequenceTable' => DeprecatedTable\InstanceConsequenceTable::class,
         'objectTable' => DeprecatedTable\MonarcObjectTable::class,
         'scaleTable' => DeprecatedTable\ScaleTable::class,

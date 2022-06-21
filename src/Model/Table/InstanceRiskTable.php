@@ -16,6 +16,7 @@ use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\InstanceRisk;
 use Monarc\Core\Model\Entity\InstanceRiskSuperClass;
 use Monarc\Core\Model\Entity\InstanceSuperClass;
+use Monarc\Core\Model\Entity\ThreatSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**
@@ -51,6 +52,18 @@ class InstanceRiskTable extends AbstractEntityTable
         return $this->getRepository()->createQueryBuilder('ir')
             ->where('ir.anr = :anr')
             ->setParameter('anr', $anr)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return InstanceRiskSuperClass[]
+     */
+    public function findByThreat(ThreatSuperClass $threat): array
+    {
+        return $this->getRepository()->createQueryBuilder('ir')
+            ->where('ir.threat = :threat')
+            ->setParameter('threat', $threat)
             ->getQuery()
             ->getResult();
     }

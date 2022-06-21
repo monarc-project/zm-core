@@ -7,52 +7,42 @@
 
 namespace Monarc\Core\Service;
 
-use Monarc\Core\Exception\UserNotLoggedInException;
 use Monarc\Core\Model\Entity\UserSuperClass;
-use Monarc\Core\Storage\Authentication as AuthenticationStorage;
 use Laminas\Http\PhpEnvironment\Request;
+use Monarc\Core\Table\UserTokenTable;
 
 /**
- * Determines and returns the system logged in user.
+ * Determines and returns the system logged-in user.
  *
  * Class ConnectedUserService
  * @package Monarc\Core\Service
  */
 class ConnectedUserService
 {
-    /** @var UserSuperClass|null */
-    protected $connectedUser;
+    protected ?UserSuperClass $connectedUser = null;
 
-    /** @var Request */
-    private $request;
+    private Request $request;
 
-    /** @var AuthenticationStorage */
-    private $authenticationStorage;
+    private UserTokenTable $userTokenTable;
 
-    public function __construct(Request $request, AuthenticationStorage $authenticationStorage)
+    public function __construct(Request $request, UserTokenTable $userTokenTable)
     {
         $this->request = $request;
-        $this->authenticationStorage = $authenticationStorage;
+        $this->userTokenTable = $userTokenTable;
     }
 
     /**
      * Returns User's object instance when user is logged-in.
-     *
-     * @throws UserNotLoggedInException
      */
-    public function getConnectedUser(): UserSuperClass
+    public function getConnectedUser(): ?UserSuperClass
     {
         if ($this->connectedUser === null) {
-            $token = $this->request->getHeader('token', null);
-            if ($token !== null) {
-                $userToken = $this->authenticationStorage->getUserToken($token->getFieldValue());
+            $token = $this->request->getHeader('token');
+            if (!empty($token)) {
+                $userToken = $this->userTokenTable->findByToken($token->getFieldValue());
                 if ($userToken !== null) {
                     $this->connectedUser = $userToken->getUser();
                 }
-            }
-
-            if ($this->connectedUser === null) {
-                throw new UserNotLoggedInException();
             }
         }
 

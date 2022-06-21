@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Service\Traits;
 
+use Doctrine\ORM\EntityNotFoundException;
 use LogicException;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Interfaces\PositionedEntityInterface;
@@ -21,7 +22,7 @@ trait PositionUpdateTrait
      * @param PositionUpdatableTableInterface|AbstractTable $table
      * @param array $data
      *
-     * @throws Exception
+     * @throws Exception|LogicException|EntityNotFoundException
      */
     public function updatePositions(
         PositionedEntityInterface $entity,
@@ -34,10 +35,22 @@ trait PositionUpdateTrait
         switch ($implicitPosition) {
             case PositionUpdatableServiceInterface::IMPLICIT_POSITION_START:
                 if (!$table->isEntityPersisted($entity)) {
-                    $table->incrementPositions(1, -1, 1, $entity->getImplicitPositionRelationsValues());
+                    $table->incrementPositions(
+                        1,
+                        -1,
+                        1,
+                        $entity->getImplicitPositionRelationsValues(),
+                        $entity->getCreator()
+                    );
                 } elseif ($entity->getPosition() > 1) {
                     $currentPosition = $entity->getPosition();
-                    $table->incrementPositions(1, $currentPosition, 1, $entity->getImplicitPositionRelationsValues());
+                    $table->incrementPositions(
+                        1,
+                        $currentPosition,
+                        1,
+                        $entity->getImplicitPositionRelationsValues(),
+                        $entity->getUpdater()
+                    );
                 }
                 $entity->setPosition(1);
 
@@ -51,7 +64,8 @@ trait PositionUpdateTrait
                         $entity->getPosition() + 1,
                         -1,
                         -1,
-                        $entity->getImplicitPositionRelationsValues()
+                        $entity->getImplicitPositionRelationsValues(),
+                        $entity->getUpdater()
                     );
                     $entity->setPosition($maxPosition);
                 }
@@ -66,24 +80,28 @@ trait PositionUpdateTrait
                         'anr' => $entity->getAnr(),
                     ];
                 }
+                $isEntityPersisted = $table->isEntityPersisted($entity);
+                $updater = $isEntityPersisted ? $entity->getUpdater() : $entity->getCreator();
                 /** @var PositionedEntityInterface $previousEntity */
                 $previousEntity = $table->findById($entityKey);
                 $expectedPosition = $previousEntity->getPosition() + 1;
-                if ($table->isEntityPersisted($entity) && $entity->getPosition() !== $expectedPosition) {
+                if ($isEntityPersisted && $entity->getPosition() !== $expectedPosition) {
                     $table->incrementPositions(
                         $entity->getPosition() + 1,
                         -1,
                         -1,
-                        $entity->getImplicitPositionRelationsValues()
+                        $entity->getImplicitPositionRelationsValues(),
+                        $updater
                     );
+                    $table->refresh($previousEntity);
+                    $expectedPosition = $previousEntity->getPosition() + 1;
                 }
-                $table->refresh($previousEntity);
-                $expectedPosition = $previousEntity->getPosition() + 1;
                 $table->incrementPositions(
                     $expectedPosition,
                     -1,
                     1,
-                    $entity->getImplicitPositionRelationsValues()
+                    $entity->getImplicitPositionRelationsValues(),
+                    $updater
                 );
                 $entity->setPosition($expectedPosition);
 

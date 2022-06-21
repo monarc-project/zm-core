@@ -7,22 +7,14 @@
 
 namespace Monarc\Core\Service;
 
-use Doctrine\ORM\EntityNotFoundException;
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
 use Monarc\Core\Exception\ActionForbiddenException;
-use Monarc\Core\Exception\UserNotLoggedInException;
+use Monarc\Core\InputFormatter\FormattedInputParams;
 use Monarc\Core\Model\Entity\User;
 use Monarc\Core\Model\Entity\UserSuperClass;
-use Monarc\Core\Service\Traits\QueryParamsFormatterTrait;
 use Monarc\Core\Table\UserTable;
 
 class UserService
 {
-    use QueryParamsFormatterTrait;
-
-    protected static array $searchFields = ['firstname', 'lastname', 'email'];
-
     protected UserTable $userTable;
 
     protected ConnectedUserService $connectedUserService;
@@ -39,58 +31,10 @@ class UserService
         $this->defaultLanguageIndex = (int)$config['defaultLanguageIndex'];
     }
 
-    /**
-     * @throws ORMException
-     * @throws UserNotLoggedInException
-     */
-    public function create(array $data): UserSuperClass
+    public function getList(FormattedInputParams $params): array
     {
-        if (empty($data['language'])) {
-            $data['language'] = $this->defaultLanguageIndex;
-        }
-
-        $data['creator'] = $this->connectedUserService->getConnectedUser()->getFirstname() . ' '
-            . $this->connectedUserService->getConnectedUser()->getLastname();
-
-        $user = new User($data);
-        $this->userTable->save($user);
-
-        return $user;
-    }
-
-    /**
-     * @throws EntityNotFoundException
-     * @throws ORMException
-     */
-    public function update(int $userId, array $data): UserSuperClass
-    {
-        $user = $this->getUpdatedUser($userId, $data);
-
-        $this->userTable->save($user);
-
-        return $user;
-    }
-
-    /**
-     * @throws EntityNotFoundException
-     * @throws ORMException
-     */
-    public function patch($userId, $data): UserSuperClass
-    {
-        $user = $this->getUpdatedUser($userId, $data);
-
-        $this->userTable->save($user);
-
-        return $user;
-    }
-
-    public function getUsersList(string $searchString, array $filter, string $orderField): array
-    {
-        $params = $this->getFormattedFilterParams($searchString, $filter);
-        $order = $this->getFormattedOrder($orderField);
-
         /** @var UserSuperClass[] $users */
-        $users = $this->userTable->findByParams($params, $order);
+        $users = $this->userTable->findByParams($params);
 
         $result = [];
         foreach ($users as $user) {
@@ -108,12 +52,60 @@ class UserService
         return $result;
     }
 
-    /**
-     * @throws ActionForbiddenException
-     * @throws EntityNotFoundException
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
+    public function getCount(FormattedInputParams $params): int
+    {
+        return $this->userTable->countByParams($params);
+    }
+
+    public function getData(int $id): array
+    {
+        /** @var UserSuperClass $user */
+        $user = $this->userTable->findById($id);
+
+        return [
+            'id' => $user->getId(),
+            'status' => $user->getStatus(),
+            'firstname' => $user->getFirstname(),
+            'lastname' => $user->getLastname(),
+            'email' => $user->getEmail(),
+            'language' => $user->getLanguage(),
+            'role' => $user->getRolesArray(),
+        ];
+    }
+
+    public function create(array $data): UserSuperClass
+    {
+        if (empty($data['language'])) {
+            $data['language'] = $this->defaultLanguageIndex;
+        }
+
+        $data['creator'] = $this->connectedUserService->getConnectedUser()->getFirstname() . ' '
+            . $this->connectedUserService->getConnectedUser()->getLastname();
+
+        $user = new User($data);
+        $this->userTable->save($user);
+
+        return $user;
+    }
+
+    public function update(int $userId, array $data): UserSuperClass
+    {
+        $user = $this->getUpdatedUser($userId, $data);
+
+        $this->userTable->save($user);
+
+        return $user;
+    }
+
+    public function patch($userId, $data): UserSuperClass
+    {
+        $user = $this->getUpdatedUser($userId, $data);
+
+        $this->userTable->save($user);
+
+        return $user;
+    }
+
     public function delete(int $userId)
     {
         /** @var UserSuperClass $user */
@@ -125,10 +117,6 @@ class UserService
         $this->userTable->remove($user);
     }
 
-    /**
-     * @throws EntityNotFoundException
-     * @throws ORMException
-     */
     protected function getUpdatedUser(int $userId, array $data): UserSuperClass
     {
         /** @var UserSuperClass $user */
@@ -147,7 +135,7 @@ class UserService
             $user->setStatus($data['status']);
         }
         /*
-         * TODO: We don't use the dateStart and dateEnd for the moment.
+         * TODO: dateStart and dateEnd are not used for the moment.
         if (isset($data['dateEnd'])) {
             $data['dateEnd'] = new DateTime($data['dateEnd']);
         }

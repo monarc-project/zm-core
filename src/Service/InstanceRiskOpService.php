@@ -154,10 +154,10 @@ class InstanceRiskOpService
                 $instancesInfos[$instance->getId()] = [
                     'id' => $instance->getId(),
                     'scope' => $instance->getObject()->getScope(),
-                    'name1' => $instance->getName1(),
-                    'name2' => $instance->getName2(),
-                    'name3' => $instance->getName3(),
-                    'name4' => $instance->getName4()
+                    'name1' => $instance->getName(1),
+                    'name2' => $instance->getName(2),
+                    'name3' => $instance->getName(3),
+                    'name4' => $instance->getName(4)
                 ];
             }
         }

@@ -13,7 +13,9 @@ use LogicException;
 use Monarc\Core\Model\Entity\Traits;
 
 /**
- * Anr
+ * TODO: Remove the AbstractEntity inheritance:
+ * - validate getLanguage usage
+ * - check all the clone of the entity and set ID null.
  *
  * @ORM\Table(name="anrs")
  * @ORM\MappedSuperclass
@@ -322,6 +324,18 @@ class AnrSuperClass extends AbstractEntity
         }
 
         return (string)$this->{'label' . $languageIndex};
+    }
+
+    public function setLabels(array $labels): self
+    {
+        foreach (range(1, 4) as $index) {
+            $key = 'label' . $index;
+            if (isset($labels[$key])) {
+                $this->{$key} = $labels[$key];
+            }
+        }
+
+        return $this;
     }
 
     /**

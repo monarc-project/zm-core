@@ -368,24 +368,22 @@ class InstanceSuperClass extends AbstractEntity
         return $this;
     }
 
-    public function getName1(): string
+    public function getName(int $languageIndex): string
     {
-        return (string)$this->name1;
+        if (!\in_array($languageIndex, range(1, 4), true)) {
+            return '';
+        }
+
+        return (string)$this->{'name' . $languageIndex};
     }
 
-    public function getName2(): string
+    public function getLabel(int $languageIndex): string
     {
-        return (string)$this->name2;
-    }
+        if (!\in_array($languageIndex, range(1, 4), true)) {
+            return '';
+        }
 
-    public function getName3(): string
-    {
-        return (string)$this->name3;
-    }
-
-    public function getName4(): string
-    {
-        return (string)$this->name4;
+        return (string)$this->{'label' . $languageIndex};
     }
 
     public function setLabels(array $labels): self
@@ -398,26 +396,6 @@ class InstanceSuperClass extends AbstractEntity
         }
 
         return $this;
-    }
-
-    public function getLabel1(): string
-    {
-        return (string)$this->label1;
-    }
-
-    public function getLabel2(): string
-    {
-        return (string)$this->label2;
-    }
-
-    public function getLabel3(): string
-    {
-        return (string)$this->label3;
-    }
-
-    public function getLabel4(): string
-    {
-        return (string)$this->label4;
     }
 
     public function setDisponibility(float $disponibility): self

@@ -7,16 +7,20 @@
 
 namespace Monarc\Core\Table;
 
+use Doctrine\Common\Collections\Expr\Comparison;
 use Doctrine\DBAL\ConnectionException;
 use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\ORM\QueryBuilder;
 use LogicException;
-use Monarc\Core\Model\Entity\AnrSuperClass;
+use Monarc\Core\InputFormatter\FormattedInputParams;
+use Monarc\Core\Table\Interfaces\PositionUpdatableTableInterface;
 
 abstract class AbstractTable
 {
@@ -115,35 +119,50 @@ abstract class AbstractTable
             ->getResult();
     }
 
+    public function findAll()
+    {
+        return $this->getRepository()->findAll();
+    }
+
     /**
      * Seeks records by params with specific order and returns entities list.
      * @see AbstractTable::applyQueryParams()
      * @see AbstractTable::applyQueryOrder()
+     * @see AbstractTable::applyPaginationParams()
      *
      * @return object[]
      */
-    public function findByParams(array $params, array $order = []): array
+    public function findByParams(FormattedInputParams $params): array
     {
         $tableAlias = 't';
         $queryBuilder = $this->getRepository()->createQueryBuilder($tableAlias);
 
         $this->applyQueryParams($queryBuilder, $params, $tableAlias)
-            ->applyQueryOrder($queryBuilder, $order, $tableAlias);
+            ->applyQueryOrder($queryBuilder, $params->getOrder(), $tableAlias)
+            ->applyPaginationParams($queryBuilder, $params);
 
         return $queryBuilder->getQuery()->getResult();
     }
 
     /**
-     * Seeks records inside an analysis by params with specific order and returns entities list.
-     * The param $anr is explicitly set here to prevent possible issues.
+     * @param FormattedInputParams $params
+     * @param string $countableField Is used to count by the field in the main table.
+     *                               For normal use there are 2 options: 'id' or 'uuid'.
      *
-     * @return object[]
+     * @return int
+     * @throws NoResultException
+     * @throws NonUniqueResultException
      */
-    public function findByAnrAndParams(AnrSuperClass $anr, array $params, array $order = []): array
+    public function countByParams(FormattedInputParams $params, string $countableField = '*'): int
     {
-        $params['anr'] = $anr;
+        $tableAlias = 't';
+        $queryBuilder = $this->getRepository()
+            ->createQueryBuilder($tableAlias)
+            ->select('COUNT(' . ($countableField === '*' ? $tableAlias : $tableAlias . '.' . $countableField) . ')');
 
-        return $this->findByParams($params, $order);
+        $this->applyQueryParams($queryBuilder, $params, $tableAlias);
+
+        return (int)$queryBuilder->getQuery()->getSingleScalarResult();
     }
 
     /**
@@ -178,11 +197,23 @@ abstract class AbstractTable
      * @param array $params Used to pass additional filter column and value to be able to make the shift
      *                      within a specific range.
      */
-    public function incrementPositions(int $positionFrom, int $positionTo, int $increment, array $params): void
-    {
+    public function incrementPositions(
+        int $positionFrom,
+        int $positionTo,
+        int $increment,
+        array $params,
+        string $updater
+    ): void {
+        if (!($this instanceof PositionUpdatableTableInterface)) {
+            return;
+        }
+
         $positionShift = $increment > 0 ? '+ ' . $increment : '- ' . abs($increment);
         $queryBuilder = $this->getRepository()->createQueryBuilder('t')
-            ->update('t.position = t.position ' . $positionShift);
+            ->update()
+            ->set('t.position', 't.position ' . $positionShift)
+            ->set('t.updater', ':updater')
+            ->setParameter('updater', $updater);
 
         foreach ($params as $fieldName => $fieldValue) {
             $queryBuilder->andWhere('t.' . $fieldName . ' = :' . $fieldName)
@@ -225,13 +256,11 @@ abstract class AbstractTable
 
     /**
      * @param QueryBuilder $queryBuilder
-     * @param array $params Expected format (default operand value is "OR"):
-     *              [
-     *                  'search' => [
-     *                      'fields' => ['field1', 'relation.label'], 'string' => 'search str', 'operand' => 'OR|AND'
-     *                  ],
-     *                  'filter' => ['{field1}' => '{value1}', ...],
-     *              ].
+     * @param FormattedInputParams $params Expected format of filter and search:
+     *      search: [
+     *          'fields' => ['field1', 'relation.label'], 'string' => 'search str', 'operator' => 'OR|AND'
+     *      ],
+     *      filter: ['field1' => 'value1', 'field2.label => 'value2'].
      * @param string $tableAlias Alias of applicable the field alias prefix.
      *                                If null, then expected to be set for each filed in params.
      *
@@ -239,13 +268,17 @@ abstract class AbstractTable
      *
      * @throws LogicException
      */
-    protected function applyQueryParams(QueryBuilder $queryBuilder, array $params, string $tableAlias): self
-    {
-        if (!empty($params['search'])) {
-            $this->validateQueryParamsFormat($params);
+    protected function applyQueryParams(
+        QueryBuilder $queryBuilder,
+        FormattedInputParams $params,
+        string $tableAlias
+    ): self {
+        if ($params->hasSearch()) {
+            $searchParams = $params->getSearch();
+            $this->validateSearchParams($searchParams);
 
             $searchQuery = [];
-            foreach ($params['search']['fields'] as $field) {
+            foreach ($searchParams['fields'] as $field) {
                 $fieldNameWithAlias = $this->linkRelationAndGetFiledNameWithAlias(
                     $queryBuilder,
                     $tableAlias,
@@ -253,20 +286,24 @@ abstract class AbstractTable
                 );
                 $searchQuery[] = ' ' . $fieldNameWithAlias . ' LIKE :searchString ';
             }
-            $operand = 'OR';
-            if (isset($params['search']['operand'])  && \in_array($params['search']['operand'], ['OR', 'AND'], true)) {
-                $operand = $params['search']['operand'];
+            $logicalOperator = 'OR';
+            if (isset($searchParams['logicalOperator'])
+                && \in_array($searchParams['logicalOperator'], ['OR', 'AND'], true)
+            ) {
+                $logicalOperator = $searchParams['logicalOperator'];
             }
 
-            $queryBuilder->andWhere(implode($searchQuery, $operand))
-                ->setParameter('searchString', '%' . $params['search']['string'] . '%');
+            $queryBuilder->andWhere(implode($logicalOperator, $searchQuery))
+                ->setParameter('searchString', '%' . $searchParams['string'] . '%');
         }
 
-        if (!empty($params['filter'])) {
-            foreach ($params['filter'] as $field => $value) {
+        if ($params->hasFilter()) {
+            foreach ($params->getFilter() as $field => $filterParams) {
                 $fieldNameWithAlias = $this->linkRelationAndGetFiledNameWithAlias($queryBuilder, $tableAlias, $field);
-                $queryBuilder->andWhere($fieldNameWithAlias . ' = :value')
-                    ->setParameter('value', $value);
+                $operator = $filterParams['operator'] ?? Comparison::EQ;
+                $fieldValueName = strpos($field, '.') !== false ? explode('.', $field)[0] : $field;
+                $queryBuilder->andWhere($fieldNameWithAlias . ' ' . $operator . ' :' . $fieldValueName)
+                    ->setParameter($fieldValueName, $filterParams['value']);
             }
         }
 
@@ -278,13 +315,27 @@ abstract class AbstractTable
      * @param array $order Expected format: ['fieldName' => 'ASC|DESC', ...].
      * @param string $tableAlias Alias of applicable the field alias prefix.
      *
-     * @return $this
+     * @return self
      */
     protected function applyQueryOrder(QueryBuilder $queryBuilder, array $order, string $tableAlias): self
     {
         foreach ($order as $field => $direction) {
             $fieldNameWithAlias = $this->linkRelationAndGetFiledNameWithAlias($queryBuilder, $tableAlias, $field);
             $queryBuilder->addOrderBy($fieldNameWithAlias, $direction);
+        }
+
+        return $this;
+    }
+
+    protected function applyPaginationParams(QueryBuilder $queryBuilder, FormattedInputParams $params): self
+    {
+        $page = $params->getPage();
+        $limit = $params->getLimit();
+        $firstResult = $page > 0 ? ($page - 1) * $limit : 0;
+
+        $queryBuilder->setFirstResult($firstResult);
+        if ($limit > 0) {
+            $queryBuilder->setMaxResults($limit);
         }
 
         return $this;
@@ -313,12 +364,12 @@ abstract class AbstractTable
     /**
      * @throws LogicException
      */
-    private function validateQueryParamsFormat(array $params): void
+    private function validateSearchParams(array $searchParams): void
     {
-        if (isset($params['search']) && empty($params['search']['fields'])) {
+        if (empty($searchParams['fields'])) {
             throw new LogicException('Search criteria should be applied to field(s).', 412);
         }
-        if (isset($params['search']) && empty($params['search']['string'])) {
+        if (empty($searchParams['string'])) {
             throw new LogicException('Search string should be provided to execute the query.', 412);
         }
     }

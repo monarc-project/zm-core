@@ -9,7 +9,13 @@ namespace Monarc\Core\Table\Interfaces;
 
 interface PositionUpdatableTableInterface
 {
-    public function incrementPositions(int $positionFrom, int $positionTo, int $increment, array $params): void;
+    public function incrementPositions(
+        int $positionFrom,
+        int $positionTo,
+        int $increment,
+        array $params,
+        string $updater
+    ): void;
 
     public function findMaxPosition(array $params): int;
 }

@@ -68,7 +68,7 @@ class Authentication extends AbstractAdapter
         // TODO: Can be implemented validation of dateStart && dateEnd.
         if ($user->isActive()) {
             if (password_verify($credential, $user->getPassword())) {
-                $this->setUser($user);
+                $this->user = $user;
 
                 return new Result(Result::SUCCESS, $this->getIdentity());
             }

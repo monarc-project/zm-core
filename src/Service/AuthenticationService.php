@@ -10,6 +10,7 @@ namespace Monarc\Core\Service;
 use DateTime;
 use Exception;
 use Monarc\Core\Adapter\Authentication as AuthenticationAdapter;
+use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Storage\Authentication as AuthenticationStorage;
 
 /**
@@ -51,6 +52,7 @@ class AuthenticationService
                 ->authenticate();
 
             if ($res->isValid()) {
+                /** @var UserSuperClass $user */
                 $user = $this->authenticationAdapter->getUser();
                 $token = uniqid(bin2hex(random_bytes(random_int(20, 40))), true);
                 $this->authenticationStorage->addUserToken($token, $user);

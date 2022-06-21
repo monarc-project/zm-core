@@ -56,6 +56,11 @@ class UserRoleSuperClass
         $this->creator = $user->getCreator();
     }
 
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
     public function getUser(): UserSuperClass
     {
         return $this->user;
@@ -76,6 +81,6 @@ class UserRoleSuperClass
 
     public static function getAvailableRoles(): array
     {
-        return [static::SUPER_ADMIN_FO, static::USER_FO, static::USER_ROLE_CEO];
+        return [];
     }
 }

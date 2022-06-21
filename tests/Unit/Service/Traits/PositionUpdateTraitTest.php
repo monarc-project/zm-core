@@ -123,6 +123,7 @@ class PositionUpdateTraitTest extends TestCase
                 'positionTo' => -1,
                 'increment' => -1,
                 'params' => ['field1' => 'value1'],
+                'updater' => 'updater',
             ]
         ], $incrementPositionParams);
         static::assertEquals(7, $entity->getPosition());
@@ -153,6 +154,7 @@ class PositionUpdateTraitTest extends TestCase
                 'positionTo' => -1,
                 'increment' => 1,
                 'params' => ['field1' => 'value1'],
+                'updater' => 'creator',
             ]
         ], $incrementPositionParams);
         static::assertEquals(1, $entity->getPosition());
@@ -183,6 +185,7 @@ class PositionUpdateTraitTest extends TestCase
                 'positionTo' => 777,
                 'increment' => 1,
                 'params' => ['field1' => 'value1'],
+                'updater' => 'updater',
             ]
         ], $incrementPositionParams);
         static::assertEquals(1, $entity->getPosition());
@@ -215,6 +218,7 @@ class PositionUpdateTraitTest extends TestCase
                 'positionTo' => -1,
                 'increment' => 1,
                 'params' => ['field1' => 'value1'],
+                'updater' => 'creator',
             ]
         ], $incrementPositionParams);
         static::assertEquals(16, $entity->getPosition());
@@ -250,6 +254,7 @@ class PositionUpdateTraitTest extends TestCase
                 'positionTo' => -1,
                 'increment' => 1,
                 'params' => ['field1' => 'value1'],
+                'updater' => 'creator',
             ]
         ], $incrementPositionParams);
         static::assertEquals(26, $entity->getPosition());
@@ -282,12 +287,14 @@ class PositionUpdateTraitTest extends TestCase
                 'positionTo' => -1,
                 'increment' => -1,
                 'params' => ['field1' => 'value1'],
+                'updater' => 'updater',
             ],
             [
                 'positionFrom' => 28,
                 'positionTo' => -1,
                 'increment' => 1,
                 'params' => ['field1' => 'value1'],
+                'updater' => 'updater',
             ],
         ], $incrementPositionParams);
         static::assertEquals(28, $entity->getPosition());
@@ -328,14 +335,20 @@ class PositionUpdateTraitTest extends TestCase
                 parent::__construct($entityManager, \get_class($entity));
             }
 
-            public function incrementPositions(int $positionFrom, int $positionTo, int $increment, array $params): void
-            {
-                $this->incrementPositionParams[] = [
-                    'positionFrom' => $positionFrom,
-                    'positionTo' => $positionTo,
-                    'increment' => $increment,
-                    'params' => $params,
-                ];
+            public function incrementPositions(
+                int $positionFrom,
+                int $positionTo,
+                int $increment,
+                array $params,
+                string $updater
+            ): void {
+                $this->incrementPositionParams[] = compact(
+                    'positionFrom',
+                    'positionTo',
+                    'increment',
+                    'params',
+                    'updater'
+                );
             }
 
             public function findMaxPosition(array $params): int
@@ -398,6 +411,16 @@ class PositionUpdateTraitTest extends TestCase
             public function getAnrTimesCalled(): int
             {
                 return $this->getAnrTimesCalled;
+            }
+
+            public function getCreator(): string
+            {
+                return 'creator';
+            }
+
+            public function getUpdater(): string
+            {
+                return 'updater';
             }
         };
     }

@@ -12,6 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 use Ramsey\Uuid\Lazy\LazyUuidFromString;
+use Ramsey\Uuid\Uuid;
 
 /**
  * ReferentialSuperClass
@@ -75,9 +76,21 @@ class ReferentialSuperClass extends AbstractEntity
      */
     protected $categories;
 
-    public function getUuid(): ?string
+    /**
+     * @ORM\PrePersist
+     */
+    public function generateAndSetUuid(): self
     {
-        return $this->uuid;
+        if ($this->uuid === null) {
+            $this->uuid = Uuid::uuid4();
+        }
+
+        return $this;
+    }
+
+    public function getUuid(): string
+    {
+        return (string)$this->uuid;
     }
 
     /**
@@ -92,50 +105,23 @@ class ReferentialSuperClass extends AbstractEntity
         return $this;
     }
 
-    public function getLabel1(): string
+    public function getLabel(int $languageIndex): string
     {
-        return (string)$this->label1;
+        if (!\in_array($languageIndex, range(1, 4), true)) {
+            return '';
+        }
+
+        return (string)$this->{'label' . $languageIndex};
     }
 
-    public function getLabel2(): string
+    public function setLabels(array $labels): self
     {
-        return (string)$this->label2;
-    }
-
-    public function getLabel3(): string
-    {
-        return (string)$this->label3;
-    }
-
-    public function getLabel4(): string
-    {
-        return (string)$this->label4;
-    }
-
-    public function setLabel1(string $label): self
-    {
-        $this->label1 = $label;
-
-        return $this;
-    }
-
-    public function setLabel2(string $label): self
-    {
-        $this->label2 = $label;
-
-        return $this;
-    }
-
-    public function setLabel3(string $label): self
-    {
-        $this->label3 = $label;
-
-        return $this;
-    }
-
-    public function setLabel4(string $label): self
-    {
-        $this->label4 = $label;
+        foreach (range(1, 4) as $index) {
+            $key = 'label' . $index;
+            if (isset($labels[$key])) {
+                $this->{$key} = $labels[$key];
+            }
+        }
 
         return $this;
     }

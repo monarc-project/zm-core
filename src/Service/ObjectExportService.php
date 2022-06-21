@@ -262,10 +262,10 @@ class ObjectExportService extends AbstractService
                         $risk['measures'][] = [
                             'uuid' => $measure->getUuid(),
                             'code' => $measure->getCode(),
-                            'label' => $measure->{'getLabel' . $language}(),
-                            'category' => $measure->getCategory()->{'getLabel' . $language}(),
+                            'label' => $measure->getLabel($language),
+                            'category' => $measure->getCategory()->getLabel($language),
                             'referential' => $measure->getReferential()->getUuid(),
-                            'referential_label' => $measure->getReferential()->{'getLabel' . $language}(),
+                            'referential_label' => $measure->getReferential()->getLabel($language),
                         ];
                     }
                     $return['rolfRisks'][] = $risk;

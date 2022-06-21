@@ -16,7 +16,7 @@ use Monarc\Core\Model\Entity\User;
 use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Table\PasswordTokenTable;
 use Monarc\Core\Table\UserTable;
-use Monarc\Core\Validator\PasswordStrength;
+use Monarc\Core\Validator\FieldValidator\PasswordStrength;
 
 /**
  * Password Service

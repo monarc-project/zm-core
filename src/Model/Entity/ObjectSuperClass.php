@@ -199,9 +199,21 @@ class ObjectSuperClass extends AbstractEntity
         ),
     );
 
-    public function getUuid(): ?string
+    /**
+     * @ORM\PrePersist
+     */
+    public function generateAndSetUuid(): self
     {
-        return $this->uuid;
+        if ($this->uuid === null) {
+            $this->uuid = Uuid::uuid4();
+        }
+
+        return $this;
+    }
+
+    public function getUuid(): string
+    {
+        return (string)$this->uuid;
     }
 
     /**
@@ -212,18 +224,6 @@ class ObjectSuperClass extends AbstractEntity
     public function setUuid($uuid): self
     {
         $this->uuid = $uuid;
-
-        return $this;
-    }
-
-    /**
-     * @ORM\PrePersist
-     */
-    public function generateAndSetUuid(): self
-    {
-        if ($this->uuid === null) {
-            $this->uuid = Uuid::uuid4();
-        }
 
         return $this;
     }
@@ -443,9 +443,10 @@ class ObjectSuperClass extends AbstractEntity
             foreach ($names as $name) {
                 $validatorsName = [];
                 if (!$partial) {
+                    // TODO: Move the validator to the creation / update part as it requires the db connection.
                     $validatorsName = array(
                         array(
-                            'name' => 'Monarc\Core\Validator\UniqueName',
+                            'name' => 'Monarc\Core\Validator\FieldValidator\UniqueName',
                             'options' => array(
                                 'entity' => $this,
                                 'adapter' => $this->getDbAdapter(),

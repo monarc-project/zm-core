@@ -7,84 +7,40 @@
 
 namespace Monarc\Core\Service;
 
-// TODO: optimize import section when all tables are refactored. To use Table\, Service\.
+// TODO: import only general Table\ and add prefixes to their usages.
 use Doctrine\ORM\EntityNotFoundException;
 use Monarc\Core\Exception\Exception;
-use Monarc\Core\Model\Entity\Amv;
-use Monarc\Core\Model\Entity\AmvSuperClass;
-use Monarc\Core\Model\Entity\Asset;
-use Monarc\Core\Model\Entity\AssetSuperClass;
-use Monarc\Core\Model\Entity\Model;
-use Monarc\Core\Model\Entity\Theme;
-use Monarc\Core\Model\Entity\Threat;
-use Monarc\Core\Model\Entity\ThreatSuperClass;
-use Monarc\Core\Model\Entity\Vulnerability;
-use Monarc\Core\Model\Entity\VulnerabilitySuperClass;
-use Monarc\Core\Service\Traits\QueryParamsFormatterTrait;
-use Monarc\Core\Table\AmvTable;
+use Monarc\Core\InputFormatter\FormattedInputParams;
+use Monarc\Core\Model\Entity;
 use Monarc\Core\Model\Table\AssetTable;
 use Monarc\Core\Model\Table\InstanceTable;
 use Monarc\Core\Model\Table\MeasureTable;
 use Monarc\Core\Model\Table\ReferentialTable;
-use Monarc\Core\Model\Table\ThreatTable;
 use Monarc\Core\Service\Interfaces\PositionUpdatableServiceInterface;
 use Monarc\Core\Service\Traits\PositionUpdateTrait;
-use Monarc\Core\Table\ModelTable;
-use Monarc\Core\Model\Table\ThemeTable;
-use Monarc\Core\Table\VulnerabilityTable;
+use Monarc\Core\Table;
 
 class AmvService implements PositionUpdatableServiceInterface
 {
     use PositionUpdateTrait;
-    use QueryParamsFormatterTrait;
 
-    protected static array $searchFields = [
-        'asset.code',
-        'asset.label1',
-        'asset.label2',
-        'asset.label3',
-        'asset.label4',
-        'asset.description1',
-        'asset.description2',
-        'asset.description3',
-        'asset.description4',
-        'threat.code',
-        'threat.label1',
-        'threat.label2',
-        'threat.label3',
-        'threat.label4',
-        'threat.description1',
-        'threat.description2',
-        'threat.description3',
-        'threat.description4',
-        'vulnerability.code',
-        'vulnerability.label1',
-        'vulnerability.label2',
-        'vulnerability.label3',
-        'vulnerability.label4',
-        'vulnerability.description1',
-        'vulnerability.description2',
-        'vulnerability.description3',
-        'vulnerability.description4',
-    ];
-
-    private AmvTable $amvTable;
+    private Table\AmvTable $amvTable;
 
     private InstanceTable $instanceTable;
 
     private AssetTable $assetTable;
 
-    private ThreatTable $threatTable;
+    private Table\ThreatTable $threatTable;
 
-    private VulnerabilityTable $vulnerabilityTable;
+    private Table\VulnerabilityTable $vulnerabilityTable;
 
     private MeasureTable $measureTable;
 
     private ReferentialTable $referentialTable;
 
-    private ModelTable $modelTable;
+    private Table\ModelTable $modelTable;
 
-    private ThemeTable $themeTable;
+    private Table\ThemeTable $themeTable;
 
     private HistoricalService $historicalService;
 
@@ -92,23 +48,26 @@ class AmvService implements PositionUpdatableServiceInterface
 
     private ThreatService $threatService;
 
+    private ThemeService $themeService;
+
     private VulnerabilityService $vulnerabilityService;
 
     private ConnectedUserService $connectedUserService;
 
     public function __construct(
-        AmvTable $amvTable,
+        Table\AmvTable $amvTable,
         InstanceTable $instanceTable,
         AssetTable $assetTable,
-        ThreatTable $threatTable,
-        VulnerabilityTable $vulnerabilityTable,
+        Table\ThreatTable $threatTable,
+        Table\VulnerabilityTable $vulnerabilityTable,
         MeasureTable $measureTable,
         ReferentialTable $referentialTable,
-        ModelTable $modelTable,
-        ThemeTable $themeTable,
+        Table\ModelTable $modelTable,
+        Table\ThemeTable $themeTable,
         HistoricalService $historicalService,
         AssetService $assetService,
         ThreatService $threatService,
+        ThemeService $themeService,
         VulnerabilityService $vulnerabilityService,
         ConnectedUserService $connectedUserService
     ) {
@@ -124,19 +83,17 @@ class AmvService implements PositionUpdatableServiceInterface
         $this->historicalService = $historicalService;
         $this->assetService = $assetService;
         $this->threatService = $threatService;
+        $this->themeService = $themeService;
         $this->vulnerabilityService = $vulnerabilityService;
         $this->connectedUserService = $connectedUserService;
     }
 
-    public function getList(string $searchString, array $filter, string $orderField): array
+    public function getList(FormattedInputParams $params): array
     {
         $result = [];
 
-        $params = $this->getFormattedFilterParams($searchString, $filter);
-        $order = $this->getFormattedOrder($orderField);
-
-        /** @var Amv[] $amvs */
-        $amvs = $this->vulnerabilityTable->findByParams($params, $order);
+        /** @var Entity\Amv[] $amvs */
+        $amvs = $this->amvTable->findByParams($params);
         foreach ($amvs as $amv) {
             $result[] = $this->prepareAmvDataResult($amv);
         }
@@ -144,24 +101,16 @@ class AmvService implements PositionUpdatableServiceInterface
         return $result;
     }
 
-    // TODO: We probably don't need this
-    public function getFilteredCount($filter = null, $filterAnd = null)
+    public function getCount($params): int
     {
-        [$filterJoin, $filterLeft, $filtersCol] = $this->getFilters();
-
-        return $this->amvTable->countFiltered(
-            $this->parseFrontendFilter($filter, $filtersCol),
-            $filterAnd,
-            $filterJoin,
-            $filterLeft
-        );
+        return $this->amvTable->countByParams($params);
     }
 
     public function getAmvData(string $uuid): array
     {
         $amv = $this->amvTable->findByUuid($uuid);
 
-        return $this->prepareAmvDataResult($amv);
+        return $this->prepareAmvDataResult($amv, true);
     }
 
     public function create($data)
@@ -172,9 +121,10 @@ class AmvService implements PositionUpdatableServiceInterface
 
         $asset = $this->assetTable->findByUuid($data['asset']);
         $threat = $this->threatTable->findByUuid($data['threat']);
+        /** @var Entity\Vulnerability $vulnerability */
         $vulnerability = $this->vulnerabilityTable->findById($data['vulnerability']);
 
-        $amv = (new Amv())
+        $amv = (new Entity\Amv())
             ->setAsset($asset)
             ->setThreat($threat)
             ->setVulnerability($vulnerability)
@@ -233,7 +183,10 @@ class AmvService implements PositionUpdatableServiceInterface
             $amv->addMeasure($this->measureTable->findByUuid($measure));
         }
 
-        // TODO: handle position and check the compliesRequirement
+        $amv->setUpdater($this->connectedUserService->getConnectedUser()->getEmail());
+
+        $this->updatePositions($amv, $this->amvTable, $data);
+
         $this->validateAmvCompliesRequirements($amv);
 
         if (!empty($changedData)) {
@@ -244,8 +197,6 @@ class AmvService implements PositionUpdatableServiceInterface
                 implode(' / ', $changedData)
             );
         }
-
-        $amv->setUpdater($this->connectedUserService->getConnectedUser()->getEmail());
 
         $this->amvTable->save($amv);
     }
@@ -276,7 +227,7 @@ class AmvService implements PositionUpdatableServiceInterface
             . ' / vulnerability => ' . $amv->getVulnerability()->getCode()
         );
 
-        $this->amvTable->delete($amv);
+        $this->amvTable->remove($amv);
     }
 
     public function deleteList($data)
@@ -295,7 +246,7 @@ class AmvService implements PositionUpdatableServiceInterface
         $destinationMeasures = $this->referentialTable->getEntity($destination)->getMeasures();
         foreach ($destinationMeasures as $destinationMeasure) {
             foreach ($destinationMeasure->getMeasuresLinked() as $measureLink) {
-                if ($measureLink->getReferential()->getUuid() == $sourceUuid) {
+                if ($measureLink->getReferential()->getUuid() === $sourceUuid) {
                     foreach ($measureLink->getAmvs() as $amv) {
                         $destinationMeasure->addAmv($amv);
                     }
@@ -310,16 +261,16 @@ class AmvService implements PositionUpdatableServiceInterface
      * Validates whether the specified theoretical AMV link complies with the behavioral requirements.
      */
     public function validateAmvCompliesRequirements(
-        AmvSuperClass $amv,
-        ?AssetSuperClass $asset = null,
+        Entity\AmvSuperClass $amv,
+        ?Entity\AssetSuperClass $asset = null,
         array $assetModels = [],
-        ?ThreatSuperClass $threat = null,
+        ?Entity\ThreatSuperClass $threat = null,
         array $threatModels = [],
-        ?VulnerabilitySuperClass $vulnerability = null,
+        ?Entity\VulnerabilitySuperClass $vulnerability = null,
         array $vulnerabilityModels = []
     ): void {
         $asset = $asset ?? $amv->getAsset();
-        if ($asset->getType() === Asset::TYPE_PRIMARY) {
+        if ($asset->isPrimary()) {
             throw new Exception('Asset can\'t be primary', 412);
         }
 
@@ -331,7 +282,7 @@ class AmvService implements PositionUpdatableServiceInterface
         $assetModelsIsRegulator = false;
         foreach ($assetModels as $model) {
             if (!is_object($model)) {
-                /** @var Model $model */
+                /** @var Entity\Model $model */
                 $model = $this->modelTable->findById((int)$model);
             }
             $assetModelsIds[] = $model->getId();
@@ -469,9 +420,9 @@ class AmvService implements PositionUpdatableServiceInterface
      */
     public function ensureAssetsIntegrityIfEnforced(
         array $models,
-        ?AssetSuperClass $asset = null,
-        ?ThreatSuperClass $threat = null,
-        ?VulnerabilitySuperClass $vulnerability = null
+        ?Entity\AssetSuperClass $asset = null,
+        ?Entity\ThreatSuperClass $threat = null,
+        ?Entity\VulnerabilitySuperClass $vulnerability = null
     ): bool {
         $amvs = $this->amvTable->findByAmv($asset, $threat, $vulnerability);
         foreach ($amvs as $amv) {
@@ -487,7 +438,7 @@ class AmvService implements PositionUpdatableServiceInterface
      * Check Models Instantiation: Don't remove to an asset of specific model if it is linked to asset by an instance
      * in an anr (by object).
      */
-    public function checkModelsInstantiation(Asset $asset, array $newModelsIds): bool
+    public function checkModelsInstantiation(Entity\Asset $asset, array $newModelsIds): bool
     {
         if ($asset->isModeSpecific() && !$asset->getModels()->isEmpty()) {
             $instances = $this->instanceTable->findByAsset($asset);
@@ -499,12 +450,14 @@ class AmvService implements PositionUpdatableServiceInterface
                     $anrIds[$anrId] = $anrId;
                 }
 
-                $modelsIds = array_flip($newModelsIds);
-                $models = $this->modelTable->findByAnrIds($anrIds);
-                foreach ($models as $model) {
-                    if (!isset($modelsIds[$model->getId()])) {
-                        // Don't remove asset of specific model if it's linked to asset by an instance in anr by object.
-                        return false;
+                if (!empty($anrIds)) {
+                    $modelsIds = array_flip($newModelsIds);
+                    $models = $this->modelTable->findByAnrIds($anrIds);
+                    foreach ($models as $model) {
+                        if (!isset($modelsIds[$model->getId()])) {
+                            // Don't remove asset of specific model if linked to asset by instance, in anr by object.
+                            return false;
+                        }
                     }
                 }
             }
@@ -516,16 +469,16 @@ class AmvService implements PositionUpdatableServiceInterface
     /**
      * Enforces Amv to follow evolution.
      *
-     * @param Model[] $models Models
-     * @param Asset|null $asset Asset
-     * @param Threat|null $threat Threat
-     * @param Vulnerability|null $vulnerability Vulnerability
+     * @param Entity\Model[] $models Models
+     * @param Entity\Asset|null $asset Asset
+     * @param Entity\Threat|null $threat Threat
+     * @param Entity\Vulnerability|null $vulnerability Vulnerability
      */
     public function enforceAmvToFollow(
         $models,
-        ?Asset $asset = null,
-        ?Threat $threat = null,
-        ?Vulnerability $vulnerability = null
+        ?Entity\Asset $asset = null,
+        ?Entity\Threat $threat = null,
+        ?Entity\Vulnerability $vulnerability = null
     ): void {
         $amvs = $this->amvTable->findByAmv($asset, $threat, $vulnerability);
         foreach ($amvs as $amv) {
@@ -542,17 +495,17 @@ class AmvService implements PositionUpdatableServiceInterface
     /**
      * Checks the AMV Integrity Level
      *
-     * @param Model[] $models The models in which the AMV link will be applicable
-     * @param Asset|null $asset The asset
-     * @param Threat|null $threat The threat
-     * @param Vulnerability|null $vulnerability The vulnerability
+     * @param Entity\Model[] $models The models in which the AMV link will be applicable
+     * @param Entity\Asset|null $asset The asset
+     * @param Entity\Threat|null $threat The threat
+     * @param Entity\Vulnerability|null $vulnerability The vulnerability
      * @param bool $follow Whether the AMV link follows changes
      */
     public function checkAmvIntegrityLevel(
         array $models,
-        ?AssetSuperClass $asset = null,
-        ?ThreatSuperClass $threat = null,
-        ?VulnerabilitySuperClass $vulnerability = null,
+        ?Entity\AssetSuperClass $asset = null,
+        ?Entity\ThreatSuperClass $threat = null,
+        ?Entity\VulnerabilitySuperClass $vulnerability = null,
         bool $follow = false
     ): bool {
         $amvs = $this->amvTable->findByAmv($asset, $threat, $vulnerability);
@@ -575,15 +528,8 @@ class AmvService implements PositionUpdatableServiceInterface
         return true;
     }
 
-    /**
-     * Generate an array ready for export
-     *
-     * @param Amv $amv The AMV entity to export
-     * @param bool $withEval
-     *
-     * @return array The exported array
-     */
-    public function generateExportArray($amv, $anrId, $withEval = false)
+
+    public function generateExportArray(Entity\AmvSuperClass $amv, $anrId, bool $withEval = false): array
     {
         $amvObj = [
             'uuid' => 'v',
@@ -734,14 +680,7 @@ class AmvService implements PositionUpdatableServiceInterface
         ];
     }
 
-    /**
-     * Generate an array ready for export
-     *
-     * @param Amv $amv The AMV entity to export
-     *
-     * @return array The exported array
-     */
-    public function generateExportMospArray($amv, $anrId, $languageCode)
+    public function generateExportMospArray(Entity\AmvSuperClass $amv, $anrId, $languageCode): array
     {
         $language = $this->getLanguage();
 
@@ -828,12 +767,12 @@ class AmvService implements PositionUpdatableServiceInterface
                                     foreach ($measuresList as $measure) {
                                         $measureUuid = $measure->getUuid();
                                         $measures[$measureUuid] = $measure->getJsonArray($measuresObj);
-                                        $measures[$measureUuid]['label'] = $measure->{'getLabel' . $language}();
-                                        $measures[$measureUuid]['category'] = $measure->getCategory(
-                                        )->{'getLabel' . $language}();
+                                        $measures[$measureUuid]['label'] = $measure->getLabel($language);
+                                        $measures[$measureUuid]['category'] = $measure->getCategory()
+                                            ->getLabel($language);
                                         $measures[$measureUuid]['referential'] = $measure->getReferential()->getUuid();
-                                        $measures[$measureUuid]['referential_label'] = $measure->getReferential(
-                                        )->{'getLabel' . $language}();
+                                        $measures[$measureUuid]['referential_label'] = $measure->getReferential()
+                                            ->getLabel($language);
                                         $amvs[$k][] = $measureUuid;
                                     }
                                 }
@@ -852,7 +791,7 @@ class AmvService implements PositionUpdatableServiceInterface
         ];
     }
 
-    protected function historize(AmvSuperClass $amv, string $action, string $label, string $details)
+    protected function historize(Entity\AmvSuperClass $amv, string $action, string $label, string $details)
     {
         $this->historicalService->create([
             'type' => 'amv',
@@ -887,7 +826,7 @@ class AmvService implements PositionUpdatableServiceInterface
             $threat = $this->getOrCreateThreatObject($amvItem['threat']);
             $vulnerability = $this->getOrCreateVulnerabilityObject($amvItem['vulnerability']);
 
-            $amv = (new Amv())
+            $amv = (new Entity\Amv())
                 ->setAsset($asset)
                 ->setThreat($threat)
                 ->setVulnerability($vulnerability)
@@ -900,7 +839,7 @@ class AmvService implements PositionUpdatableServiceInterface
         return $createdItems;
     }
 
-    private function getOrCreateAssetObject(array $assetData): Asset
+    private function getOrCreateAssetObject(array $assetData): Entity\Asset
     {
         if (!empty($assetData['uuid'])) {
             try {
@@ -910,19 +849,19 @@ class AmvService implements PositionUpdatableServiceInterface
         }
 
         // TODO: move the creation to AssetService when its refactored.
-        $asset = (new Asset())
+        $asset = (new Entity\Asset())
             ->setLabels($assetData)
             ->setDescriptions($assetData)
             ->setCode($assetData['code'])
             ->setType($assetData['type'])
             ->setCreator($this->connectedUserService->getConnectedUser()->getEmail());
 
-        $this->assetTable->save($asset);
+        $this->assetTable->save($asset, false);
 
         return $asset;
     }
 
-    private function getOrCreateThreatObject(array $threatData): Threat
+    private function getOrCreateThreatObject(array $threatData): Entity\Threat
     {
         if (!empty($threatData['uuid'])) {
             try {
@@ -931,33 +870,21 @@ class AmvService implements PositionUpdatableServiceInterface
             }
         }
 
-        // TODO: move the creation ThreatService when its refactored.
-        $threat = (new Threat())
-            ->setCode($threatData['code'])
-            ->setLabels($threatData)
-            ->setDescriptions($threatData)
-            ->setConfidentiality((int)$threatData['c'])
-            ->setIntegrity((int)$threatData['i'])
-            ->setAvailability((int)$threatData['a'])
-            ->setCreator($this->connectedUserService->getConnectedUser()->getEmail());
-
-        if (!empty($threatData['theme'])) {
-            $labelKey = 'label1';
+        $labelKey = 'label1';
+        if (!empty($threatData['theme'][$labelKey])) {
             $theme = $this->themeTable->findByLabel($labelKey, $threatData['theme'][$labelKey]);
             if ($theme === null) {
-                $theme = new Theme();
-                $theme->setLabels($threatData['theme']);
-                $this->themeTable->save($theme, false);
+                $theme = $this->themeService->create($threatData['theme'], false);
             }
-            $threat->setTheme($theme);
+            $threatData['theme'] = $theme;
+        } else {
+            unset($threatData['theme']);
         }
 
-        $this->themeTable->save($threat);
-
-        return $threat;
+        return $this->threatService->create($threatData, false);
     }
 
-    private function getOrCreateVulnerabilityObject(array $vulnerabilityData): Vulnerability
+    private function getOrCreateVulnerabilityObject(array $vulnerabilityData): Entity\Vulnerability
     {
         if (!empty($vulnerabilityData['uuid'])) {
             try {
@@ -969,43 +896,88 @@ class AmvService implements PositionUpdatableServiceInterface
         return $this->vulnerabilityService->create($vulnerabilityData);
     }
 
-    public function prepareAmvDataResult(Amv $amv): array
+    private function prepareAmvDataResult(Entity\Amv $amv, bool $includePositionFields = false): array
     {
         $measures = [];
         foreach ($amv->getMeasures() as $measure) {
+            $referential = $measure->getReferential();
             $measures[] = [
+                'uuid' => $measure->getUuid(),
+                'code' => $measure->getCode(),
                 'label1' => $measure->getLabel(1),
                 'label2' => $measure->getLabel(2),
                 'label3' => $measure->getLabel(3),
                 'label4' => $measure->getLabel(4),
+                'referential' => [
+                    'uuid' => $referential->getUuid(),
+                    'label1' => $referential->getLabel(1),
+                    'label2' => $referential->getLabel(2),
+                    'label3' => $referential->getLabel(3),
+                    'label4' => $referential->getLabel(4),
+                ]
             ];
         }
 
-        return [
+        $result = array_merge([
             'uuid' => $amv->getUuid(),
-            'asset' => [
-                'uuid' => $amv->getAsset()->getUuid(),
-                'label1' => $amv->getAsset()->getLabel(1),
-                'label2' => $amv->getAsset()->getLabel(2),
-                'label3' => $amv->getAsset()->getLabel(3),
-                'label4' => $amv->getAsset()->getLabel(4),
-            ],
-            'threat' => [
-                'uuid' => $amv->getThreat()->getUuid(),
-                'label1' => $amv->getThreat()->getLabel(1),
-                'label2' => $amv->getThreat()->getLabel(2),
-                'label3' => $amv->getThreat()->getLabel(3),
-                'label4' => $amv->getThreat()->getLabel(4),
-            ],
-            'vulnerability' => [
-                'uuid' => $amv->getVulnerability()->getUuid(),
-                'label1' => $amv->getVulnerability()->getLabel(1),
-                'label2' => $amv->getVulnerability()->getLabel(2),
-                'label3' => $amv->getVulnerability()->getLabel(3),
-                'label4' => $amv->getVulnerability()->getLabel(4),
-            ],
             'measures' => $measures,
             'status' => $amv->getStatus(),
+            'position' => $amv->getPosition(),
+        ], $this->getAmvRelationsData($amv));
+
+        if ($includePositionFields) {
+            $result['implicitPosition'] = 1;
+            if ($amv->getPosition() > 1) {
+                $maxPositionByAsset = $this->amvTable->findMaxPosition(['asset' => $amv->getAsset()]);
+                if ($maxPositionByAsset === $amv->getPosition()) {
+                    $result['implicitPosition'] = 2;
+                } else {
+                    $previousAmv = $this->amvTable->findByAssetAndPosition($amv->getAsset(), $amv->getPosition() - 1);
+                    if ($previousAmv !== null) {
+                        $result['implicitPosition'] = 3;
+                        $result['previous'] = array_merge([
+                            'uuid' => $previousAmv->getUuid(),
+                            'position' => $previousAmv->getPosition(),
+                        ], $this->getAmvRelationsData($previousAmv));
+                    }
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    private function getAmvRelationsData(Entity\Amv $amv): array
+    {
+        $asset = $amv->getAsset();
+        $threat = $amv->getThreat();
+        $vulnerability = $amv->getVulnerability();
+
+        return [
+            'asset' => [
+                'uuid' => $asset->getUuid(),
+                'code' => $asset->getCode(),
+                'label1' => $asset->getLabel(1),
+                'label2' => $asset->getLabel(2),
+                'label3' => $asset->getLabel(3),
+                'label4' => $asset->getLabel(4),
+            ],
+            'threat' => [
+                'uuid' => $threat->getUuid(),
+                'code' => $threat->getCode(),
+                'label1' => $threat->getLabel(1),
+                'label2' => $threat->getLabel(2),
+                'label3' => $threat->getLabel(3),
+                'label4' => $threat->getLabel(4),
+            ],
+            'vulnerability' => [
+                'uuid' => $vulnerability->getUuid(),
+                'code' => $vulnerability->getCode(),
+                'label1' => $vulnerability->getLabel(1),
+                'label2' => $vulnerability->getLabel(2),
+                'label3' => $vulnerability->getLabel(3),
+                'label4' => $vulnerability->getLabel(4),
+            ],
         ];
     }
 }

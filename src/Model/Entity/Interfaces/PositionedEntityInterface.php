@@ -27,4 +27,8 @@ interface PositionedEntityInterface
     public function getImplicitPositionRelationsValues(): array;
 
     public function getAnr(): ?AnrSuperClass;
+
+    public function getCreator(): string;
+
+    public function getUpdater(): string;
 }

@@ -7,10 +7,13 @@
 
 namespace Monarc\Core\Service;
 
+use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\NonUniqueResultException;
 use Monarc\Core\Exception\Exception;
+use Monarc\Core\InputFormatter\FormattedInputParams;
 use Monarc\Core\Model\Entity\AbstractEntity;
+use Monarc\Core\Model\Entity\AmvSuperClass;
 use Monarc\Core\Model\Entity\AnrObjectCategory;
 use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\Asset;
@@ -19,16 +22,15 @@ use Monarc\Core\Model\Entity\Model;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Entity\ObjectCategorySuperClass;
 use Monarc\Core\Model\Entity\ObjectSuperClass;
-use Monarc\Core\Table\AmvTable;
 use Monarc\Core\Model\Table\AnrObjectCategoryTable;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\AssetTable;
 use Monarc\Core\Model\Table\InstanceRiskOpTable;
 use Monarc\Core\Model\Table\InstanceTable;
-use Monarc\Core\Table\ModelTable;
 use Monarc\Core\Model\Table\ObjectCategoryTable;
 use Monarc\Core\Model\Table\ObjectObjectTable;
 use Monarc\Core\Model\Table\MonarcObjectTable;
+use Monarc\Core\Table;
 use Doctrine\ORM\Mapping\MappingException;
 use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\ORMException;
@@ -143,7 +145,7 @@ class ObjectService extends AbstractService
     public function getAnrObjects($page, $limit, $order, $filter, $filterAnd, $modelId, $anr, $context = AbstractEntity::BACK_OFFICE)
     {
         if ($modelId) {
-            /** @var ModelTable $modelTable */
+            /** @var Table\ModelTable $modelTable */
             $modelTable = $this->get('modelTable');
             /** @var Model $model */
             $model = $modelTable->findById($modelId);
@@ -308,22 +310,25 @@ class ObjectService extends AbstractService
                 $anrIds[] = $item->getId();
             }
 
-            /** @var ModelTable $modelTable */
-            $modelTable = $this->get('modelTable');
-            $models = $modelTable->findByAnrIds($anrIds);
+            $objectArr['replicas'] = [];
+            if (!empty($anrIds)) {
+                /** @var Table\ModelTable $modelTable */
+                $modelTable = $this->get('modelTable');
+                $models = $modelTable->findByAnrIds($anrIds);
 
-            $modelsData = [];
-            foreach ($models as $model) {
-                $modelsData[] = [
-                    'id' => $model->getId(),
-                    'label1' => $model->getLabel(1),
-                    'label2' => $model->getLabel(2),
-                    'label3' => $model->getLabel(3),
-                    'label4' => $model->getLabel(4),
-                ];
+                $modelsData = [];
+                foreach ($models as $model) {
+                    $modelsData[] = [
+                        'id' => $model->getId(),
+                        'label1' => $model->getLabel(1),
+                        'label2' => $model->getLabel(2),
+                        'label3' => $model->getLabel(3),
+                        'label4' => $model->getLabel(4),
+                    ];
+                }
+
+                $objectArr['replicas'] = $modelsData;
             }
-
-            $objectArr['replicas'] = $modelsData;
         }
 
         return $objectArr;
@@ -331,50 +336,43 @@ class ObjectService extends AbstractService
 
     protected function getRisks(ObjectSuperClass $object): array
     {
-        /** @var AmvTable $amvTable */
+        /** @var Table\AmvTable $amvTable */
         $amvTable = $this->get('amvTable');
-        try {
-            $amvs = $amvTable->getEntityByFields(
-                ['asset' => $object->getAsset()->getUuid()],
-                ['position' => 'asc']
-            );
-        } catch (QueryException | MappingException $e) {
-            $amvs = $amvTable->getEntityByFields([
-                'asset' => [
-                    'uuid' => $object->getAsset()->getUuid(),
-                    'anr' => $object->getAsset()->getAnr()->getId(),
-                ],
-            ], ['position' => 'asc']);
-        }
+        // TODO: Check if it works of FO.
+        $params = (new FormattedInputParams())
+            ->addFilter('asset', ['value' => $object->getAsset()])
+            ->addOrder('position', Criteria::ASC);
+        /** @var AmvSuperClass[] $amvs */
+        $amvs = $amvTable->findByParams($params);
 
         $risks = [];
         foreach ($amvs as $amv) {
             $risks[] = [
                 'id' => $amv->getUuid(),
-                'threatLabel1' => $amv->threat->label1,
-                'threatLabel2' => $amv->threat->label2,
-                'threatLabel3' => $amv->threat->label3,
-                'threatLabel4' => $amv->threat->label4,
-                'threatDescription1' => $amv->threat->description1,
-                'threatDescription2' => $amv->threat->description2,
-                'threatDescription3' => $amv->threat->description3,
-                'threatDescription4' => $amv->threat->description4,
+                'threatLabel1' => $amv->getThreat()->getLabel(1),
+                'threatLabel2' => $amv->getThreat()->getLabel(2),
+                'threatLabel3' => $amv->getThreat()->getLabel(3),
+                'threatLabel4' => $amv->getThreat()->getLabel(4),
+                'threatDescription1' => $amv->getThreat()->getDescription(1),
+                'threatDescription2' => $amv->getThreat()->getDescription(2),
+                'threatDescription3' => $amv->getThreat()->getDescription(3),
+                'threatDescription4' => $amv->getThreat()->getDescription(4),
                 'threatRate' => '-',
-                'vulnLabel1' => $amv->vulnerability->label1,
-                'vulnLabel2' => $amv->vulnerability->label2,
-                'vulnLabel3' => $amv->vulnerability->label3,
-                'vulnLabel4' => $amv->vulnerability->label4,
-                'vulnDescription1' => $amv->vulnerability->description1,
-                'vulnDescription2' => $amv->vulnerability->description2,
-                'vulnDescription3' => $amv->vulnerability->description3,
-                'vulnDescription4' => $amv->vulnerability->description4,
+                'vulnLabel1' => $amv->getVulnerability()->getLabel(1),
+                'vulnLabel2' => $amv->getVulnerability()->getLabel(2),
+                'vulnLabel3' => $amv->getVulnerability()->getLabel(3),
+                'vulnLabel4' => $amv->getVulnerability()->getLabel(4),
+                'vulnDescription1' => $amv->getVulnerability()->getDescription(1),
+                'vulnDescription2' => $amv->getVulnerability()->getDescription(2),
+                'vulnDescription3' => $amv->getVulnerability()->getDescription(3),
+                'vulnDescription4' => $amv->getVulnerability()->getDescription(4),
                 'vulnerabilityRate' => '-',
                 'c_risk' => '-',
-                'c_risk_enabled' => $amv->threat->c,
+                'c_risk_enabled' => $amv->getThreat()->getConfidentiality(),
                 'i_risk' => '-',
-                'i_risk_enabled' => $amv->threat->i,
+                'i_risk_enabled' => $amv->getThreat()->getIntegrity(),
                 'd_risk' => '-',
-                'd_risk_enabled' => $amv->threat->d,
+                'd_risk_enabled' => $amv->getThreat()->getAvailability(),
                 'comment' => '',
             ];
         }
@@ -559,7 +557,7 @@ class ObjectService extends AbstractService
         }
         $model = null;
         if (isset($data['modelId'])) {
-            /** @var ModelTable $modelTable */
+            /** @var Table\ModelTable $modelTable */
             $modelTable = $this->get('modelTable');
             $model = $modelTable->findByAnrId($data['modelId']);
             $model->validateObjectAcceptance($monarcObject);
@@ -1103,7 +1101,7 @@ class ObjectService extends AbstractService
 
         if ($context == AbstractEntity::BACK_OFFICE) {
             //retrieve model
-            /** @var ModelTable $modelTable */
+            /** @var Table\ModelTable $modelTable */
             $modelTable = $this->get('modelTable');
             $model = $modelTable->findByAnrId($anrId);
 

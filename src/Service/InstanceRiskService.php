@@ -218,7 +218,7 @@ class InstanceRiskService extends AbstractService
                     't' => $instanceRisk->isTreated(),
                     'tid' => $threat->getUuid(),
                     'vid' => $vulnerability->getUuid(),
-                    'instanceName' . $languageIndex => $instanceRisk->getInstance()->{'getName' . $languageIndex}(),
+                    'instanceName' . $languageIndex => $instanceRisk->getInstance()->getName($languageIndex),
                 ]);
             }
         }

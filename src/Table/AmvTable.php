@@ -26,13 +26,25 @@ class AmvTable extends AbstractTable implements PositionUpdatableTableInterface
     /**
      * @return AmvSuperClass[]
      */
-    public function findByAsset(AssetSuperClass $asset)
+    public function findByAsset(AssetSuperClass $asset): array
     {
         return $this->getRepository()->createQueryBuilder('amv')
             ->where('amv.asset = :asset')
             ->setParameter('asset', $asset)
             ->getQuery()
             ->getResult();
+    }
+
+    public function findByAssetAndPosition(AssetSuperClass $asset, int $position): ?Amv
+    {
+        return $this->getRepository()->createQueryBuilder('amv')
+            ->where('amv.asset = :asset')
+            ->andWhere('amv.position = :position')
+            ->setParameter('asset', $asset)
+            ->setParameter('position', $position)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 
     /**
@@ -52,12 +64,12 @@ class AmvTable extends AbstractTable implements PositionUpdatableTableInterface
         }
         if ($threat !== null) {
             $queryBuilder->innerJoin('amv.threat', 'threat')
-                ->where('threat.uuid = :threat_uuid')
+                ->andWhere('threat.uuid = :threat_uuid')
                 ->setParameter('threat_uuid', $threat->getUuid());
         }
         if ($vulnerability !== null) {
             $queryBuilder->innerJoin('amv.vulnerability', 'vulnerability')
-                ->where('vulnerability.uuid = :vulnerability_uuid')
+                ->andWhere('vulnerability.uuid = :vulnerability_uuid')
                 ->setParameter('vulnerability_uuid', $vulnerability->getUuid());
         }
 

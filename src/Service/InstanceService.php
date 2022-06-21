@@ -43,7 +43,6 @@ class InstanceService extends AbstractService
 
     // Tables & Entities
     protected $anrTable;
-    protected $amvTable;
     protected $objectTable;
     protected $scaleTable;
     protected $scaleImpactTypeTable;
@@ -521,12 +520,10 @@ class InstanceService extends AbstractService
 
         $data['asset'] = ['uuid' => $instance->getObject()->getAsset()->getUuid(), 'anr' => $anrId];
         $data['object'] = $instance->getObject()->getUuid();
-        $data['name1'] = $instance->getName1();
-        $data['label1'] = $instance->getLabel1();
+        $data['name1'] = $instance->getName(1);
+        $data['label1'] = $instance->getLabel(1);
 
-        unset($data['implicitPosition']);
-        unset($data['previous']);
-        unset($data['position']);
+        unset($data['implicitPosition'], $data['previous'], $data['position']);
 
         $this->updateBrothers($anrId, $instance, $data, $historic);
 
@@ -578,14 +575,14 @@ class InstanceService extends AbstractService
         $eventManager->trigger('patch', $this, [
             'objectId' => $instance->getObject()->getUuid(),
             'data' => [
-                'name1' => $instance->getName1(),
-                'name2' => $instance->getName2(),
-                'name3' => $instance->getName3(),
-                'name4' => $instance->getName4(),
-                'label1' => $instance->getLabel1(),
-                'label2' => $instance->getLabel2(),
-                'label3' => $instance->getLabel3(),
-                'label4' => $instance->getLabel4(),
+                'name1' => $instance->getName(1),
+                'name2' => $instance->getName(2),
+                'name3' => $instance->getName(3),
+                'name4' => $instance->getName(4),
+                'label1' => $instance->getLabel(1),
+                'label2' => $instance->getLabel(2),
+                'label3' => $instance->getLabel(3),
+                'label4' => $instance->getLabel(4),
                 'anr' => $instance->getAnr()->getId(),
             ],
         ]);
@@ -1132,8 +1129,7 @@ class InstanceService extends AbstractService
         $instanceTable = $this->get('table');
         $instance = $instanceTable->findById((int)$id);
 
-        $instanceNameBasedOnLanguage = 'getName' . $this->getLanguage();
-        $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $instance->{$instanceNameBasedOnLanguage}());
+        $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $instance->getName($this->getLanguage()));
 
         // TODO: ObjectExportService can be a class from client or core.
         /** @var ObjectExportService $objectExportService */
@@ -1144,14 +1140,14 @@ class InstanceService extends AbstractService
             'with_eval' => $withEval,
             'instance' => [
                 'id' => $instance->getId(),
-                'name1' => $instance->getName1(),
-                'name2' => $instance->getName2(),
-                'name3' => $instance->getName3(),
-                'name4' => $instance->getName4(),
-                'label1' => $instance->getLabel1(),
-                'label2' => $instance->getLabel2(),
-                'label3' => $instance->getLabel3(),
-                'label4' => $instance->getLabel4(),
+                'name1' => $instance->getName(1),
+                'name2' => $instance->getName(2),
+                'name3' => $instance->getName(3),
+                'name4' => $instance->getName(4),
+                'label1' => $instance->getLabel(1),
+                'label2' => $instance->getLabel(2),
+                'label3' => $instance->getLabel(3),
+                'label4' => $instance->getLabel(4),
                 'disponibility' => $instance->getAvailability(),
                 'level' => $instance->getLevel(),
                 'assetType' => $instance->getAssetType(),

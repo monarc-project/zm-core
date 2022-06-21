@@ -109,7 +109,7 @@ abstract class UserSuperClass
     /**
      * @var PasswordTokenSuperClass[]|ArrayCollection
      *
-     * @ORM\OneToMany(targetEntity="PasswordToken", mappedBy="user", cascade={"persist", "remove"}
+     * @ORM\OneToMany(targetEntity="PasswordToken", mappedBy="user", cascade={"persist", "remove"})
      */
     protected $passwordTokens;
 

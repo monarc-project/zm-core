@@ -12,6 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 use Ramsey\Uuid\Lazy\LazyUuidFromString;
+use Ramsey\Uuid\Uuid;
 
 /**
  * Measure
@@ -140,9 +141,21 @@ class MeasureSuperClass extends AbstractEntity
         parent::__construct($obj);
     }
 
-    public function getUuid(): ?string
+    /**
+     * @ORM\PrePersist
+     */
+    public function generateAndSetUuid(): self
     {
-        return $this->uuid;
+        if ($this->uuid === null) {
+            $this->uuid = Uuid::uuid4();
+        }
+
+        return $this;
+    }
+
+    public function getUuid(): string
+    {
+        return (string)$this->uuid;
     }
 
     /**
@@ -306,24 +319,13 @@ class MeasureSuperClass extends AbstractEntity
         return $this;
     }
 
-    public function getLabel1(): string
+    public function getLabel(int $languageIndex): string
     {
-        return (string)$this->label1;
-    }
+        if (!\in_array($languageIndex, range(1, 4), true)) {
+            return '';
+        }
 
-    public function getLabel2(): string
-    {
-        return (string)$this->label2;
-    }
-
-    public function getLabel3(): string
-    {
-        return (string)$this->label3;
-    }
-
-    public function getLabel4(): string
-    {
-        return (string)$this->label4;
+        return (string)$this->{'label' . $languageIndex};
     }
 
     public function setLabels(array $labels): self
@@ -340,7 +342,6 @@ class MeasureSuperClass extends AbstractEntity
 
     public function getInputFilter($partial = false)
     {
-
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);
 

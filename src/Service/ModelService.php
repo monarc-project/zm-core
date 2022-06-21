@@ -8,16 +8,14 @@
 namespace Monarc\Core\Service;
 
 use Monarc\Core\Exception\Exception;
+use Monarc\Core\InputFormatter\FormattedInputParams;
 use Monarc\Core\Model\Entity\Model;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Table\AmvTable;
-use Monarc\Core\Service\Traits\QueryParamsFormatterTrait;
 use Monarc\Core\Table\ModelTable;
 
 class ModelService
 {
-    use QueryParamsFormatterTrait;
-
     private ModelTable $modelTable;
 
     private AmvTable $amvTable;
@@ -25,17 +23,6 @@ class ModelService
     private AnrService $anrService;
 
     private ConnectedUserService $connectedUserService;
-
-    protected static array $searchFields = [
-        'label1',
-        'label2',
-        'label3',
-        'label4',
-        'description1',
-        'description2',
-        'description3',
-        'description4',
-    ];
 
     public function __construct(
         ModelTable $modelTable,
@@ -49,20 +36,22 @@ class ModelService
         $this->connectedUserService = $connectedUserService;
     }
 
-    public function getList(string $searchString, array $filter, string $orderField): array
+    public function getList(FormattedInputParams $params): array
     {
         $result = [];
 
-        $params = $this->getFormattedFilterParams($searchString, $filter);
-        $order = $this->getFormattedOrder($orderField);
-
         /** @var Model[] $models */
-        $models = $this->modelTable->findByParams($params, $order);
+        $models = $this->modelTable->findByParams($params);
         foreach ($models as $model) {
             $result[] = $this->prepareModelDataResult($model);
         }
 
         return $result;
+    }
+
+    public function getCount(FormattedInputParams $params): int
+    {
+        return $this->modelTable->countByParams($params);
     }
 
     public function create(array $data): int
@@ -246,6 +235,7 @@ class ModelService
     private function prepareModelDataResult(Model $model): array
     {
         return [
+            'id' => $model->getId(),
             'anr' => [
                 'id' => $model->getAnr()->getId(),
             ],
@@ -257,11 +247,11 @@ class ModelService
             'description2' => $model->getDescription(2),
             'description3' => $model->getDescription(3),
             'description4' => $model->getDescription(4),
-            'isGeneric' => $model->isGeneric(),
-            'isDefault' => $model->isDefault(),
-            'isRegulator' => $model->isRegulator(),
-            'areScalesUpdatable' => $model->areScalesUpdatable(),
-            'showRolfBrut' => $model->getShowRolfBrut(),
+            'isGeneric' => (int)$model->isGeneric(),
+            'isDefault' => (int)$model->isDefault(),
+            'isRegulator' => (int)$model->isRegulator(),
+            'areScalesUpdatable' => (int)$model->areScalesUpdatable(),
+            'showRolfBrut' => (int)$model->getShowRolfBrut(),
             'status' => $model->getStatus(),
         ];
     }

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
  * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
@@ -20,7 +20,7 @@ use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
-class ThemeSuperClass extends AbstractEntity
+class ThemeSuperClass
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
@@ -80,28 +80,12 @@ class ThemeSuperClass extends AbstractEntity
         return $this->id;
     }
 
-    /**
-     * @param int $id
-     */
-    public function setId($id): self
-    {
-        $this->id = $id;
-
-        return $this;
-    }
-
-    /**
-     * @return AnrSuperClass
-     */
-    public function getAnr()
+    public function getAnr(): ?AnrSuperClass
     {
         return $this->anr;
     }
 
-    /**
-     * @param AnrSuperClass $anr
-     */
-    public function setAnr($anr): self
+    public function setAnr(AnrSuperClass $anr): self
     {
         $this->anr = $anr;
 
@@ -129,6 +113,7 @@ class ThemeSuperClass extends AbstractEntity
         return (string)$this->{'label' . $languageIndex};
     }
 
+    // TODO: move to an InputValidator
     public function getInputFilter($partial = false)
     {
         if (!$this->inputFilter) {

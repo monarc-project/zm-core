@@ -8,59 +8,53 @@
 namespace Monarc\Core\Controller;
 
 use Laminas\Mvc\Controller\AbstractRestfulController;
-use Monarc\Core\Model\Entity\Model;
+use Monarc\Core\Controller\Handler\ControllerRequestResponseHandlerTrait;
+use Monarc\Core\InputFormatter\Model\GetModelsInputFormatter;
 use Monarc\Core\Service\ModelService;
-use Laminas\View\Model\JsonModel;
+use Monarc\Core\Validator\InputValidator\Model\PostModelDataInputValidator;
 
 class ApiModelsController extends AbstractRestfulController
 {
-    protected const DEFAULT_LIMIT = 25;
+    use ControllerRequestResponseHandlerTrait;
+
+    private GetModelsInputFormatter $getModelsInputFormatter;
+
+    private PostModelDataInputValidator $postModelDataInputValidator;
 
     private ModelService $modelService;
 
-    public function __construct(ModelService $modelService)
-    {
+    public function __construct(
+        GetModelsInputFormatter $getModelsInputFormatter,
+        PostModelDataInputValidator $postModelDataInputValidator,
+        ModelService $modelService
+    ) {
+        $this->getModelsInputFormatter = $getModelsInputFormatter;
+        $this->postModelDataInputValidator = $postModelDataInputValidator;
         $this->modelService = $modelService;
     }
 
     public function getList()
     {
-        $searchString = $this->params()->fromQuery('filter', '');
-        $filter = [];
-        $status = $this->params()->fromQuery('status', Model::STATUS_ACTIVE);
-        if ($status !== 'all') {
-            $filter['status'] = (int)$status;
-        }
-        $isGeneric = $this->params()->fromQuery('isGeneric');
-        if ($isGeneric !== null) {
-            $filter['isGeneric'] = $isGeneric;
-        }
-        $order = $this->params()->fromQuery('order', '');
+        $formattedParams = $this->getFormattedInputParams($this->getModelsInputFormatter);
 
-        $models = $this->modelService->getList($searchString, $filter, $order);
-
-        $page = $this->params()->fromQuery('page', 1);
-        $limit = $this->params()->fromQuery('limit', static::DEFAULT_LIMIT);
-
-        return new JsonModel([
-            'count' => \count($models),
-            'vulnerabilities' => \array_slice($models, ($page - 1) * $limit, $limit),
+        return $this->getPreparedJsonResponse([
+            'count' => $this->modelService->getCount($formattedParams),
+            'models' => $this->modelService->getList($formattedParams),
         ]);
     }
 
     public function get($id)
     {
-        return new JsonModel($this->modelService->getModelData($id));
+        return $this->getPreparedJsonResponse($this->modelService->getModelData((int)$id));
     }
 
     public function create($data)
     {
-        // TODO: validate input. inject validator.
-        // label1 is mandatory.
+        $this->validatePostParams($this->postModelDataInputValidator, $data);
 
         $modelId = $this->modelService->create($data);
 
-        return new JsonModel([
+        return $this->getPreparedJsonResponse([
             'status' => 'ok',
             'id' => $modelId,
         ]);
@@ -68,33 +62,31 @@ class ApiModelsController extends AbstractRestfulController
 
     public function update($id, $data)
     {
-        // TODO: validate input. inject validator.
+        $this->validatePostParams($this->postModelDataInputValidator, $data);
 
-        $this->modelService->update($id, $data);
+        $this->modelService->update((int)$id, $data);
 
-        return new JsonModel(['status' => 'ok']);
+        return $this->getPreparedJsonResponse(['status' => 'ok']);
     }
 
     public function patch($id, $data)
     {
-        // TODO: validate input. inject validator.
+        $this->modelService->patch((int)$id, $data);
 
-        $this->modelService->patch($id, $data);
-
-        return new JsonModel(['status' => 'ok']);
+        return $this->getPreparedJsonResponse(['status' => 'ok']);
     }
 
     public function delete($id)
     {
-        $this->modelService->delete($id);
+        $this->modelService->delete((int)$id);
 
-        return new JsonModel(['status' => 'ok']);
+        return $this->getPreparedJsonResponse(['status' => 'ok']);
     }
 
     public function deleteList($data)
     {
         $this->modelService->deleteList($data);
 
-        return new JsonModel(['status' => 'ok']);
+        return $this->getPreparedJsonResponse(['status' => 'ok']);
     }
 }

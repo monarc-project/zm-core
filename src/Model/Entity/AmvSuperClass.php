@@ -119,9 +119,9 @@ class AmvSuperClass implements PositionedEntityInterface
         return $this;
     }
 
-    public function getUuid(): ?string
+    public function getUuid(): string
     {
-        return $this->uuid;
+        return (string)$this->uuid;
     }
 
     /**

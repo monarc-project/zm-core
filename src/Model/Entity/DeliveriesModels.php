@@ -10,6 +10,7 @@ namespace Monarc\Core\Model\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
+use Monarc\Core\Validator\FieldValidator\UniqueDeliveryModel;
 
 /**
  * Amv
@@ -166,7 +167,7 @@ class DeliveriesModels extends AbstractEntity
                     ),
                     array(
                         // TODO: move the validator in the creation part, as it requires a db connection.
-                        'name' => 'Monarc\Core\Validator\UniqueDeliveryModel',
+                        'name' => UniqueDeliveryModel::class,
                         'options' => array(
                             'adapter' => $this->getDbAdapter(),
                             'category' => $this->get('category'),

@@ -11,8 +11,8 @@ use Laminas\Http\Request;
 use Laminas\Mvc\MvcEvent;
 use Laminas\View\Model\JsonModel;
 use Laminas\Router\RouteMatch;
-use Monarc\Core\Validator\UniqueEmail;
-use Monarc\Core\Validator\UniqueDeliveryModel;
+use Monarc\Core\Validator\FieldValidator\UniqueEmail;
+use Monarc\Core\Validator\FieldValidator\UniqueDeliveryModel;
 use Monarc\Core\Filter\SpecAlnum;
 
 class Module

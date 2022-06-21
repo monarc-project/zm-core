@@ -15,26 +15,12 @@ use Monarc\Core\Model\Entity\AmvSuperClass;
 use Monarc\Core\Model\Entity\AnrSuperClass;
 
 /**
- * Asset Service Export
- *
- * Class ObjectExportService
- * @package Monarc\Core\Service
+ * TODO: move all the export functionality to the FO.
  */
 class AssetExportService extends AbstractService
 {
     protected $amvService;
 
-    /**
-     * Generates the array to be exported into a file
-     *
-     * @param int $id The asset ID
-     * @param AnrSuperClass $anr
-     * @param bool $withEval
-     * @param string $filename The filename to put into
-     *
-     * @return array The exported data
-     * @throws Exception
-     */
     public function generateExportArray($id, $anr = null, $withEval = false, &$filename = '')
     {
         if (empty($id)) {

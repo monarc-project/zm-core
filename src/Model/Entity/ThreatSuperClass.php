@@ -1,7 +1,7 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -24,10 +24,13 @@ use Ramsey\Uuid\Uuid;
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
-class ThreatSuperClass extends AbstractEntity
+class ThreatSuperClass
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
+
+    public const STATUS_ACTIVE = 1;
+    public const STATUS_INACTIVE = 0;
 
     public const MODE_GENERIC = 0;
     public const MODE_SPECIFIC = 1;
@@ -191,44 +194,35 @@ class ThreatSuperClass extends AbstractEntity
         return $this;
     }
 
-    public function getUuid(): ?string
+    public function getUuid(): string
     {
-        return $this->uuid;
+        return (string)$this->uuid;
     }
 
-    /**
-     * @param string $uuid
-     *
-     * @return self
-     */
-    public function setUuid($uuid): self
+    public function setUuid(string $uuid): self
     {
         $this->uuid = $uuid;
 
         return $this;
     }
 
-    /**
-     * @return AnrSuperClass
-     */
-    public function getAnr()
+    public function getAnr(): ?AnrSuperClass
     {
         return $this->anr;
     }
 
-    /**
-     * @param AnrSuperClass $anr
-     */
-    public function setAnr($anr): self
+    public function setAnr(AnrSuperClass $anr): self
     {
         $this->anr = $anr;
 
         return $this;
     }
 
-    public function setTheme(ThemeSuperClass $theme)
+    public function setTheme(ThemeSuperClass $theme): self
     {
         $this->theme = $theme;
+
+        return $this;
     }
 
     public function getTheme(): ?ThemeSuperClass
@@ -338,9 +332,6 @@ class ThreatSuperClass extends AbstractEntity
         return $this;
     }
 
-    /**
-     * @return int
-     */
     public function getMode(): int
     {
         return (int)$this->mode;
@@ -399,6 +390,7 @@ class ThreatSuperClass extends AbstractEntity
         return $this;
     }
 
+    // TODO: move to an InputValidator.
     public function getInputFilter($partial = false)
     {
         if (!$this->inputFilter) {
@@ -408,7 +400,7 @@ class ThreatSuperClass extends AbstractEntity
             foreach ($texts as $text) {
                 $this->inputFilter->add(array(
                     'name' => $text,
-                    'required' => ((strstr($text, (string)$this->getLanguage())) && (!$partial)) ? true : false,
+                    'required' => (strstr($text, (string)$this->getLanguage()) && !$partial) ? true : false,
                     'allow_empty' => false,
                     'filters' => array(),
                     'validators' => array(),
