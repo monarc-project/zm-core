@@ -8,7 +8,9 @@
 namespace Monarc\Core\Model\Table;
 
 use Monarc\Core\Model\Db;
+use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\Threat;
+use Monarc\Core\Model\Entity\ThreatSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**
@@ -20,5 +22,17 @@ class ThreatTable extends AbstractEntityTable
     public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
     {
         parent::__construct($dbService, Threat::class, $connectedUserService);
+    }
+
+    /**
+     * @return ThreatSuperClass[]
+     */
+    public function findByAnr(AnrSuperClass $anr): array
+    {
+        return $this->getRepository()->createQueryBuilder('t')
+            ->where('t.anr = :anr')
+            ->setParameter(':anr', $anr)
+            ->getQuery()
+            ->getResult();
     }
 }
