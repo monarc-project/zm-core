@@ -151,21 +151,29 @@ class Model extends AbstractEntity
     protected $showRolfBrut = '1';
 
     /**
-     * @var \Doctrine\Common\Collections\Collection
-     * @ORM\ManyToMany(targetEntity="Monarc\Core\Model\Entity\Asset", mappedBy="models", cascade={"persist"})
+     * @var Asset[]|ArrayCollection
+     * @ORM\ManyToMany(targetEntity="Asset", mappedBy="models", cascade={"persist"})
      */
     protected $assets;
 
     /**
-     * @var \Doctrine\Common\Collections\Collection
-     * @ORM\ManyToMany(targetEntity="Monarc\Core\Model\Entity\Threat", mappedBy="models", cascade={"persist"})
+     * @var Threat[]|ArrayCollection
+     * @ORM\ManyToMany(targetEntity="Threat", mappedBy="models", cascade={"persist"})
      */
     protected $threats;
+
+    /**
+     * @var Vulnerability[]|ArrayCollection
+     * @ORM\ManyToMany(targetEntity="Vulnerability", mappedBy="models", cascade={"persist"})
+     */
+    protected $vulnerabilities;
 
     public function __construct($obj = null)
     {
         $this->assets = new ArrayCollection();
         $this->threats = new ArrayCollection();
+        $this->vulnerabilities = new ArrayCollection();
+
         parent::__construct($obj);
     }
 
@@ -288,4 +296,3 @@ class Model extends AbstractEntity
         return $this->inputFilter;
     }
 }
-
