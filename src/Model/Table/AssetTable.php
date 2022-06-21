@@ -8,7 +8,9 @@
 namespace Monarc\Core\Model\Table;
 
 use Monarc\Core\Model\Db;
+use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\Asset;
+use Monarc\Core\Model\Entity\AssetSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**
@@ -30,6 +32,18 @@ class AssetTable extends AbstractEntityTable
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    /**
+     * @return AssetSuperClass[]
+     */
+    public function findByAnr(AnrSuperClass $anr): array
+    {
+        return $this->getRepository()->createQueryBuilder('a')
+            ->where('a.anr = :anr')
+            ->setParameter(':anr', $anr)
+            ->getQuery()
+            ->getResult();
     }
 
     public function saveEntity(Asset $asset, bool $flushAll = true): void
