@@ -468,7 +468,9 @@ class AnrService extends AbstractService
                 ];
                 foreach ($soas as $s) {
                     $newSoas = $s->getJsonArray($soasArray);
-                    $newSoas['soaScaleComment'] = $s->getSoaScaleComment()->getId();
+                    if ($s->getSoaScaleComment() != null) {
+                        $newSoas['soaScaleComment'] = $s->getSoaScaleComment()->getId();
+                    }
                     $newSoas['measure_id'] = $s->getMeasure()->getUuid();
                     $return['soas'][] = $newSoas;
                 }
