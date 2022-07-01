@@ -28,6 +28,6 @@ class OperationalInstanceRiskScaleTable extends AbstractTable
             ->where('oirs.instanceRiskOp = :instanceRiskOp')
             ->setParameter('instanceRiskOp', $instanceRiskOp)
             ->getQuery()
-            ->getSQL();
+            ->getResult();
     }
 }
