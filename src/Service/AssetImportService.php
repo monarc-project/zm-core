@@ -1,18 +1,25 @@
-<?php
+<?php declare(strict_types=1);
+/**
+ * @link      https://github.com/monarc-project for the canonical source repository
+ * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @license   MONARC is licensed under GNU Affero General Public License version 3
+ */
 
 namespace Monarc\Core\Service;
 
 use Monarc\Core\Model\Entity\Asset;
-use Monarc\Core\Model\Table\AssetTable;
+use Monarc\Core\Table\AssetTable;
 
 class AssetImportService
 {
-    /** @var AssetTable */
-    private $assetTable;
+    private AssetTable $assetTable;
 
-    public function __construct(AssetTable $assetTable)
+    private AssetService $assetService;
+
+    public function __construct(AssetTable $assetTable, AssetService $assetService)
     {
         $this->assetTable = $assetTable;
+        $this->assetService = $assetService;
     }
 
     /**
@@ -24,21 +31,7 @@ class AssetImportService
             return null;
         }
 
-        $asset = $this->assetTable->findByUuid($data['asset']['uuid']);
-        // TODO: validate if the code exists.
-        if ($asset === null) {
-            $asset = (new Asset())
-                ->setUuid($data['asset']['uuid'])
-                ->setLabels($data['asset'])
-                ->setDescriptions($data['asset'])
-                ->setStatus($data['asset']['status'] ?? 1)
-                ->setMode($data['asset']['mode'] ?? 0)
-                ->setType($data['asset']['type'])
-                ->setCode($data['asset']['code']);
-
-            $this->assetTable->saveEntity($asset);
-        }
-
-        return $asset;
+        return $this->assetTable->findByUuid($data['asset']['uuid']) ??
+            $this->assetService->create($data['asset']);
     }
 }

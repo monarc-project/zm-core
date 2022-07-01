@@ -82,15 +82,6 @@ class Module
         return $defaultLanguageIndex;
     }
 
-    public function getInputFilterConfig()
-    {
-        return [
-            'invokables' => [
-                SpecAlnum::class => SpecAlnum::class,
-            ],
-        ];
-    }
-
     public function getValidatorConfig()
     {
         return [

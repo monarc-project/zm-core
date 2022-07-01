@@ -12,7 +12,6 @@ use Doctrine\ORM\EntityNotFoundException;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\InputFormatter\FormattedInputParams;
 use Monarc\Core\Model\Entity;
-use Monarc\Core\Model\Table\AssetTable;
 use Monarc\Core\Model\Table\InstanceTable;
 use Monarc\Core\Model\Table\MeasureTable;
 use Monarc\Core\Model\Table\ReferentialTable;
@@ -28,7 +27,7 @@ class AmvService implements PositionUpdatableServiceInterface
 
     private InstanceTable $instanceTable;
 
-    private AssetTable $assetTable;
+    private Table\AssetTable $assetTable;
 
     private Table\ThreatTable $threatTable;
 
@@ -57,7 +56,7 @@ class AmvService implements PositionUpdatableServiceInterface
     public function __construct(
         Table\AmvTable $amvTable,
         InstanceTable $instanceTable,
-        AssetTable $assetTable,
+        Table\AssetTable $assetTable,
         Table\ThreatTable $threatTable,
         Table\VulnerabilityTable $vulnerabilityTable,
         MeasureTable $measureTable,
@@ -129,6 +128,9 @@ class AmvService implements PositionUpdatableServiceInterface
             ->setThreat($threat)
             ->setVulnerability($vulnerability)
             ->setCreator($this->connectedUserService->getConnectedUser()->getEmail());
+        if (isset($data['status'])) {
+            $amv->setStatus($data['status']);
+        }
 
         foreach ($data['measures'] as $measureUuid) {
             $amv->addMeasure($this->measureTable->findByUuid($measureUuid));
@@ -468,18 +470,16 @@ class AmvService implements PositionUpdatableServiceInterface
 
     /**
      * Enforces Amv to follow evolution.
-     *
-     * @param Entity\Model[] $models Models
-     * @param Entity\Asset|null $asset Asset
-     * @param Entity\Threat|null $threat Threat
-     * @param Entity\Vulnerability|null $vulnerability Vulnerability
      */
     public function enforceAmvToFollow(
-        $models,
+        iterable $models,
         ?Entity\Asset $asset = null,
         ?Entity\Threat $threat = null,
         ?Entity\Vulnerability $vulnerability = null
     ): void {
+        if (empty($models)) {
+            return;
+        }
         $amvs = $this->amvTable->findByAmv($asset, $threat, $vulnerability);
         foreach ($amvs as $amv) {
             foreach ($models as $model) {
@@ -848,17 +848,7 @@ class AmvService implements PositionUpdatableServiceInterface
             }
         }
 
-        // TODO: move the creation to AssetService when its refactored.
-        $asset = (new Entity\Asset())
-            ->setLabels($assetData)
-            ->setDescriptions($assetData)
-            ->setCode($assetData['code'])
-            ->setType($assetData['type'])
-            ->setCreator($this->connectedUserService->getConnectedUser()->getEmail());
-
-        $this->assetTable->save($asset, false);
-
-        return $asset;
+        return $this->assetService->create($assetData, false);
     }
 
     private function getOrCreateThreatObject(array $threatData): Entity\Threat

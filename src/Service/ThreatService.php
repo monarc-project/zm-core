@@ -83,6 +83,9 @@ class ThreatService
             ->setAvailability((int)$data['a'])
             ->setMode((int)$data['mode'])
             ->setCreator($this->connectedUserService->getConnectedUser()->getEmail());
+        if (isset($data['status'])) {
+            $threat->setStatus($data['status']);
+        }
 
         if (!empty($data['theme'])) {
             /** @var Entity\Theme $theme */
@@ -93,7 +96,7 @@ class ThreatService
             $threat->setTheme($theme);
         }
 
-        if (!empty($data['models'])) {
+        if (!empty($data['models']) && $threat->isModeSpecific()) {
             /** @var Entity\Model[] $models */
             $models = $this->modelTable->findByIds($data['models']);
             foreach ($models as $model) {
@@ -133,7 +136,7 @@ class ThreatService
             $threat->setComment($data['comment']);
         }
 
-        $follow = $data['follow'] ?? false;
+        $follow = isset($data['follow']) && (bool)$data['follow'];
         $modelsIds = $threat->isModeSpecific() && !empty($data['models'])
             ? $data['models']
             : [];

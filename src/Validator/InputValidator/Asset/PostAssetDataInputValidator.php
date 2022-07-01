@@ -36,24 +36,14 @@ class PostAssetDataInputValidator extends AbstractInputValidator
                     ],
                 ],
             ],
-            [
-                'name' => 'label' . $this->languageIndex,
-                'required' => true,
-                'filters' => [
-                    [
-                        'name' => StringTrim::class,
-                    ],
-                ],
-                'validators' => [
-                    [
-                        'name' => StringLength::class,
-                        'options' => [
-                            'min' => 1,
-                            'max' => 255,
-                        ]
-                    ],
-                ],
-            ],
+            $this->getLabelRule(1),
+            $this->getLabelRule(2),
+            $this->getLabelRule(3),
+            $this->getLabelRule(4),
+            $this->getDescriptionRule(1),
+            $this->getDescriptionRule(2),
+            $this->getDescriptionRule(3),
+            $this->getDescriptionRule(4),
             [
                 'name' => 'mode',
                 'required' => true,
@@ -86,6 +76,70 @@ class PostAssetDataInputValidator extends AbstractInputValidator
                             'haystack' => [AssetSuperClass::TYPE_PRIMARY, AssetSuperClass::TYPE_SECONDARY],
                         ]
                     ],
+                ],
+            ],
+            [
+                'name' => 'models',
+                'required' => false,
+                'filters' => [],
+                'validators' => [],
+            ],
+            [
+                'name' => 'follow',
+                'required' => false,
+                'filters' => [],
+                'validators' => [],
+            ],
+            [
+                'name' => 'status',
+                'required' => false,
+                'filters' => [
+                    [
+                        'name' => 'ToInt'
+                    ],
+                ],
+                'validators' => [
+                    [
+                        'name' => InArray::class,
+                        'options' => [
+                            'haystack' => [AssetSuperClass::STATUS_ACTIVE, AssetSuperClass::STATUS_INACTIVE],
+                        ]
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    protected function getLabelRule(int $languageIndex): array
+    {
+        return [
+            'name' => 'label' . $languageIndex,
+            'required' => $this->languageIndex === $languageIndex,
+            'filters' => [
+                [
+                    'name' => StringTrim::class,
+                ],
+            ],
+            'validators' => [
+                [
+                    'name' => StringLength::class,
+                    'options' => [
+                        'min' => 1,
+                        'max' => 255,
+                    ]
+                ],
+            ],
+        ];
+    }
+
+    protected function getDescriptionRule(int $languageIndex): array
+    {
+        return [
+            'name' => 'description' . $languageIndex,
+            'required' => false,
+            'filters' => [
+                [
+                    'name' => StringTrim::class,
                 ],
             ],
         ];

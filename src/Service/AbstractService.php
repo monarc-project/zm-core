@@ -440,7 +440,7 @@ abstract class AbstractService extends AbstractServiceFactory
      *
      * @throws Exception
      */
-    public function setDependencies(&$entity, $dependencies)
+    public function setDependencies($entity, $dependencies)
     {
         $db = $entity->getDbAdapter();
         if (empty($db)) {

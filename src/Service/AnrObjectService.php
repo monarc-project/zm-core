@@ -9,6 +9,7 @@ namespace Monarc\Core\Service;
 
 use Doctrine\ORM\Mapping\MappingException;
 use Monarc\Core\Model\Entity\MonarcObject;
+use Monarc\Core\Model\Table\MonarcObjectTable;
 
 /**
  * Anr Object Service
@@ -50,17 +51,20 @@ class AnrObjectService extends AbstractService
      */
     public function getParents($anrid, $id)
     {
-        try{
-          $object = $this->get('table')->getEntity($id);
-        }catch(MappingException $e){
-          $object = $this->get('table')->getEntity(['uuid' => $id, 'anr' => $anrid]);
+        /** @var MonarcObjectTable $monarcObjectTable */
+        $monarcObjectTable = $this->get('table');
+        try {
+            $object = $monarcObjectTable->getEntity($id);
+        } catch (MappingException $e) {
+            $object = $monarcObjectTable->getEntity(['uuid' => $id, 'anr' => $anrid]);
         }
         if (!$object) {
             throw new \Monarc\Core\Exception\Exception('Entity does not exist', 412);
         }
 
         //verify object is linked to an anr
-        if (!$this->get('table')->checkInAnr($anrid, $id)) {
+        // TODO: Replace to just $object->hasAnrs();
+        if (!$monarcObjectTable->checkInAnr($anrid, $id)) {
             throw new \Monarc\Core\Exception\Exception('Entity does not exist for this ANR', 412);
         }
 

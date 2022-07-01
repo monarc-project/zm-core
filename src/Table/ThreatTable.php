@@ -9,7 +9,9 @@ namespace Monarc\Core\Table;
 
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityNotFoundException;
+use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\Threat;
+use Monarc\Core\Model\Entity\ThreatSuperClass;
 
 class ThreatTable extends AbstractTable
 {
@@ -40,10 +42,10 @@ class ThreatTable extends AbstractTable
      */
     public function findByUuids(array $uuids): array
     {
-        $queryBuilder = $this->getRepository()->createQueryBuilder('v');
+        $queryBuilder = $this->getRepository()->createQueryBuilder('t');
 
         return $queryBuilder
-            ->where($queryBuilder->expr()->in('v.uuid', $uuids))
+            ->where($queryBuilder->expr()->in('t.uuid', $uuids))
             ->getQuery()
             ->getResult();
     }

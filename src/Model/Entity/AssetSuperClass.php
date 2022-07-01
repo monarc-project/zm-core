@@ -1,7 +1,7 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -11,10 +11,9 @@ use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 use Ramsey\Uuid\Lazy\LazyUuidFromString;
+use Ramsey\Uuid\Uuid;
 
 /**
- * Asset
- *
  * @ORM\Table(name="assets", indexes={
  *      @ORM\Index(name="anr_id", columns={"anr_id","code"}),
  *      @ORM\Index(name="anr_id2", columns={"anr_id"})
@@ -22,13 +21,19 @@ use Ramsey\Uuid\Lazy\LazyUuidFromString;
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
-class AssetSuperClass extends AbstractEntity
+class AssetSuperClass
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
 
     public const MODE_GENERIC = 0;
     public const MODE_SPECIFIC = 1;
+
+    public const TYPE_PRIMARY = 1;
+    public const TYPE_SECONDARY = 2;
+
+    public const STATUS_ACTIVE = 1;
+    public const STATUS_INACTIVE = 0;
 
     /**
     * @var LazyUuidFromString|string
@@ -109,21 +114,21 @@ class AssetSuperClass extends AbstractEntity
      *
      * @ORM\Column(name="status", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $status = 1;
+    protected $status = self::STATUS_ACTIVE;
 
     /**
      * @var int
      *
      * @ORM\Column(name="mode", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $mode = 0;
+    protected $mode = self::MODE_GENERIC;
 
     /**
      * @var int
      *
      * @ORM\Column(name="type", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $type = 1;
+    protected $type = self::TYPE_PRIMARY;
 
     /**
      * @var string
@@ -132,37 +137,39 @@ class AssetSuperClass extends AbstractEntity
      */
     protected $code;
 
-    public function getUuid(): ?string
+    /**
+     * @ORM\PrePersist
+     */
+    public function generateAndSetUuid(): self
     {
-        return $this->uuid;
+        if ($this->uuid === null) {
+            $this->uuid = Uuid::uuid4();
+        }
+
+        return $this;
     }
 
-    /**
-     * @param string $uuid
-     *
-     * @return self
-     */
-    public function setUuid($uuid): self
+    public function getUuid(): string
+    {
+        return (string)$this->uuid;
+    }
+
+    public function setUuid(string $uuid): self
     {
         $this->uuid = $uuid;
 
         return $this;
     }
 
-    /**
-     * @return AnrSuperClass
-     */
-    public function getAnr()
+    public function getAnr(): ?AnrSuperClass
     {
         return $this->anr;
     }
 
-    /**
-     * @param AnrSuperClass $anr
-     */
-    public function setAnr($anr): self
+    public function setAnr(AnrSuperClass $anr): self
     {
         $this->anr = $anr;
+
         return $this;
     }
 
@@ -266,70 +273,8 @@ class AssetSuperClass extends AbstractEntity
         return $this->type;
     }
 
-    public function getInputFilter($partial = true)
+    public function isPrimary(): bool
     {
-        if (!$this->inputFilter) {
-            parent::getInputFilter($partial);
-
-            $texts = ['label1', 'label2', 'label3', 'label4'];
-
-            foreach ($texts as $text) {
-                $this->inputFilter->add(array(
-                    'name' => $text,
-                    'required' => strpos($text, (string)$this->getLanguage()) !== false && !$partial,
-                    'allow_empty' => false,
-                    'filters' => array(),
-                    'validators' => array(),
-                ));
-            }
-
-            $descriptions = ['description1', 'description2', 'description3', 'description4'];
-
-            foreach ($descriptions as $description) {
-                $this->inputFilter->add(array(
-                    'name' => $description,
-                    'required' => false,
-                    'allow_empty' => true,
-                    'filters' => array(),
-                    'validators' => array(),
-                ));
-            }
-        }
-
-        $this->inputFilter->add(array(
-            'name' => 'status',
-            'required' => false,
-            'allow_empty' => false,
-            'filters' => array(
-                array('name' => 'ToInt'),
-            ),
-            'validators' => array(
-                array(
-                    'name' => 'InArray',
-                    'options' => array(
-                        'haystack' => array(self::STATUS_INACTIVE, self::STATUS_ACTIVE),
-                    ),
-                ),
-            ),
-        ));
-
-        $this->inputFilter->add(array(
-            'name' => 'type',
-            'required' => false,
-            'allow_empty' => false,
-            'filters' => array(
-                array('name' => 'ToInt'),
-            ),
-            'validators' => array(
-                array(
-                    'name' => 'InArray',
-                    'options' => array(
-                        'haystack' => array(self::TYPE_PRIMARY, self::TYPE_SECONDARY),
-                    ),
-                ),
-            ),
-        ));
-
-        return $this->inputFilter;
+        return $this->type === static::TYPE_PRIMARY;
     }
 }

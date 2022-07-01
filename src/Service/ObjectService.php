@@ -24,7 +24,6 @@ use Monarc\Core\Model\Entity\ObjectCategorySuperClass;
 use Monarc\Core\Model\Entity\ObjectSuperClass;
 use Monarc\Core\Model\Table\AnrObjectCategoryTable;
 use Monarc\Core\Model\Table\AnrTable;
-use Monarc\Core\Model\Table\AssetTable;
 use Monarc\Core\Model\Table\InstanceRiskOpTable;
 use Monarc\Core\Model\Table\InstanceTable;
 use Monarc\Core\Model\Table\ObjectCategoryTable;
@@ -33,7 +32,6 @@ use Monarc\Core\Model\Table\MonarcObjectTable;
 use Monarc\Core\Table;
 use Doctrine\ORM\Mapping\MappingException;
 use Doctrine\ORM\Query\QueryException;
-use Doctrine\ORM\ORMException;
 use Monarc\Core\Model\Table\RolfTagTable;
 
 /**
@@ -81,8 +79,8 @@ class ObjectService extends AbstractService
      */
     public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $modelId = null, $anr = null, $lock = null)
     {
-        /** @var AssetTable $assetTable */
-        $assetTable = $this->get('assetTable');
+        /** @var AssetService $assetService */
+        $assetService = $this->get('assetService');
         /** @var ObjectCategoryTable $categoryTable */
         $categoryTable = $this->get('categoryTable');
 
@@ -108,18 +106,9 @@ class ObjectService extends AbstractService
         $rootArray = [];
 
         foreach ($objects as $object) {
-            if (!empty($object['asset'])) {
-                if ($anr != null) {
-                    try {
-                        $object['asset'] = $assetTable->get(['uuid' => $object['asset']->getUuid(), 'anr' => $anr]);
-                    } catch (ORMException $e) {
-                        // section used when the request comes from a back office
-                        $object['asset'] = $assetTable->get(['uuid' => $object['asset']->getUuid()]);
-                    }
-                } else {
-                    $object['asset'] = $assetTable->get($object['asset']->getUuid());
-                }
-            }
+            /** @var Asset $asset */
+            $asset = $object['asset'];
+            $object['asset'] = $assetService->prepareAssetDataResult($asset);
             if (!empty($object['category'])) {
                 $object['category'] = $categoryTable->get($object['category']->getId());
             }
@@ -519,9 +508,10 @@ class ObjectService extends AbstractService
 
         // Si asset secondaire, pas de rolfTag
         if (!empty($data['asset']) && !empty($data['rolfTag'])) {
+            /** @var Table\AssetTable $assetTable */
             $assetTable = $this->get('assetTable');
-            $asset = $assetTable->get($data['asset']);
-            if (!empty($asset['type']) && $asset['type'] != Asset::TYPE_PRIMARY) {
+            $asset = $assetTable->findByUuid($data['asset']);
+            if (!$asset->isPrimary()) {
                 unset($data['rolfTag']);
                 $setRolfTagNull = true;
             }
@@ -552,7 +542,9 @@ class ObjectService extends AbstractService
 
         //security
         if ($context == AbstractEntity::BACK_OFFICE &&
-            $monarcObject->mode == MonarcObject::MODE_GENERIC && $monarcObject->asset->mode == MonarcObject::MODE_SPECIFIC) {
+            $monarcObject->isModeGeneric()
+            && $monarcObject->getAsset()->isModeSpecific()
+        ) {
             throw new Exception("You can't have a generic object based on a specific asset", 412);
         }
         $model = null;
@@ -563,7 +555,7 @@ class ObjectService extends AbstractService
             $model->validateObjectAcceptance($monarcObject);
         }
 
-        if (($monarcObject->asset->type == Asset::TYPE_PRIMARY) && ($monarcObject->scope == MonarcObject::SCOPE_GLOBAL)) {
+        if ($monarcObject->isScopeGlobal() && $monarcObject->getAsset()->isPrimary()) {
             throw new Exception('You cannot create an object that is both global and primary', 412);
         }
 
@@ -656,13 +648,10 @@ class ObjectService extends AbstractService
 
         // Si asset secondaire, pas de rolfTag
         if (!empty($data['asset']) && !empty($data['rolfTag'])) {
+            /** @var Table\AssetTable $assetTable */
             $assetTable = $this->get('assetTable');
-            try {
-                $asset = $assetTable->get($data['asset']);
-            } catch (QueryException | MappingException $e) {
-                $asset = $assetTable->get(['uuid' => $data['asset'], 'anr' => $data['anr']]);
-            }
-            if (!empty($asset['type']) && $asset['type'] != Asset::TYPE_PRIMARY) {
+            $asset = $assetTable->findByUuid($data['asset']);
+            if (!$asset->isPrimary()) {
                 unset($data['rolfTag']);
                 $setRolfTagNull = true;
             }

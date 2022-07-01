@@ -7,6 +7,8 @@
 
 namespace Monarc\Core\Service;
 
+use Monarc\Core\Table\AssetTable;
+
 /**
  * Asset Export Service Factory
  *
@@ -16,8 +18,8 @@ namespace Monarc\Core\Service;
 class AssetExportServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = [
-        'table' => 'Monarc\Core\Model\Table\AssetTable',
+        'table' => AssetTable::class,
         'entity' => 'Monarc\Core\Model\Entity\Asset',
-        'amvService' => 'Monarc\Core\Service\AmvService',
+        'amvService' => AmvService::class,
     ];
 }

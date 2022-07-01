@@ -7,11 +7,13 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\Query\Expr;
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\AnrSuperClass;
+use Monarc\Core\Model\Entity\AssetSuperClass;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Entity\ObjectCategorySuperClass;
 use Monarc\Core\Model\Entity\ObjectSuperClass;
@@ -50,32 +52,22 @@ class MonarcObjectTable extends AbstractEntityTable
         return $object;
     }
 
-    /**
-     * Get generic by asset id
-     *
-     * @param $assetId
-     * @return array
-     */
-    public function getGenericByAssetId($assetId)
+    public function hasGenericObjectsWithAsset(AssetSuperClass $asset): bool
     {
-        $objects = $this->getRepository()->createQueryBuilder('o')
-            ->select(array('o.uuid'))
-            ->where('o.asset = :assetId')
-            ->andWhere('o.mode = :mode')
-            ->setParameter(':assetId', $assetId)
-            ->setParameter(':mode', 0)
+        return (bool)$this->getRepository()->createQueryBuilder('o')
+            ->select('COUNT(o.uuid)')
+            ->where('o.asset = :asset')
+            ->andWhere('o.mode = ' . ObjectSuperClass::MODE_GENERIC)
+            ->setParameter(':asset', $asset)
             ->getQuery()
-            ->getResult();
-
-        return $objects;
+            ->getSingleScalarResult();
     }
 
     public function hasObjectsUnderRootCategoryExcludeObject(
         ObjectCategorySuperClass $rootCategory,
         ObjectSuperClass $excludeObject = null
     ): bool {
-        $queryBuilder = $this->getRepository()
-            ->createQueryBuilder('o')
+        $queryBuilder = $this->getRepository()->createQueryBuilder('o')
             ->select('COUNT(o.uuid)')
             ->join('o.category', 'oc', Expr\Join::WITH, 'o.category = oc')
             ->where('oc.root = :rootCategory OR oc = :rootCategory')
@@ -96,8 +88,7 @@ class MonarcObjectTable extends AbstractEntityTable
      */
     public function getObjectsUnderRootCategory(ObjectCategorySuperClass $rootCategory): array
     {
-        return $this->getRepository()
-            ->createQueryBuilder('o')
+        return $this->getRepository()->createQueryBuilder('o')
             ->join('o.category', 'oc')
             ->where('oc.root = :rootCategory OR oc = :rootCategory')
             ->setParameter('rootCategory', $rootCategory)
@@ -105,14 +96,8 @@ class MonarcObjectTable extends AbstractEntityTable
             ->getResult();
     }
 
-    /**
-     * Check In Anr
-     *
-     * @param $anrid
-     * @param $id
-     * @return bool
-     */
-    public function checkInAnr($anrid, $id)
+    // TODO: drop it when the refactoring is done.
+    public function checkInAnr($anrid, $id): bool
     {
         $stmt = $this->getDb()->getEntityManager()->getConnection()->prepare(
             'SELECT id
@@ -144,6 +129,16 @@ class MonarcObjectTable extends AbstractEntityTable
     public function findByAnrAndRolfTag(AnrSuperClass $anr, RolfTagSuperClass $rolfTag): array
     {
         return [];
+    }
+
+    public function findUuidsByAsset(AssetSuperClass $asset): array
+    {
+        return $this->getRepository()->createQueryBuilder('o')
+            ->select('o.uuid')
+            ->where('o.asset = :asset')
+            ->setParameter(':asset', $asset)
+            ->getQuery()
+            ->getResult(AbstractQuery::HYDRATE_SCALAR_COLUMN);
     }
 
     public function saveEntity(ObjectSuperClass $monarcObject, bool $flushAll = true): void

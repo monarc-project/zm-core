@@ -54,7 +54,14 @@ class PostThreatDataInputValidator extends AbstractInputValidator
                     ],
                 ],
             ],
-
+            $this->getLabelRule(1),
+            $this->getLabelRule(2),
+            $this->getLabelRule(3),
+            $this->getLabelRule(4),
+            $this->getDescriptionRule(1),
+            $this->getDescriptionRule(2),
+            $this->getDescriptionRule(3),
+            $this->getDescriptionRule(4),
             [
                 'name' => 'mode',
                 'required' => true,
@@ -70,6 +77,158 @@ class PostThreatDataInputValidator extends AbstractInputValidator
                             'haystack' => [ThreatSuperClass::MODE_GENERIC, ThreatSuperClass::MODE_SPECIFIC],
                         ]
                     ],
+                ],
+            ],
+            [
+                'name' => 'c',
+                'required' => true,
+                'filters' => [
+                    [
+                        'name' => 'ToInt'
+                    ],
+                ],
+                'validators' => [
+                    [
+                        'name' => InArray::class,
+                        'options' => [
+                            'haystack' => [false, true],
+                        ]
+                    ],
+                ],
+            ],
+            [
+                'name' => 'i',
+                'required' => true,
+                'filters' => [
+                    [
+                        'name' => 'ToInt'
+                    ],
+                ],
+                'validators' => [
+                    [
+                        'name' => InArray::class,
+                        'options' => [
+                            'haystack' => [false, true],
+                        ]
+                    ],
+                ],
+            ],
+            [
+                'name' => 'a',
+                'required' => true,
+                'filters' => [
+                    [
+                        'name' => 'ToInt'
+                    ],
+                ],
+                'validators' => [
+                    [
+                        'name' => InArray::class,
+                        'options' => [
+                            'haystack' => [false, true],
+                        ]
+                    ],
+                ],
+            ],
+            [
+                'name' => 'comment',
+                'required' => false,
+                'filters' => [
+                ],
+                'validators' => [],
+            ],
+            [
+                'name' => 'qualification',
+                'required' => false,
+                'filters' => [
+                    [
+                        'name' => 'ToInt'
+                    ],
+                ],
+                'validators' => [],
+            ],
+            [
+                'name' => 'theme',
+                'required' => false,
+                'filters' => [
+                    [
+                        'name' => 'ToInt'
+                    ],
+                ],
+                'validators' => [],
+            ],
+            [
+                'name' => 'trend',
+                'required' => false,
+                'filters' => [
+                    [
+                        'name' => 'ToInt'
+                    ],
+                ],
+                'validators' => [],
+            ],
+            [
+                'name' => 'models',
+                'required' => false,
+                'filters' => [],
+                'validators' => [],
+            ],
+            [
+                'name' => 'follow',
+                'required' => false,
+                'filters' => [],
+                'validators' => [],
+            ],
+            [
+                'name' => 'status',
+                'required' => false,
+                'filters' => [
+                    [
+                        'name' => 'ToInt'
+                    ],
+                ],
+                'validators' => [
+                    [
+                        'name' => InArray::class,
+                        'options' => [
+                            'haystack' => [ThreatSuperClass::STATUS_ACTIVE, ThreatSuperClass::STATUS_INACTIVE],
+                        ]
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    protected function getLabelRule(int $languageIndex): array
+    {
+        return [
+            'name' => 'label' . $languageIndex,
+            'required' => $this->languageIndex === $languageIndex,
+            'filters' => [
+                [
+                    'name' => StringTrim::class,
+                ],
+            ],
+            'validators' => [
+                [
+                    'name' => StringLength::class,
+                    'options' => [
+                        'min' => 1,
+                        'max' => 255,
+                    ]
+                ],
+            ],
+        ];
+    }
+
+    protected function getDescriptionRule(int $languageIndex): array
+    {
+        return [
+            'name' => 'description' . $languageIndex,
+            'required' => false,
+            'filters' => [
+                [
+                    'name' => StringTrim::class,
                 ],
             ],
         ];

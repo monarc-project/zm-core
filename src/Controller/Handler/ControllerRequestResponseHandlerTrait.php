@@ -31,8 +31,11 @@ trait ControllerRequestResponseHandlerTrait
         return $inputFormatter->format($params);
     }
 
-    protected function validatePostParams(AbstractInputValidator $inputValidator, array $params): void
-    {
+    protected function validatePostParams(
+        AbstractInputValidator $inputValidator,
+        array $params,
+        bool $isBatchData = false
+    ): void {
         $this->validateInstance();
 
         if ($this instanceof RequestHandlerInterface) {
@@ -43,8 +46,15 @@ trait ControllerRequestResponseHandlerTrait
             }
         }
 
-        if (!$inputValidator->isValid($params)) {
-            throw new Exception('Data validation errors: [ ' . json_encode($inputValidator->getErrorMessages()), 412);
+        $paramsSets = $isBatchData ? $params : [$params];
+        foreach ($paramsSets as $rowNum => $paramsSet) {
+            if (!$inputValidator->isValid($paramsSet)) {
+                throw new Exception(sprintf(
+                    'Data validation errors %s: [ %s ]',
+                    $isBatchData ? '(row number "' . ($rowNum + 1) . '") ' : '',
+                    json_encode($inputValidator->getErrorMessages(), JSON_THROW_ON_ERROR)
+                ), 412);
+            }
         }
     }
 
@@ -61,9 +71,9 @@ trait ControllerRequestResponseHandlerTrait
     }
 
     /**
-     * Validates if the request contains batch of data.
+     * Validates if there is a batch of data.
      */
-    protected function isBatchDataRequest(array $data): bool
+    protected function isBatchData(array $data): bool
     {
         return array_keys($data) === range(0, \count($data) - 1);
     }

@@ -16,6 +16,7 @@ use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\MonarcObjectTable;
 use Monarc\Core\Model\Table\ScaleCommentTable;
 use Monarc\Core\Model\Table\ScaleTable;
+use Monarc\Core\Table\ThreatTable;
 
 /**
 * Anr Service
@@ -552,8 +553,10 @@ class AnrService extends AbstractService
                 }
             }
 
+            // TODO: This is only used on FO side.
+            /** @var ThreatTable $threatTable */
             $threatTable = $this->get('threatTable');
-            $threats = $threatTable->getEntityByFields(['anr' => $anr->getId()]);
+            $threats = $threatTable->findByAnr($anr);
             $threatArray = [
                 'uuid' => 'uuid',
                 'code' => 'code',

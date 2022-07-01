@@ -1,26 +1,21 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
-namespace Monarc\Core\Model\Table;
+namespace Monarc\Core\Table;
 
+use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityNotFoundException;
-use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\Asset;
-use Monarc\Core\Service\ConnectedUserService;
 
-/**
- * Class AssetTable
- * @package Monarc\Core\Model\Table
- */
-class AssetTable extends AbstractEntityTable
+class AssetTable extends AbstractTable
 {
-    public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
+    public function __construct(EntityManager $entityManager, string $entityName = Asset::class)
     {
-        parent::__construct($dbService, Asset::class, $connectedUserService);
+        parent::__construct($entityManager, $entityName);
     }
 
     public function findByUuid(string $uuid): Asset
@@ -38,12 +33,18 @@ class AssetTable extends AbstractEntityTable
         return $asset;
     }
 
-    public function saveEntity(Asset $asset, bool $flushAll = true): void
+    /**
+     * @param string[] $uuids
+     *
+     * @return Asset[]
+     */
+    public function findByUuids(array $uuids): array
     {
-        $em = $this->getDb()->getEntityManager();
-        $em->persist($asset);
-        if ($flushAll) {
-            $em->flush();
-        }
+        $queryBuilder = $this->getRepository()->createQueryBuilder('a');
+
+        return $queryBuilder
+            ->where($queryBuilder->expr()->in('a.uuid', $uuids))
+            ->getQuery()
+            ->getResult();
     }
 }

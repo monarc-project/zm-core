@@ -22,7 +22,6 @@ class InstanceServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = [
         'table' => DeprecatedTable\InstanceTable::class,
-        'assetTable' => DeprecatedTable\AssetTable::class,
         'entity' => Entity\Instance::class,
         'instanceConsequenceEntity' => Entity\InstanceConsequence::class,
         'anrTable' => DeprecatedTable\AnrTable::class,

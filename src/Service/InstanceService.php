@@ -17,7 +17,7 @@ use Monarc\Core\Model\Entity\InstanceConsequenceSuperClass;
 use Monarc\Core\Model\Entity\InstanceRiskOp;
 use Monarc\Core\Model\Entity\InstanceSuperClass;
 use Monarc\Core\Model\Entity\MonarcObject;
-use Monarc\Core\Model\Entity\ScaleCommentSuperClass;
+use Monarc\Core\Model\Entity\ObjectSuperClass;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\InstanceConsequenceTable;
 use Monarc\Core\Model\Table\InstanceRiskOpTable;
@@ -51,8 +51,6 @@ class InstanceService extends AbstractService
     protected $instanceRiskTable;
     protected $instanceRiskOpTable;
 
-    protected $assetTable;
-
     // Services
     protected $instanceConsequenceService;
     protected $instanceRiskService;
@@ -82,6 +80,7 @@ class InstanceService extends AbstractService
     public function instantiateObjectToAnr($anrId, $data, $managePosition = true, $rootLevel = false, $mode = Instance::MODE_CREA_NODE)
     {
         try {
+            /** @var ObjectSuperClass $object */
             $object = $this->get('objectTable')->getEntity($data['object']);
         } catch (MappingException | QueryException $e) {
             $object = $this->get('objectTable')->getEntity(['uuid' => $data['object'], 'anr' => $anrId]);
@@ -121,14 +120,7 @@ class InstanceService extends AbstractService
         $parent = ($data['parent']) ? $this->get('table')->getEntity($data['parent']) : null;
 
         $this->updateImpactsInherited($anrId, $parent, $data);
-        //asset
-        if (isset($object->asset)) {
-            if (in_array('anr', $this->get('assetTable')->getClassMetadata()->getIdentifierFieldNames())) {
-                $data['asset'] = ['uuid' => $object->getAsset()->getUuid(), 'anr' => $anrId];
-            } else {
-                $data['asset'] = $object->getAsset()->getUuid();
-            }
-        }
+
         //manage position
         if (!$managePosition) {
             unset($data['implicitPosition']);
@@ -204,6 +196,8 @@ class InstanceService extends AbstractService
         //instance dependencies
         $dependencies = property_exists($this, 'dependencies') ? $this->dependencies : [];
         $this->setDependencies($instance, $dependencies);
+
+        $instance->setAsset($object->getAsset());
 
         //level
         $this->updateInstanceLevels($rootLevel, $data['object'], $instance, $mode, $anrId);

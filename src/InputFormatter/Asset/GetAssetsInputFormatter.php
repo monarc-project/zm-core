@@ -29,6 +29,9 @@ class GetAssetsInputFormatter extends AbstractInputFormatter
             'default' => Model::STATUS_ACTIVE,
             'type' => 'int',
         ],
+        'type' => [
+            'type' => 'int',
+        ],
     ];
 
     protected static array $ignoredFilterFieldValues = ['status' => 'all'];

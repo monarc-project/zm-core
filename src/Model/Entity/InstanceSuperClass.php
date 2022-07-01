@@ -575,7 +575,7 @@ class InstanceSuperClass extends AbstractEntity
     }
 
     /**
-     * Returns the instance hierarchy array ordered from it's root through all the children to the instance itself.
+     * Returns the instance hierarchy array ordered from its root through all the children to the instance itself.
      * Each element is a normalized array of instance properties.
      */
     public function getHierarchyArray(): array

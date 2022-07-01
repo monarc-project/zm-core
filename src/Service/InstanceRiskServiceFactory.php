@@ -18,11 +18,11 @@ class InstanceRiskServiceFactory extends AbstractServiceFactory
         'entity' => InstanceRisk::class,
         'amvTable' => Table\AmvTable::class,
         'anrTable' => DeprecatedTable\AnrTable::class,
-        'assetTable' => DeprecatedTable\AssetTable::class,
+        'assetTable' => Table\AssetTable::class,
         'instanceTable' => DeprecatedTable\InstanceTable::class,
         'instanceRiskOwnerTable' => Table\InstanceRiskOwnerTable::class,
         'monarcObjectTable' => DeprecatedTable\MonarcObjectTable::class,
         'scaleTable' => DeprecatedTable\ScaleTable::class,
-        'threatTable' => DeprecatedTable\ThreatTable::class,
+        'threatTable' => Table\ThreatTable::class,
     ];
 }

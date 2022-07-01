@@ -1,207 +1,232 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
 namespace Monarc\Core\Service;
 
 use Monarc\Core\Exception\Exception;
-use Monarc\Core\Model\Entity\Asset;
+use Monarc\Core\InputFormatter\FormattedInputParams;
+use Monarc\Core\Model\Entity;
 use Monarc\Core\Model\Entity\Model;
-use Monarc\Core\Model\Table\AnrTable;
-use Monarc\Core\Model\Table\AssetTable;
+use Monarc\Core\Model\Table\MonarcObjectTable;
 use Monarc\Core\Model\Table\ObjectObjectTable;
-use Monarc\Core\Table\ModelTable;
+use Monarc\Core\Table;
 
-/**
- * Asset Service
- *
- * Class AssetService
- * @package Monarc\Core\Service
- */
-class AssetService extends AbstractService
+class AssetService
 {
-    protected $anrTable;
-    protected $modelTable;
-    protected $amvService;
-    protected $modelService;
-    protected $MonarcObjectTable;
-    protected $objectObjectTable;
-    protected $assetExportService;
-    protected $dependencies = ['anr', 'model[s]()'];
-    protected $forbiddenFields = ['anr'];
-    protected $filterColumns = [
-        'label1', 'label2', 'label3', 'label4',
-        'description1', 'description2', 'description3', 'description4',
-        'code',
-    ];
+    private Table\AssetTable $assetTable;
 
-    public function create($data, $saveInDb = true)
-    {
-        /** @var AssetTable $assetTable */
-        $assetTable = $this->get('table');
-        $entityClass = $assetTable->getEntityClass();
+    private MonarcObjectTable $monarcObjectTable;
 
-        /** @var Asset $asset */
-        $asset = new $entityClass();
-        $asset->setLanguage($this->getLanguage());
-        $asset->setDbAdapter($assetTable->getDb());
+    private ObjectObjectTable $objectObjectTable;
 
-        if (!empty($data['anr'])) {
-            /** @var AnrTable $anrTable */
-            $anrTable = $this->get('anrTable');
-            $anr = $anrTable->findById($data['anr']);
+    private Table\ModelTable $modelTable;
 
-            $asset->setAnr($anr);
-        }
+    private AmvService $amvService;
 
-        $asset->exchangeArray($data);
-        $this->setDependencies($asset, $this->dependencies);
+    private ConnectedUserService $connectedUserService;
 
-        $asset->setCreator($this->getConnectedUser()->getEmail());
-
-        return $assetTable->save($asset, $saveInDb);
+    public function __construct(
+        Table\AssetTable $assetTable,
+        MonarcObjectTable $monarcObjectTable,
+        ObjectObjectTable $objectObjectTable,
+        Table\ModelTable $modelTable,
+        AmvService $amvService,
+        ConnectedUserService $connectedUserService
+    ) {
+        $this->assetTable = $assetTable;
+        $this->monarcObjectTable = $monarcObjectTable;
+        $this->objectObjectTable = $objectObjectTable;
+        $this->modelTable = $modelTable;
+        $this->amvService = $amvService;
+        $this->connectedUserService = $connectedUserService;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function update($id, $data)
+    public function getList(FormattedInputParams $params): array
     {
-        $this->filterPatchFields($data);
+        $result = [];
 
-        /** @var AssetTable $assetTable */
-        $assetTable = $this->get('table');
-        /** @var Asset $asset */
-        $asset = $assetTable->findByUuid($id);
-        $asset->setDbAdapter($assetTable->getDb());
-        $asset->setLanguage($this->getLanguage());
-
-        if ($data['mode'] === Asset::MODE_GENERIC && $asset->isModeSpecific()) {
-            unset($data['models']);
+        /** @var Entity\Asset[] $assets */
+        $assets = $this->assetTable->findByParams($params);
+        foreach ($assets as $asset) {
+            $result[] = $this->prepareAssetDataResult($asset);
         }
 
-        $models = $data['models'] ?? [];
-        $follow = $data['follow'] ?? null;
-        unset($data['models'], $data['follow'], $data['uuid']);
+        return $result;
+    }
 
-        $asset->exchangeArray($data);
-        // TODO: we don't need to do this if set properly before -> change and drop drop.
-        if ($asset->getModels()) {
-            $asset->getModels()->initialize();
+    public function getCount(FormattedInputParams $params): int
+    {
+        return $this->assetTable->countByParams($params);
+    }
+
+    public function getAssetData(string $uuid): array
+    {
+        $asset = $this->assetTable->findByUuid($uuid);
+
+        return $this->prepareAssetDataResult($asset);
+    }
+
+    public function create(array $data, bool $saveInDb = true): Entity\Asset
+    {
+        $asset = (new Entity\Asset())
+            ->setCode($data['code'])
+            ->setLabels($data)
+            ->setDescriptions($data)
+            ->setMode($data['mode'])
+            ->setType($data['type'])
+            ->setCreator($this->connectedUserService->getConnectedUser()->getEmail());
+        if (isset($data['status'])) {
+            $asset->setStatus($data['status']);
         }
 
-        /** @var AmvService $amvService */
-        $amvService = $this->get('amvService');
-        if (!$amvService->checkAmvIntegrityLevel($models, $asset, null, null, $follow)) {
+        if (!empty($data['models']) && $asset->isModeSpecific()) {
+            /** @var Entity\Model[] $models */
+            $models = $this->modelTable->findByIds($data['models']);
+            foreach ($models as $model) {
+                $asset->addModel($model);
+            }
+        }
+
+        $this->assetTable->save($asset, $saveInDb);
+
+        return $asset;
+    }
+
+    public function update(string $uuid, array $data)
+    {
+        $asset = $this->assetTable->findByUuid($uuid);
+
+        $asset->setCode($data['code'])
+            ->setLabels($data)
+            ->setDescriptions($data)
+            ->setType((int)$data['type'])
+            ->setStatus($data['status'] ?? Entity\AssetSuperClass::STATUS_ACTIVE)
+            ->setUpdater($this->connectedUserService->getConnectedUser()->getEmail());
+        if (isset($data['mode'])) {
+            $asset->setMode((int)$data['mode']);
+        }
+
+        $follow = isset($data['follow']) && (bool)$data['follow'];
+        $modelsIds = $asset->isModeSpecific() && !empty($data['models'])
+            ? $data['models']
+            : [];
+
+        if (!$this->amvService->checkAmvIntegrityLevel($modelsIds, $asset, null, null, $follow)) {
             throw new Exception('Integrity AMV links violation', 412);
         }
 
-        if ($asset->isModeSpecific()) {
-            $associateObjects = $this->get('MonarcObjectTable')->getGenericByAssetId($asset->getUuid());
-            if (\count($associateObjects)) {
-                throw new Exception('Integrity AMV links violation', 412);
-            }
+        if ($asset->isModeSpecific() && $this->monarcObjectTable->hasGenericObjectsWithAsset($asset)) {
+            throw new Exception('Integrity AMV links violation', 412);
         }
 
-        if (!$amvService->checkModelsInstantiation($asset, $models)) {
+        if (!$this->amvService->checkModelsInstantiation($asset, $modelsIds)) {
             throw new Exception('This type of asset is used in a model that is no longer part of the list', 412);
         }
 
-        /** @var ModelTable $modelTable */
-        $modelTable = $this->get('modelTable');
         $asset->unlinkModels();
-        if ($asset->isModeSpecific()) {
-            if (!empty($models)) {
-                /** @var Model[] $modelsObj */
-                $modelsObj = $modelTable->findByIds($models);
-                foreach ($modelsObj as $model) {
-                    $asset->addModel($model);
-                }
+        if (!empty($modelsIds) && $asset->isModeSpecific()) {
+            /** @var Model[] $modelsObj */
+            $modelsObj = $this->modelTable->findByIds($modelsIds);
+            foreach ($modelsObj as $model) {
+                $asset->addModel($model);
             }
             if ($follow) {
-                $amvService->enforceAmvToFollow($asset->getModels(), $asset);
+                $this->amvService->enforceAmvToFollow($asset->getModels(), $asset);
             }
         }
 
-        $objects = $this->get('MonarcObjectTable')->getEntityByFields(['asset' => $asset->getId()]);
-        if (!empty($objects)) {
-            $oids = [];
-            foreach ($objects as $o) {
-                $oids[$o->id] = $o->id;
-            }
-            if (!empty($asset->getModels())) {
-                //We need to check if the asset is compliant with reg/spec model when they are used as fathers
-                //not already used in models
-                /** @var ObjectObjectTable $objectObjectTable */
-                $objectObjectTable = $this->get('objectObjectTable');
-                $olinks = $objectObjectTable->getEntityByFields(['father' => $oids]);
-                if (!empty($olinks)) {
-                    foreach ($olinks as $ol) {
-                        foreach ($asset->getModels() as $model) {
-                            $model->validateObjectAcceptance($ol->getChild());
-                        }
-                    }
-                }
-            }
-            //We need to check if the asset is compliant with reg/spec model when they are used as children
-            //of objects not already used in models. This code is pretty similar to the previous one
+        $this->validateAssetObjects($asset);
 
-            //we need the parents of theses objects
-            /** @var ObjectObjectTable $objectObjectTable */
-            $objectObjectTable = $this->get('objectObjectTable');
-            $olinks = $objectObjectTable->getEntityByFields(['child' => $oids]);
-            if (!empty($olinks)) {
-                foreach ($olinks as $ol) {
-                    /** @var Model[] $models */
-                    $models = $ol->getFather()->getAsset()->getModels();
-                    foreach ($models as $model) {
-                        $model->validateObjectAcceptance($ol, $asset);
-                    }
-                }
-            }
-        }
-
-        $asset->setUpdater($this->getConnectedUser()->getEmail());
-
-        $assetTable->saveEntity($asset);
+        $this->assetTable->save($asset);
 
         return $asset->getUuid();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function patch($id, $data)
+    public function patch(string $uuid, array $data)
     {
-        //security
-        $this->filterPatchFields($data);
+        $asset = $this->assetTable->findByUuid($uuid);
 
-        parent::patch($id, $data);
+        $asset->setStatus((int)$data['status'])
+            ->setUpdater($this->connectedUserService->getConnectedUser()->getEmail());
+
+        $this->assetTable->save($asset);
     }
 
-    /**
-     * Exports the asset, optionaly encrypted
-     * @param array $data The 'id' and 'password' for export
-     * @return string The file, optionaly encrypted
-     * @throws \Exception if the asset is invalid
-     */
-    public function exportAsset(&$data)
+
+    public function delete(string $uuid): void
     {
-        if (empty($data['id'])) {
-            throw new Exception('Asset to export is required', 412);
+        $asset = $this->assetTable->findByUuid($uuid);
+
+        $this->assetTable->remove($asset);
+    }
+
+    public function deleteList(array $data): void
+    {
+        $assets = $this->assetTable->findByUuids($data);
+
+        $this->assetTable->removeList($assets);
+    }
+
+    public function prepareAssetDataResult(Entity\Asset $asset): array
+    {
+        $models = [];
+        foreach ($asset->getModels() as $model) {
+            $models[] = [
+                'id' => $model->getId(),
+            ];
         }
-        $filename = "";
 
-        $exportedAsset = json_encode($this->get('assetExportService')->generateExportArray($data['id'], $filename));
-        $data['filename'] = $filename;
+        return [
+            'uuid' => $asset->getUuid(),
+            'code' => $asset->getCode(),
+            'label1' => $asset->getLabel(1),
+            'label2' => $asset->getLabel(2),
+            'label3' => $asset->getLabel(3),
+            'label4' => $asset->getLabel(4),
+            'description1' => $asset->getDescription(1),
+            'description2' => $asset->getDescription(2),
+            'description3' => $asset->getDescription(3),
+            'description4' => $asset->getDescription(4),
+            'type' => $asset->getType(),
+            'status' => $asset->getStatus(),
+            'mode' => $asset->getMode(),
+            'models' => $models,
+        ];
+    }
 
-        if (! empty($data['password'])) {
-            $exportedAsset = $this->encrypt($exportedAsset, $data['password']);
+    private function validateAssetObjects(Entity\Asset $asset): void
+    {
+        $objectUuids = $this->monarcObjectTable->findUuidsByAsset($asset);
+        if (!empty($objectUuids)) {
+            if (!$asset->getModels()->isEmpty()) {
+                /*
+                 * Check if the asset is compliant with reg/spec model, when they are used as fathers,
+                 * not already used in models.
+                 */
+                $childrenObjects = $this->objectObjectTable->findChildrenByFatherUuids($objectUuids);
+                foreach ($childrenObjects as $childObject) {
+                    foreach ($asset->getModels() as $model) {
+                        $model->validateObjectAcceptance($childObject);
+                    }
+
+                }
+            }
+
+            /*
+             * Check if the asset is compliant with reg/spec model, when they are used as children,
+             * not already used in their models.
+             */
+            $parentObjects = $this->objectObjectTable->findParentsByChildrenUuids($objectUuids);
+            foreach ($parentObjects as $parentObject) {
+                $models = $parentObject->getAsset()->getModels();
+                foreach ($models as $model) {
+                    $model->validateObjectAcceptance($parentObject, $asset);
+                }
+            }
         }
-
-        return $exportedAsset;
     }
 }

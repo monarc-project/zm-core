@@ -264,7 +264,7 @@ class ObjectSuperClass extends AbstractEntity
         return $this;
     }
 
-    public function getAsset(): ?AssetSuperClass
+    public function getAsset(): AssetSuperClass
     {
         return $this->asset;
     }

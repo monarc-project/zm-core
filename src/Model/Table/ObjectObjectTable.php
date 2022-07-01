@@ -8,7 +8,9 @@
 namespace Monarc\Core\Model\Table;
 
 use Monarc\Core\Model\Db;
+use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Entity\ObjectObject;
+use Monarc\Core\Model\Entity\ObjectObjectSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**
@@ -23,21 +25,42 @@ class ObjectObjectTable extends AbstractEntityTable
     }
 
     /**
-     * Get Childs
+     * TODO: due to complications of double fields relation on FO side (uuid + anr) we cant simply add self-reference.
+     * When it's refactored, we can change to $object->getFather() (normally getParent) and $object->getChildren().
      *
-     * @param $objectId
-     * @return array
+     * @param string[] $uuids
+     *
+     * @return MonarcObject[]
      */
-    public function getChildren($objectId)
+    public function findChildrenByFatherUuids(array $uuids): array
     {
-        $child = $this->getRepository()->createQueryBuilder('o')
-            ->select(array('IDENTITY(o.child) as childId', 'o.position'))
-            ->where('o.father = :father')
-            ->setParameter(':father', $objectId)
+        $queryBuilder = $this->getRepository()->createQueryBuilder('o');
+
+        return $queryBuilder
+            ->select('o.child')
+            ->innerJoin('o.father', 'parent')
+            ->where($queryBuilder->expr()->in('parent.uuid', ':fatherUuids'))
+            ->setParameter('fatherUuids', $uuids)
             ->getQuery()
             ->getResult();
+    }
 
-        return $child;
+    /**
+     * @param string[] $uuids
+     *
+     * @return MonarcObject[]
+     */
+    public function findParentsByChildrenUuids(array $uuids): array
+    {
+        $queryBuilder = $this->getRepository()->createQueryBuilder('o');
+
+        return $queryBuilder
+            ->select('o.father')
+            ->innerJoin('o.child', 'child')
+            ->where($queryBuilder->expr()->in('child.uuid', ':childrenUuids'))
+            ->setParameter('childrenUuids', $uuids)
+            ->getQuery()
+            ->getResult();
     }
 
     /**
@@ -48,18 +71,10 @@ class ObjectObjectTable extends AbstractEntityTable
      */
     public function getDirectParentsInfos($child_id, $anrid)
     {
-        // return $this->getRepository()->createQueryBuilder('oo')
-        //     ->select(['o.name1', 'o.name2', 'o.name3', 'o.name4', 'o.label1', 'o.label2', 'o.label3', 'o.label4'])
-        //     ->innerJoin('oo.father', 'o')
-        //     ->where('oo.child = :child_id')
-        //     ->setParameter(':child_id', $child_id)
-        //     ->getQuery()
-        //     ->getResult();
         $stmt = $this->getDb()->getEntityManager()->getConnection()->prepare(
             'SELECT  o.name1, o.name2, o.name3, o.name4, o.label1, o.label2, o.label3, o.label4
             FROM objects_objects oo
             INNER JOIN objects o ON oo.father_id = o.uuid and oo.anr_id = o.anr_id
-
             WHERE oo.anr_id = :anrid
             AND oo.child_id = :oid'
         );

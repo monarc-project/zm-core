@@ -95,8 +95,7 @@ class InstanceRiskOpService
 
     public function createInstanceRisksOp(InstanceSuperClass $instance, ObjectSuperClass $object): void
     {
-        if ($object->getAsset() === null
-            || $object->getRolfTag() === null
+        if ($object->getRolfTag() === null
             || $object->getAsset()->getType() !== Asset::TYPE_PRIMARY
         ) {
             return;

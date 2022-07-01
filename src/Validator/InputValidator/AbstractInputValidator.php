@@ -15,6 +15,8 @@ abstract class AbstractInputValidator
 
     protected int $languageIndex;
 
+    private array $validData = [];
+
     public function __construct(InputFilter $inputFilter, array $config)
     {
         $this->inputFilter = $inputFilter;
@@ -27,7 +29,12 @@ abstract class AbstractInputValidator
     {
         $this->inputFilter->setData($data);
 
-        return $this->inputFilter->isValid();
+        $isValid = $this->inputFilter->isValid();
+        if ($isValid) {
+            $this->validData[] = $this->inputFilter->getValues();
+        }
+
+        return $isValid;
     }
 
     public function getErrorMessages(): array
@@ -35,9 +42,14 @@ abstract class AbstractInputValidator
         return $this->inputFilter->getMessages();
     }
 
-    public function getValidData(): array
+    public function getValidData(int $validatedSetNum = 0): array
     {
-        return $this->inputFilter->getValues();
+        return $this->validData[$validatedSetNum] ?? [];
+    }
+
+    public function getValidDataSets(): array
+    {
+        return $this->validData;
     }
 
     public function setLanguageIndex(int $languageIndex): self
