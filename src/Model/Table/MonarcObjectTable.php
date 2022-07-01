@@ -35,17 +35,16 @@ class MonarcObjectTable extends AbstractEntityTable
      * @throws EntityNotFoundException
      * @throws NonUniqueResultException
      */
-    public function findByUuid(string $uuid): ObjectSuperClass
+    public function findByUuid(string $uuid): MonarcObject
     {
-        /** @var ObjectSuperClass $object */
+        /** @var MonarcObject $object */
         $object = $this->getRepository()->createQueryBuilder('o')
             ->where('o.uuid = :uuid')
             ->setParameter('uuid', $uuid)
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
-
-        if ($object == null) {
+        if ($object === null) {
             throw EntityNotFoundException::fromClassNameAndIdentifier(\get_class($this), [$uuid]);
         }
 

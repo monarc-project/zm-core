@@ -32,19 +32,4 @@ class AssetTable extends AbstractTable
 
         return $asset;
     }
-
-    /**
-     * @param string[] $uuids
-     *
-     * @return Asset[]
-     */
-    public function findByUuids(array $uuids): array
-    {
-        $queryBuilder = $this->getRepository()->createQueryBuilder('a');
-
-        return $queryBuilder
-            ->where($queryBuilder->expr()->in('a.uuid', $uuids))
-            ->getQuery()
-            ->getResult();
-    }
 }

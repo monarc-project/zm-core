@@ -8,7 +8,6 @@
 namespace Monarc\Core\Model\Table;
 
 use Monarc\Core\Model\Db;
-use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Entity\ObjectObject;
 use Monarc\Core\Model\Entity\ObjectObjectSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
@@ -30,16 +29,15 @@ class ObjectObjectTable extends AbstractEntityTable
      *
      * @param string[] $uuids
      *
-     * @return MonarcObject[]
+     * @return ObjectObjectSuperClass[]
      */
-    public function findChildrenByFatherUuids(array $uuids): array
+    public function findByParentsUuids(array $uuids): array
     {
         $queryBuilder = $this->getRepository()->createQueryBuilder('o');
 
         return $queryBuilder
-            ->select('o.child')
-            ->innerJoin('o.father', 'parent')
-            ->where($queryBuilder->expr()->in('parent.uuid', ':fatherUuids'))
+            ->innerJoin('o.father', 'op')
+            ->where($queryBuilder->expr()->in('op.uuid', ':fatherUuids'))
             ->setParameter('fatherUuids', $uuids)
             ->getQuery()
             ->getResult();
@@ -48,16 +46,15 @@ class ObjectObjectTable extends AbstractEntityTable
     /**
      * @param string[] $uuids
      *
-     * @return MonarcObject[]
+     * @return ObjectObjectSuperClass[]
      */
-    public function findParentsByChildrenUuids(array $uuids): array
+    public function findByChildrenUuids(array $uuids): array
     {
         $queryBuilder = $this->getRepository()->createQueryBuilder('o');
 
         return $queryBuilder
-            ->select('o.father')
-            ->innerJoin('o.child', 'child')
-            ->where($queryBuilder->expr()->in('child.uuid', ':childrenUuids'))
+            ->innerJoin('o.child', 'oc')
+            ->where($queryBuilder->expr()->in('oc.uuid', ':childrenUuids'))
             ->setParameter('childrenUuids', $uuids)
             ->getQuery()
             ->getResult();
@@ -66,10 +63,9 @@ class ObjectObjectTable extends AbstractEntityTable
     /**
      * Get Direct Parents Infos
      *
-     * @param $child_id
      * @return array
      */
-    public function getDirectParentsInfos($child_id, $anrid)
+    public function getDirectParentsInfos($childId, $anrId)
     {
         $stmt = $this->getDb()->getEntityManager()->getConnection()->prepare(
             'SELECT  o.name1, o.name2, o.name3, o.name4, o.label1, o.label2, o.label3, o.label4
@@ -79,7 +75,7 @@ class ObjectObjectTable extends AbstractEntityTable
             AND oo.child_id = :oid'
         );
 
-        $result = $stmt->executeQuery([':anrid' => $anrid, ':oid' => $child_id]);
+        $result = $stmt->executeQuery([':anrid' => $anrId, ':oid' => $childId]);
 
         return $result->fetchAllAssociative();
     }

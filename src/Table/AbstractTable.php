@@ -119,6 +119,21 @@ abstract class AbstractTable
             ->getResult();
     }
 
+    /**
+     * @param string[] $uuids
+     *
+     * @return object[]
+     */
+    public function findByUuids(array $uuids): array
+    {
+        $queryBuilder = $this->getRepository()->createQueryBuilder('t');
+
+        return $queryBuilder
+            ->where($queryBuilder->expr()->in('t.uuid', $uuids))
+            ->getQuery()
+            ->getResult();
+    }
+
     public function findAll()
     {
         return $this->getRepository()->findAll();

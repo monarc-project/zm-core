@@ -207,12 +207,13 @@ class AssetService
                  * Check if the asset is compliant with reg/spec model, when they are used as fathers,
                  * not already used in models.
                  */
-                $childrenObjects = $this->objectObjectTable->findChildrenByFatherUuids($objectUuids);
-                foreach ($childrenObjects as $childObject) {
+                $objectObjectsLinkedToParents = $this->objectObjectTable->findByParentsUuids($objectUuids);
+                foreach ($objectObjectsLinkedToParents as $objectObjectLinkedToParent) {
+                    /** @var Entity\MonarcObject $childObject */
+                    $childObject = $objectObjectLinkedToParent->getChild();
                     foreach ($asset->getModels() as $model) {
                         $model->validateObjectAcceptance($childObject);
                     }
-
                 }
             }
 
@@ -220,10 +221,13 @@ class AssetService
              * Check if the asset is compliant with reg/spec model, when they are used as children,
              * not already used in their models.
              */
-            $parentObjects = $this->objectObjectTable->findParentsByChildrenUuids($objectUuids);
-            foreach ($parentObjects as $parentObject) {
-                $models = $parentObject->getAsset()->getModels();
-                foreach ($models as $model) {
+            $objectObjectsLinkedToChildren = $this->objectObjectTable->findByChildrenUuids($objectUuids);
+            foreach ($objectObjectsLinkedToChildren as $objectObjectLinkedToChild) {
+                /** @var Entity\MonarcObject $parentObject */
+                $parentObject = $objectObjectLinkedToChild->getFather();
+                /** @var Entity\Asset $objectAsset */
+                $objectAsset = $parentObject->getAsset();
+                foreach ($objectAsset->getModels() as $model) {
                     $model->validateObjectAcceptance($parentObject, $asset);
                 }
             }
