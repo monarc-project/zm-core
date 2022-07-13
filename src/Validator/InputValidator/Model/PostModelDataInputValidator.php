@@ -7,33 +7,18 @@
 
 namespace Monarc\Core\Validator\InputValidator\Model;
 
-use Laminas\Filter\StringTrim;
-use Laminas\Validator\StringLength;
 use Monarc\Core\Validator\InputValidator\AbstractInputValidator;
 
 class PostModelDataInputValidator extends AbstractInputValidator
 {
     protected function getRules(): array
     {
-        return [
-            [
-                'name' => 'label' . $this->languageIndex,
-                'required' => true,
-                'filters' => [
-                    [
-                        'name' => StringTrim::class,
-                    ],
-                ],
-                'validators' => [
-                    [
-                        'name' => StringLength::class,
-                        'options' => [
-                            'min' => 1,
-                            'max' => 255,
-                        ]
-                    ],
-                ],
-            ]
-        ];
+        $labelDescriptionRules = [];
+        foreach ($this->systemLanguageIndexes as $systemLanguageIndex) {
+            $labelDescriptionRules[] = $this->getLabelRule($systemLanguageIndex);
+            $labelDescriptionRules[] = $this->getDescriptionRule($systemLanguageIndex);
+        }
+
+        return $labelDescriptionRules;
     }
 }

@@ -27,7 +27,7 @@ class AssetService
 
     private AmvService $amvService;
 
-    private ConnectedUserService $connectedUserService;
+    private Entity\UserSuperClass $connectedUser;
 
     public function __construct(
         Table\AssetTable $assetTable,
@@ -42,7 +42,7 @@ class AssetService
         $this->objectObjectTable = $objectObjectTable;
         $this->modelTable = $modelTable;
         $this->amvService = $amvService;
-        $this->connectedUserService = $connectedUserService;
+        $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
     public function getList(FormattedInputParams $params): array
@@ -65,6 +65,7 @@ class AssetService
 
     public function getAssetData(string $uuid): array
     {
+        /** @var Entity\Asset $asset */
         $asset = $this->assetTable->findByUuid($uuid);
 
         return $this->prepareAssetDataResult($asset);
@@ -78,7 +79,10 @@ class AssetService
             ->setDescriptions($data)
             ->setMode($data['mode'])
             ->setType($data['type'])
-            ->setCreator($this->connectedUserService->getConnectedUser()->getEmail());
+            ->setCreator($this->connectedUser->getEmail());
+        if (isset($data['uuid'])) {
+            $asset->setUuid($data['uuid']);
+        }
         if (isset($data['status'])) {
             $asset->setStatus($data['status']);
         }
@@ -98,6 +102,7 @@ class AssetService
 
     public function update(string $uuid, array $data)
     {
+        /** @var Entity\Asset $asset */
         $asset = $this->assetTable->findByUuid($uuid);
 
         $asset->setCode($data['code'])
@@ -105,7 +110,7 @@ class AssetService
             ->setDescriptions($data)
             ->setType((int)$data['type'])
             ->setStatus($data['status'] ?? Entity\AssetSuperClass::STATUS_ACTIVE)
-            ->setUpdater($this->connectedUserService->getConnectedUser()->getEmail());
+            ->setUpdater($this->connectedUser->getEmail());
         if (isset($data['mode'])) {
             $asset->setMode((int)$data['mode']);
         }
@@ -148,10 +153,11 @@ class AssetService
 
     public function patch(string $uuid, array $data)
     {
+        /** @var Entity\Asset $asset */
         $asset = $this->assetTable->findByUuid($uuid);
 
         $asset->setStatus((int)$data['status'])
-            ->setUpdater($this->connectedUserService->getConnectedUser()->getEmail());
+            ->setUpdater($this->connectedUser->getEmail());
 
         $this->assetTable->save($asset);
     }

@@ -17,7 +17,7 @@ class PostThreatDataInputValidator extends AbstractInputValidator
 {
     protected function getRules(): array
     {
-        return [
+        $rules = [
             [
                 'name' => 'code',
                 'required' => true,
@@ -32,49 +32,6 @@ class PostThreatDataInputValidator extends AbstractInputValidator
                         'options' => [
                             'min' => 1,
                             'max' => 255,
-                        ]
-                    ],
-                ],
-            ],
-            [
-                'name' => 'label' . $this->languageIndex,
-                'required' => true,
-                'filters' => [
-                    [
-                        'name' => StringTrim::class,
-                    ],
-                ],
-                'validators' => [
-                    [
-                        'name' => StringLength::class,
-                        'options' => [
-                            'min' => 1,
-                            'max' => 255,
-                        ]
-                    ],
-                ],
-            ],
-            $this->getLabelRule(1),
-            $this->getLabelRule(2),
-            $this->getLabelRule(3),
-            $this->getLabelRule(4),
-            $this->getDescriptionRule(1),
-            $this->getDescriptionRule(2),
-            $this->getDescriptionRule(3),
-            $this->getDescriptionRule(4),
-            [
-                'name' => 'mode',
-                'required' => true,
-                'filters' => [
-                    [
-                        'name' => 'ToInt'
-                    ],
-                ],
-                'validators' => [
-                    [
-                        'name' => InArray::class,
-                        'options' => [
-                            'haystack' => [ThreatSuperClass::MODE_GENERIC, ThreatSuperClass::MODE_SPECIFIC],
                         ]
                     ],
                 ],
@@ -131,23 +88,6 @@ class PostThreatDataInputValidator extends AbstractInputValidator
                 ],
             ],
             [
-                'name' => 'comment',
-                'required' => false,
-                'filters' => [
-                ],
-                'validators' => [],
-            ],
-            [
-                'name' => 'qualification',
-                'required' => false,
-                'filters' => [
-                    [
-                        'name' => 'ToInt'
-                    ],
-                ],
-                'validators' => [],
-            ],
-            [
                 'name' => 'theme',
                 'required' => false,
                 'filters' => [
@@ -155,28 +95,6 @@ class PostThreatDataInputValidator extends AbstractInputValidator
                         'name' => 'ToInt'
                     ],
                 ],
-                'validators' => [],
-            ],
-            [
-                'name' => 'trend',
-                'required' => false,
-                'filters' => [
-                    [
-                        'name' => 'ToInt'
-                    ],
-                ],
-                'validators' => [],
-            ],
-            [
-                'name' => 'models',
-                'required' => false,
-                'filters' => [],
-                'validators' => [],
-            ],
-            [
-                'name' => 'follow',
-                'required' => false,
-                'filters' => [],
                 'validators' => [],
             ],
             [
@@ -197,40 +115,13 @@ class PostThreatDataInputValidator extends AbstractInputValidator
                 ],
             ],
         ];
-    }
 
-    protected function getLabelRule(int $languageIndex): array
-    {
-        return [
-            'name' => 'label' . $languageIndex,
-            'required' => $this->languageIndex === $languageIndex,
-            'filters' => [
-                [
-                    'name' => StringTrim::class,
-                ],
-            ],
-            'validators' => [
-                [
-                    'name' => StringLength::class,
-                    'options' => [
-                        'min' => 1,
-                        'max' => 255,
-                    ]
-                ],
-            ],
-        ];
-    }
+        $labelDescriptionRules = [];
+        foreach ($this->systemLanguageIndexes as $systemLanguageIndex) {
+            $labelDescriptionRules[] = $this->getLabelRule($systemLanguageIndex);
+            $labelDescriptionRules[] = $this->getDescriptionRule($systemLanguageIndex);
+        }
 
-    protected function getDescriptionRule(int $languageIndex): array
-    {
-        return [
-            'name' => 'description' . $languageIndex,
-            'required' => false,
-            'filters' => [
-                [
-                    'name' => StringTrim::class,
-                ],
-            ],
-        ];
+        return array_merge($labelDescriptionRules, $rules);
     }
 }

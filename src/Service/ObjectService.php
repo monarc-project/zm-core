@@ -510,6 +510,7 @@ class ObjectService extends AbstractService
         if (!empty($data['asset']) && !empty($data['rolfTag'])) {
             /** @var Table\AssetTable $assetTable */
             $assetTable = $this->get('assetTable');
+            /** @var Asset $asset */
             $asset = $assetTable->findByUuid($data['asset']);
             if (!$asset->isPrimary()) {
                 unset($data['rolfTag']);
@@ -650,6 +651,7 @@ class ObjectService extends AbstractService
         if (!empty($data['asset']) && !empty($data['rolfTag'])) {
             /** @var Table\AssetTable $assetTable */
             $assetTable = $this->get('assetTable');
+            /** @var Asset $asset */
             $asset = $assetTable->findByUuid($data['asset']);
             if (!$asset->isPrimary()) {
                 unset($data['rolfTag']);

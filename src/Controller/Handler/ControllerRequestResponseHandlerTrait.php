@@ -42,7 +42,7 @@ trait ControllerRequestResponseHandlerTrait
             /** @var AnrSuperClass|null $anr */
             $anr = $this->getRequest()->getAttribute('anr');
             if ($anr !== null && method_exists($anr, 'getLanguage')) {
-                $inputValidator->setLanguageIndex($anr->getLanguage());
+                $inputValidator->setDefaultLanguageIndex($anr->getLanguage());
             }
         }
 

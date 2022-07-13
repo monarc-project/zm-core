@@ -7,7 +7,6 @@
 
 namespace Monarc\Core\Service;
 
-// TODO: import only general Table\ and add prefixes to their usages.
 use Doctrine\ORM\EntityNotFoundException;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\InputFormatter\FormattedInputParams;
@@ -51,6 +50,8 @@ class AmvService implements PositionUpdatableServiceInterface
 
     private VulnerabilityService $vulnerabilityService;
 
+    private InstanceRiskService $instanceRiskService;
+
     private ConnectedUserService $connectedUserService;
 
     public function __construct(
@@ -68,6 +69,7 @@ class AmvService implements PositionUpdatableServiceInterface
         ThreatService $threatService,
         ThemeService $themeService,
         VulnerabilityService $vulnerabilityService,
+        InstanceRiskService $instanceRiskService,
         ConnectedUserService $connectedUserService
     ) {
         $this->amvTable = $amvTable;
@@ -84,6 +86,7 @@ class AmvService implements PositionUpdatableServiceInterface
         $this->threatService = $threatService;
         $this->themeService = $themeService;
         $this->vulnerabilityService = $vulnerabilityService;
+        $this->instanceRiskService = $instanceRiskService;
         $this->connectedUserService = $connectedUserService;
     }
 
@@ -107,6 +110,7 @@ class AmvService implements PositionUpdatableServiceInterface
 
     public function getAmvData(string $uuid): array
     {
+        /** @var Entity\Amv $amv */
         $amv = $this->amvTable->findByUuid($uuid);
 
         return $this->prepareAmvDataResult($amv, true);
@@ -118,7 +122,9 @@ class AmvService implements PositionUpdatableServiceInterface
             throw new Exception('The informational risk already exists.', 412);
         }
 
+        /** @var Entity\Asset $asset */
         $asset = $this->assetTable->findByUuid($data['asset']);
+        /** @var Entity\Threat $threat */
         $threat = $this->threatTable->findByUuid($data['threat']);
         /** @var Entity\Vulnerability $vulnerability */
         $vulnerability = $this->vulnerabilityTable->findById($data['vulnerability']);
@@ -142,6 +148,8 @@ class AmvService implements PositionUpdatableServiceInterface
 
         $this->amvTable->save($amv);
 
+        $this->createInstanceRiskForInstances($asset);
+
         $this->historize(
             $amv,
             'create',
@@ -156,18 +164,21 @@ class AmvService implements PositionUpdatableServiceInterface
 
     public function update(string $id, array $data)
     {
+        /** @var Entity\Amv $amv */
         $amv = $this->amvTable->findByUuid($id);
 
         $labelForHistory = $amv->getAsset()->getCode() . ' - ' . $amv->getThreat()->getCode() . ' - '
             . $amv->getVulnerability()->getCode();
         $changedData = [];
         if ($data['asset'] !== $amv->getAsset()->getUuid()) {
+            /** @var Entity\Asset $asset */
             $asset = $this->assetTable->findByUuid($data['asset']);
             $changedData['asset'] = $amv->getAsset()->getCode() . ' => ' . $asset->getCode();
 
             $amv->setAsset($asset);
         }
         if ($data['threat'] !== $amv->getThreat()->getUuid()) {
+            /** @var Entity\Threat $threat */
             $threat = $this->threatTable->findByUuid($data['threat']);
             $changedData['threat'] = $amv->getThreat()->getCode() . ' => ' . $threat->getCode();
 
@@ -205,6 +216,7 @@ class AmvService implements PositionUpdatableServiceInterface
 
     public function patch(string $id, array $data)
     {
+        /** @var Entity\Amv $amv */
         $amv = $this->amvTable->findByUuid($id);
 
         if (isset($data['status'])) {
@@ -218,6 +230,7 @@ class AmvService implements PositionUpdatableServiceInterface
 
     public function delete($id)
     {
+        /** @var Entity\Amv $amv */
         $amv = $this->amvTable->findByUuid($id);
 
         $this->historize(
@@ -969,5 +982,13 @@ class AmvService implements PositionUpdatableServiceInterface
                 'label4' => $vulnerability->getLabel(4),
             ],
         ];
+    }
+
+    private function createInstanceRiskForInstances(Entity\Asset $asset): void
+    {
+        $instances = $this->instanceTable->findByAsset($asset);
+        foreach ($instances as $instance) {
+            $this->instanceRiskService->createInstanceRisks($instance, $instance->getAnr(), $instance->getObject());
+        }
     }
 }

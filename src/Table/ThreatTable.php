@@ -8,7 +8,6 @@
 namespace Monarc\Core\Table;
 
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\EntityNotFoundException;
 use Monarc\Core\Model\Entity\Threat;
 
 class ThreatTable extends AbstractTable
@@ -18,18 +17,16 @@ class ThreatTable extends AbstractTable
         parent::__construct($entityManager, $entityName);
     }
 
-    public function findByUuid(string $uuid): Threat
+    /**
+     * @return Threat[]
+     */
+    public function findByMode(int $mode): array
     {
-        $threat = $this->getRepository()->createQueryBuilder('t')
-            ->where('t.uuid = :uuid')
-            ->setParameter('uuid', $uuid)
-            ->setMaxResults(1)
+        return $this->getRepository()
+            ->createQueryBuilder('t')
+            ->where('t.mode = :mode')
+            ->setParameter(':mode', $mode)
             ->getQuery()
-            ->getOneOrNullResult();
-        if ($threat === null) {
-            throw EntityNotFoundException::fromClassNameAndIdentifier(Threat::class, [$uuid]);
-        }
-
-        return $threat;
+            ->getResult();
     }
 }

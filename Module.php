@@ -13,7 +13,6 @@ use Laminas\View\Model\JsonModel;
 use Laminas\Router\RouteMatch;
 use Monarc\Core\Validator\FieldValidator\UniqueEmail;
 use Monarc\Core\Validator\FieldValidator\UniqueDeliveryModel;
-use Monarc\Core\Filter\SpecAlnum;
 
 class Module
 {
@@ -23,10 +22,9 @@ class Module
             $eventManager = $e->getApplication()->getEventManager();
 
             $sm = $e->getApplication()->getServiceManager();
-            $eventManager->attach(MvcEvent::EVENT_ROUTE, array($this, 'MCEventRoute'), -100);
-
-            $eventManager->attach(MvcEvent::EVENT_DISPATCH_ERROR, array($this, 'onDispatchError'), 0);
-            $eventManager->attach(MvcEvent::EVENT_RENDER_ERROR, array($this, 'onRenderError'), 0);
+            $eventManager->attach(MvcEvent::EVENT_ROUTE, [$this, 'MCEventRoute'], -100);
+            $eventManager->attach(MvcEvent::EVENT_DISPATCH_ERROR, [$this, 'onDispatchError'], 0);
+            $eventManager->attach(MvcEvent::EVENT_RENDER_ERROR, [$this, 'onRenderError'], 0);
 
             $sharedEventManager = $eventManager->getSharedManager();
 
@@ -39,6 +37,7 @@ class Module
                     $instanceService = $sm->get(InstanceService::class);
                 }
                 $result = $instanceService->instantiateObjectToAnr($params['anrId'], $params['dataInstance']);
+
                 return $result;
             }, 100);
 
@@ -50,8 +49,13 @@ class Module
                 } else {
                     $instanceService = $sm->get(InstanceService::class);
                 }
-                $result = $instanceService->patchInstance($params['anrId'], $params['instanceId'], $params['data'], [], true);
-                return $result;
+                return $instanceService->patchInstance(
+                    $params['anrId'],
+                    $params['instanceId'],
+                    $params['data'],
+                    [],
+                    true
+                );
             }, 100);
 
             $sharedEventManager->attach('object', 'patch', function ($e) use ($sm) {
@@ -63,6 +67,7 @@ class Module
                     $objectService = $sm->get(ObjectService::class);
                 }
                 $result = $objectService->patch($params['objectId'], $params['data']);
+
                 return $result;
             }, 100);
         }
@@ -75,11 +80,7 @@ class Module
 
     public function getDefaultLanguage($sm)
     {
-        $config = $sm->get('Config');
-
-        $defaultLanguageIndex = $config['defaultLanguageIndex'];
-
-        return $defaultLanguageIndex;
+        return $sm->get('Config')['defaultLanguageIndex'];
     }
 
     public function getValidatorConfig()
@@ -110,35 +111,37 @@ class Module
         }
 
         $exception = $e->getParam('exception');
-        $exceptionJson = array();
+        $exceptionJson = [];
         if ($exception) {
-            $exceptionJson = array(
+            $exceptionJson = [
                 'class' => get_class($exception),
                 'file' => $exception->getFile(),
                 'line' => $exception->getLine(),
                 'message' => $exception->getMessage(),
-                'stacktrace' => $exception->getTraceAsString()
-            );
+                'stacktrace' => $exception->getTraceAsString(),
+            ];
         }
 
-        $errorJson = array(
-            'message'   => 'An error occurred during execution; please try again later.',
-            'error'     => $error,
+        $errorJson = [
+            'message' => 'An error occurred during execution; please try again later.',
+            'error' => $error,
             'exception' => $exceptionJson,
-        );
-        if ($error == 'error-router-no-match') {
+        ];
+        if ($error === 'error-router-no-match') {
             $errorJson['message'] = 'Resource not found.';
         }
 
-        $model = new JsonModel(array('errors' => array($errorJson)));
+        $model = new JsonModel(['errors' => [$errorJson]]);
 
         $e->setResult($model);
 
         return $model;
     }
 
-    public function MCEventRoute($event){
-        $serv = $event->getApplication()
+    public function MCEventRoute($event)
+    {
+        /** @var AuthenticationService $authenticationService */
+        $authenticationService = $event->getApplication()
             ->getServiceManager()
             ->get(AuthenticationService::class);
         $match = $event->getRouteMatch();
@@ -157,8 +160,8 @@ class Module
         }
 
         $token = $event->getRequest()->getHeader('token');
-        if(!empty($token)){
-            if($serv->checkConnect(array('token'=>$token->getFieldValue()))){
+        if (!empty($token)) {
+            if ($authenticationService->checkConnect(['token' => $token->getFieldValue()])) {
                 return;
             }
         }

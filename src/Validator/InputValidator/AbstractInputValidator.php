@@ -7,20 +7,25 @@
 
 namespace Monarc\Core\Validator\InputValidator;
 
+use Laminas\Filter\StringTrim;
 use Laminas\InputFilter\InputFilter;
+use Laminas\Validator\StringLength;
 
 abstract class AbstractInputValidator
 {
     protected InputFilter $inputFilter;
 
-    protected int $languageIndex;
+    protected int $defaultLanguageIndex;
+
+    protected array $systemLanguageIndexes;
 
     private array $validData = [];
 
     public function __construct(InputFilter $inputFilter, array $config)
     {
         $this->inputFilter = $inputFilter;
-        $this->languageIndex = $config['defaultLanguageIndex'] ?? 1;
+        $this->defaultLanguageIndex = $config['defaultLanguageIndex'] ?? 1;
+        $this->systemLanguageIndexes = array_column($config['languages'], 'index');
 
         $this->initRules();
     }
@@ -52,14 +57,49 @@ abstract class AbstractInputValidator
         return $this->validData;
     }
 
-    public function setLanguageIndex(int $languageIndex): self
+    public function setDefaultLanguageIndex(int $languageIndex): self
     {
-        $this->languageIndex = $languageIndex;
+        $this->defaultLanguageIndex = $languageIndex;
 
         return $this;
     }
 
     abstract protected function getRules(): array;
+
+    protected function getLabelRule(int $languageIndex): array
+    {
+        return [
+            'name' => 'label' . $languageIndex,
+            'required' => $this->defaultLanguageIndex === $languageIndex,
+            'filters' => [
+                [
+                    'name' => StringTrim::class,
+                ],
+            ],
+            'validators' => [
+                [
+                    'name' => StringLength::class,
+                    'options' => [
+                        'min' => 1,
+                        'max' => 255,
+                    ]
+                ],
+            ],
+        ];
+    }
+
+    protected function getDescriptionRule(int $languageIndex): array
+    {
+        return [
+            'name' => 'description' . $languageIndex,
+            'required' => false,
+            'filters' => [
+                [
+                    'name' => StringTrim::class,
+                ],
+            ],
+        ];
+    }
 
     private function initRules(): void
     {

@@ -9,18 +9,19 @@ namespace Monarc\Core\Service;
 
 use Monarc\Core\InputFormatter\FormattedInputParams;
 use Monarc\Core\Model\Entity\Theme;
+use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Table\ThemeTable;
 
 class ThemeService
 {
     private ThemeTable $themeTable;
 
-    private ConnectedUserService $connectedUserService;
+    private UserSuperClass $connectedUser;
 
     public function __construct(ThemeTable $themeTable, ConnectedUserService $connectedUserService)
     {
         $this->themeTable = $themeTable;
-        $this->connectedUserService = $connectedUserService;
+        $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
     public function getList(FormattedInputParams $params): array
@@ -48,7 +49,7 @@ class ThemeService
     {
         $theme = (new Theme())
             ->setLabels($data)
-            ->setCreator($this->connectedUserService->getConnectedUser()->getEmail());
+            ->setCreator($this->connectedUser->getEmail());
 
         $this->themeTable->save($theme, $saveInDb);
 
@@ -60,7 +61,8 @@ class ThemeService
         /** @var Theme $theme */
         $theme = $this->themeTable->findById($id);
 
-        $theme->setLabels($data);
+        $theme->setLabels($data)
+            ->setUpdater($this->connectedUser->getEmail());
 
         $this->themeTable->save($theme);
     }

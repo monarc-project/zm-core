@@ -23,8 +23,6 @@ use Monarc\Core\Table\UserTable;
 
 class PostUserDataInputValidator extends AbstractInputValidator
 {
-    protected array $availableLanguages;
-
     protected UserTable $userTable;
 
     protected ConnectedUserService $connectedUserService;
@@ -35,7 +33,6 @@ class PostUserDataInputValidator extends AbstractInputValidator
         UserTable $userTable,
         ConnectedUserService $connectedUserService
     ) {
-        $this->availableLanguages = $config['languages'];
         $this->userTable = $userTable;
         $this->connectedUserService = $connectedUserService;
 
@@ -147,7 +144,7 @@ class PostUserDataInputValidator extends AbstractInputValidator
                     [
                         'name' => LanguageValidator::class,
                         'options' => [
-                            'availableLanguages' => $this->availableLanguages,
+                            'systemLanguageIndexes' => $this->systemLanguageIndexes,
                         ]
                     ]
                 ],

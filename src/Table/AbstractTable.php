@@ -20,6 +20,7 @@ use Doctrine\ORM\ORMException;
 use Doctrine\ORM\QueryBuilder;
 use LogicException;
 use Monarc\Core\InputFormatter\FormattedInputParams;
+use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Table\Interfaces\PositionUpdatableTableInterface;
 
 abstract class AbstractTable
@@ -97,10 +98,15 @@ abstract class AbstractTable
     {
         $entity = $this->getRepository()->find($id);
         if ($throwErrorIfNotFound && $entity === null) {
-            throw EntityNotFoundException::fromClassNameAndIdentifier(\get_class($this), \is_array($id) ? $id : [$id]);
+            throw EntityNotFoundException::fromClassNameAndIdentifier($this->entityName, \is_array($id) ? $id : [$id]);
         }
 
         return $entity;
+    }
+
+    public function findByUuid(string $uuid): object
+    {
+        return $this->findById($uuid);
     }
 
     /**
@@ -117,6 +123,50 @@ abstract class AbstractTable
         return $queryBuilder->where($queryBuilder->expr()->in('t.id', array_map('\intval', $ids)))
             ->getQuery()
             ->getResult();
+    }
+
+    public function findByUuidAndAnr(string $uuid, AnrSuperClass $anr, bool $throwErrorIfNotFound = true): ?object
+    {
+        $entity = $this->getRepository()->createQueryBuilder('t')
+            ->where('t.uuid = :uuid')
+            ->andWhere('t.anr = :anr')
+            ->setParameter('uuid', $uuid)
+            ->setParameter('anr', $anr)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+        if ($throwErrorIfNotFound && $entity === null) {
+            throw new EntityNotFoundException(sprintf(
+                'Entity of type "%s", with ID %s was not found in analysis ID %d',
+                $this->entityName,
+                $uuid,
+                $anr->getId()
+            ));
+        }
+
+        return $entity;
+    }
+
+    public function findByIdAndAnr(int $id, AnrSuperClass $anr, bool $throwErrorIfNotFound = true): ?object
+    {
+         $entity = $this->getRepository()->createQueryBuilder('t')
+             ->where('t.id = :id')
+             ->andWhere('t.anr = :anr')
+             ->setParameter('id', $id)
+             ->setParameter('anr', $anr)
+             ->setMaxResults(1)
+             ->getQuery()
+             ->getOneOrNullResult();
+        if ($throwErrorIfNotFound && $entity === null) {
+            throw new EntityNotFoundException(sprintf(
+                'Entity of type "%s", with ID %d was not found in analysis ID %d',
+                $this->entityName,
+                $id,
+                $anr->getId()
+            ));
+        }
+
+        return $entity;
     }
 
     /**

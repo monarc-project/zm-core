@@ -76,23 +76,6 @@ class AmvTable extends AbstractTable implements PositionUpdatableTableInterface
         return $queryBuilder->getQuery()->getResult();
     }
 
-    public function findByUuid(string $uuid): Amv
-    {
-        $amv = $this->getRepository()
-            ->createQueryBuilder('a')
-            ->select('a', 'm')
-            ->leftJoin('a.measures', 'm')
-            ->where('a.uuid = :uuid')
-            ->setParameter('uuid', $uuid)
-            ->getQuery()
-            ->getOneOrNullResult();
-        if ($amv === null) {
-            throw EntityNotFoundException::fromClassNameAndIdentifier(\get_class($this), [$uuid]);
-        }
-
-        return $amv;
-    }
-
     public function findByAmvItemsUuids(
         string $assetUuid,
         string $threatUuid,

@@ -248,6 +248,9 @@ class InstanceTable extends AbstractEntityTable
             ->getResult();
     }
 
+    /**
+     * @return InstanceSuperClass[]
+     */
     public function findByAsset(Asset $asset): array
     {
         return $this->getRepository()

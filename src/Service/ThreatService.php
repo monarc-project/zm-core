@@ -27,7 +27,7 @@ class ThreatService
 
     private AmvService $amvService;
 
-    private ConnectedUserService $connectedUserService;
+    private Entity\UserSuperClass $connectedUser;
 
     public function __construct(
         Table\ThreatTable $threatTable,
@@ -44,7 +44,7 @@ class ThreatService
         $this->themeTable = $themeTable;
         $this->instanceRiskService = $instanceRiskService;
         $this->amvService = $amvService;
-        $this->connectedUserService = $connectedUserService;
+        $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
     public function getList(FormattedInputParams $params): array
@@ -67,6 +67,7 @@ class ThreatService
 
     public function getThreatData(string $uuid): array
     {
+        /** @var Entity\Threat $threat */
         $threat = $this->threatTable->findByUuid($uuid);
 
         return $this->prepareThreatDataResult($threat);
@@ -82,7 +83,10 @@ class ThreatService
             ->setIntegrity((int)$data['i'])
             ->setAvailability((int)$data['a'])
             ->setMode((int)$data['mode'])
-            ->setCreator($this->connectedUserService->getConnectedUser()->getEmail());
+            ->setCreator($this->connectedUser->getEmail());
+        if (isset($data['uuid'])) {
+            $threat->setUuid($data['uuid']);
+        }
         if (isset($data['status'])) {
             $threat->setStatus($data['status']);
         }
@@ -111,6 +115,7 @@ class ThreatService
 
     public function update(string $uuid, array $data): void
     {
+        /** @var Entity\Threat $threat */
         $threat = $this->threatTable->findByUuid($uuid);
 
         $areCiaChanged = $threat->getConfidentiality() !== (int)$data['c']
@@ -123,9 +128,13 @@ class ThreatService
             ->setConfidentiality((int)$data['c'])
             ->setIntegrity((int)$data['i'])
             ->setAvailability((int)$data['a'])
-            ->setMode($data['mode'] ?? Entity\ThreatSuperClass::MODE_GENERIC)
-            ->setStatus($data['status'] ?? Entity\ThreatSuperClass::STATUS_ACTIVE)
-            ->setUpdater($this->connectedUserService->getConnectedUser()->getEmail());
+            ->setUpdater($this->connectedUser->getEmail());
+        if (isset($data['mode'])) {
+            $threat->setMode($data['mode']);
+        }
+        if (isset($data['status'])) {
+            $threat->setStatus($data['status']);
+        }
         if (isset($data['trend'])) {
             $threat->setTrend((int)$data['trend']);
         }
@@ -184,10 +193,11 @@ class ThreatService
 
     public function patch(string $uuid, array $data): void
     {
+        /** @var Entity\Threat $threat */
         $threat = $this->threatTable->findByUuid($uuid);
 
         $threat->setStatus((int)$data['status'])
-            ->setUpdater($this->connectedUserService->getConnectedUser()->getEmail());
+            ->setUpdater($this->connectedUser->getEmail());
 
         $this->threatTable->save($threat);
     }
