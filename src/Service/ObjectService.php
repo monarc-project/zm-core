@@ -369,37 +369,22 @@ class ObjectService extends AbstractService
         return $risks;
     }
 
-    /**
-     * Get Risks Op
-     *
-     * @param $object
-     *
-     * @return array
-     */
-    protected function getRisksOp($object)
+    protected function getRisksOp(ObjectSuperClass $object): array
     {
         $riskOps = [];
 
-        if (isset($object->asset) && $object->asset->type == Asset::TYPE_PRIMARY && !is_null($object->rolfTag)) {
-            //retrieve rolf risks
-            /** @var RolfTagTable $rolfTagTable */
-            $rolfTagTable = $this->get('rolfTagTable');
-            $rolfTag = $rolfTagTable->getEntity($object->rolfTag->id);
-            $rolfRisks = $rolfTag->risks;
-
-            if (!empty($rolfRisks)) {
-                foreach ($rolfRisks as $rolfRisk) {
-                    $riskOps[] = [
-                        'label1' => $rolfRisk->label1,
-                        'label2' => $rolfRisk->label2,
-                        'label3' => $rolfRisk->label3,
-                        'label4' => $rolfRisk->label4,
-                        'description1' => $rolfRisk->description1,
-                        'description2' => $rolfRisk->description2,
-                        'description3' => $rolfRisk->description3,
-                        'description4' => $rolfRisk->description4,
-                    ];
-                }
+        if ($object->getRolfTag() !== null && $object->getAsset()->isPrimary()) {
+            foreach ($object->getRolfTag()->getRisks() as $rolfRisk) {
+                $riskOps[] = [
+                    'label1' => $rolfRisk->getLabel(1),
+                    'label2' => $rolfRisk->getLabel(2),
+                    'label3' => $rolfRisk->getLabel(3),
+                    'label4' => $rolfRisk->getLabel(4),
+                    'description1' => $rolfRisk->getDescription(1),
+                    'description2' => $rolfRisk->getDescription(2),
+                    'description3' => $rolfRisk->getDescription(3),
+                    'description4' => $rolfRisk->getDescription(4),
+                ];
             }
         }
 
