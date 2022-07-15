@@ -846,6 +846,8 @@ class AmvService implements PositionUpdatableServiceInterface
                 ->setCreator($this->connectedUserService->getConnectedUser()->getEmail());
             $this->amvTable->save($amv);
 
+            $this->createInstanceRiskForInstances($asset);
+
             $createdItems[] = $amv->getUuid();
         }
 
