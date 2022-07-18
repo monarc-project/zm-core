@@ -8,7 +8,6 @@
 namespace Monarc\Core\Service;
 
 use Monarc\Core\Model\Table;
-use Monarc\Core\Service;
 use Monarc\Core\Model\Entity\Amv;
 
 /**
@@ -30,10 +29,11 @@ class AmvServiceFactory extends AbstractServiceFactory
         'modelTable' => Table\ModelTable::class,
         'threatTable' => Table\ThreatTable::class,
         'vulnerabilityTable' => Table\VulnerabilityTable::class,
-        'historicalService' => Service\HistoricalService::class,
-        'assetService' => Service\AssetService::class,
-        'threatService' => Service\ThreatService::class,
-        'vulnerabilityService' => Service\VulnerabilityService::class,
+        'historicalService' => HistoricalService::class,
+        'assetService' => AssetService::class,
+        'threatService' => ThreatService::class,
+        'vulnerabilityService' => VulnerabilityService::class,
         'themeTable' => Table\ThemeTable::class,
+        'instanceRiskService' => InstanceRiskService::class,
     ];
 }

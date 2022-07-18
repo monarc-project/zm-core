@@ -13,6 +13,7 @@ use Doctrine\ORM\ORMException;
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\AbstractEntity;
 use Monarc\Core\Model\Entity\AnrSuperClass;
+use Monarc\Core\Model\Entity\AssetSuperClass;
 use Monarc\Core\Model\Entity\Instance;
 use Monarc\Core\Model\Entity\InstanceSuperClass;
 use Monarc\Core\Model\Entity\ObjectSuperClass;
@@ -264,6 +265,19 @@ class InstanceTable extends AbstractEntityTable
             ->innerJoin('i.anr', 'anr')
             ->where('anr.id = :anrId')
             ->setParameter('anrId', $anrId)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return InstanceSuperClass[]
+     */
+    public function findByAsset(AssetSuperClass $asset): array
+    {
+        return $this->getRepository()
+            ->createQueryBuilder('i')
+            ->where('i.asset = :asset')
+            ->setParameter('asset', $asset)
             ->getQuery()
             ->getResult();
     }

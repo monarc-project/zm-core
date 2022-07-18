@@ -13,6 +13,7 @@ use Monarc\Core\Model\Entity\AbstractEntity;
 use Monarc\Core\Model\Entity\Amv;
 use Monarc\Core\Model\Entity\AmvSuperClass;
 use Monarc\Core\Model\Entity\Asset;
+use Monarc\Core\Model\Entity\AssetSuperClass;
 use Monarc\Core\Model\Entity\Model;
 use Monarc\Core\Model\Entity\ThemeSuperClass;
 use Monarc\Core\Model\Entity\Threat;
@@ -36,6 +37,7 @@ class AmvService extends AbstractService
     protected $anrTable;
     protected $assetTable;
     protected $assetService;
+    /** @var InstanceTable */
     protected $instanceTable;
     protected $measureTable;
     protected $referentialTable;
@@ -46,6 +48,8 @@ class AmvService extends AbstractService
     protected $vulnerabilityTable;
     protected $vulnerabilityService;
     protected $historicalService;
+    /** @var InstanceRiskService */
+    protected $instanceRiskService;
     protected $errorMessage;
     protected $filterColumns = ['status'];
     protected $dependencies = ['anr', 'asset', 'threat', 'vulnerability', 'measures'];
@@ -59,7 +63,7 @@ class AmvService extends AbstractService
      */
     public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null, $filterJoin = null)
     {
-        list($filterJoin, $filterLeft, $filtersCol) = $this->get('entity')->getFiltersForService();
+        [$filterJoin, $filterLeft, $filtersCol] = $this->get('entity')->getFiltersForService();
 
         return $this->get('table')->fetchAllFiltered(
             array_keys($this->get('entity')->getJsonArray()),
@@ -113,7 +117,7 @@ class AmvService extends AbstractService
      */
     public function getFilteredCount($filter = null, $filterAnd = null)
     {
-        list($filterJoin, $filterLeft, $filtersCol) = $this->get('entity')->getFiltersForService();
+        [$filterJoin, $filterLeft, $filtersCol] = $this->get('entity')->getFiltersForService();
 
         return $this->get('table')->countFiltered(
             $this->parseFrontendFilter($filter, $filtersCol),
@@ -160,6 +164,8 @@ class AmvService extends AbstractService
         $amv->setCreator($this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname());
 
         $id = $this->get('table')->save($amv);
+
+        $this->createInstanceRiskForInstances($amv->getAsset());
 
         //historisation
         $newEntity = $this->getEntity($id);
@@ -1174,5 +1180,13 @@ class AmvService extends AbstractService
         }
         $labelParts = implode(' - ', $labelParts);
         $this->label = [$labelParts, $labelParts, $labelParts, $labelParts];
+    }
+
+    private function createInstanceRiskForInstances(AssetSuperClass $asset): void
+    {
+        $instances = $this->instanceTable->findByAsset($asset);
+        foreach ($instances as $instance) {
+            $this->instanceRiskService->createInstanceRisks($instance, $instance->getAnr(), $instance->getObject());
+        }
     }
 }
