@@ -82,7 +82,8 @@ class ModelService extends AbstractService
             $filterAnd['isGeneric'] = 0;
 
             $models = array_merge(
-                $models, $this->get('table')->fetchAllFiltered(
+                $models,
+                $this->get('table')->fetchAllFiltered(
                     array_keys($this->get('entity')->getJsonArray()),
                     $page,
                     $limit,
@@ -217,7 +218,8 @@ class ModelService extends AbstractService
             && $data['isRegulator'] && $data['isGeneric']
         ) {
             throw new \Monarc\Core\Exception\Exception(
-                "A regulator model may not be generic", 412
+                "A regulator model may not be generic",
+                412
             );
         }
 
