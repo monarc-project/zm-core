@@ -41,10 +41,13 @@ class ModelService extends AbstractService
 
         if ($scope == 'FO') {
             $filterAnd['isGeneric'] = 1;
-            $client = current($this->clientTable->fetchAll());
+            $client = $this->clientTable->findTheClient();
 
             if ($client) {
-                $joinModel = $client['model_id'];
+                $joinModel = $client->getModels()
+                                ->map(function($obj){return $obj->getModelId();})
+                                ->getValues();
+            file_put_contents('php://stderr', print_r($joinModel , TRUE).PHP_EOL);
             }
         }
 
