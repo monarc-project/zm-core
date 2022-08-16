@@ -57,13 +57,18 @@ class ApiAnrLibraryController extends AbstractController
     {
         $anrId = $this->params()->fromRoute('anrid');
 
-        if (!isset($data['objectId'])) {
+        if (!isset($data['objectId']) && !isset($data['categoryId'])) {
             throw new \Monarc\Core\Exception\Exception('objectId is missing');
         }
 
         /** @var ObjectService $service */
         $service = $this->getService();
-        $id = $service->attachObjectToAnr($data['objectId'], $anrId);
+        if (isset($data['objectId'])) {
+            $id = $service->attachObjectToAnr($data['objectId'], $anrId);
+        }
+        if (isset($data['categoryId'])) {
+            $id = $service->attachCategoryToAnr($data['categoryId'], $anrId);
+        }
 
         return new JsonModel(
             array(

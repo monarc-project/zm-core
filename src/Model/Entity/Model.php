@@ -222,6 +222,14 @@ class Model extends AbstractEntity
     }
 
     /**
+     * @return boolean
+     */
+    public function isGeneric()
+    {
+        return $this->isGeneric;
+    }
+
+    /**
      * @param boolean $isDeleted
      * @return Model
      */

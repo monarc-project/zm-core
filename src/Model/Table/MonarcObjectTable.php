@@ -106,6 +106,20 @@ class MonarcObjectTable extends AbstractEntityTable
     }
 
     /**
+     * @return ObjectSuperClass[]
+     */
+    public function getObjectsUnderParentCategory(ObjectCategorySuperClass $parentCategory): array
+    {
+        return $this->getRepository()
+            ->createQueryBuilder('o')
+            ->join('o.category', 'oc')
+            ->where('oc.parent = :parentCategory OR oc = :parentCategory')
+            ->setParameter('parentCategory', $parentCategory)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * Check In Anr
      *
      * @param $anrid
