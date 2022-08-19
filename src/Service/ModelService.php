@@ -264,27 +264,32 @@ class ModelService extends AbstractService
      */
     public function duplicate($modelId)
     {
-        //retrieve model
         /** @var ModelTable $modelTable */
         $modelTable = $this->get('table');
         /** @var Model $model */
         $model = $modelTable->getEntity($modelId);
 
-        $newModel = clone $model;
-        $newModel->set('id', null);
-        $newModel->set('isDefault', false);
-
-        $suffix = ' (copié le ' . date('m/d/Y à H:i') . ')';
-        for ($i = 1; $i <= 4; $i++) {
-            $newModel->set('label' . $i, $newModel->get('label' . $i) . $suffix);
-        }
-
-        //duplicate anr
         /** @var AnrService $anrService */
         $anrService = $this->get('anrService');
-        $newAnr = $anrService->duplicate($newModel->anr);
+        $newAnr = $anrService->duplicate($model->getAnr());
 
-        $newModel->setAnr($newAnr);
+        $nameSuffix = ' (copié le ' . date('m/d/Y à H:i') . ')';
+
+        $newModel = (new Model())
+            ->setAnr($newAnr)
+            ->setLabels([
+                'label1' => $model->getLabel(1) . $nameSuffix,
+                'label2' => $model->getLabel(2) . $nameSuffix,
+                'label3' => $model->getLabel(3) . $nameSuffix,
+                'label4' => $model->getLabel(4) . $nameSuffix,
+            ])
+            ->setDescriptions($model->getDescriptions())
+            ->setIsGeneric($model->isGeneric())
+            ->setIsRegulator($model->isRegulator())
+            ->setAreScalesUpdatable($model->areScalesUpdatable())
+            ->setShowRolfBrut($model->getShowRolfBrut())
+            ->setStatus($model->getStatus())
+            ->setCreator($this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname());
 
         if (!$newModel->isGeneric()) {
             $this->reassignSpecificObjects($model, $newModel);

@@ -24,9 +24,9 @@ class Threat extends ThreatSuperClass
 {
 
     /**
-     * @var \Monarc\Core\Model\Entity\Model
+     * @var Model[]|ArrayCollection
      *
-     * @ORM\ManyToMany(targetEntity="Monarc\Core\Model\Entity\Model", inversedBy="threats", cascade={"persist"})
+     * @ORM\ManyToMany(targetEntity="Model", inversedBy="threats", cascade={"persist"})
      * @ORM\JoinTable(name="threats_models",
      *  joinColumns={@ORM\JoinColumn(name="threat_id", referencedColumnName="uuid")},
      *  inverseJoinColumns={@ORM\JoinColumn(name="model_id", referencedColumnName="id")}
@@ -63,14 +63,14 @@ class Threat extends ThreatSuperClass
         return $this;
     }
 
-    /**
-     * Add model
-     *
-     * @param Model $model
-     */
-    public function addModel(Model $model)
+    public function addModel(Model $model): self
     {
-        $this->models->add($model);
+        if (!$this->models->contains($model)) {
+            $this->models->add($model);
+            $model->addThreat($this);
+        }
+
+        return $this;
     }
 
     public function __construct($obj = null)

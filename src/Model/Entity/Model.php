@@ -102,53 +102,53 @@ class Model extends AbstractEntity
     protected $description4;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="status", type="smallint", options={"unsigned":true, "default":1})
      */
     protected $status = '1';
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="is_scales_updatable", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $isScalesUpdatable = '1';
+    protected $isScalesUpdatable = 1;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="is_default", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $isDefault = '0';
+    protected $isDefault = 0;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="is_deleted", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $isDeleted = '0';
+    protected $isDeleted = 0;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="is_generic", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $isGeneric = '1';
+    protected $isGeneric = 1;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="is_regulator", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $isRegulator = '0';
+    protected $isRegulator = 0;
 
     /**
-     * @var smallint
+     * @var int
      *
      * @ORM\Column(name="show_rolf_brut", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $showRolfBrut = '1';
+    protected $showRolfBrut = 1;
 
     /**
      * @var Asset[]|ArrayCollection
@@ -177,39 +177,80 @@ class Model extends AbstractEntity
         parent::__construct($obj);
     }
 
-    /**
-     * @return int
-     */
     public function getId()
     {
         return $this->id;
     }
 
-    /**
-     * @param int $id
-     * @return Model
-     */
     public function setId($id)
     {
         $this->id = $id;
+
         return $this;
     }
 
-    /**
-     * @return Anr
-     */
-    public function getAnr()
+    public function getAnr(): Anr
     {
         return $this->anr;
     }
 
-    /**
-     * @param Anr $anr
-     * @return Model
-     */
-    public function setAnr($anr)
+    public function setAnr(Anr $anr): self
     {
         $this->anr = $anr;
+
+        return $this;
+    }
+
+    public function getLabel(int $languageIndex): string
+    {
+        if (!\in_array($languageIndex, range(1, 4), true)) {
+            return '';
+        }
+
+        return (string)$this->{'label' . $languageIndex};
+    }
+
+
+    public function setLabels(array $labels): self
+    {
+        foreach (range(1, 4) as $index) {
+            $key = 'label' . $index;
+            if (isset($labels[$key])) {
+                $this->{$key} = $labels[$key];
+            }
+        }
+
+        return $this;
+    }
+
+    public function getDescription(int $languageIndex): string
+    {
+        if (!\in_array($languageIndex, range(1, 4), true)) {
+            return '';
+        }
+
+        return (string)$this->{'description' . $languageIndex};
+    }
+
+    public function getDescriptions(): array
+    {
+        return [
+            'description1' => $this->description1,
+            'description2' => $this->description2,
+            'description3' => $this->description3,
+            'description4' => $this->description4,
+        ];
+    }
+
+    public function setDescriptions(array $descriptions): self
+    {
+        foreach (range(1, 4) as $index) {
+            $key = 'description' . $index;
+            if (isset($descriptions[$key])) {
+                $this->{$key} = $descriptions[$key];
+            }
+        }
+
         return $this;
     }
 
@@ -229,11 +270,6 @@ class Model extends AbstractEntity
     {
         $this->isDeleted = $isDeleted;
         return $this;
-    }
-
-    public function isGeneric(): bool
-    {
-        return (bool)$this->isGeneric;
     }
 
     public function getAssets()
@@ -277,6 +313,83 @@ class Model extends AbstractEntity
             $this->vulnerabilities->add($vulnerability);
             $vulnerability->addModel($this);
         }
+
+        return $this;
+    }
+
+    public function getStatus(): int
+    {
+        return $this->status;
+    }
+
+    public function setStatus(int $status): self
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->status === static::STATUS_ACTIVE;
+    }
+
+    public function areScalesUpdatable(): bool
+    {
+        return (bool)$this->isScalesUpdatable;
+    }
+
+    public function setAreScalesUpdatable(bool $areScalesUpdatable): self
+    {
+        $this->isScalesUpdatable = (int)$areScalesUpdatable;
+
+        return $this;
+    }
+
+    public function isDefault(): bool
+    {
+        return (bool)$this->isDefault;
+    }
+
+    public function setIsDefault(bool $isDefault): self
+    {
+        $this->isDefault = (int)$isDefault;
+
+        return $this;
+    }
+
+    public function isGeneric(): bool
+    {
+        return (bool)$this->isGeneric;
+    }
+
+    public function setIsGeneric(bool $isGeneric): self
+    {
+        $this->isGeneric = (int)$isGeneric;
+
+        return $this;
+    }
+
+    public function isRegulator(): bool
+    {
+        return (bool)$this->isRegulator;
+    }
+
+    public function setIsRegulator(bool $isRegulator): self
+    {
+        $this->isRegulator = (int)$isRegulator;
+
+        return $this;
+    }
+
+    public function getShowRolfBrut(): bool
+    {
+        return (bool)$this->showRolfBrut;
+    }
+
+    public function setShowRolfBrut(bool $showRolfBrut): self
+    {
+        $this->showRolfBrut = (int)$showRolfBrut;
 
         return $this;
     }
