@@ -272,6 +272,16 @@ class AnrSuperClass extends AbstractEntity
         return $this->objects;
     }
 
+    public function addObject(ObjectSuperClass $object): self
+    {
+        if (!$this->objects->contains($object)) {
+            $this->objects->add($object);
+            $object->addAnr($this);
+        }
+
+        return $this;
+    }
+
     /**
      * @param ObjectSuperClass[] $objects
      * @return Anr

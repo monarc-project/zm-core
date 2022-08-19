@@ -36,9 +36,9 @@ class Model extends AbstractEntity
     protected $id;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Anr
+     * @var Anr
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Anr", cascade={"REMOVE"})
+     * @ORM\ManyToOne(targetEntity="Anr", cascade={"persist", "REMOVE"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true)
      * })
@@ -228,6 +228,56 @@ class Model extends AbstractEntity
     public function setIsDeleted($isDeleted)
     {
         $this->isDeleted = $isDeleted;
+        return $this;
+    }
+
+    public function isGeneric(): bool
+    {
+        return (bool)$this->isGeneric;
+    }
+
+    public function getAssets()
+    {
+        return $this->assets;
+    }
+
+    public function addAsset(Asset $asset): self
+    {
+        if (!$this->assets->contains($asset)) {
+            $this->assets->add($asset);
+            $asset->addModel($this);
+        }
+
+        return $this;
+    }
+
+    public function getThreats()
+    {
+        return $this->threats;
+    }
+
+    public function addThreat(Threat $threat): self
+    {
+        if (!$this->threats->contains($threat)) {
+            $this->threats->add($threat);
+            $threat->addModel($this);
+        }
+
+        return $this;
+    }
+
+    public function getVulnerabilities()
+    {
+        return $this->vulnerabilities;
+    }
+
+    public function addVulnerability(Vulnerability $vulnerability): self
+    {
+        if (!$this->vulnerabilities->contains($vulnerability)) {
+            $this->vulnerabilities->add($vulnerability);
+            $vulnerability->addModel($this);
+        }
+
         return $this;
     }
 

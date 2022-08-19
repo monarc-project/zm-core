@@ -267,9 +267,9 @@ class ModelService extends AbstractService
         //retrieve model
         /** @var ModelTable $modelTable */
         $modelTable = $this->get('table');
+        /** @var Model $model */
         $model = $modelTable->getEntity($modelId);
 
-        //duplicate model
         $newModel = clone $model;
         $newModel->set('id', null);
         $newModel->set('isDefault', false);
@@ -286,7 +286,27 @@ class ModelService extends AbstractService
 
         $newModel->setAnr($newAnr);
 
+        if (!$newModel->isGeneric()) {
+            $this->reassignSpecificObjects($model, $newModel);
+        }
+
         return $modelTable->save($newModel);
+    }
+
+    private function reassignSpecificObjects(Model $fromModel, Model $toModel): void
+    {
+        foreach ($fromModel->getAssets() as $asset) {
+            $toModel->addAsset($asset);
+        }
+        foreach ($fromModel->getThreats() as $threat) {
+            $toModel->addThreat($threat);
+        }
+        foreach ($fromModel->getVulnerabilities() as $vulnerability) {
+            $toModel->addThreat($vulnerability);
+        }
+        foreach ($fromModel->getAnr()->getObjects() as $object) {
+            $toModel->getAnr()->addObject($object);
+        }
     }
 
     /**
