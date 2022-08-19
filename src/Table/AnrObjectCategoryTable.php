@@ -20,6 +20,19 @@ class AnrObjectCategoryTable extends AbstractTable
         parent::__construct($entityManager, $entityName);
     }
 
+    /**
+     * @return AnrObjectCategorySuperClass[]
+     */
+    public function findByAnr(AnrSuperClass $anr): array
+    {
+        return $this->getRepository()
+            ->createQueryBuilder('aoc')
+            ->where('aoc.anr = :anr')
+            ->setParameter('anr', $anr)
+            ->getQuery()
+            ->getResult();
+    }
+
     public function findOneByAnrAndObjectCategory(
         AnrSuperClass $anr,
         ObjectCategorySuperClass $objectCategory

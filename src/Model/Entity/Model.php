@@ -220,6 +220,16 @@ class Model
         return (string)$this->{'description' . $languageIndex};
     }
 
+    public function getDescriptions(): array
+    {
+        return [
+            'description1' => $this->description1,
+            'description2' => $this->description2,
+            'description3' => $this->description3,
+            'description4' => $this->description4,
+        ];
+    }
+
     public function setDescriptions(array $descriptions): self
     {
         foreach (range(1, 4) as $index) {

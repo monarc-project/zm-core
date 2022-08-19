@@ -11,6 +11,7 @@ use Monarc\Core\Exception\Exception;
 use Monarc\Core\InputFormatter\FormattedInputParams;
 use Monarc\Core\Model\Entity\Model;
 use Monarc\Core\Model\Entity\MonarcObject;
+use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Table\AmvTable;
 use Monarc\Core\Table\ModelTable;
 
@@ -22,7 +23,7 @@ class ModelService
 
     private AnrService $anrService;
 
-    private ConnectedUserService $connectedUserService;
+    private UserSuperClass $connectedUser;
 
     public function __construct(
         ModelTable $modelTable,
@@ -33,7 +34,7 @@ class ModelService
         $this->modelTable = $modelTable;
         $this->amvTable = $amvTable;
         $this->anrService = $anrService;
-        $this->connectedUserService = $connectedUserService;
+        $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
     public function getList(FormattedInputParams $params): array
@@ -69,7 +70,7 @@ class ModelService
 
         $model = (new Model())->setAnr($anr);
         $model = $this->setModelData($model, $data)
-            ->setCreator($this->connectedUserService->getConnectedUser()->getEmail());
+            ->setCreator($this->connectedUser->getEmail());
 
         $this->modelTable->save($model);
 
@@ -92,7 +93,7 @@ class ModelService
         $this->validateBeforeUpdate($model, $data);
 
         $this->setModelData($model, $data)
-            ->setUpdater($this->connectedUserService->getConnectedUser()->getEmail());
+            ->setUpdater($this->connectedUser->getEmail());
 
         $this->modelTable->save($model);
     }
@@ -106,7 +107,7 @@ class ModelService
             $model->setStatus($data['status']);
         }
 
-        $model->setUpdater($this->connectedUserService->getConnectedUser()->getEmail());
+        $model->setUpdater($this->connectedUser->getEmail());
 
         $this->modelTable->save($model);
     }
@@ -116,7 +117,6 @@ class ModelService
         /** @var Model $model */
         $model = $this->modelTable->findById($modelId);
 
-        // TODO: this will not work as the table used inside was refactored: 'anrObjectCategory'.
         $newAnr = $this->anrService->duplicate($model->getAnr());
 
         $labelSuffix = ' (copy from ' . date('m/d/Y at H:i') . ')';
@@ -128,17 +128,17 @@ class ModelService
                 'label3' => $model->getLabel(3) . $labelSuffix,
                 'label4' => $model->getLabel(4) . $labelSuffix,
             ])
-            ->setDescriptions([
-                'description1' => $model->getDescription(1),
-                'description2' => $model->getDescription(2),
-                'description3' => $model->getDescription(3),
-                'description4' => $model->getDescription(4),
-            ])
+            ->setDescriptions($model->getDescriptions())
             ->setIsGeneric($model->isGeneric())
             ->setIsRegulator($model->isRegulator())
             ->setAreScalesUpdatable($model->areScalesUpdatable())
             ->setShowRolfBrut($model->getShowRolfBrut())
-            ->setCreator($this->connectedUserService->getConnectedUser()->getEmail());
+            ->setStatus($model->getStatus())
+            ->setCreator($this->connectedUser->getEmail());
+
+        if (!$newModel->isGeneric()) {
+            $this->reassignSpecificObjects($model, $newModel);
+        }
 
         $this->modelTable->save($newModel);
 
@@ -156,6 +156,22 @@ class ModelService
     {
         foreach ($data as $modelId) {
             $this->delete((int) $modelId);
+        }
+    }
+
+    private function reassignSpecificObjects(Model $fromModel, Model $toModel): void
+    {
+        foreach ($fromModel->getAssets() as $asset) {
+            $toModel->addAsset($asset);
+        }
+        foreach ($fromModel->getThreats() as $threat) {
+            $toModel->addThreat($threat);
+        }
+        foreach ($fromModel->getVulnerabilities() as $vulnerability) {
+            $toModel->addVulnerability($vulnerability);
+        }
+        foreach ($fromModel->getAnr()->getObjects() as $object) {
+            $toModel->getAnr()->addObject($object);
         }
     }
 

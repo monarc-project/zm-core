@@ -10,11 +10,14 @@ namespace Monarc\Core\Service;
 use DateTime;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Anr;
+use Monarc\Core\Model\Entity\AnrObjectCategory;
+use Monarc\Core\Model\Entity\AnrObjectCategorySuperClass;
 use Monarc\Core\Model\Entity\OperationalRiskScale;
 use Monarc\Core\Model\Entity\Scale;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\ScaleCommentTable;
 use Monarc\Core\Model\Table\ScaleTable;
+use Monarc\Core\Table\AnrObjectCategoryTable;
 use Monarc\Core\Table\MonarcObjectTable;
 use Monarc\Core\Table\ThreatTable;
 
@@ -28,6 +31,7 @@ class AnrService extends AbstractService
 {
     /** @var ScaleService */
     protected $scaleService;
+    /** @var AnrObjectCategoryTable */
     protected $anrObjectCategoryTable;
     protected $MonarcObjectTable;
     protected $instanceTable;
@@ -89,13 +93,13 @@ class AnrService extends AbstractService
     }
 
     /**
-    * Duplicates an anr
-    * @param Anr $anr The source ANR object
-    * @return Anr The new ANR object
-    */
+     * Note: Used only from the ModelService when a model is duplicated.
+     *
+     * @param Anr $anr The source ANR object
+     * @return Anr The new ANR object
+     */
     public function duplicate($anr)
     {
-        //duplicate anr
         $newAnr = clone $anr;
         $newAnr->setId(null);
         $suffix = ' (copié le ' . date('m/d/Y à H:i') . ')';
@@ -130,7 +134,6 @@ class AnrService extends AbstractService
             'operationalRiskScaleType',
             'operationalRiskScaleComment',
             'translation',
-            'anrObjectCategory',
             'instance',
             'instanceConsequence',
             'instanceRisk',
@@ -231,6 +234,18 @@ class AnrService extends AbstractService
                 }
             }
         }
+
+        $anrObjectCategories = $this->anrObjectCategoryTable->findByAnr($anr);
+        foreach ($anrObjectCategories as $anrObjectCategory) {
+            $newAnrObjectCategory = new AnrObjectCategory();
+            $newAnrObjectCategory->setAnr($newAnr)
+                ->setCategory($anrObjectCategory->getCategory())
+                ->setPosition($anrObjectCategory->getPosition());
+
+            $this->anrObjectCategoryTable->save($newAnrObjectCategory, false);
+        }
+        $this->anrObjectCategoryTable->flush();
+
         return $newAnr;
     }
 
