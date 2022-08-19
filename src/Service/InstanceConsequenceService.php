@@ -29,7 +29,6 @@ class InstanceConsequenceService extends AbstractService
     protected $dependencies = ['anr', 'instance', 'object', 'scaleImpactType'];
     protected $anrTable;
     protected $instanceTable;
-    protected $MonarcObjectTable;
     protected $scaleTable;
     protected $scaleImpactTypeTable;
     protected $forbiddenFields = ['anr', 'instance', 'object', 'scaleImpactType'];
@@ -294,7 +293,7 @@ class InstanceConsequenceService extends AbstractService
         $data['anr'] = $anrId;
 
         if (!$fromInstance) {
-            //if father instance exist, create instance for child
+            // If parent's instance exist, create instance for child.
             $eventManager = new EventManager($this->sharedManager, ['instance']);
             $instanceId = $instanceConsequence->getInstance()->getId();
             $eventManager->trigger('patch', $this, compact(['anrId', 'instanceId', 'data']));

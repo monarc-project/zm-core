@@ -231,59 +231,6 @@ return [
                 ],
             ],
 
-            'monarc_api_anr_library_category' => [
-                'type' => 'segment',
-                'options' => [
-                    'route' => '/api/anr/:anrid/library-category[/:id]',
-                    'constraints' => [
-                        'id' => '[0-9]+',
-                    ],
-                    'defaults' => [
-                        'controller' => Controller\ApiAnrLibraryCategoryController::class,
-                    ],
-                ],
-            ],
-
-            'monarc_api_anr_library' => [
-                'type' => 'segment',
-                'options' => [
-                    'route' => '/api/anr/:anrid/library[/:id]',
-                    'constraints' => [
-                        'id' => '[a-f0-9-]*',
-                    ],
-                    'defaults' => [
-                        'controller' => Controller\ApiAnrLibraryController::class,
-                    ],
-                ],
-            ],
-
-            'monarc_api_anr_objects' => [
-                'type' => 'segment',
-                'options' => [
-                    'route' => '/api/anr/:anrid/objects[/:id]',
-                    'constraints' => [
-                        'id' => '[0-9]+',
-                    ],
-                    'defaults' => [
-                        'controller' => Controller\ApiAnrObjectController::class,
-                    ],
-                ],
-            ],
-
-            'monarc_api_anr_objects_parents' => [
-                'type' => 'segment',
-                'options' => [
-                    'route' => '/api/anr/:anrid/objects/:id/parents',
-                    'constraints' => [
-                        'id' => '[a-f0-9-]*',
-                    ],
-                    'defaults' => [
-                        'controller' => Controller\ApiAnrObjectController::class,
-                        'action' => 'parents'
-                    ],
-                ],
-            ],
-
             'monarc_api_models_duplication' => [
                 'type' => 'segment',
                 'options' => [
@@ -412,10 +359,10 @@ return [
             Service\MeasureService::class => Service\MeasureServiceFactory::class,
             Service\MeasureMeasureService::class => Service\MeasureMeasureServiceFactory::class,
             Service\ModelService::class => AutowireFactory::class,
-            Service\ObjectService::class => Service\ObjectServiceFactory::class,
-            Service\ObjectExportService::class => Service\ObjectExportServiceFactory::class,
-            Service\ObjectCategoryService::class => Service\ObjectCategoryServiceFactory::class,
-            Service\ObjectObjectService::class => Service\ObjectObjectServiceFactory::class,
+            Service\ObjectService::class => AutowireFactory::class,
+            Service\ObjectExportService::class => AutowireFactory::class,
+            Service\ObjectCategoryService::class => AutowireFactory::class,
+            Service\ObjectObjectService::class => AutowireFactory::class,
             Service\PasswordService::class => AutowireFactory::class,
             Service\RolfRiskService::class => Service\RolfRiskServiceFactory::class,
             Service\RolfTagService::class => Service\RolfTagServiceFactory::class,
@@ -429,7 +376,6 @@ return [
             Service\UserService::class => ReflectionBasedAbstractFactory::class,
             Service\VulnerabilityService::class => AutowireFactory::class,
             Service\DeliveriesModelsService::class => Service\DeliveriesModelsServiceFactory::class,
-            Service\AnrObjectService::class => Service\AnrObjectServiceFactory::class,
             Service\AssetImportService::class => AutowireFactory::class,
             Service\ObjectImportService::class => AutowireFactory::class,
             Service\OperationalRiskScaleService::class => AutowireFactory::class,
@@ -462,7 +408,7 @@ return [
 
             Table\ModelTable::class => Table\Factory\CoreEntityManagerFactory::class,
             DeprecatedTable\AnrTable::class => AutowireFactory::class,
-            DeprecatedTable\AnrObjectCategoryTable::class => AutowireFactory::class,
+            Table\AnrObjectCategoryTable::class => Table\Factory\CoreEntityManagerFactory::class,
             DeprecatedTable\QuestionTable::class => AutowireFactory::class,
             DeprecatedTable\QuestionChoiceTable::class => AutowireFactory::class,
             DeprecatedTable\GuideTable::class => AutowireFactory::class,
@@ -471,12 +417,12 @@ return [
             DeprecatedTable\MeasureTable::class => AutowireFactory::class,
             DeprecatedTable\MeasureMeasureTable::class => AutowireFactory::class,
             DeprecatedTable\SoaCategoryTable::class => AutowireFactory::class,
-            DeprecatedTable\MonarcObjectTable::class => AutowireFactory::class,
+            Table\MonarcObjectTable::class => Table\Factory\CoreEntityManagerFactory::class,
             DeprecatedTable\InstanceTable::class => AutowireFactory::class,
             DeprecatedTable\InstanceConsequenceTable::class => AutowireFactory::class,
             DeprecatedTable\InstanceRiskTable::class => AutowireFactory::class,
             DeprecatedTable\InstanceRiskOpTable::class => AutowireFactory::class,
-            DeprecatedTable\ObjectCategoryTable::class => AutowireFactory::class,
+            Table\ObjectCategoryTable::class => Table\Factory\CoreEntityManagerFactory::class,
             DeprecatedTable\ObjectObjectTable::class => AutowireFactory::class,
             Table\ThemeTable::class => Table\Factory\CoreEntityManagerFactory::class,
             DeprecatedTable\HistoricalTable::class => AutowireFactory::class,
@@ -499,7 +445,7 @@ return [
             Table\UserTokenTable::class => Table\Factory\ClientEntityManagerFactory::class,
             Table\PasswordTokenTable::class => Table\Factory\ClientEntityManagerFactory::class,
 
-            /* Authentification */
+            /* Authentication */
             StorageAuthentication::class => ReflectionBasedAbstractFactory::class,
             AdapterAuthentication::class => AutowireFactory::class,
             Service\ConnectedUserService::class => AutowireFactory::class,
@@ -515,6 +461,9 @@ return [
                 ReflectionBasedAbstractFactory::class,
             InputValidator\Amv\PostAmvDataInputValidator::class => ReflectionBasedAbstractFactory::class,
             InputValidator\Theme\PostThemeDataInputValidator::class => ReflectionBasedAbstractFactory::class,
+            InputValidator\Object\PostObjectDataInputValidator::class => ReflectionBasedAbstractFactory::class,
+            InputValidator\ObjectCategory\PostObjectCategoryDataInputValidator::class =>
+                ReflectionBasedAbstractFactory::class,
             LanguageValidator::class => ReflectionBasedAbstractFactory::class,
         ],
         'shared' => [
@@ -561,11 +510,6 @@ return [
                 => Controller\ApiAnrInstancesConsequencesControllerFactory::class,
             Controller\ApiAnrInstancesRisksController::class => Controller\ApiAnrInstancesRisksControllerFactory::class,
             Controller\ApiAnrInstancesRisksOpController::class => AutowireFactory::class,
-            Controller\ApiAnrLibraryController::class => Controller\ApiAnrLibraryControllerFactory::class,
-            Controller\ApiAnrLibraryCategoryController::class
-                => Controller\ApiAnrLibraryCategoryControllerFactory::class,
-            Controller\ApiAnrObjectController::class => Controller\ApiAnrObjectControllerFactory::class,
-            Controller\ApiModelsController::class => AutowireFactory::class,
             Controller\ApiModelsDuplicationController::class => AutowireFactory::class,
             Controller\ApiAnrScalesController::class => Controller\ApiAnrScalesControllerFactory::class,
             Controller\ApiAnrScalesTypesController::class => Controller\ApiAnrScalesTypesControllerFactory::class,

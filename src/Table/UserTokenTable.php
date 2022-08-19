@@ -11,6 +11,7 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\NonUniqueResultException;
 use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Model\Entity\UserToken;
+use Monarc\Core\Model\Entity\UserTokenSuperClass;
 
 class UserTokenTable extends AbstractTable
 {
@@ -22,7 +23,7 @@ class UserTokenTable extends AbstractTable
     /**
      * @throws NonUniqueResultException
      */
-    public function findByToken(string $token): ?UserToken
+    public function findByToken(string $token): ?UserTokenSuperClass
     {
         return $this->getRepository()
             ->createQueryBuilder('ut')

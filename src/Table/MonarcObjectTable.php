@@ -1,54 +1,27 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
-namespace Monarc\Core\Model\Table;
+namespace Monarc\Core\Table;
 
 use Doctrine\ORM\AbstractQuery;
-use Doctrine\ORM\EntityNotFoundException;
-use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Query\Expr;
-use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\AssetSuperClass;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Entity\ObjectCategorySuperClass;
 use Monarc\Core\Model\Entity\ObjectSuperClass;
 use Monarc\Core\Model\Entity\RolfTagSuperClass;
-use Monarc\Core\Service\ConnectedUserService;
 
-/**
- * Class MonarcObjectTable
- * @package Monarc\Core\Model\Table
- */
-class MonarcObjectTable extends AbstractEntityTable
+class MonarcObjectTable extends AbstractTable
 {
-    public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
+    public function __construct(EntityManager $entityManager, string $entityName = MonarcObject::class)
     {
-        parent::__construct($dbService, MonarcObject::class, $connectedUserService);
-    }
-
-    /**
-     * @throws EntityNotFoundException
-     * @throws NonUniqueResultException
-     */
-    public function findByUuid(string $uuid): MonarcObject
-    {
-        /** @var MonarcObject $object */
-        $object = $this->getRepository()->createQueryBuilder('o')
-            ->where('o.uuid = :uuid')
-            ->setParameter('uuid', $uuid)
-            ->setMaxResults(1)
-            ->getQuery()
-            ->getOneOrNullResult();
-        if ($object === null) {
-            throw EntityNotFoundException::fromClassNameAndIdentifier(\get_class($this), [$uuid]);
-        }
-
-        return $object;
+        parent::__construct($entityManager, $entityName);
     }
 
     public function hasGenericObjectsWithAsset(AssetSuperClass $asset): bool
@@ -81,7 +54,6 @@ class MonarcObjectTable extends AbstractEntityTable
             ->getSingleScalarResult();
     }
 
-
     /**
      * @return ObjectSuperClass[]
      */
@@ -93,20 +65,6 @@ class MonarcObjectTable extends AbstractEntityTable
             ->setParameter('rootCategory', $rootCategory)
             ->getQuery()
             ->getResult();
-    }
-
-    // TODO: drop it when the refactoring is done.
-    public function checkInAnr($anrid, $id): bool
-    {
-        $stmt = $this->getDb()->getEntityManager()->getConnection()->prepare(
-            'SELECT id
-             FROM   anrs_objects
-             WHERE  anr_id = :anrid
-             AND    object_id = :oid'
-        );
-        $stmt->execute([':anrid' => $anrid, ':oid' => $id]);
-
-        return $stmt->rowCount() > 0;
     }
 
     /**
@@ -123,6 +81,8 @@ class MonarcObjectTable extends AbstractEntityTable
     }
 
     /**
+     * TODO: should be dropped.
+     *
      * @return ObjectSuperClass[]
      */
     public function findByAnrAndRolfTag(AnrSuperClass $anr, RolfTagSuperClass $rolfTag): array
@@ -138,14 +98,5 @@ class MonarcObjectTable extends AbstractEntityTable
             ->setParameter(':asset', $asset)
             ->getQuery()
             ->getResult(AbstractQuery::HYDRATE_SCALAR_COLUMN);
-    }
-
-    public function saveEntity(ObjectSuperClass $monarcObject, bool $flushAll = true): void
-    {
-        $em = $this->getDb()->getEntityManager();
-        $em->persist($monarcObject);
-        if ($flushAll) {
-            $em->flush();
-        }
     }
 }

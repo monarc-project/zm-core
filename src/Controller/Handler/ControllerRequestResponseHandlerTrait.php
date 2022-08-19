@@ -71,6 +71,14 @@ trait ControllerRequestResponseHandlerTrait
     }
 
     /**
+     * @return JsonModel|JsonResponse
+     */
+    protected function getSuccessfulJsonResponse(array $responseData = []): object
+    {
+        $this->getPreparedJsonResponse(array_merge(['status' => 'ok'], $responseData));
+    }
+
+    /**
      * Validates if there is a batch of data.
      */
     protected function isBatchData(array $data): bool

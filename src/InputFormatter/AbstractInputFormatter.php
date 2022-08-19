@@ -11,6 +11,7 @@ use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Collections\Expr\Comparison;
 use Doctrine\Common\Collections\Expr\CompositeExpression;
 use LogicException;
+use Monarc\Core\Exception\Exception;
 
 abstract class AbstractInputFormatter
 {
@@ -28,7 +29,11 @@ abstract class AbstractInputFormatter
 
     /**
      * Can be optionally defined including the default value and operator, like:
-     * ['status' => ['default' => 1, 'operator' => '='], 'name' => ['default' => '', 'operator' => '<>']],
+     * [
+     * 'status' => ['default' => 1, 'operator' => '='],
+     * 'name' => ['default' => '', 'operator' => '<>', 'type' => 'string'],
+     * 'mode' => ['default' => 'anr', 'inArray' => ['anr', 'edit']]
+     * ],
      */
     protected static array $allowedFilterFields = [];
 
@@ -43,6 +48,12 @@ abstract class AbstractInputFormatter
      * Ex. ['asset' => 'asset.code', 'threat' => 'threat.label']
      */
     protected static array $orderParamsToFieldsMap = [];
+
+    /**
+     * The default order fields string.
+     * Ex. '-position:name:-date'. '-' means descending order, ':' fields separation.
+     */
+    protected static string $defaultOrderFields = '';
 
     private array $originalInput = [];
 
@@ -89,28 +100,34 @@ abstract class AbstractInputFormatter
                 if (!$this->areFilterFiledAndValueValid($field, $value)) {
                     continue;
                 }
-                if (isset($inputValues['type'])) {
-                    $value = settype($value, $inputValues['type']);
+                if (isset($paramValues['type'])) {
+                    settype($value, $paramValues['type']);
+                }
+                if (isset($paramValues['inArray']) && !\in_array($value, $paramValues['inArray'], true)) {
+                    throw new Exception(sprintf('Param "%s" is not allowed to have value "%s".', $field, $value), 412);
                 }
 
                 $this->formattedInputParams->addFilter($filterFieldName, [
                     'value' => $value,
                     'operator' => $paramValues['operator'] ?? static::DEFAULT_FILTER_OPERATOR,
+                    'isUsedInQuery' => $paramValues['isUsedInQuery'] ?? true,
                 ]);
             } elseif (isset($paramValues['default'])) {
                 $this->formattedInputParams->addFilter($filterFieldName, [
                     'value' => $paramValues['default'],
                     'operator' => $paramValues['operator'] ?? static::DEFAULT_FILTER_OPERATOR,
+                    'isUsedInQuery' => $paramValues['isUsedInQuery'] ?? true,
                 ]);
             }
         }
 
         /* Add order params. */
-        $orderFields = $inputParams['order'] ?? null;
-        if ($orderFields !== null) {
+        $orderFields = $inputParams['order'] ?? static::$defaultOrderFields;
+        if (!empty($orderFields)) {
             $orderFields = \strpos($orderFields, ':') !== false
                 ? explode(':', $orderFields)
                 : [$orderFields];
+
             foreach ($orderFields as $orderField) {
                 $direction = strncmp($orderField, '-', 1) === 0 ? Criteria::DESC : Criteria::ASC;
                 $orderFieldName = ltrim($orderField, '-');

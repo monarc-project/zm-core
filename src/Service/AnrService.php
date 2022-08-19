@@ -13,9 +13,9 @@ use Monarc\Core\Model\Entity\Anr;
 use Monarc\Core\Model\Entity\OperationalRiskScale;
 use Monarc\Core\Model\Entity\Scale;
 use Monarc\Core\Model\Table\AnrTable;
-use Monarc\Core\Model\Table\MonarcObjectTable;
 use Monarc\Core\Model\Table\ScaleCommentTable;
 use Monarc\Core\Model\Table\ScaleTable;
+use Monarc\Core\Table\MonarcObjectTable;
 use Monarc\Core\Table\ThreatTable;
 
 /**
@@ -134,7 +134,7 @@ class AnrService extends AbstractService
             'instance',
             'instanceConsequence',
             'instanceRisk',
-            'instanceRiskOp'
+            'instanceRiskOp',
         ];
         foreach ($array as $value) {
             $table = $this->get($value . 'Table');

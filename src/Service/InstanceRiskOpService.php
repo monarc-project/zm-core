@@ -145,6 +145,7 @@ class InstanceRiskOpService
             $instances = $this->instanceTable->findByAnrId($anrId);
         } else {
             $instance = $this->instanceTable->findById($instanceId);
+            // TODO: remove initTree and use TreeStructureTrait::getEntityWithLinkedChildren
             $this->instanceTable->initTree($instance);
             $instances = $this->extractInstanceAndChildInstances($instance);
         }
@@ -517,6 +518,7 @@ class InstanceRiskOpService
             ->setCreator($this->connectedUser->getEmail());
     }
 
+    // TODO: replace to use TreeStructureTrait::getEntityWithLinkedChildren
     private function extractInstanceAndChildInstances(InstanceSuperClass $instance): array
     {
         $childInstances = [];

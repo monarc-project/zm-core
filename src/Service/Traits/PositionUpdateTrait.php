@@ -27,7 +27,7 @@ trait PositionUpdateTrait
     public function updatePositions(
         PositionedEntityInterface $entity,
         PositionUpdatableTableInterface $table,
-        array $data
+        array $data = []
     ): void {
         $this->validateParams($entity, $table, $data);
 
@@ -86,6 +86,7 @@ trait PositionUpdateTrait
                 $previousEntity = $table->findById($entityKey);
                 $expectedPosition = $previousEntity->getPosition() + 1;
                 if ($isEntityPersisted && $entity->getPosition() !== $expectedPosition) {
+                    /* Shift the elements to fill the previous position. The element will have a new one. */
                     $table->incrementPositions(
                         $entity->getPosition() + 1,
                         -1,
@@ -96,6 +97,7 @@ trait PositionUpdateTrait
                     $table->refresh($previousEntity);
                     $expectedPosition = $previousEntity->getPosition() + 1;
                 }
+                /* Shift the elements to allocate a place for the new element's position. */
                 $table->incrementPositions(
                     $expectedPosition,
                     -1,

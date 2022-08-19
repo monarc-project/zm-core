@@ -1,19 +1,20 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
 namespace Monarc\Core\Model\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Monarc\Core\Model\Entity\Interfaces\PositionedEntityInterface;
+use Monarc\Core\Model\Entity\Interfaces\TreeStructuredEntityInterface;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 
 /**
- * Object Category
- *
  * @ORM\Table(name="objects_categories", indexes={
  *      @ORM\Index(name="root_id", columns={"root_id"}),
  *      @ORM\Index(name="parent_id", columns={"parent_id"}),
@@ -23,7 +24,7 @@ use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
-class ObjectCategorySuperClass extends AbstractEntity
+class ObjectCategorySuperClass implements PositionedEntityInterface, TreeStructuredEntityInterface
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
@@ -60,12 +61,43 @@ class ObjectCategorySuperClass extends AbstractEntity
     /**
      * @var ObjectCategorySuperClass
      *
-     * @ORM\ManyToOne(targetEntity="ObjectCategory", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="ObjectCategory", inversedBy="children", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="parent_id", referencedColumnName="id", nullable=true)
      * })
      */
     protected $parent;
+
+    /**
+     * @var ArrayCollection|ObjectCategorySuperClass[]
+     *
+     * @ORM\OneToMany(targetEntity="ObjectCategory", mappedBy="parent")
+     * @ORM\OrderBy({"position" = "ASC"})
+     */
+    protected $children;
+
+    /**
+     * @var ObjectSuperClass[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="MonarcObject", mappedBy="category")
+     * @ORM\OrderBy({"position" = "ASC"})
+     */
+    protected $objects;
+
+    /**
+     * @var AnrObjectCategorySuperClass[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="AnrObjectCategory", mappedBy="category")
+     * @ORM\OrderBy({"position" = "ASC"})
+     */
+    protected $anrObjectCategories;
+
+    /**
+     * @var AnrSuperClass[]|ArrayCollection
+     *
+     * @ORM\ManyToMany(targetEntity="Anr", mappedBy="objectCategories", cascade={"persist"})
+     */
+    protected $anrs;
 
     /**
      * @var string
@@ -102,88 +134,78 @@ class ObjectCategorySuperClass extends AbstractEntity
      */
     protected $position = 1;
 
-    protected $parameters = [
-        'implicitPosition' => [
-            'field' => 'parent',
-            'root' => 'root',
-            'subField' => ['anr']
-        ],
-    ];
+    public function __construct()
+    {
+        $this->objects = new ArrayCollection();
+        $this->children = new ArrayCollection();
+        $this->anrObjectCategories = new ArrayCollection();
+        $this->anrs = new ArrayCollection();
+    }
 
-    /**
-     * @return int
-     */
-    public function getId()
+    public function getImplicitPositionRelationsValues(): array
+    {
+        return [
+            'parent' => $this->parent->getId(),
+            'anr' => $this->anr ? $this->anr->getId() : null,
+        ];
+    }
+
+    public function getId(): int
     {
         return $this->id;
     }
 
-    /**
-     * @param int $id
-     *
-     * @return self
-     */
-    public function setId($id): self
-    {
-        $this->id = $id;
-
-        return $this;
-    }
-
-    /**
-     * @return AnrSuperClass
-     */
-    public function getAnr()
+    public function getAnr(): ?AnrSuperClass
     {
         return $this->anr;
     }
 
-    /**
-     * @param AnrSuperClass $anr
-     *
-     * @return self
-     */
-    public function setAnr($anr): self
+    public function setAnr(AnrSuperClass $anr): self
     {
         $this->anr = $anr;
 
         return $this;
     }
 
-    /**
-     * @return ObjectCategorySuperClass|null
-     */
-    public function getParent()
+    public function getParent(): ?self
     {
         return $this->parent;
     }
 
-    /**
-     * @param ObjectCategorySuperClass $parent
-     *
-     * @return self
-     */
-    public function setParent($parent): self
+    public function setParent(?self $parent): self
     {
         $this->parent = $parent;
 
         return $this;
     }
 
+    public function getChildren()
+    {
+        return $this->children;
+    }
+
     /**
-     * @return ObjectCategorySuperClass|null
+     * @return int[]
      */
-    public function getRoot()
+    public function getRecursiveChildrenIds(): array
+    {
+        $childrenIds = [];
+        foreach ($this->children as $child) {
+            $childrenIds[] = $child->getId();
+            if (!$this->children->isEmpty()) {
+                $childrenIds = array_merge($childrenIds, $child->getRecursiveChildrenIds());
+            }
+        }
+
+        return $childrenIds;
+    }
+
+    public function getRoot(): ?self
     {
         return $this->root;
     }
 
-    /**
-     * @param ObjectCategorySuperClass $root
-     *
-     * @return self
-     */
-    public function setRoot($root): self
+    public function setRoot(?TreeStructuredEntityInterface $root): self
     {
         $this->root = $root;
 
@@ -193,6 +215,51 @@ class ObjectCategorySuperClass extends AbstractEntity
     public function isCategoryRoot(): bool
     {
         return $this->root === null;
+    }
+
+    public function getObjects()
+    {
+        return $this->objects;
+    }
+
+    public function addObject(ObjectSuperClass $object): self
+    {
+        if (!$this->objects->contains($object)) {
+            $this->objects->add($object);
+            $object->setCategory($this);
+        }
+
+        return $this;
+    }
+
+    public function removeObject(ObjectSuperClass $object): self
+    {
+        if ($this->objects->contains($object)) {
+            $this->objects->removeElement($object);
+            $object->setCategory(null);
+        }
+
+        return $this;
+    }
+
+    public function getAnrObjectCategories()
+    {
+        return $this->anrObjectCategories;
+    }
+
+    public function hasAnrLink(AnrSuperClass $anr): bool
+    {
+        return $this->anrs->contains($anr);
+    }
+
+    public function removeAnrLink(AnrSuperClass $anr): self
+    {
+        if ($this->anrs->contains($anr)) {
+            $this->anrs->remove($anr);
+            $anr->removeObjectCategory($this);
+        }
+
+        return $this;
     }
 
     public function setLabels(array $labels): self
@@ -216,29 +283,15 @@ class ObjectCategorySuperClass extends AbstractEntity
         return (string)$this->{'label' . $languageIndex};
     }
 
+    public function getPosition(): int
+    {
+        return $this->position;
+    }
+
     public function setPosition(int $position): self
     {
         $this->position = $position;
 
         return $this;
-    }
-
-    public function getInputFilter($partial = false)
-    {
-        if (!$this->inputFilter) {
-            parent::getInputFilter($partial);
-
-            $texts = ['label1', 'label2', 'label3', 'label4'];
-            foreach ($texts as $text) {
-                $this->inputFilter->add(array(
-                    'name' => $text,
-                    'required' => false,
-                    'allow_empty' => false,
-                    'filters' => array(),
-                    'validators' => array(),
-                ));
-            }
-        }
-        return $this->inputFilter;
     }
 }

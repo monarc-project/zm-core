@@ -1,286 +1,145 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
 namespace Monarc\Core\Service;
 
-use Doctrine\Common\Collections\Criteria;
+use Doctrine\Common\Collections\Expr\Comparison;
 use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\NonUniqueResultException;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\InputFormatter\FormattedInputParams;
 use Monarc\Core\Model\Entity\AbstractEntity;
-use Monarc\Core\Model\Entity\AmvSuperClass;
 use Monarc\Core\Model\Entity\AnrObjectCategory;
 use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\Asset;
-use Monarc\Core\Model\Entity\InstanceSuperClass;
+use Monarc\Core\Model\Entity\AssetSuperClass;
 use Monarc\Core\Model\Entity\Model;
 use Monarc\Core\Model\Entity\MonarcObject;
+use Monarc\Core\Model\Entity\ObjectCategory;
 use Monarc\Core\Model\Entity\ObjectCategorySuperClass;
 use Monarc\Core\Model\Entity\ObjectSuperClass;
-use Monarc\Core\Model\Table\AnrObjectCategoryTable;
+use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\InstanceRiskOpTable;
 use Monarc\Core\Model\Table\InstanceTable;
-use Monarc\Core\Model\Table\ObjectCategoryTable;
-use Monarc\Core\Model\Table\ObjectObjectTable;
-use Monarc\Core\Model\Table\MonarcObjectTable;
 use Monarc\Core\Table;
 use Doctrine\ORM\Mapping\MappingException;
 use Doctrine\ORM\Query\QueryException;
 use Monarc\Core\Model\Table\RolfTagTable;
+use Monarc\Core\Table\MonarcObjectTable;
 
-/**
- * Object Service
- *
- * Class ObjectService
- * @package Monarc\Core\Service
- */
-class ObjectService extends AbstractService
+class ObjectService
 {
-    protected $objectObjectService;
-    protected $instanceRiskOpService;
-    protected $anrObjectCategoryEntity;
-    protected $anrTable;
-    protected $userAnrTable;
-    protected $anrObjectCategoryTable;
-    protected $assetTable;
-    protected $assetService;
-    protected $categoryTable;
-    protected $instanceTable;
-    protected $instanceRiskOpTable;
-    protected $modelTable;
-    protected $objectObjectTable;
-    protected $rolfTagTable;
-    protected $amvTable;
-    protected $objectExportService;
-    protected $filterColumns = ['name1', 'name2', 'name3', 'name4', 'label1', 'label2', 'label3', 'label4'];
-    protected $dependencies = ['anr', 'asset', 'category', 'rolfTag'];
+    public const MODE_OBJECT_EDIT = 'edit';
+    public const MODE_KNOWLEDGE_BASE = 'bdc';
+    public const MODE_ANR = 'anr';
 
-    /**
-     * Get List Specific
-     *
-     * @param int $page
-     * @param int $limit
-     * @param null $order
-     * @param null $filter
-     * @param null $asset
-     * @param null $category
-     * @param null $modelId
-     * @param null $anr
-     * @param null $lock
-     *
-     * @return array
-     * @throws Exception
-     */
-    public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $modelId = null, $anr = null, $lock = null)
+    private Table\MonarcObjectTable $monarcObjectTable;
+
+    private Table\AssetTable $assetTable;
+
+    private Table\ModelTable $modelTable;
+
+    private Table\ObjectObjectTable $objectObjectTable;
+
+    private Table\ObjectCategoryTable $objectCategoryTable;
+
+    private Table\AnrObjectCategoryTable $anrObjectCategoryTable;
+
+    private InstanceTable $instanceTable;
+
+    private ObjectObjectService $objectObjectService;
+
+    private UserSuperClass $connectedUser;
+
+    public function __construct(
+        Table\MonarcObjectTable $monarcObjectTable,
+        Table\AssetTable $assetTable,
+        Table\ModelTable $modelTable,
+        Table\ObjectObjectTable $objectObjectTable,
+        Table\ObjectCategoryTable $objectCategoryTable,
+        Table\AnrObjectCategoryTable $anrObjectCategoryTable,
+        InstanceTable $instanceTable,
+        ObjectObjectService $objectObjectService,
+        ConnectedUserService $connectedUserService
+    ) {
+        $this->monarcObjectTable = $monarcObjectTable;
+        $this->assetTable = $assetTable;
+        $this->modelTable = $modelTable;
+        $this->objectObjectTable = $objectObjectTable;
+        $this->objectCategoryTable = $objectCategoryTable;
+        $this->anrObjectCategoryTable = $anrObjectCategoryTable;
+        $this->instanceTable = $instanceTable;
+        $this->objectObjectService = $objectObjectService;
+        $this->connectedUser = $connectedUserService->getConnectedUser();
+    }
+
+    public function getListSpecific(FormattedInputParams $formattedInputParams): array
     {
-        /** @var AssetService $assetService */
-        $assetService = $this->get('assetService');
-        /** @var ObjectCategoryTable $categoryTable */
-        $categoryTable = $this->get('categoryTable');
-
-        $filterAnd = [];
-        $assetsTab = [];
-        if ((!is_null($asset)) && ($asset != null)) {
-            $assetsTab[] = $asset;
-            $filterAnd['asset'] = ['op' => 'IN', 'value' => $assetsTab];
+        if (!$this->areAnrObjectsValid($formattedInputParams)) {
+            return [];
         }
-        if ((!is_null($category)) && ($category != 0)) {
-            if ($category > 0) {
-                $child = $lock == 'true' ? [] : $categoryTable->getDescendants($category);
-                $child[] = $category;
-            } elseif ($category == -1) {
-                $child = null;
-            }
+        $this->prepareObjectsListFilter($formattedInputParams);
 
-            $filterAnd['category'] = $child;
-        }
+        /** @var MonarcObject $objects */
+        $objects = $this->monarcObjectTable->findByParams($formattedInputParams);
 
-        $objects = $this->getAnrObjects($page, $limit, $order, $filter, $filterAnd, $modelId, $anr);
-
-        $rootArray = [];
-
+        $result = [];
         foreach ($objects as $object) {
-            /** @var Asset $asset */
-            $asset = $object['asset'];
-            $object['asset'] = $assetService->prepareAssetDataResult($asset);
-            if (!empty($object['category'])) {
-                $object['category'] = $categoryTable->get($object['category']->getId());
-            }
-            $rootArray[(string)$object['uuid']] = $object;
+            $result[] = $this->getPreparedObjectData($object);
         }
 
-        return array_values($rootArray);
+        return $result;
     }
 
-    /**
-     * Get Anr Objects
-     *
-     * @param $page
-     * @param $limit
-     * @param $order
-     * @param $filter
-     * @param $filterAnd
-     * @param $modelId
-     * @param $anr
-     *
-     * @return array|bool
-     */
-    public function getAnrObjects($page, $limit, $order, $filter, $filterAnd, $modelId, $anr, $context = AbstractEntity::BACK_OFFICE)
+    public function getCount(FormattedInputParams $formattedInputParams): int
     {
-        if ($modelId) {
-            /** @var Table\ModelTable $modelTable */
-            $modelTable = $this->get('modelTable');
-            /** @var Model $model */
-            $model = $modelTable->findById($modelId);
-            if ($model->isGeneric()) { // le modèle est générique, on récupère les modèles génériques
-                $filterAnd['mode'] = MonarcObject::MODE_GENERIC;
-            } else {
-                $filterAnd['asset'] = [];
-                $assets = $model->getAssets();
-                foreach ($assets as $a) { // on récupère tous les assets associés au modèle et on ne prend que les spécifiques
-                    if ($a->get('mode') == MonarcObject::MODE_SPECIFIC) {
-                        $filterAnd['asset'][$a->getUuid()] = $a->getUuid();
-                    }
-                }
-                if (!$model->isRegulator()) { // si le modèle n'est pas régulateur
-                    $assets = $this->get('assetTable')->getEntityByFields(['mode' => MonarcObject::MODE_GENERIC]); // on récupère tous les assets génériques
-                    foreach ($assets as $a) {
-                        $filterAnd['asset'][$a->getUuid()] = $a->getUuid();
-                    }
-                }
-                if (!empty($filterAnd['asset'])) {
-                    $filterAnd['asset'] = array_values($filterAnd['asset']);
-                }
-            }
-            if ($context != AbstractEntity::FRONT_OFFICE) {
-                $objects = $model->getAnr()->getObjects();
-                if (!empty($objects)) { // on enlève tout les objets déjà liés
-                    foreach ($objects as $o) {
-                        $filterAnd['uuid']['value'][$o->getUuid()] = $o->getUuid();
-                    }
-                    if (!empty($filterAnd['uuid']['value'])) {
-                        $filterAnd['uuid'] = [
-                            'op' => 'NOT IN',
-                            'value' => array_values($filterAnd['uuid']['value']),
-                        ];
-                    }
-                }
-            }
-        } elseif ($anr) {
-            /** @var AnrTable $anrTable */
-            $anrTable = $this->get('anrTable');
-            $anrObj = $anrTable->getEntity($anr);
-            $objects = $anrObj->get('objects');
-            $value = [];
-            foreach ($objects as $o) { // on en prend que les objets déjà liés (composants)
-                $value[] = $o->getUuid();
-            }
-            if (empty($value)) {
-                return [];
-            }
-            $filterAnd['uuid'] = ['op' => 'IN', 'value' => $value];
+        if (!$this->areAnrObjectsValid($formattedInputParams)) {
+            return 0;
         }
+        $this->prepareObjectsListFilter($formattedInputParams);
 
-        /** @var MonarcObjectTable $monarcObjectTable */
-        $monarcObjectTable = $this->get('table');
-
-        return $monarcObjectTable->fetchAllFiltered(
-            array_keys($this->get('entity')->getJsonArray()),
-            $page,
-            $limit,
-            $this->parseFrontendOrder($order),
-            $this->parseFrontendFilter($filter, $this->filterColumns),
-            $filterAnd
-        );
+        return $this->monarcObjectTable->countByParams($formattedInputParams);
     }
 
-    /**
-     * Get Complete Entity
-     *
-     * @param $id
-     * @param string $anrContext
-     * @param null $anr
-     *
-     * @return mixed
-     * @throws Exception
-     */
-    public function getCompleteEntity($id, $anrContext = MonarcObject::CONTEXT_BDC, $anr = null)
+    public function getObjectData(string $uuid, FormattedInputParams $formattedInputParams)
     {
-        $monarcFO = false;
-        $table = $this->get('table');
-        try {
-            /** @var MonarcObject $object */
-            $object = $table->getEntity($id);
-        } catch (QueryException | MappingException $e) {
-            $object = $table->getEntity(['uuid' => $id, 'anr' => $anr]);
-            $monarcFO = true;
+        /** @var ObjectSuperClass $object */
+        $object = $this->monarcObjectTable->findByUuid($uuid);
+
+        $objectData = $this->getPreparedObjectData($object);
+
+        $filteredData = $formattedInputParams->getFilter();
+
+        /* Object edit dialog scenario. */
+        if ($this->isEditObjectMode($filteredData)) {
+            return $objectData;
         }
 
-        $objectArr = $object->getJsonArray();
+        $objectData['children'] = $this->getChildrenTreeList($object);
+        $objectData['risks'] = $this->getRisks($object);
+        $objectData['oprisks'] = $this->getRisksOp($object);
+        $objectData['parents'] = $this->getDirectParents($object);
 
-        // Retrieve children recursively
-        /** @var ObjectObjectService $objectObjectService */
-        $objectObjectService = $this->get('objectObjectService');
-        if ($object->getAnr() == null) {
-            $objectArr['children'] = $objectObjectService->getRecursiveChildren((string)$objectArr['uuid'], null);
-        } else {
-            $objectArr['children'] = $objectObjectService->getRecursiveChildren((string)$objectArr['uuid'], $anr);
-        }
+        if ($this->isAnrObjectMode($filteredData)) {
+            /* Anr/model object in a library scenario.*/
+            $anr = $this->getValidatedAnr($filteredData, $object);
 
-        // Calculate the risks table
-        $objectArr['risks'] = $this->getRisks($object);
-        $objectArr['oprisks'] = $this->getRisksOp($object);
-        $objectArr['parents'] = $this->getDirectParents((string)$objectArr['uuid'], $anr);
+            $instances = $this->instanceTable->findByAnrAndObject($anr, $object);
 
-        // Retrieve parent recursively
-        if ($anrContext == MonarcObject::CONTEXT_ANR) {
-            //Check if the object is linked to the $anr
-            $found = false;
-            $anrObject = null;
-            foreach ($object->getAnrs() as $a) {
-                if ($a->getId() === $anr) {
-                    $found = true;
-                    $anrObject = $a;
-                    break;
-                }
-            }
-
-            if (!$found) {
-                throw new Exception('This object is not bound to the ANR', 412);
-            }
-
-            if (!$anr) {
-                throw new Exception('Anr missing', 412);
-            }
-
-            /** @var InstanceTable $instanceTable */
-            $instanceTable = $this->get('instanceTable');
-            if ($monarcFO) {
-                $instances = $instanceTable->getEntityByFields([
-                    'anr' => $anr,
-                    'object' => ['uuid' => $id, 'anr' => $anr],
-                ]);
-            } else {
-                $instances = $instanceTable->getEntityByFields(['anr' => $anr, 'object' => $id]);
-            }
-
-
-            $instances_arr = [];
-            /** @var InstanceSuperClass $instance */
+            $objectData['replicas'] = [];
             foreach ($instances as $instance) {
                 $instanceHierarchy = $instance->getHierarchyArray();
 
                 $names = [
-                    'name1' => $anrObject->getLabelByLanguageIndex(1),
-                    'name2' => $anrObject->getLabelByLanguageIndex(2),
-                    'name3' => $anrObject->getLabelByLanguageIndex(3),
-                    'name4' => $anrObject->getLabelByLanguageIndex(4),
+                    'name1' => $anr->getLabelByLanguageIndex(1),
+                    'name2' => $anr->getLabelByLanguageIndex(2),
+                    'name3' => $anr->getLabelByLanguageIndex(3),
+                    'name4' => $anr->getLabelByLanguageIndex(4),
                 ];
                 foreach ($instanceHierarchy as $instanceData) {
                     $names['name1'] .= ' > ' . $instanceData['name1'];
@@ -288,186 +147,89 @@ class ObjectService extends AbstractService
                     $names['name3'] .= ' > ' . $instanceData['name3'];
                     $names['name4'] .= ' > ' . $instanceData['name4'];
                 }
-                $names['id'] = $instance->get('id');
-                $instances_arr[] = $names;
+                $names['id'] = $instance->getId();
+                $objectData['replicas'][] = $names;
             }
 
-            $objectArr['replicas'] = $instances_arr;
-        } else {
-            $anrIds = [];
-            foreach ($object->getAnrs() as $item) {
-                $anrIds[] = $item->getId();
-            }
-
-            $objectArr['replicas'] = [];
-            if (!empty($anrIds)) {
-                /** @var Table\ModelTable $modelTable */
-                $modelTable = $this->get('modelTable');
-                $models = $modelTable->findByAnrIds($anrIds);
-
-                $modelsData = [];
-                foreach ($models as $model) {
-                    $modelsData[] = [
-                        'id' => $model->getId(),
-                        'label1' => $model->getLabel(1),
-                        'label2' => $model->getLabel(2),
-                        'label3' => $model->getLabel(3),
-                        'label4' => $model->getLabel(4),
-                    ];
-                }
-
-                $objectArr['replicas'] = $modelsData;
-            }
+            return $objectData;
         }
 
-        return $objectArr;
-    }
-
-    protected function getRisks(ObjectSuperClass $object): array
-    {
-        /** @var Table\AmvTable $amvTable */
-        $amvTable = $this->get('amvTable');
-        // TODO: Check if it works of FO.
-        $params = (new FormattedInputParams())
-            ->addFilter('asset', ['value' => $object->getAsset()])
-            ->addOrder('position', Criteria::ASC);
-        /** @var AmvSuperClass[] $amvs */
-        $amvs = $amvTable->findByParams($params);
-
-        $risks = [];
-        foreach ($amvs as $amv) {
-            $risks[] = [
-                'id' => $amv->getUuid(),
-                'threatLabel1' => $amv->getThreat()->getLabel(1),
-                'threatLabel2' => $amv->getThreat()->getLabel(2),
-                'threatLabel3' => $amv->getThreat()->getLabel(3),
-                'threatLabel4' => $amv->getThreat()->getLabel(4),
-                'threatDescription1' => $amv->getThreat()->getDescription(1),
-                'threatDescription2' => $amv->getThreat()->getDescription(2),
-                'threatDescription3' => $amv->getThreat()->getDescription(3),
-                'threatDescription4' => $amv->getThreat()->getDescription(4),
-                'threatRate' => '-',
-                'vulnLabel1' => $amv->getVulnerability()->getLabel(1),
-                'vulnLabel2' => $amv->getVulnerability()->getLabel(2),
-                'vulnLabel3' => $amv->getVulnerability()->getLabel(3),
-                'vulnLabel4' => $amv->getVulnerability()->getLabel(4),
-                'vulnDescription1' => $amv->getVulnerability()->getDescription(1),
-                'vulnDescription2' => $amv->getVulnerability()->getDescription(2),
-                'vulnDescription3' => $amv->getVulnerability()->getDescription(3),
-                'vulnDescription4' => $amv->getVulnerability()->getDescription(4),
-                'vulnerabilityRate' => '-',
-                'c_risk' => '-',
-                'c_risk_enabled' => $amv->getThreat()->getConfidentiality(),
-                'i_risk' => '-',
-                'i_risk_enabled' => $amv->getThreat()->getIntegrity(),
-                'd_risk' => '-',
-                'd_risk_enabled' => $amv->getThreat()->getAvailability(),
-                'comment' => '',
-            ];
+        /* Knowledge base scenario. */
+        $anrIds = [];
+        foreach ($object->getAnrs() as $item) {
+            $anrIds[] = $item->getId();
         }
 
-        return $risks;
-    }
+        $objectData['replicas'] = [];
+        if (!empty($anrIds)) {
+            $models = $this->modelTable->findByAnrIds($anrIds);
 
-    protected function getRisksOp(ObjectSuperClass $object): array
-    {
-        $riskOps = [];
-
-        if ($object->getRolfTag() !== null && $object->getAsset()->isPrimary()) {
-            foreach ($object->getRolfTag()->getRisks() as $rolfRisk) {
-                $riskOps[] = [
-                    'label1' => $rolfRisk->getLabel(1),
-                    'label2' => $rolfRisk->getLabel(2),
-                    'label3' => $rolfRisk->getLabel(3),
-                    'label4' => $rolfRisk->getLabel(4),
-                    'description1' => $rolfRisk->getDescription(1),
-                    'description2' => $rolfRisk->getDescription(2),
-                    'description3' => $rolfRisk->getDescription(3),
-                    'description4' => $rolfRisk->getDescription(4),
+            $modelsData = [];
+            foreach ($models as $model) {
+                $modelsData[] = [
+                    'id' => $model->getId(),
+                    'label1' => $model->getLabel(1),
+                    'label2' => $model->getLabel(2),
+                    'label3' => $model->getLabel(3),
+                    'label4' => $model->getLabel(4),
                 ];
             }
+
+            $objectData['replicas'] = $modelsData;
         }
 
-        return $riskOps;
+        return $objectData;
     }
 
-    /**
-     * Get Filtered Count
-     *
-     * @param null $filter
-     * @param null $asset
-     * @param null $category
-     * @param null $model
-     *
-     * @return int
-     */
-    public function getFilteredCount($filter = null, $asset = null, $category = null, $modelId = null, $anr = null, $context = MonarcObject::BACK_OFFICE)
+    public function getLibraryTreeStructure(AnrSuperClass $anr): array
     {
-        $filterAnd = [];
-        if ((!is_null($asset)) && ($asset != 0)) {
-            $filterAnd['asset'] = $asset;
-        }
-        if ((!is_null($category)) && ($category != 0)) {
-            $filterAnd['category'] = $category;
-        }
-
-        $result = $this->getAnrObjects(1, 0, null, $filter, $filterAnd, $modelId, $anr, $context);
-
-        return count($result);
-    }
-
-    /**
-     * Recursive child
-     *
-     * @param $hierarchy
-     * @param $parent
-     * @param $childHierarchy
-     *
-     * @return mixed
-     */
-    public function recursiveChild($hierarchy, $parent, &$childHierarchy, $objectsArray)
-    {
-        $children = [];
-        foreach ($childHierarchy as $key => $link) {
-            if ((int)$link['father'] == $parent) {
-                $recursiveChild = $this->recursiveChild($hierarchy, $link['child'], $childHierarchy, $objectsArray);
-                $recursiveChild['objectObjectId'] = $link['id'];
-                $children[] = $recursiveChild;
-                unset($childHierarchy[$key]);
+        $result = [];
+        foreach ($anr->getAnrObjectCategories() as $anrObjectCategory) {
+            $objectCategory = $anrObjectCategory->getCategory();
+            $objectsData = [];
+            foreach ($objectCategory->getObjects() as $object) {
+                $objectsData[] = $this->getPreparedObjectData($object, true);
+            }
+            if (!empty($objectsData)) {
+                $result['categories'][] = $this->getPreparedObjectCategoryData($objectCategory, $objectsData);
             }
         }
 
-        $result = $objectsArray[$parent];
-        $this->formatDependencies($result, $this->dependencies);
-        if ($children) {
-            $result['childs'] = $children;
+        /* Places uncategorized objects. */
+        $objectsData = [];
+        foreach ($anr->getObjects() as $object) {
+            if ($object->getCategory() === null) {
+                $objectsData[] = $this->getPreparedObjectData($object, true);
+            }
+        }
+        if (!empty($objectsData)) {
+            $result['categories'][-1] = [
+                'id' => -1,
+                'label1' => 'Sans catégorie',
+                'label2' => 'Uncategorized',
+                'label3' => 'Keine Kategorie',
+                'label4' => 'Geen categorie',
+                'position' => -1,
+                'child' => [],
+                'objects' => $objectsData,
+            ];
         }
 
         return $result;
     }
 
-    /**
-     * @param $data
-     * @param bool $last
-     * @param string $context
-     *
-     * @return mixed
-     * @throws Exception
-     */
-    public function create($data, $last = true, $context = AbstractEntity::BACK_OFFICE)
+    // TODO: stopped here ...
+
+    public function create($data, $saveInDb = true)
     {
-        /** @var MonarcObjectTable $monarcObjectTable */
-        $monarcObjectTable = $this->get('table');
-        $entity = $monarcObjectTable->getEntityClass();
-        /** @var MonarcObject $monarcObject */
-        $monarcObject = new $entity;
-        $monarcObject->setLanguage($this->getLanguage());
-        $monarcObject->setDbAdapter($monarcObjectTable->getDb());
+        $context = AbstractEntity::BACK_OFFICE;
+
+        $monarcObject = new MonarcObject();
 
         //in FO, all objects are generics
-        if ($context == AbstractEntity::FRONT_OFFICE) {
-            $data['mode'] = MonarcObject::MODE_GENERIC;
-        }
+//        if ($context == AbstractEntity::FRONT_OFFICE) {
+//            $data['mode'] = MonarcObject::MODE_GENERIC;
+//        }
 
         $setRolfTagNull = false;
         if (empty($data['rolfTag'])) {
@@ -503,7 +265,6 @@ class ObjectService extends AbstractService
             }
         }
 
-        $monarcObject->setDbAdapter($monarcObjectTable->getDb());
         $monarcObject->exchangeArray($data);
 
         //object dependencies
@@ -523,7 +284,7 @@ class ObjectService extends AbstractService
         }
 
         if (isset($data['source'])) {
-            $monarcObject->source = $monarcObjectTable->getEntity($data['source']);
+            $monarcObject->source = $this->monarcObjectTable->getEntity($data['source']);
         }
 
         //security
@@ -545,9 +306,9 @@ class ObjectService extends AbstractService
             throw new Exception('You cannot create an object that is both global and primary', 412);
         }
 
-        if ($context === MonarcObject::BACK_OFFICE) {
+        if ($context === AbstractEntity::BACK_OFFICE) {
             //create object type bdc
-            $id = $monarcObjectTable->save($monarcObject);
+            $id = $this->monarcObjectTable->save($monarcObject);
 
             //attach object to anr
             if ($model !== null) {
@@ -557,7 +318,7 @@ class ObjectService extends AbstractService
             $id = $this->attachObjectToAnr($monarcObject, $anr, null, null, $context);
         } else {
             //create object type anr
-            $id = $monarcObjectTable->save($monarcObject);
+            $id = $this->monarcObjectTable->save($monarcObject);
         }
 
         return $id;
@@ -673,9 +434,9 @@ class ObjectService extends AbstractService
             $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
         );
 
-        /** @var MonarcObjectTable $monarcObjectTable */
+        /** @var Table\MonarcObjectTable $monarcObjectTable */
         $monarcObjectTable = $this->get('table');
-        $monarcObjectTable->saveEntity($monarcObject);
+        $monarcObjectTable->save($monarcObject);
 
         $newRootCategory = $monarcObject->getCategory()->getRoot() ?: $monarcObject->getCategory();
 
@@ -712,14 +473,6 @@ class ObjectService extends AbstractService
         return $id;
     }
 
-    /**
-     * Patch
-     *
-     * @param $id
-     * @param $data
-     *
-     * @return mixed
-     */
     public function patch($id, $data, $context = AbstractEntity::FRONT_OFFICE)
     {
         // in FO, all objects are generics
@@ -744,13 +497,13 @@ class ObjectService extends AbstractService
         $monarcObject->setLanguage($this->getLanguage());
         unset($data['anr']);
 
-        $rolfTagId = ($monarcObject->rolfTag) ? $monarcObject->rolfTag->id : null;
+        $rolfTagId = ($monarcObject->getRolfTag()) ? $monarcObject->getRolfTag()->getId() : null;
 
         $monarcObject->exchangeArray($data, true);
 
-        if ($monarcObject->rolfTag) {
-            $newRolfTagId = (is_int($monarcObject->rolfTag)) ? $monarcObject->rolfTag : $monarcObject->rolfTag->id;
-            $newRolfTag = ($rolfTagId == $newRolfTagId) ? false : $monarcObject->rolfTag;
+        if ($monarcObject->getRolfTag()) {
+            $newRolfTagId = (is_int($monarcObject->getRolfTag())) ? $monarcObject->getRolfTag() : $monarcObject->getRolfTag()->getId();
+            $newRolfTag = $rolfTagId === $newRolfTagId ? false : $monarcObject->getRolfTag();
         } else {
             $newRolfTag = false;
         }
@@ -1003,14 +756,12 @@ class ObjectService extends AbstractService
         $id = $this->create($entity, true, $context);
 
         //children
-        /** @var ObjectObjectTable $objectObjectTable */
-        $objectObjectTable = $this->get('objectObjectTable');
         try {
-            $objectsObjects = $objectObjectTable->getEntityByFields(['father' => $data['id']]);
+            $objectsObjects = $this->objectObjectTable->getEntityByFields(['parent' => $data['id']]);
         } catch (QueryException | MappingException $e) {
-            $objectsObjects = $objectObjectTable->getEntityByFields([
+            $objectsObjects = $this->objectObjectTable->getEntityByFields([
                 'anr' => $data['anr'],
-                'father' => [
+                'parent' => [
                     'anr' => $data['anr'],
                     'uuid' => $data['id'],
                 ],
@@ -1035,13 +786,13 @@ class ObjectService extends AbstractService
             $newObjectObject = clone $objectsObject;
             $newObjectObject->setId(null);
             try {
-                $newObjectObject->setFather($this->get('table')->getEntity($id));
+                $newObjectObject->setParent($this->get('table')->getEntity($id));
                 $newObjectObject->setChild($this->get('table')->getEntity($childId));
             } catch (QueryException | MappingException $e) {
-                $newObjectObject->setFather($this->get('table')->getEntity(['anr' => $data['anr'], 'uuid' => $id]));
+                $newObjectObject->setParent($this->get('table')->getEntity(['anr' => $data['anr'], 'uuid' => $id]));
                 $newObjectObject->setChild($this->get('table')->getEntity(['anr' => $data['anr'], 'uuid' => $childId]));
             }
-            $objectObjectTable->save($newObjectObject);
+            $this->objectObjectTable->save($newObjectObject);
         }
 
         return $id;
@@ -1110,37 +861,29 @@ class ObjectService extends AbstractService
 
         //retrieve root category
         if ($object->category && $object->category->id) {
-            /** @var ObjectCategoryTable $objectCategoryTable */
-            $objectCategoryTable = $this->get('categoryTable');
-            $objectCategory = $objectCategoryTable->getEntity($object->category->id);
+            $objectCategory = $this->objectCategoryTable->getEntity($object->category->id);
             $objectRootCategoryId = ($objectCategory->root) ? $objectCategory->root->id : $objectCategory->id;
 
             //add root category to anr
-            /** @var AnrObjectCategoryTable $anrObjectCategoryTable */
-            $anrObjectCategoryTable = $this->get('anrObjectCategoryTable');
-            $anrObjectCategories = $anrObjectCategoryTable->getEntityByFields([
+            $anrObjectCategories = $this->anrObjectCategoryTable->getEntityByFields([
                 'anr' => $anrId,
                 'category' => $objectRootCategoryId,
             ]);
             if (!count($anrObjectCategories)) {
                 $class = $this->get('anrObjectCategoryEntity');
                 $anrObjectCategory = new $class();
-                $anrObjectCategory->setDbAdapter($anrObjectCategoryTable->getDb());
+                $anrObjectCategory->setDbAdapter($this->anrObjectCategoryTable->getDb());
                 $anrObjectCategory->exchangeArray([
                     'anr' => $anr,
                     'category' => (($object->category->root) ? $object->category->root : $object->category),
                     'implicitPosition' => 2,
                 ]);
-                $anrObjectCategoryTable->save($anrObjectCategory);
+                $this->anrObjectCategoryTable->save($anrObjectCategory);
             }
-        } else {
-            $objectRootCategoryId = null;
         }
 
         //children
-        /** @var ObjectObjectService $objectObjectService */
-        $objectObjectService = $this->get('objectObjectService');
-        $children = $objectObjectService->getChildren($object->getUuid(), $anrId);
+        $children = $this->objectObjectService->getChildren($object->getUuid(), $anrId);
         foreach ($children as $child) {
             try {
                 $childObject = $table->getEntity($child->getChild()->getUuid());
@@ -1161,7 +904,7 @@ class ObjectService extends AbstractService
      *
      * @throws Exception
      */
-    public function detachObjectToAnr($objectId, $anrId, $context = MonarcObject::BACK_OFFICE)
+    public function detachObjectFromAnr($objectId, $anrId, $context = AbstractEntity::BACK_OFFICE)
     {
         //verify object exist
         /** @var MonarcObjectTable $table */
@@ -1185,31 +928,31 @@ class ObjectService extends AbstractService
         $objectObjectTable = $this->get('objectObjectTable');
         try {
             $links = $objectObjectTable->getEntityByFields([
-                'anr' => $context === MonarcObject::BACK_OFFICE ? 'null' : $anrId,
+                'anr' => $context === AbstractEntity::BACK_OFFICE ? 'null' : $anrId,
                 'child' => $objectId,
             ]);
         } catch (QueryException | MappingException $e) {
             $links = $objectObjectTable->getEntityByFields([
-                'anr' => $context === MonarcObject::BACK_OFFICE ? 'null' : $anrId,
+                'anr' => $context === AbstractEntity::BACK_OFFICE ? 'null' : $anrId,
                 'child' => ['uuid' => $objectId, 'anr' => $anrId],
             ]);
         }
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('instanceTable');
         foreach ($links as $link) {
-            //retrieve instance with link father object
+            //retrieve instance with link parent object
             $fatherInstancesIds = [];
             try {
                 $fatherInstances = $instanceTable->getEntityByFields([
                     'anr' => $anrId,
-                    'object' => $link->getFather()->getUuid(),
+                    'object' => $link->getParent()->getUuid(),
                 ]);
             } catch (QueryException | MappingException $e) {
                 $fatherInstances = $instanceTable->getEntityByFields([
                     'anr' => $anrId,
                     'object' => [
                         'anr' => $anrId,
-                        'uuid' => $link->getFather()->getUuid(),
+                        'uuid' => $link->getParent()->getUuid(),
                     ],
                 ]);
             }
@@ -1254,16 +997,14 @@ class ObjectService extends AbstractService
         //if the last object of the category in the anr, delete category from anr
         if (!$areObjectsUnderTheRootCategory && $objectRootCategory) {
             //anrs objects categories
-            /** @var AnrObjectCategoryTable $anrObjectCategoryTable */
-            $anrObjectCategoryTable = $this->get('anrObjectCategoryTable');
-            $anrObjectCategories = $anrObjectCategoryTable->getEntityByFields([
+            $anrObjectCategories = $this->anrObjectCategoryTable->getEntityByFields([
                 'anr' => $anrId,
                 'category' => $objectRootCategory->getId(),
             ]);
             $i = 1;
             $nbAnrObjectCategories = count($anrObjectCategories);
             foreach ($anrObjectCategories as $anrObjectCategory) {
-                $anrObjectCategoryTable->delete($anrObjectCategory->id, ($i == $nbAnrObjectCategories));
+                $this->anrObjectCategoryTable->delete($anrObjectCategory->id, ($i == $nbAnrObjectCategories));
                 $i++;
             }
         }
@@ -1300,192 +1041,90 @@ class ObjectService extends AbstractService
         $table->save($object);
     }
 
-    /**
-     * Get Categories Library By Anr
-     *
-     * @param $anrId
-     *
-     * @return mixed
-     */
-    public function getCategoriesLibraryByAnr($anrId)
+    public function getParentsInAnr(AnrSuperClass $anr, string $uuid)
     {
-        // Retrieve objects
-        $anrObjects = [];
-        $objectsCategories = [];
+        /** @var MonarcObject $object */
+        $object = $this->monarcObjectTable->findByUuid($uuid);
 
-        /** @var MonarcObjectTable $monarcObjectTable */
-        $monarcObjectTable = $this->get('table');
-        /** @var ObjectSuperClass[] $objects */
-        $objects = $monarcObjectTable->getEntityByFields(['anrs' => $anrId]);
-
-        foreach ($objects as $object) {
-            if ($object->getCategory()) {
-                $anrObjects[$object->getCategory()->getId()][] = $object->getJsonArray();
-                if (!isset($objectsCategories[$object->getCategory()->getId()])) {
-                    $objectsCategories[$object->getCategory()->getId()] = $object->getCategory()->getJsonArray();
-                }
-            } else {
-                $anrObjects[-1][] = $object->getJsonArray();
-                if (!isset($objectsCategories[-1])) {
-                    // Setup a virtual container category
-                    $objectsCategories[-1] = [
-                        'id' => -1,
-                        'parent' => null,
-                        'objects' => [],
-                        'label1' => 'Sans catégorie',
-                        'label2' => 'Uncategorized',
-                        'label3' => 'Keine Kategorie',
-                        'label4' => '',
-                        'position' => -1,
-                    ];
-                }
-            }
+        if (!$object->hasAnr($anr)) {
+            throw new Exception(sprintf('The object is not linked to the anr ID "%d"', $anr->getId()), 412);
         }
-        unset($objects);
 
-        // Recursively get the parent categories to fill the tree completely
-        $parents = [];
-        foreach ($objectsCategories as $id => $category) {
-            if ($id > 0) {
-                $this->getRecursiveParents($category, $parents, true);
+        $directParents = [];
+        foreach ($object->getParentsLinks() as $parentLink) {
+            if ($parentLink->getParent()->hasAnr($anr)) {
+                $directParents = [
+                    'uuid' => $parentLink->getParent()->getUuid(),
+                    'linkid' => $parentLink->getId(),
+                    'label1' => $parentLink->getParent()->getLabel(1),
+                    'label2' => $parentLink->getParent()->getLabel(2),
+                    'label3' => $parentLink->getParent()->getLabel(3),
+                    'label4' => $parentLink->getParent()->getLabel(4),
+                    'name1' => $parentLink->getParent()->getName(1),
+                    'name2' => $parentLink->getParent()->getName(2),
+                    'name3' => $parentLink->getParent()->getName(3),
+                    'name4' => $parentLink->getParent()->getName(4),
+                ];
             }
         }
 
-        // Concat both the current categories and their parents
-        $objectsCategories = $objectsCategories + $parents;
-
-        foreach ($anrObjects as $idCateg => $anrObject) {
-            // add object to categories to field "objects"
-            if (isset($objectsCategories[$idCateg])) {
-                $objectsCategories[$idCateg]['objects'] = $anrObject;
-            }
-        }
-
-        // Retrieve ANR's categories mapping as root categories can be sorted
-        $anrObjectsCategories = [];
-        /** @var AnrTable $anrTable */
-        /** @var AnrObjectCategoryTable $anrObjectCategoryTable */
-        $anrTable = $this->get('anrTable');
-        $anrObjectCategoryTable = $this->get('anrObjectCategoryTable');
-        $anrObjectCategories = $anrObjectCategoryTable->findByAnrOrderedByPosititon($anrTable->findById($anrId));
-
-        foreach ($anrObjectCategories as $anrObjectCategory) {
-            $anrObjectsCategories[$anrObjectCategory->id] = $this->getChildren($anrObjectCategory->category->getJsonArray(), $objectsCategories);
-            $anrObjectsCategories[$anrObjectCategory->id]['position'] = $anrObjectCategory->get('position'); // overwrite categ position from anr_categ position
-            $anrObjectsCategories[$anrObjectCategory->id]['objects'] = [];
-            if (!empty($anrObjects[$anrObjectCategory->category->id])) {
-                $anrObjectsCategories[$anrObjectCategory->id]['objects'] = $anrObjects[$anrObjectCategory->category->id]; // add objects
-            }
-        }
-        unset($anrObjects);
-
-        // If we created our virtual category, inject it at first position. We won't need to fill it again in the next
-        // loop as we already have the objects and we don't have any sub-categories or nested levels.
-        if (isset($objectsCategories[-1]) && (!empty($objectsCategories[-1]['objects']) || !empty($objectsCategories[-1]['child']))) {
-            $objectsCategories[-1]['position'] = count($anrObjectsCategories) + 1; // on met cette "catégorie" à la fin
-            $anrObjectsCategories[-1] = $objectsCategories[-1];
-        } else {
-            unset($anrObjectsCategories[-1]);
-        }
-        unset($objectsCategories);
-
-        // Order categories by position
-        foreach ($anrObjectsCategories as &$cat) {
-            if (isset($cat['child']) && is_array($cat['child'])) {
-                usort($cat['child'], function ($a, $b) {
-                    return $this->sortCategories($a, $b);
-                });
-            }
-        }
-
-        return $anrObjectsCategories;
+        return $directParents;
     }
 
-    /**
-     * Sort Categories
-     *
-     * @param $a
-     * @param $b
-     *
-     * @return int
-     */
-    protected function sortCategories($a, $b)
+    public function getPreparedObjectData(ObjectSuperClass $object, bool $objectOnly = false): array
     {
-        if (isset($a['position'], $b['position'])) {
-            return ($a['position'] - $b['position']);
+        $result = [
+            'uuid' => $object->getUuid(),
+            'label1' => $object->getLabel(1),
+            'label2' => $object->getLabel(2),
+            'label3' => $object->getLabel(3),
+            'label4' => $object->getLabel(4),
+            'name1' => $object->getName(1),
+            'name2' => $object->getName(2),
+            'name3' => $object->getName(3),
+            'name4' => $object->getName(4),
+            'mode' => $object->getMode(),
+            'scope' => $object->getScope(),
+            'position' => $object->getPosition(),
+        ];
+
+        if (!$objectOnly) {
+            $result['category'] = $object->getCategory() !== null
+                ? [
+                    'id' => $object->getCategory()->getId(),
+                    'label1' => $object->getCategory()->getLabel(1),
+                    'label2' => $object->getCategory()->getLabel(2),
+                    'label3' => $object->getCategory()->getLabel(3),
+                    'label4' => $object->getCategory()->getLabel(4),
+                    'position' => $object->getCategory()->getPosition(),
+                ]
+                : [
+                    'id' => -1,
+                    'label1' => 'Sans catégorie',
+                    'label2' => 'Uncategorized',
+                    'label3' => 'Keine Kategorie',
+                    'label4' => 'Geen categorie',
+                    'position' => -1,
+                ];
+            $result['asset'] = [
+                'uuid' => $object->getAsset()->getUuid(),
+                'code' => $object->getAsset()->getCode(),
+                'label1' => $object->getAsset()->getLabel(1),
+                'label2' => $object->getAsset()->getLabel(2),
+                'label3' => $object->getAsset()->getLabel(3),
+                'label4' => $object->getAsset()->getLabel(4),
+            ];
+            $result['rolfTag'] = $object->getRolfTag() === null ? null : [
+                'id' => $object->getRolfTag()->getId(),
+                'code' => $object->getRolfTag()->getCode(),
+                'label1' => $object->getRolfTag()->getLabel(1),
+                'label2' => $object->getRolfTag()->getLabel(2),
+                'label3' => $object->getRolfTag()->getLabel(3),
+                'label4' => $object->getRolfTag()->getLabel(4),
+            ];
         }
 
-        if (isset($a['position']) && !isset($b['position'])) {
-            return -1;
-        }
-
-        if (isset($b['position']) && !isset($a['position'])) {
-            return 1;
-        }
-
-        return 0;
-    }
-
-    /**
-     * Get Recursive Parents
-     *
-     * @param $category
-     * @param $array
-     */
-    public function getRecursiveParents($category, &$array, $objectToArray = false)
-    {
-        if (is_object($category)) {
-            $category = $category->getJsonArray();
-        }
-
-        if ($category && $category['parent']) {
-            /** @var ObjectCategoryTable $table */
-            $table = $this->get('categoryTable');
-            $parent = $table->getEntity($category['parent']->id);
-
-            if ($objectToArray) {
-                $array[$parent->id] = $parent->getJsonArray();
-            } else {
-                $array[$parent->id] = $parent;
-            }
-
-            $this->getRecursiveParents($parent, $array, $objectToArray);
-        }
-    }
-
-    /**
-     * Get Direct Parents
-     *
-     * @param $object_id
-     *
-     * @return array
-     */
-    public function getDirectParents($object_id, $anrId = null)
-    {
-        /** @var ObjectObjectTable $objectObjectTable */
-        $objectObjectTable = $this->get('objectObjectTable');
-
-        return $objectObjectTable->getDirectParentsInfos($object_id, $anrId);
-    }
-
-    private function getChildren(array $parentObjectCategory, array &$objectsCategories): array
-    {
-        $currentObjectCategory = $parentObjectCategory;
-        unset($objectsCategories[$parentObjectCategory['id']]);
-
-        foreach ($objectsCategories as $objectsCategory) {
-            if ($objectsCategory['parent'] && $objectsCategory['parent']->getId() === $parentObjectCategory['id']) {
-                $objectsCategory = $this->getChildren($objectsCategory, $objectsCategories);
-                $currentObjectCategory['child'][] = $objectsCategory;
-            }
-            unset(
-                $objectsCategory['__initializer__'],
-                $objectsCategory['__cloner__'],
-                $objectsCategory['__isInitialized__']
-            );
-        }
-
-        return $currentObjectCategory;
+        return $result;
     }
 
     /**
@@ -1522,6 +1161,122 @@ class ObjectService extends AbstractService
         return $exported;
     }
 
+    private function getCategoriesWithObjectsChildrenTreeList(ObjectCategorySuperClass $objectCategory): array
+    {
+        $result = [];
+        foreach ($objectCategory->getChildren() as $category) {
+            $objectsData = [];
+            foreach ($objectCategory->getObjects() as $object) {
+                $objectsData[] = $this->getPreparedObjectData($object, true);
+            }
+            if (!empty($objectsData)) {
+                $result[] = $this->getPreparedObjectCategoryData($category, $objectsData);
+            }
+        }
+
+        return $result;
+    }
+
+    private function getPreparedObjectCategoryData(ObjectCategorySuperClass $category, array $objectsData): array
+    {
+        return [
+            'id' => $category->getId(),
+            'label1' => $category->getLabel(1),
+            'label2' => $category->getLabel(2),
+            'label3' => $category->getLabel(3),
+            'label4' => $category->getLabel(4),
+            'position' => $category->getPosition(),
+            'child' => $category->getChildren()->isEmpty()
+                ? []
+                : $this->getCategoriesWithObjectsChildrenTreeList($category),
+            'objects' => $objectsData,
+        ];
+    }
+
+    private function getChildrenTreeList(ObjectSuperClass $object): array
+    {
+        $result = [];
+        foreach ($object->getChildrenLinks() as $childLinkObject) {
+            $result[] = [
+                'component_link_id' => $childLinkObject->getId(),
+                'label1' => $childLinkObject->getChild()->getLabel(1),
+                'label2' => $childLinkObject->getChild()->getLabel(2),
+                'label3' => $childLinkObject->getChild()->getLabel(3),
+                'label4' => $childLinkObject->getChild()->getLabel(4),
+                'name1' => $childLinkObject->getChild()->getName(1),
+                'name2' => $childLinkObject->getChild()->getName(2),
+                'name3' => $childLinkObject->getChild()->getName(3),
+                'name4' => $childLinkObject->getChild()->getName(4),
+                'mode' => $childLinkObject->getChild()->getMode(),
+                'scope' => $childLinkObject->getChild()->getScope(),
+                'children' => $childLinkObject->getChild()->getChildren()->isEmpty()
+                    ? []
+                    : $this->getChildrenTreeList($childLinkObject->getChild()),
+            ];
+        }
+
+        return $result;
+    }
+
+    private function getRisks(ObjectSuperClass $object): array
+    {
+        $risks = [];
+        foreach ($object->getAsset()->getAmvs() as $amv) {
+            $risks[] = [
+                'id' => $amv->getUuid(),
+                'threatLabel1' => $amv->getThreat()->getLabel(1),
+                'threatLabel2' => $amv->getThreat()->getLabel(2),
+                'threatLabel3' => $amv->getThreat()->getLabel(3),
+                'threatLabel4' => $amv->getThreat()->getLabel(4),
+                'threatDescription1' => $amv->getThreat()->getDescription(1),
+                'threatDescription2' => $amv->getThreat()->getDescription(2),
+                'threatDescription3' => $amv->getThreat()->getDescription(3),
+                'threatDescription4' => $amv->getThreat()->getDescription(4),
+                'threatRate' => '-',
+                'vulnLabel1' => $amv->getVulnerability()->getLabel(1),
+                'vulnLabel2' => $amv->getVulnerability()->getLabel(2),
+                'vulnLabel3' => $amv->getVulnerability()->getLabel(3),
+                'vulnLabel4' => $amv->getVulnerability()->getLabel(4),
+                'vulnDescription1' => $amv->getVulnerability()->getDescription(1),
+                'vulnDescription2' => $amv->getVulnerability()->getDescription(2),
+                'vulnDescription3' => $amv->getVulnerability()->getDescription(3),
+                'vulnDescription4' => $amv->getVulnerability()->getDescription(4),
+                'vulnerabilityRate' => '-',
+                'c_risk' => '-',
+                'c_risk_enabled' => $amv->getThreat()->getConfidentiality(),
+                'i_risk' => '-',
+                'i_risk_enabled' => $amv->getThreat()->getIntegrity(),
+                'd_risk' => '-',
+                'd_risk_enabled' => $amv->getThreat()->getAvailability(),
+                'comment' => '',
+            ];
+        }
+
+        return $risks;
+    }
+
+    private function getRisksOp(ObjectSuperClass $object): array
+    {
+        $riskOps = [];
+        if ($object->getRolfTag() !== null && $object->getAsset()->isPrimary()) {
+            foreach ($object->getRolfTag()->getRisks() as $rolfRisk) {
+                $riskOps[] = [
+                    'label1' => $rolfRisk->getLabel(1),
+                    'label2' => $rolfRisk->getLabel(2),
+                    'label3' => $rolfRisk->getLabel(3),
+                    'label4' => $rolfRisk->getLabel(4),
+                    'description1' => $rolfRisk->getDescription(1),
+                    'description2' => $rolfRisk->getDescription(2),
+                    'description3' => $rolfRisk->getDescription(3),
+                    'description4' => $rolfRisk->getDescription(4),
+                ];
+            }
+        }
+
+        return $riskOps;
+    }
+    // TODO: perhaps we need to reset position.
+
     private function unlinkCategoryFromAnrIfNoObjectsOrChildrenLeft(
         ObjectCategorySuperClass $objectCategory,
         AnrSuperClass $anr
@@ -1534,23 +1289,20 @@ class ObjectService extends AbstractService
             return;
         }
 
-        /** @var AnrObjectCategoryTable $anrObjectCategoryTable */
-        $anrObjectCategoryTable = $this->get('anrObjectCategoryTable');
-
         // Remove the relation with Anr (AnrObjectCategory) if exists.
-        $anrObjectCategory = $anrObjectCategoryTable->findOneByAnrAndObjectCategory($anr, $objectCategory);
+        // TODO:  We can do now: if ($objectCategory->hasAnrLink($anr)) { $objectCategory->removeAnrLink(); }
+        $anrObjectCategory = $this->anrObjectCategoryTable->findOneByAnrAndObjectCategory($anr, $objectCategory);
         if ($anrObjectCategory !== null) {
-            $anrObjectCategoryTable->delete($anrObjectCategory->getId());
+            $this->anrObjectCategoryTable->delete($anrObjectCategory->getId());
         }
     }
 
+    /** TODO: Not just a refactoring, but position update also. */
     private function linkCategoryWithAnrIfNotLinked(
         ObjectCategorySuperClass $objectCategory,
         AnrSuperClass $anr
     ): void {
-        /** @var AnrObjectCategoryTable $anrObjectCategoryTable */
-        $anrObjectCategoryTable = $this->get('anrObjectCategoryTable');
-        $anrObjectCategory = $anrObjectCategoryTable->findOneByAnrAndObjectCategory($anr, $objectCategory);
+        $anrObjectCategory = $this->anrObjectCategoryTable->findOneByAnrAndObjectCategory($anr, $objectCategory);
         if ($anrObjectCategory !== null) {
             return;
         }
@@ -1560,11 +1312,137 @@ class ObjectService extends AbstractService
         $anrObjectCategory = new $anrObjectCategory;
         $anrObjectCategory->setAnr($anr)->setCategory($objectCategory);
 
-        /** @var AnrObjectCategoryTable $anrObjectCategoryTable */
-        $anrObjectCategoryTable = $this->get('anrObjectCategoryTable');
-        $anrObjectCategory->setDbAdapter($anrObjectCategoryTable->getDb());
+        $anrObjectCategory->setDbAdapter($this->anrObjectCategoryTable->getDb());
         $anrObjectCategory->exchangeArray(['implicitPosition' => 2]);
 
-        $anrObjectCategoryTable->save($anrObjectCategory);
+        $this->anrObjectCategoryTable->save($anrObjectCategory);
+    }
+
+    private function getDirectParents(ObjectSuperClass $object): array
+    {
+        $parents = [];
+        foreach ($object->getParents() as $parentObject) {
+            $parents[] = [
+                'name1' => $parentObject->getName(1),
+                'name2' => $parentObject->getName(2),
+                'name3' => $parentObject->getName(3),
+                'name4' => $parentObject->getName(4),
+                'label1' => $parentObject->getLabel(1),
+                'label2' => $parentObject->getLabel(2),
+                'label3' => $parentObject->getLabel(3),
+                'label4' => $parentObject->getLabel(4),
+            ];
+        }
+
+        return $parents;
+    }
+
+    private function isEditObjectMode(array $filteredData): bool
+    {
+        return isset($filteredData['mode']) && $filteredData['mode'] === self::MODE_OBJECT_EDIT;
+    }
+
+    private function isAnrObjectMode(array $filteredData): bool
+    {
+        return isset($filteredData['mode']) && $filteredData['mode'] === self::MODE_ANR;
+    }
+
+    private function getValidatedAnr(array $filteredData, ObjectSuperClass $object): AnrSuperClass
+    {
+        $anr = $filteredData['anr'] ?? null;
+        if (!$anr instanceof AnrSuperClass) {
+            throw new \Exception('Anr parameter has to be passed missing for the mode "anr".', 412);
+        }
+        if (!$object->hasAnr($anr)) {
+            throw new Exception(sprintf('The object is not linked to the anr ID "%d"', $anr->getId()), 412);
+        }
+
+        return $anr;
+    }
+
+    private function areAnrObjectsValid(FormattedInputParams $formattedInputParams): bool
+    {
+        $anrFilter = $formattedInputParams->getFilterFor('anr');
+        if (empty($anrFilter['value'])) {
+            return true;
+        }
+
+        /** @var AnrSuperClass $anr */
+        $anr = $anrFilter['value'];
+
+        return !$anr->getObjects()->isEmpty();
+    }
+
+    private function prepareObjectsListFilter(FormattedInputParams $formattedInputParams): void
+    {
+        $this->prepareCategoryFilter($formattedInputParams);
+        $this->prepareModelFilter($formattedInputParams);
+        $this->prepareAnrFilter($formattedInputParams);
+    }
+
+    private function prepareModelFilter(FormattedInputParams $formattedInputParams): void
+    {
+        $modelFilter = $formattedInputParams->getFilterFor('model');
+        if (!empty($modelFilter['value'])) {
+            /** @var Model $model */
+            $model = $this->modelTable->findById($modelFilter['value']);
+            if ($model->isGeneric()) {
+                $formattedInputParams->setFilterValueFor('mode', ObjectSuperClass::MODE_GENERIC);
+            } else {
+                $assetsFilter = [];
+                foreach ($model->getAssets() as $asset) {
+                    if ($asset->isModeSpecific()) {
+                        $assetsFilter[$asset->getUuid()] = $asset->getUuid();
+                    }
+                }
+                if (!$model->isRegulator()) {
+                    $assets = $this->assetTable->findByMode(AssetSuperClass::MODE_GENERIC);
+                    foreach ($assets as $asset) {
+                        $assetsFilter[$asset->getUuid()] = $asset->getUuid();
+                    }
+                }
+                $formattedInputParams->setFilterValueFor('asset', array_values($assetsFilter));
+            }
+
+            $objectsToFilterOut = [];
+            foreach ($model->getAnr()->getObjects() as $object) {
+                $objectsToFilterOut[$object->getUuid()] = $object->getUuid();
+            }
+            if (!empty($objectsToFilterOut)) {
+                $formattedInputParams->setFilterFor('uuid', [
+                    'value' => array_values($objectsToFilterOut),
+                    'operator' => Comparison::NIN,
+                ]);
+            }
+        }
+    }
+
+    private function prepareAnrFilter(FormattedInputParams $formattedInputParams): void
+    {
+        $anrFilter = $formattedInputParams->getFilterFor('anr');
+        if (!empty($anrFilter['value'])) {
+            /** @var AnrSuperClass $anr */
+            $anr = $anrFilter['value'];
+            $objectsUuids = [];
+            foreach ($anr->getObjects() as $object) {
+                $objectsUuids[] = $object->getUuid();
+            }
+
+            $formattedInputParams->setFilterValueFor('uuid', $objectsUuids);
+        }
+    }
+
+    private function prepareCategoryFilter(FormattedInputParams $formattedInputParams): void
+    {
+        $lockFilter = $formattedInputParams->getFilterFor('lock');
+        $categoryFilter = $formattedInputParams->getFilterFor('category');
+        if (empty($lockFilter['value']) && !empty($categoryFilter['value'])) {
+            /** @var ObjectCategory $objectCategory */
+            $objectCategory = $this->objectCategoryTable->findById($categoryFilter['value']);
+            $formattedInputParams->setFilterValueFor(
+                'category',
+                array_merge($categoryFilter['value'], $objectCategory->getRecursiveChildrenIds())
+            );
+        }
     }
 }

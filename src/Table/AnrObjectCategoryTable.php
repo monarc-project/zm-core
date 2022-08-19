@@ -1,39 +1,29 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
-namespace Monarc\Core\Model\Table;
+namespace Monarc\Core\Table;
 
-use Monarc\Core\Model\Db;
+use Doctrine\ORM\EntityManager;
 use Monarc\Core\Model\Entity\AnrObjectCategory;
+use Monarc\Core\Model\Entity\AnrObjectCategorySuperClass;
 use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\ObjectCategorySuperClass;
-use Monarc\Core\Service\ConnectedUserService;
 
-/**
- * Class AnrObjectCategoryTable
- * @package Monarc\Core\Model\Table
- */
-class AnrObjectCategoryTable extends AbstractEntityTable
+class AnrObjectCategoryTable extends AbstractTable
 {
-    public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
+    public function __construct(EntityManager $entityManager, string $entityName = AnrObjectCategorySuperClass::class)
     {
-        parent::__construct($dbService, AnrObjectCategory::class, $connectedUserService);
+        parent::__construct($entityManager, $entityName);
     }
 
-    /**
-     * TODO: in order to specify return object type we need to create a superclass for AnrObjectCategory.
-     *
-     * @param AnrSuperClass $anr
-     * @param ObjectCategorySuperClass $objectCategory
-     *
-     * @return AnrObjectCategory|null
-     */
-    public function findOneByAnrAndObjectCategory(AnrSuperClass $anr, ObjectCategorySuperClass $objectCategory)
-    {
+    public function findOneByAnrAndObjectCategory(
+        AnrSuperClass $anr,
+        ObjectCategorySuperClass $objectCategory
+    ): ?AnrObjectCategorySuperClass {
         return $this->getRepository()
             ->createQueryBuilder('aoc')
             ->where('aoc.anr = :anr')
@@ -48,7 +38,7 @@ class AnrObjectCategoryTable extends AbstractEntityTable
     /**
      * @return AnrObjectCategory[]
      */
-    public function findByAnrOrderedByPosititon(AnrSuperClass $anr)
+    public function findByAnrOrderedByPosition(AnrSuperClass $anr): array
     {
         return $this->getRepository()
             ->createQueryBuilder('aoc')
@@ -63,7 +53,7 @@ class AnrObjectCategoryTable extends AbstractEntityTable
     /**
      * @return AnrObjectCategory[]
      */
-    public function findByObjectCategory(ObjectCategorySuperClass $objectCategory)
+    public function findByObjectCategory(ObjectCategorySuperClass $objectCategory): array
     {
         return $this->getRepository()
             ->createQueryBuilder('aoc')

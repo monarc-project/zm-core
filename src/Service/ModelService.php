@@ -115,6 +115,8 @@ class ModelService
     {
         /** @var Model $model */
         $model = $this->modelTable->findById($modelId);
+
+        // TODO: this will not work as the table used inside was refactored: 'anrObjectCategory'.
         $newAnr = $this->anrService->duplicate($model->getAnr());
 
         $labelSuffix = ' (copy from ' . date('m/d/Y at H:i') . ')';

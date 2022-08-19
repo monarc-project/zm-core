@@ -5,15 +5,15 @@
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
-namespace Monarc\Core\Model\Entity;
+namespace Monarc\Core\Model\Entity\Interfaces;
 
-use Doctrine\ORM\Mapping as ORM;
-
-/**
- * @ORM\Table(name="anrs_objects_categories")
- * @ORM\Entity
- */
-class AnrObjectCategory extends AnrObjectCategorySuperClass
+interface TreeStructuredEntityInterface
 {
-}
+    public function getId(): int;
 
+    public function setRoot(?TreeStructuredEntityInterface $root): self;
+
+    public function getRoot(): ?self;
+
+    public function getParent(): ?self;
+}

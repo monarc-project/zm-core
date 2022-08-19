@@ -33,6 +33,8 @@ class Asset extends AssetSuperClass
     public function __construct()
     {
         $this->models = new ArrayCollection();
+
+        parent::__construct();
     }
 
     public function getModels()

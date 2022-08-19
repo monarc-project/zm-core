@@ -7,13 +7,12 @@
 
 namespace Monarc\Core\Service;
 
-use Monarc\Core\Model\Entity\InstanceRiskOpSuperClass;
 use Monarc\Core\Model\Entity\RolfRiskSuperClass;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\InstanceRiskOpTable;
 use Monarc\Core\Model\Table\InstanceTable;
 use Monarc\Core\Model\Table\MeasureTable;
-use Monarc\Core\Model\Table\MonarcObjectTable;
+use Monarc\Core\Table\MonarcObjectTable;
 use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\Mapping\MappingException;
 use Monarc\Core\Model\Table\RolfRiskTable;
@@ -158,6 +157,7 @@ class RolfRiskService extends AbstractService
             if ($anr === null) {
                 $objects = $monarcObjectTable->findByRolfTag($addedRolfTag);
             } else {
+                // TODO: it's wired that we call here an empty method.
                 $objects = $monarcObjectTable->findByAnrAndRolfTag($anr, $addedRolfTag);
             }
             foreach ($objects as $object) {
@@ -291,6 +291,7 @@ class RolfRiskService extends AbstractService
         /** @var InstanceRiskOpTable $instanceRiskOpTable */
         $instanceRiskOpTable = $this->get('instanceRiskOpTable');
         foreach ($deletedTags as $deletedTag) {
+            // TODO: this wont work...
             $objects = $monarcObjectTable->getEntityByFields(['rolfTag' => $deletedTag]);
             foreach ($objects as $object) {
                 $instancesRisksOp = $instanceRiskOpTable->findByObjectAndRolfRisk($object, $rolfRisk);

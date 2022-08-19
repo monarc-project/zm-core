@@ -24,7 +24,6 @@ class InstanceConsequenceServiceFactory extends AbstractServiceFactory
         'entity' => InstanceConsequence::class,
         'anrTable' => Table\AnrTable::class,
         'instanceTable' => Table\InstanceTable::class,
-        'MonarcObjectTable' => Table\MonarcObjectTable::class,
         'scaleTable' => Table\ScaleTable::class,
         'scaleImpactTypeTable' => Table\ScaleImpactTypeTable::class,
         'scaleCommentTable' => Table\ScaleCommentTable::class,

@@ -326,18 +326,18 @@ abstract class AbstractEntityTable
     {
         $this->initTree($entity, 'position');//need to be called first to allow tree repositionning
         $rootField = $entity->parameters['implicitPosition']['root'];
-        if (!is_null($entity->get($entity->parameters['implicitPosition']['field']))) {
-            $father = $this->getEntity($entity->get($entity->parameters['implicitPosition']['field'])->get('id'));
-            $entity->set($rootField, ($father->get($rootField) === null) ? $father : $father->get($rootField));
-        } else {
+        if ($entity->get($entity->parameters['implicitPosition']['field']) === null) {
             $entity->set($rootField, null);
+        } else {
+            $parent = $this->getEntity($entity->get($entity->parameters['implicitPosition']['field'])->get('id'));
+            $entity->set($rootField, $parent->get($rootField) ?? $parent);
         }
 
         if (!$was_new && $changes['parent']['before'] != $changes['parent']['after']) {
             $temp = isset($entity->parameters['children']) ? $entity->parameters['children'] : [];
             while (!empty($temp)) {
                 $sub = array_shift($temp);
-                $sub->set($rootField, ((is_null($entity->get($rootField))) ? $entity : $entity->get($rootField)));
+                $sub->set($rootField, $entity->get($rootField) ?? $entity);
                 $this->save($sub, false);
                 if (!empty($sub->parameters['children'])) {
                     foreach ($sub->parameters['children'] as $subsub) {

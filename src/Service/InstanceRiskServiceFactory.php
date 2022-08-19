@@ -21,7 +21,6 @@ class InstanceRiskServiceFactory extends AbstractServiceFactory
         'assetTable' => Table\AssetTable::class,
         'instanceTable' => DeprecatedTable\InstanceTable::class,
         'instanceRiskOwnerTable' => Table\InstanceRiskOwnerTable::class,
-        'monarcObjectTable' => DeprecatedTable\MonarcObjectTable::class,
         'scaleTable' => DeprecatedTable\ScaleTable::class,
         'threatTable' => Table\ThreatTable::class,
     ];

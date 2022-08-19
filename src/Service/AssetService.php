@@ -10,18 +10,15 @@ namespace Monarc\Core\Service;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\InputFormatter\FormattedInputParams;
 use Monarc\Core\Model\Entity;
-use Monarc\Core\Model\Entity\Model;
-use Monarc\Core\Model\Table\MonarcObjectTable;
-use Monarc\Core\Model\Table\ObjectObjectTable;
 use Monarc\Core\Table;
 
 class AssetService
 {
     private Table\AssetTable $assetTable;
 
-    private MonarcObjectTable $monarcObjectTable;
+    private Table\MonarcObjectTable $monarcObjectTable;
 
-    private ObjectObjectTable $objectObjectTable;
+    private Table\ObjectObjectTable $objectObjectTable;
 
     private Table\ModelTable $modelTable;
 
@@ -31,8 +28,8 @@ class AssetService
 
     public function __construct(
         Table\AssetTable $assetTable,
-        MonarcObjectTable $monarcObjectTable,
-        ObjectObjectTable $objectObjectTable,
+        Table\MonarcObjectTable $monarcObjectTable,
+        Table\ObjectObjectTable $objectObjectTable,
         Table\ModelTable $modelTable,
         AmvService $amvService,
         ConnectedUserService $connectedUserService
@@ -134,7 +131,7 @@ class AssetService
 
         $asset->unlinkModels();
         if (!empty($modelsIds) && $asset->isModeSpecific()) {
-            /** @var Model[] $modelsObj */
+            /** @var Entity\Model[] $modelsObj */
             $modelsObj = $this->modelTable->findByIds($modelsIds);
             foreach ($modelsObj as $model) {
                 $asset->addModel($model);
@@ -210,7 +207,7 @@ class AssetService
         if (!empty($objectUuids)) {
             if (!$asset->getModels()->isEmpty()) {
                 /*
-                 * Check if the asset is compliant with reg/spec model, when they are used as fathers,
+                 * Check if the asset is compliant with reg/spec model, when they are used as parents,
                  * not already used in models.
                  */
                 $objectObjectsLinkedToParents = $this->objectObjectTable->findByParentsUuids($objectUuids);
@@ -230,7 +227,7 @@ class AssetService
             $objectObjectsLinkedToChildren = $this->objectObjectTable->findByChildrenUuids($objectUuids);
             foreach ($objectObjectsLinkedToChildren as $objectObjectLinkedToChild) {
                 /** @var Entity\MonarcObject $parentObject */
-                $parentObject = $objectObjectLinkedToChild->getFather();
+                $parentObject = $objectObjectLinkedToChild->getParent();
                 /** @var Entity\Asset $objectAsset */
                 $objectAsset = $parentObject->getAsset();
                 foreach ($objectAsset->getModels() as $model) {

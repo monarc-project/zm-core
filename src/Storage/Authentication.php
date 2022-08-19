@@ -13,7 +13,6 @@ use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Laminas\Authentication\Storage\StorageInterface;
 use Monarc\Core\Model\Entity\UserSuperClass;
-use Monarc\Core\Model\Entity\UserToken;
 use Monarc\Core\Model\Entity\UserTokenSuperClass;
 use Monarc\Core\Table\UserTokenTable;
 
@@ -41,7 +40,10 @@ class Authentication implements StorageInterface
         $this->clearUserTokens($user);
 
         if (!$this->hasUserToken($token)) {
-            $userToken = (new UserToken())
+            $entityName = $this->userTokenTable->getEntityName();
+            /** @var UserTokenSuperClass $userToken */
+            $userToken = new $entityName();
+            $userToken
                 ->setUser($user)
                 ->setToken($token)
                 ->setDateEnd(new DateTime(sprintf('+%d min', $this->authTtl)));
@@ -85,7 +87,7 @@ class Authentication implements StorageInterface
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function removeUserToken(string $token)
+    public function removeUserToken(string $token): bool
     {
         $userToken = $this->getUserToken($token);
         if ($userToken !== null) {

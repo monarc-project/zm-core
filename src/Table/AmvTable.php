@@ -8,16 +8,18 @@
 namespace Monarc\Core\Table;
 
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\EntityNotFoundException;
 use Monarc\Core\Model\Entity\Amv;
 use Monarc\Core\Model\Entity\AmvSuperClass;
 use Monarc\Core\Model\Entity\AssetSuperClass;
 use Monarc\Core\Model\Entity\ThreatSuperClass;
 use Monarc\Core\Model\Entity\VulnerabilitySuperClass;
 use Monarc\Core\Table\Interfaces\PositionUpdatableTableInterface;
+use Monarc\Core\Table\Traits\PositionIncrementTableTrait;
 
 class AmvTable extends AbstractTable implements PositionUpdatableTableInterface
 {
+    use PositionIncrementTableTrait;
+
     public function __construct(EntityManager $entityManager, string $entityName = Amv::class)
     {
         parent::__construct($entityManager, $entityName);
@@ -26,13 +28,17 @@ class AmvTable extends AbstractTable implements PositionUpdatableTableInterface
     /**
      * @return AmvSuperClass[]
      */
-    public function findByAsset(AssetSuperClass $asset): array
+    public function findByAsset(AssetSuperClass $asset, array $orderBy = []): array
     {
-        return $this->getRepository()->createQueryBuilder('amv')
+        $queryBuilder = $this->getRepository()->createQueryBuilder('amv')
             ->where('amv.asset = :asset')
-            ->setParameter('asset', $asset)
-            ->getQuery()
-            ->getResult();
+            ->setParameter('asset', $asset);
+
+        foreach ($orderBy as $fieldName => $direction) {
+            $queryBuilder->addOrderBy($fieldName, $direction);
+        }
+
+        return $queryBuilder->getQuery()->getResult();
     }
 
     public function findByAssetAndPosition(AssetSuperClass $asset, int $position): ?Amv

@@ -9,7 +9,7 @@ namespace Monarc\Core\Controller\Handler;
 
 use Laminas\Mvc\Controller\AbstractRestfulController;
 use Laminas\Mvc\MvcEvent;
-use Laminas\Router\Http\RouteMatch;
+use Laminas\Router\RouteMatch;
 use Monarc\Core\Request\Psr7Bridge\RequestConverter;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;

@@ -1,7 +1,7 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -11,43 +11,51 @@ use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Model;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Entity\ObjectObjectSuperClass;
+use Monarc\Core\Model\Entity\ObjectSuperClass;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\InstanceTable;
-use Monarc\Core\Model\Table\MonarcObjectTable;
-use Monarc\Core\Model\Table\ObjectObjectTable;
+use Monarc\Core\Table\MonarcObjectTable;
+use Monarc\Core\Table\ObjectObjectTable;
 use Laminas\EventManager\EventManager;
 use Doctrine\ORM\Mapping\MappingException;
 use Doctrine\ORM\Query\QueryException;
 use Laminas\EventManager\SharedEventManager;
-use Monarc\Core\Table\ModelTable;
 use function in_array;
 use function is_object;
 
-/**
- * Object Object Service
- *
- * Class ObjectObjectService
- * @package Monarc\Core\Service
- */
-class ObjectObjectService extends AbstractService
+class ObjectObjectService
 {
     protected $anrTable;
     protected $userAnrTable;
     protected $MonarcObjectTable;
     protected $instanceTable;
+    // TODO: we don't need the deps
     protected $childTable;
-    protected $fatherTable;
-    protected $dependencies = ['[child](object)', '[father](object)', '[anr](object)'];
+    protected $parentTable;
+    protected $dependencies = ['[child](object)', '[parent](object)', '[anr](object)'];
 
+    // TODO: inject the EventManager or replace it's usage to directly call/execute the functionality.
     /** @var SharedEventManager */
     private $sharedManager;
+//    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
+//    {
+//        $objectObjectService = parent::__invoke($container, $requestedName, $options);
+//
+//        $objectObjectService->setSharedManager($container->get('EventManager')->getSharedManager());
+//
+//        return $objectObjectService;
+//    }
 
-    /**
-     * @inheritdoc
-     */
+    private ObjectObjectTable $objectObjectTable;
+
+    public function __construct(ObjectObjectTable $objectObjectTable)
+    {
+        $this->objectObjectTable = $objectObjectTable;
+    }
+
     public function create($data, $last = true, $context = MonarcObject::BACK_OFFICE)
     {
-        if ($data['father'] == $data['child']) {
+        if ($data['parent'] === $data['child']) {
             throw new Exception('You cannot add yourself as a component', 412);
         }
 
@@ -55,15 +63,15 @@ class ObjectObjectService extends AbstractService
         $objectObjectTable = $this->get('table');
 
         //verify child not already existing
-        if (isset($data['father']['anr'], $data['father']['uuid'], $data['child']['anr'], $data['child']['uuid'])) {
+        if (isset($data['parent']['anr'], $data['parent']['uuid'], $data['child']['anr'], $data['child']['uuid'])) {
             $objectsObjects = $objectObjectTable->getEntityByFields([
                 'anr' => empty($data['anr']) ? null : $data['anr'],
-                'father' => $data['father'],
+                'father' => $data['parent'],
                 'child' => $data['child']
             ]);
         } else {
             $queryParams = [
-                'father' => $data['father'],
+                'parent' => $data['parent'],
                 'child' => $data['child'],
             ];
             if (!empty($data['anr'])) {
@@ -75,7 +83,7 @@ class ObjectObjectService extends AbstractService
             throw new Exception('This component already exist for this object', 412);
         }
 
-        $recursiveParentsListIds = $this->getRecursiveParentsListId($data['father'], $data['anr'] ?? null);
+        $recursiveParentsListIds = $this->getRecursiveParentsListId($data['parent'], $data['anr'] ?? null);
         $childUuid = $data['child']['uuid'] ?? $data['child'];
         if (isset($recursiveParentsListIds[$childUuid])) {
             throw new Exception('You cannot create a cyclic dependency', 412);
@@ -86,10 +94,10 @@ class ObjectObjectService extends AbstractService
 
         // Ensure that we're not trying to add a specific item if the father is generic
         try {
-            $father = $monarcObjectTable->getEntity($data['father']);
+            $father = $monarcObjectTable->getEntity($data['parent']);
             $child = $monarcObjectTable->getEntity($data['child']);
         } catch (MappingException $e) {
-            $father = $monarcObjectTable->getEntity(['uuid' => $data['father'], 'anr' => $data['anr']]);
+            $father = $monarcObjectTable->getEntity(['uuid' => $data['parent'], 'anr' => $data['anr']]);
             $child = $monarcObjectTable->getEntity(['uuid' => $data['child'], 'anr' => $data['anr']]);
         }
 
@@ -196,7 +204,7 @@ class ObjectObjectService extends AbstractService
                 $dataInstance['previous'] = $previousInstance;
             }
 
-            //if father instance exist, create instance for child
+            //if parent instance exist, create instance for child
             $eventManager = new EventManager($this->sharedManager, ['addcomponent']);
             $eventManager->trigger('createinstance', $this, compact(['anrId', 'dataInstance']));
         }
@@ -225,49 +233,29 @@ class ObjectObjectService extends AbstractService
         }
         if ($objectId !== null) {
             try {
-                return $table->getEntityByFields(['father' => $objectId], ['position' => 'DESC']);
+                return $table->getEntityByFields(['parent' => $objectId], ['position' => 'DESC']);
             } catch (MappingException | QueryException $e) {
-                return $table->getEntityByFields(['father' => ['uuid' => $objectId, 'anr' => $anrId]], ['position' => 'DESC']);
+                return $table->getEntityByFields(['parent' => ['uuid' => $objectId, 'anr' => $anrId]], ['position' => 'DESC']);
             }
         }
 
         return null;
     }
 
-    /**
-     * Recursively fetches and return the children
-     *
-     * @param string|array $fatherId The parent object ID
-     * @param int $anrId The ANR ID
-     *
-     * @return array The children
-     */
-    public function getRecursiveChildren($fatherId, $anrId = null, $excludeParentRelationObjectObjectIds = [])
+    public function getRecursiveChildren(ObjectSuperClass $parent): array
     {
-        /** @var ObjectObjectTable $table */
-        $table = $this->get('table');
-
-        $queryParams['father'] = $fatherId;
-        if ($anrId !== null) {
-            $queryParams = [
-                'father' => [
-                    'uuid' => $fatherId,
-                    'anr' => $anrId,
-                ]
-            ];
-        }
-
         /**
          * Infinite loop prevention.
-         * Fetch all the fathers (parent relations) of the current father to check if its children are not fathers.
+         * Fetch all the parents relations of the current parent to check if its children are not parents.
          * @var ObjectObjectSuperClass[] $fathersOfFatherObjectObjects
          */
-        if (empty($excludeParentRelationObjectObjectIds)) {
-            $fathersOfFatherObjectObjects = $table->getEntityByFields(['child' => $queryParams['father']]);
-            if (!empty($fathersOfFatherObjectObjects)) {
-                $excludeParentRelationObjectObjectIds = array_column($fathersOfFatherObjectObjects, 'id');
-            }
-        }
+        // TODO: it was passed in the param, but we should not have any recursive things originally.
+//        if (empty($excludeParentRelationObjectObjectIds)) {
+//            $fathersOfFatherObjectObjects = $table->getEntityByFields(['child' => $queryParams['father']]);
+//            if (!empty($fathersOfFatherObjectObjects)) {
+//                $excludeParentRelationObjectObjectIds = array_column($fathersOfFatherObjectObjects, 'id');
+//            }
+//        }
 
         $children = $table->getEntityByFields($queryParams, ['position' => 'ASC']);
 
@@ -280,6 +268,7 @@ class ObjectObjectService extends AbstractService
             if ($child->getChild()->getAnr() !== null) {
                 $queryParams['anr'] = $child->getChild()->getAnr();
             }
+            // TODO: this wont work...
             $objectChild = $this->get('MonarcObjectTable')->get($queryParams);
 
             /** Infinite loop prevention. */
@@ -316,8 +305,8 @@ class ObjectObjectService extends AbstractService
             /** @var ObjectObjectSuperClass $parent */
             $parent_array = $parent->getJsonArray();
 
-            $object_parent = $this->get('MonarcObjectTable')->get($parent_array['father']);
-            $object_parent['parents'] = $this->getRecursiveParents($parent_array['father']);
+            $object_parent = $this->get('MonarcObjectTable')->get($parent_array['parent']);
+            $object_parent['parents'] = $this->getRecursiveParents($parent_array['parent']);
             $object_parent['component_link_id'] = $parent_array['id'];
             $array_parents[] = $object_parent;
         }
@@ -348,10 +337,10 @@ class ObjectObjectService extends AbstractService
 
         /** @var ObjectObjectSuperClass $parentObject */
         foreach ($parents as $parentObject) {
-            $parentParam = $parentObject->getFather()->getUuid();
+            $parentParam = $parentObject->getParent()->getUuid();
             if ($anrId !== null) {
                 $parentParam = [
-                    'uuid' => $parentObject->getFather()->getUuid(),
+                    'uuid' => $parentObject->getParent()->getUuid(),
                     'anr' => $anrId,
                 ];
             }
@@ -376,7 +365,7 @@ class ObjectObjectService extends AbstractService
             return;
         }
 
-        $this->manageRelativePositionUpdate('father', $entity, $direction);
+        $this->manageRelativePositionUpdate('parent', $entity, $direction);
     }
 
     /**
@@ -397,7 +386,7 @@ class ObjectObjectService extends AbstractService
         $instanceTable = $this->get('instanceTable');
         try {
             $childInstances = $instanceTable->getEntityByFields(['object' => $objectObject->getChild()->getUuid()]);
-            $fatherInstances = $instanceTable->getEntityByFields(['object' => $objectObject->getFather()->getUuid()]);
+            $fatherInstances = $instanceTable->getEntityByFields(['object' => $objectObject->getParent()->getUuid()]);
         } catch (QueryException | MappingException $e) {
             $childInstances = $instanceTable->getEntityByFields([
                 'object' => [
@@ -407,7 +396,7 @@ class ObjectObjectService extends AbstractService
             ]);
             $fatherInstances = $instanceTable->getEntityByFields([
                 'object' => [
-                    'uuid' => $objectObject->getFather()->getUuid(),
+                    'uuid' => $objectObject->getParent()->getUuid(),
                     'anr' => $objectObject->anr->id
                 ]
             ]);

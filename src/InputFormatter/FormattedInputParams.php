@@ -42,7 +42,26 @@ class FormattedInputParams
         return $this->filter;
     }
 
-    public function addFilter($field, array $criteria): self
+    public function getFilterFor(string $field): array
+    {
+        return $this->filter[$field] ?? [];
+    }
+
+    public function setFilterFor(string $field, array $filterParams): self
+    {
+        $this->filter[$field] = $filterParams;
+
+        return $this;
+    }
+
+    public function setFilterValueFor(string $field, $value): self
+    {
+        $this->filter[$field]['value'] = $value;
+
+        return $this;
+    }
+
+    public function addFilter(string $field, array $criteria): self
     {
         $this->filter[$field] = $criteria;
 

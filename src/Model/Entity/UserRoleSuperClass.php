@@ -21,12 +21,8 @@ class UserRoleSuperClass
 {
     use CreateEntityTrait;
 
-    public const SUPER_ADMIN_FO = 'superadminfo';
-    public const USER_FO = 'userfo';
-    public const USER_ROLE_CEO = 'ceo';
-
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer", nullable=false)
      * @ORM\Id

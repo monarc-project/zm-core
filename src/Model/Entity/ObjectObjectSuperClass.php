@@ -54,7 +54,7 @@ class ObjectObjectSuperClass extends AbstractEntity
      *   @ORM\JoinColumn(name="father_id", referencedColumnName="uuid", nullable=true)
      * })
      */
-    protected $father;
+    protected $parent;
 
     /**
      * @var ObjectSuperClass
@@ -75,7 +75,7 @@ class ObjectObjectSuperClass extends AbstractEntity
 
     protected $parameters = [
         'implicitPosition' => [
-            'field' => 'father',
+            'field' => 'parent',
         ],
     ];
 
@@ -103,14 +103,14 @@ class ObjectObjectSuperClass extends AbstractEntity
         return $this;
     }
 
-    public function getFather(): ObjectSuperClass
+    public function getParent(): ObjectSuperClass
     {
-        return $this->father;
+        return $this->parent;
     }
 
-    public function setFather(ObjectSuperClass $father): self
+    public function setParent(ObjectSuperClass $parent): self
     {
-        $this->father = $father;
+        $this->parent = $parent;
 
         return $this;
     }
@@ -144,7 +144,7 @@ class ObjectObjectSuperClass extends AbstractEntity
         $filterJoin = [
             [
                 'as' => 'f',
-                'rel' => 'father',
+                'rel' => 'parent',
             ],
         ];
         $filterLeft = [

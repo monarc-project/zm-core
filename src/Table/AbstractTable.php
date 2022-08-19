@@ -21,7 +21,6 @@ use Doctrine\ORM\QueryBuilder;
 use LogicException;
 use Monarc\Core\InputFormatter\FormattedInputParams;
 use Monarc\Core\Model\Entity\AnrSuperClass;
-use Monarc\Core\Table\Interfaces\PositionUpdatableTableInterface;
 
 abstract class AbstractTable
 {
@@ -221,13 +220,20 @@ abstract class AbstractTable
     public function countByParams(FormattedInputParams $params, string $countableField = '*'): int
     {
         $tableAlias = 't';
-        $queryBuilder = $this->getRepository()
-            ->createQueryBuilder($tableAlias)
+        $queryBuilder = $this->getRepository()->createQueryBuilder($tableAlias)
             ->select('COUNT(' . ($countableField === '*' ? $tableAlias : $tableAlias . '.' . $countableField) . ')');
 
         $this->applyQueryParams($queryBuilder, $params, $tableAlias);
 
         return (int)$queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    public function countAll(): int
+    {
+        return (int)$this->getRepository()->createQueryBuilder('t')
+            ->select('COUNT(t)')
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 
     /**
@@ -250,49 +256,6 @@ abstract class AbstractTable
     public function refresh(object $entity): void
     {
         $this->entityManager->refresh($entity);
-    }
-
-    /**
-     * The method is called from PositionUpdateTrait and can be used only for table classes that implement
-     * PositionUpdatableTableInterface.
-     *
-     * @param int $positionFrom Starting position to update.
-     * @param int $positionTo Latest position value to update (no limit if negative).
-     * @param int $increment Increment or decrement (negative) value for the position shift.
-     * @param array $params Used to pass additional filter column and value to be able to make the shift
-     *                      within a specific range.
-     */
-    public function incrementPositions(
-        int $positionFrom,
-        int $positionTo,
-        int $increment,
-        array $params,
-        string $updater
-    ): void {
-        if (!($this instanceof PositionUpdatableTableInterface)) {
-            return;
-        }
-
-        $positionShift = $increment > 0 ? '+ ' . $increment : '- ' . abs($increment);
-        $queryBuilder = $this->getRepository()->createQueryBuilder('t')
-            ->update()
-            ->set('t.position', 't.position ' . $positionShift)
-            ->set('t.updater', ':updater')
-            ->setParameter('updater', $updater);
-
-        foreach ($params as $fieldName => $fieldValue) {
-            $queryBuilder->andWhere('t.' . $fieldName . ' = :' . $fieldName)
-                ->setParameter($fieldName, $fieldValue);
-        }
-
-        $queryBuilder->andWhere('t.position >= :positionFrom')
-            ->setParameter('positionFrom', $positionFrom);
-        if ($positionTo > $positionFrom) {
-            $queryBuilder->andWhere('t.position <= :positionTo')
-                ->setParameter('positionTo', $positionTo);
-        }
-
-        $queryBuilder->getQuery()->getResult();
     }
 
     /**
@@ -339,38 +302,80 @@ abstract class AbstractTable
         string $tableAlias
     ): self {
         if ($params->hasSearch()) {
-            $searchParams = $params->getSearch();
-            $this->validateSearchParams($searchParams);
-
-            $searchQuery = [];
-            foreach ($searchParams['fields'] as $field) {
-                $fieldNameWithAlias = $this->linkRelationAndGetFiledNameWithAlias(
-                    $queryBuilder,
-                    $tableAlias,
-                    $field
-                );
-                $searchQuery[] = ' ' . $fieldNameWithAlias . ' LIKE :searchString ';
-            }
-            $logicalOperator = 'OR';
-            if (isset($searchParams['logicalOperator'])
-                && \in_array($searchParams['logicalOperator'], ['OR', 'AND'], true)
-            ) {
-                $logicalOperator = $searchParams['logicalOperator'];
-            }
-
-            $queryBuilder->andWhere(implode($logicalOperator, $searchQuery))
-                ->setParameter('searchString', '%' . $searchParams['string'] . '%');
+            $this->applySearch($queryBuilder, $tableAlias, $params->getSearch());
         }
 
         if ($params->hasFilter()) {
             foreach ($params->getFilter() as $field => $filterParams) {
-                $fieldNameWithAlias = $this->linkRelationAndGetFiledNameWithAlias($queryBuilder, $tableAlias, $field);
-                $operator = $filterParams['operator'] ?? Comparison::EQ;
-                $fieldValueName = strpos($field, '.') !== false ? explode('.', $field)[0] : $field;
-                $queryBuilder->andWhere($fieldNameWithAlias . ' ' . $operator . ' :' . $fieldValueName)
-                    ->setParameter($fieldValueName, $filterParams['value']);
+                if ($filterParams['isUsedInQuery']) {
+                    $this->applyFilter($queryBuilder, $tableAlias, $field, $filterParams);
+                }
             }
         }
+
+        return $this;
+    }
+
+    protected function applySearch(QueryBuilder $queryBuilder, string $tableAlias, array $searchParams): self
+    {
+        $this->validateSearchParams($searchParams);
+
+        $searchQuery = [];
+        foreach ($searchParams['fields'] as $field) {
+            $fieldNameWithAlias = $this->linkRelationAndGetFiledNameWithAlias(
+                $queryBuilder,
+                $tableAlias,
+                $field
+            );
+            $searchQuery[] = ' ' . $fieldNameWithAlias . ' LIKE :searchString ';
+        }
+        $logicalOperator = 'OR';
+        if (isset($searchParams['logicalOperator'])
+            && \in_array($searchParams['logicalOperator'], ['OR', 'AND'], true)
+        ) {
+            $logicalOperator = $searchParams['logicalOperator'];
+        }
+
+        $queryBuilder->andWhere(implode($logicalOperator, $searchQuery))
+            ->setParameter('searchString', '%' . $searchParams['string'] . '%');
+
+        return $this;
+    }
+
+    protected function applyFilter(
+        QueryBuilder $queryBuilder,
+        string $tableAlias,
+        string $field,
+        array $filterParams
+    ): self {
+        $fieldNameWithAlias = $this->linkRelationAndGetFiledNameWithAlias(
+            $queryBuilder,
+            $tableAlias,
+            $field
+        );
+        $operator = $filterParams['operator'] ?? Comparison::EQ;
+        if (\is_array($filterParams['value'])) {
+            $operator = Comparison::IN;
+        }
+        $fieldValueName = strpos($field, '.') !== false ? explode('.', $field)[0] : $field;
+        if ($filterParams['value'] === null) {
+            $queryBuilder->andWhere($fieldValueName . ' IS NULL');
+
+            return $this;
+        }
+
+        $whereCondition = $fieldNameWithAlias . ' ' . $operator . ' :' . $fieldValueName;
+        if (\is_array($filterParams['value'])
+            && \in_array($operator, [Comparison::IN, Comparison::NIN], true)
+        ) {
+            $whereCondition = $operator === Comparison::IN
+                ? $queryBuilder->expr()->in($fieldNameWithAlias, ':' . $fieldValueName)
+                : $queryBuilder->expr()->notIn($fieldNameWithAlias, ':' . $fieldValueName);
+        }
+
+        $queryBuilder
+            ->andWhere($whereCondition)
+            ->setParameter($fieldValueName, $filterParams['value']);
 
         return $this;
     }

@@ -5,8 +5,8 @@ namespace Monarc\Core\Service;
 use Doctrine\ORM\EntityNotFoundException;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\MonarcObject;
-use Monarc\Core\Model\Table\MonarcObjectTable;
-use Monarc\Core\Model\Table\ObjectCategoryTable;
+use Monarc\Core\Table\MonarcObjectTable;
+use Monarc\Core\Table\ObjectCategoryTable;
 
 class ObjectImportService
 {
@@ -62,7 +62,7 @@ class ObjectImportService
             ->setMode($objectData['mode'])
             ->setScope($objectData['scope'])
             //->setLabel($labelKey, $objectData[$labelKey])
-            ->setDisponibility((float)$objectData['disponibility'])
+            ->setAvailability((float)$objectData['disponibility'])
             ->setPosition($objectData['position']);
 
         return $monarcObject;

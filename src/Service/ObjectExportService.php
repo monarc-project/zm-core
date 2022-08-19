@@ -1,7 +1,7 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -10,22 +10,34 @@ namespace Monarc\Core\Service;
 use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\NonUniqueResultException;
 use Monarc\Core\Exception\Exception;
-use Monarc\Core\Model\Table\MonarcObjectTable;
+use Monarc\Core\Model\Entity\MonarcObject;
+use Monarc\Core\Table\MonarcObjectTable;
 
-/**
- * Object Service Export
- *
- * Class ObjectExportService
- * @package Monarc\Core\Service
- */
-class ObjectExportService extends AbstractService
+class ObjectExportService
 {
-    protected $assetExportService;
-    protected $objectObjectService;
-    protected $assetService;
+    private MonarcObjectTable $monarcObjectTable;
 
-    /** @var  ConfigService */
-    protected $configService;
+    private ObjectService $objectService;
+
+    private AssetExportService $assetExportService;
+
+    private ObjectObjectService $objectObjectService;
+
+    private ConfigService $configService;
+
+    public function __construct(
+        MonarcObjectTable $monarcObjectTable,
+        ObjectService $objectService,
+        AssetExportService $assetExportService,
+        ObjectObjectService $objectObjectService,
+        ConfigService $configService
+    ) {
+        $this->monarcObjectTable = $monarcObjectTable;
+        $this->objectService = $objectService;
+        $this->assetExportService = $assetExportService;
+        $this->objectObjectService = $objectObjectService;
+        $this->configService = $configService;
+    }
 
     /**
      * NOTE: this method is not used on the FO side, only for BO.
@@ -34,41 +46,26 @@ class ObjectExportService extends AbstractService
      * @throws Exception
      * @throws NonUniqueResultException
      */
-    public function generateExportArray(string $uuid, $anr = null, $withEval = false): array
+    public function generateExportArray(string $uuid): array
     {
         if (empty($uuid)) {
             throw new Exception('Object to export is required', 412);
         }
 
-        /** @var MonarcObjectTable $monarcObjectTable */
-        $monarcObjectTable = $this->get('table');
-        $monarcObject = $monarcObjectTable->findByUuid($uuid);
-
-        $objectObj = [
-            'uuid' => 'uuid',
-            'mode' => 'mode',
-            'scope' => 'scope',
-            'name1' => 'name1',
-            'name2' => 'name2',
-            'name3' => 'name3',
-            'name4' => 'name4',
-            'label1' => 'label1',
-            'label2' => 'label2',
-            'label3' => 'label3',
-            'label4' => 'label4',
-            'disponibility' => 'disponibility',
-            'position' => 'position',
-        ];
+        /** @var MonarcObject $monarcObject */
+        $monarcObject = $this->monarcObjectTable->findByUuid($uuid);
 
         $return = [
             'type' => 'object',
-            'object' => $monarcObject->getJsonArray($objectObj),
+            'object' => $this->objectService->getPreparedObjectData($monarcObject, true),
             'version' => $this->getVersion(),
             'monarc_version' => $this->configService->getAppVersion()['appVersion'],
         ];
 
+        // TODO: Fix all the rest of the code...
+
         // Recovery categories
-        $categ = $monarcObject->get('category');
+        $categ = $monarcObject->getCategory();
         if (!empty($categ)) {
             $categObj = [
                 'id' => 'id',
@@ -101,20 +98,20 @@ class ObjectExportService extends AbstractService
         }
 
         // Recovery asset
-        $asset = $monarcObject->get('asset');
+        $asset = $monarcObject->getAsset();
         $return['asset'] = null;
         $return['object']['asset'] = null;
         if (!empty($asset)) {
             $asset = $asset->getJsonArray(['uuid']);
             $return['object']['asset'] = $asset['uuid'];
-            $return['asset'] = $this->get('assetExportService')->generateExportArray($asset['uuid'], null, $withEval);
+            $return['asset'] = $this->assetExportService->generateExportArray($asset['uuid']);
         }
 
         // Recovery of operational risks
-        $rolfTag = $monarcObject->get('rolfTag');
+        $rolfTag = $monarcObject->getRolfTag();
         $return['object']['rolfTag'] = null;
         if (!empty($rolfTag)) {
-            $risks = $rolfTag->get('risks');
+            $risks = $rolfTag->getRisks();
             $rolfTag = $rolfTag->getJsonArray(['id', 'code', 'label1', 'label2', 'label3', 'label4']);
             $return['object']['rolfTag'] = $rolfTag['id'];
             $return['rolfTags'][$rolfTag['id']] = $rolfTag;
@@ -175,18 +172,14 @@ class ObjectExportService extends AbstractService
         }
 
         // Recovery children(s)
-        $children = array_reverse($this->get('objectObjectService')->getChildren(
-            $monarcObject->getUuid(),
-            null
-        )); // Le tri de cette fonction est "position DESC"
+        // Le tri de cette fonction est "position DESC"
+        $children = array_reverse($this->objectObjectService->getChildren($monarcObject->getUuid()));
         $return['children'] = [];
         if (!empty($children)) {
             $place = 1;
             foreach ($children as $child) {
                 $return['children'][$child->getChild()->getUuid()] = $this->generateExportArray(
-                    $child->getChild()->getUuid(),
-                    null,
-                    $withEval
+                    $child->getChild()->getUuid()
                 );
                 $return['children'][$child->getChild()->getUuid()]['object']['position'] = $place;
                 $place++;
@@ -207,9 +200,8 @@ class ObjectExportService extends AbstractService
         $language = $this->getLanguage();
         $languageCode = $this->configService->getLanguageCodes()[$language];
 
-        /** @var MonarcObjectTable $monarcObjectTable */
-        $monarcObjectTable = $this->get('table');
-        $monarcObject = $monarcObjectTable->findByUuid($uuid);
+        /** @var MonarcObject $monarcObject */
+        $monarcObject = $this->monarcObjectTable->findByUuid($uuid);
 
         $objectObj = [
             'uuid' => 'uuid',
@@ -231,18 +223,17 @@ class ObjectExportService extends AbstractService
         unset($return['object']['label' . $language]);
 
         // Recovery asset
-        $asset = $monarcObject->get('asset');
+        $asset = $monarcObject->getAsset();
         $return['asset'] = null;
         if (!empty($asset)) {
             $asset = $asset->getJsonArray(['uuid']);
-            $return['asset'] = $this->get('assetExportService')
-                ->generateExportMospArray($asset['uuid'], null, $languageCode);
+            $return['asset'] = $this->assetExportService->generateExportMospArray($asset['uuid'], null, $languageCode);
         }
 
         // Recovery of operational risks
         $return['rolfRisks'] = [];
         $return['rolfTags'] = [];
-        $rolfTag = $monarcObject->get('rolfTag');
+        $rolfTag = $monarcObject->getRolfTag();
         if (!empty($rolfTag)) {
             $risks = $rolfTag->get('risks');
             $rolfTag = $rolfTag->getJsonArray(['code', 'label' . $language]);
@@ -274,9 +265,8 @@ class ObjectExportService extends AbstractService
         }
 
         // Recover children
-        $children = array_reverse($this->get('objectObjectService')->getChildren(
+        $children = array_reverse($this->objectObjectService->getChildren(
             $monarcObject->getUuid(),
-            is_null($monarcObject->get('anr')) ? null : $monarcObject->get('anr')->get('id')
         )); // Le tri de cette fonction est "position DESC"
         $return['children'] = [];
         if (!empty($children)) {
@@ -294,9 +284,8 @@ class ObjectExportService extends AbstractService
      */
     public function generateExportFileName(string $uuid, bool $isForMosp = false): string
     {
-        /** @var MonarcObjectTable $monarcObjectTable */
-        $monarcObjectTable = $this->get('table');
-        $monarcObject = $monarcObjectTable->findByUuid($uuid);
+        /** @var MonarcObject $monarcObject */
+        $monarcObject = $this->monarcObjectTable->findByUuid($uuid);
 
         return preg_replace(
             "/[^a-z0-9\._-]+/i",

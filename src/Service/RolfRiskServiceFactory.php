@@ -19,7 +19,7 @@ class RolfRiskServiceFactory extends AbstractServiceFactory
         'table' => 'Monarc\Core\Model\Table\RolfRiskTable',
         'entity' => 'Monarc\Core\Model\Entity\RolfRisk',
         'rolfTagTable' => 'Monarc\Core\Model\Table\RolfTagTable',
-        'MonarcObjectTable' => 'Monarc\Core\Model\Table\MonarcObjectTable',
+        'MonarcObjectTable' => 'Monarc\Core\Table\MonarcObjectTable',
         'instanceTable' => 'Monarc\Core\Model\Table\InstanceTable',
         'measureTable' => 'Monarc\Core\Model\Table\MeasureTable',
         'instanceRiskOpTable' => 'Monarc\Core\Model\Table\InstanceRiskOpTable',

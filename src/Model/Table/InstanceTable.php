@@ -54,10 +54,8 @@ class InstanceTable extends AbstractEntityTable
             ->innerJoin('i.object', 'o')
             ->where('i.anr = :anr')
             ->andWhere('o.uuid = :object_uuid')
-            ->andWhere('o.anr = :object_anr')
             ->setParameter('anr', $anr)
             ->setParameter('object_uuid', $object->getUuid())
-            ->setParameter('object_anr', $anr)
             ->getQuery()
             ->getResult();
     }

@@ -18,8 +18,7 @@ class PostAmvDataInputValidator extends AbstractInputValidator
             [
                 'name' => 'asset',
                 'required' => true,
-                'filters' => [
-                ],
+                'filters' => [],
                 'validators' => [
                     [
                         'name' => StringLength::class,
@@ -33,8 +32,7 @@ class PostAmvDataInputValidator extends AbstractInputValidator
             [
                 'name' => 'threat',
                 'required' => true,
-                'filters' => [
-                ],
+                'filters' => [],
                 'validators' => [
                     [
                         'name' => StringLength::class,
@@ -48,8 +46,7 @@ class PostAmvDataInputValidator extends AbstractInputValidator
             [
                 'name' => 'vulnerability',
                 'required' => true,
-                'filters' => [
-                ],
+                'filters' => [],
                 'validators' => [
                     [
                         'name' => StringLength::class,

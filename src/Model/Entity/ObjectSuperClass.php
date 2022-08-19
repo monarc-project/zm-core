@@ -1,7 +1,7 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -9,14 +9,13 @@ namespace Monarc\Core\Model\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Monarc\Core\Model\Entity\Interfaces\PositionedEntityInterface;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 use Ramsey\Uuid\Lazy\LazyUuidFromString;
 use Ramsey\Uuid\Uuid;
 
 /**
- * ObjectSuperClass
- *
  * @ORM\Table(name="objects", indexes={
  *      @ORM\Index(name="object_category_id", columns={"object_category_id"}),
  *      @ORM\Index(name="asset_id", columns={"asset_id"}),
@@ -25,7 +24,7 @@ use Ramsey\Uuid\Uuid;
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
-class ObjectSuperClass extends AbstractEntity
+class ObjectSuperClass implements PositionedEntityInterface
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
@@ -170,7 +169,7 @@ class ObjectSuperClass extends AbstractEntity
      *
      * @ORM\Column(name="disponibility", type="decimal", options={"unsigned":true, "default":0})
      */
-    protected $disponibility = 0;
+    protected $availability = 0;
 
     /**
      * @var int
@@ -193,11 +192,57 @@ class ObjectSuperClass extends AbstractEntity
      */
     protected $originalName;
 
-    protected $parameters = array(
-        'implicitPosition' => array(
-            'field' => 'category',
-        ),
-    );
+    // TODO: !!!
+    // TODO: implement the same links on Client's entity side...
+
+    /**
+     * @var ArrayCollection|ObjectSuperClass[]
+     *
+     * @ORM\ManyToMany(targetEntity="MonarcObject", mappedBy="children")
+     */
+    protected $parents;
+
+    /**
+     * Note: If the property use used, the order has to be performed manually due to the Doctrine limitation.
+     *
+     * @var ArrayCollection|ObjectSuperClass[]
+     *
+     * @ORM\ManyToMany(targetEntity="MonarcObject")
+     * @ORM\JoinTable(name="objects_objects",
+     *  joinColumns={@ORM\JoinColumn(name="father_id", referencedColumnName="uuid")},
+     *  inverseJoinColumns={@ORM\JoinColumn(name="child_id", referencedColumnName="uuid")}
+     * )
+     */
+    protected $children;
+
+    /**
+     * @var ArrayCollection|ObjectObjectSuperClass[]
+     *
+     * @ORM\OneToMany(targetEntity="ObjectObject", mappedBy="child")
+     */
+    protected $parentsLinks;
+
+    /**
+     * @var ArrayCollection|ObjectObjectSuperClass[]
+     *
+     * @ORM\OneToMany(targetEntity="ObjectObject", mappedBy="parent")
+     * @ORM\OrderBy({"position": "ASC"})
+     */
+    protected $childrenLinks;
+
+    public function __construct()
+    {
+        $this->anrs = new ArrayCollection();
+        $this->parents = new ArrayCollection();
+        $this->children = new ArrayCollection();
+        $this->parentsLinks = new ArrayCollection();
+        $this->childrenLinks = new ArrayCollection();
+    }
+
+    public function getImplicitPositionRelationsValues(): array
+    {
+        return ['category' => $this->category->getId()];
+    }
 
     /**
      * @ORM\PrePersist
@@ -216,50 +261,41 @@ class ObjectSuperClass extends AbstractEntity
         return (string)$this->uuid;
     }
 
-    /**
-     * @param string $uuid
-     *
-     * @return self
-     */
-    public function setUuid($uuid): self
+    public function setUuid(string $uuid): self
     {
         $this->uuid = $uuid;
 
         return $this;
     }
 
-    /**
-     * @return AnrSuperClass|null
-     */
     public function getAnr(): ?AnrSuperClass
     {
         return $this->anr;
     }
 
-    /**
-     * @param AnrSuperClass|null $anr
-     */
-    public function setAnr($anr): self
+    public function setAnr(AnrSuperClass $anr): self
     {
         $this->anr = $anr;
 
         return $this;
     }
 
-    /**
-     * @return ObjectCategorySuperClass
-     */
-    public function getCategory()
+    public function getCategory(): ?ObjectCategorySuperClass
     {
         return $this->category;
     }
 
-    /**
-     * @param ObjectCategorySuperClass $category
-     */
-    public function setCategory($category): self
+    public function setCategory(?ObjectCategorySuperClass $category): self
     {
-        $this->category = $category;
+        if ($category === null) {
+            if ($this->category !== null) {
+                $this->category->removeObject($this);
+            }
+            $this->category = null;
+        } else {
+            $this->category = $category;
+            $category->addObject($this);
+        }
 
         return $this;
     }
@@ -269,10 +305,7 @@ class ObjectSuperClass extends AbstractEntity
         return $this->asset;
     }
 
-    /**
-     * @param AssetSuperClass $asset
-     */
-    public function setAsset($asset): self
+    public function setAsset(AssetSuperClass $asset): self
     {
         $this->asset = $asset;
 
@@ -284,7 +317,7 @@ class ObjectSuperClass extends AbstractEntity
         return $this->rolfTag;
     }
 
-    public function setRolfTag(?RolfTagSuperClass $rolfTag)
+    public function setRolfTag(RolfTagSuperClass $rolfTag)
     {
         $this->rolfTag = $rolfTag;
 
@@ -294,32 +327,43 @@ class ObjectSuperClass extends AbstractEntity
     /**
      * @return AnrSuperClass[]
      */
-    public function getAnrs()
+    public function getAnrs(): iterable
     {
         return $this->anrs;
     }
 
-    /**
-     * @param ArrayCollection|AnrSuperClass[] $anrs
-     */
-    public function setAnrs($anrs): self
+    public function addAnr(AnrSuperClass $anr): self
     {
-        $this->anrs = $anrs;
+        if (!$this->anrs->contains($anr)) {
+            $this->anrs->add($anr);
+            $anr->addObject($this);
+        }
 
         return $this;
     }
 
-    /**
-     * @param AnrSuperClass $anr
-     */
-    public function addAnr(AnrSuperClass $anr): self
+    public function removeAnr(AnrSuperClass $anr): self
     {
-        if ($this->anrs === null) {
-            $this->anrs = new ArrayCollection();
+        if ($this->anrs->contains($anr)) {
+            $this->anrs->remove($anr);
+            $anr->removeObject($this);
         }
 
-        if (!$this->anrs->contains($anr)) {
-            $this->anrs->add($anr);
+        return $this;
+    }
+
+    public function hasAnr(AnrSuperClass $anr): bool
+    {
+        return $this->anrs->contains($anr);
+    }
+
+    public function setNames(array $names): self
+    {
+        foreach (range(1, 4) as $index) {
+            $key = 'name' . $index;
+            if (isset($names[$key])) {
+                $this->{$key} = $names[$key];
+            }
         }
 
         return $this;
@@ -327,7 +371,7 @@ class ObjectSuperClass extends AbstractEntity
 
     public function setName(string $nameKey, string $nameValue): self
     {
-        if (in_array($nameKey, ['name1', 'name2', 'name3', 'name4'], true)) {
+        if (\in_array($nameKey, ['name1', 'name2', 'name3', 'name4'], true)) {
             $this->{$nameKey} = $nameValue;
         }
 
@@ -336,16 +380,28 @@ class ObjectSuperClass extends AbstractEntity
 
     public function getName(int $languageIndex): string
     {
-        if (!in_array($languageIndex, range(1, 4), true)) {
+        if (!\in_array($languageIndex, range(1, 4), true)) {
             return '';
         }
 
         return (string)$this->{'name' . $languageIndex};
     }
 
+    public function setLabels(array $labels): self
+    {
+        foreach (range(1, 4) as $index) {
+            $key = 'label' . $index;
+            if (isset($labels[$key])) {
+                $this->{$key} = $labels[$key];
+            }
+        }
+
+        return $this;
+    }
+
     public function setLabel(string $labelKey, string $labelValue): self
     {
-        if (in_array($labelKey, ['label1', 'label2', 'label3', 'label4'], true)) {
+        if (\in_array($labelKey, ['label1', 'label2', 'label3', 'label4'], true)) {
             $this->{$labelKey} = $labelValue;
         }
 
@@ -378,16 +434,16 @@ class ObjectSuperClass extends AbstractEntity
         return $this->scope === static::SCOPE_LOCAL ? 'local' : 'global';
     }
 
-    public function setDisponibility(float $disponibility): self
+    public function setAvailability(float $availability): self
     {
-        $this->disponibility = $disponibility;
+        $this->availability = $availability;
 
         return $this;
     }
 
-    public function getDisponibility(): float
+    public function getAvailability(): float
     {
-        return $this->disponibility;
+        return $this->availability;
     }
 
     public function setPosition(int $position): self
@@ -434,132 +490,62 @@ class ObjectSuperClass extends AbstractEntity
         return $this->getUuid() === $object->getUuid();
     }
 
-    public function getInputFilter($partial = false)
+    public function getParents()
     {
-        if (!$this->inputFilter) {
-            parent::getInputFilter($partial);
-
-            $names = ['name1', 'name2', 'name3', 'name4'];
-            foreach ($names as $name) {
-                $validatorsName = [];
-                if (!$partial) {
-                    // TODO: Move the validator to the creation / update part as it requires the db connection.
-                    $validatorsName = array(
-                        array(
-                            'name' => 'Monarc\Core\Validator\FieldValidator\UniqueName',
-                            'options' => array(
-                                'entity' => $this,
-                                'adapter' => $this->getDbAdapter(),
-                                'field' => $name
-                            ),
-                        ),
-                    );
-                }
-
-                $this->inputFilter->add(array(
-                    'name' => $name,
-                    'required' => false,
-                    'allow_empty' => false,
-                    'filters' => array(),
-                    //  'validators' => $validatorsName,
-                ));
-            }
-
-            $labels = ['label1', 'label2', 'label3', 'label4'];
-            foreach ($labels as $label) {
-                $this->inputFilter->add(array(
-                    'name' => $label,
-                    'required' => false,
-                    'allow_empty' => false,
-                    'filters' => array(),
-                    'validators' => array(),
-                ));
-            }
-
-            $this->inputFilter->add(array(
-                'name' => 'scope',
-                'required' => false,
-                'allow_empty' => true,
-                'continue_if_empty' => true,
-                'filters' => array(),
-                'validators' => array(
-                    array(
-                        'name' => 'IsInt',
-                    ),
-                ),
-            ));
-
-            $this->inputFilter->add(array(
-                'name' => 'mode',
-                'required' => false,
-                'allow_empty' => true,
-                'continue_if_empty' => true,
-                'filters' => array(),
-                'validators' => array(
-                    array(
-                        'name' => 'IsInt',
-                    ),
-                ),
-            ));
-
-            $this->inputFilter->add(array(
-                'name' => 'asset',
-                'required' => (!$partial) ? true : false,
-                'allow_empty' => true,
-                'continue_if_empty' => true,
-                'filters' => array(),
-                // 'validators' => array(
-                //     array(
-                //         'name' => 'IsInt',
-                //     ),
-                // ),
-            ));
-
-            // Dans certains cas, la catégorie n'est pas fourni. On n'empêche pas le save mais du coup l'objet n'est pas attaché à une categorie
-            $this->inputFilter->add(array(
-                'name' => 'category',
-                'required' => false,
-                'allow_empty' => true,
-                'continue_if_empty' => true,
-                'filters' => array(),
-                'validators' => array(
-                    array(
-                        'name' => 'IsInt',
-                    ),
-                ),
-            ));
-
-            $this->inputFilter->add(array(
-                'name' => 'rolfTag',
-                'required' => false,
-                'allow_empty' => true,
-                'continue_if_empty' => true,
-                'filters' => array(),
-                'validators' => array(/*array(
-                        'name' => 'IsInt',
-                    ),*/
-                ),
-            ));
-
-            $this->inputFilter->add(array(
-                'name' => 'mode',
-                'required' => (!$partial) ? true : false,
-                'allow_empty' => false,
-                'continue_if_empty' => false,
-                'filters' => array(),
-                'validators' => array(
-                    array(
-                        'name' => 'InArray',
-                        'options' => array(
-                            'haystack' => [0, 1],
-                        ),
-                    ),
-                ),
-            ));
-        }
-        return $this->inputFilter;
+        return $this->parents;
     }
 
+    public function addParent(ObjectSuperClass $objectSuperClass): self
+    {
+        // TODO: implement + when we add we need to validate if it is nt presented in parents or children indirectly.
+        // TODO: also check if not the same object...
+
+        return $this;
+    }
+
+    public function removeParent(ObjectSuperClass $objectSuperClass): self
+    {
+        // TODO: implement...
+
+        return $this;
+    }
+
+    /**
+     * Note: If the method use used, the order has to be performed manually due to the Doctrine limitation.
+     */
+    public function getChildren()
+    {
+        return $this->children;
+    }
+
+    public function addChild(ObjectSuperClass $objectSuperClass): self
+    {
+        // TODO: implement + when we add we need to validate if it is nt presented in parents or children indirectly.
+        // TODO: also check if not the same object...
+
+        return $this;
+    }
+
+    public function removeChild(ObjectSuperClass $objectSuperClass): self
+    {
+        // TODO: implement...
+
+        return $this;
+    }
+
+    public function getParentsLinks()
+    {
+        return $this->parentsLinks;
+    }
+
+    // TODO: add, remove links methods. Check if we need to call add / remove Parent / Child, if yes then drop the props.
+
+    public function getChildrenLinks()
+    {
+        return $this->childrenLinks;
+    }
+
+    // TODO: replace the usage to the filter use.
     public function getFiltersForService()
     {
         $filterJoin = [

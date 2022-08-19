@@ -29,8 +29,11 @@ use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\Mapping\MappingException;
 use Laminas\EventManager\SharedEventManager;
 use Monarc\Core\Model\Table\ScaleTable;
+use Monarc\Core\Table\MonarcObjectTable;
 
 /**
+ * TODO: this service cant work as far as the 'asset' and 'object' dependencies can't set up.
+ *
  * Instance Service
  *
  * Class InstanceService
@@ -79,17 +82,20 @@ class InstanceService extends AbstractService
      */
     public function instantiateObjectToAnr($anrId, $data, $managePosition = true, $rootLevel = false, $mode = Instance::MODE_CREA_NODE)
     {
+        /** @var MonarcObjectTable $objectTable */
+        $objectTable = $this->get('objectTable');
         try {
             /** @var ObjectSuperClass $object */
-            $object = $this->get('objectTable')->getEntity($data['object']);
+            $object = $objectTable->findByUuid($data['object']);
         } catch (MappingException | QueryException $e) {
-            $object = $this->get('objectTable')->getEntity(['uuid' => $data['object'], 'anr' => $anrId]);
+            // TODO: ....
+            $object = $objectTable->findByUuidAndAnr($data['object'], $anrId);
         }
 
         //verify if user is authorized to instantiate this object
         $authorized = false;
-        foreach ($object->anrs as $anr) {
-            if ($anr->id == $anrId) {
+        foreach ($object->getAnrs() as $anr) {
+            if ($anr->getId() === $anrId) {
                 $authorized = true;
                 break;
             }

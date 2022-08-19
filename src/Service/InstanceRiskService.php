@@ -47,7 +47,6 @@ class InstanceRiskService extends AbstractService
 
     // only for setDependencies (deprecated)
     protected $assetTable;
-    protected $monarcObjectTable;
     protected $scaleTable;
     protected $threatTable;
 
@@ -556,6 +555,7 @@ class InstanceRiskService extends AbstractService
     }
 
     /**
+     * TODO: replace to use TreeStructureTrait::getIdsOfEntityWithLinkedChildren
      * @param Instance[] $instances
      *
      * @return array

@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Model\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
@@ -52,6 +53,14 @@ class AssetSuperClass
      * })
      */
     protected $anr;
+
+    /**
+     * @var ArrayCollection|AmvSuperClass[]
+     *
+     * @ORM\OneToMany(targetEntity="Amv", mappedBy="asset")
+     * @ORM\OrderBy({"position": "ASC"})
+     */
+    protected $amvs;
 
     /**
      * @var string
@@ -137,6 +146,11 @@ class AssetSuperClass
      */
     protected $code;
 
+    public function __construct()
+    {
+        $this->amvs = new ArrayCollection();
+    }
+
     /**
      * @ORM\PrePersist
      */
@@ -169,6 +183,30 @@ class AssetSuperClass
     public function setAnr(AnrSuperClass $anr): self
     {
         $this->anr = $anr;
+
+        return $this;
+    }
+
+    public function getAmvs()
+    {
+        return $this->amvs;
+    }
+
+    public function addAmv(AmvSuperClass $amv): self
+    {
+        if (!$this->amvs->contains($amv)) {
+            $this->amvs->add($amv);
+            $amv->setAsset($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAmv(AmvSuperClass $amv): self
+    {
+        if ($this->amvs->contains($amv)) {
+            $this->amvs->remove($amv);
+        }
 
         return $this;
     }

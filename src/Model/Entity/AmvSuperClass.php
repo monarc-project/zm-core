@@ -107,6 +107,11 @@ class AmvSuperClass implements PositionedEntityInterface
         $this->measures = new ArrayCollection();
     }
 
+    public function getImplicitPositionRelationsValues(): array
+    {
+        return ['asset' => $this->asset->getUuid()];
+    }
+
     /**
      * @ORM\PrePersist
      */
@@ -168,6 +173,7 @@ class AmvSuperClass implements PositionedEntityInterface
     public function setAsset(AssetSuperClass $asset): self
     {
         $this->asset = $asset;
+        $asset->addAmv($this);
 
         return $this;
     }
@@ -241,11 +247,6 @@ class AmvSuperClass implements PositionedEntityInterface
         $this->position = $position;
 
         return $this;
-    }
-
-    public function getImplicitPositionRelationsValues(): array
-    {
-        return ['asset' => $this->asset->getUuid()];
     }
 
     public function getStatus(): int

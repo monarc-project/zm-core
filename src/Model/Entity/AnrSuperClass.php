@@ -43,6 +43,25 @@ class AnrSuperClass extends AbstractEntity
     protected $objects;
 
     /**
+     * @var ArrayCollection|AnrObjectCategorySuperClass[]
+     *
+     * @ORM\OneToMany(targetEntity="AnrObjectCategory", orphanRemoval=true, mappedBy="anr", cascade={"remove"})
+     * @ORM\OrderBy({"position" = "ASC"})
+     */
+    protected $anrObjectCategories;
+
+    /**
+     * @var ArrayCollection|ObjectCategorySuperClass[]
+     *
+     * @ORM\ManyToMany(targetEntity="ObjectCategory", inversedBy="anrs", cascade={"persist"})
+     * @ORM\JoinTable(name="anrs_objects_categories",
+     *  inverseJoinColumns={@ORM\JoinColumn(name="object_category_id", referencedColumnName="id")},
+     *  joinColumns={@ORM\JoinColumn(name="anr_id", referencedColumnName="id")},
+     * )
+     */
+    protected $objectCategories;
+
+    /**
      * @var string
      *
      * @ORM\Column(name="label1", type="string", length=255, nullable=true)
@@ -256,6 +275,8 @@ class AnrSuperClass extends AbstractEntity
     public function __construct($obj = null)
     {
         $this->objects = new ArrayCollection();
+        $this->anrObjectCategories = new ArrayCollection();
+        $this->objectCategories = new ArrayCollection();
 
         parent::__construct($obj);
     }
@@ -273,9 +294,6 @@ class AnrSuperClass extends AbstractEntity
         return $this;
     }
 
-    /**
-     * @return ArrayCollection|ObjectSuperClass[]
-     */
     public function getObjects()
     {
         return $this->objects;
@@ -283,11 +301,63 @@ class AnrSuperClass extends AbstractEntity
 
     /**
      * @param ObjectSuperClass[] $objects
-     * @return Anr
      */
     public function setObjects($objects): self
     {
         $this->objects = $objects;
+
+        return $this;
+    }
+
+    public function addObject(ObjectSuperClass $object): self
+    {
+        if (!$this->objects->contains($object)) {
+            $this->objects->add($object);
+            $object->addAnr($this);
+        }
+
+        return $this;
+    }
+
+    public function removeObject(ObjectSuperClass $object): self
+    {
+        if ($this->objects->contains($object)) {
+            $this->objects->remove($object);
+            $object->removeAnr($this);
+        }
+
+        return $this;
+    }
+
+    public function getAnrObjectCategories()
+    {
+        return $this->anrObjectCategories;
+    }
+
+    public function addAnrObjectCategory(AnrObjectCategorySuperClass $anrObjectCategory): self
+    {
+        if (!$this->anrObjectCategories->contains($anrObjectCategory)) {
+            $this->anrObjectCategories->add($anrObjectCategory);
+            $anrObjectCategory->setAnr($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAnrObjectCategory(AnrObjectCategorySuperClass $anrObjectCategory): self
+    {
+        if ($this->anrObjectCategories->contains($anrObjectCategory)) {
+            $this->anrObjectCategories->removeElement($anrObjectCategory);
+        }
+
+        return $this;
+    }
+
+    public function removeObjectCategory(ObjectCategorySuperClass $objectCategory): self
+    {
+        if ($this->objectCategories->contains($objectCategory)) {
+            $this->objectCategories->removeElement($objectCategory);
+        }
 
         return $this;
     }
