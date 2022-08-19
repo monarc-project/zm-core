@@ -302,7 +302,7 @@ class ModelService extends AbstractService
             $toModel->addThreat($threat);
         }
         foreach ($fromModel->getVulnerabilities() as $vulnerability) {
-            $toModel->addThreat($vulnerability);
+            $toModel->addVulnerability($vulnerability);
         }
         foreach ($fromModel->getAnr()->getObjects() as $object) {
             $toModel->getAnr()->addObject($object);
