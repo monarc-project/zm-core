@@ -1256,19 +1256,20 @@ class ObjectService extends AbstractService
             $model = $modelTable->getEntityByFields(['anr' => $anrId])[0];
 
             if ($model) {
-                foreach ($objectsToAdd as $objectToAdd) {
+                foreach ($objectsToAdd as $key => $objectToAdd) {
                     //object is specific and model generic
                     if ($model->isGeneric() && $objectToAdd->getMode() ==
                     \Monarc\Core\Model\Entity\MonarcObject::MODE_SPECIFIC) {
-                        $objectsToAdd->remove($objectToAdd);
+                        unset($objectsToAdd[$key]);
                     }
                     //object and models are specific but not in the same model
                     if (!$model->isGeneric() && $objectToAdd->getMode() ==
                         \Monarc\Core\Model\Entity\MonarcObject::MODE_SPECIFIC) {
                         $assetsAllowed = $model->getAssets();
                         $currentAsset = $objectToAdd->getAsset();
-                        if (!$assetsAllowed->contains($curentAsset)) {
-                            $objectsToAdd->remove($objectToAdd);
+                        if (!$assetsAllowed->contains($currentAsset)
+                            && $currentAsset->getMode()!= \Monarc\Core\Model\Entity\MonarcObject::MODE_GENERIC) {
+                            unset($objectsToAdd[$key]);
                         }
                     }
                 }

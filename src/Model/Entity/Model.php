@@ -239,6 +239,11 @@ class Model extends AbstractEntity
         return $this;
     }
 
+    public function getAssets()
+    {
+        return $this->assets;
+    }
+
     public function getInputFilter($partial = false)
     {
         if (!$this->inputFilter) {
