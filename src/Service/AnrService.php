@@ -145,6 +145,7 @@ class AnrService extends AbstractService
 
         //duplicate object categories, instances, instances consequences, instances risks, instances risks op
         $clones = [];
+        $newInstancesParentLink = [];
         $array = [
             'scale',
             'scaleImpactType',
@@ -162,6 +163,7 @@ class AnrService extends AbstractService
         foreach ($array as $value) {
             $table = $this->get($value . 'Table');
             $order = [];
+            $entities = null;
             switch ($value) {
                 case 'instance':
                     $order['level'] = 'ASC';
@@ -180,16 +182,8 @@ class AnrService extends AbstractService
 
                 switch ($value) {
                     case 'instance':
-                        if (!empty($entity->root->id) && !empty($clones['instance'][$entity->root->id])) {
-                            $newEntity->set('root', $clones['instance'][$entity->root->id]);
-                        } else {
-                            $newEntity->set('root', null);
-                        }
-                        if (!empty($entity->parent->id) && !empty($clones['instance'][$entity->parent->id])) {
-                            $newEntity->set('parent', $clones['instance'][$entity->parent->id]);
-                        } else {
-                            $newEntity->set('parent', null);
-                        }
+                        $newEntity->set('root', null);
+                        $newEntity->set('parent', null);
                         break;
                     case 'instanceConsequence':
                         if (!empty($entity->instance->id) && !empty($clones['instance'][$entity->instance->id])) {
@@ -266,6 +260,10 @@ class AnrService extends AbstractService
 
                 $table->save($newEntity);
 
+                if ($value==='instance') {
+                    $newInstancesParentLink[$newEntity->getId()]['parent'] = $entity->getParent();
+                    $newInstancesParentLink[$newEntity->getId()]['root'] = $entity->getRoot();
+                }
                 if (method_exists($newEntity, 'get')) {
                     $clones[$value][$entity->get('id')] = $newEntity;
                 } else {
@@ -273,6 +271,24 @@ class AnrService extends AbstractService
                 }
             }
         }
+        //reconstruct instances tree
+        $instanceTable = $this->get('instanceTable');
+        $newInstances = $instanceTable->findByAnrAndOrderByParams($newAnr);
+        foreach ($newInstances as $newInstance) {
+            if ($newInstancesParentLink[$newInstance->getId()]['root'] !== null) {
+                $newInstance->setRoot(
+                    $clones['instance'][$newInstancesParentLink[$newInstance->getId()]['root']->getId()]
+                );
+            }
+            if ($newInstancesParentLink[$newInstance->getId()]['parent'] !== null) {
+                $newInstance->setParent(
+                    $clones['instance'][$newInstancesParentLink[$newInstance->getId()]['parent']->getId()]
+                );
+            }
+            $instanceTable->save($newInstance,false);
+        }
+        $instanceTable->getDb()->flush();
+
         return $newAnr;
     }
 
