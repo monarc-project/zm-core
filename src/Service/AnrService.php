@@ -285,7 +285,7 @@ class AnrService extends AbstractService
                     $clones['instance'][$newInstancesParentLink[$newInstance->getId()]['parent']->getId()]
                 );
             }
-            $instanceTable->save($newInstance,false);
+            $instanceTable->save($newInstance, false);
         }
         $instanceTable->getDb()->flush();
 
