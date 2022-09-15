@@ -42,15 +42,27 @@ class AuthenticationController extends AbstractRestfulController
             /** @var User $user */
             $user = $authenticatedData['user'];
 
-            if ($authenticatedData['token'] == '2FARequired') {
+            if (in_array($authenticatedData['token'], array('2FARequired', '2FAToBeConfigured'))) {
                 $this->getResponse()->setStatusCode(401);
             }
 
-            return new JsonModel([
-                'token' => $authenticatedData['token'],
-                'uid' => $user->getId(),
-                'language' => $user->getLanguage(),
-            ]);
+            if ($authenticatedData['token'] == '2FAToBeConfigured') {
+                $jsonModel = new JsonModel([
+                    'token' => $authenticatedData['token'],
+                    'uid' => $user->getId(),
+                    'language' => $user->getLanguage(),
+                    'secret' => $authenticatedData['secret'],
+                    'qrcode' => $authenticatedData['qrcode']
+                ]);
+            } else {
+                $jsonModel = new JsonModel([
+                    'token' => $authenticatedData['token'],
+                    'uid' => $user->getId(),
+                    'language' => $user->getLanguage(),
+                ]);
+            }
+
+            return $jsonModel;
         }
 
         $this->getResponse()->setStatusCode(401);

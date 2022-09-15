@@ -4,6 +4,7 @@ namespace Monarc\Core\Adapter;
 use Doctrine\ORM\EntityNotFoundException;
 use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Model\Table\UserTable;
+use Monarc\Core\Service\ConfigService;
 use Laminas\Authentication\Adapter\AbstractAdapter;
 use Laminas\Authentication\Result;
 use RobThree\Auth\TwoFactorAuth;
@@ -22,11 +23,16 @@ class Authentication extends AbstractAdapter
     /** @var UserSuperClass */
     protected $user;
 
-    const TWO_FA_AUTHENTICATION_REQUIRED = 2;
+    /** @var ConfigService */
+    private $configService;
 
-    public function __construct(UserTable $userTable)
+    const TWO_FA_AUTHENTICATION_REQUIRED = 2;
+    const TWO_FA_AUTHENTICATION_TO_SET_UP = 3;
+
+    public function __construct(UserTable $userTable, ConfigService $configService)
     {
         $this->userTable = $userTable;
+        $this->configService = $configService;
     }
 
     /**
@@ -67,6 +73,7 @@ class Authentication extends AbstractAdapter
             if (password_verify($credential, $user->getPassword())) {
                 $this->setUser($user);
                 // if the user is using Two Factor Authentication
+                file_put_contents('php://stderr', print_r('Correct password', TRUE).PHP_EOL);
                 if ($user->isTwoFactorAuthEnabled()) {
                     // check if the 2FA token has been submitted
                     if (empty($token)) {
@@ -90,7 +97,14 @@ class Authentication extends AbstractAdapter
                             }
                         }
                     }
-                } else {
+                } else if ($this->configService->isTwoFactorAuthEnforced()) {
+                    file_put_contents('php://stderr', print_r('2FA enforced', TRUE).PHP_EOL);
+                    if (empty($token)) {
+                        // if two factor authentication is enforced and the user has not yet enabled it
+                        return new Result(self::TWO_FA_AUTHENTICATION_TO_SET_UP, $this->getIdentity());
+                    }
+                }
+                else {
                     return new Result(Result::SUCCESS, $this->getIdentity());
                 }
 
