@@ -15,7 +15,6 @@ use Monarc\Core\Model\Table\ModelTable;
  * Model Service
  *
  * Class ModelService
- *
  * @package Monarc\Core\Service
  */
 class ModelService extends AbstractService
@@ -30,41 +29,22 @@ class ModelService extends AbstractService
     protected $clientTable; // only loaded by Monarc\FrontOffice service factory
     protected $forbiddenFields = ['anr'];
     protected $filterColumns = [
-        'label1',
-        'label2',
-        'label3',
-        'label4',
-        'description1',
-        'description2',
-        'description3',
-        'description4',
+        'label1', 'label2', 'label3', 'label4', 'description1', 'description2', 'description3', 'description4',
     ];
 
     /**
      * @inheritdoc
      */
-    public function getList(
-        $page = 1,
-        $limit = 25,
-        $order = null,
-        $filter = null,
-        $filterAnd = null,
-        $scope = 'BO'
-    ) {
+    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null, $scope = 'BO')
+    {
         $joinModel = -1;
 
         if ($scope == 'FO') {
             $filterAnd['isGeneric'] = 1;
-            $client = $this->clientTable->findTheClient();
+            $client = current($this->clientTable->fetchAll());
 
             if ($client) {
-                $joinModel = $client->getModels()
-                    ->map(
-                        function ($obj) {
-                            return $obj->getModelId();
-                        }
-                    )
-                    ->getValues();
+                $joinModel = $client['model_id'];
             }
         }
 
@@ -81,17 +61,14 @@ class ModelService extends AbstractService
             $filterAnd['id'] = $joinModel;
             $filterAnd['isGeneric'] = 0;
 
-            $models = array_merge(
-                $models,
-                $this->get('table')->fetchAllFiltered(
-                    array_keys($this->get('entity')->getJsonArray()),
-                    $page,
-                    $limit,
-                    $this->parseFrontendOrder($order),
-                    $this->parseFrontendFilter($filter, $this->filterColumns),
-                    $filterAnd
-                )
-            );
+            $models = array_merge($models, $this->get('table')->fetchAllFiltered(
+                array_keys($this->get('entity')->getJsonArray()),
+                $page,
+                $limit,
+                $this->parseFrontendOrder($order),
+                $this->parseFrontendFilter($filter, $this->filterColumns),
+                $filterAnd
+            ));
         }
 
         return $models;
@@ -112,23 +89,18 @@ class ModelService extends AbstractService
             'description3' => $data['description3'],
             'description4' => $data['description4'],
         ];
-        /**
-        * @var AnrService $anrService
-        */
+        /** @var AnrService $anrService */
         $anrService = $this->get('anrService');
         $anrId = $anrService->create($dataAnr);
 
         $data['anr'] = $anrId;
 
-        /**
-        * @var Model $model
-        */
+        /** @var Model $model */
         $model = $this->get('entity');
 
         $model->exchangeArray($data);
 
-        $dependencies
-            = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($model, $dependencies);
 
         // If we reached here, our object is ready to be saved.
@@ -138,7 +110,7 @@ class ModelService extends AbstractService
         }
 
         $model->setCreator(
-            $this->getConnectedUser()->getEmail()
+            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
         );
 
         return $this->get('table')->save($model);
@@ -166,9 +138,7 @@ class ModelService extends AbstractService
      */
     public function update($id, $data)
     {
-        /**
-        * @var Model $model
-        */
+        /** @var Model $model */
         $model = $this->get('table')->getEntity($id);
         if (!$model) {
             throw new \Monarc\Core\Exception\Exception('Entity does not exist', 412);
@@ -192,12 +162,11 @@ class ModelService extends AbstractService
 
         $model->exchangeArray($data);
 
-        $dependencies
-            = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
+        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($model, $dependencies);
 
         $model->setUpdater(
-            $this->getConnectedUser()->getEmail()
+            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
         );
 
         return $this->get('table')->save($model);
@@ -205,58 +174,38 @@ class ModelService extends AbstractService
 
     /**
      * Verifies the model integrity before updating it
-     *
-     * @param  Model $model The model to check
-     * @param  array $data  The new data
+     * @param Model $model The model to check
+     * @param array $data The new data
      * @return bool True if it's correct, false otherwise
      * @throws \Exception
      */
     public function verifyBeforeUpdate($model, $data)
     {
-        if (isset($data['isRegulator'])
-            && isset($data['isGeneric'])
-            && $data['isRegulator'] && $data['isGeneric']
+        if (isset($data['isRegulator']) && isset($data['isGeneric']) &&
+            $data['isRegulator'] && $data['isGeneric']
         ) {
-            throw new \Monarc\Core\Exception\Exception(
-                "A regulator model may not be generic",
-                412
-            );
+            throw new \Monarc\Core\Exception\Exception("A regulator model may not be generic", 412);
         }
 
         $modeObject = null;
 
-        if (isset($data['isRegulator'])
-            && $data['isRegulator']
-            && !$model->isRegulator
-        ) { // change to regulator
+        if (isset($data['isRegulator']) && $data['isRegulator'] && !$model->isRegulator) { // change to regulator
             //retrieve assets
             $assetsIds = [];
             foreach ($model->assets as $asset) {
                 $assetsIds[] = $asset->getUuid();
             }
             if (!empty($assetsIds)) {
-                $amvs = $this->get('amvTable')
-                    ->getEntityByFields(['asset' => $assetsIds]);
+                $amvs = $this->get('amvTable')->getEntityByFields(['asset' => $assetsIds]);
                 foreach ($amvs as $amv) {
-                    if ($amv->get('asset')->get('mode') == MonarcObject::MODE_SPECIFIC
-                        && $amv->get('threat')->get('mode') == MonarcObject::MODE_GENERIC
-                        && $amv->get('vulnerability')->get('mode') == MonarcObject::MODE_GENERIC
-                    ) {
-                        throw new \Monarc\Core\Exception\Exception(
-                            'You can not make this change. '.
-                            'The level of integrity between '.
-                            'the model and its objects would corrupt',
-                            412
-                        );
+                    if ($amv->get('asset')->get('mode') == MonarcObject::MODE_SPECIFIC && $amv->get('threat')->get('mode') == MonarcObject::MODE_GENERIC && $amv->get('vulnerability')->get('mode') == MonarcObject::MODE_GENERIC) {
+                        throw new \Monarc\Core\Exception\Exception('You can not make this change. The level of integrity between the model and its objects would corrupt', 412);
                     }
                 }
             }
 
             $modeObject = MonarcObject::MODE_GENERIC;
-        } elseif (isset($data['isGeneric'])
-            && $data['isGeneric']
-            && !$model->isGeneric
-        ) { // change to generic
+        } elseif (isset($data['isGeneric']) && $data['isGeneric'] && !$model->isGeneric) { // change to generic
             $modeObject = MonarcObject::MODE_SPECIFIC;
         }
 
@@ -265,11 +214,7 @@ class ModelService extends AbstractService
             if (!empty($objects)) {
                 foreach ($objects as $o) {
                     if ($o->get('mode') == $modeObject) {
-                        throw new \Monarc\Core\Exception\Exception(
-                            'You can not make this change. The level of integrity '.
-                            'between the model and its objects would corrupt',
-                            412
-                        );
+                        throw new \Monarc\Core\Exception\Exception('You can not make this change. The level of integrity between the model and its objects would corrupt', 412);
                     }
                 }
             }
@@ -319,33 +264,54 @@ class ModelService extends AbstractService
      */
     public function duplicate($modelId)
     {
-        //retrieve model
-        /**
-        * @var ModelTable $modelTable
-        */
+        /** @var ModelTable $modelTable */
         $modelTable = $this->get('table');
+        /** @var Model $model */
         $model = $modelTable->getEntity($modelId);
 
-        //duplicate model
-        $newModel = clone $model;
-        $newModel->set('id', null);
-        $newModel->set('isDefault', false);
+        /** @var AnrService $anrService */
+        $anrService = $this->get('anrService');
+        $newAnr = $anrService->duplicate($model->getAnr());
 
-        $suffix = ' (copié le ' . date('m/d/Y à H:i') . ')';
-        for ($i = 1; $i <= 4; $i++) {
-            $newModel->set('label' . $i, $newModel->get('label' . $i) . $suffix);
+        $nameSuffix = ' (copié le ' . date('m/d/Y à H:i') . ')';
+
+        $newModel = (new Model())
+            ->setAnr($newAnr)
+            ->setLabels([
+                'label1' => $model->getLabel(1) . $nameSuffix,
+                'label2' => $model->getLabel(2) . $nameSuffix,
+                'label3' => $model->getLabel(3) . $nameSuffix,
+                'label4' => $model->getLabel(4) . $nameSuffix,
+            ])
+            ->setDescriptions($model->getDescriptions())
+            ->setIsGeneric($model->isGeneric())
+            ->setIsRegulator($model->isRegulator())
+            ->setAreScalesUpdatable($model->areScalesUpdatable())
+            ->setShowRolfBrut($model->getShowRolfBrut())
+            ->setStatus($model->getStatus())
+            ->setCreator($this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname());
+
+        if (!$newModel->isGeneric()) {
+            $this->reassignSpecificObjects($model, $newModel);
         }
 
-        //duplicate anr
-        /**
-        * @var AnrService $anrService
-        */
-        $anrService = $this->get('anrService');
-        $newAnr = $anrService->duplicate($newModel->anr);
-
-        $newModel->setAnr($newAnr);
-
         return $modelTable->save($newModel);
+    }
+
+    private function reassignSpecificObjects(Model $fromModel, Model $toModel): void
+    {
+        foreach ($fromModel->getAssets() as $asset) {
+            $toModel->addAsset($asset);
+        }
+        foreach ($fromModel->getThreats() as $threat) {
+            $toModel->addThreat($threat);
+        }
+        foreach ($fromModel->getVulnerabilities() as $vulnerability) {
+            $toModel->addVulnerability($vulnerability);
+        }
+        foreach ($fromModel->getAnr()->getObjects() as $object) {
+            $toModel->getAnr()->addObject($object);
+        }
     }
 
     /**
@@ -356,10 +322,7 @@ class ModelService extends AbstractService
         $model = $this->get('table')->getEntity($id);
         $anr = $model->get('anr');
         $model->set('anr', null);
-        $model->set(
-            'status',
-            \Monarc\Core\Model\Entity\AbstractEntity::STATUS_DELETED
-        );
+        $model->set('status', \Monarc\Core\Model\Entity\AbstractEntity::STATUS_DELETED);
         $this->get('table')->save($model);
 
         if ($anr) {
@@ -379,10 +342,7 @@ class ModelService extends AbstractService
             $model = $this->get('table')->getEntity($d);
             $anr = $model->get('anr');
             $model->set('anr', null);
-            $model->set(
-                'status',
-                \Monarc\Core\Model\Entity\AbstractEntity::STATUS_DELETED
-            );
+            $model->set('status', \Monarc\Core\Model\Entity\AbstractEntity::STATUS_DELETED);
             $this->get('table')->save($model, ($i == $nbData));
             $i++;
 

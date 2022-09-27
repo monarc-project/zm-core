@@ -320,6 +320,7 @@ class ObjectSuperClass extends AbstractEntity
 
         if (!$this->anrs->contains($anr)) {
             $this->anrs->add($anr);
+            $anr->addObject($this);
         }
 
         return $this;
