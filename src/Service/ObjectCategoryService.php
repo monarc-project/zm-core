@@ -83,20 +83,33 @@ class ObjectCategoryService extends AbstractService
     public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = [])
     {
         $objectCategories = $this->getList($page, $limit, $order, $filter, $filterAnd);
+        $result = $objectCategories;
 
         $currentObjectsListId = [];
-        foreach ($objectCategories as $objectCategory) {
-            $currentObjectsListId[] = $objectCategory['id'];
+        foreach ($objectCategories as $key => $objectCategory) {
+            if (is_object($result[$key]['objects'])) {
+                $result[$key]['objects'] = [];
+            }
+            foreach ($objectCategory['objects'] as $object) {
+                $result[$key]['objects'][] = [
+                    'uuid' => $object->getUuid(),
+                    'name1' => $object->getName(1),
+                    'name2' => $object->getName(2),
+                    'name3' => $object->getName(3),
+                    'name4' => $object->getName(4),
+                ];
+            }
+            $currentObjectCategoriessListId[] = $objectCategory['id'];
         }
 
         //retrieve parent
         if (empty($filterAnd['id'])) {
             foreach ($objectCategories as $objectCategory) {
-                $this->addParent($objectCategories, $objectCategory, $currentObjectsListId);
+                $this->addParent($result, $objectCategory, $currentObjectCategoriessListId);
             }
         }
 
-        return $objectCategories;
+        return $result;
     }
 
     /**
