@@ -879,33 +879,9 @@ class ObjectService extends AbstractService
 
                 if (!is_null($newRolfTag) && (!$forceSpecific)) {
                     //add new risk op to instance
-                    /** @var RolfTagTable $rolfTagTable */
-                    $rolfTagTable = $this->get('rolfTagTable');
-                    $rolfTag = $rolfTagTable->getEntity($newRolfTag);
-                    $rolfRisks = $rolfTag->risks;
-                    $nbRolfRisks = count($rolfRisks);
-                    $i = 1;
-                    foreach ($rolfRisks as $rolfRisk) {
-                        $data = [
-                            'anr' => $object->anr->id,
-                            'instance' => $instance->id,
-                            'object' => $object->getUuid(),
-                            'rolfRisk' => $rolfRisk->id,
-                            'riskCacheCode' => $rolfRisk->code,
-                            'riskCacheLabel1' => $rolfRisk->label1,
-                            'riskCacheLabel2' => $rolfRisk->label2,
-                            'riskCacheLabel3' => $rolfRisk->label3,
-                            'riskCacheLabel4' => $rolfRisk->label4,
-                            'riskCacheDescription1' => $rolfRisk->description1,
-                            'riskCacheDescription2' => $rolfRisk->description2,
-                            'riskCacheDescription3' => $rolfRisk->description3,
-                            'riskCacheDescription4' => $rolfRisk->description4,
-                        ];
-                        /** @var InstanceRiskOpService $instanceRiskOpService */
-                        $instanceRiskOpService = $this->get('instanceRiskOpService');
-                        $instanceRiskOpService->create($data, ($nbRolfRisks == $i));
-                        $i++;
-                    }
+                    /** @var InstanceRiskOpService $instanceRiskOpService */
+                    $instanceRiskOpService = $this->get('instanceRiskOpService');
+                    $instanceRiskOpService->createInstanceRisksOp($instance, $object);
                 }
             }
         }
