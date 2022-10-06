@@ -85,9 +85,9 @@ class ObjectCategoryService extends AbstractService
         $objectCategories = $this->getList($page, $limit, $order, $filter, $filterAnd);
         $result = $objectCategories;
 
-        $currentObjectsListId = [];
+        $currentObjectCategoriesListId = [];
         foreach ($objectCategories as $key => $objectCategory) {
-            if (is_object($result[$key]['objects'])) {
+            if (\is_object($result[$key]['objects'])) {
                 $result[$key]['objects'] = [];
             }
             foreach ($objectCategory['objects'] as $object) {
@@ -99,13 +99,13 @@ class ObjectCategoryService extends AbstractService
                     'name4' => $object->getName(4),
                 ];
             }
-            $currentObjectCategoriessListId[] = $objectCategory['id'];
+            $currentObjectCategoriesListId[] = $objectCategory['id'];
         }
 
         //retrieve parent
         if (empty($filterAnd['id'])) {
             foreach ($objectCategories as $objectCategory) {
-                $this->addParent($result, $objectCategory, $currentObjectCategoriessListId);
+                $this->addParent($result, $objectCategory, $currentObjectCategoriesListId);
             }
         }
 
