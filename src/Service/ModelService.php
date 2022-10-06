@@ -12,6 +12,7 @@ use Monarc\Core\InputFormatter\FormattedInputParams;
 use Monarc\Core\Model\Entity\Model;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Entity\UserSuperClass;
+use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Table\AmvTable;
 use Monarc\Core\Table\ModelTable;
 
@@ -21,6 +22,8 @@ class ModelService
 
     private AmvTable $amvTable;
 
+    private AnrTable $anrTable;
+
     private AnrService $anrService;
 
     private UserSuperClass $connectedUser;
@@ -28,11 +31,13 @@ class ModelService
     public function __construct(
         ModelTable $modelTable,
         AmvTable $amvTable,
+        AnrTable $anrTable,
         AnrService $anrService,
         ConnectedUserService $connectedUserService
     ) {
         $this->modelTable = $modelTable;
         $this->amvTable = $amvTable;
+        $this->anrTable = $anrTable;
         $this->anrService = $anrService;
         $this->connectedUser = $connectedUserService->getConnectedUser();
     }
@@ -149,13 +154,17 @@ class ModelService
     {
         /** @var Model $model */
         $model = $this->modelTable->findById($id);
-        $this->modelTable->remove($model);
+        $model->setStatus(Model::STATUS_DELETED);
+
+        $this->anrTable->deleteEntity($model->getAnr(), false);
+
+        $this->modelTable->save($model);
     }
 
     public function deleteList(array $data): void
     {
         foreach ($data as $modelId) {
-            $this->delete((int) $modelId);
+            $this->delete((int)$modelId);
         }
     }
 

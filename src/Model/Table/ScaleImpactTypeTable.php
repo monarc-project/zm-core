@@ -8,6 +8,7 @@
 namespace Monarc\Core\Model\Table;
 
 use Monarc\Core\Model\Db;
+use Monarc\Core\Model\Entity\Anr;
 use Monarc\Core\Model\Entity\ScaleImpactType;
 use Monarc\Core\Service\ConnectedUserService;
 
@@ -20,5 +21,18 @@ class ScaleImpactTypeTable extends AbstractEntityTable
     public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
     {
         parent::__construct($dbService, ScaleImpactType::class, $connectedUserService);
+    }
+
+    /**
+     * @return ScaleImpactType[]
+     */
+    public function findByAnr(Anr $anr): array
+    {
+        return $this->getRepository()
+            ->createQueryBuilder('sit')
+            ->where('sit.anr = :anr')
+            ->setParameter('anr', $anr)
+            ->getQuery()
+            ->getResult();
     }
 }

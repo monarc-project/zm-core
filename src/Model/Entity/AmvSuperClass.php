@@ -109,7 +109,12 @@ class AmvSuperClass implements PositionedEntityInterface
 
     public function getImplicitPositionRelationsValues(): array
     {
-        return ['asset' => $this->asset->getUuid()];
+        $fields = ['asset' => $this->asset];
+        if ($this->anr !== null) {
+            $fields['anr'] = $this->anr;
+        }
+
+        return $fields;
     }
 
     /**

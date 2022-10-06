@@ -63,6 +63,13 @@ class AssetSuperClass
     protected $amvs;
 
     /**
+     * @var ArrayCollection|ObjectSuperClass[]
+     *
+     * @ORM\OneToMany(targetEntity="MonarcObject", mappedBy="asset")
+     */
+    protected $objects;
+
+    /**
      * @var string
      *
      * @ORM\Column(name="label1", type="string", length=255, nullable=true)
@@ -149,6 +156,7 @@ class AssetSuperClass
     public function __construct()
     {
         $this->amvs = new ArrayCollection();
+        $this->objects = new ArrayCollection();
     }
 
     /**
@@ -206,6 +214,35 @@ class AssetSuperClass
     {
         if ($this->amvs->contains($amv)) {
             $this->amvs->remove($amv);
+        }
+
+        return $this;
+    }
+
+    public function getObjects()
+    {
+        return $this->objects;
+    }
+
+    public function hasObjects(): bool
+    {
+        return !$this->objects->isEmpty();
+    }
+
+    public function addObject(ObjectSuperClass $object): self
+    {
+        if (!$this->objects->contains($object)) {
+            $this->objects->add($object);
+            $object->setAsset($this);
+        }
+
+        return $this;
+    }
+
+    public function removeObject(ObjectSuperClass $object): self
+    {
+        if ($this->objects->contains($object)) {
+            $this->objects->remove($object);
         }
 
         return $this;

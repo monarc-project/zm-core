@@ -7,7 +7,6 @@
 
 namespace Monarc\Core\Service;
 
-use Interop\Container\ContainerInterface;
 use Monarc\Core\Model\Entity;
 use Monarc\Core\Model\Table as DeprecatedTable;
 use Monarc\Core\Table;
@@ -35,21 +34,10 @@ class InstanceServiceFactory extends AbstractServiceFactory
         'instanceConsequenceService' => Service\InstanceConsequenceService::class,
         'instanceRiskService' => Service\InstanceRiskService::class,
         'instanceRiskOpService' => Service\InstanceRiskOpService::class,
-        'objectObjectService' => Service\ObjectObjectService::class,
         'objectExportService' => Service\ObjectExportService::class,
         'amvService' => Service\AmvService::class,
         'translateService' => Service\TranslateService::class,
         'configService' => ConfigService::class,
         'operationalRiskScalesExportService' => OperationalRiskScalesExportService::class,
     ];
-
-    // TODO: A temporary solution to inject SharedEventManager. All the factories classes will be removed.
-    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
-    {
-        $objectObjectService = parent::__invoke($container, $requestedName, $options);
-
-        $objectObjectService->setSharedManager($container->get('EventManager')->getSharedManager());
-
-        return $objectObjectService;
-    }
 }

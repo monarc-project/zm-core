@@ -9,6 +9,8 @@ class AlterModelTable extends AbstractMigration
         $this->table('models')
             ->removeColumn('is_deleted')
             ->renameColumn('is_scales_updatable', "are_scales_updatable")
+            ->dropForeignKey('anr_id')
+            ->addForeignKey('anr_id', 'anrs', 'id', ['delete'=> 'SET_NULL', 'update'=> 'CASCADE'])
             ->update();
 
         $this->execute('ALTER TABLE amvs MODIFY updated_at datetime NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP;');

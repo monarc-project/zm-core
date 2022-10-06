@@ -7,7 +7,6 @@
 
 namespace Monarc\Core\Table;
 
-use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Query\Expr;
 use Monarc\Core\Model\Entity\AnrSuperClass;
@@ -16,9 +15,13 @@ use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Entity\ObjectCategorySuperClass;
 use Monarc\Core\Model\Entity\ObjectSuperClass;
 use Monarc\Core\Model\Entity\RolfTagSuperClass;
+use Monarc\Core\Table\Interfaces\PositionUpdatableTableInterface;
+use Monarc\Core\Table\Traits\PositionIncrementTableTrait;
 
-class MonarcObjectTable extends AbstractTable
+class MonarcObjectTable extends AbstractTable implements PositionUpdatableTableInterface
 {
+    use PositionIncrementTableTrait;
+
     public function __construct(EntityManager $entityManager, string $entityName = MonarcObject::class)
     {
         parent::__construct($entityManager, $entityName);
@@ -88,15 +91,5 @@ class MonarcObjectTable extends AbstractTable
     public function findByAnrAndRolfTag(AnrSuperClass $anr, RolfTagSuperClass $rolfTag): array
     {
         return [];
-    }
-
-    public function findUuidsByAsset(AssetSuperClass $asset): array
-    {
-        return $this->getRepository()->createQueryBuilder('o')
-            ->select('o.uuid')
-            ->where('o.asset = :asset')
-            ->setParameter(':asset', $asset)
-            ->getQuery()
-            ->getResult(AbstractQuery::HYDRATE_SCALAR_COLUMN);
     }
 }

@@ -20,7 +20,7 @@ trait PositionUpdateTrait
     /**
      * @param PositionedEntityInterface $entity
      * @param PositionUpdatableTableInterface|AbstractTable $table
-     * @param array $data
+     * @param array $data Note: ['forcePositionUpdate' => true] is used to update the position for already persisted.
      *
      * @throws Exception|LogicException|EntityNotFoundException
      */
@@ -32,9 +32,19 @@ trait PositionUpdateTrait
         $this->validateParams($entity, $table, $data);
 
         $implicitPosition = $data['implicitPosition'] ?? PositionUpdatableServiceInterface::IMPLICIT_POSITION_END;
+
+        /* We try to update the position for already persisted entities only when it's after another element. */
+        $isEntityPersisted = $table->isEntityPersisted($entity);
+        if ($isEntityPersisted
+            && $implicitPosition !== PositionUpdatableServiceInterface::IMPLICIT_POSITION_AFTER
+            && empty($data['forcePositionUpdate'])
+        ) {
+            return;
+        }
+
         switch ($implicitPosition) {
             case PositionUpdatableServiceInterface::IMPLICIT_POSITION_START:
-                if (!$table->isEntityPersisted($entity)) {
+                if (!$isEntityPersisted) {
                     $table->incrementPositions(
                         1,
                         -1,
@@ -57,7 +67,7 @@ trait PositionUpdateTrait
                 break;
             case PositionUpdatableServiceInterface::IMPLICIT_POSITION_END:
                 $maxPosition = $table->findMaxPosition($entity->getImplicitPositionRelationsValues());
-                if (!$table->isEntityPersisted($entity)) {
+                if (!$isEntityPersisted) {
                     $entity->setPosition($maxPosition + 1);
                 } elseif ($entity->getPosition() !== $maxPosition) {
                     $table->incrementPositions(
@@ -80,7 +90,6 @@ trait PositionUpdateTrait
                         'anr' => $entity->getAnr(),
                     ];
                 }
-                $isEntityPersisted = $table->isEntityPersisted($entity);
                 $updater = $isEntityPersisted ? $entity->getUpdater() : $entity->getCreator();
                 /** @var PositionedEntityInterface $previousEntity */
                 $previousEntity = $table->findById($entityKey);

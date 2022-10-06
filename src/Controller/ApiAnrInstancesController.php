@@ -20,7 +20,7 @@ use Laminas\View\Model\JsonModel;
  */
 class ApiAnrInstancesController extends AbstractController
 {
-    protected $name = 'instances';
+    // TODO: This wont work due to the refactoring!!!
     protected $dependencies = ['anr', 'asset', 'object', 'root', 'parent'];
 
     /**
@@ -35,7 +35,7 @@ class ApiAnrInstancesController extends AbstractController
         $instances = $service->getInstancesData($anrId);
 
         return new JsonModel(array(
-            $this->name => $instances
+            'instances' => $instances
         ));
     }
 
@@ -121,12 +121,9 @@ class ApiAnrInstancesController extends AbstractController
         return $this->getResponse();
     }
 
-    /**
-     * @inheritdoc
-     */
     public function create($data)
     {
-        $anrId = (int) $this->params()->fromRoute('anrid');
+        $anrId = (int)$this->params()->fromRoute('anrid');
 
         //verification required
         $required = ['object', 'parent', 'position'];
@@ -136,13 +133,13 @@ class ApiAnrInstancesController extends AbstractController
                 $missing[] = $field . ' missing';
             }
         }
-        if (count($missing)) {
+        if (!empty($missing)) {
             throw new Exception(implode(', ', $missing), 412);
         }
 
-        $data['c'] = isset($data['c'])?$data['c']:'-1';
-        $data['i'] = isset($data['i'])?$data['i']:'-1';
-        $data['d'] = isset($data['d'])?$data['d']:'-1';
+        $data['c'] = $data['c'] ?? '-1';
+        $data['i'] = $data['i'] ?? '-1';
+        $data['d'] = $data['d'] ?? '-1';
 
         /** @var InstanceService $service */
         $service = $this->getService();

@@ -30,7 +30,7 @@ class ObjectCategorySuperClass implements PositionedEntityInterface, TreeStructu
     use UpdateEntityTrait;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer", nullable=false)
      * @ORM\Id
@@ -49,7 +49,7 @@ class ObjectCategorySuperClass implements PositionedEntityInterface, TreeStructu
     protected $anr;
 
     /**
-     * @var ObjectCategorySuperClass
+     * @var ObjectCategorySuperClass|null
      *
      * @ORM\ManyToOne(targetEntity="ObjectCategory", cascade={"persist"})
      * @ORM\JoinColumns({
@@ -59,7 +59,7 @@ class ObjectCategorySuperClass implements PositionedEntityInterface, TreeStructu
     protected $root;
 
     /**
-     * @var ObjectCategorySuperClass
+     * @var ObjectCategorySuperClass|null
      *
      * @ORM\ManyToOne(targetEntity="ObjectCategory", inversedBy="children", cascade={"persist"})
      * @ORM\JoinColumns({
@@ -144,10 +144,14 @@ class ObjectCategorySuperClass implements PositionedEntityInterface, TreeStructu
 
     public function getImplicitPositionRelationsValues(): array
     {
-        return [
-            'parent' => $this->parent->getId(),
-            'anr' => $this->anr ? $this->anr->getId() : null,
+        $fields = [
+            'parent' => $this->parent,
         ];
+        if ($this->anr !== null) {
+            $fields['anr'] = $this->anr;
+        }
+
+        return $fields;
     }
 
     public function getId(): int
@@ -217,6 +221,16 @@ class ObjectCategorySuperClass implements PositionedEntityInterface, TreeStructu
         return $this->root === null;
     }
 
+    public function getRootCategory(): self
+    {
+        return $this->root ?? $this;
+    }
+
+    public function areRootCategoriesEqual(ObjectCategorySuperClass $category): bool
+    {
+        return $this->getRootCategory()->getId() === $category->getRootCategory()->getId();
+    }
+
     public function getObjects()
     {
         return $this->objects;
@@ -245,6 +259,16 @@ class ObjectCategorySuperClass implements PositionedEntityInterface, TreeStructu
     public function getAnrObjectCategories()
     {
         return $this->anrObjectCategories;
+    }
+
+    public function addAnrObjectCategory(AnrObjectCategorySuperClass $anrObjectCategory): self
+    {
+        if (!$this->anrObjectCategories->contains($anrObjectCategory)) {
+            $this->anrObjectCategories->add($anrObjectCategory);
+            $anrObjectCategory->setCategory($this);
+        }
+
+        return $this;
     }
 
     public function hasAnrLink(AnrSuperClass $anr): bool

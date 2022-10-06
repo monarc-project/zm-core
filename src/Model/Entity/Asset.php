@@ -42,6 +42,11 @@ class Asset extends AssetSuperClass
         return $this->models;
     }
 
+    public function hasModels(): bool
+    {
+        return !$this->models->isEmpty();
+    }
+
     public function addModel(Model $model): self
     {
         if (!$this->models->contains($model)) {

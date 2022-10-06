@@ -60,4 +60,23 @@ trait PositionIncrementTableTrait
 
         $queryBuilder->getQuery()->getResult();
     }
+
+    public function findMaxPosition(array $params): int
+    {
+        $queryBuilder = $this->getRepository()->createQueryBuilder('t')->select('MAX(t.position)');
+
+        foreach ($params as $fieldName => $fieldValue) {
+            if ($fieldValue !== null) {
+                $queryBuilder
+                    ->andWhere('t.' . $fieldName . ' = :' . $fieldName)
+                    ->setParameter($fieldName, $fieldValue);
+            } else {
+                $queryBuilder->andWhere('t.' . $fieldName . ' IS NULL');
+            }
+        }
+
+        return (int)$queryBuilder
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

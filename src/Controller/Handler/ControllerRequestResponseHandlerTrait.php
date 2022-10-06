@@ -24,7 +24,7 @@ trait ControllerRequestResponseHandlerTrait
             /** @var AnrSuperClass|null $anr */
             $anr = $this->getRequest()->getAttribute('anr');
             if ($anr !== null) {
-                $params = array_merge(['anr' => $anr], $params);
+                $params = array_merge($params, ['anr' => $anr]);
             }
         }
 
@@ -75,7 +75,7 @@ trait ControllerRequestResponseHandlerTrait
      */
     protected function getSuccessfulJsonResponse(array $responseData = []): object
     {
-        $this->getPreparedJsonResponse(array_merge(['status' => 'ok'], $responseData));
+        return $this->getPreparedJsonResponse(array_merge(['status' => 'ok'], $responseData));
     }
 
     /**

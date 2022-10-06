@@ -29,6 +29,7 @@ class Model
 
     public const STATUS_ACTIVE = 1;
     public const STATUS_INACTIVE = 0;
+    public const STATUS_DELETED = 3;
 
     /**
      * @var int
@@ -42,9 +43,9 @@ class Model
     /**
      * @var Anr
      *
-     * @ORM\ManyToOne(targetEntity="Anr", cascade={"REMOVE"})
+     * @ORM\ManyToOne(targetEntity="Anr")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=false)
+     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="SET NULL")
      * })
      */
     protected $anr;
@@ -177,7 +178,7 @@ class Model
         return $this->id;
     }
 
-    public function getAnr(): Anr
+    public function getAnr(): ?Anr
     {
         return $this->anr;
     }

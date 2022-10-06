@@ -322,7 +322,7 @@ class AnrSuperClass extends AbstractEntity
     public function removeObject(ObjectSuperClass $object): self
     {
         if ($this->objects->contains($object)) {
-            $this->objects->remove($object);
+            $this->objects->removeElement($object);
             $object->removeAnr($this);
         }
 

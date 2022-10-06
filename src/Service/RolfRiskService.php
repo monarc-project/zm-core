@@ -297,7 +297,7 @@ class RolfRiskService extends AbstractService
                 $instancesRisksOp = $instanceRiskOpTable->findByObjectAndRolfRisk($object, $rolfRisk);
 
                 foreach ($instancesRisksOp as $instanceRiskOp) {
-                    $instanceRiskOp->setSpecific(1);
+                    $instanceRiskOp->setIsSpecific(true);
                     $instanceRiskOpTable->saveEntity($instanceRiskOp, false);
                 }
 

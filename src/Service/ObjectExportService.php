@@ -171,19 +171,14 @@ class ObjectExportService
             }
         }
 
-        // Recovery children(s)
-        // Le tri de cette fonction est "position DESC"
-        $children = array_reverse($this->objectObjectService->getChildren($monarcObject->getUuid()));
         $return['children'] = [];
-        if (!empty($children)) {
-            $place = 1;
-            foreach ($children as $child) {
-                $return['children'][$child->getChild()->getUuid()] = $this->generateExportArray(
-                    $child->getChild()->getUuid()
-                );
-                $return['children'][$child->getChild()->getUuid()]['object']['position'] = $place;
-                $place++;
-            }
+        $place = 1;
+        foreach ($monarcObject->getChildren() as $child) {
+            $return['children'][$child->getChild()->getUuid()] = $this->generateExportArray(
+                $child->getChild()->getUuid()
+            );
+            $return['children'][$child->getChild()->getUuid()]['object']['position'] = $place;
+            $place++;
         }
 
         return $return;
@@ -265,14 +260,10 @@ class ObjectExportService
         }
 
         // Recover children
-        $children = array_reverse($this->objectObjectService->getChildren(
-            $monarcObject->getUuid(),
-        )); // Le tri de cette fonction est "position DESC"
+        $children = $monarcObject->getChildren();
         $return['children'] = [];
-        if (!empty($children)) {
-            foreach ($children as $child) {
-                $return['children'][] = $this->generateExportMospArray($child->getChild()->getUuid());
-            }
+        foreach ($monarcObject->getChildren() as $child) {
+            $return['children'][] = $this->generateExportMospArray($child->getChild()->getUuid());
         }
 
         return ['object' => $return];

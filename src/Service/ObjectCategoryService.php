@@ -19,7 +19,6 @@ use Monarc\Core\Table\AnrObjectCategoryTable;
 use Monarc\Core\Table\ObjectCategoryTable;
 use Monarc\Core\Table\MonarcObjectTable;
 
-// TODO: refactor along with object service...
 class ObjectCategoryService
 {
     use TreeStructureTrait;
@@ -48,51 +47,49 @@ class ObjectCategoryService
         $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
-    // TODO: fix this method
-    public function getEntity($id)
+    public function getObjectCategoryData(int $id): array
     {
-        $entity = $this->objectCategoryTable->findById($id);
+        /** @var ObjectCategory $objectCategory */
+        $objectCategory = $this->objectCategoryTable->findById($id);
 
-        $entity['previous'] = null;
-        if ($entity['position'] == 1) {
-            $entity['implicitPosition'] = 1;
-        } else {
-            $pos = $this->get('table')->getRepository()->createQueryBuilder('t')->select('count(t.id)');
-            if (empty($entity['parent'])) {
-                $pos = $pos->where('t.parent IS NULL');
+        $objectCategoryData = [
+            'id' => $objectCategory->getId(),
+            'root' => $objectCategory->getRoot() !== null
+                ? ['id' => $objectCategory->getRoot()->getId()]
+                : null,
+            'parent' => $objectCategory->getParent() !== null
+                ? [
+                    'id' => $objectCategory->getParent()->getId(),
+                    'label1' => $objectCategory->getParent()->getLabel(1),
+                    'label2' => $objectCategory->getParent()->getLabel(2),
+                    'label3' => $objectCategory->getParent()->getLabel(3),
+                    'label4' => $objectCategory->getParent()->getLabel(4),
+                ]
+                : null,
+            'label1' => $objectCategory->getLabel(1),
+            'label2' => $objectCategory->getLabel(2),
+            'label3' => $objectCategory->getLabel(3),
+            'label4' => $objectCategory->getLabel(4),
+            'position' => $objectCategory->getPosition(),
+            'previous' => null,
+            'implicitPosition' => 1,
+        ];
+
+        if ($objectCategory->getPosition() > 1) {
+            $maxPosition = $this->objectCategoryTable
+                ->findMaxPosition($objectCategory->getImplicitPositionRelationsValues());
+            if ($objectCategory->getPosition() >= $maxPosition) {
+                $objectCategoryData['implicitPosition'] = 2;
             } else {
-                $pos = $pos->where('t.parent = :parent')
-                    ->setParameter(':parent', $entity['parent']->id);
-            }
-
-            if ($entity['anr']) {
-                $pos->andWhere('t.anr = :anr')->setParameter(':anr', $entity['anr']->id);
-            }
-
-            $pos = $pos->getQuery()->getSingleScalarResult();
-            if ($entity['position'] >= $pos) {
-                $entity['implicitPosition'] = 2;
-            } else {
-                $entity['implicitPosition'] = 3;
-                // Autre chose ?te
-                $prev = $this->get('table')->getRepository()->createQueryBuilder('t')->select('t.id');
-                if (empty($entity['parent'])) {
-                    $prev = $prev->where('t.parent IS NULL');
-                } else {
-                    $prev = $prev->where('t.parent = :parent')
-                        ->setParameter(':parent', $entity['parent']->id);
+                $objectCategoryData['implicitPosition'] = 3;
+                $previousObjectCategory = $this->objectCategoryTable->findPreviousCategory($objectCategory);
+                if ($previousObjectCategory !== null) {
+                    $objectCategoryData['previous'] = $previousObjectCategory->getId();
                 }
-                if ($entity['anr']) {
-                    $prev->andWhere('t.anr = :anr')->setParameter(':anr', $entity['anr']->id);
-                }
-                $prev = $prev->andWhere('t.position = :pos')
-                    ->setParameter(':pos', $entity['position'] - 1)
-                    ->getQuery()->getSingleScalarResult();
-                $entity['previous'] = $prev;
             }
         }
 
-        return $entity;
+        return $objectCategoryData;
     }
 
     public function getList(FormattedInputParams $formattedInputParams)
@@ -227,8 +224,10 @@ class ObjectCategoryService
         }
     }
 
-    private function getPreparedObjectCategoryData(ObjectCategory $objectCategory, bool $includeChildren = true): array
-    {
+    private function getPreparedObjectCategoryData(
+        ObjectCategorySuperClass $objectCategory,
+        bool $includeChildren = true
+    ): array {
         $result = [
             'id' => $objectCategory->getId(),
             'label1' => $objectCategory->getLabel(1),
@@ -247,49 +246,14 @@ class ObjectCategoryService
         return $result;
     }
 
-    // TODO: ....
-
-    /**
-     * Patches the Library Category
-     * @param int $categoryId The category ID to patch
-     * @param array $data The new data
-     * @return mixed|null The resulting object
-     */
-    public function patchLibraryCategory($categoryId, $data)
-    {
-        $anrId = $data['anr'];
-
-        /** @var ObjectCategorySuperClass $anrObjectCategory */
-        $anrObjectCategory = $this->anrObjectCategoryTable
-            ->getEntityByFields(['anr' => $anrId, 'category' => $categoryId])[0];
-        //$anrObjectCategory->setDbAdapter($anrObjectCategoryTable->getDb());
-
-        //Specific handle of previous data
-        if (isset($data['previous'])) {//we get a position but we need an id
-            $id = $this->anrObjectCategoryTable->getRepository()->createQueryBuilder('t')
-                ->select('t.id')
-                ->where('t.anr = :anrid')
-                ->andWhere('t.position = :pos')
-                ->setParameters([':anrid' => $anrId, ':pos' => $data['previous']])
-                ->getQuery()->getSingleScalarResult();
-
-            $data['previous'] = $id ? $id : null;
-        }
-
-        $anrObjectCategory->exchangeArray($data);
-        $this->setDependencies($anrObjectCategory, ['anr']);
-
-        return $this->anrObjectCategoryTable->save($anrObjectCategory);
-    }
-
-    public function unlinkCategoryFromAnrs(ObjectCategory $objectCategory): void
+    private function unlinkCategoryFromAnrs(ObjectCategorySuperClass $objectCategory): void
     {
         foreach ($objectCategory->getAnrObjectCategories() as $anrObjectCategory) {
             $this->anrObjectCategoryTable->remove($anrObjectCategory, false);
         }
     }
 
-    protected function unlinkCategoryFromAnrsOrLinkItsRoot(ObjectCategorySuperClass $objectCategory): void
+    private function unlinkCategoryFromAnrsOrLinkItsRoot(ObjectCategorySuperClass $objectCategory): void
     {
         foreach ($objectCategory->getAnrObjectCategories() as $anrObjectCategory) {
             if ($objectCategory->getRoot() && $objectCategory->getRoot()->hasAnrLink($anrObjectCategory->getAnr())) {
@@ -303,7 +267,7 @@ class ObjectCategoryService
     }
 
     /**
-     * We need to link every Anr of Objects that are under the root category, or it's children.
+     * Link every Anr object that is under the root category, or it's children.
      */
     protected function linkCategoryToAnr(ObjectCategorySuperClass $objectCategory): void
     {

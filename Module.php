@@ -4,9 +4,7 @@ namespace Monarc\Core;
 
 use Monarc\Core\Service\AuthenticationService;
 use Monarc\Core\Service\InstanceService;
-use Monarc\Core\Service\ObjectService;
 use Monarc\FrontOffice\Service\AnrInstanceService;
-use Monarc\FrontOffice\Service\AnrObjectService;
 use Laminas\Http\Request;
 use Laminas\Mvc\MvcEvent;
 use Laminas\View\Model\JsonModel;
@@ -28,19 +26,6 @@ class Module
 
             $sharedEventManager = $eventManager->getSharedManager();
 
-            $sharedEventManager->attach('addcomponent', 'createinstance', function ($e) use ($sm) {
-                $params = $e->getParams();
-                /** @var InstanceService $instanceService */
-                if ($sm->has(AnrInstanceService::class)) {
-                    $instanceService = $sm->get(AnrInstanceService::class);
-                } else {
-                    $instanceService = $sm->get(InstanceService::class);
-                }
-                $result = $instanceService->instantiateObjectToAnr($params['anrId'], $params['dataInstance']);
-
-                return $result;
-            }, 100);
-
             $sharedEventManager->attach('instance', 'patch', function ($e) use ($sm) {
                 $params = $e->getParams();
                 /** @var InstanceService $instanceService */
@@ -56,19 +41,6 @@ class Module
                     [],
                     true
                 );
-            }, 100);
-
-            $sharedEventManager->attach('object', 'patch', function ($e) use ($sm) {
-                $params = $e->getParams();
-                /** @var ObjectService $objectService */
-                if ($sm->has(AnrObjectService::class)) {
-                    $objectService = $sm->get(AnrObjectService::class);
-                } else {
-                    $objectService = $sm->get(ObjectService::class);
-                }
-                $result = $objectService->patch($params['objectId'], $params['data']);
-
-                return $result;
             }, 100);
         }
     }

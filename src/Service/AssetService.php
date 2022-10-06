@@ -112,7 +112,7 @@ class AssetService
             $asset->setMode((int)$data['mode']);
         }
 
-        $follow = isset($data['follow']) && (bool)$data['follow'];
+        $follow = !empty($data['follow']);
         $modelsIds = $asset->isModeSpecific() && !empty($data['models'])
             ? $data['models']
             : [];
@@ -203,35 +203,32 @@ class AssetService
 
     private function validateAssetObjects(Entity\Asset $asset): void
     {
-        $objectUuids = $this->monarcObjectTable->findUuidsByAsset($asset);
-        if (!empty($objectUuids)) {
-            if (!$asset->getModels()->isEmpty()) {
+        if (!empty($asset->hasObjects())) {
+            if (!$asset->hasModels()) {
                 /*
-                 * Check if the asset is compliant with reg/spec model, when they are used as parents,
+                 * Check if the asset is compliant with generic/specific model, when they are used as parents,
                  * not already used in models.
                  */
-                $objectObjectsLinkedToParents = $this->objectObjectTable->findByParentsUuids($objectUuids);
-                foreach ($objectObjectsLinkedToParents as $objectObjectLinkedToParent) {
-                    /** @var Entity\MonarcObject $childObject */
-                    $childObject = $objectObjectLinkedToParent->getChild();
-                    foreach ($asset->getModels() as $model) {
-                        $model->validateObjectAcceptance($childObject);
+                foreach ($asset->getObjects() as $monarcObject) {
+                    foreach ($monarcObject->getChildren() as $childObject) {
+                        foreach ($asset->getModels() as $model) {
+                            $model->validateObjectAcceptance($childObject);
+                        }
                     }
                 }
             }
 
             /*
-             * Check if the asset is compliant with reg/spec model, when they are used as children,
+             * Check if the asset is compliant with generic/specific model, when they are used as children,
              * not already used in their models.
              */
-            $objectObjectsLinkedToChildren = $this->objectObjectTable->findByChildrenUuids($objectUuids);
-            foreach ($objectObjectsLinkedToChildren as $objectObjectLinkedToChild) {
-                /** @var Entity\MonarcObject $parentObject */
-                $parentObject = $objectObjectLinkedToChild->getParent();
-                /** @var Entity\Asset $objectAsset */
-                $objectAsset = $parentObject->getAsset();
-                foreach ($objectAsset->getModels() as $model) {
-                    $model->validateObjectAcceptance($parentObject, $asset);
+            foreach ($asset->getObjects() as $monarcObject) {
+                foreach ($monarcObject->getParents() as $parentObject) {
+                    /** @var Entity\Asset $objectAsset */
+                    $objectAsset = $parentObject->getAsset();
+                    foreach ($objectAsset->getModels() as $model) {
+                        $model->validateObjectAcceptance($parentObject, $asset);
+                    }
                 }
             }
         }

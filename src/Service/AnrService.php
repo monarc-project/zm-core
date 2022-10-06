@@ -12,6 +12,7 @@ use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Anr;
 use Monarc\Core\Model\Entity\AnrObjectCategory;
 use Monarc\Core\Model\Entity\AnrObjectCategorySuperClass;
+use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\OperationalRiskScale;
 use Monarc\Core\Model\Entity\Scale;
 use Monarc\Core\Model\Table\AnrTable;
@@ -98,7 +99,7 @@ class AnrService extends AbstractService
      * @param Anr $anr The source ANR object
      * @return Anr The new ANR object
      */
-    public function duplicate($anr)
+    public function duplicate(AnrSuperClass $anr)
     {
         $newAnr = clone $anr;
         $newAnr->setId(null);

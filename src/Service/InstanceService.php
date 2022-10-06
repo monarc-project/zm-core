@@ -16,7 +16,6 @@ use Monarc\Core\Model\Entity\Instance;
 use Monarc\Core\Model\Entity\InstanceConsequenceSuperClass;
 use Monarc\Core\Model\Entity\InstanceRiskOp;
 use Monarc\Core\Model\Entity\InstanceSuperClass;
-use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Entity\ObjectSuperClass;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\InstanceConsequenceTable;
@@ -24,16 +23,14 @@ use Monarc\Core\Model\Table\InstanceRiskOpTable;
 use Monarc\Core\Model\Table\InstanceRiskTable;
 use Monarc\Core\Model\Table\InstanceTable;
 use Monarc\Core\Model\Table\ScaleImpactTypeTable;
-use Laminas\EventManager\EventManager;
 use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\Mapping\MappingException;
-use Laminas\EventManager\SharedEventManager;
 use Monarc\Core\Model\Table\ScaleTable;
 use Monarc\Core\Table\MonarcObjectTable;
 
 /**
  * TODO: this service cant work as far as the 'asset' and 'object' dependencies can't set up.
- *
+ *`
  * Instance Service
  *
  * Class InstanceService
@@ -41,7 +38,7 @@ use Monarc\Core\Table\MonarcObjectTable;
  */
 class InstanceService extends AbstractService
 {
-    protected $dependencies = ['anr', 'asset', 'object', '[parent](instance)', '[root](instance)'];
+    protected $dependencies = ['anr', '[parent](instance)', '[root](instance)'];
     protected $filterColumns = ['label1', 'label2', 'label3', 'label4'];
 
     // Tables & Entities
@@ -58,7 +55,6 @@ class InstanceService extends AbstractService
     protected $instanceConsequenceService;
     protected $instanceRiskService;
     protected $instanceRiskOpService;
-    protected $objectObjectService;
     protected $translateService;
     protected $configService;
     protected $operationalRiskScalesExportService;
@@ -69,78 +65,66 @@ class InstanceService extends AbstractService
 
     protected $forbiddenFields = ['anr', 'asset', 'object', 'ch', 'dh', 'ih'];
 
-    /** @var SharedEventManager */
-    private $sharedManager;
-
-    /**
-     * Instantiate Object To Anr
-     *
-     * @param $anrId
-     * @param $data
-     * @return mixed|null
-     * @throws Exception
-     */
-    public function instantiateObjectToAnr($anrId, $data, $managePosition = true, $rootLevel = false, $mode = Instance::MODE_CREA_NODE)
-    {
+    // TODO: refactor all the service along with the method
+    public function instantiateObjectToAnr(
+        int $anrId,
+        array $data,
+        bool $managePosition = true,
+        bool $rootLevel = false,
+        int $mode = Instance::MODE_CREA_NODE
+    ) {
+        /** @var InstanceTable $instanceTable */
+        $instanceTable = $this->get('table');
         /** @var MonarcObjectTable $objectTable */
         $objectTable = $this->get('objectTable');
+        /** @var AnrTable $anrTable */
+        $anrTable = $this->get('anrTable');
+        $anr = $anrTable->findById($anrId);
         try {
             /** @var ObjectSuperClass $object */
             $object = $objectTable->findByUuid($data['object']);
         } catch (MappingException | QueryException $e) {
-            // TODO: ....
-            $object = $objectTable->findByUuidAndAnr($data['object'], $anrId);
+            $object = $objectTable->findByUuidAndAnr($data['object'], $anr);
         }
 
-        //verify if user is authorized to instantiate this object
-        $authorized = false;
-        foreach ($object->getAnrs() as $anr) {
-            if ($anr->getId() === $anrId) {
-                $authorized = true;
-                break;
-            }
-        }
-        if (!$authorized) {
-            throw new Exception('Object is not an object of this anr', 412);
+        if (!$object->hasAnrLink($anr)) {
+            throw new Exception('The object is not linked to the anr', 412);
         }
 
-        $data['anr'] = $anrId;
-
-        $commonProperties = ['name1', 'name2', 'name3', 'name4', 'label1', 'label2', 'label3', 'label4'];
-        foreach ($commonProperties as $commonProperty) {
-            $data[$commonProperty] = $object->$commonProperty;
-        }
-
-        if (isset($data['parent']) && empty($data['parent'])) {
+        $data['anr'] = $anr;
+        $data['name1'] = $object->getName(1);
+        $data['name2'] = $object->getName(2);
+        $data['name3'] = $object->getName(3);
+        $data['name4'] = $object->getName(4);
+        $data['label1'] = $object->getLabel(1);
+        $data['label2'] = $object->getLabel(2);
+        $data['label3'] = $object->getLabel(3);
+        $data['label4'] = $object->getLabel(4);
+        $data['asset'] = $object->getAsset();
+        $data['object'] = $object;
+        if (!empty($data['parent'])) {
+            $data['parent'] = $data['parent'] instanceof InstanceSuperClass
+                ? $data['parent']
+                : $instanceTable->findById($data['parent']);
+        } else {
             $data['parent'] = null;
-        } elseif (!empty($data['parent'])) {
-            $parent = $this->get('table')->getEntity($data['parent']);
-            if (!$parent) {
-                $data['parent'] = null;
-                unset($parent);
-            }
         }
 
-        //set impacts
-        /** @var InstanceTable $table */
-        $parent = ($data['parent']) ? $this->get('table')->getEntity($data['parent']) : null;
-
-        $this->updateImpactsInherited($anrId, $parent, $data);
+        $this->updateImpactsInherited($anrId, $data['parent'], $data);
 
         //manage position
         if (!$managePosition) {
-            unset($data['implicitPosition']);
-            unset($data['previous']);
+            unset($data['implicitPosition'], $data['previous']);
         } elseif (isset($data['position'])) {
             $data['position']++;
             if ($data['position'] <= 1) {
                 $data['implicitPosition'] = 1;
             } else {
-                $return = $this->get('table')->getRepository()->createQueryBuilder('t')
+                $return = $instanceTable->getRepository()->createQueryBuilder('t')
                     ->select('COUNT(t.id)');
-                if (isset($parent)) {
+                if (!empty($data['parent'])) {
                     $return = $return->where('t.parent = :parent')
-                        ->setParameter(':parent', $parent->get('id'));
+                        ->setParameter(':parent', $data['parent']);
                 } else {
                     $return = $return->where('t.parent IS NULL');
                 }
@@ -154,11 +138,11 @@ class InstanceService extends AbstractService
                 if ($data['position'] == $max + 1) {
                     $data['implicitPosition'] = 2;
                 } else {
-                    $return = $this->get('table')->getRepository()->createQueryBuilder('t')
+                    $return = $instanceTable->getRepository()->createQueryBuilder('t')
                         ->select('t.id');
-                    if (isset($parent)) {
+                    if (!empty($data['parent'])) {
                         $return = $return->where('t.parent = :parent')
-                            ->setParameter(':parent', $parent->get('id'));
+                            ->setParameter(':parent', $data['parent']);
                     } else {
                         $return = $return->where('t.parent IS NULL');
                     }
@@ -193,26 +177,20 @@ class InstanceService extends AbstractService
         if ($instance->get('id')) {
             $c = get_class($instance);
             $instance = new $c;
-            $instance->setDbAdapter($this->get('table')->getDb());
+            $instance->setDbAdapter($instanceTable->getDb());
             $instance->setLanguage($this->getLanguage());
             $instance->initParametersChanges();
         }
         $instance->exchangeArray($data, false);
 
-        //instance dependencies
         $dependencies = property_exists($this, 'dependencies') ? $this->dependencies : [];
         $this->setDependencies($instance, $dependencies);
 
-        $instance->setAsset($object->getAsset());
+        $this->updateInstanceLevels($rootLevel, $instance, $mode);
 
-        //level
-        $this->updateInstanceLevels($rootLevel, $data['object'], $instance, $mode, $anrId);
+        $instance->setCreator($this->getConnectedUser()->getEmail());
 
-        $instance->setCreator(
-            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
-        );
-
-        $id = $this->get('table')->save($instance);
+        $instanceTable->saveEntity($instance);
 
         //instances risk
         /** @var InstanceRiskService $instanceRiskService */
@@ -225,19 +203,21 @@ class InstanceService extends AbstractService
         $instanceRiskOpService->createInstanceRisksOp($instance, $object);
 
         //instances consequences
-        $instanceConsequence = $this->createInstanceConsequences($id, $anrId, $object);
-        $this->get('instanceConsequenceService')->updateInstanceImpacts($instanceConsequence);
+        $instanceConsequence = $this->createInstanceConsequences($instance, $anr, $object);
+        if ($instanceConsequence !== null) {
+            $this->get('instanceConsequenceService')->updateInstanceImpacts($instanceConsequence);
+        }
 
         // Check if the root element is not the same as current child element to avoid a circular dependency.
         if ($rootLevel
-            || $parent === null
-            || $parent->getRoot() === null
-            || $parent->getRoot()->getObject()->getUuid() !== $instance->getObject()->getUuid()
+            || !$instance->hasParent()
+            || $instance->getParent()->getRoot() === null
+            || $instance->getParent()->getRoot()->getObject()->getUuid() !== $instance->getObject()->getUuid()
         ) {
-            $this->createChildren($anrId, $id, $object);
+            $this->createChildren($instance);
         }
 
-        return $id;
+        return $instance->getId();
     }
 
     /**
@@ -382,10 +362,6 @@ class InstanceService extends AbstractService
 
         $this->updateBrothers($anrId, $instance, $initialData, $historic);
 
-        if (\count($historic) === 1) {
-            $this->objectImpacts($instance);
-        }
-
         return $id;
     }
 
@@ -527,8 +503,6 @@ class InstanceService extends AbstractService
 
         $this->updateBrothers($anrId, $instance, $data, $historic);
 
-        $this->objectImpacts($instance);
-
         return $id;
     }
 
@@ -565,86 +539,32 @@ class InstanceService extends AbstractService
     }
 
     /**
-     * Object Impacts
-     *
-     * @param InstanceSuperClass $instance
+     * Creates instances for each child.
      */
-    protected function objectImpacts($instance)
+    protected function createChildren(InstanceSuperClass $parentInstance): void
     {
-        $eventManager = new EventManager($this->sharedManager, ['object']);
-        $eventManager->trigger('patch', $this, [
-            'objectId' => $instance->getObject()->getUuid(),
-            'data' => [
-                'name1' => $instance->getName(1),
-                'name2' => $instance->getName(2),
-                'name3' => $instance->getName(3),
-                'name4' => $instance->getName(4),
-                'label1' => $instance->getLabel(1),
-                'label2' => $instance->getLabel(2),
-                'label3' => $instance->getLabel(3),
-                'label4' => $instance->getLabel(4),
-                'anr' => $instance->getAnr()->getId(),
-            ],
-        ]);
-    }
-
-    public function setSharedManager(SharedEventManager $sharedManager)
-    {
-        $this->sharedManager = $sharedManager;
-    }
-
-    /**
-     * Create Children
-     *
-     * @param $anrId
-     * @param $parentId
-     * @param $object
-     */
-    protected function createChildren($anrId, $parentId, $object)
-    {
-        //retrieve object children and create instance for each child
-        /** @var ObjectObjectService $objectObjectService */
-        $objectObjectService = $this->get('objectObjectService');
-        $children = $objectObjectService->getChildren($object, $anrId);
-        foreach ($children as $child) {
+        foreach ($parentInstance->getObject()->getChildren() as $childObject) {
             $data = [
-                'object' => $child->getChild()->getUuid(),
-                'parent' => $parentId,
-                'position' => $child->position,
-                'c' => '-1',
-                'i' => '-1',
-                'd' => '-1',
+                'anr' => $parentInstance->getAnr(),
+                'object' => $childObject->getUuid(),
+                'parent' => $parentInstance,
+                'position' => $childObject->getPosition(),
+                'c' => -1,
+                'i' => -1,
+                'd' => -1,
             ];
-            if ($object->get('anr')) {
-                $data['anr'] = $object->get('anr')->get('id');
-            }
-            $this->instantiateObjectToAnr($anrId, $data, false);
+            $this->instantiateObjectToAnr($parentInstance->getAnr()->getId(), $data, false);
         }
     }
 
-    /**
-     * Update Level
-     *
-     * @param $rootLevel
-     * @param $objectId
-     * @param $instance
-     * @param $mode
-     */
-    protected function updateInstanceLevels($rootLevel, $objectId, &$instance, $mode, $anrId = null)
+    protected function updateInstanceLevels(bool $rootLevel, InstanceSuperClass $instance, int $mode)
     {
-        if (($rootLevel) || ($mode == Instance::MODE_CREA_ROOT)) {
+        if ($rootLevel || $mode === Instance::MODE_CREA_ROOT) {
             $instance->setLevel(Instance::LEVEL_ROOT);
+        } elseif ($instance->getObject()->hasChildren()) {
+            $instance->setLevel(Instance::LEVEL_INTER);
         } else {
-            //retrieve children
-            /** @var ObjectObjectService $objectObjectService */
-            $objectObjectService = $this->get('objectObjectService');
-            $children = $objectObjectService->getChildren($objectId, $anrId);
-
-            if (!count($children)) {
-                $instance->setLevel(Instance::LEVEL_LEAF);
-            } else {
-                $instance->setLevel(Instance::LEVEL_INTER);
-            }
+            $instance->setLevel(Instance::LEVEL_LEAF);
         }
     }
 
@@ -763,50 +683,41 @@ class InstanceService extends AbstractService
      * @param $data
      * @param $historic
      */
-    protected function updateBrothers($anrId, $instance, $data, &$historic)
+    protected function updateBrothers($anrId, InstanceSuperClass $instance, $data, &$historic)
     {
         $fieldsToDelete = ['parent', 'createdAt', 'creator', 'risks', 'oprisks', 'instances', 'position'];
         //if source object is global, reverberate to other instance with the same source object
-        if ($instance->object->scope == MonarcObject::SCOPE_GLOBAL) {
+        if ($instance->getObject()->isScopeGlobal()) {
             //retrieve instance with same object source
-            /** @var InstanceTable $table */
-            $table = $this->get('table');
-            try{
-                $brothers = $table->getEntityByFields(['object' => $instance->getObject()->getUuid()]);
-            } catch (QueryException|MappingException $e) {
-                $brothers = $table->getEntityByFields([
-                    'object' => [
-                        'uuid' => $instance->getObject()->getUuid(),
-                        'anr' => $anrId
-                    ]
-                ]);
-            }
+            /** @var InstanceTable $instanceTable */
+            $instanceTable = $this->get('table');
+            $brothers = $instanceTable->findByObject($instance->getObject());
+
             foreach ($brothers as $brother) {
-                if (($brother->id != $instance->id) && (!in_array($brother->id, $historic))) {
+                if ($brother->getId() !== $instance->getId() && !\in_array($brother->getId(), $historic, true)) {
                     foreach ($fieldsToDelete as $fieldToDelete) {
                         if (isset($data[$fieldToDelete])) {
                             unset($data[$fieldToDelete]);
                         }
                     }
-                    $data['id'] = $brother->id;
-                    $data['c'] = $brother->c;
-                    $data['i'] = $brother->i;
-                    $data['d'] = $brother->d;
+                    $data['id'] = $brother->getId();
+                    $data['c'] = $brother->getConfidentiality();
+                    $data['i'] = $brother->getIntegrity();
+                    $data['d'] = $brother->getAvailability();
                     //Unproper FIX to issue#31 to be reviewed when #7 fixed
-                    $tempName='name'.$instance->getLanguage();
-                    $tempLabel='label'.$instance->getLanguage();
-                    $data['name'.$instance->getLanguage()] = $brother->$tempName;
-                    $data['label'.$instance->getLanguage()] = $brother->$tempLabel;
+                    $data['name' . $instance->getLanguage()] = $brother->getName($instance->getLanguage());
+                    $data['label' . $instance->getLanguage()] = $brother->getLabel($instance->getLanguage());
 
                     if (isset($data['consequences'])) {
                         //retrieve instance consequence id for the brother instance id ans scale impact type
                         /** @var InstanceConsequenceTable $instanceConsequenceTable */
                         $instanceConsequenceTable = $this->get('instanceConsequenceTable');
-                        $instanceConsequences = $instanceConsequenceTable->getEntityByFields(['instance' => $brother->id]);
+                        $instanceConsequences = $instanceConsequenceTable->findByInstance($brother);
                         foreach ($instanceConsequences as $instanceConsequence) {
+                            $scaleImpactType = $instanceConsequence->getScaleImpactType()->getType();
                             foreach ($data['consequences'] as $key => $dataConsequence) {
-                                if ($dataConsequence['scaleImpactType'] == $instanceConsequence->scaleImpactType->type) {
-                                    $data['consequences'][$key]['id'] = $instanceConsequence->id;
+                                if ((int)$dataConsequence['scaleImpactType'] === $scaleImpactType) {
+                                    $data['consequences'][$key]['id'] = $instanceConsequence->getId();
                                 }
                             }
                         }
@@ -814,7 +725,7 @@ class InstanceService extends AbstractService
 
                     unset($data['parent']);
 
-                    $this->updateInstance($anrId, $brother->id, $data, $historic, false);
+                    $this->updateInstance($anrId, $brother->getId(), $data, $historic);
                 }
             }
         }
@@ -961,105 +872,82 @@ class InstanceService extends AbstractService
 
     /**
      * TODO: move to InstanceConsequenceService.
-     *
-     * Create Instance Consequences
-     *
-     * @param $instanceId
-     * @param $anrId
-     * @param $object
      */
-    public function createInstanceConsequences($instanceId, $anrId, $object)
-    {
-        if ($object->scope == MonarcObject::SCOPE_GLOBAL) {
+    public function createInstanceConsequences(
+        InstanceSuperClass $instance,
+        AnrSuperClass $anr,
+        ObjectSuperClass $object
+    ): ?InstanceConsequenceSuperClass {
+        $instanceConsequenceEntity = null;
+
+        if ($object->isScopeGlobal()) {
             /** @var InstanceTable $instanceTable */
             $instanceTable = $this->get('table');
-
-            try {
-                $brothers = $instanceTable->getEntityByFields(['anr' => $anrId, 'object' => $object->getUuid()]);
-            } catch (MappingException | QueryException $e) {
-                $brothers = $instanceTable->getEntityByFields([
-                    'anr' => $anrId,
-                    'object' => [
-                        'uuid' => $object->getUuid(),
-                        'anr' => $anrId
-                    ],
-                ]);
-            }
+            $brothers = $instanceTable->findByAnrAndObject($anr, $object);
         }
 
-        if (($object->scope == MonarcObject::SCOPE_GLOBAL) && (count($brothers) > 1)) {
+        if (!empty($brothers) && $object->isScopeGlobal()) {
+            $refInstance = null;
             foreach ($brothers as $brother) {
-                if ($brother->id != $instanceId) {
+                if ($brother->getId() !== $instance->getId()) {
                     $refInstance = $brother;
                     break;
                 }
             }
 
-            /** @var InstanceConsequenceTable $instanceConsequenceTable */
-            $instanceConsequenceTable = $this->get('instanceConsequenceTable');
-            $instancesConsequences = $instanceConsequenceTable->getEntityByFields(['anr' => $anrId, 'instance' => $refInstance->id]);
+            if ($refInstance !== null) {
+                /** @var InstanceConsequenceTable $instanceConsequenceTable */
+                $instanceConsequenceTable = $this->get('instanceConsequenceTable');
+                $instancesConsequences = $instanceConsequenceTable->findByAnrInstance($anr, $refInstance);
 
-            $i = 1;
-            $nbInstancesConsequences = count($instancesConsequences);
-            foreach ($instancesConsequences as $instanceConsequence) {
-                $data = [
-                    'anr' => $this->get('anrTable')->getEntity($anrId),
-                    'instance' => $this->get('table')->getEntity($instanceId),
-                    'object' => $object,
-                    'scaleImpactType' => $instanceConsequence->scaleImpactType,
-                    'isHidden' => $instanceConsequence->isHidden,
-                    'locallyTouched' => $instanceConsequence->locallyTouched,
-                    'c' => $instanceConsequence->c,
-                    'i' => $instanceConsequence->i,
-                    'd' => $instanceConsequence->d,
-                ];
+                foreach ($instancesConsequences as $instanceConsequence) {
+                    $data = [
+                        'anr' => $anr,
+                        'instance' => $instance,
+                        'object' => $object,
+                        'scaleImpactType' => $instanceConsequence->getScaleImpactType(),
+                        'isHidden' => $instanceConsequence->isHidden(),
+                        'locallyTouched' => $instanceConsequence->getLocallyTouched(),
+                        'c' => $instanceConsequence->getConfidentiality(),
+                        'i' => $instanceConsequence->getIntegrity(),
+                        'd' => $instanceConsequence->getAvailability(),
+                    ];
 
-                $class = $this->get('instanceConsequenceEntity');
-                /** @var InstanceConsequenceSuperClass $instanceConsequenceEntity */
-                $instanceConsequenceEntity = new $class();
-                $instanceConsequenceEntity->setLanguage($this->getLanguage());
-                $instanceConsequenceEntity->setDbAdapter($this->get('instanceConsequenceTable')->getDb());
-                $instanceConsequenceEntity->exchangeArray($data);
-                $instanceConsequenceEntity->setCreator(
-                    $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
-                );
+                    $class = $this->get('instanceConsequenceEntity');
+                    /** @var InstanceConsequenceSuperClass $instanceConsequenceEntity */
+                    $instanceConsequenceEntity = new $class();
+                    $instanceConsequenceEntity->exchangeArray($data);
+                    $instanceConsequenceEntity->setCreator($this->getConnectedUser()->getEmail());
 
-                $instanceConsequenceTable->save($instanceConsequenceEntity, ($i == $nbInstancesConsequences));
-
-                $i++;
+                    $instanceConsequenceTable->save($instanceConsequenceEntity, false);
+                }
+                $instanceConsequenceTable->getDb()->flush();
             }
         } else {
-            //retrieve scale impact types
             /** @var ScaleImpactTypeTable $scaleImpactTypeTable */
             $scaleImpactTypeTable = $this->get('scaleImpactTypeTable');
-            $scalesImpactTypes = $scaleImpactTypeTable->getEntityByFields(['anr' => $anrId]);
+            $scalesImpactTypes = $scaleImpactTypeTable->findByAnr($anr);
 
             /** @var InstanceConsequenceTable $instanceConsequenceTable */
             $instanceConsequenceTable = $this->get('instanceConsequenceTable');
 
-            $i = 1;
-            $nbScalesImpactTypes = count($scalesImpactTypes);
             foreach ($scalesImpactTypes as $scalesImpactType) {
                 $data = [
-                    'anr' => $this->get('anrTable')->getEntity($anrId),
-                    'instance' => $this->get('table')->getEntity($instanceId),
+                    'anr' => $anr,
+                    'instance' => $instance,
                     'object' => $object,
                     'scaleImpactType' => $scalesImpactType,
-                    'isHidden' => $scalesImpactType->isHidden,
+                    'isHidden' => $scalesImpactType->isH,
                 ];
                 $class = $this->get('instanceConsequenceEntity');
                 /** @var InstanceConsequenceSuperClass $instanceConsequenceEntity */
                 $instanceConsequenceEntity = new $class();
-                $instanceConsequenceEntity->setLanguage($this->getLanguage());
-                $instanceConsequenceEntity->setDbAdapter($this->get('instanceConsequenceTable')->getDb());
                 $instanceConsequenceEntity->exchangeArray($data);
-                $instanceConsequenceEntity->setCreator(
-                    $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
-                );
+                $instanceConsequenceEntity->setCreator($this->getConnectedUser()->getEmail());
 
-                $instanceConsequenceTable->save($instanceConsequenceEntity, $i === $nbScalesImpactTypes);
-                $i++;
+                $instanceConsequenceTable->save($instanceConsequenceEntity, false);
             }
+            $instanceConsequenceTable->getDb()->flush();
         }
 
         return $instanceConsequenceEntity;

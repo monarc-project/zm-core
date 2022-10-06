@@ -9,11 +9,38 @@ namespace Monarc\Core\Table;
 
 use Doctrine\ORM\EntityManager;
 use Monarc\Core\Model\Entity\ObjectCategory;
+use Monarc\Core\Model\Entity\ObjectCategorySuperClass;
+use Monarc\Core\Table\Interfaces\PositionUpdatableTableInterface;
+use Monarc\Core\Table\Traits\PositionIncrementTableTrait;
 
-class ObjectCategoryTable extends AbstractTable
+class ObjectCategoryTable extends AbstractTable implements PositionUpdatableTableInterface
 {
+    use PositionIncrementTableTrait;
+
     public function __construct(EntityManager $entityManager, string $entityName = ObjectCategory::class)
     {
         parent::__construct($entityManager, $entityName);
+    }
+
+    public function findPreviousCategory(ObjectCategorySuperClass $objectCategory): ?ObjectCategorySuperClass
+    {
+        $queryBuilder = $this->getRepository()->createQueryBuilder('oc');
+
+        foreach ($objectCategory->getImplicitPositionRelationsValues() as $fieldName => $fieldValue) {
+            if ($fieldValue !== null) {
+                $queryBuilder
+                    ->andWhere('t.' . $fieldName . ' = :' . $fieldName)
+                    ->setParameter($fieldName, $fieldValue);
+            } else {
+                $queryBuilder->andWhere('t.' . $fieldName . ' IS NULL');
+            }
+        }
+        $queryBuilder->andWhere('oo.position = :position')
+            ->setParameter('position', $objectCategory->getPosition() - 1);
+
+        return $queryBuilder
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 }

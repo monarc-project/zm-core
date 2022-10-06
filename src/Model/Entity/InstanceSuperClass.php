@@ -111,6 +111,13 @@ class InstanceSuperClass extends AbstractEntity
     protected $instanceRisks;
 
     /**
+     * @var InstanceRiskOpSuperClass[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="InstanceRiskOp", mappedBy="instance")
+     */
+    protected $operationalInstanceRisks;
+
+    /**
      * @var string
      *
      * @ORM\Column(name="name1", type="string", length=255, nullable=true)
@@ -247,6 +254,7 @@ class InstanceSuperClass extends AbstractEntity
     {
         $this->instanceConsequences = new ArrayCollection();
         $this->instanceRisks = new ArrayCollection();
+        $this->operationalInstanceRisks = new ArrayCollection();
 
         parent::__construct($obj);
     }
@@ -275,43 +283,34 @@ class InstanceSuperClass extends AbstractEntity
         return $this->anr;
     }
 
-    public function setAnr(?AnrSuperClass $anr): self
+    public function setAnr(AnrSuperClass $anr): self
     {
         $this->anr = $anr;
 
         return $this;
     }
 
-    /**
-     * @return AssetSuperClass
-     */
-    public function getAsset()
+    public function getAsset(): AssetSuperClass
     {
         return $this->asset;
     }
 
-    /**
-     * @param AssetSuperClass $asset
-     */
-    public function setAsset($asset): self
+    public function setAsset(AssetSuperClass $asset): self
     {
         $this->asset = $asset;
 
         return $this;
     }
 
-    /**
-     * @return ObjectSuperClass
-     */
-    public function getObject()
+    public function getObject(): ObjectSuperClass
     {
         return $this->object;
     }
 
-
-    public function setObject(?ObjectSuperClass $object): self
+    public function setObject(ObjectSuperClass $object): self
     {
         $this->object = $object;
+        $object->addInstance($this);
 
         return $this;
     }
@@ -321,9 +320,15 @@ class InstanceSuperClass extends AbstractEntity
         return $this->root;
     }
 
+    public function getRootInstance(): self
+    {
+        return $this->root ?? $this;
+    }
+
     public function setRoot(?InstanceSuperClass $root)
     {
         $this->root = $root;
+
         return $this;
     }
 
@@ -337,6 +342,11 @@ class InstanceSuperClass extends AbstractEntity
         $this->parent = $parent;
 
         return $this;
+    }
+
+    public function hasParent(): bool
+    {
+        return $this->parent !== null;
     }
 
     public function getLevel(): int
@@ -570,6 +580,21 @@ class InstanceSuperClass extends AbstractEntity
     public function resetInstanceRisks(): self
     {
         $this->instanceRisks = new ArrayCollection();
+
+        return $this;
+    }
+
+    public function getOperationalInstanceRisks()
+    {
+        return $this->operationalInstanceRisks;
+    }
+
+    public function addOperationalInstanceRisk(InstanceRiskOpSuperClass $operationalInstanceRisk): self
+    {
+        if (!$this->operationalInstanceRisks->contains($operationalInstanceRisk)) {
+            $this->operationalInstanceRisks->add($operationalInstanceRisk);
+            $operationalInstanceRisk->setInstance($this);
+        }
 
         return $this;
     }

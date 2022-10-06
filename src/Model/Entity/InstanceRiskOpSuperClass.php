@@ -30,12 +30,12 @@ class InstanceRiskOpSuperClass extends AbstractEntity
     use CreateEntityTrait;
     use UpdateEntityTrait;
 
-    const KIND_NOT_SET = 0;
-    const KIND_REDUCTION = 1;
-    const KIND_REFUS = 2;
-    const KIND_ACCEPTATION = 3;
-    const KIND_PARTAGE = 4;
-    const KIND_NOT_TREATED = 5;
+    public const KIND_NOT_SET = 0;
+    public const KIND_REDUCTION = 1;
+    public const KIND_REFUS = 2;
+    public const KIND_ACCEPTATION = 3;
+    public const KIND_PARTAGE = 4;
+    public const KIND_NOT_TREATED = 5;
 
     public const TYPE_SPECIFIC = 1;
 
@@ -258,15 +258,13 @@ class InstanceRiskOpSuperClass extends AbstractEntity
         $this->setCreatedAtValue();
     }
 
-    /**
-     * @return int
-     */
     public function getId()
     {
         return $this->id;
     }
 
     /**
+     * TODO: remove it.
      * @param int $id
      * @return self
      */
@@ -277,40 +275,27 @@ class InstanceRiskOpSuperClass extends AbstractEntity
         return $this;
     }
 
-    /**
-     * @return AnrSuperClass
-     */
-    public function getAnr()
+    public function getAnr(): AnrSuperClass
     {
         return $this->anr;
     }
 
-    /**
-     * @param AnrSuperClass $anr
-     * @return self
-     */
-    public function setAnr($anr): self
+    public function setAnr(AnrSuperClass $anr): self
     {
         $this->anr = $anr;
 
         return $this;
     }
 
-    /**
-     * @return InstanceSuperClass
-     */
-    public function getInstance()
+    public function getInstance(): InstanceSuperClass
     {
         return $this->instance;
     }
 
-    /**
-     * @param InstanceSuperClass $instance
-     * @return self
-     */
-    public function setInstance($instance): self
+    public function setInstance(InstanceSuperClass $instance): self
     {
         $this->instance = $instance;
+        $instance->addOperationalInstanceRisk($this);
 
         return $this;
     }
@@ -383,11 +368,6 @@ class InstanceRiskOpSuperClass extends AbstractEntity
         $this->rolfRisk = $rolfRisk;
 
         return $this;
-    }
-
-    public function isSpecific(): bool
-    {
-        return $this->specific === self::TYPE_SPECIFIC;
     }
 
     public function isTreated(): bool
@@ -551,6 +531,18 @@ class InstanceRiskOpSuperClass extends AbstractEntity
             $this->operationalInstanceRiskScales->add($operationalInstanceRiskScale);
             $operationalInstanceRiskScale->setOperationalInstanceRisk($this);
         }
+
+        return $this;
+    }
+
+    public function isSpecific(): bool
+    {
+        return (bool)$this->specific;
+    }
+
+    public function setIsSpecific(bool $isSpecific): self
+    {
+        $this->specific = $isSpecific;
 
         return $this;
     }

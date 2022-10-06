@@ -1,19 +1,18 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
 namespace Monarc\Core\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Monarc\Core\Model\Entity\Interfaces\PositionedEntityInterface;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 
 /**
- * Object Object
- *
  * @ORM\Table(name="objects_objects", indexes={
  *      @ORM\Index(name="anr", columns={"anr_id"}),
  *      @ORM\Index(name="father_id", columns={"father_id"}),
@@ -22,13 +21,13 @@ use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
-class ObjectObjectSuperClass extends AbstractEntity
+class ObjectObjectSuperClass implements PositionedEntityInterface
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer", nullable=false)
      * @ORM\Id
@@ -73,22 +72,21 @@ class ObjectObjectSuperClass extends AbstractEntity
      */
     protected $position = 1;
 
-    protected $parameters = [
-        'implicitPosition' => [
-            'field' => 'parent',
-        ],
-    ];
+    public function getImplicitPositionRelationsValues(): array
+    {
+        $fields = [
+            'parent' => $this->parent,
+        ];
+        if ($this->anr !== null) {
+            $fields['anr'] = $this->anr;
+        }
+
+        return $fields;
+    }
 
     public function getId()
     {
         return $this->id;
-    }
-
-    public function setId($id): self
-    {
-        $this->id = $id;
-
-        return $this;
     }
 
     public function getAnr(): AnrSuperClass
@@ -137,23 +135,5 @@ class ObjectObjectSuperClass extends AbstractEntity
         $this->position = $position;
 
         return $this;
-    }
-
-    public function getFiltersForService()
-    {
-        $filterJoin = [
-            [
-                'as' => 'f',
-                'rel' => 'parent',
-            ],
-        ];
-        $filterLeft = [
-
-        ];
-        $filtersCol = [
-
-        ];
-
-        return [$filterJoin, $filterLeft, $filtersCol];
     }
 }

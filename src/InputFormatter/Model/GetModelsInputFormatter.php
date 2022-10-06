@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\InputFormatter\Model;
 
+use Doctrine\ORM\Query\Expr\Comparison;
 use Monarc\Core\InputFormatter\AbstractInputFormatter;
 use Monarc\Core\Model\Entity\Model;
 
@@ -27,11 +28,16 @@ class GetModelsInputFormatter extends AbstractInputFormatter
         'status' => [
             'default' => Model::STATUS_ACTIVE,
             'type' => 'int',
+            'convert' => [
+                'value' => 'all',
+                'to' => [
+                    'operator' => Comparison::NEQ,
+                    'value' => Model::STATUS_DELETED,
+                ]
+            ]
         ],
         'isGeneric' => [
             'type' => 'int',
         ],
     ];
-
-    protected static array $ignoredFilterFieldValues = ['status' => 'all'];
 }

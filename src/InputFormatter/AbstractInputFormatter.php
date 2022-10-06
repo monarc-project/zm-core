@@ -100,6 +100,12 @@ abstract class AbstractInputFormatter
                 if (!$this->areFilterFiledAndValueValid($field, $value)) {
                     continue;
                 }
+                if (isset($paramValues['convert']['value'], $paramValues['convert']['to']['value'])
+                    && $paramValues['convert']['value'] === $value
+                ) {
+                    $value = $paramValues['convert']['to']['value'];
+                    $paramValues['operator'] = $paramValues['convert']['to']['operator'] ?? $paramValues['operator'];
+                }
                 if (isset($paramValues['type'])) {
                     settype($value, $paramValues['type']);
                 }

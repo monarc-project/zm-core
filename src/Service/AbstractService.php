@@ -14,7 +14,7 @@ use Monarc\Core\Model\Entity\Scale;
 use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Model\GetAndSet;
 use Monarc\Core\Model\Table\AbstractEntityTable;
-use Monarc\Core\Model\Table\ObjectObjectTable;
+use Monarc\Core\Table\ObjectObjectTable;
 use Monarc\Core\Model\Table\ScaleTable;
 use Monarc\Core\Traits\RiskTrait;
 use Doctrine\Common\Util\ClassUtils;
@@ -553,88 +553,6 @@ abstract class AbstractService extends AbstractServiceFactory
             }
         }
     }
-
-    /**
-     * Updates the position field of the element relative to the other elements and the provided direction.
-     *
-     * @param string $field The position field name
-     * @param AbstractEntity $entity The entity to move
-     * @param string $direction The direction in which the entity moves (up / down)
-     */
-    protected function manageRelativePositionUpdate($field, $entity, $direction)
-    {
-        /** @var ObjectObjectTable $table */
-        $table = $this->get('table');
-
-        if ($direction == 'up') {
-            try {
-                $entityAbove = $table->getEntityByFields([
-                    $field => $entity->$field,
-                    'position' => $entity->position - 1,
-                ]);
-            } catch (QueryException $e) {
-                $entityAbove = $table->getEntityByFields([
-                    $field => [
-                        'uuid' => $entity->$field->getUuid(),
-                        'anr' => $entity->$field->anr->id,
-                    ],
-                    'position' => $entity->position - 1,
-                ]);
-            }
-            if (count($entityAbove) == 1) {
-                $entityAbove = $entityAbove[0];
-                $entityAbove->position = $entityAbove->position + 1;
-                $table->save($entityAbove);
-            }
-
-            $entity->position = $entity->position - 1;
-            $table->save($entity);
-        } else {
-            if ($direction == 'down') {
-                try {
-                    $entityBelow = $table->getEntityByFields([
-                        $field => $entity->$field,
-                        'position' => $entity->position + 1,
-                    ]);
-                } catch (QueryException $e) {
-                    $entityBelow = $table->getEntityByFields([
-                        $field => [
-                            'uuid' => $entity->$field->getUuid(),
-                            'anr' => $entity->$field->anr->id,
-                        ],
-                        'position' => $entity->position + 1,
-                    ]);
-                }
-                if (count($entityBelow) == 1) {
-                    $entityBelow = $entityBelow[0];
-                    //file_put_contents('php://stderr', print_r(count($entityBelow), TRUE).PHP_EOL);
-
-                    $entityBelow->position = $entityBelow->position - 1;
-                    $table->save($entityBelow);
-
-                    $entity->position = $entity->position + 1;
-                    $table->save($entity);
-                }
-            }
-        }
-    }
-
-    /**
-     * Returns the root entity of the provided entity by recursively calling getParent() on it.
-     *
-     * @param AbstractEntity $entity
-     *
-     * @return AbstractEntity The resulting parent entity, or itself if the entity has no parent
-     */
-    public function getRoot($entity)
-    {
-        if (!is_null($entity->getParent())) {
-            return $this->getRoot($entity->getParent());
-        } else {
-            return $entity;
-        }
-    }
-
 
     /**
      * Filter fields for a patch request by removing the forbidden fields list

@@ -11,6 +11,7 @@ use Monarc\Core\InputFormatter\FormattedInputParams;
 use Monarc\Core\Model\Entity\Interfaces\TreeStructuredEntityInterface;
 use Monarc\Core\Table\AbstractTable;
 
+// TODO: check if we need it at all ??? Normally the entities relations tackle most of the challenges.
 trait TreeStructureTrait
 {
     private array $children = [];

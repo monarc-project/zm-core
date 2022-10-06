@@ -100,19 +100,4 @@ class AmvTable extends AbstractTable implements PositionUpdatableTableInterface
             ->getQuery()
             ->getOneOrNullResult();
     }
-
-    public function findMaxPosition(array $params): int
-    {
-        $queryBuilder = $this->getRepository()->createQueryBuilder('amv')->select('MAX(amv.position)');
-
-        foreach ($params as $fieldName => $fieldValue) {
-            $queryBuilder
-                ->andWhere('amv.' . $fieldName . ' = :' . $fieldName)
-                ->setParameter($fieldName, $fieldValue);
-        }
-
-        return (int)$queryBuilder
-            ->getQuery()
-            ->getSingleScalarResult();
-    }
 }

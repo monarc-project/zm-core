@@ -933,7 +933,7 @@ class AmvService implements PositionUpdatableServiceInterface
         if ($includePositionFields) {
             $result['implicitPosition'] = 1;
             if ($amv->getPosition() > 1) {
-                $maxPositionByAsset = $this->amvTable->findMaxPosition(['asset' => $amv->getAsset()]);
+                $maxPositionByAsset = $this->amvTable->findMaxPosition($amv->getImplicitPositionRelationsValues());
                 if ($maxPositionByAsset === $amv->getPosition()) {
                     $result['implicitPosition'] = 2;
                 } else {

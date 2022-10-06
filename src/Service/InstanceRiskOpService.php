@@ -95,9 +95,7 @@ class InstanceRiskOpService
 
     public function createInstanceRisksOp(InstanceSuperClass $instance, ObjectSuperClass $object): void
     {
-        if ($object->getRolfTag() === null
-            || $object->getAsset()->getType() !== Asset::TYPE_PRIMARY
-        ) {
+        if ($object->getRolfTag() === null || !$object->getAsset()->isPrimary()) {
             return;
         }
 
@@ -145,7 +143,7 @@ class InstanceRiskOpService
             $instances = $this->instanceTable->findByAnrId($anrId);
         } else {
             $instance = $this->instanceTable->findById($instanceId);
-            // TODO: remove initTree and use TreeStructureTrait::getEntityWithLinkedChildren
+            // TODO: remove initTree and use TreeStructureTrait::getEntityWithLinkedChildren !!!
             $this->instanceTable->initTree($instance);
             $instances = $this->extractInstanceAndChildInstances($instance);
         }
@@ -357,7 +355,7 @@ class InstanceRiskOpService
         InstanceSuperClass $instance,
         ObjectSuperClass $object,
         RolfRiskSuperClass $rolfRisk,
-        $flushChanges = false
+        bool $flushChanges = false
     ): InstanceRiskOpSuperClass {
         $instanceRiskOp = $this->createInstanceRiskOpObjectFromInstanceObjectAndRolfRisk(
             $instance,

@@ -151,6 +151,7 @@ class InstanceRiskOwnerSuperClass
     {
         if ($this->operationalInstanceRisks->contains($operationalInstanceRisk)) {
             $this->operationalInstanceRisks->removeElement($operationalInstanceRisk);
+            $operationalInstanceRisk->setInstanceRiskOwner(null);
         }
 
         return $this;

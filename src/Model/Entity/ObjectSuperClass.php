@@ -192,8 +192,7 @@ class ObjectSuperClass implements PositionedEntityInterface
      */
     protected $originalName;
 
-    // TODO: !!!
-    // TODO: implement the same links on Client's entity side...
+    // TODO: implement the same links on Client's entity side with 2 fields rel !!!
 
     /**
      * @var ArrayCollection|ObjectSuperClass[]
@@ -230,6 +229,13 @@ class ObjectSuperClass implements PositionedEntityInterface
      */
     protected $childrenLinks;
 
+    /**
+     * @var ArrayCollection|InstanceSuperClass[]
+     *
+     * @ORM\OneToMany(targetEntity="Instance", mappedBy="object")
+     */
+    protected $instances;
+
     public function __construct()
     {
         $this->anrs = new ArrayCollection();
@@ -237,11 +243,17 @@ class ObjectSuperClass implements PositionedEntityInterface
         $this->children = new ArrayCollection();
         $this->parentsLinks = new ArrayCollection();
         $this->childrenLinks = new ArrayCollection();
+        $this->instances = new ArrayCollection();
     }
 
     public function getImplicitPositionRelationsValues(): array
     {
-        return ['category' => $this->category->getId()];
+        $fields = ['category' => $this->category];
+        if ($this->anr !== null) {
+            $fields['anr'] = $this->anr;
+        }
+
+        return $fields;
     }
 
     /**
@@ -280,6 +292,11 @@ class ObjectSuperClass implements PositionedEntityInterface
         return $this;
     }
 
+    public function hasCategory(): bool
+    {
+        return $this->category !== null;
+    }
+
     public function getCategory(): ?ObjectCategorySuperClass
     {
         return $this->category;
@@ -308,6 +325,7 @@ class ObjectSuperClass implements PositionedEntityInterface
     public function setAsset(AssetSuperClass $asset): self
     {
         $this->asset = $asset;
+        $asset->addObject($this);
 
         return $this;
     }
@@ -324,10 +342,12 @@ class ObjectSuperClass implements PositionedEntityInterface
         return $this;
     }
 
-    /**
-     * @return AnrSuperClass[]
-     */
-    public function getAnrs(): iterable
+    public function hasRolfTag(): bool
+    {
+        return $this->rolfTag !== null;
+    }
+
+    public function getAnrs()
     {
         return $this->anrs;
     }
@@ -352,7 +372,7 @@ class ObjectSuperClass implements PositionedEntityInterface
         return $this;
     }
 
-    public function hasAnr(AnrSuperClass $anr): bool
+    public function hasAnrLink(AnrSuperClass $anr): bool
     {
         return $this->anrs->contains($anr);
     }
@@ -387,6 +407,21 @@ class ObjectSuperClass implements PositionedEntityInterface
         return (string)$this->{'name' . $languageIndex};
     }
 
+    public function getNames(): array
+    {
+        return [
+            'name1' => $this->name1,
+            'name2' => $this->name2,
+            'name3' => $this->name3,
+            'name4' => $this->name4,
+        ];
+    }
+
+    public function getNameCleanedFromCopy(int $languageIndex): string
+    {
+        return preg_replace('/^(.*)(\(copy #\d+\))+$/', '$1', $this->getName($languageIndex));
+    }
+
     public function setLabels(array $labels): self
     {
         foreach (range(1, 4) as $index) {
@@ -417,6 +452,21 @@ class ObjectSuperClass implements PositionedEntityInterface
         return (string)$this->{'label' . $languageIndex};
     }
 
+    public function getLabelCleanedFromCopy(int $languageIndex): string
+    {
+        return preg_replace('/^(.*)(\(copy #\d+\))+$/', '$1', $this->getLabel($languageIndex));
+    }
+
+    public function getLabels(): array
+    {
+        return [
+            'label1' => $this->label1,
+            'label2' => $this->label2,
+            'label3' => $this->label3,
+            'label4' => $this->label4,
+        ];
+    }
+
     public function getScope(): int
     {
         return $this->scope;
@@ -443,7 +493,7 @@ class ObjectSuperClass implements PositionedEntityInterface
 
     public function getAvailability(): float
     {
-        return $this->availability;
+        return (float)$this->availability;
     }
 
     public function setPosition(int $position): self
@@ -490,22 +540,38 @@ class ObjectSuperClass implements PositionedEntityInterface
         return $this->getUuid() === $object->getUuid();
     }
 
+    public function isObjectOneOfParents(ObjectSuperClass $object): bool
+    {
+        foreach ($this->parents as $parent) {
+            if ($parent->getUuid() === $object->getUuid() || $parent->isObjectOneOfParents($object)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function getParents()
     {
         return $this->parents;
     }
 
-    public function addParent(ObjectSuperClass $objectSuperClass): self
+    public function addParent(ObjectSuperClass $object): self
     {
-        // TODO: implement + when we add we need to validate if it is nt presented in parents or children indirectly.
-        // TODO: also check if not the same object...
+        if (!$this->parents->contains($object)) {
+            $this->parents->add($object);
+            $object->addChild($this);
+        }
 
         return $this;
     }
 
-    public function removeParent(ObjectSuperClass $objectSuperClass): self
+    public function removeParent(ObjectSuperClass $object): self
     {
-        // TODO: implement...
+        if ($this->parents->contains($object)) {
+            $this->parents->remove($object);
+            $object->removeChild($this);
+        }
 
         return $this;
     }
@@ -518,49 +584,75 @@ class ObjectSuperClass implements PositionedEntityInterface
         return $this->children;
     }
 
-    public function addChild(ObjectSuperClass $objectSuperClass): self
+    public function hasChildren(): bool
     {
-        // TODO: implement + when we add we need to validate if it is nt presented in parents or children indirectly.
-        // TODO: also check if not the same object...
+        return !$this->children->isEmpty();
+    }
+
+    public function hasChild(ObjectSuperClass $child): bool
+    {
+        return $this->children->contains($child);
+    }
+
+    public function addChild(ObjectSuperClass $object): self
+    {
+        if (!$this->children->contains($object)) {
+            $this->children->add($object);
+            $object->addParent($this);
+        }
 
         return $this;
     }
 
-    public function removeChild(ObjectSuperClass $objectSuperClass): self
+    public function removeChild(ObjectSuperClass $object): self
     {
-        // TODO: implement...
+        if ($this->children->contains($object)) {
+            $this->children->remove($object);
+            $object->removeParent($this);
+        }
 
         return $this;
     }
 
+    /**
+     * The links are only used to keep the order of the objects' composition.
+     */
     public function getParentsLinks()
     {
         return $this->parentsLinks;
     }
-
-    // TODO: add, remove links methods. Check if we need to call add / remove Parent / Child, if yes then drop the props.
 
     public function getChildrenLinks()
     {
         return $this->childrenLinks;
     }
 
-    // TODO: replace the usage to the filter use.
-    public function getFiltersForService()
+    public function getInstances()
     {
-        $filterJoin = [
-            [
-                'as' => 'a',
-                'rel' => 'anrs',
-            ],
-        ];
-        $filterLeft = [
+        return $this->instances;
+    }
 
-        ];
-        $filtersCol = [
+    public function hasInstances(): bool
+    {
+        return !$this->instances->isEmpty();
+    }
 
-        ];
+    public function addInstance(InstanceSuperClass $instance): self
+    {
+        if (!$this->instances->contains($instance)) {
+            $this->instances->add($instance);
+            $instance->setObject($this);
+        }
 
-        return [$filterJoin, $filterLeft, $filtersCol];
+        return $this;
+    }
+
+    public function removeInstance(InstanceSuperClass $instance): self
+    {
+        if ($this->instances->contains($instance)) {
+            $this->instances->remove($instance);
+        }
+
+        return $this;
     }
 }

@@ -9,50 +9,27 @@ namespace Monarc\Core\Table;
 
 use Doctrine\ORM\EntityManager;
 use Monarc\Core\Model\Entity\ObjectObject;
-use Monarc\Core\Model\Entity\ObjectObjectSuperClass;
+use Monarc\Core\Model\Entity\ObjectSuperClass;
+use Monarc\Core\Table\Interfaces\PositionUpdatableTableInterface;
+use Monarc\Core\Table\Traits\PositionIncrementTableTrait;
 
-class ObjectObjectTable extends AbstractTable
+class ObjectObjectTable extends AbstractTable implements PositionUpdatableTableInterface
 {
+    use PositionIncrementTableTrait;
+
     public function __construct(EntityManager $entityManager, string $entityName = ObjectObject::class)
     {
         parent::__construct($entityManager, $entityName);
     }
 
-    // TODO: check if we should move the methods to the FO.
-
-    /**
-     * TODO: due to complications of double fields relation on FO side (uuid + anr) we cant simply add self-reference.
-     * When it's refactored, we can change to $object->getParents() and $object->getChildren().
-     *
-     * @param string[] $uuids
-     *
-     * @return ObjectObjectSuperClass[]
-     */
-    public function findByParentsUuids(array $uuids): array
+    public function findByParentObjectAndPosition(ObjectSuperClass $parentObject, int $position): ObjectObject
     {
-        $queryBuilder = $this->getRepository()->createQueryBuilder('o');
-
-        return $queryBuilder
-            ->innerJoin('o.parent', 'op')
-            ->where($queryBuilder->expr()->in('op.uuid', ':parentUuids'))
-            ->setParameter('parentUuids', $uuids)
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
-     * @param string[] $uuids
-     *
-     * @return ObjectObjectSuperClass[]
-     */
-    public function findByChildrenUuids(array $uuids): array
-    {
-        $queryBuilder = $this->getRepository()->createQueryBuilder('o');
-
-        return $queryBuilder
-            ->innerJoin('o.child', 'oc')
-            ->where($queryBuilder->expr()->in('oc.uuid', ':childrenUuids'))
-            ->setParameter('childrenUuids', $uuids)
+        return $this->getRepository()->createQueryBuilder('oo')
+            ->where('oo.parent = :parentObject')
+            ->andWhere('oo.position = :position')
+            ->setParameter('parentObject', $parentObject)
+            ->setParameter('position', $position)
+            ->setMaxResults(1)
             ->getQuery()
             ->getResult();
     }

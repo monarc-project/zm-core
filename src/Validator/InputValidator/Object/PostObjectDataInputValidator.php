@@ -8,8 +8,6 @@
 namespace Monarc\Core\Validator\InputValidator\Object;
 
 use Laminas\Filter\StringTrim;
-use Laminas\I18n\Validator\IsInt;
-use Laminas\InputFilter\InputFilter;
 use Laminas\Validator\InArray;
 use Laminas\Validator\StringLength;
 use Monarc\Core\Model\Entity\ObjectSuperClass;
@@ -17,22 +15,17 @@ use Monarc\Core\Validator\InputValidator\AbstractInputValidator;
 
 class PostObjectDataInputValidator extends AbstractInputValidator
 {
-    public function __construct(
-        InputFilter $inputFilter,
-        array $config
-    ) {
-        parent::__construct($inputFilter, $config);
-    }
-
     protected function getRules(): array
     {
         $rules = [
             [
                 'name' => 'scope',
-                'allowEmpty' => true,
-                'continueIfEmpty' => true,
-                'required' => false,
-                'filters' => [],
+                'required' => true,
+                'allowEmpty' => false,
+                'continueIfEmpty' => false,
+                'filters' => [
+                    ['name' => 'ToInt'],
+                ],
                 'validators' => [
                     [
                         'name' => InArray::class,
@@ -45,9 +38,11 @@ class PostObjectDataInputValidator extends AbstractInputValidator
             [
                 'name' => 'mode',
                 'required' => false,
-                'allow_empty' => true,
-                'continue_if_empty' => true,
-                'filters' => [],
+                'allow_empty' => false,
+                'continue_if_empty' => false,
+                'filters' => [
+                    ['name' => 'ToInt'],
+                ],
                 'validators' => [
                     [
                         'name' => InArray::class,
@@ -73,27 +68,23 @@ class PostObjectDataInputValidator extends AbstractInputValidator
             ],
             [
                 'name' => 'category',
-                'required' => false,
-                'allow_empty' => true,
-                'continue_if_empty' => true,
-                'filters' => [],
-                'validators' => [
-                    [
-                        'name' => IsInt::class,
-                    ]
+                'required' => true,
+                'allow_empty' => false,
+                'continue_if_empty' => false,
+                'filters' => [
+                    ['name' => 'ToInt'],
                 ],
+                'validators' => [],
             ],
             [
                 'name' => 'rolfTag',
                 'required' => false,
                 'allow_empty' => true,
                 'continue_if_empty' => true,
-                'filters' => [],
-                'validators' => [
-                    [
-                        'name' => IsInt::class,
-                    ]
+                'filters' => [
+                    ['name' => 'ToInt'],
                 ],
+                'validators' => [],
             ],
         ];
 

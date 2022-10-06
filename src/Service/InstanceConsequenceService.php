@@ -157,12 +157,21 @@ class InstanceConsequenceService extends AbstractService
         /** @var InstanceConsequence $instanceConsequence */
         $instanceConsequence = $table->getEntity($id);
 
-        $this->filterPostFields($data, $instanceConsequence, ['anr', 'instance', 'object', 'scaleImpactType', 'ch', 'ih', 'dh']);
+        $this->filterPostFields(
+            $data,
+            $instanceConsequence,
+            ['anr', 'instance', 'object', 'scaleImpactType', 'ch', 'ih', 'dh']
+        );
 
         $instanceConsequence->setDbAdapter($this->get('table')->getDb());
         $instanceConsequence->setLanguage($this->getLanguage());
 
         $instanceConsequence->exchangeArray($data);
+
+        // TODO: it wont work as 'object' dependency will not be possible to set. Preset before for now.
+        if (!empty($data['object'])) {
+            $data['object'] = $instanceConsequence->getObject();
+        }
 
         $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($instanceConsequence, $dependencies);

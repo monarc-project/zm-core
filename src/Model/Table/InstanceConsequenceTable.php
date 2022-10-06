@@ -73,6 +73,20 @@ class InstanceConsequenceTable extends AbstractEntityTable
             ->getResult();
     }
 
+    /**
+     * @return InstanceConsequenceSuperClass[]
+     */
+    public function findByAnrInstance(AnrSuperClass $anr, InstanceSuperClass $instance): array
+    {
+        return $this->getRepository()->createQueryBuilder('ic')
+            ->where('ic.anr = :anr')
+            ->andWhere('ic.instance = :instance')
+            ->setParameter('anr', $anr)
+            ->setParameter('instance', $instance)
+            ->getQuery()
+            ->getResult();
+    }
+
     public function saveEntity(InstanceConsequenceSuperClass $instanceConsequence, bool $flushAll = true): void
     {
         $em = $this->getDb()->getEntityManager();

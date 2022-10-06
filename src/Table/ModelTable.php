@@ -8,6 +8,8 @@
 namespace Monarc\Core\Table;
 
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityNotFoundException;
+use Monarc\Core\Model\Entity\Anr;
 use Monarc\Core\Model\Entity\Model;
 
 class ModelTable extends AbstractTable
@@ -50,13 +52,18 @@ class ModelTable extends AbstractTable
             ->getResult();
     }
 
-    public function findByAnrId(array $anrId): ?Model
+    public function findByAnr(Anr $anr): Model
     {
-        return $this->getRepository()->createQueryBuilder('m')
-            ->where('m.anr = :anrId')
-            ->setParameter('anrId', $anrId)
+        $model = $this->getRepository()->createQueryBuilder('m')
+            ->where('m.anr = :anr')
+            ->setParameter('anr', $anr)
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
+        if ($model === null) {
+            throw new EntityNotFoundException(sprintf('Model has not been found by the anr ID "%d"', $anr->getId()));
+        }
+
+        return $model;
     }
 }
