@@ -260,6 +260,7 @@ class ObjectSuperClass extends AbstractEntity
     public function setCategory($category): self
     {
         $this->category = $category;
+        $category->addObject($this);
 
         return $this;
     }
