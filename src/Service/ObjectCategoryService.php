@@ -10,7 +10,9 @@ namespace Monarc\Core\Service;
 use Monarc\Core\Model\Entity\AnrObjectCategory;
 use Monarc\Core\Model\Entity\ObjectCategory;
 use Monarc\Core\Model\Entity\ObjectCategorySuperClass;
+use Monarc\Core\Model\Entity\ObjectSuperClass;
 use Monarc\Core\Model\Table\AnrObjectCategoryTable;
+use Monarc\Core\Model\Table\ModelTable;
 use Monarc\Core\Model\Table\MonarcObjectTable;
 
 /**
@@ -27,6 +29,8 @@ class ObjectCategoryService extends AbstractService
     protected $userAnrTable;
     protected $filterColumns = ['label1', 'label2', 'label3', 'label4'];
     protected $dependencies = ['root', 'parent', 'anr'];//required for autopositionning
+
+    protected ModelTable $modelTable;
 
     /**
      * @inheritdoc
@@ -80,24 +84,39 @@ class ObjectCategoryService extends AbstractService
     /**
      * @inheritdoc
      */
-    public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = [])
-    {
+    public function getListSpecific(
+        $page = 1,
+        $limit = 25,
+        $order = null,
+        $filter = null,
+        $filterAnd = [],
+        $modelId = null
+    ) {
         $objectCategories = $this->getList($page, $limit, $order, $filter, $filterAnd);
         $result = $objectCategories;
+
+        $model = null;
+        if ($modelId !== null) {
+            $model = $this->modelTable->findById((int)$modelId);
+        }
 
         $currentObjectCategoriesListId = [];
         foreach ($objectCategories as $key => $objectCategory) {
             if (\is_object($result[$key]['objects'])) {
                 $result[$key]['objects'] = [];
             }
-            foreach ($objectCategory['objects'] as $object) {
-                $result[$key]['objects'][] = [
-                    'uuid' => $object->getUuid(),
-                    'name1' => $object->getName(1),
-                    'name2' => $object->getName(2),
-                    'name3' => $object->getName(3),
-                    'name4' => $object->getName(4),
-                ];
+            if ($model !== null) {
+                /** @var ObjectSuperClass $object */
+                foreach ($objectCategory['objects'] as $object) {
+                    $result[$key]['objects'][] = [
+                        'uuid' => $object->getUuid(),
+                        'name1' => $object->getName(1),
+                        'name2' => $object->getName(2),
+                        'name3' => $object->getName(3),
+                        'name4' => $object->getName(4),
+                        'isLinkedToAnr' => $object->isLinkedToAnr($model->getAnr()),
+                    ];
+                }
             }
             $currentObjectCategoriesListId[] = $objectCategory['id'];
         }

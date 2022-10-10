@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Doctrine\ORM\EntityNotFoundException;
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\Model;
 use Monarc\Core\Service\ConnectedUserService;
@@ -20,6 +21,17 @@ class ModelTable extends AbstractEntityTable
     public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
     {
         parent::__construct($dbService, Model::class, $connectedUserService);
+    }
+
+    public function findById(int $id): Model
+    {
+        /** @var Model $model */
+        $model = $this->getRepository()->find($id);
+        if ($model === null) {
+            throw EntityNotFoundException::fromClassNameAndIdentifier(static::class, [$id]);
+        }
+
+        return $model;
     }
 
     /**

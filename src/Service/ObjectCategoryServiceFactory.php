@@ -24,5 +24,6 @@ class ObjectCategoryServiceFactory extends AbstractServiceFactory
         'anrObjectCategoryTable' => Table\AnrObjectCategoryTable::class,
         'monarcObjectTable' => Table\MonarcObjectTable::class,
         'anrTable' => Table\AnrTable::class,
+        'modelTable' => Table\ModelTable::class,
     ];
 }
