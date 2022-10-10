@@ -35,16 +35,28 @@ class ModelService extends AbstractService
     /**
      * @inheritdoc
      */
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null, $scope = 'BO')
-    {
+    public function getList(
+        $page = 1,
+        $limit = 25,
+        $order = null,
+        $filter = null,
+        $filterAnd = null,
+        $scope = 'BO'
+    ) {
         $joinModel = -1;
 
         if ($scope == 'FO') {
             $filterAnd['isGeneric'] = 1;
-            $client = current($this->clientTable->fetchAll());
+            $client = $this->clientTable->findTheClient();
 
             if ($client) {
-                $joinModel = $client['model_id'];
+                $joinModel = $client->getModels()
+                    ->map(
+                        function ($obj) {
+                            return $obj->getModelId();
+                        }
+                    )
+                    ->getValues();
             }
         }
 
@@ -198,8 +210,16 @@ class ModelService extends AbstractService
             if (!empty($assetsIds)) {
                 $amvs = $this->get('amvTable')->getEntityByFields(['asset' => $assetsIds]);
                 foreach ($amvs as $amv) {
-                    if ($amv->get('asset')->get('mode') == MonarcObject::MODE_SPECIFIC && $amv->get('threat')->get('mode') == MonarcObject::MODE_GENERIC && $amv->get('vulnerability')->get('mode') == MonarcObject::MODE_GENERIC) {
-                        throw new \Monarc\Core\Exception\Exception('You can not make this change. The level of integrity between the model and its objects would corrupt', 412);
+                    if ($amv->get('asset')->get('mode') == MonarcObject::MODE_SPECIFIC
+                        && $amv->get('threat')->get('mode') == MonarcObject::MODE_GENERIC
+                        && $amv->get('vulnerability')->get('mode') == MonarcObject::MODE_GENERIC
+                    ) {
+                        throw new \Monarc\Core\Exception\Exception(
+                            'You can not make this change. '.
+                            'The level of integrity between '.
+                            'the model and its objects would corrupt',
+                            412
+                        );
                     }
                 }
             }
@@ -214,7 +234,11 @@ class ModelService extends AbstractService
             if (!empty($objects)) {
                 foreach ($objects as $o) {
                     if ($o->get('mode') == $modeObject) {
-                        throw new \Monarc\Core\Exception\Exception('You can not make this change. The level of integrity between the model and its objects would corrupt', 412);
+                        throw new \Monarc\Core\Exception\Exception(
+                            'You can not make this change. '.
+                            'The level of integrity between the model and its objects would corrupt',
+                            412
+                        );
                     }
                 }
             }

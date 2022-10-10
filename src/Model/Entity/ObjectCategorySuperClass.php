@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Model\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
@@ -68,6 +69,13 @@ class ObjectCategorySuperClass extends AbstractEntity
     protected $parent;
 
     /**
+     * @var ArrayCollection|ObjectSuperClass[]
+     *
+     * @ORM\OneToMany(targetEntity="MonarcObject", mappedBy="category")
+     */
+    protected $objects;
+
+    /**
      * @var string
      *
      * @ORM\Column(name="label1", type="string", length=255, nullable=true)
@@ -109,6 +117,13 @@ class ObjectCategorySuperClass extends AbstractEntity
             'subField' => ['anr']
         ],
     ];
+
+    public function __construct($obj = null)
+    {
+        $this->objects = new ArrayCollection();
+
+        parent::__construct($obj);
+    }
 
     /**
      * @return int
@@ -186,6 +201,21 @@ class ObjectCategorySuperClass extends AbstractEntity
     public function setRoot($root): self
     {
         $this->root = $root;
+
+        return $this;
+    }
+
+    public function getObjects()
+    {
+        return $this->objects;
+    }
+
+    public function addObject(ObjectSuperClass $object): self
+    {
+        if (!$this->objects->contains($object)) {
+            $this->objects->add($object);
+            $object->setCategory($this);
+        }
 
         return $this;
     }

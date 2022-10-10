@@ -77,8 +77,17 @@ class ObjectService extends AbstractService
      * @return array
      * @throws Exception
      */
-    public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $asset = null, $category = null, $model = null, $anr = null, $lock = null)
-    {
+    public function getListSpecific(
+        $page = 1,
+        $limit = 25,
+        $order = null,
+        $filter = null,
+        $asset = null,
+        $category = null,
+        $model = null,
+        $anr = null,
+        $lock = null
+    ) {
         /** @var AssetTable $assetTable */
         $assetTable = $this->get('assetTable');
         /** @var ObjectCategoryTable $categoryTable */
@@ -140,8 +149,16 @@ class ObjectService extends AbstractService
      *
      * @return array|bool
      */
-    public function getAnrObjects($page, $limit, $order, $filter, $filterAnd, $model, $anr, $context = AbstractEntity::BACK_OFFICE)
-    {
+    public function getAnrObjects(
+        $page,
+        $limit,
+        $order,
+        $filter,
+        $filterAnd,
+        $model,
+        $anr,
+        $context = AbstractEntity::BACK_OFFICE
+    ) {
         if ($model) {
             /** @var ModelTable $modelTable */
             $modelTable = $this->get('modelTable');
@@ -151,13 +168,17 @@ class ObjectService extends AbstractService
             } else {
                 $filterAnd['asset'] = [];
                 $assets = $model->get('assets');
-                foreach ($assets as $a) { // on récupère tous les assets associés au modèle et on ne prend que les spécifiques
+                // we get all the assets linked to the model
+                // we take only specific
+                foreach ($assets as $a) {
                     if ($a->get('mode') == MonarcObject::MODE_SPECIFIC) {
                         $filterAnd['asset'][$a->getUuid()] = $a->getUuid();
                     }
                 }
-                if (!$model->get('isRegulator')) { // si le modèle n'est pas régulateur
-                    $assets = $this->get('assetTable')->getEntityByFields(['mode' => MonarcObject::MODE_GENERIC]); // on récupère tous les assets génériques
+                if (!$model->get('isRegulator')) { // model != regulator
+                    // we get all the generic assets
+                    $assets = $this->get('assetTable')
+                        ->getEntityByFields(['mode' => MonarcObject::MODE_GENERIC]);
                     foreach ($assets as $a) {
                         $filterAnd['asset'][$a->getUuid()] = $a->getUuid();
                     }
@@ -428,8 +449,14 @@ class ObjectService extends AbstractService
      *
      * @return int
      */
-    public function getFilteredCount($filter = null, $asset = null, $category = null, $model = null, $anr = null, $context = MonarcObject::BACK_OFFICE)
-    {
+    public function getFilteredCount(
+        $filter = null,
+        $asset = null,
+        $category = null,
+        $model = null,
+        $anr = null,
+        $context = MonarcObject::BACK_OFFICE
+    ) {
         $filterAnd = [];
         if ((!is_null($asset)) && ($asset != 0)) {
             $filterAnd['asset'] = $asset;
@@ -553,14 +580,16 @@ class ObjectService extends AbstractService
 
         //security
         if ($context == AbstractEntity::BACK_OFFICE &&
-            $monarcObject->mode == MonarcObject::MODE_GENERIC && $monarcObject->asset->mode == MonarcObject::MODE_SPECIFIC) {
+            $monarcObject->mode ==
+            MonarcObject::MODE_GENERIC && $monarcObject->asset->mode == MonarcObject::MODE_SPECIFIC) {
             throw new Exception("You can't have a generic object based on a specific asset", 412);
         }
         if (isset($data['modelId'])) {
             $this->get('modelTable')->canAcceptObject($data['modelId'], $monarcObject, $context);
         }
 
-        if (($monarcObject->asset->type == Asset::TYPE_PRIMARY) && ($monarcObject->scope == MonarcObject::SCOPE_GLOBAL)) {
+        if (($monarcObject->asset->type == Asset::TYPE_PRIMARY) &&
+            ($monarcObject->scope == MonarcObject::SCOPE_GLOBAL)) {
             throw new Exception('You cannot create an object that is both global and primary', 412);
         }
 
@@ -709,7 +738,8 @@ class ObjectService extends AbstractService
         if ($oldRootCategory !== $newRootCategory) {
             /*
              * AnrObjectCategory entity used only to link Anrs with root categories.
-             * TODO: AnrObjectCategory is not really needed, can be replaced with the ObjectCategory usage with a status field.
+             * TODO: AnrObjectCategory is not really needed,
+             * can be replaced with the ObjectCategory usage with a status field.
              * Status can tell us about visibility on UI (when no objects left we don't show the root category),
              * but seems it works well without status.
              */
@@ -835,7 +865,6 @@ class ObjectService extends AbstractService
                 $instanceTable->save($instance);
             }
             if (($newRolfTag) || (is_null($newRolfTag)) || ($forceSpecific)) {
-
                 //change instance risk op to specific
                 /** @var InstanceRiskOpTable $instanceRiskOpTable */
                 $instanceRiskOpTable = $this->get('instanceRiskOpTable');
@@ -850,33 +879,9 @@ class ObjectService extends AbstractService
 
                 if (!is_null($newRolfTag) && (!$forceSpecific)) {
                     //add new risk op to instance
-                    /** @var RolfTagTable $rolfTagTable */
-                    $rolfTagTable = $this->get('rolfTagTable');
-                    $rolfTag = $rolfTagTable->getEntity($newRolfTag);
-                    $rolfRisks = $rolfTag->risks;
-                    $nbRolfRisks = count($rolfRisks);
-                    $i = 1;
-                    foreach ($rolfRisks as $rolfRisk) {
-                        $data = [
-                            'anr' => $object->anr->id,
-                            'instance' => $instance->id,
-                            'object' => $object->getUuid(),
-                            'rolfRisk' => $rolfRisk->id,
-                            'riskCacheCode' => $rolfRisk->code,
-                            'riskCacheLabel1' => $rolfRisk->label1,
-                            'riskCacheLabel2' => $rolfRisk->label2,
-                            'riskCacheLabel3' => $rolfRisk->label3,
-                            'riskCacheLabel4' => $rolfRisk->label4,
-                            'riskCacheDescription1' => $rolfRisk->description1,
-                            'riskCacheDescription2' => $rolfRisk->description2,
-                            'riskCacheDescription3' => $rolfRisk->description3,
-                            'riskCacheDescription4' => $rolfRisk->description4,
-                        ];
-                        /** @var InstanceRiskOpService $instanceRiskOpService */
-                        $instanceRiskOpService = $this->get('instanceRiskOpService');
-                        $instanceRiskOpService->create($data, ($nbRolfRisks == $i));
-                        $i++;
-                    }
+                    /** @var InstanceRiskOpService $instanceRiskOpService */
+                    $instanceRiskOpService = $this->get('instanceRiskOpService');
+                    $instanceRiskOpService->createInstanceRisksOp($instance, $object);
                 }
             }
         }
@@ -923,7 +928,8 @@ class ObjectService extends AbstractService
     private function checkModeIntegrityRecursive($mode, $field, $objects = [])
     {
         foreach ($objects as $p) {
-            if ($p['mode'] == $mode || (!empty($p[$field]) && !$this->checkModeIntegrityRecursive($mode, $field, $p[$field]))) {
+            if ($p['mode'] == $mode || (!empty($p[$field]) &&
+            !$this->checkModeIntegrityRecursive($mode, $field, $p[$field]))) {
                 return false;
             }
         }
@@ -1084,8 +1090,13 @@ class ObjectService extends AbstractService
      * @return null
      * @throws Exception
      */
-    public function attachObjectToAnr($object, $anrId, $parent = null, $objectObjectPosition = null, $context = AbstractEntity::BACK_OFFICE)
-    {
+    public function attachObjectToAnr(
+        $object,
+        $anrId,
+        $parent = null,
+        $objectObjectPosition = null,
+        $context = AbstractEntity::BACK_OFFICE
+    ) {
         //object
         /** @var MonarcObjectTable $table */
         $table = $this->get('table');
@@ -1179,6 +1190,72 @@ class ObjectService extends AbstractService
 
         return $id;
     }
+
+    /**
+     * Attach Category To Anr
+     *
+     * @param $category
+     * @param $anrId
+     *
+     * @return null
+     * @throws Exception
+     */
+    public function attachCategoryToAnr($category, $anrId, $context = AbstractEntity::BACK_OFFICE)
+    {
+        /** @var MonarcObjectTable $table */
+        $table = $this->get('table');
+
+        //category
+        /** @var CategoryTable $table */
+        $categoryTable = $this->get('categoryTable');
+
+        if (!is_object($category)) {
+            try {
+                $category = $categoryTable->getEntity($category);
+            } catch (QueryException | MappingException $e) {
+                $category = $categoryTable->getEntity(['id' => $category, 'anr' => $anrId]);
+            }
+        }
+
+        if (!$category) {
+            throw new Exception('Category does not exist', 412);
+        }
+
+        $objectsToAdd = $table->getObjectsUnderParentCategory($category);
+
+        // for BO we have to be sure that all objects are compatible
+        // Generic, specific etc.
+        if ($context == AbstractEntity::BACK_OFFICE) {
+            //retrieve model
+            /** @var ModelTable $modelTable */
+            $modelTable = $this->get('modelTable');
+            $model = $modelTable->getEntityByFields(['anr' => $anrId])[0];
+
+            if ($model) {
+                foreach ($objectsToAdd as $key => $objectToAdd) {
+                    //object is specific and model generic
+                    if ($model->isGeneric() && $objectToAdd->getMode() ==
+                    \Monarc\Core\Model\Entity\MonarcObject::MODE_SPECIFIC) {
+                        unset($objectsToAdd[$key]);
+                    }
+                    //object and models are specific but not in the same model
+                    if (!$model->isGeneric() && $objectToAdd->getMode() ==
+                        \Monarc\Core\Model\Entity\MonarcObject::MODE_SPECIFIC) {
+                        $assetsAllowed = $model->getAssets();
+                        $currentAsset = $objectToAdd->getAsset();
+                        if (!$assetsAllowed->contains($currentAsset)
+                            && $currentAsset->getMode()!= \Monarc\Core\Model\Entity\MonarcObject::MODE_GENERIC) {
+                            unset($objectsToAdd[$key]);
+                        }
+                    }
+                }
+            }
+        }
+        foreach ($objectsToAdd as $objectToAdd) {
+            $this->attachObjectToAnr($objectToAdd, $anrId);
+        }
+    }
+
 
     /**
      * Detach Object To Anr
@@ -1275,7 +1352,8 @@ class ObjectService extends AbstractService
         $objectRootCategory = null;
         if ($object->getCategory()) {
             $objectRootCategory = $object->getCategory()->getRoot() ?: $object->getCategory();
-            $areObjectsUnderTheRootCategory = $table->hasObjectsUnderRootCategoryExcludeObject($objectRootCategory, $object);
+            $areObjectsUnderTheRootCategory =
+            $table->hasObjectsUnderRootCategoryExcludeObject($objectRootCategory, $object);
         }
 
         //if the last object of the category in the anr, delete category from anr
@@ -1397,18 +1475,22 @@ class ObjectService extends AbstractService
         $anrObjectCategories = $anrObjectCategoryTable->findByAnrOrderedByPosititon($anrTable->findById($anrId));
 
         foreach ($anrObjectCategories as $anrObjectCategory) {
-            $anrObjectsCategories[$anrObjectCategory->id] = $this->getChildren($anrObjectCategory->category->getJsonArray(), $objectsCategories);
-            $anrObjectsCategories[$anrObjectCategory->id]['position'] = $anrObjectCategory->get('position'); // overwrite categ position from anr_categ position
+            $anrObjectsCategories[$anrObjectCategory->id] =
+            $this->getChildren($anrObjectCategory->category->getJsonArray(), $objectsCategories);
+            $anrObjectsCategories[$anrObjectCategory->id]['position'] =
+            $anrObjectCategory->get('position'); // overwrite categ position from anr_categ position
             $anrObjectsCategories[$anrObjectCategory->id]['objects'] = [];
             if (!empty($anrObjects[$anrObjectCategory->category->id])) {
-                $anrObjectsCategories[$anrObjectCategory->id]['objects'] = $anrObjects[$anrObjectCategory->category->id]; // add objects
+                $anrObjectsCategories[$anrObjectCategory->id]['objects'] =
+                $anrObjects[$anrObjectCategory->category->id]; // add objects
             }
         }
         unset($anrObjects);
 
         // If we created our virtual category, inject it at first position. We won't need to fill it again in the next
         // loop as we already have the objects and we don't have any sub-categories or nested levels.
-        if (isset($objectsCategories[-1]) && (!empty($objectsCategories[-1]['objects']) || !empty($objectsCategories[-1]['child']))) {
+        if (isset($objectsCategories[-1]) && (!empty($objectsCategories[-1]['objects']) ||
+           !empty($objectsCategories[-1]['child']))) {
             $objectsCategories[-1]['position'] = count($anrObjectsCategories) + 1; // on met cette "catégorie" à la fin
             $anrObjectsCategories[-1] = $objectsCategories[-1];
         } else {
