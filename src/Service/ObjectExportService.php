@@ -21,21 +21,17 @@ class ObjectExportService
 
     private AssetExportService $assetExportService;
 
-    private ObjectObjectService $objectObjectService;
-
     private ConfigService $configService;
 
     public function __construct(
         MonarcObjectTable $monarcObjectTable,
         ObjectService $objectService,
         AssetExportService $assetExportService,
-        ObjectObjectService $objectObjectService,
         ConfigService $configService
     ) {
         $this->monarcObjectTable = $monarcObjectTable;
         $this->objectService = $objectService;
         $this->assetExportService = $assetExportService;
-        $this->objectObjectService = $objectObjectService;
         $this->configService = $configService;
     }
 
