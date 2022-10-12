@@ -10,12 +10,14 @@ namespace Monarc\Core\Service;
 use Doctrine\Common\Collections\Expr\Comparison;
 use Monarc\Core\InputFormatter\FormattedInputParams;
 use Monarc\Core\Model\Entity\AnrObjectCategory;
+use Monarc\Core\Model\Entity\Model;
 use Monarc\Core\Model\Entity\ObjectCategory;
 use Monarc\Core\Model\Entity\ObjectCategorySuperClass;
 use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Service\Traits\PositionUpdateTrait;
 use Monarc\Core\Service\Traits\TreeStructureTrait;
 use Monarc\Core\Table\AnrObjectCategoryTable;
+use Monarc\Core\Table\ModelTable;
 use Monarc\Core\Table\ObjectCategoryTable;
 use Monarc\Core\Table\MonarcObjectTable;
 
@@ -24,14 +26,13 @@ class ObjectCategoryService
     use TreeStructureTrait;
     use PositionUpdateTrait;
 
-    protected $anrTable;//required for autopositionning of anrobjectcategories
-    protected $dependencies = ['root', 'parent', 'anr'];//required for autopositionning
-
     private ObjectCategoryTable $objectCategoryTable;
 
     private MonarcObjectTable $monarcObjectTable;
 
     private AnrObjectCategoryTable $anrObjectCategoryTable;
+
+    private ModelTable $modelTable;
 
     private UserSuperClass $connectedUser;
 
@@ -39,11 +40,13 @@ class ObjectCategoryService
         ObjectCategoryTable $objectCategoryTable,
         MonarcObjectTable $monarcObjectTable,
         AnrObjectCategoryTable $anrObjectCategoryTable,
+        ModelTable $modelTable,
         ConnectedUserService $connectedUserService
     ) {
         $this->objectCategoryTable = $objectCategoryTable;
         $this->monarcObjectTable = $monarcObjectTable;
         $this->anrObjectCategoryTable = $anrObjectCategoryTable;
+        $this->modelTable = $modelTable;
         $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
@@ -99,13 +102,21 @@ class ObjectCategoryService
             || empty($formattedInputParams->getFilterFor('lock')['value']);
         $includeParents = empty($formattedInputParams->getFilterFor('catid')['value']);
 
+        $model = null;
+        if (!empty($formattedInputParams->getFilterFor('model'))) {
+            $modelId = $formattedInputParams->getFilterFor('model')['value'];
+            /** @var Model $model */
+            $model = $this->modelTable->findById($modelId);
+        }
+
         $categoriesData = [];
         /** @var ObjectCategory[] $objectCategories */
         $objectCategories = $this->objectCategoryTable->findByParams($formattedInputParams);
         foreach ($objectCategories as $objectCategory) {
             $categoriesData[$objectCategory->getId()] = $this->getPreparedObjectCategoryData(
                 $objectCategory,
-                $includeChildren
+                $includeChildren,
+                $model
             );
             if ($includeParents
                 && $objectCategory->getParent() !== null
@@ -113,7 +124,8 @@ class ObjectCategoryService
             ) {
                 $categoriesData[$objectCategory->getParent()->getId()] = $this->getPreparedObjectCategoryData(
                     $objectCategory->getParent(),
-                    false
+                    false,
+                    $model
                 );
             }
         }
@@ -173,7 +185,7 @@ class ObjectCategoryService
         } elseif (empty($data['parent']) && $objectCategory->getParent() !== null) {
             $objectCategory->setParent(null)->setRoot(null);
             /* The category become root now, before it had a parent and was not root. */
-            $this->linkCategoryToAnr($objectCategory);
+            $this->linkRootCategoryToAnr($objectCategory);
             if ($previousRootCategory !== null
                 && !$this->monarcObjectTable->hasObjectsUnderRootCategoryExcludeObject($previousRootCategory)
             ) {
@@ -226,7 +238,8 @@ class ObjectCategoryService
 
     private function getPreparedObjectCategoryData(
         ObjectCategorySuperClass $objectCategory,
-        bool $includeChildren = true
+        bool $includeChildren = true,
+        ?Model $model = null
     ): array {
         $result = [
             'id' => $objectCategory->getId(),
@@ -237,9 +250,26 @@ class ObjectCategoryService
             'position' => $objectCategory->getPosition(),
         ];
 
+        /*
+         * If the $model parameter is passed we include the objects list linked to the categories.
+         * This allows to link the new objects to the model.
+         */
+        if ($model !== null) {
+            foreach ($objectCategory->getObjects() as $object) {
+                $result['objects'][] = [
+                    'uuid' => $object->getUuid(),
+                    'name1' => $object->getName(1),
+                    'name2' => $object->getName(2),
+                    'name3' => $object->getName(3),
+                    'name4' => $object->getName(4),
+                    'isLinkedToAnr' => $object->hasAnrLink($model->getAnr()),
+                ];
+            }
+        }
+
         if ($includeChildren) {
             foreach ($objectCategory->getChildren() as $childCategory) {
-                $result['child'] = $this->getPreparedObjectCategoryData($childCategory);
+                $result['child'] = $this->getPreparedObjectCategoryData($childCategory, true, $model);
             }
         }
 
@@ -256,7 +286,9 @@ class ObjectCategoryService
     private function unlinkCategoryFromAnrsOrLinkItsRoot(ObjectCategorySuperClass $objectCategory): void
     {
         foreach ($objectCategory->getAnrObjectCategories() as $anrObjectCategory) {
-            if ($objectCategory->getRoot() && $objectCategory->getRoot()->hasAnrLink($anrObjectCategory->getAnr())) {
+            if ($objectCategory->getRoot()
+                && $objectCategory->getRoot()->hasAnrLink($anrObjectCategory->getAnr())
+            ) {
                 $this->anrObjectCategoryTable->remove($anrObjectCategory, false);
             } else {
                 $anrObjectCategory->setCategory($objectCategory->getRoot())
@@ -269,26 +301,24 @@ class ObjectCategoryService
     /**
      * Link every Anr object that is under the root category, or it's children.
      */
-    protected function linkCategoryToAnr(ObjectCategorySuperClass $objectCategory): void
+    private function linkRootCategoryToAnr(ObjectCategorySuperClass $objectCategory): void
     {
-        $anrs = [];
+        if (!$objectCategory->isCategoryRoot()) {
+            return;
+        }
+
         $objects = $this->monarcObjectTable->getObjectsUnderRootCategory($objectCategory);
         foreach ($objects as $object) {
             foreach ($object->getAnrs() as $anr) {
-                if (isset($anrs[$anr->getId()])
-                    || $objectCategory->hasAnrLink($anr)
-                ) {
-                    continue;
+                if (!$objectCategory->hasAnrLink($anr)) {
+                    $anrObjectCategory = (new AnrObjectCategory())
+                        ->setAnr($anr)
+                        ->setCategory($objectCategory)
+                        ->setCreator($this->connectedUser->getEmail());
+                    $this->updatePositions($anrObjectCategory, $this->anrObjectCategoryTable);
+
+                    $this->anrObjectCategoryTable->save($anrObjectCategory, false);
                 }
-
-                $anrObjectCategory = (new AnrObjectCategory())
-                    ->setAnr($anr)
-                    ->setCategory($objectCategory);
-                $this->updatePositions($anrObjectCategory, $this->anrObjectCategoryTable);
-
-                $this->anrObjectCategoryTable->save($anrObjectCategory, false);
-
-                $anrs[$anr->getId()] = true;
             }
         }
     }

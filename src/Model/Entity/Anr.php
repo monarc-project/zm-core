@@ -15,4 +15,22 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Anr extends AnrSuperClass
 {
+    /**
+     * @var Model
+     *
+     * @ORM\OneToOne(targetEntity="Model",  mappedBy="anr")
+     */
+    protected $model;
+
+    public function setModel(Model $model): self
+    {
+        $this->model = $model;
+
+        return $this;
+    }
+
+    public function getModel(): Model
+    {
+        return $this->model;
+    }
 }

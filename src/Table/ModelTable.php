@@ -51,19 +51,4 @@ class ModelTable extends AbstractTable
             ->getQuery()
             ->getResult();
     }
-
-    public function findByAnr(Anr $anr): Model
-    {
-        $model = $this->getRepository()->createQueryBuilder('m')
-            ->where('m.anr = :anr')
-            ->setParameter('anr', $anr)
-            ->setMaxResults(1)
-            ->getQuery()
-            ->getOneOrNullResult();
-        if ($model === null) {
-            throw new EntityNotFoundException(sprintf('Model has not been found by the anr ID "%d"', $anr->getId()));
-        }
-
-        return $model;
-    }
 }

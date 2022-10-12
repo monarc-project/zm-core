@@ -305,19 +305,22 @@ class ObjectService
         return $newMonarcObject;
     }
 
-    public function attachObjectToAnr(string $objectUuid, Anr $anr, $parent = null, $objectObjectPosition = null)
+    public function attachObjectToAnr(string $objectUuid, Anr $anr): MonarcObject
     {
         /** @var MonarcObject $monarcObject */
         $monarcObject = $this->monarcObjectTable->findByUuid($objectUuid);
 
-        $model = $this->modelTable->findByAnr($anr);
-        $model->validateObjectAcceptance($monarcObject);
-
-        $this->linkObjectAndItsCategoryToAnr($monarcObject, $anr);
-
-        $this->monarcObjectTable->save($monarcObject);
+        $this->validateAndAttachObjectToAnr($monarcObject, $anr);
 
         return $monarcObject;
+    }
+
+    public function attachCategoryObjectsToAnr(int $categoryId, Anr $anr): void
+    {
+        /** @var ObjectCategory $objectCategory */
+        $objectCategory = $this->objectCategoryTable->findById($categoryId);
+
+        $this->attachCategoryAndItsChildrenObjectsToAnr($objectCategory, $anr);
     }
 
     public function detachObjectFromAnr(string $objectUuid, Anr $anr): void
@@ -481,6 +484,26 @@ class ObjectService
         }
 
         return $exported;
+    }
+
+    private function attachCategoryAndItsChildrenObjectsToAnr(ObjectCategory $objectCategory, Anr $anr): void
+    {
+        foreach ($objectCategory->getObjects() as $monarcObject) {
+            $this->validateAndAttachObjectToAnr($monarcObject, $anr);
+        }
+
+        foreach ($objectCategory->getChildren() as $childCategory) {
+            $this->attachCategoryAndItsChildrenObjectsToAnr($childCategory, $anr);
+        }
+    }
+
+    public function validateAndAttachObjectToAnr(MonarcObject $monarcObject, Anr $anr): void
+    {
+        $anr->getModel()->validateObjectAcceptance($monarcObject);
+
+        $this->linkObjectAndItsCategoryToAnr($monarcObject, $anr);
+
+        $this->monarcObjectTable->save($monarcObject);
     }
 
     private function linkObjectAndItsCategoryToAnr(MonarcObject $monarcObject, Anr $anr): void

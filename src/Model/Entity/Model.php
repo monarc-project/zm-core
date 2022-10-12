@@ -43,7 +43,7 @@ class Model
     /**
      * @var Anr
      *
-     * @ORM\ManyToOne(targetEntity="Anr")
+     * @ORM\OneToOne(targetEntity="Anr")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="SET NULL")
      * })

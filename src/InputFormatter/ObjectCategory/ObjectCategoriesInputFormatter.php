@@ -41,5 +41,9 @@ class ObjectCategoriesInputFormatter extends AbstractInputFormatter
             'type' => 'int',
             'isUsedInQuery' => false,
         ],
+        'model' => [
+            'type' => 'int',
+            'isUsedInQuery' => false,
+        ],
     ];
 }
