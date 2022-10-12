@@ -253,6 +253,13 @@ class ObjectSuperClass extends AbstractEntity
         return $this;
     }
 
+    public function resetAnrs(): self
+    {
+        $this->anrs = new ArrayCollection();
+
+        return $this;
+    }
+
     /**
      * @return ObjectCategorySuperClass
      */
