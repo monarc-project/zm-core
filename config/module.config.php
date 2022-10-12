@@ -461,6 +461,9 @@ return [
             InputValidator\ObjectCategory\PostObjectCategoryDataInputValidator::class =>
                 ReflectionBasedAbstractFactory::class,
             LanguageValidator::class => ReflectionBasedAbstractFactory::class,
+            InputValidator\ObjectComposition\CreateDataInputValidator::class => ReflectionBasedAbstractFactory::class,
+            InputValidator\ObjectComposition\MovePositionDataInputValidator::class =>
+                ReflectionBasedAbstractFactory::class,
         ],
         'shared' => [
             ModelEntity\Scale::class => false,
