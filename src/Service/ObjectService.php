@@ -19,6 +19,7 @@ use Monarc\Core\Model\Entity\Model;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Entity\ObjectCategory;
 use Monarc\Core\Model\Entity\ObjectCategorySuperClass;
+use Monarc\Core\Model\Entity\ObjectObject;
 use Monarc\Core\Model\Entity\ObjectSuperClass;
 use Monarc\Core\Model\Entity\RolfTag;
 use Monarc\Core\Model\Entity\UserSuperClass;
@@ -46,6 +47,8 @@ class ObjectService
 
     private Table\AnrObjectCategoryTable $anrObjectCategoryTable;
 
+    private Table\ObjectObjectTable $objectObjectTable;
+
     private InstanceTable $instanceTable;
 
     private RolfTagTable $rolfTagTable;
@@ -62,6 +65,7 @@ class ObjectService
         Table\ModelTable $modelTable,
         Table\ObjectCategoryTable $objectCategoryTable,
         Table\AnrObjectCategoryTable $anrObjectCategoryTable,
+        Table\ObjectObjectTable $objectObjectTable,
         InstanceTable $instanceTable,
         RolfTagTable $rolfTagTable,
         InstanceRiskOpTable $instanceRiskOpTable,
@@ -73,6 +77,7 @@ class ObjectService
         $this->modelTable = $modelTable;
         $this->objectCategoryTable = $objectCategoryTable;
         $this->anrObjectCategoryTable = $anrObjectCategoryTable;
+        $this->objectObjectTable = $objectObjectTable;
         $this->instanceTable = $instanceTable;
         $this->rolfTagTable = $rolfTagTable;
         $this->instanceRiskOpTable = $instanceRiskOpTable;
@@ -190,7 +195,9 @@ class ObjectService
         foreach ($anr->getAnrObjectCategories() as $anrObjectCategory) {
             $objectCategory = $anrObjectCategory->getCategory();
             $objectsData = $this->getObjectsDataOfCategoryAndAnr($objectCategory, $anr);
-            $result[] = $this->getPreparedObjectCategoryData($objectCategory, $objectsData, $anr);
+            if (!empty($objectsData) || $objectCategory->hasChildren()) {
+                $result[] = $this->getPreparedObjectCategoryData($objectCategory, $objectsData, $anr);
+            }
         }
 
         /* Places uncategorized objects. */
@@ -201,7 +208,7 @@ class ObjectService
             }
         }
         if (!empty($objectsData)) {
-            $result[-1] = [
+            $result[] = [
                 'id' => -1,
                 'label1' => 'Sans catégorie',
                 'label2' => 'Uncategorized',
@@ -223,28 +230,25 @@ class ObjectService
 
         $this->validateAssetAndDataOnCreate($asset, $data);
 
-        $category = null;
-        if (!empty($data['category'])) {
-            /** @var ObjectCategory $category */
-            $category = $this->objectCategoryTable->findById($data['category']);
-        }
-        $rolfTag = null;
-        if (!empty($data['rolfTag']) && !$asset->isPrimary()) {
-            $rolfTag = $this->rolfTagTable->findById($data['rolfTag']);
-        }
-
         $monarcObject = (new MonarcObject())
             ->setLabels($data)
             ->setNames($data)
             ->setAsset($asset)
-            ->setCategory($category)
-            ->setRolfTag($rolfTag)
             ->setScope((int)$data['scope'])
             ->setMode((int)$data['mode'])
             ->setCreator($this->connectedUser->getEmail());
 
         if (isset($data['uuid'])) {
             $monarcObject->setUuid($data['uuid']);
+        }
+        if (!empty($data['category'])) {
+            /** @var ObjectCategory $category */
+            $category = $this->objectCategoryTable->findById($data['category']);
+            $monarcObject->setCategory($category);
+        }
+        if (!empty($data['rolfTag']) && !$asset->isPrimary()) {
+            $rolfTag = $this->rolfTagTable->findById($data['rolfTag']);
+            $monarcObject->setRolfTag($rolfTag);
         }
 
         /*
@@ -293,12 +297,7 @@ class ObjectService
 
         $newMonarcObject = $this->getObjectCopy($anr, $monarcObjectToCopy);
 
-        foreach ($monarcObjectToCopy->getChildren() as $childObject) {
-            $newChildObject = $this->getObjectCopy($anr, $childObject);
-            $this->monarcObjectTable->save($newChildObject, false);
-
-            $newMonarcObject->addChild($newChildObject);
-        }
+        $this->duplicateObjectChildren($monarcObjectToCopy, $newMonarcObject, $anr);
 
         $this->monarcObjectTable->save($newMonarcObject);
 
@@ -497,7 +496,7 @@ class ObjectService
         }
     }
 
-    public function validateAndAttachObjectToAnr(MonarcObject $monarcObject, Anr $anr): void
+    private function validateAndAttachObjectToAnr(MonarcObject $monarcObject, Anr $anr): void
     {
         $anr->getModel()->validateObjectAcceptance($monarcObject);
 
@@ -517,6 +516,7 @@ class ObjectService
                     ->setCategory($monarcObject->getCategory()->getRootCategory())
                     ->setAnr($anr)
                     ->setCreator($this->connectedUser->getEmail());
+                /* The category supposed to positioned at the end. */
                 $this->updatePositions($anrObjectCategory, $this->anrObjectCategoryTable);
 
                 $this->anrObjectCategoryTable->save($anrObjectCategory, false);
@@ -643,7 +643,7 @@ class ObjectService
                 if ($monarcObject->hasCategory()) {
                     $anrObjectCategories = $monarcObject->getCategory()->getRootCategory()->getAnrObjectCategories();
                     foreach ($anrObjectCategories as $anrObjectCategory) {
-                        $this->validateAndRemoveAnrCategoryLinkIfNoObjectsLinked($anrObjectCategory);
+                        $this->validateAndRemoveAnrCategoryLinkIfNoObjectsLinked($anrObjectCategory, $monarcObject);
                     }
                 }
                 foreach ($monarcObject->getAnrs() as $anr) {
@@ -709,7 +709,10 @@ class ObjectService
         if ($monarcObjectToCopy->hasRolfTag()) {
             $newMonarcObject->setRolfTag($monarcObjectToCopy->getRolfTag());
         }
-
+        /*
+         * The objects positioning inside of categories was dropped from the UI, only kept in the db and passed data.
+         * We always set position end.
+         */
         $this->updatePositions($newMonarcObject, $this->monarcObjectTable);
 
         return $newMonarcObject;
@@ -722,7 +725,9 @@ class ObjectService
         $result = [];
         foreach ($objectCategory->getChildren() as $childCategory) {
             $objectsData = $this->getObjectsDataOfCategoryAndAnr($childCategory, $anr);
-            $result[] = $this->getPreparedObjectCategoryData($childCategory, $objectsData, $anr);
+            if (!empty($objectsData) || $childCategory->hasChildren()) {
+                $result[] = $this->getPreparedObjectCategoryData($childCategory, $objectsData, $anr);
+            }
         }
 
         return $result;
@@ -740,7 +745,7 @@ class ObjectService
             'label3' => $category->getLabel(3),
             'label4' => $category->getLabel(4),
             'position' => $category->getPosition(),
-            'child' => $category->getChildren()->isEmpty()
+            'child' => !$category->hasChildren()
                 ? []
                 : $this->getCategoriesWithObjectsChildrenTreeList($category, $anr),
             'objects' => $objectsData,
@@ -776,7 +781,7 @@ class ObjectService
                 'name4' => $childLinkObject->getChild()->getName(4),
                 'mode' => $childLinkObject->getChild()->getMode(),
                 'scope' => $childLinkObject->getChild()->getScope(),
-                'children' => $childLinkObject->getChild()->getChildren()->isEmpty()
+                'children' => !$childLinkObject->getChild()->hasChildren()
                     ? []
                     : $this->getChildrenTreeList($childLinkObject->getChild()),
             ];
@@ -891,6 +896,7 @@ class ObjectService
     ): void {
         if (!$objectCategory->hasAnrLink($anr)) {
             $anrObjectCategory = (new AnrObjectCategory())->setAnr($anr);
+            /* The category supposed to positioned at the end. */
             $this->updatePositions($anrObjectCategory, $this->anrObjectCategoryTable);
             $objectCategory->addAnrObjectCategory($anrObjectCategory);
             $this->anrObjectCategoryTable->save($anrObjectCategory, false);
@@ -1014,14 +1020,45 @@ class ObjectService
     private function prepareCategoryFilter(FormattedInputParams $formattedInputParams): void
     {
         $lockFilter = $formattedInputParams->getFilterFor('lock');
-        $categoryFilter = $formattedInputParams->getFilterFor('category');
-        if (empty($lockFilter['value']) && !empty($categoryFilter['value'])) {
-            /** @var ObjectCategory $objectCategory */
-            $objectCategory = $this->objectCategoryTable->findById($categoryFilter['value']);
-            $formattedInputParams->setFilterValueFor(
-                'category',
-                array_merge($categoryFilter['value'], $objectCategory->getRecursiveChildrenIds())
-            );
+        $categoryFilter = $formattedInputParams->getFilterFor('category.id');
+        if (!empty($categoryFilter['value'])) {
+            if ($categoryFilter['value'] === -1) {
+                $formattedInputParams->unsetFilterFor('category.id')->setFilterValueFor('category', null);
+            } elseif (!empty($lockFilter['value'])) {
+                /** @var ObjectCategory $objectCategory */
+                $objectCategory = $this->objectCategoryTable->findById($categoryFilter['value']);
+                $formattedInputParams->setFilterValueFor(
+                    'category.id',
+                    array_merge($categoryFilter['value'], $objectCategory->getRecursiveChildrenIds())
+                );
+            }
+        }
+    }
+
+    private function duplicateObjectChildren(MonarcObject $objectToCopy, MonarcObject $parentObject, Anr $anr): void
+    {
+        foreach ($objectToCopy->getChildren() as $childObject) {
+            $newChildObject = $this->getObjectCopy($anr, $childObject);
+
+            /** Only to keep the same positions in the duplicated object composition. */
+            foreach ($childObject->getParentsLinks() as $parentLink) {
+                if ($parentLink->getChild()->isEqualTo($childObject)) {
+                    $newParentLink = (new ObjectObject())
+                        ->setParent($parentObject)
+                        ->setChild($newChildObject)
+                        ->setPosition($parentLink->getPosition())
+                        ->setCreator($this->connectedUser->getEmail());
+                    $this->objectObjectTable->save($newParentLink, false);
+
+                    $newChildObject->addParentLink($newParentLink);
+                }
+            }
+
+            $this->monarcObjectTable->save($newChildObject, false);
+
+            if ($childObject->hasChildren()) {
+                $this->duplicateObjectChildren($childObject, $newChildObject, $anr);
+            }
         }
     }
 }

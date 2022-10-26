@@ -61,6 +61,11 @@ class AnrObjectCategorySuperClass implements PositionedEntityInterface
      */
     protected $position = 0;
 
+    public function getImplicitPositionRelationsValues(): array
+    {
+        return ['anr' => $this->anr];
+    }
+
     public function getId(): int
     {
         return $this->id;
@@ -100,10 +105,5 @@ class AnrObjectCategorySuperClass implements PositionedEntityInterface
         $this->position = $position;
 
         return $this;
-    }
-
-    public function getImplicitPositionRelationsValues(): array
-    {
-        return ['anr' => $this->anr];
     }
 }

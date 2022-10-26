@@ -29,13 +29,13 @@ class ObjectCategoryTable extends AbstractTable implements PositionUpdatableTabl
         foreach ($objectCategory->getImplicitPositionRelationsValues() as $fieldName => $fieldValue) {
             if ($fieldValue !== null) {
                 $queryBuilder
-                    ->andWhere('t.' . $fieldName . ' = :' . $fieldName)
+                    ->andWhere('oc.' . $fieldName . ' = :' . $fieldName)
                     ->setParameter($fieldName, $fieldValue);
             } else {
-                $queryBuilder->andWhere('t.' . $fieldName . ' IS NULL');
+                $queryBuilder->andWhere('oc.' . $fieldName . ' IS NULL');
             }
         }
-        $queryBuilder->andWhere('oo.position = :position')
+        $queryBuilder->andWhere('oc.position = :position')
             ->setParameter('position', $objectCategory->getPosition() - 1);
 
         return $queryBuilder

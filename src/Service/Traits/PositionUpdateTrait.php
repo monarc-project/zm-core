@@ -120,6 +120,22 @@ trait PositionUpdateTrait
         }
     }
 
+    public function shiftPositionsForRemovingEntity(
+        PositionedEntityInterface $entity,
+        PositionUpdatableTableInterface $table
+    ): void {
+        /* Shift the elements to the position of the removing entity. */
+        $table->incrementPositions(
+            $entity->getPosition() + 1,
+            -1,
+            -1,
+            $entity->getImplicitPositionRelationsValues(),
+            $entity->getUpdater()
+        );
+        /* Set the position of the removing to 0 that it is not counted anymore. */
+        $entity->setPosition(0);
+    }
+
     /**
      * @throws Exception|LogicException
      */

@@ -11,6 +11,8 @@ use Monarc\Core\InputFormatter\AbstractInputFormatter;
 
 class ObjectCategoriesInputFormatter extends AbstractInputFormatter
 {
+    protected const DEFAULT_LIMIT = 0;
+
     protected static array $allowedSearchFields = [
         'label1',
         'label2',

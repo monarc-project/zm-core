@@ -11,7 +11,6 @@ use Doctrine\ORM\EntityManager;
 use Monarc\Core\Model\Entity\AnrObjectCategory;
 use Monarc\Core\Model\Entity\AnrObjectCategorySuperClass;
 use Monarc\Core\Model\Entity\AnrSuperClass;
-use Monarc\Core\Model\Entity\ObjectCategorySuperClass;
 use Monarc\Core\Table\Interfaces\PositionUpdatableTableInterface;
 use Monarc\Core\Table\Traits\PositionIncrementTableTrait;
 
@@ -19,7 +18,7 @@ class AnrObjectCategoryTable extends AbstractTable implements PositionUpdatableT
 {
     use PositionIncrementTableTrait;
 
-    public function __construct(EntityManager $entityManager, string $entityName = AnrObjectCategorySuperClass::class)
+    public function __construct(EntityManager $entityManager, string $entityName = AnrObjectCategory::class)
     {
         parent::__construct($entityManager, $entityName);
     }

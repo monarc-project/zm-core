@@ -54,6 +54,13 @@ class FormattedInputParams
         return $this;
     }
 
+    public function unsetFilterFor(string $field): self
+    {
+        unset($this->filter[$field]);
+
+        return $this;
+    }
+
     public function setFilterValueFor(string $field, $value): self
     {
         $this->filter[$field]['value'] = $value;

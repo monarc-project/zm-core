@@ -28,7 +28,6 @@ class PostUserDataInputValidator extends AbstractInputValidator
     protected ConnectedUserService $connectedUserService;
 
     public function __construct(
-        InputFilter $inputFilter,
         array $config,
         UserTable $userTable,
         ConnectedUserService $connectedUserService
@@ -36,7 +35,7 @@ class PostUserDataInputValidator extends AbstractInputValidator
         $this->userTable = $userTable;
         $this->connectedUserService = $connectedUserService;
 
-        parent::__construct($inputFilter, $config);
+        parent::__construct($config);
     }
 
     protected function getRules(): array

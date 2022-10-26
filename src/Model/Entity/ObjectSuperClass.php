@@ -365,7 +365,7 @@ class ObjectSuperClass implements PositionedEntityInterface
     public function removeAnr(AnrSuperClass $anr): self
     {
         if ($this->anrs->contains($anr)) {
-            $this->anrs->remove($anr);
+            $this->anrs->removeElement($anr);
             $anr->removeObject($this);
         }
 
@@ -569,7 +569,7 @@ class ObjectSuperClass implements PositionedEntityInterface
     public function removeParent(ObjectSuperClass $object): self
     {
         if ($this->parents->contains($object)) {
-            $this->parents->remove($object);
+            $this->parents->removeElement($object);
             $object->removeChild($this);
         }
 
@@ -607,7 +607,7 @@ class ObjectSuperClass implements PositionedEntityInterface
     public function removeChild(ObjectSuperClass $object): self
     {
         if ($this->children->contains($object)) {
-            $this->children->remove($object);
+            $this->children->removeElement($object);
             $object->removeParent($this);
         }
 
@@ -620,6 +620,13 @@ class ObjectSuperClass implements PositionedEntityInterface
     public function getParentsLinks()
     {
         return $this->parentsLinks;
+    }
+
+    public function addParentLink(ObjectObjectSuperClass $parentLink): self
+    {
+        $this->parentsLinks->add($parentLink);
+
+        return $this;
     }
 
     public function getChildrenLinks()
@@ -650,7 +657,7 @@ class ObjectSuperClass implements PositionedEntityInterface
     public function removeInstance(InstanceSuperClass $instance): self
     {
         if ($this->instances->contains($instance)) {
-            $this->instances->remove($instance);
+            $this->instances->removeElement($instance);
         }
 
         return $this;

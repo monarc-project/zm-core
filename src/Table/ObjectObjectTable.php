@@ -22,7 +22,7 @@ class ObjectObjectTable extends AbstractTable implements PositionUpdatableTableI
         parent::__construct($entityManager, $entityName);
     }
 
-    public function findByParentObjectAndPosition(ObjectSuperClass $parentObject, int $position): ObjectObject
+    public function findByParentObjectAndPosition(ObjectSuperClass $parentObject, int $position): ?ObjectObject
     {
         return $this->getRepository()->createQueryBuilder('oo')
             ->where('oo.parent = :parentObject')
@@ -31,6 +31,6 @@ class ObjectObjectTable extends AbstractTable implements PositionUpdatableTableI
             ->setParameter('position', $position)
             ->setMaxResults(1)
             ->getQuery()
-            ->getResult();
+            ->getOneOrNullResult();
     }
 }

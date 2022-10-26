@@ -150,7 +150,7 @@ class AnrSuperClass extends AbstractEntity
      *
      * @ORM\Column(name="seuil_traitement", type="integer", options={"unsigned":true})
      */
-    protected $seuilTraitement;
+    protected $seuilTraitement = 0;
 
     /**
      * @var int
@@ -228,7 +228,6 @@ class AnrSuperClass extends AbstractEntity
      * @ORM\Column(name="manage_risks", type="smallint", options={"unsigned":true, "default":0})
      */
     protected $manageRisks = 0;
-
 
     /**
      * @var string
@@ -380,6 +379,11 @@ class AnrSuperClass extends AbstractEntity
     public function getSeuilRolf2(): int
     {
         return $this->seuilRolf2;
+    }
+
+    public function getSeuilTraitement(): int
+    {
+        return (int)$this->seuilTraitement;
     }
 
     public function getShowRolfBrut(): int

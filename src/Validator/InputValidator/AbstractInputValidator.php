@@ -21,9 +21,9 @@ abstract class AbstractInputValidator
 
     private array $validData = [];
 
-    public function __construct(InputFilter $inputFilter, array $config)
+    public function __construct(array $config)
     {
-        $this->inputFilter = $inputFilter;
+        $this->inputFilter = new InputFilter();
         $this->defaultLanguageIndex = $config['defaultLanguageIndex'] ?? 1;
         $this->systemLanguageIndexes = array_column($config['languages'], 'index');
 

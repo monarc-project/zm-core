@@ -107,7 +107,11 @@ abstract class AbstractInputFormatter
                     $paramValues['operator'] = $paramValues['convert']['to']['operator'] ?? $paramValues['operator'];
                 }
                 if (isset($paramValues['type'])) {
-                    settype($value, $paramValues['type']);
+                    if ($paramValues['type'] === 'boolean') {
+                        $value = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+                    } else {
+                        settype($value, $paramValues['type']);
+                    }
                 }
                 if (isset($paramValues['inArray']) && !\in_array($value, $paramValues['inArray'], true)) {
                     throw new Exception(sprintf('Param "%s" is not allowed to have value "%s".', $field, $value), 412);

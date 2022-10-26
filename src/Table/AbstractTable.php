@@ -307,7 +307,7 @@ abstract class AbstractTable
 
         if ($params->hasFilter()) {
             foreach ($params->getFilter() as $field => $filterParams) {
-                if ($filterParams['isUsedInQuery']) {
+                if (!isset($filterParams['isUsedInQuery']) || $filterParams['isUsedInQuery'] === true) {
                     $this->applyFilter($queryBuilder, $tableAlias, $field, $filterParams);
                 }
             }
@@ -354,16 +354,18 @@ abstract class AbstractTable
             $field
         );
         $operator = $filterParams['operator'] ?? Comparison::EQ;
-        if (\is_array($filterParams['value'])) {
+        if (\is_array($filterParams['value']) && !\in_array($operator, [Comparison::IN, Comparison::NIN], true)) {
             $operator = Comparison::IN;
         }
-        $fieldValueName = strpos($field, '.') !== false ? explode('.', $field)[0] : $field;
+
+        /* Handle `is null` in the where clause. */
         if ($filterParams['value'] === null) {
-            $queryBuilder->andWhere($fieldValueName . ' IS NULL');
+            $queryBuilder->andWhere($queryBuilder->expr()->isNull($fieldNameWithAlias));
 
             return $this;
         }
 
+        $fieldValueName = strpos($field, '.') !== false ? explode('.', $field)[0] : $field;
         $whereCondition = $fieldNameWithAlias . ' ' . $operator . ' :' . $fieldValueName;
         if (\is_array($filterParams['value'])
             && \in_array($operator, [Comparison::IN, Comparison::NIN], true)

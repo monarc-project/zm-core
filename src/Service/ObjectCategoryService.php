@@ -100,7 +100,13 @@ class ObjectCategoryService
         $this->prepareCategoryFilter($formattedInputParams);
         $includeChildren = empty($formattedInputParams->getFilterFor('parentId')['value'])
             || empty($formattedInputParams->getFilterFor('lock')['value']);
-        $includeParents = empty($formattedInputParams->getFilterFor('catid')['value']);
+
+        /*
+         * Fetch only root categories and populates their children in case if no filter by parentId or categoryId.
+         */
+        if ($includeChildren && empty($formattedInputParams->getFilterFor('catid')['value'])) {
+            $formattedInputParams->setFilterValueFor('parent', null);
+        }
 
         $model = null;
         if (!empty($formattedInputParams->getFilterFor('model'))) {
@@ -113,24 +119,14 @@ class ObjectCategoryService
         /** @var ObjectCategory[] $objectCategories */
         $objectCategories = $this->objectCategoryTable->findByParams($formattedInputParams);
         foreach ($objectCategories as $objectCategory) {
-            $categoriesData[$objectCategory->getId()] = $this->getPreparedObjectCategoryData(
+            $categoriesData[] = $this->getPreparedObjectCategoryData(
                 $objectCategory,
                 $includeChildren,
                 $model
             );
-            if ($includeParents
-                && $objectCategory->getParent() !== null
-                && !isset($categoriesData[$objectCategory->getParent()->getId()])
-            ) {
-                $categoriesData[$objectCategory->getParent()->getId()] = $this->getPreparedObjectCategoryData(
-                    $objectCategory->getParent(),
-                    false,
-                    $model
-                );
-            }
         }
 
-        return array_values($categoriesData);
+        return $categoriesData;
     }
 
     public function getCount(): int
@@ -202,15 +198,52 @@ class ObjectCategoryService
     {
         /** @var ObjectCategory $objectCategory */
         $objectCategory = $this->objectCategoryTable->findById($id);
+
+        $this->objectCategoryTable->beginTransaction();
+
+        /* Remove all the relations with ANRs and adjust the overall positions. */
+        $anrsWhereTheCategoryIsRoot = [];
+        foreach ($objectCategory->getAnrObjectCategories() as $anrObjectCategory) {
+            $this->shiftPositionsForRemovingEntity($anrObjectCategory, $this->anrObjectCategoryTable);
+            $maxPosition = 1;
+            foreach ($anrObjectCategory->getAnr()->getAnrObjectCategories() as $anrBasedObjectCategory) {
+                if ($anrBasedObjectCategory->getId() !== $anrObjectCategory->getId()) {
+                    $maxPosition = $anrBasedObjectCategory->getPosition();
+                }
+            }
+            $anrsWhereTheCategoryIsRoot[] = [
+                'anr' => $anrObjectCategory->getAnr(),
+                'maxPosition' => $maxPosition,
+            ];
+            $this->anrObjectCategoryTable->remove($anrObjectCategory, true);
+        }
+
         /* Set the removing category's parent for all its children. */
         foreach ($objectCategory->getChildren() as $childCategory) {
             $childCategory
                 ->setParent($objectCategory->getParent())
                 ->setUpdater($this->connectedUser->getEmail());
+
+            /* If the removing category is root, then all its direct children become root. */
+            if ($objectCategory->isCategoryRoot()) {
+                $childCategory->setRoot(null);
+                foreach ($anrsWhereTheCategoryIsRoot as $anrWhereTheCategoryIsRoot) {
+                    $anrObjectCategory = (new AnrObjectCategory())
+                        ->setCategory($childCategory)
+                        ->setAnr($anrWhereTheCategoryIsRoot['anr'])
+                        ->setPosition(++$anrWhereTheCategoryIsRoot['maxPosition'])
+                        ->setCreator($this->connectedUser->getEmail());
+
+                    $this->anrObjectCategoryTable->save($anrObjectCategory, false);
+                }
+            }
+
             $this->objectCategoryTable->save($childCategory, false);
         }
 
         $this->objectCategoryTable->remove($objectCategory);
+
+        $this->objectCategoryTable->commit();
     }
 
     private function prepareCategoryFilter(FormattedInputParams $formattedInputParams): void
@@ -219,9 +252,10 @@ class ObjectCategoryService
         $parentIdFilter = $formattedInputParams->getFilterFor('parentId');
         $categoryIdFilter = $formattedInputParams->getFilterFor('catid');
 
+        $isParentIdFilterEmpty = empty($parentIdFilter['value']);
         if (!empty($categoryIdFilter['value'])) {
             $excludeCategoriesIds = [$categoryIdFilter['value']];
-            if (!empty($parentIdFilter['value'])) {
+            if (!$isParentIdFilterEmpty) {
                 $excludeCategoriesIds[] = $parentIdFilter['value'];
                 $formattedInputParams->setFilterValueFor('parent', $parentIdFilter['value']);
             }
@@ -229,9 +263,9 @@ class ObjectCategoryService
                 'value' => $excludeCategoriesIds,
                 'operator' => Comparison::NIN,
             ]);
-        }
-
-        if (!empty($lockFilter['value']) || empty($parentIdFilter['value'])) {
+        } elseif (!$isParentIdFilterEmpty) {
+            $formattedInputParams->setFilterValueFor('parent', $parentIdFilter['value']);
+        } elseif (empty($lockFilter['value'])) {
             $formattedInputParams->setFilterValueFor('parent', null);
         }
     }
@@ -269,7 +303,7 @@ class ObjectCategoryService
 
         if ($includeChildren) {
             foreach ($objectCategory->getChildren() as $childCategory) {
-                $result['child'] = $this->getPreparedObjectCategoryData($childCategory, true, $model);
+                $result['child'][] = $this->getPreparedObjectCategoryData($childCategory, true, $model);
             }
         }
 
@@ -315,6 +349,7 @@ class ObjectCategoryService
                         ->setAnr($anr)
                         ->setCategory($objectCategory)
                         ->setCreator($this->connectedUser->getEmail());
+                    /* The category supposed to positioned at the end. */
                     $this->updatePositions($anrObjectCategory, $this->anrObjectCategoryTable);
 
                     $this->anrObjectCategoryTable->save($anrObjectCategory, false);

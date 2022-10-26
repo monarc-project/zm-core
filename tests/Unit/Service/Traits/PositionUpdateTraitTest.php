@@ -101,7 +101,7 @@ class PositionUpdateTraitTest extends TestCase
     /**
      * @covers PositionUpdateTrait::updatePositions
      */
-    public function testImplicitPositionEndUpdateForExistedEntity(): void
+    public function testImplicitPositionEndUpdateForExistedEntityWithForceUpdateParam(): void
     {
         $entity = $this->getTestClassOfPositionedEntity(100);
         /** @var AbstractTable $table */
@@ -111,7 +111,8 @@ class PositionUpdateTraitTest extends TestCase
         $positionUpdateTrait = $this->getObjectForTrait(PositionUpdateTrait::class);
 
         $positionUpdateTrait->updatePositions($entity, $table, [
-            'implicitPosition' => PositionUpdatableServiceInterface::IMPLICIT_POSITION_END
+            'implicitPosition' => PositionUpdatableServiceInterface::IMPLICIT_POSITION_END,
+            'forcePositionUpdate' => true,
         ]);
 
         $incrementPositionParams = $table->getIncrementPositionParams();
@@ -127,6 +128,28 @@ class PositionUpdateTraitTest extends TestCase
             ]
         ], $incrementPositionParams);
         static::assertEquals(7, $entity->getPosition());
+    }
+
+    /**
+     * @covers PositionUpdateTrait::updatePositions
+     */
+    public function testImplicitPositionEndUpdateForExistedEntityWithoutForceUpdateParam(): void
+    {
+        $entity = $this->getTestClassOfPositionedEntity(100);
+        /** @var AbstractTable $table */
+        $table = $this->getTestClassOfPositionUpdatableTable(7, $entity, false);
+
+        /** @var PositionUpdateTrait $positionUpdateTrait */
+        $positionUpdateTrait = $this->getObjectForTrait(PositionUpdateTrait::class);
+
+        $positionUpdateTrait->updatePositions($entity, $table, [
+            'implicitPosition' => PositionUpdatableServiceInterface::IMPLICIT_POSITION_END,
+        ]);
+
+        $incrementPositionParams = $table->getIncrementPositionParams();
+
+        static::assertCount(0, $incrementPositionParams);
+        static::assertEquals(100, $entity->getPosition());
     }
 
     /**
@@ -163,7 +186,7 @@ class PositionUpdateTraitTest extends TestCase
     /**
      * @covers PositionUpdateTrait::updatePositions
      */
-    public function testImplicitPositionStartForExistingEntity(): void
+    public function testImplicitPositionStartForExistingEntityWithForceUpdateParam(): void
     {
         $entity = $this->getTestClassOfPositionedEntity(777);
         /** @var AbstractTable $table */
@@ -173,7 +196,8 @@ class PositionUpdateTraitTest extends TestCase
         $positionUpdateTrait = $this->getObjectForTrait(PositionUpdateTrait::class);
 
         $positionUpdateTrait->updatePositions($entity, $table, [
-            'implicitPosition' => PositionUpdatableServiceInterface::IMPLICIT_POSITION_START
+            'implicitPosition' => PositionUpdatableServiceInterface::IMPLICIT_POSITION_START,
+            'forcePositionUpdate' => true,
         ]);
 
         $incrementPositionParams = $table->getIncrementPositionParams();
@@ -318,7 +342,7 @@ class PositionUpdateTraitTest extends TestCase
         {
             private int $expectedMaxPos;
             private bool $isNewEntity;
-            private array $incrementPositionParams;
+            private array $incrementPositionParams = [];
             private ?PositionedEntityInterface $previousEntity;
 
             public function __construct(

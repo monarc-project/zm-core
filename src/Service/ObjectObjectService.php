@@ -89,7 +89,7 @@ class ObjectObjectService
             ->setChild($childObject)
             ->setCreator($this->connectedUser->getEmail());
 
-        $this->updatePositions($objectObject, $this->objectObjectTable);
+        $this->updatePositions($objectObject, $this->objectObjectTable, $data);
 
         $this->objectObjectTable->save($objectObject);
 
@@ -106,7 +106,15 @@ class ObjectObjectService
         /** @var ObjectObject $objectObject */
         $objectObject = $this->objectObjectTable->findById($id);
 
-        if ($data['move'] === static::MOVE_COMPOSITION_POSITION_UP && $objectObject->getPosition() === 1) {
+        /* Validate if the position is within the bounds of shift. */
+        if (($data['move'] === static::MOVE_COMPOSITION_POSITION_UP
+                && $objectObject->getPosition() <= 1
+            ) || ($data['move'] === static::MOVE_COMPOSITION_POSITION_DOWN
+                && $objectObject->getPosition() >= $this->objectObjectTable->findMaxPosition(
+                    $objectObject->getImplicitPositionRelationsValues()
+                )
+            )
+        ) {
             return;
         }
 
@@ -117,7 +125,10 @@ class ObjectObjectService
             $objectObject->getParent(),
             $positionToBeSet
         );
-        $this->objectObjectTable->save($previousObjectCompositionLink->setPosition($objectObject->getPosition()));
+        /* Some positions are not aligned in the DB, that's why we may have empty result. */
+        if ($previousObjectCompositionLink !== null) {
+            $this->objectObjectTable->save($previousObjectCompositionLink->setPosition($objectObject->getPosition()));
+        }
         $this->objectObjectTable->save($objectObject->setPosition($positionToBeSet));
     }
 

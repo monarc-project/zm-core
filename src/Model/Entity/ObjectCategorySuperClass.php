@@ -188,6 +188,11 @@ class ObjectCategorySuperClass implements PositionedEntityInterface, TreeStructu
         return $this->children;
     }
 
+    public function hasChildren(): bool
+    {
+        return !$this->children->isEmpty();
+    }
+
     /**
      * @return int[]
      */
@@ -209,6 +214,9 @@ class ObjectCategorySuperClass implements PositionedEntityInterface, TreeStructu
         return $this->root;
     }
 
+    /**
+     * @param ObjectCategorySuperClass|null $root
+     */
     public function setRoot(?TreeStructuredEntityInterface $root): self
     {
         $this->root = $root;
@@ -279,7 +287,7 @@ class ObjectCategorySuperClass implements PositionedEntityInterface, TreeStructu
     public function removeAnrLink(AnrSuperClass $anr): self
     {
         if ($this->anrs->contains($anr)) {
-            $this->anrs->remove($anr);
+            $this->anrs->removeElement($anr);
             $anr->removeObjectCategory($this);
         }
 

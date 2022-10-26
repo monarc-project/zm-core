@@ -213,7 +213,7 @@ class AssetSuperClass
     public function removeAmv(AmvSuperClass $amv): self
     {
         if ($this->amvs->contains($amv)) {
-            $this->amvs->remove($amv);
+            $this->amvs->removeElement($amv);
         }
 
         return $this;
@@ -242,7 +242,7 @@ class AssetSuperClass
     public function removeObject(ObjectSuperClass $object): self
     {
         if ($this->objects->contains($object)) {
-            $this->objects->remove($object);
+            $this->objects->removeElement($object);
         }
 
         return $this;

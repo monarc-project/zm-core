@@ -261,10 +261,17 @@ class ModelService
 
     private function prepareModelDataResult(Model $model): array
     {
+        $anr = $model->getAnr();
+
         return [
             'id' => $model->getId(),
             'anr' => [
-                'id' => $model->getAnr()->getId(),
+                'id' => $anr->getId(),
+                'seuil1' => $anr->getSeuil1(),
+                'seuil2' => $anr->getSeuil2(),
+                'seuilRolf1' => $anr->getSeuilRolf1(),
+                'seuilRolf2' => $anr->getSeuilRolf2(),
+                'seuilTraitement' => $anr->getSeuilTraitement(),
             ],
             'label1' => $model->getLabel(1),
             'label2' => $model->getLabel(2),
