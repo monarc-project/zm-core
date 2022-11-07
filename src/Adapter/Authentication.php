@@ -73,7 +73,6 @@ class Authentication extends AbstractAdapter
             if (password_verify($credential, $user->getPassword())) {
                 $this->setUser($user);
                 // if the user is using Two Factor Authentication
-                file_put_contents('php://stderr', print_r('Correct password', TRUE).PHP_EOL);
                 if ($user->isTwoFactorAuthEnabled()) {
                     // check if the 2FA token has been submitted
                     if (empty($token)) {
@@ -98,11 +97,20 @@ class Authentication extends AbstractAdapter
                         }
                     }
                 } else if ($this->configService->isTwoFactorAuthEnforced()) {
-                    file_put_contents('php://stderr', print_r('2FA enforced', TRUE).PHP_EOL);
                     if (empty($token)) {
                         // if two factor authentication is enforced and the user has not yet enabled it
                         return new Result(self::TWO_FA_AUTHENTICATION_TO_SET_UP, $this->getIdentity());
                     }
+                    $tokens = explode(":", $token); # verificationCode and otpSecret tokens
+                    // verify the submitted OTP token
+                    $tfa = new TwoFactorAuth('MONARC TwoFactorAuth');
+                    if ($tfa->verifyCode($tokens[0], $tokens[1])) {
+                        $user->setSecretKey($tokens[0]);
+                        $user->setTwoFactorAuthEnabled(true);
+                        $this->userTable->saveEntity($user);
+                        return new Result(Result::SUCCESS, $this->getIdentity());
+                    }
+
                 }
                 else {
                     return new Result(Result::SUCCESS, $this->getIdentity());
