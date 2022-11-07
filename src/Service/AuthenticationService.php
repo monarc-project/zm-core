@@ -59,20 +59,20 @@ class AuthenticationService
                 // authentication with second factor
                 $token = $data['otp'];
             } elseif (isset($data['recoveryCode'])) {
-                // authentication with revocery code
+                // authentication with 2FA revocery code
                 $token = $data['recoveryCode'];
             }
+
+
+            if (isset($data['verificationCode']) && isset($data['otpSecret'])) {
+                // activation of 2FA via login page (when user must activate 2FA on a 2FA enforced instance)
+                 $token = $data['otpSecret'].":".$data['verificationCode'];
+             }
 
             $res = $this->authenticationAdapter
                 ->setIdentity($data['login'])
                 ->setCredential($data['password'])
                 ->authenticate($token);
-
-            if (isset($data['verificationCode']) && isset($data['otpSecret'])) {
-               // activation of 2FA via login page (when user must activate 2FA on a 2FA enforced instance)
-                $token = $data['verificationCode'];
-                $user = $this->authenticationAdapter->getUser();
-            }
 
             if ($res->isValid() && $res->getCode() == 1) {
                 $user = $this->authenticationAdapter->getUser();
@@ -86,7 +86,6 @@ class AuthenticationService
 
                 return compact('token', 'user');
             }  elseif ($res->getCode() == 3) {
-                file_put_contents('php://stderr', print_r('2FAToBeConfigured', TRUE).PHP_EOL);
                 $user = $this->authenticationAdapter->getUser();
                 $token = "2FAToBeConfigured";
                 // Create a new secret and generate a QRCode
@@ -96,7 +95,6 @@ class AuthenticationService
                 }
                 $secret = $this->tfa->createSecret();
                 $qrcode = $this->tfa->getQRCodeImageAsDataUri($label, $secret);
-                file_put_contents('php://stderr', print_r($secret, TRUE).PHP_EOL);
 
                 return compact('token', 'user', 'secret', 'qrcode');
             }
