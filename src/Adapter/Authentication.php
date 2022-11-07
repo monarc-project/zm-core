@@ -110,8 +110,7 @@ class Authentication extends AbstractAdapter
                         $this->userTable->saveEntity($user);
                         return new Result(Result::SUCCESS, $this->getIdentity());
                     }
-                }
-                else {
+                } else {
                     return new Result(Result::SUCCESS, $this->getIdentity());
                 }
 
