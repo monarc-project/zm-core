@@ -220,6 +220,13 @@ class ObjectCategorySuperClass extends AbstractEntity
         return $this;
     }
 
+    public function resetObjects(): self
+    {
+        $this->objects = new ArrayCollection();
+
+        return $this;
+    }
+
     public function isCategoryRoot(): bool
     {
         return $this->root === null;

@@ -199,6 +199,13 @@ class ObjectSuperClass extends AbstractEntity
         ),
     );
 
+    public function __construct($obj = null)
+    {
+        $this->anrs = new ArrayCollection();
+
+        parent::__construct($obj);
+    }
+
     public function getUuid(): ?string
     {
         return $this->uuid;
@@ -242,6 +249,13 @@ class ObjectSuperClass extends AbstractEntity
     public function setAnr($anr): self
     {
         $this->anr = $anr;
+
+        return $this;
+    }
+
+    public function resetAnrs(): self
+    {
+        $this->anrs = new ArrayCollection();
 
         return $this;
     }
@@ -315,16 +329,17 @@ class ObjectSuperClass extends AbstractEntity
      */
     public function addAnr(AnrSuperClass $anr): self
     {
-        if ($this->anrs === null) {
-            $this->anrs = new ArrayCollection();
-        }
-
         if (!$this->anrs->contains($anr)) {
             $this->anrs->add($anr);
             $anr->addObject($this);
         }
 
         return $this;
+    }
+
+    public function isLinkedToAnr(AnrSuperClass $anr): bool
+    {
+        return $this->anrs->contains($anr);
     }
 
     public function setName(string $nameKey, string $nameValue): self
