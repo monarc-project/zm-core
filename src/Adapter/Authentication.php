@@ -96,7 +96,7 @@ class Authentication extends AbstractAdapter
                             }
                         }
                     }
-                } else if ($this->configService->isTwoFactorAuthEnforced()) {
+                } elseif ($this->configService->isTwoFactorAuthEnforced()) {
                     if (empty($token)) {
                         // if two factor authentication is enforced and the user has not yet enabled it
                         return new Result(self::TWO_FA_AUTHENTICATION_TO_SET_UP, $this->getIdentity());
@@ -110,7 +110,6 @@ class Authentication extends AbstractAdapter
                         $this->userTable->saveEntity($user);
                         return new Result(Result::SUCCESS, $this->getIdentity());
                     }
-
                 }
                 else {
                     return new Result(Result::SUCCESS, $this->getIdentity());
