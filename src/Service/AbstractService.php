@@ -26,6 +26,7 @@ use Doctrine\ORM\Query\QueryException;
  * Abstract Service
  *
  * Class AbstractService
+ *
  * @package Monarc\Core\Service
  */
 abstract class AbstractService extends AbstractServiceFactory
@@ -35,18 +36,21 @@ abstract class AbstractService extends AbstractServiceFactory
 
     /**
      * The service factory used in this service
+     *
      * @var AbstractServiceFactory|array|null
      */
     protected $serviceFactory;
 
     /**
      * The default table used in this service
+     *
      * @var AbstractEntityTable
      */
     protected $table;
 
     /**
      * The default entity used in this service
+     *
      * @var AbstractEntity
      */
     protected $entity;
@@ -55,19 +59,19 @@ abstract class AbstractService extends AbstractServiceFactory
 
     /**
      * The list of fields deleted during POST/PUT/PATCH
+     *
      * @var array
      */
     protected $forbiddenFields = [];
 
     /**
      * The list of fields corresponding to the entity's dependencies
+     *
      * @var array
      */
     protected $dependencies = [];
 
     /**
-     * Constructor
-     *
      * @param AbstractServiceFactory|array|null $serviceFactory The factory to use for this service, or an array or
      * values to set on the Service variables.
      */
@@ -85,6 +89,7 @@ abstract class AbstractService extends AbstractServiceFactory
     /**
      * Returns the ServiceFactory attached to this service. The factory generally has the same name as the class
      * appended with "Factory".
+     *
      * @see AbstractServiceFactory
      */
     protected function getServiceFactory()
@@ -96,8 +101,8 @@ abstract class AbstractService extends AbstractServiceFactory
      * Parses the filter value coming from the frontend and returns an array of columns to filter. Basically, this
      * method will construct an array where the keys are the columns, and the value of each key is the filter parameter.
      *
-     * @param string $filter The value to look for
-     * @param array $columns An array of columns in which the value is searched
+     * @param string $filter  The value to look for
+     * @param array  $columns An array of columns in which the value is searched
      *
      * @return array Key/pair array as per the description
      */
@@ -154,7 +159,7 @@ abstract class AbstractService extends AbstractServiceFactory
      * are ignored but kept for compatibility with getList calls. The order parameter is also ignored since it
      * will have no impact on the final count.
      *
-     * @param array|null $filter The array of columns => values which should be filtered (in a WHERE.. OR.. fashion)
+     * @param array|null $filter    The array of columns => values which should be filtered (in a WHERE.. OR.. fashion)
      * @param array|null $filterAnd The array of columns => values which should be filtered (in a WHERE.. AND.. fashion)
      *
      * @return int The number of elements retrieved from the query
@@ -173,10 +178,10 @@ abstract class AbstractService extends AbstractServiceFactory
      * Returns the list of elements based on the provided filters passed in parameters. Results are paginated (using the
      * $page and $limit combo), except when $limit is <= 0, in which case all results will be returned.
      *
-     * @param int $page The page number, starting at 1.
-     * @param int $limit The maximum number of elements retrieved, or null to retrieve everything
-     * @param array|null $order The order in which elements should be retrieved (['column' => 'ASC/DESC'])
-     * @param array|null $filter The array of columns => values which should be filtered (in a WHERE.. OR.. fashion)
+     * @param int        $page      The page number, starting at 1.
+     * @param int        $limit     The maximum number of elements retrieved, or null to retrieve everything
+     * @param array|null $order     The order in which elements should be retrieved (['column' => 'ASC/DESC'])
+     * @param array|null $filter    The array of columns => values which should be filtered (in a WHERE.. OR.. fashion)
      * @param array|null $filterAnd The array of columns => values which should be filtered (in a WHERE.. AND.. fashion)
      *
      * @return array An array of elements based on the provided search query
@@ -216,8 +221,8 @@ abstract class AbstractService extends AbstractServiceFactory
      * Creates a new entity of the type of this class, where the fields have the value of the $data array.
      *
      * @param array $data The object's data
-     * @param bool $last Whether or not this will be the last element of a batch. Setting this to false will suspend
-     *                   flushing to the database to increase performance during batch insertions.
+     * @param bool  $last Whether this will be the last element of a batch. Setting this to false will suspend
+     *                    flushing to the database to increase performance during batch insertions.
      *
      * @return object The created entity object
      */
@@ -225,7 +230,9 @@ abstract class AbstractService extends AbstractServiceFactory
     {
         $entity = $this->get('entity');
 
-        /** @var AbstractEntityTable $table */
+        /**
+        * @var AbstractEntityTable $table
+        */
         $table = $this->get('table');
 
         // $class is already an entity instance created in AbstractServiceModelEntity.

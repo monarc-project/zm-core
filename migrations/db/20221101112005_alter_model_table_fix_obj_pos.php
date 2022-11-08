@@ -45,5 +45,13 @@ class AlterModelTableFixObjPos extends AbstractMigration
             $expectedCompositionLinkPosition++;
             $previousParentObjectId = $compositionObjectsData['father_id'];
         }
+
+        $table = $this->table('anr_metadatas_on_instances');
+        $table->rename('instances_metadata')->update();
+
+        $this->execute('update translations set type = "instance-metadata" where type = "anr-metadatas-on-instances"');
+
+        // Fix nullable recovery_codes of users.
+        $this->execute('update users set recovery_codes = "' . serialize([]) . '" where recovery_codes IS NULL');
     }
 }

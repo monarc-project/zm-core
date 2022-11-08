@@ -43,7 +43,7 @@ class Model
     /**
      * @var Anr
      *
-     * @ORM\OneToOne(targetEntity="Anr")
+     * @ORM\OneToOne(targetEntity="Anr", cascade={"persist", "REMOVE"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="SET NULL")
      * })

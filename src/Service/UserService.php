@@ -46,6 +46,7 @@ class UserService
                 'status' => $user->getStatus(),
                 'language' => $user->getLanguage(),
                 'role' => $user->getRolesArray(),
+                'isTwoFactorAuthEnabled' => $user->isTwoFactorAuthEnabled(),
             ];
         }
 
@@ -70,6 +71,7 @@ class UserService
             'email' => $user->getEmail(),
             'language' => $user->getLanguage(),
             'role' => $user->getRolesArray(),
+            'isTwoFactorAuthEnabled' => $user->isTwoFactorAuthEnabled(),
         ];
     }
 

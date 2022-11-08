@@ -64,14 +64,15 @@ class PasswordService
 
         $subject = 'Restore password';
         $link = $this->configService->getHost() . '/#/passwordforgotten/' . htmlentities($token);
+        $nameFrom = $this->configService->getEmail()['name'];
         $message = <<<EMAIL_MESSAGE
 <p>Hello,</p>
 <p>This is an automatically generated e-mail, please do not reply.</p>
 <p>Thank you for requesting a new password, please confirm your request by clicking on the link below :<br />
     <a href="$link"><strong>$link</strong></a>
 </p>
-<p>In case you have not made request for a new password, we kindly ask you to ignore this e-mail</p>
-<p>Best regards,<br />Monarc Team</p>
+<p>If you have not asked for a new password, we ask you to ignore this email.</p>
+<p>Best regards,<br />$nameFrom</p>
 EMAIL_MESSAGE;
 
         $this->mailService->send($email, $subject, $message, $this->configService->getEmail());

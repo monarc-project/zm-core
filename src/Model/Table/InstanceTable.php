@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
  * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
@@ -13,16 +13,12 @@ use Doctrine\ORM\ORMException;
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\AbstractEntity;
 use Monarc\Core\Model\Entity\AnrSuperClass;
-use Monarc\Core\Model\Entity\Asset;
+use Monarc\Core\Model\Entity\AssetSuperClass;
 use Monarc\Core\Model\Entity\Instance;
 use Monarc\Core\Model\Entity\InstanceSuperClass;
 use Monarc\Core\Model\Entity\ObjectSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
-/**
- * Class InstanceTable
- * @package Monarc\Core\Model\Table
- */
 class InstanceTable extends AbstractEntityTable
 {
     public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
@@ -56,6 +52,27 @@ class InstanceTable extends AbstractEntityTable
             ->andWhere('o.uuid = :object_uuid')
             ->setParameter('anr', $anr)
             ->setParameter('object_uuid', $object->getUuid())
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return InstanceSuperClass[]
+     */
+    public function findGlobalBrothersByAnrAndInstance(AnrSuperClass $anr, InstanceSuperClass $instance): array
+    {
+        return $this->getRepository()
+            ->createQueryBuilder('i')
+            ->innerJoin('i.object', 'o')
+            ->where('i.anr = :anr')
+            ->andWhere('o.uuid = :object_uuid')
+            ->andWhere('o.anr = :anr')
+            ->andWhere('i.id != :id')
+            ->andWhere('o.scope = :scopeMode')
+            ->setParameter('anr', $anr)
+            ->setParameter('id', $instance->getId())
+            ->setParameter('object_uuid', $instance->getObject()->getUuid())
+            ->setParameter('scopeMode', ObjectSuperClass::SCOPE_GLOBAL)
             ->getQuery()
             ->getResult();
     }
@@ -139,28 +156,6 @@ class InstanceTable extends AbstractEntityTable
     }
 
     /**
-     * Build Where For Position Create
-     *
-     * @param $params
-     * @param $queryBuilder
-     * @param AbstractEntity $entity
-     * @param string $newOrOld
-     * @return mixed
-     */
-    protected function buildWhereForPositionCreate($params, $queryBuilder, AbstractEntity $entity, $newOrOld = 'new')
-    {
-        $queryBuilder = parent::buildWhereForPositionCreate($params, $queryBuilder, $entity, $newOrOld);
-        $anr = $entity->get('anr');
-        if ($anr) {
-            $queryBuilder = $queryBuilder->andWhere('t.anr = :anr')
-                ->setParameter(':anr', is_object($anr) ? $anr->get('id') : $anr);
-        } else {
-            $queryBuilder = $queryBuilder->andWhere('t.anr IS NULL');
-        }
-        return $queryBuilder;
-    }
-
-    /**
      * Manage Delete Position
      *
      * @param AbstractEntity $entity
@@ -200,39 +195,6 @@ class InstanceTable extends AbstractEntityTable
     }
 
     /**
-     * Count Position Max
-     *
-     * @param AbstractEntity $entity
-     * @param array $params
-     * @return mixed
-     */
-    protected function countPositionMax(AbstractEntity $entity, $params = array())
-    {
-        $return = $this->getRepository()->createQueryBuilder('t')
-            ->select('COUNT(t.id)');
-        if (!empty($params['field'])) {
-            if (isset($params['newField'][$params['field']])) {
-                if (is_null($params['newField'][$params['field']])) {
-                    $return = $return->where('t.' . $params['field'] . ' IS NULL');
-                } else {
-                    $return = $return->where('t.' . $params['field'] . ' = :' . $params['field'])
-                        ->setParameter(':' . $params['field'], $params['newField'][$params['field']]);
-                }
-            }
-        }
-        $anr = $entity->get('anr');
-        if ($anr) {
-            $return = $return->andWhere('t.anr = :anr')
-                ->setParameter(':anr', is_object($anr) ? $anr->get('id') : $anr);
-        } else {
-            $return = $return->andWhere('t.anr IS NULL');
-        }
-
-        $id = $entity->get('id');
-        return $return->getQuery()->getSingleScalarResult() + ($id ? 0 : 1);
-    }
-
-    /**
      * @return InstanceSuperClass[]
      */
     public function findByAnrId(int $anrId)
@@ -249,7 +211,7 @@ class InstanceTable extends AbstractEntityTable
     /**
      * @return InstanceSuperClass[]
      */
-    public function findByAsset(Asset $asset): array
+    public function findByAsset(AssetSuperClass $asset): array
     {
         return $this->getRepository()
             ->createQueryBuilder('i')

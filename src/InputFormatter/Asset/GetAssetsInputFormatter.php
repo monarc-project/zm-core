@@ -8,7 +8,7 @@
 namespace Monarc\Core\InputFormatter\Asset;
 
 use Monarc\Core\InputFormatter\AbstractInputFormatter;
-use Monarc\Core\Model\Entity\Model;
+use Monarc\Core\Model\Entity\AssetSuperClass;
 
 class GetAssetsInputFormatter extends AbstractInputFormatter
 {
@@ -26,7 +26,7 @@ class GetAssetsInputFormatter extends AbstractInputFormatter
 
     protected static array $allowedFilterFields = [
         'status' => [
-            'default' => Model::STATUS_ACTIVE,
+            'default' => AssetSuperClass::STATUS_ACTIVE,
             'type' => 'int',
         ],
         'type' => [

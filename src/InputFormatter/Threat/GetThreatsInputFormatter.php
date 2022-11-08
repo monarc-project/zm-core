@@ -8,7 +8,7 @@
 namespace Monarc\Core\InputFormatter\Threat;
 
 use Monarc\Core\InputFormatter\AbstractInputFormatter;
-use Monarc\Core\Model\Entity\Model;
+use Monarc\Core\Model\Entity\ThreatSuperClass;
 
 class GetThreatsInputFormatter extends AbstractInputFormatter
 {
@@ -26,7 +26,7 @@ class GetThreatsInputFormatter extends AbstractInputFormatter
 
     protected static array $allowedFilterFields = [
         'status' => [
-            'default' => Model::STATUS_ACTIVE,
+            'default' => ThreatSuperClass::STATUS_ACTIVE,
             'type' => 'int',
         ],
     ];

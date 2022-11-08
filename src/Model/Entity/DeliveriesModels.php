@@ -105,9 +105,9 @@ class DeliveriesModels extends AbstractEntity
     protected $editable;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Anr
+     * @var AnrSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Anr", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Anr", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true)
      * })
@@ -132,7 +132,7 @@ class DeliveriesModels extends AbstractEntity
         }
         if (!$this->inputFilter) {
             $dirFile = './data/';
-            $appconfdir = getenv('APP_CONF_DIR') ? getenv('APP_CONF_DIR') : '';
+            $appconfdir = getenv('APP_CONF_DIR') ?: '';
             if( ! empty($appconfdir) ){
                 $dirFile = $appconfdir . '/data/';
             }

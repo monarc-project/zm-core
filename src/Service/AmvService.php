@@ -986,7 +986,7 @@ class AmvService implements PositionUpdatableServiceInterface
         ];
     }
 
-    private function createInstanceRiskForInstances(Entity\Asset $asset): void
+    private function createInstanceRiskForInstances(Entity\AssetSuperClass $asset): void
     {
         $instances = $this->instanceTable->findByAsset($asset);
         foreach ($instances as $instance) {

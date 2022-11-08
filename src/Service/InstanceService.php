@@ -58,6 +58,7 @@ class InstanceService extends AbstractService
     protected $translateService;
     protected $configService;
     protected $operationalRiskScalesExportService;
+    protected $instanceMetadataExportService;
 
     // Export (Services)
     protected $objectExportService;
@@ -191,6 +192,9 @@ class InstanceService extends AbstractService
         $instance->setCreator($this->getConnectedUser()->getEmail());
 
         $instanceTable->saveEntity($instance);
+
+        //instanceMetadata, fetch value for global instance
+        $this->updateInstanceMetadataFromBrothers($instance);
 
         //instances risk
         /** @var InstanceRiskService $instanceRiskService */
@@ -326,7 +330,10 @@ class InstanceService extends AbstractService
                     }
                     /** @var Instance $result */
                     $result = $queryBuilder->andWhere('t.position = :pos')
-                        ->setParameter(':pos', $data['position'] + ($data['position'] < $instance->get('position') ? -1 : 0))
+                        ->setParameter(
+                            ':pos',
+                            $data['position'] + ($data['position'] < $instance->get('position') ? -1 : 0)
+                        )
                         ->setMaxResults(1)
                         ->getQuery()
                         ->getOneOrNullResult();
@@ -450,7 +457,11 @@ class InstanceService extends AbstractService
                     }
                     /** @var Instance $result */
                     $result = $queryBuilder->andWhere('t.position = :pos')
-                        ->setParameter(':pos', $data['position'] + ($data['position'] < $instance->getPosition() || $data['parent'] != $instance->getParent() ? -1 : 0))
+                        ->setParameter(
+                            ':pos',
+                            $data['position'] + ($data['position'] < $instance->getPosition() || $data['parent']
+                            != $instance->getParent() ? -1 : 0)
+                        )
                         ->setMaxResults(1)
                         ->getQuery()
                         ->getOneOrNullResult();
@@ -651,7 +662,6 @@ class InstanceService extends AbstractService
         $children = $table->getEntityByFields(['parent' => $instance->getId()]);
 
         foreach ($children as $child) {
-
             if ($child->getInheritedConfidentiality()) {
                 $child->c = $instance->getConfidentiality();
             }
@@ -754,7 +764,8 @@ class InstanceService extends AbstractService
 
                 /** @var InstanceConsequenceService $instanceConsequenceService */
                 $instanceConsequenceService = $this->get('instanceConsequenceService');
-                $instanceConsequenceService->patchConsequence($consequence['id'], $dataConsequences, $patchInstance, $fromInstance);
+                $instanceConsequenceService
+                    ->patchConsequence($consequence['id'], $dataConsequences, $patchInstance, $fromInstance);
 
                 $i++;
             }
@@ -937,7 +948,7 @@ class InstanceService extends AbstractService
                     'instance' => $instance,
                     'object' => $object,
                     'scaleImpactType' => $scalesImpactType,
-                    'isHidden' => $scalesImpactType->isH,
+                    'isHidden' => $scalesImpactType->isHidden(),
                 ];
                 $class = $this->get('instanceConsequenceEntity');
                 /** @var InstanceConsequenceSuperClass $instanceConsequenceEntity */
@@ -1060,6 +1071,12 @@ class InstanceService extends AbstractService
             ),
         ];
 
+        $instanceMetadataExportService = $this->get('instanceMetadataExportService');
+        $return['instanceMetadata'] = $instanceMetadataExportService->generateExportArray($instance->getAnr());
+        if ($withEval) {
+            $return['instanceMetadata'] = $this->generateExportArrayOfInstanceMetadata($instance);
+        }
+
         // Scales
         if ($withEval && $withScale) {
             $return['scales'] = $this->generateExportArrayOfScales($instance->getAnr());
@@ -1163,13 +1180,8 @@ class InstanceService extends AbstractService
             if (!empty($return['risks'][$instanceRisk->get('id')]['amv'])
                 && empty($return['amvs'][$instanceRisk->getAmv()->getUuid()])
             ) {
-                [
-                    $amv,
-                    $threats,
-                    $vulns,
-                    $themes,
-                    $measures] = $this->get('amvService')->generateExportArray(
-                    $instanceRisk->get('amv'),
+                [$amv, $threats, $vulns, $themes, $measures] = $this->get('amvService')->generateExportArray(
+                    $instanceRisk->getAmv(),
                     $instanceRisk->getAnr() !== null ? $instanceRisk->getAnr()->getId() : null,
                     $withEval
                 );
@@ -1191,7 +1203,9 @@ class InstanceService extends AbstractService
             $threat = $instanceRisk->getThreat();
             if (!empty($threat)) {
                 if (empty($return['threats'][$threat->getUuid()])) {
-                    $return['threats'][$instanceRisk->getThreat()->getUuid()] = $instanceRisk->get('threat')->getJsonArray($treatsObj);
+                    // TODO: we can't do getJsonArray anymore.
+                    $return['threats'][$instanceRisk->getThreat()->getUuid()] =
+                        $instanceRisk->get('threat')->getJsonArray($treatsObj);
                 }
                 $return['risks'][$instanceRisk->get('id')]['threat'] = $instanceRisk->getThreat()->getUuid();
             } else {
@@ -1200,10 +1214,13 @@ class InstanceService extends AbstractService
 
             $vulnerability = $instanceRisk->get('vulnerability');
             if (!empty($vulnerability)) {
+                // TODO: we can't do getJsonArray anymore.
                 if (empty($return['vuls'][$instanceRisk->getVulnerability()->getUuid()])) {
-                    $return['vuls'][$instanceRisk->getVulnerability()->getUuid()] = $instanceRisk->get('vulnerability')->getJsonArray($vulsObj);
+                    $return['vuls'][$instanceRisk->getVulnerability()->getUuid()] =
+                        $instanceRisk->get('vulnerability')->getJsonArray($vulsObj);
                 }
-                $return['risks'][$instanceRisk->get('id')]['vulnerability'] = $instanceRisk->getVulnerability()->getUuid();
+                $return['risks'][$instanceRisk->get('id')]['vulnerability'] =
+                    $instanceRisk->getVulnerability()->getUuid();
             } else {
                 $return['risks'][$instanceRisk->get('id')]['vulnerability'] = null;
             }
@@ -1255,8 +1272,10 @@ class InstanceService extends AbstractService
                 ->setParameter(':i', $instance->get('id'))->getQuery()->getResult();
             foreach ($instanceConseqResults as $ic) {
                 $return['consequences'][$ic->get('id')] = $ic->getJsonArray($instanceConseqArray);
-                $return['consequences'][$ic->get('id')]['scaleImpactType'] = $ic->get('scaleImpactType')->getJsonArray($scaleTypeArray);
-                $return['consequences'][$ic->get('id')]['scaleImpactType']['scale'] = $ic->get('scaleImpactType')->get('scale')->get('id');
+                $return['consequences'][$ic->get('id')]['scaleImpactType'] =
+                    $ic->get('scaleImpactType')->getJsonArray($scaleTypeArray);
+                $return['consequences'][$ic->get('id')]['scaleImpactType']['scale'] =
+                    $ic->get('scaleImpactType')->get('scale')->get('id');
             }
         }
 
@@ -1265,11 +1284,19 @@ class InstanceService extends AbstractService
             ->createQueryBuilder('t')
             ->where('t.parent = :p')
             ->setParameter(':p', $instance->get('id'))
-            ->orderBy('t.position','ASC')->getQuery()->getResult();
+            ->orderBy('t.position', 'ASC')->getQuery()->getResult();
         $return['children'] = [];
         $f = '';
         foreach ($childrenInstances as $i) {
-            $return['children'][$i->get('id')] = $this->generateExportArray($i->get('id'), $f, $withEval, false, $withControls, $withRecommendations, $withUnlinkedRecommendations);
+            $return['children'][$i->get('id')] = $this->generateExportArray(
+                $i->getId(),
+                $f,
+                $withEval,
+                false,
+                $withControls,
+                $withRecommendations,
+                $withUnlinkedRecommendations
+            );
         }
 
         return $return;
@@ -1376,6 +1403,15 @@ class InstanceService extends AbstractService
         }
 
         return $result;
+    }
+
+    protected function generateExportArrayOfInstanceMetadata(InstanceSuperClass $instance): array
+    {
+        return [];
+    }
+
+    protected function updateInstanceMetadataFromBrothers(InstanceSuperClass $instance): void
+    {
     }
 
     protected function generateExportArrayOfRecommendations(

@@ -200,48 +200,51 @@ class ObjectCategoryService
         $objectCategory = $this->objectCategoryTable->findById($id);
 
         $this->objectCategoryTable->beginTransaction();
-
-        /* Remove all the relations with ANRs and adjust the overall positions. */
-        $anrsWhereTheCategoryIsRoot = [];
-        foreach ($objectCategory->getAnrObjectCategories() as $anrObjectCategory) {
-            $this->shiftPositionsForRemovingEntity($anrObjectCategory, $this->anrObjectCategoryTable);
-            $maxPosition = 1;
-            foreach ($anrObjectCategory->getAnr()->getAnrObjectCategories() as $anrBasedObjectCategory) {
-                if ($anrBasedObjectCategory->getId() !== $anrObjectCategory->getId()) {
-                    $maxPosition = $anrBasedObjectCategory->getPosition();
+        try {
+            /* Remove all the relations with ANRs and adjust the overall positions. */
+            $anrsWhereTheCategoryIsRoot = [];
+            foreach ($objectCategory->getAnrObjectCategories() as $anrObjectCategory) {
+                $this->shiftPositionsForRemovingEntity($anrObjectCategory, $this->anrObjectCategoryTable);
+                $maxPosition = 1;
+                foreach ($anrObjectCategory->getAnr()->getAnrObjectCategories() as $anrBasedObjectCategory) {
+                    if ($anrBasedObjectCategory->getId() !== $anrObjectCategory->getId()) {
+                        $maxPosition = $anrBasedObjectCategory->getPosition();
+                    }
                 }
-            }
-            $anrsWhereTheCategoryIsRoot[] = [
-                'anr' => $anrObjectCategory->getAnr(),
-                'maxPosition' => $maxPosition,
-            ];
-            $this->anrObjectCategoryTable->remove($anrObjectCategory, true);
-        }
-
-        /* Set the removing category's parent for all its children. */
-        foreach ($objectCategory->getChildren() as $childCategory) {
-            $childCategory
-                ->setParent($objectCategory->getParent())
-                ->setUpdater($this->connectedUser->getEmail());
-
-            /* If the removing category is root, then all its direct children become root. */
-            if ($objectCategory->isCategoryRoot()) {
-                $childCategory->setRoot(null);
-                foreach ($anrsWhereTheCategoryIsRoot as $anrWhereTheCategoryIsRoot) {
-                    $anrObjectCategory = (new AnrObjectCategory())
-                        ->setCategory($childCategory)
-                        ->setAnr($anrWhereTheCategoryIsRoot['anr'])
-                        ->setPosition(++$anrWhereTheCategoryIsRoot['maxPosition'])
-                        ->setCreator($this->connectedUser->getEmail());
-
-                    $this->anrObjectCategoryTable->save($anrObjectCategory, false);
-                }
+                $anrsWhereTheCategoryIsRoot[] = [
+                    'anr' => $anrObjectCategory->getAnr(),
+                    'maxPosition' => $maxPosition,
+                ];
+                $this->anrObjectCategoryTable->remove($anrObjectCategory, true);
             }
 
-            $this->objectCategoryTable->save($childCategory, false);
-        }
+            /* Set the removing category's parent for all its children. */
+            foreach ($objectCategory->getChildren() as $childCategory) {
+                $childCategory
+                    ->setParent($objectCategory->getParent())
+                    ->setUpdater($this->connectedUser->getEmail());
 
-        $this->objectCategoryTable->remove($objectCategory);
+                /* If the removing category is root, then all its direct children become root. */
+                if ($objectCategory->isCategoryRoot()) {
+                    $childCategory->setRoot(null);
+                    foreach ($anrsWhereTheCategoryIsRoot as $anrWhereTheCategoryIsRoot) {
+                        $anrObjectCategory = (new AnrObjectCategory())
+                            ->setCategory($childCategory)
+                            ->setAnr($anrWhereTheCategoryIsRoot['anr'])
+                            ->setPosition(++$anrWhereTheCategoryIsRoot['maxPosition'])
+                            ->setCreator($this->connectedUser->getEmail());
+
+                        $this->anrObjectCategoryTable->save($anrObjectCategory, false);
+                    }
+                }
+
+                $this->objectCategoryTable->save($childCategory, false);
+            }
+
+            $this->objectCategoryTable->remove($objectCategory);
+        } catch (\Throwable $e) {
+            $this->objectCategoryTable->rollback();
+        }
 
         $this->objectCategoryTable->commit();
     }

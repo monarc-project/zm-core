@@ -9,7 +9,7 @@ namespace Monarc\Core\InputFormatter\Amv;
 
 use Doctrine\ORM\Query\Expr\Comparison;
 use Monarc\Core\InputFormatter\AbstractInputFormatter;
-use Monarc\Core\Model\Entity\Model;
+use Monarc\Core\Model\Entity\AmvSuperClass;
 
 class GetAmvsInputFormatter extends AbstractInputFormatter
 {
@@ -53,7 +53,7 @@ class GetAmvsInputFormatter extends AbstractInputFormatter
             'operator' => Comparison::NEQ,
         ],
         'status' => [
-            'default' => Model::STATUS_ACTIVE,
+            'default' => AmvSuperClass::STATUS_ACTIVE,
             'type' => 'int',
         ],
     ];

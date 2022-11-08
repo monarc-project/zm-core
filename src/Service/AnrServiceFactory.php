@@ -40,5 +40,7 @@ class AnrServiceFactory extends AbstractServiceFactory
         'operationalRiskScaleService' => OperationalRiskScaleService::class,
         'configService' => ConfigService::class,
         'operationalRiskScalesExportService' => OperationalRiskScalesExportService::class,
+        'instanceMetadataExportService' => InstanceMetadataExportService::class,
+        'soaScaleCommentExportService' => SoaScaleCommentExportService::class,
     ];
 }

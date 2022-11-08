@@ -63,6 +63,8 @@ class AnrService extends AbstractService
     protected $recordService;
     protected $configService;
     protected $operationalRiskScalesExportService;
+    protected $instanceMetadataExportService;
+    protected $soaScaleCommentExportService;
 
     /**
      * TODO: drop the $last param when abstract inheritance is removed. Would be good to always return an abject.
@@ -127,6 +129,7 @@ class AnrService extends AbstractService
 
         //duplicate object categories, instances, instances consequences, instances risks, instances risks op
         $clones = [];
+        $newInstancesParentLink = [];
         $array = [
             'scale',
             'scaleImpactType',
@@ -143,6 +146,7 @@ class AnrService extends AbstractService
         foreach ($array as $value) {
             $table = $this->get($value . 'Table');
             $order = [];
+            $entities = null;
             switch ($value) {
                 case 'instance':
                     $order['level'] = 'ASC';
@@ -161,16 +165,8 @@ class AnrService extends AbstractService
 
                 switch ($value) {
                     case 'instance':
-                        if (!empty($entity->root->id) && !empty($clones['instance'][$entity->root->id])) {
-                            $newEntity->set('root', $clones['instance'][$entity->root->id]);
-                        } else {
-                            $newEntity->set('root', null);
-                        }
-                        if (!empty($entity->parent->id) && !empty($clones['instance'][$entity->parent->id])) {
-                            $newEntity->set('parent', $clones['instance'][$entity->parent->id]);
-                        } else {
-                            $newEntity->set('parent', null);
-                        }
+                        $newEntity->set('root', null);
+                        $newEntity->set('parent', null);
                         break;
                     case 'instanceConsequence':
                         if (!empty($entity->instance->id) && !empty($clones['instance'][$entity->instance->id])) {
@@ -178,8 +174,12 @@ class AnrService extends AbstractService
                         } else {
                             $newEntity->set('instance', null);
                         }
-                        if (!empty($entity->scaleImpactType->id) && !empty($clones['scaleImpactType'][$entity->scaleImpactType->id])) {
-                            $newEntity->set('scaleImpactType', $clones['scaleImpactType'][$entity->scaleImpactType->id]);
+                        if (!empty($entity->scaleImpactType->id) &&
+                                !empty($clones['scaleImpactType'][$entity->scaleImpactType->id])) {
+                            $newEntity->set(
+                                'scaleImpactType',
+                                $clones['scaleImpactType'][$entity->scaleImpactType->id]
+                            );
                         } else {
                             $newEntity->set('scaleImpactType', null);
                         }
@@ -205,28 +205,48 @@ class AnrService extends AbstractService
                         } else {
                             $newEntity->set('scale', null);
                         }
-                        if (!empty($entity->scaleImpactType->id) && !empty($clones['scaleImpactType'][$entity->scaleImpactType->id])) {
-                            $newEntity->set('scaleImpactType', $clones['scaleImpactType'][$entity->scaleImpactType->id]);
+                        if (!empty($entity->scaleImpactType->id) &&
+                            !empty($clones['scaleImpactType'][$entity->scaleImpactType->id])) {
+                            $newEntity->set(
+                                'scaleImpactType',
+                                $clones['scaleImpactType'][$entity->scaleImpactType->id]
+                            );
                         } else {
                             $newEntity->set('scaleImpactType', null);
                         }
                         break;
                     case 'operationalRiskScaleType':
-                        if (!empty($entity->getOperationalRiskScale()->getId()) && !empty($clones['operationalRiskScale'][$entity->getOperationalRiskScale()->getId()])) {
-                            $newEntity->setOperationalRiskScale($clones['operationalRiskScale'][$entity->getOperationalRiskScale()->getId()]);
+                        if (!empty($entity->getOperationalRiskScale()->getId()) &&
+                                !empty($clones['operationalRiskScale'][$entity->getOperationalRiskScale()->getId()])) {
+                            $newEntity->setOperationalRiskScale(
+                                $clones['operationalRiskScale'][$entity->getOperationalRiskScale()->getId()]
+                            );
                         }
                         break;
                     case 'operationalRiskScaleComment':
-                        if (!empty($entity->getOperationalRiskScale()->getId()) && !empty($clones['operationalRiskScale'][$entity->getOperationalRiskScale()->getId()])) {
-                            $newEntity->setOperationalRiskScale($clones['operationalRiskScale'][$entity->getOperationalRiskScale()->getId()]);
+                        if (!empty($entity->getOperationalRiskScale()->getId()) &&
+                            !empty($clones['operationalRiskScale'][$entity->getOperationalRiskScale()->getId()])) {
+                            $newEntity->setOperationalRiskScale(
+                                $clones['operationalRiskScale'][$entity->getOperationalRiskScale()->getId()]
+                            );
                         }
-                        if (!empty($entity->getOperationalRiskScaleType()) && !empty($clones['operationalRiskScaleType'][$entity->getOperationalRiskScaleType()->getId()])) {
-                            $newEntity->setOperationalRiskScaleType($clones['operationalRiskScaleType'][$entity->getOperationalRiskScaleType()->getId()]);
+                        if (!empty($entity->getOperationalRiskScaleType()) &&
+                            !empty(
+                                $clones['operationalRiskScaleType'][$entity->getOperationalRiskScaleType()->getId()]
+                            )) {
+                            $newEntity->setOperationalRiskScaleType(
+                                $clones['operationalRiskScaleType'][$entity->getOperationalRiskScaleType()->getId()]
+                            );
                         }
                         break;
                 }
 
                 $table->save($newEntity);
+
+                if ($value === 'instance') {
+                    $newInstancesParentLink[$newEntity->getId()]['parent'] = $entity->getParent();
+                    $newInstancesParentLink[$newEntity->getId()]['root'] = $entity->getRoot();
+                }
 
                 if (method_exists($newEntity, 'get')) {
                     $clones[$value][$entity->get('id')] = $newEntity;
@@ -234,6 +254,23 @@ class AnrService extends AbstractService
                     $clones[$value][$entity->getId()] = $newEntity;
                 }
             }
+        }
+
+        // Reconstruct instances tree
+        $instanceTable = $this->get('instanceTable');
+        $newInstances = $instanceTable->findByAnrAndOrderByParams($newAnr);
+        foreach ($newInstances as $newInstance) {
+            if ($newInstancesParentLink[$newInstance->getId()]['root'] !== null) {
+                $newInstance->setRoot(
+                    $clones['instance'][$newInstancesParentLink[$newInstance->getId()]['root']->getId()]
+                );
+            }
+            if ($newInstancesParentLink[$newInstance->getId()]['parent'] !== null) {
+                $newInstance->setParent(
+                    $clones['instance'][$newInstancesParentLink[$newInstance->getId()]['parent']->getId()]
+                );
+            }
+            $instanceTable->save($newInstance, false);
         }
 
         $anrObjectCategories = $this->anrObjectCategoryTable->findByAnr($anr);
@@ -245,7 +282,8 @@ class AnrService extends AbstractService
 
             $this->anrObjectCategoryTable->save($newAnrObjectCategory, false);
         }
-        $this->anrObjectCategoryTable->flush();
+
+        $instanceTable->getDb()->flush();
 
         return $newAnr;
     }
@@ -271,7 +309,19 @@ class AnrService extends AbstractService
         $withInterviews = isset($data['interviews']) && $data['interviews'];
         $withSoas = isset($data['soas']) && $data['soas'];
         $withRecords = isset($data['records']) && $data['records'];
-        $exportedAnr = json_encode($this->generateExportArray($data['id'], $filename, $withEval, $withControls, $withRecommendations, $withMethodSteps, $withInterviews, $withSoas, $withRecords));
+        $exportedAnr = json_encode(
+            $this->generateExportArray(
+                $data['id'],
+                $filename,
+                $withEval,
+                $withControls,
+                $withRecommendations,
+                $withMethodSteps,
+                $withInterviews,
+                $withSoas,
+                $withRecords
+            )
+        );
         $data['filename'] = $filename;
 
         if (!empty($data['password'])) {
@@ -282,18 +332,29 @@ class AnrService extends AbstractService
     }
 
     /**
-    * Generates the array to be exported into a file when calling {#exportAnr}
-    * @see #exportAnr
-    *
-    * @param int $id The ANR id
-    * @param string $filename The output filename
-    * @param bool $withEval If true, exports evaluations as well
-    *
-    * @return array The data array that should be saved
-    * @throws Exception If the ANR or an entity is not found
-    */
-    public function generateExportArray($id, &$filename = "", $withEval = false, $withControls = false, $withRecommendations = false, $withMethodSteps = false, $withInterviews = false, $withSoas = false, $withRecords = false)
-    {
+     * TODO: move to the Client side as the functionality is only available there.
+     *
+     * Generates the array to be exported into a file when calling {#exportAnr}
+     * @see #exportAnr
+     *
+     * @param int $id The ANR id
+     * @param string $filename The output filename
+     * @param bool $withEval If true, exports evaluations as well
+     *
+     * @return array The data array that should be saved
+     * @throws Exception If the ANR or an entity is not found
+     */
+    public function generateExportArray(
+        $id,
+        &$filename = "",
+        $withEval = false,
+        $withControls = false,
+        $withRecommendations = false,
+        $withMethodSteps = false,
+        $withInterviews = false,
+        $withSoas = false,
+        $withRecords = false
+    ) {
         /** @var AnrTable $anrTable */
         $anrTable = $this->get('table');
         $anr = $anrTable->findById($id);
@@ -324,9 +385,19 @@ class AnrService extends AbstractService
             );
         }
 
+        /** @var InstanceMetadataExportService $instanceMetadataExportService */
+        $instanceMetadataExportService = $this->get('instanceMetadataExportService');
+        $return['instanceMetadata'] = $instanceMetadataExportService->generateExportArray($anr);
+
         if ($withEval) {
             // TODO: Soa functionality is related only to FrontOffice.
             if ($withSoas) {
+                // soaScaleComment
+                $soaScaleCommentExportService = $this->get('soaScaleCommentExportService');
+                $return['soaScaleComment'] = $soaScaleCommentExportService->generateExportArray(
+                    $anr
+                );
+
                 // referentials
                 $return['referentials'] = [];
                 $referentialTable = $this->get('referentialTable');
@@ -360,7 +431,9 @@ class AnrService extends AbstractService
                 foreach ($measures as $m) {
                     $newMeasure = $m->getJsonArray($measuresArray);
                     $newMeasure['referential'] = $m->getReferential()->getUuid();
-                    $newMeasure['category'] = $m->getCategory() ? $m->getCategory()->get('label' . $this->getLanguage()) : '';
+                    $newMeasure['category'] = $m->getCategory() ?
+                        $m->getCategory()->get('label' . $this->getLanguage())
+                        : '';
                     $return['measures'][$m->getUuid()] = $newMeasure;
                 }
 
@@ -401,7 +474,6 @@ class AnrService extends AbstractService
                     'remarks' => 'remarks',
                     'evidences' => 'evidences',
                     'actions' => 'actions',
-                    'compliance' => 'compliance',
                     'EX' => 'EX',
                     'LR' => 'LR',
                     'CO' => 'CO',
@@ -411,6 +483,9 @@ class AnrService extends AbstractService
                 ];
                 foreach ($soas as $s) {
                     $newSoas = $s->getJsonArray($soasArray);
+                    if ($s->getSoaScaleComment() !== null) {
+                        $newSoas['soaScaleComment'] = $s->getSoaScaleComment()->getId();
+                    }
                     $newSoas['measure_id'] = $s->getMeasure()->getUuid();
                     $return['soas'][] = $newSoas;
                 }
@@ -495,7 +570,11 @@ class AnrService extends AbstractService
 
                 $deliveryTable = $this->get('deliveryTable');
                 for ($i = 0; $i <= 5; $i++) {
-                    $deliveries = $deliveryTable->getEntityByFields(['anr' => $anr->getId() , 'typedoc' => $i ], ['id'=>'ASC']);
+                    $deliveries = $deliveryTable->getEntityByFields(
+                        ['anr' => $anr->getId(),
+                        'typedoc' => $i ],
+                        ['id'=>'ASC']
+                    );
                     $deliveryArray = [
                         'id' => 'id',
                         'typedoc' => 'typedoc',

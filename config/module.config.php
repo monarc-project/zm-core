@@ -1,4 +1,9 @@
-<?php
+<?php declare(strict_types=1);
+/**
+ * @link      https://github.com/monarc-project for the canonical source repository
+ * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @license   MONARC is licensed under GNU Affero General Public License version 3
+ */
 
 use Laminas\Mail\Transport\SmtpOptions;
 use Laminas\Mail\Transport\Smtp;
@@ -381,6 +386,10 @@ return [
             Service\OperationalRiskScaleService::class => AutowireFactory::class,
             Service\OperationalRiskScaleCommentService::class => AutowireFactory::class,
             Service\OperationalRiskScalesExportService::class => AutowireFactory::class,
+            Service\InstanceMetadataExportService::class => AutowireFactory::class,
+            Service\SoaScaleCommentExportService::class => AutowireFactory::class,
+            Service\AnrInstanceMetadataService::class => AutowireFactory::class,
+            Service\SoaScaleCommentService::class => AutowireFactory::class,
 
             // TODO: Entities are created from the code. Should be removed.
             ModelEntity\DeliveriesModels::class => ServiceModelEntity\DeliveriesModelsServiceModelEntity::class,
@@ -440,6 +449,8 @@ return [
             Table\UserTable::class => Table\Factory\ClientEntityManagerFactory::class,
             Table\UserTokenTable::class => Table\Factory\ClientEntityManagerFactory::class,
             Table\PasswordTokenTable::class => Table\Factory\ClientEntityManagerFactory::class,
+            Table\AnrInstanceMetadataTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\SoaScaleCommentTable::class => Table\Factory\CoreEntityManagerFactory::class,
 
             /* Authentication */
             StorageAuthentication::class => ReflectionBasedAbstractFactory::class,

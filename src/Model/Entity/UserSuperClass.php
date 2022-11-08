@@ -1,7 +1,7 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -84,6 +84,27 @@ abstract class UserSuperClass
      * @ORM\Column(name="password", type="string", length=255, nullable=true)
      */
     protected $password;
+
+    /**
+     * @var boolean
+     *
+     * @ORM\Column(name="is_two_factor_enabled", type="boolean", options={"default":false})
+     */
+    protected $isTwoFactorAuthEnabled = false;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="secret_key", type="string", length=255, options={"default":""})
+     */
+    protected $secretKey = '';
+
+    /**
+     * @var array
+     *
+     * @ORM\Column(name="recovery_codes", type="array", length=250, options={"default":""})
+     */
+    protected $recoveryCodes = [];
 
     /**
      * @var integer
@@ -314,6 +335,49 @@ abstract class UserSuperClass
         $this->mospApiKey = $mospApiKey;
 
         return $this;
+    }
+
+    public function getSecretKey(): string
+    {
+        return $this->secretKey;
+    }
+
+    public function setSecretKey(string $secretKey): self
+    {
+        $this->secretKey = $secretKey;
+
+        return $this;
+    }
+
+    public function getRecoveryCodes(): array
+    {
+        return $this->recoveryCodes;
+    }
+
+    public function setRecoveryCodes(array $recoveryCodes): self
+    {
+        $this->recoveryCodes = $recoveryCodes;
+
+        return $this;
+    }
+
+    public function createRecoveryCodes(array $recoveryCodes): self
+    {
+        $this->recoveryCodes = array_map('password_hash', $recoveryCodes, [PASSWORD_BCRYPT]);
+
+        return $this;
+    }
+
+    public function setTwoFactorAuthEnabled(bool $isTwoFactorAuthEnabled): self
+    {
+        $this->isTwoFactorAuthEnabled = $isTwoFactorAuthEnabled;
+
+        return $this;
+    }
+
+    public function isTwoFactorAuthEnabled(): bool
+    {
+        return $this->isTwoFactorAuthEnabled;
     }
 
     public function isSystemUser(): bool

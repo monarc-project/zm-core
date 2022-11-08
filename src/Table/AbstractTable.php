@@ -10,6 +10,7 @@ namespace Monarc\Core\Table;
 use Doctrine\Common\Collections\Expr\Comparison;
 use Doctrine\DBAL\ConnectionException;
 use Doctrine\DBAL\Exception as DbalException;
+use Doctrine\DBAL\ParameterType;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\EntityRepository;
@@ -280,6 +281,11 @@ abstract class AbstractTable
     public function rollback(): void
     {
         $this->entityManager->getConnection()->rollBack();
+    }
+
+    public function quote($value, $type = ParameterType::STRING)
+    {
+        return $this->entityManager->getConnection()->quote($value, $type);
     }
 
     /**

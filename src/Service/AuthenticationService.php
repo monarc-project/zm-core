@@ -1,7 +1,7 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -10,22 +10,13 @@ namespace Monarc\Core\Service;
 use DateTime;
 use Exception;
 use Monarc\Core\Adapter\Authentication as AuthenticationAdapter;
-use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Storage\Authentication as AuthenticationStorage;
 
-/**
- * Authentication Service
- *
- * Class AuthenticationService
- * @package Monarc\Core\Service
- */
 class AuthenticationService
 {
-    /** @var AuthenticationStorage */
-    private $authenticationStorage;
+    private AuthenticationStorage $authenticationStorage;
 
-    /** @var AuthenticationAdapter */
-    private $authenticationAdapter;
+    private AuthenticationAdapter $authenticationAdapter;
 
     public function __construct(
         AuthenticationStorage $authenticationStorage,
@@ -44,18 +35,26 @@ class AuthenticationService
      */
     public function authenticate($data): array
     {
-
         if (!empty($data['login']) && !empty($data['password'])) {
+            $token = '';
+            if (isset($data['otp'])) {
+                $token = $data['otp'];
+            } elseif (isset($data['recoveryCode'])) {
+                $token = $data['recoveryCode'];
+            }
+
             $res = $this->authenticationAdapter
                 ->setIdentity($data['login'])
                 ->setCredential($data['password'])
-                ->authenticate();
+                ->authenticate($token);
 
             if ($res->isValid()) {
-                /** @var UserSuperClass $user */
                 $user = $this->authenticationAdapter->getUser();
-                $token = uniqid(bin2hex(random_bytes(random_int(20, 40))), true);
-                $this->authenticationStorage->addUserToken($token, $user);
+                $token = "2FARequired";
+                if ($res->getCode() !== 2) {
+                    $token = uniqid(bin2hex(random_bytes(random_int(20, 40))), true);
+                    $this->authenticationStorage->addUserToken($token, $user);
+                }
 
                 return compact('token', 'user');
             }
@@ -65,13 +64,13 @@ class AuthenticationService
     }
 
     /**
-     * Disconnects an user and invalidates the token
+     * Disconnects user and invalidates the token.
      *
      * @param array $data Array with 'token'
      *
      * @return bool True if the token existed and got removed, false otherwise
      */
-    public function logout($data)
+    public function logout($data): bool
     {
         if (!empty($data['token']) && $this->authenticationStorage->hasUserToken($data['token'])) {
             $this->authenticationStorage->removeUserToken($data['token']);
@@ -89,7 +88,7 @@ class AuthenticationService
      *
      * @return bool True if the token is valid, false otherwise
      */
-    public function checkConnect($data)
+    public function checkConnect($data): bool
     {
         if (empty($data['token'])) {
             return false;

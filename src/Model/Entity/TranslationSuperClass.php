@@ -22,9 +22,11 @@ class TranslationSuperClass
 
     public const OPERATIONAL_RISK_SCALE_TYPE = 'operational-risk-scale-type';
     public const OPERATIONAL_RISK_SCALE_COMMENT = 'operational-risk-scale-comment';
+    public const INSTANCE_METADATA = 'instance-metadata';
+    public const SOA_SCALE_COMMENT = 'soa-scale-comment';
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer", nullable=false)
      * @ORM\Id
@@ -70,9 +72,6 @@ class TranslationSuperClass
      */
     protected $value;
 
-    /**
-     * @return int
-     */
     public function getId()
     {
         return $this->id;
