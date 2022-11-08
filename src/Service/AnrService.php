@@ -11,7 +11,6 @@ use DateTime;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Anr;
 use Monarc\Core\Model\Entity\AnrObjectCategory;
-use Monarc\Core\Model\Entity\AnrObjectCategorySuperClass;
 use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\OperationalRiskScale;
 use Monarc\Core\Model\Entity\Scale;
@@ -22,12 +21,6 @@ use Monarc\Core\Table\AnrObjectCategoryTable;
 use Monarc\Core\Table\MonarcObjectTable;
 use Monarc\Core\Table\ThreatTable;
 
-/**
-* Anr Service
-*
-* Class AnrService
-* @package Monarc\Core\Service
-*/
 class AnrService extends AbstractService
 {
     /** @var ScaleService */

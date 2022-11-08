@@ -757,7 +757,6 @@ class AmvService implements PositionUpdatableServiceInterface
                                     $threats[$threatUuid]['language'] = $languageCode;
                                     unset($threats[$threatUuid]['label' . $language]);
                                     unset($threats[$threatUuid]['description' . $language]);
-
                                 }
                                 break;
                             case 'vulnerability':
