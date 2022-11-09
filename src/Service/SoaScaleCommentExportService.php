@@ -8,13 +8,9 @@
 namespace Monarc\Core\Service;
 
 use Monarc\Core\Model\Entity\AnrSuperClass;
-use Monarc\Core\Model\Entity\SoaScaleCommentSuperClass;
-use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Model\Entity\TranslationSuperClass;
-use Monarc\Core\Model\Entity\Translation;
-use Monarc\Core\Model\Table\SoaScaleCommentTable;
-use Monarc\Core\Model\Table\TranslationTable;
-use Ramsey\Uuid\Uuid;
+use Monarc\Core\Table\SoaScaleCommentTable;
+use Monarc\Core\Table\TranslationTable;
 
 class SoaScaleCommentExportService
 {
@@ -41,7 +37,7 @@ class SoaScaleCommentExportService
         // TODO: we need to fetch the translations without language code for BO and handle it differently later on.
         $soaScaleCommentTranslations = $this->translationTable->findByAnrTypesAndLanguageIndexedByKey(
             $anr,
-            [Translation::SOA_SCALE_COMMENT],
+            [TranslationSuperClass::SOA_SCALE_COMMENT],
             $this->getAnrLanguageCode($anr)
         );
 
