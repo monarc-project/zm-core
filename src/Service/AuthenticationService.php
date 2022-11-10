@@ -67,7 +67,7 @@ class AuthenticationService
             if (isset($data['verificationCode']) && isset($data['otpSecret'])) {
                 // activation of 2FA via login page (when user must activate 2FA on a 2FA enforced instance)
                  $token = $data['otpSecret'].":".$data['verificationCode'];
-             }
+            }
 
             $res = $this->authenticationAdapter
                 ->setIdentity($data['login'])
@@ -85,7 +85,7 @@ class AuthenticationService
                 $token = "2FARequired";
 
                 return compact('token', 'user');
-            }  elseif ($res->getCode() == 3) {
+            } elseif ($res->getCode() == 3) {
                 $user = $this->authenticationAdapter->getUser();
                 $token = "2FAToBeConfigured";
                 // Create a new secret and generate a QRCode
