@@ -292,6 +292,7 @@ class ObjectCategoryService
          * This allows to link the new objects to the model.
          */
         if ($model !== null) {
+            $result['objects'] = [];
             foreach ($objectCategory->getObjects() as $object) {
                 $result['objects'][] = [
                     'uuid' => $object->getUuid(),

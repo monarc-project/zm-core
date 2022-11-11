@@ -7,28 +7,6 @@ use Ramsey\Uuid\Uuid;
 
 class ChangeableOperationalImpact extends AbstractMigration
 {
-    /**
-     * Change Method.
-     *
-     * Write your reversible migrations using this method.
-     *
-     * More information on writing migrations is available here:
-     * http://docs.phinx.org/en/latest/migrations.html#the-abstractmigration-class
-     *
-     * The following commands can be used in this method and Phinx will
-     * automatically reverse them when rolling back:
-     *
-     *    createTable
-     *    renameTable
-     *    addColumn
-     *    renameColumn
-     *    addIndex
-     *    addForeignKey
-     *
-     * Remember to call "create()" or "update()" and NOT "save()" when working
-     * with the Table class.
-     */
-
     public function change()
     {
         $this->execute(
@@ -199,7 +177,7 @@ class ChangeableOperationalImpact extends AbstractMigration
             foreach ($scaleValues as $valueKey => $scaleValue) {
                 $commentTranslationKey = '';
                 if ($scaleType === OperationalRiskScale::TYPE_IMPACT && $scaleValue >= $scaleData['min']) {
-                    $commentTranslationKey = Uuid::uuid4();
+                    $commentTranslationKey = (string)Uuid::uuid4();
                     $operationalRisksScalesCommentsTable->insert([
                         'anr_id' => $scaleData['anr_id'],
                         'operational_risk_scale_id' => $currentScalesByAnrAndType[$scaleData['anr_id']][$scaleType],
@@ -211,7 +189,7 @@ class ChangeableOperationalImpact extends AbstractMigration
                         'creator' => 'Migration script',
                     ])->save();
                 } elseif ($scaleType === OperationalRiskScale::TYPE_LIKELIHOOD) {
-                    $commentTranslationKey = Uuid::uuid4();
+                    $commentTranslationKey = (string)Uuid::uuid4();
                     $operationalRisksScalesCommentsTable->insert([
                         'anr_id' => $scaleData['anr_id'],
                         'operational_risk_scale_id' => $currentScalesByAnrAndType[$scaleData['anr_id']][$scaleType],

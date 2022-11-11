@@ -47,7 +47,7 @@ class AlterModelTableFixObjPos extends AbstractMigration
         }
 
         $table = $this->table('anr_metadatas_on_instances');
-        $table->rename('instances_metadata')->update();
+        $table->rename('anr_instances_metadata')->update();
 
         $this->execute('update translations set type = "instance-metadata" where type = "anr-metadatas-on-instances"');
     }
