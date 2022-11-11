@@ -1,7 +1,7 @@
 <?php
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -9,28 +9,25 @@ namespace Monarc\Core\Service;
 
 use DateTime;
 use Exception;
-use RobThree\Auth\TwoFactorAuth;
-use RobThree\Auth\Providers\Qr\EndroidQrCodeProvider;
-use Monarc\Core\Service\ConfigService;
+use Laminas\Authentication\Result;
 use Monarc\Core\Adapter\Authentication as AuthenticationAdapter;
 use Monarc\Core\Storage\Authentication as AuthenticationStorage;
+use RobThree\Auth\Providers\Qr\EndroidQrCodeProvider;
+use RobThree\Auth\TwoFactorAuth;
 
-/**
- * Authentication Service
- *
- * Class AuthenticationService
- * @package Monarc\Core\Service
- */
 class AuthenticationService
 {
-    /** @var AuthenticationStorage */
-    private $authenticationStorage;
+    public const TWO_FA_CODE_NOT_CORRECT = '2FACodeNotCorrect';
+    public const TWO_FA_CODE_REQUIRED = '2FARequired';
+    public const TWO_FA_CODE_TO_BE_CONFIGURED = '2FAToBeConfigured';
 
-    /** @var AuthenticationAdapter */
-    private $authenticationAdapter;
+    private ConfigService $configService;
 
-    /** @var TwoFactorAuth */
-    private $tfa;
+    private AuthenticationStorage $authenticationStorage;
+
+    private AuthenticationAdapter $authenticationAdapter;
+
+    private TwoFactorAuth $tfa;
 
     public function __construct(
         ConfigService $configService,
@@ -42,6 +39,15 @@ class AuthenticationService
         $this->authenticationAdapter = $authenticationAdapter;
         $qr = new EndroidQrCodeProvider();
         $this->tfa = new TwoFactorAuth('MONARC', 6, 30, 'sha1', $qr);
+    }
+
+    public static function getAvailable2FATokens(): array
+    {
+        return [
+            self::TWO_FA_CODE_NOT_CORRECT,
+            self::TWO_FA_CODE_REQUIRED,
+            self::TWO_FA_CODE_TO_BE_CONFIGURED,
+        ];
     }
 
     /**
@@ -66,7 +72,7 @@ class AuthenticationService
 
             if (isset($data['verificationCode']) && isset($data['otpSecret'])) {
                 // activation of 2FA via login page (when user must activate 2FA on a 2FA enforced instance)
-                 $token = $data['otpSecret'].":".$data['verificationCode'];
+                $token = $data['otpSecret'] . ':' . $data['verificationCode'];
             }
 
             $res = $this->authenticationAdapter
@@ -74,24 +80,31 @@ class AuthenticationService
                 ->setCredential($data['password'])
                 ->authenticate($token);
 
-            if ($res->isValid() && $res->getCode() == 1) {
+            if ($res->isValid() && $res->getCode() === Result::SUCCESS) {
                 $user = $this->authenticationAdapter->getUser();
                 $token = uniqid(bin2hex(random_bytes(random_int(20, 40))), true);
                 $this->authenticationStorage->addUserToken($token, $user);
 
                 return compact('token', 'user');
-            } elseif ($res->getCode() == 2) {
+            }
+            if (\in_array($res->getCode(), [
+                AuthenticationAdapter::TWO_FA_REQUIRED,
+                AuthenticationAdapter::TWO_FA_FAILED
+            ], true)) {
                 $user = $this->authenticationAdapter->getUser();
-                $token = "2FARequired";
+                $token = $res->getCode() === AuthenticationAdapter::TWO_FA_REQUIRED
+                    ? self::TWO_FA_CODE_REQUIRED
+                    : self::TWO_FA_CODE_NOT_CORRECT;
 
                 return compact('token', 'user');
-            } elseif ($res->getCode() == 3) {
+            }
+            if ($res->getCode() === AuthenticationAdapter::TWO_FA_TO_SET_UP) {
                 $user = $this->authenticationAdapter->getUser();
-                $token = "2FAToBeConfigured";
+                $token = self::TWO_FA_CODE_TO_BE_CONFIGURED;
                 // Create a new secret and generate a QRCode
                 $label = 'MONARC';
                 if ($this->configService->getInstanceName()) {
-                    $label .= ' ('. $this->configService->getInstanceName() .')';
+                    $label .= ' (' . $this->configService->getInstanceName() . ')';
                 }
                 $secret = $this->tfa->createSecret();
                 $qrcode = $this->tfa->getQRCodeImageAsDataUri($label, $secret);
