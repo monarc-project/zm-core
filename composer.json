@@ -51,7 +51,6 @@
         "doctrine/doctrine-orm-module": "^5.1",
         "ramsey/uuid-doctrine": "^1.5",
         "laminas/laminas-log": "^2.11",
-        "laminas/laminas-console": "^2.8",
         "ocramius/proxy-manager": "^2.2",
         "laminas/laminas-mail": "^2.10",
         "laminas/laminas-i18n": "^2.9",
