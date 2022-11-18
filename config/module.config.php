@@ -386,9 +386,9 @@ return [
             Service\OperationalRiskScaleService::class => AutowireFactory::class,
             Service\OperationalRiskScaleCommentService::class => AutowireFactory::class,
             Service\OperationalRiskScalesExportService::class => AutowireFactory::class,
-            Service\InstanceMetadataExportService::class => AutowireFactory::class,
+            Service\InstanceMetadataFieldsExportService::class => AutowireFactory::class,
             Service\SoaScaleCommentExportService::class => AutowireFactory::class,
-            Service\AnrInstanceMetadataService::class => AutowireFactory::class,
+            Service\InstanceMetadataFieldService::class => AutowireFactory::class,
             Service\SoaScaleCommentService::class => AutowireFactory::class,
 
             // TODO: Entities are created from the code. Should be removed.
@@ -449,7 +449,7 @@ return [
             Table\UserTable::class => Table\Factory\ClientEntityManagerFactory::class,
             Table\UserTokenTable::class => Table\Factory\ClientEntityManagerFactory::class,
             Table\PasswordTokenTable::class => Table\Factory\ClientEntityManagerFactory::class,
-            Table\AnrInstanceMetadataTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\AnrInstanceMetadataFieldTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\SoaScaleCommentTable::class => Table\Factory\CoreEntityManagerFactory::class,
 
             /* Authentication */

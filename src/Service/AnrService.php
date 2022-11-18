@@ -56,7 +56,7 @@ class AnrService extends AbstractService
     protected $recordService;
     protected $configService;
     protected $operationalRiskScalesExportService;
-    protected $instanceMetadataExportService;
+    protected $instanceMetadataFieldsExportService;
     protected $soaScaleCommentExportService;
 
     /**
@@ -380,7 +380,8 @@ class AnrService extends AbstractService
 
         /** @var InstanceMetadataExportService $instanceMetadataExportService */
         $instanceMetadataExportService = $this->get('instanceMetadataExportService');
-        $return['instanceMetadata'] = $instanceMetadataExportService->generateExportArray($anr);
+        // TODO: of FrontOffice side add the backward compatibility to support the 'anrMetadatasOnInstances'
+        $return['instanceMetadataFields'] = $instanceMetadataExportService->generateExportArray($anr);
 
         if ($withEval) {
             // TODO: Soa functionality is related only to FrontOffice.

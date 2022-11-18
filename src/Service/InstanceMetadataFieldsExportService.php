@@ -9,23 +9,23 @@ namespace Monarc\Core\Service;
 
 use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\TranslationSuperClass;
-use Monarc\Core\Table\InstanceMetadataTable;
+use Monarc\Core\Table\InstanceMetadataFieldTable;
 use Monarc\Core\Table\TranslationTable;
 
-class InstanceMetadataExportService
+class InstanceMetadataFieldsExportService
 {
-    protected InstanceMetadataTable $instanceMetadataTable;
+    protected InstanceMetadataFieldTable $instanceMetadataFieldTable;
 
     protected TranslationTable $translationTable;
 
     protected ConfigService $configService;
 
     public function __construct(
-        InstanceMetadataTable $instanceMetadataTable,
+        InstanceMetadataFieldTable $instanceMetadataFieldTable,
         TranslationTable $translationTable,
         ConfigService $configService
     ) {
-        $this->instanceMetadataTable = $instanceMetadataTable;
+        $this->instanceMetadataFieldTable = $instanceMetadataFieldTable;
         $this->translationTable = $translationTable;
         $this->configService = $configService;
     }
@@ -35,17 +35,17 @@ class InstanceMetadataExportService
         $result = [];
 
         // TODO: we need to fetch the translations without language code for BO and handle it differently later on.
-        $instanceMetadataTranslations = $this->translationTable->findByAnrTypesAndLanguageIndexedByKey(
+        $instanceMetadataFieldsTranslations = $this->translationTable->findByAnrTypesAndLanguageIndexedByKey(
             $anr,
             [TranslationSuperClass::INSTANCE_METADATA],
             $this->getAnrLanguageCode($anr)
         );
 
-        $instanceMetadataList = $this->instanceMetadataTable->findByAnr($anr);
-        foreach ($instanceMetadataList as $metadata) {
-            $translationLabel = $instanceMetadataTranslations[$metadata->getLabelTranslationKey()] ?? null;
-            $result[$metadata->getId()] = [
-                'id' => $metadata->getId(),
+        $instanceMetadataFields = $this->instanceMetadataFieldTable->findByAnr($anr);
+        foreach ($instanceMetadataFields as $metadataField) {
+            $translationLabel = $instanceMetadataFieldsTranslations[$metadataField->getLabelTranslationKey()] ?? null;
+            $result[$metadataField->getId()] = [
+                'id' => $metadataField->getId(),
                 'label' => $translationLabel !== null ? $translationLabel->getValue() : '',
             ];
         }

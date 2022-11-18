@@ -10,11 +10,11 @@ namespace Monarc\Core\Model\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Table(name="instances_metadata", indexes={
+ * @ORM\Table(name="instances_metadata_fields", indexes={
  *      @ORM\Index(name="anr_id", columns={"anr_id"})
  * })
  * @ORM\Entity
  */
-class InstanceMetadata extends InstanceMetadataSuperClass
+class InstanceMetadataField extends InstanceMetadataFieldSuperClass
 {
 }

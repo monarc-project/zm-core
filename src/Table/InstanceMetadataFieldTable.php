@@ -9,18 +9,18 @@ namespace Monarc\Core\Table;
 
 use Doctrine\ORM\EntityManager;
 use Monarc\Core\Model\Entity\AnrSuperClass;
-use Monarc\Core\Model\Entity\InstanceMetadata;
-use Monarc\Core\Model\Entity\InstanceMetadataSuperClass;
+use Monarc\Core\Model\Entity\InstanceMetadataField;
+use Monarc\Core\Model\Entity\InstanceMetadataFieldSuperClass;
 
-class InstanceMetadataTable extends AbstractTable
+class InstanceMetadataFieldTable extends AbstractTable
 {
-    public function __construct(EntityManager $entityManager, string $entityName = InstanceMetadata::class)
+    public function __construct(EntityManager $entityManager, string $entityName = InstanceMetadataField::class)
     {
         parent::__construct($entityManager, $entityName);
     }
 
     /**
-     * @return InstanceMetadataSuperClass[]
+     * @return InstanceMetadataFieldSuperClass[]
      */
     public function findByAnr(AnrSuperClass $anr): array
     {

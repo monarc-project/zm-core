@@ -9,19 +9,19 @@ namespace Monarc\Core\Service;
 
 use Doctrine\ORM\EntityNotFoundException;
 use Monarc\Core\Model\Entity\Anr;
-use Monarc\Core\Model\Entity\InstanceMetadataSuperClass;
-use Monarc\Core\Model\Entity\InstanceMetadata;
+use Monarc\Core\Model\Entity\InstanceMetadataFieldSuperClass;
+use Monarc\Core\Model\Entity\InstanceMetadataField;
 use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Model\Entity\TranslationSuperClass;
 use Monarc\Core\Model\Entity\Translation;
 use Monarc\Core\Model\Entity\AnrSuperClass;
-use Monarc\Core\Table\InstanceMetadataTable;
+use Monarc\Core\Table\InstanceMetadataFieldTable;
 use Monarc\Core\Table\TranslationTable;
 use Ramsey\Uuid\Uuid;
 
-class AnrInstanceMetadataService
+class InstanceMetadataFieldService
 {
-    protected InstanceMetadataTable $instanceMetadataTable;
+    protected InstanceMetadataFieldTable $instanceMetadataFieldTable;
 
     protected TranslationTable $translationTable;
 
@@ -30,12 +30,12 @@ class AnrInstanceMetadataService
     protected UserSuperClass $connectedUser;
 
     public function __construct(
-        InstanceMetadataTable $instanceMetadataTable,
+        InstanceMetadataFieldTable $instanceMetadataFieldTable,
         TranslationTable $translationTable,
         ConfigService $configService,
         ConnectedUserService $connectedUserService
     ) {
-        $this->instanceMetadataTable = $instanceMetadataTable;
+        $this->instanceMetadataFieldTable = $instanceMetadataFieldTable;
         $this->translationTable = $translationTable;
         $this->configService = $configService;
         $this->connectedUser = $connectedUserService->getConnectedUser();
@@ -44,21 +44,21 @@ class AnrInstanceMetadataService
     public function create(Anr $anr, array $data): array
     {
         $returnValue = [];
-        $data = $data['metadata'] ?? $data;
+        $data = $data['metadataField'] ?? $data;
         foreach ($data as $inputMetadata) {
-            $metadata = (new InstanceMetadata())
+            $metadataField = (new InstanceMetadataField())
                 ->setAnr($anr)
                 ->setLabelTranslationKey((string)Uuid::uuid4())
                 ->setCreator($this->connectedUser->getEmail());
 
-            $this->instanceMetadataTable->save($metadata);
-            $returnValue[] = $metadata->getId();
+            $this->instanceMetadataFieldTable->save($metadataField);
+            $returnValue[] = $metadataField->getId();
 
             foreach ($inputMetadata as $lang => $labelText) {
                 $translation = $this->createTranslationObject(
                     $anr,
                     TranslationSuperClass::INSTANCE_METADATA,
-                    $metadata->getLabelTranslationKey(),
+                    $metadataField->getLabelTranslationKey(),
                     $lang,
                     (string)$labelText
                 );
@@ -72,7 +72,7 @@ class AnrInstanceMetadataService
     public function getList(Anr $anr, string $language = null): array
     {
         $result = [];
-        $metadataList = $this->instanceMetadataTable->findByAnr($anr);
+        $metadataList = $this->instanceMetadataFieldTable->findByAnr($anr);
         if ($language === null) {
             $language = $this->getAnrLanguageCode($anr);
         }
@@ -97,12 +97,12 @@ class AnrInstanceMetadataService
 
     public function delete(int $id): void
     {
-        $metadataToDelete = $this->instanceMetadataTable->findById($id);
+        $metadataToDelete = $this->instanceMetadataFieldTable->findById($id);
         if ($metadataToDelete === null) {
             throw new EntityNotFoundException(sprintf('Metadata with ID %d is not found', $id));
         }
 
-        $this->instanceMetadataTable->remove($metadataToDelete);
+        $this->instanceMetadataFieldTable->remove($metadataToDelete);
 
         $translationsKeys[] = $metadataToDelete->getLabelTranslationKey();
 
@@ -127,10 +127,10 @@ class AnrInstanceMetadataService
             ->setCreator($this->connectedUser->getEmail());
     }
 
-    public function getInstanceMetadata(Anr $anr, int $id, string $language): array
+    public function getInstanceMetadataField(Anr $anr, int $id, string $language): array
     {
-        /** @var InstanceMetadataSuperClass $metadata */
-        $metadata = $this->instanceMetadataTable->findById($id);
+        /** @var InstanceMetadataFieldSuperClass $metadata */
+        $metadata = $this->instanceMetadataFieldTable->findById($id);
         if ($language === "") {
             $language = $this->getAnrLanguageCode($anr);
         }
@@ -149,10 +149,10 @@ class AnrInstanceMetadataService
         ];
     }
 
-    public function update(int $id, array $data): InstanceMetadataSuperClass
+    public function update(int $id, array $data): InstanceMetadataFieldSuperClass
     {
-        /** @var InstanceMetadataSuperClass $metadata */
-        $metadata = $this->instanceMetadataTable->findById($id);
+        /** @var InstanceMetadataFieldSuperClass $metadata */
+        $metadata = $this->instanceMetadataFieldTable->findById($id);
         $languageCode = $data['language'] ?? $this->getAnrLanguageCode($metadata->getAnr());
         if (!empty($data[$languageCode])) {
             $translationKey = $metadata->getLabelTranslationKey();
@@ -163,7 +163,7 @@ class AnrInstanceMetadataService
                 $this->translationTable->save($translation, false);
             }
         }
-        $this->instanceMetadataTable->save($metadata);
+        $this->instanceMetadataFieldTable->save($metadata);
 
         return $metadata;
     }

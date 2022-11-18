@@ -39,6 +39,6 @@ class InstanceServiceFactory extends AbstractServiceFactory
         'translateService' => Service\TranslateService::class,
         'configService' => ConfigService::class,
         'operationalRiskScalesExportService' => OperationalRiskScalesExportService::class,
-        'instanceMetadataExportService' => InstanceMetadataExportService::class,
+        'instanceMetadataFieldsExportService' => InstanceMetadataFieldsExportService::class,
     ];
 }

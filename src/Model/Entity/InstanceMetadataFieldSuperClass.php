@@ -12,13 +12,13 @@ use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 
 /**
- * @ORM\Table(name="instance_metadata", indexes={
+ * @ORM\Table(name="instance_metadata_fields", indexes={
  *      @ORM\Index(name="anr_id", columns={"anr_id"})
  * })
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
-class InstanceMetadataSuperClass
+class InstanceMetadataFieldSuperClass
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;

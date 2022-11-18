@@ -58,7 +58,7 @@ class InstanceService extends AbstractService
     protected $translateService;
     protected $configService;
     protected $operationalRiskScalesExportService;
-    protected $instanceMetadataExportService;
+    protected $instanceMetadataFieldsExportService;
 
     // Export (Services)
     protected $objectExportService;
@@ -193,8 +193,8 @@ class InstanceService extends AbstractService
 
         $instanceTable->saveEntity($instance);
 
-        //instanceMetadata, fetch value for global instance
-        $this->updateInstanceMetadataFromBrothers($instance);
+        //instanceMetadataField, fetch value for global instance
+        $this->updateInstanceMetadataFieldFromBrothers($instance);
 
         //instances risk
         /** @var InstanceRiskService $instanceRiskService */
@@ -1071,10 +1071,14 @@ class InstanceService extends AbstractService
             ),
         ];
 
-        $instanceMetadataExportService = $this->get('instanceMetadataExportService');
-        $return['instanceMetadata'] = $instanceMetadataExportService->generateExportArray($instance->getAnr());
+        $instanceMetadataFieldsExportService = $this->get('instanceMetadataFieldsExportService');
+        // TODO: of FrontOffice side add the backward compatibility to support the 'anrMetadatasOnInstances'
+        $return['instanceMetadataFields'] = $instanceMetadataFieldsExportService->generateExportArray(
+            $instance->getAnr()
+        );
         if ($withEval) {
-            $return['instanceMetadata'] = $this->generateExportArrayOfInstanceMetadata($instance);
+            // TODO: of FrontOffice side add the backward compatibility to support the 'anrMetadatasOnInstances'
+            $return['instanceMetadataFields'] = $this->generateExportArrayOfInstanceMetadataFields($instance);
         }
 
         // Scales
@@ -1405,12 +1409,12 @@ class InstanceService extends AbstractService
         return $result;
     }
 
-    protected function generateExportArrayOfInstanceMetadata(InstanceSuperClass $instance): array
+    protected function generateExportArrayOfInstanceMetadataFields(InstanceSuperClass $instance): array
     {
         return [];
     }
 
-    protected function updateInstanceMetadataFromBrothers(InstanceSuperClass $instance): void
+    protected function updateInstanceMetadataFieldFromBrothers(InstanceSuperClass $instance): void
     {
     }
 

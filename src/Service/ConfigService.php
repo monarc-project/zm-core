@@ -153,4 +153,9 @@ class ConfigService
             'name' => $this->config['email']['name'] ?? 'Monarc',
         ];
     }
+
+    public function isTwoFactorAuthEnforced(): bool
+    {
+        return $this->config['twoFactorAuthEnforced'] ?? false;
+    }
 }
