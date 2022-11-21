@@ -272,7 +272,7 @@ class ObjectService
             ->setMode((int)$data['mode'])
             ->setUpdater($this->connectedUser->getEmail());
 
-        $this->validateAndSetRolfTag($monarcObject, $data);
+        $this->adjustInstancesValidateAndSetRolfTag($monarcObject, $data);
         $this->validateAndSetCategory($monarcObject, $data);
 
         $this->monarcObjectTable->save($monarcObject);
@@ -563,12 +563,8 @@ class ObjectService
         }
     }
 
-    private function validateAndSetRolfTag(MonarcObject $monarcObject, array $data): void
+    private function adjustInstancesValidateAndSetRolfTag(MonarcObject $monarcObject, array $data): void
     {
-        if (!$monarcObject->getAsset()->isPrimary()) {
-            return;
-        }
-
         /* Set operational risks to specific only when RolfTag was set before, and another RolfTag or null is set. */
         $isRolfTagUpdated = false;
         if (!empty($data['rolfTag'])
@@ -592,12 +588,16 @@ class ObjectService
         $this->updateInstancesAndOperationalRisks($monarcObject, $isRolfTagUpdated);
     }
 
-    private function updateInstancesAndOperationalRisks(MonarcObject $moanrcObject, bool $isRolfTagUpdated): void
+    private function updateInstancesAndOperationalRisks(MonarcObject $monarcObject, bool $isRolfTagUpdated): void
     {
-        foreach ($moanrcObject->getInstances() as $instance) {
-            $instance->setNames($moanrcObject->getNames())
-                ->setLabels($moanrcObject->getLabels());
+        foreach ($monarcObject->getInstances() as $instance) {
+            $instance->setNames($monarcObject->getNames())
+                ->setLabels($monarcObject->getLabels());
             $this->instanceTable->saveEntity($instance, false);
+
+            if (!$monarcObject->getAsset()->isPrimary()) {
+                continue;
+            }
 
             $rolfRisksIdsToOperationalInstanceRisks = [];
             foreach ($instance->getOperationalInstanceRisks() as $operationalInstanceRisk) {
@@ -609,14 +609,14 @@ class ObjectService
                 }
             }
 
-            if ($isRolfTagUpdated && $moanrcObject->getRolfTag() !== null) {
-                foreach ($moanrcObject->getRolfTag()->getRisks() as $rolfRisk) {
+            if ($isRolfTagUpdated && $monarcObject->getRolfTag() !== null) {
+                foreach ($monarcObject->getRolfTag()->getRisks() as $rolfRisk) {
                     if (isset($rolfRisksIdsToOperationalInstanceRisks[$rolfRisk->getId()])) {
                         $rolfRisksIdsToOperationalInstanceRisks[$rolfRisk->getId()]->setIsSpecific(false);
                     } else {
                         $this->instanceRiskOpService->createInstanceRiskOpWithScales(
                             $instance,
-                            $moanrcObject,
+                            $monarcObject,
                             $rolfRisk
                         );
                     }

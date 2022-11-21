@@ -554,12 +554,12 @@ class InstanceService extends AbstractService
      */
     protected function createChildren(InstanceSuperClass $parentInstance): void
     {
-        foreach ($parentInstance->getObject()->getChildren() as $childObject) {
+        foreach ($parentInstance->getObject()->getChildrenLinks() as $childObjectLink) {
             $data = [
                 'anr' => $parentInstance->getAnr(),
-                'object' => $childObject->getUuid(),
+                'object' => $childObjectLink->getChild()->getUuid(),
                 'parent' => $parentInstance,
-                'position' => $childObject->getPosition(),
+                'position' => $childObjectLink->getChild()->getPosition(),
                 'c' => -1,
                 'i' => -1,
                 'd' => -1,

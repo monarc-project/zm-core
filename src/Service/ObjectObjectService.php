@@ -145,7 +145,7 @@ class ObjectObjectService
                 ) {
                     $childObjectInstance->setParent(null);
                     $childObjectInstance->setRoot(null);
-                    $this->instanceTable->delete($childObjectInstance, false);
+                    $this->instanceTable->deleteEntity($childObjectInstance, false);
                 }
             }
         }
