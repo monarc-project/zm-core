@@ -287,6 +287,12 @@ class ObjectCategoryService
             'position' => $objectCategory->getPosition(),
         ];
 
+        if ($includeChildren) {
+            foreach ($objectCategory->getChildren() as $childCategory) {
+                $result['child'][] = $this->getPreparedObjectCategoryData($childCategory, true, $model);
+            }
+        }
+
         /*
          * If the $model parameter is passed we include the objects list linked to the categories.
          * This allows to link the new objects to the model.
@@ -302,12 +308,6 @@ class ObjectCategoryService
                     'name4' => $object->getName(4),
                     'isLinkedToAnr' => $object->hasAnrLink($model->getAnr()),
                 ];
-            }
-        }
-
-        if ($includeChildren) {
-            foreach ($objectCategory->getChildren() as $childCategory) {
-                $result['child'][] = $this->getPreparedObjectCategoryData($childCategory, true, $model);
             }
         }
 

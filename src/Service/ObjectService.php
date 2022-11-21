@@ -194,10 +194,7 @@ class ObjectService
         $result = [];
         foreach ($anr->getAnrObjectCategories() as $anrObjectCategory) {
             $objectCategory = $anrObjectCategory->getCategory();
-            $objectsData = $this->getObjectsDataOfCategoryAndAnr($objectCategory, $anr);
-            if (!empty($objectsData) || $objectCategory->hasChildren()) {
-                $result[] = $this->getPreparedObjectCategoryData($objectCategory, $objectsData, $anr);
-            }
+            $result[] = $this->getCategoriesAndObjectsTreeList($objectCategory, $anr);
         }
 
         /* Places uncategorized objects. */
@@ -718,15 +715,31 @@ class ObjectService
         return $newMonarcObject;
     }
 
+    private function getCategoriesAndObjectsTreeList(
+        ObjectCategorySuperClass $objectCategory,
+        AnrSuperClass $anr
+    ): array {
+        $result = [];
+        $objectsData = $this->getObjectsDataOfCategoryAndAnr($objectCategory, $anr);
+        if (!empty($objectsData) || $objectCategory->hasChildren()) {
+            $objectCategoryData = $this->getPreparedObjectCategoryData($objectCategory, $objectsData, $anr);
+            if (!empty($objectsData) || !empty($objectCategoryData)) {
+                $result = $objectCategoryData;
+            }
+        }
+
+        return $result;
+    }
+
     private function getCategoriesWithObjectsChildrenTreeList(
         ObjectCategorySuperClass $objectCategory,
         AnrSuperClass $anr
     ): array {
         $result = [];
         foreach ($objectCategory->getChildren() as $childCategory) {
-            $objectsData = $this->getObjectsDataOfCategoryAndAnr($childCategory, $anr);
-            if (!empty($objectsData) || $childCategory->hasChildren()) {
-                $result[] = $this->getPreparedObjectCategoryData($childCategory, $objectsData, $anr);
+            $categoryData = $this->getCategoriesAndObjectsTreeList($childCategory, $anr);
+            if (!empty($categoryData)) {
+                $result[] = $categoryData;
             }
         }
 
@@ -738,7 +751,7 @@ class ObjectService
         array $objectsData,
         AnrSuperClass $anr
     ): array {
-        return [
+        $result = [
             'id' => $category->getId(),
             'label1' => $category->getLabel(1),
             'label2' => $category->getLabel(2),
@@ -750,6 +763,11 @@ class ObjectService
                 : $this->getCategoriesWithObjectsChildrenTreeList($category, $anr),
             'objects' => $objectsData,
         ];
+        if (empty($objectsData) && empty($result['child'])) {
+            return [];
+        }
+
+        return $result;
     }
 
     private function getObjectsDataOfCategoryAndAnr(ObjectCategorySuperClass $objectCategory, AnrSuperClass $anr): array
