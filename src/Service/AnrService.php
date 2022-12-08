@@ -11,9 +11,11 @@ use DateTime;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Anr;
 use Monarc\Core\Model\Entity\AnrObjectCategory;
+use Monarc\Core\Model\Entity\AnrObjectCategorySuperClass;
 use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\OperationalRiskScale;
 use Monarc\Core\Model\Entity\Scale;
+use Monarc\Core\Model\Entity\ThreatSuperClass;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\ScaleCommentTable;
 use Monarc\Core\Model\Table\ScaleTable;
@@ -266,6 +268,7 @@ class AnrService extends AbstractService
             $instanceTable->save($newInstance, false);
         }
 
+        /** @var AnrObjectCategorySuperClass[] $anrObjectCategories */
         $anrObjectCategories = $this->anrObjectCategoryTable->findByAnr($anr);
         foreach ($anrObjectCategories as $anrObjectCategory) {
             $newAnrObjectCategory = new AnrObjectCategory();
@@ -645,6 +648,7 @@ class AnrService extends AbstractService
             // TODO: This is only used on FO side.
             /** @var ThreatTable $threatTable */
             $threatTable = $this->get('threatTable');
+            /** @var ThreatSuperClass[] $threats */
             $threats = $threatTable->findByAnr($anr);
             $threatArray = [
                 'uuid' => 'uuid',
@@ -666,17 +670,15 @@ class AnrService extends AbstractService
             ];
 
 
-            foreach ($threats as $t) {
+            foreach ($threats as $threat) {
                 $threatUuid = $t->getUuid();
                 $return['method']['threats'][$threatUuid] = $t->getJsonArray($threatArray);
-                if (isset($t->theme->id)) {
-                    $return['method']['threats'][$threatUuid]['theme']['id'] = $t->theme->id;
-                    $return['method']['threats'][$threatUuid]['theme']['label' . $this->getLanguage()] =
-                        $t->theme->get('label' . $this->getLanguage());
-                    $return['method']['threats'][$threatUuid]['theme']['label1'] = $t->theme->label1;
-                    $return['method']['threats'][$threatUuid]['theme']['label2'] = $t->theme->label2;
-                    $return['method']['threats'][$threatUuid]['theme']['label3'] = $t->theme->label3;
-                    $return['method']['threats'][$threatUuid]['theme']['label4'] = $t->theme->label4;
+                if ($threat->getTheme() !== null) {
+                    $return['method']['threats'][$threatUuid]['theme']['id'] = $threat->getTheme()->getId();
+                    $return['method']['threats'][$threatUuid]['theme']['label1'] = $threat->getTheme()->getLabel(1);
+                    $return['method']['threats'][$threatUuid]['theme']['label2'] = $threat->getTheme()->getLabel(2);
+                    $return['method']['threats'][$threatUuid]['theme']['label3'] = $threat->getTheme()->getLabel(3);
+                    $return['method']['threats'][$threatUuid]['theme']['label4'] = $threat->getTheme()->getLabel(4);
                 }
             }
 

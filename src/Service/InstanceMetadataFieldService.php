@@ -72,7 +72,8 @@ class InstanceMetadataFieldService
     public function getList(Anr $anr, string $language = null): array
     {
         $result = [];
-        $metadataList = $this->instanceMetadataFieldTable->findByAnr($anr);
+        /** @var InstanceMetadataFieldSuperClass[] $metadataFields */
+        $metadataFields = $this->instanceMetadataFieldTable->findByAnr($anr);
         if ($language === null) {
             $language = $this->getAnrLanguageCode($anr);
         }
@@ -83,10 +84,10 @@ class InstanceMetadataFieldService
             $language
         );
 
-        foreach ($metadataList as $index => $metadata) {
-            $translationLabel = $translations[$metadata->getLabelTranslationKey()] ?? null;
+        foreach ($metadataFields as $index => $metadataField) {
+            $translationLabel = $translations[$metadataField->getLabelTranslationKey()] ?? null;
             $result[] = [
-                'id' => $metadata->getId(),
+                'id' => $metadataField->getId(),
                 'index' => $index + 1,
                 $language => $translationLabel !== null ? $translationLabel->getValue() : '',
             ];

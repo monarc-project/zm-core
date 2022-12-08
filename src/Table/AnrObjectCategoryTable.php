@@ -9,8 +9,6 @@ namespace Monarc\Core\Table;
 
 use Doctrine\ORM\EntityManager;
 use Monarc\Core\Model\Entity\AnrObjectCategory;
-use Monarc\Core\Model\Entity\AnrObjectCategorySuperClass;
-use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Table\Interfaces\PositionUpdatableTableInterface;
 use Monarc\Core\Table\Traits\PositionIncrementTableTrait;
 
@@ -21,18 +19,5 @@ class AnrObjectCategoryTable extends AbstractTable implements PositionUpdatableT
     public function __construct(EntityManager $entityManager, string $entityName = AnrObjectCategory::class)
     {
         parent::__construct($entityManager, $entityName);
-    }
-
-    /**
-     * @return AnrObjectCategorySuperClass[]
-     */
-    public function findByAnr(AnrSuperClass $anr): array
-    {
-        return $this->getRepository()
-            ->createQueryBuilder('aoc')
-            ->where('aoc.anr = :anr')
-            ->setParameter('anr', $anr)
-            ->getQuery()
-            ->getResult();
     }
 }

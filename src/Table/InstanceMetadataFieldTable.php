@@ -8,26 +8,12 @@
 namespace Monarc\Core\Table;
 
 use Doctrine\ORM\EntityManager;
-use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\InstanceMetadataField;
-use Monarc\Core\Model\Entity\InstanceMetadataFieldSuperClass;
 
 class InstanceMetadataFieldTable extends AbstractTable
 {
     public function __construct(EntityManager $entityManager, string $entityName = InstanceMetadataField::class)
     {
         parent::__construct($entityManager, $entityName);
-    }
-
-    /**
-     * @return InstanceMetadataFieldSuperClass[]
-     */
-    public function findByAnr(AnrSuperClass $anr): array
-    {
-        return $this->getRepository()->createQueryBuilder('im')
-            ->where('im.anr = :anr')
-            ->setParameter('anr', $anr)
-            ->getQuery()
-            ->getResult();
     }
 }

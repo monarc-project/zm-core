@@ -14,12 +14,10 @@ use Monarc\Core\Model\Entity\Scale;
 use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Model\GetAndSet;
 use Monarc\Core\Model\Table\AbstractEntityTable;
-use Monarc\Core\Table\ObjectObjectTable;
 use Monarc\Core\Model\Table\ScaleTable;
 use Monarc\Core\Traits\RiskTrait;
 use Doctrine\Common\Util\ClassUtils;
 use Ramsey\Uuid\Uuid;
-use Doctrine\ORM\Query\QueryException;
 
 /**
  * TODO: refactor, clean up, but better to remove the class.

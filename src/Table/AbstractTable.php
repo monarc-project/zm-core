@@ -170,6 +170,18 @@ abstract class AbstractTable
     }
 
     /**
+     * @return object[]
+     */
+    public function findByAnr(AnrSuperClass $anr): array
+    {
+        return $this->getRepository()->createQueryBuilder('t')
+            ->where('t.anr = :anr')
+            ->setParameter('anr', $anr)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * @param string[] $uuids
      *
      * @return object[]

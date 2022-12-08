@@ -8,6 +8,7 @@
 namespace Monarc\Core\Service;
 
 use Monarc\Core\Model\Entity\AnrSuperClass;
+use Monarc\Core\Model\Entity\InstanceMetadataFieldSuperClass;
 use Monarc\Core\Model\Entity\TranslationSuperClass;
 use Monarc\Core\Table\InstanceMetadataFieldTable;
 use Monarc\Core\Table\TranslationTable;
@@ -41,6 +42,7 @@ class InstanceMetadataFieldsExportService
             $this->getAnrLanguageCode($anr)
         );
 
+        /** @var InstanceMetadataFieldSuperClass[] $instanceMetadataFields */
         $instanceMetadataFields = $this->instanceMetadataFieldTable->findByAnr($anr);
         foreach ($instanceMetadataFields as $metadataField) {
             $translationLabel = $instanceMetadataFieldsTranslations[$metadataField->getLabelTranslationKey()] ?? null;
