@@ -23,23 +23,17 @@ use Laminas\ServiceManager\Factory\FactoryInterface;
 class DoctrineCacheServiceFactory implements FactoryInterface
 {
     /**
-     * @inheritDoc
-     *
      * @return ArrayCache|ChainCache
      */
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
         $arrayCache = new ArrayCache();
 
-        if (getenv('APPLICATION_ENV') == 'production') {
-            // TODO: clarify if we use cache on prod.
-            if (extension_loaded('apc')) {
-                $apcCache = new ApcCache();
-                return new ChainCache([$apcCache, $arrayCache]);
-            } elseif (extension_loaded('apcu')) {
-                $apcuCache = new ApcuCache();
-                return new ChainCache([$apcuCache, $arrayCache]);
-            }
+        if (extension_loaded('apcu')) {
+            return new ChainCache([new ApcuCache(), $arrayCache]);
+        }
+        if (extension_loaded('apc')) {
+            return new ChainCache([new ApcCache(), $arrayCache]);
         }
 
         return $arrayCache;

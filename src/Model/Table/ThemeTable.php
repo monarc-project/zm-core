@@ -38,6 +38,7 @@ class ThemeTable extends AbstractEntityTable
         return $queryBuilder
             ->andWhere('t.' . $labelKey . ' = :' . $labelKey)
             ->setParameter($labelKey, $labelValue)
+            ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
     }
