@@ -27,6 +27,14 @@ class ConfigService
         $this->config = $config;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getConfigOption(string $optionName, $default = null)
+    {
+        return $this->config[$optionName] ?? $default;
+    }
+
     public function getLanguage(): array
     {
         $languages = $this->config['languages'];

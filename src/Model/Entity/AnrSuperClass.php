@@ -24,6 +24,11 @@ class AnrSuperClass extends AbstractEntity
     use Traits\CreateEntityTrait;
     use Traits\UpdateEntityTrait;
 
+    public const STATUS_ACTIVE = 1;
+    public const STATUS_AWAITING_OF_IMPORT = 2;
+    public const STATUS_UNDER_IMPORT = 3;
+    public const STATUS_IMPORT_ERROR = 9;
+
     /**
      * @var int
      *
@@ -251,6 +256,13 @@ class AnrSuperClass extends AbstractEntity
      */
     protected $showRolfBrut = 0;
 
+    /**
+     * @var int
+     *
+     * @ORM\Column(name="status", type="smallint", nullable=false, options={"unsigned":true})
+     */
+    protected $status = self::STATUS_ACTIVE;
+
     public function getId(): int
     {
         return $this->id;
@@ -341,5 +353,22 @@ class AnrSuperClass extends AbstractEntity
         }
 
         return (string)$this->{'label' . $languageNumber};
+    }
+
+    public function setStatus(int $status): self
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
+    public function getStatus(): int
+    {
+        return $this->status;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->status === static::STATUS_ACTIVE;
     }
 }
