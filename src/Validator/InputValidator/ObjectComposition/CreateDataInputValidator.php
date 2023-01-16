@@ -7,6 +7,8 @@
 
 namespace Monarc\Core\Validator\InputValidator\ObjectComposition;
 
+use Laminas\Validator\InArray;
+use Monarc\Core\Service\Interfaces\PositionUpdatableServiceInterface;
 use Monarc\Core\Validator\InputValidator\AbstractInputValidator;
 
 class CreateDataInputValidator extends AbstractInputValidator
@@ -28,6 +30,37 @@ class CreateDataInputValidator extends AbstractInputValidator
                 'allowEmpty' => false,
                 'continueIfEmpty' => false,
                 'filters' => [],
+                'validators' => [],
+            ],
+            [
+                'name' => 'implicitPosition',
+                'required' => false,
+                'allowEmpty' => true,
+                'continueIfEmpty' => true,
+                'filters' => [
+                    ['name' => 'ToInt'],
+                ],
+                'validators' => [
+                    [
+                        'name' => InArray::class,
+                        'options' => [
+                            'haystack' => [
+                                PositionUpdatableServiceInterface::IMPLICIT_POSITION_START,
+                                PositionUpdatableServiceInterface::IMPLICIT_POSITION_END,
+                                PositionUpdatableServiceInterface::IMPLICIT_POSITION_AFTER
+                            ],
+                        ]
+                    ]
+                ],
+            ],
+            [
+                'name' => 'previous',
+                'required' => false,
+                'allowEmpty' => true,
+                'continueIfEmpty' => true,
+                'filters' => [
+                    ['name' => 'ToInt'],
+                ],
                 'validators' => [],
             ],
         ];

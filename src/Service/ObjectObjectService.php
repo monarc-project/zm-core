@@ -137,7 +137,7 @@ class ObjectObjectService
         /** @var ObjectObjectSuperClass $objectObject */
         $objectObject = $this->objectObjectTable->findById($id);
 
-        /** Unlink the related instances of the compositions. */
+        /* Unlink the related instances of the compositions. */
         foreach ($objectObject->getChild()->getInstances() as $childObjectInstance) {
             foreach ($objectObject->getParent()->getInstances() as $parentObjectInstance) {
                 if ($childObjectInstance->hasParent()
@@ -149,6 +149,9 @@ class ObjectObjectService
                 }
             }
         }
+
+        /* Shift positions to fill in the gap of the object being removed. */
+        $this->shiftPositionsForRemovingEntity($objectObject, $this->objectObjectTable);
 
         $this->objectObjectTable->remove($objectObject);
     }
