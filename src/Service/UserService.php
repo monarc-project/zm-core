@@ -99,7 +99,7 @@ class UserService
         return $user;
     }
 
-    public function patch($userId, $data): UserSuperClass
+    public function patch(int $userId, array $data): UserSuperClass
     {
         $user = $this->getUpdatedUser($userId, $data);
 

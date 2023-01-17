@@ -161,13 +161,6 @@ class ModelService
         $this->modelTable->save($model);
     }
 
-    public function deleteList(array $data): void
-    {
-        foreach ($data as $modelId) {
-            $this->delete((int)$modelId);
-        }
-    }
-
     private function reassignSpecificObjects(Model $fromModel, Model $toModel): void
     {
         foreach ($fromModel->getAssets() as $asset) {
