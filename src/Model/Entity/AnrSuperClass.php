@@ -367,7 +367,7 @@ class AnrSuperClass extends AbstractEntity
         return $this->status;
     }
 
-    public function getStatusName(): int
+    public function getStatusName(): string
     {
         switch ($this->status) {
             case self::STATUS_AWAITING_OF_IMPORT:
