@@ -26,7 +26,7 @@ class QuestionChoiceSuperClass extends AbstractEntity
     use UpdateEntityTrait;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer", nullable=false)
      * @ORM\Id
@@ -37,7 +37,7 @@ class QuestionChoiceSuperClass extends AbstractEntity
     /**
      * @var QuestionSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Question")
+     * @ORM\ManyToOne(targetEntity="Question", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="question_id", referencedColumnName="id", nullable=true)
      * })
@@ -102,18 +102,13 @@ class QuestionChoiceSuperClass extends AbstractEntity
         return $this->question;
     }
 
-    public function setQuestion($question)
+    public function setQuestion(QuestionSuperClass $question): self
     {
         $this->question = $question;
+        $question->addQuestionChoice($this);
+
         return $this;
     }
-
-    // Don't need this, the entity is really simple, position is handled manually
-    // protected $parameters = array(
-    //     'implicitPosition' => array(
-    //         'field' => 'question',
-    //     ),
-    // );
 
     public function getInputFilter($partial = false)
     {
@@ -143,19 +138,6 @@ class QuestionChoiceSuperClass extends AbstractEntity
                 'filters' => [['name' => 'ToInt']],
                 'validators' => array()
             ));
-            /*
-                        $this->inputFilter->add(array(
-                            'name' => 'question',
-                            'required' => true,
-                            'allow_empty' => false,
-                            'filters' => array(),
-                            'validators' => array(
-                                array(
-                                    'name' => 'IsInt',
-                                ),
-                            ),
-                        ));
-            */
         }
         return $this->inputFilter;
     }
