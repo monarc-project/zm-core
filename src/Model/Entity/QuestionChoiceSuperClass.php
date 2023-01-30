@@ -35,9 +35,9 @@ class QuestionChoiceSuperClass extends AbstractEntity
     protected $id;
 
     /**
-     * @var \Monarc\Core\Model\Entity\Question
+     * @var QuestionSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Model\Entity\Question")
+     * @ORM\ManyToOne(targetEntity="Question")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="question_id", referencedColumnName="id", nullable=true)
      * })
@@ -97,18 +97,11 @@ class QuestionChoiceSuperClass extends AbstractEntity
         return $this;
     }
 
-    /**
-     * @return Question
-     */
     public function getQuestion()
     {
         return $this->question;
     }
 
-    /**
-     * @param Question $question
-     * @return QuestionChoice
-     */
     public function setQuestion($question)
     {
         $this->question = $question;

@@ -53,4 +53,12 @@ class ConnectedUserService
 
         return $this->connectedUser;
     }
+
+    /**
+     * Allows running the application from CLI.
+     */
+    public function setConnectedUser(UserSuperClass $user): void
+    {
+        $this->connectedUser = $user;
+    }
 }
