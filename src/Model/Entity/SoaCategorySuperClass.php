@@ -144,6 +144,16 @@ class SoaCategorySuperClass extends AbstractEntity
         return (string)$this->{'label' . $languageIndex};
     }
 
+    public function getLabels(): array
+    {
+        return [
+            'label1' => (string)$this->label1,
+            'label2' => (string)$this->label2,
+            'label3' => (string)$this->label3,
+            'label4' => (string)$this->label4,
+        ];
+    }
+
     public function setLabels(array $labels): self
     {
         foreach (range(1, 4) as $index) {
