@@ -360,6 +360,16 @@ class ObjectSuperClass extends AbstractEntity
         return (string)$this->{'name' . $languageIndex};
     }
 
+    public function getNames(): array
+    {
+        return [
+            'name1' => $this->name1,
+            'name2' => $this->name2,
+            'name3' => $this->name3,
+            'name4' => $this->name4,
+        ];
+    }
+
     public function setLabel(string $labelKey, string $labelValue): self
     {
         if (in_array($labelKey, ['label1', 'label2', 'label3', 'label4'], true)) {
@@ -376,6 +386,16 @@ class ObjectSuperClass extends AbstractEntity
         }
 
         return (string)$this->{'label' . $languageIndex};
+    }
+
+    public function getLabels(): array
+    {
+        return [
+            'label1' => $this->label1,
+            'label2' => $this->label2,
+            'label3' => $this->label3,
+            'label4' => $this->label4,
+        ];
     }
 
     public function getScope(): int
