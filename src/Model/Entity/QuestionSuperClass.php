@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Model\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
@@ -24,13 +25,20 @@ class QuestionSuperClass extends AbstractEntity
     use UpdateEntityTrait;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer", nullable=false)
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     protected $id;
+
+    /**
+     * @var QuestionChoiceSuperClass[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="QuestionChoice", mappedBy="question")
+     */
+    protected $questionChoices;
 
     /**
      * @var int
@@ -81,6 +89,13 @@ class QuestionSuperClass extends AbstractEntity
      */
     protected $position;
 
+    public function __construct($obj = null)
+    {
+        parent::__construct($obj);
+
+        $this->questionChoices = new ArrayCollection();
+    }
+
     /**
      * @return int
      */
@@ -100,6 +115,15 @@ class QuestionSuperClass extends AbstractEntity
         return $this;
     }
 
+    public function addQuestionChoice(QuestionChoiceSuperClass $questionChoice): self
+    {
+        if (!$this->questionChoices->contains($questionChoice)) {
+            $this->questionChoices->add($questionChoice);
+            $questionChoice->setQuestion($this);
+        }
+
+        return $this;
+    }
 
     public function isMultiChoice(): bool
     {

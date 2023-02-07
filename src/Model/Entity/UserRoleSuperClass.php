@@ -24,6 +24,7 @@ class UserRoleSuperClass
     public const SUPER_ADMIN_FO = 'superadminfo';
     public const USER_FO = 'userfo';
     public const USER_ROLE_CEO = 'ceo';
+    public const USER_ROLE_SYSTEM = 'system';
 
     /**
      * @var integer
