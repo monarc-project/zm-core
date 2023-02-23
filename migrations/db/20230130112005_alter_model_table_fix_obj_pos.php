@@ -52,5 +52,10 @@ class AlterModelTableFixObjPos extends AbstractMigration
         $this->execute(
             'update translations set type = "instances-metadata-fields" where type = "anr-metadatas-on-instances"'
         );
+
+        $this->table('instances')->removeColumn('disponibility')->update();
+        $this->table('objects')->removeColumn('disponibility')->update();
+
+        $this->table('instances_consequences')->removeColumn('object_id')->removeColumn('locally_touched')->update();
     }
 }

@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -82,17 +82,21 @@ trait PositionUpdateTrait
 
                 break;
             case PositionUpdatableServiceInterface::IMPLICIT_POSITION_AFTER:
-                $entityKey = $data['previous'];
-                /* Due to some models' 2 fields (uuid, anr) relation we have to add anr to the search when needed. */
-                if (\is_string($entityKey) && $entity->getAnr() !== null) {
-                    $entityKey = [
-                        'uuid' => $entityKey,
-                        'anr' => $entity->getAnr(),
-                    ];
+                if ($data['previous'] instanceof PositionedEntityInterface) {
+                    $previousEntity = $data['previous'];
+                } else {
+                    $entityKey = $data['previous'];
+                    /* Some entities have 2 fields (uuid, anr) relation, sp anr is added to the search in this case. */
+                    if (\is_string($entityKey) && $entity->getAnr() !== null) {
+                        $entityKey = [
+                            'uuid' => $entityKey,
+                            'anr' => $entity->getAnr(),
+                        ];
+                    }
+                    /** @var PositionedEntityInterface $previousEntity */
+                    $previousEntity = $table->findById($entityKey);
                 }
                 $updater = $isEntityPersisted ? $entity->getUpdater() : $entity->getCreator();
-                /** @var PositionedEntityInterface $previousEntity */
-                $previousEntity = $table->findById($entityKey);
                 $expectedPosition = $previousEntity->getPosition() + 1;
                 if ($isEntityPersisted && $entity->getPosition() !== $expectedPosition) {
                     /* Shift the elements to fill the previous position. The element will have a new one. */

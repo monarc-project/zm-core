@@ -66,6 +66,7 @@ class AnrSuperClass extends AbstractEntity
      */
     protected $objectCategories;
 
+    // TODO: use the LabelEntityTrait after refactoring.
     /**
      * @var string
      *

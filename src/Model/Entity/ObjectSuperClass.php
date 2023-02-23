@@ -11,6 +11,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Interfaces\PositionedEntityInterface;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
+use Monarc\Core\Model\Entity\Traits\LabelsEntityTrait;
+use Monarc\Core\Model\Entity\Traits\NamesEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 use Ramsey\Uuid\Lazy\LazyUuidFromString;
 use Ramsey\Uuid\Uuid;
@@ -28,6 +30,9 @@ class ObjectSuperClass implements PositionedEntityInterface
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
+
+    use LabelsEntityTrait;
+    use NamesEntityTrait;
 
     public const SCOPE_LOCAL = 1;
     public const SCOPE_GLOBAL = 2;
@@ -109,69 +114,6 @@ class ObjectSuperClass implements PositionedEntityInterface
     protected $scope = 1;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="name1", type="string", length=255, nullable=true)
-     */
-    protected $name1;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="name2", type="string", length=255, nullable=true)
-     */
-    protected $name2;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="name3", type="string", length=255, nullable=true)
-     */
-    protected $name3;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="name4", type="string", length=255, nullable=true)
-     */
-    protected $name4;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label1", type="string", length=255, nullable=true)
-     */
-    protected $label1;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label2", type="string", length=255, nullable=true)
-     */
-    protected $label2;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label3", type="string", length=255, nullable=true)
-     */
-    protected $label3;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label4", type="string", length=255, nullable=true)
-     */
-    protected $label4;
-
-    /**
-     * @var float
-     *
-     * @ORM\Column(name="disponibility", type="decimal", options={"unsigned":true, "default":0})
-     */
-    protected $availability = 0;
-
-    /**
      * @var int
      *
      * @ORM\Column(name="position", type="smallint", options={"unsigned":true, "default":0})
@@ -193,7 +135,6 @@ class ObjectSuperClass implements PositionedEntityInterface
     protected $originalName;
 
     // TODO: implement the same links on Client's entity side with 2 fields rel !!!
-
     /**
      * @var ArrayCollection|ObjectSuperClass[]
      *
@@ -377,94 +318,14 @@ class ObjectSuperClass implements PositionedEntityInterface
         return $this->anrs->contains($anr);
     }
 
-    public function setNames(array $names): self
-    {
-        foreach (range(1, 4) as $index) {
-            $key = 'name' . $index;
-            if (isset($names[$key])) {
-                $this->{$key} = $names[$key];
-            }
-        }
-
-        return $this;
-    }
-
-    public function setName(string $nameKey, string $nameValue): self
-    {
-        if (\in_array($nameKey, ['name1', 'name2', 'name3', 'name4'], true)) {
-            $this->{$nameKey} = $nameValue;
-        }
-
-        return $this;
-    }
-
-    public function getName(int $languageIndex): string
-    {
-        if (!\in_array($languageIndex, range(1, 4), true)) {
-            return '';
-        }
-
-        return (string)$this->{'name' . $languageIndex};
-    }
-
-    public function getNames(): array
-    {
-        return [
-            'name1' => $this->name1,
-            'name2' => $this->name2,
-            'name3' => $this->name3,
-            'name4' => $this->name4,
-        ];
-    }
-
     public function getNameCleanedFromCopy(int $languageIndex): string
     {
         return preg_replace('/^(.*)(\(copy #\d+\))+$/', '$1', $this->getName($languageIndex));
     }
 
-    public function setLabels(array $labels): self
-    {
-        foreach (range(1, 4) as $index) {
-            $key = 'label' . $index;
-            if (isset($labels[$key])) {
-                $this->{$key} = $labels[$key];
-            }
-        }
-
-        return $this;
-    }
-
-    public function setLabel(string $labelKey, string $labelValue): self
-    {
-        if (\in_array($labelKey, ['label1', 'label2', 'label3', 'label4'], true)) {
-            $this->{$labelKey} = $labelValue;
-        }
-
-        return $this;
-    }
-
-    public function getLabel(int $languageIndex): string
-    {
-        if (!\in_array($languageIndex, range(1, 4), true)) {
-            return '';
-        }
-
-        return (string)$this->{'label' . $languageIndex};
-    }
-
     public function getLabelCleanedFromCopy(int $languageIndex): string
     {
         return preg_replace('/^(.*)(\(copy #\d+\))+$/', '$1', $this->getLabel($languageIndex));
-    }
-
-    public function getLabels(): array
-    {
-        return [
-            'label1' => $this->label1,
-            'label2' => $this->label2,
-            'label3' => $this->label3,
-            'label4' => $this->label4,
-        ];
     }
 
     public function getScope(): int
@@ -482,18 +343,6 @@ class ObjectSuperClass implements PositionedEntityInterface
     public function getScopeName(): string
     {
         return $this->scope === static::SCOPE_LOCAL ? 'local' : 'global';
-    }
-
-    public function setAvailability(float $availability): self
-    {
-        $this->availability = $availability;
-
-        return $this;
-    }
-
-    public function getAvailability(): float
-    {
-        return (float)$this->availability;
     }
 
     public function setPosition(int $position): self

@@ -712,61 +712,6 @@ abstract class AbstractEntityTable
     }
 
     /**
-     * @param $id
-     *
-     * @return array
-     */
-    public function getDescendants($id): array
-    {
-        $childList = [];
-        $this->getRecursiveChild($childList, $id);
-
-        return $childList;
-    }
-
-    /**
-     * Get Recursive Child
-     *
-     * @param $childList
-     * @param $id
-     */
-    protected function getRecursiveChild(&$childList, $id)
-    {
-        $children = $this->getRepository()->createQueryBuilder('t')
-            ->select(array('t.id'))
-            ->where('t.parent = :parent')
-            ->setParameter(':parent', $id)
-            ->getQuery()
-            ->getResult();
-
-        if (count($children)) {
-            foreach ($children as $child) {
-                $childList[] = $child['id'];
-                $this->getRecursiveChild($childList, $child['id']);
-            }
-        }
-    }
-
-    /**
-     * @param $childList
-     * @param $id
-     */
-    protected function getRecursiveChildObjects(&$childList, $id)
-    {
-        $children = $this->getRepository()->createQueryBuilder('t')
-            ->select()
-            ->where('t.parent = :parent')
-            ->setParameter(':parent', $id)
-            ->getQuery()
-            ->getResult();
-
-        foreach ($children as $child) {
-            $childList[] = $child;
-            $this->getRecursiveChildObjects($childList, $child->id);
-        }
-    }
-
-    /**
      * Optimized method to avoid recursive call with multiple SQL queries
      *
      * @param $entity

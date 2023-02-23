@@ -30,7 +30,7 @@ use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\InstanceRiskOpTable;
 use Monarc\Core\Table\InstanceRiskOwnerTable;
-use Monarc\Core\Model\Table\InstanceTable;
+use Monarc\Core\Table\InstanceTable;
 use Monarc\Core\Table\OperationalInstanceRiskScaleTable;
 use Monarc\Core\Table\OperationalRiskScaleTable;
 use Monarc\Core\Table\OperationalRiskScaleTypeTable;
@@ -136,11 +136,11 @@ class InstanceRiskOpService
         $this->instanceRiskOpTable->getDb()->flush();
     }
 
-    public function getOperationalRisks(int $anrId, int $instanceId = null, array $params = [])
+    public function getOperationalRisks(AnrSuperClass $anr, int $instanceId = null, array $params = [])
     {
         $instancesInfos = [];
         if ($instanceId === null) {
-            $instances = $this->instanceTable->findByAnrId($anrId);
+            $instances = $this->instanceTable->findByAnr($anr);
         } else {
             $instance = $this->instanceTable->findById($instanceId);
             // TODO: remove initTree and use TreeStructureTrait::getEntityWithLinkedChildren !!!

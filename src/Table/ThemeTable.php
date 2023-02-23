@@ -23,6 +23,7 @@ class ThemeTable extends AbstractTable
         return $this->getRepository()->createQueryBuilder('t')
             ->andWhere('t.' . $labelKey . ' = :' . $labelKey)
             ->setParameter($labelKey, $labelValue)
+            ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
     }

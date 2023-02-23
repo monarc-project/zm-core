@@ -9,7 +9,8 @@ namespace Monarc\Core\Service;
 
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\ScaleImpactType;
-use Monarc\Core\Model\Table\InstanceTable;
+use Monarc\Core\Model\Table\ScaleImpactTypeTable;
+use Monarc\Core\Table\InstanceTable;
 
 /**
  * Scale Type Service
@@ -23,6 +24,7 @@ class ScaleImpactTypeService extends AbstractService
     protected $scaleTable;
     protected $instanceTable;
     protected $instanceConsequenceService;
+    protected $instanceService;
     protected $dependencies = ['anr', 'scale'];
     protected $forbiddenFields = ['scale'];
     protected $types = [
@@ -44,12 +46,8 @@ class ScaleImpactTypeService extends AbstractService
         return $this->types;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
     {
-
         $scales = parent::getList($page, $limit, $order, $filter, $filterAnd);
 
         $types = $this->getTypes();
@@ -58,7 +56,7 @@ class ScaleImpactTypeService extends AbstractService
             if (isset($scale['type'])) {
                 if (isset($types[$scale['type']])) {
                     $scales[$key]['type'] = $types[$scale['type']];
-                } else{
+                } else {
                     $scales[$key]['type'] = 'CUS'; // Custom user-defined column
                 }
             }
@@ -67,13 +65,10 @@ class ScaleImpactTypeService extends AbstractService
         return $scales;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function create($data, $last = true)
     {
         $anrId = $data['anr'];
-        $scales = parent::getList(1,0, null, null, ['anr' => $anrId]);
+        $scales = parent::getList(1, 0, null, null, ['anr' => $anrId]);
 
         if (!isset($data['isSys'])) {
             $data['isSys'] = 0;
@@ -108,7 +103,7 @@ class ScaleImpactTypeService extends AbstractService
         //retrieve all instances for current anr
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('instanceTable');
-        $instances = $instanceTable->getEntityByFields(['anr' => $anrId]);
+        $instances = $instanceTable->findByAnr($scaleImpactType->getAnr());
         $i = 1;
         $nbInstances = count($instances);
         foreach ($instances as $instance) {
@@ -128,9 +123,6 @@ class ScaleImpactTypeService extends AbstractService
         return $id;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function update($id, $data)
     {
         $data['isSys'] = 0;
@@ -154,9 +146,6 @@ class ScaleImpactTypeService extends AbstractService
         return $this->get('table')->save($scaleImpactType);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function delete($id)
     {
         $entity = $this->getEntity($id);
@@ -169,25 +158,23 @@ class ScaleImpactTypeService extends AbstractService
     }
 
     /**
-     * @inheritdoc
+     * Hide / show scales' types on Edit Impacts dialog.
      */
     public function patch($id, $data)
     {
-        //security
         $this->filterPatchFields($data);
 
-        if (isset($data['isHidden'])) {
-            $instancesConsequencesData = [
-                'c' => -1,
-                'i' => -1,
-                'd' => -1,
-                'anr' => $data['anr'],
-                'isHidden' => $data['isHidden'],
-            ];
+        /** @var ScaleImpactTypeTable $scaleImpactTypeTable */
+        $scaleImpactTypeTable = $this->get('table');
+        $scaleImpactType = $scaleImpactTypeTable->findById((int)$id);
 
+        if (isset($data['isHidden'])) {
             /** @var InstanceConsequenceService $instanceConsequenceService */
             $instanceConsequenceService = $this->get('instanceConsequenceService');
-            $instanceConsequenceService->patchByScaleImpactType($id, $instancesConsequencesData);
+            $instanceConsequenceService->updateConsequencesByScaleImpactType($scaleImpactType, (bool)$data['isHidden']);
+            /** @var InstanceService $instanceService */
+            $instanceService = $this->get('instanceService');
+            $instanceService->refreshAllTheInstancesImpactAndUpdateRisks($scaleImpactType->getAnr());
         }
 
         parent::patch($id, $data);

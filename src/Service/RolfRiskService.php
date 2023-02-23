@@ -10,13 +10,13 @@ namespace Monarc\Core\Service;
 use Monarc\Core\Model\Entity\RolfRiskSuperClass;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\InstanceRiskOpTable;
-use Monarc\Core\Model\Table\InstanceTable;
 use Monarc\Core\Model\Table\MeasureTable;
+use Monarc\Core\Model\Table\RolfRiskTable;
+use Monarc\Core\Model\Table\RolfTagTable;
+use Monarc\Core\Table\InstanceTable;
 use Monarc\Core\Table\MonarcObjectTable;
 use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\Mapping\MappingException;
-use Monarc\Core\Model\Table\RolfRiskTable;
-use Monarc\Core\Model\Table\RolfTagTable;
 
 /**
  * Rolf Risk Service
@@ -161,12 +161,7 @@ class RolfRiskService extends AbstractService
                 $objects = $monarcObjectTable->findByAnrAndRolfTag($anr, $addedRolfTag);
             }
             foreach ($objects as $object) {
-                if ($anr === null) {
-                    $instances = $instanceTable->findByObject($object);
-                } else {
-                    $instances = $instanceTable->findByAnrAndObject($anr, $object);
-                }
-                foreach ($instances as $instance) {
+                foreach ($object->getInstances() as $instance) {
                     $instanceRiskOpService->createInstanceRiskOpWithScales(
                         $instance,
                         $object,

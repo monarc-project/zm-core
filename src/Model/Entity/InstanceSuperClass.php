@@ -1,7 +1,7 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -9,12 +9,14 @@ namespace Monarc\Core\Model\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Monarc\Core\Model\Entity\Interfaces\PositionedEntityInterface;
+use Monarc\Core\Model\Entity\Interfaces\TreeStructuredEntityInterface;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
+use Monarc\Core\Model\Entity\Traits\LabelsEntityTrait;
+use Monarc\Core\Model\Entity\Traits\NamesEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 
 /**
- * Instance
- *
  * @ORM\Table(name="instances", indexes={
  *      @ORM\Index(name="anr", columns={"anr_id"}),
  *      @ORM\Index(name="asset_id", columns={"asset_id"}),
@@ -25,20 +27,23 @@ use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
-class InstanceSuperClass extends AbstractEntity
+class InstanceSuperClass implements PositionedEntityInterface, TreeStructuredEntityInterface
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
 
-    const LEVEL_ROOT = 1; //instance de racine d'un objet
-    const LEVEL_LEAF = 2; //instance d'une feuille d'un objet
-    const LEVEL_INTER = 3; //instance d'une noeud intermédiaire d'un objet
+    use LabelsEntityTrait;
+    use NamesEntityTrait;
 
-    const MODE_CREA_ROOT = 1;//Mode de création d'une instance qui permet d'instancier directement une racine
-    const MODE_CREA_NODE = 2;//Mode de création d'une instance à partir d'un nouveau composant d'objet
+    public const LEVEL_ROOT = 1; // Root instance.
+    public const LEVEL_LEAF = 2; // Child instance.
+    public const LEVEL_INTER = 3; // Intermediate level.
+
+    public const MODE_CREATE_ROOT = 1;
+    public const MODE_CREATE_NODE = 2;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer", nullable=false)
      * @ORM\Id
@@ -77,7 +82,7 @@ class InstanceSuperClass extends AbstractEntity
     protected $object;
 
     /**
-     * @var InstanceSuperClass
+     * @var InstanceSuperClass|null
      *
      * @ORM\ManyToOne(targetEntity="Instance", cascade={"persist"})
      * @ORM\JoinColumns({
@@ -86,15 +91,24 @@ class InstanceSuperClass extends AbstractEntity
      */
     protected $root;
 
+    // TODO: implement the same links on Client's entity side with 2 fields rel !!!
     /**
-     * @var InstanceSuperClass
+     * @var InstanceSuperClass|null
      *
-     * @ORM\ManyToOne(targetEntity="Instance", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Instance", inversedBy="children", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="parent_id", referencedColumnName="id", nullable=true)
      * })
      */
     protected $parent;
+
+    /**
+     * @var ArrayCollection|InstanceSuperClass[]
+     *
+     * @ORM\OneToMany(targetEntity="Instance", mappedBy="parent")
+     * @ORM\OrderBy({"position" = "ASC"})
+     */
+    protected $children;
 
     /**
      * @var InstanceConsequenceSuperClass[]|ArrayCollection
@@ -118,69 +132,6 @@ class InstanceSuperClass extends AbstractEntity
     protected $operationalInstanceRisks;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="name1", type="string", length=255, nullable=true)
-     */
-    protected $name1;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="name2", type="string", length=255, nullable=true)
-     */
-    protected $name2;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="name3", type="string", length=255, nullable=true)
-     */
-    protected $name3;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="name4", type="string", length=255, nullable=true)
-     */
-    protected $name4;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label1", type="string", length=255, nullable=true)
-     */
-    protected $label1;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label2", type="string", length=255, nullable=true)
-     */
-    protected $label2;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label3", type="string", length=255, nullable=true)
-     */
-    protected $label3;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label4", type="string", length=255, nullable=true)
-     */
-    protected $label4;
-
-    /**
-     * @var float
-     *
-     * @ORM\Column(name="disponibility", type="decimal", options={"unsigned":true, "default":0})
-     */
-    protected $disponibility = 0;
-
-    /**
      * @var int
      *
      * @ORM\Column(name="level", type="smallint", options={"unsigned":true, "default":1})
@@ -202,46 +153,46 @@ class InstanceSuperClass extends AbstractEntity
     protected $exportable = 1;
 
     /**
-     * @var int
+     * @var int "-1" - means the value is inherited from one of its parents.
      *
      * @ORM\Column(name="c", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $c = 1;
+    protected $c = -1;
 
     /**
-     * @var int
+     * @var int "-1" - means the value is inherited from one of its parents.
      *
      * @ORM\Column(name="i", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $i = 1;
+    protected $i = -1;
 
     /**
-     * @var int
+     * @var int "-1" - means the value is inherited from one of its parents.
      *
      * @ORM\Column(name="d", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $d = 1;
+    protected $d = -1;
 
     /**
-     * @var int
+     * @var int 1 - the confidentiality value is inherited, 0 - not inherited.
      *
      * @ORM\Column(name="ch", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $ch = 0;
+    protected $ch = 1;
 
     /**
-     * @var int
+     * @var int 1 - the integrity value is inherited, 0 - not inherited.
      *
      * @ORM\Column(name="ih", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $ih = 0;
+    protected $ih = 1;
 
     /**
-     * @var int
+     * @var int 1 - the availability value is inherited, 0 - not inherited.
      *
      * @ORM\Column(name="dh", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $dh = 0;
+    protected $dh = 1;
 
     /**
      * @var int
@@ -255,27 +206,26 @@ class InstanceSuperClass extends AbstractEntity
         $this->instanceConsequences = new ArrayCollection();
         $this->instanceRisks = new ArrayCollection();
         $this->operationalInstanceRisks = new ArrayCollection();
+        $this->children = new ArrayCollection();
 
         parent::__construct($obj);
     }
 
-    /**
-     * @return int
-     */
-    public function getId()
+    public function getImplicitPositionRelationsValues(): array
     {
-        return $this->id;
+        $fields = [
+            'parent' => $this->parent,
+        ];
+        if ($this->anr !== null) {
+            $fields['anr'] = $this->anr;
+        }
+
+        return $fields;
     }
 
-    /**
-     * @param int $id
-     * @return Instance
-     */
-    public function setId($id): self
+    public function getId(): int
     {
-        $this->id = $id;
-
-        return $this;
+        return $this->id;
     }
 
     public function getAnr(): AnrSuperClass
@@ -315,7 +265,7 @@ class InstanceSuperClass extends AbstractEntity
         return $this;
     }
 
-    public function getRoot(): ?InstanceSuperClass
+    public function getRoot(): ?self
     {
         return $this->root;
     }
@@ -325,14 +275,19 @@ class InstanceSuperClass extends AbstractEntity
         return $this->root ?? $this;
     }
 
-    public function setRoot(?InstanceSuperClass $root)
+    public function setRoot(?TreeStructuredEntityInterface $root): self
     {
         $this->root = $root;
 
         return $this;
     }
 
-    public function getParent(): ?InstanceSuperClass
+    public function isRoot(): bool
+    {
+        return $this->root === null;
+    }
+
+    public function getParent(): ?self
     {
         return $this->parent;
     }
@@ -347,6 +302,11 @@ class InstanceSuperClass extends AbstractEntity
     public function hasParent(): bool
     {
         return $this->parent !== null;
+    }
+
+    public function getChildren()
+    {
+        return $this->children;
     }
 
     public function getLevel(): int
@@ -364,60 +324,6 @@ class InstanceSuperClass extends AbstractEntity
     public function isLevelRoot(): bool
     {
         return $this->level === static::LEVEL_ROOT;
-    }
-
-    public function setNames(array $names): self
-    {
-        foreach (range(1, 4) as $index) {
-            $key = 'name' . $index;
-            if (isset($names[$key])) {
-                $this->{$key} = $names[$key];
-            }
-        }
-
-        return $this;
-    }
-
-    public function getName(int $languageIndex): string
-    {
-        if (!\in_array($languageIndex, range(1, 4), true)) {
-            return '';
-        }
-
-        return (string)$this->{'name' . $languageIndex};
-    }
-
-    public function getLabel(int $languageIndex): string
-    {
-        if (!\in_array($languageIndex, range(1, 4), true)) {
-            return '';
-        }
-
-        return (string)$this->{'label' . $languageIndex};
-    }
-
-    public function setLabels(array $labels): self
-    {
-        foreach (range(1, 4) as $index) {
-            $key = 'label' . $index;
-            if (isset($labels[$key])) {
-                $this->{$key} = $labels[$key];
-            }
-        }
-
-        return $this;
-    }
-
-    public function setDisponibility(float $disponibility): self
-    {
-        $this->disponibility = $disponibility;
-
-        return $this;
-    }
-
-    public function getDisponibility(): float
-    {
-        return $this->disponibility;
     }
 
     public function setAssetType(int $assetType): self
@@ -487,9 +393,9 @@ class InstanceSuperClass extends AbstractEntity
         return $this;
     }
 
-    public function getInheritedConfidentiality(): int
+    public function isConfidentialityInherited(): bool
     {
-        return $this->ch;
+        return $this->ch === 1;
     }
 
     public function setInheritedIntegrity(int $ih): self
@@ -499,9 +405,9 @@ class InstanceSuperClass extends AbstractEntity
         return $this;
     }
 
-    public function getInheritedIntegrity(): int
+    public function isIntegrityInherited(): bool
     {
-        return $this->ih;
+        return $this->ih === 1;
     }
 
     public function setInheritedAvailability(int $dh): self
@@ -511,9 +417,9 @@ class InstanceSuperClass extends AbstractEntity
         return $this;
     }
 
-    public function getInheritedAvailability(): int
+    public function isAvailabilityInherited(): bool
     {
-        return $this->dh;
+        return $this->dh === 1;
     }
 
     public static function getAvailableScalesCriteria(): array
@@ -555,13 +461,6 @@ class InstanceSuperClass extends AbstractEntity
         return $this;
     }
 
-    public function resetInstanceConsequences(): self
-    {
-        $this->instanceConsequences = new ArrayCollection();
-
-        return $this;
-    }
-
     public function getInstanceRisks()
     {
         return $this->instanceRisks;
@@ -573,13 +472,6 @@ class InstanceSuperClass extends AbstractEntity
             $this->instanceRisks->add($instanceRisk);
             $instanceRisk->setInstance($this);
         }
-
-        return $this;
-    }
-
-    public function resetInstanceRisks(): self
-    {
-        $this->instanceRisks = new ArrayCollection();
 
         return $this;
     }
@@ -601,24 +493,24 @@ class InstanceSuperClass extends AbstractEntity
 
     /**
      * Returns the instance hierarchy array ordered from its root through all the children to the instance itself.
-     * Each element is a normalized array of instance properties.
+     * Each element is a normalized array of the instances' names.
      */
     public function getHierarchyArray(): array
     {
-        if ($this->root === null || $this->id === $this->root->getId()) {
-            return [$this->getJsonArray()];
+        if ($this->isRoot()) {
+            return [$this->getNames()];
         }
 
-        return $this->getInstanceParents($this);
+        return $this->getParents();
     }
 
-    private function getInstanceParents(InstanceSuperClass $instance): array
+    private function getParents(): array
     {
-        if ($instance->getRoot() === null || $instance->getId() === $instance->getRoot()->getId()) {
-            return [$instance->getJsonArray()];
+        if ($this->isRoot() || $this->getParent() === null) {
+            return [$this->getNames()];
         }
 
-        return array_merge($this->getInstanceParents($instance->getParent()), [$instance->getJsonArray()]);
+        return array_merge($this->getParent()->getParents(), [$this->getNames()]);
     }
 
     public function getHierarchyString(): string
@@ -626,55 +518,47 @@ class InstanceSuperClass extends AbstractEntity
         return implode(' > ', array_column($this->getHierarchyArray(), 'name' . $this->anr->getLanguage()));
     }
 
-    protected $parameters = array(
-        'implicitPosition' => array(
-            'field' => 'parent',
-            'root' => 'root',
-            'subField' => [
-                'anr',
-            ],
-        ),
-    );
-
-    public function getInputFilter($partial = false)
+    public function updateImpactBasedOnConsequences(): self
     {
-        parent::getInputFilter($partial);
+        foreach ($this->instanceConsequences as $instanceConsequence) {
+            /* Exclude hidden consequences and deprecated consequences impact types from the calculation. */
+            if ($instanceConsequence->isHidden() || !\in_array(
+                $instanceConsequence->getScaleImpactType()->getType(),
+                ScaleImpactTypeSuperClass::getScaleImpactTypesCid(),
+                true
+            )) {
+                continue;
+            }
 
-        $texts = [
-            'name1', 'name2', 'name3', 'name4',
-            'label1', 'label2', 'label3', 'label4',
-        ];
-        foreach ($texts as $text) {
-            $this->inputFilter->add(array(
-                'name' => $text,
-                'required' => strstr($text, (string)$this->getLanguage()) && (!$partial),
-                'allow_empty' => false,
-                'filters' => array(),
-                'validators' => array(),
-            ));
+            if ($instanceConsequence->getConfidentiality() > $this->c) {
+                $this->c = $instanceConsequence->getConfidentiality();
+                $this->ch = 0;
+            }
+            if ($instanceConsequence->getIntegrity() > $this->i) {
+                $this->i = $instanceConsequence->getIntegrity();
+                $this->ih = 0;
+            }
+            if ($instanceConsequence->getAvailability() > $this->d) {
+                $this->d = $instanceConsequence->getAvailability();
+                $this->dh = 0;
+            }
         }
 
-        $fields = ['c', 'i', 'd', 'asset', 'object'];
-        foreach ($fields as $field) {
-            $this->inputFilter->add(array(
-                'name' => $field,
-                'required' => (!$partial) ? true : false,
-                'allow_empty' => false,
-                'filters' => array(),
-                'validators' => array(),
-            ));
+        return $this;
+    }
+
+    public function refreshInheritedImpact(): self
+    {
+        if ($this->isConfidentialityInherited()) {
+            $this->c = $this->hasParent() ? $this->parent->getConfidentiality() : -1;
+        }
+        if ($this->isIntegrityInherited()) {
+            $this->i = $this->hasParent() ? $this->parent->getIntegrity() : -1;
+        }
+        if ($this->isAvailabilityInherited()) {
+            $this->d = $this->hasParent() ? $this->parent->getAvailability() : -1;
         }
 
-        $descriptions = ['description1', 'description2', 'description3', 'description4'];
-        foreach ($descriptions as $description) {
-            $this->inputFilter->add(array(
-                'name' => $description,
-                'required' => false,
-                'allow_empty' => true,
-                'filters' => array(),
-                'validators' => array(),
-            ));
-        }
-        return $this->inputFilter;
+        return $this;
     }
 }

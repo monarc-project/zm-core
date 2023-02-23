@@ -1,10 +1,13 @@
 <?php
+/**
+ * @link      https://github.com/monarc-project for the canonical source repository
+ * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
+ * @license   MONARC is licensed under GNU Affero General Public License version 3
+ */
 
 namespace Monarc\Core;
 
 use Monarc\Core\Service\AuthenticationService;
-use Monarc\Core\Service\InstanceService;
-use Monarc\FrontOffice\Service\AnrInstanceService;
 use Laminas\Http\Request;
 use Laminas\Mvc\MvcEvent;
 use Laminas\View\Model\JsonModel;
@@ -19,29 +22,9 @@ class Module
         if ($e->getRequest() instanceof Request) {
             $eventManager = $e->getApplication()->getEventManager();
 
-            $sm = $e->getApplication()->getServiceManager();
             $eventManager->attach(MvcEvent::EVENT_ROUTE, [$this, 'MCEventRoute'], -100);
             $eventManager->attach(MvcEvent::EVENT_DISPATCH_ERROR, [$this, 'onDispatchError'], 0);
             $eventManager->attach(MvcEvent::EVENT_RENDER_ERROR, [$this, 'onRenderError'], 0);
-
-            $sharedEventManager = $eventManager->getSharedManager();
-
-            $sharedEventManager->attach('instance', 'patch', function ($e) use ($sm) {
-                $params = $e->getParams();
-                /** @var InstanceService $instanceService */
-                if ($sm->has(AnrInstanceService::class)) {
-                    $instanceService = $sm->get(AnrInstanceService::class);
-                } else {
-                    $instanceService = $sm->get(InstanceService::class);
-                }
-                return $instanceService->patchInstance(
-                    $params['anrId'],
-                    $params['instanceId'],
-                    $params['data'],
-                    [],
-                    true
-                );
-            }, 100);
         }
     }
 

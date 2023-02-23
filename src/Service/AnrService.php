@@ -20,6 +20,7 @@ use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\ScaleCommentTable;
 use Monarc\Core\Model\Table\ScaleTable;
 use Monarc\Core\Table\AnrObjectCategoryTable;
+use Monarc\Core\Table\InstanceTable;
 use Monarc\Core\Table\MonarcObjectTable;
 use Monarc\Core\Table\ThreatTable;
 
@@ -252,6 +253,7 @@ class AnrService extends AbstractService
         }
 
         // Reconstruct instances tree
+        /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('instanceTable');
         $newInstances = $instanceTable->findByAnrAndOrderByParams($newAnr);
         foreach ($newInstances as $newInstance) {

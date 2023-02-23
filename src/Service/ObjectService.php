@@ -24,7 +24,6 @@ use Monarc\Core\Model\Entity\ObjectSuperClass;
 use Monarc\Core\Model\Entity\RolfTag;
 use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Model\Table\InstanceRiskOpTable;
-use Monarc\Core\Model\Table\InstanceTable;
 use Monarc\Core\Service\Traits\PositionUpdateTrait;
 use Monarc\Core\Table;
 use Monarc\Core\Model\Table\RolfTagTable;
@@ -49,7 +48,7 @@ class ObjectService
 
     private Table\ObjectObjectTable $objectObjectTable;
 
-    private InstanceTable $instanceTable;
+    private Table\InstanceTable $instanceTable;
 
     private RolfTagTable $rolfTagTable;
 
@@ -66,7 +65,7 @@ class ObjectService
         Table\ObjectCategoryTable $objectCategoryTable,
         Table\AnrObjectCategoryTable $anrObjectCategoryTable,
         Table\ObjectObjectTable $objectObjectTable,
-        InstanceTable $instanceTable,
+        Table\InstanceTable $instanceTable,
         RolfTagTable $rolfTagTable,
         InstanceRiskOpTable $instanceRiskOpTable,
         InstanceRiskOpService $instanceRiskOpService,
@@ -340,7 +339,7 @@ class ObjectService
                     && \in_array($currentObjectInstance->getParent()->getId(), $parentInstancesIds, true)
                 ) {
                     $monarcObject->removeInstance($currentObjectInstance);
-                    $this->instanceTable->deleteEntity($currentObjectInstance);
+                    $this->instanceTable->remove($currentObjectInstance, false);
                 }
             }
 
@@ -361,7 +360,7 @@ class ObjectService
         }
 
         foreach ($monarcObject->getInstances() as $instance) {
-            $this->instanceTable->deleteEntity($instance, false);
+            $this->instanceTable->remove($instance, false);
         }
 
         $this->monarcObjectTable->save($monarcObject);
@@ -593,7 +592,7 @@ class ObjectService
         foreach ($monarcObject->getInstances() as $instance) {
             $instance->setNames($monarcObject->getNames())
                 ->setLabels($monarcObject->getLabels());
-            $this->instanceTable->saveEntity($instance, false);
+            $this->instanceTable->save($instance, false);
 
             if (!$monarcObject->getAsset()->isPrimary()) {
                 continue;
@@ -701,7 +700,6 @@ class ObjectService
             ])
             ->setScope($monarcObjectToCopy->getScope())
             ->setMode($monarcObjectToCopy->getMode())
-            ->setAvailability($monarcObjectToCopy->getAvailability())
             ->setCreator($this->connectedUser->getEmail());
         if ($monarcObjectToCopy->hasRolfTag()) {
             $newMonarcObject->setRolfTag($monarcObjectToCopy->getRolfTag());

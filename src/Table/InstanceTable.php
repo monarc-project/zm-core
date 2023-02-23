@@ -1,43 +1,28 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
-namespace Monarc\Core\Model\Table;
+namespace Monarc\Core\Table;
 
-use Doctrine\ORM\EntityNotFoundException;
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
-use Monarc\Core\Model\Db;
-use Monarc\Core\Model\Entity\AbstractEntity;
+use Doctrine\ORM\EntityManager;
 use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\AssetSuperClass;
 use Monarc\Core\Model\Entity\Instance;
 use Monarc\Core\Model\Entity\InstanceSuperClass;
 use Monarc\Core\Model\Entity\ObjectSuperClass;
-use Monarc\Core\Service\ConnectedUserService;
+use Monarc\Core\Table\Interfaces\PositionUpdatableTableInterface;
+use Monarc\Core\Table\Traits\PositionIncrementTableTrait;
 
-class InstanceTable extends AbstractEntityTable
+class InstanceTable extends AbstractTable implements PositionUpdatableTableInterface
 {
-    public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
-    {
-        parent::__construct($dbService, Instance::class, $connectedUserService);
-    }
+    use PositionIncrementTableTrait;
 
-    /**
-     * @throws EntityNotFoundException
-     */
-    public function findById(int $id): InstanceSuperClass
+    public function __construct(EntityManager $entityManager, $entityName = Instance::class)
     {
-        /** @var InstanceSuperClass|null $instance */
-        $instance = $this->getRepository()->find($id);
-        if ($instance === null) {
-            throw EntityNotFoundException::fromClassNameAndIdentifier(\get_class($this), [$id]);
-        }
-
-        return $instance;
+        parent::__construct($entityManager, $entityName);
     }
 
     /**
@@ -121,6 +106,21 @@ class InstanceTable extends AbstractEntityTable
         return $queryBuilder->getQuery()->getResult();
     }
 
+    /**
+     * @return Instance[]
+     */
+    public function findRootInstancesByAnrAndOrderByPosition(AnrSuperClass $anr): array
+    {
+        return $this->getRepository()
+            ->createQueryBuilder('i')
+            ->where('i.anr = :anr')
+            ->andWhere('i.parent IS NULL')
+            ->setParameter('anr', $anr)
+            ->addOrderBy('i.position')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function findOneByAnrAndObjectExcludeInstance(
         AnrSuperClass $anr,
         ObjectSuperClass $object,
@@ -140,19 +140,6 @@ class InstanceTable extends AbstractEntityTable
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
-    }
-
-    /**
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
-    public function saveEntity(InstanceSuperClass $instance, bool $flushAll = true): void
-    {
-        $em = $this->getDb()->getEntityManager();
-        $em->persist($instance);
-        if ($flushAll) {
-            $em->flush();
-        }
     }
 
     /**
@@ -197,20 +184,6 @@ class InstanceTable extends AbstractEntityTable
     /**
      * @return InstanceSuperClass[]
      */
-    public function findByAnrId(int $anrId)
-    {
-        return $this->getRepository()
-            ->createQueryBuilder('i')
-            ->innerJoin('i.anr', 'anr')
-            ->where('anr.id = :anrId')
-            ->setParameter('anrId', $anrId)
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
-     * @return InstanceSuperClass[]
-     */
     public function findByAsset(AssetSuperClass $asset): array
     {
         return $this->getRepository()
@@ -221,16 +194,25 @@ class InstanceTable extends AbstractEntityTable
             ->getResult();
     }
 
-    /**
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
-    public function deleteEntity(InstanceSuperClass $instance, bool $flushAll = true): void
-    {
-        $em = $this->getDb()->getEntityManager();
-        $em->remove($instance);
-        if ($flushAll) {
-            $em->flush();
+    public function findOneByAnrParentAndPosition(
+        AnrSuperClass $anr,
+        ?InstanceSuperClass $parentInstance,
+        int $position
+    ): ?InstanceSuperClass {
+        $queryBuilder = $this->getRepository()->createQueryBuilder('a')
+            ->where('i.anr = :anr')
+            ->setParameter('anr', $anr);
+        if ($parentInstance === null) {
+            $queryBuilder->andWhere('i.parent IS NULL');
+        } else {
+            $queryBuilder->andWhere('i.parent = :parent')->setParameter('parent', $parentInstance);
         }
+
+        return $queryBuilder
+            ->andWhere('i.position = :position')
+            ->setParameter('position', $position)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getResult();
     }
 }

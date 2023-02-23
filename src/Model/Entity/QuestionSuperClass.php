@@ -91,9 +91,9 @@ class QuestionSuperClass extends AbstractEntity
 
     public function __construct($obj = null)
     {
-        $this->questionChoices = new ArrayCollection();
-
         parent::__construct($obj);
+
+        $this->questionChoices = new ArrayCollection();
     }
 
     /**

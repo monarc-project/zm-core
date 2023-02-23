@@ -19,17 +19,16 @@ use Monarc\Core\Model\Entity\InstanceSuperClass;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Entity\ObjectSuperClass;
 use Monarc\Core\Table\AmvTable;
-use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\InstanceRiskTable;
 use Monarc\Core\Table\InstanceRiskOwnerTable;
-use Monarc\Core\Model\Table\InstanceTable;
-use Monarc\Core\Traits\RiskTrait;
+use Monarc\Core\Table\InstanceTable;
+use Monarc\Core\Service\Traits\RiskCalculationTrait;
 use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\Mapping\MappingException;
 
 class InstanceRiskService extends AbstractService
 {
-    use RiskTrait;
+    use RiskCalculationTrait;
 
     protected $dependencies = ['anr', 'amv', 'asset', 'instance', 'threat', 'vulnerability'];
 
@@ -50,7 +49,6 @@ class InstanceRiskService extends AbstractService
 
     public function createInstanceRisks(
         InstanceSuperClass $instance,
-        AnrSuperClass $anr,
         ObjectSuperClass $object,
         array $params = []
     ): void {
@@ -59,7 +57,7 @@ class InstanceRiskService extends AbstractService
 
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('instanceTable');
-        $otherInstance = $instanceTable->findOneByAnrAndObjectExcludeInstance($anr, $object, $instance);
+        $otherInstance = $instanceTable->findOneByAnrAndObjectExcludeInstance($instance->getAnr(), $object, $instance);
 
         if ($otherInstance !== null && $object->isScopeGlobal()) {
             foreach ($instanceRiskTable->findByInstance($otherInstance) as $instanceRisk) {
@@ -82,7 +80,7 @@ class InstanceRiskService extends AbstractService
                 $instanceRiskEntityClassName = $instanceRiskTable->getEntityClass();
                 /** @var InstanceRiskSuperClass $instanceRisk */
                 $instanceRisk = new $instanceRiskEntityClassName();
-                $instanceRisk->setAnr($anr)
+                $instanceRisk->setAnr($instance->getAnr())
                     ->setAmv($amv)
                     ->setAsset($amv->getAsset())
                     ->setInstance($instance)
@@ -97,7 +95,7 @@ class InstanceRiskService extends AbstractService
                         $instanceRisk->setContext($instanceRiskData['context'] ?? '');
                         if (!empty($instanceRiskData['riskOwner'])) {
                             $instanceRiskOwner = $this->getOrCreateInstanceRiskOwner(
-                                $anr,
+                                $instance->getAnr(),
                                 $instanceRiskData['riskOwner']
                             );
                             $instanceRisk->setInstanceRiskOwner($instanceRiskOwner);
@@ -129,18 +127,14 @@ class InstanceRiskService extends AbstractService
         $instanceRiskTable->getDb()->flush();
     }
 
-    public function getInstanceRisks(int $anrId, ?int $instanceId, array $params = []): array
+    public function getInstanceRisks(AnrSuperClass $anr, ?int $instanceId, array $params = []): array
     {
-        /** @var AnrTable $anrTable */
-        $anrTable = $this->get('anrTable');
-        $anr = $anrTable->findById($anrId);
-
         if ($instanceId !== null) {
             /** @var InstanceTable $instanceTable */
             $instanceTable = $this->get('instanceTable');
             $instance = $instanceTable->findById($instanceId);
 
-            if ($instance->getAnr()->getId() !== $anrId) {
+            if ($instance->getAnr()->getId() !== $anr->getId()) {
                 throw new Exception('Anr ID and instance anr ID are different', 412);
             }
 

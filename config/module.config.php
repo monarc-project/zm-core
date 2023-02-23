@@ -111,18 +111,6 @@ return [
                 ],
             ],
 
-            'monarc_api_anr' => [
-                'type' => 'segment',
-                'options' => [
-                    'route' => '/api/anr[/:id]',
-                    'constraints' => [
-                        'id' => '[0-9]+',
-                    ],
-                    'defaults' => [
-                        'controller' => Controller\ApiAnrController::class,
-                    ],
-                ],
-            ],
             'monarc_api_anr_export' => [
                 'type' => 'segment',
                 'options' => [
@@ -146,66 +134,12 @@ return [
                 ],
             ],
 
-            'monarc_api_anr_instances_consequences' => [
-                'type' => 'segment',
-                'options' => [
-                    'route' => '/api/anr/:anrid/instances-consequences[/:id]',
-                    'constraints' => [
-                        'id' => '[0-9]+',
-                    ],
-                    'defaults' => [
-                        'controller' => Controller\ApiAnrInstancesConsequencesController::class,
-                    ],
-                ],
-            ],
-
-            'monarc_api_anr_risks' => [
-                'type' => 'segment',
-                'options' => [
-                    'route' => '/api/anr/:anrid/risks[/:id]',
-                    'constraints' => [
-                        'anrid' => '[0-9]+',
-                        'id' => '[0-9]+',
-                    ],
-                    'defaults' => [
-                        'controller' => Controller\ApiAnrRisksController::class,
-                    ],
-                ],
-            ],
-
             'monarc_api_anr_risks_op' => [
                 'type' => 'segment',
                 'options' => [
                     'route' => '/api/anr/:anrid/risksop[/:id]',
                     'defaults' => [
                         'controller' => Controller\ApiAnrRisksOpController::class,
-                    ],
-                ],
-            ],
-
-            'monarc_api_anr_instances' => [
-                'type' => 'segment',
-                'options' => [
-                    'route' => '/api/anr/:anrid/instances[/:id]',
-                    'constraints' => [
-                        'id' => '[0-9]+',
-                    ],
-                    'defaults' => [
-                        'controller' => Controller\ApiAnrInstancesController::class,
-                    ],
-                ],
-            ],
-
-            'monarc_api_anr_instances_export' => [
-                'type' => 'segment',
-                'options' => [
-                    'route' => '/api/anr/:anrid/instances/:id/export',
-                    'constraints' => [
-                        'id' => '[0-9]+',
-                    ],
-                    'defaults' => [
-                        'controller' => Controller\ApiAnrInstancesController::class,
-                        'action' => 'export'
                     ],
                 ],
             ],
@@ -355,10 +289,10 @@ return [
             Service\GuideService::class => Service\GuideServiceFactory::class,
             Service\GuideItemService::class => Service\GuideItemServiceFactory::class,
             Service\HistoricalService::class => Service\HistoricalServiceFactory::class,
-            Service\InstanceService::class => Service\InstanceServiceFactory::class,
+            Service\InstanceService::class => AutowireFactory::class,
             Service\InstanceRiskService::class => Service\InstanceRiskServiceFactory::class,
             Service\InstanceRiskOpService::class => AutowireFactory::class,
-            Service\InstanceConsequenceService::class => Service\InstanceConsequenceServiceFactory::class,
+            Service\InstanceConsequenceService::class => AutowireFactory::class,
             Service\MailService::class => AutowireFactory::class,
             Service\ReferentialService::class => Service\ReferentialServiceFactory::class,
             Service\MeasureService::class => Service\MeasureServiceFactory::class,
@@ -397,8 +331,6 @@ return [
             ModelEntity\Measure::class => ServiceModelEntity\MeasureServiceModelEntity::class,
             ModelEntity\MeasureMeasure::class => ServiceModelEntity\MeasureMeasureServiceModelEntity::class,
             ModelEntity\SoaCategory::class => ServiceModelEntity\SoaCategoryServiceModelEntity::class,
-            ModelEntity\Instance::class => ServiceModelEntity\InstanceServiceModelEntity::class,
-            ModelEntity\InstanceConsequence::class => ServiceModelEntity\InstanceConsequenceServiceModelEntity::class,
             ModelEntity\InstanceRisk::class => ServiceModelEntity\InstanceRiskServiceModelEntity::class,
             ModelEntity\InstanceRiskOp::class => ServiceModelEntity\InstanceRiskOpServiceModelEntity::class,
             ModelEntity\RolfRisk::class => ServiceModelEntity\RolfRiskServiceModelEntity::class,
@@ -411,9 +343,7 @@ return [
             ModelEntity\ScaleComment::class => ServiceModelEntity\ScaleCommentServiceModelEntity::class,
             ModelEntity\ScaleImpactType::class => ServiceModelEntity\ScaleImpactTypeServiceModelEntity::class,
 
-            Table\ModelTable::class => Table\Factory\CoreEntityManagerFactory::class,
             DeprecatedTable\AnrTable::class => AutowireFactory::class,
-            Table\AnrObjectCategoryTable::class => Table\Factory\CoreEntityManagerFactory::class,
             DeprecatedTable\QuestionTable::class => AutowireFactory::class,
             DeprecatedTable\QuestionChoiceTable::class => AutowireFactory::class,
             DeprecatedTable\GuideTable::class => AutowireFactory::class,
@@ -422,25 +352,27 @@ return [
             DeprecatedTable\MeasureTable::class => AutowireFactory::class,
             DeprecatedTable\MeasureMeasureTable::class => AutowireFactory::class,
             DeprecatedTable\SoaCategoryTable::class => AutowireFactory::class,
-            Table\MonarcObjectTable::class => Table\Factory\CoreEntityManagerFactory::class,
-            DeprecatedTable\InstanceTable::class => AutowireFactory::class,
-            DeprecatedTable\InstanceConsequenceTable::class => AutowireFactory::class,
             DeprecatedTable\InstanceRiskTable::class => AutowireFactory::class,
             DeprecatedTable\InstanceRiskOpTable::class => AutowireFactory::class,
-            Table\ObjectCategoryTable::class => Table\Factory\CoreEntityManagerFactory::class,
-            Table\ObjectObjectTable::class => AutowireFactory::class,
-            Table\ThemeTable::class => Table\Factory\CoreEntityManagerFactory::class,
             DeprecatedTable\HistoricalTable::class => AutowireFactory::class,
-            Table\AssetTable::class => Table\Factory\CoreEntityManagerFactory::class,
-            Table\AmvTable::class => Table\Factory\CoreEntityManagerFactory::class,
-            Table\ThreatTable::class => Table\Factory\CoreEntityManagerFactory::class,
             DeprecatedTable\RolfTagTable::class => AutowireFactory::class,
             DeprecatedTable\RolfRiskTable::class => AutowireFactory::class,
             DeprecatedTable\ScaleTable::class => AutowireFactory::class,
             DeprecatedTable\ScaleCommentTable::class => AutowireFactory::class,
             DeprecatedTable\ScaleImpactTypeTable::class => AutowireFactory::class,
-            Table\VulnerabilityTable::class => Table\Factory\CoreEntityManagerFactory::class,
             DeprecatedTable\DeliveriesModelsTable::class => AutowireFactory::class,
+            Table\InstanceConsequenceTable::class => AutowireFactory::class,
+            Table\ModelTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\AnrObjectCategoryTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\MonarcObjectTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\InstanceTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\ObjectCategoryTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\ObjectObjectTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\ThemeTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\AssetTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\AmvTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\ThreatTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\VulnerabilityTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\OperationalRiskScaleTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\OperationalRiskScaleTypeTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\OperationalRiskScaleCommentTable::class => Table\Factory\CoreEntityManagerFactory::class,
@@ -449,7 +381,7 @@ return [
             Table\UserTable::class => Table\Factory\ClientEntityManagerFactory::class,
             Table\UserTokenTable::class => Table\Factory\ClientEntityManagerFactory::class,
             Table\PasswordTokenTable::class => Table\Factory\ClientEntityManagerFactory::class,
-            Table\AnrInstanceMetadataFieldTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\InstanceMetadataFieldTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\SoaScaleCommentTable::class => Table\Factory\CoreEntityManagerFactory::class,
 
             /* Authentication */
@@ -475,6 +407,8 @@ return [
             InputValidator\ObjectComposition\CreateDataInputValidator::class => ReflectionBasedAbstractFactory::class,
             InputValidator\ObjectComposition\MovePositionDataInputValidator::class =>
                 ReflectionBasedAbstractFactory::class,
+            InputValidator\Instance\CreateInstanceDataInputValidator::class => ReflectionBasedAbstractFactory::class,
+            InputValidator\Instance\UpdateInstanceDataInputValidator::class => ReflectionBasedAbstractFactory::class,
         ],
         'shared' => [
             ModelEntity\Scale::class => false,
@@ -486,6 +420,7 @@ return [
                 Service\AssetService::class => Service\AssetService::class,
                 Service\ThreatService::class => Service\ThreatService::class,
                 Service\VulnerabilityService::class => Service\VulnerabilityService::class,
+                Service\InstanceService::class => Service\InstanceService::class,
             ],
             'proxies_target_dir' => $dataPath . '/LazyServices/Proxy',
             'write_proxy_files' => $env === 'production',
@@ -500,24 +435,19 @@ return [
             Service\ThreatService::class => [
                 LazyServiceFactory::class,
             ],
-            Service\VulnerabilityService::class => [
+            Service\InstanceService::class => [
                 LazyServiceFactory::class,
             ],
         ],
     ],
     'controllers' => [
         'factories' => [
-            // TODO: replace to AutowireFactory before refactor the service injection.
             Controller\IndexController::class => InvokableFactory::class,
+            // TODO: Move all the controllers to BackOffice side.
             Controller\AuthenticationController::class => AutowireFactory::class,
-            Controller\ApiAnrController::class => Controller\ApiAnrControllerFactory::class,
             Controller\ApiAnrRiskOwnersController::class => AutowireFactory::class,
-            Controller\ApiAnrRisksController::class => AutowireFactory::class,
             Controller\ApiAnrRisksOpController::class => AutowireFactory::class,
             Controller\ApiAnrExportController::class => AutowireFactory::class,
-            Controller\ApiAnrInstancesController::class => Controller\ApiAnrInstancesControllerFactory::class,
-            Controller\ApiAnrInstancesConsequencesController::class
-                => Controller\ApiAnrInstancesConsequencesControllerFactory::class,
             Controller\ApiAnrInstancesRisksController::class => Controller\ApiAnrInstancesRisksControllerFactory::class,
             Controller\ApiAnrInstancesRisksOpController::class => AutowireFactory::class,
             Controller\ApiModelsDuplicationController::class => AutowireFactory::class,

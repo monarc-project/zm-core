@@ -8,8 +8,6 @@
 namespace Monarc\Core\Table;
 
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\EntityNotFoundException;
-use Monarc\Core\Model\Entity\Anr;
 use Monarc\Core\Model\Entity\Model;
 
 class ModelTable extends AbstractTable

@@ -15,7 +15,6 @@ use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Model\GetAndSet;
 use Monarc\Core\Model\Table\AbstractEntityTable;
 use Monarc\Core\Model\Table\ScaleTable;
-use Monarc\Core\Traits\RiskTrait;
 use Doctrine\Common\Util\ClassUtils;
 use Ramsey\Uuid\Uuid;
 
@@ -30,7 +29,6 @@ use Ramsey\Uuid\Uuid;
 abstract class AbstractService extends AbstractServiceFactory
 {
     use GetAndSet;
-    use RiskTrait;
 
     /**
      * The service factory used in this service
@@ -633,7 +631,6 @@ abstract class AbstractService extends AbstractServiceFactory
         // TODO: Ensure that this method is never called inside a loop
         // TODO: Optimizations: Fetch all threats directly instead of performing one query for each scale type
         $errors = [];
-        $scaleThreat = $scaleVul = $scaleImpact = null;
 
         // Ensure threat rate is within valid bounds
         if (isset($data['threatRate'])) {
@@ -674,76 +671,6 @@ abstract class AbstractService extends AbstractServiceFactory
                 : $instanceRisk['vulnerabilityRate'];
             if (($vulnerabilityRate != -1) && (($reductionAmount < 0) || ($reductionAmount > $vulnerabilityRate))) {
                 $errors[] = 'Value for reduction amount is not valid (min ' . $data['vulnerabilityRate'] . ')';
-            }
-        }
-
-        // TODO: Remove the part of the Operational risks scales.
-        // If we have C/I/D or R/O/L/F/P values, ensure they are within the min/max bounds of the corresponding
-        // scale impact
-        if (isset($data['c']) || isset($data['i']) || isset($data['d'])
-            || isset($data['brutR']) || isset($data['brutO']) || isset($data['brutL'])
-            || isset($data['brutF']) || isset($data['brutP'])
-            || isset($data['netR']) || isset($data['netO']) || isset($data['netL'])
-            || isset($data['netF']) || isset($data['netP'])
-            || isset($data['targetedR']) || isset($data['targetedO']) || isset($data['targetedL'])
-            || isset($data['targetedF']) || isset($data['targetedP'])
-        ) {
-            /** @var ScaleTable $scaleTable */
-            $scaleTable = $this->get('scaleTable');
-            $scaleImpact = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => Scale::TYPE_IMPACT]);
-
-            $scaleImpact = $scaleImpact[0];
-
-            $fields = [
-                'c',
-                'i',
-                'd',
-                'brutR',
-                'brutO',
-                'brutL',
-                'brutF',
-                'brutP',
-                'netR',
-                'netO',
-                'netL',
-                'netF',
-                'netP',
-                'targetedR',
-                'targetedO',
-                'targetedL',
-                'targetedF',
-                'targetedP',
-            ];
-
-            foreach ($fields as $field) {
-                if (isset($data[$field])) {
-                    $value = (int)$data[$field];
-                    if ($value != -1 && ($value < $scaleImpact->get('min') || $value > $scaleImpact->get('max'))) {
-                        $errors[] = 'Value for ' . $field . ' is not valid';
-                    }
-                }
-            }
-        }
-
-        // If we have raw/net/target probability, ensure the value is within valid bounds
-        if (isset($data['brutProb']) || isset($data['netProb']) || isset($data['targetedProb'])) {
-            if (is_null($scaleThreat)) {
-                /** @var ScaleTable $scaleTable */
-                $scaleTable = $this->get('scaleTable');
-                $scaleThreat = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => Scale::TYPE_THREAT]);
-                $scaleThreat = $scaleThreat[0];
-            }
-
-            $fields = ['brutProb', 'netProb', 'targetedProb'];
-
-            foreach ($fields as $field) {
-                if (isset($data[$field])) {
-                    $value = (int)$data[$field];
-
-                    if ($value != -1 && ($value < $scaleThreat->get('min') || $value > $scaleThreat->get('max'))) {
-                        $errors[] = 'Value for ' . $field . ' is not valid';
-                    }
-                }
             }
         }
 

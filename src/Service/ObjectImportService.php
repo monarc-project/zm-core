@@ -61,8 +61,6 @@ class ObjectImportService
             //->setRolfTag($rolfTag)
             ->setMode($objectData['mode'])
             ->setScope($objectData['scope'])
-            //->setLabel($labelKey, $objectData[$labelKey])
-            ->setAvailability((float)$objectData['disponibility'])
             ->setPosition($objectData['position']);
 
         return $monarcObject;

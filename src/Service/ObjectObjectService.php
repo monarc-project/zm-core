@@ -8,14 +8,16 @@
 namespace Monarc\Core\Service;
 
 use Monarc\Core\Exception\Exception;
+use Monarc\Core\Model\Entity\AnrObjectCategory;
 use Monarc\Core\Model\Entity\Asset;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Entity\ObjectObject;
 use Monarc\Core\Model\Entity\ObjectObjectSuperClass;
 use Monarc\Core\Model\Entity\UserSuperClass;
-use Monarc\Core\Model\Table\InstanceTable;
 use Monarc\Core\Service\Interfaces\PositionUpdatableServiceInterface;
 use Monarc\Core\Service\Traits\PositionUpdateTrait;
+use Monarc\Core\Table\AnrObjectCategoryTable;
+use Monarc\Core\Table\InstanceTable;
 use Monarc\Core\Table\MonarcObjectTable;
 use Monarc\Core\Table\ObjectObjectTable;
 
@@ -32,6 +34,8 @@ class ObjectObjectService
 
     private InstanceTable $instanceTable;
 
+    private AnrObjectCategoryTable $anrObjectCategoryTable;
+
     private InstanceService $instanceService;
 
     private UserSuperClass $connectedUser;
@@ -40,11 +44,13 @@ class ObjectObjectService
         ObjectObjectTable $objectObjectTable,
         MonarcObjectTable $monarcObjectTable,
         InstanceTable $instanceTable,
+        AnrObjectCategoryTable $anrObjectCategoryTable,
         InstanceService $instanceService,
         ConnectedUserService $connectedUserService
     ) {
         $this->objectObjectTable = $objectObjectTable;
         $this->monarcObjectTable = $monarcObjectTable;
+        $this->anrObjectCategoryTable = $anrObjectCategoryTable;
         $this->instanceTable = $instanceTable;
         $this->instanceService = $instanceService;
         $this->connectedUser = $connectedUserService->getConnectedUser();
@@ -78,11 +84,8 @@ class ObjectObjectService
             $model->validateObjectAcceptance($childObject);
         }
 
-        /* Ensure the child object is linked to the same anrs as parent is linked, link if not. */
-        foreach ($parentObject->getAnrs() as $parentObjectAnr) {
-            $childObject->addAnr($parentObjectAnr);
-            $this->monarcObjectTable->save($childObject, false);
-        }
+        /* Ensure the child object and all its children are linked to the same anrs as parent linked, link if not. */
+        $this->validateAndLinkAllChildrenToAnrs($parentObject->getAnrs(), $childObject);
 
         $objectObject = (new ObjectObject())
             ->setParent($parentObject)
@@ -145,7 +148,7 @@ class ObjectObjectService
                 ) {
                     $childObjectInstance->setParent(null);
                     $childObjectInstance->setRoot(null);
-                    $this->instanceTable->deleteEntity($childObjectInstance, false);
+                    $this->instanceTable->remove($childObjectInstance, false);
                 }
             }
         }
@@ -171,19 +174,18 @@ class ObjectObjectService
 
     private function createInstances(MonarcObject $parentObject, MonarcObject $childObject, array $data): void
     {
-        /** @var ObjectObjectSuperClass $previousObjectCompositionLink */
-        $previousObjectCompositionLink = $this->objectObjectTable->findById($data['previous']);
+        $previousObjectCompositionLink = null;
+        if ($data['implicitPosition'] === PositionUpdatableServiceInterface::IMPLICIT_POSITION_AFTER) {
+            /** @var ObjectObjectSuperClass $previousObjectCompositionLink */
+            $previousObjectCompositionLink = $this->objectObjectTable->findById($data['previous']);
+        }
         foreach ($parentObject->getInstances() as $parentObjectInstance) {
             $instanceData = [
-                'object' => $childObject->getUuid(),
-                'parent' => $parentObjectInstance->getId(),
-                'root' => $parentObjectInstance->getRootInstance(),
+                'object' => $childObject,
+                'parent' => $parentObjectInstance,
                 'implicitPosition' => $data['implicitPosition'],
-                'c' => -1,
-                'i' => -1,
-                'd' => -1,
             ];
-            if ($data['implicitPosition'] === PositionUpdatableServiceInterface::IMPLICIT_POSITION_AFTER) {
+            if ($previousObjectCompositionLink !== null) {
                 foreach ($previousObjectCompositionLink->getChild()->getInstances() as $previousObjectInstance) {
                     if ($previousObjectInstance->hasParent()
                         && $previousObjectInstance->getParent()->getId() === $parentObjectInstance->getId()
@@ -193,7 +195,31 @@ class ObjectObjectService
                 }
             }
 
-            $this->instanceService->instantiateObjectToAnr($parentObjectInstance->getAnr()->getId(), $instanceData);
+            $this->instanceService->instantiateObjectToAnr($parentObjectInstance->getAnr(), $instanceData);
+        }
+    }
+
+    private function validateAndLinkAllChildrenToAnrs(iterable $anrs, MonarcObject $object): void
+    {
+        foreach ($anrs as $anr) {
+            if (!$object->hasAnrLink($anr)) {
+                $object->addAnr($anr);
+                $this->monarcObjectTable->save($object, false);
+            }
+            /* Link the object's root category if not linked. */
+            if ($object->hasCategory() && !$object->getCategory()->getRootCategory()->hasAnrLink($anr)) {
+                $anrObjectCategory = (new AnrObjectCategory())
+                    ->setAnr($anr)
+                    ->setCategory($object->getCategory()->getRootCategory())
+                    ->setCreator($this->connectedUser->getEmail());
+
+                $this->updatePositions($anrObjectCategory, $this->anrObjectCategoryTable);
+
+                $this->anrObjectCategoryTable->save($anrObjectCategory, false);
+            }
+        }
+        foreach ($object->getChildren() as $childObject) {
+            $this->validateAndLinkAllChildrenToAnrs($anrs, $childObject);
         }
     }
 }

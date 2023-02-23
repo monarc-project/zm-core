@@ -11,11 +11,11 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
+use Monarc\Core\Model\Entity\Traits\DescriptionsEntityTrait;
+use Monarc\Core\Model\Entity\Traits\LabelsEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 
 /**
- * Model
- *
  * @ORM\Table(name="models", indexes={
  *      @ORM\Index(name="anr", columns={"anr_id"})
  * })
@@ -26,6 +26,9 @@ class Model
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
+
+    use LabelsEntityTrait;
+    use DescriptionsEntityTrait;
 
     public const STATUS_ACTIVE = 1;
     public const STATUS_INACTIVE = 0;
@@ -49,62 +52,6 @@ class Model
      * })
      */
     protected $anr;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label1", type="string", length=255, nullable=true)
-     */
-    protected $label1;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label2", type="string", length=255, nullable=true)
-     */
-    protected $label2;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label3", type="string", length=255, nullable=true)
-     */
-    protected $label3;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label4", type="string", length=255, nullable=true)
-     */
-    protected $label4;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="description1", type="string", length=255, nullable=true)
-     */
-    protected $description1;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="description2", type="string", length=255, nullable=true)
-     */
-    protected $description2;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="description3", type="string", length=255, nullable=true)
-     */
-    protected $description3;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="description4", type="string", length=255, nullable=true)
-     */
-    protected $description4;
 
     /**
      * @var int
@@ -186,59 +133,6 @@ class Model
     public function setAnr(Anr $anr): self
     {
         $this->anr = $anr;
-
-        return $this;
-    }
-
-    public function getLabel(int $languageIndex): string
-    {
-        if (!\in_array($languageIndex, range(1, 4), true)) {
-            return '';
-        }
-
-        return (string)$this->{'label' . $languageIndex};
-    }
-
-
-    public function setLabels(array $labels): self
-    {
-        foreach (range(1, 4) as $index) {
-            $key = 'label' . $index;
-            if (isset($labels[$key])) {
-                $this->{$key} = $labels[$key];
-            }
-        }
-
-        return $this;
-    }
-
-    public function getDescription(int $languageIndex): string
-    {
-        if (!\in_array($languageIndex, range(1, 4), true)) {
-            return '';
-        }
-
-        return (string)$this->{'description' . $languageIndex};
-    }
-
-    public function getDescriptions(): array
-    {
-        return [
-            'description1' => $this->description1,
-            'description2' => $this->description2,
-            'description3' => $this->description3,
-            'description4' => $this->description4,
-        ];
-    }
-
-    public function setDescriptions(array $descriptions): self
-    {
-        foreach (range(1, 4) as $index) {
-            $key = 'description' . $index;
-            if (isset($descriptions[$key])) {
-                $this->{$key} = $descriptions[$key];
-            }
-        }
 
         return $this;
     }

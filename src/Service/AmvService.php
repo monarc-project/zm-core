@@ -11,7 +11,6 @@ use Doctrine\ORM\EntityNotFoundException;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\InputFormatter\FormattedInputParams;
 use Monarc\Core\Model\Entity;
-use Monarc\Core\Model\Table\InstanceTable;
 use Monarc\Core\Model\Table\MeasureTable;
 use Monarc\Core\Model\Table\ReferentialTable;
 use Monarc\Core\Service\Interfaces\PositionUpdatableServiceInterface;
@@ -24,7 +23,7 @@ class AmvService implements PositionUpdatableServiceInterface
 
     private Table\AmvTable $amvTable;
 
-    private InstanceTable $instanceTable;
+    private Table\InstanceTable $instanceTable;
 
     private Table\AssetTable $assetTable;
 
@@ -56,7 +55,7 @@ class AmvService implements PositionUpdatableServiceInterface
 
     public function __construct(
         Table\AmvTable $amvTable,
-        InstanceTable $instanceTable,
+        Table\InstanceTable $instanceTable,
         Table\AssetTable $assetTable,
         Table\ThreatTable $threatTable,
         Table\VulnerabilityTable $vulnerabilityTable,
@@ -989,7 +988,7 @@ class AmvService implements PositionUpdatableServiceInterface
     {
         $instances = $this->instanceTable->findByAsset($asset);
         foreach ($instances as $instance) {
-            $this->instanceRiskService->createInstanceRisks($instance, $instance->getAnr(), $instance->getObject());
+            $this->instanceRiskService->createInstanceRisks($instance, $instance->getObject());
         }
     }
 }

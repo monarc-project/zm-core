@@ -9,6 +9,7 @@ namespace Monarc\Core\Model\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Monarc\Core\Model\Entity\Traits\LabelsEntityTrait;
 
 /**
  * CategoriesSuperClass
@@ -20,6 +21,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class SoaCategorySuperClass extends AbstractEntity
 {
+    use LabelsEntityTrait;
+
     /**
      * @var integer
      *
@@ -45,34 +48,6 @@ class SoaCategorySuperClass extends AbstractEntity
      * @ORM\OneToMany(targetEntity="Measure", mappedBy="category")
      */
     protected $measures;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label1", type="text", nullable=true)
-     */
-    protected $label1;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label2", type="text", nullable=true)
-     */
-    protected $label2;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label3", type="text", nullable=true)
-     */
-    protected $label3;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label4", type="text", nullable=true)
-     */
-    protected $label4;
 
     /**
      * @var int
@@ -131,37 +106,6 @@ class SoaCategorySuperClass extends AbstractEntity
     public function setReferential($referential): self
     {
         $this->referential = $referential;
-
-        return $this;
-    }
-
-    public function getLabel(int $languageIndex): string
-    {
-        if (!\in_array($languageIndex, range(1, 4), true)) {
-            return '';
-        }
-
-        return (string)$this->{'label' . $languageIndex};
-    }
-
-    public function getLabels(): array
-    {
-        return [
-            'label1' => (string)$this->label1,
-            'label2' => (string)$this->label2,
-            'label3' => (string)$this->label3,
-            'label4' => (string)$this->label4,
-        ];
-    }
-
-    public function setLabels(array $labels): self
-    {
-        foreach (range(1, 4) as $index) {
-            $key = 'label' . $index;
-            if (isset($labels[$key])) {
-                $this->{$key} = $labels[$key];
-            }
-        }
 
         return $this;
     }

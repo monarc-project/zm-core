@@ -7,9 +7,11 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Doctrine\ORM\EntityNotFoundException;
 use Monarc\Core\Model\Db;
-use Monarc\Core\Model\Entity\Anr;
+use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\ScaleImpactType;
+use Monarc\Core\Model\Entity\ScaleImpactTypeSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**
@@ -23,10 +25,21 @@ class ScaleImpactTypeTable extends AbstractEntityTable
         parent::__construct($dbService, ScaleImpactType::class, $connectedUserService);
     }
 
+    public function findById(int $id): ScaleImpactTypeSuperClass
+    {
+        /** @var ScaleImpactTypeSuperClass $scaleImpactType */
+        $scaleImpactType = $this->getRepository()->find($id);
+        if ($scaleImpactType === null) {
+            throw EntityNotFoundException::fromClassNameAndIdentifier(\get_class($this), [$id]);
+        }
+
+        return $scaleImpactType;
+    }
+
     /**
      * @return ScaleImpactType[]
      */
-    public function findByAnr(Anr $anr): array
+    public function findByAnr(AnrSuperClass $anr): array
     {
         return $this->getRepository()
             ->createQueryBuilder('sit')
@@ -34,5 +47,14 @@ class ScaleImpactTypeTable extends AbstractEntityTable
             ->setParameter('anr', $anr)
             ->getQuery()
             ->getResult();
+    }
+
+    public function saveEntity(ScaleImpactTypeSuperClass $scaleImpactType, bool $flushAll = true): void
+    {
+        $em = $this->getDb()->getEntityManager();
+        $em->persist($scaleImpactType);
+        if ($flushAll) {
+            $em->flush();
+        }
     }
 }

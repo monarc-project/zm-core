@@ -14,6 +14,7 @@ use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\ScaleComment;
 use Monarc\Core\Model\Entity\ScaleCommentSuperClass;
 use Monarc\Core\Model\Entity\ScaleImpactTypeSuperClass;
+use Monarc\Core\Model\Entity\ScaleSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**
@@ -52,30 +53,16 @@ class ScaleCommentTable extends AbstractEntityTable
     }
 
     /**
-     * Get By Scale And Out Of Range
-     *
-     * @param $scaleId
-     * @param $min
-     * @param $max
-     *
-     * @return array
+     * Get By Scale And Out Of Range.
      */
-    public function getByScaleAndOutOfRange($scaleId, $min, $max)
+    public function findByScaleAndOutOfRange(ScaleSuperClass $scale, int $min, int $max): array
     {
         return $this->getRepository()->createQueryBuilder('s')
-            ->select([
-                's.id',
-                's.scaleValue',
-                'IDENTITY(s.scaleImpactType) as scaleImpactType',
-                's.comment1',
-                's.comment2',
-                's.comment3',
-                's.comment4',
-            ])
-            ->where('s.scale = :scaleId AND (s.scaleValue > :max OR s.scaleValue < :min)')
-            ->setParameter(':scaleId', $scaleId)
-            ->setParameter(':min', $min)
-            ->setParameter(':max', $max)
+            ->select('s.id')
+            ->where('s.scale = :scale AND (s.scaleValue > :max OR s.scaleValue < :min)')
+            ->setParameter('scale', $scale)
+            ->setParameter('min', $min)
+            ->setParameter('max', $max)
             ->getQuery()
             ->getResult();
     }

@@ -1,7 +1,7 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -12,24 +12,21 @@ use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 
 /**
- * Instance ConsequenceSuperClass
- *
  * @ORM\Table(name="instances_consequences", indexes={
  *      @ORM\Index(name="anr_id", columns={"anr_id"}),
  *      @ORM\Index(name="instance_id", columns={"instance_id"}),
- *      @ORM\Index(name="object_id", columns={"object_id"}),
  *      @ORM\Index(name="scale_impact_type_id", columns={"scale_impact_type_id"})
  * })
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
-class InstanceConsequenceSuperClass extends AbstractEntity
+class InstanceConsequenceSuperClass
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer", nullable=false)
      * @ORM\Id
@@ -58,16 +55,6 @@ class InstanceConsequenceSuperClass extends AbstractEntity
     protected $instance;
 
     /**
-     * @var ObjectSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="MonarcObject", cascade={"persist"})
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="object_id", referencedColumnName="uuid", nullable=true)
-     * })
-     */
-    protected $object;
-
-    /**
      * @var ScaleImpactTypeSuperClass
      *
      * @ORM\ManyToOne(targetEntity="ScaleImpactType", cascade={"persist"})
@@ -83,13 +70,6 @@ class InstanceConsequenceSuperClass extends AbstractEntity
      * @ORM\Column(name="is_hidden", type="smallint", options={"unsigned":true, "default":0})
      */
     protected $isHidden = 0;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="locally_touched", type="smallint", options={"unsigned":true, "default":0})
-     */
-    protected $locallyTouched = 0;
 
     /**
      * @var int
@@ -120,38 +100,19 @@ class InstanceConsequenceSuperClass extends AbstractEntity
         return $this->id;
     }
 
-    /**
-     * @param int $id
-     */
-    public function setId($id): self
-    {
-        $this->id = $id;
-
-        return $this;
-    }
-
-    /**
-     * @return AnrSuperClass
-     */
-    public function getAnr()
+    public function getAnr(): AnrSuperClass
     {
         return $this->anr;
     }
 
-    /**
-     * @param AnrSuperClass $anr
-     */
-    public function setAnr($anr): self
+    public function setAnr(AnrSuperClass $anr): self
     {
         $this->anr = $anr;
 
         return $this;
     }
 
-    /**
-     * @return Instance
-     */
-    public function getInstance()
+    public function getInstance(): InstanceSuperClass
     {
         return $this->instance;
     }
@@ -160,18 +121,6 @@ class InstanceConsequenceSuperClass extends AbstractEntity
     {
         $this->instance = $instance;
         $this->instance->addInstanceConsequence($this);
-
-        return $this;
-    }
-
-    public function getObject(): ObjectSuperClass
-    {
-        return $this->object;
-    }
-
-    public function setObject(ObjectSuperClass $object): self
-    {
-        $this->object = $object;
 
         return $this;
     }
@@ -243,44 +192,5 @@ class InstanceConsequenceSuperClass extends AbstractEntity
         $this->isHidden = (int)$isHidden;
 
         return $this;
-    }
-
-    public function getLocallyTouched(): int
-    {
-        return (int)$this->locallyTouched;
-    }
-
-    public function setLocallyTouched(int $locallyTouched): self
-    {
-        $this->locallyTouched = $locallyTouched;
-
-        return $this;
-    }
-
-    public function getInputFilter($partial = false)
-    {
-        if (!$this->inputFilter) {
-            parent::getInputFilter($partial);
-
-            $this->inputFilter->add(array(
-                'name' => 'anr',
-                'required' => true,
-                'allow_empty' => false,
-                'filters' => array(),
-                'validators' => array(),
-            ));
-
-            $fields = ['instance', 'object', 'scaleImpactType'];
-            foreach ($fields as $field) {
-                $this->inputFilter->add(array(
-                    'name' => $field,
-                    'required' => ($partial) ? false : true,
-                    'allow_empty' => false,
-                    'filters' => array(),
-                    'validators' => array(),
-                ));
-            }
-        }
-        return $this->inputFilter;
     }
 }
