@@ -284,7 +284,6 @@ class ScaleImpactTypeSuperClass extends AbstractEntity
                     ),
                 ));
             }
-
         }
         return $this->inputFilter;
     }
