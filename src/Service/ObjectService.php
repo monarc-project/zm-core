@@ -354,6 +354,8 @@ class ObjectService
             )
         ) {
             $rootCategory = $monarcObject->getCategory()->getRootCategory();
+            /* Shift position to the end and remove the relation with Anr (AnrObjectCategory) */
+            $this->updatePositions($rootCategory, $this->anrObjectCategoryTable, ['forcePositionUpdate' => true]);
             $this->objectCategoryTable->save($rootCategory->removeAnrLink($anr), false);
         }
 
@@ -607,8 +609,10 @@ class ObjectService
                     $this->validateAndRemoveAnrCategoryLinkIfNoObjectsLinked($anrObjectCategory, $monarcObject);
                 }
             }
-            /* Create the links with anrs for the new root category if they not exist.*/
-            if (!$hasCategory) {
+            /* Create the links with anrs for the new root category if they do not exist. */
+            if (!$hasCategory
+                || $category->getRootCategory()->getId() !== $monarcObject->getCategory()->getRootCategory()->getId()
+            ) {
                 foreach ($monarcObject->getAnrs() as $anr) {
                     $this->linkCategoryWithAnrIfNotLinked($category->getRootCategory(), $anr);
                 }
