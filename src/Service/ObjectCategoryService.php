@@ -15,7 +15,6 @@ use Monarc\Core\Model\Entity\ObjectCategory;
 use Monarc\Core\Model\Entity\ObjectCategorySuperClass;
 use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Service\Traits\PositionUpdateTrait;
-use Monarc\Core\Service\Traits\TreeStructureTrait;
 use Monarc\Core\Table\AnrObjectCategoryTable;
 use Monarc\Core\Table\ModelTable;
 use Monarc\Core\Table\ObjectCategoryTable;
@@ -23,7 +22,6 @@ use Monarc\Core\Table\MonarcObjectTable;
 
 class ObjectCategoryService
 {
-    use TreeStructureTrait;
     use PositionUpdateTrait;
 
     private ObjectCategoryTable $objectCategoryTable;
@@ -60,7 +58,7 @@ class ObjectCategoryService
             'root' => $objectCategory->getRoot() !== null
                 ? ['id' => $objectCategory->getRoot()->getId()]
                 : null,
-            'parent' => $objectCategory->getParent() !== null
+            'parent' => $objectCategory->hasParent()
                 ? [
                     'id' => $objectCategory->getParent()->getId(),
                     'label1' => $objectCategory->getParent()->getLabel(1),
@@ -144,7 +142,7 @@ class ObjectCategoryService
             /** @var ObjectCategory $parent */
             $parent = $this->objectCategoryTable->findById((int)$data['parent']);
             $objectCategory->setParent($parent);
-            $objectCategory->setRoot($parent->getRoot());
+            $objectCategory->setRoot($parent->getRootCategory());
         }
 
         $this->updatePositions($objectCategory, $this->objectCategoryTable, $data);
@@ -159,34 +157,55 @@ class ObjectCategoryService
         /** @var ObjectCategory $objectCategory */
         $objectCategory = $this->objectCategoryTable->findById($id);
 
-        $objectCategory->setLabels($data)
-            ->setUpdater($this->connectedUser->getEmail());
+        $objectCategory->setLabels($data)->setUpdater($this->connectedUser->getEmail());
 
-        $isRootCategoryBeforeUpdated = $objectCategory->isCategoryRoot();
-        $previousRootCategory = $objectCategory->getRoot();
-
-        /* Perform operations to update the category links with anrs (only root categories are linked to anr). */
+        /*
+         * Perform operations to update the category links with anrs (only root categories are linked to anr).
+         * 1 condition. The case when the category's parent is changed. Before the category could be root or a child.
+         * 2 condition. The case when the category becomes root (parent removed), and before it had a parent.
+         */
         if (!empty($data['parent'])
-            && ($objectCategory->getParent() === null
-                || (int)$data['parent'] !== $objectCategory->getParent()->getId()
-            )
+            && (!$objectCategory->hasParent() || (int)$data['parent'] !== $objectCategory->getParent()->getId())
         ) {
-            /** @var ObjectCategory $parent */
-            $parent = $this->objectCategoryTable->findById((int)$data['parent']);
-            $objectCategory->setParent($parent)->setRoot($parent->getRoot() ?? $parent);
-            if ($isRootCategoryBeforeUpdated) {
-                /* The category was root, now we will set parent, and it's not root anymore. */
-                $this->unlinkCategoryFromAnrsOrLinkItsRoot($objectCategory);
-            }
-        } elseif (empty($data['parent']) && $objectCategory->getParent() !== null) {
-            $objectCategory->setParent(null)->setRoot(null);
-            /* The category become root now, before it had a parent and was not root. */
-            $this->linkRootCategoryToAnr($objectCategory);
-            if ($previousRootCategory !== null
-                && !$this->monarcObjectTable->hasObjectsUnderRootCategoryExcludeObject($previousRootCategory)
+            /** @var ObjectCategory $parentCategory */
+            $parentCategory = $this->objectCategoryTable->findById((int)$data['parent']);
+
+            $previousRootCategory = $objectCategory->getRootCategory();
+            $isRootCategoryBeforeUpdated = $objectCategory->isCategoryRoot();
+            $hasRootCategoryChanged = $objectCategory->hasParent()
+                && $parentCategory->getRootCategory()->getId() !== $objectCategory->getRootCategory()->getId();
+
+            $objectCategory->setParent($parentCategory)->setRoot($parentCategory->getRootCategory());
+
+            /* Unlink the root from Anr in case if the category was root before or the category's root is changed
+             * and there are no more objects left under the previous root. */
+            if ($isRootCategoryBeforeUpdated
+                || ($hasRootCategoryChanged && !$previousRootCategory->hasObjectsLinkedDirectlyOrToChildCategories())
             ) {
                 $this->unlinkCategoryFromAnrs($previousRootCategory);
             }
+
+            if ($isRootCategoryBeforeUpdated || $hasRootCategoryChanged) {
+                /* Link the new root to Anrs, if not linked. */
+                $this->linkTheCategoryRootToAnrs($objectCategory);
+                /* Update the category children with the new root. */
+                $this->updateRootOfChildrenTree($objectCategory);
+            }
+        } elseif (empty($data['parent']) && $objectCategory->hasParent()) {
+            $previousRootCategory = $objectCategory->getRootCategory();
+            $objectCategory->setParent(null)->setRoot(null);
+
+            /* If in the previous category's root or its children no more objects, the root has to be unlinked. */
+            if ($previousRootCategory !== null
+                && !$previousRootCategory->hasObjectsLinkedDirectlyOrToChildCategories()
+            ) {
+                $this->unlinkCategoryFromAnrs($previousRootCategory);
+            }
+
+            /* The category become root now, before it had a parent and was not root. */
+            $this->linkTheCategoryRootToAnrs($objectCategory);
+
+            $this->updateRootOfChildrenTree($objectCategory);
         }
 
         $this->objectCategoryTable->save($objectCategory);
@@ -247,6 +266,16 @@ class ObjectCategoryService
         }
 
         $this->objectCategoryTable->commit();
+    }
+
+    private function updateRootOfChildrenTree(ObjectCategory $objectCategory): void
+    {
+        foreach ($objectCategory->getChildren() as $childCategory) {
+            $childCategory->setRoot($objectCategory->getRootCategory());
+            $this->objectCategoryTable->save($childCategory, false);
+
+            $this->updateRootOfChildrenTree($childCategory);
+        }
     }
 
     private function prepareCategoryFilter(FormattedInputParams $formattedInputParams): void
@@ -321,37 +350,17 @@ class ObjectCategoryService
         }
     }
 
-    private function unlinkCategoryFromAnrsOrLinkItsRoot(ObjectCategorySuperClass $objectCategory): void
-    {
-        foreach ($objectCategory->getAnrObjectCategories() as $anrObjectCategory) {
-            if ($objectCategory->getRoot()
-                && $objectCategory->getRoot()->hasAnrLink($anrObjectCategory->getAnr())
-            ) {
-                $this->anrObjectCategoryTable->remove($anrObjectCategory, false);
-            } else {
-                $anrObjectCategory->setCategory($objectCategory->getRoot())
-                    ->setUpdater($this->connectedUser->getEmail());
-                $this->anrObjectCategoryTable->save($anrObjectCategory, false);
-            }
-        }
-    }
-
     /**
-     * Link every Anr object that is under the root category, or it's children.
+     * Links every Anr of objects that are under the root category, or it's children.
      */
-    private function linkRootCategoryToAnr(ObjectCategorySuperClass $objectCategory): void
+    private function linkTheCategoryRootToAnrs(ObjectCategorySuperClass $objectCategory): void
     {
-        if (!$objectCategory->isCategoryRoot()) {
-            return;
-        }
-
-        $objects = $this->monarcObjectTable->getObjectsUnderRootCategory($objectCategory);
-        foreach ($objects as $object) {
+        foreach ($objectCategory->getObjectsRecursively() as $object) {
             foreach ($object->getAnrs() as $anr) {
-                if (!$objectCategory->hasAnrLink($anr)) {
+                if (!$objectCategory->getRootCategory()->hasAnrLink($anr)) {
                     $anrObjectCategory = (new AnrObjectCategory())
                         ->setAnr($anr)
-                        ->setCategory($objectCategory)
+                        ->setCategory($objectCategory->getRootCategory())
                         ->setCreator($this->connectedUser->getEmail());
                     /* The category supposed to positioned at the end. */
                     $this->updatePositions($anrObjectCategory, $this->anrObjectCategoryTable);

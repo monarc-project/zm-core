@@ -8,9 +8,11 @@
 namespace Monarc\Core\Service;
 
 use Monarc\Core\Exception\Exception;
+use Monarc\Core\Helper\EncryptDecryptHelperTrait;
 
 class InstanceExportService
 {
+    use EncryptDecryptHelperTrait;
     // TODO: fix the new class!!!
 
     public function export(&$data)

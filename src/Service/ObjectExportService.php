@@ -10,11 +10,14 @@ namespace Monarc\Core\Service;
 use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\NonUniqueResultException;
 use Monarc\Core\Exception\Exception;
+use Monarc\Core\Helper\EncryptDecryptHelperTrait;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Table\MonarcObjectTable;
 
 class ObjectExportService
 {
+    use EncryptDecryptHelperTrait;
+
     private MonarcObjectTable $monarcObjectTable;
 
     private ObjectService $objectService;
@@ -33,6 +36,33 @@ class ObjectExportService
         $this->objectService = $objectService;
         $this->assetExportService = $assetExportService;
         $this->configService = $configService;
+    }
+
+    /**
+     * TODO: is going to be refactored along with all the export functionality.
+     */
+    public function export(&$data)
+    {
+        if (empty($data['id'])) {
+            throw new Exception('Object to export is required', 412);
+        }
+
+        $isForMosp = !empty($data['mosp']);
+        if ($isForMosp) {
+            $object = $this->generateExportMospArray($data['id']);
+        } else {
+            $object = $this->generateExportArray($data['id'], false);
+        }
+
+        $exported = json_encode($object);
+
+        $data['filename'] = $this->generateExportFileName($data['id'], $isForMosp);
+
+        if (!empty($data['password'])) {
+            $exported = $this->encrypt($exported, $data['password']);
+        }
+
+        return $exported;
     }
 
     /**

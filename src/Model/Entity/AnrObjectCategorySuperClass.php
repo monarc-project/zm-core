@@ -91,6 +91,7 @@ class AnrObjectCategorySuperClass implements PositionedEntityInterface
     public function setCategory(ObjectCategorySuperClass $category): self
     {
         $this->category = $category;
+        $category->addAnrObjectCategory($this);
 
         return $this;
     }

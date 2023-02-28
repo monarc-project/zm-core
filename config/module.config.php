@@ -134,16 +134,6 @@ return [
                 ],
             ],
 
-            'monarc_api_anr_risks_op' => [
-                'type' => 'segment',
-                'options' => [
-                    'route' => '/api/anr/:anrid/risksop[/:id]',
-                    'defaults' => [
-                        'controller' => Controller\ApiAnrRisksOpController::class,
-                    ],
-                ],
-            ],
-
             'monarc_api_anr_instances_risks' => [
                 'type' => 'segment',
                 'options' => [
@@ -258,7 +248,23 @@ return [
             'ViewJsonStrategy',
         ],
     ],
-
+    'controllers' => [
+        'factories' => [
+            Controller\IndexController::class => InvokableFactory::class,
+            // TODO: Move all the controllers to BackOffice side.
+            Controller\AuthenticationController::class => AutowireFactory::class,
+            Controller\ApiAnrRiskOwnersController::class => AutowireFactory::class,
+            Controller\ApiAnrExportController::class => AutowireFactory::class,
+            Controller\ApiAnrInstancesRisksController::class => Controller\ApiAnrInstancesRisksControllerFactory::class,
+            Controller\ApiAnrInstancesRisksOpController::class => AutowireFactory::class,
+            Controller\ApiModelsDuplicationController::class => AutowireFactory::class,
+            Controller\ApiAnrScalesController::class => Controller\ApiAnrScalesControllerFactory::class,
+            Controller\ApiAnrScalesTypesController::class => Controller\ApiAnrScalesTypesControllerFactory::class,
+            Controller\ApiAnrScalesCommentsController::class => Controller\ApiAnrScalesCommentsControllerFactory::class,
+            Controller\ApiOperationalRisksScalesController::class => AutowireFactory::class,
+            Controller\ApiOperationalRisksScalesCommentsController::class => AutowireFactory::class,
+        ],
+    ],
     'service_manager' => [
         'invokables' => [
             ModelEntity\Question::class => ModelEntity\Question::class,
@@ -409,6 +415,9 @@ return [
                 ReflectionBasedAbstractFactory::class,
             InputValidator\Instance\CreateInstanceDataInputValidator::class => ReflectionBasedAbstractFactory::class,
             InputValidator\Instance\UpdateInstanceDataInputValidator::class => ReflectionBasedAbstractFactory::class,
+            InputValidator\Instance\PatchInstanceDataInputValidator::class => ReflectionBasedAbstractFactory::class,
+            InputValidator\InstanceConsequence\PatchConsequenceDataInputValidator::class =>
+                ReflectionBasedAbstractFactory::class,
         ],
         'shared' => [
             ModelEntity\Scale::class => false,
@@ -421,6 +430,7 @@ return [
                 Service\ThreatService::class => Service\ThreatService::class,
                 Service\VulnerabilityService::class => Service\VulnerabilityService::class,
                 Service\InstanceService::class => Service\InstanceService::class,
+                Service\AmvService::class => Service\AmvService::class,
             ],
             'proxies_target_dir' => $dataPath . '/LazyServices/Proxy',
             'write_proxy_files' => $env === 'production',
@@ -438,24 +448,9 @@ return [
             Service\InstanceService::class => [
                 LazyServiceFactory::class,
             ],
-        ],
-    ],
-    'controllers' => [
-        'factories' => [
-            Controller\IndexController::class => InvokableFactory::class,
-            // TODO: Move all the controllers to BackOffice side.
-            Controller\AuthenticationController::class => AutowireFactory::class,
-            Controller\ApiAnrRiskOwnersController::class => AutowireFactory::class,
-            Controller\ApiAnrRisksOpController::class => AutowireFactory::class,
-            Controller\ApiAnrExportController::class => AutowireFactory::class,
-            Controller\ApiAnrInstancesRisksController::class => Controller\ApiAnrInstancesRisksControllerFactory::class,
-            Controller\ApiAnrInstancesRisksOpController::class => AutowireFactory::class,
-            Controller\ApiModelsDuplicationController::class => AutowireFactory::class,
-            Controller\ApiAnrScalesController::class => Controller\ApiAnrScalesControllerFactory::class,
-            Controller\ApiAnrScalesTypesController::class => Controller\ApiAnrScalesTypesControllerFactory::class,
-            Controller\ApiAnrScalesCommentsController::class => Controller\ApiAnrScalesCommentsControllerFactory::class,
-            Controller\ApiOperationalRisksScalesController::class => AutowireFactory::class,
-            Controller\ApiOperationalRisksScalesCommentsController::class => AutowireFactory::class,
+            Service\AmvService::class => [
+                LazyServiceFactory::class,
+            ],
         ],
     ],
 

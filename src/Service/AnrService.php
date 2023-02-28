@@ -9,6 +9,7 @@ namespace Monarc\Core\Service;
 
 use DateTime;
 use Monarc\Core\Exception\Exception;
+use Monarc\Core\Helper\EncryptDecryptHelperTrait;
 use Monarc\Core\Model\Entity\Anr;
 use Monarc\Core\Model\Entity\AnrObjectCategory;
 use Monarc\Core\Model\Entity\AnrObjectCategorySuperClass;
@@ -26,6 +27,8 @@ use Monarc\Core\Table\ThreatTable;
 
 class AnrService extends AbstractService
 {
+    use EncryptDecryptHelperTrait;
+
     /** @var ScaleService */
     protected $scaleService;
     /** @var AnrObjectCategoryTable */
@@ -273,8 +276,8 @@ class AnrService extends AbstractService
         /** @var AnrObjectCategorySuperClass[] $anrObjectCategories */
         $anrObjectCategories = $this->anrObjectCategoryTable->findByAnr($anr);
         foreach ($anrObjectCategories as $anrObjectCategory) {
-            $newAnrObjectCategory = new AnrObjectCategory();
-            $newAnrObjectCategory->setAnr($newAnr)
+            $newAnrObjectCategory = (new AnrObjectCategory())
+                ->setAnr($newAnr)
                 ->setCategory($anrObjectCategory->getCategory())
                 ->setPosition($anrObjectCategory->getPosition());
 

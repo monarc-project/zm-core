@@ -45,7 +45,7 @@ class InstanceRiskOpTable extends AbstractEntityTable
     /**
      * @return InstanceRiskOp[]
      */
-    public function getInstancesRisksOp(int $anrId, array $instancesIds, array $params = []): array
+    public function getInstancesRisksOp(AnrSuperClass $anr, array $instancesIds, array $params = []): array
     {
         $qb = $this->getRepository()->createQueryBuilder('iro');
 
@@ -55,8 +55,8 @@ class InstanceRiskOpTable extends AbstractEntityTable
         $return = $qb
             ->select()
             ->where($qb->expr()->in('iro.instance', $instancesIds))
-            ->andWhere('iro.anr = :anr ')
-            ->setParameter(':anr', $anrId);
+            ->andWhere('iro.anr = :anr')
+            ->setParameter(':anr', $anr);
 
         if (isset($params['kindOfMeasure'])) {
             $return->andWhere('iro.kindOfMeasure = :kim')

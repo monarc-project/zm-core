@@ -243,6 +243,9 @@ class InstanceService
         $this->instanceTable->save($instance, false);
     }
 
+    /**
+     * Is called when a ScaleImpactTypeService when a scale type visibility is changed.
+     */
     public function refreshAllTheInstancesImpactAndUpdateRisks(Entity\AnrSuperClass $anr): void
     {
         $rootInstances = $this->instanceTable->findRootsByAnr($anr);

@@ -10,7 +10,6 @@ namespace Monarc\Core\Model\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Interfaces\PositionedEntityInterface;
-use Monarc\Core\Model\Entity\Interfaces\TreeStructuredEntityInterface;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\LabelsEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
@@ -25,7 +24,7 @@ use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
-class ObjectCategorySuperClass implements PositionedEntityInterface, TreeStructuredEntityInterface
+class ObjectCategorySuperClass implements PositionedEntityInterface
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
@@ -153,14 +152,48 @@ class ObjectCategorySuperClass implements PositionedEntityInterface, TreeStructu
 
     public function setParent(?self $parent): self
     {
+        /* When parent is changed the child is removed. */
+        if (($parent === null && $this->parent !== null)
+            || ($this->parent !== null && $parent->getId() !== $this->parent->getId())
+        ) {
+            $this->parent->removeChild($this);
+        }
+
         $this->parent = $parent;
 
+        if ($this->parent !== null) {
+            $this->parent->addChild($this);
+        }
+
         return $this;
+    }
+
+    public function hasParent(): bool
+    {
+        return $this->parent !== null;
     }
 
     public function getChildren()
     {
         return $this->children;
+    }
+
+    public function removeChild(self $childCategory): self
+    {
+        if ($this->children->contains($childCategory)) {
+            $this->children->removeElement($childCategory);
+        }
+
+        return $this;
+    }
+
+    public function addChild(self $childCategory): self
+    {
+        if (!$this->children->contains($childCategory)) {
+            $this->children->add($childCategory);
+        }
+
+        return $this;
     }
 
     public function hasChildren(): bool
@@ -189,10 +222,7 @@ class ObjectCategorySuperClass implements PositionedEntityInterface, TreeStructu
         return $this->root;
     }
 
-    /**
-     * @param ObjectCategorySuperClass|null $root
-     */
-    public function setRoot(?TreeStructuredEntityInterface $root): self
+    public function setRoot(?self $root): self
     {
         $this->root = $root;
 
@@ -209,7 +239,7 @@ class ObjectCategorySuperClass implements PositionedEntityInterface, TreeStructu
         return $this->root ?? $this;
     }
 
-    public function areRootCategoriesEqual(ObjectCategorySuperClass $category): bool
+    public function areRootCategoriesEqual(self $category): bool
     {
         return $this->getRootCategory()->getId() === $category->getRootCategory()->getId();
     }
@@ -239,6 +269,34 @@ class ObjectCategorySuperClass implements PositionedEntityInterface, TreeStructu
         return $this;
     }
 
+    public function getObjectsRecursively(): array
+    {
+        $objects = [];
+        if (!$this->objects->isEmpty()) {
+            $objects = $this->objects->toArray();
+            foreach ($this->children as $childCategory) {
+                $objects = array_merge($objects, $childCategory->getObjectsRecursively());
+            }
+        }
+
+        return $objects;
+    }
+
+    public function hasObjectsLinkedDirectlyOrToChildCategories(): bool
+    {
+        if (!$this->objects->isEmpty()) {
+            return true;
+        }
+
+        foreach ($this->children as $childCategory) {
+            if ($childCategory->hasObjectsLinkedDirectlyOrToChildCategories()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function getAnrObjectCategories()
     {
         return $this->anrObjectCategories;
@@ -256,7 +314,17 @@ class ObjectCategorySuperClass implements PositionedEntityInterface, TreeStructu
 
     public function hasAnrLink(AnrSuperClass $anr): bool
     {
-        return $this->anrs->contains($anr);
+        if ($this->anrs->contains($anr)) {
+            return true;
+        }
+
+        foreach ($this->getAnrObjectCategories() as $anrObjectCategory) {
+            if ($anrObjectCategory->getAnr()->getId() === $anr->getId()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function removeAnrLink(AnrSuperClass $anr): self

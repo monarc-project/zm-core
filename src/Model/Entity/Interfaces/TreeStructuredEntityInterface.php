@@ -11,7 +11,7 @@ interface TreeStructuredEntityInterface
 {
     public function getId(): int;
 
-    public function setRoot(?TreeStructuredEntityInterface $root): self;
+    public function setRoot(?self $root): self;
 
     public function getRoot(): ?self;
 

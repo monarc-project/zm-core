@@ -680,41 +680,6 @@ abstract class AbstractService extends AbstractServiceFactory
     }
 
     /**
-     * Encrypt the provided data using the specified key
-     * This is used for import and exporting of files mainly
-     *
-     * @param string $data The data to encrypt
-     * @param string $key The key to use to encrypt the data
-     *
-     * @return string The encrypted data
-     */
-    protected function encrypt($data, $key)
-    {
-        $encrypted = openssl_encrypt($data, 'AES-256-CBC', hash('sha512', $key));
-
-        return $encrypted;
-    }
-
-    /**
-     * Decrypt the provided data using the specified key
-     * This is used for import and exporting of files mainly
-     *
-     * @param string $data The data to decrypt
-     * @param string $key The key to use to decrypt the data
-     *
-     * @return string The decrypted data
-     */
-    protected function decrypt($data, $key)
-    {
-        $decrypted = openssl_decrypt($data, 'AES-256-CBC', hash('sha512', $key));
-        if (!$decrypted) {
-            $decrypted = openssl_decrypt($data, 'AES-256-ECB', hash('md5', $key));
-        }
-
-        return $decrypted;
-    }
-
-    /**
      * Computes and returns the Git version
      *
      * @param string $type The format of version to retrieve (major / full)

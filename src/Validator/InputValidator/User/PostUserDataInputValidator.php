@@ -9,7 +9,6 @@ namespace Monarc\Core\Validator\InputValidator\User;
 
 use Laminas\Filter\StringTrim;
 use Laminas\InputFilter\ArrayInput;
-use Laminas\InputFilter\InputFilter;
 use Laminas\Validator\Callback;
 use Laminas\Validator\EmailAddress;
 use Laminas\Validator\NotEmpty;

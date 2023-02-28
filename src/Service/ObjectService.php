@@ -238,9 +238,7 @@ class ObjectService
             $monarcObject->setUuid($data['uuid']);
         }
         if (!empty($data['category'])) {
-            /** @var ObjectCategory $category */
-            $category = $this->objectCategoryTable->findById($data['category']);
-            $monarcObject->setCategory($category);
+            $this->validateAndSetCategory($monarcObject, $data);
         }
         if (!empty($data['rolfTag']) && !$asset->isPrimary()) {
             $rolfTag = $this->rolfTagTable->findById($data['rolfTag']);
@@ -452,35 +450,6 @@ class ObjectService
         return $result;
     }
 
-    /**
-     * TODO: is going to be refactored along with all the export functionality.
-     */
-    public function export(&$data)
-    {
-        if (empty($data['id'])) {
-            throw new Exception('Object to export is required', 412);
-        }
-
-        /** @var ObjectExportService $objectExportService */
-        $objectExportService = $this->get('objectExportService');
-        $isForMosp = !empty($data['mosp']);
-        if ($isForMosp) {
-            $object = $objectExportService->generateExportMospArray($data['id']);
-        } else {
-            $object = $objectExportService->generateExportArray($data['id'], false);
-        }
-
-        $exported = json_encode($object);
-
-        $data['filename'] = $objectExportService->generateExportFileName($data['id'], $isForMosp);
-
-        if (!empty($data['password'])) {
-            $exported = $this->encrypt($exported, $data['password']);
-        }
-
-        return $exported;
-    }
-
     private function attachCategoryAndItsChildrenObjectsToAnr(ObjectCategory $objectCategory, Anr $anr): void
     {
         foreach ($objectCategory->getObjects() as $monarcObject) {
@@ -631,17 +600,15 @@ class ObjectService
             /** @var ObjectCategory $category */
             $category = $this->objectCategoryTable->findById((int)$data['category']);
 
-            /*
-             * If the root category is changed and no more objects linked to it in the anrs, the link should be dropped.
-             * Create the links with anrs for the new root category if they not exist.
-             */
-            if (!$hasCategory || !$category->areRootCategoriesEqual($monarcObject->getCategory())) {
-                if ($monarcObject->hasCategory()) {
-                    $anrObjectCategories = $monarcObject->getCategory()->getRootCategory()->getAnrObjectCategories();
-                    foreach ($anrObjectCategories as $anrObjectCategory) {
-                        $this->validateAndRemoveAnrCategoryLinkIfNoObjectsLinked($anrObjectCategory, $monarcObject);
-                    }
+            /* If the root category is changed and no more objects linked, the link with anrs should be dropped. */
+            if ($hasCategory && !$category->areRootCategoriesEqual($monarcObject->getCategory())) {
+                $anrObjectCategories = $monarcObject->getCategory()->getRootCategory()->getAnrObjectCategories();
+                foreach ($anrObjectCategories as $anrObjectCategory) {
+                    $this->validateAndRemoveAnrCategoryLinkIfNoObjectsLinked($anrObjectCategory, $monarcObject);
                 }
+            }
+            /* Create the links with anrs for the new root category if they not exist.*/
+            if (!$hasCategory) {
                 foreach ($monarcObject->getAnrs() as $anr) {
                     $this->linkCategoryWithAnrIfNotLinked($category->getRootCategory(), $anr);
                 }
@@ -911,10 +878,13 @@ class ObjectService
         AnrSuperClass $anr
     ): void {
         if (!$objectCategory->hasAnrLink($anr)) {
-            $anrObjectCategory = (new AnrObjectCategory())->setAnr($anr);
+            $anrObjectCategory = (new AnrObjectCategory())
+                ->setAnr($anr)
+                ->setCategory($objectCategory)
+                ->setCreator($this->connectedUser->getEmail());
             /* The category supposed to positioned at the end. */
             $this->updatePositions($anrObjectCategory, $this->anrObjectCategoryTable);
-            $objectCategory->addAnrObjectCategory($anrObjectCategory);
+
             $this->anrObjectCategoryTable->save($anrObjectCategory, false);
         }
     }

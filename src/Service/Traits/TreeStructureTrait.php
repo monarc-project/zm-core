@@ -11,37 +11,21 @@ use Monarc\Core\InputFormatter\FormattedInputParams;
 use Monarc\Core\Model\Entity\Interfaces\TreeStructuredEntityInterface;
 use Monarc\Core\Table\AbstractTable;
 
-// TODO: check if we need it at all ??? Normally the entities relations tackle most of the challenges.
 trait TreeStructureTrait
 {
-    private array $children = [];
-
     /**
-     * TODO: adjust the code to manage the ObjectService needs as well.
-     * TODO: validate in the service and call it only when the root is changed.
-     * TODO: cover with tests.
-     *
-     * Performs the setting of the new root for the entity based on the parent's root relation and for its children.
+     * Performs the setting of root relation for the entity's children.
      * The entity is not persisted with the new root, siblings' entities are persisted, but not flushed.
      */
-    public function updateRootForTheTree(TreeStructuredEntityInterface $entity, AbstractTable $table): void
+    public function updateRootOfChildrenTree(TreeStructuredEntityInterface $entity, AbstractTable $table): void
     {
         $childrenOfRoot = $this->getChildrenOfRoot($entity, $table);
-
-        /* Update root for the current entity. */
-        if ($entity->getParent() === null) {
-            $entity->setRoot(null);
-        } else {
-            $entity->setRoot($entity->getParent()->getRoot() ?? $entity->getParent());
-        }
 
         /* Update root for the children entities. */
         $newChildrenRootEntity = $entity->getRoot() ?? $entity;
         foreach ($childrenOfRoot as $childOfRoot) {
-            if ($this->isChildOfEntity($entity, $childOfRoot)) {
-                $childOfRoot->setRoot($newChildrenRootEntity);
-                $table->save($table, false);
-            }
+            $childOfRoot->setRoot($newChildrenRootEntity);
+            $table->save($table, false);
         }
     }
 

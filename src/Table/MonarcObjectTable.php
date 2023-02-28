@@ -40,34 +40,17 @@ class MonarcObjectTable extends AbstractTable implements PositionUpdatableTableI
 
     public function hasObjectsUnderRootCategoryExcludeObject(
         ObjectCategorySuperClass $rootCategory,
-        ObjectSuperClass $excludeObject = null
+        ObjectSuperClass $excludeObject
     ): bool {
-        $queryBuilder = $this->getRepository()->createQueryBuilder('o')
+        return (bool)$this->getRepository()->createQueryBuilder('o')
             ->select('COUNT(o.uuid)')
             ->join('o.category', 'oc', Expr\Join::WITH, 'o.category = oc')
             ->where('oc.root = :rootCategory OR oc = :rootCategory')
-            ->setParameter('rootCategory', $rootCategory);
-        if ($excludeObject !== null) {
-            $queryBuilder->andWhere('o <> :excludeObject')
-                ->setParameter('excludeObject', $excludeObject);
-        }
-
-        return (bool)$queryBuilder
+            ->andWhere('o <> :excludeObject')
+            ->setParameter('rootCategory', $rootCategory)
+            ->setParameter('excludeObject', $excludeObject)
             ->getQuery()
             ->getSingleScalarResult();
-    }
-
-    /**
-     * @return ObjectSuperClass[]
-     */
-    public function getObjectsUnderRootCategory(ObjectCategorySuperClass $rootCategory): array
-    {
-        return $this->getRepository()->createQueryBuilder('o')
-            ->join('o.category', 'oc')
-            ->where('oc.root = :rootCategory OR oc = :rootCategory')
-            ->setParameter('rootCategory', $rootCategory)
-            ->getQuery()
-            ->getResult();
     }
 
     /**

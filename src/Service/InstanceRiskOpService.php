@@ -161,7 +161,7 @@ class InstanceRiskOpService
         }
 
         $instancesRisksOp = $this->instanceRiskOpTable->getInstancesRisksOp(
-            $anrId,
+            $anr,
             array_keys($instancesInfos),
             $params
         );
