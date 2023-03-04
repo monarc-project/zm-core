@@ -48,14 +48,6 @@ class AnrSuperClass extends AbstractEntity
     protected $objects;
 
     /**
-     * @var ArrayCollection|AnrObjectCategorySuperClass[]
-     *
-     * @ORM\OneToMany(targetEntity="AnrObjectCategory", orphanRemoval=true, mappedBy="anr", cascade={"remove"})
-     * @ORM\OrderBy({"position" = "ASC"})
-     */
-    protected $anrObjectCategories;
-
-    /**
      * @var ArrayCollection|ObjectCategorySuperClass[]
      *
      * @ORM\ManyToMany(targetEntity="ObjectCategory", inversedBy="anrs", cascade={"persist"})
@@ -63,6 +55,7 @@ class AnrSuperClass extends AbstractEntity
      *  inverseJoinColumns={@ORM\JoinColumn(name="object_category_id", referencedColumnName="id")},
      *  joinColumns={@ORM\JoinColumn(name="anr_id", referencedColumnName="id")},
      * )
+     * @ORM\OrderBy({"position" = "ASC"})
      */
     protected $objectCategories;
 
@@ -287,7 +280,6 @@ class AnrSuperClass extends AbstractEntity
     public function __construct($obj = null)
     {
         $this->objects = new ArrayCollection();
-        $this->anrObjectCategories = new ArrayCollection();
         $this->objectCategories = new ArrayCollection();
 
         parent::__construct($obj);
@@ -341,25 +333,16 @@ class AnrSuperClass extends AbstractEntity
         return $this;
     }
 
-    public function getAnrObjectCategories()
+    public function getObjectCategories()
     {
-        return $this->anrObjectCategories;
+        return $this->objectCategories;
     }
 
-    public function addAnrObjectCategory(AnrObjectCategorySuperClass $anrObjectCategory): self
+    public function addObjectCategory(ObjectCategorySuperClass $objectCategory): self
     {
-        if (!$this->anrObjectCategories->contains($anrObjectCategory)) {
-            $this->anrObjectCategories->add($anrObjectCategory);
-            $anrObjectCategory->setAnr($this);
-        }
-
-        return $this;
-    }
-
-    public function removeAnrObjectCategory(AnrObjectCategorySuperClass $anrObjectCategory): self
-    {
-        if ($this->anrObjectCategories->contains($anrObjectCategory)) {
-            $this->anrObjectCategories->removeElement($anrObjectCategory);
+        if (!$this->objectCategories->contains($objectCategory)) {
+            $this->objectCategories->add($objectCategory);
+            $objectCategory->addAnrLink($this);
         }
 
         return $this;
@@ -369,6 +352,7 @@ class AnrSuperClass extends AbstractEntity
     {
         if ($this->objectCategories->contains($objectCategory)) {
             $this->objectCategories->removeElement($objectCategory);
+            $objectCategory->removeAnrLink($this);
         }
 
         return $this;

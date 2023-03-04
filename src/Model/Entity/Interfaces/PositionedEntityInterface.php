@@ -26,6 +26,19 @@ interface PositionedEntityInterface
      */
     public function getImplicitPositionRelationsValues(): array;
 
+    /**
+     * All the necessary implicit position relations values have to be tracked to be able to fix positions
+     * in case of their changes.
+     * For example if parent values is changed the new position is considered with use of a new parent value.
+     * The previous parent value is required to fill previous position of the element.
+     * Implemented in PropertyStateEntityTrait.
+     */
+    public function trackPropertyState(string $name, $value): void;
+
+    public function arePropertiesStatesChanged(array $properties): bool;
+
+    public function getPropertiesStates(array $properties): array;
+
     public function getAnr(): ?AnrSuperClass;
 
     public function getCreator(): string;

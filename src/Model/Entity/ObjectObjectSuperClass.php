@@ -10,6 +10,7 @@ namespace Monarc\Core\Model\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Interfaces\PositionedEntityInterface;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
+use Monarc\Core\Model\Entity\Traits\PropertyStateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 
 /**
@@ -25,6 +26,8 @@ class ObjectObjectSuperClass implements PositionedEntityInterface
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
+
+    use PropertyStateEntityTrait;
 
     /**
      * @var int
@@ -74,9 +77,7 @@ class ObjectObjectSuperClass implements PositionedEntityInterface
 
     public function getImplicitPositionRelationsValues(): array
     {
-        $fields = [
-            'parent' => $this->parent,
-        ];
+        $fields['parent'] = $this->parent;
         if ($this->anr !== null) {
             $fields['anr'] = $this->anr;
         }
@@ -108,6 +109,8 @@ class ObjectObjectSuperClass implements PositionedEntityInterface
 
     public function setParent(ObjectSuperClass $parent): self
     {
+        $this->trackPropertyState('parent', $this->parent);
+
         $this->parent = $parent;
 
         return $this;

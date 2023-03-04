@@ -19,24 +19,19 @@ class CreateDataInputValidator extends AbstractInputValidator
             [
                 'name' => 'parent',
                 'required' => true,
-                'allowEmpty' => false,
-                'continueIfEmpty' => false,
                 'filters' => [],
                 'validators' => [],
             ],
             [
                 'name' => 'child',
                 'required' => true,
-                'allowEmpty' => false,
-                'continueIfEmpty' => false,
                 'filters' => [],
                 'validators' => [],
             ],
             [
                 'name' => 'implicitPosition',
                 'required' => false,
-                'allowEmpty' => true,
-                'continueIfEmpty' => true,
+                'allow_empty' => true,
                 'filters' => [
                     ['name' => 'ToInt'],
                 ],
@@ -56,8 +51,7 @@ class CreateDataInputValidator extends AbstractInputValidator
             [
                 'name' => 'previous',
                 'required' => false,
-                'allowEmpty' => true,
-                'continueIfEmpty' => true,
+                'allow_empty' => true,
                 'filters' => [
                     ['name' => 'ToInt'],
                 ],

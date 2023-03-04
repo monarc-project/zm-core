@@ -176,7 +176,7 @@ abstract class AbstractEntityTable
      *
      * @return bool|array
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function get($id, $fields = [])
     {
@@ -243,7 +243,7 @@ abstract class AbstractEntityTable
      *
      * @return mixed|null
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function save(AbstractEntity $entity, $last = true)
     {
@@ -266,6 +266,7 @@ abstract class AbstractEntityTable
         if (in_array('uuid', $ids)) { //uuid
             if (isset($params['implicitPosition']['changes'])) {
                 if (isset($entity->parameters['implicitPosition']['root']) && (!$entity->uuid || $params['implicitPosition']['changes']['parent']['before'] != $params['implicitPosition']['changes']['parent']['after'])) {
+                    throw Exception('The method "updateRootTree" does not exist.', 412);
                     $this->updateRootTree($entity, !$entity->uuid, $params['implicitPosition']['changes']);
                     $clean_params = true;
                 }
@@ -274,6 +275,7 @@ abstract class AbstractEntityTable
                     || (isset($params['implicitPosition']['changes']['parent']) && $params['implicitPosition']['changes']['parent']['before'] != $params['implicitPosition']['changes']['parent']['after'])
                     || (isset($params['implicitPosition']['changes']['position']) && $params['implicitPosition']['changes']['position']['before'] != $params['implicitPosition']['changes']['position']['after'])
                 ) {
+                    throw Exception('The method "autopose" does not exist.', 412);
                     $this->autopose($entity, !$entity->uuid, $params['implicitPosition']['changes']);
                     $clean_params = true;
                 }
@@ -281,6 +283,7 @@ abstract class AbstractEntityTable
         } else { //id
             if (isset($params['implicitPosition']['changes'])) {
                 if (isset($entity->parameters['implicitPosition']['root']) && (!$entity->id || $params['implicitPosition']['changes']['parent']['before'] != $params['implicitPosition']['changes']['parent']['after'])) {
+                    throw Exception('The method "updateRootTree" does not exist.', 412);
                     $this->updateRootTree($entity, !$entity->id, $params['implicitPosition']['changes']);
                     $clean_params = true;
                 }
@@ -289,6 +292,7 @@ abstract class AbstractEntityTable
                     || (isset($params['implicitPosition']['changes']['parent']) && $params['implicitPosition']['changes']['parent']['before'] != $params['implicitPosition']['changes']['parent']['after'])
                     || (isset($params['implicitPosition']['changes']['position']) && $params['implicitPosition']['changes']['position']['before'] != $params['implicitPosition']['changes']['position']['after'])
                 ) {
+                    throw Exception('The method "autopose" does not exist.', 412);
                     $this->autopose($entity, !$entity->id, $params['implicitPosition']['changes']);
                     $clean_params = true;
                 }
@@ -318,6 +322,8 @@ abstract class AbstractEntityTable
     }
 
     /**
+     * TODO: Remove...
+     *
      * @param $entity
      * @param $was_new
      * @param array $changes
@@ -349,7 +355,7 @@ abstract class AbstractEntityTable
     }
 
     /**
-     * TODO: refactor the massive method.
+     * TODO: Remove...
      *
      * @param $entity
      * @param $was_new
@@ -492,6 +498,7 @@ abstract class AbstractEntityTable
                 ->setParameters($params);
             $bros->getQuery()->getResult();
 
+            throw Exception('The method "autopose" does not exist.', 412);
             $this->autopose($entity, $was_new, $changes, true);//TIPS : we simulate the new option to move new brothers up
         } else {//we're not new, the parent is the same, so we "just" have to change internal positions
             $avant = $changes['position']['before'];
@@ -595,7 +602,7 @@ abstract class AbstractEntityTable
     }
 
     /**
-     * TODO: refactor the massive method.
+     * TODO: Remove ...
      *
      * @param AbstractEntity $entity
      * @param array $params

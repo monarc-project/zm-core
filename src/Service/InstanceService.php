@@ -80,7 +80,7 @@ class InstanceService
         array $data,
         bool $isRootLevel = false
     ): Entity\InstanceSuperClass {
-        $object = $data['object'] instanceof Entity\ObjectObjectSuperClass
+        $object = $data['object'] instanceof Entity\ObjectSuperClass
             ? $data['object']
             : $this->monarcObjectTable->findByUuid($data['object']);
 
@@ -109,19 +109,21 @@ class InstanceService
 
         $this->updateInstanceLevels($isRootLevel, $instance);
 
-        $this->updatePositions($instance, $this->instanceTable, $data);
+        $this->updatePositions($instance, $this->instanceTable, $this->getPreparedPositionData($instance, $data));
+
+        $this->instanceTable->save($instance);
 
         /* Used only on FO side. */
         $this->updateInstanceMetadataFieldFromBrothers($instance);
 
-        $this->instanceRiskService->createInstanceRisks($instance, $object);
-
-        $this->instanceRiskOpService->createInstanceRisksOp($instance, $object);
-
         $this->instanceConsequenceService->createInstanceConsequences($instance, $anr, $object);
         $instance->updateImpactBasedOnConsequences()->refreshInheritedImpact();
 
-        $this->instanceTable->save($instance);
+        $this->instanceTable->save($instance, false);
+
+        $this->instanceRiskService->createInstanceRisks($instance, $object);
+
+        $this->instanceRiskOpService->createInstanceRisksOp($instance, $object);
 
         /* Check if the root element is not the same as current child element to avoid a circular dependency. */
         if ($instance->isRoot()
@@ -160,34 +162,9 @@ class InstanceService
         /** @var Entity\InstanceSuperClass $instance */
         $instance = $this->instanceTable->findById($id);
 
-        if (!empty($data['parent']) && $instance->hasParent() && $instance->getParent()->getId() !== $data['parent']) {
-            /** @var Entity\InstanceSuperClass|null $parentInstance */
-            $parentInstance = $this->instanceTable->findById((int)$data['parent'], false);
-            if ($parentInstance !== null) {
-                $instance->setParent($parentInstance)->setRoot($parentInstance->getRoot() ?? $parentInstance);
-            }
-        } elseif (empty($data['parent'])) {
-            $instance->setParent(null)->setRoot(null);
-        }
+        $this->updateInstanceParent($instance, $data);
 
-        if (isset($data['position'])) {
-            $positionData = [
-                'position' => $data['position'] + 1,
-                'implicitPosition' => PositionUpdatableServiceInterface::IMPLICIT_POSITION_START,
-                'forcePositionUpdate' => true,
-            ];
-            if ($data['position'] > 0) {
-                $previousInstance = $this->instanceTable
-                    ->findOneByAnrParentAndPosition($anr, $instance->getParent(), $data['position']);
-                if ($previousInstance !== null) {
-                    $positionData['implicitPosition'] = PositionUpdatableServiceInterface::IMPLICIT_POSITION_AFTER;
-                    $positionData['previous'] = $previousInstance;
-                } else {
-                    $positionData['implicitPosition'] = PositionUpdatableServiceInterface::IMPLICIT_POSITION_END;
-                }
-            }
-            $this->updatePositions($instance, $this->instanceTable, $positionData);
-        }
+        $this->updatePositions($instance, $this->instanceTable, $this->getPreparedPositionData($instance, $data));
 
         $instance->refreshInheritedImpact();
 
@@ -395,5 +372,57 @@ class InstanceService
         foreach ($instance->getInstanceRisks() as $instanceRisk) {
             $this->instanceRiskService->updateRisks($instanceRisk, false);
         }
+    }
+
+    private function updateInstanceParent(Entity\InstanceSuperClass $instance, array $data): void
+    {
+        if (!empty($data['parent'])
+            && (!$instance->hasParent() || $instance->getParent()->getId() !== $data['parent'])
+        ) {
+            /** @var Entity\InstanceSuperClass|null $parentInstance */
+            $parentInstance = $this->instanceTable->findById((int)$data['parent'], false);
+            if ($parentInstance !== null) {
+                $instance->setParent($parentInstance)->setRoot($parentInstance->getRoot() ?? $parentInstance);
+            }
+        } elseif (empty($data['parent']) && $instance->hasParent()) {
+            $instance->setParent(null)->setRoot(null);
+        }
+    }
+
+    private function getPreparedPositionData(Entity\InstanceSuperClass $instance, array $data): array
+    {
+        $positionData = [];
+        if (isset($data['position'])) {
+            $positionData = [
+                'implicitPosition' => PositionUpdatableServiceInterface::IMPLICIT_POSITION_START,
+                'forcePositionUpdate' => true,
+            ];
+            if ((int)$data['position'] > 0) {
+                $previousInstancePosition = $data['position'];
+                $isParentChanged = $instance->arePropertiesStatesChanged($instance->getImplicitPositionRelationsValues());
+                /* If the instance is moved inside the same parent or root and its position <= then expected one,
+                 * the previous element position is increased to 1. */
+                if (!$isParentChanged
+                    && $this->instanceTable->isEntityPersisted($instance)
+                    && $previousInstancePosition >= $instance->getPosition()
+                ) {
+                    $previousInstancePosition++;
+                }
+                $previousInstance = $this->instanceTable->findOneByAnrParentAndPosition(
+                    $instance->getAnr(),
+                    $instance->getParent(),
+                    $previousInstancePosition
+                );
+                if ($previousInstance !== null) {
+                    $positionData = [
+                        'implicitPosition' => PositionUpdatableServiceInterface::IMPLICIT_POSITION_AFTER,
+                        'previous' => $previousInstance,
+                        'forcePositionUpdate' => true,
+                    ];
+                }
+            }
+        }
+
+        return $positionData;
     }
 }

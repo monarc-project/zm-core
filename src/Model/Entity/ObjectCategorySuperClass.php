@@ -12,6 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Interfaces\PositionedEntityInterface;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\LabelsEntityTrait;
+use Monarc\Core\Model\Entity\Traits\PropertyStateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 
 /**
@@ -30,6 +31,8 @@ class ObjectCategorySuperClass implements PositionedEntityInterface
     use UpdateEntityTrait;
 
     use LabelsEntityTrait;
+
+    use PropertyStateEntityTrait;
 
     /**
      * @var int
@@ -87,14 +90,6 @@ class ObjectCategorySuperClass implements PositionedEntityInterface
     protected $objects;
 
     /**
-     * @var AnrObjectCategorySuperClass[]|ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="AnrObjectCategory", mappedBy="category")
-     * @ORM\OrderBy({"position" = "ASC"})
-     */
-    protected $anrObjectCategories;
-
-    /**
      * @var AnrSuperClass[]|ArrayCollection
      *
      * @ORM\ManyToMany(targetEntity="Anr", mappedBy="objectCategories", cascade={"persist"})
@@ -112,15 +107,12 @@ class ObjectCategorySuperClass implements PositionedEntityInterface
     {
         $this->objects = new ArrayCollection();
         $this->children = new ArrayCollection();
-        $this->anrObjectCategories = new ArrayCollection();
         $this->anrs = new ArrayCollection();
     }
 
     public function getImplicitPositionRelationsValues(): array
     {
-        $fields = [
-            'parent' => $this->parent,
-        ];
+        $fields['parent'] = $this->parent;
         if ($this->anr !== null) {
             $fields['anr'] = $this->anr;
         }
@@ -158,6 +150,8 @@ class ObjectCategorySuperClass implements PositionedEntityInterface
         ) {
             $this->parent->removeChild($this);
         }
+
+        $this->trackPropertyState('parent', $this->parent);
 
         $this->parent = $parent;
 
@@ -297,34 +291,24 @@ class ObjectCategorySuperClass implements PositionedEntityInterface
         return false;
     }
 
-    public function getAnrObjectCategories()
+    public function getLinkedAnrs()
     {
-        return $this->anrObjectCategories;
-    }
-
-    public function addAnrObjectCategory(AnrObjectCategorySuperClass $anrObjectCategory): self
-    {
-        if (!$this->anrObjectCategories->contains($anrObjectCategory)) {
-            $this->anrObjectCategories->add($anrObjectCategory);
-            $anrObjectCategory->setCategory($this);
-        }
-
-        return $this;
+        return $this->anrs;
     }
 
     public function hasAnrLink(AnrSuperClass $anr): bool
     {
-        if ($this->anrs->contains($anr)) {
-            return true;
+        return $this->anrs->contains($anr);
+    }
+
+    public function addAnrLink(AnrSuperClass $anr): self
+    {
+        if (!$this->anrs->contains($anr)) {
+            $this->anrs->add($anr);
+            $anr->addObjectCategory($this);
         }
 
-        foreach ($this->getAnrObjectCategories() as $anrObjectCategory) {
-            if ($anrObjectCategory->getAnr()->getId() === $anr->getId()) {
-                return true;
-            }
-        }
-
-        return false;
+        return $this;
     }
 
     public function removeAnrLink(AnrSuperClass $anr): self
@@ -332,6 +316,15 @@ class ObjectCategorySuperClass implements PositionedEntityInterface
         if ($this->anrs->contains($anr)) {
             $this->anrs->removeElement($anr);
             $anr->removeObjectCategory($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAllAnrLinks(): self
+    {
+        foreach ($this->anrs as $anr) {
+            $this->removeAnrLink($anr);
         }
 
         return $this;

@@ -132,9 +132,8 @@ class PostUserDataInputValidator extends AbstractInputValidator
             ],
             [
                 'name' => 'language',
-                'allowEmpty' => true,
-                'continueIfEmpty' => true,
                 'required' => false,
+                'allow_empty' => true,
                 'filters' => [
                     ['name' => 'ToInt'],
                 ],

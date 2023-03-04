@@ -14,6 +14,7 @@ use Monarc\Core\Model\Entity\Interfaces\TreeStructuredEntityInterface;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\LabelsEntityTrait;
 use Monarc\Core\Model\Entity\Traits\NamesEntityTrait;
+use Monarc\Core\Model\Entity\Traits\PropertyStateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 
 /**
@@ -34,6 +35,8 @@ class InstanceSuperClass implements PositionedEntityInterface, TreeStructuredEnt
 
     use LabelsEntityTrait;
     use NamesEntityTrait;
+
+    use PropertyStateEntityTrait;
 
     public const LEVEL_ROOT = 1; // Root instance.
     public const LEVEL_LEAF = 2; // Child instance.
@@ -91,7 +94,6 @@ class InstanceSuperClass implements PositionedEntityInterface, TreeStructuredEnt
      */
     protected $root;
 
-    // TODO: implement the same links on Client's entity side with 2 fields rel !!!
     /**
      * @var InstanceSuperClass|null
      *
@@ -201,26 +203,20 @@ class InstanceSuperClass implements PositionedEntityInterface, TreeStructuredEnt
      */
     protected $position = 1;
 
-    public function __construct($obj = null)
+    public function __construct()
     {
         $this->instanceConsequences = new ArrayCollection();
         $this->instanceRisks = new ArrayCollection();
         $this->operationalInstanceRisks = new ArrayCollection();
         $this->children = new ArrayCollection();
-
-        parent::__construct($obj);
     }
 
     public function getImplicitPositionRelationsValues(): array
     {
-        $fields = [
+        return [
             'parent' => $this->parent,
+            'anr' => $this->anr,
         ];
-        if ($this->anr !== null) {
-            $fields['anr'] = $this->anr;
-        }
-
-        return $fields;
     }
 
     public function getId(): int
@@ -294,6 +290,7 @@ class InstanceSuperClass implements PositionedEntityInterface, TreeStructuredEnt
 
     public function setParent(?InstanceSuperClass $parent): self
     {
+        $this->trackPropertyState('parent', $this->parent);
         $this->parent = $parent;
 
         return $this;

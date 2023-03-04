@@ -32,9 +32,7 @@ class AlterModelTableFixObjPos extends AbstractMigration
             if ($compositionObjectsData['father_id'] !== $previousParentObjectId) {
                 $expectedCompositionLinkPosition = 1;
             }
-            if ($compositionObjectsData['father_id'] === $previousParentObjectId
-                && $expectedCompositionLinkPosition !== $compositionObjectsData['position']
-            ) {
+            if ($expectedCompositionLinkPosition !== $compositionObjectsData['position']) {
                 $this->execute(sprintf(
                     'UPDATE objects_objects SET position = %d WHERE id = %d',
                     $expectedCompositionLinkPosition,
@@ -45,6 +43,40 @@ class AlterModelTableFixObjPos extends AbstractMigration
             $expectedCompositionLinkPosition++;
             $previousParentObjectId = $compositionObjectsData['father_id'];
         }
+
+        /* Fix instances positions to have them in a correct sequence (1, 2, 3, ...). */
+        $instancesQuery = $this->query(
+            'SELECT id, anr_id, parent_id, position FROM instances ORDER BY anr_id, parent_id, position'
+        );
+        $previousParentInstanceId = null;
+        $expectedInstancePosition = 1;
+        foreach ($instancesQuery->fetchAll() as $instanceData) {
+            if ($previousParentInstanceId === null) {
+                $previousParentInstanceId = (int)$instanceData['parent_id'];
+            }
+            if ((int)$instanceData['parent_id'] !== $previousParentInstanceId) {
+                $expectedInstancePosition = 1;
+            }
+            if ($expectedInstancePosition !== $instanceData['position']) {
+                $this->execute(sprintf(
+                    'UPDATE instances SET position = %d WHERE id = %d',
+                    $expectedInstancePosition,
+                    $instanceData['id']
+                ));
+            }
+
+            $expectedInstancePosition++;
+            $previousParentInstanceId = (int)$instanceData['parent_id'];
+        }
+
+        /* The position of the category will be used based on object_category table (root_id = null). */
+        $this->table('anrs_objects_categories')
+            ->removeColumn('position')
+            ->removeColumn('creator')
+            ->removeColumn('created_at')
+            ->removeColumn('updater')
+            ->removeColumn('updated_at')
+            ->update();
 
         $table = $this->table('anr_metadatas_on_instances');
         $table->rename('instances_metadata_fields')->update();

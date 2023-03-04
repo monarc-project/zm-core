@@ -369,7 +369,6 @@ return [
             DeprecatedTable\DeliveriesModelsTable::class => AutowireFactory::class,
             Table\InstanceConsequenceTable::class => AutowireFactory::class,
             Table\ModelTable::class => Table\Factory\CoreEntityManagerFactory::class,
-            Table\AnrObjectCategoryTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\MonarcObjectTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\InstanceTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\ObjectCategoryTable::class => Table\Factory\CoreEntityManagerFactory::class,

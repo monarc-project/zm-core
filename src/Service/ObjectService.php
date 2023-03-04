@@ -11,7 +11,6 @@ use Doctrine\Common\Collections\Expr\Comparison;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\InputFormatter\FormattedInputParams;
 use Monarc\Core\Model\Entity\Anr;
-use Monarc\Core\Model\Entity\AnrObjectCategory;
 use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\Asset;
 use Monarc\Core\Model\Entity\AssetSuperClass;
@@ -44,8 +43,6 @@ class ObjectService
 
     private Table\ObjectCategoryTable $objectCategoryTable;
 
-    private Table\AnrObjectCategoryTable $anrObjectCategoryTable;
-
     private Table\ObjectObjectTable $objectObjectTable;
 
     private Table\InstanceTable $instanceTable;
@@ -63,7 +60,6 @@ class ObjectService
         Table\AssetTable $assetTable,
         Table\ModelTable $modelTable,
         Table\ObjectCategoryTable $objectCategoryTable,
-        Table\AnrObjectCategoryTable $anrObjectCategoryTable,
         Table\ObjectObjectTable $objectObjectTable,
         Table\InstanceTable $instanceTable,
         RolfTagTable $rolfTagTable,
@@ -75,7 +71,6 @@ class ObjectService
         $this->assetTable = $assetTable;
         $this->modelTable = $modelTable;
         $this->objectCategoryTable = $objectCategoryTable;
-        $this->anrObjectCategoryTable = $anrObjectCategoryTable;
         $this->objectObjectTable = $objectObjectTable;
         $this->instanceTable = $instanceTable;
         $this->rolfTagTable = $rolfTagTable;
@@ -191,8 +186,7 @@ class ObjectService
     public function getLibraryTreeStructure(AnrSuperClass $anr): array
     {
         $result = [];
-        foreach ($anr->getAnrObjectCategories() as $anrObjectCategory) {
-            $objectCategory = $anrObjectCategory->getCategory();
+        foreach ($anr->getObjectCategories() as $objectCategory) {
             $result[] = $this->getCategoriesAndObjectsTreeList($objectCategory, $anr);
         }
 
@@ -353,10 +347,8 @@ class ObjectService
                 $monarcObject
             )
         ) {
-            $rootCategory = $monarcObject->getCategory()->getRootCategory();
-            /* Shift position to the end and remove the relation with Anr (AnrObjectCategory) */
-            $this->updatePositions($rootCategory, $this->anrObjectCategoryTable, ['forcePositionUpdate' => true]);
-            $this->objectCategoryTable->save($rootCategory->removeAnrLink($anr), false);
+            $monarcObject->getCategory()->getRootCategory()->removeAnrLink($anr);
+            $this->objectCategoryTable->save($monarcObject->getCategory()->getRootCategory(), false);
         }
 
         foreach ($monarcObject->getInstances() as $instance) {
@@ -476,18 +468,11 @@ class ObjectService
     {
         $monarcObject->addAnr($anr);
 
-        if ($monarcObject->hasCategory()) {
-            /** Link root category to the anr, if not linked. */
-            if (!$monarcObject->getCategory()->getRootCategory()->hasAnrLink($anr)) {
-                $anrObjectCategory = (new AnrObjectCategory())
-                    ->setCategory($monarcObject->getCategory()->getRootCategory())
-                    ->setAnr($anr)
-                    ->setCreator($this->connectedUser->getEmail());
-                /* The category supposed to positioned at the end. */
-                $this->updatePositions($anrObjectCategory, $this->anrObjectCategoryTable);
+        /** Link root category to the anr, if not linked. */
+        if ($monarcObject->hasCategory() && !$monarcObject->getCategory()->getRootCategory()->hasAnrLink($anr)) {
+            $monarcObject->getCategory()->getRootCategory()->addAnrLink($anr);
 
-                $this->anrObjectCategoryTable->save($anrObjectCategory, false);
-            }
+            $this->objectCategoryTable->save($monarcObject->getCategory()->getRootCategory(), false);
         }
 
         foreach ($monarcObject->getChildren() as $childObject) {
@@ -604,17 +589,14 @@ class ObjectService
 
             /* If the root category is changed and no more objects linked, the link with anrs should be dropped. */
             if ($hasCategory && !$category->areRootCategoriesEqual($monarcObject->getCategory())) {
-                $anrObjectCategories = $monarcObject->getCategory()->getRootCategory()->getAnrObjectCategories();
-                foreach ($anrObjectCategories as $anrObjectCategory) {
-                    $this->validateAndRemoveAnrCategoryLinkIfNoObjectsLinked($anrObjectCategory, $monarcObject);
-                }
+                $this->validateAndRemoveRootCategoryLinkIfNoObjectsLinked($monarcObject);
             }
             /* Create the links with anrs for the new root category if they do not exist. */
             if (!$hasCategory
                 || $category->getRootCategory()->getId() !== $monarcObject->getCategory()->getRootCategory()->getId()
             ) {
                 foreach ($monarcObject->getAnrs() as $anr) {
-                    $this->linkCategoryWithAnrIfNotLinked($category->getRootCategory(), $anr);
+                    $this->objectCategoryTable->save($category->getRootCategory()->addAnrLink($anr), false);
                 }
             }
 
@@ -861,35 +843,18 @@ class ObjectService
         return $riskOps;
     }
 
-    private function validateAndRemoveAnrCategoryLinkIfNoObjectsLinked(
-        AnrObjectCategory $anrObjectCategory,
-        MonarcObject $monarcObject
-    ): void {
+    private function validateAndRemoveRootCategoryLinkIfNoObjectsLinked(MonarcObject $monarcObject): void
+    {
+        if (!$monarcObject->hasCategory()) {
+            return;
+        }
+
         /* Check if there are no more objects left under the root category or its children ones. */
         $hasObjectsUnderRootCategory = $this->monarcObjectTable
-            ->hasObjectsUnderRootCategoryExcludeObject($anrObjectCategory->getCategory(), $monarcObject);
+            ->hasObjectsUnderRootCategoryExcludeObject($monarcObject->getCategory()->getRootCategory(), $monarcObject);
         if (!$hasObjectsUnderRootCategory) {
-            /* Shift position to the end and remove the relation with Anr (AnrObjectCategory) */
-            $this->updatePositions($anrObjectCategory, $this->anrObjectCategoryTable, ['forcePositionUpdate' => true]);
-            $anrObjectCategory->getCategory()->removeAnrLink($anrObjectCategory->getAnr());
-            $this->objectCategoryTable->save($anrObjectCategory->getCategory(), false);
-            $this->anrObjectCategoryTable->remove($anrObjectCategory, false);
-        }
-    }
-
-    private function linkCategoryWithAnrIfNotLinked(
-        ObjectCategorySuperClass $objectCategory,
-        AnrSuperClass $anr
-    ): void {
-        if (!$objectCategory->hasAnrLink($anr)) {
-            $anrObjectCategory = (new AnrObjectCategory())
-                ->setAnr($anr)
-                ->setCategory($objectCategory)
-                ->setCreator($this->connectedUser->getEmail());
-            /* The category supposed to positioned at the end. */
-            $this->updatePositions($anrObjectCategory, $this->anrObjectCategoryTable);
-
-            $this->anrObjectCategoryTable->save($anrObjectCategory, false);
+            $monarcObject->getCategory()->getRootCategory()->removeAllAnrLinks();
+            $this->objectCategoryTable->save($monarcObject->getCategory()->getRootCategory(), false);
         }
     }
 

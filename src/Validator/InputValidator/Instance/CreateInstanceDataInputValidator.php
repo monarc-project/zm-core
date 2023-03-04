@@ -17,15 +17,13 @@ class CreateInstanceDataInputValidator extends AbstractInputValidator
             [
                 'name' => 'object',
                 'required' => true,
-                'allowEmpty' => false,
-                'continueIfEmpty' => false,
                 'filters' => [],
                 'validators' => [],
             ],
             [
                 'name' => 'parent',
                 'required' => true,
-                'allowEmpty' => true,
+                'allow_empty' => true,
                 'filters' => [
                     ['name' => 'ToInt'],
                 ],
@@ -34,7 +32,7 @@ class CreateInstanceDataInputValidator extends AbstractInputValidator
             [
                 'name' => 'position',
                 'required' => true,
-                'allowEmpty' => true,
+                'allow_empty' => true,
                 'filters' => [
                     ['name' => 'ToInt'],
                 ],

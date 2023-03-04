@@ -21,8 +21,6 @@ class PostObjectDataInputValidator extends AbstractInputValidator
             [
                 'name' => 'scope',
                 'required' => true,
-                'allowEmpty' => false,
-                'continueIfEmpty' => false,
                 'filters' => [
                     ['name' => 'ToInt'],
                 ],
@@ -38,8 +36,6 @@ class PostObjectDataInputValidator extends AbstractInputValidator
             [
                 'name' => 'mode',
                 'required' => false,
-                'allow_empty' => false,
-                'continue_if_empty' => false,
                 'filters' => [
                     ['name' => 'ToInt'],
                 ],
@@ -69,8 +65,6 @@ class PostObjectDataInputValidator extends AbstractInputValidator
             [
                 'name' => 'category',
                 'required' => true,
-                'allow_empty' => false,
-                'continue_if_empty' => false,
                 'filters' => [
                     ['name' => 'ToInt'],
                 ],
@@ -80,7 +74,6 @@ class PostObjectDataInputValidator extends AbstractInputValidator
                 'name' => 'rolfTag',
                 'required' => false,
                 'allow_empty' => true,
-                'continue_if_empty' => true,
                 'filters' => [
                     ['name' => 'ToInt'],
                 ],

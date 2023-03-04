@@ -17,7 +17,7 @@ class PatchInstanceDataInputValidator extends AbstractInputValidator
             [
                 'name' => 'parent',
                 'required' => true,
-                'allowEmpty' => true,
+                'allow_empty' => true,
                 'filters' => [
                     ['name' => 'ToInt'],
                 ],
@@ -26,7 +26,7 @@ class PatchInstanceDataInputValidator extends AbstractInputValidator
             [
                 'name' => 'position',
                 'required' => true,
-                'allowEmpty' => true,
+                'allow_empty' => true,
                 'filters' => [
                     ['name' => 'ToInt'],
                 ],

@@ -11,8 +11,6 @@ use DateTime;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Helper\EncryptDecryptHelperTrait;
 use Monarc\Core\Model\Entity\Anr;
-use Monarc\Core\Model\Entity\AnrObjectCategory;
-use Monarc\Core\Model\Entity\AnrObjectCategorySuperClass;
 use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\OperationalRiskScale;
 use Monarc\Core\Model\Entity\Scale;
@@ -20,7 +18,6 @@ use Monarc\Core\Model\Entity\ThreatSuperClass;
 use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\ScaleCommentTable;
 use Monarc\Core\Model\Table\ScaleTable;
-use Monarc\Core\Table\AnrObjectCategoryTable;
 use Monarc\Core\Table\InstanceTable;
 use Monarc\Core\Table\MonarcObjectTable;
 use Monarc\Core\Table\ThreatTable;
@@ -31,8 +28,6 @@ class AnrService extends AbstractService
 
     /** @var ScaleService */
     protected $scaleService;
-    /** @var AnrObjectCategoryTable */
-    protected $anrObjectCategoryTable;
     protected $MonarcObjectTable;
     protected $instanceTable;
     protected $instanceConsequenceTable;
@@ -137,6 +132,7 @@ class AnrService extends AbstractService
             'operationalRiskScaleType',
             'operationalRiskScaleComment',
             'translation',
+            // TODO: This will not work anymore : instance, instanceConsequence are refactored.
             'instance',
             'instanceConsequence',
             'instanceRisk',
@@ -273,18 +269,11 @@ class AnrService extends AbstractService
             $instanceTable->save($newInstance, false);
         }
 
-        /** @var AnrObjectCategorySuperClass[] $anrObjectCategories */
-        $anrObjectCategories = $this->anrObjectCategoryTable->findByAnr($anr);
-        foreach ($anrObjectCategories as $anrObjectCategory) {
-            $newAnrObjectCategory = (new AnrObjectCategory())
-                ->setAnr($newAnr)
-                ->setCategory($anrObjectCategory->getCategory())
-                ->setPosition($anrObjectCategory->getPosition());
-
-            $this->anrObjectCategoryTable->save($newAnrObjectCategory, false);
+        foreach ($anr->getObjectCategories() as $objectCategory) {
+            $newAnr->addObjectCategory($objectCategory);
         }
 
-        $instanceTable->getDb()->flush();
+        $anrTable->save($newAnr);
 
         return $newAnr;
     }

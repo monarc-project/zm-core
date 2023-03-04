@@ -24,7 +24,6 @@ class AnrServiceFactory extends AbstractServiceFactory
         'entity' => Anr::class,
         'scaleService' => ScaleService::class,
         'instanceService' => InstanceService::class,
-        'anrObjectCategoryTable' => Table\AnrObjectCategoryTable::class,
         'instanceTable' => Table\InstanceTable::class,
         'instanceConsequenceTable' => Table\InstanceConsequenceTable::class,
         'instanceRiskTable' => DeprecatedTable\InstanceRiskTable::class,

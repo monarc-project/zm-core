@@ -44,40 +44,6 @@ class InstanceTable extends AbstractTable implements PositionUpdatableTableInter
     /**
      * @return InstanceSuperClass[]
      */
-    public function findGlobalBrothersByAnrAndInstance(AnrSuperClass $anr, InstanceSuperClass $instance): array
-    {
-        return $this->getRepository()
-            ->createQueryBuilder('i')
-            ->innerJoin('i.object', 'o')
-            ->where('i.anr = :anr')
-            ->andWhere('o.uuid = :object_uuid')
-            ->andWhere('o.anr = :anr')
-            ->andWhere('i.id != :id')
-            ->andWhere('o.scope = :scopeMode')
-            ->setParameter('anr', $anr)
-            ->setParameter('id', $instance->getId())
-            ->setParameter('object_uuid', $instance->getObject()->getUuid())
-            ->setParameter('scopeMode', ObjectSuperClass::SCOPE_GLOBAL)
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
-     * @return InstanceSuperClass[]
-     */
-    public function findByObject(ObjectSuperClass $object): array
-    {
-        return $this->getRepository()
-            ->createQueryBuilder('i')
-            ->where('i.object = :object')
-            ->setParameter('object', $object)
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
-     * @return InstanceSuperClass[]
-     */
     public function findRootsByAnr(AnrSuperClass $anr): array
     {
         return $this->getRepository()
@@ -143,45 +109,6 @@ class InstanceTable extends AbstractTable implements PositionUpdatableTableInter
     }
 
     /**
-     * Manage Delete Position
-     *
-     * @param AbstractEntity $entity
-     * @param array $params
-     */
-    protected function manageDeletePosition(AbstractEntity $entity, $params = array())
-    {
-        $return = $this->getRepository()->createQueryBuilder('t')
-            ->update()
-            ->set('t.position', 't.position - 1');
-        $hasWhere = false;
-        if (!empty($params['field'])) {
-            $hasWhere = true;
-            if (is_null($entity->get($params['field']))) {
-                $return = $return->where('t.' . $params['field'] . ' IS NULL');
-            } else {
-                $return = $return->where('t.' . $params['field'] . ' = :' . $params['field'])
-                    ->setParameter(':' . $params['field'], $entity->get($params['field']));
-            }
-        }
-
-        $anr = $entity->get('anr');
-        if ($anr) {
-            $return = $return->andWhere('t.anr = :anr')
-                ->setParameter(':anr', is_object($anr) ? $anr->get('id') : $anr);
-        } else {
-            $return = $return->andWhere('t.anr IS NULL');
-        }
-
-        if ($hasWhere) {
-            $return = $return->andWhere('t.position >= :pos');
-        } else {
-            $return = $return->where('t.position >= :pos');
-        }
-        $return = $return->setParameter(':pos', $entity->get('position'));
-        $return->getQuery()->getResult();
-    }
-
-    /**
      * @return InstanceSuperClass[]
      */
     public function findByAsset(AssetSuperClass $asset): array
@@ -199,7 +126,7 @@ class InstanceTable extends AbstractTable implements PositionUpdatableTableInter
         ?InstanceSuperClass $parentInstance,
         int $position
     ): ?InstanceSuperClass {
-        $queryBuilder = $this->getRepository()->createQueryBuilder('a')
+        $queryBuilder = $this->getRepository()->createQueryBuilder('i')
             ->where('i.anr = :anr')
             ->setParameter('anr', $anr);
         if ($parentInstance === null) {
@@ -213,6 +140,6 @@ class InstanceTable extends AbstractTable implements PositionUpdatableTableInter
             ->setParameter('position', $position)
             ->setMaxResults(1)
             ->getQuery()
-            ->getResult();
+            ->getOneOrNullResult();
     }
 }

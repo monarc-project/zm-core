@@ -19,8 +19,6 @@ class MovePositionDataInputValidator extends AbstractInputValidator
             [
                 'name' => 'move',
                 'required' => true,
-                'allowEmpty' => false,
-                'continueIfEmpty' => false,
                 'filters' => [],
                 'validators' => [
                     [

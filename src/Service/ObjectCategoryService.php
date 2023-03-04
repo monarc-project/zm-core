@@ -9,16 +9,13 @@ namespace Monarc\Core\Service;
 
 use Doctrine\Common\Collections\Expr\Comparison;
 use Monarc\Core\InputFormatter\FormattedInputParams;
-use Monarc\Core\Model\Entity\AnrObjectCategory;
 use Monarc\Core\Model\Entity\Model;
 use Monarc\Core\Model\Entity\ObjectCategory;
-use Monarc\Core\Model\Entity\ObjectCategorySuperClass;
 use Monarc\Core\Model\Entity\UserSuperClass;
+use Monarc\Core\Service\Interfaces\PositionUpdatableServiceInterface;
 use Monarc\Core\Service\Traits\PositionUpdateTrait;
-use Monarc\Core\Table\AnrObjectCategoryTable;
 use Monarc\Core\Table\ModelTable;
 use Monarc\Core\Table\ObjectCategoryTable;
-use Monarc\Core\Table\MonarcObjectTable;
 
 class ObjectCategoryService
 {
@@ -26,24 +23,16 @@ class ObjectCategoryService
 
     private ObjectCategoryTable $objectCategoryTable;
 
-    private MonarcObjectTable $monarcObjectTable;
-
-    private AnrObjectCategoryTable $anrObjectCategoryTable;
-
     private ModelTable $modelTable;
 
     private UserSuperClass $connectedUser;
 
     public function __construct(
         ObjectCategoryTable $objectCategoryTable,
-        MonarcObjectTable $monarcObjectTable,
-        AnrObjectCategoryTable $anrObjectCategoryTable,
         ModelTable $modelTable,
         ConnectedUserService $connectedUserService
     ) {
         $this->objectCategoryTable = $objectCategoryTable;
-        $this->monarcObjectTable = $monarcObjectTable;
-        $this->anrObjectCategoryTable = $anrObjectCategoryTable;
         $this->modelTable = $modelTable;
         $this->connectedUser = $connectedUserService->getConnectedUser();
     }
@@ -80,9 +69,9 @@ class ObjectCategoryService
             $maxPosition = $this->objectCategoryTable
                 ->findMaxPosition($objectCategory->getImplicitPositionRelationsValues());
             if ($objectCategory->getPosition() >= $maxPosition) {
-                $objectCategoryData['implicitPosition'] = 2;
+                $objectCategoryData['implicitPosition'] = PositionUpdatableServiceInterface::IMPLICIT_POSITION_END;
             } else {
-                $objectCategoryData['implicitPosition'] = 3;
+                $objectCategoryData['implicitPosition'] = PositionUpdatableServiceInterface::IMPLICIT_POSITION_AFTER;
                 $previousObjectCategory = $this->objectCategoryTable->findPreviousCategory($objectCategory);
                 if ($previousObjectCategory !== null) {
                     $objectCategoryData['previous'] = $previousObjectCategory->getId();
@@ -182,12 +171,12 @@ class ObjectCategoryService
             if ($isRootCategoryBeforeUpdated
                 || ($hasRootCategoryChanged && !$previousRootCategory->hasObjectsLinkedDirectlyOrToChildCategories())
             ) {
-                $this->unlinkCategoryFromAnrs($previousRootCategory);
+                $previousRootCategory->removeAllAnrLinks();
             }
 
             if ($isRootCategoryBeforeUpdated || $hasRootCategoryChanged) {
                 /* Link the new root to Anrs, if not linked. */
-                $this->linkTheCategoryRootToAnrs($objectCategory);
+                $this->linkTheCategoryRootToObjectLinkedAnrs($objectCategory);
                 /* Update the category children with the new root. */
                 $this->updateRootOfChildrenTree($objectCategory);
             }
@@ -199,14 +188,20 @@ class ObjectCategoryService
             if ($previousRootCategory !== null
                 && !$previousRootCategory->hasObjectsLinkedDirectlyOrToChildCategories()
             ) {
-                $this->unlinkCategoryFromAnrs($previousRootCategory);
+                $previousRootCategory->removeAllAnrLinks();
             }
 
             /* The category become root now, before it had a parent and was not root. */
-            $this->linkTheCategoryRootToAnrs($objectCategory);
-
+            $this->linkTheCategoryRootToObjectLinkedAnrs($objectCategory);
+            /* Update the category children with the new root. */
             $this->updateRootOfChildrenTree($objectCategory);
         }
+
+        $this->updatePositions(
+            $objectCategory,
+            $this->objectCategoryTable,
+            array_merge($data, ['forcePositionUpdate' => true])
+        );
 
         $this->objectCategoryTable->save($objectCategory);
 
@@ -218,54 +213,29 @@ class ObjectCategoryService
         /** @var ObjectCategory $objectCategory */
         $objectCategory = $this->objectCategoryTable->findById($id);
 
-        $this->objectCategoryTable->beginTransaction();
-        try {
-            /* Remove all the relations with ANRs and adjust the overall positions. */
-            $anrsWhereTheCategoryIsRoot = [];
-            foreach ($objectCategory->getAnrObjectCategories() as $anrObjectCategory) {
-                $this->shiftPositionsForRemovingEntity($anrObjectCategory, $this->anrObjectCategoryTable);
-                $maxPosition = 1;
-                foreach ($anrObjectCategory->getAnr()->getAnrObjectCategories() as $anrBasedObjectCategory) {
-                    if ($anrBasedObjectCategory->getId() !== $anrObjectCategory->getId()) {
-                        $maxPosition = $anrBasedObjectCategory->getPosition();
-                    }
+        /* Remove all the relations with ANRs and adjust the overall positions. */
+        $this->shiftPositionsForRemovingEntity($objectCategory, $this->objectCategoryTable);
+
+        /* Set the removing category's parent for all its children */
+        foreach ($objectCategory->getChildren() as $childCategory) {
+            $childCategory
+                ->setParent($objectCategory->getParent())
+                ->setUpdater($this->connectedUser->getEmail());
+
+            /* If the removing category is root, then all its direct children become root. */
+            if ($objectCategory->isCategoryRoot()) {
+                $childCategory->setRoot(null);
+                foreach ($objectCategory->getLinkedAnrs() as $anr) {
+                    $childCategory->addAnrLink($anr);
                 }
-                $anrsWhereTheCategoryIsRoot[] = [
-                    'anr' => $anrObjectCategory->getAnr(),
-                    'maxPosition' => $maxPosition,
-                ];
-                $this->anrObjectCategoryTable->remove($anrObjectCategory, true);
             }
 
-            /* Set the removing category's parent for all its children. */
-            foreach ($objectCategory->getChildren() as $childCategory) {
-                $childCategory
-                    ->setParent($objectCategory->getParent())
-                    ->setUpdater($this->connectedUser->getEmail());
+            $this->updatePositions($childCategory, $this->objectCategoryTable, ['forcePositionUpdate' => true]);
 
-                /* If the removing category is root, then all its direct children become root. */
-                if ($objectCategory->isCategoryRoot()) {
-                    $childCategory->setRoot(null);
-                    foreach ($anrsWhereTheCategoryIsRoot as $anrWhereTheCategoryIsRoot) {
-                        $anrObjectCategory = (new AnrObjectCategory())
-                            ->setCategory($childCategory)
-                            ->setAnr($anrWhereTheCategoryIsRoot['anr'])
-                            ->setPosition(++$anrWhereTheCategoryIsRoot['maxPosition'])
-                            ->setCreator($this->connectedUser->getEmail());
-
-                        $this->anrObjectCategoryTable->save($anrObjectCategory, false);
-                    }
-                }
-
-                $this->objectCategoryTable->save($childCategory, false);
-            }
-
-            $this->objectCategoryTable->remove($objectCategory);
-        } catch (\Throwable $e) {
-            $this->objectCategoryTable->rollback();
+            $this->objectCategoryTable->save($childCategory, false);
         }
 
-        $this->objectCategoryTable->commit();
+        $this->objectCategoryTable->remove($objectCategory);
     }
 
     private function updateRootOfChildrenTree(ObjectCategory $objectCategory): void
@@ -289,8 +259,11 @@ class ObjectCategoryService
             $excludeCategoriesIds = [$categoryIdFilter['value']];
             if (!$isParentIdFilterEmpty) {
                 $excludeCategoriesIds[] = $parentIdFilter['value'];
-                $formattedInputParams->setFilterValueFor('parent', $parentIdFilter['value']);
             }
+            $formattedInputParams->setFilterValueFor(
+                'parent',
+                $isParentIdFilterEmpty ? null : $parentIdFilter['value']
+            );
             $formattedInputParams->setFilterFor('id', [
                 'value' => $excludeCategoriesIds,
                 'operator' => Comparison::NIN,
@@ -303,7 +276,7 @@ class ObjectCategoryService
     }
 
     private function getPreparedObjectCategoryData(
-        ObjectCategorySuperClass $objectCategory,
+        ObjectCategory $objectCategory,
         bool $includeChildren = true,
         ?Model $model = null
     ): array {
@@ -343,29 +316,15 @@ class ObjectCategoryService
         return $result;
     }
 
-    private function unlinkCategoryFromAnrs(ObjectCategorySuperClass $objectCategory): void
-    {
-        foreach ($objectCategory->getAnrObjectCategories() as $anrObjectCategory) {
-            $this->anrObjectCategoryTable->remove($anrObjectCategory, false);
-        }
-    }
-
     /**
      * Links every Anr of objects that are under the root category, or it's children.
      */
-    private function linkTheCategoryRootToAnrs(ObjectCategorySuperClass $objectCategory): void
+    private function linkTheCategoryRootToObjectLinkedAnrs(ObjectCategory $objectCategory): void
     {
         foreach ($objectCategory->getObjectsRecursively() as $object) {
             foreach ($object->getAnrs() as $anr) {
                 if (!$objectCategory->getRootCategory()->hasAnrLink($anr)) {
-                    $anrObjectCategory = (new AnrObjectCategory())
-                        ->setAnr($anr)
-                        ->setCategory($objectCategory->getRootCategory())
-                        ->setCreator($this->connectedUser->getEmail());
-                    /* The category supposed to positioned at the end. */
-                    $this->updatePositions($anrObjectCategory, $this->anrObjectCategoryTable);
-
-                    $this->anrObjectCategoryTable->save($anrObjectCategory, false);
+                    $objectCategory->addAnrLink($anr);
                 }
             }
         }

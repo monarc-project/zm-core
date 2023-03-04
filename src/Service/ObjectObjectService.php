@@ -8,7 +8,6 @@
 namespace Monarc\Core\Service;
 
 use Monarc\Core\Exception\Exception;
-use Monarc\Core\Model\Entity\AnrObjectCategory;
 use Monarc\Core\Model\Entity\Asset;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Entity\ObjectObject;
@@ -16,9 +15,9 @@ use Monarc\Core\Model\Entity\ObjectObjectSuperClass;
 use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Service\Interfaces\PositionUpdatableServiceInterface;
 use Monarc\Core\Service\Traits\PositionUpdateTrait;
-use Monarc\Core\Table\AnrObjectCategoryTable;
 use Monarc\Core\Table\InstanceTable;
 use Monarc\Core\Table\MonarcObjectTable;
+use Monarc\Core\Table\ObjectCategoryTable;
 use Monarc\Core\Table\ObjectObjectTable;
 
 class ObjectObjectService
@@ -34,7 +33,7 @@ class ObjectObjectService
 
     private InstanceTable $instanceTable;
 
-    private AnrObjectCategoryTable $anrObjectCategoryTable;
+    private ObjectCategoryTable $objectCategoryTable;
 
     private InstanceService $instanceService;
 
@@ -44,14 +43,14 @@ class ObjectObjectService
         ObjectObjectTable $objectObjectTable,
         MonarcObjectTable $monarcObjectTable,
         InstanceTable $instanceTable,
-        AnrObjectCategoryTable $anrObjectCategoryTable,
+        ObjectCategoryTable $objectCategoryTable,
         InstanceService $instanceService,
         ConnectedUserService $connectedUserService
     ) {
         $this->objectObjectTable = $objectObjectTable;
         $this->monarcObjectTable = $monarcObjectTable;
-        $this->anrObjectCategoryTable = $anrObjectCategoryTable;
         $this->instanceTable = $instanceTable;
+        $this->objectCategoryTable = $objectCategoryTable;
         $this->instanceService = $instanceService;
         $this->connectedUser = $connectedUserService->getConnectedUser();
     }
@@ -172,6 +171,9 @@ class ObjectObjectService
         }
     }
 
+    /**
+     * New instance is created when the composition parent object is presented in the analysis.
+     */
     private function createInstances(MonarcObject $parentObject, MonarcObject $childObject, array $data): void
     {
         $previousObjectCompositionLink = null;
@@ -208,14 +210,9 @@ class ObjectObjectService
             }
             /* Link the object's root category if not linked. */
             if ($object->hasCategory() && !$object->getCategory()->getRootCategory()->hasAnrLink($anr)) {
-                $anrObjectCategory = (new AnrObjectCategory())
-                    ->setAnr($anr)
-                    ->setCategory($object->getCategory()->getRootCategory())
-                    ->setCreator($this->connectedUser->getEmail());
+                $object->getCategory()->getRootCategory()->addAnrLink($anr);
 
-                $this->updatePositions($anrObjectCategory, $this->anrObjectCategoryTable);
-
-                $this->anrObjectCategoryTable->save($anrObjectCategory, false);
+                $this->objectCategoryTable->save($object->getCategory()->getRootCategory(), false);
             }
         }
         foreach ($object->getChildren() as $childObject) {

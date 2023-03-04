@@ -147,8 +147,7 @@ class InstanceRiskService extends AbstractService
 
         $languageIndex = $this->getLanguageIndex($anr);
 
-        $instanceRisks = $instanceRiskTable
-            ->findInstancesRisksByParams($anr, $languageIndex, $params);
+        $instanceRisks = $instanceRiskTable->findInstancesRisksByParams($anr, $languageIndex, $params);
 
         $result = [];
         foreach ($instanceRisks as $instanceRisk) {

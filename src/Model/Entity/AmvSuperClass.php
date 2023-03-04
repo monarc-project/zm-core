@@ -11,6 +11,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Interfaces\PositionedEntityInterface;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
+use Monarc\Core\Model\Entity\Traits\PropertyStateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 use Ramsey\Uuid\Lazy\LazyUuidFromString;
 use Ramsey\Uuid\Uuid;
@@ -29,6 +30,8 @@ class AmvSuperClass implements PositionedEntityInterface
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
+
+    use PropertyStateEntityTrait;
 
     public const STATUS_ACTIVE = 1;
     public const STATUS_INACTIVE = 0;
@@ -109,7 +112,7 @@ class AmvSuperClass implements PositionedEntityInterface
 
     public function getImplicitPositionRelationsValues(): array
     {
-        $fields = ['asset' => $this->asset];
+        $fields['asset'] = $this->asset;
         if ($this->anr !== null) {
             $fields['anr'] = $this->anr;
         }
@@ -177,6 +180,7 @@ class AmvSuperClass implements PositionedEntityInterface
 
     public function setAsset(AssetSuperClass $asset): self
     {
+        $this->trackPropertyState('asset', $this->asset);
         $this->asset = $asset;
         $asset->addAmv($this);
 

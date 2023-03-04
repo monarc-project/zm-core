@@ -7,17 +7,63 @@
 
 namespace Monarc\Core\Validator\InputValidator\ObjectCategory;
 
+use Laminas\Validator\InArray;
+use Monarc\Core\Service\Interfaces\PositionUpdatableServiceInterface;
 use Monarc\Core\Validator\InputValidator\AbstractInputValidator;
 
 class PostObjectCategoryDataInputValidator extends AbstractInputValidator
 {
     protected function getRules(): array
     {
-        $labelRules = [];
+        $rules = [
+            [
+                'name' => 'root',
+                'required' => true,
+                'allow_empty' => true,
+                'filters' => [],
+                'validators' => [],
+            ],[
+                'name' => 'parent',
+                'required' => true,
+                'allow_empty' => true,
+                'filters' => [],
+                'validators' => [],
+            ],
+            [
+                'name' => 'implicitPosition',
+                'required' => false,
+                'allow_empty' => true,
+                'filters' => [
+                    ['name' => 'ToInt'],
+                ],
+                'validators' => [
+                    [
+                        'name' => InArray::class,
+                        'options' => [
+                            'haystack' => [
+                                PositionUpdatableServiceInterface::IMPLICIT_POSITION_START,
+                                PositionUpdatableServiceInterface::IMPLICIT_POSITION_END,
+                                PositionUpdatableServiceInterface::IMPLICIT_POSITION_AFTER
+                            ],
+                        ]
+                    ]
+                ],
+            ],
+            [
+                'name' => 'previous',
+                'required' => false,
+                'allow_empty' => true,
+                'filters' => [
+                    ['name' => 'ToInt'],
+                ],
+                'validators' => [],
+            ],
+        ];
+
         foreach ($this->systemLanguageIndexes as $systemLanguageIndex) {
-            $labelRules[] = $this->getLabelRule($systemLanguageIndex);
+            $rules[] = $this->getLabelRule($systemLanguageIndex);
         }
 
-        return $labelRules;
+        return $rules;
     }
 }

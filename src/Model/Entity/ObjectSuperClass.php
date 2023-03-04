@@ -13,6 +13,7 @@ use Monarc\Core\Model\Entity\Interfaces\PositionedEntityInterface;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\LabelsEntityTrait;
 use Monarc\Core\Model\Entity\Traits\NamesEntityTrait;
+use Monarc\Core\Model\Entity\Traits\PropertyStateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 use Ramsey\Uuid\Lazy\LazyUuidFromString;
 use Ramsey\Uuid\Uuid;
@@ -33,6 +34,8 @@ class ObjectSuperClass implements PositionedEntityInterface
 
     use LabelsEntityTrait;
     use NamesEntityTrait;
+
+    use PropertyStateEntityTrait;
 
     public const SCOPE_LOCAL = 1;
     public const SCOPE_GLOBAL = 2;
@@ -134,7 +137,6 @@ class ObjectSuperClass implements PositionedEntityInterface
      */
     protected $originalName;
 
-    // TODO: implement the same links on Client's entity side with 2 fields rel !!!
     /**
      * @var ArrayCollection|ObjectSuperClass[]
      *
@@ -189,7 +191,7 @@ class ObjectSuperClass implements PositionedEntityInterface
 
     public function getImplicitPositionRelationsValues(): array
     {
-        $fields = ['category' => $this->category];
+        $fields['category'] = $this->category;
         if ($this->anr !== null) {
             $fields['anr'] = $this->anr;
         }
@@ -245,6 +247,8 @@ class ObjectSuperClass implements PositionedEntityInterface
 
     public function setCategory(?ObjectCategorySuperClass $category): self
     {
+        $this->trackPropertyState('category', $this->category);
+
         if ($category === null) {
             if ($this->category !== null) {
                 $this->category->removeObject($this);
