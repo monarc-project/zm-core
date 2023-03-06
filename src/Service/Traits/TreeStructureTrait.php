@@ -11,6 +11,7 @@ use Monarc\Core\InputFormatter\FormattedInputParams;
 use Monarc\Core\Model\Entity\Interfaces\TreeStructuredEntityInterface;
 use Monarc\Core\Table\AbstractTable;
 
+/* TODO: The trait is not used anywhere for the moment. */
 trait TreeStructureTrait
 {
     /**

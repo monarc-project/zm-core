@@ -142,10 +142,9 @@ class InstanceRiskOpService
         if ($instanceId === null) {
             $instances = $this->instanceTable->findByAnr($anr);
         } else {
+            /** @var InstanceSuperClass $instance */
             $instance = $this->instanceTable->findById($instanceId);
-            // TODO: remove initTree and use TreeStructureTrait::getEntityWithLinkedChildren !!!
-            $this->instanceTable->initTree($instance);
-            $instances = $this->extractInstanceAndChildInstances($instance);
+            $instances = $this->extractInstanceAndChildrenInstances($instance);
         }
         foreach ($instances as $instance) {
             if ($instance->getAsset()->getType() === Asset::TYPE_PRIMARY) {
@@ -516,12 +515,11 @@ class InstanceRiskOpService
             ->setCreator($this->connectedUser->getEmail());
     }
 
-    // TODO: replace to use TreeStructureTrait::getEntityWithLinkedChildren
-    private function extractInstanceAndChildInstances(InstanceSuperClass $instance): array
+    private function extractInstanceAndChildrenInstances(InstanceSuperClass $instance): array
     {
         $childInstances = [];
-        foreach ($instance->getParameterValues('children') as $childInstance) {
-            $childInstances = array_merge($childInstances, $this->extractInstanceAndChildInstances($childInstance));
+        foreach ($instance->getChildren() as $childInstance) {
+            $childInstances = array_merge($childInstances, $this->extractInstanceAndChildrenInstances($childInstance));
         }
 
         return array_merge([$instance], $childInstances);

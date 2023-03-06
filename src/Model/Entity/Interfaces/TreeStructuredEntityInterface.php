@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Model\Entity\Interfaces;
 
+/* TODO: The interface is not used anywhere for the moment. */
 interface TreeStructuredEntityInterface
 {
     public function getId(): int;

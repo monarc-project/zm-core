@@ -132,14 +132,14 @@ class InstanceRiskService extends AbstractService
         if ($instanceId !== null) {
             /** @var InstanceTable $instanceTable */
             $instanceTable = $this->get('instanceTable');
+            /** @var InstanceSuperClass $instance */
             $instance = $instanceTable->findById($instanceId);
 
             if ($instance->getAnr()->getId() !== $anr->getId()) {
                 throw new Exception('Anr ID and instance anr ID are different', 412);
             }
 
-            $instanceTable->initTree($instance);
-            $params['instanceIds'] = $this->extractInstancesAndTheirChildrenIds([$instance->getId() => $instance]);
+            $params['instanceIds'] = $this->getInstanceAndItsChildrenIds($instance);
         }
 
         /** @var InstanceRiskTable $instanceRiskTable */
@@ -541,24 +541,14 @@ class InstanceRiskService extends AbstractService
         return $instanceRiskResult;
     }
 
-    /**
-     * TODO: replace to use TreeStructureTrait::getIdsOfEntityWithLinkedChildren
-     * @param Instance[] $instances
-     *
-     * @return array
-     */
-    private function extractInstancesAndTheirChildrenIds(array $instances): array
+    private function getInstanceAndItsChildrenIds(InstanceSuperClass $instance): array
     {
-        $instancesIds = [];
-        foreach ($instances as $instanceId => $instance) {
-            $instancesIds[] = $instanceId;
-            $instancesIds = array_merge(
-                $instancesIds,
-                $this->extractInstancesAndTheirChildrenIds($instance->getParameterValues('children'))
-            );
+        $childrenIds = [];
+        foreach ($instance->getChildren() as $childInstance) {
+            $childrenIds = array_merge($childrenIds, $this->getInstanceAndItsChildrenIds($childInstance));
         }
 
-        return $instancesIds;
+        return array_merge([$instance->getId()], $childrenIds);
     }
 
     /**

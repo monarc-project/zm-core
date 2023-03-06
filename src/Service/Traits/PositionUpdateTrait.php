@@ -48,6 +48,11 @@ trait PositionUpdateTrait
         $updater = $isEntityPersisted ? $entity->getUpdater() : $entity->getCreator();
         switch ($implicitPosition) {
             case PositionUpdatableServiceInterface::IMPLICIT_POSITION_START:
+                /* Stop positions update if the entity is already on the right place. */
+                if ($isEntityPersisted && !$areImplicitPositionsValuesChanged && $entity->getPosition() === 1) {
+                    break;
+                }
+
                 /* If the entity is new or the implicit positions values are changed (root, parent, etc),
                  * it's necessary to shift all the positions within the new place to allocate the position 1. */
                 if (!$isEntityPersisted || $areImplicitPositionsValuesChanged) {
@@ -72,6 +77,14 @@ trait PositionUpdateTrait
                 break;
             case PositionUpdatableServiceInterface::IMPLICIT_POSITION_END:
                 $maxPosition = $table->findMaxPosition($implicitPositionsValues);
+                /* Stop positions update if the entity is already on the right place. */
+                if ($isEntityPersisted
+                    && !$areImplicitPositionsValuesChanged
+                    && $entity->getPosition() === $maxPosition
+                ) {
+                    break;
+                }
+
                 if (!$isEntityPersisted || $areImplicitPositionsValuesChanged) {
                     /* Populate the entity position within the previous implicit position set (not occupied for now). */
                     if ($areImplicitPositionsValuesChanged) {
@@ -105,8 +118,15 @@ trait PositionUpdateTrait
                     /** @var PositionedEntityInterface $previousEntity */
                     $previousEntity = $table->findById($entityKey);
                 }
-
+                /* Stop positions update if the entity is already on the right place. */
                 $expectedPosition = $previousEntity->getPosition() + 1;
+                if ($isEntityPersisted
+                    && !$areImplicitPositionsValuesChanged
+                    && $entity->getPosition() === $expectedPosition
+                ) {
+                    break;
+                }
+
                 if ($isEntityPersisted
                     && !$areImplicitPositionsValuesChanged
                     && $entity->getPosition() !== $expectedPosition

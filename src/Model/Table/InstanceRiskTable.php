@@ -109,7 +109,7 @@ class InstanceRiskTable extends AbstractEntityTable
             ->setParameter('anr', $anr);
 
         if (!empty($params['instanceIds'])) {
-            $queryBuilder->andWhere($queryBuilder->expr()->in('ir.instance', $params['instanceIds']));
+            $queryBuilder->andWhere($queryBuilder->expr()->in('i.id', array_map('\intval', $params['instanceIds'])));
         }
 
         if (!empty($params['amvs'])) {

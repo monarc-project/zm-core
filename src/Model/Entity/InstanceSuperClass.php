@@ -10,7 +10,6 @@ namespace Monarc\Core\Model\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Interfaces\PositionedEntityInterface;
-use Monarc\Core\Model\Entity\Interfaces\TreeStructuredEntityInterface;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\LabelsEntityTrait;
 use Monarc\Core\Model\Entity\Traits\NamesEntityTrait;
@@ -28,7 +27,7 @@ use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
-class InstanceSuperClass implements PositionedEntityInterface, TreeStructuredEntityInterface
+class InstanceSuperClass implements PositionedEntityInterface
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
@@ -271,7 +270,7 @@ class InstanceSuperClass implements PositionedEntityInterface, TreeStructuredEnt
         return $this->root ?? $this;
     }
 
-    public function setRoot(?TreeStructuredEntityInterface $root): self
+    public function setRoot(?self $root): self
     {
         $this->root = $root;
 

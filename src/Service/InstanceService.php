@@ -321,6 +321,7 @@ class InstanceService
             ],
             'asset' => array_merge([
                 'uuid' => $instance->getAsset()->getUuid(),
+                'type' => $instance->getAsset()->getType(),
             ], $instance->getAsset()->getLabels()),
             'object' => array_merge([
                 'uuid' => $instance->getObject()->getUuid(),
@@ -399,12 +400,11 @@ class InstanceService
             ];
             if ((int)$data['position'] > 0) {
                 $previousInstancePosition = $data['position'];
-                $isParentChanged = $instance->arePropertiesStatesChanged($instance->getImplicitPositionRelationsValues());
                 /* If the instance is moved inside the same parent or root and its position <= then expected one,
                  * the previous element position is increased to 1. */
-                if (!$isParentChanged
-                    && $this->instanceTable->isEntityPersisted($instance)
+                if ($this->instanceTable->isEntityPersisted($instance)
                     && $previousInstancePosition >= $instance->getPosition()
+                    && !$instance->arePropertiesStatesChanged($instance->getImplicitPositionRelationsValues())
                 ) {
                     $previousInstancePosition++;
                 }
