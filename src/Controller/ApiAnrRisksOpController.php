@@ -54,7 +54,7 @@ class ApiAnrRisksOpController extends AbstractRestfulController
 
         return new JsonModel([
             'count' => \count($risks),
-            'oprisks' => \array_slice($risks, ($params['page'] - 1) * $params['limit'], $params['limit']),
+            'oprisks' => \array_slice($risks, ($params['page'] - 1) * $params['limit'], (int)$params['limit']),
         ]);
     }
 

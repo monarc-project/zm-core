@@ -302,7 +302,7 @@ abstract class UserSuperClass
         return $this;
     }
 
-    public function getRecoveryCodes(): ?array
+    public function getRecoveryCodes(): mixed
     {
         return $this->recoveryCodes;
     }
