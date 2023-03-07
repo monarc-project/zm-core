@@ -10,6 +10,7 @@ namespace Monarc\Core\Model\Entity;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use http\Params;
 use Monarc\Core\Model\Entity\Traits;
 
 /**
@@ -105,7 +106,7 @@ abstract class UserSuperClass
     protected $secretKey;
 
     /**
-     * @var ArrayCollection
+     * @var array
      *
      * @ORM\Column(name="recovery_codes", type="array", length=250, options={"default":""})
      */
@@ -302,9 +303,9 @@ abstract class UserSuperClass
         return $this;
     }
 
-    public function getRecoveryCodes(): mixed
+    public function getRecoveryCodes(): array
     {
-        return $this->recoveryCodes;
+        return !empty($this->recoveryCodes) ? $this->recoveryCodes : [];
     }
 
     public function setRecoveryCodes(?array $recoveryCodes): self
