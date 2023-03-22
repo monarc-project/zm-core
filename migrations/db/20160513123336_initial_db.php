@@ -5,27 +5,6 @@ use Phinx\Db\Adapter\MysqlAdapter;
 
 class InitialDb extends AbstractMigration
 {
-    /**
-     * Change Method.
-     *
-     * Write your reversible migrations using this method.
-     *
-     * More information on writing migrations is available here:
-     * http://docs.phinx.org/en/latest/migrations.html#the-abstractmigration-class
-     *
-     * The following commands can be used in this method and Phinx will
-     * automatically reverse them when rolling back:
-     *
-     *    createTable
-     *    renameTable
-     *    addColumn
-     *    renameColumn
-     *    addIndex
-     *    addForeignKey
-     *
-     * Remember to call "create()" or "update()" and NOT "save()" when working
-     * with the Table class.
-     */
     public function change()
     {
         // Migration for table amvs
@@ -153,30 +132,6 @@ class InitialDb extends AbstractMigration
             ->create();
 
 
-        // Migration for table cities
-        $table = $this->table('cities');
-        $table
-            ->addColumn('country_id', 'integer', array('null' => true, 'signed' => false))
-            ->addColumn('label', 'string', array('limit' => 255))
-            ->addColumn('creator', 'string', array('null' => true, 'limit' => 255))
-            ->addColumn('created_at', 'datetime', array('null' => true))
-            ->addColumn('updater', 'string', array('null' => true, 'limit' => 255))
-            ->addColumn('updated_at', 'datetime', array('null' => true))
-            ->addIndex(array('country_id'))
-            ->create();
-        $table->changeColumn('id', 'integer',array('identity'=>true,'signed'=>false))->update();
-
-
-        // Migration for table countries
-        $table = $this->table('countries');
-        $table
-            ->addColumn('iso', 'string', array('default' => '', 'limit' => 2))
-            ->addColumn('iso3', 'string', array('null' => true, 'limit' => 3))
-            ->addColumn('name', 'string', array('null' => true, 'default' => '', 'limit' => 80))
-            ->create();
-        $table->changeColumn('id', 'integer',array('identity'=>true,'signed'=>false))->update();
-
-
         // Migration for table deliveries
         $table = $this->table('deliveries');
         $table
@@ -218,21 +173,6 @@ class InitialDb extends AbstractMigration
             ->addColumn('updated_at', 'datetime', array('null' => true))
             ->addIndex(array('anr_id'))
             ->addIndex(array('typedoc'))
-            ->create();
-        $table->changeColumn('id', 'integer',array('identity'=>true,'signed'=>false))->update();
-
-
-        // Migration for table rss_feeds
-        $table = $this->table('rss_feeds');
-        $table
-            ->addColumn('guid', 'char', array('null' => true, 'limit' => 255))
-            ->addColumn('type', 'integer', array('null' => true, 'default' => '1', 'limit' => MysqlAdapter::INT_TINY))
-            ->addColumn('title', 'string', array('null' => true, 'limit' => 255))
-            ->addColumn('link', 'string', array('null' => true, 'limit' => 255))
-            ->addColumn('description', 'text', array('null' => true))
-            ->addColumn('pubdate', 'datetime', array('null' => true))
-            ->addColumn('picto', 'string', array('null' => true, 'limit' => 255))
-            ->addIndex(array('guid'))
             ->create();
         $table->changeColumn('id', 'integer',array('identity'=>true,'signed'=>false))->update();
 
@@ -822,7 +762,7 @@ class InitialDb extends AbstractMigration
         $table = $this->table('threats');
         $table
             ->addColumn('anr_id', 'integer', array('null' => true, 'signed' => false))
-            ->addColumn('threat_theme_id', 'integer', array('null' => true, 'signed' => false))
+            ->addColumn('theme_id', 'integer', array('null' => true, 'signed' => false))
             ->addColumn('mode', 'integer', array('null' => true, 'default' => '1', 'limit' => MysqlAdapter::INT_TINY))
             ->addColumn('code', 'char', array('null' => true, 'limit' => 100))
             ->addColumn('label1', 'string', array('null' => true, 'limit' => 255))
@@ -868,7 +808,7 @@ class InitialDb extends AbstractMigration
             ->addColumn('updated_at', 'datetime', array('null' => true))
             ->addIndex(array('anr_id','code'),array('unique'=>true))
             ->addIndex(array('anr_id'))
-            ->addIndex(array('threat_theme_id'))
+            ->addIndex(array('theme_id'))
             ->create();
         $table->changeColumn('id', 'integer',array('identity'=>true,'signed'=>false))->update();
 
@@ -946,10 +886,6 @@ class InitialDb extends AbstractMigration
         $table
             ->addForeignKey('asset_id', 'assets', 'id', array('delete' => 'RESTRICT','update' => 'RESTRICT'))
             ->addForeignKey('model_id', 'models', 'id', array('delete' => 'RESTRICT','update' => 'RESTRICT'))
-            ->update();
-        $table = $this->table('cities');
-        $table
-            ->addForeignKey('country_id', 'countries', 'id', array('delete' => 'CASCADE','update' => 'RESTRICT'))
             ->update();
         $table = $this->table('deliveries');
         $table
@@ -1097,7 +1033,7 @@ class InitialDb extends AbstractMigration
         $table = $this->table('threats');
         $table
             ->addForeignKey('anr_id', 'anrs', 'id', array('delete' => 'CASCADE','update' => 'RESTRICT'))
-            ->addForeignKey('threat_theme_id', 'themes', 'id', array('delete' => 'CASCADE','update' => 'RESTRICT'))
+            ->addForeignKey('theme_id', 'themes', 'id', array('delete' => 'SET_NULL','update' => 'RESTRICT'))
             ->update();
         $table = $this->table('threats_models');
         $table

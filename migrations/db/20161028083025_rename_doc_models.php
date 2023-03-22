@@ -5,44 +5,24 @@ use Phinx\Db\Adapter\MysqlAdapter;
 
 class RenameDocModels extends AbstractMigration
 {
-    /**
-     * Change Method.
-     *
-     * Write your reversible migrations using this method.
-     *
-     * More information on writing migrations is available here:
-     * http://docs.phinx.org/en/latest/migrations.html#the-abstractmigration-class
-     *
-     * The following commands can be used in this method and Phinx will
-     * automatically reverse them when rolling back:
-     *
-     *    createTable
-     *    renameTable
-     *    addColumn
-     *    renameColumn
-     *    addIndex
-     *    addForeignKey
-     *
-     * Remember to call "create()" or "update()" and NOT "save()" when working
-     * with the Table class.
-     */
     public function up()
     {
-        $this->dropTable('deliveries');
-        $this->dropTable('deliveries_models');
+        $this->table('deliveries')->drop()->save();
+        $this->table('deliveries_models')->drop()->save();
 
         $table = $this->table('doc_models');
-        $table->rename('deliveries_models');
-        $table->renameColumn('description', 'description1');
-        $table->addColumn('description2', 'text', array('null' => true, 'limit' => MysqlAdapter::TEXT_LONG))
+        $table->rename('deliveries_models')
+            ->renameColumn('description', 'description1')
+            ->addColumn('description2', 'text', array('null' => true, 'limit' => MysqlAdapter::TEXT_LONG))
             ->addColumn('description3', 'text', array('null' => true, 'limit' => MysqlAdapter::TEXT_LONG))
             ->addColumn('description4', 'text', array('null' => true, 'limit' => MysqlAdapter::TEXT_LONG))
             ->addColumn('anr_id', 'integer', array('null' => true, 'signed' => false))
             ->update();
-        $table
+        $this->table('deliveries_models')
             ->addForeignKey('anr_id', 'anrs', 'id', array('delete' => 'CASCADE','update' => 'RESTRICT'))
             ->update();
     }
+
     public function down()
     {
         $table = $this->table('deliveries_models');

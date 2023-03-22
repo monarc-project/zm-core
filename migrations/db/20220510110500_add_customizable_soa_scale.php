@@ -62,7 +62,7 @@ class AddCustomizableSoaScale extends AbstractMigration
                     'comment_translation_key' => $data['key'],
                     'is_hidden' => 0,
                     'creator' => 'Migration script',
-                ])->save();
+                ])->saveData();
                 $this->createTranslations($data, Translation::SOA_SCALE_COMMENT, 'comment', $anr['id']);
             }
         }

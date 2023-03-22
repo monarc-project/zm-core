@@ -7,28 +7,6 @@ use Ramsey\Uuid\Uuid;
 
 class ChangeableOperationalImpact extends AbstractMigration
 {
-    /**
-     * Change Method.
-     *
-     * Write your reversible migrations using this method.
-     *
-     * More information on writing migrations is available here:
-     * http://docs.phinx.org/en/latest/migrations.html#the-abstractmigration-class
-     *
-     * The following commands can be used in this method and Phinx will
-     * automatically reverse them when rolling back:
-     *
-     *    createTable
-     *    renameTable
-     *    addColumn
-     *    renameColumn
-     *    addIndex
-     *    addForeignKey
-     *
-     * Remember to call "create()" or "update()" and NOT "save()" when working
-     * with the Table class.
-     */
-
     public function change()
     {
         $this->execute(
@@ -166,7 +144,7 @@ class ChangeableOperationalImpact extends AbstractMigration
                     'min' => $isLikelihoodScale ? $scaleData['min'] : 0,
                     'max' => $isLikelihoodScale ? $scaleData['max'] : (int)$scaleData['max'] - (int)$scaleData['min'],
                     'creator' => 'Migration script',
-                ])->save();
+                ])->saveData();
                 $currentScalesByAnrAndType[$scaleData['anr_id']][$scaleType] =
                     $this->getAdapter()->getConnection()->lastInsertId();
             }
@@ -180,7 +158,7 @@ class ChangeableOperationalImpact extends AbstractMigration
                     'label_translation_key' => $labelTranslationKey,
                     'is_hidden' => $scaleData['is_hidden'],
                     'creator' => 'Migration script',
-                ])->save();
+                ])->saveData();
                 $operationalRiskScaleTypeId = $this->getAdapter()->getConnection()->lastInsertId();
                 $this->createTranslations(
                     $scaleData,
@@ -209,7 +187,7 @@ class ChangeableOperationalImpact extends AbstractMigration
                         'is_hidden' => $scaleData['max'] < $scaleValue ? 1 : 0,
                         'comment_translation_key' => $commentTranslationKey,
                         'creator' => 'Migration script',
-                    ])->save();
+                    ])->saveData();
                 } elseif ($scaleType === OperationalRiskScale::TYPE_LIKELIHOOD) {
                     $commentTranslationKey = Uuid::uuid4();
                     $operationalRisksScalesCommentsTable->insert([
@@ -221,7 +199,7 @@ class ChangeableOperationalImpact extends AbstractMigration
                         'is_hidden' => $scaleData['min'] > $scaleValue || $scaleData['max'] < $scaleValue ? 1 : 0,
                         'comment_translation_key' => $commentTranslationKey,
                         'creator' => 'Migration script',
-                    ])->save();
+                    ])->saveData();
                 }
                 if ($commentTranslationKey !== '') {
                     $this->createTranslations(
