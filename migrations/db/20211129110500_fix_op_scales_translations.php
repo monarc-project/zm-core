@@ -35,7 +35,7 @@ class FixOpScalesTranslations extends AbstractMigration
                             'lang' => $lang,
                             'value' => '',
                             'creator' => 'Migration script',
-                        ])->save();
+                        ])->saveData();
                     }
                 }
             }
@@ -67,7 +67,7 @@ class FixOpScalesTranslations extends AbstractMigration
                             'lang' => $lang,
                             'value' => '',
                             'creator' => 'Migration script',
-                        ])->save();
+                        ])->saveData();
                     }
                 }
             }

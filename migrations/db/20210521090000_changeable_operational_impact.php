@@ -144,7 +144,7 @@ class ChangeableOperationalImpact extends AbstractMigration
                     'min' => $isLikelihoodScale ? $scaleData['min'] : 0,
                     'max' => $isLikelihoodScale ? $scaleData['max'] : (int)$scaleData['max'] - (int)$scaleData['min'],
                     'creator' => 'Migration script',
-                ])->save();
+                ])->saveData();
                 $currentScalesByAnrAndType[$scaleData['anr_id']][$scaleType] =
                     $this->getAdapter()->getConnection()->lastInsertId();
             }
@@ -158,7 +158,7 @@ class ChangeableOperationalImpact extends AbstractMigration
                     'label_translation_key' => $labelTranslationKey,
                     'is_hidden' => $scaleData['is_hidden'],
                     'creator' => 'Migration script',
-                ])->save();
+                ])->saveData();
                 $operationalRiskScaleTypeId = $this->getAdapter()->getConnection()->lastInsertId();
                 $this->createTranslations(
                     $scaleData,
@@ -187,7 +187,7 @@ class ChangeableOperationalImpact extends AbstractMigration
                         'is_hidden' => $scaleData['max'] < $scaleValue ? 1 : 0,
                         'comment_translation_key' => $commentTranslationKey,
                         'creator' => 'Migration script',
-                    ])->save();
+                    ])->saveData();
                 } elseif ($scaleType === OperationalRiskScale::TYPE_LIKELIHOOD) {
                     $commentTranslationKey = (string)Uuid::uuid4();
                     $operationalRisksScalesCommentsTable->insert([
@@ -199,7 +199,7 @@ class ChangeableOperationalImpact extends AbstractMigration
                         'is_hidden' => $scaleData['min'] > $scaleValue || $scaleData['max'] < $scaleValue ? 1 : 0,
                         'comment_translation_key' => $commentTranslationKey,
                         'creator' => 'Migration script',
-                    ])->save();
+                    ])->saveData();
                 }
                 if ($commentTranslationKey !== '') {
                     $this->createTranslations(

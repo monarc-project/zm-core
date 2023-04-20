@@ -25,7 +25,7 @@ return array(
     ),
     'environments' => array(
         'default_migration_table' => 'phinxlog',
-        'default_database' => 'common',
+        'default_environment' => 'common',
         'common' => array(
             'adapter' => 'mysql',
             'host' => $globalConf['doctrine']['connection']['orm_default']['params']['host'],

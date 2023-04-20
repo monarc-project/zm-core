@@ -1,32 +1,9 @@
 <?php
 
 use Phinx\Migration\AbstractMigration;
-use Phinx\Db\Adapter\MysqlAdapter;
-use Phinx\Util\Literal;
 
 class AddReferentials extends AbstractMigration
 {
-    /**
-     * Change Method.
-     *
-     * Write your reversible migrations using this method.
-     *
-     * More information on writing migrations is available here:
-     * http://docs.phinx.org/en/latest/migrations.html#the-abstractmigration-class
-     *
-     * The following commands can be used in this method and Phinx will
-     * automatically reverse them when rolling back:
-     *
-     *    createTable
-     *    renameTable
-     *    addColumn
-     *    renameColumn
-     *    addIndex
-     *    addForeignKey
-     *
-     * Remember to call "create()" or "update()" and NOT "save()" when working
-     * with the Table class.
-     */
     public function change()
     {
       // Migration for table referentials it appears that we can set a function as default value, so the uuid has to be managed via php or a trigger
@@ -46,8 +23,7 @@ class AddReferentials extends AbstractMigration
       $table->removeColumn('id')->update();
       $row = ['uuid'=>'98ca84fb-db87-11e8-ac77-0800279aaa2b','label1'=>'ISO 27002','label2'=>'ISO 27002',
       'label3'=>'ISO 27002','label4'=>'ISO 27002','creator' => 'Migration script','created_at' => date('Y-m-d H:i:s')];
-      $table->insert($row);
-      $table->saveData();
+      $table->insert($row)->saveData();
 
       $this->execute("ALTER TABLE referentials ADD PRIMARY KEY uuid (uuid)");
       //add foreign key for measures
