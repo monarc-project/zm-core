@@ -11,7 +11,6 @@ use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\AnrSuperClass;
-use Monarc\Core\Model\Entity\Instance;
 use Monarc\Core\Model\Entity\InstanceRiskOwner;
 use Monarc\Core\Model\Entity\InstanceRiskOwnerSuperClass;
 use Monarc\Core\Model\Entity\InstanceRiskSuperClass;
@@ -23,13 +22,12 @@ use Monarc\Core\Model\Table\InstanceRiskTable;
 use Monarc\Core\Table\InstanceRiskOwnerTable;
 use Monarc\Core\Table\InstanceTable;
 use Monarc\Core\Service\Traits\RiskCalculationTrait;
-use Doctrine\ORM\Query\QueryException;
-use Doctrine\ORM\Mapping\MappingException;
 
 class InstanceRiskService extends AbstractService
 {
     use RiskCalculationTrait;
 
+    // TODO: all the dependencies except of anr can't be used.
     protected $dependencies = ['anr', 'amv', 'asset', 'instance', 'threat', 'vulnerability'];
 
     protected $anrTable;
@@ -252,24 +250,10 @@ class InstanceRiskService extends AbstractService
                 //retrieve brothers instances
                 /** @var InstanceTable $instanceTable */
                 $instanceTable = $this->get('instanceTable');
-                try {
-                    $instances = $instanceTable->getEntityByFields([
-                        'anr' => $instanceRisk->getAnr()->getId(),
-                        'object' => $object->getUuid(),
-                    ]);
-                } catch (QueryException | MappingException $e) {
-                    $instances = $instanceTable->getEntityByFields([
-                        'anr' => $instanceRisk->getAnr()->getId(),
-                        'object' => [
-                            'anr' => $instanceRisk->getAnr()->getId(),
-                            'uuid' => $object->getUuid(),
-                        ]
-                    ]);
-                }
+                $instances = $instanceTable->findByAnrAndObject($instanceRisk->getAnr(), $object);
 
-                /** @var Instance $instance */
                 foreach ($instances as $instance) {
-                    if ($instance != $instanceRisk->getInstance()) {
+                    if ($instance->getId() !== $instanceRisk->getInstance()->getId()) {
                         $instancesRisks = $instanceRiskTable->getEntityByFields([
                             'amv' => [
                                 'anr' => $instanceRisk->getAnr()->getId(),
@@ -291,7 +275,7 @@ class InstanceRiskService extends AbstractService
 
         foreach ($this->dependencies as $dependency) {
             if (!isset($data[$dependency])) {
-                $data[$dependency] = $instanceRisk->$dependency->id;
+                $data[$dependency] = $instanceRisk->$dependency;
             }
         }
 
@@ -345,22 +329,8 @@ class InstanceRiskService extends AbstractService
                 //retrieve brothers instances
                 /** @var InstanceTable $instanceTable */
                 $instanceTable = $this->get('instanceTable');
-                try {
-                    $instances = $instanceTable->getEntityByFields([
-                        'anr' => $instanceRisk->getAnr()->getId(),
-                        'object' => $object->getUuid(),
-                    ]);
-                } catch (QueryException | MappingException $e) {
-                    $instances = $instanceTable->getEntityByFields([
-                        'anr' => $instanceRisk->getAnr()->getId(),
-                        'object' => [
-                            'anr' => $instanceRisk->getAnr()->getId(),
-                            'uuid' => $object->getUuid(),
-                        ]
-                    ]);
-                }
+                $instances = $instanceTable->findByAnrAndObject($instanceRisk->getAnr(), $object);
 
-                /** @var Instance $instance */
                 foreach ($instances as $instance) {
                     $instancesRisks = $instanceRiskTable->findByInstanceAndInstanceRiskRelations(
                         $instance,

@@ -278,7 +278,8 @@ class InstanceRiskOpService
      */
     public function update(int $id, array $data): array
     {
-        // TODO: implement Permissions validator and inject it here. similar to \Monarc\Core\Service\AbstractService::deleteFromAnr
+        // TODO: implement Permissions validator and inject it here.
+        // It has to be done in the AnrValidationMiddleware (used before AbstractService::deleteFromAnr).
 
         /** @var InstanceRiskOpSuperClass $operationalInstanceRisk */
         $operationalInstanceRisk = $this->instanceRiskOpTable->findById($id);

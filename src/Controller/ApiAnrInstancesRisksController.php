@@ -17,6 +17,7 @@ use Laminas\View\Model\JsonModel;
  */
 class ApiAnrInstancesRisksController extends AbstractController
 {
+    // TODO: test the actions, there are dependencies that can't be used as before (could be an error).
     protected $dependencies = ['anr','amv', 'asset', 'threat', 'vulnerability', 'instance', 'owner'];
     protected $name = 'instances-risks';
 
