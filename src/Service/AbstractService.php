@@ -119,17 +119,21 @@ abstract class AbstractService extends AbstractServiceFactory
      * is the name of the column that we should sort the data with, eventually prepended with '-' when we need it in
      * descending order (ascending otherwise).
      *
-     * @param string $order The order requested by the frontend/API call
+     * @param string|null $order The order requested by the frontend/API call
      *
      * @return array|null Returns null if $order is null, otherwise an array ['columnName', 'ASC/DESC']
      */
     protected function parseFrontendOrder($order)
     {
+        if (empty($order)) {
+            return null;
+        }
+
         // Fields in the ORM are using a CamelCase notation, whereas JSON fields use underscores. Convert it here in
         // case there's a value not filtered.
         if (strpos($order, '_') !== false) {
             $o = explode('_', $order);
-            $order = "";
+            $order = '';
             foreach ($o as $n => $oo) {
                 if ($n <= 0) {
                     $order = $oo;
@@ -139,15 +143,15 @@ abstract class AbstractService extends AbstractServiceFactory
             }
         }
 
-        if ($order == null) {
+        if ($order === '') {
             return null;
-        } else {
-            if (substr($order, 0, 1) == '-') {
-                return [substr($order, 1), 'DESC'];
-            } else {
-                return [$order, 'ASC'];
-            }
         }
+
+        if ($order[0] === '-') {
+            return [substr($order, 1), 'DESC'];
+        }
+
+        return [$order, 'ASC'];
     }
 
     /**

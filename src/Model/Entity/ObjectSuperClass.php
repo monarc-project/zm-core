@@ -73,7 +73,7 @@ class ObjectSuperClass implements PositionedEntityInterface
     protected $anrs;
 
     /**
-     * @var ObjectCategorySuperClass
+     * @var ObjectCategorySuperClass|null
      *
      * @ORM\ManyToOne(targetEntity="ObjectCategory", cascade={"persist"})
      * @ORM\JoinColumns({
