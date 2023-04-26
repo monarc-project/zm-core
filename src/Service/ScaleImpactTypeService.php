@@ -8,6 +8,7 @@
 namespace Monarc\Core\Service;
 
 use Monarc\Core\Exception\Exception;
+use Monarc\Core\Model\Entity\Instance;
 use Monarc\Core\Model\Entity\ScaleImpactType;
 use Monarc\Core\Model\Table\ScaleImpactTypeTable;
 use Monarc\Core\Table\InstanceTable;
@@ -41,7 +42,7 @@ class ScaleImpactTypeService extends AbstractService
     /**
      * @return array
      */
-    public function getTypes()
+    public function getTypes(): array
     {
         return $this->types;
     }
@@ -98,29 +99,20 @@ class ScaleImpactTypeService extends AbstractService
             $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
         );
 
-        $id = $this->get('table')->save($scaleImpactType);
-
-        //retrieve all instances for current anr
+        // Create InstanceConsequence for each instance of the current anr.
         /** @var InstanceTable $instanceTable */
         $instanceTable = $this->get('instanceTable');
+        /** @var InstanceConsequenceService $instanceConsequenceService */
+        $instanceConsequenceService = $this->get('instanceConsequenceService');
+        /** @var Instance[] $instances */
         $instances = $instanceTable->findByAnr($scaleImpactType->getAnr());
-        $i = 1;
-        $nbInstances = count($instances);
         foreach ($instances as $instance) {
-            //create instances consequences
-            $dataConsequences = [
-                'anr' => $anrId,
-                'instance' => $instance->id,
-                'object' => $instance->getObject()->getUuid(),
-                'scaleImpactType' => $id,
-            ];
-            /** @var InstanceConsequenceService $instanceConsequenceService */
-            $instanceConsequenceService = $this->get('instanceConsequenceService');
-            $instanceConsequenceService->create($dataConsequences, ($i == $nbInstances));
-            $i++;
+            $instanceConsequenceService->createInstanceConsequence($instance, $scaleImpactType);
         }
 
-        return $id;
+        $this->get('table')->saveEntity($scaleImpactType);
+
+        return $scaleImpactType->getId();
     }
 
     public function update($id, $data)
@@ -139,9 +131,7 @@ class ScaleImpactTypeService extends AbstractService
         $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
         $this->setDependencies($scaleImpactType, $dependencies);
 
-        $scaleImpactType->setUpdater(
-            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
-        );
+        $scaleImpactType->setUpdater($this->getConnectedUser()->getEmail());
 
         return $this->get('table')->save($scaleImpactType);
     }

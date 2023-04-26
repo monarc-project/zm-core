@@ -27,7 +27,7 @@ class ScaleImpactTypeTable extends AbstractEntityTable
 
     public function findById(int $id): ScaleImpactTypeSuperClass
     {
-        /** @var ScaleImpactTypeSuperClass $scaleImpactType */
+        /** @var ScaleImpactTypeSuperClass|null $scaleImpactType */
         $scaleImpactType = $this->getRepository()->find($id);
         if ($scaleImpactType === null) {
             throw EntityNotFoundException::fromClassNameAndIdentifier(\get_class($this), [$id]);
@@ -37,7 +37,7 @@ class ScaleImpactTypeTable extends AbstractEntityTable
     }
 
     /**
-     * @return ScaleImpactType[]
+     * @return ScaleImpactTypeSuperClass[]
      */
     public function findByAnr(AnrSuperClass $anr): array
     {

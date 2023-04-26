@@ -93,9 +93,9 @@ class InstanceConsequenceService
      * Creates the instance consequences based on a sibling instance's consequences or available scale impact types.
      */
     public function createInstanceConsequences(
-        Entity\InstanceSuperClass $instance,
-        Entity\AnrSuperClass $anr,
-        Entity\ObjectSuperClass $object
+        Entity\Instance $instance,
+        Entity\Anr $anr,
+        Entity\MonarcObject $object
     ): void {
         $siblingInstance = null;
         if ($object->isScopeGlobal()) {
@@ -105,17 +105,16 @@ class InstanceConsequenceService
         if ($siblingInstance !== null) {
             $instancesConsequences = $this->instanceConsequenceTable->findByAnrAndInstance($anr, $siblingInstance);
             foreach ($instancesConsequences as $instanceConsequence) {
-                 $instanceConsequence = (new Entity\InstanceConsequence())
-                    ->setAnr($anr)
-                    ->setInstance($instance)
-                    ->setScaleImpactType($instanceConsequence->getScaleImpactType())
-                    ->setIsHidden($instanceConsequence->isHidden())
-                    ->setConfidentiality($instanceConsequence->getConfidentiality())
-                    ->setIntegrity($instanceConsequence->getIntegrity())
-                    ->setAvailability($instanceConsequence->getAvailability())
-                    ->setCreator($this->connectedUser->getEmail());
-
-                $this->instanceConsequenceTable->save($instanceConsequence, false);
+                $this->createInstanceConsequence(
+                    $instance,
+                    $instanceConsequence->getScaleImpactType(),
+                    $instanceConsequence->isHidden(),
+                    [
+                        'confidentiality' => $instanceConsequence->getConfidentiality(),
+                        'integrity' => $instanceConsequence->getIntegrity(),
+                        'availability' => $instanceConsequence->getAvailability(),
+                    ]
+                );
             }
         } else {
             $scalesImpactTypes = $this->scaleImpactTypeTable->findByAnr($anr);
@@ -125,19 +124,40 @@ class InstanceConsequenceService
                     Entity\ScaleImpactTypeSuperClass::getScaleImpactTypesCid(),
                     true
                 )) {
-                     $instanceConsequence = (new Entity\InstanceConsequence())
-                         ->setAnr($anr)
-                         ->setInstance($instance)
-                         ->setScaleImpactType($scalesImpactType)
-                         ->setIsHidden($scalesImpactType->isHidden())
-                         ->setCreator($this->connectedUser->getEmail());
-
-                    $this->instanceConsequenceTable->save($instanceConsequence, false);
+                    $this->createInstanceConsequence($instance, $scalesImpactType, $scalesImpactType->isHidden());
                 }
             }
         }
 
         $this->instanceConsequenceTable->flush();
+    }
+
+    public function createInstanceConsequence(
+        Entity\InstanceSuperClass $instance,
+        Entity\ScaleImpactTypeSuperClass $scaleImpactType,
+        bool $isHidden = false,
+        array $evaluationCriteria = [],
+        bool $saveInTheDb = false
+    ): Entity\InstanceConsequenceSuperClass {
+        $instanceConsequence = (new Entity\InstanceConsequence())
+            ->setAnr($instance->getAnr())
+            ->setInstance($instance)
+            ->setScaleImpactType($scaleImpactType)
+            ->setIsHidden($isHidden)
+            ->setCreator($this->connectedUser->getEmail());
+        if (isset($evaluationCriteria['confidentiality'])) {
+            $instanceConsequence->setConfidentiality($evaluationCriteria['confidentiality']);
+        }
+        if (isset($evaluationCriteria['integrity'])) {
+            $instanceConsequence->setIntegrity($evaluationCriteria['integrity']);
+        }
+        if (isset($evaluationCriteria['availability'])) {
+            $instanceConsequence->setAvailability($evaluationCriteria['availability']);
+        }
+
+        $this->instanceConsequenceTable->save($instanceConsequence, $saveInTheDb);
+
+        return $instanceConsequence;
     }
 
     /**
