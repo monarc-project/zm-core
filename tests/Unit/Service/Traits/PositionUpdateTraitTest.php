@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityManager;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\Interfaces\PositionedEntityInterface;
+use Monarc\Core\Model\Entity\Traits\PropertyStateEntityTrait;
 use Monarc\Core\Service\Interfaces\PositionUpdatableServiceInterface;
 use Monarc\Core\Service\Traits\PositionUpdateTrait;
 use Monarc\Core\Table\AbstractTable;
@@ -23,7 +24,7 @@ class PositionUpdateTraitTest extends TestCase
         $this->expectException(\LogicException::class);
         $this->expectExceptionMessage('Table should be subclass of "' . AbstractTable::class . '"');
 
-        /** @var PositionUpdateTrait $positionUpdateTrait */
+        /** @var PositionUpdateTrait|object $positionUpdateTrait */
         $positionUpdateTrait = $this->getObjectForTrait(PositionUpdateTrait::class);
 
         $entity = $this->getMockBuilder(PositionedEntityInterface::class)->getMock();
@@ -51,7 +52,7 @@ class PositionUpdateTraitTest extends TestCase
             )
         );
 
-        /** @var PositionUpdateTrait $positionUpdateTrait */
+        /** @var PositionUpdateTrait|object $positionUpdateTrait */
         $positionUpdateTrait = $this->getObjectForTrait(PositionUpdateTrait::class);
 
         $positionUpdateTrait->updatePositions($entity, $table, []);
@@ -71,7 +72,7 @@ class PositionUpdateTraitTest extends TestCase
             'To set the implicit position after another element, the "previous" param is mandatory.'
         );
 
-        /** @var PositionUpdateTrait $positionUpdateTrait */
+        /** @var PositionUpdateTrait|object $positionUpdateTrait */
         $positionUpdateTrait = $this->getObjectForTrait(PositionUpdateTrait::class);
 
         $positionUpdateTrait->updatePositions($entity, $table, [
@@ -90,7 +91,7 @@ class PositionUpdateTraitTest extends TestCase
         /** @var AbstractTable $table */
         $table = $this->getTestClassOfPositionUpdatableTable(10, $entity);
 
-        /** @var PositionUpdateTrait $positionUpdateTrait */
+        /** @var PositionUpdateTrait|object $positionUpdateTrait */
         $positionUpdateTrait = $this->getObjectForTrait(PositionUpdateTrait::class);
 
         $positionUpdateTrait->updatePositions($entity, $table, []);
@@ -104,10 +105,10 @@ class PositionUpdateTraitTest extends TestCase
     public function testImplicitPositionEndUpdateForExistedEntityWithForceUpdateParam(): void
     {
         $entity = $this->getTestClassOfPositionedEntity(100);
-        /** @var AbstractTable $table */
+        /** @var AbstractTable|PositionUpdatableTableInterface $table */
         $table = $this->getTestClassOfPositionUpdatableTable(7, $entity, false);
 
-        /** @var PositionUpdateTrait $positionUpdateTrait */
+        /** @var PositionUpdateTrait|object $positionUpdateTrait */
         $positionUpdateTrait = $this->getObjectForTrait(PositionUpdateTrait::class);
 
         $positionUpdateTrait->updatePositions($entity, $table, [
@@ -139,7 +140,7 @@ class PositionUpdateTraitTest extends TestCase
         /** @var AbstractTable $table */
         $table = $this->getTestClassOfPositionUpdatableTable(7, $entity, false);
 
-        /** @var PositionUpdateTrait $positionUpdateTrait */
+        /** @var PositionUpdateTrait|object $positionUpdateTrait */
         $positionUpdateTrait = $this->getObjectForTrait(PositionUpdateTrait::class);
 
         $positionUpdateTrait->updatePositions($entity, $table, [
@@ -161,7 +162,7 @@ class PositionUpdateTraitTest extends TestCase
         /** @var AbstractTable $table */
         $table = $this->getTestClassOfPositionUpdatableTable(10, $entity);
 
-        /** @var PositionUpdateTrait $positionUpdateTrait */
+        /** @var PositionUpdateTrait|object $positionUpdateTrait */
         $positionUpdateTrait = $this->getObjectForTrait(PositionUpdateTrait::class);
 
         $positionUpdateTrait->updatePositions($entity, $table, [
@@ -192,7 +193,7 @@ class PositionUpdateTraitTest extends TestCase
         /** @var AbstractTable $table */
         $table = $this->getTestClassOfPositionUpdatableTable(10, $entity, false);
 
-        /** @var PositionUpdateTrait $positionUpdateTrait */
+        /** @var PositionUpdateTrait|object $positionUpdateTrait */
         $positionUpdateTrait = $this->getObjectForTrait(PositionUpdateTrait::class);
 
         $positionUpdateTrait->updatePositions($entity, $table, [
@@ -225,7 +226,7 @@ class PositionUpdateTraitTest extends TestCase
         /** @var AbstractTable $table */
         $table = $this->getTestClassOfPositionUpdatableTable(15, $entity, true, $previousEntity);
 
-        /** @var PositionUpdateTrait $positionUpdateTrait */
+        /** @var PositionUpdateTrait|object $positionUpdateTrait */
         $positionUpdateTrait = $this->getObjectForTrait(PositionUpdateTrait::class);
 
         $positionUpdateTrait->updatePositions($entity, $table, [
@@ -258,7 +259,7 @@ class PositionUpdateTraitTest extends TestCase
         /** @var AbstractTable $table */
         $table = $this->getTestClassOfPositionUpdatableTable(15, $entity, true, $previousEntity);
 
-        /** @var PositionUpdateTrait $positionUpdateTrait */
+        /** @var PositionUpdateTrait|object $positionUpdateTrait */
         $positionUpdateTrait = $this->getObjectForTrait(PositionUpdateTrait::class);
 
         static::assertEquals(0, $entity->getAnrTimesCalled());
@@ -402,6 +403,9 @@ class PositionUpdateTraitTest extends TestCase
         return new class($currentPosition) implements PositionedEntityInterface {
             private int $position;
             private int $getAnrTimesCalled = 0;
+
+            // TODO: perform the used PropertyStateEntityTrait methods testing.
+            use PropertyStateEntityTrait;
 
             public function __construct(int $currentPosition)
             {
