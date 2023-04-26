@@ -430,6 +430,8 @@ class ObjectService
                 'label2' => $object->getAsset()->getLabel(2),
                 'label3' => $object->getAsset()->getLabel(3),
                 'label4' => $object->getAsset()->getLabel(4),
+                'type' => $object->getAsset()->getType(),
+                'mode' => $object->getAsset()->getMode(),
             ];
             $result['rolfTag'] = $object->getRolfTag() === null ? null : [
                 'id' => $object->getRolfTag()->getId(),
