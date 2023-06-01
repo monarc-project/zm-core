@@ -218,6 +218,25 @@ class InstanceRiskSuperClass extends AbstractEntity
      */
     protected $cacheTargetedRisk = -1;
 
+    public static function constructFromObject(InstanceRiskSuperClass $instanceRisk): InstanceRiskSuperClass
+    {
+        return (new static())
+            ->setContext($instanceRisk->getContext())
+            ->setSpecific($instanceRisk->getSpecific())
+            ->setMh($instanceRisk->getMh())
+            ->setThreatRate($instanceRisk->getThreatRate())
+            ->setVulnerabilityRate($instanceRisk->getVulnerabilityRate())
+            ->setKindOfMeasure($instanceRisk->getKindOfMeasure())
+            ->setReductionAmount($instanceRisk->getReductionAmount())
+            ->setComment($instanceRisk->getComment())
+            ->setCommentAfter($instanceRisk->getCommentAfter())
+            ->setRiskConfidentiality($instanceRisk->getRiskConfidentiality())
+            ->setRiskIntegrity($instanceRisk->getRiskIntegrity())
+            ->setRiskAvailability($instanceRisk->getRiskAvailability())
+            ->setCacheMaxRisk($instanceRisk->getCacheMaxRisk())
+            ->setCacheTargetedRisk($instanceRisk->getCacheTargetedRisk());
+    }
+
     public function getId()
     {
         return $this->id;

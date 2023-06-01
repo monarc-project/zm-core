@@ -210,6 +210,23 @@ class InstanceSuperClass implements PositionedEntityInterface
         $this->children = new ArrayCollection();
     }
 
+    public static function constructFromObject(InstanceSuperClass $instance): InstanceSuperClass
+    {
+        return (new static())
+            ->setLabels($instance->getLabels())
+            ->setNames($instance->getNames())
+            ->setConfidentiality($instance->getConfidentiality())
+            ->setIntegrity($instance->getIntegrity())
+            ->setAvailability($instance->getAvailability())
+            ->setInheritedConfidentiality((int)$instance->isConfidentialityInherited())
+            ->setInheritedIntegrity((int)$instance->isIntegrityInherited())
+            ->setInheritedAvailability((int)$instance->isAvailabilityInherited())
+            ->setPosition($instance->getPosition())
+            ->setAssetType($instance->getAssetType())
+            ->setLevel($instance->getLevel())
+            ->setExportable($instance->getExportable());
+    }
+
     public function getImplicitPositionRelationsValues(): array
     {
         return [
@@ -439,9 +456,6 @@ class InstanceSuperClass implements PositionedEntityInterface
         return $this;
     }
 
-    /**
-     * @return InstanceConsequenceSuperClass[]
-     */
     public function getInstanceConsequences()
     {
         return $this->instanceConsequences;
@@ -507,11 +521,6 @@ class InstanceSuperClass implements PositionedEntityInterface
         }
 
         return array_merge($this->getParent()->getParents(), [$this->getNames()]);
-    }
-
-    public function getHierarchyString(): string
-    {
-        return implode(' > ', array_column($this->getHierarchyArray(), 'name' . $this->anr->getLanguage()));
     }
 
     public function updateImpactBasedOnConsequences(): self

@@ -27,7 +27,7 @@ class InstanceService
 
     private InstanceConsequenceService $instanceConsequenceService;
 
-    private Entity\User $connectedUser;
+    private Entity\UserSuperClass $connectedUser;
 
     public function __construct(
         Table\InstanceTable $instanceTable,
@@ -347,10 +347,10 @@ class InstanceService
     {
         $otherInstances = $this->instanceTable->findByAnrAndObject($instance->getAnr(), $instance->getObject());
         $names = [
-            'name1' => $instance->getAnr()->getLabelByLanguageIndex(1),
-            'name2' => $instance->getAnr()->getLabelByLanguageIndex(2),
-            'name3' => $instance->getAnr()->getLabelByLanguageIndex(3),
-            'name4' => $instance->getAnr()->getLabelByLanguageIndex(4),
+            'name1' => $instance->getAnr()->getLabel(1),
+            'name2' => $instance->getAnr()->getLabel(2),
+            'name3' => $instance->getAnr()->getLabel(3),
+            'name4' => $instance->getAnr()->getLabel(4),
         ];
         $otherInstancesData = [];
         foreach ($otherInstances as $otherInstance) {

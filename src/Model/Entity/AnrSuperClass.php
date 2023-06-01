@@ -1,7 +1,7 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -9,22 +9,19 @@ namespace Monarc\Core\Model\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
-use LogicException;
 use Monarc\Core\Model\Entity\Traits;
 
 /**
- * TODO: Remove the AbstractEntity inheritance:
- * - validate getLanguage usage
- * - check all the clone of the entity and set ID null.
- *
  * @ORM\Table(name="anrs")
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
-class AnrSuperClass extends AbstractEntity
+class AnrSuperClass
 {
     use Traits\CreateEntityTrait;
     use Traits\UpdateEntityTrait;
+    use Traits\LabelsEntityTrait;
+    use Traits\DescriptionsEntityTrait;
 
     public const STATUS_ACTIVE = 1;
     public const STATUS_AWAITING_OF_IMPORT = 2;
@@ -59,64 +56,9 @@ class AnrSuperClass extends AbstractEntity
      */
     protected $objectCategories;
 
-    // TODO: use the LabelEntityTrait after refactoring.
     /**
-     * @var string
+     * Informational risks min threshold setting.
      *
-     * @ORM\Column(name="label1", type="string", length=255, nullable=true)
-     */
-    protected $label1;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label2", type="string", length=255, nullable=true)
-     */
-    protected $label2;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label3", type="string", length=255, nullable=true)
-     */
-    protected $label3;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label4", type="string", length=255, nullable=true)
-     */
-    protected $label4;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="description1", type="text", nullable=true)
-     */
-    protected $description1;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="description2", type="text", nullable=true)
-     */
-    protected $description2;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="description3", type="text", nullable=true)
-     */
-    protected $description3;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="description4", type="text", nullable=true)
-     */
-    protected $description4;
-
-    /**
      * @var int
      *
      * @ORM\Column(name="seuil1", type="integer", options={"unsigned":true, "default":4})
@@ -124,6 +66,8 @@ class AnrSuperClass extends AbstractEntity
     protected $seuil1 = 4;
 
     /**
+     * Informational risks max threshold setting.
+     *
      * @var int
      *
      * @ORM\Column(name="seuil2", type="integer", options={"unsigned":true, "default":8})
@@ -131,6 +75,8 @@ class AnrSuperClass extends AbstractEntity
     protected $seuil2 = 8;
 
     /**
+     * Operational risks min threshold setting.
+     *
      * @var int
      *
      * @ORM\Column(name="seuil_rolf1", type="integer", options={"unsigned":true, "default":4})
@@ -138,6 +84,8 @@ class AnrSuperClass extends AbstractEntity
     protected $seuilRolf1 = 4;
 
     /**
+     * Operational risks max threshold setting.
+     *
      * @var int
      *
      * @ORM\Column(name="seuil_rolf2", type="integer", options={"unsigned":true, "default":8})
@@ -152,6 +100,8 @@ class AnrSuperClass extends AbstractEntity
     protected $seuilTraitement = 0;
 
     /**
+     * Used to mark different steps initialisation/completion (applied to all $init.., $eval... properties).
+     *
      * @var int
      *
      * @ORM\Column(name="init_anr_context", type="smallint", options={"unsigned":true, "default":0})
@@ -277,12 +227,44 @@ class AnrSuperClass extends AbstractEntity
      */
     protected $status = self::STATUS_ACTIVE;
 
-    public function __construct($obj = null)
+    public function __construct()
     {
         $this->objects = new ArrayCollection();
         $this->objectCategories = new ArrayCollection();
+    }
 
-        parent::__construct($obj);
+    /**
+     * Only the primitive data types properties values are set to the new object.
+     * The relation properties have to be recreated manually.
+     */
+    public static function constructFromObject(AnrSuperClass $anr): AnrSuperClass
+    {
+        return (new static())
+            ->setLabels($anr->getLabels())
+            ->setDescriptions($anr->getDescriptions())
+            ->setSeuil1($anr->getSeuil1())
+            ->setSeuil2($anr->getSeuil2())
+            ->setSeuilRolf1($anr->getSeuilRolf1())
+            ->setSeuilRolf2($anr->getSeuilRolf2())
+            ->setSeuilTraitement($anr->getSeuilTraitement())
+            ->setShowRolfBrut($anr->getShowRolfBrut())
+            ->setInitAnrContext($anr->getInitAnrContext())
+            ->setInitEvalContext($anr->getInitEvalContext())
+            ->setInitDefContext($anr->getInitDefContext())
+            ->setInitRiskContext($anr->getInitRiskContext())
+            ->setInitLivrableDone($anr->getInitLivrableDone())
+            ->setEvalRisks($anr->getEvalRisks())
+            ->setEvalPlanRisks($anr->getEvalPlanRisks())
+            ->setEvalLivrableDone($anr->getEvalLivrableDone())
+            ->setContextAnaRisk($anr->getContextAnaRisk())
+            ->setContextGestRisk($anr->getContextGestRisk())
+            ->setManageRisks($anr->getManageRisks())
+            ->setModelSummary($anr->getModelSummary())
+            ->setModelLivrableDone($anr->getModelLivrableDone())
+            ->setSynthAct($anr->getSynthAct())
+            ->setSynthThreat($anr->getSynthThreat())
+            ->setCacheModelShowRolfBrut($anr->getCacheModelShowRolfBrut())
+            ->setStatus($anr->getStatus());
     }
 
     public function getId(): int
@@ -290,27 +272,9 @@ class AnrSuperClass extends AbstractEntity
         return $this->id;
     }
 
-    // TODO: remove the hack when AnrService is refactored.
-    public function setId(?int $id): self
-    {
-        $this->id = $id;
-
-        return $this;
-    }
-
     public function getObjects()
     {
         return $this->objects;
-    }
-
-    /**
-     * @param ObjectSuperClass[] $objects
-     */
-    public function setObjects($objects): self
-    {
-        $this->objects = $objects;
-
-        return $this;
     }
 
     public function addObject(ObjectSuperClass $object): self
@@ -358,14 +322,35 @@ class AnrSuperClass extends AbstractEntity
         return $this;
     }
 
+    public function setSeuil1(int $seuil1): self
+    {
+        $this->seuil1 = $seuil1;
+
+        return $this;
+    }
+
+
     public function getSeuil1(): int
     {
         return $this->seuil1;
     }
 
+    public function setSeuil2(int $seuil2): self
+    {
+        $this->seuil2 = $seuil2;
+
+        return $this;
+    }
     public function getSeuil2(): int
     {
         return $this->seuil2;
+    }
+
+    public function setSeuilRolf1(int $seuilRolf1): self
+    {
+        $this->seuilRolf1 = $seuilRolf1;
+
+        return $this;
     }
 
     public function getSeuilRolf1(): int
@@ -373,9 +358,23 @@ class AnrSuperClass extends AbstractEntity
         return $this->seuilRolf1;
     }
 
+    public function setSeuilRolf2(int $seuilRolf2): self
+    {
+        $this->seuilRolf2 = $seuilRolf2;
+
+        return $this;
+    }
+
     public function getSeuilRolf2(): int
     {
         return $this->seuilRolf2;
+    }
+
+    public function setSeuilTraitement(int $seuilTraitement): self
+    {
+        $this->seuilTraitement = $seuilTraitement;
+
+        return $this;
     }
 
     public function getSeuilTraitement(): int
@@ -383,47 +382,16 @@ class AnrSuperClass extends AbstractEntity
         return (int)$this->seuilTraitement;
     }
 
-    public function getShowRolfBrut(): int
+    public function setShowRolfBrut(int $showRolfBrut): self
     {
-        return $this->showRolfBrut;
-    }
-
-    public function getLabelByLanguageIndex(int $languageIndex): string
-    {
-        if (!\in_array($languageIndex, range(1, 4), true)) {
-            return '';
-        }
-
-        return (string)$this->{'label' . $languageIndex};
-    }
-
-    public function setLabels(array $labels): self
-    {
-        foreach (range(1, 4) as $index) {
-            $key = 'label' . $index;
-            if (isset($labels[$key])) {
-                $this->{$key} = $labels[$key];
-            }
-        }
+        $this->showRolfBrut = $showRolfBrut;
 
         return $this;
     }
 
-    /**
-     * On BO side there is no language field in the Anr entity, so user's language is used.
-     * On FO side there is a language field, so Anr's lang is used.
-     *
-     * @return string
-     */
-    public function getLabel(): string
+    public function getShowRolfBrut(): int
     {
-        // TODO: replace it's usage to always pass the lang number (-> like the method above, replace its use).
-        $languageNumber = $this->getLanguage();
-        if (!property_exists(\get_class($this), 'label' . $languageNumber)) {
-            throw new LogicException(sprintf('Language number %d does not exist.', $languageNumber));
-        }
-
-        return (string)$this->{'label' . $languageNumber};
+        return $this->showRolfBrut;
     }
 
     public function setStatus(int $status): self
@@ -456,5 +424,197 @@ class AnrSuperClass extends AbstractEntity
     public function isActive(): bool
     {
         return $this->status === static::STATUS_ACTIVE;
+    }
+
+    public function getInitAnrContext(): int
+    {
+        return $this->initAnrContext;
+    }
+
+    public function setInitAnrContext(int $initAnrContext): self
+    {
+        $this->initAnrContext = $initAnrContext;
+
+        return $this;
+    }
+
+    public function getInitEvalContext(): int
+    {
+        return $this->initEvalContext;
+    }
+
+    public function setInitEvalContext(int $initEvalContext): self
+    {
+        $this->initEvalContext = $initEvalContext;
+
+        return $this;
+    }
+
+    public function getInitRiskContext(): int
+    {
+        return $this->initRiskContext;
+    }
+
+    public function setInitRiskContext(int $initRiskContext): self
+    {
+        $this->initRiskContext = $initRiskContext;
+
+        return $this;
+    }
+
+    public function getInitDefContext(): int
+    {
+        return $this->initDefContext;
+    }
+
+    public function setInitDefContext(int $initDefContext): self
+    {
+        $this->initDefContext = $initDefContext;
+
+        return $this;
+    }
+
+    public function getInitLivrableDone(): int
+    {
+        return $this->initLivrableDone;
+    }
+
+    public function setInitLivrableDone(int $initLivrableDone): self
+    {
+        $this->initLivrableDone = $initLivrableDone;
+
+        return $this;
+    }
+
+    public function getModelSummary(): int
+    {
+        return $this->modelSummary;
+    }
+
+    public function setModelSummary(int $modelSummary): self
+    {
+        $this->modelSummary = $modelSummary;
+
+        return $this;
+    }
+
+    public function getModelLivrableDone(): int
+    {
+        return $this->modelLivrableDone;
+    }
+
+    public function setModelLivrableDone(int $modelLivrableDone): self
+    {
+        $this->modelLivrableDone = $modelLivrableDone;
+
+        return $this;
+    }
+
+    public function getEvalRisks(): int
+    {
+        return $this->evalRisks;
+    }
+
+    public function setEvalRisks(int $evalRisks): self
+    {
+        $this->evalRisks = $evalRisks;
+
+        return $this;
+    }
+
+    public function getEvalPlanRisks(): int
+    {
+        return $this->evalPlanRisks;
+    }
+
+    public function setEvalPlanRisks(int $evalPlanRisks): self
+    {
+        $this->evalPlanRisks = $evalPlanRisks;
+
+        return $this;
+    }
+
+    public function getEvalLivrableDone(): int
+    {
+        return $this->evalLivrableDone;
+    }
+
+    public function setEvalLivrableDone(int $evalLivrableDone): self
+    {
+        $this->evalLivrableDone = $evalLivrableDone;
+
+        return $this;
+    }
+
+    public function getManageRisks(): int
+    {
+        return $this->manageRisks;
+    }
+
+    public function setManageRisks(int $manageRisks): self
+    {
+        $this->manageRisks = $manageRisks;
+
+        return $this;
+    }
+
+    public function getContextAnaRisk(): string
+    {
+        return $this->contextAnaRisk;
+    }
+
+    public function setContextAnaRisk(string $contextAnaRisk): self
+    {
+        $this->contextAnaRisk = $contextAnaRisk;
+
+        return $this;
+    }
+
+    public function getContextGestRisk(): string
+    {
+        return $this->contextGestRisk;
+    }
+
+    public function setContextGestRisk(string $contextGestRisk): self
+    {
+        $this->contextGestRisk = $contextGestRisk;
+
+        return $this;
+    }
+
+    public function getSynthThreat(): string
+    {
+        return $this->synthThreat;
+    }
+
+    public function setSynthThreat(string $synthThreat): self
+    {
+        $this->synthThreat = $synthThreat;
+
+        return $this;
+    }
+
+    public function getSynthAct(): string
+    {
+        return $this->synthAct;
+    }
+
+    public function setSynthAct(string $synthAct): self
+    {
+        $this->synthAct = $synthAct;
+
+        return $this;
+    }
+
+    public function getCacheModelShowRolfBrut(): int
+    {
+        return $this->cacheModelShowRolfBrut;
+    }
+
+    public function setCacheModelShowRolfBrut(int $cacheModelShowRolfBrut): self
+    {
+        $this->cacheModelShowRolfBrut = $cacheModelShowRolfBrut;
+
+        return $this;
     }
 }

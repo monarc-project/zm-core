@@ -23,7 +23,7 @@ class SoaScaleCommentTable extends AbstractTable
     /**
      * @return SoaScaleCommentSuperClass[]
      */
-    public function findByAnr(AnrSuperClass $anr): array
+    public function findByAnrOrderByIndex(AnrSuperClass $anr): array
     {
         return $this->getRepository()->createQueryBuilder('ssc')
             ->where('ssc.anr = :anr')

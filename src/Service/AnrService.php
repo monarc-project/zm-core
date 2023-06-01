@@ -1,692 +1,443 @@
-<?php
+<?php declare(strict_types=1);
 /**
-* @link      https://github.com/monarc-project for the canonical source repository
-* @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
-* @license   MONARC is licensed under GNU Affero General Public License version 3
-*/
+ * @link      https://github.com/monarc-project for the canonical source repository
+ * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
+ * @license   MONARC is licensed under GNU Affero General Public License version 3
+ */
 
 namespace Monarc\Core\Service;
 
-use DateTime;
-use Monarc\Core\Exception\Exception;
 use Monarc\Core\Helper\EncryptDecryptHelperTrait;
-use Monarc\Core\Model\Entity\Anr;
-use Monarc\Core\Model\Entity\AnrSuperClass;
-use Monarc\Core\Model\Entity\OperationalRiskScale;
-use Monarc\Core\Model\Entity\Scale;
-use Monarc\Core\Model\Entity\ThreatSuperClass;
-use Monarc\Core\Model\Table\AnrTable;
-use Monarc\Core\Model\Table\ScaleCommentTable;
-use Monarc\Core\Model\Table\ScaleTable;
-use Monarc\Core\Table\InstanceTable;
-use Monarc\Core\Table\MonarcObjectTable;
-use Monarc\Core\Table\ThreatTable;
+use Monarc\Core\Model\Entity;
+use Monarc\Core\Model\Table as DeprecatedTable;
+use Monarc\Core\Table;
 
-class AnrService extends AbstractService
+class AnrService
 {
     use EncryptDecryptHelperTrait;
 
-    /** @var ScaleService */
-    protected $scaleService;
-    protected $MonarcObjectTable;
-    protected $instanceTable;
-    protected $instanceConsequenceTable;
-    protected $instanceRiskTable;
-    protected $instanceRiskOpTable;
-    protected $scaleTable;
-    protected $scaleImpactTypeTable;
-    protected $scaleCommentTable;
-    protected $operationalRiskScaleTable;
-    protected $operationalRiskScaleTypeTable;
-    protected $operationalRiskScaleCommentTable;
-    protected $translationTable;
-    /** @var OperationalRiskScaleService */
-    protected $operationalRiskScaleService;
-    protected $instanceService;
-    protected $questionTable;
-    protected $questionChoiceTable;
-    protected $threatTable;
-    protected $interviewTable;
-    protected $deliveryTable;
-    protected $referentialTable;
-    protected $measureTable;
-    protected $measureMeasureTable;
-    protected $soaCategoryTable;
-    protected $soaTable;
-    protected $recordTable;
-    protected $recordService;
-    protected $configService;
-    protected $operationalRiskScalesExportService;
-    protected $instanceMetadataFieldsExportService;
-    protected $soaScaleCommentExportService;
+    private Table\AnrTable $anrTable;
 
-    /**
-     * TODO: drop the $last param when abstract inheritance is removed. Would be good to always return an abject.
-     */
-    public function create($data, $last = true, $returnObject = false)
+    private Table\InstanceTable $instanceTable;
+
+    private Table\InstanceConsequenceTable $instanceConsequenceTable;
+
+    private DeprecatedTable\InstanceRiskTable $instanceRiskTable;
+
+    private DeprecatedTable\InstanceRiskOpTable $instanceRiskOpTable;
+
+    private Table\ScaleTable $scaleTable;
+
+    private Table\ScaleImpactTypeTable $scaleImpactTypeTable;
+
+    private Table\ScaleCommentTable $scaleCommentTable;
+
+    private Table\OperationalRiskScaleTable $operationalRiskScaleTable;
+
+    private Table\OperationalRiskScaleTypeTable $operationalRiskScaleTypeTable;
+
+    private Table\OperationalRiskScaleCommentTable $operationalRiskScaleCommentTable;
+
+    private Table\OperationalInstanceRiskScaleTable $operationalInstanceRiskScaleTable;
+
+    private Table\TranslationTable $translationTable;
+
+    private Table\SoaScaleCommentTable $soaScaleCommentTable;
+
+    private Table\InstanceMetadataFieldTable $instanceMetadataFieldTable;
+
+    private ScaleService $scaleService;
+
+    private OperationalRiskScaleService $operationalRiskScaleService;
+
+    private Entity\UserSuperClass $connectedUser;
+
+    public function __construct(
+        Table\AnrTable $anrTable,
+        Table\InstanceTable $instanceTable,
+        Table\InstanceConsequenceTable $instanceConsequenceTable,
+        DeprecatedTable\InstanceRiskTable $instanceRiskTable,
+        DeprecatedTable\InstanceRiskOpTable $instanceRiskOpTable,
+        Table\ScaleTable $scaleTable,
+        Table\ScaleImpactTypeTable $scaleImpactTypeTable,
+        Table\ScaleCommentTable $scaleCommentTable,
+        Table\OperationalRiskScaleTable $operationalRiskScaleTable,
+        Table\OperationalRiskScaleTypeTable $operationalRiskScaleTypeTable,
+        Table\OperationalRiskScaleCommentTable $operationalRiskScaleCommentTable,
+        Table\OperationalInstanceRiskScaleTable $operationalInstanceRiskScaleTable,
+        Table\TranslationTable $translationTable,
+        Table\SoaScaleCommentTable $soaScaleCommentTable,
+        Table\InstanceMetadataFieldTable $instanceMetadataFieldTable,
+        ScaleService $scaleService,
+        OperationalRiskScaleService $operationalRiskScaleService,
+        ConnectedUserService $connectedUserService
+    ) {
+        $this->anrTable = $anrTable;
+        $this->instanceTable = $instanceTable;
+        $this->instanceConsequenceTable = $instanceConsequenceTable;
+        $this->instanceRiskTable = $instanceRiskTable;
+        $this->instanceRiskOpTable = $instanceRiskOpTable;
+        $this->scaleTable = $scaleTable;
+        $this->scaleImpactTypeTable = $scaleImpactTypeTable;
+        $this->scaleCommentTable = $scaleCommentTable;
+        $this->operationalRiskScaleTable = $operationalRiskScaleTable;
+        $this->operationalRiskScaleTypeTable = $operationalRiskScaleTypeTable;
+        $this->operationalRiskScaleCommentTable = $operationalRiskScaleCommentTable;
+        $this->operationalInstanceRiskScaleTable = $operationalInstanceRiskScaleTable;
+        $this->translationTable = $translationTable;
+        $this->soaScaleCommentTable = $soaScaleCommentTable;
+        $this->instanceMetadataFieldTable = $instanceMetadataFieldTable;
+        $this->scaleService = $scaleService;
+        $this->operationalRiskScaleService = $operationalRiskScaleService;
+        $this->connectedUser = $connectedUserService->getConnectedUser();
+    }
+
+    public function create($data): Entity\Anr
     {
-        /** @var Anr $anr */
-        $anr = $this->get('entity');
-        $anr->exchangeArray($data);
+        $anr = (new Entity\Anr())
+            ->setLabels($data)
+            ->setDescriptions($data)
+            ->setCreator($this->connectedUser->getEmail());
 
-        $anr->setCreator($this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname());
+        $this->anrTable->save($anr);
 
-        $this->get('table')->save($anr);
+        $this->scaleService->create($anr, ['type' => Entity\ScaleSuperClass::TYPE_IMPACT, 'min' => 0, 'max' => 3]);
+        $this->scaleService->create($anr, ['type' => Entity\ScaleSuperClass::TYPE_THREAT, 'min' => 0, 'max' => 4]);
+        $this->scaleService->create(
+            $anr,
+            ['type' => Entity\ScaleSuperClass::TYPE_VULNERABILITY, 'min' => 0, 'max' => 3]
+        );
 
-        foreach ([Scale::TYPE_IMPACT, Scale::TYPE_THREAT, Scale::TYPE_VULNERABILITY] as $type) {
-            $this->scaleService->create([
-                'anr' => $anr->getId(),
-                'type' => $type,
-                'min' => 0,
-                'max' => $type === Scale::TYPE_THREAT ? 4 : 3
-            ]);
-        }
+        $this->operationalRiskScaleService->createScale($anr, Entity\OperationalRiskScaleSuperClass::TYPE_IMPACT, 0, 4);
+        $this->operationalRiskScaleService->createScale(
+            $anr,
+            Entity\OperationalRiskScaleSuperClass::TYPE_LIKELIHOOD,
+            0,
+            4
+        );
 
-        foreach ([OperationalRiskScale::TYPE_IMPACT, OperationalRiskScale::TYPE_LIKELIHOOD] as $type) {
-            $this->operationalRiskScaleService->createScale($anr, $type, 0, 4);
-        }
-
-        return $returnObject ? $anr : $anr->getId();
+        /** @var Entity\Anr $anr */
+        return $anr;
     }
 
     /**
      * Note: Used only from the ModelService when a model is duplicated.
-     *
-     * @param Anr $anr The source ANR object
-     * @return Anr The new ANR object
      */
-    public function duplicate(AnrSuperClass $anr)
+    public function duplicate(Entity\Anr $anr): Entity\Anr
     {
-        $newAnr = clone $anr;
-        $newAnr->setId(null);
-        $suffix = ' (copié le ' . date('m/d/Y à H:i') . ')';
-        for ($i = 1; $i <= 4; $i++) {
-            $newAnr->set('label' . $i, $newAnr->get('label' . $i) . $suffix);
-        }
+        /** @var Entity\Anr $newAnr */
+        $newAnr = Entity\Anr::constructFromObject($anr)->setCreator($this->connectedUser->getEmail());
 
-        /** @var AnrTable $anrTable */
-        $anrTable = $this->get('table');
-        $anrTable->save($newAnr);
+        $suffix = ' (copy ' . date('m/d/Y à H:i') . ')';
+        $newAnr->setLabels([
+            'label1' => $newAnr->getLabel(1) . $suffix,
+            'label2' => $newAnr->getLabel(2) . $suffix,
+            'label3' => $newAnr->getLabel(3) . $suffix,
+            'label4' => $newAnr->getLabel(4) . $suffix,
+        ]);
 
-        //duplicate objects
-        $i = 1;
-        $nbObjects = count($newAnr->objects);
-        foreach ($newAnr->objects as $object) {
-            //add anr to object
-            $object->addAnr($newAnr);
-
-            /** @var MonarcObjectTable $MonarcObjectTable */
-            $MonarcObjectTable = $this->get('MonarcObjectTable');
-            $MonarcObjectTable->save($object, ($i == $nbObjects));
-            $i++;
-        }
-
-        //duplicate object categories, instances, instances consequences, instances risks, instances risks op
-        $clones = [];
-        $newInstancesParentLink = [];
-        $array = [
-            'scale',
-            'scaleImpactType',
-            'scaleComment',
-            'operationalRiskScale',
-            'operationalRiskScaleType',
-            'operationalRiskScaleComment',
-            'translation',
-            // TODO: This will not work anymore : instance, instanceConsequence are refactored.
-            'instance',
-            'instanceConsequence',
-            'instanceRisk',
-            'instanceRiskOp',
-        ];
-        foreach ($array as $value) {
-            $table = $this->get($value . 'Table');
-            $order = [];
-            $entities = null;
-            switch ($value) {
-                case 'instance':
-                    $order['level'] = 'ASC';
-                    break;
-            }
-
-            $entities = method_exists($table, 'getEntityByFields') ?
-                $table->getEntityByFields(['anr' => $anr->id], $order) :
-                $table->findByAnr($anr);
-            foreach ($entities as $entity) {
-                $newEntity = clone $entity;
-                if (method_exists($newEntity, 'set')) {
-                    $newEntity->set('id', null);
-                }
-                $newEntity->setAnr($newAnr);
-
-                switch ($value) {
-                    case 'instance':
-                        $newEntity->set('root', null);
-                        $newEntity->set('parent', null);
-                        break;
-                    case 'instanceConsequence':
-                        if (!empty($entity->instance->id) && !empty($clones['instance'][$entity->instance->id])) {
-                            $newEntity->set('instance', $clones['instance'][$entity->instance->id]);
-                        } else {
-                            $newEntity->set('instance', null);
-                        }
-                        if (!empty($entity->scaleImpactType->id) &&
-                                !empty($clones['scaleImpactType'][$entity->scaleImpactType->id])) {
-                            $newEntity->set(
-                                'scaleImpactType',
-                                $clones['scaleImpactType'][$entity->scaleImpactType->id]
-                            );
-                        } else {
-                            $newEntity->set('scaleImpactType', null);
-                        }
-                        break;
-                    case 'instanceRisk':
-                    case 'instanceRiskOp':
-                        if (!empty($entity->instance->id) && !empty($clones['instance'][$entity->instance->id])) {
-                            $newEntity->set('instance', $clones['instance'][$entity->instance->id]);
-                        } else {
-                            $newEntity->set('instance', null);
-                        }
-                        break;
-                    case 'scaleImpactType':
-                        if (!empty($entity->scale->id) && !empty($clones['scale'][$entity->scale->id])) {
-                            $newEntity->set('scale', $clones['scale'][$entity->scale->id]);
-                        } else {
-                            $newEntity->set('scale', null);
-                        }
-                        break;
-                    case 'scaleComment':
-                        if (!empty($entity->scale->id) && !empty($clones['scale'][$entity->scale->id])) {
-                            $newEntity->set('scale', $clones['scale'][$entity->scale->id]);
-                        } else {
-                            $newEntity->set('scale', null);
-                        }
-                        if (!empty($entity->scaleImpactType->id) &&
-                            !empty($clones['scaleImpactType'][$entity->scaleImpactType->id])) {
-                            $newEntity->set(
-                                'scaleImpactType',
-                                $clones['scaleImpactType'][$entity->scaleImpactType->id]
-                            );
-                        } else {
-                            $newEntity->set('scaleImpactType', null);
-                        }
-                        break;
-                    case 'operationalRiskScaleType':
-                        if (!empty($entity->getOperationalRiskScale()->getId()) &&
-                                !empty($clones['operationalRiskScale'][$entity->getOperationalRiskScale()->getId()])) {
-                            $newEntity->setOperationalRiskScale(
-                                $clones['operationalRiskScale'][$entity->getOperationalRiskScale()->getId()]
-                            );
-                        }
-                        break;
-                    case 'operationalRiskScaleComment':
-                        if (!empty($entity->getOperationalRiskScale()->getId()) &&
-                            !empty($clones['operationalRiskScale'][$entity->getOperationalRiskScale()->getId()])) {
-                            $newEntity->setOperationalRiskScale(
-                                $clones['operationalRiskScale'][$entity->getOperationalRiskScale()->getId()]
-                            );
-                        }
-                        if (!empty($entity->getOperationalRiskScaleType()) &&
-                            !empty(
-                                $clones['operationalRiskScaleType'][$entity->getOperationalRiskScaleType()->getId()]
-                            )) {
-                            $newEntity->setOperationalRiskScaleType(
-                                $clones['operationalRiskScaleType'][$entity->getOperationalRiskScaleType()->getId()]
-                            );
-                        }
-                        break;
-                }
-
-                $table->save($newEntity);
-
-                if ($value === 'instance') {
-                    $newInstancesParentLink[$newEntity->getId()]['parent'] = $entity->getParent();
-                    $newInstancesParentLink[$newEntity->getId()]['root'] = $entity->getRoot();
-                }
-
-                if (method_exists($newEntity, 'get')) {
-                    $clones[$value][$entity->get('id')] = $newEntity;
-                } else {
-                    $clones[$value][$entity->getId()] = $newEntity;
-                }
-            }
-        }
-
-        // Reconstruct instances tree
-        /** @var InstanceTable $instanceTable */
-        $instanceTable = $this->get('instanceTable');
-        $newInstances = $instanceTable->findByAnrAndOrderByParams($newAnr);
-        foreach ($newInstances as $newInstance) {
-            if ($newInstancesParentLink[$newInstance->getId()]['root'] !== null) {
-                $newInstance->setRoot(
-                    $clones['instance'][$newInstancesParentLink[$newInstance->getId()]['root']->getId()]
-                );
-            }
-            if ($newInstancesParentLink[$newInstance->getId()]['parent'] !== null) {
-                $newInstance->setParent(
-                    $clones['instance'][$newInstancesParentLink[$newInstance->getId()]['parent']->getId()]
-                );
-            }
-            $instanceTable->save($newInstance, false);
+        foreach ($newAnr->getObjects() as $object) {
+            $newAnr->addObject($object);
         }
 
         foreach ($anr->getObjectCategories() as $objectCategory) {
             $newAnr->addObjectCategory($objectCategory);
         }
 
-        $anrTable->save($newAnr);
+        $newScalesImpactTypes = $this->duplicateScales($newAnr, $anr);
+        $newOperationalRisksScalesTypes = $this->duplicateOperationalRisksScales($newAnr, $anr);
+
+        $this->duplicateSoaScaleComments($newAnr, $anr);
+
+        $this->duplicateInstancesMetadataFields($newAnr, $anr);
+
+        $this->duplicateTranslations($newAnr, $anr);
+
+        $this->duplicateInstancesRisksAndConsequences(
+            $newAnr,
+            $anr,
+            $newScalesImpactTypes,
+            $newOperationalRisksScalesTypes
+        );
+
+        $this->anrTable->save($newAnr);
 
         return $newAnr;
     }
 
     /**
-    * Exports an ANR, optionaly encrypted, for later re-import
-    * @param array $data An array with the ANR 'id' and 'password' for encryption
-    * @return string JSON file, optionaly encrypted
-    * @throws Exception If the ANR is invalid
-    */
-    public function exportAnr(&$data)
-    {
-        if (empty($data['id'])) {
-            throw new Exception('Anr to export is required', 412);
+     * @param Entity\Anr $newAnr
+     * @param Entity\Anr $anr
+     * @param array|Entity\ScaleImpactType[] $newScaleImpactTypes
+     *                                      New scale impact types with the keys mapped to the ones duplicated from.
+     * @param array|Entity\OperationalRiskScaleType[] $newOperationalRisksScalesTypes
+     *                                      New operational risks scale types with the old keys mapped.
+     */
+    private function duplicateInstancesRisksAndConsequences(
+        Entity\Anr $newAnr,
+        Entity\Anr $anr,
+        array $newScaleImpactTypes,
+        array $newOperationalRisksScalesTypes
+    ): void {
+        foreach ($this->instanceTable->findRootInstancesByAnrAndOrderByPosition($anr) as $rootInstance) {
+            $newRootInstance = $this->duplicateInstance(
+                $rootInstance,
+                $newAnr,
+                $newScaleImpactTypes,
+                $newOperationalRisksScalesTypes
+            );
+            $this->duplicateChildrenInstances(
+                $newRootInstance,
+                $rootInstance,
+                $newScaleImpactTypes,
+                $newOperationalRisksScalesTypes
+            );
         }
+    }
 
-        $filename = '';
+    private function duplicateChildrenInstances(
+        Entity\Instance $newInstance,
+        Entity\Instance $instance,
+        array $newScaleImpactTypes,
+        array $newOperationalRisksScalesTypes
+    ): void {
+        foreach ($instance->getChildren() as $childInstance) {
+            $newChildInstance = $this
+                ->duplicateInstance(
+                    $childInstance,
+                    $newInstance->getAnr(),
+                    $newScaleImpactTypes,
+                    $newOperationalRisksScalesTypes
+                )
+                ->setParent($newInstance)
+                ->setRoot($newInstance->isRoot() ? $newInstance : $newInstance->getRoot());
+            $this->duplicateChildrenInstances(
+                $newChildInstance,
+                $childInstance,
+                $newScaleImpactTypes,
+                $newOperationalRisksScalesTypes
+            );
+        }
+    }
 
-        $withEval = isset($data['assessments']) && $data['assessments'];
-        $withControls = isset($data['controls']) && $data['controls'];
-        $withRecommendations = isset($data['recommendations']) && $data['recommendations'];
-        $withMethodSteps = isset($data['methodSteps']) && $data['methodSteps'];
-        $withInterviews = isset($data['interviews']) && $data['interviews'];
-        $withSoas = isset($data['soas']) && $data['soas'];
-        $withRecords = isset($data['records']) && $data['records'];
-        $exportedAnr = json_encode(
-            $this->generateExportArray(
-                $data['id'],
-                $filename,
-                $withEval,
-                $withControls,
-                $withRecommendations,
-                $withMethodSteps,
-                $withInterviews,
-                $withSoas,
-                $withRecords
-            )
+    private function duplicateInstance(
+        Entity\Instance $instance,
+        Entity\Anr $newAnr,
+        array $scaleImpactTypes,
+        array $newOperationalRisksScalesTypes
+    ): Entity\Instance {
+        /** @var Entity\Instance $newInstance */
+        $newInstance = Entity\Instance::constructFromObject($instance)
+            ->setAnr($newAnr)
+            ->setAsset($instance->getAsset())
+            ->setObject($instance->getObject())
+            ->setCreator($this->connectedUser->getEmail());
+
+        $this->instanceTable->save($newInstance, false);
+
+        $this->duplicateInstancesConsequences($newInstance, $instance, $scaleImpactTypes);
+        $this->duplicateInstancesInformationalAndOperationalRisks(
+            $newInstance,
+            $instance,
+            $newOperationalRisksScalesTypes
         );
-        $data['filename'] = $filename;
 
-        if (!empty($data['password'])) {
-            $exportedAnr = $this->encrypt($exportedAnr, $data['password']);
+        return $newInstance;
+    }
+
+    private function duplicateInstancesConsequences(
+        Entity\Instance $newInstance,
+        Entity\Instance $instance,
+        array $scaleImpactTypes
+    ): void {
+        foreach ($instance->getInstanceConsequences() as $instanceConsequence) {
+            if (!isset($scaleImpactTypes[$instanceConsequence->getScaleImpactType()->getId()])) {
+                throw new \LogicException('Scale impact types have to be created before the instance consequences.');
+            }
+
+            $newInstanceConsequence = Entity\InstanceConsequence::constructFromObject($instanceConsequence)
+                ->setAnr($newInstance->getAnr())
+                ->setInstance($newInstance)
+                ->setScaleImpactType($scaleImpactTypes[$instanceConsequence->getScaleImpactType()->getId()])
+                ->setCreator($this->connectedUser->getEmail());
+
+            $this->instanceConsequenceTable->save($newInstanceConsequence, false);
+        }
+    }
+
+    private function duplicateInstancesInformationalAndOperationalRisks(
+        Entity\Instance $newInstance,
+        Entity\Instance $instance,
+        array $newOperationalRisksScalesTypes
+    ): void {
+        foreach ($instance->getInstanceRisks() as $instanceRisk) {
+            /** @var Entity\InstanceRisk $newInstanceRisk */
+            $newInstanceRisk = Entity\InstanceRisk::constructFromObject($instanceRisk)
+                ->setAnr($newInstance->getAnr())
+                ->setInstance($newInstance)
+                ->setAsset($instanceRisk->getAsset())
+                ->setThreat($instanceRisk->getThreat())
+                ->setVulnerability($instanceRisk->getVulnerability())
+                ->setAmv($instanceRisk->getAmv())
+                ->setCreator($this->connectedUser->getEmail());
+
+            $this->instanceRiskTable->save($newInstanceRisk, false);
         }
 
-        return $exportedAnr;
+        foreach ($instance->getOperationalInstanceRisks() as $operationalInstanceRisk) {
+            /** @var Entity\InstanceRiskOp $newInstanceRiskOp */
+            $newInstanceRiskOp = Entity\InstanceRiskOp::constructFromObject($operationalInstanceRisk)
+                ->setAnr($newInstance->getAnr())
+                ->setInstance($newInstance)
+                ->setObject($operationalInstanceRisk->getObject())
+                ->setRolfRisk($operationalInstanceRisk->getRolfRisk())
+                ->setCreator($this->connectedUser->getEmail());
+
+            foreach ($operationalInstanceRisk->getOperationalInstanceRiskScales() as $operationalInstanceRiskScale) {
+                $operationalRiskScaleTypeId = $operationalInstanceRiskScale->getOperationalRiskScaleType()->getId();
+                if (!isset($newOperationalRisksScalesTypes[$operationalRiskScaleTypeId])) {
+                    throw new \LogicException(
+                        'Operational risk scale types have to be created before the operational instance risk creation.'
+                    );
+                }
+
+                $newOperationalInstanceRiskScale = Entity\OperationalInstanceRiskScale::constructFromObject(
+                    $operationalInstanceRiskScale
+                )
+                    ->setAnr($newInstance->getAnr())
+                    ->setOperationalInstanceRisk($newInstanceRiskOp)
+                    ->setOperationalRiskScaleType($newOperationalRisksScalesTypes[$operationalRiskScaleTypeId])
+                    ->setCreator($this->connectedUser->getEmail());
+
+                $this->operationalInstanceRiskScaleTable->save($newOperationalInstanceRiskScale, false);
+            }
+
+            $this->instanceRiskOpTable->save($newInstanceRiskOp, false);
+        }
     }
 
     /**
-     * TODO: move to the Client side as the functionality is only available there.
-     *
-     * Generates the array to be exported into a file when calling {#exportAnr}
-     * @see #exportAnr
-     *
-     * @param int $id The ANR id
-     * @param string $filename The output filename
-     * @param bool $withEval If true, exports evaluations as well
-     *
-     * @return array The data array that should be saved
-     * @throws Exception If the ANR or an entity is not found
+     * @return array New scale impact types with the keys mapped to the ones duplicated from.
      */
-    public function generateExportArray(
-        $id,
-        &$filename = "",
-        $withEval = false,
-        $withControls = false,
-        $withRecommendations = false,
-        $withMethodSteps = false,
-        $withInterviews = false,
-        $withSoas = false,
-        $withRecords = false
-    ) {
-        /** @var AnrTable $anrTable */
-        $anrTable = $this->get('table');
-        $anr = $anrTable->findById($id);
+    private function duplicateScales(Entity\Anr $newAnr, Entity\Anr $anr): array
+    {
+        $newScaleImpactTypes = [];
+        foreach ($this->scaleTable->findByAnr($anr) as $scale) {
+            $newScale = Entity\Scale::constructFromObject($scale)
+                ->setAnr($newAnr)
+                ->setCreator($this->connectedUser->getEmail());
 
-        $filename = preg_replace("/[^a-z0-9\._-]+/i", '', $anr->get('label' . $this->getLanguage()));
+            foreach ($scale->getScaleImpactTypes() as $scaleImpactType) {
+                $newScaleImpactTypes[$scaleImpactType->getId()] = Entity\ScaleImpactType::constructFromObject(
+                    $scaleImpactType
+                )->setAnr($newAnr)->setScale($newScale)->setCreator($this->connectedUser->getEmail());
 
-        $return = [
-            'type' => 'anr',
-            'monarc_version' => $this->get('configService')->getAppVersion()['appVersion'],
-            'export_datetime' => (new DateTime())->format('Y-m-d H:i:s'),
-            'instances' => [],
-            'with_eval' => $withEval,
-        ];
-
-        /** @var InstanceService $instanceService */
-        $instanceService = $this->get('instanceService');
-        $table = $this->get('instanceTable');
-        $instances = $table->getEntityByFields(['anr' => $anr->getId(), 'parent' => null], ['position'=>'ASC']);
-        $f = '';
-        foreach ($instances as $instance) {
-            $return['instances'][$instance->getId()] = $instanceService->generateExportArray(
-                $instance->getId(),
-                $f,
-                $withEval,
-                false,
-                $withControls,
-                $withRecommendations
-            );
-        }
-
-        /** @var InstanceMetadataExportService $instanceMetadataExportService */
-        $instanceMetadataExportService = $this->get('instanceMetadataExportService');
-        // TODO: of FrontOffice side add the backward compatibility to support the 'anrMetadatasOnInstances'
-        $return['instanceMetadataFields'] = $instanceMetadataExportService->generateExportArray($anr);
-
-        if ($withEval) {
-            // TODO: Soa functionality is related only to FrontOffice.
-            if ($withSoas) {
-                // soaScaleComment
-                $soaScaleCommentExportService = $this->get('soaScaleCommentExportService');
-                $return['soaScaleComment'] = $soaScaleCommentExportService->generateExportArray(
-                    $anr
-                );
-
-                // referentials
-                $return['referentials'] = [];
-                $referentialTable = $this->get('referentialTable');
-                $referentials = $referentialTable->getEntityByFields(['anr' => $anr->getId()]);
-                $referentialsArray = [
-                    'uuid' => 'uuid',
-                    'label1' => 'label1',
-                    'label2' => 'label2',
-                    'label3' => 'label3',
-                    'label4' => 'label4'
-                ];
-                foreach ($referentials as $r) {
-                    $return['referentials'][$r->getUuid()] = $r->getJsonArray($referentialsArray);
-                }
-
-                // measures
-                $return['measures'] = [];
-                $measureTable = $this->get('measureTable');
-                $measures = $measureTable->getEntityByFields(['anr' => $anr->getId()]);
-                $measuresArray = [
-                    'uuid' => 'uuid',
-                    'referential' => 'referential',
-                    'category' => 'category',
-                    'code' => 'code',
-                    'label1' => 'label1',
-                    'label2' => 'label2',
-                    'label3' => 'label3',
-                    'label4' => 'label4',
-                    'status' => 'status'
-                ];
-                foreach ($measures as $m) {
-                    $newMeasure = $m->getJsonArray($measuresArray);
-                    $newMeasure['referential'] = $m->getReferential()->getUuid();
-                    $newMeasure['category'] = $m->getCategory() ?
-                        $m->getCategory()->get('label' . $this->getLanguage())
-                        : '';
-                    $return['measures'][$m->getUuid()] = $newMeasure;
-                }
-
-                // measures-measures
-                $return['measuresMeasures'] = [];
-                $measureMeasureTable = $this->get('measureMeasureTable');
-                $measuresMeasures = $measureMeasureTable->getEntityByFields(['anr' => $anr->getId()]);
-                foreach ($measuresMeasures as $mm) {
-                    $newMeasureMeasure = [];
-                    $newMeasureMeasure['father'] = $mm->getFather();
-                    $newMeasureMeasure['child'] = $mm->getChild();
-                    $return['measuresMeasures'][] = $newMeasureMeasure;
-                }
-
-                // soacategories
-                $return['soacategories'] = [];
-                $soaCategoryTable = $this->get('soaCategoryTable');
-                $soaCategories = $soaCategoryTable->getEntityByFields(['anr' => $anr->getId()]);
-                $soaCategoriesArray = [
-                    'referential' => 'referential',
-                    'label1' => 'label1',
-                    'label2' => 'label2',
-                    'label3' => 'label3',
-                    'label4' => 'label4',
-                    'status' => 'status'
-                ];
-                foreach ($soaCategories as $c) {
-                    $newSoaCategory = $c->getJsonArray($soaCategoriesArray);
-                    $newSoaCategory['referential'] = $c->getReferential()->getUuid();
-                    $return['soacategories'][] = $newSoaCategory;
-                }
-
-                // soas
-                $return['soas'] = [];
-                $soaTable = $this->get('soaTable');
-                $soas = $soaTable->getEntityByFields(['anr' => $anr->getId()]);
-                $soasArray = [
-                    'remarks' => 'remarks',
-                    'evidences' => 'evidences',
-                    'actions' => 'actions',
-                    'EX' => 'EX',
-                    'LR' => 'LR',
-                    'CO' => 'CO',
-                    'BR' => 'BR',
-                    'BP' => 'BP',
-                    'RRA' => 'RRA',
-                ];
-                foreach ($soas as $s) {
-                    $newSoas = $s->getJsonArray($soasArray);
-                    if ($s->getSoaScaleComment() !== null) {
-                        $newSoas['soaScaleComment'] = $s->getSoaScaleComment()->getId();
-                    }
-                    $newSoas['measure_id'] = $s->getMeasure()->getUuid();
-                    $return['soas'][] = $newSoas;
-                }
+                $this->scaleImpactTypeTable->save($newScaleImpactTypes[$scaleImpactType->getId()], false);
             }
 
-            // operational risk scales
-            /** @var OperationalRiskScalesExportService $operationalRiskScalesExportService */
-            $operationalRiskScalesExportService = $this->get('operationalRiskScalesExportService');
-            $return['operationalRiskScales'] = $operationalRiskScalesExportService->generateExportArray($anr);
-
-            // scales
-            $return['scales'] = [];
-            /** @var ScaleTable $scaleTable */
-            $scaleTable = $this->get('scaleTable');
-            $scales = $scaleTable->findByAnr($anr);
-            foreach ($scales as $scale) {
-                $return['scales'][$scale->getType()] = [
-                    'id' => $scale->getId(),
-                    'min' => $scale->getMin(),
-                    'max' => $scale->getMax(),
-                    'type' => $scale->getType(),
-                ];
-            }
-
-            /** @var ScaleCommentTable $scaleCommentTable */
-            $scaleCommentTable = $this->get('scaleCommentTable');
-            $scaleComments = $scaleCommentTable->findByAnr($anr);
-            foreach ($scaleComments as $scaleComment) {
-                $scaleCommentId = $scaleComment->getId();
-                $return['scalesComments'][$scaleCommentId] = [
-                    'id' => $scaleCommentId,
-                    'scaleIndex' => $scaleComment->getScaleIndex(),
-                    'scaleValue' => $scaleComment->getScaleValue(),
-                    'comment1' => $scaleComment->getComment(1),
-                    'comment2' => $scaleComment->getComment(2),
-                    'comment3' => $scaleComment->getComment(3),
-                    'comment4' => $scaleComment->getComment(4),
-                    'scale' => [
-                        'id' => $scaleComment->getScale()->getId(),
-                        'type' => $scaleComment->getScale()->getType()
-                    ],
-                ];
+            foreach ($scale->getScaleComments() as $scaleComment) {
+                /** @var Entity\ScaleComment $newScaleComment */
+                $newScaleComment = Entity\ScaleComment::constructFromObject($scaleComment)
+                    ->setScale($newScale)
+                    ->setAnr($newAnr)
+                    ->setCreator($this->connectedUser->getEmail());
                 if ($scaleComment->getScaleImpactType() !== null) {
-                    $return['scalesComments'][$scaleCommentId]['scaleImpactType'] = [
-                        'id' => $scaleComment->getScaleImpactType()->getId(),
-                        'type' => $scaleComment->getScaleImpactType()->getType(),
-                        'position' => $scaleComment->getScaleImpactType()->getPosition(),
-                        'labels' => [
-                            'label1' => $scaleComment->getScaleImpactType()->getLabel(1),
-                            'label2' => $scaleComment->getScaleImpactType()->getLabel(2),
-                            'label3' => $scaleComment->getScaleImpactType()->getLabel(3),
-                            'label4' => $scaleComment->getScaleImpactType()->getLabel(4),
-                        ],
-                        'isSys' => $scaleComment->getScaleImpactType()->isSys(),
-                        'isHidden' => $scaleComment->getScaleImpactType()->isHidden(),
-                    ];
-                }
-            }
-
-            if ($withMethodSteps) {
-                //Risks analysis method data
-                $return['method']['steps'] = [
-                    'initAnrContext' => $anr->initAnrContext,
-                    'initEvalContext' => $anr->initEvalContext,
-                    'initRiskContext' => $anr->initRiskContext,
-                    'initDefContext' => $anr->initDefContext,
-                    'modelImpacts' => $anr->modelImpacts,
-                    'modelSummary' => $anr->modelSummary,
-                    'evalRisks' => $anr->evalRisks,
-                    'evalPlanRisks' => $anr->evalPlanRisks,
-                    'manageRisks' => $anr->manageRisks,
-                ];
-
-                $return['method']['data'] = [
-                    'contextAnaRisk' => $anr->contextAnaRisk,
-                    'contextGestRisk' => $anr->contextGestRisk,
-                    'synthThreat' => $anr->synthThreat,
-                    'synthAct' => $anr->synthAct,
-                ];
-
-
-
-                $deliveryTable = $this->get('deliveryTable');
-                for ($i = 0; $i <= 5; $i++) {
-                    $deliveries = $deliveryTable->getEntityByFields(
-                        ['anr' => $anr->getId(),
-                        'typedoc' => $i ],
-                        ['id'=>'ASC']
+                    $newScaleComment->setScaleImpactType(
+                        $newScaleImpactTypes[$scaleComment->getScaleImpactType()->getId()]
                     );
-                    $deliveryArray = [
-                        'id' => 'id',
-                        'typedoc' => 'typedoc',
-                        'name' => 'name',
-                        'status' => 'status',
-                        'version' => 'version',
-                        'classification' => 'classification',
-                        'respCustomer' => 'respCustomer',
-                        'respSmile' => 'respSmile',
-                        'summaryEvalRisk' => 'summaryEvalRisk',
-                    ];
-                    foreach ($deliveries as $d) {
-                        $return['method']['deliveries'][$d->typedoc] = $d->getJsonArray($deliveryArray);
-                    }
-                }
-                $questionTable = $this->get('questionTable');
-                $questions = $questionTable->getEntityByFields(['anr' => $anr->getId()], ['position'=>'ASC']);
-                $questionArray = [
-                    'id' => 'id',
-                    'mode' => 'mode',
-                    'multichoice' => 'multichoice',
-                    'label1' => 'label1',
-                    'label2' => 'label2',
-                    'label3' => 'label3',
-                    'label4' => 'label4',
-                    'response' => 'response',
-                    'type' => 'type',
-                    'position' => 'position',
-
-                ];
-
-                foreach ($questions as $q) {
-                    $return['method']['questions'][$q->position] = $q->getJsonArray($questionArray);
                 }
 
-                $questionChoiceTable = $this->get('questionChoiceTable');
-                $questionsChoices = $questionChoiceTable->getEntityByFields(['anr' => $anr->getId()]);
-                $questionChoiceArray = [
-                    'question' => 'question',
-                    'position' => 'position',
-                    'label1' => 'label1',
-                    'label2' => 'label2',
-                    'label3' => 'label3',
-                    'label4' => 'label4',
-                ];
-                foreach ($questionsChoices as $qc) {
-                    $return['method']['questionChoice'][$qc->id] = $qc->getJsonArray($questionChoiceArray);
-                    $return['method']['questionChoice'][$qc->id]['question'] = $qc->question->id;
-                }
-            }
-            //import thresholds
-            $return['method']['thresholds'] = [
-                'seuil1' => $anr->seuil1,
-                'seuil2' => $anr->seuil2,
-                'seuilRolf1' => $anr->seuilRolf1,
-                'seuilRolf2' => $anr->seuilRolf2,
-            ];
-            // manage the interviews
-            if ($withInterviews) {
-                $interviewTable = $this->get('interviewTable');
-                $interviews = $interviewTable->getEntityByFields(['anr' => $anr->getId()], ['id'=>'ASC']);
-                $interviewArray = [
-                    'id' => 'id',
-                    'date' => 'date',
-                    'service' => 'service',
-                    'content' => 'content',
-                ];
-
-                foreach ($interviews as $i) {
-                    $return['method']['interviews'][$i->id] = $i->getJsonArray($interviewArray);
-                }
+                $this->scaleCommentTable->save($newScaleComment, false);
             }
 
-            // TODO: This is only used on FO side.
-            /** @var ThreatTable $threatTable */
-            $threatTable = $this->get('threatTable');
-            /** @var ThreatSuperClass[] $threats */
-            $threats = $threatTable->findByAnr($anr);
-            $threatArray = [
-                'uuid' => 'uuid',
-                'code' => 'code',
-                'label1' => 'label1',
-                'label2' => 'label2',
-                'label3' => 'label3',
-                'label4' => 'label4',
-                'description1' => 'description1',
-                'description2' => 'description2',
-                'description3' => 'description3',
-                'description4' => 'description4',
-                'c' => 'c',
-                'i' => 'i',
-                'a' => 'a',
-                'trend' => 'trend',
-                'comment' => 'comment',
-                'qualification' => 'qualification',
-            ];
-
-
-            foreach ($threats as $threat) {
-                $threatUuid = $t->getUuid();
-                $return['method']['threats'][$threatUuid] = $t->getJsonArray($threatArray);
-                if ($threat->getTheme() !== null) {
-                    $return['method']['threats'][$threatUuid]['theme']['id'] = $threat->getTheme()->getId();
-                    $return['method']['threats'][$threatUuid]['theme']['label1'] = $threat->getTheme()->getLabel(1);
-                    $return['method']['threats'][$threatUuid]['theme']['label2'] = $threat->getTheme()->getLabel(2);
-                    $return['method']['threats'][$threatUuid]['theme']['label3'] = $threat->getTheme()->getLabel(3);
-                    $return['method']['threats'][$threatUuid]['theme']['label4'] = $threat->getTheme()->getLabel(4);
-                }
-            }
-
-            // manage the GDPR records
-            if ($withRecords) {
-                $recordService = $this->get('recordService');
-                $table = $this->get('recordTable');
-                $records = $table->getEntityByFields(['anr' => $anr->getId()], ['id'=>'ASC']);
-                $f = '';
-                foreach ($records as $r) {
-                    $return['records'][$r->id] = $recordService->generateExportArray($r->id, $f);
-                }
-            }
+            $this->scaleTable->save($newScale, false);
         }
-        return $return;
+
+        return $newScaleImpactTypes;
+    }
+
+    /**
+     * @return array New operations risks scales types with the keys mapped to the ones duplicated from.
+     */
+    private function duplicateOperationalRisksScales(Entity\Anr $newAnr, Entity\Anr $anr): array
+    {
+        /** @var Entity\OperationalRiskScaleType[] $newOperationalRisksScaleTypes */
+        $newOperationalRisksScaleTypes = [];
+        /** @var Entity\OperationalRiskScale $operationalRiskScale */
+        foreach ($this->operationalRiskScaleTable->findByAnr($anr) as $operationalRiskScale) {
+            $newOperationalRiskScale = Entity\OperationalRiskScale::constructFromObject($operationalRiskScale)
+                ->setAnr($newAnr)
+                ->setCreator($this->connectedUser->getEmail());
+
+            foreach ($operationalRiskScale->getOperationalRiskScaleTypes() as $operationalRiskScaleType) {
+                $newOperationalRisksScaleTypes[$operationalRiskScaleType->getId()] =
+                    Entity\OperationalRiskScaleType::constructFromObject($operationalRiskScaleType)
+                    ->setAnr($newAnr)
+                    ->setOperationalRiskScale($newOperationalRiskScale)
+                    ->setCreator($this->connectedUser->getEmail());
+
+                $this->operationalRiskScaleTypeTable->save(
+                    $newOperationalRisksScaleTypes[$operationalRiskScaleType->getId()],
+                    false
+                );
+            }
+
+            foreach ($operationalRiskScale->getOperationalRiskScaleComments() as $operationalRiskScaleComment) {
+                $newOperationalRiskScaleComment = Entity\OperationalRiskScaleComment::constructFromObject(
+                    $operationalRiskScaleComment
+                )
+                    ->setAnr($newAnr)
+                    ->setOperationalRiskScale($newOperationalRiskScale)
+                    ->setCreator($this->connectedUser->getEmail());
+                if ($operationalRiskScaleComment->getOperationalRiskScaleType() !== null) {
+                    $scaleTypeId = $operationalRiskScaleComment->getOperationalRiskScaleType()->getId();
+                    $newOperationalRiskScaleComment->setOperationalRiskScaleType(
+                        $newOperationalRisksScaleTypes[$scaleTypeId]
+                    );
+                }
+
+                $this->operationalRiskScaleCommentTable->save($newOperationalRiskScaleComment, false);
+            }
+
+            $this->operationalRiskScaleTable->save($newOperationalRiskScale, false);
+        }
+
+        return $newOperationalRisksScaleTypes;
+    }
+
+    private function duplicateTranslations(Entity\Anr $newAnr, Entity\Anr $anr): void
+    {
+        /** @var Entity\Translation $translation */
+        foreach ($this->translationTable->findByAnr($anr) as $translation) {
+            $newTranslation = Entity\Translation::constructFromObject($translation)
+                ->setAnr($newAnr)
+                ->setCreator($this->connectedUser->getEmail());
+
+            $this->translationTable->save($newTranslation, false);
+        }
+    }
+
+    private function duplicateSoaScaleComments(Entity\Anr $newAnr, Entity\Anr $anr): void
+    {
+        /** @var Entity\SoaScaleComment $soaScaleComment */
+        foreach ($this->soaScaleCommentTable->findByAnr($anr) as $soaScaleComment) {
+            $newSoaScaleComment = Entity\SoaScaleComment::constructFromObject($soaScaleComment)
+                ->setAnr($newAnr)
+                ->setCreator($this->connectedUser->getEmail());
+
+            $this->soaScaleCommentTable->save($newSoaScaleComment, false);
+        }
+    }
+
+    private function duplicateInstancesMetadataFields(Entity\Anr $newAnr, Entity\Anr $anr): void
+    {
+        /** @var Entity\InstanceMetadataField $instanceMetadataField */
+        foreach ($this->instanceMetadataFieldTable->findByAnr($anr) as $instanceMetadataField) {
+            $newInstanceMetadataField = Entity\InstanceMetadataField::constructFromObject($instanceMetadataField)
+                ->setAnr($newAnr)
+                ->setCreator($this->connectedUser->getEmail());
+
+            $this->instanceMetadataFieldTable->save($newInstanceMetadataField, false);
+        }
     }
 }

@@ -1,15 +1,12 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2021 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
 namespace Monarc\Core\Service;
 
-use Doctrine\ORM\EntityNotFoundException;
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
 use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\OperationalRiskScaleCommentSuperClass;
 use Monarc\Core\Model\Entity\OperationalRiskScaleSuperClass;
@@ -20,7 +17,6 @@ use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Model\Entity\OperationalRiskScale;
 use Monarc\Core\Model\Entity\OperationalRiskScaleComment;
 use Monarc\Core\Model\Entity\Translation;
-use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\InstanceRiskOpTable;
 use Monarc\Core\Table\OperationalInstanceRiskScaleTable;
 use Monarc\Core\Table\OperationalRiskScaleCommentTable;
@@ -31,8 +27,6 @@ use Ramsey\Uuid\Uuid;
 
 class OperationalRiskScaleService
 {
-    protected AnrTable $anrTable;
-
     protected UserSuperClass $connectedUser;
 
     protected OperationalRiskScaleTable $operationalRiskScaleTable;
@@ -52,7 +46,6 @@ class OperationalRiskScaleService
     private OperationalInstanceRiskScaleTable $operationalInstanceRiskScaleTable;
 
     public function __construct(
-        AnrTable $anrTable,
         ConnectedUserService $connectedUserService,
         OperationalRiskScaleTable $operationalRiskScaleTable,
         OperationalRiskScaleTypeTable $operationalRiskScaleTypeTable,
@@ -63,7 +56,6 @@ class OperationalRiskScaleService
         InstanceRiskOpTable $instanceRiskOpTable,
         OperationalInstanceRiskScaleTable $operationalInstanceRiskScaleTable
     ) {
-        $this->anrTable = $anrTable;
         $this->connectedUser = $connectedUserService->getConnectedUser();
         $this->operationalRiskScaleTable = $operationalRiskScaleTable;
         $this->operationalRiskScaleTypeTable = $operationalRiskScaleTypeTable;
@@ -90,14 +82,14 @@ class OperationalRiskScaleService
 
         $this->operationalRiskScaleTable->save($scale, false);
 
-        $languageCodes = $this->getLanguageCodesForTranslations($anr);
+        $languageCodes = $this->getLanguageCodesForTranslations();
 
-        if ($type === OperationalRiskScale::TYPE_IMPACT) {
+        if ($type === OperationalRiskScaleSuperClass::TYPE_IMPACT) {
             $scaleType = $this->createOperationalRiskScaleTypeObject($anr, $scale);
             foreach ($languageCodes as $languageCode) {
                 $translation = $this->createTranslationObject(
                     $anr,
-                    Translation::OPERATIONAL_RISK_SCALE_TYPE,
+                    TranslationSuperClass::OPERATIONAL_RISK_SCALE_TYPE,
                     $scaleType->getLabelTranslationKey(),
                     $languageCode,
                     ''
@@ -120,18 +112,8 @@ class OperationalRiskScaleService
         $this->operationalRiskScaleTable->flush();
     }
 
-    /**
-     * @param int $anrId
-     * @param array $data
-     *
-     * @return int
-     * @throws EntityNotFoundException
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
-    public function createOperationalRiskScaleType(int $anrId, array $data): int
+    public function createOperationalRiskScaleType(AnrSuperClass $anr, array $data): int
     {
-        $anr = $this->anrTable->findById($anrId);
         $languages = [];
         $operationalRiskScale = $this->operationalRiskScaleTable->findByAnrAndScaleId($anr, (int)$data['scaleId']);
 
@@ -142,7 +124,7 @@ class OperationalRiskScaleService
             foreach ($data['label'] as $lang => $labelText) {
                 $translation = $this->createTranslationObject(
                     $anr,
-                    Translation::OPERATIONAL_RISK_SCALE_TYPE,
+                    TranslationSuperClass::OPERATIONAL_RISK_SCALE_TYPE,
                     $operationalRiskScaleType->getLabelTranslationKey(),
                     $lang,
                     (string)$labelText
@@ -153,10 +135,10 @@ class OperationalRiskScaleService
             }
         } else {
             // FrontOffice scenario.
-            $anrLanguageCode = $this->getAnrLanguageCode($anr);
+            $anrLanguageCode = $this->getLanguageCodeByAnr($anr);
             $translation = $this->createTranslationObject(
                 $anr,
-                Translation::OPERATIONAL_RISK_SCALE_TYPE,
+                TranslationSuperClass::OPERATIONAL_RISK_SCALE_TYPE,
                 $operationalRiskScaleType->getLabelTranslationKey(),
                 $anrLanguageCode,
                 $data['label'][$anrLanguageCode]
@@ -194,21 +176,17 @@ class OperationalRiskScaleService
         return $operationalRiskScaleType->getId();
     }
 
-    /**
-     * @throws EntityNotFoundException
-     */
-    public function getOperationalRiskScales(int $anrId, string $language = null): array
+    public function getOperationalRiskScales(AnrSuperClass $anr, ?string $language = null): array
     {
         $result = [];
-        $anr = $this->anrTable->findById($anrId);
         $operationalRiskScales = $this->operationalRiskScaleTable->findByAnr($anr);
         if ($language === null) {
-            $language = $this->getAnrLanguageCode($anr);
+            $language = $this->getLanguageCodeByAnr($anr);
         }
 
         $translations = $this->translationTable->findByAnrTypesAndLanguageIndexedByKey(
             $anr,
-            [Translation::OPERATIONAL_RISK_SCALE_TYPE, Translation::OPERATIONAL_RISK_SCALE_COMMENT],
+            [TranslationSuperClass::OPERATIONAL_RISK_SCALE_TYPE, TranslationSuperClass::OPERATIONAL_RISK_SCALE_COMMENT],
             $language
         );
 
@@ -303,7 +281,7 @@ class OperationalRiskScaleService
         $operationalRiskScaleType->setIsHidden(!empty($data['isHidden']));
 
         if (!empty($data['label'])) {
-            $languageCode = $data['language'] ?? $this->getAnrLanguageCode($operationalRiskScaleType->getAnr());
+            $languageCode = $data['language'] ?? $this->getLanguageCodeByAnr($operationalRiskScaleType->getAnr());
             $translationKey = $operationalRiskScaleType->getLabelTranslationKey();
             if (!empty($translationKey)) {
                 $translation = $this->translationTable
@@ -330,15 +308,14 @@ class OperationalRiskScaleService
         return $operationalRiskScaleType->getId();
     }
 
-    public function updateValueForAllScales(array $data): void
+    public function updateValueForAllScales(AnrSuperClass $anr, array $data): void
     {
-        $anr = $this->anrTable->findById($data['anr']);
         $scaleIndex = (int)$data['scaleIndex'];
         $scaleValue = (int)$data['scaleValue'];
 
         $operationalRiskScaleComments = $this->operationalRiskScaleCommentTable->findByAnrAndScaleTypeOrderByIndex(
             $anr,
-            OperationalRiskScale::TYPE_IMPACT
+            OperationalRiskScaleSuperClass::TYPE_IMPACT
         );
 
         foreach ($operationalRiskScaleComments as $operationalRiskScaleComment) {
@@ -361,17 +338,16 @@ class OperationalRiskScaleService
         $this->operationalRiskScaleCommentTable->flush();
     }
 
-    public function updateLevelsNumberOfOperationalRiskScale(array $data)
+    public function updateLevelsNumberOfOperationalRiskScale(AnrSuperClass $anr, array $data)
     {
-        $anr = $this->anrTable->findById($data['anr']);
-        $languageCodes = $this->getLanguageCodesForTranslations($anr);
+        $languageCodes = $this->getLanguageCodesForTranslations();
 
         // Change the levels number of the scale.
         $levelsNumber = (int)$data['numberOfLevelForOperationalImpact'];
 
         $operationalRiskScales = $this->operationalRiskScaleTable->findWithCommentsByAnrAndType(
             $anr,
-            OperationalRiskScale::TYPE_IMPACT
+            OperationalRiskScaleSuperClass::TYPE_IMPACT
         );
 
         foreach ($operationalRiskScales as $operationalRiskScale) {
@@ -416,17 +392,16 @@ class OperationalRiskScaleService
         }
     }
 
-    public function updateMinMaxForOperationalRiskProbability($data): void
+    public function updateMinMaxForOperationalRiskProbability(AnrSuperClass $anr, $data): void
     {
         $probabilityMin = (int)$data['probabilityMin'];
         $probabilityMax = (int)$data['probabilityMax'];
 
-        $anr = $this->anrTable->findById($data['anr']);
-        $languageCodes = $this->getLanguageCodesForTranslations($anr);
+        $languageCodes = $this->getLanguageCodesForTranslations();
 
         $operationalRiskScales = $this->operationalRiskScaleTable->findWithCommentsByAnrAndType(
             $anr,
-            OperationalRiskScale::TYPE_LIKELIHOOD
+            OperationalRiskScaleSuperClass::TYPE_LIKELIHOOD
         );
 
         foreach ($operationalRiskScales as $operationalRiskScale) {
@@ -504,7 +479,7 @@ class OperationalRiskScaleService
             // Create a translation for the scaleComment (init with blank value).
             $translation = $this->createTranslationObject(
                 $anr,
-                Translation::OPERATIONAL_RISK_SCALE_COMMENT,
+                TranslationSuperClass::OPERATIONAL_RISK_SCALE_COMMENT,
                 $scaleComment->getCommentTranslationKey(),
                 $languageCode,
                 ''
@@ -514,12 +489,12 @@ class OperationalRiskScaleService
         }
     }
 
-    protected function getAnrLanguageCode(AnrSuperClass $anr): string
+    protected function getLanguageCodeByAnr(AnrSuperClass $anr): string
     {
-        return $this->configService->getActiveLanguageCodes()[$anr->getLanguage()];
+        return throw new \LogicException('The "Core\Anr" class does not have language code.');
     }
 
-    protected function getLanguageCodesForTranslations(AnrSuperClass $anr): array
+    protected function getLanguageCodesForTranslations(): array
     {
         return $this->configService->getActiveLanguageCodes();
     }

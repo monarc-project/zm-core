@@ -138,10 +138,10 @@ class ObjectService
                 $instanceHierarchy = $instance->getHierarchyArray();
 
                 $names = [
-                    'name1' => $anr->getLabelByLanguageIndex(1),
-                    'name2' => $anr->getLabelByLanguageIndex(2),
-                    'name3' => $anr->getLabelByLanguageIndex(3),
-                    'name4' => $anr->getLabelByLanguageIndex(4),
+                    'name1' => $anr->getLabel(1),
+                    'name2' => $anr->getLabel(2),
+                    'name3' => $anr->getLabel(3),
+                    'name4' => $anr->getLabel(4),
                 ];
                 foreach ($instanceHierarchy as $instanceData) {
                     $names['name1'] .= ' > ' . $instanceData['name1'];

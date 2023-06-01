@@ -5,16 +5,15 @@
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
-namespace Monarc\Core\Model\Entity;
+namespace Monarc\Core\Table;
 
-use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\EntityManager;
+use Monarc\Core\Model\Entity\ScaleComment;
 
-/**
- * @ORM\Table(name="scales", indexes={
- *      @ORM\Index(name="anr", columns={"anr_id"})
- * })
- * @ORM\Entity
- */
-class Scale extends ScaleSuperClass
+class ScaleCommentTable extends AbstractTable
 {
+    public function __construct(EntityManager $entityManager, string $entityName = ScaleComment::class)
+    {
+        parent::__construct($entityManager, $entityName);
+    }
 }

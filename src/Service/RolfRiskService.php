@@ -8,7 +8,7 @@
 namespace Monarc\Core\Service;
 
 use Monarc\Core\Model\Entity\RolfRiskSuperClass;
-use Monarc\Core\Model\Table\AnrTable;
+use Monarc\Core\Table\AnrTable;
 use Monarc\Core\Model\Table\InstanceRiskOpTable;
 use Monarc\Core\Model\Table\MeasureTable;
 use Monarc\Core\Model\Table\RolfRiskTable;
@@ -121,7 +121,7 @@ class RolfRiskService extends AbstractService
         if (!empty($data['anr'])) {
             /** @var AnrTable $anrTable */
             $anrTable = $this->get('anrTable');
-            $anr = $anrTable->findById($data['anr']);
+            $anr = $anrTable->findById((int)$data['anr']);
             $rolfRisk->setAnr($anr);
         }
 

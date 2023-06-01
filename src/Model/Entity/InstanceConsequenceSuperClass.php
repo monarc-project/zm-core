@@ -92,6 +92,16 @@ class InstanceConsequenceSuperClass
      */
     protected $d = -1;
 
+    public static function constructFromObject(
+        InstanceConsequenceSuperClass $instanceConsequence
+    ): InstanceConsequenceSuperClass {
+        return (new static())
+            ->setConfidentiality($instanceConsequence->getConfidentiality())
+            ->setIntegrity($instanceConsequence->getIntegrity())
+            ->setAvailability($instanceConsequence->getAvailability())
+            ->setIsHidden($instanceConsequence->isHidden());
+    }
+
     /**
      * @return int
      */

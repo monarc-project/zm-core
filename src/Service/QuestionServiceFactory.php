@@ -7,6 +7,8 @@
 
 namespace Monarc\Core\Service;
 
+use Monarc\Core\Table\AnrTable;
+
 /**
  * Question Service Factory
  * Class QuestionServiceFactory
@@ -18,6 +20,6 @@ class QuestionServiceFactory extends AbstractServiceFactory
         'table' => 'Monarc\Core\Model\Table\QuestionTable',
         'entity' => 'Monarc\Core\Model\Entity\Question',
         'choiceTable' => 'Monarc\Core\Model\Table\QuestionChoiceTable',
-        'anrTable' => 'Monarc\Core\Model\Table\AnrTable',
+        'anrTable' => AnrTable::class,
     ];
 }

@@ -11,6 +11,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
+use Monarc\Core\Model\Table\InstanceRiskOpTable;
 
 /**
  * Instance Risk Op
@@ -69,7 +70,7 @@ class InstanceRiskOpSuperClass extends AbstractEntity
     protected $instance;
 
     /**
-     * @var InstanceRiskOwnerSuperClass
+     * @var InstanceRiskOwnerSuperClass|null
      *
      * @ORM\ManyToOne(targetEntity="InstanceRiskOwner", cascade={"persist"})
      * @ORM\JoinColumns({
@@ -252,27 +253,30 @@ class InstanceRiskOpSuperClass extends AbstractEntity
         parent::__construct($obj);
     }
 
-    public function __clone()
-    {
-        $this->id = null;
-        $this->setCreatedAtValue();
+    public static function constructFromObject(
+        InstanceRiskOpSuperClass $operationalInstanceRisk
+    ): InstanceRiskOpSuperClass {
+        return (new static())
+            ->setContext($operationalInstanceRisk->getContext())
+            ->setRiskCacheCode($operationalInstanceRisk->getRiskCacheCode())
+            ->setRiskCacheLabels($operationalInstanceRisk->getRiskCacheLabels())
+            ->setRiskCacheDescriptions($operationalInstanceRisk->getRiskCacheDescriptions())
+            ->setBrutProb($operationalInstanceRisk->getBrutProb())
+            ->setNetProb($operationalInstanceRisk->getNetProb())
+            ->setTargetedProb($operationalInstanceRisk->getTargetedProb())
+            ->setRiskCacheCode($operationalInstanceRisk->getRiskCacheCode())
+            ->setCacheBrutRisk($operationalInstanceRisk->getCacheBrutRisk())
+            ->setCacheNetRisk($operationalInstanceRisk->getCacheNetRisk())
+            ->setCacheTargetedRisk($operationalInstanceRisk->getCacheTargetedRisk())
+            ->setKindOfMeasure($operationalInstanceRisk->getKindOfMeasure())
+            ->setComment($operationalInstanceRisk->getComment())
+            ->setMitigation($operationalInstanceRisk->getMitigation())
+            ->setSpecific($operationalInstanceRisk->getSpecific());
     }
 
     public function getId()
     {
         return $this->id;
-    }
-
-    /**
-     * TODO: remove it.
-     * @param int $id
-     * @return self
-     */
-    public function setId($id): self
-    {
-        $this->id = $id;
-
-        return $this;
     }
 
     public function getAnr(): AnrSuperClass
@@ -332,38 +336,24 @@ class InstanceRiskOpSuperClass extends AbstractEntity
         return $this;
     }
 
-    /**
-     * @return ObjectSuperClass
-     */
     public function getObject()
     {
         return $this->object;
     }
 
-    /**
-     * @param ObjectSuperClass $object
-     * @return self
-     */
-    public function setObject($object): self
+    public function setObject(ObjectSuperClass $object): self
     {
         $this->object = $object;
 
         return $this;
     }
 
-    /**
-     * @return RolfRiskSuperClass
-     */
     public function getRolfRisk()
     {
         return $this->rolfRisk;
     }
 
-    /**
-     * @param RolfRiskSuperClass $rolfRisk
-     * @return self
-     */
-    public function setRolfRisk($rolfRisk): self
+    public function setRolfRisk(RolfRiskSuperClass $rolfRisk): self
     {
         $this->rolfRisk = $rolfRisk;
 
@@ -498,6 +488,16 @@ class InstanceRiskOpSuperClass extends AbstractEntity
         return $this;
     }
 
+    public function getRiskCacheLabels(): array
+    {
+        return [
+            'riskCacheLabel1' => $this->riskCacheLabel1,
+            'riskCacheLabel2' => $this->riskCacheLabel2,
+            'riskCacheLabel3' => $this->riskCacheLabel3,
+            'riskCacheLabel4' => $this->riskCacheLabel4,
+        ];
+    }
+
     public function getRiskCacheDescription(int $languageIndex): string
     {
         if (!\in_array($languageIndex, range(1, 4), true)) {
@@ -517,6 +517,16 @@ class InstanceRiskOpSuperClass extends AbstractEntity
         }
 
         return $this;
+    }
+
+    public function getRiskCacheDescriptions(): array
+    {
+        return [
+            'riskCacheDescription1' => $this->riskCacheDescription1,
+            'riskCacheDescription2' => $this->riskCacheDescription2,
+            'riskCacheDescription3' => $this->riskCacheDescription3,
+            'riskCacheDescription4' => $this->riskCacheDescription4,
+        ];
     }
 
     public function getOperationalInstanceRiskScales()

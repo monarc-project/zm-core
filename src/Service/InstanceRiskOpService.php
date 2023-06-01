@@ -27,7 +27,6 @@ use Monarc\Core\Model\Entity\OperationalRiskScaleTypeSuperClass;
 use Monarc\Core\Model\Entity\RolfRiskSuperClass;
 use Monarc\Core\Model\Entity\Translation;
 use Monarc\Core\Model\Entity\UserSuperClass;
-use Monarc\Core\Model\Table\AnrTable;
 use Monarc\Core\Model\Table\InstanceRiskOpTable;
 use Monarc\Core\Table\InstanceRiskOwnerTable;
 use Monarc\Core\Table\InstanceTable;
@@ -39,8 +38,6 @@ use Monarc\Core\Table\TranslationTable;
 
 class InstanceRiskOpService
 {
-    protected AnrTable $anrTable;
-
     protected InstanceTable $instanceTable;
 
     protected InstanceRiskOpTable $instanceRiskOpTable;
@@ -66,7 +63,6 @@ class InstanceRiskOpService
     protected array $operationalRiskScales = [];
 
     public function __construct(
-        AnrTable $anrTable,
         InstanceTable $instanceTable,
         InstanceRiskOpTable $instanceRiskOpTable,
         OperationalInstanceRiskScaleTable $operationalInstanceRiskScaleTable,
@@ -79,7 +75,6 @@ class InstanceRiskOpService
         InstanceRiskOwnerTable $instanceRiskOwnerTable,
         ConfigService $configService
     ) {
-        $this->anrTable = $anrTable;
         $this->instanceTable = $instanceTable;
         $this->instanceRiskOpTable = $instanceRiskOpTable;
         $this->operationalInstanceRiskScaleTable = $operationalInstanceRiskScaleTable;
@@ -278,9 +273,6 @@ class InstanceRiskOpService
      */
     public function update(int $id, array $data): array
     {
-        // TODO: implement Permissions validator and inject it here.
-        // It has to be done in the AnrValidationMiddleware (used before AbstractService::deleteFromAnr).
-
         /** @var InstanceRiskOpSuperClass $operationalInstanceRisk */
         $operationalInstanceRisk = $this->instanceRiskOpTable->findById($id);
         if (isset($data['kindOfMeasure'])) {
@@ -423,7 +415,7 @@ class InstanceRiskOpService
 
     protected function getAnrLanguageCode(AnrSuperClass $anr): string
     {
-        return strtolower($this->configService->getLanguageCodes()[$anr->getLanguage()]);
+        return strtolower($this->configService->getLanguageCodes()[$this->connectedUser->getLanguage()]);
     }
 
     /**
@@ -461,11 +453,10 @@ class InstanceRiskOpService
         }
         /* There is only one scale of the TYPE_LIKELIHOOD. */
         $operationalRiskScale = current($this->operationalRiskScales[OperationalRiskScaleSuperClass::TYPE_LIKELIHOOD]);
-        if ($scaleProbabilityValue !== -1
-            && ($scaleProbabilityValue < $operationalRiskScale->getMin()
-                || $scaleProbabilityValue > $operationalRiskScale->getMax()
-            )
-        ) {
+        if ($scaleProbabilityValue !== -1 && (
+            $scaleProbabilityValue < $operationalRiskScale->getMin()
+            || $scaleProbabilityValue > $operationalRiskScale->getMax()
+        )) {
             throw new Exception(sprintf(
                 'The value %d should be between %d and %d.',
                 $scaleProbabilityValue,

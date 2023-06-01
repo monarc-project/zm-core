@@ -111,29 +111,6 @@ return [
                 ],
             ],
 
-            'monarc_api_anr_export' => [
-                'type' => 'segment',
-                'options' => [
-                    'route' => '/api/anr-export',
-                    'defaults' => [
-                        'controller' => Controller\ApiAnrExportController::class,
-                    ],
-                ],
-            ],
-
-            'monarc_api_anr_risk_owners' => [
-                'type' => 'segment',
-                'options' => [
-                    'route' => '/api/anr/:anrid/risk-owners[/:id]',
-                    'constraints' => [
-                        'id' => '[0-9]+',
-                    ],
-                    'defaults' => [
-                        'controller' => Controller\ApiAnrRiskOwnersController::class,
-                    ],
-                ],
-            ],
-
             'monarc_api_anr_instances_risks' => [
                 'type' => 'segment',
                 'options' => [
@@ -172,74 +149,6 @@ return [
                     ],
                 ],
             ],
-
-            'monarc_api_scales' => [
-                'type' => 'segment',
-                'options' => [
-                    'route' => '/api/anr/:anrId/scales[/:id]',
-                    'constraints' => [
-                        'id' => '[0-9]+',
-                    ],
-                    'defaults' => [
-                        'controller' => Controller\ApiAnrScalesController::class,
-                    ],
-                ],
-            ],
-
-            'monarc_api_operational_scales' => [
-                'type' => 'segment',
-                'options' => [
-                    'route' => '/api/anr/:anrId/operational-scales[/:id]',
-                    'constraints' => [
-                        'id' => '[0-9]+',
-                    ],
-                    'defaults' => [
-                        'controller' => Controller\ApiOperationalRisksScalesController::class,
-                    ],
-                ],
-            ],
-
-            'monarc_api_operational_scales_comment' => [
-                'type' => 'segment',
-                'options' => [
-                    'route' => '/api/anr/:anrId/operational-scales/:scaleid/comments[/:id]',
-                    'constraints' => [
-                        'id' => '[0-9]+',
-                        'scaleid' => '[0-9]+',
-                    ],
-                    'defaults' => [
-                        'controller' => Controller\ApiOperationalRisksScalesCommentsController::class,
-                    ],
-                ],
-            ],
-
-            'monarc_api_scales_comments' => [
-                'type' => 'segment',
-                'options' => [
-                    'route' => '/api/anr/:anrId/scales/:scaleId/comments[/:id]',
-                    'constraints' => [
-                        'anrId' => '[0-9]+',
-                        'scaleId' => '[0-9]+',
-                        'id' => '[0-9]+',
-                    ],
-                    'defaults' => [
-                        'controller' => Controller\ApiAnrScalesCommentsController::class,
-                    ],
-                ],
-            ],
-
-            'monarc_api_scales_types' => [
-                'type' => 'segment',
-                'options' => [
-                    'route' => '/api/anr/:anrId/scales-types[/:id]',
-                    'constraints' => [
-                        'id' => '[0-9]+',
-                    ],
-                    'defaults' => [
-                        'controller' => Controller\ApiAnrScalesTypesController::class,
-                    ],
-                ],
-            ],
         ],
     ],
 
@@ -253,16 +162,9 @@ return [
             Controller\IndexController::class => InvokableFactory::class,
             // TODO: Move all the controllers to BackOffice side.
             Controller\AuthenticationController::class => AutowireFactory::class,
-            Controller\ApiAnrRiskOwnersController::class => AutowireFactory::class,
-            Controller\ApiAnrExportController::class => AutowireFactory::class,
             Controller\ApiAnrInstancesRisksController::class => Controller\ApiAnrInstancesRisksControllerFactory::class,
             Controller\ApiAnrInstancesRisksOpController::class => AutowireFactory::class,
             Controller\ApiModelsDuplicationController::class => AutowireFactory::class,
-            Controller\ApiAnrScalesController::class => Controller\ApiAnrScalesControllerFactory::class,
-            Controller\ApiAnrScalesTypesController::class => Controller\ApiAnrScalesTypesControllerFactory::class,
-            Controller\ApiAnrScalesCommentsController::class => Controller\ApiAnrScalesCommentsControllerFactory::class,
-            Controller\ApiOperationalRisksScalesController::class => AutowireFactory::class,
-            Controller\ApiOperationalRisksScalesCommentsController::class => AutowireFactory::class,
         ],
     ],
     'service_manager' => [
@@ -283,7 +185,7 @@ return [
 
             // TODO: replace to autowiring.
             Service\AmvService::class => AutowireFactory::class,
-            Service\AnrService::class => Service\AnrServiceFactory::class,
+            Service\AnrService::class => AutowireFactory::class,
             Service\UserRoleService::class => AutowireFactory::class,
             Service\UserProfileService::class => AutowireFactory::class,
             Service\AuthenticationService::class => AutowireFactory::class,
@@ -312,9 +214,9 @@ return [
             Service\RolfRiskService::class => Service\RolfRiskServiceFactory::class,
             Service\RolfTagService::class => Service\RolfTagServiceFactory::class,
             Service\RoleService::class => Service\RoleServiceFactory::class,
-            Service\ScaleService::class => Service\ScaleServiceFactory::class,
-            Service\ScaleCommentService::class => Service\ScaleCommentServiceFactory::class,
-            Service\ScaleImpactTypeService::class => Service\ScaleImpactTypeServiceFactory::class,
+            Service\ScaleService::class => AutowireFactory::class,
+            Service\ScaleCommentService::class => AutowireFactory::class,
+            Service\ScaleImpactTypeService::class => AutowireFactory::class,
             Service\ThemeService::class => AutowireFactory::class,
             Service\ThreatService::class => AutowireFactory::class,
             Service\SoaCategoryService::class => Service\SoaCategoryServiceFactory::class,
@@ -338,18 +240,12 @@ return [
             ModelEntity\MeasureMeasure::class => ServiceModelEntity\MeasureMeasureServiceModelEntity::class,
             ModelEntity\SoaCategory::class => ServiceModelEntity\SoaCategoryServiceModelEntity::class,
             ModelEntity\InstanceRisk::class => ServiceModelEntity\InstanceRiskServiceModelEntity::class,
-            ModelEntity\InstanceRiskOp::class => ServiceModelEntity\InstanceRiskOpServiceModelEntity::class,
             ModelEntity\RolfRisk::class => ServiceModelEntity\RolfRiskServiceModelEntity::class,
             ModelEntity\RolfTag::class => ServiceModelEntity\RolfTagServiceModelEntity::class,
             ModelEntity\GuideItem::class => ServiceModelEntity\GuideItemServiceModelEntity::class,
-            ModelEntity\Anr::class => ServiceModelEntity\AnrServiceModelEntity::class,
             ModelEntity\Guide::class => ServiceModelEntity\GuideServiceModelEntity::class,
             ModelEntity\Historical::class => ServiceModelEntity\HistoricalServiceModelEntity::class,
-            ModelEntity\Scale::class => ServiceModelEntity\ScaleServiceModelEntity::class,
-            ModelEntity\ScaleComment::class => ServiceModelEntity\ScaleCommentServiceModelEntity::class,
-            ModelEntity\ScaleImpactType::class => ServiceModelEntity\ScaleImpactTypeServiceModelEntity::class,
 
-            DeprecatedTable\AnrTable::class => AutowireFactory::class,
             DeprecatedTable\QuestionTable::class => AutowireFactory::class,
             DeprecatedTable\QuestionChoiceTable::class => AutowireFactory::class,
             DeprecatedTable\GuideTable::class => AutowireFactory::class,
@@ -363,11 +259,12 @@ return [
             DeprecatedTable\HistoricalTable::class => AutowireFactory::class,
             DeprecatedTable\RolfTagTable::class => AutowireFactory::class,
             DeprecatedTable\RolfRiskTable::class => AutowireFactory::class,
-            DeprecatedTable\ScaleTable::class => AutowireFactory::class,
-            DeprecatedTable\ScaleCommentTable::class => AutowireFactory::class,
-            DeprecatedTable\ScaleImpactTypeTable::class => AutowireFactory::class,
             DeprecatedTable\DeliveriesModelsTable::class => AutowireFactory::class,
-            Table\InstanceConsequenceTable::class => AutowireFactory::class,
+            Table\ScaleTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\ScaleCommentTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\ScaleImpactTypeTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\AnrTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\InstanceConsequenceTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\ModelTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\MonarcObjectTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\InstanceTable::class => Table\Factory\CoreEntityManagerFactory::class,

@@ -87,6 +87,15 @@ class OperationalRiskScaleTypeSuperClass
     public function __construct()
     {
         $this->operationalRiskScaleComments = new ArrayCollection();
+        $this->operationalInstanceRiskScales = new ArrayCollection();
+    }
+
+    public static function constructFromObject(
+        OperationalRiskScaleTypeSuperClass $operationalRiskScaleType
+    ): OperationalRiskScaleTypeSuperClass {
+        return (new static())
+            ->setLabelTranslationKey($operationalRiskScaleType->getLabelTranslationKey())
+            ->setIsHidden($operationalRiskScaleType->isHidden());
     }
 
     public function getId(): int
@@ -131,13 +140,6 @@ class OperationalRiskScaleTypeSuperClass
             $this->operationalRiskScaleComments->add($operationalRiskScaleComment);
             $operationalRiskScaleComment->setOperationalRiskScaleType($this);
         }
-
-        return $this;
-    }
-
-    public function setOperationalRiskScaleComments($operationalRiskScaleComments): self
-    {
-        $this->operationalRiskScaleComments = $operationalRiskScaleComments;
 
         return $this;
     }

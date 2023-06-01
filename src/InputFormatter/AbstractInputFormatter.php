@@ -22,7 +22,7 @@ abstract class AbstractInputFormatter
     protected const DEFAULT_LIMIT = 20;
 
     /** Formatted params response type. */
-    protected FormattedInputParams $formattedInputParams;
+    protected ?FormattedInputParams $formattedInputParams = null;
 
     /** List of allowed search fields or composition of relation field separated by "." with the destination field. */
     protected static array $allowedSearchFields = [];

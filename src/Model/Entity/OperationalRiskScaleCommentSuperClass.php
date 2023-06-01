@@ -92,9 +92,16 @@ class OperationalRiskScaleCommentSuperClass
      */
     protected $isHidden = 0;
 
-    /**
-     * @return int
-     */
+    public static function constructFromObject(
+        OperationalRiskScaleCommentSuperClass $operationalRiskScaleComment
+    ): OperationalRiskScaleCommentSuperClass {
+        return (new static())
+            ->setScaleValue($operationalRiskScaleComment->getScaleValue())
+            ->setScaleIndex($operationalRiskScaleComment->getScaleIndex())
+            ->setCommentTranslationKey($operationalRiskScaleComment->getCommentTranslationKey())
+            ->setIsHidden($operationalRiskScaleComment->isHidden());
+    }
+
     public function getId()
     {
         return $this->id;

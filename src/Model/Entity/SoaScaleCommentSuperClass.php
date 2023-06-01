@@ -71,6 +71,15 @@ class SoaScaleCommentSuperClass
      */
     protected $colour = '';
 
+    public static function constructFromObject(SoaScaleCommentSuperClass $soaScaleComment): SoaScaleCommentSuperClass
+    {
+        return (new static())
+            ->setScaleIndex($soaScaleComment->getScaleIndex())
+            ->setCommentTranslationKey($soaScaleComment->getCommentTranslationKey())
+            ->setIsHidden($soaScaleComment->isHidden())
+            ->setColour($soaScaleComment->getColour());
+    }
+
     /**
      * @return int
      */

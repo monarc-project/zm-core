@@ -41,7 +41,7 @@ abstract class AbstractServiceModelEntity implements FactoryInterface
             return $instance;
         }
 
-        return false;
+        throw new \LogicException(sprintf('The declared service class "%s" can\'t be created', $class));
     }
 
     public function getRessources()

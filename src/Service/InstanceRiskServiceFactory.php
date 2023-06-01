@@ -17,7 +17,7 @@ class InstanceRiskServiceFactory extends AbstractServiceFactory
         'table' => DeprecatedTable\InstanceRiskTable::class,
         'entity' => InstanceRisk::class,
         'amvTable' => Table\AmvTable::class,
-        'anrTable' => DeprecatedTable\AnrTable::class,
+        'anrTable' => Table\AnrTable::class,
         'assetTable' => Table\AssetTable::class,
         'instanceTable' => Table\InstanceTable::class,
         'instanceRiskOwnerTable' => Table\InstanceRiskOwnerTable::class,

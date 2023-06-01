@@ -80,24 +80,26 @@ class OperationalRiskScaleSuperClass
      */
     protected $max;
 
-
     public function __construct()
     {
         $this->operationalRiskScaleTypes = new ArrayCollection();
         $this->operationalRiskScaleComments = new ArrayCollection();
     }
 
-    /**
-     * @return int
-     */
+    public static function constructFromObject(
+        OperationalRiskScaleSuperClass $operationalRiskScale
+    ): OperationalRiskScaleSuperClass {
+        return (new static())
+            ->setType($operationalRiskScale->getType())
+            ->setMin($operationalRiskScale->getMin())
+            ->setMax($operationalRiskScale->getMax());
+    }
+
     public function getId()
     {
         return $this->id;
     }
 
-    /**
-     * @return AnrSuperClass
-     */
     public function getAnr()
     {
         return $this->anr;
@@ -162,18 +164,6 @@ class OperationalRiskScaleSuperClass
         return $this;
     }
 
-    /**
-     * @param OperationalRiskScaleCommentSuperClass[] $operationalRiskScaleComments
-     *
-     * @return OperationalRiskScaleSuperClass
-     */
-    public function setOperationalRiskScaleComments($operationalRiskScaleComments): self
-    {
-        $this->operationalRiskScaleComments = $operationalRiskScaleComments;
-
-        return $this;
-    }
-
     public function getOperationalRiskScaleTypes()
     {
         return $this->operationalRiskScaleTypes;
@@ -185,18 +175,6 @@ class OperationalRiskScaleSuperClass
             $this->operationalRiskScaleTypes->add($operationalRiskScaleType);
             $operationalRiskScaleType->setOperationalRiskScale($this);
         }
-
-        return $this;
-    }
-
-    /**
-     * @param OperationalRiskScaleTypeSuperClass[] $operationalRiskScaleTypes
-     *
-     * @return OperationalRiskScaleSuperClass
-     */
-    public function setOperationalRiskScaleTypes($operationalRiskScaleTypes): self
-    {
-        $this->operationalRiskScaleTypes = $operationalRiskScaleTypes;
 
         return $this;
     }

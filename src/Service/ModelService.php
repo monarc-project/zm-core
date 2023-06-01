@@ -12,7 +12,7 @@ use Monarc\Core\InputFormatter\FormattedInputParams;
 use Monarc\Core\Model\Entity\Model;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Entity\UserSuperClass;
-use Monarc\Core\Model\Table\AnrTable;
+use Monarc\Core\Table\AnrTable;
 use Monarc\Core\Table\AmvTable;
 use Monarc\Core\Table\ModelTable;
 
@@ -71,7 +71,7 @@ class ModelService
             'description2' => $data['description2'],
             'description3' => $data['description3'],
             'description4' => $data['description4'],
-        ], true, true);
+        ]);
 
         $model = (new Model())->setAnr($anr);
         $model = $this->setModelData($model, $data)
@@ -156,7 +156,7 @@ class ModelService
         $model = $this->modelTable->findById($id);
         $model->setStatus(Model::STATUS_DELETED);
 
-        $this->anrTable->deleteEntity($model->getAnr(), false);
+        $this->anrTable->remove($model->getAnr(), false);
 
         $this->modelTable->save($model);
     }
@@ -171,9 +171,6 @@ class ModelService
         }
         foreach ($fromModel->getVulnerabilities() as $vulnerability) {
             $toModel->addVulnerability($vulnerability);
-        }
-        foreach ($fromModel->getAnr()->getObjects() as $object) {
-            $toModel->getAnr()->addObject($object);
         }
     }
 

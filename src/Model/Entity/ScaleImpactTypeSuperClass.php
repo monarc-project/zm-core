@@ -9,13 +9,13 @@ namespace Monarc\Core\Model\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Monarc\Core\Model\Entity\Interfaces\PositionedEntityInterface;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\LabelsEntityTrait;
+use Monarc\Core\Model\Entity\Traits\PropertyStateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 
 /**
- * Scale Impact Type Super Class
- *
  * @ORM\Table(name="scales_impact_types", indexes={
  *      @ORM\Index(name="anr", columns={"anr_id"}),
  *      @ORM\Index(name="scale_id", columns={"scale_id"})
@@ -23,24 +23,26 @@ use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
-class ScaleImpactTypeSuperClass extends AbstractEntity
+class ScaleImpactTypeSuperClass implements PositionedEntityInterface
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
 
     use LabelsEntityTrait;
 
-    const SCALE_TYPE_C = 1;
-    const SCALE_TYPE_I = 2;
-    const SCALE_TYPE_D = 3;
-    const SCALE_TYPE_R = 4;
-    const SCALE_TYPE_O = 5;
-    const SCALE_TYPE_L = 6;
-    const SCALE_TYPE_F = 7;
-    const SCALE_TYPE_P = 8;
+    use PropertyStateEntityTrait;
+
+    public const SCALE_TYPE_C = 1;
+    public const SCALE_TYPE_I = 2;
+    public const SCALE_TYPE_D = 3;
+    public const SCALE_TYPE_R = 4;
+    public const SCALE_TYPE_O = 5;
+    public const SCALE_TYPE_L = 6;
+    public const SCALE_TYPE_F = 7;
+    public const SCALE_TYPE_P = 8;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer", nullable=false)
      * @ORM\Id
@@ -86,14 +88,14 @@ class ScaleImpactTypeSuperClass extends AbstractEntity
      *
      * @ORM\Column(name="is_sys", type="smallint", options={"unsigned":true})
      */
-    protected $isSys;
+    protected $isSys = 0;
 
     /**
      * @var int
      *
      * @ORM\Column(name="is_hidden", type="smallint", options={"unsigned":true})
      */
-    protected $isHidden;
+    protected $isHidden = 0;
 
     /**
      * @var int
@@ -102,29 +104,28 @@ class ScaleImpactTypeSuperClass extends AbstractEntity
      */
     protected $position;
 
-    public function __construct($obj = null)
+    public function __construct()
     {
         $this->scaleComments = new ArrayCollection();
-
-        parent::__construct($obj);
     }
 
-    /**
-     * @return int
-     */
-    public function getId()
+    public static function constructFromObject(ScaleImpactTypeSuperClass $scaleImpactType): ScaleImpactTypeSuperClass
+    {
+        return (new static())
+            ->setType($scaleImpactType->getType())
+            ->setIsSys($scaleImpactType->isSys())
+            ->setIsHidden($scaleImpactType->isHidden())
+            ->setPosition($scaleImpactType->getPosition());
+    }
+
+    public function getImplicitPositionRelationsValues(): array
+    {
+        return ['scale' => $this->scale, 'anr' => $this->anr];
+    }
+
+    public function getId(): int
     {
         return $this->id;
-    }
-
-    /**
-     * @param int $id
-     */
-    public function setId($id): self
-    {
-        $this->id = $id;
-
-        return $this;
     }
 
     public function getAnr(): AnrSuperClass
@@ -180,7 +181,7 @@ class ScaleImpactTypeSuperClass extends AbstractEntity
 
     public function getType(): int
     {
-        return (int)$this->type;
+        return $this->type;
     }
 
     public function setType(int $type): self
@@ -214,77 +215,72 @@ class ScaleImpactTypeSuperClass extends AbstractEntity
         return $this;
     }
 
-    public static function getScaleImpactTypesRolfp(): array
-    {
-        return [
-            self::SCALE_TYPE_R,
-            self::SCALE_TYPE_O,
-            self::SCALE_TYPE_L,
-            self::SCALE_TYPE_F,
-            self::SCALE_TYPE_P,
-        ];
-    }
-
     public static function getScaleImpactTypesCid(): array
     {
         return [
-            self::SCALE_TYPE_C,
-            self::SCALE_TYPE_I,
-            self::SCALE_TYPE_D,
+            static::SCALE_TYPE_C,
+            static::SCALE_TYPE_I,
+            static::SCALE_TYPE_D,
         ];
     }
 
-    protected $parameters = array(
-        'implicitPosition' => array(
-            'field' => 'scale',
-        ),
-    );
-
-    public function getInputFilter($partial = false)
+    public static function getScaleImpactTypesShortcuts(): array
     {
-        if (!$this->inputFilter) {
-            parent::getInputFilter($partial);
+        return [
+            static::SCALE_TYPE_C => 'C',
+            static::SCALE_TYPE_I => 'I',
+            static::SCALE_TYPE_D => 'D',
+            static::SCALE_TYPE_R => 'R',
+            static::SCALE_TYPE_O => 'O',
+            static::SCALE_TYPE_L => 'L',
+            static::SCALE_TYPE_F => 'F',
+            static::SCALE_TYPE_P => 'P',
+        ];
+    }
 
-            $texts = ['label1', 'label2', 'label3', 'label4'];
-
-            foreach ($texts as $text) {
-                $this->inputFilter->add(array(
-                    'name' => $text,
-                    'required' => false,
-                    'allow_empty' => false,
-                    'filters' => array(),
-                    'validators' => array(),
-                ));
-            }
-
-            if (!$partial) {
-                $this->inputFilter->add(array(
-                    'name' => 'anr',
-                    'required' => true,
-                    'allow_empty' => false,
-                    'continue_if_empty' => false,
-                    'filters' => array(),
-                    'validators' => array(
-                        array(
-                            'name' => 'IsInt',
-                        ),
-                    ),
-                ));
-
-                $this->inputFilter->add(array(
-                    'name' => 'scale',
-                    'required' => true,
-                    'allow_empty' => false,
-                    'continue_if_empty' => false,
-                    'filters' => array(),
-                    'validators' => array(
-                        array(
-                            'name' => 'IsInt',
-                        ),
-                    ),
-                ));
-            }
-        }
-        return $this->inputFilter;
+    public static function getDefaultScalesImpacts(): array
+    {
+        return [
+            'label1' => [
+                'C' => 'Confidentialité',
+                'I' => 'Intégrité',
+                'D' => 'Disponibilité',
+                'R' => 'Réputation',
+                'O' => 'Opérationnel',
+                'L' => 'Légal',
+                'F' => 'Financier',
+                'P' => 'Personne'
+            ],
+            'label2' => [
+                'C' => 'Confidentiality',
+                'I' => 'Integrity',
+                'D' => 'Availability',
+                'R' => 'Reputation',
+                'O' => 'Operational',
+                'L' => 'Legal',
+                'F' => 'Financial',
+                'P' => 'Personal'
+            ],
+            'label3' => [
+                'C' => 'Vertraulichkeit',
+                'I' => 'Integrität',
+                'D' => 'Verfügbarkeit',
+                'R' => 'Ruf',
+                'O' => 'Einsatzbereit',
+                'L' => 'Legal',
+                'F' => 'Finanziellen',
+                'P' => 'Person'
+            ],
+            'label4' => [
+                'C' => 'Vertrouwelijkheid',
+                'I' => 'Integriteit',
+                'D' => 'Beschikbaarheid',
+                'R' => 'Reputatie',
+                'O' => 'Operationeel',
+                'L' => 'Legaal',
+                'F' => 'Financieel',
+                'P' => 'Persoon'
+            ],
+        ];
     }
 }

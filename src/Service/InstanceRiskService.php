@@ -27,7 +27,7 @@ class InstanceRiskService extends AbstractService
 {
     use RiskCalculationTrait;
 
-    // TODO: all the dependencies except of anr can't be used.
+    // TODO: all the dependencies can't be used to set them via setDependencies or when we call save of abstract etc.
     protected $dependencies = ['anr', 'amv', 'asset', 'instance', 'threat', 'vulnerability'];
 
     protected $anrTable;

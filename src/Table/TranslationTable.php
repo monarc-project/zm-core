@@ -22,18 +22,6 @@ class TranslationTable extends AbstractTable
     /**
      * @return TranslationSuperClass[]
      */
-    public function findByAnr(AnrSuperClass $anr): array
-    {
-        return $this->getRepository()->createQueryBuilder('t')
-            ->where('t.anr = :anr')
-            ->setParameter('anr', $anr)
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
-     * @return TranslationSuperClass[]
-     */
     public function findByAnrTypesAndLanguageIndexedByKey(AnrSuperClass $anr, array $types, string $lang): array
     {
         $queryBuilder = $this->getRepository()->createQueryBuilder('t', 't.key');
@@ -60,23 +48,6 @@ class TranslationTable extends AbstractTable
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
-    }
-
-    /**
-     * @return TranslationSuperClass[]
-     */
-    public function findByAnrKeysAndLanguageIndexedByKey(AnrSuperClass $anr, array $keys, string $lang): array
-    {
-        $queryBuilder = $this->getRepository()->createQueryBuilder('t', 't.key');
-
-        return $queryBuilder
-            ->where('t.anr = :anr')
-            ->andWhere($queryBuilder->expr()->in('t.key', $keys))
-            ->andWhere('t.lang = :lang')
-            ->setParameter('anr', $anr)
-            ->setParameter('lang', $lang)
-            ->getQuery()
-            ->getResult();
     }
 
     public function deleteListByKeys(array $keys): void

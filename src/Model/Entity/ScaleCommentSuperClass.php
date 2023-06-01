@@ -1,7 +1,7 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -20,13 +20,13 @@ use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
-class ScaleCommentSuperClass extends AbstractEntity
+class ScaleCommentSuperClass
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer", nullable=false)
      * @ORM\Id
@@ -39,7 +39,7 @@ class ScaleCommentSuperClass extends AbstractEntity
      *
      * @ORM\ManyToOne(targetEntity="Anr", cascade={"persist"})
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
+     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=false, onDelete="CASCADE")
      * })
      */
     protected $anr;
@@ -49,7 +49,7 @@ class ScaleCommentSuperClass extends AbstractEntity
      *
      * @ORM\ManyToOne(targetEntity="Scale", cascade={"persist"})
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="scale_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
+     *   @ORM\JoinColumn(name="scale_id", referencedColumnName="id", nullable=false, onDelete="CASCADE")
      * })
      */
     protected $scale;
@@ -106,22 +106,20 @@ class ScaleCommentSuperClass extends AbstractEntity
      */
     protected $comment4;
 
-    /**
-     * @return int
-     */
+    public static function constructFromObject(ScaleCommentSuperClass $scaleComment): ScaleCommentSuperClass
+    {
+        return (new static())
+            ->setComments($scaleComment->getComments())
+            ->setScaleIndex($scaleComment->getScaleIndex())
+            ->setScaleValue($scaleComment->getScaleValue());
+    }
+
     public function getId()
     {
         return $this->id;
     }
 
-    public function setId(int $id): self
-    {
-        $this->id = $id;
-
-        return $this;
-    }
-
-    public function getAnr(): ?AnrSuperClass
+    public function getAnr(): AnrSuperClass
     {
         return $this->anr;
     }
@@ -141,6 +139,7 @@ class ScaleCommentSuperClass extends AbstractEntity
     public function setScale(ScaleSuperClass $scale): self
     {
         $this->scale = $scale;
+        $scale->addScaleComment($this);
 
         return $this;
     }
@@ -165,6 +164,10 @@ class ScaleCommentSuperClass extends AbstractEntity
 
     public function setScaleIndex(int $scaleIndex): self
     {
+        if (!\in_array($scaleIndex, $this->getScaleIndexAvailableValues(), true)) {
+            throw new \LogicException(sprintf('The scale index "%d" is out of bounds.', $scaleIndex));
+        }
+
         $this->scaleIndex = $scaleIndex;
 
         return $this;
@@ -203,6 +206,16 @@ class ScaleCommentSuperClass extends AbstractEntity
         return $this;
     }
 
+    public function getComments(): array
+    {
+        return [
+            'comment1' => $this->comment1,
+            'comment2' => $this->comment2,
+            'comment3' => $this->comment3,
+            'comment4' => $this->comment4,
+        ];
+    }
+
     public function getScaleIndexAvailableValues()
     {
         $values = [];
@@ -212,59 +225,5 @@ class ScaleCommentSuperClass extends AbstractEntity
         }
 
         return $values;
-    }
-
-    public function getInputFilter($partial = false)
-    {
-        if (!$this->inputFilter) {
-            parent::getInputFilter($partial);
-
-            $this->inputFilter->add([
-                'name' => 'scaleIndex',
-                'required' => true,
-                'allow_empty' => false,
-                'continue_if_empty' => false,
-                'filters' => [],
-                'validators' => [
-                    [
-                        'name' => 'InArray',
-                        'options' => [
-                            'haystack' => $this->getScaleIndexAvailableValues(),
-                        ],
-                    ],
-                ],
-            ]);
-
-            $this->inputFilter->add([
-                'name' => 'scale',
-                'required' => true,
-                'allow_empty' => false,
-                'continue_if_empty' => false,
-                'filters' => [],
-                'validators' => [
-                    [
-                        'name' => 'IsInt',
-                    ],
-                ],
-            ]);
-
-            if ($this->getScale()->getType() === 1) {
-                $this->inputFilter->add([
-                    'name' => 'scaleImpactType',
-                    'required' => true,
-                    'allow_empty' => false,
-                    'continue_if_empty' => false,
-                    'filters' => [],
-                    'validators' => [
-                        [
-                            'name' => 'IsInt',
-                        ],
-                    ],
-                ]);
-            }
-
-        }
-
-        return $this->inputFilter;
     }
 }

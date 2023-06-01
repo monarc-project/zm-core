@@ -8,7 +8,6 @@
 namespace Monarc\Core\Service;
 
 use Monarc\Core\Model\Entity;
-use Monarc\Core\Model\Table as DeprecatedTable;
 use Monarc\Core\Service\Traits\ImpactVerificationTrait;
 use Monarc\Core\Table;
 
@@ -20,22 +19,19 @@ class InstanceConsequenceService
 
     private Table\InstanceTable $instanceTable;
 
-    private DeprecatedTable\ScaleCommentTable $scaleCommentTable;
+    private Table\ScaleTable $scaleTable;
 
-    private DeprecatedTable\ScaleTable $scaleTable;
-
-    private DeprecatedTable\ScaleImpactTypeTable $scaleImpactTypeTable;
+    private Table\ScaleImpactTypeTable $scaleImpactTypeTable;
 
     private InstanceService $instanceService;
 
-    private Entity\User $connectedUser;
+    private Entity\UserSuperClass $connectedUser;
 
     public function __construct(
         Table\InstanceConsequenceTable $instanceConsequenceTable,
         Table\InstanceTable $instanceTable,
-        DeprecatedTable\ScaleTable $scaleTable,
-        DeprecatedTable\ScaleImpactTypeTable $scaleImpactTypeTable,
-        DeprecatedTable\ScaleCommentTable $scaleCommentTable,
+        Table\ScaleTable $scaleTable,
+        Table\ScaleImpactTypeTable $scaleImpactTypeTable,
         InstanceService $instanceService,
         ConnectedUserService $connectedUserService
     ) {
@@ -43,14 +39,13 @@ class InstanceConsequenceService
         $this->instanceTable = $instanceTable;
         $this->scaleTable = $scaleTable;
         $this->scaleImpactTypeTable = $scaleImpactTypeTable;
-        $this->scaleCommentTable = $scaleCommentTable;
         $this->instanceService = $instanceService;
         $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
     public function getConsequencesData(Entity\InstanceSuperClass $instance, bool $includeScaleComments = false): array
     {
-        $anrLanguage = $instance->getAnr()->getLanguage();
+        $languageIndex = $this->getLanguageIndex($instance->getAnr());
 
         $result = [];
         foreach ($instance->getInstanceConsequences() as $instanceConsequence) {
@@ -70,15 +65,10 @@ class InstanceConsequenceService
                     'isHidden' => $instanceConsequence->isHidden(),
                 ];
                 if ($includeScaleComments) {
-                    $scalesComments = $this->scaleCommentTable->findByAnrAndScaleImpactType(
-                        $instance->getAnr(),
-                        $scaleImpactType
-                    );
-
                     $consequenceData['comments'] = [];
-                    foreach ($scalesComments as $scaleComment) {
+                    foreach ($scaleImpactType->getScaleComments() as $scaleComment) {
                         $consequenceData['comments'][$scaleComment->getScaleValue()] = $scaleComment
-                            ->getComment($anrLanguage);
+                            ->getComment($languageIndex);
                     }
                 }
 
@@ -117,6 +107,7 @@ class InstanceConsequenceService
                 );
             }
         } else {
+            /** @var Entity\ScaleImpactTypeSuperClass[] $scalesImpactTypes */
             $scalesImpactTypes = $this->scaleImpactTypeTable->findByAnr($anr);
             foreach ($scalesImpactTypes as $scalesImpactType) {
                 if (!\in_array(
@@ -199,6 +190,11 @@ class InstanceConsequenceService
             $this->instanceConsequenceTable->save($instanceConsequence, false);
         }
         $this->instanceConsequenceTable->flush();
+    }
+
+    protected function getLanguageIndex(Entity\AnrSuperClass $anr): int
+    {
+        return $this->connectedUser->getLanguage();
     }
 
     /**

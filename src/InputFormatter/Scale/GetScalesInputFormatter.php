@@ -5,16 +5,13 @@
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
-namespace Monarc\Core\Model\Entity;
+namespace Monarc\Core\InputFormatter\Scale;
 
-use Doctrine\ORM\Mapping as ORM;
+use Monarc\Core\InputFormatter\AbstractInputFormatter;
 
-/**
- * @ORM\Table(name="scales", indexes={
- *      @ORM\Index(name="anr", columns={"anr_id"})
- * })
- * @ORM\Entity
- */
-class Scale extends ScaleSuperClass
+class GetScalesInputFormatter extends AbstractInputFormatter
 {
+    protected static array $allowedFilterFields = [
+        'anr',
+    ];
 }

@@ -1,7 +1,7 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -13,22 +13,20 @@ use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 
 /**
- * Scale Super Class
- *
  * @ORM\Table(name="scales", indexes={
  *      @ORM\Index(name="anr", columns={"anr_id"})
  * })
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
-class ScaleSuperClass extends AbstractEntity
+class ScaleSuperClass
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
 
-    const TYPE_IMPACT = 1;
-    const TYPE_THREAT = 2;
-    const TYPE_VULNERABILITY = 3;
+    public const TYPE_IMPACT = 1;
+    public const TYPE_THREAT = 2;
+    public const TYPE_VULNERABILITY = 3;
 
     /**
      * @var int
@@ -44,7 +42,7 @@ class ScaleSuperClass extends AbstractEntity
      *
      * @ORM\ManyToOne(targetEntity="Anr", cascade={"persist"})
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
+     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=false, onDelete="CASCADE")
      * })
      */
     protected $anr;
@@ -85,44 +83,37 @@ class ScaleSuperClass extends AbstractEntity
      */
     protected $max;
 
-    public function __construct($obj = null)
+    public function __construct(AnrSuperClass $anr, array $data)
     {
+        $this->setAnr($anr)
+            ->setType($data['type'])
+            ->setMin($data['min'])
+            ->setMax($data['max']);
+
         $this->scaleComments = new ArrayCollection();
         $this->scaleImpactTypes = new ArrayCollection();
-
-        parent::__construct($obj);
     }
 
-    /**
-     * @return int
-     */
+    public static function constructFromObject(ScaleSuperClass $scale): ScaleSuperClass
+    {
+        return new static($scale->getAnr(), [
+            'type' => $scale->getType(),
+            'min' => $scale->getMin(),
+            'max' => $scale->getMax(),
+        ]);
+    }
+
     public function getId()
     {
         return $this->id;
     }
 
-    /**
-     * @param int $id
-     */
-    public function setId($id): self
-    {
-        $this->id = $id;
-
-        return $this;
-    }
-
-    /**
-     * @return AnrSuperClass
-     */
-    public function getAnr()
+    public function getAnr(): AnrSuperClass
     {
         return $this->anr;
     }
 
-    /**
-     * @param AnrSuperClass $anr
-     */
-    public function setAnr($anr): self
+    public function setAnr(AnrSuperClass $anr): self
     {
         $this->anr = $anr;
 
@@ -131,11 +122,15 @@ class ScaleSuperClass extends AbstractEntity
 
     public function getType(): int
     {
-        return (int)$this->type;
+        return $this->type;
     }
 
     public function setType(int $type): self
     {
+        if (!\array_key_exists($type, static::getAvailableTypes())) {
+            throw new \LogicException('Scale type "%d" is not supported. The scale cant be created.');
+        }
+
         $this->type = $type;
 
         return $this;
@@ -143,7 +138,7 @@ class ScaleSuperClass extends AbstractEntity
 
     public function getMin(): int
     {
-        return (int)$this->min;
+        return $this->min;
     }
 
     public function setMin(int $min): self
@@ -155,7 +150,7 @@ class ScaleSuperClass extends AbstractEntity
 
     public function getMax(): int
     {
-        return (int)$this->max;
+        return $this->max;
     }
 
     public function setMax(int $max): self
@@ -165,17 +160,21 @@ class ScaleSuperClass extends AbstractEntity
         return $this;
     }
 
-    /**
-     * @return ScaleCommentSuperClass[]
-     */
     public function getScaleComments()
     {
         return $this->scaleComments;
     }
 
-    /**
-     * @return ScaleImpactTypeSuperClass[]
-     */
+    public function addScaleComment(ScaleCommentSuperClass $scaleComment): self
+    {
+        if (!$this->scaleComments->contains($scaleComment)) {
+            $this->scaleComments->add($scaleComment);
+            $scaleComment->setScale($this);
+        }
+
+        return $this;
+    }
+
     public function getScaleImpactTypes()
     {
         return $this->scaleImpactTypes;
@@ -184,95 +183,9 @@ class ScaleSuperClass extends AbstractEntity
     public static function getAvailableTypes(): array
     {
         return [
-            Scale::TYPE_IMPACT => 'impact',
-            Scale::TYPE_THREAT => 'threat',
-            Scale::TYPE_VULNERABILITY => 'vulnerability',
-        ];
-    }
-
-    public function getInputFilter($partial = false)
-    {
-        if (!$this->inputFilter) {
-            parent::getInputFilter($partial);
-
-            $this->inputFilter->add([
-                'name' => 'min',
-                'required' => true,
-                'allow_empty' => false,
-                'continue_if_empty' => false,
-                'filters' => [],
-                'validators' => [
-                    ['name' => 'IsInt'],
-                ],
-            ]);
-
-            $this->inputFilter->add([
-                'name' => 'max',
-                'required' => true,
-                'allow_empty' => false,
-                'continue_if_empty' => false,
-                'filters' => [],
-                'validators' => [
-                    ['name' => 'IsInt']
-                ],
-            ]);
-        }
-        return $this->inputFilter;
-    }
-
-    public function getImpactLangues()
-    {
-        return [
-            'fr' => [
-                'C' => 'Confidentialité',
-                'I' => 'Intégrité',
-                'D' => 'Disponibilité',
-                'R' => 'Réputation',
-                'O' => 'Opérationnel',
-                'L' => 'Légal',
-                'F' => 'Financier',
-                'P' => 'Personne'
-            ],
-            'en' => [
-                'C' => 'Confidentiality',
-                'I' => 'Integrity',
-                'D' => 'Availability',
-                'R' => 'Reputation',
-                'O' => 'Operational',
-                'L' => 'Legal',
-                'F' => 'Financial',
-                'P' => 'Personal'
-            ],
-            'de' => [
-                'C' => 'Vertraulichkeit',
-                'I' => 'Integrität',
-                'D' => 'Verfügbarkeit',
-                'R' => 'Ruf',
-                'O' => 'Einsatzbereit',
-                'L' => 'Legal',
-                'F' => 'Finanziellen',
-                'P' => 'Person'
-            ],
-            'ne' => [
-                'C' => 'Vertrouwelijkheid',
-                'I' => 'Integriteit',
-                'D' => 'Beschikbaarheid',
-                'R' => 'Reputatie',
-                'O' => 'Operationeel',
-                'L' => 'Legaal',
-                'F' => 'Financieel',
-                'P' => 'Persoon'
-            ],
-            '0' => [
-                'C' => 'Confidentiality',
-                'I' => 'Integrity',
-                'D' => 'Availability',
-                'R' => 'Reputation',
-                'O' => 'Operational',
-                'L' => 'Legal',
-                'F' => 'Financial',
-                'P' => 'Personal'
-            ]
+            static::TYPE_IMPACT => 'impact',
+            static::TYPE_THREAT => 'threat',
+            static::TYPE_VULNERABILITY => 'vulnerability',
         ];
     }
 }

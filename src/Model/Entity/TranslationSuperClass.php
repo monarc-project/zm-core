@@ -72,6 +72,15 @@ class TranslationSuperClass
      */
     protected $value;
 
+    public static function constructFromObject(TranslationSuperClass $translation): TranslationSuperClass
+    {
+        return (new static())
+            ->setType($translation->getType())
+            ->setKey($translation->getKey())
+            ->setLang($translation->getLang())
+            ->setValue($translation->getValue());
+    }
+
     public function getId()
     {
         return $this->id;

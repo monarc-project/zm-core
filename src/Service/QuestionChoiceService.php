@@ -8,7 +8,7 @@
 namespace Monarc\Core\Service;
 
 use Monarc\Core\Model\Entity\QuestionChoice;
-use Monarc\Core\Model\Table\AnrTable;
+use Monarc\Core\Table\AnrTable;
 use Monarc\Core\Model\Table\QuestionChoiceTable;
 use Monarc\Core\Model\Table\QuestionTable;
 
@@ -88,7 +88,7 @@ class QuestionChoiceService extends AbstractService
 
         /** @var AnrTable $anrTable */
         $anrTable = $this->get('anrTable');
-        $anr = $anrTable->getEntity($anrId);
+        $anr = $anrTable->findById((int)$anrId);
 
         // Add new choices
         $pos = 1;

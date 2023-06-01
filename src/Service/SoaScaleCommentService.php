@@ -42,7 +42,7 @@ class SoaScaleCommentService
     public function getSoaScaleComments(Anr $anr, string $language = null): array
     {
         $result = [];
-        $soaScaleComments = $this->soaScaleCommentTable->findByAnr($anr);
+        $soaScaleComments = $this->soaScaleCommentTable->findByAnrOrderByIndex($anr);
         if ($language === null) {
             $language = $this->getAnrLanguageCode($anr);
         }
@@ -69,7 +69,7 @@ class SoaScaleCommentService
 
     public function createOrHideSoaScaleComment(Anr $anr, array $data): void
     {
-        $soaScaleComments = $this->soaScaleCommentTable->findByAnr($anr);
+        $soaScaleComments = $this->soaScaleCommentTable->findByAnrOrderByIndex($anr);
         $numberOfCurrentComments = \count($soaScaleComments);
 
         if (isset($data['numberOfLevels'])) {
@@ -122,7 +122,7 @@ class SoaScaleCommentService
     public function getSoaScaleCommentsDataById(Anr $anr, string $language = null): array
     {
         $result = [];
-        $soaScaleComments = $this->soaScaleCommentTable->findByAnr($anr);
+        $soaScaleComments = $this->soaScaleCommentTable->findByAnrOrderByIndex($anr);
         if ($language === null) {
             $language = $this->getAnrLanguageCode($anr);
         }
@@ -199,7 +199,7 @@ class SoaScaleCommentService
 
     protected function getAnrLanguageCode(AnrSuperClass $anr): string
     {
-        return $this->configService->getActiveLanguageCodes()[$anr->getLanguage()];
+        throw new \LogicException('Anr language code is not available on the BackOffice side.');
     }
 
     protected function getLanguageCodesForTranslations(AnrSuperClass $anr): array
