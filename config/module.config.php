@@ -213,7 +213,6 @@ return [
             Service\PasswordService::class => AutowireFactory::class,
             Service\RolfRiskService::class => Service\RolfRiskServiceFactory::class,
             Service\RolfTagService::class => Service\RolfTagServiceFactory::class,
-            Service\RoleService::class => Service\RoleServiceFactory::class,
             Service\ScaleService::class => AutowireFactory::class,
             Service\ScaleCommentService::class => AutowireFactory::class,
             Service\ScaleImpactTypeService::class => AutowireFactory::class,

@@ -199,7 +199,7 @@ class SoaScaleCommentService
 
     protected function getAnrLanguageCode(AnrSuperClass $anr): string
     {
-        throw new \LogicException('Anr language code is not available on the BackOffice side.');
+        throw new \LogicException('The "Core\Anr" entity does not have a language field.');
     }
 
     protected function getLanguageCodesForTranslations(AnrSuperClass $anr): array

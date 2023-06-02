@@ -263,7 +263,6 @@ class OperationalRiskScaleService
             }
 
             $this->operationalRiskScaleTable->remove($scaleTypeToDelete, false);
-
         }
         $this->operationalRiskScaleTable->flush();
 
@@ -491,7 +490,7 @@ class OperationalRiskScaleService
 
     protected function getLanguageCodeByAnr(AnrSuperClass $anr): string
     {
-        return throw new \LogicException('The "Core\Anr" class does not have language code.');
+        return throw new \LogicException('The "Core\Anr" entity does not have a language field.');
     }
 
     protected function getLanguageCodesForTranslations(): array

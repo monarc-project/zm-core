@@ -15,7 +15,6 @@ use Monarc\Core\Table\ScaleImpactTypeTable;
 use Monarc\Core\Table\InstanceTable;
 use Monarc\Core\Table\ScaleTable;
 
-/** It's not inherited on FrontOffice side. */
 class ScaleImpactTypeService
 {
     use PositionUpdateTrait;
