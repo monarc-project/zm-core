@@ -9,7 +9,7 @@ namespace Monarc\Core\Service;
 
 use Monarc\Core\Model\Entity\RolfRiskSuperClass;
 use Monarc\Core\Table\AnrTable;
-use Monarc\Core\Model\Table\InstanceRiskOpTable;
+use Monarc\Core\Table\InstanceRiskOpTable;
 use Monarc\Core\Model\Table\MeasureTable;
 use Monarc\Core\Model\Table\RolfRiskTable;
 use Monarc\Core\Model\Table\RolfTagTable;
@@ -27,9 +27,13 @@ use Doctrine\ORM\Mapping\MappingException;
 class RolfRiskService extends AbstractService
 {
     protected $rolfTagTable;
+    /** @var MonarcObjectTable */
     protected $MonarcObjectTable;
+    /** @var InstanceTable */
     protected $instanceTable;
+    /** @var InstanceRiskOpTable */
     protected $instanceRiskOpTable;
+    /** @var InstanceRiskOpService */
     protected $instanceRiskOpService;
     protected $measureTable;
     protected $referentialTable;
@@ -169,7 +173,7 @@ class RolfRiskService extends AbstractService
                     );
                 }
 
-                $instanceRiskOpTable->getDb()->flush();
+                $instanceRiskOpTable->flush();
             }
         }
 
@@ -293,10 +297,10 @@ class RolfRiskService extends AbstractService
 
                 foreach ($instancesRisksOp as $instanceRiskOp) {
                     $instanceRiskOp->setIsSpecific(true);
-                    $instanceRiskOpTable->saveEntity($instanceRiskOp, false);
+                    $instanceRiskOpTable->save($instanceRiskOp, false);
                 }
 
-                $instanceRiskOpTable->getDb()->flush();
+                $instanceRiskOpTable->flush();
             }
         }
 
@@ -326,7 +330,7 @@ class RolfRiskService extends AbstractService
                     );
                 }
 
-                $instanceRiskOpTable->getDb()->flush();
+                $instanceRiskOpTable->flush();
             }
         }
 
@@ -351,7 +355,7 @@ class RolfRiskService extends AbstractService
                             'riskCacheDescription4' => $rolfRisk->getDescription(4),
                         ]);
 
-                    $instanceRiskOpTable->saveEntity($instanceRiskOp, false);
+                    $instanceRiskOpTable->save($instanceRiskOp, false);
                 }
             }
         }

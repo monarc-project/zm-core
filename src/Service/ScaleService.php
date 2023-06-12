@@ -10,7 +10,6 @@ namespace Monarc\Core\Service;
 use Monarc\Core\InputFormatter\FormattedInputParams;
 use Monarc\Core\Model\Entity;
 use Monarc\Core\Table;
-use Monarc\Core\Model\Table\InstanceRiskTable;
 
 /** TODO: Currently inherited on the FrontOffice side. Drop the inheritance. */
 class ScaleService
@@ -21,7 +20,7 @@ class ScaleService
 
     private Table\InstanceTable $instanceTable;
 
-    private InstanceRiskTable $instanceRiskTable;
+    private Table\InstanceRiskTable $instanceRiskTable;
 
     private Table\InstanceConsequenceTable $instanceConsequenceTable;
 
@@ -35,7 +34,7 @@ class ScaleService
         Table\ScaleTable $scaleTable,
         Table\ScaleCommentTable $scaleCommentTable,
         Table\InstanceTable $instanceTable,
-        InstanceRiskTable $instanceRiskTable,
+        Table\InstanceRiskTable $instanceRiskTable,
         Table\InstanceConsequenceTable $instanceConsequenceTable,
         InstanceRiskService $instanceRiskService,
         ScaleImpactTypeService $scaleImpactTypeService,
@@ -111,8 +110,8 @@ class ScaleService
             }
         }
 
-        $scale->setMin($data['min'])
-            ->setMax($data['max'])
+        $scale->setMin((int)$data['min'])
+            ->setMax((int)$data['max'])
             ->setUpdater($this->connectedUser->getEmail());
 
         $this->scaleTable->save($scale);
@@ -122,44 +121,44 @@ class ScaleService
 
     private function adjustInstanceRisksValues(Entity\Anr $anr, array $data, int $scaleType): void
     {
+        /** @var Entity\InstanceRisk[] $instancesRisks */
         $instancesRisks = $this->instanceRiskTable->findByAnr($anr);
 
         foreach ($instancesRisks as $instanceRisk) {
-            $riskValuesToUpdate = [];
+            $ratesValuesToUpdate = [];
             if ($scaleType === Entity\ScaleSuperClass::TYPE_THREAT) {
                 if ($instanceRisk->getThreatRate() === -1) {
                     continue;
                 }
 
                 if ($instanceRisk->getThreatRate() < $data['min']) {
-                    $riskValuesToUpdate['threatRate'] = $data['min'];
+                    $ratesValuesToUpdate['threatRate'] = $data['min'];
                 } elseif ($instanceRisk->getThreatRate() > $data['max']) {
-                    $riskValuesToUpdate['threatRate'] = $data['max'];
+                    $ratesValuesToUpdate['threatRate'] = $data['max'];
                 }
             } elseif ($scaleType === Entity\ScaleSuperClass::TYPE_VULNERABILITY) {
                 if ($instanceRisk->getVulnerabilityRate() !== -1
                     && $instanceRisk->getVulnerabilityRate() < $data['min']
                 ) {
-                    $riskValuesToUpdate['vulnerabilityRate'] = $data['min'];
+                    $ratesValuesToUpdate['vulnerabilityRate'] = $data['min'];
                 } elseif ($instanceRisk->getVulnerabilityRate() !== -1
                     && $instanceRisk->getVulnerabilityRate() > $data['max']
                 ) {
-                    $riskValuesToUpdate['vulnerabilityRate'] = $data['max'];
+                    $ratesValuesToUpdate['vulnerabilityRate'] = $data['max'];
                 }
                 if ($instanceRisk->getReductionAmount() !== -1
                     && $instanceRisk->getReductionAmount() < $data['min']
                 ) {
-                    $riskValuesToUpdate['reductionAmount'] = $data['min'];
+                    $ratesValuesToUpdate['reductionAmount'] = $data['min'];
                 } elseif ($instanceRisk->getReductionAmount() !== -1
                     && $instanceRisk->getReductionAmount() > $data['max']
                 ) {
-                    $riskValuesToUpdate['reductionAmount'] = $data['max'];
+                    $ratesValuesToUpdate['reductionAmount'] = $data['max'];
                 }
             }
 
-            if (!empty($riskValuesToUpdate)) {
-                $riskValuesToUpdate['anr'] = $anr->getId();
-                $this->instanceRiskService->patch($instanceRisk->getId(), $riskValuesToUpdate);
+            if (!empty($ratesValuesToUpdate)) {
+                $this->instanceRiskService->updateInstanceRiskRates($instanceRisk, $ratesValuesToUpdate);
             }
         }
     }

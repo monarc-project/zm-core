@@ -41,9 +41,6 @@ class InstanceSuperClass implements PositionedEntityInterface
     public const LEVEL_LEAF = 2; // Child instance.
     public const LEVEL_INTER = 3; // Intermediate level.
 
-    public const MODE_CREATE_ROOT = 1;
-    public const MODE_CREATE_NODE = 2;
-
     /**
      * @var int
      *
@@ -486,6 +483,15 @@ class InstanceSuperClass implements PositionedEntityInterface
         return $this;
     }
 
+    public function removeAllInstanceRisks(): self
+    {
+        foreach ($this->instanceRisks as $instanceRisk) {
+            $this->instanceRisks->removeElement($instanceRisk);
+        }
+
+        return $this;
+    }
+
     public function getOperationalInstanceRisks()
     {
         return $this->operationalInstanceRisks;
@@ -496,6 +502,15 @@ class InstanceSuperClass implements PositionedEntityInterface
         if (!$this->operationalInstanceRisks->contains($operationalInstanceRisk)) {
             $this->operationalInstanceRisks->add($operationalInstanceRisk);
             $operationalInstanceRisk->setInstance($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAllOperationalInstanceRisks(): self
+    {
+        foreach ($this->operationalInstanceRisks as $operationalInstanceRisk) {
+            $this->operationalInstanceRisks->removeElement($operationalInstanceRisk);
         }
 
         return $this;

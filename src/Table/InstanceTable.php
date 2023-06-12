@@ -57,23 +57,6 @@ class InstanceTable extends AbstractTable implements PositionUpdatableTableInter
     }
 
     /**
-     * @return InstanceSuperClass[]
-     */
-    public function findByAnrAndOrderByParams(AnrSuperClass $anr, array $orderBy = []): array
-    {
-        $queryBuilder = $this->getRepository()
-            ->createQueryBuilder('i')
-            ->where('i.anr = :anr')
-            ->setParameter('anr', $anr);
-
-        foreach ($orderBy as $fieldName => $order) {
-            $queryBuilder->addOrderBy($fieldName, $order);
-        }
-
-        return $queryBuilder->getQuery()->getResult();
-    }
-
-    /**
      * @return Instance[]
      */
     public function findRootInstancesByAnrAndOrderByPosition(AnrSuperClass $anr): array

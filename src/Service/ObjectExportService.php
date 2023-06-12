@@ -84,7 +84,6 @@ class ObjectExportService
         $return = [
             'type' => 'object',
             'object' => $this->objectService->getPreparedObjectData($monarcObject, true),
-            'version' => $this->getVersion(),
             'monarc_version' => $this->configService->getAppVersion()['appVersion'],
         ];
 

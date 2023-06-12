@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -10,19 +10,7 @@ namespace Monarc\Core\Service;
 use Doctrine\Common\Collections\Expr\Comparison;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\InputFormatter\FormattedInputParams;
-use Monarc\Core\Model\Entity\Anr;
-use Monarc\Core\Model\Entity\AnrSuperClass;
-use Monarc\Core\Model\Entity\Asset;
-use Monarc\Core\Model\Entity\AssetSuperClass;
-use Monarc\Core\Model\Entity\Model;
-use Monarc\Core\Model\Entity\MonarcObject;
-use Monarc\Core\Model\Entity\ObjectCategory;
-use Monarc\Core\Model\Entity\ObjectCategorySuperClass;
-use Monarc\Core\Model\Entity\ObjectObject;
-use Monarc\Core\Model\Entity\ObjectSuperClass;
-use Monarc\Core\Model\Entity\RolfTag;
-use Monarc\Core\Model\Entity\UserSuperClass;
-use Monarc\Core\Model\Table\InstanceRiskOpTable;
+use Monarc\Core\Model\Entity;
 use Monarc\Core\Service\Traits\PositionUpdateTrait;
 use Monarc\Core\Table;
 use Monarc\Core\Model\Table\RolfTagTable;
@@ -49,11 +37,11 @@ class ObjectService
 
     private RolfTagTable $rolfTagTable;
 
-    private InstanceRiskOpTable $instanceRiskOpTable;
+    private Table\InstanceRiskOpTable $instanceRiskOpTable;
 
     private InstanceRiskOpService $instanceRiskOpService;
 
-    private UserSuperClass $connectedUser;
+    private Entity\UserSuperClass $connectedUser;
 
     public function __construct(
         Table\MonarcObjectTable $monarcObjectTable,
@@ -63,7 +51,7 @@ class ObjectService
         Table\ObjectObjectTable $objectObjectTable,
         Table\InstanceTable $instanceTable,
         RolfTagTable $rolfTagTable,
-        InstanceRiskOpTable $instanceRiskOpTable,
+        Table\InstanceRiskOpTable $instanceRiskOpTable,
         InstanceRiskOpService $instanceRiskOpService,
         ConnectedUserService $connectedUserService
     ) {
@@ -86,7 +74,7 @@ class ObjectService
         }
         $this->prepareObjectsListFilter($formattedInputParams);
 
-        /** @var MonarcObject $objects */
+        /** @var Entity\MonarcObject[] $objects */
         $objects = $this->monarcObjectTable->findByParams($formattedInputParams);
 
         $result = [];
@@ -110,7 +98,7 @@ class ObjectService
 
     public function getObjectData(string $uuid, FormattedInputParams $formattedInputParams)
     {
-        /** @var ObjectSuperClass $object */
+        /** @var Entity\ObjectSuperClass $object */
         $object = $this->monarcObjectTable->findByUuid($uuid);
 
         $objectData = $this->getPreparedObjectData($object);
@@ -183,7 +171,7 @@ class ObjectService
         return $objectData;
     }
 
-    public function getLibraryTreeStructure(AnrSuperClass $anr): array
+    public function getLibraryTreeStructure(Entity\AnrSuperClass $anr): array
     {
         $result = [];
         foreach ($anr->getObjectCategories() as $objectCategory) {
@@ -213,14 +201,14 @@ class ObjectService
         return $result;
     }
 
-    public function create(array $data, bool $saveInDb = true): MonarcObject
+    public function create(array $data, bool $saveInDb = true): Entity\MonarcObject
     {
-        /** @var Asset $asset */
+        /** @var Entity\Asset $asset */
         $asset = $this->assetTable->findByUuid($data['asset']);
 
         $this->validateAssetAndDataOnCreate($asset, $data);
 
-        $monarcObject = (new MonarcObject())
+        $monarcObject = (new Entity\MonarcObject())
             ->setLabels($data)
             ->setNames($data)
             ->setAsset($asset)
@@ -247,12 +235,13 @@ class ObjectService
 
         $this->monarcObjectTable->save($monarcObject, $saveInDb);
 
+        /** @var Entity\MonarcObject $monarcObject */
         return $monarcObject;
     }
 
-    public function update(string $uuid, array $data): MonarcObject
+    public function update(string $uuid, array $data): Entity\MonarcObject
     {
-        /** @var MonarcObject $monarcObject */
+        /** @var Entity\MonarcObject $monarcObject */
         $monarcObject = $this->monarcObjectTable->findByUuid($uuid);
 
         $this->validateObjectAndDataOnUpdate($monarcObject, $data);
@@ -278,9 +267,9 @@ class ObjectService
         $this->monarcObjectTable->remove($monarcObject);
     }
 
-    public function duplicate(Anr $anr, array $data): MonarcObject
+    public function duplicate(Entity\Anr $anr, array $data): Entity\MonarcObject
     {
-        /** @var MonarcObject $monarcObjectToCopy */
+        /** @var Entity\MonarcObject $monarcObjectToCopy */
         $monarcObjectToCopy = $this->monarcObjectTable->findByUuid($data['id']);
 
         $newMonarcObject = $this->getObjectCopy($anr, $monarcObjectToCopy);
@@ -292,9 +281,9 @@ class ObjectService
         return $newMonarcObject;
     }
 
-    public function attachObjectToAnr(string $objectUuid, Anr $anr): MonarcObject
+    public function attachObjectToAnr(string $objectUuid, Entity\Anr $anr): Entity\MonarcObject
     {
-        /** @var MonarcObject $monarcObject */
+        /** @var Entity\MonarcObject $monarcObject */
         $monarcObject = $this->monarcObjectTable->findByUuid($objectUuid);
 
         $this->validateAndAttachObjectToAnr($monarcObject, $anr);
@@ -302,17 +291,17 @@ class ObjectService
         return $monarcObject;
     }
 
-    public function attachCategoryObjectsToAnr(int $categoryId, Anr $anr): void
+    public function attachCategoryObjectsToAnr(int $categoryId, Entity\Anr $anr): void
     {
-        /** @var ObjectCategory $objectCategory */
+        /** @var Entity\ObjectCategory $objectCategory */
         $objectCategory = $this->objectCategoryTable->findById($categoryId);
 
         $this->attachCategoryAndItsChildrenObjectsToAnr($objectCategory, $anr);
     }
 
-    public function detachObjectFromAnr(string $objectUuid, Anr $anr): void
+    public function detachObjectFromAnr(string $objectUuid, Entity\Anr $anr): void
     {
-        /** @var MonarcObject $monarcObject */
+        /** @var Entity\MonarcObject $monarcObject */
         $monarcObject = $this->monarcObjectTable->findByUuid($objectUuid);
 
         $monarcObject->removeAnr($anr);
@@ -358,9 +347,9 @@ class ObjectService
         $this->monarcObjectTable->save($monarcObject);
     }
 
-    public function getParentsInAnr(AnrSuperClass $anr, string $uuid)
+    public function getParentsInAnr(Entity\AnrSuperClass $anr, string $uuid)
     {
-        /** @var MonarcObject $object */
+        /** @var Entity\MonarcObject $object */
         $object = $this->monarcObjectTable->findByUuid($uuid);
 
         if (!$object->hasAnrLink($anr)) {
@@ -388,7 +377,7 @@ class ObjectService
         return $directParents;
     }
 
-    public function getPreparedObjectData(ObjectSuperClass $object, bool $objectOnly = false): array
+    public function getPreparedObjectData(Entity\ObjectSuperClass $object, bool $objectOnly = false): array
     {
         $result = [
             'uuid' => $object->getUuid(),
@@ -446,8 +435,10 @@ class ObjectService
         return $result;
     }
 
-    private function attachCategoryAndItsChildrenObjectsToAnr(ObjectCategory $objectCategory, Anr $anr): void
-    {
+    private function attachCategoryAndItsChildrenObjectsToAnr(
+        Entity\ObjectCategory $objectCategory,
+        Entity\Anr $anr
+    ): void {
         foreach ($objectCategory->getObjects() as $monarcObject) {
             $this->validateAndAttachObjectToAnr($monarcObject, $anr);
         }
@@ -457,7 +448,7 @@ class ObjectService
         }
     }
 
-    private function validateAndAttachObjectToAnr(MonarcObject $monarcObject, Anr $anr): void
+    private function validateAndAttachObjectToAnr(Entity\MonarcObject $monarcObject, Entity\Anr $anr): void
     {
         $anr->getModel()->validateObjectAcceptance($monarcObject);
 
@@ -466,7 +457,7 @@ class ObjectService
         $this->monarcObjectTable->save($monarcObject);
     }
 
-    private function linkObjectAndItsCategoryToAnr(MonarcObject $monarcObject, Anr $anr): void
+    private function linkObjectAndItsCategoryToAnr(Entity\MonarcObject $monarcObject, Entity\Anr $anr): void
     {
         $monarcObject->addAnr($anr);
 
@@ -484,13 +475,13 @@ class ObjectService
         }
     }
 
-    private function validateAssetAndDataOnCreate(Asset $asset, array $data): void
+    private function validateAssetAndDataOnCreate(Entity\Asset $asset, array $data): void
     {
-        if ($data['mode'] === ObjectSuperClass::MODE_GENERIC && $asset->isModeSpecific()) {
+        if ($data['mode'] === Entity\ObjectSuperClass::MODE_GENERIC && $asset->isModeSpecific()) {
             throw new Exception('It is forbidden to have a generic object linked to a specific asset', 412);
         }
 
-        if ($data['scope'] === ObjectSuperClass::SCOPE_GLOBAL && $asset->isPrimary()) {
+        if ($data['scope'] === Entity\ObjectSuperClass::SCOPE_GLOBAL && $asset->isPrimary()) {
             throw new Exception('It is forbidden to create a global object linked to a primary asset', 412);
         }
 
@@ -498,7 +489,7 @@ class ObjectService
         // Could not find a place in UI (FE code) where they are passed.
     }
 
-    private function validateObjectAndDataOnUpdate(MonarcObject $monarcObject, array $data): void
+    private function validateObjectAndDataOnUpdate(Entity\MonarcObject $monarcObject, array $data): void
     {
         if (isset($data['scope']) && $data['scope'] !== $monarcObject->getScope()) {
             throw new Exception('The scope of an existing object can not be changed.', 412);
@@ -520,16 +511,14 @@ class ObjectService
         }
     }
 
-    private function adjustInstancesValidateAndSetRolfTag(MonarcObject $monarcObject, array $data): void
+    private function adjustInstancesValidateAndSetRolfTag(Entity\MonarcObject $monarcObject, array $data): void
     {
         /* Set operational risks to specific only when RolfTag was set before, and another RolfTag or null is set. */
         $isRolfTagUpdated = false;
-        if (!empty($data['rolfTag'])
-            && ($monarcObject->getRolfTag() === null
-                || (int)$data['rolfTag'] !== $monarcObject->getRolfTag()->getId()
-            )
-        ) {
-            /** @var RolfTag $rolfTag */
+        if (!empty($data['rolfTag']) && (
+            $monarcObject->getRolfTag() === null || (int)$data['rolfTag'] !== $monarcObject->getRolfTag()->getId()
+        )) {
+            /** @var Entity\RolfTag $rolfTag */
             $rolfTag = $this->rolfTagTable->findById((int)$data['rolfTag']);
             $monarcObject->setRolfTag($rolfTag);
 
@@ -545,7 +534,7 @@ class ObjectService
         $this->updateInstancesAndOperationalRisks($monarcObject, $isRolfTagUpdated);
     }
 
-    private function updateInstancesAndOperationalRisks(MonarcObject $monarcObject, bool $isRolfTagUpdated): void
+    private function updateInstancesAndOperationalRisks(Entity\MonarcObject $monarcObject, bool $isRolfTagUpdated): void
     {
         foreach ($monarcObject->getInstances() as $instance) {
             $instance->setNames($monarcObject->getNames())
@@ -582,11 +571,11 @@ class ObjectService
         }
     }
 
-    private function validateAndSetCategory(MonarcObject $monarcObject, array $data): void
+    private function validateAndSetCategory(Entity\MonarcObject $monarcObject, array $data): void
     {
         $hasCategory = $monarcObject->hasCategory();
         if (!$hasCategory || (int)$data['category'] !== $monarcObject->getCategory()->getId()) {
-            /** @var ObjectCategory $category */
+            /** @var Entity\ObjectCategory $category */
             $category = $this->objectCategoryTable->findById((int)$data['category']);
 
             /* If the root category is changed and no more objects linked, the link with anrs should be dropped. */
@@ -606,27 +595,25 @@ class ObjectService
         }
     }
 
-    private function checkModeIntegrity(MonarcObject $monarcObject): bool
+    private function checkModeIntegrity(Entity\MonarcObject $monarcObject): bool
     {
         if ($monarcObject->isModeGeneric()) {
-            $objects = $this->getParentsTreeList($monarcObject);
+            $objectsList = $this->getParentsTreeList($monarcObject);
             $field = 'parents';
         } else {
-            $objects = $this->getChildrenTreeList($monarcObject);
+            $objectsList = $this->getChildrenTreeList($monarcObject);
             $field = 'children';
         }
 
-        return $this->checkModeIntegrityRecursive($objects, $monarcObject->getMode(), $field);
+        return $this->checkModeIntegrityRecursive($objectsList, $monarcObject->getMode(), $field);
     }
 
-    private function checkModeIntegrityRecursive(array $objects, int $mode, string $field): bool
+    private function checkModeIntegrityRecursive(array $objectsList, int $mode, string $field): bool
     {
-        foreach ($objects as $object) {
-            if ($object->getMode() === $mode
-                || (!empty($p[$field])
-                    && !$this->checkModeIntegrityRecursive($p[$field], $mode, $field)
-                )
-            ) {
+        foreach ($objectsList as $objectData) {
+            if ($objectData['mode'] === $mode || (
+                !empty($objectData[$field]) && !$this->checkModeIntegrityRecursive($objectData[$field], $mode, $field)
+            )) {
                 return false;
             }
         }
@@ -634,10 +621,10 @@ class ObjectService
         return true;
     }
 
-    private function getObjectCopy(Anr $anr, MonarcObject $monarcObjectToCopy): MonarcObject
+    private function getObjectCopy(Entity\Anr $anr, Entity\MonarcObject $monarcObjectToCopy): Entity\MonarcObject
     {
         $labelsNamesSuffix = ' copy #' . time();
-        $newMonarcObject = (new MonarcObject())
+        $newMonarcObject = (new Entity\MonarcObject())
             ->setCategory($monarcObjectToCopy->getCategory())
             ->setAsset($monarcObjectToCopy->getAsset())
             ->addAnr($anr)
@@ -665,12 +652,13 @@ class ObjectService
          */
         $this->updatePositions($newMonarcObject, $this->monarcObjectTable);
 
+        /** @var Entity\MonarcObject $newMonarcObject */
         return $newMonarcObject;
     }
 
     private function getCategoriesAndObjectsTreeList(
-        ObjectCategorySuperClass $objectCategory,
-        AnrSuperClass $anr
+        Entity\ObjectCategorySuperClass $objectCategory,
+        Entity\AnrSuperClass $anr
     ): array {
         $result = [];
         $objectsData = $this->getObjectsDataOfCategoryAndAnr($objectCategory, $anr);
@@ -685,8 +673,8 @@ class ObjectService
     }
 
     private function getCategoriesWithObjectsChildrenTreeList(
-        ObjectCategorySuperClass $objectCategory,
-        AnrSuperClass $anr
+        Entity\ObjectCategorySuperClass $objectCategory,
+        Entity\AnrSuperClass $anr
     ): array {
         $result = [];
         foreach ($objectCategory->getChildren() as $childCategory) {
@@ -700,9 +688,9 @@ class ObjectService
     }
 
     private function getPreparedObjectCategoryData(
-        ObjectCategorySuperClass $category,
+        Entity\ObjectCategorySuperClass $category,
         array $objectsData,
-        AnrSuperClass $anr
+        Entity\AnrSuperClass $anr
     ): array {
         $result = [
             'id' => $category->getId(),
@@ -723,8 +711,10 @@ class ObjectService
         return $result;
     }
 
-    private function getObjectsDataOfCategoryAndAnr(ObjectCategorySuperClass $objectCategory, AnrSuperClass $anr): array
-    {
+    private function getObjectsDataOfCategoryAndAnr(
+        Entity\ObjectCategorySuperClass $objectCategory,
+        Entity\AnrSuperClass $anr
+    ): array {
         $objectsData = [];
         foreach ($objectCategory->getObjects() as $object) {
             if ($object->hasAnrLink($anr)) {
@@ -735,7 +725,7 @@ class ObjectService
         return $objectsData;
     }
 
-    private function getChildrenTreeList(ObjectSuperClass $object): array
+    private function getChildrenTreeList(Entity\ObjectSuperClass $object): array
     {
         $result = [];
         foreach ($object->getChildrenLinks() as $childLinkObject) {
@@ -761,7 +751,7 @@ class ObjectService
         return $result;
     }
 
-    private function getParentsTreeList(ObjectSuperClass $object): array
+    private function getParentsTreeList(Entity\ObjectSuperClass $object): array
     {
         $result = [];
         foreach ($object->getParentsLinks() as $parentLinkObject) {
@@ -787,7 +777,7 @@ class ObjectService
         return $result;
     }
 
-    private function getRisks(ObjectSuperClass $object): array
+    private function getRisks(Entity\ObjectSuperClass $object): array
     {
         $risks = [];
         foreach ($object->getAsset()->getAmvs() as $amv) {
@@ -824,7 +814,7 @@ class ObjectService
         return $risks;
     }
 
-    private function getRisksOp(ObjectSuperClass $object): array
+    private function getRisksOp(Entity\ObjectSuperClass $object): array
     {
         $riskOps = [];
         if ($object->getRolfTag() !== null && $object->getAsset()->isPrimary()) {
@@ -845,7 +835,7 @@ class ObjectService
         return $riskOps;
     }
 
-    private function validateAndRemoveRootCategoryLinkIfNoObjectsLinked(MonarcObject $monarcObject): void
+    private function validateAndRemoveRootCategoryLinkIfNoObjectsLinked(Entity\MonarcObject $monarcObject): void
     {
         if (!$monarcObject->hasCategory()) {
             return;
@@ -860,7 +850,7 @@ class ObjectService
         }
     }
 
-    private function getDirectParents(ObjectSuperClass $object): array
+    private function getDirectParents(Entity\ObjectSuperClass $object): array
     {
         $parents = [];
         foreach ($object->getParents() as $parentObject) {
@@ -889,10 +879,10 @@ class ObjectService
         return isset($filteredData['mode']['value']) && $filteredData['mode']['value'] === self::MODE_ANR;
     }
 
-    private function getValidatedAnr(array $filteredData, ObjectSuperClass $object): AnrSuperClass
+    private function getValidatedAnr(array $filteredData, Entity\ObjectSuperClass $object): Entity\AnrSuperClass
     {
         $anr = $filteredData['anr']['value'] ?? null;
-        if (!$anr instanceof AnrSuperClass) {
+        if (!$anr instanceof Entity\AnrSuperClass) {
             throw new \Exception('Anr parameter has to be passed missing for the mode "anr".', 412);
         }
         if (!$object->hasAnrLink($anr)) {
@@ -909,7 +899,7 @@ class ObjectService
             return true;
         }
 
-        /** @var AnrSuperClass $anr */
+        /** @var Entity\AnrSuperClass $anr */
         $anr = $anrFilter['value'];
 
         return !$anr->getObjects()->isEmpty();
@@ -926,10 +916,10 @@ class ObjectService
     {
         $modelFilter = $formattedInputParams->getFilterFor('model');
         if (!empty($modelFilter['value'])) {
-            /** @var Model $model */
+            /** @var Entity\Model $model */
             $model = $this->modelTable->findById($modelFilter['value']);
             if ($model->isGeneric()) {
-                $formattedInputParams->setFilterValueFor('mode', ObjectSuperClass::MODE_GENERIC);
+                $formattedInputParams->setFilterValueFor('mode', Entity\ObjectSuperClass::MODE_GENERIC);
             } else {
                 $assetsFilter = [];
                 foreach ($model->getAssets() as $asset) {
@@ -938,7 +928,7 @@ class ObjectService
                     }
                 }
                 if (!$model->isRegulator()) {
-                    $assets = $this->assetTable->findByMode(AssetSuperClass::MODE_GENERIC);
+                    $assets = $this->assetTable->findByMode(Entity\AssetSuperClass::MODE_GENERIC);
                     foreach ($assets as $asset) {
                         $assetsFilter[$asset->getUuid()] = $asset->getUuid();
                     }
@@ -963,7 +953,7 @@ class ObjectService
     {
         $anrFilter = $formattedInputParams->getFilterFor('anr');
         if (!empty($anrFilter['value'])) {
-            /** @var AnrSuperClass $anr */
+            /** @var Entity\AnrSuperClass $anr */
             $anr = $anrFilter['value'];
             $objectsUuids = [];
             foreach ($anr->getObjects() as $object) {
@@ -982,7 +972,7 @@ class ObjectService
             if ($categoryFilter['value'] === -1) {
                 $formattedInputParams->unsetFilterFor('category.id')->setFilterValueFor('category', null);
             } elseif (!empty($lockFilter['value'])) {
-                /** @var ObjectCategory $objectCategory */
+                /** @var Entity\ObjectCategory $objectCategory */
                 $objectCategory = $this->objectCategoryTable->findById($categoryFilter['value']);
                 $formattedInputParams->setFilterValueFor(
                     'category.id',
@@ -992,15 +982,18 @@ class ObjectService
         }
     }
 
-    private function duplicateObjectChildren(MonarcObject $objectToCopy, MonarcObject $parentObject, Anr $anr): void
-    {
+    private function duplicateObjectChildren(
+        Entity\MonarcObject $objectToCopy,
+        Entity\MonarcObject $parentObject,
+        Entity\Anr $anr
+    ): void {
         foreach ($objectToCopy->getChildren() as $childObject) {
             $newChildObject = $this->getObjectCopy($anr, $childObject);
 
             /** Only to keep the same positions in the duplicated object composition. */
             foreach ($childObject->getParentsLinks() as $parentLink) {
                 if ($parentLink->getChild()->isEqualTo($childObject)) {
-                    $newParentLink = (new ObjectObject())
+                    $newParentLink = (new Entity\ObjectObject())
                         ->setParent($parentObject)
                         ->setChild($newChildObject)
                         ->setPosition($parentLink->getPosition())

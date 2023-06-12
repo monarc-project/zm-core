@@ -1,7 +1,7 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -11,11 +11,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
-use Monarc\Core\Model\Table\InstanceRiskOpTable;
 
 /**
- * Instance Risk Op
- *
  * @ORM\Table(name="instances_risks_op", indexes={
  *      @ORM\Index(name="anr_id", columns={"anr_id"}),
  *      @ORM\Index(name="instance_id", columns={"instance_id"}),
@@ -26,22 +23,22 @@ use Monarc\Core\Model\Table\InstanceRiskOpTable;
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
-class InstanceRiskOpSuperClass extends AbstractEntity
+class InstanceRiskOpSuperClass
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
 
     public const KIND_NOT_SET = 0;
     public const KIND_REDUCTION = 1;
-    public const KIND_REFUS = 2;
+    public const KIND_REFUSED = 2;
     public const KIND_ACCEPTATION = 3;
-    public const KIND_PARTAGE = 4;
+    public const KIND_SHARED = 4;
     public const KIND_NOT_TREATED = 5;
 
     public const TYPE_SPECIFIC = 1;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer", nullable=false)
      * @ORM\Id
@@ -64,7 +61,8 @@ class InstanceRiskOpSuperClass extends AbstractEntity
      *
      * @ORM\ManyToOne(targetEntity="Instance", cascade={"persist"})
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="instance_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
+     *   @ORM\JoinColumn(name="instance_id", referencedColumnName="id", nullable=true,
+     *     orphanRemoval=true, onDelete="CASCADE")
      * })
      */
     protected $instance;
@@ -246,11 +244,9 @@ class InstanceRiskOpSuperClass extends AbstractEntity
      */
     protected $specific = 0;
 
-    public function __construct($obj = null)
+    public function __construct()
     {
         $this->operationalInstanceRiskScales = new ArrayCollection();
-
-        parent::__construct($obj);
     }
 
     public static function constructFromObject(
@@ -370,11 +366,11 @@ class InstanceRiskOpSuperClass extends AbstractEntity
         switch ($this->kindOfMeasure) {
             case static::KIND_REDUCTION:
                 return 'Reduction';
-            case static::KIND_REFUS:
+            case static::KIND_REFUSED:
                 return 'Denied';
             case static::KIND_ACCEPTATION:
                 return 'Accepted';
-            case static::KIND_PARTAGE:
+            case static::KIND_SHARED:
                 return 'Shared';
             default:
                 return 'Not treated';
@@ -460,9 +456,9 @@ class InstanceRiskOpSuperClass extends AbstractEntity
         return [
             self::KIND_NOT_SET => 'Not treated',
             self::KIND_REDUCTION => 'Reduction',
-            self::KIND_REFUS => 'Denied',
+            self::KIND_REFUSED => 'Denied',
             self::KIND_ACCEPTATION => 'Accepted',
-            self::KIND_PARTAGE => 'Shared',
+            self::KIND_SHARED => 'Shared',
             self::KIND_NOT_TREATED => 'Not treated',
         ];
     }
@@ -552,7 +548,7 @@ class InstanceRiskOpSuperClass extends AbstractEntity
 
     public function setIsSpecific(bool $isSpecific): self
     {
-        $this->specific = $isSpecific;
+        $this->specific = (int)$isSpecific;
 
         return $this;
     }

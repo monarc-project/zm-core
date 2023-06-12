@@ -12,6 +12,7 @@ use Doctrine\Common\Collections\Expr\Comparison;
 use Doctrine\Common\Collections\Expr\CompositeExpression;
 use LogicException;
 use Monarc\Core\Exception\Exception;
+use Monarc\Core\Model\Entity\AnrSuperClass;
 
 abstract class AbstractInputFormatter
 {
@@ -24,7 +25,11 @@ abstract class AbstractInputFormatter
     /** Formatted params response type. */
     protected ?FormattedInputParams $formattedInputParams = null;
 
-    /** List of allowed search fields or composition of relation field separated by "." with the destination field. */
+    /**
+     * List of allowed search fields or composition of relation field separated by "." with the destination field.
+     * There is a special placeholder available {anrLanguage} to specify that anr language index has to be added.
+     *  example: 'asset.label{anrLanguage}'
+     */
     protected static array $allowedSearchFields = [];
 
     /**
@@ -83,9 +88,21 @@ abstract class AbstractInputFormatter
         $this->formattedInputParams = new FormattedInputParams();
 
         /* Add search filter. */
-        if (!empty($inputParams['filter'])) {
+        if (!empty($inputParams['filter']) && !empty(static::$allowedSearchFields)) {
+            $searchFields = static::$allowedSearchFields;
+            if (isset($inputParams['anr'])
+                && $inputParams['anr'] instanceof AnrSuperClass
+                && method_exists($inputParams['anr'], 'getLanguage')
+            ) {
+                $searchFields = array_map(static function ($field) {
+                    global $inputParams;
+
+                    return str_replace('{anrLanguage}', $inputParams['anr']->getLanguage(), $field);
+                }, $searchFields);
+            }
+
             $this->formattedInputParams->setSearch([
-                'fields' => static::$allowedSearchFields,
+                'fields' => $searchFields,
                 'string' => (string)$inputParams['filter'],
                 'logicalOperator' => static::DEFAULT_SEARCH_LOGICAL_OPERATOR,
             ]);

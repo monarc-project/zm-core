@@ -9,7 +9,6 @@ namespace Monarc\Core\Service;
 
 use Monarc\Core\Helper\EncryptDecryptHelperTrait;
 use Monarc\Core\Model\Entity;
-use Monarc\Core\Model\Table as DeprecatedTable;
 use Monarc\Core\Table;
 
 class AnrService
@@ -22,9 +21,9 @@ class AnrService
 
     private Table\InstanceConsequenceTable $instanceConsequenceTable;
 
-    private DeprecatedTable\InstanceRiskTable $instanceRiskTable;
+    private Table\InstanceRiskTable $instanceRiskTable;
 
-    private DeprecatedTable\InstanceRiskOpTable $instanceRiskOpTable;
+    private Table\InstanceRiskOpTable $instanceRiskOpTable;
 
     private Table\ScaleTable $scaleTable;
 
@@ -56,8 +55,8 @@ class AnrService
         Table\AnrTable $anrTable,
         Table\InstanceTable $instanceTable,
         Table\InstanceConsequenceTable $instanceConsequenceTable,
-        DeprecatedTable\InstanceRiskTable $instanceRiskTable,
-        DeprecatedTable\InstanceRiskOpTable $instanceRiskOpTable,
+        Table\InstanceRiskTable $instanceRiskTable,
+        Table\InstanceRiskOpTable $instanceRiskOpTable,
         Table\ScaleTable $scaleTable,
         Table\ScaleImpactTypeTable $scaleImpactTypeTable,
         Table\ScaleCommentTable $scaleCommentTable,

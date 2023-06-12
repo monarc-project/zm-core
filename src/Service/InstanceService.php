@@ -189,8 +189,7 @@ class InstanceService
             throw new Exception('Only a root instance can be deleted.', 412);
         }
 
-        $this->instanceRiskService->deleteInstanceRisks($instance);
-        $this->instanceRiskOpService->deleteOperationalRisks($instance);
+        $instance->removeAllInstanceRisks()->removeAllOperationalInstanceRisks();
 
         $this->shiftPositionsForRemovingEntity($instance, $this->instanceTable);
 
@@ -291,9 +290,9 @@ class InstanceService
     {
         foreach ($consequencesData as $consequenceData) {
             $this->instanceConsequenceService->patchConsequence($anr, $consequenceData['id'], [
-                'c' => (int)$consequenceData['c_risk'],
-                'i' => (int)$consequenceData['i_risk'],
-                'd' => (int)$consequenceData['d_risk'],
+                'confidentiality' => (int)$consequenceData['c_risk'],
+                'integrity' => (int)$consequenceData['i_risk'],
+                'availability' => (int)$consequenceData['d_risk'],
                 'isHidden' => (int)$consequencesData['isHidden'],
             ], false);
         }
@@ -371,7 +370,7 @@ class InstanceService
     private function updateRisks(Entity\InstanceSuperClass $instance): void
     {
         foreach ($instance->getInstanceRisks() as $instanceRisk) {
-            $this->instanceRiskService->updateRisks($instanceRisk, false);
+            $this->instanceRiskService->recalculateRiskRates($instanceRisk, false);
         }
     }
 

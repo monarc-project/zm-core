@@ -7,56 +7,41 @@
 
 namespace Monarc\Core\Service;
 
-use Monarc\Core\Model\Entity\AnrSuperClass;
-use Monarc\Core\Model\Entity\OperationalRiskScaleCommentSuperClass;
-use Monarc\Core\Model\Entity\OperationalRiskScaleSuperClass;
-use Monarc\Core\Model\Entity\OperationalRiskScaleType;
-use Monarc\Core\Model\Entity\OperationalRiskScaleTypeSuperClass;
-use Monarc\Core\Model\Entity\TranslationSuperClass;
-use Monarc\Core\Model\Entity\UserSuperClass;
-use Monarc\Core\Model\Entity\OperationalRiskScale;
-use Monarc\Core\Model\Entity\OperationalRiskScaleComment;
-use Monarc\Core\Model\Entity\Translation;
-use Monarc\Core\Model\Table\InstanceRiskOpTable;
-use Monarc\Core\Table\OperationalInstanceRiskScaleTable;
-use Monarc\Core\Table\OperationalRiskScaleCommentTable;
-use Monarc\Core\Table\OperationalRiskScaleTable;
-use Monarc\Core\Table\OperationalRiskScaleTypeTable;
-use Monarc\Core\Table\TranslationTable;
+use Monarc\Core\Model\Entity;
+use Monarc\Core\Table;
 use Ramsey\Uuid\Uuid;
 
 class OperationalRiskScaleService
 {
-    protected UserSuperClass $connectedUser;
+    protected Table\OperationalRiskScaleTable $operationalRiskScaleTable;
 
-    protected OperationalRiskScaleTable $operationalRiskScaleTable;
+    protected Table\OperationalRiskScaleTypeTable $operationalRiskScaleTypeTable;
 
-    protected OperationalRiskScaleTypeTable $operationalRiskScaleTypeTable;
+    protected Table\OperationalRiskScaleCommentTable $operationalRiskScaleCommentTable;
 
-    protected OperationalRiskScaleCommentTable $operationalRiskScaleCommentTable;
-
-    protected TranslationTable $translationTable;
+    protected Table\TranslationTable $translationTable;
 
     protected ConfigService $configService;
 
     private InstanceRiskOpService $instanceRiskOpService;
 
-    private InstanceRiskOpTable $instanceRiskOpTable;
+    private Table\InstanceRiskOpTable $instanceRiskOpTable;
 
-    private OperationalInstanceRiskScaleTable $operationalInstanceRiskScaleTable;
+    private Table\OperationalInstanceRiskScaleTable $operationalInstanceRiskScaleTable;
+
+    protected Entity\UserSuperClass $connectedUser;
 
     public function __construct(
         ConnectedUserService $connectedUserService,
-        OperationalRiskScaleTable $operationalRiskScaleTable,
-        OperationalRiskScaleTypeTable $operationalRiskScaleTypeTable,
-        OperationalRiskScaleCommentTable $operationalRiskScaleCommentTable,
-        TranslationTable $translationTable,
+        Table\OperationalRiskScaleTable $operationalRiskScaleTable,
+        Table\OperationalRiskScaleTypeTable $operationalRiskScaleTypeTable,
+        Table\OperationalRiskScaleCommentTable $operationalRiskScaleCommentTable,
+        Table\TranslationTable $translationTable,
         ConfigService $configService,
         InstanceRiskOpService $instanceRiskOpService,
-        InstanceRiskOpTable $instanceRiskOpTable,
-        OperationalInstanceRiskScaleTable $operationalInstanceRiskScaleTable
+        Table\InstanceRiskOpTable $instanceRiskOpTable,
+        Table\OperationalInstanceRiskScaleTable $operationalInstanceRiskScaleTable
     ) {
-        $this->connectedUser = $connectedUserService->getConnectedUser();
         $this->operationalRiskScaleTable = $operationalRiskScaleTable;
         $this->operationalRiskScaleTypeTable = $operationalRiskScaleTypeTable;
         $this->operationalRiskScaleCommentTable = $operationalRiskScaleCommentTable;
@@ -65,15 +50,16 @@ class OperationalRiskScaleService
         $this->instanceRiskOpService = $instanceRiskOpService;
         $this->instanceRiskOpTable = $instanceRiskOpTable;
         $this->operationalInstanceRiskScaleTable = $operationalInstanceRiskScaleTable;
+        $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
     public function createScale(
-        AnrSuperClass $anr,
+        Entity\AnrSuperClass $anr,
         int $type,
         int $min,
         int $max
     ): void {
-        $scale = (new OperationalRiskScale())
+        $scale = (new Entity\OperationalRiskScale())
             ->setAnr($anr)
             ->setType($type)
             ->setMin($min)
@@ -84,12 +70,12 @@ class OperationalRiskScaleService
 
         $languageCodes = $this->getLanguageCodesForTranslations();
 
-        if ($type === OperationalRiskScaleSuperClass::TYPE_IMPACT) {
+        if ($type === Entity\OperationalRiskScaleSuperClass::TYPE_IMPACT) {
             $scaleType = $this->createOperationalRiskScaleTypeObject($anr, $scale);
             foreach ($languageCodes as $languageCode) {
                 $translation = $this->createTranslationObject(
                     $anr,
-                    TranslationSuperClass::OPERATIONAL_RISK_SCALE_TYPE,
+                    Entity\TranslationSuperClass::OPERATIONAL_RISK_SCALE_TYPE,
                     $scaleType->getLabelTranslationKey(),
                     $languageCode,
                     ''
@@ -112,7 +98,7 @@ class OperationalRiskScaleService
         $this->operationalRiskScaleTable->flush();
     }
 
-    public function createOperationalRiskScaleType(AnrSuperClass $anr, array $data): int
+    public function createOperationalRiskScaleType(Entity\AnrSuperClass $anr, array $data): int
     {
         $languages = [];
         $operationalRiskScale = $this->operationalRiskScaleTable->findByAnrAndScaleId($anr, (int)$data['scaleId']);
@@ -124,7 +110,7 @@ class OperationalRiskScaleService
             foreach ($data['label'] as $lang => $labelText) {
                 $translation = $this->createTranslationObject(
                     $anr,
-                    TranslationSuperClass::OPERATIONAL_RISK_SCALE_TYPE,
+                    Entity\TranslationSuperClass::OPERATIONAL_RISK_SCALE_TYPE,
                     $operationalRiskScaleType->getLabelTranslationKey(),
                     $lang,
                     (string)$labelText
@@ -138,7 +124,7 @@ class OperationalRiskScaleService
             $anrLanguageCode = $this->getLanguageCodeByAnr($anr);
             $translation = $this->createTranslationObject(
                 $anr,
-                TranslationSuperClass::OPERATIONAL_RISK_SCALE_TYPE,
+                Entity\TranslationSuperClass::OPERATIONAL_RISK_SCALE_TYPE,
                 $operationalRiskScaleType->getLabelTranslationKey(),
                 $anrLanguageCode,
                 $data['label'][$anrLanguageCode]
@@ -163,6 +149,7 @@ class OperationalRiskScaleService
         }
 
         /* Link the new type with all the existed operational risks. */
+        /** @var Entity\InstanceRiskOpSuperClass $operationalInstanceRisk */
         foreach ($this->instanceRiskOpTable->findByAnr($anr) as $operationalInstanceRisk) {
             $operationalInstanceRiskScale = $this->instanceRiskOpService->createOperationalInstanceRiskScaleObject(
                 $operationalInstanceRisk,
@@ -176,7 +163,7 @@ class OperationalRiskScaleService
         return $operationalRiskScaleType->getId();
     }
 
-    public function getOperationalRiskScales(AnrSuperClass $anr, ?string $language = null): array
+    public function getOperationalRiskScales(Entity\AnrSuperClass $anr, ?string $language = null): array
     {
         $result = [];
         $operationalRiskScales = $this->operationalRiskScaleTable->findByAnr($anr);
@@ -184,11 +171,10 @@ class OperationalRiskScaleService
             $language = $this->getLanguageCodeByAnr($anr);
         }
 
-        $translations = $this->translationTable->findByAnrTypesAndLanguageIndexedByKey(
-            $anr,
-            [TranslationSuperClass::OPERATIONAL_RISK_SCALE_TYPE, TranslationSuperClass::OPERATIONAL_RISK_SCALE_COMMENT],
-            $language
-        );
+        $translations = $this->translationTable->findByAnrTypesAndLanguageIndexedByKey($anr, [
+            Entity\TranslationSuperClass::OPERATIONAL_RISK_SCALE_TYPE,
+            Entity\TranslationSuperClass::OPERATIONAL_RISK_SCALE_COMMENT,
+        ], $language);
 
         foreach ($operationalRiskScales as $operationalRiskScale) {
             $comments = [];
@@ -254,7 +240,7 @@ class OperationalRiskScaleService
         $translationsKeys = [];
 
         foreach ($data as $id) {
-            /** @var OperationalRiskScaleType $scaleTypeToDelete */
+            /** @var Entity\OperationalRiskScaleType $scaleTypeToDelete */
             $scaleTypeToDelete = $this->operationalRiskScaleTypeTable->findById($id);
             $translationsKeys[] = $scaleTypeToDelete->getLabelTranslationKey();
 
@@ -273,7 +259,7 @@ class OperationalRiskScaleService
 
     public function update(int $id, array $data): int
     {
-        /** @var OperationalRiskScaleTypeSuperClass $operationalRiskScaleType */
+        /** @var Entity\OperationalRiskScaleTypeSuperClass $operationalRiskScaleType */
         $operationalRiskScaleType = $this->operationalRiskScaleTypeTable->findById($id);
 
         $scaleTypeVisibilityBeforeUpdate = $operationalRiskScaleType->isHidden();
@@ -307,14 +293,14 @@ class OperationalRiskScaleService
         return $operationalRiskScaleType->getId();
     }
 
-    public function updateValueForAllScales(AnrSuperClass $anr, array $data): void
+    public function updateValueForAllScales(Entity\AnrSuperClass $anr, array $data): void
     {
         $scaleIndex = (int)$data['scaleIndex'];
         $scaleValue = (int)$data['scaleValue'];
 
         $operationalRiskScaleComments = $this->operationalRiskScaleCommentTable->findByAnrAndScaleTypeOrderByIndex(
             $anr,
-            OperationalRiskScaleSuperClass::TYPE_IMPACT
+            Entity\OperationalRiskScaleSuperClass::TYPE_IMPACT
         );
 
         foreach ($operationalRiskScaleComments as $operationalRiskScaleComment) {
@@ -337,7 +323,7 @@ class OperationalRiskScaleService
         $this->operationalRiskScaleCommentTable->flush();
     }
 
-    public function updateLevelsNumberOfOperationalRiskScale(AnrSuperClass $anr, array $data)
+    public function updateLevelsNumberOfOperationalRiskScale(Entity\AnrSuperClass $anr, array $data)
     {
         $languageCodes = $this->getLanguageCodesForTranslations();
 
@@ -346,7 +332,7 @@ class OperationalRiskScaleService
 
         $operationalRiskScales = $this->operationalRiskScaleTable->findWithCommentsByAnrAndType(
             $anr,
-            OperationalRiskScaleSuperClass::TYPE_IMPACT
+            Entity\OperationalRiskScaleSuperClass::TYPE_IMPACT
         );
 
         foreach ($operationalRiskScales as $operationalRiskScale) {
@@ -391,7 +377,7 @@ class OperationalRiskScaleService
         }
     }
 
-    public function updateMinMaxForOperationalRiskProbability(AnrSuperClass $anr, $data): void
+    public function updateMinMaxForOperationalRiskProbability(Entity\AnrSuperClass $anr, $data): void
     {
         $probabilityMin = (int)$data['probabilityMin'];
         $probabilityMax = (int)$data['probabilityMax'];
@@ -400,7 +386,7 @@ class OperationalRiskScaleService
 
         $operationalRiskScales = $this->operationalRiskScaleTable->findWithCommentsByAnrAndType(
             $anr,
-            OperationalRiskScaleSuperClass::TYPE_LIKELIHOOD
+            Entity\OperationalRiskScaleSuperClass::TYPE_LIKELIHOOD
         );
 
         foreach ($operationalRiskScales as $operationalRiskScale) {
@@ -427,10 +413,10 @@ class OperationalRiskScaleService
     }
 
     protected function createOperationalRiskScaleTypeObject(
-        AnrSuperClass $anr,
-        OperationalRiskScaleSuperClass $operationalRiskScale
-    ): OperationalRiskScaleTypeSuperClass {
-        return (new OperationalRiskScaleType())
+        Entity\AnrSuperClass $anr,
+        Entity\OperationalRiskScaleSuperClass $operationalRiskScale
+    ): Entity\OperationalRiskScaleTypeSuperClass {
+        return (new Entity\OperationalRiskScaleType())
             ->setAnr($anr)
             ->setOperationalRiskScale($operationalRiskScale)
             ->setLabelTranslationKey((string)Uuid::uuid4())
@@ -438,13 +424,13 @@ class OperationalRiskScaleService
     }
 
     protected function createTranslationObject(
-        AnrSuperClass $anr,
+        Entity\AnrSuperClass $anr,
         string $type,
         string $key,
         string $lang,
         string $value
-    ): TranslationSuperClass {
-        return (new Translation())
+    ): Entity\TranslationSuperClass {
+        return (new  Entity\Translation())
             ->setAnr($anr)
             ->setType($type)
             ->setKey($key)
@@ -454,14 +440,14 @@ class OperationalRiskScaleService
     }
 
     protected function createScaleComment(
-        AnrSuperClass $anr,
-        OperationalRiskScaleSuperClass $operationalRiskScale,
-        ?OperationalRiskScaleTypeSuperClass $operationalRiskScaleType,
+        Entity\AnrSuperClass $anr,
+        Entity\OperationalRiskScaleSuperClass $operationalRiskScale,
+        ?Entity\OperationalRiskScaleTypeSuperClass $operationalRiskScaleType,
         int $scaleIndex,
         int $scaleValue,
         array $languageCodes
     ): void {
-        $scaleComment = (new OperationalRiskScaleComment())
+        $scaleComment = (new Entity\OperationalRiskScaleComment())
             ->setAnr($anr)
             ->setOperationalRiskScale($operationalRiskScale)
             ->setScaleIndex($scaleIndex)
@@ -478,7 +464,7 @@ class OperationalRiskScaleService
             // Create a translation for the scaleComment (init with blank value).
             $translation = $this->createTranslationObject(
                 $anr,
-                TranslationSuperClass::OPERATIONAL_RISK_SCALE_COMMENT,
+                Entity\TranslationSuperClass::OPERATIONAL_RISK_SCALE_COMMENT,
                 $scaleComment->getCommentTranslationKey(),
                 $languageCode,
                 ''
@@ -488,7 +474,7 @@ class OperationalRiskScaleService
         }
     }
 
-    protected function getLanguageCodeByAnr(AnrSuperClass $anr): string
+    protected function getLanguageCodeByAnr(Entity\AnrSuperClass $anr): string
     {
         return throw new \LogicException('The "Core\Anr" entity does not have a language field.');
     }
@@ -500,14 +486,14 @@ class OperationalRiskScaleService
 
     /**
      * @param int $index
-     * @param OperationalRiskScaleCommentSuperClass[] $operationalRiskScaleComments
+     * @param Entity\OperationalRiskScaleCommentSuperClass[] $operationalRiskScaleComments
      *
-     * @return OperationalRiskScaleCommentSuperClass|null
+     * @return Entity\OperationalRiskScaleCommentSuperClass|null
      */
     private function getCommentByIndex(
         int $index,
         iterable $operationalRiskScaleComments
-    ): ?OperationalRiskScaleCommentSuperClass {
+    ): ?Entity\OperationalRiskScaleCommentSuperClass {
         foreach ($operationalRiskScaleComments as $operationalRiskScaleComment) {
             if ($operationalRiskScaleComment->getScaleIndex() === $index) {
                 return $operationalRiskScaleComment;

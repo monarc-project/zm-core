@@ -1,7 +1,7 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -12,8 +12,6 @@ use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 
 /**
- * InstanceRisk
- *
  * @ORM\Table(name="instances_risks", indexes={
  *      @ORM\Index(name="anr", columns={"anr_id"}),
  *      @ORM\Index(name="amv_id", columns={"amv_id"}),
@@ -26,20 +24,19 @@ use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
-class InstanceRiskSuperClass extends AbstractEntity
+class InstanceRiskSuperClass
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
 
-    const KIND_NOT_SET = 0;
-    const KIND_REDUCTION = 1;
-    const KIND_REFUS = 2;
-    const KIND_ACCEPTATION = 3;
-    const KIND_PARTAGE = 4;
-    const KIND_NOT_TREATED = 5;
+    public const KIND_NOT_SET = 0;
+    public const KIND_REDUCTION = 1;
+    public const KIND_REFUSED = 2;
+    public const KIND_ACCEPTATION = 3;
+    public const KIND_SHARED = 4;
+    public const KIND_NOT_TREATED = 5;
 
     public const TYPE_SPECIFIC = 1;
-    public const TYPE_NOT_SPECIFIC = 0;
 
     /**
      * @var int
@@ -105,13 +102,14 @@ class InstanceRiskSuperClass extends AbstractEntity
      *
      * @ORM\ManyToOne(targetEntity="Instance", cascade={"persist"})
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="instance_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
+     *   @ORM\JoinColumn(name="instance_id", referencedColumnName="id", nullable=true,
+     *     orphanRemoval=true, onDelete="CASCADE")
      * })
      */
     protected $instance;
 
     /**
-     * @var InstanceRiskOwnerSuperClass
+     * @var InstanceRiskOwnerSuperClass|null
      *
      * @ORM\ManyToOne(targetEntity="InstanceRiskOwner", cascade={"persist"})
      * @ORM\JoinColumns({
@@ -188,21 +186,21 @@ class InstanceRiskSuperClass extends AbstractEntity
      *
      * @ORM\Column(name="risk_c", type="smallint", options={"unsigned":false, "default":-1})
      */
-    protected $riskC = -1;
+    protected $riskConfidentiality = -1;
 
     /**
      * @var int
      *
      * @ORM\Column(name="risk_i", type="smallint", options={"unsigned":false, "default":-1})
      */
-    protected $riskI = -1;
+    protected $riskIntegrity = -1;
 
     /**
      * @var int
      *
      * @ORM\Column(name="risk_d", type="smallint", options={"unsigned":false, "default":-1})
      */
-    protected $riskD = -1;
+    protected $riskAvailability = -1;
 
     /**
      * @var int
@@ -263,79 +261,55 @@ class InstanceRiskSuperClass extends AbstractEntity
         return $this;
     }
 
-    /**
-     * @return AssetSuperClass
-     */
-    public function getAsset()
+    public function getAsset(): AssetSuperClass
     {
         return $this->asset;
     }
 
-    /**
-     * @param AssetSuperClass $asset
-     */
-    public function setAsset($asset): self
+    public function setAsset(AssetSuperClass $asset): self
     {
         $this->asset = $asset;
 
         return $this;
     }
 
-    /**
-     * @return AmvSuperClass
-     */
-    public function getAmv()
+    public function getAmv(): ?AmvSuperClass
     {
         return $this->amv;
     }
 
-    /**
-     * @param AmvSuperClass $amv
-     */
-    public function setAmv($amv): self
+    public function setAmv(?AmvSuperClass $amv): self
     {
         $this->amv = $amv;
 
         return $this;
     }
 
-    /**
-     * @return ThreatSuperClass
-     */
-    public function getThreat()
+    public function getThreat(): ThreatSuperClass
     {
         return $this->threat;
     }
 
-    /**
-     * @param ThreatSuperClass $threat
-     */
-    public function setThreat($threat): self
+    public function setThreat(ThreatSuperClass $threat): self
     {
         $this->threat = $threat;
 
         return $this;
     }
 
-    /**
-     * @return VulnerabilitySuperClass
-     */
-    public function getVulnerability()
+    public function getVulnerability(): VulnerabilitySuperClass
     {
         return $this->vulnerability;
     }
 
-    /**
-     * @param VulnerabilitySuperClass $vulnerability
-     */
-    public function setVulnerability($vulnerability): self
+    public function setVulnerability(VulnerabilitySuperClass $vulnerability): self
     {
         $this->vulnerability = $vulnerability;
 
         return $this;
     }
 
-    public function getInstanceRiskOwner()
+    public function getInstanceRiskOwner(): ?InstanceRiskOwnerSuperClass
     {
         return $this->instanceRiskOwner;
     }
@@ -367,18 +341,12 @@ class InstanceRiskSuperClass extends AbstractEntity
         return $this;
     }
 
-    /**
-     * @return InstanceSuperClass
-     */
-    public function getInstance()
+    public function getInstance(): InstanceSuperClass
     {
         return $this->instance;
     }
 
-    /**
-     * @param InstanceSuperClass $instance
-     */
-    public function setInstance($instance): self
+    public function setInstance(InstanceSuperClass $instance): self
     {
         $this->instance = $instance;
         $this->instance->addInstanceRisk($this);
@@ -429,36 +397,36 @@ class InstanceRiskSuperClass extends AbstractEntity
 
     public function getRiskConfidentiality(): int
     {
-        return (int)$this->riskC;
+        return (int)$this->riskConfidentiality;
     }
 
-    public function setRiskConfidentiality(int $riskC): InstanceRiskSuperClass
+    public function setRiskConfidentiality(int $riskConfidentiality): InstanceRiskSuperClass
     {
-        $this->riskC = $riskC;
+        $this->riskConfidentiality = $riskConfidentiality;
 
         return $this;
     }
 
     public function getRiskIntegrity(): int
     {
-        return (int)$this->riskI;
+        return (int)$this->riskIntegrity;
     }
 
-    public function setRiskIntegrity(int $riskI): InstanceRiskSuperClass
+    public function setRiskIntegrity(int $riskIntegrity): InstanceRiskSuperClass
     {
-        $this->riskI = $riskI;
+        $this->riskIntegrity = $riskIntegrity;
 
         return $this;
     }
 
     public function getRiskAvailability(): int
     {
-        return (int)$this->riskD;
+        return (int)$this->riskAvailability;
     }
 
-    public function setRiskAvailability(int $riskD): InstanceRiskSuperClass
+    public function setRiskAvailability(int $riskAvailability): InstanceRiskSuperClass
     {
-        $this->riskD = $riskD;
+        $this->riskAvailability = $riskAvailability;
 
         return $this;
     }
@@ -499,11 +467,11 @@ class InstanceRiskSuperClass extends AbstractEntity
         switch ($this->kindOfMeasure) {
             case static::KIND_REDUCTION:
                 return 'Reduction';
-            case static::KIND_REFUS:
+            case static::KIND_REFUSED:
                 return 'Denied';
             case static::KIND_ACCEPTATION:
                 return 'Accepted';
-            case static::KIND_PARTAGE:
+            case static::KIND_SHARED:
                 return 'Shared';
             default:
                 return 'Not treated';
@@ -561,9 +529,9 @@ class InstanceRiskSuperClass extends AbstractEntity
         return [
             self::KIND_NOT_SET => 'Not treated',
             self::KIND_REDUCTION => 'Reduction',
-            self::KIND_REFUS => 'Denied',
+            self::KIND_REFUSED => 'Denied',
             self::KIND_ACCEPTATION => 'Accepted',
-            self::KIND_PARTAGE => 'Shared',
+            self::KIND_SHARED => 'Shared',
             self::KIND_NOT_TREATED => 'Not treated',
         ];
     }
@@ -578,72 +546,5 @@ class InstanceRiskSuperClass extends AbstractEntity
         $this->commentAfter = $commentAfter;
 
         return $this;
-    }
-
-    public function getInputFilter($partial = false)
-    {
-        if (!$this->inputFilter) {
-            parent::getInputFilter($partial);
-
-            $integers = [
-                'specific',
-                'mh',
-                'threatRate',
-                'vulnerabilityRate',
-                'kindOfMeasure',
-                'reductionAmount',
-                'riskC',
-                'riskI',
-                'riskD',
-                'cacheMaxRisk',
-                'cacheTargetedRisk',
-            ];
-            foreach ($integers as $i) {
-                $this->inputFilter->add(array(
-                    'name' => $i,
-                    'required' => false,
-                    'allow_empty' => false,
-                    'filters' => array(),
-                    'validators' => array(
-                        array(
-                            'name' => 'IsInt',
-                        ),
-                    ),
-                ));
-            }
-        }
-        return $this->inputFilter;
-    }
-
-    public function getFiltersForService(){
-        $filterJoin = [
-            [
-                'as' => 'th',
-                'rel' => 'threat',
-            ],
-            [
-                'as' => 'v',
-                'rel' => 'vulnerability',
-            ],
-            [
-                'as' => 'i',
-                'rel' => 'instance',
-            ],
-        ];
-        $filterLeft = [
-            [
-                'as' => 'th1',
-                'rel' => 'threat',
-            ],
-            [
-                'as' => 'v1',
-                'rel' => 'vulnerability',
-            ],
-
-        ];
-        $filtersCol = [
-
-        ];
-        return [$filterJoin,$filterLeft,$filtersCol];
     }
 }

@@ -104,7 +104,7 @@ class Authentication extends AbstractAdapter
             if ($tokens !== false && $tfa->verifyCode($tokens[0], $tokens[1])) {
                 $user->setSecretKey($tokens[0]);
                 $user->setTwoFactorAuthEnabled(true);
-                $this->userTable->saveEntity($user);
+                $this->userTable->save($user);
 
                 return new Result(Result::SUCCESS, $this->getIdentity());
             }
@@ -129,7 +129,7 @@ class Authentication extends AbstractAdapter
             if (password_verify($token, $recoveryCode)) {
                 unset($recoveryCodes[$key]);
                 $user->setRecoveryCodes($recoveryCodes);
-                $this->userTable->saveEntity($user);
+                $this->userTable->save($user);
 
                 return new Result(Result::SUCCESS, $this->getIdentity());
             }

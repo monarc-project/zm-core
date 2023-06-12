@@ -10,11 +10,9 @@ namespace Monarc\Core\Service;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\AbstractEntity;
 use Monarc\Core\Model\Entity\AnrSuperClass;
-use Monarc\Core\Model\Entity\Scale;
 use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Model\GetAndSet;
 use Monarc\Core\Model\Table\AbstractEntityTable;
-use Monarc\Core\Model\Table\ScaleTable;
 use Doctrine\Common\Util\ClassUtils;
 use Ramsey\Uuid\Uuid;
 
@@ -613,92 +611,6 @@ abstract class AbstractService extends AbstractServiceFactory
                     }
                 }
             }
-        }
-    }
-
-    /**
-     * Verifies the consequences rates for the provided data and instance risk
-     *
-     * @param int $anrId The ANR's ID
-     * @param array $data The consequence data array
-     * @param array $instanceRisk The instance risk data array
-     *
-     * @throws Exception If there are incorrect values, return a comma-separated string of all the errors
-     */
-    protected function verifyRates($anrId, $data, $instanceRisk = null)
-    {
-        // TODO: Ensure that this method is never called inside a loop
-        // TODO: Optimizations: Fetch all threats directly instead of performing one query for each scale type
-        $errors = [];
-
-        // Ensure threat rate is within valid bounds
-        if (isset($data['threatRate'])) {
-            /** @var ScaleTable $scaleTable */
-            $scaleTable = $this->get('scaleTable');
-            $scaleThreat = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => Scale::TYPE_THREAT]);
-
-            $scaleThreat = $scaleThreat[0];
-
-            $prob = (int)$data['threatRate'];
-
-            if (($prob != -1) && (($prob < $scaleThreat->get('min')) || ($prob > $scaleThreat->get('max')))) {
-                $errors[] = 'Value for probability is not valid';
-            }
-        }
-
-        // Ensure vulnerability rate is within valid bounds
-        if (isset($data['vulnerabilityRate'])) {
-            /** @var ScaleTable $scaleTable */
-            $scaleTable = $this->get('scaleTable');
-            $scaleVul = $scaleTable->getEntityByFields(['anr' => $anrId, 'type' => Scale::TYPE_VULNERABILITY]);
-
-            $scaleVul = $scaleVul[0];
-
-            $prob = (int)$data['vulnerabilityRate'];
-
-            if (($prob != -1) && (($prob < $scaleVul->get('min')) || ($prob > $scaleVul->get('max')))) {
-                $errors[] = 'Value for qualification is not valid';
-            }
-        }
-
-        // If an instance risk is passed, make sure the reduction amount is not higher than the vulnerability rate
-        if ($instanceRisk && isset($data['reductionAmount'])) {
-            $reductionAmount = (int)$data['reductionAmount'];
-
-            $vulnerabilityRate = isset($data['vulnerabilityRate'])
-                ? (int)$data['vulnerabilityRate']
-                : $instanceRisk['vulnerabilityRate'];
-            if (($vulnerabilityRate != -1) && (($reductionAmount < 0) || ($reductionAmount > $vulnerabilityRate))) {
-                $errors[] = 'Value for reduction amount is not valid (min ' . $data['vulnerabilityRate'] . ')';
-            }
-        }
-
-        if (count($errors)) {
-            throw new Exception(implode(', ', $errors), 412);
-        }
-    }
-
-    /**
-     * Computes and returns the Git version
-     *
-     * @param string $type The format of version to retrieve (major / full)
-     *
-     * @return string The version string
-     */
-    protected function getVersion($type = 'major')
-    {
-        switch (strtolower($type)) {
-            case 'full':
-                return isset($this->monarcConf['version']) ? $this->monarcConf['version'] : null;
-                break;
-            default:
-            case 'major':
-                if (!empty($this->monarcConf['version'])) {
-                    return implode('.', array_slice(explode('.', $this->monarcConf['version']), 0, 2));
-                } else {
-                    return null;
-                }
-                break;
         }
     }
 

@@ -111,32 +111,6 @@ return [
                 ],
             ],
 
-            'monarc_api_anr_instances_risks' => [
-                'type' => 'segment',
-                'options' => [
-                    'route' => '/api/anr/:anrid/instances-risks[/:id]',
-                    'constraints' => [
-                        'id' => '[0-9]+',
-                    ],
-                    'defaults' => [
-                        'controller' => Controller\ApiAnrInstancesRisksController::class,
-                    ],
-                ],
-            ],
-
-            'monarc_api_anr_instances_risksop' => [
-                'type' => 'segment',
-                'options' => [
-                    'route' => '/api/anr/:anrid/instances-oprisks[/:id]',
-                    'constraints' => [
-                        'id' => '[0-9]+',
-                    ],
-                    'defaults' => [
-                        'controller' => Controller\ApiAnrInstancesRisksOpController::class,
-                    ],
-                ],
-            ],
-
             'monarc_api_models_duplication' => [
                 'type' => 'segment',
                 'options' => [
@@ -162,8 +136,6 @@ return [
             Controller\IndexController::class => InvokableFactory::class,
             // TODO: Move all the controllers to BackOffice side.
             Controller\AuthenticationController::class => AutowireFactory::class,
-            Controller\ApiAnrInstancesRisksController::class => Controller\ApiAnrInstancesRisksControllerFactory::class,
-            Controller\ApiAnrInstancesRisksOpController::class => AutowireFactory::class,
             Controller\ApiModelsDuplicationController::class => AutowireFactory::class,
         ],
     ],
@@ -253,12 +225,12 @@ return [
             DeprecatedTable\MeasureTable::class => AutowireFactory::class,
             DeprecatedTable\MeasureMeasureTable::class => AutowireFactory::class,
             DeprecatedTable\SoaCategoryTable::class => AutowireFactory::class,
-            DeprecatedTable\InstanceRiskTable::class => AutowireFactory::class,
-            DeprecatedTable\InstanceRiskOpTable::class => AutowireFactory::class,
             DeprecatedTable\HistoricalTable::class => AutowireFactory::class,
             DeprecatedTable\RolfTagTable::class => AutowireFactory::class,
             DeprecatedTable\RolfRiskTable::class => AutowireFactory::class,
             DeprecatedTable\DeliveriesModelsTable::class => AutowireFactory::class,
+            Table\InstanceRiskTable::class => AutowireFactory::class,
+            Table\InstanceRiskOpTable::class => AutowireFactory::class,
             Table\ScaleTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\ScaleCommentTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\ScaleImpactTypeTable::class => Table\Factory\CoreEntityManagerFactory::class,
@@ -312,6 +284,8 @@ return [
             InputValidator\Instance\UpdateInstanceDataInputValidator::class => ReflectionBasedAbstractFactory::class,
             InputValidator\Instance\PatchInstanceDataInputValidator::class => ReflectionBasedAbstractFactory::class,
             InputValidator\InstanceConsequence\PatchConsequenceDataInputValidator::class =>
+                ReflectionBasedAbstractFactory::class,
+            InputValidator\InstanceRisk\UpdateInstanceRiskDataInputValidator::class =>
                 ReflectionBasedAbstractFactory::class,
         ],
         'shared' => [

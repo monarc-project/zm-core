@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
  * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
@@ -7,63 +7,49 @@
 
 namespace Monarc\Core\Service\Traits;
 
-// TODO: use bcmath lib for the calculations and refactor it.
 trait RiskCalculationTrait
 {
-    /**
-     * Calculates the risk's confidentiality value based on the provided parameters
-     * @param int $c The base confidentiality value
-     * @param int $tRate Threat rate
-     * @param int $vRate Vulnerability rate
-     * @return int The risk's confidentiality value
-     */
-    protected function getRiskC($c, $tRate, $vRate)
-    {
-        return $c !== -1 && $tRate !== -1 && $vRate !== -1
-            ? $c * $tRate * $vRate
-            : -1;
+    protected function calculateRiskConfidentiality(
+        int $instanceConfidentialityValue,
+        int $threatRate,
+        int $vulnerabilityRate
+    ): int {
+        return $instanceConfidentialityValue === -1 || $threatRate === -1 || $vulnerabilityRate === -1
+            ? -1
+            : $instanceConfidentialityValue * $threatRate * $vulnerabilityRate;
+    }
+
+    protected function calculateRiskIntegrity(
+        int $instanceIntegrityImpact,
+        int $threatRate,
+        int $vulnerabilityRate
+    ): int {
+        return $instanceIntegrityImpact === -1 || $threatRate === -1 || $vulnerabilityRate === -1
+            ? -1
+            : $instanceIntegrityImpact * $threatRate * $vulnerabilityRate;
+    }
+
+    protected function calculateRiskAvailability(
+        int $instanceAvailabilityImpact,
+        int $threatRate,
+        int $vulnerabilityRate
+    ) {
+        return $instanceAvailabilityImpact === -1 || $threatRate === -1 || $vulnerabilityRate === -1
+            ? -1
+            : $instanceAvailabilityImpact * $threatRate * $vulnerabilityRate;
     }
 
     /**
-     * Calculates the risk's integrity value based on the provided parameters
-     * @param int $i The base integrity value
-     * @param int $tRate Threat rate
-     * @param int $vRate Vulnerability rate
-     * @return int The risk's integrity value
+     * @param int[] $instanceImpacts
      */
-    protected function getRiskI($i, $tRate, $vRate)
-    {
-        return $i !== -1 && $tRate !== -1 && $vRate !== -1
-            ? $i * $tRate * $vRate
-            : -1;
-    }
-
-    /**
-     * Calculates the risk's availability (Disponibilité) value based on the provided parameters
-     * @param int $d The base availability value
-     * @param int $tRate Threat rate
-     * @param int $vRate Vulnerability rate
-     * @return int The risk's availability value
-     */
-    protected function getRiskD($d, $tRate, $vRate)
-    {
-        return $d !== -1 && $tRate !== -1 && $vRate !== -1
-            ? $d * $tRate * $vRate
-            : -1;
-    }
-
-    /**
-     * Calculates the target risk based on the provided parameters
-     * @param array[int] $impacts The impacts values
-     * @param int $tRate Threat rate
-     * @param int $vRate Vulnerability rate
-     * @param int $vRateReduc Vulnerability rate reduction
-     * @return int The target risk
-     */
-    protected function getTargetRisk($impacts, $tRate, $vRate, $vRateReduc)
-    {
-        return max($impacts) !== -1 && $tRate !== -1 && $vRate !== -1
-            ? max($impacts) * $tRate * ($vRate - $vRateReduc)
-            : -1;
+    protected function calculateTargetRisk(
+        array $instanceImpacts,
+        int $threatRate,
+        int $vulnerabilityRate,
+        int $vulnerabilityReductionRate
+    ): int {
+        return max($instanceImpacts) === -1 || $threatRate === -1 || $vulnerabilityRate === -1
+            ? -1
+            : max($instanceImpacts) * $threatRate * ($vulnerabilityRate - $vulnerabilityReductionRate);
     }
 }

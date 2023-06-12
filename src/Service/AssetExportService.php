@@ -57,7 +57,6 @@ class AssetExportService extends AbstractService
         $return = [
             'type' => 'asset',
             'asset' => $entity->getJsonArray($assetObj),
-            'version' => $this->getVersion(),
             'amvs' => [],
             'threats' => [],
             'themes' => [],

@@ -164,7 +164,7 @@ class InstanceConsequenceService
         /** @var Entity\InstanceConsequence $instanceConsequence */
         $instanceConsequence = $this->instanceConsequenceTable->findByIdAndAnr($id, $anr);
 
-        $this->verifyImpactData($this->scaleTable->findByAnrAndType($anr, Entity\ScaleSuperClass::TYPE_IMPACT), $data);
+        $this->verifyImpacts($anr, $this->scaleTable, $data);
 
         $instanceConsequence
             ->setIsHidden((bool)$data['isHidden'])

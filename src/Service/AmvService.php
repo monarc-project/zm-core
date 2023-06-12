@@ -540,7 +540,7 @@ class AmvService implements PositionUpdatableServiceInterface
         return true;
     }
 
-
+    // TODO: extract in a separate service (Currently can be called from FO and BO (single library object export), $withEval is only for FO)
     public function generateExportArray(Entity\AmvSuperClass $amv, $anrId, bool $withEval = false): array
     {
         $amvObj = [

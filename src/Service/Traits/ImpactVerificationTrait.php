@@ -8,21 +8,84 @@
 namespace Monarc\Core\Service\Traits;
 
 use Monarc\Core\Exception\Exception;
+use Monarc\Core\Model\Entity\AnrSuperClass;
+use Monarc\Core\Model\Entity\InstanceRiskSuperClass;
 use Monarc\Core\Model\Entity\ScaleSuperClass;
+use Monarc\Core\Table\ScaleTable;
 
 trait ImpactVerificationTrait
 {
-    protected function verifyImpactData(ScaleSuperClass $scale, array $data): void
+    private $verificationErrorMessages = [];
+
+    /**
+     * @throws Exception
+     */
+    protected function verifyImpacts(AnrSuperClass $anr, ScaleTable $scaleTable, array $data): void
     {
-        if (isset($data['c'])) {
-            $value = (int)$data['c'];
-            if ($value != -1 && ($value < $scaleImpact->getMin() || $value > $scaleImpact->get('max'))) {
-                $errors[] = 'Value for ' . $field . ' is not valid';
+        $scale = $scaleTable->findByAnrAndType($anr, ScaleSuperClass::TYPE_IMPACT);
+        $this->verificationErrorMessages = [];
+        if (isset($data['confidentiality'])) {
+            $value = (int)$data['confidentiality'];
+            $this->verifyValue($value, $scale, 'confidentiality');
+        }
+        if (isset($data['integrity'])) {
+            $value = (int)$data['integrity'];
+            $this->verifyValue($value, $scale, 'integrity');
+        }
+        if (isset($data['availability'])) {
+            $value = (int)$data['availability'];
+            $this->verifyValue($value, $scale, 'availability');
+        }
+
+        if (!empty($this->verificationErrorMessages)) {
+            throw new Exception(implode(', ', $this->verificationErrorMessages), 412);
+        }
+    }
+
+    protected function verifyInstanceRiskRates(
+        InstanceRiskSuperClass $instanceRisk,
+        ScaleTable $scaleTable,
+        array $data
+    ): void {
+        $this->verificationErrorMessages = [];
+        if (isset($data['threatRate'])) {
+            $threatScale = $scaleTable->findByAnrAndType($instanceRisk->getAnr(), ScaleSuperClass::TYPE_THREAT);
+            $value = (int)$data['threatRate'];
+            $this->verifyValue($value, $threatScale, 'threat probability');
+        }
+        if (isset($data['vulnerabilityRate'])) {
+            $vulnerabilityScale = $scaleTable
+                ->findByAnrAndType($instanceRisk->getAnr(), ScaleSuperClass::TYPE_VULNERABILITY);
+            $value = (int)$data['vulnerabilityRate'];
+            $this->verifyValue($value, $vulnerabilityScale, 'vulnerability qualification');
+        }
+        if (isset($data['reductionAmount'])) {
+            $reductionAmount = (int)$data['reductionAmount'];
+            $vulnerabilityRate = (int)($data['vulnerabilityRate'] ?? $instanceRisk->getVulnerabilityRate());
+            if ($vulnerabilityRate !== -1 && ($reductionAmount < 0 || $reductionAmount > $vulnerabilityRate)) {
+                $this->verificationErrorMessages[] = sprintf(
+                    'The value for reduction amount (%d) is not valid (min %d).',
+                    $reductionAmount,
+                    $vulnerabilityRate
+                );
             }
         }
 
-        if (!empty($errors)) {
-            throw new Exception(implode(', ', $errors), 412);
+        if (!empty($this->verificationErrorMessages)) {
+            throw new Exception(implode(', ', $this->verificationErrorMessages), 412);
+        }
+    }
+
+    private function verifyValue(int $value, ScaleSuperClass $scale, string $scaleType): void
+    {
+        if ($value !== -1 && ($value < $scale->getMin() || $value > $scale->getMax())) {
+            $this->verificationErrorMessages[] = sprintf(
+                'The value %d of "%s" is out of bounds. min: %d max: %d.',
+                $value,
+                $scaleType,
+                $scale->getMin(),
+                $scale->getMax()
+            );
         }
     }
 }

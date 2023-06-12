@@ -10,14 +10,13 @@ namespace Monarc\Core\Service;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\InputFormatter\FormattedInputParams;
 use Monarc\Core\Model\Entity;
-use Monarc\Core\Model\Table\InstanceRiskTable;
 use Monarc\Core\Table;
 
 class ThreatService
 {
     private Table\ThreatTable $threatTable;
 
-    private InstanceRiskTable $instanceRiskTable;
+    private Table\InstanceRiskTable $instanceRiskTable;
 
     private Table\ModelTable $modelTable;
 
@@ -31,7 +30,7 @@ class ThreatService
 
     public function __construct(
         Table\ThreatTable $threatTable,
-        InstanceRiskTable $instanceRiskTable,
+        Table\InstanceRiskTable $instanceRiskTable,
         Table\ModelTable $modelTable,
         Table\ThemeTable $themeTable,
         InstanceRiskService $instanceRiskService,
@@ -185,9 +184,9 @@ class ThreatService
         if ($areCiaChanged) {
             $instancesRisks = $this->instanceRiskTable->findByThreat($threat);
             foreach ($instancesRisks as $instanceRisk) {
-                $this->instanceRiskService->updateRisks($instanceRisk);
+                $this->instanceRiskService->recalculateRiskRates($instanceRisk);
             }
-            $this->instanceRiskTable->getDb()->flush();
+            $this->instanceRiskTable->flush();
         }
     }
 

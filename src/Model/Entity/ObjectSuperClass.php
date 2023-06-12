@@ -173,6 +173,8 @@ class ObjectSuperClass implements PositionedEntityInterface
     protected $childrenLinks;
 
     /**
+     * Note: On BackofficeOffice side the instances list includes all the instances across all the models.
+     *
      * @var ArrayCollection|InstanceSuperClass[]
      *
      * @ORM\OneToMany(targetEntity="Instance", mappedBy="object")

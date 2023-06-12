@@ -8,6 +8,7 @@
 namespace Monarc\Core\Validator\InputValidator\Threat;
 
 use Laminas\Filter\StringTrim;
+use Laminas\Filter\ToInt;
 use Laminas\Validator\InArray;
 use Laminas\Validator\StringLength;
 use Monarc\Core\Model\Entity\ThreatSuperClass;
@@ -41,7 +42,7 @@ class PostThreatDataInputValidator extends AbstractInputValidator
                 'required' => true,
                 'filters' => [
                     [
-                        'name' => 'ToInt'
+                        'name' => ToInt::class
                     ],
                 ],
                 'validators' => [
@@ -58,7 +59,7 @@ class PostThreatDataInputValidator extends AbstractInputValidator
                 'required' => true,
                 'filters' => [
                     [
-                        'name' => 'ToInt'
+                        'name' => ToInt::class
                     ],
                 ],
                 'validators' => [
@@ -75,7 +76,7 @@ class PostThreatDataInputValidator extends AbstractInputValidator
                 'required' => true,
                 'filters' => [
                     [
-                        'name' => 'ToInt'
+                        'name' => ToInt::class
                     ],
                 ],
                 'validators' => [
@@ -92,7 +93,7 @@ class PostThreatDataInputValidator extends AbstractInputValidator
                 'required' => false,
                 'filters' => [
                     [
-                        'name' => 'ToInt'
+                        'name' => ToInt::class
                     ],
                 ],
                 'validators' => [],
@@ -102,7 +103,7 @@ class PostThreatDataInputValidator extends AbstractInputValidator
                 'required' => false,
                 'filters' => [
                     [
-                        'name' => 'ToInt'
+                        'name' => ToInt::class
                     ],
                 ],
                 'validators' => [
