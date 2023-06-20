@@ -7,7 +7,6 @@
 
 namespace Monarc\Core\Service;
 
-use Doctrine\ORM\EntityNotFoundException;
 use Monarc\Core\Model\Entity\Anr;
 use Monarc\Core\Model\Entity\InstanceMetadataFieldSuperClass;
 use Monarc\Core\Model\Entity\InstanceMetadataField;
@@ -96,20 +95,18 @@ class InstanceMetadataFieldService
         return $result;
     }
 
-    public function delete(int $id): void
+    public function delete(AnrSuperClass $anr, int $id): void
     {
-        $metadataToDelete = $this->instanceMetadataFieldTable->findById($id);
-        if ($metadataToDelete === null) {
-            throw new EntityNotFoundException(sprintf('Metadata with ID %d is not found', $id));
+        /** @var InstanceMetadataFieldSuperClass $metadataToDelete */
+        $metadataToDelete = $this->instanceMetadataFieldTable->findByIdAndAnr($id, $anr);
+
+        $translationsToRemove = $this->translationTable
+            ->findByAnrAndKey($anr, $metadataToDelete->getLabelTranslationKey());
+        foreach ($translationsToRemove as $translationToRemove) {
+            $this->translationTable->remove($translationToRemove, false);
         }
 
         $this->instanceMetadataFieldTable->remove($metadataToDelete);
-
-        $translationsKeys[] = $metadataToDelete->getLabelTranslationKey();
-
-        if (!empty($translationsKeys)) {
-            $this->translationTable->deleteListByKeys($translationsKeys);
-        }
     }
 
     protected function createTranslationObject(
@@ -131,8 +128,8 @@ class InstanceMetadataFieldService
     public function getInstanceMetadataField(Anr $anr, int $id, string $language): array
     {
         /** @var InstanceMetadataFieldSuperClass $metadata */
-        $metadata = $this->instanceMetadataFieldTable->findById($id);
-        if ($language === "") {
+        $metadata = $this->instanceMetadataFieldTable->findByIdAndAnr($id, $anr);
+        if ($language === '') {
             $language = $this->getAnrLanguageCode($anr);
         }
 
@@ -150,10 +147,10 @@ class InstanceMetadataFieldService
         ];
     }
 
-    public function update(int $id, array $data): InstanceMetadataFieldSuperClass
+    public function update(AnrSuperClass $anr, int $id, array $data): InstanceMetadataFieldSuperClass
     {
         /** @var InstanceMetadataFieldSuperClass $metadata */
-        $metadata = $this->instanceMetadataFieldTable->findById($id);
+        $metadata = $this->instanceMetadataFieldTable->findByIdAndAnr($id, $anr);
         $languageCode = $data['language'] ?? $this->getAnrLanguageCode($metadata->getAnr());
         if (!empty($data[$languageCode])) {
             $translationKey = $metadata->getLabelTranslationKey();
@@ -171,6 +168,6 @@ class InstanceMetadataFieldService
 
     protected function getAnrLanguageCode(AnrSuperClass $anr): string
     {
-        return $this->configService->getActiveLanguageCodes()[$anr->getLanguage()];
+        throw new \LogicException('The "Core\Anr" entity does not have a language field.');
     }
 }

@@ -7,7 +7,6 @@
 
 namespace Monarc\Core\Service;
 
-use Monarc\Core\Table\InstanceTable;
 use Monarc\Core\Table\MonarcObjectTable;
 use Monarc\Core\Table\InstanceRiskOpTable;
 
@@ -24,7 +23,6 @@ class RolfRiskServiceFactory extends AbstractServiceFactory
         'entity' => 'Monarc\Core\Model\Entity\RolfRisk',
         'rolfTagTable' => 'Monarc\Core\Model\Table\RolfTagTable',
         'MonarcObjectTable' => MonarcObjectTable::class,
-        'instanceTable' => InstanceTable::class,
         'measureTable' => 'Monarc\Core\Model\Table\MeasureTable',
         'instanceRiskOpTable' => InstanceRiskOpTable::class,
         'instanceRiskOpService' => InstanceRiskOpService::class,

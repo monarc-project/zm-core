@@ -118,14 +118,14 @@ class InstanceSuperClass implements PositionedEntityInterface
     /**
      * @var InstanceRiskSuperClass[]|ArrayCollection
      *
-     * @ORM\OneToMany(targetEntity="InstanceRisk", mappedBy="instance")
+     * @ORM\OneToMany(targetEntity="InstanceRisk", orphanRemoval=true, mappedBy="instance")
      */
     protected $instanceRisks;
 
     /**
      * @var InstanceRiskOpSuperClass[]|ArrayCollection
      *
-     * @ORM\OneToMany(targetEntity="InstanceRiskOp", mappedBy="instance")
+     * @ORM\OneToMany(targetEntity="InstanceRiskOp", orphanRemoval=true, mappedBy="instance")
      */
     protected $operationalInstanceRisks;
 

@@ -11,6 +11,8 @@ use Monarc\Core\InputFormatter\AbstractInputFormatter;
 
 class GetScaleImpactTypesInputFormatter extends AbstractInputFormatter
 {
+    protected const DEFAULT_LIMIT = 0;
+
     public static string $defaultOrderFields = 'position';
 
     protected static array $allowedFilterFields = [

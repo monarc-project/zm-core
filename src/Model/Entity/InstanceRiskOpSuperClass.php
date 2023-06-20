@@ -61,8 +61,7 @@ class InstanceRiskOpSuperClass
      *
      * @ORM\ManyToOne(targetEntity="Instance", cascade={"persist"})
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="instance_id", referencedColumnName="id", nullable=true,
-     *     orphanRemoval=true, onDelete="CASCADE")
+     *   @ORM\JoinColumn(name="instance_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
      * })
      */
     protected $instance;

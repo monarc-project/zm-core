@@ -110,19 +110,6 @@ return [
                     ],
                 ],
             ],
-
-            'monarc_api_models_duplication' => [
-                'type' => 'segment',
-                'options' => [
-                    'route' => '/api/models-duplication[/:id]',
-                    'constraints' => [
-                        'id' => '[0-9]+',
-                    ],
-                    'defaults' => [
-                        'controller' => Controller\ApiModelsDuplicationController::class,
-                    ],
-                ],
-            ],
         ],
     ],
 
@@ -134,9 +121,7 @@ return [
     'controllers' => [
         'factories' => [
             Controller\IndexController::class => InvokableFactory::class,
-            // TODO: Move all the controllers to BackOffice side.
             Controller\AuthenticationController::class => AutowireFactory::class,
-            Controller\ApiModelsDuplicationController::class => AutowireFactory::class,
         ],
     ],
     'service_manager' => [

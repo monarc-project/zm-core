@@ -235,13 +235,13 @@ class OperationalRiskScaleService
         return $result;
     }
 
-    public function deleteOperationalRiskScaleTypes(array $data): void
+    public function deleteOperationalRiskScaleTypes(Entity\AnrSuperClass $anr, array $data): void
     {
         $translationsKeys = [];
 
         foreach ($data as $id) {
             /** @var Entity\OperationalRiskScaleType $scaleTypeToDelete */
-            $scaleTypeToDelete = $this->operationalRiskScaleTypeTable->findById($id);
+            $scaleTypeToDelete = $this->operationalRiskScaleTypeTable->findByIdAndAnr((int)$id, $anr);
             $translationsKeys[] = $scaleTypeToDelete->getLabelTranslationKey();
 
             foreach ($scaleTypeToDelete->getOperationalRiskScaleComments() as $operationalRiskScaleComment) {
@@ -253,7 +253,7 @@ class OperationalRiskScaleService
         $this->operationalRiskScaleTable->flush();
 
         if (!empty($translationsKeys)) {
-            $this->translationTable->deleteListByKeys($translationsKeys);
+            $this->translationTable->deleteListByAnrAndKeys($anr, $translationsKeys);
         }
     }
 
@@ -476,7 +476,7 @@ class OperationalRiskScaleService
 
     protected function getLanguageCodeByAnr(Entity\AnrSuperClass $anr): string
     {
-        return throw new \LogicException('The "Core\Anr" entity does not have a language field.');
+        throw new \LogicException('The "Core\Anr" entity does not have a language field.');
     }
 
     protected function getLanguageCodesForTranslations(): array

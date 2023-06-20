@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Service;
 
+use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\RolfRiskSuperClass;
 use Monarc\Core\Table\AnrTable;
 use Monarc\Core\Table\InstanceRiskOpTable;
@@ -15,8 +16,6 @@ use Monarc\Core\Model\Table\RolfRiskTable;
 use Monarc\Core\Model\Table\RolfTagTable;
 use Monarc\Core\Table\InstanceTable;
 use Monarc\Core\Table\MonarcObjectTable;
-use Doctrine\ORM\Query\QueryException;
-use Doctrine\ORM\Mapping\MappingException;
 
 /**
  * Rolf Risk Service
@@ -29,8 +28,6 @@ class RolfRiskService extends AbstractService
     protected $rolfTagTable;
     /** @var MonarcObjectTable */
     protected $MonarcObjectTable;
-    /** @var InstanceTable */
-    protected $instanceTable;
     /** @var InstanceRiskOpTable */
     protected $instanceRiskOpTable;
     /** @var InstanceRiskOpService */
@@ -125,6 +122,7 @@ class RolfRiskService extends AbstractService
         if (!empty($data['anr'])) {
             /** @var AnrTable $anrTable */
             $anrTable = $this->get('anrTable');
+            /** @var AnrSuperClass $anr */
             $anr = $anrTable->findById((int)$data['anr']);
             $rolfRisk->setAnr($anr);
         }
@@ -155,8 +153,6 @@ class RolfRiskService extends AbstractService
         $instanceRiskOpService = $this->get('instanceRiskOpService');
         /** @var MonarcObjectTable $monarcObjectTable */
         $monarcObjectTable = $this->get('MonarcObjectTable');
-        /** @var InstanceTable $instanceTable */
-        $instanceTable = $this->get('instanceTable');
         foreach ($rolfRisk->getTags() as $addedRolfTag) {
             if ($anr === null) {
                 $objects = $monarcObjectTable->findByRolfTag($addedRolfTag);
@@ -235,6 +231,9 @@ class RolfRiskService extends AbstractService
         unset($data['measures']);
         $rolfRisk->setDbAdapter($rolfRiskTable->getDb());
         $rolfRisk->setLanguage($this->getLanguage());
+        if (isset($data['anr'])) {
+            unset($data['anr']);
+        }
         $rolfRisk->exchangeArray($data);
         $dependencies = property_exists($this, 'dependencies') ? $this->dependencies : [];
         $this->setDependencies($rolfRisk, $dependencies);
@@ -244,11 +243,9 @@ class RolfRiskService extends AbstractService
             $currentTagId[] = $tag->getId();
         }
 
-        $rolfRisk->get('tags')->initialize();
-
-        foreach ($rolfRisk->get('tags') as $rolfTag) {
+        foreach ($rolfRisk->getTags() as $rolfTag) {
             if (\in_array($rolfTag->getId(), $rolfTags, true)) {
-                unset($rolfTags[\array_search($rolfTag->getId(), $rolfTags)]);
+                unset($rolfTags[\array_search($rolfTag->getId(), $rolfTags, true)]);
             } else {
                 $rolfRisk->get('tags')->removeElement($rolfTag);
             }
@@ -263,8 +260,6 @@ class RolfRiskService extends AbstractService
                 }
             }
         }
-
-        $this->setDependencies($rolfRisk, ['anr']);
 
         $newTagId = [];
         foreach ($rolfRisk->getTags() as $tag) {
@@ -290,9 +285,7 @@ class RolfRiskService extends AbstractService
         /** @var InstanceRiskOpTable $instanceRiskOpTable */
         $instanceRiskOpTable = $this->get('instanceRiskOpTable');
         foreach ($deletedTags as $deletedTag) {
-            // TODO: this wont work...
-            $objects = $monarcObjectTable->getEntityByFields(['rolfTag' => $deletedTag]);
-            foreach ($objects as $object) {
+            foreach ($monarcObjectTable->findByRolfTag($deletedTag) as $object) {
                 $instancesRisksOp = $instanceRiskOpTable->findByObjectAndRolfRisk($object, $rolfRisk);
 
                 foreach ($instancesRisksOp as $instanceRiskOp) {
@@ -304,40 +297,24 @@ class RolfRiskService extends AbstractService
             }
         }
 
-        /** @var InstanceTable $instanceTable */
-        $instanceTable = $this->get('instanceTable');
         /** @var InstanceRiskOpService $instanceRiskOpService */
         $instanceRiskOpService = $this->get('instanceRiskOpService');
         foreach ($addedTags as $addedTag) {
-            $objects = $monarcObjectTable->getEntityByFields(['rolfTag' => $addedTag]);
-            foreach ($objects as $object) {
-                try {
-                    $instances = $instanceTable->getEntityByFields(['object' => $object->getUuid()]);
-                } catch (QueryException | MappingException $e) {
-                    $instances = $instanceTable->getEntityByFields([
-                        'object' => [
-                            'anr' => $data['anr'],
-                            'uuid' => $object->getUuid()
-                        ]
-                    ]);
-                }
-
-                foreach ($instances as $instance) {
+            foreach ($monarcObjectTable->findByRolfTag($addedTag) as $object) {
+                foreach ($object->getInstances() as $instance) {
                     $instanceRiskOpService->createInstanceRiskOpWithScales(
                         $instance,
                         $object,
                         $rolfRisk
                     );
                 }
-
-                $instanceRiskOpTable->flush();
             }
         }
+        $instanceRiskOpTable->flush();
 
         foreach ($currentTagId as $currentTag) {
             // manage the fact that label can changed for OP risk
-            $objects = $monarcObjectTable->getEntityByFields(['rolfTag' => $currentTag]);
-            foreach ($objects as $object) {
+            foreach ($monarcObjectTable->findByRolfTag($currentTag) as $object) {
                 $instancesRisksOp = $instanceRiskOpTable->findByObjectAndRolfRisk($object, $rolfRisk);
 
                 foreach ($instancesRisksOp as $instanceRiskOp) {

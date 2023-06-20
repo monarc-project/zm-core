@@ -11,6 +11,8 @@ use Monarc\Core\InputFormatter\AbstractInputFormatter;
 
 class GetScalesInputFormatter extends AbstractInputFormatter
 {
+    protected const DEFAULT_LIMIT = 0;
+
     protected static array $allowedFilterFields = [
         'anr',
     ];

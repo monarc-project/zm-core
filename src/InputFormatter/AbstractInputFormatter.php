@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -12,7 +12,6 @@ use Doctrine\Common\Collections\Expr\Comparison;
 use Doctrine\Common\Collections\Expr\CompositeExpression;
 use LogicException;
 use Monarc\Core\Exception\Exception;
-use Monarc\Core\Model\Entity\AnrSuperClass;
 
 abstract class AbstractInputFormatter
 {
@@ -27,8 +26,8 @@ abstract class AbstractInputFormatter
 
     /**
      * List of allowed search fields or composition of relation field separated by "." with the destination field.
-     * There is a special placeholder available {anrLanguage} to specify that anr language index has to be added.
-     *  example: 'asset.label{anrLanguage}'
+     * There is a special placeholder available {languageIndex} to specify that language index has to be added.
+     *  example: 'asset.label{languageIndex}'
      */
     protected static array $allowedSearchFields = [];
 
@@ -60,6 +59,8 @@ abstract class AbstractInputFormatter
      */
     protected static string $defaultOrderFields = '';
 
+    protected int $defaultLanguageIndex = 1;
+
     private array $originalInput = [];
 
     public function getOriginalInput(): array
@@ -83,23 +84,22 @@ abstract class AbstractInputFormatter
         return $this->processInputParams($inputParams);
     }
 
+    public function setDefaultLanguageIndex(int $languageIndex): void
+    {
+        $this->defaultLanguageIndex = $languageIndex;
+    }
+
     protected function processInputParams(array $inputParams): FormattedInputParams
     {
         $this->formattedInputParams = new FormattedInputParams();
 
         /* Add search filter. */
         if (!empty($inputParams['filter']) && !empty(static::$allowedSearchFields)) {
-            $searchFields = static::$allowedSearchFields;
-            if (isset($inputParams['anr'])
-                && $inputParams['anr'] instanceof AnrSuperClass
-                && method_exists($inputParams['anr'], 'getLanguage')
-            ) {
-                $searchFields = array_map(static function ($field) {
-                    global $inputParams;
-
-                    return str_replace('{anrLanguage}', $inputParams['anr']->getLanguage(), $field);
-                }, $searchFields);
-            }
+            $searchFields = array_map(function ($field) {
+                return strpos('{languageIndex}', $field) !== false
+                    ? str_replace('{languageIndex}', (string)$this->defaultLanguageIndex, $field)
+                    : $field;
+            }, static::$allowedSearchFields);
 
             $this->formattedInputParams->setSearch([
                 'fields' => $searchFields,

@@ -11,6 +11,8 @@ use Monarc\Core\InputFormatter\AbstractInputFormatter;
 
 class GetScaleCommentsInputFormatter extends AbstractInputFormatter
 {
+    protected const DEFAULT_LIMIT = 0;
+
     protected static array $allowedFilterFields = [
         'anr',
         'scale',

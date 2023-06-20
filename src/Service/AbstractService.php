@@ -17,7 +17,7 @@ use Doctrine\Common\Util\ClassUtils;
 use Ramsey\Uuid\Uuid;
 
 /**
- * TODO: refactor, clean up, but better to remove the class.
+ * TODO: Remove the class as soon as all the services are refactored.
  * Abstract Service
  *
  * Class AbstractService
@@ -81,29 +81,18 @@ abstract class AbstractService extends AbstractServiceFactory
     }
 
     /**
-     * Returns the ServiceFactory attached to this service. The factory generally has the same name as the class
-     * appended with "Factory".
-     *
-     * @see AbstractServiceFactory
-     */
-    protected function getServiceFactory()
-    {
-        return $this->serviceFactory;
-    }
-
-    /**
      * Parses the filter value coming from the frontend and returns an array of columns to filter. Basically, this
      * method will construct an array where the keys are the columns, and the value of each key is the filter parameter.
      *
-     * @param string $filter  The value to look for
-     * @param array  $columns An array of columns in which the value is searched
+     * @param string $filter The value to look for
+     * @param array $columns An array of columns in which the value is searched
      *
      * @return array Key/pair array as per the description
      */
-    protected function parseFrontendFilter($filter, $columns = [])
+    protected function parseFrontendFilter($filter, $columns = []): array
     {
         $output = [];
-        if (!is_null($filter) && $columns) {
+        if ($filter !== null && !empty($columns)) {
             foreach ($columns as $c) {
                 $output[$c] = $filter;
             }
@@ -157,7 +146,7 @@ abstract class AbstractService extends AbstractServiceFactory
      * are ignored but kept for compatibility with getList calls. The order parameter is also ignored since it
      * will have no impact on the final count.
      *
-     * @param array|null $filter    The array of columns => values which should be filtered (in a WHERE.. OR.. fashion)
+     * @param array|null $filter The array of columns => values which should be filtered (in a WHERE.. OR.. fashion)
      * @param array|null $filterAnd The array of columns => values which should be filtered (in a WHERE.. AND.. fashion)
      *
      * @return int The number of elements retrieved from the query
@@ -165,21 +154,17 @@ abstract class AbstractService extends AbstractServiceFactory
     public function getFilteredCount($filter = null, $filterAnd = null)
     {
         // set limit to null because we want to count the total number of objects
-        return count($this->getList(1, null, null, $filter, $filterAnd));
-        // return $this->get('table')->countFiltered(
-        //     $this->parseFrontendFilter($filter, $this->filterColumns),
-        //     $filterAnd
-        // );
+        return \count($this->getList(1, null, null, $filter, $filterAnd));
     }
 
     /**
      * Returns the list of elements based on the provided filters passed in parameters. Results are paginated (using the
      * $page and $limit combo), except when $limit is <= 0, in which case all results will be returned.
      *
-     * @param int        $page      The page number, starting at 1.
-     * @param int        $limit     The maximum number of elements retrieved, or null to retrieve everything
-     * @param array|null $order     The order in which elements should be retrieved (['column' => 'ASC/DESC'])
-     * @param array|null $filter    The array of columns => values which should be filtered (in a WHERE.. OR.. fashion)
+     * @param int $page The page number, starting at 1.
+     * @param int $limit The maximum number of elements retrieved, or null to retrieve everything
+     * @param array|null $order The order in which elements should be retrieved (['column' => 'ASC/DESC'])
+     * @param array|null $filter The array of columns => values which should be filtered (in a WHERE.. OR.. fashion)
      * @param array|null $filterAnd The array of columns => values which should be filtered (in a WHERE.. AND.. fashion)
      *
      * @return array An array of elements based on the provided search query
@@ -219,7 +204,7 @@ abstract class AbstractService extends AbstractServiceFactory
      * Creates a new entity of the type of this class, where the fields have the value of the $data array.
      *
      * @param array $data The object's data
-     * @param bool  $last Whether this will be the last element of a batch. Setting this to false will suspend
+     * @param bool $last Whether this will be the last element of a batch. Setting this to false will suspend
      *                    flushing to the database to increase performance during batch insertions.
      *
      * @return object The created entity object
@@ -229,8 +214,8 @@ abstract class AbstractService extends AbstractServiceFactory
         $entity = $this->get('entity');
 
         /**
-        * @var AbstractEntityTable $table
-        */
+         * @var AbstractEntityTable $table
+         */
         $table = $this->get('table');
 
         // $class is already an entity instance created in AbstractServiceModelEntity.
@@ -413,26 +398,6 @@ abstract class AbstractService extends AbstractServiceFactory
     }
 
     /**
-     * Format and cleans up entities dependencies (relationships)
-     *
-     * @param array $entity The entity data array
-     * @param array $dependencies The entity's dependencies
-     */
-    protected function formatDependencies(&$entity, $dependencies)
-    {
-        foreach ($dependencies as $dependency) {
-            if (!empty($entity[$dependency])) {
-                $entity[$dependency] = $entity[$dependency]->getJsonArray();
-
-                // Remove the fields we don't want to appear in the JSON output
-                unset($entity[$dependency]['__initializer__']);
-                unset($entity[$dependency]['__cloner__']);
-                unset($entity[$dependency]['__isInitialized__']);
-            }
-        }
-    }
-
-    /**
      * Defines and loads the entity's dependencies (relationship fields)
      *
      * @param AbstractEntity $entity The entity to load
@@ -450,21 +415,19 @@ abstract class AbstractService extends AbstractServiceFactory
         $entity->setDbAdapter($db);
 
         foreach ($dependencies as $dependency) {
-            $deptable = $propertyname = $dependency;
+            $propertyname = $dependency;
             $matching = [];
             // si c'est 0 c'est pas bon non plus
             if (preg_match("/(\[([a-z0-9]*)\])\(([a-z0-9]*)\)$/", $deptable, $matching)) {
                 $propertyname = str_replace($matching[0], $matching[2], $deptable);
-                $deptable = str_replace($matching[0], $matching[3], $deptable);
             }
 
             $value = $entity->get($propertyname);
-            if (!is_null($value) && !empty($value) && !is_object($value)) {
+            if (!empty($value) && !\is_object($value)) {
                 if ($metadata->hasAssociation($propertyname)) {
                     $class = $metadata->getAssociationTargetClass($propertyname);
-                    // TODO: remove the FrontOffice dependency from Core!
                     // seems to have some bug with getDbadapter and anr and anr mustn t have uniqid or N identifier
-                    if (ClassUtils::getRealClass($class) != 'Monarc\FrontOffice\Model\Entity\Anr') {
+                    if (ClassUtils::getRealClass($class) !== 'Monarc\FrontOffice\Model\Entity\Anr') {
                         $valueIdentifier = $entity->getDbAdapter()
                             ->getClassMetadata(ClassUtils::getRealClass($class))
                             ->getIdentifierFieldNames();
@@ -472,20 +435,22 @@ abstract class AbstractService extends AbstractServiceFactory
                         $valueIdentifier = null;
                     }
 
-                    if (!is_array($value) || isset($value['id']) || isset($value['uuid'])) {
+                    if (!\is_array($value) || isset($value['id']) || isset($value['uuid'])) {
                         if ($valueIdentifier !== null
                             && (
                                 isset($value['uuid'])
                                 || (\is_string($value) && Uuid::isValid($value))
                             )
                         ) {
-                            if (in_array('anr', $valueIdentifier, true)) {
+                            if (\in_array('anr', $valueIdentifier, true)) {
                                 if (isset($value['anr'])
-                                    && (is_int($value['anr']) || $value['anr'] instanceof AnrSuperClass)
+                                    && (\is_int($value['anr']) || $value['anr'] instanceof AnrSuperClass)
                                 ) {
                                     $anrParamValue = $value['anr'];
                                 } else {
-                                    $anrParamValue = is_int($entity->anr) ? $entity->anr : $entity->anr->getId();
+                                    $anrParamValue = \is_int($entity->getAnr())
+                                        ? $entity->getAnr()
+                                        : $entity->getAnr()->getId();
                                 }
                                 $dep = $db->getReference($class, [
                                     'uuid' => $value['uuid'] ?? $value,
@@ -498,27 +463,36 @@ abstract class AbstractService extends AbstractServiceFactory
                             $dep = $db->getReference($class, $value['id'] ?? $value);
                         }
 
-                        if (isset($dep->anr, $entity->anr) && $dep->anr instanceof AnrSuperClass) {
-                            $depAnrId = $dep->anr->id;
-                            $entityAnrId = is_int($entity->anr) ? $entity->anr : $entity->anr->id;
+                        if ($dep->getAnr() !== null
+                            && $entity->getAnr() !== null
+                            && $dep->getAnr() instanceof AnrSuperClass
+                        ) {
+                            $depAnrId = $dep->getAnr()->getId();
+                            $entityAnrId = $entity->getAnr() instanceof AnrSuperClass
+                                ? $entity->getAnr()->getId()
+                                : $entity->getAnr();
                             if ($depAnrId !== $entityAnrId) {
                                 throw new Exception('You are not authorized to use this dependency', 412);
                             }
                         }
-                        if (!$dep->id && !$dep->uuid) {
+                        if ((!method_exists($dep, 'getId') || !$dep->getId())
+                            && (!method_exists($dep, 'getUuid') || !$dep->getUuid())
+                        ) {
                             throw new Exception('Entity does not exist', 412);
                         }
                         $entity->set($propertyname, $dep);
-                    } elseif (!array_key_exists('id', $value)) {
+                    } elseif (!\array_key_exists('id', $value)) {
                         $a_dep = [];
                         try {
                             $dep = $db->getReference($class, $value);
                             $entity->set($propertyname, $dep);
                         } catch (\Exception $e) {
                             foreach ($value as $v) {
-                                if ($v !== null && !empty($v) && !is_object($v)) {
-                                    $dep = $db->getReference($class, isset($v['uuid']) ? $v['uuid'] : $v);
-                                    if (!$dep->id && !$dep->uuid) {
+                                if (!empty($v) && !\is_object($v)) {
+                                    $dep = $db->getReference($class, $v['uuid'] ?? $v);
+                                    if ((!method_exists($dep, 'getId') || !$dep->getId())
+                                        && (!method_exists($dep, 'getUuid') || !$dep->getUuid())
+                                    ) {
                                         throw new Exception('Entity does not exist', 412);
                                     }
                                     $a_dep[] = $dep;
@@ -526,28 +500,6 @@ abstract class AbstractService extends AbstractServiceFactory
                             }
                             $entity->set($propertyname, $a_dep);
                         }
-                    }
-                } else { // DEPRECATED
-                    $tableName = $deptable . 'Table';
-                    $method = 'set' . ucfirst($propertyname);
-                    if (!is_array($value) || isset($value['id'])) {
-                        $dep = $this->get($tableName)->getReference(isset($value['id']) ? $value['id'] : $value);
-                        if (!$dep->id) {
-                            throw new Exception('Entity does not exist', 412);
-                        }
-                        $entity->$method($dep);
-                    } elseif (!array_key_exists('id', $value)) {
-                        $a_dep = [];
-                        foreach ($value as $v) {
-                            if ($v !== null && !empty($v) && !is_object($v)) {
-                                $dep = $this->get($tableName)->getReference($v);
-                                if (!$dep->id) {
-                                    throw new Exception('Entity does not exist', 412);
-                                }
-                                $a_dep[] = $dep;
-                            }
-                        }
-                        $entity->$method($a_dep);
                     }
                 }
             }
@@ -572,44 +524,13 @@ abstract class AbstractService extends AbstractServiceFactory
 
     /**
      * Filter fields for a post/put request by removing the forbidden fields list
-     *
-     * @param array $data The fields data
-     * @param AbstractEntity $entity The entity
-     * @param bool|array $forbiddenFields The fields to remove, or false
      */
-    protected function filterPostFields(&$data, $entity, $forbiddenFields = false)
+    protected function filterPostFields(array &$data, AbstractEntity $entity, ?array $forbiddenFields = null)
     {
-        $forbiddenFields = (!$forbiddenFields) ? $this->forbiddenFields : $forbiddenFields;
-        if (is_array($data)) {
-            foreach (array_keys($data) as $key) {
-                if (in_array($key, $forbiddenFields)) {
-                    if (is_object($entity->$key)) {
-                        if ($key !== 'anr' && $entity->$key->uuid != null) {
-                            $properties = $this->get($key . 'Table')->getClassMetadata()->getIdentifierFieldNames();
-                            if (in_array('anr', $properties)) {
-                                if (isset($data['anr']) && $data['anr'] !== null) { // TO IMPROVE fo with uuid
-                                    $data[$key] = $entity->$key ? [
-                                        'uuid' => $entity->$key->getUuid(),
-                                        'anr' => $data['anr'],
-                                    ] : null;
-                                } else {
-                                    if ($entity->$key->anr !== null && $entity->$key->anr->id !== null) {
-                                        $data[$key] = $entity->$key ? [
-                                            'uuid' => $entity->$key->getUuid(),
-                                            'anr' => $entity->$key->getAnr()->getId(),
-                                        ] : null;
-                                    }
-                                }
-                            } else {// bo with uuid
-                                $data[$key] = $entity->$key ? $entity->$key->getUuid() : null;
-                            }
-                        } else {//standard case
-                            $data[$key] = $entity->$key ? $entity->$key->getId() : null;
-                        }
-                    } else {
-                        $data[$key] = $entity->$key;
-                    }
-                }
+        $forbiddenFields = !$forbiddenFields ? $this->forbiddenFields : $forbiddenFields;
+        foreach ($forbiddenFields as $forbiddenField) {
+            if (isset($data[$forbiddenField])) {
+                unset($data[$forbiddenField]);
             }
         }
     }
