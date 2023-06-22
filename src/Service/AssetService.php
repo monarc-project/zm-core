@@ -18,8 +18,6 @@ class AssetService
 
     private Table\MonarcObjectTable $monarcObjectTable;
 
-    private Table\ObjectObjectTable $objectObjectTable;
-
     private Table\ModelTable $modelTable;
 
     private AmvService $amvService;
@@ -29,14 +27,12 @@ class AssetService
     public function __construct(
         Table\AssetTable $assetTable,
         Table\MonarcObjectTable $monarcObjectTable,
-        Table\ObjectObjectTable $objectObjectTable,
         Table\ModelTable $modelTable,
         AmvService $amvService,
         ConnectedUserService $connectedUserService
     ) {
         $this->assetTable = $assetTable;
         $this->monarcObjectTable = $monarcObjectTable;
-        $this->objectObjectTable = $objectObjectTable;
         $this->modelTable = $modelTable;
         $this->amvService = $amvService;
         $this->connectedUser = $connectedUserService->getConnectedUser();
@@ -70,6 +66,7 @@ class AssetService
 
     public function create(array $data, bool $saveInDb = true): Entity\Asset
     {
+        /** @var Entity\Asset $asset */
         $asset = (new Entity\Asset())
             ->setCode($data['code'])
             ->setLabels($data)

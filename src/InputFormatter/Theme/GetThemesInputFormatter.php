@@ -8,13 +8,16 @@
 namespace Monarc\Core\InputFormatter\Theme;
 
 use Monarc\Core\InputFormatter\AbstractInputFormatter;
+use Monarc\Core\Service\ConnectedUserService;
 
 class GetThemesInputFormatter extends AbstractInputFormatter
 {
     protected static array $allowedSearchFields = [
-        'label1',
-        'label2',
-        'label3',
-        'label4',
+        'label{languageIndex}',
     ];
+
+    public function __construct(ConnectedUserService $connectedUserService)
+    {
+        $this->setDefaultLanguageIndex($connectedUserService->getConnectedUser()->getLanguage());
+    }
 }

@@ -96,7 +96,7 @@ abstract class AbstractInputFormatter
         /* Add search filter. */
         if (!empty($inputParams['filter']) && !empty(static::$allowedSearchFields)) {
             $searchFields = array_map(function ($field) {
-                return strpos('{languageIndex}', $field) !== false
+                return strpos($field, '{languageIndex}') !== false
                     ? str_replace('{languageIndex}', (string)$this->defaultLanguageIndex, $field)
                     : $field;
             }, static::$allowedSearchFields);

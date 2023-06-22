@@ -32,11 +32,7 @@ trait ControllerRequestResponseHandlerTrait
                 $params = array_merge($params, ['anr' => $anr]);
                 if (method_exists($anr, 'getLanguage')) {
                     $inputFormatter->setDefaultLanguageIndex($anr->getLanguage());
-                } else {
-                    // todo: set the lang from ConnectedUser
                 }
-            } else {
-                // todo: set the lang from ConnectedUser
             }
         }
 

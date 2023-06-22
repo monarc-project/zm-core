@@ -295,6 +295,7 @@ class Model
             throw new Exception('You cannot add a specific object to a generic model', 412);
         }
 
+        /** @var Asset $asset */
         $asset = $forcedAsset ?? $object->getAsset();
         if ($this->isRegulator()) {
             if ($object->isModeGeneric()) {

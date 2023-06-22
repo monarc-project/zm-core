@@ -89,7 +89,11 @@ class ScaleImpactTypeService
             $this->instanceConsequenceService->createInstanceConsequence($instance, $scaleImpactType);
         }
 
-        $this->updatePositions($scaleImpactType, $this->scaleImpactTypeTable);
+        if (empty($data['position'])) {
+            $this->updatePositions($scaleImpactType, $this->scaleImpactTypeTable);
+        } else {
+            $scaleImpactType->setPosition($data['position']);
+        }
 
         $this->scaleImpactTypeTable->save($scaleImpactType, $saveInTheDb);
 
@@ -136,6 +140,7 @@ class ScaleImpactTypeService
     public function createDefaultScaleImpactTypes(Entity\Scale $scale): void
     {
         $defaultScaleImpactTypes = Entity\ScaleImpactTypeSuperClass::getDefaultScalesImpacts();
+        $position = 1;
         foreach (Entity\ScaleImpactTypeSuperClass::getScaleImpactTypesShortcuts() as $type => $shortcut) {
             $this->create($scale->getAnr(), [
                 'scale' => $scale,
@@ -145,6 +150,7 @@ class ScaleImpactTypeService
                 'label2' => $defaultScaleImpactTypes['label2'][$shortcut],
                 'label3' => $defaultScaleImpactTypes['label3'][$shortcut],
                 'label4' => $defaultScaleImpactTypes['label4'][$shortcut],
+                'position' => $position++,
             ], false);
         }
     }

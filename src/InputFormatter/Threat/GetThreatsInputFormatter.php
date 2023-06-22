@@ -9,18 +9,13 @@ namespace Monarc\Core\InputFormatter\Threat;
 
 use Monarc\Core\InputFormatter\AbstractInputFormatter;
 use Monarc\Core\Model\Entity\ThreatSuperClass;
+use Monarc\Core\Service\ConnectedUserService;
 
 class GetThreatsInputFormatter extends AbstractInputFormatter
 {
     protected static array $allowedSearchFields = [
-        'label1',
-        'label2',
-        'label3',
-        'label4',
-        'description1',
-        'description2',
-        'description3',
-        'description4',
+        'label{languageIndex}',
+        'description{languageIndex}',
         'code',
     ];
 
@@ -32,4 +27,9 @@ class GetThreatsInputFormatter extends AbstractInputFormatter
     ];
 
     protected static array $ignoredFilterFieldValues = ['status' => 'all'];
+
+    public function __construct(ConnectedUserService $connectedUserService)
+    {
+        $this->setDefaultLanguageIndex($connectedUserService->getConnectedUser()->getLanguage());
+    }
 }

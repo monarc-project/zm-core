@@ -9,6 +9,7 @@ namespace Monarc\Core\InputFormatter\Asset;
 
 use Monarc\Core\InputFormatter\AbstractInputFormatter;
 use Monarc\Core\Model\Entity\AssetSuperClass;
+use Monarc\Core\Service\ConnectedUserService;
 
 class GetAssetsInputFormatter extends AbstractInputFormatter
 {
@@ -29,4 +30,9 @@ class GetAssetsInputFormatter extends AbstractInputFormatter
     ];
 
     protected static array $ignoredFilterFieldValues = ['status' => 'all'];
+
+    public function __construct(ConnectedUserService $connectedUserService)
+    {
+        $this->setDefaultLanguageIndex($connectedUserService->getConnectedUser()->getLanguage());
+    }
 }
