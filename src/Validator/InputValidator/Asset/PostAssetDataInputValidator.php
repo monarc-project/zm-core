@@ -10,11 +10,43 @@ namespace Monarc\Core\Validator\InputValidator\Asset;
 use Laminas\Filter\StringTrim;
 use Laminas\Validator\InArray;
 use Laminas\Validator\StringLength;
+use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\AssetSuperClass;
+use Monarc\Core\Table\Interfaces\UniqueCodeTableInterface;
+use Monarc\Core\Validator\FieldValidator\UniqueCode;
 use Monarc\Core\Validator\InputValidator\AbstractInputValidator;
 
 class PostAssetDataInputValidator extends AbstractInputValidator
 {
+    private UniqueCodeTableInterface $assetTable;
+
+    private ?AnrSuperClass $anr = null;
+
+    private array $excludeFilter = [];
+
+    public function __construct(
+        array $config,
+        UniqueCodeTableInterface $assetTable
+    ) {
+        $this->assetTable = $assetTable;
+
+        parent::__construct($config);
+    }
+
+    public function setAnr(AnrSuperClass $anr): self
+    {
+        $this->anr = $anr;
+
+        return $this;
+    }
+
+    public function setExcludeFilter(array $excludeFilter): self
+    {
+        $this->excludeFilter = $excludeFilter;
+
+        return $this;
+    }
+
     protected function getRules(): array
     {
         $rules = [
@@ -33,6 +65,18 @@ class PostAssetDataInputValidator extends AbstractInputValidator
                             'min' => 1,
                             'max' => 255,
                         ]
+                    ],
+                    [
+                        'name' => UniqueCode::class,
+                        'options' => [
+                            'uniqueCodeValidationTable' => $this->assetTable,
+                            'anr' => function () {
+                                return $this->anr;
+                            },
+                            'excludeFilter' => function () {
+                                return $this->excludeFilter;
+                            },
+                        ],
                     ],
                 ],
             ],

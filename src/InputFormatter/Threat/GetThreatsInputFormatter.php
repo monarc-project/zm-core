@@ -14,8 +14,14 @@ use Monarc\Core\Service\ConnectedUserService;
 class GetThreatsInputFormatter extends AbstractInputFormatter
 {
     protected static array $allowedSearchFields = [
-        'label{languageIndex}',
-        'description{languageIndex}',
+        'label1',
+        'label2',
+        'label3',
+        'label4',
+        'description1',
+        'description2',
+        'description3',
+        'description4',
         'code',
     ];
 

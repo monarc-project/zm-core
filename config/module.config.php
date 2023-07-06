@@ -5,6 +5,7 @@
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
+use Interop\Container\Containerinterface;
 use Laminas\Mail\Transport\SmtpOptions;
 use Laminas\Mail\Transport\Smtp;
 use Laminas\Mime\Message;
@@ -155,7 +156,7 @@ return [
             Service\GuideItemService::class => Service\GuideItemServiceFactory::class,
             Service\HistoricalService::class => Service\HistoricalServiceFactory::class,
             Service\InstanceService::class => AutowireFactory::class,
-            Service\InstanceRiskService::class => Service\InstanceRiskServiceFactory::class,
+            Service\InstanceRiskService::class => AutowireFactory::class,
             Service\InstanceRiskOpService::class => AutowireFactory::class,
             Service\InstanceConsequenceService::class => AutowireFactory::class,
             Service\MailService::class => AutowireFactory::class,
@@ -195,7 +196,6 @@ return [
             ModelEntity\Measure::class => ServiceModelEntity\MeasureServiceModelEntity::class,
             ModelEntity\MeasureMeasure::class => ServiceModelEntity\MeasureMeasureServiceModelEntity::class,
             ModelEntity\SoaCategory::class => ServiceModelEntity\SoaCategoryServiceModelEntity::class,
-            ModelEntity\InstanceRisk::class => ServiceModelEntity\InstanceRiskServiceModelEntity::class,
             ModelEntity\RolfRisk::class => ServiceModelEntity\RolfRiskServiceModelEntity::class,
             ModelEntity\RolfTag::class => ServiceModelEntity\RolfTagServiceModelEntity::class,
             ModelEntity\GuideItem::class => ServiceModelEntity\GuideItemServiceModelEntity::class,
@@ -252,10 +252,33 @@ return [
             /* Validators */
             InputValidator\User\PostUserDataInputValidator::class => ReflectionBasedAbstractFactory::class,
             InputValidator\Model\PostModelDataInputValidator::class => ReflectionBasedAbstractFactory::class,
-            InputValidator\Asset\PostAssetDataInputValidator::class => ReflectionBasedAbstractFactory::class,
-            InputValidator\Threat\PostThreatDataInputValidator::class => ReflectionBasedAbstractFactory::class,
-            InputValidator\Vulnerability\PostVulnerabilityDataInputValidator::class =>
-                ReflectionBasedAbstractFactory::class,
+            InputValidator\Asset\PostAssetDataInputValidator::class => static function (
+                Containerinterface $container,
+                $serviceName
+            ) {
+                return new InputValidator\Asset\PostAssetDataInputValidator(
+                    $container->get('config'),
+                    $container->get(Table\AssetTable::class)
+                );
+            },
+            InputValidator\Threat\PostThreatDataInputValidator::class => static function (
+                Containerinterface $container,
+                $serviceName
+            ) {
+                return new InputValidator\Threat\PostThreatDataInputValidator(
+                    $container->get('config'),
+                    $container->get(Table\ThemeTable::class)
+                );
+            },
+            InputValidator\Vulnerability\PostVulnerabilityDataInputValidator::class => static function (
+                Containerinterface $container,
+                $serviceName
+            ) {
+                return new InputValidator\Vulnerability\PostVulnerabilityDataInputValidator(
+                    $container->get('config'),
+                    $container->get(Table\VulnerabilityTable::class)
+                );
+            },
             InputValidator\Amv\PostAmvDataInputValidator::class => ReflectionBasedAbstractFactory::class,
             InputValidator\Theme\PostThemeDataInputValidator::class => ReflectionBasedAbstractFactory::class,
             InputValidator\Object\PostObjectDataInputValidator::class => ReflectionBasedAbstractFactory::class,

@@ -18,13 +18,13 @@ class PostObjectCategoryDataInputValidator extends AbstractInputValidator
         $rules = [
             [
                 'name' => 'root',
-                'required' => true,
+                'required' => false,
                 'allow_empty' => true,
                 'filters' => [],
                 'validators' => [],
             ],[
                 'name' => 'parent',
-                'required' => true,
+                'required' => false,
                 'allow_empty' => true,
                 'filters' => [],
                 'validators' => [],

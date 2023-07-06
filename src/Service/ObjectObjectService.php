@@ -100,6 +100,7 @@ class ObjectObjectService
             $this->createInstances($parentObject, $childObject, $data);
         }
 
+        /** @var ObjectObject $objectObject */
         return $objectObject;
     }
 
@@ -109,9 +110,9 @@ class ObjectObjectService
         $objectObject = $this->objectObjectTable->findById($id);
 
         /* Validate if the position is within the bounds of shift. */
-        if (($data['move'] === static::MOVE_COMPOSITION_POSITION_UP
-                && $objectObject->getPosition() <= 1
-            ) || ($data['move'] === static::MOVE_COMPOSITION_POSITION_DOWN
+        if (($data['move'] === static::MOVE_COMPOSITION_POSITION_UP && $objectObject->getPosition() <= 1)
+            || (
+                $data['move'] === static::MOVE_COMPOSITION_POSITION_DOWN
                 && $objectObject->getPosition() >= $this->objectObjectTable->findMaxPosition(
                     $objectObject->getImplicitPositionRelationsValues()
                 )

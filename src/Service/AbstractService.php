@@ -418,8 +418,8 @@ abstract class AbstractService extends AbstractServiceFactory
             $propertyname = $dependency;
             $matching = [];
             // si c'est 0 c'est pas bon non plus
-            if (preg_match("/(\[([a-z0-9]*)\])\(([a-z0-9]*)\)$/", $deptable, $matching)) {
-                $propertyname = str_replace($matching[0], $matching[2], $deptable);
+            if (preg_match("/(\[([a-z0-9]*)\])\(([a-z0-9]*)\)$/", $dependency, $matching)) {
+                $propertyname = str_replace($matching[0], $matching[2], $dependency);
             }
 
             $value = $entity->get($propertyname);
@@ -463,9 +463,10 @@ abstract class AbstractService extends AbstractServiceFactory
                             $dep = $db->getReference($class, $value['id'] ?? $value);
                         }
 
-                        if ($dep->getAnr() !== null
-                            && $entity->getAnr() !== null
+                        if (method_exists($dep, 'getAnr')
+                            && method_exists($entity, 'getAnr')
                             && $dep->getAnr() instanceof AnrSuperClass
+                            && $entity->getAnr() !== null
                         ) {
                             $depAnrId = $dep->getAnr()->getId();
                             $entityAnrId = $entity->getAnr() instanceof AnrSuperClass

@@ -7,6 +7,9 @@
 
 namespace Monarc\Core\Service;
 
+use Monarc\Core\Exception\Exception;
+use Monarc\Core\Model\Table\MeasureMeasureTable;
+
 /**
  * Measure Service
  *
@@ -26,34 +29,34 @@ class MeasureMeasureService extends AbstractService
      */
     public function create($data, $last = true)
     {
-        $id = null;
-        if ($data['father'] == $data['child']) {
-            throw new \Monarc\Core\Exception\Exception("You cannot add yourself as a component", 412);
+        if ($data['father'] === $data['child']) {
+            throw new Exception('You cannot add yourself as a component', 412);
         }
-        $measureEntity = $this->get('measureEntity');
         $measureTable = $this->get('measureTable');
         $measureMeasureTable = $this->get('table');
-        $measuresMeasures = $measureMeasureTable->getEntityByFields(['child' => $data['child']['uuid'], 'father' => $data['father']['uuid']]);
+        $measuresMeasures = $measureMeasureTable->getEntityByFields(
+            ['child' => $data['child'], 'father' => $data['father']]
+        );
 
         if (!empty($measuresMeasures)) { // the link already exist
-            throw new \Monarc\Core\Exception\Exception('This component already exist for this object', 412);
+            throw new Exception('This component already exist for this object', 412);
         }
 
         $father = $measureTable->getEntity($data['father']);
         $child = $measureTable->getEntity($data['child']);
         $father->addLinkedMeasure($child); //we add the link for the two measure
-        $id = $measureTable->save($father);
 
-        return $id;
+        return $measureTable->save($father);
     }
 
     public function delete($id)
     {
-      $measureTable = $this->get('measureTable');
-      $father = $measureTable->getEntity($id['father']);
-      $child = $measureTable->getEntity($id['child']);
-      $father->deleteLinkedMeasure($child);
-      $measureTable->save($father);
+        /** @var MeasureMeasureTable $measureTable */
+        $measureTable = $this->get('measureTable');
+        $father = $measureTable->getEntity($id['father']);
+        $child = $measureTable->getEntity($id['child']);
+        $father->deleteLinkedMeasure($child);
+        $measureTable->save($father);
     }
 
     /**

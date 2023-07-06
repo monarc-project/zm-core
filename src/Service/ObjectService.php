@@ -43,6 +43,8 @@ class ObjectService
 
     private Entity\UserSuperClass $connectedUser;
 
+    private bool $isObjectListFilterPrepared = false;
+
     public function __construct(
         Table\MonarcObjectTable $monarcObjectTable,
         Table\AssetTable $assetTable,
@@ -112,7 +114,7 @@ class ObjectService
 
         $objectData['children'] = $this->getChildrenTreeList($object);
         $objectData['risks'] = $this->getRisks($object);
-        $objectData['oprisks'] = $this->getRisksOp($object);
+        $objectData['oprisks'] = $this->getRisks($object);
         $objectData['parents'] = $this->getDirectParents($object);
 
         if ($this->isAnrObjectMode($filteredData)) {
@@ -262,17 +264,24 @@ class ObjectService
 
     public function delete(string $uuid): void
     {
+        /** @var Entity\MonarcObject $monarcObject */
         $monarcObject = $this->monarcObjectTable->findByUuid($uuid);
+
+        /* Manage the positions shift for the objects and objects_objects tables. */
+        $this->shiftPositionsForRemovingEntity($monarcObject, $this->monarcObjectTable);
+        foreach ($monarcObject->getParentsLinks() as $linkWhereTheObjectIsChild) {
+            $this->shiftPositionsForRemovingEntity($linkWhereTheObjectIsChild, $this->objectObjectTable);
+        }
 
         $this->monarcObjectTable->remove($monarcObject);
     }
 
-    public function duplicate(Entity\Anr $anr, array $data): Entity\MonarcObject
+    public function duplicate(array $data, ?Entity\Anr $anr): Entity\MonarcObject
     {
         /** @var Entity\MonarcObject $monarcObjectToCopy */
         $monarcObjectToCopy = $this->monarcObjectTable->findByUuid($data['id']);
 
-        $newMonarcObject = $this->getObjectCopy($anr, $monarcObjectToCopy);
+        $newMonarcObject = $this->getObjectCopy($monarcObjectToCopy, $anr);
 
         $this->duplicateObjectChildren($monarcObjectToCopy, $newMonarcObject, $anr);
 
@@ -621,13 +630,12 @@ class ObjectService
         return true;
     }
 
-    private function getObjectCopy(Entity\Anr $anr, Entity\MonarcObject $monarcObjectToCopy): Entity\MonarcObject
+    private function getObjectCopy(Entity\MonarcObject $monarcObjectToCopy, ?Entity\Anr $anr): Entity\MonarcObject
     {
         $labelsNamesSuffix = ' copy #' . time();
         $newMonarcObject = (new Entity\MonarcObject())
             ->setCategory($monarcObjectToCopy->getCategory())
             ->setAsset($monarcObjectToCopy->getAsset())
-            ->addAnr($anr)
             ->setLabels([
                 'label1' => $monarcObjectToCopy->getLabelCleanedFromCopy(1) . $labelsNamesSuffix,
                 'label2' => $monarcObjectToCopy->getLabelCleanedFromCopy(2) . $labelsNamesSuffix,
@@ -643,6 +651,9 @@ class ObjectService
             ->setScope($monarcObjectToCopy->getScope())
             ->setMode($monarcObjectToCopy->getMode())
             ->setCreator($this->connectedUser->getEmail());
+        if ($anr !== null) {
+            $newMonarcObject->addAnr($anr);
+        }
         if ($monarcObjectToCopy->hasRolfTag()) {
             $newMonarcObject->setRolfTag($monarcObjectToCopy->getRolfTag());
         }
@@ -907,9 +918,12 @@ class ObjectService
 
     private function prepareObjectsListFilter(FormattedInputParams $formattedInputParams): void
     {
-        $this->prepareCategoryFilter($formattedInputParams);
-        $this->prepareModelFilter($formattedInputParams);
-        $this->prepareAnrFilter($formattedInputParams);
+        if (!$this->isObjectListFilterPrepared) {
+            $this->prepareCategoryFilter($formattedInputParams);
+            $this->prepareModelFilter($formattedInputParams);
+            $this->prepareAnrFilter($formattedInputParams);
+            $this->isObjectListFilterPrepared = true;
+        }
     }
 
     private function prepareModelFilter(FormattedInputParams $formattedInputParams): void
@@ -974,10 +988,10 @@ class ObjectService
             } elseif (!empty($lockFilter['value'])) {
                 /** @var Entity\ObjectCategory $objectCategory */
                 $objectCategory = $this->objectCategoryTable->findById($categoryFilter['value']);
-                $formattedInputParams->setFilterValueFor(
-                    'category.id',
-                    array_merge($categoryFilter['value'], $objectCategory->getRecursiveChildrenIds())
-                );
+                $formattedInputParams->setFilterFor('category.id', [
+                    'value' => array_merge([$categoryFilter['value']], $objectCategory->getRecursiveChildrenIds()),
+                    'operator' => Comparison::IN
+                ]);
             }
         }
     }
@@ -985,10 +999,10 @@ class ObjectService
     private function duplicateObjectChildren(
         Entity\MonarcObject $objectToCopy,
         Entity\MonarcObject $parentObject,
-        Entity\Anr $anr
+        ?Entity\Anr $anr
     ): void {
         foreach ($objectToCopy->getChildren() as $childObject) {
-            $newChildObject = $this->getObjectCopy($anr, $childObject);
+            $newChildObject = $this->getObjectCopy($childObject, $anr);
 
             /** Only to keep the same positions in the duplicated object composition. */
             foreach ($childObject->getParentsLinks() as $parentLink) {

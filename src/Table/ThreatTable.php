@@ -9,9 +9,13 @@ namespace Monarc\Core\Table;
 
 use Doctrine\ORM\EntityManager;
 use Monarc\Core\Model\Entity\Threat;
+use Monarc\Core\Table\Interfaces\UniqueCodeTableInterface;
+use Monarc\Core\Table\Traits\CodeExistenceValidationTableTrait;
 
-class ThreatTable extends AbstractTable
+class ThreatTable extends AbstractTable implements UniqueCodeTableInterface
 {
+    use CodeExistenceValidationTableTrait;
+
     public function __construct(EntityManager $entityManager, $entityName = Threat::class)
     {
         parent::__construct($entityManager, $entityName);

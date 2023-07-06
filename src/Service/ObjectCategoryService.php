@@ -138,6 +138,7 @@ class ObjectCategoryService
 
         $this->objectCategoryTable->save($objectCategory);
 
+        /** @var ObjectCategory $objectCategory */
         return $objectCategory;
     }
 

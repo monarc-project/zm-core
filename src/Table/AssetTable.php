@@ -9,9 +9,13 @@ namespace Monarc\Core\Table;
 
 use Doctrine\ORM\EntityManager;
 use Monarc\Core\Model\Entity\Asset;
+use Monarc\Core\Table\Interfaces\UniqueCodeTableInterface;
+use Monarc\Core\Table\Traits\CodeExistenceValidationTableTrait;
 
-class AssetTable extends AbstractTable
+class AssetTable extends AbstractTable implements UniqueCodeTableInterface
 {
+    use CodeExistenceValidationTableTrait;
+
     public function __construct(EntityManager $entityManager, string $entityName = Asset::class)
     {
         parent::__construct($entityManager, $entityName);

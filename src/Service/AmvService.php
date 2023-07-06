@@ -137,13 +137,13 @@ class AmvService implements PositionUpdatableServiceInterface
             $amv->setStatus($data['status']);
         }
 
+        $this->validateAmvCompliesRequirements($amv);
+
         foreach ($data['measures'] as $measureUuid) {
             $amv->addMeasure($this->measureTable->findByUuid($measureUuid));
         }
 
         $this->updatePositions($amv, $this->amvTable, $data);
-
-        $this->validateAmvCompliesRequirements($amv);
 
         $this->amvTable->save($amv);
 
@@ -190,6 +190,8 @@ class AmvService implements PositionUpdatableServiceInterface
             $amv->setVulnerability($vulnerability);
         }
 
+        $this->validateAmvCompliesRequirements($amv);
+
         $amv->unlinkMeasures();
         foreach ($data['measures'] as $measure) {
             $amv->addMeasure($this->measureTable->findByUuid($measure));
@@ -198,8 +200,6 @@ class AmvService implements PositionUpdatableServiceInterface
         $amv->setUpdater($this->connectedUserService->getConnectedUser()->getEmail());
 
         $this->updatePositions($amv, $this->amvTable, $data);
-
-        $this->validateAmvCompliesRequirements($amv);
 
         if (!empty($changedData)) {
             $this->historize(
@@ -241,6 +241,8 @@ class AmvService implements PositionUpdatableServiceInterface
             . ' / vulnerability => ' . $amv->getVulnerability()->getCode()
         );
 
+        $this->shiftPositionsForRemovingEntity($amv, $this->amvTable);
+
         $this->amvTable->remove($amv);
     }
 
@@ -273,6 +275,10 @@ class AmvService implements PositionUpdatableServiceInterface
 
     /**
      * Validates whether the specified theoretical AMV link complies with the behavioral requirements.
+     *
+     * @param Entity\Model[]|int[] $assetModels
+     * @param Entity\Model[]|int[] $threatModels
+     * @param Entity\Model[]|int[] $vulnerabilityModels
      */
     public function validateAmvCompliesRequirements(
         Entity\AmvSuperClass $amv,
@@ -351,8 +357,14 @@ class AmvService implements PositionUpdatableServiceInterface
         }
 
         if (!$assetMode && ($threatMode || $vulnerabilityMode)) { // 0 0 1 || 0 1 0 || 0 1 1
-            throw new Exception('The tuple asset / threat / vulnerability is invalid', 412);
-        } elseif ($assetMode && (!$threatMode || !$vulnerabilityMode)) { // 1 0 0 || 1 0 1 || 1 1 0
+            throw new Exception(
+                'The tuple asset / threat / vulnerability is invalid. '
+                . 'Specific and generic objects can\'t consist a link together',
+                412
+            );
+        }
+
+        if ($assetMode && (!$threatMode || !$vulnerabilityMode)) { // 1 0 0 || 1 0 1 || 1 1 0
             // only if there is no regulating model for the asset
             if (!$assetModelsIsRegulator) {
                 if (!$threatMode && !$vulnerabilityMode) { // 1 0 0
@@ -388,13 +400,16 @@ class AmvService implements PositionUpdatableServiceInterface
                 }
 
                 throw new Exception(
-                    'All models must be common to asset and ' . $vulnerabilityMode ? 'vulnerability' : 'threat',
+                    'Specific models relations must be common to asset and '
+                    . ($vulnerabilityMode ? 'vulnerability' : 'threat'),
                     412
                 );
             }
 
             throw new Exception('Asset\'s model must not be regulator', 412);
-        } elseif ($assetMode && $threatMode && $vulnerabilityMode) { // 1 1 1 - We have to check the models.
+        }
+
+        if ($assetMode && $threatMode && $vulnerabilityMode) { // 1 1 1 - We have to check the models.
             if (empty($assetModelsIds)) {
                 $assetModelsIds = [];
             } elseif (!\is_array($assetModelsIds)) {

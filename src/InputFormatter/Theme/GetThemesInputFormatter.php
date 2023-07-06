@@ -13,7 +13,10 @@ use Monarc\Core\Service\ConnectedUserService;
 class GetThemesInputFormatter extends AbstractInputFormatter
 {
     protected static array $allowedSearchFields = [
-        'label{languageIndex}',
+        'label1',
+        'label2',
+        'label3',
+        'label4',
     ];
 
     public function __construct(ConnectedUserService $connectedUserService)

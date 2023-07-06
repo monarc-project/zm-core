@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -11,11 +11,43 @@ use Laminas\Filter\StringTrim;
 use Laminas\Filter\ToInt;
 use Laminas\Validator\InArray;
 use Laminas\Validator\StringLength;
+use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\ThreatSuperClass;
+use Monarc\Core\Table\Interfaces\UniqueCodeTableInterface;
+use Monarc\Core\Validator\FieldValidator\UniqueCode;
 use Monarc\Core\Validator\InputValidator\AbstractInputValidator;
 
 class PostThreatDataInputValidator extends AbstractInputValidator
 {
+    private UniqueCodeTableInterface $threatTable;
+
+    private ?AnrSuperClass $anr = null;
+
+    private array $excludeFilter = [];
+
+    public function __construct(
+        array $config,
+        UniqueCodeTableInterface $threatTable
+    ) {
+        $this->threatTable = $threatTable;
+
+        parent::__construct($config);
+    }
+
+    public function setAnr(AnrSuperClass $anr): self
+    {
+        $this->anr = $anr;
+
+        return $this;
+    }
+
+    public function setExcludeFilter(array $excludeFilter): self
+    {
+        $this->excludeFilter = $excludeFilter;
+
+        return $this;
+    }
+
     protected function getRules(): array
     {
         $rules = [
@@ -34,6 +66,18 @@ class PostThreatDataInputValidator extends AbstractInputValidator
                             'min' => 1,
                             'max' => 255,
                         ]
+                    ],
+                    [
+                        'name' => UniqueCode::class,
+                        'options' => [
+                            'uniqueCodeValidationTable' => $this->threatTable,
+                            'anr' => function () {
+                                return $this->anr;
+                            },
+                            'excludeFilter' => function () {
+                                return $this->excludeFilter;
+                            },
+                        ],
                     ],
                 ],
             ],
@@ -115,6 +159,7 @@ class PostThreatDataInputValidator extends AbstractInputValidator
                     ],
                 ],
             ],
+
         ];
 
         $labelDescriptionRules = [];

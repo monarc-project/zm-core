@@ -7,15 +7,9 @@
 
 namespace Monarc\Core\Table\Interfaces;
 
-interface PositionUpdatableTableInterface
-{
-    public function incrementPositions(
-        int $positionFrom,
-        int $positionTo,
-        int $increment,
-        array $params,
-        string $updater
-    ): void;
+use Monarc\Core\Model\Entity\AnrSuperClass;
 
-    public function findMaxPosition(array $params): int;
+interface UniqueCodeTableInterface
+{
+    public function doesCodeAlreadyExist(string $code, ?AnrSuperClass $anr = null, array $excludeFilter = []): bool;
 }
