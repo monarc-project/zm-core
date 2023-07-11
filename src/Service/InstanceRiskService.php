@@ -62,6 +62,9 @@ class InstanceRiskService
                     ->setAmv($instanceRisk->getAmv())
                     ->setInstanceRiskOwner($instanceRisk->getInstanceRiskOwner())
                     ->setCreator($this->connectedUser->getEmail());
+
+                $this->recalculateRiskRates($newInstanceRisk, false);
+
                 $this->instanceRiskTable->save($newInstanceRisk, false);
 
                 $this->duplicateRecommendationRisk($instanceRisk, $newInstanceRisk);

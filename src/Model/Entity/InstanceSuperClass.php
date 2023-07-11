@@ -540,9 +540,12 @@ class InstanceSuperClass implements PositionedEntityInterface
 
     public function updateImpactBasedOnConsequences(): self
     {
+        $maxConfidentiality = -1;
+        $maxIntegrity = -1;
+        $maxAvailability = -1;
         foreach ($this->instanceConsequences as $instanceConsequence) {
             /* Exclude hidden consequences and deprecated consequences impact types from the calculation. */
-            if ($instanceConsequence->isHidden() || !\in_array(
+            if ($instanceConsequence->isHidden() || \in_array(
                 $instanceConsequence->getScaleImpactType()->getType(),
                 ScaleImpactTypeSuperClass::getScaleImpactTypesCid(),
                 true
@@ -550,19 +553,23 @@ class InstanceSuperClass implements PositionedEntityInterface
                 continue;
             }
 
-            if ($instanceConsequence->getConfidentiality() > $this->c) {
-                $this->c = $instanceConsequence->getConfidentiality();
-                $this->ch = 0;
+            if ($instanceConsequence->getConfidentiality() > $maxConfidentiality) {
+                $maxConfidentiality = $instanceConsequence->getConfidentiality();
             }
-            if ($instanceConsequence->getIntegrity() > $this->i) {
-                $this->i = $instanceConsequence->getIntegrity();
-                $this->ih = 0;
+            if ($instanceConsequence->getIntegrity() > $maxIntegrity) {
+                $maxIntegrity = $instanceConsequence->getIntegrity();
             }
-            if ($instanceConsequence->getAvailability() > $this->d) {
-                $this->d = $instanceConsequence->getAvailability();
-                $this->dh = 0;
+            if ($instanceConsequence->getAvailability() > $maxAvailability) {
+                $maxAvailability = $instanceConsequence->getAvailability();
             }
         }
+
+        $this->c = $maxConfidentiality;
+        $this->i = $maxIntegrity;
+        $this->d = $maxAvailability;
+        $this->ch = $this->c === -1 ? 1 : 0;
+        $this->ih = $this->i === -1 ? 1 : 0;
+        $this->dh = $this->d === -1 ? 1 : 0;
 
         return $this;
     }

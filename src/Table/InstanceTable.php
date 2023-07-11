@@ -76,20 +76,21 @@ class InstanceTable extends AbstractTable implements PositionUpdatableTableInter
         ObjectSuperClass $object,
         InstanceSuperClass $instanceToExclude
     ): ?InstanceSuperClass {
-        return $this->getRepository()
+        $queryBuilder = $this->getRepository()
             ->createQueryBuilder('i')
             ->innerJoin('i.object', 'o')
             ->where('i.anr = :anr')
             ->andWhere('o.uuid = :object_uuid')
-            ->andWhere('o.anr = :object_anr')
             ->andWhere('i.id <> :instanceId')
             ->setParameter('anr', $anr)
             ->setParameter('object_uuid', $object->getUuid())
-            ->setParameter('object_anr', $anr)
             ->setParameter('instanceId', $instanceToExclude->getId())
-            ->setMaxResults(1)
-            ->getQuery()
-            ->getOneOrNullResult();
+            ->setMaxResults(1);
+        if ($object->getAnr() !== null) {
+            $queryBuilder->andWhere('o.anr = :object_anr')->setParameter('object_anr', $object->getAnr());
+        }
+
+        return $queryBuilder->getQuery()->getOneOrNullResult();
     }
 
     /**

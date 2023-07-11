@@ -153,29 +153,42 @@ class InstanceConsequenceService
 
     /**
      * This method is called from controllers to hide / show a specific consequence only linked to a specific instance.
-     * The other place is InstanceService, to update an instance impacts (in this case $updateInstance = false).
+     * The other place is InstanceService, to update an instance impacts.
      */
     public function patchConsequence(
         Entity\AnrSuperClass $anr,
         int $id,
-        array $data,
-        bool $updateInstance = true
+        array $data
     ): Entity\InstanceConsequence {
         /** @var Entity\InstanceConsequence $instanceConsequence */
         $instanceConsequence = $this->instanceConsequenceTable->findByIdAndAnr($id, $anr);
 
         $this->verifyImpacts($anr, $this->scaleTable, $data);
 
+        $updateInstance = $instanceConsequence->isHidden() !== (bool)$data['isHidden'];
+
         $instanceConsequence
             ->setIsHidden((bool)$data['isHidden'])
             ->setUpdater($this->connectedUser->getEmail());
-        $this->updateSiblingsConsequences($instanceConsequence, $updateInstance);
+        if (isset($data['confidentiality'])) {
+            $updateInstance = $updateInstance
+                || $instanceConsequence->getConfidentiality() !== $data['confidentiality'];
+            $instanceConsequence->setConfidentiality($data['confidentiality']);
+        }
+        if (isset($data['integrity'])) {
+            $updateInstance = $updateInstance || $instanceConsequence->getIntegrity() !== $data['integrity'];
+            $instanceConsequence->setIntegrity($data['integrity']);
+        }
+        if (isset($data['availability'])) {
+            $updateInstance = $updateInstance || $instanceConsequence->getAvailability() !== $data['availability'];
+            $instanceConsequence->setAvailability($data['availability']);
+        }
 
         if ($updateInstance) {
             $this->instanceService->refreshInstanceImpactAndUpdateRisks($instanceConsequence->getInstance());
         }
 
-        $instanceConsequence->setUpdater($this->connectedUser->getEmail());
+        $this->updateSiblingsConsequences($instanceConsequence, $updateInstance);
 
         $this->instanceConsequenceTable->save($instanceConsequence);
 

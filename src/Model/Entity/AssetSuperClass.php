@@ -15,6 +15,7 @@ use Monarc\Core\Model\Entity\Traits\LabelsEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 use Ramsey\Uuid\Lazy\LazyUuidFromString;
 use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
 
 /**
  * @ORM\Table(name="assets", indexes={
@@ -42,7 +43,7 @@ class AssetSuperClass
     public const STATUS_INACTIVE = 0;
 
     /**
-    * @var LazyUuidFromString|string
+    * @var LazyUuidFromString|UuidInterface|string
     *
     * @ORM\Column(name="uuid", type="uuid", nullable=false)
     * @ORM\Id
@@ -253,6 +254,11 @@ class AssetSuperClass
     public function getType(): int
     {
         return $this->type;
+    }
+
+    public function getTypeName(): string
+    {
+        return $this->isPrimary() ? 'Primary' : 'Secondary';
     }
 
     public function isPrimary(): bool

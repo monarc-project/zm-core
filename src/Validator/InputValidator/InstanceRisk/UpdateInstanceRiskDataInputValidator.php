@@ -28,7 +28,11 @@ class UpdateInstanceRiskDataInputValidator extends AbstractInputValidator
                     ],
                     [
                         'name' => Callback::class,
-                        'callback' => [\get_class($this), 'filterRate'],
+                        'options' => [
+                            'callback' => function ($value) {
+                                return $this->filterRate($value);
+                            },
+                        ],
                     ],
                 ],
                 'validators' => [],
@@ -42,7 +46,11 @@ class UpdateInstanceRiskDataInputValidator extends AbstractInputValidator
                     ],
                     [
                         'name' => Callback::class,
-                        'callback' => [\get_class($this), 'filterRate'],
+                        'options' => [
+                            'callback' => function ($value) {
+                                return $this->filterRate($value);
+                            },
+                        ],
                     ],
                 ],
                 'validators' => [],

@@ -1004,9 +1004,10 @@ class ObjectService
         foreach ($objectToCopy->getChildren() as $childObject) {
             $newChildObject = $this->getObjectCopy($childObject, $anr);
 
-            /** Only to keep the same positions in the duplicated object composition. */
+            /* Only to keep the same positions in the duplicated object composition. */
             foreach ($childObject->getParentsLinks() as $parentLink) {
-                if ($parentLink->getChild()->isEqualTo($childObject)) {
+                /* The child object could be presented in different compositions, so validate if the parent is right. */
+                if ($parentLink->getParent()->isEqualTo($objectToCopy)) {
                     $newParentLink = (new Entity\ObjectObject())
                         ->setParent($parentObject)
                         ->setChild($newChildObject)

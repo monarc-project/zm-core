@@ -293,8 +293,8 @@ class InstanceService
                 'confidentiality' => (int)$consequenceData['c_risk'],
                 'integrity' => (int)$consequenceData['i_risk'],
                 'availability' => (int)$consequenceData['d_risk'],
-                'isHidden' => (int)$consequencesData['isHidden'],
-            ], false);
+                'isHidden' => (int)$consequenceData['isHidden'],
+            ]);
         }
     }
 
