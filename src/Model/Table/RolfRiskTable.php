@@ -54,4 +54,13 @@ class RolfRiskTable extends AbstractEntityTable
             $em->flush();
         }
     }
+
+    public function deleteEntity(RolfRiskSuperClass $rolfRisk, bool $flush = true): void
+    {
+        $em = $this->getDb()->getEntityManager();
+        $em->remove($rolfRisk);
+        if ($flush) {
+            $em->flush();
+        }
+    }
 }

@@ -58,7 +58,8 @@
         "laminas/laminas-inputfilter": "^2.10",
         "laminas/laminas-dependency-plugin": "^2.0",
         "laminas/laminas-mvc-middleware": "^2.2",
-        "robthree/twofactorauth": "^1.8"
+        "robthree/twofactorauth": "^1.8",
+        "laminas/laminas-mvc-i18n": "^1.7"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",

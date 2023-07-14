@@ -7,18 +7,16 @@
 
 namespace Monarc\Core\Validator\FieldValidator;
 
-use Laminas\Validator\AbstractValidator;
+use Laminas\Validator\LessThan;
 
-class LanguageValidator extends AbstractValidator
+class LessThanOtherInput extends LessThan
 {
-    public function isValid($value): bool
+    public function isValid($value)
     {
-        if (!\in_array($value, $this->getOptions()['systemLanguageIndexes'], true)) {
-            $this->error(sprintf('The language index "%s" is not supported', $value));
-
-            return false;
+        if (\is_callable($this->getMax())) {
+            $this->setMax($this->getMax()());
         }
 
-        return true;
+        return parent::isValid($value);
     }
 }

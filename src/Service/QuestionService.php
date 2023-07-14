@@ -20,6 +20,7 @@ class QuestionService extends AbstractService
     protected $choiceTable;
     protected $anrTable;
     protected $userAnrTable;
+
     protected $dependencies = ['anr'];
 
     /**
@@ -75,18 +76,14 @@ class QuestionService extends AbstractService
             unset($data['position']);
         }
         //bo case manage position
-        // quick fix : TO DO : improve the position management
+        // quick fix : TO-DO : improve the position management
         if (!empty($data['implicitPosition']) && empty($data['anr'])) {
             if ($data['implicitPosition'] == 1) { //the first
-                if ($data['position'] != $table->minQuestionPosition()) {
-                    $table->movePosition(0);
-                    $data['position'] = 1;
-                }
+                $table->movePosition(0);
+                $data['position'] = 1;
             } else {
                 if ($data['implicitPosition'] == 2) { // the last
-                    if ($data['position'] != $table->maxQuestionPosition()) {
-                        $data['position'] = $table->maxQuestionPosition() + 1;
-                    }
+                    $data['position'] = $table->maxQuestionPosition() + 1;
                 } else { //in the middle
                     if ($data['previous']) {
                         $previous = $this->get('table')->getEntity($data['previous']);

@@ -13,35 +13,104 @@ class AlterModelTableFixObjPos extends AbstractMigration
             ->addForeignKey('anr_id', 'anrs', 'id', ['delete'=> 'SET_NULL', 'update'=> 'CASCADE'])
             ->update();
 
-        $this->execute('ALTER TABLE amvs MODIFY updated_at datetime NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP;');
+        $this->execute('ALTER TABLE `amvs` MODIFY updated_at datetime NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP;');
 
-        $this->table('historicals')
-            ->changeColumn('source_id', 'string', ['null' => true, 'limit' => 64])
-            ->update();
+        /* Fix the amvs positions. */
+        $amvsQuery = $this->query('SELECT uuid, asset_id, position FROM `amvs` ORDER BY asset_id, position');
+        $previousAssetUuid = null;
+        $expectedAmvPosition = 1;
+        foreach ($amvsQuery->fetchAll() as $amvData) {
+            if ($previousAssetUuid === null) {
+                $previousAssetUuid = $amvData['asset_id'];
+            }
+            if ($amvData['asset_id'] !== $previousAssetUuid) {
+                $expectedAmvPosition = 1;
+            }
+            if ($expectedAmvPosition !== $amvData['position']) {
+                $this->execute(sprintf(
+                    'UPDATE amvs SET position = %d WHERE uuid = "%s"',
+                    $expectedAmvPosition,
+                    $amvData['uuid']
+                ));
+            }
+
+            $expectedAmvPosition++;
+            $previousAssetUuid = $amvData['asset_id'];
+        }
+
+        /* Fix the objects positions. */
+        $objectsQuery = $this->query(
+            'SELECT uuid, object_category_id, position FROM objects ORDER BY object_category_id, position'
+        );
+        $previousObjectCategoryId = null;
+        $expectedObjectPosition = 1;
+        foreach ($objectsQuery->fetchAll() as $objectData) {
+            if ($previousObjectCategoryId === null) {
+                $previousObjectCategoryId = $objectData['object_category_id'];
+            }
+            if ($objectData['object_category_id'] !== $previousObjectCategoryId) {
+                $expectedObjectPosition = 1;
+            }
+            if ($expectedObjectPosition !== $objectData['position']) {
+                $this->execute(sprintf(
+                    'UPDATE objects SET position = %d WHERE uuid = "%s"',
+                    $expectedObjectPosition,
+                    $objectData['uuid']
+                ));
+            }
+
+            $expectedObjectPosition++;
+            $previousObjectCategoryId = $objectData['object_category_id'];
+        }
 
         /* Fix the objects compositions positions. */
-        $objectsQuery = $this->query(
+        $objectsObjectsQuery = $this->query(
             'SELECT id, father_id, position FROM objects_objects ORDER BY father_id, position'
         );
-        $previousParentObjectId = null;
+        $previousParentObjectUuid = null;
         $expectedCompositionLinkPosition = 1;
-        foreach ($objectsQuery->fetchAll() as $compositionObjectsData) {
-            if ($previousParentObjectId === null) {
-                $previousParentObjectId = $compositionObjectsData['father_id'];
+        foreach ($objectsObjectsQuery->fetchAll() as $objectCompositionData) {
+            if ($previousParentObjectUuid === null) {
+                $previousParentObjectUuid = $objectCompositionData['father_id'];
             }
-            if ($compositionObjectsData['father_id'] !== $previousParentObjectId) {
+            if ($objectCompositionData['father_id'] !== $previousParentObjectUuid) {
                 $expectedCompositionLinkPosition = 1;
             }
-            if ($expectedCompositionLinkPosition !== $compositionObjectsData['position']) {
+            if ($expectedCompositionLinkPosition !== $objectCompositionData['position']) {
                 $this->execute(sprintf(
                     'UPDATE objects_objects SET position = %d WHERE id = %d',
                     $expectedCompositionLinkPosition,
-                    $compositionObjectsData['id']
+                    $objectCompositionData['id']
                 ));
             }
 
             $expectedCompositionLinkPosition++;
-            $previousParentObjectId = $compositionObjectsData['father_id'];
+            $previousParentObjectUuid = $objectCompositionData['father_id'];
+        }
+
+        /* Fix the objects categories positions. */
+        $objectsCategoriesQuery = $this->query(
+            'SELECT id, parent_id, position FROM objects_categories ORDER BY parent_id, position'
+        );
+        $previousParentCategoryId = -1;
+        $expectedCategoryPosition = 1;
+        foreach ($objectsCategoriesQuery->fetchAll() as $objectCategoryData) {
+            if ($previousParentCategoryId === -1) {
+                $previousParentCategoryId = $objectCategoryData['parent_id'];
+            }
+            if ($objectCategoryData['parent_id'] !== $previousParentCategoryId) {
+                $expectedCategoryPosition = 1;
+            }
+            if ($expectedCategoryPosition !== $objectCategoryData['position']) {
+                $this->execute(sprintf(
+                    'UPDATE objects_categories SET position = %d WHERE id = %d',
+                    $expectedCategoryPosition,
+                    $objectCategoryData['id']
+                ));
+            }
+
+            $expectedCategoryPosition++;
+            $previousParentCategoryId = $objectCategoryData['parent_id'];
         }
 
         /* Fix instances positions to have them in a correct sequence (1, 2, 3, ...). */
@@ -89,5 +158,9 @@ class AlterModelTableFixObjPos extends AbstractMigration
         $this->table('objects')->removeColumn('disponibility')->update();
 
         $this->table('instances_consequences')->removeColumn('object_id')->removeColumn('locally_touched')->update();
+
+        $this->table('historicals')
+            ->changeColumn('source_id', 'string', ['null' => true, 'limit' => 64])
+            ->update();
     }
 }

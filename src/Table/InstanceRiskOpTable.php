@@ -73,6 +73,18 @@ class InstanceRiskOpTable extends AbstractTable
     /**
      * @return InstanceRiskOpSuperClass[]
      */
+    public function findByRolfRisk(RolfRiskSuperClass $rolfRisk): array
+    {
+        return $this->getRepository()->createQueryBuilder('oprisk')
+            ->where('oprisk.rolfRisk = :rolfRisk')
+            ->setParameter('rolfRisk', $rolfRisk)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return InstanceRiskOpSuperClass[]
+     */
     public function findByObjectAndRolfRisk(ObjectSuperClass $object, RolfRiskSuperClass $rolfRisk)
     {
         $queryBuilder = $this->getRepository()->createQueryBuilder('oprisk')

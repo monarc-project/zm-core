@@ -14,7 +14,6 @@ use Monarc\Core\Table\InstanceRiskOpTable;
 use Monarc\Core\Model\Table\MeasureTable;
 use Monarc\Core\Model\Table\RolfRiskTable;
 use Monarc\Core\Model\Table\RolfTagTable;
-use Monarc\Core\Table\InstanceTable;
 use Monarc\Core\Table\MonarcObjectTable;
 
 /**
@@ -127,7 +126,7 @@ class RolfRiskService extends AbstractService
             $rolfRisk->setAnr($anr);
         }
 
-        foreach ($data['measures'] as $measure) {
+        foreach ($data['measures'] ?? [] as $measure) {
             /** @var MeasureTable $measureTable */
             $measureTable = $this->get('measureTable');
             if (isset($measure['uuid'], $measure['anr'], $anr)) {
@@ -180,33 +179,40 @@ class RolfRiskService extends AbstractService
         return $rolfRisk->getId();
     }
 
-    /**
-     * @inheritdoc
-     * set the deleted risks in specific
-     */
     public function delete($id)
     {
+        /** @var RolfRiskTable $rolfRiskTable */
+        $rolfRiskTable = $this->get('table');
+        $rolfRisk = $rolfRiskTable->findById($id);
+
+        /** @var InstanceRiskOpTable $instanceRiskOpTable */
         $instanceRiskOpTable = $this->get('instanceRiskOpTable');
-        $instancesRisksOp = $instanceRiskOpTable->getEntityByFields(['rolfRisk' => $id]);
-        $nbInstancesRisksOp = \count($instancesRisksOp);
-        foreach ($instancesRisksOp as $i => $instanceRiskOp) {
-            $instanceRiskOp->specific = 1;
-            $instanceRiskOpTable->save($instanceRiskOp, ($i + 1) === $nbInstancesRisksOp);
+
+        $instancesRisksOp = $instanceRiskOpTable->findByRolfRisk($rolfRisk);
+        foreach ($instancesRisksOp as $instanceRiskOp) {
+            $instanceRiskOp->setIsSpecific(true);
+            $instanceRiskOpTable->save($instanceRiskOp, false);
         }
 
-        return parent::delete($id);
+        $rolfRiskTable->deleteEntity($rolfRisk);
+
+        return true;
     }
 
-    /**
-     * @inheritdoc
-     * set the deleted risks in specific
-     */
     public function deleteListFromAnr($data, $anrId = null)
     {
-        foreach ($data as $ro) {
-            $this->delete($ro);
+        foreach ($data as $rolfRiskId) {
+            $this->delete($rolfRiskId);
         }
     }
+
+    public function deleteList($data)
+    {
+        foreach ($data as $rolfRiskId) {
+            $this->delete($rolfRiskId);
+        }
+    }
+
     /**
      * @inheritdoc
      */
@@ -215,10 +221,7 @@ class RolfRiskService extends AbstractService
         $rolfTags = $data['tags'] ?? [];
         unset($data['tags']);
 
-        /** @var RolfRiskTable $rolfRiskTable */
-        $rolfRiskTable = $this->get('table');
 
-        $rolfRisk = $rolfRiskTable->findById($id);
         //manage the measures separately because it's the slave of the relation RolfRisks<-->measures
         foreach ($data['measures'] as $measure) {
             $this->get('measureTable')->getEntity($measure)->addOpRisk($rolfRisk);
@@ -238,9 +241,9 @@ class RolfRiskService extends AbstractService
         $dependencies = property_exists($this, 'dependencies') ? $this->dependencies : [];
         $this->setDependencies($rolfRisk, $dependencies);
 
-        $currentTagId = [];
+        $currentTags = [];
         foreach ($rolfRisk->getTags() as $tag) {
-            $currentTagId[] = $tag->getId();
+            $currentTags[$tag->getId()] = $tag;
         }
 
         foreach ($rolfRisk->getTags() as $rolfTag) {
@@ -261,22 +264,22 @@ class RolfRiskService extends AbstractService
             }
         }
 
-        $newTagId = [];
+        $newTags = [];
         foreach ($rolfRisk->getTags() as $tag) {
-            $newTagId[] = $tag->getId();
+            $newTags[$tag->getId()] = $tag;
         }
 
         $deletedTags = [];
-        foreach ($currentTagId as $tagId) {
-            if (!\in_array($tagId, $newTagId, true)) {
+        foreach ($currentTags as $tagId => $currentTag) {
+            if (!\array_key_exists($tagId, $newTags)) {
                 $deletedTags[] = $tagId;
             }
         }
 
         $addedTags = [];
-        foreach ($newTagId as $tagId) {
-            if (!\in_array($tagId, $currentTagId, true)) {
-                $addedTags[] = $tagId;
+        foreach ($newTags as $newTagId => $newTag) {
+            if (!\array_key_exists($newTagId, $currentTags)) {
+                $addedTags[] = $newTag;
             }
         }
 
@@ -312,7 +315,7 @@ class RolfRiskService extends AbstractService
         }
         $instanceRiskOpTable->flush();
 
-        foreach ($currentTagId as $currentTag) {
+        foreach ($currentTags as $currentTag) {
             // manage the fact that label can changed for OP risk
             foreach ($monarcObjectTable->findByRolfTag($currentTag) as $object) {
                 $instancesRisksOp = $instanceRiskOpTable->findByObjectAndRolfRisk($object, $rolfRisk);

@@ -7,9 +7,12 @@
 
 namespace Monarc\Core\Controller\Handler;
 
+use Laminas\Diactoros\Response;
+use Laminas\Diactoros\Stream;
 use Laminas\Mvc\Controller\AbstractRestfulController;
 use Laminas\Mvc\MvcEvent;
 use Laminas\Router\RouteMatch;
+use Laminas\View\Model\ViewModel;
 use Monarc\Core\Request\Psr7Bridge\RequestConverter;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -26,6 +29,24 @@ abstract class AbstractRestfulControllerRequestHandler extends AbstractRestfulCo
             $this->setEvent((new MvcEvent())->setRouteMatch($routerMatch));
         }
 
-        return $this->dispatch($laminasRequest);
+        $result = $this->dispatch($laminasRequest);
+
+        /* Handles the case of the missing controller's action or other dispatching issues. */
+        if ($result instanceof ViewModel) {
+            $content = json_encode([
+                'errors' => [
+                    [
+                        'message' => ($result->getVariables()['content'] ?? '')
+                            . '. Check if the controller\'s action template is presented for: "'
+                            . $result->getTemplate() . '"',
+                    ],
+                ],
+            ], JSON_THROW_ON_ERROR);
+            $stream = fopen('data://application/json,' . $content, 'rb+');
+
+            return new Response($stream, 412);
+        }
+
+        return $result;
     }
 }

@@ -95,7 +95,7 @@ class ScaleService
         /** @var Entity\Scale $scale */
         $scale = $this->scaleTable->findByIdAndAnr($id, $anr);
 
-        if ($data['max'] > $scale->getMax() || $data['min'] < $scale->getMin()) {
+        if ($data['max'] < $scale->getMax() || $data['min'] > $scale->getMin()) {
             if ($scale->getType() === Entity\ScaleSuperClass::TYPE_IMPACT) {
                 $this->adjustInstancesAndConsequencesImpacts($anr, $data);
             } else {
@@ -194,6 +194,10 @@ class ScaleService
                     $this->instanceConsequenceTable->save($instanceConsequence, false);
                 }
             }
+            foreach ($instance->getInstanceRisks() as $instanceRisk) {
+                $this->instanceRiskService->recalculateRiskRates($instanceRisk, false);
+            }
+
             $this->instanceTable->save($instance, false);
         }
     }

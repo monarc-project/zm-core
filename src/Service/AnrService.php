@@ -91,6 +91,9 @@ class AnrService
         $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
+    /**
+     * Note: Used only from the ModelService when a model is created.
+     */
     public function create($data): Entity\Anr
     {
         $anr = (new Entity\Anr())
@@ -162,6 +165,22 @@ class AnrService
         $this->anrTable->save($newAnr);
 
         return $newAnr;
+    }
+
+    /**
+     * Is used to patch the thresholds values on the informational and operational scales page.
+     */
+    public function patchAcceptanceThresholdValues(Entity\Anr $anr, array $thresholds): Entity\Anr
+    {
+        $anr->setSeuil1($thresholds['seuil1'])
+            ->setSeuil2($thresholds['seuil2'])
+            ->setSeuilRolf1($thresholds['seuilRolf1'])
+            ->setSeuilRolf2($thresholds['seuilRolf2'])
+            ->setUpdater($this->connectedUser->getEmail());
+
+        $this->anrTable->save($anr);
+
+        return $anr;
     }
 
     /**

@@ -17,7 +17,7 @@ class PatchConsequenceDataInputValidator extends AbstractInputValidator
             [
                 'name' => 'isHidden',
                 'required' => true,
-                'allow_empty' => false,
+                'allow_empty' => true,
                 'filters' => [
                     [
                         'name' => 'boolean'

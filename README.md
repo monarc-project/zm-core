@@ -89,6 +89,30 @@ or, in case if config needs to be injected:
     ServiceNamescpace\MyService::class => Laminas\ServiceManager\AbstractFactory\ReflectionBasedAbstractFactory::class,
 
 
+Input Formatters
+-------
+
+The input formatters classes aim to perform the [GET] requests data filtering, validating and transforming into a format that can be used directly to prepare the database queries.
+The formatters classes are enriched with possibilities of handling and preparing the data for search by text, filter by params, ordering and pagination.
+
+Tha basic classes are `InputFormatter\AbstractInputFormatter`, `InputFormatter\FormattedInputParams`.
+The instantiated objects inherited the basic classes are used in the Controllers and the formatted results are passed to the services and to the table classes methods.
+The tables' classes, inherited the `Table\AbstractTable` have a certain method `findByParams` where the `FormattedInputParams` object is accepted and processed to generate the query.  
+
+The trait's method `Controller\Handler\ControllerRequestResponseHandlerTrait::getFormattedInputParams` helps in the process.
+
+
+Validators
+-------
+
+The validators classes are responsible to validate the post, put and patch requests' data. 
+Every child class of `Validator\InputValidator\AbstractInputValidator` have to describe a set rules that are used to validate the incoming data.  
+The validated data can be obtained with use of the methods `getValidData`, `getValidDataSets` if `isValid` result is `true`.
+
+The trait's method `Controller\Handler\ControllerRequestResponseHandlerTrait::validatePostParams` helps in the process.
+It can also handle the batch data requests, that are used for the import operations.
+
+
 Tests Coverage
 --------------
 

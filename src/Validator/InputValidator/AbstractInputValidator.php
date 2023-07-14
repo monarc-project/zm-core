@@ -19,6 +19,8 @@ abstract class AbstractInputValidator
 
     protected array $systemLanguageIndexes;
 
+    protected array $initialData = [];
+
     private array $validData = [];
 
     public function __construct(array $config)
@@ -32,6 +34,7 @@ abstract class AbstractInputValidator
 
     public function isValid(array $data): bool
     {
+        $this->initialData = $data;
         $this->inputFilter->setData($data);
 
         $isValid = $this->inputFilter->isValid();
