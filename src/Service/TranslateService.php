@@ -1,7 +1,7 @@
 <?php
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -9,49 +9,34 @@ namespace Monarc\Core\Service;
 
 use Laminas\I18n\Translator\Translator;
 
-/**
- * Translate Service
- *
- * Class TranslateService
- * @package Monarc\Core\Service
- */
 class TranslateService
 {
-    protected $translator = null;
-    protected $languages = [];
+    protected Translator $translator;
 
-    /**
-     * TranslateService constructor.
-     * @param null $translator
-     * @param array $languages
-     */
-    public function __construct($translator = null, $languages = [])
+    protected array $languages;
+
+    public function __construct(Translator $translator, array $languages = [])
     {
         $this->translator = $translator;
         $this->languages = $languages;
     }
 
     /**
-     * Translates the provided message into the target language in $langueIndex
      * @param string $message The message to translate
-     * @param null|int $langueIndex The language index or null for the default language
+     * @param null|int $languageIndex The language index or null for the default language
+     *
      * @return string The translated message
      */
-    public function translate($message, $langueIndex = null)
+    public function translate(string $message, ?int $languageIndex = null): string
     {
-        if (!$this->translator) {
-            return $message;
-        } elseif (empty($langueIndex) || !isset($this->languages[$langueIndex])) {
+        if ($languageIndex === null || !isset($this->languages[$languageIndex])) {
             return $this->translator->translate($message);
-        } else {
-            return $this->translator->translate($message, 'monarc', $this->languages[$langueIndex]);
         }
+
+        return $this->translator->translate($message, 'monarc', $this->languages[$languageIndex]);
     }
 
-    /**
-     * @return Translator The translator service
-     */
-    public function getTranslator()
+    public function getTranslator(): Translator
     {
         return $this->translator;
     }

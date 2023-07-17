@@ -12,8 +12,6 @@ use Laminas\Http\Request;
 use Laminas\Mvc\MvcEvent;
 use Laminas\View\Model\JsonModel;
 use Laminas\Router\RouteMatch;
-use Monarc\Core\Validator\FieldValidator\UniqueEmail;
-use Monarc\Core\Validator\FieldValidator\UniqueDeliveryModel;
 
 class Module
 {
@@ -36,16 +34,6 @@ class Module
     public function getDefaultLanguage($sm)
     {
         return $sm->get('Config')['defaultLanguageIndex'];
-    }
-
-    public function getValidatorConfig()
-    {
-        return [
-            'invokables' => [
-                UniqueEmail::class => UniqueEmail::class,
-                UniqueDeliveryModel::class => UniqueDeliveryModel::class,
-            ],
-        ];
     }
 
     public function onDispatchError($e)

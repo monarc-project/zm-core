@@ -1,32 +1,29 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
+
 namespace Monarc\Core\Validator\FieldValidator;
 
 use Laminas\Validator\AbstractValidator;
 
-/**
- * Class PasswordStrength is an implementation of AbstractValidator that ensures the strength of passwords.
- * @package Monarc\Core\Validator
- */
 class PasswordStrength extends AbstractValidator
 {
-    const LENGTH = 'length';
-    const UPPER  = 'upper';
-    const LOWER  = 'lower';
-    const DIGIT  = 'digit';
-    const SPECIAL  = 'special';
+    private const LENGTH = 'length';
+    private const UPPER = 'upper';
+    private const LOWER = 'lower';
+    private const DIGIT = 'digit';
+    private const SPECIAL = 'special';
 
-    protected $messageTemplates = array(
-        self::LENGTH => "be at least 8 characters in length",
-        self::UPPER  => "contain at least one uppercase letter",
-        self::LOWER  => "contain at least one lowercase letter",
-        self::DIGIT  => "contain at least one digit character",
-        self::SPECIAL  => "contain at least one special character"
-    );
+    protected $messageTemplates = [
+        self::LENGTH => 'be at least 8 characters in length',
+        self::UPPER => 'contain at least one uppercase letter',
+        self::LOWER => 'contain at least one lowercase letter',
+        self::DIGIT => 'contain at least one digit character',
+        self::SPECIAL => 'contain at least one special character',
+    ];
 
     /**
      * @inheritdoc
@@ -37,7 +34,7 @@ class PasswordStrength extends AbstractValidator
 
         $isValid = true;
 
-        if (strlen($value) < 8) {
+        if (\strlen($value) < 8) {
             $this->error(self::LENGTH);
             $isValid = false;
         }
@@ -61,6 +58,7 @@ class PasswordStrength extends AbstractValidator
             $this->error(self::SPECIAL);
             $isValid = false;
         }
+
         return $isValid;
     }
 }

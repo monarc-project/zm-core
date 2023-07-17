@@ -25,8 +25,8 @@ class UniqueDeliveryModel extends AbstractValidator
         'id' => 0,
     ];
 
-    const ALREADY_USED = "ALREADY_USED";
-    const MAX_BY_CATEGORY_REACHED = "MAX_BY_CATEGORY_REACHED";
+    private const ALREADY_USED = 'ALREADY_USED';
+    private const MAX_BY_CATEGORY_REACHED = 'MAX_BY_CATEGORY_REACHED';
 
     protected $messageTemplates = [
         self::ALREADY_USED => 'This category is already used.',

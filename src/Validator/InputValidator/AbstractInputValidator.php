@@ -8,8 +8,11 @@
 namespace Monarc\Core\Validator\InputValidator;
 
 use Laminas\Filter\StringTrim;
+use Laminas\I18n\Translator\Resources;
 use Laminas\InputFilter\InputFilter;
+use Laminas\Validator\AbstractValidator;
 use Laminas\Validator\StringLength;
+use Monarc\Core\Service\ConnectedUserService;
 
 abstract class AbstractInputValidator
 {
@@ -23,13 +26,28 @@ abstract class AbstractInputValidator
 
     private array $validData = [];
 
-    public function __construct(array $config)
+    public function __construct(array $config, ConnectedUserService $connectedUserService)
     {
         $this->inputFilter = new InputFilter();
         $this->defaultLanguageIndex = $config['defaultLanguageIndex'] ?? 1;
         $this->systemLanguageIndexes = array_column($config['languages'], 'index');
 
         $this->initRules();
+
+        if ($connectedUserService->getConnectedUser() !== null) {
+            $translator = (new InputValidationTranslator())
+                ->addTranslationFilePattern('phpArray', Resources::getBasePath(), Resources::getPatternForValidator())
+                ->addTranslationFilePattern(
+                    'phpArray',
+                    __DIR__ . '/../../../locale/languages/',
+                    '%s/validation_messages.php'
+                );
+
+            $activeLanguages = $config['activeLanguages'] ?? ['fr', 'en', 'de', 'nl'];
+            $translator->setLocale($activeLanguages[$connectedUserService->getConnectedUser()->getLanguage() - 1]);
+
+            AbstractValidator::setDefaultTranslator($translator);
+        }
     }
 
     public function isValid(array $data): bool

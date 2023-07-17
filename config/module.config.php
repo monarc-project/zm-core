@@ -142,13 +142,19 @@ return [
             DbCli::class => DbCliFactory::class,
 
             // TODO: replace to autowiring.
+            Service\Export\AssetExportService::class => AutowireFactory::class,
+            Service\Export\ObjectExportService::class => AutowireFactory::class,
+            // TOOD: move to the Export folder.
+            Service\OperationalRiskScalesExportService::class => AutowireFactory::class,
+            Service\InstanceMetadataFieldsExportService::class => AutowireFactory::class,
+            Service\SoaScaleCommentExportService::class => AutowireFactory::class,
+            // --- END ---
             Service\AmvService::class => AutowireFactory::class,
             Service\AnrService::class => AutowireFactory::class,
             Service\UserRoleService::class => AutowireFactory::class,
             Service\UserProfileService::class => AutowireFactory::class,
             Service\AuthenticationService::class => AutowireFactory::class,
             Service\AssetService::class => AutowireFactory::class,
-            Service\AssetExportService::class => Service\AssetExportServiceFactory::class,
             Service\ConfigService::class => ReflectionBasedAbstractFactory::class,
             Service\QuestionService::class => Service\QuestionServiceFactory::class,
             Service\QuestionChoiceService::class => Service\QuestionChoiceServiceFactory::class,
@@ -165,7 +171,6 @@ return [
             Service\MeasureMeasureService::class => Service\MeasureMeasureServiceFactory::class,
             Service\ModelService::class => AutowireFactory::class,
             Service\ObjectService::class => AutowireFactory::class,
-            Service\ObjectExportService::class => AutowireFactory::class,
             Service\ObjectCategoryService::class => AutowireFactory::class,
             Service\ObjectObjectService::class => AutowireFactory::class,
             Service\PasswordService::class => AutowireFactory::class,
@@ -184,9 +189,6 @@ return [
             Service\ObjectImportService::class => AutowireFactory::class,
             Service\OperationalRiskScaleService::class => AutowireFactory::class,
             Service\OperationalRiskScaleCommentService::class => AutowireFactory::class,
-            Service\OperationalRiskScalesExportService::class => AutowireFactory::class,
-            Service\InstanceMetadataFieldsExportService::class => AutowireFactory::class,
-            Service\SoaScaleCommentExportService::class => AutowireFactory::class,
             Service\InstanceMetadataFieldService::class => AutowireFactory::class,
             Service\SoaScaleCommentService::class => AutowireFactory::class,
 
@@ -258,6 +260,7 @@ return [
             ) {
                 return new InputValidator\Asset\PostAssetDataInputValidator(
                     $container->get('config'),
+                    $container->get(Service\ConnectedUserService::class),
                     $container->get(Table\AssetTable::class)
                 );
             },
@@ -267,6 +270,7 @@ return [
             ) {
                 return new InputValidator\Threat\PostThreatDataInputValidator(
                     $container->get('config'),
+                    $container->get(Service\ConnectedUserService::class),
                     $container->get(Table\ThemeTable::class)
                 );
             },
@@ -276,6 +280,7 @@ return [
             ) {
                 return new InputValidator\Vulnerability\PostVulnerabilityDataInputValidator(
                     $container->get('config'),
+                    $container->get(Service\ConnectedUserService::class),
                     $container->get(Table\VulnerabilityTable::class)
                 );
             },
@@ -295,6 +300,8 @@ return [
                 ReflectionBasedAbstractFactory::class,
             InputValidator\InstanceRisk\UpdateInstanceRiskDataInputValidator::class =>
                 ReflectionBasedAbstractFactory::class,
+            InputValidator\Anr\PatchThresholdsDataInputValidator::class => ReflectionBasedAbstractFactory::class,
+            InputValidator\Profile\PatchProfileDataInputValidator::class => ReflectionBasedAbstractFactory::class,
         ],
         'shared' => [
             ModelEntity\Scale::class => false,

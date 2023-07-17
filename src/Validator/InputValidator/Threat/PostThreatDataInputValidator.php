@@ -13,6 +13,7 @@ use Laminas\Validator\InArray;
 use Laminas\Validator\StringLength;
 use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\ThreatSuperClass;
+use Monarc\Core\Service\ConnectedUserService;
 use Monarc\Core\Table\Interfaces\UniqueCodeTableInterface;
 use Monarc\Core\Validator\FieldValidator\UniqueCode;
 use Monarc\Core\Validator\InputValidator\AbstractInputValidator;
@@ -27,11 +28,12 @@ class PostThreatDataInputValidator extends AbstractInputValidator
 
     public function __construct(
         array $config,
+        ConnectedUserService $connectedUserService,
         UniqueCodeTableInterface $threatTable
     ) {
         $this->threatTable = $threatTable;
 
-        parent::__construct($config);
+        parent::__construct($config, $connectedUserService);
     }
 
     public function setAnr(AnrSuperClass $anr): self

@@ -59,6 +59,7 @@
         "laminas/laminas-dependency-plugin": "^2.0",
         "laminas/laminas-mvc-middleware": "^2.2",
         "robthree/twofactorauth": "^1.8",
+        "laminas/laminas-i18n-resources": "^2.9",
         "laminas/laminas-mvc-i18n": "^1.7"
     },
     "require-dev": {

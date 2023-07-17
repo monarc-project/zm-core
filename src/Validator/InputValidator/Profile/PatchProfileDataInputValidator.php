@@ -5,23 +5,18 @@
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
-namespace Monarc\Core\Validator\InputValidator\User;
+namespace Monarc\Core\Validator\InputValidator\Profile;
 
 use Laminas\Filter\StringTrim;
-use Laminas\InputFilter\ArrayInput;
-use Laminas\Validator\Callback;
 use Laminas\Validator\EmailAddress;
-use Laminas\Validator\NotEmpty;
 use Laminas\Validator\StringLength;
-use Monarc\Core\Model\Entity\UserRole;
 use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
-use Monarc\Core\Validator\FieldValidator\LanguageValidator;
 use Monarc\Core\Validator\FieldValidator\UniqueEmail;
 use Monarc\Core\Validator\InputValidator\AbstractInputValidator;
 use Monarc\Core\Table\UserTable;
 
-class PostUserDataInputValidator extends AbstractInputValidator
+class PatchProfileDataInputValidator extends AbstractInputValidator
 {
     protected UserTable $userTable;
 
@@ -78,23 +73,6 @@ class PostUserDataInputValidator extends AbstractInputValidator
                 ],
             ],
             [
-                'name' => 'password',
-                'required' => false,
-                'filters' => [
-                    [
-                        'name' => StringTrim::class,
-                    ],
-                ],
-                'validators' => [
-                    [
-                        'name' => StringLength::class,
-                        'options' => [
-                            'min' => 9,
-                        ]
-                    ],
-                ],
-            ],
-            [
                 'name' => 'email',
                 'required' => true,
                 'filters' => [
@@ -115,43 +93,6 @@ class PostUserDataInputValidator extends AbstractInputValidator
                     ],
                 ],
             ],
-            [
-                'name' => 'role',
-                'required' => true,
-                'type' => ArrayInput::class,
-                'validators' => [
-                    [
-                        'name' => NotEmpty::class,
-                    ],
-                    [
-                        'name' => Callback::class,
-                        'options' => [
-                            'callback' => [$this, 'validateRoles'],
-                        ],
-                    ],
-                ],
-            ],
-            [
-                'name' => 'language',
-                'required' => false,
-                'allow_empty' => true,
-                'filters' => [
-                    ['name' => 'ToInt'],
-                ],
-                'validators' => [
-                    [
-                        'name' => LanguageValidator::class,
-                        'options' => [
-                            'systemLanguageIndexes' => $this->systemLanguageIndexes,
-                        ]
-                    ]
-                ],
-            ],
         ];
-    }
-
-    public function validateRoles($value): bool
-    {
-        return \in_array($value, UserRole::getAvailableRoles(), true);
     }
 }
