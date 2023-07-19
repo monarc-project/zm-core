@@ -35,6 +35,8 @@ abstract class AbstractInputValidator
         $this->initRules();
 
         if ($connectedUserService->getConnectedUser() !== null) {
+            // TODO: instead of instantion of the translator here, we can inject it and remove connected user service injection.
+            // TODO: the same translator instance can be used in the controller threat, or we can add the message here.
             $translator = (new InputValidationTranslator())
                 ->addTranslationFilePattern('phpArray', Resources::getBasePath(), Resources::getPatternForValidator())
                 ->addTranslationFilePattern(
@@ -66,6 +68,23 @@ abstract class AbstractInputValidator
     public function getErrorMessages(): array
     {
         return $this->inputFilter->getMessages();
+    }
+
+    public function getErrorMessagesRow(bool $wereBatchDataValidated, int $rowNum): string
+    {
+        $errorMessages = [];
+        foreach ($this->getErrorMessages() as $field => $messages) {
+            $errorMessages[$field] = array_map('htmlentities', array_values($messages));
+        }
+
+        $result = [
+            'validationErrors' => $errorMessages,
+        ];
+        if ($wereBatchDataValidated) {
+            $result['row'] = $rowNum + 1;
+        }
+
+        return html_entity_decode(json_encode($result, JSON_THROW_ON_ERROR));
     }
 
     public function getValidData(int $validatedSetNum = 0): array

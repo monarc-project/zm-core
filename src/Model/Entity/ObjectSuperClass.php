@@ -17,6 +17,7 @@ use Monarc\Core\Model\Entity\Traits\PropertyStateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 use Ramsey\Uuid\Lazy\LazyUuidFromString;
 use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
 
 /**
  * @ORM\Table(name="objects", indexes={
@@ -44,7 +45,7 @@ class ObjectSuperClass implements PositionedEntityInterface
     public const MODE_SPECIFIC = 1;
 
     /**
-     * @var LazyUuidFromString|string
+     * @var LazyUuidFromString|UuidInterface|string
      *
      * @ORM\Column(name="uuid", type="uuid", nullable=false)
      * @ORM\Id
@@ -122,20 +123,6 @@ class ObjectSuperClass implements PositionedEntityInterface
      * @ORM\Column(name="position", type="smallint", options={"unsigned":true, "default":0})
      */
     protected $position = 0;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="token_import", type="string", length=255, nullable=true)
-     */
-    protected $tokenImport;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="original_name", type="string", length=255, nullable=true)
-     */
-    protected $originalName;
 
     /**
      * @var ArrayCollection|ObjectSuperClass[]

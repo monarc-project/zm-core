@@ -155,12 +155,36 @@ class AlterModelTableFixObjPos extends AbstractMigration
         );
 
         $this->table('instances')->removeColumn('disponibility')->update();
-        $this->table('objects')->removeColumn('disponibility')->update();
+        $this->table('objects')
+            ->removeColumn('disponibility')
+            ->removeColumn('token_import')
+            ->removeColumn('original_name')
+            ->update();
 
         $this->table('instances_consequences')->removeColumn('object_id')->removeColumn('locally_touched')->update();
 
         $this->table('historicals')
             ->changeColumn('source_id', 'string', ['null' => true, 'limit' => 64])
             ->update();
+
+        /* Fix possibly missing soacategory. */
+        $measuresQuery = $this->query('SELECT uuid, referential_uuid FROM measures WHERE soacategory_id IS NULL;');
+        $soaCategoryId = null;
+        $soaCategoryTable = $this->table('soacategory');
+        foreach ($measuresQuery->fetchAll() as $measureData) {
+            if ($soaCategoryId === null) {
+                $soaCategoryTable->insert([
+                    'label1' => 'catégorie manquante',
+                    'label2' => 'missing category',
+                    'label3' => 'fehlende Kategorie',
+                    'label4' => 'ontbrekende categorie',
+                    'referential_uuid' => $measureData['referential_uuid'],
+                ])->saveData();
+                $soaCategoryId = (int)$this->getAdapter()->getConnection()->lastInsertId();
+            }
+
+            $this->execute('UPDATE measures SET soacategory_id = ' . $soaCategoryId
+                . ' WHERE uuid = "' . $measureData['uuid'] . '"');
+        }
     }
 }

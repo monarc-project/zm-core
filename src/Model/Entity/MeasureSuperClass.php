@@ -83,7 +83,7 @@ class MeasureSuperClass extends AbstractEntity
      *
      * @ORM\Column(name="status", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $status = '1';
+    protected $status = 1;
 
     /**
      * @var ArrayCollection|AmvSuperClass[]
@@ -290,6 +290,18 @@ class MeasureSuperClass extends AbstractEntity
     public function setCode(string $code): self
     {
         $this->code = $code;
+
+        return $this;
+    }
+
+    public function getStatus(): int
+    {
+        return $this->status;
+    }
+
+    public function setStatus(int $status): self
+    {
+        $this->status = $status;
 
         return $this;
     }

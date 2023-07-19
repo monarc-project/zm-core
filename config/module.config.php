@@ -144,6 +144,7 @@ return [
             // TODO: replace to autowiring.
             Service\Export\AssetExportService::class => AutowireFactory::class,
             Service\Export\ObjectExportService::class => AutowireFactory::class,
+            Service\Export\AmvExportService::class => InvokableFactory::class,
             // TOOD: move to the Export folder.
             Service\OperationalRiskScalesExportService::class => AutowireFactory::class,
             Service\InstanceMetadataFieldsExportService::class => AutowireFactory::class,

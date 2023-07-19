@@ -8,6 +8,7 @@
 namespace Monarc\Core\Validator\InputValidator\Profile;
 
 use Laminas\Filter\StringTrim;
+use Laminas\Filter\ToInt;
 use Laminas\Validator\EmailAddress;
 use Laminas\Validator\StringLength;
 use Monarc\Core\Model\Entity\UserSuperClass;
@@ -38,7 +39,7 @@ class PatchProfileDataInputValidator extends AbstractInputValidator
         return [
             [
                 'name' => 'firstname',
-                'required' => true,
+                'required' => false,
                 'filters' => [
                     [
                         'name' => StringTrim::class,
@@ -56,7 +57,7 @@ class PatchProfileDataInputValidator extends AbstractInputValidator
             ],
             [
                 'name' => 'lastname',
-                'required' => true,
+                'required' => false,
                 'filters' => [
                     [
                         'name' => StringTrim::class,
@@ -74,7 +75,7 @@ class PatchProfileDataInputValidator extends AbstractInputValidator
             ],
             [
                 'name' => 'email',
-                'required' => true,
+                'required' => false,
                 'filters' => [
                     [
                         'name' => StringTrim::class,
@@ -91,6 +92,28 @@ class PatchProfileDataInputValidator extends AbstractInputValidator
                             'currentUserId' => $this->connectedUser !== null ? $this->connectedUser->getId() : 0,
                         ],
                     ],
+                ],
+            ],
+            [
+                'name' => 'language',
+                'required' => false,
+                'filters' => [
+                    [
+                        'name' => ToInt::class,
+                    ],
+                ],
+                'validators' => [
+                ],
+            ],
+            [
+                'name' => 'mospApiKey',
+                'required' => false,
+                'filters' => [
+                    [
+                        'name' => StringTrim::class,
+                    ],
+                ],
+                'validators' => [
                 ],
             ],
         ];

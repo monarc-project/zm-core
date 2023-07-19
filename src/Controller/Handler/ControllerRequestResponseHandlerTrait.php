@@ -57,11 +57,7 @@ trait ControllerRequestResponseHandlerTrait
         $paramsSets = $isBatchData ? $params : [$params];
         foreach ($paramsSets as $rowNum => $paramsSet) {
             if (!$inputValidator->isValid($paramsSet)) {
-                throw new Exception(sprintf(
-                    'Data validation errors %s: [ %s ]',
-                    $isBatchData ? '(row number "' . ($rowNum + 1) . '") ' : '',
-                    json_encode($inputValidator->getErrorMessages(), JSON_THROW_ON_ERROR)
-                ), 412);
+                throw new Exception($inputValidator->getErrorMessagesRow($isBatchData, $rowNum), 400);
             }
         }
     }

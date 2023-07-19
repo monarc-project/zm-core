@@ -114,7 +114,7 @@ class ObjectService
 
         $objectData['children'] = $this->getChildrenTreeList($object);
         $objectData['risks'] = $this->getRisks($object);
-        $objectData['oprisks'] = $this->getRisks($object);
+        $objectData['oprisks'] = $this->getRisksOp($object);
         $objectData['parents'] = $this->getDirectParents($object);
 
         if ($this->isAnrObjectMode($filteredData)) {
@@ -158,13 +158,9 @@ class ObjectService
 
             $modelsData = [];
             foreach ($models as $model) {
-                $modelsData[] = [
+                $modelsData[] = array_merge([
                     'id' => $model->getId(),
-                    'label1' => $model->getLabel(1),
-                    'label2' => $model->getLabel(2),
-                    'label3' => $model->getLabel(3),
-                    'label4' => $model->getLabel(4),
-                ];
+                ], $model->getLabels());
             }
 
             $objectData['replicas'] = $modelsData;
@@ -368,51 +364,31 @@ class ObjectService
         $directParents = [];
         foreach ($object->getParentsLinks() as $parentLink) {
             if ($parentLink->getParent()->hasAnrLink($anr)) {
-                $directParents[] = [
+                $directParents[] = array_merge([
                     'uuid' => $parentLink->getParent()->getUuid(),
                     'linkid' => $parentLink->getId(),
-                    'label1' => $parentLink->getParent()->getLabel(1),
-                    'label2' => $parentLink->getParent()->getLabel(2),
-                    'label3' => $parentLink->getParent()->getLabel(3),
-                    'label4' => $parentLink->getParent()->getLabel(4),
-                    'name1' => $parentLink->getParent()->getName(1),
-                    'name2' => $parentLink->getParent()->getName(2),
-                    'name3' => $parentLink->getParent()->getName(3),
-                    'name4' => $parentLink->getParent()->getName(4),
-                ];
+                ], $parentLink->getParent()->getLabels(), $parentLink->getParent()->getNames());
             }
         }
 
         return $directParents;
     }
 
-    public function getPreparedObjectData(Entity\ObjectSuperClass $object, bool $objectOnly = false): array
+    private function getPreparedObjectData(Entity\ObjectSuperClass $object, bool $objectOnly = false): array
     {
-        $result = [
+        $result = array_merge([
             'uuid' => $object->getUuid(),
-            'label1' => $object->getLabel(1),
-            'label2' => $object->getLabel(2),
-            'label3' => $object->getLabel(3),
-            'label4' => $object->getLabel(4),
-            'name1' => $object->getName(1),
-            'name2' => $object->getName(2),
-            'name3' => $object->getName(3),
-            'name4' => $object->getName(4),
             'mode' => $object->getMode(),
             'scope' => $object->getScope(),
             'position' => $object->getPosition(),
-        ];
+        ], $object->getLabels(), $object->getNames());
 
         if (!$objectOnly) {
             $result['category'] = $object->getCategory() !== null
-                ? [
+                ? array_merge([
                     'id' => $object->getCategory()->getId(),
-                    'label1' => $object->getCategory()->getLabel(1),
-                    'label2' => $object->getCategory()->getLabel(2),
-                    'label3' => $object->getCategory()->getLabel(3),
-                    'label4' => $object->getCategory()->getLabel(4),
                     'position' => $object->getCategory()->getPosition(),
-                ]
+                ], $object->getCategory()->getLabels())
                 : [
                     'id' => -1,
                     'label1' => 'Sans catégorie',
@@ -421,24 +397,16 @@ class ObjectService
                     'label4' => 'Geen categorie',
                     'position' => -1,
                 ];
-            $result['asset'] = [
+            $result['asset'] = array_merge([
                 'uuid' => $object->getAsset()->getUuid(),
                 'code' => $object->getAsset()->getCode(),
-                'label1' => $object->getAsset()->getLabel(1),
-                'label2' => $object->getAsset()->getLabel(2),
-                'label3' => $object->getAsset()->getLabel(3),
-                'label4' => $object->getAsset()->getLabel(4),
                 'type' => $object->getAsset()->getType(),
                 'mode' => $object->getAsset()->getMode(),
-            ];
-            $result['rolfTag'] = $object->getRolfTag() === null ? null : [
+            ], $object->getAsset()->getLabels());
+            $result['rolfTag'] = $object->getRolfTag() === null ? null : array_merge([
                 'id' => $object->getRolfTag()->getId(),
                 'code' => $object->getRolfTag()->getCode(),
-                'label1' => $object->getRolfTag()->getLabel(1),
-                'label2' => $object->getRolfTag()->getLabel(2),
-                'label3' => $object->getRolfTag()->getLabel(3),
-                'label4' => $object->getRolfTag()->getLabel(4),
-            ];
+            ], $object->getRolfTag()->getLabels());
         }
 
         return $result;
@@ -703,18 +671,14 @@ class ObjectService
         array $objectsData,
         Entity\AnrSuperClass $anr
     ): array {
-        $result = [
+        $result = array_merge($category->getLabels(), [
             'id' => $category->getId(),
-            'label1' => $category->getLabel(1),
-            'label2' => $category->getLabel(2),
-            'label3' => $category->getLabel(3),
-            'label4' => $category->getLabel(4),
             'position' => $category->getPosition(),
             'child' => !$category->hasChildren()
                 ? []
                 : $this->getCategoriesWithObjectsChildrenTreeList($category, $anr),
             'objects' => $objectsData,
-        ];
+        ]);
         if (empty($objectsData) && empty($result['child'])) {
             return [];
         }
@@ -740,23 +704,15 @@ class ObjectService
     {
         $result = [];
         foreach ($object->getChildrenLinks() as $childLinkObject) {
-            $result[] = [
+            $result[] = array_merge([
                 'uuid' => $childLinkObject->getChild()->getUuid(),
                 'component_link_id' => $childLinkObject->getId(),
-                'label1' => $childLinkObject->getChild()->getLabel(1),
-                'label2' => $childLinkObject->getChild()->getLabel(2),
-                'label3' => $childLinkObject->getChild()->getLabel(3),
-                'label4' => $childLinkObject->getChild()->getLabel(4),
-                'name1' => $childLinkObject->getChild()->getName(1),
-                'name2' => $childLinkObject->getChild()->getName(2),
-                'name3' => $childLinkObject->getChild()->getName(3),
-                'name4' => $childLinkObject->getChild()->getName(4),
                 'mode' => $childLinkObject->getChild()->getMode(),
                 'scope' => $childLinkObject->getChild()->getScope(),
                 'children' => !$childLinkObject->getChild()->hasChildren()
                     ? []
                     : $this->getChildrenTreeList($childLinkObject->getChild()),
-            ];
+            ], $childLinkObject->getChild()->getLabels(), $childLinkObject->getChild()->getNames());
         }
 
         return $result;
@@ -766,23 +722,15 @@ class ObjectService
     {
         $result = [];
         foreach ($object->getParentsLinks() as $parentLinkObject) {
-            $result[] = [
+            $result[] = array_merge([
                 'uuid' => $parentLinkObject->getParent()->getUuid(),
                 'component_link_id' => $parentLinkObject->getId(),
-                'label1' => $parentLinkObject->getParent()->getLabel(1),
-                'label2' => $parentLinkObject->getParent()->getLabel(2),
-                'label3' => $parentLinkObject->getParent()->getLabel(3),
-                'label4' => $parentLinkObject->getParent()->getLabel(4),
-                'name1' => $parentLinkObject->getParent()->getName(1),
-                'name2' => $parentLinkObject->getParent()->getName(2),
-                'name3' => $parentLinkObject->getParent()->getName(3),
-                'name4' => $parentLinkObject->getParent()->getName(4),
                 'mode' => $parentLinkObject->getParent()->getMode(),
                 'scope' => $parentLinkObject->getParent()->getScope(),
                 'parents' => $parentLinkObject->getParent()->getParents()->isEmpty()
                     ? []
                     : $this->getParentsTreeList($parentLinkObject->getParent()),
-            ];
+            ], $parentLinkObject->getParent()->getLabels(), $parentLinkObject->getParent()->getNames());
         }
 
         return $result;
@@ -830,16 +778,7 @@ class ObjectService
         $riskOps = [];
         if ($object->getRolfTag() !== null && $object->getAsset()->isPrimary()) {
             foreach ($object->getRolfTag()->getRisks() as $rolfRisk) {
-                $riskOps[] = [
-                    'label1' => $rolfRisk->getLabel(1),
-                    'label2' => $rolfRisk->getLabel(2),
-                    'label3' => $rolfRisk->getLabel(3),
-                    'label4' => $rolfRisk->getLabel(4),
-                    'description1' => $rolfRisk->getDescription(1),
-                    'description2' => $rolfRisk->getDescription(2),
-                    'description3' => $rolfRisk->getDescription(3),
-                    'description4' => $rolfRisk->getDescription(4),
-                ];
+                $riskOps[] = array_merge($rolfRisk->getLabels(), $rolfRisk->getDescriptions());
             }
         }
 
@@ -865,16 +804,7 @@ class ObjectService
     {
         $parents = [];
         foreach ($object->getParents() as $parentObject) {
-            $parents[] = [
-                'name1' => $parentObject->getName(1),
-                'name2' => $parentObject->getName(2),
-                'name3' => $parentObject->getName(3),
-                'name4' => $parentObject->getName(4),
-                'label1' => $parentObject->getLabel(1),
-                'label2' => $parentObject->getLabel(2),
-                'label3' => $parentObject->getLabel(3),
-                'label4' => $parentObject->getLabel(4),
-            ];
+            $parents[] = array_merge($parentObject->getNames(), $parentObject->getLabels());
         }
 
         return $parents;
