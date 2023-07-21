@@ -134,7 +134,7 @@ class UserService
             $user->setEmail($data['email']);
         }
         if (isset($data['status'])) {
-            $user->setStatus($data['status']);
+            $user->setStatus((int)$data['status']);
         }
         /*
          * TODO: dateStart and dateEnd are not used for the moment.

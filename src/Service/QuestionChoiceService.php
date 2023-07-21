@@ -23,6 +23,7 @@ class QuestionChoiceService extends AbstractService
     protected $questionTable;
     protected $anrTable;
     protected $userAnrTable;
+
     protected $dependencies = ['anr', 'question'];
 
     /**

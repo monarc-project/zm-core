@@ -32,7 +32,7 @@ class RolfRiskSuperClass extends AbstractEntity
     use DescriptionsEntityTrait;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer", nullable=false)
      * @ORM\Id
@@ -80,24 +80,17 @@ class RolfRiskSuperClass extends AbstractEntity
 
     public function __construct($obj = null)
     {
+        parent::__construct($obj);
+
         $this->tags = new ArrayCollection();
         $this->measures = new ArrayCollection();
-
-        parent::__construct($obj);
     }
 
-    /**
-     * @return int
-     */
     public function getId()
     {
         return $this->id;
     }
 
-    /**
-     * @param int $id
-     * @return RolfRisk
-     */
     public function setId($id): self
     {
         $this->id = $id;

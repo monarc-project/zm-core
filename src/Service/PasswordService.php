@@ -1,15 +1,13 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2021 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
 namespace Monarc\Core\Service;
 
 use DateTime;
-use Doctrine\ORM\EntityNotFoundException;
-use Doctrine\ORM\ORMException;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\PasswordToken;
 use Monarc\Core\Model\Entity\User;
@@ -18,25 +16,15 @@ use Monarc\Core\Table\PasswordTokenTable;
 use Monarc\Core\Table\UserTable;
 use Monarc\Core\Validator\FieldValidator\PasswordStrength;
 
-/**
- * Password Service
- *
- * Class PasswordService
- * @package Monarc\Core\Service
- */
 class PasswordService
 {
-    /** @var PasswordTokenTable */
-    private $passwordTokenTable;
+    private PasswordTokenTable $passwordTokenTable;
 
-    /** @var UserTable */
-    private $userTable;
+    private UserTable $userTable;
 
-    /** @var MailService */
-    private $mailService;
+    private MailService $mailService;
 
-    /** @var  ConfigService */
-    protected $configService;
+    protected ConfigService $configService;
 
     public function __construct(
         PasswordTokenTable $passwordTokenTable,
@@ -50,10 +38,6 @@ class PasswordService
         $this->configService = $configService;
     }
 
-    /**
-     * @throws Exception
-     * @throws ORMException
-     */
     public function passwordForgotten(string $email)
     {
         $user = $this->userTable->findByEmail($email);
@@ -78,10 +62,6 @@ EMAIL_MESSAGE;
         $this->mailService->send($email, $subject, $message, $this->configService->getEmail());
     }
 
-    /**
-     * @throws Exception
-     * @throws ORMException
-     */
     public function newPasswordByToken(string $token, string $password): void
     {
         $passwordToken = $this->passwordTokenTable->getByToken($token, new DateTime());
@@ -111,10 +91,6 @@ EMAIL_MESSAGE;
 
     /**
      * Changes the password for the specified user ID based on its old password.
-     *
-     * @throws Exception If the origin password is incorrect
-     * @throws ORMException
-     * @throws EntityNotFoundException
      */
     public function changePassword(int $userId, string $oldPassword, string $newPassword): void
     {
@@ -132,9 +108,6 @@ EMAIL_MESSAGE;
 
     /**
      * Changes the password for the specified user ID.
-     *
-     * @throws ORMException
-     * @throws EntityNotFoundException
      */
     public function changePasswordWithoutOldPassword(int $userId, string $newPassword): void
     {
@@ -148,9 +121,6 @@ EMAIL_MESSAGE;
 
     /**
      * Reset the password for the specified user ID.
-     *
-     * @throws ORMException
-     * @throws EntityNotFoundException
      */
     public function resetPassword(int $userId): void
     {
@@ -166,8 +136,6 @@ EMAIL_MESSAGE;
      * Validates that the password matches the required strength policy (special chars, lower/uppercase, number)
      *
      * @param string $password
-     *
-     * @throws Exception If password is invalid
      */
     protected function validatePassword(string $password): void
     {

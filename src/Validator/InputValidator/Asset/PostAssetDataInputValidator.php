@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -12,10 +12,10 @@ use Laminas\Validator\InArray;
 use Laminas\Validator\StringLength;
 use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\AssetSuperClass;
-use Monarc\Core\Service\ConnectedUserService;
 use Monarc\Core\Table\Interfaces\UniqueCodeTableInterface;
 use Monarc\Core\Validator\FieldValidator\UniqueCode;
 use Monarc\Core\Validator\InputValidator\AbstractInputValidator;
+use Monarc\Core\Validator\InputValidator\InputValidationTranslator;
 
 class PostAssetDataInputValidator extends AbstractInputValidator
 {
@@ -27,12 +27,12 @@ class PostAssetDataInputValidator extends AbstractInputValidator
 
     public function __construct(
         array $config,
-        ConnectedUserService $connectedUserService,
+        InputValidationTranslator $translator,
         UniqueCodeTableInterface $assetTable
     ) {
         $this->assetTable = $assetTable;
 
-        parent::__construct($config, $connectedUserService);
+        parent::__construct($config, $translator);
     }
 
     public function setAnr(AnrSuperClass $anr): self

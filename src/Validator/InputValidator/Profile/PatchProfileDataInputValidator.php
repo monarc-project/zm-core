@@ -16,6 +16,7 @@ use Monarc\Core\Service\ConnectedUserService;
 use Monarc\Core\Validator\FieldValidator\UniqueEmail;
 use Monarc\Core\Validator\InputValidator\AbstractInputValidator;
 use Monarc\Core\Table\UserTable;
+use Monarc\Core\Validator\InputValidator\InputValidationTranslator;
 
 class PatchProfileDataInputValidator extends AbstractInputValidator
 {
@@ -25,13 +26,14 @@ class PatchProfileDataInputValidator extends AbstractInputValidator
 
     public function __construct(
         array $config,
+        InputValidationTranslator $translator,
         UserTable $userTable,
         ConnectedUserService $connectedUserService
     ) {
         $this->userTable = $userTable;
         $this->connectedUser = $connectedUserService->getConnectedUser();
 
-        parent::__construct($config, $connectedUserService);
+        parent::__construct($config, $translator);
     }
 
     protected function getRules(): array

@@ -150,7 +150,7 @@ abstract class UserSuperClass
         if (isset($data['password'])) {
             $this->setPassword($data['password']);
         }
-        $this->language = $data['language'];
+        $this->language = $data['language'] ?? 1;
         $this->mospApiKey = $data['mospApiKey'] ?? '';
         $this->status = $data['status'] ?? self::STATUS_ACTIVE;
         $this->creator = $data['creator'];

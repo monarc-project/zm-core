@@ -254,14 +254,13 @@ class AmvService implements PositionUpdatableServiceInterface
     }
 
     /**
-     * TODO: review (called from FO and BO) and probably move out the method as it better fits to referential service.
      * Function to link automatically the amv of the destination from the source depending on the measures_measures
      */
     public function createLinkedAmvs($sourceUuid, $destination)
     {
         $destinationMeasures = $this->referentialTable->getEntity($destination)->getMeasures();
         foreach ($destinationMeasures as $destinationMeasure) {
-            foreach ($destinationMeasure->getMeasuresLinked() as $measureLink) {
+            foreach ($destinationMeasure->getLinkedMeasures() as $measureLink) {
                 if ($measureLink->getReferential()->getUuid() === $sourceUuid) {
                     foreach ($measureLink->getAmvs() as $amv) {
                         $destinationMeasure->addAmv($amv);

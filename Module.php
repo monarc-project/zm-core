@@ -7,11 +7,14 @@
 
 namespace Monarc\Core;
 
+use Laminas\ServiceManager\ServiceLocatorInterface;
 use Monarc\Core\Service\AuthenticationService;
 use Laminas\Http\Request;
 use Laminas\Mvc\MvcEvent;
 use Laminas\View\Model\JsonModel;
 use Laminas\Router\RouteMatch;
+use Monarc\Core\Validator\FieldValidator\UniqueEmail;
+use Monarc\Core\Validator\FieldValidator\UniqueDeliveryModel;
 
 class Module
 {
@@ -31,31 +34,42 @@ class Module
         return include __DIR__ . '/config/module.config.php';
     }
 
-    public function getDefaultLanguage($sm)
+    public function getDefaultLanguage(ServiceLocatorInterface $sm)
     {
         return $sm->get('Config')['defaultLanguageIndex'];
     }
 
-    public function onDispatchError($e)
+    public function getValidatorConfig()
+    {
+        return [
+            'invokables' => [
+                UniqueEmail::class => UniqueEmail::class,
+                UniqueDeliveryModel::class => UniqueDeliveryModel::class,
+            ],
+        ];
+    }
+
+    public function onDispatchError(MvcEvent $e)
     {
         return $this->getJsonModelError($e);
     }
 
-    public function onRenderError($e)
+    public function onRenderError(MvcEvent $e)
     {
         return $this->getJsonModelError($e);
     }
 
-    public function getJsonModelError($e)
+    public function getJsonModelError(MvcEvent $e)
     {
         $error = $e->getError();
         if (!$error) {
             return;
         }
 
+        /** @var \Exception $exception */
         $exception = $e->getParam('exception');
         $exceptionJson = [];
-        if ($exception) {
+        if ($exception !== null) {
             $exceptionJson = [
                 'class' => get_class($exception),
                 'file' => $exception->getFile(),
@@ -74,7 +88,7 @@ class Module
             $errorJson['message'] = 'Resource not found.';
         }
 
-        if ($exception->getCode() === 400) {
+        if ($exception !== null && $exception->getCode() === 400) {
             $model = new JsonModel([
                 'errors' => [json_decode($exception->getMessage(), true, 512, JSON_THROW_ON_ERROR)],
             ]);
@@ -87,7 +101,7 @@ class Module
         return $model;
     }
 
-    public function MCEventRoute($event)
+    public function MCEventRoute(MvcEvent $event)
     {
         /** @var AuthenticationService $authenticationService */
         $authenticationService = $event->getApplication()

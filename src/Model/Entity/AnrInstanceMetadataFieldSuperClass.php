@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -12,13 +12,13 @@ use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 
 /**
- * @ORM\Table(name="instance_metadata_fields", indexes={
+ * @ORM\Table(name="anr_instance_metadata_fields", indexes={
  *      @ORM\Index(name="anr_id", columns={"anr_id"})
  * })
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
-class InstanceMetadataFieldSuperClass
+class AnrInstanceMetadataFieldSuperClass
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
@@ -37,7 +37,7 @@ class InstanceMetadataFieldSuperClass
      *
      * @ORM\ManyToOne(targetEntity="Anr", cascade={"persist"})
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
+     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=false, onDelete="CASCADE")
      * })
      */
     protected $anr;
@@ -45,9 +45,16 @@ class InstanceMetadataFieldSuperClass
     /**
      * @var string
      *
-     * @ORM\Column(name="label_translation_key", type="string", length=255, options={"default": ""})
+     * @ORM\Column(name="label_translation_key", type="string", length=255, nullable=false, options={"default": ""})
      */
     protected $labelTranslationKey = '';
+
+
+    public static function constructFromObject(
+        AnrInstanceMetadataFieldSuperClass $anrInstanceMetadataField
+    ): AnrInstanceMetadataFieldSuperClass {
+        return (new static())->setLabelTranslationKey($anrInstanceMetadataField->getLabelTranslationKey());
+    }
 
     public function getId()
     {

@@ -114,7 +114,7 @@ class InstanceService
         $this->instanceTable->save($instance);
 
         /* Used only on FO side. */
-        $this->updateInstanceMetadataFieldFromBrothers($instance);
+        $this->updateAnrInstanceMetadataFieldFromBrothers($instance);
 
         $this->instanceConsequenceService->createInstanceConsequences($instance, $anr, $object);
         $instance->updateImpactBasedOnConsequences()->refreshInheritedImpact();
@@ -233,7 +233,7 @@ class InstanceService
         $this->instanceTable->flush();
     }
 
-    protected function updateInstanceMetadataFieldFromBrothers(Entity\InstanceSuperClass $instance): void
+    protected function updateAnrInstanceMetadataFieldFromBrothers(Entity\InstanceSuperClass $instance): void
     {
     }
 

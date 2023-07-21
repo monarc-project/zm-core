@@ -10,6 +10,7 @@ namespace Monarc\Core\Model\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
+use Monarc\Core\Model\Entity\Traits\LabelsEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 
 /**
@@ -23,6 +24,8 @@ class QuestionSuperClass extends AbstractEntity
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
+
+    use LabelsEntityTrait;
 
     /**
      * @var int
@@ -46,34 +49,6 @@ class QuestionSuperClass extends AbstractEntity
      * @ORM\Column(name="type", type="smallint", options={"unsigned":true})
      */
     protected $type;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label1", type="string", length=255, nullable=true)
-     */
-    protected $label1;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label2", type="string", length=255, nullable=true)
-     */
-    protected $label2;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label3", type="string", length=255, nullable=true)
-     */
-    protected $label3;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label4", type="string", length=255, nullable=true)
-     */
-    protected $label4;
 
     /**
      * @var int
@@ -106,7 +81,6 @@ class QuestionSuperClass extends AbstractEntity
 
     /**
      * @param int $id
-     * @return Question
      */
     public function setId($id): self
     {
@@ -131,50 +105,50 @@ class QuestionSuperClass extends AbstractEntity
     }
 
     // TODO: Related to the refactoring of all: questions order is a bit different.
-    protected $parameters = array(
+    protected $parameters = [
         'isParentRelative' => false // for the autopositionner
-    );
-
+    ];
 
     public function getInputFilter($partial = false)
     {
         if (!$this->inputFilter) {
             parent::getInputFilter($partial);
 
-            $this->inputFilter->add(array(
+            $this->inputFilter->add([
                 'name' => 'type',
-                'required' => ($partial) ? false : true,
+                'required' => $partial ? false : true,
                 'allow_empty' => true,
                 'continue_if_empty' => true,
-                'filters' => array(),
-                'validators' => array(
-                    array(
+                'filters' => [],
+                'validators' => [
+                    [
                         'name' => 'InArray',
-                        'options' => array(
+                        'options' => [
                             'haystack' => [1, 2],
-                        ),
+                        ],
                         'default' => 1,
-                    ),
-                ),
-            ));
+                    ],
+                ],
+            ]);
 
-            $this->inputFilter->add(array(
+            $this->inputFilter->add([
                 'name' => 'multichoice',
-                'required' => ($partial) ? false : true,
+                'required' => $partial ? false : true,
                 'allow_empty' => true,
                 'continue_if_empty' => true,
-                'filters' => array(),
-                'validators' => array(
-                    array(
+                'filters' => [],
+                'validators' => [
+                    [
                         'name' => 'InArray',
-                        'options' => array(
+                        'options' => [
                             'haystack' => [0, 1],
-                        ),
+                        ],
                         'default' => 0,
-                    ),
-                ),
-            ));
+                    ],
+                ],
+            ]);
         }
+
         return $this->inputFilter;
     }
 }

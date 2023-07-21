@@ -461,9 +461,6 @@ class ObjectService
         if ($data['scope'] === Entity\ObjectSuperClass::SCOPE_GLOBAL && $asset->isPrimary()) {
             throw new Exception('It is forbidden to create a global object linked to a primary asset', 412);
         }
-
-        // TODO: if modelId or anrId is passed then $model->validateObjectAcceptance($monarcObject);
-        // Could not find a place in UI (FE code) where they are passed.
     }
 
     private function validateObjectAndDataOnUpdate(Entity\MonarcObject $monarcObject, array $data): void

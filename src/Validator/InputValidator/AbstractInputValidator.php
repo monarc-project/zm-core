@@ -1,18 +1,16 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
 namespace Monarc\Core\Validator\InputValidator;
 
 use Laminas\Filter\StringTrim;
-use Laminas\I18n\Translator\Resources;
 use Laminas\InputFilter\InputFilter;
 use Laminas\Validator\AbstractValidator;
 use Laminas\Validator\StringLength;
-use Monarc\Core\Service\ConnectedUserService;
 
 abstract class AbstractInputValidator
 {
@@ -26,30 +24,15 @@ abstract class AbstractInputValidator
 
     private array $validData = [];
 
-    public function __construct(array $config, ConnectedUserService $connectedUserService)
+    public function __construct(array $config, InputValidationTranslator $translator)
     {
         $this->inputFilter = new InputFilter();
         $this->defaultLanguageIndex = $config['defaultLanguageIndex'] ?? 1;
         $this->systemLanguageIndexes = array_column($config['languages'], 'index');
 
+        AbstractValidator::setDefaultTranslator($translator);
+
         $this->initRules();
-
-        if ($connectedUserService->getConnectedUser() !== null) {
-            // TODO: instead of instantion of the translator here, we can inject it and remove connected user service injection.
-            // TODO: the same translator instance can be used in the controller threat, or we can add the message here.
-            $translator = (new InputValidationTranslator())
-                ->addTranslationFilePattern('phpArray', Resources::getBasePath(), Resources::getPatternForValidator())
-                ->addTranslationFilePattern(
-                    'phpArray',
-                    __DIR__ . '/../../../locale/languages/',
-                    '%s/validation_messages.php'
-                );
-
-            $activeLanguages = $config['activeLanguages'] ?? ['fr', 'en', 'de', 'nl'];
-            $translator->setLocale($activeLanguages[$connectedUserService->getConnectedUser()->getLanguage() - 1]);
-
-            AbstractValidator::setDefaultTranslator($translator);
-        }
     }
 
     public function isValid(array $data): bool

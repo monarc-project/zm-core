@@ -1,4 +1,9 @@
 <?php declare(strict_types=1);
+/**
+ * @link      https://github.com/monarc-project for the canonical source repository
+ * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
+ * @license   MONARC is licensed under GNU Affero General Public License version 3
+ */
 
 use Phinx\Migration\AbstractMigration;
 
@@ -8,9 +13,9 @@ class AlterModelTableFixObjPos extends AbstractMigration
     {
         $this->table('models')
             ->removeColumn('is_deleted')
-            ->renameColumn('is_scales_updatable', "are_scales_updatable")
+            ->renameColumn('is_scales_updatable', 'are_scales_updatable')
             ->dropForeignKey('anr_id')
-            ->addForeignKey('anr_id', 'anrs', 'id', ['delete'=> 'SET_NULL', 'update'=> 'CASCADE'])
+            ->addForeignKey('anr_id', 'anrs', 'id', ['delete' => 'SET_NULL', 'update' => 'CASCADE'])
             ->update();
 
         $this->execute('ALTER TABLE `amvs` MODIFY updated_at datetime NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP;');
@@ -27,11 +32,13 @@ class AlterModelTableFixObjPos extends AbstractMigration
                 $expectedAmvPosition = 1;
             }
             if ($expectedAmvPosition !== $amvData['position']) {
-                $this->execute(sprintf(
-                    'UPDATE amvs SET position = %d WHERE uuid = "%s"',
-                    $expectedAmvPosition,
-                    $amvData['uuid']
-                ));
+                $this->execute(
+                    sprintf(
+                        'UPDATE amvs SET position = %d WHERE uuid = "%s"',
+                        $expectedAmvPosition,
+                        $amvData['uuid']
+                    )
+                );
             }
 
             $expectedAmvPosition++;
@@ -52,11 +59,13 @@ class AlterModelTableFixObjPos extends AbstractMigration
                 $expectedObjectPosition = 1;
             }
             if ($expectedObjectPosition !== $objectData['position']) {
-                $this->execute(sprintf(
-                    'UPDATE objects SET position = %d WHERE uuid = "%s"',
-                    $expectedObjectPosition,
-                    $objectData['uuid']
-                ));
+                $this->execute(
+                    sprintf(
+                        'UPDATE objects SET position = %d WHERE uuid = "%s"',
+                        $expectedObjectPosition,
+                        $objectData['uuid']
+                    )
+                );
             }
 
             $expectedObjectPosition++;
@@ -77,11 +86,13 @@ class AlterModelTableFixObjPos extends AbstractMigration
                 $expectedCompositionLinkPosition = 1;
             }
             if ($expectedCompositionLinkPosition !== $objectCompositionData['position']) {
-                $this->execute(sprintf(
-                    'UPDATE objects_objects SET position = %d WHERE id = %d',
-                    $expectedCompositionLinkPosition,
-                    $objectCompositionData['id']
-                ));
+                $this->execute(
+                    sprintf(
+                        'UPDATE objects_objects SET position = %d WHERE id = %d',
+                        $expectedCompositionLinkPosition,
+                        $objectCompositionData['id']
+                    )
+                );
             }
 
             $expectedCompositionLinkPosition++;
@@ -102,11 +113,13 @@ class AlterModelTableFixObjPos extends AbstractMigration
                 $expectedCategoryPosition = 1;
             }
             if ($expectedCategoryPosition !== $objectCategoryData['position']) {
-                $this->execute(sprintf(
-                    'UPDATE objects_categories SET position = %d WHERE id = %d',
-                    $expectedCategoryPosition,
-                    $objectCategoryData['id']
-                ));
+                $this->execute(
+                    sprintf(
+                        'UPDATE objects_categories SET position = %d WHERE id = %d',
+                        $expectedCategoryPosition,
+                        $objectCategoryData['id']
+                    )
+                );
             }
 
             $expectedCategoryPosition++;
@@ -127,11 +140,13 @@ class AlterModelTableFixObjPos extends AbstractMigration
                 $expectedInstancePosition = 1;
             }
             if ($expectedInstancePosition !== $instanceData['position']) {
-                $this->execute(sprintf(
-                    'UPDATE instances SET position = %d WHERE id = %d',
-                    $expectedInstancePosition,
-                    $instanceData['id']
-                ));
+                $this->execute(
+                    sprintf(
+                        'UPDATE instances SET position = %d WHERE id = %d',
+                        $expectedInstancePosition,
+                        $instanceData['id']
+                    )
+                );
             }
 
             $expectedInstancePosition++;
@@ -146,9 +161,6 @@ class AlterModelTableFixObjPos extends AbstractMigration
             ->removeColumn('updater')
             ->removeColumn('updated_at')
             ->update();
-
-        $table = $this->table('anr_metadatas_on_instances');
-        $table->rename('instances_metadata_fields')->update();
 
         $this->execute(
             'update translations set type = "instances-metadata-fields" where type = "anr-metadatas-on-instances"'
@@ -183,8 +195,17 @@ class AlterModelTableFixObjPos extends AbstractMigration
                 $soaCategoryId = (int)$this->getAdapter()->getConnection()->lastInsertId();
             }
 
-            $this->execute('UPDATE measures SET soacategory_id = ' . $soaCategoryId
-                . ' WHERE uuid = "' . $measureData['uuid'] . '"');
+            $this->execute(
+                'UPDATE measures SET soacategory_id = ' . $soaCategoryId
+                . ' WHERE uuid = "' . $measureData['uuid'] . '"'
+            );
         }
+
+        /* Rename the `anr_metadatas_on_instances` to `anr_instance_metadata_fields`. */
+        $this->table('anr_metadatas_on_instances')->rename('anr_instance_metadata_fields')->update();
+        $this->table('anr_instance_metadata_fields')
+            ->changeColumn('anr_id', 'integer', ['signed' => false, 'null' => false])
+            ->changeColumn('label_translation_key', 'string', ['null' => false, 'limit' => 255])
+            ->update();
     }
 }

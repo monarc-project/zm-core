@@ -15,6 +15,7 @@ namespace Monarc\Core\Service;
  */
 class ReferentialService extends AbstractService
 {
+    // TODO: avoid the deps setting up in abstract
     protected $dependencies = ['anr', 'amvs'];
     protected $filterColumns = ['uuid', 'label1', 'label2', 'label3', 'label4'];
     protected $forbiddenFields = ['anr'];

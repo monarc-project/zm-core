@@ -129,27 +129,25 @@ return [
         'invokables' => [
             ModelEntity\Question::class => ModelEntity\Question::class,
             ModelEntity\QuestionChoice::class => ModelEntity\QuestionChoice::class,
-
-            // TODO: fix the classes and dependencies.
-            'Monarc\Core\Service\Mime\Part' => Part::class,
-            'Monarc\Core\Service\Mime\Message' => Message::class,
-            'Monarc\Core\Service\Mail\Message' => \Laminas\Mail\Message::class,
-            'Monarc\Core\Service\Mail\Transport\Smtp' => Smtp::class,
-            'Monarc\Core\Service\Mail\Transport\SmtpOptions' => SmtpOptions::class,
         ],
         'factories' => [
             Db::class => DbFactory::class,
             DbCli::class => DbCliFactory::class,
 
-            // TODO: replace to autowiring.
-            Service\Export\AssetExportService::class => AutowireFactory::class,
-            Service\Export\ObjectExportService::class => AutowireFactory::class,
-            Service\Export\AmvExportService::class => InvokableFactory::class,
-            // TOOD: move to the Export folder.
-            Service\OperationalRiskScalesExportService::class => AutowireFactory::class,
-            Service\InstanceMetadataFieldsExportService::class => AutowireFactory::class,
-            Service\SoaScaleCommentExportService::class => AutowireFactory::class,
-            // --- END ---
+            // TODO: Services to refactor and replace with autowiring.
+            Service\QuestionService::class => Service\QuestionServiceFactory::class,
+            Service\QuestionChoiceService::class => Service\QuestionChoiceServiceFactory::class,
+            Service\GuideService::class => Service\GuideServiceFactory::class,
+            Service\GuideItemService::class => Service\GuideItemServiceFactory::class,
+            Service\HistoricalService::class => Service\HistoricalServiceFactory::class,
+            Service\RolfRiskService::class => Service\RolfRiskServiceFactory::class,
+            Service\RolfTagService::class => Service\RolfTagServiceFactory::class,
+            Service\ReferentialService::class => Service\ReferentialServiceFactory::class,
+            Service\MeasureService::class => Service\MeasureServiceFactory::class,
+            Service\MeasureMeasureService::class => Service\MeasureMeasureServiceFactory::class,
+            Service\SoaCategoryService::class => Service\SoaCategoryServiceFactory::class,
+            Service\DeliveriesModelsService::class => Service\DeliveriesModelsServiceFactory::class,
+            /* Services. */
             Service\AmvService::class => AutowireFactory::class,
             Service\AnrService::class => AutowireFactory::class,
             Service\UserRoleService::class => AutowireFactory::class,
@@ -157,43 +155,35 @@ return [
             Service\AuthenticationService::class => AutowireFactory::class,
             Service\AssetService::class => AutowireFactory::class,
             Service\ConfigService::class => ReflectionBasedAbstractFactory::class,
-            Service\QuestionService::class => Service\QuestionServiceFactory::class,
-            Service\QuestionChoiceService::class => Service\QuestionChoiceServiceFactory::class,
-            Service\GuideService::class => Service\GuideServiceFactory::class,
-            Service\GuideItemService::class => Service\GuideItemServiceFactory::class,
-            Service\HistoricalService::class => Service\HistoricalServiceFactory::class,
             Service\InstanceService::class => AutowireFactory::class,
             Service\InstanceRiskService::class => AutowireFactory::class,
             Service\InstanceRiskOpService::class => AutowireFactory::class,
             Service\InstanceConsequenceService::class => AutowireFactory::class,
             Service\MailService::class => AutowireFactory::class,
-            Service\ReferentialService::class => Service\ReferentialServiceFactory::class,
-            Service\MeasureService::class => Service\MeasureServiceFactory::class,
-            Service\MeasureMeasureService::class => Service\MeasureMeasureServiceFactory::class,
             Service\ModelService::class => AutowireFactory::class,
             Service\ObjectService::class => AutowireFactory::class,
             Service\ObjectCategoryService::class => AutowireFactory::class,
             Service\ObjectObjectService::class => AutowireFactory::class,
             Service\PasswordService::class => AutowireFactory::class,
-            Service\RolfRiskService::class => Service\RolfRiskServiceFactory::class,
-            Service\RolfTagService::class => Service\RolfTagServiceFactory::class,
             Service\ScaleService::class => AutowireFactory::class,
             Service\ScaleCommentService::class => AutowireFactory::class,
             Service\ScaleImpactTypeService::class => AutowireFactory::class,
             Service\ThemeService::class => AutowireFactory::class,
             Service\ThreatService::class => AutowireFactory::class,
-            Service\SoaCategoryService::class => Service\SoaCategoryServiceFactory::class,
             Service\UserService::class => ReflectionBasedAbstractFactory::class,
             Service\VulnerabilityService::class => AutowireFactory::class,
-            Service\DeliveriesModelsService::class => Service\DeliveriesModelsServiceFactory::class,
             Service\AssetImportService::class => AutowireFactory::class,
             Service\ObjectImportService::class => AutowireFactory::class,
             Service\OperationalRiskScaleService::class => AutowireFactory::class,
             Service\OperationalRiskScaleCommentService::class => AutowireFactory::class,
-            Service\InstanceMetadataFieldService::class => AutowireFactory::class,
+            Service\AnrInstanceMetadataFieldService::class => AutowireFactory::class,
             Service\SoaScaleCommentService::class => AutowireFactory::class,
+            /* Export services. */
+            Service\Export\AssetExportService::class => AutowireFactory::class,
+            Service\Export\ObjectExportService::class => AutowireFactory::class,
+            Service\Export\AmvExportService::class => InvokableFactory::class,
 
-            // TODO: Entities are created from the code. Should be removed.
+            // TODO: Entities are created in a generic way. Should be removed.
             ModelEntity\DeliveriesModels::class => ServiceModelEntity\DeliveriesModelsServiceModelEntity::class,
             ModelEntity\Referential::class => ServiceModelEntity\ReferentialServiceModelEntity::class,
             ModelEntity\Measure::class => ServiceModelEntity\MeasureServiceModelEntity::class,
@@ -205,6 +195,7 @@ return [
             ModelEntity\Guide::class => ServiceModelEntity\GuideServiceModelEntity::class,
             ModelEntity\Historical::class => ServiceModelEntity\HistoricalServiceModelEntity::class,
 
+            /* Table classes */
             DeprecatedTable\QuestionTable::class => AutowireFactory::class,
             DeprecatedTable\QuestionChoiceTable::class => AutowireFactory::class,
             DeprecatedTable\GuideTable::class => AutowireFactory::class,
@@ -217,8 +208,8 @@ return [
             DeprecatedTable\RolfTagTable::class => AutowireFactory::class,
             DeprecatedTable\RolfRiskTable::class => AutowireFactory::class,
             DeprecatedTable\DeliveriesModelsTable::class => AutowireFactory::class,
-            Table\InstanceRiskTable::class => AutowireFactory::class,
-            Table\InstanceRiskOpTable::class => AutowireFactory::class,
+            Table\InstanceRiskTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\InstanceRiskOpTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\ScaleTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\ScaleCommentTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\ScaleImpactTypeTable::class => Table\Factory\CoreEntityManagerFactory::class,
@@ -239,11 +230,11 @@ return [
             Table\OperationalRiskScaleCommentTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\OperationalInstanceRiskScaleTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\InstanceRiskOwnerTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\AnrInstanceMetadataFieldTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\SoaScaleCommentTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\UserTable::class => Table\Factory\ClientEntityManagerFactory::class,
             Table\UserTokenTable::class => Table\Factory\ClientEntityManagerFactory::class,
             Table\PasswordTokenTable::class => Table\Factory\ClientEntityManagerFactory::class,
-            Table\InstanceMetadataFieldTable::class => Table\Factory\CoreEntityManagerFactory::class,
-            Table\SoaScaleCommentTable::class => Table\Factory\CoreEntityManagerFactory::class,
 
             /* Authentication */
             StorageAuthentication::class => ReflectionBasedAbstractFactory::class,
@@ -253,6 +244,7 @@ return [
             Service\TranslateService::class => Service\TranslateServiceFactory::class,
 
             /* Validators */
+            InputValidator\InputValidationTranslator::class => ReflectionBasedAbstractFactory::class,
             InputValidator\User\PostUserDataInputValidator::class => ReflectionBasedAbstractFactory::class,
             InputValidator\Model\PostModelDataInputValidator::class => ReflectionBasedAbstractFactory::class,
             InputValidator\Asset\PostAssetDataInputValidator::class => static function (
@@ -261,7 +253,7 @@ return [
             ) {
                 return new InputValidator\Asset\PostAssetDataInputValidator(
                     $container->get('config'),
-                    $container->get(Service\ConnectedUserService::class),
+                    $container->get(InputValidator\InputValidationTranslator::class),
                     $container->get(Table\AssetTable::class)
                 );
             },
@@ -271,7 +263,7 @@ return [
             ) {
                 return new InputValidator\Threat\PostThreatDataInputValidator(
                     $container->get('config'),
-                    $container->get(Service\ConnectedUserService::class),
+                    $container->get(InputValidator\InputValidationTranslator::class),
                     $container->get(Table\ThemeTable::class)
                 );
             },
@@ -281,7 +273,7 @@ return [
             ) {
                 return new InputValidator\Vulnerability\PostVulnerabilityDataInputValidator(
                     $container->get('config'),
-                    $container->get(Service\ConnectedUserService::class),
+                    $container->get(InputValidator\InputValidationTranslator::class),
                     $container->get(Table\VulnerabilityTable::class)
                 );
             },

@@ -67,7 +67,7 @@ class MonarcObjectTable extends AbstractTable implements PositionUpdatableTableI
     }
 
     /**
-     * TODO: should be dropped.
+     * TODO: Drop when the relation RolfTag -> MonarcObject[] is added.
      *
      * @return ObjectSuperClass[]
      */

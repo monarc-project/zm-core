@@ -11,7 +11,6 @@ use Monarc\Core\InputFormatter\FormattedInputParams;
 use Monarc\Core\Model\Entity;
 use Monarc\Core\Table;
 
-/** TODO: Currently inherited on the FrontOffice side. Drop the inheritance. */
 class ScaleService
 {
     private Table\ScaleTable $scaleTable;

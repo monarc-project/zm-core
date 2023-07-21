@@ -69,7 +69,7 @@ class MeasureSuperClass extends AbstractEntity
      *     inverseJoinColumns={@ORM\JoinColumn(name="child_id", referencedColumnName="uuid")}
      * )
      */
-    protected $measuresLinked;
+    protected $linkedMeasures;
 
     /**
      * @var string
@@ -109,11 +109,11 @@ class MeasureSuperClass extends AbstractEntity
 
     public function __construct($obj = null)
     {
-        $this->measuresLinked = new ArrayCollection();
+        parent::__construct($obj);
+
         $this->amvs = new ArrayCollection();
         $this->rolfRisks = new ArrayCollection();
-
-        parent::__construct($obj);
+        $this->linkedMeasures = new ArrayCollection();
     }
 
     /**
@@ -226,8 +226,8 @@ class MeasureSuperClass extends AbstractEntity
 
     public function addLinkedMeasure(MeasureSuperClass $measure): self
     {
-        if (!$this->measuresLinked->contains($measure)) {
-            $this->measuresLinked->add($measure);
+        if (!$this->linkedMeasures->contains($measure)) {
+            $this->linkedMeasures->add($measure);
             $measure->addLinkedMeasure($this);
         }
 
@@ -236,28 +236,17 @@ class MeasureSuperClass extends AbstractEntity
 
     public function deleteLinkedMeasure(MeasureSuperClass $measure): self
     {
-        if ($this->measuresLinked->contains($measure)) {
-            $this->measuresLinked->removeElement($measure);
+        if ($this->linkedMeasures->contains($measure)) {
+            $this->linkedMeasures->removeElement($measure);
             $measure->deleteLinkedMeasure($this);
         }
 
         return $this;
     }
 
-    // TODO: rename to getLinkedMeasures, and variable name to linkedMeasures.
-    public function getMeasuresLinked()
+    public function getLinkedMeasures()
     {
-        return $this->measuresLinked;
-    }
-
-    /**
-     * @param MeasureSuperClass[] $measuresLinked
-     */
-    public function setMeasuresLinked($measuresLinked)
-    {
-        $this->measuresLinked = $measuresLinked;
-
-        return $this;
+        return $this->linkedMeasures;
     }
 
     public function getRolfRisks()

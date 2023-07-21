@@ -156,7 +156,7 @@ class RolfRiskService extends AbstractService
             if ($anr === null) {
                 $objects = $monarcObjectTable->findByRolfTag($addedRolfTag);
             } else {
-                // TODO: it's wired that we call here an empty method.
+                // TODO: Added the correct relation and use $addedRolfTag->getObjects();
                 $objects = $monarcObjectTable->findByAnrAndRolfTag($anr, $addedRolfTag);
             }
             foreach ($objects as $object) {
@@ -352,7 +352,7 @@ class RolfRiskService extends AbstractService
     {
         $measuresDest = $this->get('referentialTable')->getEntity($destination)->getMeasures();
         foreach ($measuresDest as $md) {
-            foreach ($md->getMeasuresLinked() as $measureLink) {
+            foreach ($md->getLinkedMeasures() as $measureLink) {
                 if ($measureLink->getReferential()->getUuid() === $source_uuid) {
                     foreach ($measureLink->rolfRisks as $risk) {
                         $md->addOpRisk($risk);

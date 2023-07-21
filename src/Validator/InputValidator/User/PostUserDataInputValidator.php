@@ -20,6 +20,7 @@ use Monarc\Core\Validator\FieldValidator\LanguageValidator;
 use Monarc\Core\Validator\FieldValidator\UniqueEmail;
 use Monarc\Core\Validator\InputValidator\AbstractInputValidator;
 use Monarc\Core\Table\UserTable;
+use Monarc\Core\Validator\InputValidator\InputValidationTranslator;
 
 class PostUserDataInputValidator extends AbstractInputValidator
 {
@@ -29,13 +30,14 @@ class PostUserDataInputValidator extends AbstractInputValidator
 
     public function __construct(
         array $config,
+        InputValidationTranslator $translator,
         UserTable $userTable,
         ConnectedUserService $connectedUserService
     ) {
         $this->userTable = $userTable;
         $this->connectedUser = $connectedUserService->getConnectedUser();
 
-        parent::__construct($config, $connectedUserService);
+        parent::__construct($config, $translator);
     }
 
     protected function getRules(): array
@@ -146,6 +148,17 @@ class PostUserDataInputValidator extends AbstractInputValidator
                         ]
                     ]
                 ],
+            ],
+            [
+                'name' => 'status',
+                'required' => false,
+                'allow_empty' => true,
+                'filters' => [
+                    [
+                        'name' => 'boolean',
+                    ]
+                ],
+                'validators' => [],
             ],
         ];
     }

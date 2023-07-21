@@ -1,26 +1,26 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
 namespace Monarc\Core\Service;
 
 use Monarc\Core\Model\Entity\Anr;
-use Monarc\Core\Model\Entity\InstanceMetadataFieldSuperClass;
-use Monarc\Core\Model\Entity\InstanceMetadataField;
+use Monarc\Core\Model\Entity\AnrInstanceMetadataFieldSuperClass;
+use Monarc\Core\Model\Entity\AnrInstanceMetadataField;
 use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Model\Entity\TranslationSuperClass;
 use Monarc\Core\Model\Entity\Translation;
 use Monarc\Core\Model\Entity\AnrSuperClass;
-use Monarc\Core\Table\InstanceMetadataFieldTable;
+use Monarc\Core\Table\AnrInstanceMetadataFieldTable;
 use Monarc\Core\Table\TranslationTable;
 use Ramsey\Uuid\Uuid;
 
-class InstanceMetadataFieldService
+class AnrInstanceMetadataFieldService
 {
-    protected InstanceMetadataFieldTable $instanceMetadataFieldTable;
+    protected AnrInstanceMetadataFieldTable $anrInstanceMetadataFieldTable;
 
     protected TranslationTable $translationTable;
 
@@ -29,12 +29,12 @@ class InstanceMetadataFieldService
     protected UserSuperClass $connectedUser;
 
     public function __construct(
-        InstanceMetadataFieldTable $instanceMetadataFieldTable,
+        AnrInstanceMetadataFieldTable $anrInstanceMetadataFieldTable,
         TranslationTable $translationTable,
         ConfigService $configService,
         ConnectedUserService $connectedUserService
     ) {
-        $this->instanceMetadataFieldTable = $instanceMetadataFieldTable;
+        $this->anrInstanceMetadataFieldTable = $anrInstanceMetadataFieldTable;
         $this->translationTable = $translationTable;
         $this->configService = $configService;
         $this->connectedUser = $connectedUserService->getConnectedUser();
@@ -45,12 +45,12 @@ class InstanceMetadataFieldService
         $returnValue = [];
         $data = $data['metadataField'] ?? $data;
         foreach ($data as $inputMetadata) {
-            $metadataField = (new InstanceMetadataField())
+            $metadataField = (new AnrInstanceMetadataField())
                 ->setAnr($anr)
                 ->setLabelTranslationKey((string)Uuid::uuid4())
                 ->setCreator($this->connectedUser->getEmail());
 
-            $this->instanceMetadataFieldTable->save($metadataField);
+            $this->anrInstanceMetadataFieldTable->save($metadataField);
             $returnValue[] = $metadataField->getId();
 
             foreach ($inputMetadata as $lang => $labelText) {
@@ -71,8 +71,8 @@ class InstanceMetadataFieldService
     public function getList(Anr $anr, string $language = null): array
     {
         $result = [];
-        /** @var InstanceMetadataFieldSuperClass[] $metadataFields */
-        $metadataFields = $this->instanceMetadataFieldTable->findByAnr($anr);
+        /** @var AnrInstanceMetadataFieldSuperClass[] $metadataFields */
+        $metadataFields = $this->anrInstanceMetadataFieldTable->findByAnr($anr);
         if ($language === null) {
             $language = $this->getAnrLanguageCode($anr);
         }
@@ -97,8 +97,8 @@ class InstanceMetadataFieldService
 
     public function delete(AnrSuperClass $anr, int $id): void
     {
-        /** @var InstanceMetadataFieldSuperClass $metadataToDelete */
-        $metadataToDelete = $this->instanceMetadataFieldTable->findByIdAndAnr($id, $anr);
+        /** @var AnrInstanceMetadataFieldSuperClass $metadataToDelete */
+        $metadataToDelete = $this->anrInstanceMetadataFieldTable->findByIdAndAnr($id, $anr);
 
         $translationsToRemove = $this->translationTable
             ->findByAnrAndKey($anr, $metadataToDelete->getLabelTranslationKey());
@@ -106,7 +106,7 @@ class InstanceMetadataFieldService
             $this->translationTable->remove($translationToRemove, false);
         }
 
-        $this->instanceMetadataFieldTable->remove($metadataToDelete);
+        $this->anrInstanceMetadataFieldTable->remove($metadataToDelete);
     }
 
     protected function createTranslationObject(
@@ -125,10 +125,10 @@ class InstanceMetadataFieldService
             ->setCreator($this->connectedUser->getEmail());
     }
 
-    public function getInstanceMetadataField(Anr $anr, int $id, string $language): array
+    public function getAnrInstanceMetadataField(Anr $anr, int $id, string $language): array
     {
-        /** @var InstanceMetadataFieldSuperClass $metadata */
-        $metadata = $this->instanceMetadataFieldTable->findByIdAndAnr($id, $anr);
+        /** @var AnrInstanceMetadataFieldSuperClass $metadata */
+        $metadata = $this->anrInstanceMetadataFieldTable->findByIdAndAnr($id, $anr);
         if ($language === '') {
             $language = $this->getAnrLanguageCode($anr);
         }
@@ -147,10 +147,10 @@ class InstanceMetadataFieldService
         ];
     }
 
-    public function update(AnrSuperClass $anr, int $id, array $data): InstanceMetadataFieldSuperClass
+    public function update(AnrSuperClass $anr, int $id, array $data): AnrInstanceMetadataFieldSuperClass
     {
-        /** @var InstanceMetadataFieldSuperClass $metadata */
-        $metadata = $this->instanceMetadataFieldTable->findByIdAndAnr($id, $anr);
+        /** @var AnrInstanceMetadataFieldSuperClass $metadata */
+        $metadata = $this->anrInstanceMetadataFieldTable->findByIdAndAnr($id, $anr);
         $languageCode = $data['language'] ?? $this->getAnrLanguageCode($metadata->getAnr());
         if (!empty($data[$languageCode])) {
             $translationKey = $metadata->getLabelTranslationKey();
@@ -161,7 +161,7 @@ class InstanceMetadataFieldService
                 $this->translationTable->save($translation, false);
             }
         }
-        $this->instanceMetadataFieldTable->save($metadata);
+        $this->anrInstanceMetadataFieldTable->save($metadata);
 
         return $metadata;
     }

@@ -17,7 +17,8 @@ use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
  */
 class MeasureService extends AbstractService
 {
-    protected $dependencies = ['anr', 'category', 'amvs', 'referential', 'measuresLinked', 'rolfRisks'];
+    // TODO: have to replace all the usages of anr, amvs
+    protected $dependencies = ['anr', 'category', 'amvs', 'referential', 'linkedMeasures', 'rolfRisks'];
     protected $filterColumns = ['label1', 'label2', 'label3', 'label4', 'code', 'status'];
     protected $forbiddenFields = ['anr'];
     protected $soaCategoryTable;

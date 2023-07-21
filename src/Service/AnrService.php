@@ -43,7 +43,7 @@ class AnrService
 
     private Table\SoaScaleCommentTable $soaScaleCommentTable;
 
-    private Table\InstanceMetadataFieldTable $instanceMetadataFieldTable;
+    private Table\AnrInstanceMetadataFieldTable $anrInstanceMetadataFieldTable;
 
     private ScaleService $scaleService;
 
@@ -66,7 +66,7 @@ class AnrService
         Table\OperationalInstanceRiskScaleTable $operationalInstanceRiskScaleTable,
         Table\TranslationTable $translationTable,
         Table\SoaScaleCommentTable $soaScaleCommentTable,
-        Table\InstanceMetadataFieldTable $instanceMetadataFieldTable,
+        Table\AnrInstanceMetadataFieldTable $anrInstanceMetadataFieldTable,
         ScaleService $scaleService,
         OperationalRiskScaleService $operationalRiskScaleService,
         ConnectedUserService $connectedUserService
@@ -85,7 +85,7 @@ class AnrService
         $this->operationalInstanceRiskScaleTable = $operationalInstanceRiskScaleTable;
         $this->translationTable = $translationTable;
         $this->soaScaleCommentTable = $soaScaleCommentTable;
-        $this->instanceMetadataFieldTable = $instanceMetadataFieldTable;
+        $this->anrInstanceMetadataFieldTable = $anrInstanceMetadataFieldTable;
         $this->scaleService = $scaleService;
         $this->operationalRiskScaleService = $operationalRiskScaleService;
         $this->connectedUser = $connectedUserService->getConnectedUser();
@@ -449,13 +449,14 @@ class AnrService
 
     private function duplicateInstancesMetadataFields(Entity\Anr $newAnr, Entity\Anr $anr): void
     {
-        /** @var Entity\InstanceMetadataField $instanceMetadataField */
-        foreach ($this->instanceMetadataFieldTable->findByAnr($anr) as $instanceMetadataField) {
-            $newInstanceMetadataField = Entity\InstanceMetadataField::constructFromObject($instanceMetadataField)
+        /** @var Entity\AnrInstanceMetadataField $anrInstanceMetadataField */
+        foreach ($this->anrInstanceMetadataFieldTable->findByAnr($anr) as $anrInstanceMetadataField) {
+            $newAnrInstanceMetadataField = Entity\AnrInstanceMetadataField
+                ::constructFromObject($anrInstanceMetadataField)
                 ->setAnr($newAnr)
                 ->setCreator($this->connectedUser->getEmail());
 
-            $this->instanceMetadataFieldTable->save($newInstanceMetadataField, false);
+            $this->anrInstanceMetadataFieldTable->save($newAnrInstanceMetadataField, false);
         }
     }
 }

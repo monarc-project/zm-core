@@ -46,7 +46,8 @@ class InstanceRiskService
     public function createInstanceRisks(
         Entity\InstanceSuperClass $instance,
         Entity\ObjectSuperClass $object,
-        array $params = []
+        array $params = [],
+        bool $saveInDb = true
     ): void {
         $otherInstance = $this->instanceTable
             ->findOneByAnrAndObjectExcludeInstance($instance->getAnr(), $object, $instance);
@@ -102,8 +103,9 @@ class InstanceRiskService
             }
         }
 
-        // TODO: check if we can avoid saving here.
-        $this->instanceRiskTable->flush();
+        if ($saveInDb) {
+            $this->instanceRiskTable->flush();
+        }
     }
 
     public function getInstanceRisks(Entity\AnrSuperClass $anr, ?int $instanceId, array $params = []): array
