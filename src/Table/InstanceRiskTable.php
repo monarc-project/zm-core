@@ -50,7 +50,6 @@ class InstanceRiskTable extends AbstractTable
             ->innerJoin('ir.vulnerability', 'v')
             ->innerJoin('ir.asset', 'a')
             ->leftJoin('ir.amv', 'amv')
-            ->leftJoin('ir.instanceRiskOwner', 'iro')
             ->where('ir.anr = :anr')
             ->andWhere('ir.cacheMaxRisk >= -1')
             ->setParameter('anr', $anr);
@@ -62,7 +61,7 @@ class InstanceRiskTable extends AbstractTable
         if (!empty($params['amvs'])) {
             $amvIds = $params['amvs'];
             if (\is_string($amvIds)) {
-                $amvIds = explode(',', trim($amvIds), ',');
+                $amvIds = explode(',', trim($amvIds));
             }
             $queryBuilder->andWhere($queryBuilder->expr()->in('amv.uuid', $amvIds));
         }

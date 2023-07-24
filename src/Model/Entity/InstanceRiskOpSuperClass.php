@@ -17,8 +17,7 @@ use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
  *      @ORM\Index(name="anr_id", columns={"anr_id"}),
  *      @ORM\Index(name="instance_id", columns={"instance_id"}),
  *      @ORM\Index(name="object_id", columns={"object_id"}),
- *      @ORM\Index(name="rolf_risk_id", columns={"rolf_risk_id"}),
- *      @ORM\Index(name="owner_id", columns={"owner_id"})
+ *      @ORM\Index(name="rolf_risk_id", columns={"rolf_risk_id"})
  * })
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
@@ -65,23 +64,6 @@ class InstanceRiskOpSuperClass
      * })
      */
     protected $instance;
-
-    /**
-     * @var InstanceRiskOwnerSuperClass|null
-     *
-     * @ORM\ManyToOne(targetEntity="InstanceRiskOwner", cascade={"persist"})
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="owner_id", referencedColumnName="id", nullable=true)
-     * })
-     */
-    protected $instanceRiskOwner;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="context", type="string", length=255, nullable=true)
-     */
-    protected $context;
 
     /**
      * @var ObjectSuperClass
@@ -252,7 +234,6 @@ class InstanceRiskOpSuperClass
         InstanceRiskOpSuperClass $operationalInstanceRisk
     ): InstanceRiskOpSuperClass {
         return (new static())
-            ->setContext($operationalInstanceRisk->getContext())
             ->setRiskCacheCode($operationalInstanceRisk->getRiskCacheCode())
             ->setRiskCacheLabels($operationalInstanceRisk->getRiskCacheLabels())
             ->setRiskCacheDescriptions($operationalInstanceRisk->getRiskCacheDescriptions())
@@ -295,38 +276,6 @@ class InstanceRiskOpSuperClass
     {
         $this->instance = $instance;
         $instance->addOperationalInstanceRisk($this);
-
-        return $this;
-    }
-
-    public function getInstanceRiskOwner(): ?InstanceRiskOwnerSuperClass
-    {
-        return $this->instanceRiskOwner;
-    }
-
-    public function setInstanceRiskOwner(?InstanceRiskOwnerSuperClass $instanceRiskOwner): self
-    {
-        if ($instanceRiskOwner === null) {
-            if ($this->instanceRiskOwner !== null) {
-                $this->instanceRiskOwner->removeOperationalInstanceRisk($this);
-                $this->instanceRiskOwner = null;
-            }
-        } else {
-            $this->instanceRiskOwner = $instanceRiskOwner;
-            $instanceRiskOwner->addOperationalInstanceRisk($this);
-        }
-
-        return $this;
-    }
-
-    public function getContext(): string
-    {
-        return (string)$this->context;
-    }
-
-    public function setContext(string $context): self
-    {
-        $this->context = $context;
 
         return $this;
     }

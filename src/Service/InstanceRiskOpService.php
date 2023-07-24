@@ -34,8 +34,6 @@ class InstanceRiskOpService
 
     protected Table\OperationalRiskScaleTypeTable $operationalRiskScaleTypeTable;
 
-    protected Table\InstanceRiskOwnerTable $instanceRiskOwnerTable;
-
     protected array $operationalRiskScales = [];
 
     public function __construct(
@@ -48,7 +46,6 @@ class InstanceRiskOpService
         TranslateService $translateService,
         Table\OperationalRiskScaleTable $operationalRiskScaleTable,
         Table\OperationalRiskScaleTypeTable $operationalRiskScaleTypeTable,
-        Table\InstanceRiskOwnerTable $instanceRiskOwnerTable,
         ConfigService $configService
     ) {
         $this->instanceTable = $instanceTable;
@@ -60,7 +57,6 @@ class InstanceRiskOpService
         $this->translateService = $translateService;
         $this->operationalRiskScaleTable = $operationalRiskScaleTable;
         $this->operationalRiskScaleTypeTable = $operationalRiskScaleTypeTable;
-        $this->instanceRiskOwnerTable = $instanceRiskOwnerTable;
         $this->configService = $configService;
     }
 
@@ -83,7 +79,6 @@ class InstanceRiskOpService
                     ->setInstance($instance)
                     ->setObject($instanceRiskOp->getObject())
                     ->setRolfRisk($instanceRiskOp->getRolfRisk())
-                    ->setInstanceRiskOwner($instanceRiskOp->getInstanceRiskOwner())
                     ->setCreator($this->connectedUser->getEmail());
                 $this->instanceRiskOpTable->save($newInstanceRiskOp, false);
 
@@ -186,10 +181,6 @@ class InstanceRiskOpService
                 't' => $instanceRiskOp->getKindOfMeasure() === Entity\InstanceRiskOpSuperClass::KIND_NOT_TREATED,
                 'position' => $instanceRiskOp->getInstance()->getPosition(),
                 'instanceInfos' => $instancesInfos[$instanceRiskOp->getInstance()->getId()] ?? [],
-                'context' => $instanceRiskOp->getContext(),
-                'owner' => $instanceRiskOp->getInstanceRiskOwner()
-                    ? $instanceRiskOp->getInstanceRiskOwner()->getName()
-                    : '',
             ];
         }
 
@@ -252,12 +243,6 @@ class InstanceRiskOpService
         if (isset($data['targetedProb']) && $operationalInstanceRisk->getTargetedProb() !== $data['targetedProb']) {
             $this->verifyScaleProbabilityValue($operationalInstanceRisk->getAnr(), (int)$data['targetedProb']);
             $operationalInstanceRisk->setTargetedProb((int)$data['targetedProb']);
-        }
-        if (\array_key_exists('owner', $data)) {
-            $this->processRiskOwnerName((string)$data['owner'], $operationalInstanceRisk);
-        }
-        if (isset($data['context'])) {
-            $operationalInstanceRisk->setContext($data['context']);
         }
 
         $operationalInstanceRisk->setUpdater($this->connectedUser->getEmail());
@@ -419,44 +404,6 @@ class InstanceRiskOpService
                 $operationalRiskScale->getMax()
             ), 412);
         }
-    }
-
-    protected function processRiskOwnerName(
-        string $ownerName,
-        Entity\InstanceRiskOpSuperClass $operationalInstanceRisk
-    ): void {
-        if (empty($ownerName)) {
-            $operationalInstanceRisk->setInstanceRiskOwner(null);
-        } else {
-            $instanceRiskOwner = $this->instanceRiskOwnerTable->findByAnrAndName(
-                $operationalInstanceRisk->getAnr(),
-                $ownerName
-            );
-            if ($instanceRiskOwner === null) {
-                $instanceRiskOwner = $this->createInstanceRiskOwnerObject(
-                    $operationalInstanceRisk->getAnr(),
-                    $ownerName
-                );
-
-                $this->instanceRiskOwnerTable->save($instanceRiskOwner, false);
-
-                $operationalInstanceRisk->setInstanceRiskOwner($instanceRiskOwner);
-            } elseif ($operationalInstanceRisk->getInstanceRiskOwner() === null
-                || $operationalInstanceRisk->getInstanceRiskOwner()->getId() !== $instanceRiskOwner->getId()
-            ) {
-                $operationalInstanceRisk->setInstanceRiskOwner($instanceRiskOwner);
-            }
-        }
-    }
-
-    protected function createInstanceRiskOwnerObject(
-        Entity\AnrSuperClass $anr,
-        string $ownerName
-    ): Entity\InstanceRiskOwnerSuperClass {
-        return (new Entity\InstanceRiskOwner())
-            ->setAnr($anr)
-            ->setName($ownerName)
-            ->setCreator($this->connectedUser->getEmail());
     }
 
     protected function getConstructedFromObjectInstanceRiskOp(

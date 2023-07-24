@@ -44,7 +44,7 @@ class SoaScaleCommentService
         $result = [];
         $soaScaleComments = $this->soaScaleCommentTable->findByAnrOrderByIndex($anr);
         if ($language === null) {
-            $language = $this->getAnrLanguageCode($anr);
+            $language = $this->getLanguageCode($anr);
         }
 
         $translations = $this->translationTable->findByAnrTypesAndLanguageIndexedByKey(
@@ -103,7 +103,7 @@ class SoaScaleCommentService
         $soaScaleComment = $this->soaScaleCommentTable->findById($id);
 
         if (!empty($data['comment'])) {
-            $languageCode = $data['language'] ?? $this->getAnrLanguageCode($soaScaleComment->getAnr());
+            $languageCode = $data['language'] ?? $this->getLanguageCode($soaScaleComment->getAnr());
             $translationKey = $soaScaleComment->getCommentTranslationKey();
             if (!empty($translationKey)) {
                 $translation = $this->translationTable
@@ -124,7 +124,7 @@ class SoaScaleCommentService
         $result = [];
         $soaScaleComments = $this->soaScaleCommentTable->findByAnrOrderByIndex($anr);
         if ($language === null) {
-            $language = $this->getAnrLanguageCode($anr);
+            $language = $this->getLanguageCode($anr);
         }
 
         $translations = $this->translationTable->findByAnrTypesAndLanguageIndexedByKey(
@@ -153,7 +153,7 @@ class SoaScaleCommentService
         array $languageCodes,
         bool $isFlushable = false
     ): void {
-        $scaleComment = (new soaScaleComment())
+        $scaleComment = (new SoaScaleComment())
             ->setAnr($anr)
             ->setScaleIndex($scaleIndex)
             ->setColour('')
@@ -197,9 +197,9 @@ class SoaScaleCommentService
             ->setCreator($this->connectedUser->getEmail());
     }
 
-    protected function getAnrLanguageCode(AnrSuperClass $anr): string
+    protected function getLanguageCode(AnrSuperClass $anr): string
     {
-        throw new \LogicException('The "Core\Anr" entity does not have a language field.');
+        return $this->configService->getActiveLanguageCodes()[$this->connectedUser->getLanguage()];
     }
 
     protected function getLanguageCodesForTranslations(AnrSuperClass $anr): array

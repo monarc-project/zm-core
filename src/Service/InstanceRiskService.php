@@ -21,8 +21,6 @@ class InstanceRiskService
 
     private Table\InstanceTable $instanceTable;
 
-    private Table\InstanceRiskOwnerTable $instanceRiskOwnerTable;
-
     private Table\ScaleTable $scaleTable;
 
     private Entity\UserSuperClass $connectedUser;
@@ -32,13 +30,11 @@ class InstanceRiskService
     public function __construct(
         Table\InstanceRiskTable $instanceRiskTable,
         Table\InstanceTable $instanceTable,
-        Table\InstanceRiskOwnerTable $instanceRiskOwnerTable,
         Table\ScaleTable $scaleTable,
         ConnectedUserService $connectedUserService
     ) {
         $this->instanceRiskTable = $instanceRiskTable;
         $this->instanceTable = $instanceTable;
-        $this->instanceRiskOwnerTable = $instanceRiskOwnerTable;
         $this->scaleTable = $scaleTable;
         $this->connectedUser = $connectedUserService->getConnectedUser();
     }
@@ -61,14 +57,11 @@ class InstanceRiskService
                     ->setThreat($instanceRisk->getThreat())
                     ->setVulnerability($instanceRisk->getVulnerability())
                     ->setAmv($instanceRisk->getAmv())
-                    ->setInstanceRiskOwner($instanceRisk->getInstanceRiskOwner())
                     ->setCreator($this->connectedUser->getEmail());
 
                 $this->recalculateRiskRates($newInstanceRisk, false);
 
                 $this->instanceRiskTable->save($newInstanceRisk, false);
-
-                $this->duplicateRecommendationRisk($instanceRisk, $newInstanceRisk);
             }
         } else {
             foreach ($object->getAsset()->getAmvs() as $amv) {
@@ -80,22 +73,6 @@ class InstanceRiskService
                     ->setThreat($amv->getThreat())
                     ->setVulnerability($amv->getVulnerability())
                     ->setCreator($this->connectedUser->getEmail());
-
-                /* Set risk owner and context in case of import. */
-                if (!empty($params['risks'])) {
-                    $riskKey = array_search($amv->getUuid(), array_column($params['risks'], 'amv'), true);
-                    if ($riskKey !== false) {
-                        $instanceRiskData = array_values($params['risks'])[$riskKey];
-                        $instanceRisk->setContext($instanceRiskData['context'] ?? '');
-                        if (!empty($instanceRiskData['riskOwner'])) {
-                            $instanceRiskOwner = $this->getOrCreateInstanceRiskOwner(
-                                $instance->getAnr(),
-                                $instanceRiskData['riskOwner']
-                            );
-                            $instanceRisk->setInstanceRiskOwner($instanceRiskOwner);
-                        }
-                    }
-                }
 
                 $this->instanceRiskTable->save($instanceRisk, false);
 
@@ -152,10 +129,6 @@ class InstanceRiskService
                     'vulnLabel' . $languageIndex => $vulnerability->getLabel($languageIndex),
                     'vulnDescription' . $languageIndex => $vulnerability->getDescription($languageIndex),
                     'vulnerabilityRate' => $instanceRisk->getVulnerabilityRate(),
-                    'context' => $instanceRisk->getContext(),
-                    'owner' => $instanceRisk->getInstanceRiskOwner()
-                        ? $instanceRisk->getInstanceRiskOwner()->getName()
-                        : '',
                     'specific' => $instanceRisk->getSpecific(),
                     'reductionAmount' => $instanceRisk->getReductionAmount(),
                     'c_impact' => $instanceRisk->getInstance()->getConfidentiality(),
@@ -302,53 +275,10 @@ class InstanceRiskService
         $this->instanceRiskTable->save($instanceRisk, $saveInDb);
     }
 
-    protected function getOrCreateInstanceRiskOwner(
-        Entity\AnrSuperClass $anr,
-        string $ownerName
-    ): Entity\InstanceRiskOwnerSuperClass {
-        if (!isset($this->cachedData['instanceRiskOwners'][$ownerName])) {
-            $instanceRiskOwner = $this->instanceRiskOwnerTable->findByAnrAndName($anr, $ownerName);
-            if ($instanceRiskOwner === null) {
-                $instanceRiskOwner = $this->createInstanceRiskOwnerObject($anr, $ownerName);
-
-                $this->instanceRiskOwnerTable->save($instanceRiskOwner, false);
-            }
-
-            $this->cachedData['instanceRiskOwners'][$ownerName] = $instanceRiskOwner;
-        }
-
-        return $this->cachedData['instanceRiskOwners'][$ownerName];
-    }
-
     protected function duplicateRecommendationRisk(
         Entity\InstanceRiskSuperClass $instanceRisk,
         Entity\InstanceRiskSuperClass $newInstanceRisk
     ): void {
-    }
-
-    protected function processRiskOwnerName(
-        string $ownerName,
-        Entity\InstanceRiskSuperClass $instanceRisk
-    ): void {
-        if (empty($ownerName)) {
-            $instanceRisk->setInstanceRiskOwner(null);
-        } else {
-            $instanceRiskOwner = $this->instanceRiskOwnerTable->findByAnrAndName(
-                $instanceRisk->getAnr(),
-                $ownerName
-            );
-            if ($instanceRiskOwner === null) {
-                $instanceRiskOwner = $this->createInstanceRiskOwnerObject($instanceRisk->getAnr(), $ownerName);
-
-                $this->instanceRiskOwnerTable->save($instanceRiskOwner, false);
-
-                $instanceRisk->setInstanceRiskOwner($instanceRiskOwner);
-            } elseif ($instanceRisk->getInstanceRiskOwner() === null
-                || $instanceRisk->getInstanceRiskOwner()->getId() !== $instanceRiskOwner->getId()
-            ) {
-                $instanceRisk->setInstanceRiskOwner($instanceRiskOwner);
-            }
-        }
     }
 
     protected function getConstructedFromObjectInstanceRisk(
@@ -360,16 +290,6 @@ class InstanceRiskService
     protected function createInstanceRiskObject(): Entity\InstanceRiskSuperClass
     {
         return new Entity\InstanceRisk();
-    }
-
-    protected function createInstanceRiskOwnerObject(
-        Entity\AnrSuperClass $anr,
-        string $ownerName
-    ): Entity\InstanceRiskOwnerSuperClass {
-        return (new Entity\InstanceRiskOwner())
-            ->setAnr($anr)
-            ->setName($ownerName)
-            ->setCreator($this->connectedUser->getEmail());
     }
 
     protected function getLanguageIndex(Entity\AnrSuperClass $anr): int
@@ -433,13 +353,6 @@ class InstanceRiskService
 
     private function updateInstanceRiskData(Entity\InstanceRiskSuperClass $instanceRisk, array $data): void
     {
-
-        if (isset($data['owner'])) {
-            $this->processRiskOwnerName((string)$data['owner'], $instanceRisk);
-        }
-        if (isset($data['context'])) {
-            $instanceRisk->setContext($data['context']);
-        }
         if (isset($data['reductionAmount'])) {
             $instanceRisk->setReductionAmount((int)$data['reductionAmount']);
         }

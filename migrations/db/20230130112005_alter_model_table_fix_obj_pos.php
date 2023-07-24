@@ -207,5 +207,33 @@ class AlterModelTableFixObjPos extends AbstractMigration
             ->changeColumn('anr_id', 'integer', ['signed' => false, 'null' => false])
             ->changeColumn('label_translation_key', 'string', ['null' => false, 'limit' => 255])
             ->update();
+
+        /* Remove table instances_risks_owners and the relation with it. */
+        $this->table('instances_risks')
+            ->dropForeignKey('owner_id')
+            ->removeColumn('owner_id')
+            ->removeColumn('context')
+            ->update();
+        $this->table('instances_risks_op')
+            ->dropForeignKey('owner_id')
+            ->removeColumn('owner_id')
+            ->removeColumn('context')
+            ->removeColumn('brut_r')
+            ->removeColumn('brut_o')
+            ->removeColumn('brut_l')
+            ->removeColumn('brut_f')
+            ->removeColumn('brut_p')
+            ->removeColumn('net_r')
+            ->removeColumn('net_o')
+            ->removeColumn('net_l')
+            ->removeColumn('net_f')
+            ->removeColumn('net_p')
+            ->removeColumn('targeted_r')
+            ->removeColumn('targeted_o')
+            ->removeColumn('targeted_l')
+            ->removeColumn('targeted_f')
+            ->removeColumn('targeted_p')
+            ->update();
+        $this->table('instance_risk_owners')->drop()->update();
     }
 }

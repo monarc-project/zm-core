@@ -229,7 +229,6 @@ return [
             Table\OperationalRiskScaleTypeTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\OperationalRiskScaleCommentTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\OperationalInstanceRiskScaleTable::class => Table\Factory\CoreEntityManagerFactory::class,
-            Table\InstanceRiskOwnerTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\AnrInstanceMetadataFieldTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\SoaScaleCommentTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\UserTable::class => Table\Factory\ClientEntityManagerFactory::class,

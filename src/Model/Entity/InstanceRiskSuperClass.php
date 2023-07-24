@@ -18,8 +18,7 @@ use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
  *      @ORM\Index(name="asset_id", columns={"asset_id"}),
  *      @ORM\Index(name="threat_id", columns={"threat_id"}),
  *      @ORM\Index(name="vulnerability_id", columns={"vulnerability_id"}),
- *      @ORM\Index(name="instance_id", columns={"instance_id"}),
- *      @ORM\Index(name="owner_id", columns={"owner_id"})
+ *      @ORM\Index(name="instance_id", columns={"instance_id"})
  * })
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
@@ -106,23 +105,6 @@ class InstanceRiskSuperClass
      * })
      */
     protected $instance;
-
-    /**
-     * @var InstanceRiskOwnerSuperClass|null
-     *
-     * @ORM\ManyToOne(targetEntity="InstanceRiskOwner", cascade={"persist"})
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="owner_id", referencedColumnName="id", nullable=true)
-     * })
-     */
-    protected $instanceRiskOwner;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="context", type="string", length=255, nullable=true)
-     */
-    protected $context;
 
     /**
      * @var int
@@ -218,7 +200,6 @@ class InstanceRiskSuperClass
     public static function constructFromObject(InstanceRiskSuperClass $instanceRisk): InstanceRiskSuperClass
     {
         return (new static())
-            ->setContext($instanceRisk->getContext())
             ->setSpecific($instanceRisk->getSpecific())
             ->setMh($instanceRisk->getMh())
             ->setThreatRate($instanceRisk->getThreatRate())
@@ -304,38 +285,6 @@ class InstanceRiskSuperClass
     public function setVulnerability(VulnerabilitySuperClass $vulnerability): self
     {
         $this->vulnerability = $vulnerability;
-
-        return $this;
-    }
-
-    public function getInstanceRiskOwner(): ?InstanceRiskOwnerSuperClass
-    {
-        return $this->instanceRiskOwner;
-    }
-
-    public function setInstanceRiskOwner(?InstanceRiskOwnerSuperClass $instanceRiskOwner): self
-    {
-        if ($instanceRiskOwner === null) {
-            if ($this->instanceRiskOwner !== null) {
-                $this->instanceRiskOwner->removeInstanceRisk($this);
-                $this->instanceRiskOwner = null;
-            }
-        } else {
-            $this->instanceRiskOwner = $instanceRiskOwner;
-            $instanceRiskOwner->addInstanceRisk($this);
-        }
-
-        return $this;
-    }
-
-    public function getContext(): string
-    {
-        return (string)$this->context;
-    }
-
-    public function setContext(string $context): self
-    {
-        $this->context = $context;
 
         return $this;
     }
