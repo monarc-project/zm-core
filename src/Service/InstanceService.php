@@ -75,12 +75,10 @@ class InstanceService
         return $instanceData;
     }
 
-    public function instantiateObjectToAnr(
-        Entity\AnrSuperClass $anr,
-        array $data,
-        bool $isRootLevel = false
-    ): Entity\InstanceSuperClass {
-        $object = $data['object'] instanceof Entity\ObjectSuperClass
+    public function instantiateObjectToAnr(Entity\Anr $anr, array $data, bool $isRootLevel = false): Entity\Instance
+    {
+        /** @var Entity\MonarcObject $object */
+        $object = $data['object'] instanceof Entity\MonarcObject
             ? $data['object']
             : $this->monarcObjectTable->findByUuid($data['object']);
 
@@ -89,7 +87,7 @@ class InstanceService
         }
 
         $instanceClassName = $this->instanceTable->getEntityName();
-        /** @var Entity\InstanceSuperClass|Entity\Instance $instance */
+        /** @var Entity\Instance $instance */
         $instance = (new $instanceClassName)
             ->setAnr($anr)
             ->setObject($object)
@@ -99,8 +97,8 @@ class InstanceService
             ->setCreator($this->connectedUser->getEmail());
 
         if (!empty($data['parent'])) {
-            /** @var Entity\InstanceSuperClass $parentInstance */
-            $parentInstance = $data['parent'] instanceof Entity\InstanceSuperClass
+            /** @var Entity\Instance $parentInstance */
+            $parentInstance = $data['parent'] instanceof Entity\Instance
                 ? $data['parent']
                 : $this->instanceTable->findById($data['parent']);
 

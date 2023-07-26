@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Model\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -19,4 +20,51 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class MonarcObject extends ObjectSuperClass
 {
+    /**
+     * @var ArrayCollection|Anr[]
+     *
+     * @ORM\ManyToMany(targetEntity="Anr", inversedBy="objects", cascade={"persist"})
+     * @ORM\JoinTable(name="anrs_objects",
+     *  joinColumns={@ORM\JoinColumn(name="object_id", referencedColumnName="uuid")},
+     *  inverseJoinColumns={@ORM\JoinColumn(name="anr_id", referencedColumnName="id")}
+     * )
+     */
+    protected $anrs;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->anrs = new ArrayCollection();
+    }
+
+    public function getAnrs()
+    {
+        return $this->anrs;
+    }
+
+    public function addAnr(Anr $anr): self
+    {
+        if (!$this->anrs->contains($anr)) {
+            $this->anrs->add($anr);
+            $anr->addObject($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAnr(Anr $anr): self
+    {
+        if ($this->anrs->contains($anr)) {
+            $this->anrs->removeElement($anr);
+            $anr->removeObject($this);
+        }
+
+        return $this;
+    }
+
+    public function hasAnrLink(Anr $anr): bool
+    {
+        return $this->anrs->contains($anr);
+    }
 }

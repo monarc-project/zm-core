@@ -335,14 +335,13 @@ class ObjectService
         }
 
         /* If no more objects under its root category, the category need to be unlinked from the analysis. */
-        if ($monarcObject->hasCategory()
-            && !$this->monarcObjectTable->hasObjectsUnderRootCategoryExcludeObject(
-                $monarcObject->getCategory()->getRootCategory(),
-                $monarcObject
-            )
-        ) {
-            $monarcObject->getCategory()->getRootCategory()->removeAnrLink($anr);
-            $this->objectCategoryTable->save($monarcObject->getCategory()->getRootCategory(), false);
+        if ($monarcObject->hasCategory()) {
+            /** @var Entity\ObjectCategory $rootCategory */
+            $rootCategory = $monarcObject->getCategory()->getRootCategory();
+            if (!$this->monarcObjectTable->hasObjectsUnderRootCategoryExcludeObject($rootCategory, $monarcObject)) {
+                $rootCategory->removeAnrLink($anr);
+                $this->objectCategoryTable->save($rootCategory, false);
+            }
         }
 
         foreach ($monarcObject->getInstances() as $instance) {
@@ -363,7 +362,9 @@ class ObjectService
 
         $directParents = [];
         foreach ($object->getParentsLinks() as $parentLink) {
-            if ($parentLink->getParent()->hasAnrLink($anr)) {
+            /** @var Entity\MonarcObject $parentObject */
+            $parentObject = $parentLink->getParent();
+            if ($parentObject->hasAnrLink($anr)) {
                 $directParents[] = array_merge([
                     'uuid' => $parentLink->getParent()->getUuid(),
                     'linkid' => $parentLink->getId(),
@@ -439,10 +440,13 @@ class ObjectService
         $monarcObject->addAnr($anr);
 
         /** Link root category to the anr, if not linked. */
-        if ($monarcObject->hasCategory() && !$monarcObject->getCategory()->getRootCategory()->hasAnrLink($anr)) {
-            $monarcObject->getCategory()->getRootCategory()->addAnrLink($anr);
-
-            $this->objectCategoryTable->save($monarcObject->getCategory()->getRootCategory(), false);
+        if ($monarcObject->hasCategory()) {
+            /** @var Entity\ObjectCategory $rootCategory */
+            $rootCategory = $monarcObject->getCategory()->getRootCategory();
+            if (!$rootCategory->hasAnrLink($anr)) {
+                $rootCategory->addAnrLink($anr);
+                $this->objectCategoryTable->save($rootCategory, false);
+            }
         }
 
         foreach ($monarcObject->getChildren() as $childObject) {
@@ -688,6 +692,7 @@ class ObjectService
         Entity\Anr $anr
     ): array {
         $objectsData = [];
+        /** @var Entity\MonarcObject $object */
         foreach ($objectCategory->getObjects() as $object) {
             if ($object->hasAnrLink($anr)) {
                 $objectsData[] = $this->getPreparedObjectData($object, true);
@@ -788,12 +793,12 @@ class ObjectService
             return;
         }
 
+        /** @var Entity\ObjectCategory $rootCategory */
+        $rootCategory = $monarcObject->getCategory()->getRootCategory();
         /* Check if there are no more objects left under the root category or its children ones. */
-        $hasObjectsUnderRootCategory = $this->monarcObjectTable
-            ->hasObjectsUnderRootCategoryExcludeObject($monarcObject->getCategory()->getRootCategory(), $monarcObject);
-        if (!$hasObjectsUnderRootCategory) {
-            $monarcObject->getCategory()->getRootCategory()->removeAllAnrLinks();
-            $this->objectCategoryTable->save($monarcObject->getCategory()->getRootCategory(), false);
+        if (!$this->monarcObjectTable->hasObjectsUnderRootCategoryExcludeObject($rootCategory, $monarcObject)) {
+            $rootCategory->removeAllAnrLinks();
+            $this->objectCategoryTable->save($rootCategory, false);
         }
     }
 
@@ -837,7 +842,7 @@ class ObjectService
             return true;
         }
 
-        /** @var Entity\AnrSuperClass $anr */
+        /** @var Entity\Anr $anr */
         $anr = $anrFilter['value'];
 
         return !$anr->getObjects()->isEmpty();
@@ -894,7 +899,7 @@ class ObjectService
     {
         $anrFilter = $formattedInputParams->getFilterFor('anr');
         if (!empty($anrFilter['value'])) {
-            /** @var Entity\AnrSuperClass $anr */
+            /** @var Entity\Anr $anr */
             $anr = $anrFilter['value'];
             $objectsUuids = [];
             foreach ($anr->getObjects() as $object) {
@@ -917,7 +922,7 @@ class ObjectService
                 $objectCategory = $this->objectCategoryTable->findById($categoryFilter['value']);
                 $formattedInputParams->setFilterFor('category.id', [
                     'value' => array_merge([$categoryFilter['value']], $objectCategory->getRecursiveChildrenIds()),
-                    'operator' => Comparison::IN
+                    'operator' => Comparison::IN,
                 ]);
             }
         }

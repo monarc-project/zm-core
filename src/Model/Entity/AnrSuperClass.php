@@ -38,25 +38,6 @@ class AnrSuperClass
     protected $id;
 
     /**
-     * @var ArrayCollection|ObjectSuperClass[]
-     *
-     * @ORM\ManyToMany(targetEntity="MonarcObject", mappedBy="anrs")
-     */
-    protected $objects;
-
-    /**
-     * @var ArrayCollection|ObjectCategorySuperClass[]
-     *
-     * @ORM\ManyToMany(targetEntity="ObjectCategory", inversedBy="anrs", cascade={"persist"})
-     * @ORM\JoinTable(name="anrs_objects_categories",
-     *  inverseJoinColumns={@ORM\JoinColumn(name="object_category_id", referencedColumnName="id")},
-     *  joinColumns={@ORM\JoinColumn(name="anr_id", referencedColumnName="id")},
-     * )
-     * @ORM\OrderBy({"position" = "ASC"})
-     */
-    protected $objectCategories;
-
-    /**
      * Informational risks min threshold setting.
      *
      * @var int
@@ -227,12 +208,6 @@ class AnrSuperClass
      */
     protected $status = self::STATUS_ACTIVE;
 
-    public function __construct()
-    {
-        $this->objects = new ArrayCollection();
-        $this->objectCategories = new ArrayCollection();
-    }
-
     /**
      * Only the primitive data types properties values are set to the new object.
      * The relation properties have to be recreated manually.
@@ -270,56 +245,6 @@ class AnrSuperClass
     public function getId(): int
     {
         return $this->id;
-    }
-
-    public function getObjects()
-    {
-        return $this->objects;
-    }
-
-    public function addObject(ObjectSuperClass $object): self
-    {
-        if (!$this->objects->contains($object)) {
-            $this->objects->add($object);
-            $object->addAnr($this);
-        }
-
-        return $this;
-    }
-
-    public function removeObject(ObjectSuperClass $object): self
-    {
-        if ($this->objects->contains($object)) {
-            $this->objects->removeElement($object);
-            $object->removeAnr($this);
-        }
-
-        return $this;
-    }
-
-    public function getObjectCategories()
-    {
-        return $this->objectCategories;
-    }
-
-    public function addObjectCategory(ObjectCategorySuperClass $objectCategory): self
-    {
-        if (!$this->objectCategories->contains($objectCategory)) {
-            $this->objectCategories->add($objectCategory);
-            $objectCategory->addAnrLink($this);
-        }
-
-        return $this;
-    }
-
-    public function removeObjectCategory(ObjectCategorySuperClass $objectCategory): self
-    {
-        if ($this->objectCategories->contains($objectCategory)) {
-            $this->objectCategories->removeElement($objectCategory);
-            $objectCategory->removeAnrLink($this);
-        }
-
-        return $this;
     }
 
     public function setSeuil1(int $seuil1): self

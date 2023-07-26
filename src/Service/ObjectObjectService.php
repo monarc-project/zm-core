@@ -8,8 +8,10 @@
 namespace Monarc\Core\Service;
 
 use Monarc\Core\Exception\Exception;
+use Monarc\Core\Model\Entity\Anr;
 use Monarc\Core\Model\Entity\Asset;
 use Monarc\Core\Model\Entity\MonarcObject;
+use Monarc\Core\Model\Entity\ObjectCategory;
 use Monarc\Core\Model\Entity\ObjectObject;
 use Monarc\Core\Model\Entity\ObjectObjectSuperClass;
 use Monarc\Core\Model\Entity\UserSuperClass;
@@ -198,7 +200,9 @@ class ObjectObjectService
                 }
             }
 
-            $this->instanceService->instantiateObjectToAnr($parentObjectInstance->getAnr(), $instanceData);
+            /** @var Anr $anr */
+            $anr = $parentObjectInstance->getAnr();
+            $this->instanceService->instantiateObjectToAnr($anr, $instanceData);
         }
     }
 
@@ -210,10 +214,13 @@ class ObjectObjectService
                 $this->monarcObjectTable->save($object, false);
             }
             /* Link the object's root category if not linked. */
-            if ($object->hasCategory() && !$object->getCategory()->getRootCategory()->hasAnrLink($anr)) {
-                $object->getCategory()->getRootCategory()->addAnrLink($anr);
-
-                $this->objectCategoryTable->save($object->getCategory()->getRootCategory(), false);
+            if ($object->hasCategory()) {
+                /** @var ObjectCategory $rootCategory */
+                $rootCategory = $object->getCategory()->getRootCategory();
+                if (!$rootCategory->hasAnrLink($anr)) {
+                    $rootCategory->addAnrLink($anr);
+                    $this->objectCategoryTable->save($rootCategory, false);
+                }
             }
         }
         foreach ($object->getChildren() as $childObject) {

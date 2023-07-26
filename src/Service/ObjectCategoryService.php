@@ -10,6 +10,7 @@ namespace Monarc\Core\Service;
 use Doctrine\Common\Collections\Expr\Comparison;
 use Monarc\Core\InputFormatter\FormattedInputParams;
 use Monarc\Core\Model\Entity\Model;
+use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Entity\ObjectCategory;
 use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Service\Interfaces\PositionUpdatableServiceInterface;
@@ -160,6 +161,7 @@ class ObjectCategoryService
             /** @var ObjectCategory $parentCategory */
             $parentCategory = $this->objectCategoryTable->findById((int)$data['parent']);
 
+            /** @var ObjectCategory $previousRootCategory */
             $previousRootCategory = $objectCategory->getRootCategory();
             $isRootCategoryBeforeUpdated = $objectCategory->isCategoryRoot();
             $hasRootCategoryChanged = $objectCategory->hasParent()
@@ -182,6 +184,7 @@ class ObjectCategoryService
                 $this->updateRootOfChildrenTree($objectCategory);
             }
         } elseif (empty($data['parent']) && $objectCategory->hasParent()) {
+            /** @var ObjectCategory $previousRootCategory */
             $previousRootCategory = $objectCategory->getRootCategory();
             $objectCategory->setParent(null)->setRoot(null);
 
@@ -302,6 +305,7 @@ class ObjectCategoryService
          */
         if ($model !== null) {
             $result['objects'] = [];
+            /** @var MonarcObject $object */
             foreach ($objectCategory->getObjects() as $object) {
                 $result['objects'][] = [
                     'uuid' => $object->getUuid(),
@@ -324,7 +328,9 @@ class ObjectCategoryService
     {
         foreach ($objectCategory->getObjectsRecursively() as $object) {
             foreach ($object->getAnrs() as $anr) {
-                if (!$objectCategory->getRootCategory()->hasAnrLink($anr)) {
+                /** @var ObjectCategory $rootCategory */
+                $rootCategory = $objectCategory->getRootCategory();
+                if (!$rootCategory->hasAnrLink($anr)) {
                     $objectCategory->addAnrLink($anr);
                 }
             }

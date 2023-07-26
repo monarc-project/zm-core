@@ -90,13 +90,6 @@ class ObjectCategorySuperClass implements PositionedEntityInterface
     protected $objects;
 
     /**
-     * @var AnrSuperClass[]|ArrayCollection
-     *
-     * @ORM\ManyToMany(targetEntity="Anr", mappedBy="objectCategories", cascade={"persist"})
-     */
-    protected $anrs;
-
-    /**
      * @var int
      *
      * @ORM\Column(name="position", type="smallint", options={"unsigned":true, "default":1})
@@ -107,7 +100,6 @@ class ObjectCategorySuperClass implements PositionedEntityInterface
     {
         $this->objects = new ArrayCollection();
         $this->children = new ArrayCollection();
-        $this->anrs = new ArrayCollection();
     }
 
     public function getImplicitPositionRelationsValues(): array
@@ -289,45 +281,6 @@ class ObjectCategorySuperClass implements PositionedEntityInterface
         }
 
         return false;
-    }
-
-    public function getLinkedAnrs()
-    {
-        return $this->anrs;
-    }
-
-    public function hasAnrLink(AnrSuperClass $anr): bool
-    {
-        return $this->anrs->contains($anr);
-    }
-
-    public function addAnrLink(AnrSuperClass $anr): self
-    {
-        if (!$this->anrs->contains($anr)) {
-            $this->anrs->add($anr);
-            $anr->addObjectCategory($this);
-        }
-
-        return $this;
-    }
-
-    public function removeAnrLink(AnrSuperClass $anr): self
-    {
-        if ($this->anrs->contains($anr)) {
-            $this->anrs->removeElement($anr);
-            $anr->removeObjectCategory($this);
-        }
-
-        return $this;
-    }
-
-    public function removeAllAnrLinks(): self
-    {
-        foreach ($this->anrs as $anr) {
-            $this->removeAnrLink($anr);
-        }
-
-        return $this;
     }
 
     public function getPosition(): int

@@ -63,17 +63,6 @@ class ObjectSuperClass implements PositionedEntityInterface
     protected $anr;
 
     /**
-     * @var ArrayCollection|AnrSuperClass[]
-     *
-     * @ORM\ManyToMany(targetEntity="Anr", inversedBy="objects", cascade={"persist"})
-     * @ORM\JoinTable(name="anrs_objects",
-     *  joinColumns={@ORM\JoinColumn(name="object_id", referencedColumnName="uuid")},
-     *  inverseJoinColumns={@ORM\JoinColumn(name="anr_id", referencedColumnName="id")}
-     * )
-     */
-    protected $anrs;
-
-    /**
      * @var ObjectCategorySuperClass|null
      *
      * @ORM\ManyToOne(targetEntity="ObjectCategory", cascade={"persist"})
@@ -170,7 +159,6 @@ class ObjectSuperClass implements PositionedEntityInterface
 
     public function __construct()
     {
-        $this->anrs = new ArrayCollection();
         $this->parents = new ArrayCollection();
         $this->children = new ArrayCollection();
         $this->parentsLinks = new ArrayCollection();
@@ -279,36 +267,6 @@ class ObjectSuperClass implements PositionedEntityInterface
     public function hasRolfTag(): bool
     {
         return $this->rolfTag !== null;
-    }
-
-    public function getAnrs()
-    {
-        return $this->anrs;
-    }
-
-    public function addAnr(AnrSuperClass $anr): self
-    {
-        if (!$this->anrs->contains($anr)) {
-            $this->anrs->add($anr);
-            $anr->addObject($this);
-        }
-
-        return $this;
-    }
-
-    public function removeAnr(AnrSuperClass $anr): self
-    {
-        if ($this->anrs->contains($anr)) {
-            $this->anrs->removeElement($anr);
-            $anr->removeObject($this);
-        }
-
-        return $this;
-    }
-
-    public function hasAnrLink(AnrSuperClass $anr): bool
-    {
-        return $this->anrs->contains($anr);
     }
 
     public function getNameCleanedFromCopy(int $languageIndex): string
