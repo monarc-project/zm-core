@@ -100,7 +100,7 @@ class ObjectService
 
     public function getObjectData(string $uuid, FormattedInputParams $formattedInputParams)
     {
-        /** @var Entity\ObjectSuperClass $object */
+        /** @var Entity\MonarcObject $object */
         $object = $this->monarcObjectTable->findByUuid($uuid);
 
         $objectData = $this->getPreparedObjectData($object);
@@ -169,7 +169,7 @@ class ObjectService
         return $objectData;
     }
 
-    public function getLibraryTreeStructure(Entity\AnrSuperClass $anr): array
+    public function getLibraryTreeStructure(Entity\Anr $anr): array
     {
         $result = [];
         foreach ($anr->getObjectCategories() as $objectCategory) {
@@ -352,7 +352,7 @@ class ObjectService
         $this->monarcObjectTable->save($monarcObject);
     }
 
-    public function getParentsInAnr(Entity\AnrSuperClass $anr, string $uuid)
+    public function getParentsInAnr(Entity\Anr $anr, string $uuid)
     {
         /** @var Entity\MonarcObject $object */
         $object = $this->monarcObjectTable->findByUuid($uuid);
@@ -374,7 +374,7 @@ class ObjectService
         return $directParents;
     }
 
-    private function getPreparedObjectData(Entity\ObjectSuperClass $object, bool $objectOnly = false): array
+    private function getPreparedObjectData(Entity\MonarcObject $object, bool $objectOnly = false): array
     {
         $result = array_merge([
             'uuid' => $object->getUuid(),
@@ -633,8 +633,8 @@ class ObjectService
     }
 
     private function getCategoriesAndObjectsTreeList(
-        Entity\ObjectCategorySuperClass $objectCategory,
-        Entity\AnrSuperClass $anr
+        Entity\ObjectCategory $objectCategory,
+        Entity\Anr $anr
     ): array {
         $result = [];
         $objectsData = $this->getObjectsDataOfCategoryAndAnr($objectCategory, $anr);
@@ -649,8 +649,8 @@ class ObjectService
     }
 
     private function getCategoriesWithObjectsChildrenTreeList(
-        Entity\ObjectCategorySuperClass $objectCategory,
-        Entity\AnrSuperClass $anr
+        Entity\ObjectCategory $objectCategory,
+        Entity\Anr $anr
     ): array {
         $result = [];
         foreach ($objectCategory->getChildren() as $childCategory) {
@@ -664,9 +664,9 @@ class ObjectService
     }
 
     private function getPreparedObjectCategoryData(
-        Entity\ObjectCategorySuperClass $category,
+        Entity\ObjectCategory $category,
         array $objectsData,
-        Entity\AnrSuperClass $anr
+        Entity\Anr $anr
     ): array {
         $result = array_merge($category->getLabels(), [
             'id' => $category->getId(),
@@ -684,8 +684,8 @@ class ObjectService
     }
 
     private function getObjectsDataOfCategoryAndAnr(
-        Entity\ObjectCategorySuperClass $objectCategory,
-        Entity\AnrSuperClass $anr
+        Entity\ObjectCategory $objectCategory,
+        Entity\Anr $anr
     ): array {
         $objectsData = [];
         foreach ($objectCategory->getObjects() as $object) {
@@ -697,7 +697,7 @@ class ObjectService
         return $objectsData;
     }
 
-    private function getChildrenTreeList(Entity\ObjectSuperClass $object): array
+    private function getChildrenTreeList(Entity\MonarcObject $object): array
     {
         $result = [];
         foreach ($object->getChildrenLinks() as $childLinkObject) {
@@ -715,7 +715,7 @@ class ObjectService
         return $result;
     }
 
-    private function getParentsTreeList(Entity\ObjectSuperClass $object): array
+    private function getParentsTreeList(Entity\MonarcObject $object): array
     {
         $result = [];
         foreach ($object->getParentsLinks() as $parentLinkObject) {
@@ -733,7 +733,7 @@ class ObjectService
         return $result;
     }
 
-    private function getRisks(Entity\ObjectSuperClass $object): array
+    private function getRisks(Entity\MonarcObject $object): array
     {
         $risks = [];
         foreach ($object->getAsset()->getAmvs() as $amv) {
@@ -770,7 +770,7 @@ class ObjectService
         return $risks;
     }
 
-    private function getRisksOp(Entity\ObjectSuperClass $object): array
+    private function getRisksOp(Entity\MonarcObject $object): array
     {
         $riskOps = [];
         if ($object->getRolfTag() !== null && $object->getAsset()->isPrimary()) {
@@ -797,7 +797,7 @@ class ObjectService
         }
     }
 
-    private function getDirectParents(Entity\ObjectSuperClass $object): array
+    private function getDirectParents(Entity\MonarcObject $object): array
     {
         $parents = [];
         foreach ($object->getParents() as $parentObject) {
@@ -817,10 +817,10 @@ class ObjectService
         return isset($filteredData['mode']['value']) && $filteredData['mode']['value'] === self::MODE_ANR;
     }
 
-    private function getValidatedAnr(array $filteredData, Entity\ObjectSuperClass $object): Entity\AnrSuperClass
+    private function getValidatedAnr(array $filteredData, Entity\MonarcObject $object): Entity\Anr
     {
         $anr = $filteredData['anr']['value'] ?? null;
-        if (!$anr instanceof Entity\AnrSuperClass) {
+        if (!$anr instanceof Entity\Anr) {
             throw new \Exception('Anr parameter has to be passed missing for the mode "anr".', 412);
         }
         if (!$object->hasAnrLink($anr)) {

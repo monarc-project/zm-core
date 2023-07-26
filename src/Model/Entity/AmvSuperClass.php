@@ -13,8 +13,8 @@ use Monarc\Core\Model\Entity\Interfaces\PositionedEntityInterface;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\PropertyStateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
-use Ramsey\Uuid\Lazy\LazyUuidFromString;
 use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
 
 /**
  * @ORM\Table(name="amvs", indexes={
@@ -37,7 +37,7 @@ class AmvSuperClass implements PositionedEntityInterface
     public const STATUS_INACTIVE = 0;
 
     /**
-     * @var LazyUuidFromString|string
+     * @var UuidInterface|string
      *
      * @ORM\Column(name="uuid", type="uuid", nullable=false)
      * @ORM\Id
@@ -112,10 +112,10 @@ class AmvSuperClass implements PositionedEntityInterface
 
     public function getImplicitPositionRelationsValues(): array
     {
-        $fields['asset'] = $this->asset;
         if ($this->anr !== null) {
             $fields['anr'] = $this->anr;
         }
+        $fields['asset'] = $this->asset;
 
         return $fields;
     }

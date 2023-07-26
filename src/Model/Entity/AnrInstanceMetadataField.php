@@ -10,7 +10,7 @@ namespace Monarc\Core\Model\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Table(name="amr_instances_metadata_fields", indexes={
+ * @ORM\Table(name="anr_instance_metadata_fields", indexes={
  *      @ORM\Index(name="anr_id", columns={"anr_id"})
  * })
  * @ORM\Entity
