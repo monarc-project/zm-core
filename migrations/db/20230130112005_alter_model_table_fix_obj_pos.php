@@ -162,10 +162,6 @@ class AlterModelTableFixObjPos extends AbstractMigration
             ->removeColumn('updated_at')
             ->update();
 
-        $this->execute(
-            'update translations set type = "anr-instances-metadata-fields" where type = "anr-metadatas-on-instances"'
-        );
-
         $this->table('instances')->removeColumn('disponibility')->update();
         $this->table('objects')
             ->removeColumn('disponibility')
@@ -207,6 +203,9 @@ class AlterModelTableFixObjPos extends AbstractMigration
             ->changeColumn('anr_id', 'integer', ['signed' => false, 'null' => false])
             ->changeColumn('label_translation_key', 'string', ['null' => false, 'limit' => 255])
             ->update();
+        $this->execute(
+            'update translations set type = "anr-instance-metadata-field" where type = "anr-metadatas-on-instances"'
+        );
 
         /* Remove table instances_risks_owners and the relation with it. */
         $this->table('instances_risks')
