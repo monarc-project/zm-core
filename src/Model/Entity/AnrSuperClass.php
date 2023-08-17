@@ -7,7 +7,6 @@
 
 namespace Monarc\Core\Model\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits;
 
@@ -20,8 +19,6 @@ class AnrSuperClass
 {
     use Traits\CreateEntityTrait;
     use Traits\UpdateEntityTrait;
-    use Traits\LabelsEntityTrait;
-    use Traits\DescriptionsEntityTrait;
 
     public const STATUS_ACTIVE = 1;
     public const STATUS_AWAITING_OF_IMPORT = 2;
@@ -215,8 +212,6 @@ class AnrSuperClass
     public static function constructFromObject(AnrSuperClass $anr): AnrSuperClass
     {
         return (new static())
-            ->setLabels($anr->getLabels())
-            ->setDescriptions($anr->getDescriptions())
             ->setSeuil1($anr->getSeuil1())
             ->setSeuil2($anr->getSeuil2())
             ->setSeuilRolf1($anr->getSeuilRolf1())
@@ -238,8 +233,7 @@ class AnrSuperClass
             ->setModelLivrableDone($anr->getModelLivrableDone())
             ->setSynthAct($anr->getSynthAct())
             ->setSynthThreat($anr->getSynthThreat())
-            ->setCacheModelShowRolfBrut($anr->getCacheModelShowRolfBrut())
-            ->setStatus($anr->getStatus());
+            ->setCacheModelShowRolfBrut($anr->getCacheModelShowRolfBrut());
     }
 
     public function getId(): int

@@ -8,7 +8,6 @@
 namespace Monarc\Core\Service;
 
 use Monarc\Core\Model\Entity\Anr;
-use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\TranslationSuperClass;
 use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Model\Entity\SoaScaleComment;
@@ -19,33 +18,31 @@ use Ramsey\Uuid\Uuid;
 
 class SoaScaleCommentService
 {
-    protected UserSuperClass $connectedUser;
+    private SoaScaleCommentTable $soaScaleCommentTable;
 
-    protected SoaScaleCommentTable $soaScaleCommentTable;
+    private TranslationTable $translationTable;
 
-    protected TranslationTable $translationTable;
+    private ConfigService $configService;
 
-    protected ConfigService $configService;
+    private UserSuperClass $connectedUser;
 
     public function __construct(
-        ConnectedUserService $connectedUserService,
         SoaScaleCommentTable $soaScaleCommentTable,
         TranslationTable $translationTable,
-        ConfigService $configService
+        ConfigService $configService,
+        ConnectedUserService $connectedUserService
     ) {
-        $this->connectedUser = $connectedUserService->getConnectedUser();
         $this->soaScaleCommentTable = $soaScaleCommentTable;
         $this->translationTable = $translationTable;
         $this->configService = $configService;
+        $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
-    public function getSoaScaleComments(Anr $anr, string $language = null): array
+    public function getSoaScaleComments(Anr $anr, string $language): array
     {
         $result = [];
+        /** @var SoaScaleComment[] $soaScaleComments */
         $soaScaleComments = $this->soaScaleCommentTable->findByAnrOrderByIndex($anr);
-        if ($language === null) {
-            $language = $this->getLanguageCode($anr);
-        }
 
         $translations = $this->translationTable->findByAnrTypesAndLanguageIndexedByKey(
             $anr,
@@ -54,7 +51,7 @@ class SoaScaleCommentService
         );
 
         foreach ($soaScaleComments as $comment) {
-            $translationComment = $translations[$comment->getCommentTranslationKey()] ?? null;
+            $translationComment = $translations[$comment->getLabelTranslationKey()] ?? null;
             $result[] = [
                 'id' => $comment->getId(),
                 'scaleIndex' => $comment->getScaleIndex(),
@@ -67,29 +64,23 @@ class SoaScaleCommentService
         return $result;
     }
 
-    public function createOrHideSoaScaleComment(Anr $anr, array $data): void
+    public function createOrHideSoaScaleComments(Anr $anr, array $data): void
     {
         $soaScaleComments = $this->soaScaleCommentTable->findByAnrOrderByIndex($anr);
-        $numberOfCurrentComments = \count($soaScaleComments);
 
         if (isset($data['numberOfLevels'])) {
             $levelsNumber = (int)$data['numberOfLevels'];
             foreach ($soaScaleComments as $soaScaleComment) {
-                if ($soaScaleComment->getScaleIndex() < $levelsNumber) {
-                    $soaScaleComment->setIsHidden(false);
-                } else {
-                    $soaScaleComment->setIsHidden(true);
-                }
+                $soaScaleComment
+                    ->setIsHidden($soaScaleComment->getScaleIndex() >= $levelsNumber)
+                    ->setUpdater($this->connectedUser->getEmail());
                 $this->soaScaleCommentTable->save($soaScaleComment, false);
             }
+            $numberOfCurrentComments = \count($soaScaleComments);
             if ($levelsNumber > $numberOfCurrentComments) {
-                $languageCodes = $this->getLanguageCodesForTranslations($anr);
-                for ($i=$numberOfCurrentComments; $i < $levelsNumber; $i++) {
-                    $this->createSoaScaleComment(
-                        $anr,
-                        $i,
-                        $languageCodes
-                    );
+                $languageCodes = $this->configService->getActiveLanguageCodes();
+                for ($i = $numberOfCurrentComments; $i < $levelsNumber; $i++) {
+                    $this->createSoaScaleComment($anr, $i, $languageCodes);
                 }
             }
 
@@ -97,113 +88,69 @@ class SoaScaleCommentService
         }
     }
 
-    public function update(int $id, array $data): void
+    public function update(Anr $anr, int $id, array $data): void
     {
         /** @var SoaScaleComment $soaScaleComment */
-        $soaScaleComment = $this->soaScaleCommentTable->findById($id);
+        $soaScaleComment = $this->soaScaleCommentTable->findByIdAndAnr($id, $anr);
 
-        if (!empty($data['comment'])) {
-            $languageCode = $data['language'] ?? $this->getLanguageCode($soaScaleComment->getAnr());
-            $translationKey = $soaScaleComment->getCommentTranslationKey();
+        if (isset($data['comment'])) {
+            $languageCode = $data['language'];
+            $translationKey = $soaScaleComment->getLabelTranslationKey();
             if (!empty($translationKey)) {
-                $translation = $this->translationTable
-                    ->findByAnrKeyAndLanguage($soaScaleComment->getAnr(), $translationKey, $languageCode);
-                $translation->setValue($data['comment']);
+                $translation = $this->translationTable->findByAnrKeyAndLanguage($anr, $translationKey, $languageCode);
+                $translation->setValue($data['comment'])->setUpdater($this->connectedUser->getEmail());
                 $this->translationTable->save($translation, false);
             }
         }
         if (!empty($data['colour'])) {
-            $soaScaleComment->setColour($data['colour']);
+            $soaScaleComment->setColour($data['colour'])->setUpdater($this->connectedUser->getEmail());
         }
 
         $this->soaScaleCommentTable->save($soaScaleComment);
     }
 
-    public function getSoaScaleCommentsDataById(Anr $anr, string $language = null): array
+    protected function createSoaScaleComment(Anr $anr, int $scaleIndex, array $languageCodes): void
     {
-        $result = [];
-        $soaScaleComments = $this->soaScaleCommentTable->findByAnrOrderByIndex($anr);
-        if ($language === null) {
-            $language = $this->getLanguageCode($anr);
-        }
-
-        $translations = $this->translationTable->findByAnrTypesAndLanguageIndexedByKey(
-            $anr,
-            [TranslationSuperClass::SOA_SCALE_COMMENT],
-            $language
-        );
-
-        foreach ($soaScaleComments as $comment) {
-            $translationComment = $translations[$comment->getCommentTranslationKey()] ?? null;
-            $result[$comment->getId()] = [
-               'id' => $comment->getId(),
-               'scaleIndex' => $comment->getScaleIndex(),
-               'colour' => $comment->getColour(),
-               'comment' => $translationComment !== null ? $translationComment->getValue() : '',
-               'isHidden' => $comment->isHidden(),
-            ];
-        }
-
-        return $result;
-    }
-
-    protected function createSoaScaleComment(
-        AnrSuperClass $anr,
-        int $scaleIndex,
-        array $languageCodes,
-        bool $isFlushable = false
-    ): void {
         $scaleComment = (new SoaScaleComment())
+            ->setLabelTranslationKey((string)Uuid::uuid4())
             ->setAnr($anr)
             ->setScaleIndex($scaleIndex)
             ->setColour('')
             ->setIsHidden(false)
-            ->setCommentTranslationKey((string)Uuid::uuid4())
             ->setCreator($this->connectedUser->getEmail());
 
         $this->soaScaleCommentTable->save($scaleComment, false);
 
         foreach ($languageCodes as $languageCode) {
             // Create a translation for the scaleComment (init with blank value).
-            $translation = $this->createTranslationObject(
+            $this->createTranslationObject(
                 $anr,
                 TranslationSuperClass::SOA_SCALE_COMMENT,
-                $scaleComment->getCommentTranslationKey(),
+                $scaleComment->getLabelTranslationKey(),
                 $languageCode,
                 ''
             );
-
-            $this->translationTable->save($translation, false);
-        }
-
-        if ($isFlushable) {
-            $this->soaScaleCommentTable->flush();
         }
     }
 
     protected function createTranslationObject(
-        AnrSuperClass $anr,
+        Anr $anr,
         string $type,
         string $key,
         string $lang,
         string $value
-    ): TranslationSuperClass {
-        return (new Translation())
+    ): Translation {
+        $translation = (new Translation())
             ->setAnr($anr)
             ->setType($type)
             ->setKey($key)
             ->setLang($lang)
             ->setValue($value)
             ->setCreator($this->connectedUser->getEmail());
-    }
 
-    protected function getLanguageCode(AnrSuperClass $anr): string
-    {
-        return $this->configService->getActiveLanguageCodes()[$this->connectedUser->getLanguage()];
-    }
+        $this->translationTable->save($translation, false);
 
-    protected function getLanguageCodesForTranslations(AnrSuperClass $anr): array
-    {
-        return $this->configService->getActiveLanguageCodes();
+        /** @var Translation */
+        return $translation;
     }
 }

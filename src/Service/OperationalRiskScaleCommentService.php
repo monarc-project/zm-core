@@ -7,54 +7,50 @@
 
 namespace Monarc\Core\Service;
 
-use Monarc\Core\Model\Entity\AnrSuperClass;
-use Monarc\Core\Model\Entity\OperationalRiskScaleCommentSuperClass;
+use Monarc\Core\Model\Entity\OperationalRiskScaleComment;
+use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Table\OperationalRiskScaleCommentTable;
 use Monarc\Core\Table\TranslationTable;
 
 class OperationalRiskScaleCommentService
 {
-    protected OperationalRiskScaleCommentTable $operationalRiskScaleCommentTable;
+    private OperationalRiskScaleCommentTable $operationalRiskScaleCommentTable;
 
-    protected TranslationTable $translationTable;
+    private TranslationTable $translationTable;
 
-    protected ConfigService $configService;
+    private UserSuperClass $connectedUser;
 
     public function __construct(
         OperationalRiskScaleCommentTable $operationalRiskScaleCommentTable,
         TranslationTable $translationTable,
-        ConfigService $configService
+        ConnectedUserService $connectedUserService
     ) {
         $this->operationalRiskScaleCommentTable = $operationalRiskScaleCommentTable;
         $this->translationTable = $translationTable;
-        $this->configService = $configService;
+        $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
-    public function update(int $id, array $data): int
+    public function update(int $id, array $data): OperationalRiskScaleComment
     {
-        /** @var OperationalRiskScaleCommentSuperClass $operationalRiskScaleComment */
+        /** @var OperationalRiskScaleComment $operationalRiskScaleComment */
         $operationalRiskScaleComment = $this->operationalRiskScaleCommentTable->findById($id);
 
         if (isset($data['scaleValue'])) {
             $operationalRiskScaleComment->setScaleValue((int)$data['scaleValue']);
         }
 
-        if (!empty($data['comment'])) {
+        if (isset($data['comment'])) {
             $translation = $this->translationTable->findByAnrKeyAndLanguage(
                 $operationalRiskScaleComment->getAnr(),
-                $operationalRiskScaleComment->getCommentTranslationKey(),
-                $this->getLanguageCode($operationalRiskScaleComment->getAnr(), $data)
+                $operationalRiskScaleComment->getLabelTranslationKey(),
+                $data['language'] ?? 'fr'
             );
-            $translation->setValue($data['comment']);
+            $translation->setValue($data['comment'])->setUpdater($this->connectedUser->getEmail());
+
             $this->translationTable->save($translation, false);
         }
         $this->operationalRiskScaleCommentTable->save($operationalRiskScaleComment);
 
-        return $operationalRiskScaleComment->getId();
-    }
-
-    protected function getLanguageCode(AnrSuperClass $anr, array $data): string
-    {
-        return $data['language'] ?? 'fr';
+        return $operationalRiskScaleComment;
     }
 }

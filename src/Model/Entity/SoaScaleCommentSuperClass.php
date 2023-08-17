@@ -51,13 +51,6 @@ class SoaScaleCommentSuperClass
     protected $scaleIndex;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="comment_translation_key", type="string", length=255, options={"default": ""})
-     */
-    protected $commentTranslationKey = '';
-
-    /**
      * @var int
      *
      * @ORM\Column(name="is_hidden", type="smallint", options={"default": 0})
@@ -70,15 +63,6 @@ class SoaScaleCommentSuperClass
      * @ORM\Column(name="colour", type="string", length=255, options={"default": ""})
      */
     protected $colour = '';
-
-    public static function constructFromObject(SoaScaleCommentSuperClass $soaScaleComment): SoaScaleCommentSuperClass
-    {
-        return (new static())
-            ->setScaleIndex($soaScaleComment->getScaleIndex())
-            ->setCommentTranslationKey($soaScaleComment->getCommentTranslationKey())
-            ->setIsHidden($soaScaleComment->isHidden())
-            ->setColour($soaScaleComment->getColour());
-    }
 
     /**
      * @return int
@@ -108,18 +92,6 @@ class SoaScaleCommentSuperClass
     public function setScaleIndex(int $scaleIndex): self
     {
         $this->scaleIndex = $scaleIndex;
-
-        return $this;
-    }
-
-    public function getCommentTranslationKey(): string
-    {
-        return $this->commentTranslationKey;
-    }
-
-    public function setCommentTranslationKey(string $commentTranslationKey): self
-    {
-        $this->commentTranslationKey = $commentTranslationKey;
 
         return $this;
     }

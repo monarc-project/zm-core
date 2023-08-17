@@ -55,6 +55,13 @@ class AmvSuperClass implements PositionedEntityInterface
     protected $anr;
 
     /**
+     * @var InstanceRiskSuperClass[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="InstanceRisk", mappedBy="amv")
+     */
+    protected $instanceRisks;
+
+    /**
      * @var AssetSuperClass
      *
      * @ORM\ManyToOne(targetEntity="Asset", cascade={"persist"})
@@ -107,6 +114,7 @@ class AmvSuperClass implements PositionedEntityInterface
 
     public function __construct()
     {
+        $this->instanceRisks = new ArrayCollection();
         $this->measures = new ArrayCollection();
     }
 
@@ -157,6 +165,31 @@ class AmvSuperClass implements PositionedEntityInterface
     public function setAnr(AnrSuperClass $anr): self
     {
         $this->anr = $anr;
+
+        return $this;
+    }
+
+    public function getInstanceRisks()
+    {
+        return $this->instanceRisks;
+    }
+
+    public function addInstanceRisk(InstanceRiskSuperClass $instanceRisk): self
+    {
+        if (!$this->instanceRisks->contains($instanceRisk)) {
+            $this->instanceRisks->add($instanceRisk);
+            $instanceRisk->setAmv($this);
+        }
+
+        return $this;
+    }
+
+    public function removeInstanceRisk(InstanceRiskSuperClass $instanceRisk): self
+    {
+        if ($this->instanceRisks->contains($instanceRisk)) {
+            $this->instanceRisks->removeElement($instanceRisk);
+            $instanceRisk->setAmv(null);
+        }
 
         return $this;
     }

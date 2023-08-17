@@ -8,6 +8,7 @@
 namespace Monarc\Core\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Monarc\Core\Model\Entity\Traits\LabelTranslationKeyEntityTrait;
 
 /**
  * @ORM\Table(name="anr_instance_metadata_fields", indexes={
@@ -17,4 +18,10 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class AnrInstanceMetadataField extends AnrInstanceMetadataFieldSuperClass
 {
+    use LabelTranslationKeyEntityTrait;
+
+    public static function constructFromObject(AnrInstanceMetadataField $anrInstanceMetadataField): self
+    {
+        return (new self())->setLabelTranslationKey($anrInstanceMetadataField->getLabelTranslationKey());
+    }
 }

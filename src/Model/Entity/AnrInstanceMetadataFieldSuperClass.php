@@ -42,20 +42,6 @@ class AnrInstanceMetadataFieldSuperClass
      */
     protected $anr;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label_translation_key", type="string", length=255, nullable=false, options={"default": ""})
-     */
-    protected $labelTranslationKey = '';
-
-
-    public static function constructFromObject(
-        AnrInstanceMetadataFieldSuperClass $anrInstanceMetadataField
-    ): AnrInstanceMetadataFieldSuperClass {
-        return (new static())->setLabelTranslationKey($anrInstanceMetadataField->getLabelTranslationKey());
-    }
-
     public function getId()
     {
         return $this->id;
@@ -69,18 +55,6 @@ class AnrInstanceMetadataFieldSuperClass
     public function setAnr(AnrSuperClass $anr): self
     {
         $this->anr = $anr;
-
-        return $this;
-    }
-
-    public function getLabelTranslationKey(): string
-    {
-        return $this->labelTranslationKey;
-    }
-
-    public function setLabelTranslationKey(string $labelTranslationKey): self
-    {
-        $this->labelTranslationKey = $labelTranslationKey;
 
         return $this;
     }

@@ -451,10 +451,9 @@ class AnrService
     {
         /** @var Entity\AnrInstanceMetadataField $anrInstanceMetadataField */
         foreach ($this->anrInstanceMetadataFieldTable->findByAnr($anr) as $anrInstanceMetadataField) {
-            $newAnrInstanceMetadataField = Entity\AnrInstanceMetadataField
-                ::constructFromObject($anrInstanceMetadataField)
-                ->setAnr($newAnr)
-                ->setCreator($this->connectedUser->getEmail());
+            $newAnrInstanceMetadataField = Entity\AnrInstanceMetadataField::constructFromObject(
+                $anrInstanceMetadataField
+            )->setAnr($newAnr)->setCreator($this->connectedUser->getEmail());
 
             $this->anrInstanceMetadataFieldTable->save($newAnrInstanceMetadataField, false);
         }

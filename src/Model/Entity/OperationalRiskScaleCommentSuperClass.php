@@ -77,28 +77,11 @@ class OperationalRiskScaleCommentSuperClass
     protected $scaleIndex;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="comment_translation_key", type="string", length=255, options={"default": ""})
-     */
-    protected $commentTranslationKey = '';
-
-    /**
      * @var int
      *
      * @ORM\Column(name="is_hidden", type="smallint", options={"default": 0})
      */
     protected $isHidden = 0;
-
-    public static function constructFromObject(
-        OperationalRiskScaleCommentSuperClass $operationalRiskScaleComment
-    ): OperationalRiskScaleCommentSuperClass {
-        return (new static())
-            ->setScaleValue($operationalRiskScaleComment->getScaleValue())
-            ->setScaleIndex($operationalRiskScaleComment->getScaleIndex())
-            ->setCommentTranslationKey($operationalRiskScaleComment->getCommentTranslationKey())
-            ->setIsHidden($operationalRiskScaleComment->isHidden());
-    }
 
     public function getId()
     {
@@ -163,18 +146,6 @@ class OperationalRiskScaleCommentSuperClass
     public function setScaleValue(int $scaleValue): self
     {
         $this->scaleValue = $scaleValue;
-
-        return $this;
-    }
-
-    public function getCommentTranslationKey(): string
-    {
-        return $this->commentTranslationKey;
-    }
-
-    public function setCommentTranslationKey(string $commentTranslationKey): self
-    {
-        $this->commentTranslationKey = $commentTranslationKey;
 
         return $this;
     }

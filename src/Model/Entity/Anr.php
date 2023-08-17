@@ -16,6 +16,9 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Anr extends AnrSuperClass
 {
+    use Traits\LabelsEntityTrait;
+    use Traits\DescriptionsEntityTrait;
+
     /**
      * @var Model
      *
@@ -46,6 +49,19 @@ class Anr extends AnrSuperClass
     {
         $this->objects = new ArrayCollection();
         $this->objectCategories = new ArrayCollection();
+    }
+
+    /**
+     * @param Anr $anr
+     *
+     * @return Anr
+     */
+    public static function constructFromObject(AnrSuperClass $anr): AnrSuperClass
+    {
+        /** @var Anr $newAnr */
+        $newAnr = parent::constructFromObject($anr);
+
+        return $newAnr->setLabels($anr->getLabels())->setDescriptions($anr->getDescriptions());
     }
 
     public function setModel(Model $model): self

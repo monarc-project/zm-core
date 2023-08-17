@@ -235,5 +235,13 @@ class FixPositionsCleanupDb extends AbstractMigration
             ->removeColumn('targeted_p')
             ->update();
         $this->table('instance_risk_owners')->drop()->update();
+
+        /* Rename the translation related fields to align the names. */
+        $this->table('soa_scale_comments')
+            ->renameColumn('comment_translation_key', 'label_translation_key')
+            ->update();
+        $this->table('operational_risks_scales_comments')
+            ->renameColumn('comment_translation_key', 'label_translation_key')
+            ->update();
     }
 }

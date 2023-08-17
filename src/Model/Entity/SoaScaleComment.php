@@ -8,6 +8,7 @@
 namespace Monarc\Core\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Monarc\Core\Model\Entity\Traits\LabelTranslationKeyEntityTrait;
 
 /**
  * @ORM\Table(name="soa_scale_comments")
@@ -15,4 +16,14 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class SoaScaleComment extends SoaScaleCommentSuperClass
 {
+    use LabelTranslationKeyEntityTrait;
+
+    public static function constructFromObject(SoaScaleComment $soaScaleComment): self
+    {
+        return (new self())
+            ->setScaleIndex($soaScaleComment->getScaleIndex())
+            ->setLabelTranslationKey($soaScaleComment->getLabelTranslationKey())
+            ->setIsHidden($soaScaleComment->isHidden())
+            ->setColour($soaScaleComment->getColour());
+    }
 }

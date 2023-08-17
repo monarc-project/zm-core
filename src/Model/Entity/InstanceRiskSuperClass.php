@@ -215,16 +215,9 @@ class InstanceRiskSuperClass
             ->setCacheTargetedRisk($instanceRisk->getCacheTargetedRisk());
     }
 
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
-    }
-
-    public function setId($id): self
-    {
-        $this->id = $id;
-
-        return $this;
     }
 
     // TODO: the nullable value is added for the multi-fields relation issue (when we remove a relation, e.g. amv).
@@ -260,6 +253,11 @@ class InstanceRiskSuperClass
 
     public function setAmv(?AmvSuperClass $amv): self
     {
+        if ($amv !== null) {
+            $amv->addInstanceRisk($this);
+        } elseif ($this->amv !== null) {
+            $this->amv->removeInstanceRisk($this);
+        }
         $this->amv = $amv;
 
         return $this;

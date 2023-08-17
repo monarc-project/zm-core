@@ -54,7 +54,6 @@ class OperationalRiskScaleTypeSuperClass
      */
     protected $operationalRiskScale;
 
-
     /**
      * @var OperationalRiskScaleCommentSuperClass[]|ArrayCollection
      *
@@ -71,13 +70,6 @@ class OperationalRiskScaleTypeSuperClass
     protected $operationalInstanceRiskScales;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="label_translation_key", type="string", length=255)
-     */
-    protected $labelTranslationKey;
-
-    /**
      * @var int
      *
      * @ORM\Column(name="is_hidden", type="smallint", options={"default": 0})
@@ -88,14 +80,6 @@ class OperationalRiskScaleTypeSuperClass
     {
         $this->operationalRiskScaleComments = new ArrayCollection();
         $this->operationalInstanceRiskScales = new ArrayCollection();
-    }
-
-    public static function constructFromObject(
-        OperationalRiskScaleTypeSuperClass $operationalRiskScaleType
-    ): OperationalRiskScaleTypeSuperClass {
-        return (new static())
-            ->setLabelTranslationKey($operationalRiskScaleType->getLabelTranslationKey())
-            ->setIsHidden($operationalRiskScaleType->isHidden());
     }
 
     public function getId(): int
@@ -147,18 +131,6 @@ class OperationalRiskScaleTypeSuperClass
     public function getOperationalInstanceRiskScales()
     {
         return $this->operationalInstanceRiskScales;
-    }
-
-    public function getLabelTranslationKey(): string
-    {
-        return $this->labelTranslationKey;
-    }
-
-    public function setLabelTranslationKey(string $labelTranslationKey): self
-    {
-        $this->labelTranslationKey = $labelTranslationKey;
-
-        return $this;
     }
 
     public function isHidden(): bool

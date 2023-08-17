@@ -226,15 +226,12 @@ class ObjectSuperClass implements PositionedEntityInterface
     {
         $this->trackPropertyState('category', $this->category);
 
-        if ($category === null) {
-            if ($this->category !== null) {
-                $this->category->removeObject($this);
-            }
-            $this->category = null;
-        } else {
-            $this->category = $category;
+        if ($category !== null) {
             $category->addObject($this);
+        } elseif ($this->category !== null) {
+            $this->category->removeObject($this);
         }
+        $this->category = $category;
 
         return $this;
     }
