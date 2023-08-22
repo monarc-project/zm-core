@@ -76,6 +76,13 @@ class AssetSuperClass
     protected $objects;
 
     /**
+     * @var ArrayCollection|InstanceSuperClass[]
+     *
+     * @ORM\OneToMany(targetEntity="Instance", mappedBy="asset")
+     */
+    protected $instances;
+
+    /**
      * @var int
      *
      * @ORM\Column(name="status", type="smallint", options={"unsigned":true, "default":1})
@@ -107,6 +114,7 @@ class AssetSuperClass
     {
         $this->amvs = new ArrayCollection();
         $this->objects = new ArrayCollection();
+        $this->instances = new ArrayCollection();
     }
 
     /**
@@ -193,6 +201,35 @@ class AssetSuperClass
     {
         if ($this->objects->contains($object)) {
             $this->objects->removeElement($object);
+        }
+
+        return $this;
+    }
+
+    public function getInstances()
+    {
+        return $this->instances;
+    }
+
+    public function hasInstances(): bool
+    {
+        return !$this->instances->isEmpty();
+    }
+
+    public function addInstance(InstanceSuperClass $instance): self
+    {
+        if (!$this->instances->contains($instance)) {
+            $this->instances->add($instance);
+            $instance->setAsset($this);
+        }
+
+        return $this;
+    }
+
+    public function removeInstance(InstanceSuperClass $instance): self
+    {
+        if ($this->instances->contains($instance)) {
+            $this->instances->removeElement($instance);
         }
 
         return $this;

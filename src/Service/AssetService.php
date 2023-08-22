@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -156,7 +156,6 @@ class AssetService
         $this->assetTable->save($asset);
     }
 
-
     public function delete(string $uuid): void
     {
         $asset = $this->assetTable->findByUuid($uuid);
@@ -171,7 +170,7 @@ class AssetService
         $this->assetTable->removeList($assets);
     }
 
-    public function prepareAssetDataResult(Entity\Asset $asset): array
+    private function prepareAssetDataResult(Entity\Asset $asset): array
     {
         $models = [];
         foreach ($asset->getModels() as $model) {
@@ -180,22 +179,14 @@ class AssetService
             ];
         }
 
-        return [
+        return array_merge($asset->getLabels(), $asset->getDescriptions(), [
             'uuid' => $asset->getUuid(),
             'code' => $asset->getCode(),
-            'label1' => $asset->getLabel(1),
-            'label2' => $asset->getLabel(2),
-            'label3' => $asset->getLabel(3),
-            'label4' => $asset->getLabel(4),
-            'description1' => $asset->getDescription(1),
-            'description2' => $asset->getDescription(2),
-            'description3' => $asset->getDescription(3),
-            'description4' => $asset->getDescription(4),
             'type' => $asset->getType(),
             'status' => $asset->getStatus(),
             'mode' => $asset->getMode(),
             'models' => $models,
-        ];
+        ]);
     }
 
     private function validateAssetObjects(Entity\Asset $asset): void

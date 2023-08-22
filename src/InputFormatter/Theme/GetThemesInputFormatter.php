@@ -1,14 +1,13 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
 namespace Monarc\Core\InputFormatter\Theme;
 
 use Monarc\Core\InputFormatter\AbstractInputFormatter;
-use Monarc\Core\Service\ConnectedUserService;
 
 class GetThemesInputFormatter extends AbstractInputFormatter
 {
@@ -18,9 +17,4 @@ class GetThemesInputFormatter extends AbstractInputFormatter
         'label3',
         'label4',
     ];
-
-    public function __construct(ConnectedUserService $connectedUserService)
-    {
-        $this->setDefaultLanguageIndex($connectedUserService->getConnectedUser()->getLanguage());
-    }
 }

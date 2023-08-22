@@ -93,19 +93,6 @@ class InstanceTable extends AbstractTable implements PositionUpdatableTableInter
         return $queryBuilder->getQuery()->getOneOrNullResult();
     }
 
-    /**
-     * @return InstanceSuperClass[]
-     */
-    public function findByAsset(AssetSuperClass $asset): array
-    {
-        return $this->getRepository()
-            ->createQueryBuilder('i')
-            ->where('i.asset = :asset')
-            ->setParameter('asset', $asset)
-            ->getQuery()
-            ->getResult();
-    }
-
     public function findOneByAnrParentAndPosition(
         AnrSuperClass $anr,
         ?InstanceSuperClass $parentInstance,

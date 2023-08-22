@@ -114,11 +114,16 @@ class InstanceRiskSuperClass
     protected $specific = 0;
 
     /**
+     * The field is to mark if the threatRate value is not set or is modified externally.
+     * 1 - means that the threatRate values is not set yet of set from the "Threats assessment" menu,
+     * for all the instance risks that are composed with the threat.
+     * 0 - means the value is set manually on the risks table.
+     *
      * @var int
      *
      * @ORM\Column(name="mh", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $mh = 1;
+    protected $isThreatRateNotSetOrModifiedExternally = 1;
 
     /**
      * @var int
@@ -201,7 +206,7 @@ class InstanceRiskSuperClass
     {
         return (new static())
             ->setSpecific($instanceRisk->getSpecific())
-            ->setMh($instanceRisk->getMh())
+            ->setIsThreatRateNotSetOrModifiedExternally($instanceRisk->IsThreatRateNotSetOrModifiedExternally())
             ->setThreatRate($instanceRisk->getThreatRate())
             ->setVulnerabilityRate($instanceRisk->getVulnerabilityRate())
             ->setKindOfMeasure($instanceRisk->getKindOfMeasure())
@@ -424,16 +429,16 @@ class InstanceRiskSuperClass
         }
     }
 
-    public function setMh(int $mh): self
+    public function setIsThreatRateNotSetOrModifiedExternally(bool $isThreatRateNotSetOrModifiedExternally): self
     {
-        $this->mh = $mh;
+        $this->isThreatRateNotSetOrModifiedExternally = (int)$isThreatRateNotSetOrModifiedExternally;
 
         return $this;
     }
 
-    public function getMh(): int
+    public function IsThreatRateNotSetOrModifiedExternally(): bool
     {
-        return (int)$this->mh;
+        return (bool)$this->isThreatRateNotSetOrModifiedExternally;
     }
 
     public function getCacheMaxRisk(): int

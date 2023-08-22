@@ -7,18 +7,25 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Doctrine\ORM\EntityNotFoundException;
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\Entity\Referential;
 use Monarc\Core\Service\ConnectedUserService;
 
-/**
- * Class ReferentialTable
- * @package Monarc\Core\Model\Table
- */
 class ReferentialTable extends AbstractEntityTable
 {
     public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
     {
         parent::__construct($dbService, Referential::class, $connectedUserService);
+    }
+
+    public function findByUuid(string $uuid): Referential
+    {
+        $referential = $this->getRepository()->find($uuid);
+        if ($referential === null) {
+            throw new EntityNotFoundException(sprintf('Referential with uuid "%s" was not found', $uuid));
+        }
+
+        return $referential;
     }
 }

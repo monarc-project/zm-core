@@ -19,7 +19,7 @@ abstract class AbstractInputFormatter
 
     protected const DEFAULT_FILTER_OPERATOR = Comparison::EQ;
 
-    protected const DEFAULT_LIMIT = 20;
+    protected const DEFAULT_LIMIT = 0;
 
     /** Formatted params response type. */
     protected ?FormattedInputParams $formattedInputParams = null;

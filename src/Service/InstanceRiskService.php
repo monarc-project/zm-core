@@ -25,8 +25,6 @@ class InstanceRiskService
 
     private Entity\UserSuperClass $connectedUser;
 
-    protected array $cachedData = [];
-
     public function __construct(
         Table\InstanceRiskTable $instanceRiskTable,
         Table\InstanceTable $instanceTable,
@@ -40,49 +38,55 @@ class InstanceRiskService
     }
 
     public function createInstanceRisks(
-        Entity\InstanceSuperClass $instance,
-        Entity\ObjectSuperClass $object,
-        array $params = [],
+        Entity\Instance $instance,
+        Entity\MonarcObject $monarcObject,
         bool $saveInDb = true
     ): void {
         $otherInstance = $this->instanceTable
-            ->findOneByAnrAndObjectExcludeInstance($instance->getAnr(), $object, $instance);
+            ->findOneByAnrAndObjectExcludeInstance($instance->getAnr(), $monarcObject, $instance);
 
-        if ($otherInstance !== null && $object->isScopeGlobal()) {
+        if ($otherInstance !== null && $monarcObject->isScopeGlobal()) {
             foreach ($otherInstance->getInstanceRisks() as $instanceRisk) {
-                $newInstanceRisk = $this->getConstructedFromObjectInstanceRisk($instanceRisk)
-                    ->setAnr($instance->getAnr())
-                    ->setInstance($instance)
-                    ->setAsset($instanceRisk->getAsset())
-                    ->setThreat($instanceRisk->getThreat())
-                    ->setVulnerability($instanceRisk->getVulnerability())
-                    ->setAmv($instanceRisk->getAmv())
-                    ->setCreator($this->connectedUser->getEmail());
-
-                $this->recalculateRiskRates($newInstanceRisk, false);
-
-                $this->instanceRiskTable->save($newInstanceRisk, false);
+                /** @var Entity\Amv $amv */
+                $amv = $instanceRisk->getAmv();
+                $this->createInstanceRisk($instance, $amv, $instanceRisk);
             }
         } else {
-            foreach ($object->getAsset()->getAmvs() as $amv) {
-                $instanceRisk = $this->createInstanceRiskObject()
-                    ->setAnr($instance->getAnr())
-                    ->setInstance($instance)
-                    ->setAmv($amv)
-                    ->setAsset($amv->getAsset())
-                    ->setThreat($amv->getThreat())
-                    ->setVulnerability($amv->getVulnerability())
-                    ->setCreator($this->connectedUser->getEmail());
-
-                $this->instanceRiskTable->save($instanceRisk, false);
-
-                $this->recalculateRiskRates($instanceRisk, false);
+            foreach ($monarcObject->getAsset()->getAmvs() as $amv) {
+                $this->createInstanceRisk($instance, $amv);
             }
         }
 
         if ($saveInDb) {
             $this->instanceRiskTable->flush();
         }
+    }
+
+    public function createInstanceRisk(
+        Entity\Instance $instance,
+        Entity\Amv $amv,
+        ?Entity\InstanceRisk $fromInstanceRisk = null,
+        bool $saveInDb = false
+    ): Entity\InstanceRisk {
+        $instanceRisk = $fromInstanceRisk !== null
+            ? $this->getConstructedFromObjectInstanceRisk($fromInstanceRisk)
+            : $this->createInstanceRiskObject();
+
+        /** @var Entity\InstanceRisk $instanceRisk */
+        $instanceRisk
+            ->setAnr($instance->getAnr())
+            ->setInstance($instance)
+            ->setAmv($amv)
+            ->setAsset($amv->getAsset())
+            ->setThreat($amv->getThreat())
+            ->setVulnerability($amv->getVulnerability())
+            ->setCreator($this->connectedUser->getEmail());
+
+        $this->recalculateRiskRates($instanceRisk, $saveInDb);
+
+        $this->instanceRiskTable->save($instanceRisk, $saveInDb);
+
+        return $instanceRisk;
     }
 
     public function getInstanceRisks(Entity\AnrSuperClass $anr, ?int $instanceId, array $params = []): array
@@ -103,14 +107,17 @@ class InstanceRiskService
             $threat = $instanceRisk->getThreat();
             $vulnerability = $instanceRisk->getVulnerability();
             $key = 'r' . $instanceRisk->getId();
-            $isInstanceRiskHasToBeSet = true;
+            $shouldInstanceRiskBeAddedToResults = true;
             if ($object->isScopeGlobal()) {
                 $key = 'o' . $object->getUuid() . '-' . $threat->getUuid() . '-' . $vulnerability->getUuid();
                 if (isset($result[$key])) {
-                    $isInstanceRiskHasToBeSet = $this->shouldInstanceRiskBeAddedToResults($instanceRisk, $result[$key]);
+                    $shouldInstanceRiskBeAddedToResults = $this->shouldInstanceRiskBeAddedToResults(
+                        $instanceRisk,
+                        $result[$key]
+                    );
                 }
             }
-            if (!$object->isScopeGlobal() || $isInstanceRiskHasToBeSet) {
+            if (!$object->isScopeGlobal() || $shouldInstanceRiskBeAddedToResults) {
                 $result[$key] = $this->addCustomFieldsToInstanceRiskResult($instanceRisk, [
                     'id' => $instanceRisk->getId(),
                     'oid' => $object->getUuid(),
@@ -273,12 +280,6 @@ class InstanceRiskService
         );
 
         $this->instanceRiskTable->save($instanceRisk, $saveInDb);
-    }
-
-    protected function duplicateRecommendationRisk(
-        Entity\InstanceRiskSuperClass $instanceRisk,
-        Entity\InstanceRiskSuperClass $newInstanceRisk
-    ): void {
     }
 
     protected function getConstructedFromObjectInstanceRisk(

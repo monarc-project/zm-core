@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -23,8 +23,6 @@ class AmvService implements PositionUpdatableServiceInterface
 
     private Table\AmvTable $amvTable;
 
-    private Table\InstanceTable $instanceTable;
-
     private Table\AssetTable $assetTable;
 
     private Table\ThreatTable $threatTable;
@@ -45,17 +43,14 @@ class AmvService implements PositionUpdatableServiceInterface
 
     private ThreatService $threatService;
 
-    private ThemeService $themeService;
-
     private VulnerabilityService $vulnerabilityService;
 
     private InstanceRiskService $instanceRiskService;
 
-    private ConnectedUserService $connectedUserService;
+    private Entity\UserSuperClass $connectedUser;
 
     public function __construct(
         Table\AmvTable $amvTable,
-        Table\InstanceTable $instanceTable,
         Table\AssetTable $assetTable,
         Table\ThreatTable $threatTable,
         Table\VulnerabilityTable $vulnerabilityTable,
@@ -66,13 +61,11 @@ class AmvService implements PositionUpdatableServiceInterface
         HistoricalService $historicalService,
         AssetService $assetService,
         ThreatService $threatService,
-        ThemeService $themeService,
         VulnerabilityService $vulnerabilityService,
         InstanceRiskService $instanceRiskService,
         ConnectedUserService $connectedUserService
     ) {
         $this->amvTable = $amvTable;
-        $this->instanceTable = $instanceTable;
         $this->assetTable = $assetTable;
         $this->threatTable = $threatTable;
         $this->vulnerabilityTable = $vulnerabilityTable;
@@ -83,16 +76,14 @@ class AmvService implements PositionUpdatableServiceInterface
         $this->historicalService = $historicalService;
         $this->assetService = $assetService;
         $this->threatService = $threatService;
-        $this->themeService = $themeService;
         $this->vulnerabilityService = $vulnerabilityService;
         $this->instanceRiskService = $instanceRiskService;
-        $this->connectedUserService = $connectedUserService;
+        $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
     public function getList(FormattedInputParams $params): array
     {
         $result = [];
-
         /** @var Entity\Amv[] $amvs */
         $amvs = $this->amvTable->findByParams($params);
         foreach ($amvs as $amv) {
@@ -102,7 +93,7 @@ class AmvService implements PositionUpdatableServiceInterface
         return $result;
     }
 
-    public function getCount($params): int
+    public function getCount(FormattedInputParams $params): int
     {
         return $this->amvTable->countByParams($params);
     }
@@ -115,7 +106,7 @@ class AmvService implements PositionUpdatableServiceInterface
         return $this->prepareAmvDataResult($amv, true);
     }
 
-    public function create($data)
+    public function create(array $data): Entity\Amv
     {
         if ($this->amvTable->findByAmvItemsUuids($data['asset'], $data['threat'], $data['vulnerability']) !== null) {
             throw new Exception('The informational risk already exists.', 412);
@@ -132,14 +123,14 @@ class AmvService implements PositionUpdatableServiceInterface
             ->setAsset($asset)
             ->setThreat($threat)
             ->setVulnerability($vulnerability)
-            ->setCreator($this->connectedUserService->getConnectedUser()->getEmail());
+            ->setCreator($this->connectedUser->getEmail());
         if (isset($data['status'])) {
             $amv->setStatus($data['status']);
         }
 
         $this->validateAmvCompliesRequirements($amv);
 
-        foreach ($data['measures'] as $measureUuid) {
+        foreach ($data['measures'] ?? [] as $measureUuid) {
             $amv->addMeasure($this->measureTable->findByUuid($measureUuid));
         }
 
@@ -147,7 +138,7 @@ class AmvService implements PositionUpdatableServiceInterface
 
         $this->amvTable->save($amv);
 
-        $this->createInstanceRiskForInstances($asset);
+        $this->createInstanceRiskForInstances($asset, $amv);
 
         $this->historize(
             $amv,
@@ -158,10 +149,11 @@ class AmvService implements PositionUpdatableServiceInterface
             . ' / vulnerability => ' . $amv->getVulnerability()->getCode()
         );
 
-        return $amv->getUuid();
+        /** @var Entity\Amv */
+        return $amv;
     }
 
-    public function update(string $id, array $data)
+    public function update(string $id, array $data): Entity\Amv
     {
         /** @var Entity\Amv $amv */
         $amv = $this->amvTable->findByUuid($id);
@@ -197,7 +189,7 @@ class AmvService implements PositionUpdatableServiceInterface
             $amv->addMeasure($this->measureTable->findByUuid($measure));
         }
 
-        $amv->setUpdater($this->connectedUserService->getConnectedUser()->getEmail());
+        $amv->setUpdater($this->connectedUser->getEmail());
 
         $this->updatePositions($amv, $this->amvTable, $data);
 
@@ -211,9 +203,11 @@ class AmvService implements PositionUpdatableServiceInterface
         }
 
         $this->amvTable->save($amv);
+
+        return $amv;
     }
 
-    public function patch(string $id, array $data)
+    public function patch(string $id, array $data): Entity\Amv
     {
         /** @var Entity\Amv $amv */
         $amv = $this->amvTable->findByUuid($id);
@@ -222,12 +216,71 @@ class AmvService implements PositionUpdatableServiceInterface
             $amv->setStatus((int)$data['status']);
         }
 
-        $amv->setUpdater($this->connectedUserService->getConnectedUser()->getEmail());
+        $amv->setUpdater($this->connectedUser->getEmail());
 
         $this->amvTable->save($amv);
+
+        return $amv;
     }
 
-    public function delete($id)
+    /**
+     * Import of instance risks.
+     *
+     * @return string[] Created Amvs' uuids.
+     */
+    public function createAmvItems(array $data): array
+    {
+        $createdAmvsUuids = [];
+        foreach ($data as $amvData) {
+            if (!isset($amvData['asset']['uuid'], $amvData['threat']['uuid'], $amvData['vulnerability']['uuid'])
+                || $this->amvTable->findByAmvItemsUuids(
+                    $amvData['asset']['uuid'],
+                    $amvData['threat']['uuid'],
+                    $amvData['vulnerability']['uuid'],
+                ) !== null
+            ) {
+                continue;
+            }
+
+            $asset = $this->getOrCreateAssetObject($amvData['asset']);
+            $threat = $this->getOrCreateThreatObject($amvData['threat']);
+            $vulnerability = $this->getOrCreateVulnerabilityObject($amvData['vulnerability']);
+
+            $amv = (new Entity\Amv())
+                ->setAsset($asset)
+                ->setThreat($threat)
+                ->setVulnerability($vulnerability)
+                ->setCreator($this->connectedUser->getEmail());
+            $this->amvTable->save($amv);
+
+            $this->createInstanceRiskForInstances($asset, $amv);
+
+            $createdAmvsUuids[] = $amv->getUuid();
+        }
+
+        return $createdAmvsUuids;
+    }
+
+    /**
+     * Links amv of destination to source depending on the measures_measures (map referential).
+     */
+    public function createLinkedAmvs(string $sourceReferentialUuid, string $destinationReferentialUuid): void
+    {
+        $referential = $this->referentialTable->findByUuid($destinationReferentialUuid);
+        foreach ($referential->getMeasures() as $destinationMeasure) {
+            foreach ($destinationMeasure->getLinkedMeasures() as $measureLink) {
+                if ($measureLink->getReferential()->getUuid() === $sourceReferentialUuid) {
+                    foreach ($measureLink->getAmvs() as $amv) {
+                        $destinationMeasure->addAmv($amv);
+                    }
+                    $this->measureTable->save($destinationMeasure, false);
+                }
+            }
+        }
+        $this->measureTable->getDb()->flush();
+    }
+
+    public function delete(string $id): void
     {
         /** @var Entity\Amv $amv */
         $amv = $this->amvTable->findByUuid($id);
@@ -246,7 +299,7 @@ class AmvService implements PositionUpdatableServiceInterface
         $this->amvTable->remove($amv);
     }
 
-    public function deleteList($data)
+    public function deleteList(array $data): void
     {
         foreach ($data as $amvUuid) {
             $this->delete($amvUuid);
@@ -254,22 +307,105 @@ class AmvService implements PositionUpdatableServiceInterface
     }
 
     /**
-     * Function to link automatically the amv of the destination from the source depending on the measures_measures
+     * Ensure Assets Integrity If Enforced
      */
-    public function createLinkedAmvs($sourceUuid, $destination)
+    public function ensureAssetsIntegrityIfEnforced(
+        array $modelsIds,
+        ?Entity\Asset $asset = null,
+        ?Entity\Threat $threat = null,
+        ?Entity\Vulnerability $vulnerability = null
+    ): bool {
+        $amvs = $this->amvTable->findByAmv($asset, $threat, $vulnerability);
+        foreach ($amvs as $amv) {
+            /** @var Entity\Asset $asset */
+            $asset = $amv->getAsset();
+            if (!$this->checkModelsInstantiation($asset, $modelsIds)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Check Models Instantiation: Don't remove to an asset of specific model if it is linked to asset by an instance
+     * in an anr (by object).
+     */
+    public function checkModelsInstantiation(Entity\Asset $asset, array $newModelsIds): bool
     {
-        $destinationMeasures = $this->referentialTable->getEntity($destination)->getMeasures();
-        foreach ($destinationMeasures as $destinationMeasure) {
-            foreach ($destinationMeasure->getLinkedMeasures() as $measureLink) {
-                if ($measureLink->getReferential()->getUuid() === $sourceUuid) {
-                    foreach ($measureLink->getAmvs() as $amv) {
-                        $destinationMeasure->addAmv($amv);
-                    }
-                    $this->measureTable->save($destinationMeasure, false);
+        if ($asset->isModeSpecific() && $asset->hasInstances() && !$asset->getModels()->isEmpty()) {
+            $modelsIds = array_flip($newModelsIds);
+            foreach ($asset->getInstances() as $instance) {
+                /** @var Entity\Anr $anr */
+                $anr = $instance->getAnr();
+                if (!isset($modelsIds[$anr->getModel()->getId()])) {
+                    // Don't remove asset of specific model if linked to asset by instance, in anr by object.
+                    return false;
                 }
             }
         }
-        $this->measureTable->getDb()->flush();
+
+        return true;
+    }
+
+    /**
+     * Enforces Amv to follow evolution.
+     */
+    public function enforceAmvToFollow(
+        iterable $models,
+        ?Entity\Asset $asset = null,
+        ?Entity\Threat $threat = null,
+        ?Entity\Vulnerability $vulnerability = null
+    ): void {
+        if (empty($models)) {
+            return;
+        }
+        $amvs = $this->amvTable->findByAmv($asset, $threat, $vulnerability);
+        foreach ($amvs as $amv) {
+            foreach ($models as $model) {
+                $model->addAsset($amv->getAsset())
+                    ->addThreat($amv->getThreat())
+                    ->addVulnerability($amv->getVulnerability());
+                $this->modelTable->save($model, false);
+            }
+        }
+        $this->modelTable->flush();
+    }
+
+    /**
+     * Checks the AMV Integrity Level
+     *
+     * @param Entity\Model[] $models The models in which the AMV link will be applicable
+     * @param Entity\Asset|null $asset The asset
+     * @param Entity\Threat|null $threat The threat
+     * @param Entity\Vulnerability|null $vulnerability The vulnerability
+     * @param bool $follow Whether the AMV link follows changes
+     */
+    public function checkAmvIntegrityLevel(
+        array $models,
+        ?Entity\AssetSuperClass $asset = null,
+        ?Entity\ThreatSuperClass $threat = null,
+        ?Entity\VulnerabilitySuperClass $vulnerability = null,
+        bool $follow = false
+    ): bool {
+        $amvs = $this->amvTable->findByAmv($asset, $threat, $vulnerability);
+
+        foreach ($amvs as $amv) {
+            $assetModels = $asset || $follow ? $models : [];
+            $threatsModels = $threat || $follow ? $models : [];
+            $vulnerabilityModels = $vulnerability || $follow ? $models : [];
+            $this->validateAmvCompliesRequirements(
+                $amv,
+                $asset,
+                $assetModels,
+                $threat,
+                $threatsModels,
+                $vulnerability,
+                $vulnerabilityModels
+            );
+        }
+
+        return true;
     }
 
     /**
@@ -279,8 +415,8 @@ class AmvService implements PositionUpdatableServiceInterface
      * @param Entity\Model[]|int[] $threatModels
      * @param Entity\Model[]|int[] $vulnerabilityModels
      */
-    public function validateAmvCompliesRequirements(
-        Entity\AmvSuperClass $amv,
+    private function validateAmvCompliesRequirements(
+        Entity\Amv $amv,
         ?Entity\AssetSuperClass $asset = null,
         array $assetModels = [],
         ?Entity\ThreatSuperClass $threat = null,
@@ -443,118 +579,7 @@ class AmvService implements PositionUpdatableServiceInterface
         throw new Exception('Missing data', 412);
     }
 
-    /**
-     * Ensure Assets Integrity If Enforced
-     */
-    public function ensureAssetsIntegrityIfEnforced(
-        array $models,
-        ?Entity\AssetSuperClass $asset = null,
-        ?Entity\ThreatSuperClass $threat = null,
-        ?Entity\VulnerabilitySuperClass $vulnerability = null
-    ): bool {
-        $amvs = $this->amvTable->findByAmv($asset, $threat, $vulnerability);
-        foreach ($amvs as $amv) {
-            if (!$this->checkModelsInstantiation($amv->getAsset(), $models)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Check Models Instantiation: Don't remove to an asset of specific model if it is linked to asset by an instance
-     * in an anr (by object).
-     */
-    public function checkModelsInstantiation(Entity\Asset $asset, array $newModelsIds): bool
-    {
-        if ($asset->isModeSpecific() && !$asset->getModels()->isEmpty()) {
-            $instances = $this->instanceTable->findByAsset($asset);
-
-            if (!empty($instances)) {
-                $anrIds = [];
-                foreach ($instances as $instance) {
-                    $anrId = $instance->getAnr()->getId();
-                    $anrIds[$anrId] = $anrId;
-                }
-
-                if (!empty($anrIds)) {
-                    $modelsIds = array_flip($newModelsIds);
-                    $models = $this->modelTable->findByAnrIds($anrIds);
-                    foreach ($models as $model) {
-                        if (!isset($modelsIds[$model->getId()])) {
-                            // Don't remove asset of specific model if linked to asset by instance, in anr by object.
-                            return false;
-                        }
-                    }
-                }
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Enforces Amv to follow evolution.
-     */
-    public function enforceAmvToFollow(
-        iterable $models,
-        ?Entity\Asset $asset = null,
-        ?Entity\Threat $threat = null,
-        ?Entity\Vulnerability $vulnerability = null
-    ): void {
-        if (empty($models)) {
-            return;
-        }
-        $amvs = $this->amvTable->findByAmv($asset, $threat, $vulnerability);
-        foreach ($amvs as $amv) {
-            foreach ($models as $model) {
-                $model->addAsset($amv->getAsset())
-                    ->addThreat($amv->getThreat())
-                    ->addVulnerability($amv->getVulnerability());
-                $this->modelTable->save($model, false);
-            }
-        }
-        $this->modelTable->flush();
-    }
-
-    /**
-     * Checks the AMV Integrity Level
-     *
-     * @param Entity\Model[] $models The models in which the AMV link will be applicable
-     * @param Entity\Asset|null $asset The asset
-     * @param Entity\Threat|null $threat The threat
-     * @param Entity\Vulnerability|null $vulnerability The vulnerability
-     * @param bool $follow Whether the AMV link follows changes
-     */
-    public function checkAmvIntegrityLevel(
-        array $models,
-        ?Entity\AssetSuperClass $asset = null,
-        ?Entity\ThreatSuperClass $threat = null,
-        ?Entity\VulnerabilitySuperClass $vulnerability = null,
-        bool $follow = false
-    ): bool {
-        $amvs = $this->amvTable->findByAmv($asset, $threat, $vulnerability);
-
-        foreach ($amvs as $amv) {
-            $assetModels = $asset || $follow ? $models : [];
-            $threatsModels = $threat || $follow ? $models : [];
-            $vulnerabilityModels = $vulnerability || $follow ? $models : [];
-            $this->validateAmvCompliesRequirements(
-                $amv,
-                $asset,
-                $assetModels,
-                $threat,
-                $threatsModels,
-                $vulnerability,
-                $vulnerabilityModels
-            );
-        }
-
-        return true;
-    }
-
-    protected function historize(Entity\AmvSuperClass $amv, string $action, string $label, string $details)
+    private function historize(Entity\AmvSuperClass $amv, string $action, string $label, string $details): void
     {
         $this->historicalService->create([
             'type' => 'amv',
@@ -568,47 +593,14 @@ class AmvService implements PositionUpdatableServiceInterface
         ]);
     }
 
-    /**
-     * Creates the amv items (assets, threats, vulnerabilities) to use them for AMVs creation later.
-     */
-    public function createAmvItems(array $data): array
-    {
-        $createdItems = [];
-        foreach ($data as $amvItem) {
-            if (!isset($amvItem['asset']['uuid'], $amvItem['threat']['uuid'], $amvItem['vulnerability']['uuid'])
-                || $this->amvTable->findByAmvItemsUuids(
-                    $amvItem['asset']['uuid'],
-                    $amvItem['threat']['uuid'],
-                    $amvItem['vulnerability']['uuid'],
-                ) !== null
-            ) {
-                continue;
-            }
-
-            $asset = $this->getOrCreateAssetObject($amvItem['asset']);
-            $threat = $this->getOrCreateThreatObject($amvItem['threat']);
-            $vulnerability = $this->getOrCreateVulnerabilityObject($amvItem['vulnerability']);
-
-            $amv = (new Entity\Amv())
-                ->setAsset($asset)
-                ->setThreat($threat)
-                ->setVulnerability($vulnerability)
-                ->setCreator($this->connectedUserService->getConnectedUser()->getEmail());
-            $this->amvTable->save($amv);
-
-            $this->createInstanceRiskForInstances($asset);
-
-            $createdItems[] = $amv->getUuid();
-        }
-
-        return $createdItems;
-    }
-
     private function getOrCreateAssetObject(array $assetData): Entity\Asset
     {
         if (!empty($assetData['uuid'])) {
             try {
-                return $this->assetTable->findByUuid($assetData['uuid']);
+                /** @var Entity\Asset $asset */
+                $asset = $this->assetTable->findByUuid($assetData['uuid']);
+
+                return $asset;
             } catch (EntityNotFoundException $e) {
             }
         }
@@ -620,20 +612,16 @@ class AmvService implements PositionUpdatableServiceInterface
     {
         if (!empty($threatData['uuid'])) {
             try {
-                return $this->threatTable->findByUuid($threatData['uuid']);
+                /** @var Entity\Threat $threat */
+                $threat = $this->threatTable->findByUuid($threatData['uuid']);
+
+                return $threat;
             } catch (EntityNotFoundException $e) {
             }
         }
 
-        $labelKey = 'label1';
-        if (!empty($threatData['theme'][$labelKey])) {
-            $theme = $this->themeTable->findByLabel($labelKey, $threatData['theme'][$labelKey]);
-            if ($theme === null) {
-                $theme = $this->themeService->create($threatData['theme'], false);
-            }
-            $threatData['theme'] = $theme;
-        } else {
-            unset($threatData['theme']);
+        if (isset($threatData['theme'])) {
+            $threatData['theme'] = $this->themeTable->findById((int)$threatData['theme']);
         }
 
         return $this->threatService->create($threatData, false);
@@ -643,7 +631,10 @@ class AmvService implements PositionUpdatableServiceInterface
     {
         if (!empty($vulnerabilityData['uuid'])) {
             try {
-                return $this->vulnerabilityTable->findByUuid($vulnerabilityData['uuid']);
+                /** @var Entity\Vulnerability $vulnerability */
+                $vulnerability = $this->vulnerabilityTable->findByUuid($vulnerabilityData['uuid']);
+
+                return $vulnerability;
             } catch (EntityNotFoundException $e) {
             }
         }
@@ -724,11 +715,10 @@ class AmvService implements PositionUpdatableServiceInterface
         ];
     }
 
-    private function createInstanceRiskForInstances(Entity\AssetSuperClass $asset): void
+    private function createInstanceRiskForInstances(Entity\Asset $asset, Entity\Amv $amv): void
     {
-        $instances = $this->instanceTable->findByAsset($asset);
-        foreach ($instances as $instance) {
-            $this->instanceRiskService->createInstanceRisks($instance, $instance->getObject());
+        foreach ($asset->getInstances() as $instance) {
+            $this->instanceRiskService->createInstanceRisk($instance, $amv);
         }
     }
 }

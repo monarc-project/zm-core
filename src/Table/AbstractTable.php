@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2021 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -149,14 +149,14 @@ abstract class AbstractTable
 
     public function findByIdAndAnr(int $id, AnrSuperClass $anr, bool $throwErrorIfNotFound = true): ?object
     {
-         $entity = $this->getRepository()->createQueryBuilder('t')
-             ->where('t.id = :id')
-             ->andWhere('t.anr = :anr')
-             ->setParameter('id', $id)
-             ->setParameter('anr', $anr)
-             ->setMaxResults(1)
-             ->getQuery()
-             ->getOneOrNullResult();
+        $entity = $this->getRepository()->createQueryBuilder('t')
+            ->where('t.id = :id')
+            ->andWhere('t.anr = :anr')
+            ->setParameter('id', $id)
+            ->setParameter('anr', $anr)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
         if ($throwErrorIfNotFound && $entity === null) {
             throw new EntityNotFoundException(sprintf(
                 'Entity of type "%s", with ID %d was not found in analysis ID %d',
@@ -192,6 +192,23 @@ abstract class AbstractTable
 
         return $queryBuilder
             ->where($queryBuilder->expr()->in('t.uuid', $uuids))
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @param string[] $uuids
+     *
+     * @return object[]
+     */
+    public function findByUuidsAndAnr(array $uuids, AnrSuperClass $anr): array
+    {
+        $queryBuilder = $this->getRepository()->createQueryBuilder('t');
+
+        return $queryBuilder
+            ->where($queryBuilder->expr()->in('t.uuid', $uuids))
+            ->where('t.anr = :anr')
+            ->setParameter('anr', $anr)
             ->getQuery()
             ->getResult();
     }

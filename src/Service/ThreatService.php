@@ -74,6 +74,7 @@ class ThreatService
 
     public function create(array $data, bool $saveInDb = true): Entity\Threat
     {
+        /** @var Entity\Threat */
         $threat = (new Entity\Threat())
             ->setCode($data['code'])
             ->setLabels($data)
@@ -157,11 +158,9 @@ class ThreatService
             throw new Exception('Assets Integrity', 412);
         }
 
-        if (!empty($data['theme'])
-            && ($threat->getTheme() === null
-                || $threat->getTheme()->getId() !== (int)$data['theme']
-            )
-        ) {
+        if (!empty($data['theme']) && (
+            $threat->getTheme() === null || $threat->getTheme()->getId() !== (int)$data['theme']
+        )) {
             /** @var Entity\Theme $theme */
             $theme = $this->themeTable->findById((int)$data['theme']);
             $threat->setTheme($theme);
@@ -203,16 +202,16 @@ class ThreatService
 
     public function delete(string $uuid): void
     {
-        $vulnerability = $this->threatTable->findByUuid($uuid);
+        $threat = $this->threatTable->findByUuid($uuid);
 
-        $this->threatTable->remove($vulnerability);
+        $this->threatTable->remove($threat);
     }
 
     public function deleteList(array $data): void
     {
-        $vulnerabilities = $this->threatTable->findByUuids($data);
+        $threats = $this->threatTable->findByUuids($data);
 
-        $this->threatTable->removeList($vulnerabilities);
+        $this->threatTable->removeList($threats);
     }
 
     private function prepareThreatDataResult(Entity\Threat $threat): array
@@ -223,38 +222,26 @@ class ThreatService
                 'id' => $model->getId(),
             ];
         }
-        $theme = null;
+        $themeData = null;
         if ($threat->getTheme() !== null) {
-            $theme = [
+            $themeData = array_merge([
                 'id' => $threat->getTheme()->getId(),
-                'label1' => $threat->getTheme()->getLabel(1),
-                'label2' => $threat->getTheme()->getLabel(2),
-                'label3' => $threat->getTheme()->getLabel(3),
-                'label4' => $threat->getTheme()->getLabel(4),
-            ];
+            ], $threat->getTheme()->getLabels());
         }
 
-        return [
+        return array_merge($threat->getLabels(), $threat->getDescriptions(), [
             'uuid' => $threat->getUuid(),
             'code' => $threat->getCode(),
-            'label1' => $threat->getLabel(1),
-            'label2' => $threat->getLabel(2),
-            'label3' => $threat->getLabel(3),
-            'label4' => $threat->getLabel(4),
-            'description1' => $threat->getDescription(1),
-            'description2' => $threat->getDescription(2),
-            'description3' => $threat->getDescription(3),
-            'description4' => $threat->getDescription(4),
             'c' => $threat->getConfidentiality(),
             'i' => $threat->getIntegrity(),
             'a' => $threat->getAvailability(),
-            'theme' => $theme,
+            'theme' => $themeData,
             'trend' => $threat->getTrend(),
             'qualification' => $threat->getQualification(),
             'mode' => $threat->getMode(),
             'comment' => $threat->getComment(),
             'models' => $models,
             'status' => $threat->getStatus(),
-        ];
+        ]);
     }
 }

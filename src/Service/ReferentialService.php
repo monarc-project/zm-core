@@ -7,12 +7,6 @@
 
 namespace Monarc\Core\Service;
 
-/**
- * Referential Service
- *
- * Class ReferentialService
- * @package Monarc\Core\Service
- */
 class ReferentialService extends AbstractService
 {
     // TODO: avoid the deps setting up in abstract

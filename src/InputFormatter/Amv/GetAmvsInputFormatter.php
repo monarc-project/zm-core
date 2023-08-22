@@ -60,5 +60,9 @@ class GetAmvsInputFormatter extends AbstractInputFormatter
 
     protected static array $ignoredFilterFieldValues = ['status' => 'all'];
 
-    protected static array $orderParamsToFieldsMap = ['asset' => 'asset.code'];
+    protected static array $orderParamsToFieldsMap = [
+        'asset' => 'asset.code',
+        'threat' => 'threat.code',
+        'vulnerability' => 'vulnerability.code',
+    ];
 }

@@ -31,12 +31,11 @@ abstract class AbstractInputValidator
         $this->systemLanguageIndexes = array_column($config['languages'], 'index');
 
         AbstractValidator::setDefaultTranslator($translator);
-
-        $this->initRules();
     }
 
     public function isValid(array $data): bool
     {
+        $this->initRules();
         $this->initialData = $data;
         $this->inputFilter->setData($data);
 

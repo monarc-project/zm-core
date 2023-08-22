@@ -257,6 +257,7 @@ class InstanceSuperClass implements PositionedEntityInterface
     public function setAsset(AssetSuperClass $asset): self
     {
         $this->asset = $asset;
+        $asset->addInstance($this);
 
         return $this;
     }

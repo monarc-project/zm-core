@@ -18,11 +18,6 @@ use Ramsey\Uuid\Uuid;
 
 /**
  * TODO: Remove the class as soon as all the services are refactored.
- * Abstract Service
- *
- * Class AbstractService
- *
- * @package Monarc\Core\Service
  */
 abstract class AbstractService extends AbstractServiceFactory
 {
