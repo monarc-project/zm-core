@@ -18,6 +18,9 @@ use Monarc\Core\Validator\FieldValidator\UniqueCode;
 use Monarc\Core\Validator\InputValidator\AbstractInputValidator;
 use Monarc\Core\Validator\InputValidator\InputValidationTranslator;
 
+/**
+ * Note. For UniqueCode validator $excludeFilter or/and $anr properties have to be set before calling isValid method.
+ */
 class PostThreatDataInputValidator extends AbstractInputValidator
 {
     private UniqueCodeTableInterface $threatTable;
@@ -73,12 +76,8 @@ class PostThreatDataInputValidator extends AbstractInputValidator
                         'name' => UniqueCode::class,
                         'options' => [
                             'uniqueCodeValidationTable' => $this->threatTable,
-                            'anr' => function () {
-                                return $this->anr;
-                            },
-                            'excludeFilter' => function () {
-                                return $this->excludeFilter;
-                            },
+                            'anr' => $this->anr,
+                            'excludeFilter' => $this->excludeFilter,
                         ],
                     ],
                 ],

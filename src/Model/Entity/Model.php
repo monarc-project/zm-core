@@ -277,7 +277,7 @@ class Model
         return $this;
     }
 
-    public function getShowRolfBrut(): bool
+    public function showRolfBrut(): bool
     {
         return (bool)$this->showRolfBrut;
     }

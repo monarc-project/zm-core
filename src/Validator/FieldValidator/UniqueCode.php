@@ -25,13 +25,12 @@ class UniqueCode extends AbstractValidator
         $uniqueCodeValidationTable = $this->getOptions()['uniqueCodeValidationTable'];
 
         /** @var AnrSuperClass|null $anr */
-        $anr = $this->getOptions()['anr'] !== null && \is_callable($this->getOptions()['anr'])
-            ? $this->getOptions()['anr']()
+        $anr = !empty($this->getOptions()['anr']) && $this->getOptions()['anr'] instanceof AnrSuperClass
+            ? $this->getOptions()['anr']
             : null;
 
         /** @var array */
-        $excludeFilter = !empty($this->getOptions()['excludeFilter']) !== null
-            && \is_callable($this->getOptions()['excludeFilter']) ? $this->getOptions()['excludeFilter']() : [];
+        $excludeFilter = !empty($this->getOptions()['excludeFilter']) ? $this->getOptions()['excludeFilter'] : [];
 
         if ($uniqueCodeValidationTable->doesCodeAlreadyExist($value, $anr, $excludeFilter)) {
             $this->error(self::ALREADY_USED);

@@ -217,7 +217,7 @@ class AnrSuperClass
             ->setSeuilRolf1($anr->getSeuilRolf1())
             ->setSeuilRolf2($anr->getSeuilRolf2())
             ->setSeuilTraitement($anr->getSeuilTraitement())
-            ->setShowRolfBrut($anr->getShowRolfBrut())
+            ->setShowRolfBrut($anr->showRolfBrut())
             ->setInitAnrContext($anr->getInitAnrContext())
             ->setInitEvalContext($anr->getInitEvalContext())
             ->setInitDefContext($anr->getInitDefContext())
@@ -301,16 +301,16 @@ class AnrSuperClass
         return (int)$this->seuilTraitement;
     }
 
-    public function setShowRolfBrut(int $showRolfBrut): self
+    public function setShowRolfBrut(bool $showRolfBrut): self
     {
-        $this->showRolfBrut = $showRolfBrut;
+        $this->showRolfBrut = (int)$showRolfBrut;
 
         return $this;
     }
 
-    public function getShowRolfBrut(): int
+    public function showRolfBrut(): bool
     {
-        return $this->showRolfBrut;
+        return (bool)$this->showRolfBrut;
     }
 
     public function setStatus(int $status): self
@@ -525,14 +525,14 @@ class AnrSuperClass
         return $this;
     }
 
-    public function getCacheModelShowRolfBrut(): int
+    public function getCacheModelShowRolfBrut(): bool
     {
-        return $this->cacheModelShowRolfBrut;
+        return (bool)$this->cacheModelShowRolfBrut;
     }
 
-    public function setCacheModelShowRolfBrut(int $cacheModelShowRolfBrut): self
+    public function setCacheModelShowRolfBrut(bool $cacheModelShowRolfBrut): self
     {
-        $this->cacheModelShowRolfBrut = $cacheModelShowRolfBrut;
+        $this->cacheModelShowRolfBrut = (int)$cacheModelShowRolfBrut;
 
         return $this;
     }

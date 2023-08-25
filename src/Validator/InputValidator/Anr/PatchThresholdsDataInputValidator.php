@@ -7,8 +7,8 @@
 
 namespace Monarc\Core\Validator\InputValidator\Anr;
 
-use Monarc\Core\Validator\FieldValidator\GreaterThanOtherInput;
-use Monarc\Core\Validator\FieldValidator\LessThanOtherInput;
+use Laminas\Validator\GreaterThan;
+use Laminas\Validator\LessThan;
 use Monarc\Core\Validator\InputValidator\AbstractInputValidator;
 
 class PatchThresholdsDataInputValidator extends AbstractInputValidator
@@ -25,12 +25,10 @@ class PatchThresholdsDataInputValidator extends AbstractInputValidator
                 ],
                 'validators' => [
                     [
-                        'name' => LessThanOtherInput::class,
+                        'name' => LessThan::class,
                         'options' => [
                             'inclusive' => true,
-                            'max' => function () {
-                                return (int)($this->initialData['seuil2'] ?? 9999);
-                            },
+                            'max' => (int)($this->initialData['seuil2'] ?? 9999),
                         ]
                     ],
                 ],
@@ -44,12 +42,10 @@ class PatchThresholdsDataInputValidator extends AbstractInputValidator
                 ],
                 'validators' => [
                     [
-                        'name' => GreaterThanOtherInput::class,
+                        'name' => GreaterThan::class,
                         'options' => [
                             'inclusive' => true,
-                            'min' => function () {
-                                return (int)($this->initialData['seuil1'] ?? 0);
-                            },
+                            'min' => (int)($this->initialData['seuil1'] ?? 0),
                         ]
                     ],
                 ],
@@ -63,12 +59,10 @@ class PatchThresholdsDataInputValidator extends AbstractInputValidator
                 ],
                 'validators' => [
                     [
-                        'name' => LessThanOtherInput::class,
+                        'name' => LessThan::class,
                         'options' => [
                             'inclusive' => true,
-                            'max' => function () {
-                                return (int)($this->initialData['seuilRolf2'] ?? 9999);
-                            },
+                            'max' => (int)($this->initialData['seuilRolf2'] ?? 9999),
                         ]
                     ],
                 ],
@@ -82,12 +76,10 @@ class PatchThresholdsDataInputValidator extends AbstractInputValidator
                 ],
                 'validators' => [
                     [
-                        'name' => GreaterThanOtherInput::class,
+                        'name' => GreaterThan::class,
                         'options' => [
                             'inclusive' => true,
-                            'min' => function () {
-                                return (int)($this->initialData['seuilRolf1'] ?? 0);
-                            },
+                            'min' => (int)($this->initialData['seuilRolf1'] ?? 0),
                         ]
                     ],
                 ],

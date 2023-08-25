@@ -9,6 +9,7 @@ namespace Monarc\Core\Service;
 
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\InputFormatter\FormattedInputParams;
+use Monarc\Core\Model\Entity\Anr;
 use Monarc\Core\Model\Entity\Model;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Entity\UserSuperClass;
@@ -137,7 +138,7 @@ class ModelService
             ->setIsGeneric($model->isGeneric())
             ->setIsRegulator($model->isRegulator())
             ->setAreScalesUpdatable($model->areScalesUpdatable())
-            ->setShowRolfBrut($model->getShowRolfBrut())
+            ->setShowRolfBrut($model->showRolfBrut())
             ->setStatus($model->getStatus())
             ->setCreator($this->connectedUser->getEmail());
 
@@ -251,6 +252,7 @@ class ModelService
 
     private function prepareModelDataResult(Model $model): array
     {
+        /** @var Anr $anr */
         $anr = $model->getAnr();
 
         return [
@@ -275,7 +277,7 @@ class ModelService
             'isDefault' => (int)$model->isDefault(),
             'isRegulator' => (int)$model->isRegulator(),
             'areScalesUpdatable' => (int)$model->areScalesUpdatable(),
-            'showRolfBrut' => (int)$model->getShowRolfBrut(),
+            'showRolfBrut' => (int)$model->showRolfBrut(),
             'status' => $model->getStatus(),
         ];
     }

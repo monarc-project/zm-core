@@ -121,7 +121,8 @@ class ObjectSuperClass implements PositionedEntityInterface
     protected $parents;
 
     /**
-     * Note: If the property use used, the order has to be performed manually due to the Doctrine limitation.
+     * Note: If the property use used, the order has to be performed manually due to Doctrine limitation.
+     *       Ordered list can be retrieved with use $childrenLinks relation.
      *
      * @var ArrayCollection|ObjectSuperClass[]
      *

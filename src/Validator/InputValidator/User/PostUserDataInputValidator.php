@@ -28,6 +28,9 @@ class PostUserDataInputValidator extends AbstractInputValidator
 
     protected ?UserSuperClass $connectedUser;
 
+    /** @var string[] */
+    protected array $userRoles;
+
     public function __construct(
         array $config,
         InputValidationTranslator $translator,
@@ -36,6 +39,7 @@ class PostUserDataInputValidator extends AbstractInputValidator
     ) {
         $this->userTable = $userTable;
         $this->connectedUser = $connectedUserService->getConnectedUser();
+        $this->userRoles = UserRole::getAvailableRoles();
 
         parent::__construct($config, $translator);
     }
@@ -165,6 +169,6 @@ class PostUserDataInputValidator extends AbstractInputValidator
 
     public function validateRoles($value): bool
     {
-        return \in_array($value, UserRole::getAvailableRoles(), true);
+        return \in_array($value, $this->userRoles, true);
     }
 }

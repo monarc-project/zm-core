@@ -24,6 +24,8 @@ abstract class AbstractInputValidator
 
     private array $validData = [];
 
+    private bool $areRulesInitialized = false;
+
     public function __construct(array $config, InputValidationTranslator $translator)
     {
         $this->inputFilter = new InputFilter();
@@ -35,8 +37,13 @@ abstract class AbstractInputValidator
 
     public function isValid(array $data): bool
     {
-        $this->initRules();
         $this->initialData = $data;
+        if (!$this->areRulesInitialized) {
+            /* Rules initialisation is not done in the constructor to allow setting up additional properties and
+            options (e.g. defaultLanguageIndex, anr, excludeFilter etc). */
+            $this->initRules();
+            $this->areRulesInitialized = true;
+        }
         $this->inputFilter->setData($data);
 
         $isValid = $this->inputFilter->isValid();
