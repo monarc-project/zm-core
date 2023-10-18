@@ -15,12 +15,10 @@ class TranslateServiceFactory implements FactoryInterface
 {
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
-        if (is_dir('node_modules/ng_client/po')) {
-            $baseDir = 'node_modules/ng_client/po/';
-        } elseif (is_dir('node_modules/ng_backoffice/po')) {
-            $baseDir = 'node_modules/ng_backoffice/po/';
-        } else {
-            throw new \Exception('The translations files are missing.', 412);
+        $projectRoot = \defined('PROJECT_ROOT') ? PROJECT_ROOT : '';
+        $baseDir = $projectRoot . 'node_modules/ng_client/po/';
+        if (is_dir($projectRoot . 'node_modules/ng_backoffice/po')) {
+            $baseDir = $projectRoot . 'node_modules/ng_backoffice/po/';
         }
         $translationConfig = [
             'locale' => '',
