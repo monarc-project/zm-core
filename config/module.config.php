@@ -33,11 +33,11 @@ use Laminas\ServiceManager\Factory\InvokableFactory;
 use Laminas\ServiceManager\Proxy\LazyServiceFactory;
 
 $env = getenv('APPLICATION_ENV') ?: 'production';
-$appConfigDir = getenv('APP_CONF_DIR') ?? '';
-
 $dataPath = './data';
-if (!empty($appConfigDir)) {
-    $dataPath = $appConfigDir . '/data';
+if (defined('DATA_PATH')) {
+    $dataPath = DATA_PATH;
+} elseif (!empty(getenv('APP_CONF_DIR'))) {
+    $dataPath = getenv('APP_CONF_DIR') . '/data';
 }
 
 return [
