@@ -270,13 +270,15 @@ class ObjectService extends AbstractService
         // Retrieve parent recursively
         if ($anrContext == MonarcObject::CONTEXT_ANR) {
             //Check if the object is linked to the $anr
-            $found = false;
-            $anrObject = null;
-            foreach ($object->getAnrs() as $a) {
-                if ($a->getId() === $anr) {
-                    $found = true;
-                    $anrObject = $a;
-                    break;
+            $found = $object->getAnr() !== null;
+            $anrObject = $object->getAnr();
+            if ($anrObject === null) {
+                foreach ($object->getAnrs() as $a) {
+                    if ($a->getId() === $anr) {
+                        $found = true;
+                        $anrObject = $a;
+                        break;
+                    }
                 }
             }
 
