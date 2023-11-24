@@ -97,14 +97,14 @@ class ObjectSuperClass implements PositionedEntityInterface
      *
      * @ORM\Column(name="mode", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $mode = 1;
+    protected $mode = self::MODE_GENERIC;
 
     /**
      * @var int
      *
      * @ORM\Column(name="scope", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $scope = 1;
+    protected $scope = self::SCOPE_LOCAL;
 
     /**
      * @var int
@@ -255,7 +255,7 @@ class ObjectSuperClass implements PositionedEntityInterface
         return $this->rolfTag;
     }
 
-    public function setRolfTag(RolfTagSuperClass $rolfTag)
+    public function setRolfTag(?RolfTagSuperClass $rolfTag)
     {
         $this->rolfTag = $rolfTag;
 

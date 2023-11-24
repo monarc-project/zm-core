@@ -6,10 +6,6 @@
  */
 
 use Interop\Container\Containerinterface;
-use Laminas\Mail\Transport\SmtpOptions;
-use Laminas\Mail\Transport\Smtp;
-use Laminas\Mime\Message;
-use Laminas\Mime\Part;
 use Doctrine\Persistence\Mapping\Driver\MappingDriverChain;
 use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
 use Monarc\Core\Adapter\Authentication as AdapterAuthentication;

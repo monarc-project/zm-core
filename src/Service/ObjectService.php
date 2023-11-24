@@ -69,7 +69,7 @@ class ObjectService
         $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
-    public function getListSpecific(FormattedInputParams $formattedInputParams): array
+    public function getList(FormattedInputParams $formattedInputParams): array
     {
         if (!$this->areAnrObjectsValid($formattedInputParams)) {
             return [];
@@ -227,7 +227,7 @@ class ObjectService
 
         /*
          * The objects positioning inside of categories was dropped from the UI, only kept in the db and passed data.
-         * We always set position end.
+         * New objects are always placed at the end.
          */
         $this->updatePositions($monarcObject, $this->monarcObjectTable);
 
@@ -536,8 +536,14 @@ class ObjectService
             if ($isRolfTagUpdated && $monarcObject->getRolfTag() !== null) {
                 foreach ($monarcObject->getRolfTag()->getRisks() as $rolfRisk) {
                     if (isset($rolfRisksIdsToOperationalInstanceRisks[$rolfRisk->getId()])) {
+                        /* Restore the specific to false if the operational risk is linked to another risk. */
                         $rolfRisksIdsToOperationalInstanceRisks[$rolfRisk->getId()]->setIsSpecific(false);
+                        $this->instanceRiskOpTable->save(
+                            $rolfRisksIdsToOperationalInstanceRisks[$rolfRisk->getId()],
+                            false
+                        );
                     } else {
+                        /* Recreate the risk with scales if it did not exist before. */
                         $this->instanceRiskOpService->createInstanceRiskOpWithScales(
                             $instance,
                             $monarcObject,
@@ -602,6 +608,7 @@ class ObjectService
     private function getObjectCopy(Entity\MonarcObject $monarcObjectToCopy, ?Entity\Anr $anr): Entity\MonarcObject
     {
         $labelsNamesSuffix = ' copy #' . time();
+        /** @var Entity\MonarcObject $newMonarcObject */
         $newMonarcObject = (new Entity\MonarcObject())
             ->setCategory($monarcObjectToCopy->getCategory())
             ->setAsset($monarcObjectToCopy->getAsset())
@@ -632,7 +639,6 @@ class ObjectService
          */
         $this->updatePositions($newMonarcObject, $this->monarcObjectTable);
 
-        /** @var Entity\MonarcObject $newMonarcObject */
         return $newMonarcObject;
     }
 
