@@ -15,7 +15,7 @@ jobs:
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: '8.0'
+        php-version: '8.1'
         extensions: imagick, intl, mysql, bcmath, openssl
         ini-values: post_max_size=256M, short_open_tag=On
         tools: pecl, cs2pr, phpcs
@@ -32,7 +32,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-php-
     - name: Install dependencies
-      run: composer install --prefer-dist --no-progress
+      run: composer install --prefer-dist --no-progress --ignore-platform-req=php
 
     # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
     # Docs: https://getcomposer.org/doc/articles/scripts.md
@@ -40,7 +40,7 @@ jobs:
     # We need to run to validate only files' changes.
     - name: Get changed files using a comma separator
       id: changed-files-comma
-      uses: tj-actions/changed-files@v12.2
+      uses: tj-actions/changed-files@v41
       with:
         separator: " "
         files: |
