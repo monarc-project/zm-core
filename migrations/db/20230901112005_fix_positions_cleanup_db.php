@@ -168,6 +168,7 @@ class FixPositionsCleanupDb extends AbstractMigration
             ->removeColumn('disponibility')
             ->removeColumn('token_import')
             ->removeColumn('original_name')
+            ->removeColumn('anr_id')
             ->update();
         $this->table('instances_consequences')->removeColumn('object_id')->removeColumn('locally_touched')->update();
 

@@ -53,16 +53,6 @@ class ObjectSuperClass implements PositionedEntityInterface
     protected $uuid;
 
     /**
-     * @var AnrSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Anr", cascade={"persist"})
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true)
-     * })
-     */
-    protected $anr;
-
-    /**
      * @var ObjectCategorySuperClass|null
      *
      * @ORM\ManyToOne(targetEntity="ObjectCategory", cascade={"persist"})
@@ -169,12 +159,7 @@ class ObjectSuperClass implements PositionedEntityInterface
 
     public function getImplicitPositionRelationsValues(): array
     {
-        $fields['category'] = $this->category;
-        if ($this->anr !== null) {
-            $fields['anr'] = $this->anr;
-        }
-
-        return $fields;
+        return ['category' => $this->category];
     }
 
     /**
@@ -197,18 +182,6 @@ class ObjectSuperClass implements PositionedEntityInterface
     public function setUuid(string $uuid): self
     {
         $this->uuid = $uuid;
-
-        return $this;
-    }
-
-    public function getAnr(): ?AnrSuperClass
-    {
-        return $this->anr;
-    }
-
-    public function setAnr(AnrSuperClass $anr): self
-    {
-        $this->anr = $anr;
 
         return $this;
     }
@@ -413,7 +386,7 @@ class ObjectSuperClass implements PositionedEntityInterface
     }
 
     /**
-     * The links are only used to keep the order of the objects' composition.
+     * The links are used to keep the order of the objects' composition.
      */
     public function getParentsLinks()
     {

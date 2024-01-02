@@ -90,7 +90,8 @@ class InstanceRiskOpTable extends AbstractTable
         $queryBuilder = $this->getRepository()->createQueryBuilder('oprisk')
             ->innerJoin('oprisk.object', 'o');
 
-        if ($object->getAnr() !== null) {
+        /* TODO. Temporary solution to be able to drop anr_id from the ObjectSuperClass. */
+        if (method_exists($object, 'getAnr') && $object->getAnr() !== null) {
             $queryBuilder
                 ->where('oprisk.anr = :anr')
                 ->andWhere('o.uuid = :objectUuid')

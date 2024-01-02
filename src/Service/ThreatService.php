@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Service;
 
+use Doctrine\ORM\EntityNotFoundException;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\InputFormatter\FormattedInputParams;
 use Monarc\Core\Model\Entity;
@@ -82,10 +83,9 @@ class ThreatService
             ->setConfidentiality((int)$data['c'])
             ->setIntegrity((int)$data['i'])
             ->setAvailability((int)$data['a'])
-            ->setMode((int)$data['mode'])
             ->setCreator($this->connectedUser->getEmail());
-        if (isset($data['uuid'])) {
-            $threat->setUuid($data['uuid']);
+        if (isset($data['mode'])) {
+            $threat->setMode((int)$data['mode']);
         }
         if (isset($data['status'])) {
             $threat->setStatus($data['status']);
@@ -111,6 +111,25 @@ class ThreatService
         $this->threatTable->save($threat, $saveInDb);
 
         return $threat;
+    }
+
+    public function getOrCreateThreat(array $threatData): Entity\Threat
+    {
+        if (!empty($threatData['uuid'])) {
+            try {
+                /** @var Entity\Threat $threat */
+                $threat = $this->threatTable->findByUuid($threatData['uuid']);
+
+                return $threat;
+            } catch (EntityNotFoundException $e) {
+            }
+        }
+
+        if (isset($threatData['theme'])) {
+            $threatData['theme'] = $this->themeTable->findById((int)$threatData['theme']);
+        }
+
+        return $this->create($threatData, false);
     }
 
     public function update(string $uuid, array $data): void

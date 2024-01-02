@@ -11,13 +11,13 @@ use Doctrine\Common\Collections\Expr\Comparison;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\InputFormatter\FormattedInputParams;
 use Monarc\Core\Model\Entity;
-use Monarc\Core\Service\Traits\PositionUpdateTrait;
+use Monarc\Core\Service\Traits;
 use Monarc\Core\Table;
 use Monarc\Core\Model\Table\RolfTagTable;
 
 class ObjectService
 {
-    use PositionUpdateTrait;
+    use Traits\PositionUpdateTrait;
 
     public const MODE_OBJECT_EDIT = 'edit';
     public const MODE_KNOWLEDGE_BASE = 'bdc';
@@ -98,7 +98,7 @@ class ObjectService
         return $this->monarcObjectTable->countByParams($formattedInputParams);
     }
 
-    public function getObjectData(string $uuid, FormattedInputParams $formattedInputParams)
+    public function getObjectData(string $uuid, FormattedInputParams $formattedInputParams): array
     {
         /** @var Entity\MonarcObject $object */
         $object = $this->monarcObjectTable->findByUuid($uuid);
@@ -129,15 +129,15 @@ class ObjectService
 
                 $names = [
                     'name1' => $anr->getLabel(1),
-                    'name2' => $anr->getLabel(2),
-                    'name3' => $anr->getLabel(3),
-                    'name4' => $anr->getLabel(4),
+                    'name2' => $anr->getLabel(2) ? : $anr->getLabel(1),
+                    'name3' => $anr->getLabel(3) ? : $anr->getLabel(1),
+                    'name4' => $anr->getLabel(4) ? : $anr->getLabel(1),
                 ];
                 foreach ($instanceHierarchy as $instanceData) {
                     $names['name1'] .= ' > ' . $instanceData['name1'];
-                    $names['name2'] .= ' > ' . $instanceData['name2'];
-                    $names['name3'] .= ' > ' . $instanceData['name3'];
-                    $names['name4'] .= ' > ' . $instanceData['name4'];
+                    $names['name2'] .= ' > ' . ($instanceData['name2'] ? : $instanceData['name1']);
+                    $names['name3'] .= ' > ' . ($instanceData['name3'] ? : $instanceData['name1']);
+                    $names['name4'] .= ' > ' . ($instanceData['name4'] ? : $instanceData['name1']);
                 }
                 $names['id'] = $instance->getId();
                 $objectData['replicas'][] = $names;
@@ -179,21 +179,12 @@ class ObjectService
         /* Places uncategorized objects. */
         $objectsData = [];
         foreach ($anr->getObjects() as $object) {
-            if ($object->getCategory() === null) {
+            if (!$object->hasCategory()) {
                 $objectsData[] = $this->getPreparedObjectData($object, true);
             }
         }
         if (!empty($objectsData)) {
-            $result[] = [
-                'id' => -1,
-                'label1' => 'Sans catégorie',
-                'label2' => 'Uncategorized',
-                'label3' => 'Keine Kategorie',
-                'label4' => 'Geen categorie',
-                'position' => -1,
-                'child' => [],
-                'objects' => $objectsData,
-            ];
+            $result[] = Entity\ObjectCategorySuperClass::getUndefinedCategoryData($objectsData);
         }
 
         return $result;
@@ -213,10 +204,6 @@ class ObjectService
             ->setScope((int)$data['scope'])
             ->setMode((int)$data['mode'])
             ->setCreator($this->connectedUser->getEmail());
-
-        if (isset($data['uuid'])) {
-            $monarcObject->setUuid($data['uuid']);
-        }
         if (!empty($data['category'])) {
             $this->validateAndSetCategory($monarcObject, $data);
         }
@@ -263,10 +250,9 @@ class ObjectService
         /** @var Entity\MonarcObject $monarcObject */
         $monarcObject = $this->monarcObjectTable->findByUuid($uuid);
 
-        /* Manage the positions shift for the objects and objects_objects tables. */
-        $this->shiftPositionsForRemovingEntity($monarcObject, $this->monarcObjectTable);
-        foreach ($monarcObject->getParentsLinks() as $linkWhereTheObjectIsChild) {
-            $this->shiftPositionsForRemovingEntity($linkWhereTheObjectIsChild, $this->objectObjectTable);
+        /* If the object is linked to anrs, it has to be detached first. */
+        foreach ($monarcObject->getAnrs() as $linkedAnr) {
+            $this->detachObjectFromAnr($monarcObject->getUuid(), $linkedAnr);
         }
 
         $this->monarcObjectTable->remove($monarcObject);
@@ -311,27 +297,10 @@ class ObjectService
 
         $monarcObject->removeAnr($anr);
 
-        /* Removes the instances of the object if it's inside the composed parent's instance and the composition link */
-        foreach ($monarcObject->getParents() as $objectParent) {
-            $parentInstancesIds = [];
-            foreach ($objectParent->getInstances() as $parentInstance) {
-                if ($parentInstance->getAnr()->getId() === $anr->getId()) {
-                    $parentInstancesIds[] = $parentInstance->getId();
-                }
-            }
-
-            foreach ($monarcObject->getInstances() as $currentObjectInstance) {
-                if ($currentObjectInstance->hasParent()
-                    && \in_array($currentObjectInstance->getParent()->getId(), $parentInstancesIds, true)
-                ) {
-                    $monarcObject->removeInstance($currentObjectInstance);
-                    $this->instanceTable->remove($currentObjectInstance, false);
-                }
-            }
-
-            /* Removes from the library object composition (affects all the linked analysis). */
-            $objectParent->removeChild($monarcObject);
-            $this->monarcObjectTable->save($objectParent, false);
+        /* Remove from the library object composition (affects all the linked analysis), shift positions. */
+        foreach ($monarcObject->getParentsLinks() as $objectParentLink) {
+            $this->shiftPositionsForRemovingEntity($objectParentLink, $this->objectObjectTable);
+            $this->objectObjectTable->remove($objectParentLink, false);
         }
 
         /* If no more objects under its root category, the category need to be unlinked from the analysis. */
@@ -344,7 +313,11 @@ class ObjectService
             }
         }
 
+        /* Remove the directly linked instances and shift their positions. */
         foreach ($monarcObject->getInstances() as $instance) {
+            $this->shiftPositionsForRemovingEntity($instance, $this->instanceTable);
+            $instance->removeAllInstanceRisks()->removeAllOperationalInstanceRisks();
+            $monarcObject->removeInstance($instance);
             $this->instanceTable->remove($instance, false);
         }
 
@@ -635,77 +608,11 @@ class ObjectService
         }
         /*
          * The objects positioning inside of categories was dropped from the UI, only kept in the db and passed data.
-         * We always set position end.
+         * The position is always set at the end.
          */
         $this->updatePositions($newMonarcObject, $this->monarcObjectTable);
 
         return $newMonarcObject;
-    }
-
-    private function getCategoriesAndObjectsTreeList(
-        Entity\ObjectCategory $objectCategory,
-        Entity\Anr $anr
-    ): array {
-        $result = [];
-        $objectsData = $this->getObjectsDataOfCategoryAndAnr($objectCategory, $anr);
-        if (!empty($objectsData) || $objectCategory->hasChildren()) {
-            $objectCategoryData = $this->getPreparedObjectCategoryData($objectCategory, $objectsData, $anr);
-            if (!empty($objectsData) || !empty($objectCategoryData)) {
-                $result = $objectCategoryData;
-            }
-        }
-
-        return $result;
-    }
-
-    private function getCategoriesWithObjectsChildrenTreeList(
-        Entity\ObjectCategory $objectCategory,
-        Entity\Anr $anr
-    ): array {
-        $result = [];
-        foreach ($objectCategory->getChildren() as $childCategory) {
-            $categoryData = $this->getCategoriesAndObjectsTreeList($childCategory, $anr);
-            if (!empty($categoryData)) {
-                $result[] = $categoryData;
-            }
-        }
-
-        return $result;
-    }
-
-    private function getPreparedObjectCategoryData(
-        Entity\ObjectCategory $category,
-        array $objectsData,
-        Entity\Anr $anr
-    ): array {
-        $result = array_merge($category->getLabels(), [
-            'id' => $category->getId(),
-            'position' => $category->getPosition(),
-            'child' => !$category->hasChildren()
-                ? []
-                : $this->getCategoriesWithObjectsChildrenTreeList($category, $anr),
-            'objects' => $objectsData,
-        ]);
-        if (empty($objectsData) && empty($result['child'])) {
-            return [];
-        }
-
-        return $result;
-    }
-
-    private function getObjectsDataOfCategoryAndAnr(
-        Entity\ObjectCategory $objectCategory,
-        Entity\Anr $anr
-    ): array {
-        $objectsData = [];
-        /** @var Entity\MonarcObject $object */
-        foreach ($objectCategory->getObjects() as $object) {
-            if ($object->hasAnrLink($anr)) {
-                $objectsData[] = $this->getPreparedObjectData($object, true);
-            }
-        }
-
-        return $objectsData;
     }
 
     private function getChildrenTreeList(Entity\MonarcObject $object): array
@@ -963,5 +870,72 @@ class ObjectService
                 $this->duplicateObjectChildren($childObject, $newChildObject, $anr);
             }
         }
+    }
+
+
+    private function getPreparedObjectCategoryData(
+        Entity\ObjectCategory $category,
+        array $objectsData,
+        Entity\Anr $anr
+    ): array {
+        $result = array_merge($category->getLabels(), [
+            'id' => $category->getId(),
+            'position' => $category->getPosition(),
+            'child' => !$category->hasChildren()
+                ? []
+                : $this->getCategoriesWithObjectsChildrenTreeList($category, $anr),
+            'objects' => $objectsData,
+        ]);
+        if (empty($objectsData) && empty($result['child'])) {
+            return [];
+        }
+
+        return $result;
+    }
+
+    private function getCategoriesAndObjectsTreeList(
+        Entity\ObjectCategory $objectCategory,
+        Entity\Anr $anr
+    ): array {
+        $result = [];
+        $objectsData = $this->getObjectsDataOfCategoryAndAnr($objectCategory, $anr);
+        if (!empty($objectsData) || $objectCategory->hasChildren()) {
+            $objectCategoryData = $this->getPreparedObjectCategoryData($objectCategory, $objectsData, $anr);
+            if (!empty($objectsData) || !empty($objectCategoryData)) {
+                $result = $objectCategoryData;
+            }
+        }
+
+        return $result;
+    }
+
+    private function getCategoriesWithObjectsChildrenTreeList(
+        Entity\ObjectCategory $objectCategory,
+        Entity\Anr $anr
+    ): array {
+        $result = [];
+        foreach ($objectCategory->getChildren() as $childCategory) {
+            $categoryData = $this->getCategoriesAndObjectsTreeList($childCategory, $anr);
+            if (!empty($categoryData)) {
+                $result[] = $categoryData;
+            }
+        }
+
+        return $result;
+    }
+
+    private function getObjectsDataOfCategoryAndAnr(
+        Entity\ObjectCategory $objectCategory,
+        Entity\Anr $anr
+    ): array {
+        $objectsData = [];
+        /** @var Entity\MonarcObject $object */
+        foreach ($objectCategory->getObjects() as $object) {
+            if ($object->hasAnrLink($anr)) {
+                $objectsData[] = $this->getPreparedObjectData($object, true);
+            }
+        }
+
+        return $objectsData;
     }
 }

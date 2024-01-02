@@ -20,7 +20,9 @@ trait PositionUpdateTrait
     /**
      * @param PositionedEntityInterface $entity
      * @param PositionUpdatableTableInterface|AbstractTable $table
-     * @param array $data Note: ['forcePositionUpdate' => true] is used to update the position for already persisted.
+     * @param array $data Notes:
+     *                    - ['forcePositionUpdate' => true] is used to force the position update for already persisted.
+     *                    - ['setOnlyExactPosition' => true] is used to set the predefined position only.
      *
      * @throws Exception|LogicException|EntityNotFoundException
      */
@@ -30,6 +32,12 @@ trait PositionUpdateTrait
         array $data = []
     ): void {
         $this->validateParams($entity, $table, $data);
+
+        if (!empty($data['setOnlyExactPosition']) && isset($data['position'])) {
+            $entity->setPosition($data['position']);
+
+            return;
+        }
 
         $implicitPosition = $data['implicitPosition'] ?? PositionUpdatableServiceInterface::IMPLICIT_POSITION_END;
 
@@ -58,7 +66,7 @@ trait PositionUpdateTrait
                 if (!$isEntityPersisted || $areImplicitPositionsValuesChanged) {
                     $table->incrementPositions(1, -1, 1, $implicitPositionsValues, $entity->getCreator());
                     /* Populate the entity position within the previous implicit position set (not occupied for now). */
-                    if ($areImplicitPositionsValuesChanged) {
+                    if ($isEntityPersisted && $areImplicitPositionsValuesChanged) {
                         $table->incrementPositions(
                             $entity->getPosition() + 1,
                             -1,
@@ -87,7 +95,7 @@ trait PositionUpdateTrait
 
                 if (!$isEntityPersisted || $areImplicitPositionsValuesChanged) {
                     /* Populate the entity position within the previous implicit position set (not occupied for now). */
-                    if ($areImplicitPositionsValuesChanged) {
+                    if ($isEntityPersisted && $areImplicitPositionsValuesChanged) {
                         $table->incrementPositions(
                             $entity->getPosition() + 1,
                             -1,
@@ -109,7 +117,7 @@ trait PositionUpdateTrait
                 } else {
                     $entityKey = $data['previous'];
                     /* Some entities have 2 fields (uuid, anr) relation, sp anr is added to the search in this case. */
-                    if (\is_string($entityKey) && $entity->getAnr() !== null) {
+                    if (\is_string($entityKey) && method_exists($entity, 'getAnr') && $entity->getAnr() !== null) {
                         $entityKey = [
                             'uuid' => $entityKey,
                             'anr' => $entity->getAnr(),
@@ -135,7 +143,7 @@ trait PositionUpdateTrait
                     $table->incrementPositions($entity->getPosition() + 1, -1, -1, $implicitPositionsValues, $updater);
                     $table->refresh($previousEntity);
                     $expectedPosition = $previousEntity->getPosition() + 1;
-                } elseif ($areImplicitPositionsValuesChanged) {
+                } elseif ($isEntityPersisted && $areImplicitPositionsValuesChanged) {
                     /* Populate the entity position within the previous implicit position set (not occupied for now). */
                     $table->incrementPositions(
                         $entity->getPosition() + 1,

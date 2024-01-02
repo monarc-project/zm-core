@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Service;
 
+use Doctrine\ORM\EntityNotFoundException;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\InputFormatter\FormattedInputParams;
 use Monarc\Core\Model\Entity;
@@ -71,11 +72,10 @@ class AssetService
             ->setCode($data['code'])
             ->setLabels($data)
             ->setDescriptions($data)
-            ->setMode($data['mode'])
             ->setType($data['type'])
             ->setCreator($this->connectedUser->getEmail());
-        if (isset($data['uuid'])) {
-            $asset->setUuid($data['uuid']);
+        if (isset($data['mode'])) {
+            $asset->setMode((int)$data['mode']);
         }
         if (isset($data['status'])) {
             $asset->setStatus($data['status']);
@@ -92,6 +92,21 @@ class AssetService
         $this->assetTable->save($asset, $saveInDb);
 
         return $asset;
+    }
+
+    public function getOrCreateAsset(array $assetData): Entity\Asset
+    {
+        if (!empty($assetData['uuid'])) {
+            try {
+                /** @var Entity\Asset $asset */
+                $asset = $this->assetTable->findByUuid($assetData['uuid']);
+
+                return $asset;
+            } catch (EntityNotFoundException $e) {
+            }
+        }
+
+        return $this->create($assetData, false);
     }
 
     public function update(string $uuid, array $data)

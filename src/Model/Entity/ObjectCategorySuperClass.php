@@ -294,4 +294,18 @@ class ObjectCategorySuperClass implements PositionedEntityInterface
 
         return $this;
     }
+
+    public static function getUndefinedCategoryData(array $objectsData): array
+    {
+        return [
+            'id' => -1,
+            'label1' => 'Sans catégorie',
+            'label2' => 'Uncategorized',
+            'label3' => 'Keine Kategorie',
+            'label4' => 'Geen categorie',
+            'position' => -1,
+            'child' => [],
+            'objects' => $objectsData,
+        ];
+    }
 }

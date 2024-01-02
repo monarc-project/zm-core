@@ -76,7 +76,6 @@ class Anr extends AnrSuperClass
         return $this->model;
     }
 
-
     public function getObjects()
     {
         return $this->objects;

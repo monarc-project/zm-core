@@ -39,8 +39,6 @@ interface PositionedEntityInterface
 
     public function getPropertiesStates(array $properties): array;
 
-    public function getAnr(): ?AnrSuperClass;
-
     public function getCreator(): string;
 
     public function getUpdater(): string;

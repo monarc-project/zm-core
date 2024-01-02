@@ -7,7 +7,6 @@
 
 namespace Monarc\Core\Service;
 
-use Doctrine\ORM\EntityNotFoundException;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\InputFormatter\FormattedInputParams;
 use Monarc\Core\Model\Entity;
@@ -35,8 +34,6 @@ class AmvService implements PositionUpdatableServiceInterface
 
     private Table\ModelTable $modelTable;
 
-    private Table\ThemeTable $themeTable;
-
     private HistoricalService $historicalService;
 
     private AssetService $assetService;
@@ -57,7 +54,6 @@ class AmvService implements PositionUpdatableServiceInterface
         MeasureTable $measureTable,
         ReferentialTable $referentialTable,
         Table\ModelTable $modelTable,
-        Table\ThemeTable $themeTable,
         HistoricalService $historicalService,
         AssetService $assetService,
         ThreatService $threatService,
@@ -72,7 +68,6 @@ class AmvService implements PositionUpdatableServiceInterface
         $this->measureTable = $measureTable;
         $this->referentialTable = $referentialTable;
         $this->modelTable = $modelTable;
-        $this->themeTable = $themeTable;
         $this->historicalService = $historicalService;
         $this->assetService = $assetService;
         $this->threatService = $threatService;
@@ -232,8 +227,8 @@ class AmvService implements PositionUpdatableServiceInterface
     {
         $createdAmvsUuids = [];
         foreach ($data as $amvData) {
-            if (!isset($amvData['asset']['uuid'], $amvData['threat']['uuid'], $amvData['vulnerability']['uuid'])
-                || $this->amvTable->findByAmvItemsUuids(
+            if (isset($amvData['asset']['uuid'], $amvData['threat']['uuid'], $amvData['vulnerability']['uuid'])
+                && $this->amvTable->findByAmvItemsUuids(
                     $amvData['asset']['uuid'],
                     $amvData['threat']['uuid'],
                     $amvData['vulnerability']['uuid'],
@@ -242,9 +237,9 @@ class AmvService implements PositionUpdatableServiceInterface
                 continue;
             }
 
-            $asset = $this->getOrCreateAssetObject($amvData['asset']);
-            $threat = $this->getOrCreateThreatObject($amvData['threat']);
-            $vulnerability = $this->getOrCreateVulnerabilityObject($amvData['vulnerability']);
+            $asset = $this->assetService->getOrCreateAsset($amvData['asset']);
+            $threat = $this->threatService->getOrCreateThreat($amvData['threat']);
+            $vulnerability = $this->vulnerabilityService->getOrCreateVulnerability($amvData['vulnerability']);
 
             $amv = (new Entity\Amv())
                 ->setAsset($asset)
@@ -591,55 +586,6 @@ class AmvService implements PositionUpdatableServiceInterface
             'label4' => $label,
             'details' => $details,
         ]);
-    }
-
-    private function getOrCreateAssetObject(array $assetData): Entity\Asset
-    {
-        if (!empty($assetData['uuid'])) {
-            try {
-                /** @var Entity\Asset $asset */
-                $asset = $this->assetTable->findByUuid($assetData['uuid']);
-
-                return $asset;
-            } catch (EntityNotFoundException $e) {
-            }
-        }
-
-        return $this->assetService->create($assetData, false);
-    }
-
-    private function getOrCreateThreatObject(array $threatData): Entity\Threat
-    {
-        if (!empty($threatData['uuid'])) {
-            try {
-                /** @var Entity\Threat $threat */
-                $threat = $this->threatTable->findByUuid($threatData['uuid']);
-
-                return $threat;
-            } catch (EntityNotFoundException $e) {
-            }
-        }
-
-        if (isset($threatData['theme'])) {
-            $threatData['theme'] = $this->themeTable->findById((int)$threatData['theme']);
-        }
-
-        return $this->threatService->create($threatData, false);
-    }
-
-    private function getOrCreateVulnerabilityObject(array $vulnerabilityData): Entity\Vulnerability
-    {
-        if (!empty($vulnerabilityData['uuid'])) {
-            try {
-                /** @var Entity\Vulnerability $vulnerability */
-                $vulnerability = $this->vulnerabilityTable->findByUuid($vulnerabilityData['uuid']);
-
-                return $vulnerability;
-            } catch (EntityNotFoundException $e) {
-            }
-        }
-
-        return $this->vulnerabilityService->create($vulnerabilityData);
     }
 
     private function prepareAmvDataResult(Entity\Amv $amv, bool $includePositionFields = false): array

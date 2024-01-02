@@ -111,7 +111,7 @@ class InstanceService
 
         $this->instanceTable->save($instance);
 
-        /* Used only on FO side. */
+        /* TODO: Used only on FO side. Can be removed. Kept not to forget to add there. */
         $this->updateAnrInstanceMetadataFieldFromBrothers($instance);
 
         $this->instanceConsequenceService->createInstanceConsequences($instance, $anr, $object);
@@ -244,7 +244,8 @@ class InstanceService
             $this->instantiateObjectToAnr($parentInstance->getAnr(), [
                 'object' => $childObjectLink->getChild(),
                 'parent' => $parentInstance,
-                'position' => $childObjectLink->getChild()->getPosition(),
+                'position' => $childObjectLink->getPosition(),
+                'setOnlyExactPosition' => true,
             ]);
         }
     }

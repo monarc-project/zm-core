@@ -76,7 +76,7 @@ class InstanceTable extends AbstractTable implements PositionUpdatableTableInter
         ObjectSuperClass $object,
         InstanceSuperClass $instanceToExclude
     ): ?InstanceSuperClass {
-        $queryBuilder = $this->getRepository()
+        return $this->getRepository()
             ->createQueryBuilder('i')
             ->innerJoin('i.object', 'o')
             ->where('i.anr = :anr')
@@ -85,12 +85,9 @@ class InstanceTable extends AbstractTable implements PositionUpdatableTableInter
             ->setParameter('anr', $anr)
             ->setParameter('object_uuid', $object->getUuid())
             ->setParameter('instanceId', $instanceToExclude->getId())
-            ->setMaxResults(1);
-        if ($object->getAnr() !== null) {
-            $queryBuilder->andWhere('o.anr = :object_anr')->setParameter('object_anr', $object->getAnr());
-        }
-
-        return $queryBuilder->getQuery()->getOneOrNullResult();
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 
     public function findOneByAnrParentAndPosition(
