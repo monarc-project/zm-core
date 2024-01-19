@@ -83,29 +83,17 @@ class InstanceRiskOpTable extends AbstractTable
     }
 
     /**
-     * @return InstanceRiskOpSuperClass[]
+     * The method is overridden on Client side with the anr relation in the where clause.
+     *
+     * @return InstanceRiskOp[]
      */
-    public function findByObjectAndRolfRisk(ObjectSuperClass $object, RolfRiskSuperClass $rolfRisk)
+    public function findByObjectAndRolfRisk(ObjectSuperClass $object, RolfRiskSuperClass $rolfRisk): array
     {
-        $queryBuilder = $this->getRepository()->createQueryBuilder('oprisk')
-            ->innerJoin('oprisk.object', 'o');
-
-        /* TODO. Temporary solution to be able to drop anr_id from the ObjectSuperClass. */
-        if (method_exists($object, 'getAnr') && $object->getAnr() !== null) {
-            $queryBuilder
-                ->where('oprisk.anr = :anr')
-                ->andWhere('o.uuid = :objectUuid')
-                ->andWhere('o.anr = :anr')
-                ->setParameter('objectUuid', $object->getUuid())
-                ->setParameter('anr', $object->getAnr());
-        } else {
-            $queryBuilder
-                ->where('o.uuid = :objectUuid')
-                ->setParameter('objectUuid', $object->getUuid());
-        }
-
-        return $queryBuilder
+        return $this->getRepository()->createQueryBuilder('oprisk')
+            ->innerJoin('oprisk.object', 'o')
+            ->where('o.uuid = :objectUuid')
             ->andWhere('oprisk.rolfRisk = :rolfRisk')
+            ->setParameter('objectUuid', $object->getUuid())
             ->setParameter('rolfRisk', $rolfRisk)
             ->getQuery()
             ->getResult();

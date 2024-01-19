@@ -131,9 +131,9 @@ class AmvService implements PositionUpdatableServiceInterface
 
         $this->updatePositions($amv, $this->amvTable, $data);
 
-        $this->amvTable->save($amv);
-
         $this->createInstanceRiskForInstances($asset, $amv);
+
+        $this->amvTable->save($amv);
 
         $this->historize(
             $amv,
@@ -246,9 +246,10 @@ class AmvService implements PositionUpdatableServiceInterface
                 ->setThreat($threat)
                 ->setVulnerability($vulnerability)
                 ->setCreator($this->connectedUser->getEmail());
-            $this->amvTable->save($amv);
 
             $this->createInstanceRiskForInstances($asset, $amv);
+
+            $this->amvTable->save($amv);
 
             $createdAmvsUuids[] = $amv->getUuid();
         }
@@ -661,6 +662,9 @@ class AmvService implements PositionUpdatableServiceInterface
         ];
     }
 
+    /**
+     * Created instance risks based on the newly created AMV for the instances based on the linked asset.
+     */
     private function createInstanceRiskForInstances(Entity\Asset $asset, Entity\Amv $amv): void
     {
         foreach ($asset->getInstances() as $instance) {

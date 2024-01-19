@@ -20,7 +20,7 @@ trait ImpactVerificationTrait
     /**
      * @throws Exception
      */
-    protected function verifyImpacts(AnrSuperClass $anr, ScaleTable $scaleTable, array $data): void
+    private function verifyImpacts(AnrSuperClass $anr, ScaleTable $scaleTable, array $data): void
     {
         $scale = $scaleTable->findByAnrAndType($anr, ScaleSuperClass::TYPE_IMPACT);
         $this->verificationErrorMessages = [];
@@ -42,7 +42,7 @@ trait ImpactVerificationTrait
         }
     }
 
-    protected function verifyInstanceRiskRates(
+    private function verifyInstanceRiskRates(
         InstanceRiskSuperClass $instanceRisk,
         ScaleTable $scaleTable,
         array $data
@@ -87,5 +87,42 @@ trait ImpactVerificationTrait
                 $scale->getMax()
             );
         }
+    }
+
+    /**
+     * Determines whether the instance risk's impacts are higher than passed data. Only for global objects.
+     *
+     * @param InstanceRiskSuperClass $instanceRisk
+     * @param array $valuesToCompare ['max_risk' => INT, 'c_impact' => INT, 'i_impact' => INT, 'd_impact' => INT]
+     *
+     * @return bool
+     */
+    private function areInstanceRiskImpactsHigher(
+        InstanceRiskSuperClass $instanceRisk,
+        array $valuesToCompare
+    ): bool {
+        $instance = $instanceRisk->getInstance();
+        $isMaxRiskSet = false;
+        foreach ($instance->getInstanceRisks() as $instanceRiskToValidate) {
+            if ($instanceRiskToValidate->getCacheMaxRisk() !== -1) {
+                $isMaxRiskSet = true;
+                break;
+            }
+        }
+        if ($isMaxRiskSet) {
+            return $valuesToCompare['max_risk'] < $instanceRisk->getCacheMaxRisk();
+        }
+
+        /* We compare CIA criteria in case if max risk value is not set. */
+        $maxExistedCia = max($valuesToCompare['c_impact'], $valuesToCompare['i_impact'], $valuesToCompare['d_impact']);
+        $maxCurrentCia = max($instance->getConfidentiality(), $instance->getIntegrity(), $instance->getAvailability());
+        if ($maxExistedCia === $maxCurrentCia) {
+            $sumExistedCia = $valuesToCompare['c_impact'] + $valuesToCompare['i_impact'] + $valuesToCompare['d_impact'];
+            $sumCurrentCia = $instance->getConfidentiality() + $instance->getIntegrity() + $instance->getAvailability();
+
+            return $sumExistedCia < $sumCurrentCia;
+        }
+
+        return $maxExistedCia < $maxCurrentCia;
     }
 }

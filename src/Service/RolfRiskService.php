@@ -221,7 +221,10 @@ class RolfRiskService extends AbstractService
         $rolfTags = $data['tags'] ?? [];
         unset($data['tags']);
 
+        /** @var RolfRiskTable $rolfRiskTable */
+        $rolfRiskTable = $this->get('table');
 
+        $rolfRisk = $rolfRiskTable->findById($id);
         //manage the measures separately because it's the slave of the relation RolfRisks<-->measures
         foreach ($data['measures'] as $measure) {
             $this->get('measureTable')->getEntity($measure)->addOpRisk($rolfRisk);

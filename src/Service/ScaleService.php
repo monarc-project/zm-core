@@ -168,7 +168,6 @@ class ScaleService
      */
     protected function adjustInstancesAndConsequencesImpacts(Entity\Anr $anr, array $data): void
     {
-        /** @var Entity\Instance[] $rootInstances */
         $rootInstances = $this->instanceTable->findRootsByAnr($anr);
         foreach ($rootInstances as $rootInstance) {
             $this->performAdjustmentForInstanceAndItsConsequences($rootInstance, $data);
@@ -194,7 +193,8 @@ class ScaleService
                 }
             }
             foreach ($instance->getInstanceRisks() as $instanceRisk) {
-                $this->instanceRiskService->recalculateRiskRates($instanceRisk, false);
+                $this->instanceRiskService->recalculateRiskRates($instanceRisk);
+                $this->instanceRiskTable->save($instanceRisk, false);
             }
 
             $this->instanceTable->save($instance, false);

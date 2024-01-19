@@ -203,6 +203,7 @@ class ThreatService
             $instancesRisks = $this->instanceRiskTable->findByThreat($threat);
             foreach ($instancesRisks as $instanceRisk) {
                 $this->instanceRiskService->recalculateRiskRates($instanceRisk);
+                $this->instanceRiskTable->save($instanceRisk, false);
             }
             $this->instanceRiskTable->flush();
         }

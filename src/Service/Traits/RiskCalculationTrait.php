@@ -7,9 +7,63 @@
 
 namespace Monarc\Core\Service\Traits;
 
+use Monarc\Core\Model\Entity\InstanceRiskSuperClass;
+
 trait RiskCalculationTrait
 {
-    protected function calculateRiskConfidentiality(
+    public function recalculateRiskRates(InstanceRiskSuperClass $instanceRisk): void
+    {
+        $instance = $instanceRisk->getInstance();
+
+        $riskConfidentiality = $this->calculateRiskConfidentiality(
+            $instance->getConfidentiality(),
+            $instanceRisk->getThreatRate(),
+            $instanceRisk->getVulnerabilityRate()
+        );
+        $riskIntegrity = $this->calculateRiskIntegrity(
+            $instance->getIntegrity(),
+            $instanceRisk->getThreatRate(),
+            $instanceRisk->getVulnerabilityRate()
+        );
+        $riskAvailability = $this->calculateRiskAvailability(
+            $instance->getAvailability(),
+            $instanceRisk->getThreatRate(),
+            $instanceRisk->getVulnerabilityRate()
+        );
+
+        $instanceRisk
+            ->setRiskConfidentiality($riskConfidentiality)
+            ->setRiskIntegrity($riskIntegrity)
+            ->setRiskAvailability($riskAvailability);
+
+        $risks = [];
+        $impacts = [];
+
+        if ($instanceRisk->getThreat()->getConfidentiality()) {
+            $risks[] = $riskConfidentiality;
+            $impacts[] = $instance->getConfidentiality();
+        }
+        if ($instanceRisk->getThreat()->getIntegrity()) {
+            $risks[] = $riskIntegrity;
+            $impacts[] = $instance->getIntegrity();
+        }
+        if ($instanceRisk->getThreat()->getAvailability()) {
+            $risks[] = $riskAvailability;
+            $impacts[] = $instance->getAvailability();
+        }
+
+        $instanceRisk->setCacheMaxRisk(!empty($risks) ? max($risks) : -1);
+        $instanceRisk->setCacheTargetedRisk(
+            $this->calculateTargetRisk(
+                $impacts,
+                $instanceRisk->getThreatRate(),
+                $instanceRisk->getVulnerabilityRate(),
+                $instanceRisk->getReductionAmount()
+            )
+        );
+    }
+
+    private function calculateRiskConfidentiality(
         int $instanceConfidentialityValue,
         int $threatRate,
         int $vulnerabilityRate
@@ -19,7 +73,7 @@ trait RiskCalculationTrait
             : $instanceConfidentialityValue * $threatRate * $vulnerabilityRate;
     }
 
-    protected function calculateRiskIntegrity(
+    private function calculateRiskIntegrity(
         int $instanceIntegrityImpact,
         int $threatRate,
         int $vulnerabilityRate
@@ -29,7 +83,7 @@ trait RiskCalculationTrait
             : $instanceIntegrityImpact * $threatRate * $vulnerabilityRate;
     }
 
-    protected function calculateRiskAvailability(
+    private function calculateRiskAvailability(
         int $instanceAvailabilityImpact,
         int $threatRate,
         int $vulnerabilityRate
@@ -42,7 +96,7 @@ trait RiskCalculationTrait
     /**
      * @param int[] $instanceImpacts
      */
-    protected function calculateTargetRisk(
+    private function calculateTargetRisk(
         array $instanceImpacts,
         int $threatRate,
         int $vulnerabilityRate,

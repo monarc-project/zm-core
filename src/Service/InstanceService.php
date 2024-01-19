@@ -18,13 +18,11 @@ class InstanceService
     use PositionUpdateTrait;
 
     private Table\InstanceTable $instanceTable;
-
     private Table\MonarcObjectTable $monarcObjectTable;
+    private Table\InstanceRiskTable $instanceRiskTable;
 
     private InstanceRiskService $instanceRiskService;
-
     private InstanceRiskOpService $instanceRiskOpService;
-
     private InstanceConsequenceService $instanceConsequenceService;
 
     private Entity\UserSuperClass $connectedUser;
@@ -32,6 +30,7 @@ class InstanceService
     public function __construct(
         Table\InstanceTable $instanceTable,
         Table\MonarcObjectTable $monarcObjectTable,
+        Table\InstanceRiskTable $instanceRiskTable,
         InstanceRiskService $instanceRiskService,
         InstanceRiskOpService $instanceRiskOpService,
         InstanceConsequenceService $instanceConsequenceService,
@@ -39,13 +38,14 @@ class InstanceService
     ) {
         $this->instanceTable = $instanceTable;
         $this->monarcObjectTable = $monarcObjectTable;
+        $this->instanceRiskTable = $instanceRiskTable;
         $this->instanceRiskService = $instanceRiskService;
         $this->instanceRiskOpService = $instanceRiskOpService;
         $this->instanceConsequenceService = $instanceConsequenceService;
         $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
-    public function getInstancesData(Entity\AnrSuperClass $anr): array
+    public function getInstancesData(Entity\Anr $anr): array
     {
         $rootInstances = $this->instanceTable->findRootInstancesByAnrAndOrderByPosition($anr);
         $instanceData = [];
@@ -59,9 +59,9 @@ class InstanceService
         return $instanceData;
     }
 
-    public function getInstanceData(Entity\AnrSuperClass $anr, int $id): array
+    public function getInstanceData(Entity\Anr $anr, int $id): array
     {
-        /** @var Entity\InstanceSuperClass $instance */
+        /** @var Entity\Instance $instance */
         $instance = $this->instanceTable->findById($id);
         if ($instance->getAnr()->getId() !== $anr->getId()) {
             throw new Exception(sprintf('The instance ID "%d" belongs to a different analysis.', $id));
@@ -86,9 +86,8 @@ class InstanceService
             throw new Exception('The object is not linked to the anr', 412);
         }
 
-        $instanceClassName = $this->instanceTable->getEntityName();
         /** @var Entity\Instance $instance */
-        $instance = (new $instanceClassName)
+        $instance = (new Entity\Instance())
             ->setAnr($anr)
             ->setObject($object)
             ->setAsset($object->getAsset())
@@ -111,9 +110,6 @@ class InstanceService
 
         $this->instanceTable->save($instance);
 
-        /* TODO: Used only on FO side. Can be removed. Kept not to forget to add there. */
-        $this->updateAnrInstanceMetadataFieldFromBrothers($instance);
-
         $this->instanceConsequenceService->createInstanceConsequences($instance, $anr, $object);
         $instance->updateImpactBasedOnConsequences()->refreshInheritedImpact();
 
@@ -135,9 +131,9 @@ class InstanceService
         return $instance;
     }
 
-    public function updateInstance(Entity\AnrSuperClass $anr, int $id, array $data): Entity\InstanceSuperClass
+    public function updateInstance(Entity\Anr $anr, int $id, array $data): Entity\Instance
     {
-        /** @var Entity\InstanceSuperClass $instance */
+        /** @var Entity\Instance $instance */
         $instance = $this->instanceTable->findById($id);
 
         $this->updateConsequences($anr, $data['consequences']);
@@ -151,13 +147,13 @@ class InstanceService
         return $instance;
     }
 
-    public function patchInstance(Entity\AnrSuperClass $anr, int $id, array $data): Entity\InstanceSuperClass
+    public function patchInstance(Entity\Anr $anr, int $id, array $data): Entity\Instance
     {
         if (isset($data['parent']) && $id === $data['parent']) {
             throw new Exception('Instance can not be a parent of itself.', 412);
         }
 
-        /** @var Entity\InstanceSuperClass $instance */
+        /** @var Entity\Instance $instance */
         $instance = $this->instanceTable->findById($id);
 
         $this->updateInstanceParent($instance, $data);
@@ -179,7 +175,7 @@ class InstanceService
 
     public function delete(int $id): void
     {
-        /** @var Entity\InstanceSuperClass $instance */
+        /** @var Entity\Instance $instance */
         $instance = $this->instanceTable->findById($id);
 
         /* Only a root instance can be deleted. */
@@ -194,7 +190,7 @@ class InstanceService
         $this->instanceTable->remove($instance);
     }
 
-    public function updateChildrenImpactsAndRisks(Entity\InstanceSuperClass $instance): void
+    public function updateChildrenImpactsAndRisks(Entity\Instance $instance): void
     {
         foreach ($instance->getChildren() as $childInstance) {
             $childInstance->refreshInheritedImpact();
@@ -207,7 +203,7 @@ class InstanceService
         }
     }
 
-    public function refreshInstanceImpactAndUpdateRisks(Entity\InstanceSuperClass $instance): void
+    public function refreshInstanceImpactAndUpdateRisks(Entity\Instance $instance): void
     {
         $instance->updateImpactBasedOnConsequences();
         $this->updateRisks($instance);
@@ -220,7 +216,7 @@ class InstanceService
     /**
      * Is called when a ScaleImpactTypeService when a scale type visibility is changed.
      */
-    public function refreshAllTheInstancesImpactAndUpdateRisks(Entity\AnrSuperClass $anr): void
+    public function refreshAllTheInstancesImpactAndUpdateRisks(Entity\Anr $anr): void
     {
         $rootInstances = $this->instanceTable->findRootsByAnr($anr);
         foreach ($rootInstances as $rootInstance) {
@@ -231,17 +227,15 @@ class InstanceService
         $this->instanceTable->flush();
     }
 
-    protected function updateAnrInstanceMetadataFieldFromBrothers(Entity\InstanceSuperClass $instance): void
-    {
-    }
-
     /**
      * Creates instances for each child.
      */
-    private function createChildren(Entity\InstanceSuperClass $parentInstance): void
+    private function createChildren(Entity\Instance $parentInstance): void
     {
+        /** @var Entity\Anr $anr */
+        $anr = $parentInstance->getAnr();
         foreach ($parentInstance->getObject()->getChildrenLinks() as $childObjectLink) {
-            $this->instantiateObjectToAnr($parentInstance->getAnr(), [
+            $this->instantiateObjectToAnr($anr, [
                 'object' => $childObjectLink->getChild(),
                 'parent' => $parentInstance,
                 'position' => $childObjectLink->getPosition(),
@@ -254,7 +248,7 @@ class InstanceService
      * The level is used to determine if the related object has a composition and if not root (doesn't have it),
      * then the instance can be removed or moved independently.
      */
-    private function updateInstanceLevels(bool $rootLevel, Entity\InstanceSuperClass $instance): void
+    private function updateInstanceLevels(bool $rootLevel, Entity\Instance $instance): void
     {
         if ($rootLevel) {
             $instance->setLevel(Entity\InstanceSuperClass::LEVEL_ROOT);
@@ -265,7 +259,7 @@ class InstanceService
         }
     }
 
-    private function updateOtherGlobalInstancesConsequences(Entity\InstanceSuperClass $instance, array $data): void
+    private function updateOtherGlobalInstancesConsequences(Entity\Instance $instance, array $data): void
     {
         if ($instance->getObject()->isScopeGlobal()) {
             /* Retrieve instances linked to the same global object to update impacts based on the passed instance. */
@@ -285,7 +279,7 @@ class InstanceService
         }
     }
 
-    private function updateConsequences(Entity\AnrSuperClass $anr, array $consequencesData)
+    private function updateConsequences(Entity\Anr $anr, array $consequencesData)
     {
         foreach ($consequencesData as $consequenceData) {
             $this->instanceConsequenceService->patchConsequence($anr, $consequenceData['id'], [
@@ -297,7 +291,7 @@ class InstanceService
         }
     }
 
-    private function getChildrenTreeList(Entity\InstanceSuperClass $instance): array
+    private function getChildrenTreeList(Entity\Instance $instance): array
     {
         $result = [];
         foreach ($instance->getChildren() as $childInstance) {
@@ -310,7 +304,7 @@ class InstanceService
         return $result;
     }
 
-    private function getPreparedInstanceData(Entity\InstanceSuperClass $instance): array
+    private function getPreparedInstanceData(Entity\Instance $instance): array
     {
         return array_merge([
             'id' => $instance->getId(),
@@ -341,14 +335,16 @@ class InstanceService
         ], $instance->getLabels(), $instance->getNames());
     }
 
-    private function getOtherInstances(Entity\InstanceSuperClass $instance): array
+    private function getOtherInstances(Entity\Instance $instance): array
     {
-        $otherInstances = $this->instanceTable->findByAnrAndObject($instance->getAnr(), $instance->getObject());
+        /** @var Entity\Anr $anr */
+        $anr = $instance->getAnr();
+        $otherInstances = $this->instanceTable->findByAnrAndObject($anr, $instance->getObject());
         $names = [
-            'name1' => $instance->getAnr()->getLabel(1),
-            'name2' => $instance->getAnr()->getLabel(2),
-            'name3' => $instance->getAnr()->getLabel(3),
-            'name4' => $instance->getAnr()->getLabel(4),
+            'name1' => $anr->getLabel(1),
+            'name2' => $anr->getLabel(2),
+            'name3' => $anr->getLabel(3),
+            'name4' => $anr->getLabel(4),
         ];
         $otherInstancesData = [];
         foreach ($otherInstances as $otherInstance) {
@@ -366,19 +362,20 @@ class InstanceService
         return $otherInstancesData;
     }
 
-    private function updateRisks(Entity\InstanceSuperClass $instance): void
+    private function updateRisks(Entity\Instance $instance): void
     {
         foreach ($instance->getInstanceRisks() as $instanceRisk) {
-            $this->instanceRiskService->recalculateRiskRates($instanceRisk, false);
+            $this->instanceRiskService->recalculateRiskRates($instanceRisk);
+            $this->instanceRiskTable->save($instanceRisk, false);
         }
     }
 
-    private function updateInstanceParent(Entity\InstanceSuperClass $instance, array $data): void
+    private function updateInstanceParent(Entity\Instance $instance, array $data): void
     {
         if (!empty($data['parent'])
             && (!$instance->hasParent() || $instance->getParent()->getId() !== $data['parent'])
         ) {
-            /** @var Entity\InstanceSuperClass|null $parentInstance */
+            /** @var Entity\Instance|null $parentInstance */
             $parentInstance = $this->instanceTable->findById((int)$data['parent'], false);
             if ($parentInstance !== null) {
                 $instance->setParent($parentInstance)->setRoot($parentInstance->getRoot() ?? $parentInstance);
@@ -388,7 +385,7 @@ class InstanceService
         }
     }
 
-    private function getPreparedPositionData(Entity\InstanceSuperClass $instance, array $data): array
+    private function getPreparedPositionData(Entity\Instance $instance, array $data): array
     {
         $positionData = [];
         if (isset($data['position'])) {

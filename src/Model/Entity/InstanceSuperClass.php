@@ -539,6 +539,16 @@ class InstanceSuperClass implements PositionedEntityInterface
         return array_merge($this->getParent()->getParents(), [$this->getNames()]);
     }
 
+    public function getSelfAndChildrenIds(): array
+    {
+        $childrenIds = [];
+        foreach ($this->children as $childInstance) {
+            $childrenIds[] = $childInstance->getSelfAndChildrenIds();
+        }
+
+        return array_merge([$this->id], ...$childrenIds);
+    }
+
     public function updateImpactBasedOnConsequences(): self
     {
         $maxConfidentiality = -1;

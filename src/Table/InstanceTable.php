@@ -7,10 +7,9 @@
 
 namespace Monarc\Core\Table;
 
-use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManager;
+use Monarc\Core\Model\Entity\Anr;
 use Monarc\Core\Model\Entity\AnrSuperClass;
-use Monarc\Core\Model\Entity\AssetSuperClass;
 use Monarc\Core\Model\Entity\Instance;
 use Monarc\Core\Model\Entity\InstanceSuperClass;
 use Monarc\Core\Model\Entity\ObjectSuperClass;
@@ -43,9 +42,9 @@ class InstanceTable extends AbstractTable implements PositionUpdatableTableInter
     }
 
     /**
-     * @return InstanceSuperClass[]
+     * @return Instance[]
      */
-    public function findRootsByAnr(AnrSuperClass $anr): array
+    public function findRootsByAnr(Anr $anr): array
     {
         return $this->getRepository()
             ->createQueryBuilder('i')
@@ -59,7 +58,7 @@ class InstanceTable extends AbstractTable implements PositionUpdatableTableInter
     /**
      * @return Instance[]
      */
-    public function findRootInstancesByAnrAndOrderByPosition(AnrSuperClass $anr): array
+    public function findRootInstancesByAnrAndOrderByPosition(Anr $anr): array
     {
         return $this->getRepository()
             ->createQueryBuilder('i')
