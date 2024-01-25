@@ -22,7 +22,7 @@ class OperationalInstanceRiskScaleSuperClass
     use UpdateEntityTrait;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer", nullable=false)
      * @ORM\Id
@@ -80,15 +80,6 @@ class OperationalInstanceRiskScaleSuperClass
      * @ORM\Column(name="targeted_value", type="integer", options={"default": -1})
      */
     protected $targetedValue = -1;
-
-    public static function constructFromObject(
-        OperationalInstanceRiskScaleSuperClass $operationalInstanceRiskScale
-    ): OperationalInstanceRiskScaleSuperClass {
-        return (new static())
-            ->setBrutValue($operationalInstanceRiskScale->getBrutValue())
-            ->setNetValue($operationalInstanceRiskScale->getNetValue())
-            ->setTargetedValue($operationalInstanceRiskScale->getTargetedValue());
-    }
 
     public function getId(): int
     {

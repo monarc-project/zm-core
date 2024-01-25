@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
  * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
@@ -9,6 +9,9 @@ namespace Monarc\Core\Service;
 
 use Laminas\I18n\Translator\Translator;
 
+/**
+ * The service uses .po files for translation of the backend based strings.
+ */
 class TranslateService
 {
     protected Translator $translator;

@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -13,43 +13,21 @@ use Ramsey\Uuid\Uuid;
 
 class OperationalRiskScaleService
 {
-    private Table\OperationalRiskScaleTable $operationalRiskScaleTable;
-
-    private Table\OperationalRiskScaleTypeTable $operationalRiskScaleTypeTable;
-
-    private Table\OperationalRiskScaleCommentTable $operationalRiskScaleCommentTable;
-
-    private Table\TranslationTable $translationTable;
-
-    private ConfigService $configService;
-
-    private InstanceRiskOpService $instanceRiskOpService;
-
-    private Table\InstanceRiskOpTable $instanceRiskOpTable;
-
-    private Table\OperationalInstanceRiskScaleTable $operationalInstanceRiskScaleTable;
-
     private Entity\UserSuperClass $connectedUser;
 
+    private array $operationalRiskScales = [];
+
     public function __construct(
-        ConnectedUserService $connectedUserService,
-        Table\OperationalRiskScaleTable $operationalRiskScaleTable,
-        Table\OperationalRiskScaleTypeTable $operationalRiskScaleTypeTable,
-        Table\OperationalRiskScaleCommentTable $operationalRiskScaleCommentTable,
-        Table\TranslationTable $translationTable,
-        ConfigService $configService,
-        InstanceRiskOpService $instanceRiskOpService,
-        Table\InstanceRiskOpTable $instanceRiskOpTable,
-        Table\OperationalInstanceRiskScaleTable $operationalInstanceRiskScaleTable
+        private Table\OperationalRiskScaleTable $operationalRiskScaleTable,
+        private Table\OperationalRiskScaleTypeTable $operationalRiskScaleTypeTable,
+        private Table\OperationalRiskScaleCommentTable $operationalRiskScaleCommentTable,
+        private Table\TranslationTable $translationTable,
+        private ConfigService $configService,
+        private InstanceRiskOpService $instanceRiskOpService,
+        private Table\InstanceRiskOpTable $instanceRiskOpTable,
+        private Table\OperationalInstanceRiskScaleTable $operationalInstanceRiskScaleTable,
+        ConnectedUserService $connectedUserService
     ) {
-        $this->operationalRiskScaleTable = $operationalRiskScaleTable;
-        $this->operationalRiskScaleTypeTable = $operationalRiskScaleTypeTable;
-        $this->operationalRiskScaleCommentTable = $operationalRiskScaleCommentTable;
-        $this->translationTable = $translationTable;
-        $this->configService = $configService;
-        $this->instanceRiskOpService = $instanceRiskOpService;
-        $this->instanceRiskOpTable = $instanceRiskOpTable;
-        $this->operationalInstanceRiskScaleTable = $operationalInstanceRiskScaleTable;
         $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
@@ -383,6 +361,20 @@ class OperationalRiskScaleService
         }
     }
 
+    public function getFromCacheOrFindLikelihoodScale(Entity\Anr $anr): Entity\OperationalRiskScale
+    {
+        $typeLikelihood = Entity\OperationalRiskScaleSuperClass::TYPE_LIKELIHOOD;
+        if (!isset($this->operationalRiskScales[$typeLikelihood])) {
+            $this->operationalRiskScales[$typeLikelihood] = $this->operationalRiskScaleTable->findByAnrAndType(
+                $anr,
+                $typeLikelihood
+            );
+        }
+
+        /* There is only one scale of the TYPE_LIKELIHOOD. */
+        return current($this->operationalRiskScales[$typeLikelihood]);
+    }
+
     protected function getCreatedOperationalRiskScaleTypeObject(
         Entity\AnrSuperClass $anr,
         Entity\OperationalRiskScale $operationalRiskScale
@@ -425,6 +417,7 @@ class OperationalRiskScaleService
         int $scaleValue,
         array $languageCodes
     ): void {
+        /** @var Entity\OperationalRiskScaleComment $scaleComment */
         $scaleComment = (new Entity\OperationalRiskScaleComment())
             ->setLabelTranslationKey((string)Uuid::uuid4())
             ->setAnr($anr)

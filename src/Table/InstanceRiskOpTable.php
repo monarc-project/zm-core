@@ -12,7 +12,6 @@ use Doctrine\ORM\EntityManager;
 use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\InstanceRiskOp;
 use Monarc\Core\Model\Entity\InstanceRiskOpSuperClass;
-use Monarc\Core\Model\Entity\InstanceSuperClass;
 use Monarc\Core\Model\Entity\ObjectSuperClass;
 use Monarc\Core\Model\Entity\RolfRiskSuperClass;
 
@@ -55,19 +54,6 @@ class InstanceRiskOpTable extends AbstractTable
         }
 
         return $queryBuilder->getQuery()->getResult();
-    }
-
-    /**
-     * @return InstanceRiskOpSuperClass[]
-     */
-    public function findByInstance(InstanceSuperClass $instance)
-    {
-        return $this->getRepository()
-            ->createQueryBuilder('oprisk')
-            ->where('oprisk.instance = :instance')
-            ->setParameter('instance', $instance)
-            ->getQuery()
-            ->getResult();
     }
 
     /**

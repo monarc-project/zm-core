@@ -265,12 +265,6 @@ abstract class AbstractEntityTable
         $clean_params = false;
         if (in_array('uuid', $ids)) { //uuid
             if (isset($params['implicitPosition']['changes'])) {
-                if (isset($entity->parameters['implicitPosition']['root']) && (!$entity->uuid || $params['implicitPosition']['changes']['parent']['before'] != $params['implicitPosition']['changes']['parent']['after'])) {
-                    throw Exception('The method "updateRootTree" does not exist.', 412);
-                    $this->updateRootTree($entity, !$entity->uuid, $params['implicitPosition']['changes']);
-                    $clean_params = true;
-                }
-
                 if ((!$entity->uuid)
                     || (isset($params['implicitPosition']['changes']['parent']) && $params['implicitPosition']['changes']['parent']['before'] != $params['implicitPosition']['changes']['parent']['after'])
                     || (isset($params['implicitPosition']['changes']['position']) && $params['implicitPosition']['changes']['position']['before'] != $params['implicitPosition']['changes']['position']['after'])
@@ -282,11 +276,6 @@ abstract class AbstractEntityTable
             }
         } else { //id
             if (isset($params['implicitPosition']['changes'])) {
-                if (isset($entity->parameters['implicitPosition']['root']) && (!$entity->id || $params['implicitPosition']['changes']['parent']['before'] != $params['implicitPosition']['changes']['parent']['after'])) {
-                    throw Exception('The method "updateRootTree" does not exist.', 412);
-                    $this->updateRootTree($entity, !$entity->id, $params['implicitPosition']['changes']);
-                    $clean_params = true;
-                }
 
                 if ((!$entity->id)
                     || (isset($params['implicitPosition']['changes']['parent']) && $params['implicitPosition']['changes']['parent']['before'] != $params['implicitPosition']['changes']['parent']['after'])
@@ -319,39 +308,6 @@ abstract class AbstractEntityTable
         }
 
         return $id;
-    }
-
-    /**
-     * TODO: Remove...
-     *
-     * @param $entity
-     * @param $was_new
-     * @param array $changes
-     */
-    protected function updateRootTree($entity, $was_new, $changes = [])
-    {
-        $this->initTree($entity, 'position');//need to be called first to allow tree repositionning
-        $rootField = $entity->parameters['implicitPosition']['root'];
-        if ($entity->get($entity->parameters['implicitPosition']['field']) === null) {
-            $entity->set($rootField, null);
-        } else {
-            $parent = $this->getEntity($entity->get($entity->parameters['implicitPosition']['field'])->get('id'));
-            $entity->set($rootField, $parent->get($rootField) ?? $parent);
-        }
-
-        if (!$was_new && $changes['parent']['before'] != $changes['parent']['after']) {
-            $temp = isset($entity->parameters['children']) ? $entity->parameters['children'] : [];
-            while (!empty($temp)) {
-                $sub = array_shift($temp);
-                $sub->set($rootField, $entity->get($rootField) ?? $entity);
-                $this->save($sub, false);
-                if (!empty($sub->parameters['children'])) {
-                    foreach ($sub->parameters['children'] as $subsub) {
-                        array_unshift($temp, $subsub);
-                    }
-                }
-            }
-        }
     }
 
     /**
@@ -716,53 +672,5 @@ abstract class AbstractEntityTable
     public function getReference($id)
     {
         return $this->getDb()->getReference($this->getEntityClass(), $id);
-    }
-
-    /**
-     * Optimized method to avoid recursive call with multiple SQL queries
-     *
-     * @param $entity
-     * @param null $order_by
-     */
-    public function initTree($entity, $order_by = null)
-    {
-        $rootField = $entity->parameters['implicitPosition']['root'] ?? 'root';
-        $parentField = $entity->parameters['implicitPosition']['field'] ?? 'parent';
-
-        $ref = $entity->get($rootField) === null
-            ? $entity->get('id')
-            : $entity->get($rootField)->get('id');
-
-        $qb = $this->getRepository()->createQueryBuilder('t');
-
-        $qb->select()
-            ->where('t.' . $rootField . ' = :ref')
-            ->setParameter(':ref', $ref);
-
-        if ($order_by !== null) {
-            $qb->orderBy('t.' . $order_by, 'DESC');
-        }
-
-        $descendants = $qb->getQuery()->getResult();
-
-        $family = array();
-        foreach ($descendants as $c) {
-            //root is null but [null] on an array is not pretty cool
-            $family[$c->get($parentField) === null ? 0 : $c->get($parentField)->get('id')][] = $c;
-        }
-
-        if (!empty($family)) {
-            $temp = array();
-            $temp[] = $entity;
-            while (!empty($temp)) {
-                $current = array_shift($temp);
-                if (!empty($family[$current->get('id')])) {
-                    foreach ($family[$current->get('id')] as $fam) {
-                        $current->addParameterValue('children', $fam->getId(), $fam);
-                        array_unshift($temp, $fam);
-                    }
-                }
-            }
-        }
     }
 }

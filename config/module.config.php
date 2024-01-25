@@ -288,6 +288,10 @@ return [
                 ReflectionBasedAbstractFactory::class,
             InputValidator\InstanceRisk\UpdateInstanceRiskDataInputValidator::class =>
                 ReflectionBasedAbstractFactory::class,
+            InputValidator\InstanceRiskOp\PatchInstanceRiskOpDataInputValidator::class =>
+                ReflectionBasedAbstractFactory::class,
+            InputValidator\InstanceRiskOp\UpdateInstanceRiskOpDataInputValidator::class =>
+                ReflectionBasedAbstractFactory::class,
             InputValidator\Anr\PatchThresholdsDataInputValidator::class => ReflectionBasedAbstractFactory::class,
             InputValidator\Profile\PatchProfileDataInputValidator::class => ReflectionBasedAbstractFactory::class,
         ],

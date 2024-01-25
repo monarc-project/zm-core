@@ -539,6 +539,9 @@ class InstanceSuperClass implements PositionedEntityInterface
         return array_merge($this->getParent()->getParents(), [$this->getNames()]);
     }
 
+    /**
+     * @return int[]
+     */
     public function getSelfAndChildrenIds(): array
     {
         $childrenIds = [];
@@ -547,6 +550,19 @@ class InstanceSuperClass implements PositionedEntityInterface
         }
 
         return array_merge([$this->id], ...$childrenIds);
+    }
+
+    /**
+     * @return self[]
+     */
+    public function getSelfAndChildrenInstances(): array
+    {
+        $childrenInstances = [];
+        foreach ($this->children as $childInstance) {
+            $childrenInstances[] = $childInstance->getSelfAndChildrenInstances();
+        }
+
+        return array_merge([$this], ...$childrenInstances);
     }
 
     public function updateImpactBasedOnConsequences(): self

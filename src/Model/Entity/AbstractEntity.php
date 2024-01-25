@@ -488,22 +488,6 @@ abstract class AbstractEntity implements InputFilterAwareInterface
         return $this;
     }
 
-    /**
-     * The method is used in AbstractEntityTable::initTree
-     */
-    public function addParameterValue(string $key, int $index, $value)
-    {
-        $this->parameters[$key][$index] = $value;
-    }
-
-    /**
-     * The method is used to get the initialized tree of parent -> children elements.
-     */
-    public function getParameterValues(string $name): array
-    {
-        return $this->parameters[$name] ?? [];
-    }
-
     public function initParametersChanges()
     {
         unset($this->parameters['implicitPosition']['changes']);

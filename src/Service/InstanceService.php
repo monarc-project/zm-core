@@ -173,14 +173,14 @@ class InstanceService
         return $instance;
     }
 
-    public function delete(int $id): void
+    public function delete(Entity\Anr $anr, int $id): void
     {
         /** @var Entity\Instance $instance */
-        $instance = $this->instanceTable->findById($id);
+        $instance = $this->instanceTable->findByIdAndAnr($id, $anr);
 
         /* Only a root instance can be deleted. */
         if (!$instance->isLevelRoot()) {
-            throw new Exception('Only a root instance can be deleted.', 412);
+            throw new Exception('Only composition root instances can be deleted.', 412);
         }
 
         $instance->removeAllInstanceRisks()->removeAllOperationalInstanceRisks();

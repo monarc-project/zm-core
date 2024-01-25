@@ -311,18 +311,13 @@ class InstanceRiskOpSuperClass
 
     public function getTreatmentName(): string
     {
-        switch ($this->kindOfMeasure) {
-            case static::KIND_REDUCTION:
-                return 'Reduction';
-            case static::KIND_REFUSED:
-                return 'Denied';
-            case static::KIND_ACCEPTATION:
-                return 'Accepted';
-            case static::KIND_SHARED:
-                return 'Shared';
-            default:
-                return 'Not treated';
-        }
+        return match ($this->kindOfMeasure) {
+            static::KIND_REDUCTION => 'Reduction',
+            static::KIND_REFUSED => 'Denied',
+            static::KIND_ACCEPTATION => 'Accepted',
+            static::KIND_SHARED => 'Shared',
+            default => 'Not treated',
+        };
     }
 
     public function getCacheBrutRisk(): int
