@@ -8,6 +8,8 @@
 namespace Monarc\Core\Service;
 
 use Monarc\Core\Model\Entity;
+use Monarc\Core\Model\Entity\ScaleSuperClass;
+use Monarc\Core\Service\Helper\ScalesCacheHelper;
 use Monarc\Core\Service\Traits\ImpactVerificationTrait;
 use Monarc\Core\Table;
 
@@ -15,38 +17,20 @@ class InstanceConsequenceService
 {
     use ImpactVerificationTrait;
 
-    private Table\InstanceConsequenceTable $instanceConsequenceTable;
-
-    private Table\InstanceTable $instanceTable;
-
-    private Table\ScaleTable $scaleTable;
-
-    private Table\ScaleImpactTypeTable $scaleImpactTypeTable;
-
-    private InstanceService $instanceService;
-
     private Entity\UserSuperClass $connectedUser;
 
     public function __construct(
-        Table\InstanceConsequenceTable $instanceConsequenceTable,
-        Table\InstanceTable $instanceTable,
-        Table\ScaleTable $scaleTable,
-        Table\ScaleImpactTypeTable $scaleImpactTypeTable,
-        InstanceService $instanceService,
+        private Table\InstanceConsequenceTable $instanceConsequenceTable,
+        private Table\InstanceTable $instanceTable,
+        private InstanceService $instanceService,
+        private ScalesCacheHelper $scalesCacheHelper,
         ConnectedUserService $connectedUserService
     ) {
-        $this->instanceConsequenceTable = $instanceConsequenceTable;
-        $this->instanceTable = $instanceTable;
-        $this->scaleTable = $scaleTable;
-        $this->scaleImpactTypeTable = $scaleImpactTypeTable;
-        $this->instanceService = $instanceService;
         $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
-    public function getConsequencesData(Entity\InstanceSuperClass $instance, bool $includeScaleComments = false): array
+    public function getConsequencesData(Entity\Instance $instance, bool $includeScaleComments = false): array
     {
-        $languageIndex = $this->getLanguageIndex($instance->getAnr());
-
         $result = [];
         foreach ($instance->getInstanceConsequences() as $instanceConsequence) {
             $scaleImpactType = $instanceConsequence->getScaleImpactType();
@@ -68,7 +52,7 @@ class InstanceConsequenceService
                     $consequenceData['comments'] = [];
                     foreach ($scaleImpactType->getScaleComments() as $scaleComment) {
                         $consequenceData['comments'][$scaleComment->getScaleValue()] = $scaleComment
-                            ->getComment($languageIndex);
+                            ->getComment($this->connectedUser->getLanguage());
                     }
                 }
 
@@ -85,7 +69,8 @@ class InstanceConsequenceService
     public function createInstanceConsequences(
         Entity\Instance $instance,
         Entity\Anr $anr,
-        Entity\MonarcObject $object
+        Entity\MonarcObject $object,
+        bool $saveInDb = true
     ): void {
         $siblingInstance = null;
         if ($object->isScopeGlobal()) {
@@ -107,9 +92,8 @@ class InstanceConsequenceService
                 );
             }
         } else {
-            /** @var Entity\ScaleImpactTypeSuperClass[] $scalesImpactTypes */
-            $scalesImpactTypes = $this->scaleImpactTypeTable->findByAnr($anr);
-            foreach ($scalesImpactTypes as $scalesImpactType) {
+            /** @var Entity\ScaleImpactType $scalesImpactType */
+            foreach ($this->scalesCacheHelper->getCachedScaleImpactTypes($anr) as $scalesImpactType) {
                 if (!\in_array(
                     $scalesImpactType->getType(),
                     Entity\ScaleImpactTypeSuperClass::getScaleImpactTypesCid(),
@@ -120,16 +104,19 @@ class InstanceConsequenceService
             }
         }
 
-        $this->instanceConsequenceTable->flush();
+        if ($saveInDb) {
+            $this->instanceConsequenceTable->flush();
+        }
     }
 
     public function createInstanceConsequence(
-        Entity\InstanceSuperClass $instance,
-        Entity\ScaleImpactTypeSuperClass $scaleImpactType,
+        Entity\Instance $instance,
+        Entity\ScaleImpactType $scaleImpactType,
         bool $isHidden = false,
         array $evaluationCriteria = [],
         bool $saveInTheDb = false
-    ): Entity\InstanceConsequenceSuperClass {
+    ): Entity\InstanceConsequence {
+        /** @var Entity\InstanceConsequence $instanceConsequence */
         $instanceConsequence = (new Entity\InstanceConsequence())
             ->setAnr($instance->getAnr())
             ->setInstance($instance)
@@ -155,15 +142,12 @@ class InstanceConsequenceService
      * This method is called from controllers to hide / show a specific consequence only linked to a specific instance.
      * The other place is InstanceService, to update an instance impacts.
      */
-    public function patchConsequence(
-        Entity\AnrSuperClass $anr,
-        int $id,
-        array $data
-    ): Entity\InstanceConsequence {
+    public function patchConsequence(Entity\Anr $anr, int $id, array $data): Entity\InstanceConsequence
+    {
         /** @var Entity\InstanceConsequence $instanceConsequence */
         $instanceConsequence = $this->instanceConsequenceTable->findByIdAndAnr($id, $anr);
 
-        $this->verifyImpacts($anr, $this->scaleTable, $data);
+        $this->verifyImpacts($this->scalesCacheHelper->getCachedScaleByType($anr, ScaleSuperClass::TYPE_IMPACT), $data);
 
         $updateInstance = $instanceConsequence->isHidden() !== (bool)$data['isHidden'];
 
@@ -185,7 +169,9 @@ class InstanceConsequenceService
         }
 
         if ($updateInstance) {
-            $this->instanceService->refreshInstanceImpactAndUpdateRisks($instanceConsequence->getInstance());
+            /** @var Entity\Instance $instance */
+            $instance = $instanceConsequence->getInstance();
+            $this->instanceService->refreshInstanceImpactAndUpdateRisks($instance);
         }
 
         $this->updateSiblingsConsequences($instanceConsequence, $updateInstance);
@@ -195,6 +181,7 @@ class InstanceConsequenceService
         return $instanceConsequence;
     }
 
+    /** Updated the consequences visibility based on the scales impact types visibility update. */
     public function updateConsequencesByScaleImpactType(Entity\ScaleImpactType $scaleImpactType, bool $hide): void
     {
         $instancesConsequences = $this->instanceConsequenceTable->findByScaleImpactType($scaleImpactType);
@@ -203,11 +190,6 @@ class InstanceConsequenceService
             $this->instanceConsequenceTable->save($instanceConsequence, false);
         }
         $this->instanceConsequenceTable->flush();
-    }
-
-    protected function getLanguageIndex(Entity\AnrSuperClass $anr): int
-    {
-        return $this->connectedUser->getLanguage();
     }
 
     /**

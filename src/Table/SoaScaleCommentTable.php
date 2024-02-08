@@ -23,14 +23,17 @@ class SoaScaleCommentTable extends AbstractTable
     /**
      * @return SoaScaleCommentSuperClass[]
      */
-    public function findByAnrOrderByIndex(AnrSuperClass $anr): array
+    public function findByAnrOrderByIndex(AnrSuperClass $anr, bool $onlyVisible = false): array
     {
-        return $this->getRepository()->createQueryBuilder('ssc')
+        $queryBuilder =  $this->getRepository()->createQueryBuilder('ssc')
             ->where('ssc.anr = :anr')
             ->setParameter('anr', $anr)
-            ->orderBy('ssc.scaleIndex', Criteria::ASC)
-            ->getQuery()
-            ->getResult();
+            ->orderBy('ssc.scaleIndex', Criteria::ASC);
+        if ($onlyVisible) {
+            $queryBuilder->andWhere('ssc.isHidden = 0');
+        }
+
+        return $queryBuilder->getQuery()->getResult();
     }
 
     /**

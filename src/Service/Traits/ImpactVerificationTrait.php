@@ -8,7 +8,6 @@
 namespace Monarc\Core\Service\Traits;
 
 use Monarc\Core\Exception\Exception;
-use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\InstanceRiskSuperClass;
 use Monarc\Core\Model\Entity\ScaleSuperClass;
 use Monarc\Core\Table\ScaleTable;
@@ -20,21 +19,23 @@ trait ImpactVerificationTrait
     /**
      * @throws Exception
      */
-    private function verifyImpacts(AnrSuperClass $anr, ScaleTable $scaleTable, array $data): void
+    private function verifyImpacts(ScaleSuperClass $impactScale, array $data): void
     {
-        $scale = $scaleTable->findByAnrAndType($anr, ScaleSuperClass::TYPE_IMPACT);
+        if ($impactScale->getType() !== ScaleSuperClass::TYPE_IMPACT) {
+            throw new \LogicException('The scale validation has to be done towards scale of type "impact".');
+        }
         $this->verificationErrorMessages = [];
         if (isset($data['confidentiality'])) {
             $value = (int)$data['confidentiality'];
-            $this->verifyValue($value, $scale, 'confidentiality');
+            $this->verifyValue($value, $impactScale, 'confidentiality');
         }
         if (isset($data['integrity'])) {
             $value = (int)$data['integrity'];
-            $this->verifyValue($value, $scale, 'integrity');
+            $this->verifyValue($value, $impactScale, 'integrity');
         }
         if (isset($data['availability'])) {
             $value = (int)$data['availability'];
-            $this->verifyValue($value, $scale, 'availability');
+            $this->verifyValue($value, $impactScale, 'availability');
         }
 
         if (!empty($this->verificationErrorMessages)) {

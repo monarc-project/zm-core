@@ -103,20 +103,13 @@ class AnrService
 
         $this->anrTable->save($anr);
 
-        $this->scaleService->create($anr, ['type' => Entity\ScaleSuperClass::TYPE_IMPACT, 'min' => 0, 'max' => 3]);
-        $this->scaleService->create($anr, ['type' => Entity\ScaleSuperClass::TYPE_THREAT, 'min' => 0, 'max' => 4]);
-        $this->scaleService->create(
-            $anr,
-            ['type' => Entity\ScaleSuperClass::TYPE_VULNERABILITY, 'min' => 0, 'max' => 3]
-        );
+        $this->scaleService->create($anr, Entity\ScaleSuperClass::TYPE_IMPACT, 0, 3);
+        $this->scaleService->create($anr, Entity\ScaleSuperClass::TYPE_THREAT, 0, 4);
+        $this->scaleService->create($anr, Entity\ScaleSuperClass::TYPE_VULNERABILITY, 0, 3);
 
         $this->operationalRiskScaleService->createScale($anr, Entity\OperationalRiskScaleSuperClass::TYPE_IMPACT, 0, 4);
-        $this->operationalRiskScaleService->createScale(
-            $anr,
-            Entity\OperationalRiskScaleSuperClass::TYPE_LIKELIHOOD,
-            0,
-            4
-        );
+        $this->operationalRiskScaleService
+            ->createScale($anr, Entity\OperationalRiskScaleSuperClass::TYPE_LIKELIHOOD, 0, 4);
 
         /** @var Entity\Anr $anr */
         return $anr;

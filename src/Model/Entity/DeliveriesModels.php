@@ -9,12 +9,11 @@ namespace Monarc\Core\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
+use Monarc\Core\Model\Entity\Traits\DescriptionsEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 use Monarc\Core\Validator\FieldValidator\UniqueDeliveryModel;
 
 /**
- * Amv
- *
  * @ORM\Table(name="deliveries_models", indexes={
  *      @ORM\Index(name="anr_id", columns={"anr_id"})
  * })
@@ -25,6 +24,16 @@ class DeliveriesModels extends AbstractEntity
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
+
+    use DescriptionsEntityTrait;
+
+    public const MODEL_CONTEXT_VALIDATION = 1; // Document model for Context validation
+    public const MODEL_ASSETS_AND_MODELS_VALIDATION = 2; // Document model for Assets and models validation
+    public const MODEL_RISK_ANALYSIS = 3; // Document model for Risk analysis
+    public const MODEL_IMPLEMENTATION_PLAN = 4; // Document model for implementation plan
+    public const MODEL_STATEMENT_OF_APPLICABILITY = 5; // Document model for Statement of applicability
+    public const MODEL_RECORD_OF_PROCESSING_ACTIVITIES = 6; // Document model for Record of processing activities
+    public const MODEL_ALL_RECORD_OF_PROCESSING_ACTIVITIES = 7; // Document model for all Rec. of processing activities
 
     /**
      * @var integer
@@ -40,34 +49,6 @@ class DeliveriesModels extends AbstractEntity
      * @ORM\Column(name="category", type="smallint", length=4, options={"default":0})
      */
     protected $category;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="description1", type="text", nullable=true)
-     */
-    protected $description1;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="description2", type="text", nullable=true)
-     */
-    protected $description2;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="description3", type="text", nullable=true)
-     */
-    protected $description3;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="description4", type="text", nullable=true)
-     */
-    protected $description4;
 
     /**
      * @var string
@@ -114,14 +95,36 @@ class DeliveriesModels extends AbstractEntity
      */
     protected $anr;
 
-    const MODEL_CONTEXT_VALIDATION = 1; // Document model for Context validation
-    const MODEL_ASSETS_AND_MODELS_VALIDATION = 2; // Document model for Assets and models validation
-    const MODEL_RISK_ANALYSIS = 3; // Document model for Risk analysis
-    const MODEL_IMPLEMENTATION_PLAN = 4; // Document model for implementation plan
-    const MODEL_STATEMENT_OF_APPLICABILITY = 5; // Document model for Statement of applicability
-    const MODEL_RECORD_OF_PROCESSING_ACTIVITIES = 6; // Document model for Record of processing activities
-    const MODEL_ALL_RECORD_OF_PROCESSING_ACTIVITIES = 7; // Document model for all Record of processing activities
+    public function getPath(int $languageIndex): string
+    {
+        if (!\in_array($languageIndex, range(1, 4), true)) {
+            return '';
+        }
 
+        return (string)$this->{'path' . $languageIndex};
+    }
+
+    public function setPath(array $paths): self
+    {
+        foreach (range(1, 4) as $index) {
+            $key = 'path' . $index;
+            if (isset($paths[$key])) {
+                $this->{$key} = $paths[$key];
+            }
+        }
+
+        return $this;
+    }
+
+    public function getPaths(): array
+    {
+        return [
+            'path1' => $this->path1,
+            'path2' => $this->path2,
+            'path3' => $this->path3,
+            'path4' => $this->path4,
+        ];
+    }
 
     public function getInputFilter($partial = false)
     {

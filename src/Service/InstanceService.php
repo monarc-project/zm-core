@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -9,44 +9,32 @@ namespace Monarc\Core\Service;
 
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity;
-use Monarc\Core\Service\Interfaces\PositionUpdatableServiceInterface;
+use Monarc\Core\Service\Traits\InstancePositionDataHelperTrait;
 use Monarc\Core\Service\Traits\PositionUpdateTrait;
 use Monarc\Core\Table;
 
 class InstanceService
 {
     use PositionUpdateTrait;
-
-    private Table\InstanceTable $instanceTable;
-    private Table\MonarcObjectTable $monarcObjectTable;
-    private Table\InstanceRiskTable $instanceRiskTable;
-
-    private InstanceRiskService $instanceRiskService;
-    private InstanceRiskOpService $instanceRiskOpService;
-    private InstanceConsequenceService $instanceConsequenceService;
+    use InstancePositionDataHelperTrait;
 
     private Entity\UserSuperClass $connectedUser;
 
     public function __construct(
-        Table\InstanceTable $instanceTable,
-        Table\MonarcObjectTable $monarcObjectTable,
-        Table\InstanceRiskTable $instanceRiskTable,
-        InstanceRiskService $instanceRiskService,
-        InstanceRiskOpService $instanceRiskOpService,
-        InstanceConsequenceService $instanceConsequenceService,
+        private Table\InstanceTable $instanceTable,
+        private Table\MonarcObjectTable $monarcObjectTable,
+        private Table\InstanceRiskTable $instanceRiskTable,
+        private InstanceRiskService $instanceRiskService,
+        private InstanceRiskOpService $instanceRiskOpService,
+        private InstanceConsequenceService $instanceConsequenceService,
         ConnectedUserService $connectedUserService
     ) {
-        $this->instanceTable = $instanceTable;
-        $this->monarcObjectTable = $monarcObjectTable;
-        $this->instanceRiskTable = $instanceRiskTable;
-        $this->instanceRiskService = $instanceRiskService;
-        $this->instanceRiskOpService = $instanceRiskOpService;
-        $this->instanceConsequenceService = $instanceConsequenceService;
         $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
     public function getInstancesData(Entity\Anr $anr): array
     {
+        /** @var Entity\Instance[] $rootInstances */
         $rootInstances = $this->instanceTable->findRootInstancesByAnrAndOrderByPosition($anr);
         $instanceData = [];
         foreach ($rootInstances as $rootInstance) {
@@ -62,13 +50,9 @@ class InstanceService
     public function getInstanceData(Entity\Anr $anr, int $id): array
     {
         /** @var Entity\Instance $instance */
-        $instance = $this->instanceTable->findById($id);
-        if ($instance->getAnr()->getId() !== $anr->getId()) {
-            throw new Exception(sprintf('The instance ID "%d" belongs to a different analysis.', $id));
-        }
+        $instance = $this->instanceTable->findByIdAndAnr($id, $anr);
 
         $instanceData = $this->getPreparedInstanceData($instance);
-
         $instanceData['consequences'] = $this->instanceConsequenceService->getConsequencesData($instance);
         $instanceData['instances'] = $this->getOtherInstances($instance);
 
@@ -106,11 +90,15 @@ class InstanceService
 
         $this->updateInstanceLevels($isRootLevel, $instance);
 
-        $this->updatePositions($instance, $this->instanceTable, $this->getPreparedPositionData($instance, $data));
+        $this->updatePositions(
+            $instance,
+            $this->instanceTable,
+            $this->getPreparedPositionData($this->instanceTable, $instance, $data)
+        );
 
         $this->instanceTable->save($instance);
 
-        $this->instanceConsequenceService->createInstanceConsequences($instance, $anr, $object);
+        $this->instanceConsequenceService->createInstanceConsequences($instance, $anr, $object, false);
         $instance->updateImpactBasedOnConsequences()->refreshInheritedImpact();
 
         $this->instanceTable->save($instance, false);
@@ -134,13 +122,13 @@ class InstanceService
     public function updateInstance(Entity\Anr $anr, int $id, array $data): Entity\Instance
     {
         /** @var Entity\Instance $instance */
-        $instance = $this->instanceTable->findById($id);
+        $instance = $this->instanceTable->findByIdAndAnr($id, $anr);
 
         $this->updateConsequences($anr, $data['consequences']);
 
         $this->refreshInstanceImpactAndUpdateRisks($instance);
 
-        $this->updateOtherGlobalInstancesConsequences($instance, $data);
+        $this->updateOtherGlobalInstancesConsequences($instance);
 
         $this->instanceTable->save($instance);
 
@@ -149,16 +137,20 @@ class InstanceService
 
     public function patchInstance(Entity\Anr $anr, int $id, array $data): Entity\Instance
     {
-        if (isset($data['parent']) && $id === $data['parent']) {
+        if (!empty($data['parent']) && $id === $data['parent']) {
             throw new Exception('Instance can not be a parent of itself.', 412);
         }
 
         /** @var Entity\Instance $instance */
-        $instance = $this->instanceTable->findById($id);
+        $instance = $this->instanceTable->findByIdAndAnr($id, $anr);
 
         $this->updateInstanceParent($instance, $data);
 
-        $this->updatePositions($instance, $this->instanceTable, $this->getPreparedPositionData($instance, $data));
+        $this->updatePositions(
+            $instance,
+            $this->instanceTable,
+            $this->getPreparedPositionData($this->instanceTable, $instance, $data)
+        );
 
         $instance->refreshInheritedImpact();
 
@@ -168,7 +160,7 @@ class InstanceService
 
         $this->instanceTable->save($instance->setUpdater($this->connectedUser->getEmail()));
 
-        $this->updateOtherGlobalInstancesConsequences($instance, $data);
+        $this->updateOtherGlobalInstancesConsequences($instance);
 
         return $instance;
     }
@@ -218,6 +210,7 @@ class InstanceService
      */
     public function refreshAllTheInstancesImpactAndUpdateRisks(Entity\Anr $anr): void
     {
+        /** @var Entity\Instance[] $rootInstances */
         $rootInstances = $this->instanceTable->findRootsByAnr($anr);
         foreach ($rootInstances as $rootInstance) {
             $this->refreshInstanceImpactAndUpdateRisks($rootInstance);
@@ -259,7 +252,7 @@ class InstanceService
         }
     }
 
-    private function updateOtherGlobalInstancesConsequences(Entity\Instance $instance, array $data): void
+    private function updateOtherGlobalInstancesConsequences(Entity\Instance $instance): void
     {
         if ($instance->getObject()->isScopeGlobal()) {
             /* Retrieve instances linked to the same global object to update impacts based on the passed instance. */
@@ -383,41 +376,5 @@ class InstanceService
         } elseif (empty($data['parent']) && $instance->hasParent()) {
             $instance->setParent(null)->setRoot(null);
         }
-    }
-
-    private function getPreparedPositionData(Entity\Instance $instance, array $data): array
-    {
-        $positionData = [];
-        if (isset($data['position'])) {
-            $positionData = [
-                'implicitPosition' => PositionUpdatableServiceInterface::IMPLICIT_POSITION_START,
-                'forcePositionUpdate' => true,
-            ];
-            if ((int)$data['position'] > 0) {
-                $previousInstancePosition = $data['position'];
-                /* If the instance is moved inside the same parent or root and its position <= then expected one,
-                 * the previous element position is increased to 1. */
-                if ($this->instanceTable->isEntityPersisted($instance)
-                    && $previousInstancePosition >= $instance->getPosition()
-                    && !$instance->arePropertiesStatesChanged($instance->getImplicitPositionRelationsValues())
-                ) {
-                    $previousInstancePosition++;
-                }
-                $previousInstance = $this->instanceTable->findOneByAnrParentAndPosition(
-                    $instance->getAnr(),
-                    $instance->getParent(),
-                    $previousInstancePosition
-                );
-                if ($previousInstance !== null) {
-                    $positionData = [
-                        'implicitPosition' => PositionUpdatableServiceInterface::IMPLICIT_POSITION_AFTER,
-                        'previous' => $previousInstance,
-                        'forcePositionUpdate' => true,
-                    ];
-                }
-            }
-        }
-
-        return $positionData;
     }
 }

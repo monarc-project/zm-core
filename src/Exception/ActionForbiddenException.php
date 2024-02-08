@@ -11,7 +11,7 @@ use Throwable;
 
 class ActionForbiddenException extends \Exception
 {
-    public function __construct($message = "The action is forbidden.", $code = 403, Throwable $previous = null)
+    public function __construct($message = 'The action is forbidden.', $code = 403, Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);
     }

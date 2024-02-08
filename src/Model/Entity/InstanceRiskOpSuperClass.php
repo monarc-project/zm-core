@@ -304,22 +304,6 @@ class InstanceRiskOpSuperClass
         return $this;
     }
 
-    public function isTreated(): bool
-    {
-        return $this->kindOfMeasure !== self::KIND_NOT_TREATED;
-    }
-
-    public function getTreatmentName(): string
-    {
-        return match ($this->kindOfMeasure) {
-            static::KIND_REDUCTION => 'Reduction',
-            static::KIND_REFUSED => 'Denied',
-            static::KIND_ACCEPTATION => 'Accepted',
-            static::KIND_SHARED => 'Shared',
-            default => 'Not treated',
-        };
-    }
-
     public function getCacheBrutRisk(): int
     {
         return $this->cacheBrutRisk;
@@ -397,13 +381,45 @@ class InstanceRiskOpSuperClass
     public static function getAvailableMeasureTypes(): array
     {
         return [
-            self::KIND_NOT_SET => 'Not treated',
-            self::KIND_REDUCTION => 'Reduction',
-            self::KIND_REFUSED => 'Denied',
-            self::KIND_ACCEPTATION => 'Accepted',
-            self::KIND_SHARED => 'Shared',
-            self::KIND_NOT_TREATED => 'Not treated',
+            static::KIND_NOT_SET => 'Not treated',
+            static::KIND_REDUCTION => 'Reduction',
+            static::KIND_REFUSED => 'Denied',
+            static::KIND_ACCEPTATION => 'Accepted',
+            static::KIND_SHARED => 'Shared',
+            static::KIND_NOT_TREATED => 'Not treated',
         ];
+    }
+
+    public function isTreated(): bool
+    {
+        return !\in_array($this->kindOfMeasure, [self::KIND_NOT_TREATED, self::KIND_NOT_SET], true);
+    }
+
+    public function getTreatmentName(): string
+    {
+        return static::getTreatmentNameByType($this->kindOfMeasure);
+    }
+
+    public static function getTreatmentNameByType(int $treatmentType): string
+    {
+        return match ($treatmentType) {
+            static::KIND_REDUCTION => 'Reduction',
+            static::KIND_REFUSED => 'Denied',
+            static::KIND_ACCEPTATION => 'Accepted',
+            static::KIND_SHARED => 'Shared',
+            default => 'Not treated',
+        };
+    }
+
+    public function getTreatmentServiceName(): string
+    {
+        return match ($this->kindOfMeasure) {
+            static::KIND_REDUCTION => 'reduction',
+            static::KIND_REFUSED => 'denied',
+            static::KIND_ACCEPTATION => 'accepted',
+            static::KIND_SHARED => 'shared',
+            default => 'not_treated',
+        };
     }
 
     public function getRiskCacheLabel(int $languageIndex): string

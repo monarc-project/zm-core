@@ -40,4 +40,17 @@ class ScaleTable extends AbstractTable
 
         return $scale;
     }
+
+    /**
+     * @return ScaleSuperClass[]
+     */
+    public function findByAnrIndexedByType(AnrSuperClass $anr): array
+    {
+        return $this->getRepository()
+            ->createQueryBuilder('s', 's.type')
+            ->where('s.anr = :anr')
+            ->setParameter('anr', $anr)
+            ->getQuery()
+            ->getResult();
+    }
 }

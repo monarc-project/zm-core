@@ -12,7 +12,6 @@ use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\InstanceConsequence;
 use Monarc\Core\Model\Entity\InstanceConsequenceSuperClass;
 use Monarc\Core\Model\Entity\InstanceSuperClass;
-use Monarc\Core\Model\Entity\ScaleImpactType;
 use Monarc\Core\Model\Entity\ScaleImpactTypeSuperClass;
 
 class InstanceConsequenceTable extends AbstractTable
@@ -37,9 +36,9 @@ class InstanceConsequenceTable extends AbstractTable
     }
 
     /**
-     * @return InstanceConsequence[]
+     * @return InstanceConsequenceSuperClass[]
      */
-    public function findByScaleImpactType(ScaleImpactType $scaleImpactType): array
+    public function findByScaleImpactType(ScaleImpactTypeSuperClass $scaleImpactType): array
     {
         return $this->getRepository()->createQueryBuilder('ic')
             ->where('ic.scaleImpactType = :scaleImpactType')
@@ -49,7 +48,7 @@ class InstanceConsequenceTable extends AbstractTable
     }
 
     /**
-     * @return InstanceConsequence[]
+     * @return InstanceConsequenceSuperClass[]
      */
     public function findByAnrInstanceAndScaleImpactType(
         AnrSuperClass $anr,

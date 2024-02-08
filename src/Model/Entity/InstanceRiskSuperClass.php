@@ -408,27 +408,6 @@ class InstanceRiskSuperClass
         return $this;
     }
 
-    public function isTreated(): bool
-    {
-        return $this->kindOfMeasure !== self::KIND_NOT_TREATED;
-    }
-
-    public function getTreatmentName(): string
-    {
-        switch ($this->kindOfMeasure) {
-            case static::KIND_REDUCTION:
-                return 'Reduction';
-            case static::KIND_REFUSED:
-                return 'Denied';
-            case static::KIND_ACCEPTATION:
-                return 'Accepted';
-            case static::KIND_SHARED:
-                return 'Shared';
-            default:
-                return 'Not treated';
-        }
-    }
-
     public function setIsThreatRateNotSetOrModifiedExternally(bool $isThreatRateNotSetOrModifiedExternally): self
     {
         $this->isThreatRateNotSetOrModifiedExternally = (int)$isThreatRateNotSetOrModifiedExternally;
@@ -485,6 +464,38 @@ class InstanceRiskSuperClass
             self::KIND_SHARED => 'Shared',
             self::KIND_NOT_TREATED => 'Not treated',
         ];
+    }
+
+    public function isTreated(): bool
+    {
+        return !\in_array($this->kindOfMeasure, [self::KIND_NOT_TREATED, self::KIND_NOT_SET], true);
+    }
+
+    public function getTreatmentName(): string
+    {
+        return static::getTreatmentNameByType($this->kindOfMeasure);
+    }
+
+    public static function getTreatmentNameByType(int $treatmentType): string
+    {
+        return match ($treatmentType) {
+            static::KIND_REDUCTION => 'Reduction',
+            static::KIND_REFUSED => 'Denied',
+            static::KIND_ACCEPTATION => 'Accepted',
+            static::KIND_SHARED => 'Shared',
+            default => 'Not treated',
+        };
+    }
+
+    public function getTreatmentServiceName(): string
+    {
+        return match ($this->kindOfMeasure) {
+            static::KIND_REDUCTION => 'reduction',
+            static::KIND_REFUSED => 'denied',
+            static::KIND_ACCEPTATION => 'accepted',
+            static::KIND_SHARED => 'shared',
+            default => 'not_treated',
+        };
     }
 
     public function getCommentAfter(): string

@@ -104,21 +104,21 @@ class ThreatSuperClass
     /**
      * @var int
      *
-     * @ORM\Column(name="c", type="smallint", options={"unsigned":true, "default":0})
+     * @ORM\Column(name="c", type="smallint", options={"unsigned":true, "default":1})
      */
     protected $c = 1;
 
     /**
      * @var int
      *
-     * @ORM\Column(name="i", type="smallint", options={"unsigned":true, "default":0})
+     * @ORM\Column(name="i", type="smallint", options={"unsigned":true, "default":1})
      */
     protected $i = 1;
 
     /**
      * @var int
      *
-     * @ORM\Column(name="a", type="smallint", options={"unsigned":true, "default":0})
+     * @ORM\Column(name="a", type="smallint", options={"unsigned":true, "default":1})
      */
     protected $a = 1;
 

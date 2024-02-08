@@ -1,59 +1,37 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
 namespace Monarc\Core\Service;
 
-use Monarc\Core\InputFormatter\FormattedInputParams;
 use Monarc\Core\Model\Entity;
 use Monarc\Core\Table;
 
 class ScaleService
 {
-    private Table\ScaleTable $scaleTable;
-
-    private Table\ScaleCommentTable $scaleCommentTable;
-
-    private Table\InstanceTable $instanceTable;
-
-    private Table\InstanceRiskTable $instanceRiskTable;
-
-    private Table\InstanceConsequenceTable $instanceConsequenceTable;
-
-    private ScaleImpactTypeService $scaleImpactTypeService;
-
-    private InstanceRiskService $instanceRiskService;
-
     private Entity\UserSuperClass $connectedUser;
 
     public function __construct(
-        Table\ScaleTable $scaleTable,
-        Table\ScaleCommentTable $scaleCommentTable,
-        Table\InstanceTable $instanceTable,
-        Table\InstanceRiskTable $instanceRiskTable,
-        Table\InstanceConsequenceTable $instanceConsequenceTable,
-        InstanceRiskService $instanceRiskService,
-        ScaleImpactTypeService $scaleImpactTypeService,
+        private Table\ScaleTable $scaleTable,
+        private Table\ScaleCommentTable $scaleCommentTable,
+        private Table\InstanceTable $instanceTable,
+        private Table\InstanceRiskTable $instanceRiskTable,
+        private Table\InstanceConsequenceTable $instanceConsequenceTable,
+        private InstanceRiskService $instanceRiskService,
+        private ScaleImpactTypeService $scaleImpactTypeService,
         ConnectedUserService $connectedUserService
     ) {
-        $this->scaleTable = $scaleTable;
-        $this->scaleCommentTable = $scaleCommentTable;
-        $this->instanceTable = $instanceTable;
-        $this->instanceRiskTable = $instanceRiskTable;
-        $this->instanceConsequenceTable = $instanceConsequenceTable;
-        $this->scaleImpactTypeService = $scaleImpactTypeService;
-        $this->instanceRiskService = $instanceRiskService;
         $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
-    public function getList(FormattedInputParams $formattedInputParams): array
+    public function getList(Entity\Anr $anr): array
     {
         $result = [];
         /** @var Entity\Scale[] $scales */
-        $scales = $this->scaleTable->findByParams($formattedInputParams);
+        $scales = $this->scaleTable->findByAnr($anr);
         $availableTypes = Entity\ScaleSuperClass::getAvailableTypes();
 
         foreach ($scales as $scale) {
@@ -72,9 +50,10 @@ class ScaleService
      * The creation of a new scale is only initiated when we create a model.
      * In all the other cases the scales are ether duplicated (duplication of anr/model) nether updated (import).
      */
-    public function create(Entity\Anr $anr, array $data): Entity\Scale
+    public function create(Entity\Anr $anr, int $type, int $min, int $max): Entity\Scale
     {
-        $scale = (new Entity\Scale($anr, $data))->setCreator($this->connectedUser->getEmail());
+        /** @var Entity\Scale $scale */
+        $scale = (new Entity\Scale($anr, compact($type, $min, $max)))->setCreator($this->connectedUser->getEmail());
 
         if ($scale->getType() === Entity\ScaleSuperClass::TYPE_IMPACT) {
             $this->scaleImpactTypeService->createDefaultScaleImpactTypes($scale);
@@ -82,7 +61,6 @@ class ScaleService
 
         $this->scaleTable->save($scale);
 
-        /** @var Entity\Scale $scale */
         return $scale;
     }
 
@@ -166,8 +144,9 @@ class ScaleService
      * Adjusts all the instances' and their consequences' impacts to align with min / max scales values in case if
      * they are out of bounds.
      */
-    protected function adjustInstancesAndConsequencesImpacts(Entity\Anr $anr, array $data): void
+    private function adjustInstancesAndConsequencesImpacts(Entity\Anr $anr, array $data): void
     {
+        /** @var Entity\Instance[] $rootInstances */
         $rootInstances = $this->instanceTable->findRootsByAnr($anr);
         foreach ($rootInstances as $rootInstance) {
             $this->performAdjustmentForInstanceAndItsConsequences($rootInstance, $data);
@@ -202,11 +181,12 @@ class ScaleService
     }
 
     /**
-     * @param object|Entity\Instance|Entity\InstanceConsequence $ciaScalesObject
-     * @param array $data
+     * @return bool True if any adjustments were made.
      */
-    private function validateAndAdjustImpacts(object $ciaScalesObject, array $data): bool
-    {
+    private function validateAndAdjustImpacts(
+        Entity\Instance|Entity\InstanceConsequence $ciaScalesObject,
+        array $data
+    ): bool {
         $areImpactsAdjusted = false;
         if ($ciaScalesObject->getConfidentiality() !== -1 && $ciaScalesObject->getConfidentiality() < $data['min']) {
             $ciaScalesObject->setConfidentiality($data['min']);

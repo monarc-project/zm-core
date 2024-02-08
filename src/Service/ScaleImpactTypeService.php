@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -19,31 +19,16 @@ class ScaleImpactTypeService
 {
     use PositionUpdateTrait;
 
-    private ScaleImpactTypeTable $scaleImpactTypeTable;
-
-    private ScaleTable $scaleTable;
-
-    private InstanceTable $instanceTable;
-
-    private InstanceService $instanceService;
-
-    private InstanceConsequenceService $instanceConsequenceService;
-
     private Entity\UserSuperClass $connectedUser;
 
     public function __construct(
-        ScaleImpactTypeTable $scaleImpactTypeTable,
-        ScaleTable $scaleTable,
-        InstanceTable $instanceTable,
-        InstanceService $instanceService,
-        InstanceConsequenceService $instanceConsequenceService,
+        private ScaleImpactTypeTable $scaleImpactTypeTable,
+        private ScaleTable $scaleTable,
+        private InstanceTable $instanceTable,
+        private InstanceService $instanceService,
+        private InstanceConsequenceService $instanceConsequenceService,
         ConnectedUserService $connectedUserService
     ) {
-        $this->scaleImpactTypeTable = $scaleImpactTypeTable;
-        $this->scaleTable = $scaleTable;
-        $this->instanceTable = $instanceTable;
-        $this->instanceService = $instanceService;
-        $this->instanceConsequenceService = $instanceConsequenceService;
         $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
@@ -68,6 +53,7 @@ class ScaleImpactTypeService
 
     public function create(Entity\Anr $anr, array $data, bool $saveInTheDb = true): Entity\ScaleImpactType
     {
+        /** @var Entity\ScaleImpactType $scaleImpactType */
         $scaleImpactType = (new Entity\ScaleImpactType())
             ->setAnr($anr)
             ->setScale(
@@ -97,19 +83,7 @@ class ScaleImpactTypeService
 
         $this->scaleImpactTypeTable->save($scaleImpactType, $saveInTheDb);
 
-        /** @var Entity\ScaleImpactType $scaleImpactType */
         return $scaleImpactType;
-    }
-
-    public function delete(Entity\Anr $anr, int $id): void
-    {
-        /** @var Entity\ScaleImpactType $scaleImpactType */
-        $scaleImpactType = $this->scaleImpactTypeTable->findByIdAndAnr($id, $anr);
-        if ($scaleImpactType->isSys()) {
-            throw new Exception('Default Scale Impact Types can\'t be removed.', '403');
-        }
-
-        $this->scaleImpactTypeTable->remove($scaleImpactType);
     }
 
     /**
@@ -134,6 +108,17 @@ class ScaleImpactTypeService
         $this->scaleImpactTypeTable->save($scaleImpactType);
 
         return $scaleImpactType;
+    }
+
+    public function delete(Entity\Anr $anr, int $id): void
+    {
+        /** @var Entity\ScaleImpactType $scaleImpactType */
+        $scaleImpactType = $this->scaleImpactTypeTable->findByIdAndAnr($id, $anr);
+        if ($scaleImpactType->isSys()) {
+            throw new Exception('Default Scale Impact Types can\'t be removed.', '403');
+        }
+
+        $this->scaleImpactTypeTable->remove($scaleImpactType);
     }
 
     /** Called only from the BackOffice, ScaleService. */

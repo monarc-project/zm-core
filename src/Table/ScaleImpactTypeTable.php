@@ -8,7 +8,9 @@
 namespace Monarc\Core\Table;
 
 use Doctrine\ORM\EntityManager;
+use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\ScaleImpactType;
+use Monarc\Core\Model\Entity\ScaleImpactTypeSuperClass;
 use Monarc\Core\Table\Interfaces\PositionUpdatableTableInterface;
 use Monarc\Core\Table\Traits\PositionIncrementTableTrait;
 
@@ -19,5 +21,18 @@ class ScaleImpactTypeTable extends AbstractTable implements PositionUpdatableTab
     public function __construct(EntityManager $entityManager, string $entityName = ScaleImpactType::class)
     {
         parent::__construct($entityManager, $entityName);
+    }
+
+    /**
+     * @return ScaleImpactTypeSuperClass[]
+     */
+    public function findByAnrIndexedByType(AnrSuperClass $anr): array
+    {
+        return $this->getRepository()
+            ->createQueryBuilder('sit', 'sit.type')
+            ->where('sit.anr = :anr')
+            ->setParameter('anr', $anr)
+            ->getQuery()
+            ->getResult();
     }
 }

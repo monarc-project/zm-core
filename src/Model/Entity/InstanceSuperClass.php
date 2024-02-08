@@ -174,21 +174,21 @@ class InstanceSuperClass implements PositionedEntityInterface
     /**
      * @var int 1 - the confidentiality value is inherited, 0 - not inherited.
      *
-     * @ORM\Column(name="ch", type="smallint", options={"unsigned":true, "default":0})
+     * @ORM\Column(name="ch", type="smallint", options={"unsigned":true, "default":1})
      */
     protected $ch = 1;
 
     /**
      * @var int 1 - the integrity value is inherited, 0 - not inherited.
      *
-     * @ORM\Column(name="ih", type="smallint", options={"unsigned":true, "default":0})
+     * @ORM\Column(name="ih", type="smallint", options={"unsigned":true, "default":1})
      */
     protected $ih = 1;
 
     /**
      * @var int 1 - the availability value is inherited, 0 - not inherited.
      *
-     * @ORM\Column(name="dh", type="smallint", options={"unsigned":true, "default":0})
+     * @ORM\Column(name="dh", type="smallint", options={"unsigned":true, "default":1})
      */
     protected $dh = 1;
 

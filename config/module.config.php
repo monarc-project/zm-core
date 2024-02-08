@@ -12,6 +12,7 @@ use Monarc\Core\Adapter\Authentication as AdapterAuthentication;
 use Monarc\Core\Controller;
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\DbCli;
+use Monarc\Core\Service\Helper\ScalesCacheHelper;
 use Monarc\Core\Service\Model\DbCliFactory;
 use Monarc\Core\Service\Model\DbFactory;
 use Monarc\Core\Service;
@@ -294,6 +295,9 @@ return [
                 ReflectionBasedAbstractFactory::class,
             InputValidator\Anr\PatchThresholdsDataInputValidator::class => ReflectionBasedAbstractFactory::class,
             InputValidator\Profile\PatchProfileDataInputValidator::class => ReflectionBasedAbstractFactory::class,
+            InputValidator\Scale\UpdateScalesDataInputValidator::class => ReflectionBasedAbstractFactory::class,
+
+            ScalesCacheHelper::class => AutowireFactory::class,
         ],
         'shared' => [
             ModelEntity\Scale::class => false,

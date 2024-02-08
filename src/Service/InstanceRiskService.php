@@ -187,12 +187,8 @@ class InstanceRiskService
         $this->instanceRiskTable->save($instanceRisk);
     }
 
-    public function update(
-        Entity\Anr $anr,
-        int $id,
-        array $data,
-        bool $manageGlobal = true
-    ): Entity\InstanceRisk {
+    public function update(Entity\Anr $anr, int $id, array $data, bool $manageGlobal = true): Entity\InstanceRisk
+    {
         /** @var Entity\InstanceRisk $instanceRisk */
         $instanceRisk = $this->instanceRiskTable->findByIdAndAnr($id, $anr);
 
