@@ -7,18 +7,20 @@
 
 namespace Monarc\Core\Controller;
 
+use Monarc\Core\Controller\Handler\AbstractRestfulControllerRequestHandler;
+use Monarc\Core\Controller\Handler\ControllerRequestResponseHandlerTrait;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Entity\AbstractEntity;
 use Monarc\Core\Service\AbstractServiceFactory;
-use Laminas\Mvc\Controller\AbstractRestfulController;
-use Laminas\View\Model\JsonModel;
 
 /**
  * Abstract Controller used on every REST API controllers
  * @package Monarc\Core\Controller
  */
-abstract class AbstractController extends AbstractRestfulController
+abstract class AbstractController extends AbstractRestfulControllerRequestHandler
 {
+    use ControllerRequestResponseHandlerTrait;
+
     /**
      * The service used by the controller.
      * @var \Monarc\Core\Service\AbstractService
@@ -85,10 +87,10 @@ abstract class AbstractController extends AbstractRestfulController
             }
         }
 
-        return new JsonModel(array(
+        return $this->getPreparedJsonResponse([
             'count' => $service->getFilteredCount($filter),
             $this->name => $entities
-        ));
+        ]);
     }
 
     /**
@@ -104,7 +106,7 @@ abstract class AbstractController extends AbstractRestfulController
             $this->formatDependencies($entity, $this->dependencies);
         }
 
-        return new JsonModel($entity);
+        return $this->getPreparedJsonResponse($entity);
     }
 
     /**
@@ -124,8 +126,7 @@ abstract class AbstractController extends AbstractRestfulController
           $id = $this->getService()->create($new_data);
           array_push($created_objects, $id);
       }
-      return new JsonModel([
-          'status' => 'ok',
+      return $this->getSuccessfulJsonResponse([
           'id' => count($created_objects)==1 ? $created_objects[0]: $created_objects,
       ]);
     }
@@ -138,9 +139,9 @@ abstract class AbstractController extends AbstractRestfulController
     public function delete($id)
     {
         if($this->getService()->delete($id)){
-            return new JsonModel(array('status' => 'ok'));
+            return $this->getSuccessfulJsonResponse();
         }else{
-            return new JsonModel(array('status' => 'ko')); // Todo: peux être retourner un message d'erreur
+            return $this->getPreparedJsonResponse(['status' => 'ko']); // Todo: peux être retourner un message d'erreur
         }
     }
 
@@ -152,9 +153,9 @@ abstract class AbstractController extends AbstractRestfulController
     public function deleteList($data)
     {
         if($this->getService()->deleteList($data)){
-            return new JsonModel(array('status' => 'ok'));
+            return $this->getSuccessfulJsonResponse();
         }else{
-            return new JsonModel(array('status' => 'ko')); // Todo: peux être retourner un message d'erreur
+            return $this->getPreparedJsonResponse(['status' => 'ko']); // Todo: peux être retourner un message d'erreur
         }
     }
 
@@ -168,7 +169,7 @@ abstract class AbstractController extends AbstractRestfulController
     {
         $this->getService()->update($id, $data);
 
-        return new JsonModel(array('status' => 'ok'));
+        return $this->getSuccessfulJsonResponse();
     }
 
     /**
@@ -182,7 +183,7 @@ abstract class AbstractController extends AbstractRestfulController
     {
         $this->getService()->patch($id, $data);
 
-        return new JsonModel(array('status' => 'ok'));
+        return $this->getSuccessfulJsonResponse();
     }
 
     /**

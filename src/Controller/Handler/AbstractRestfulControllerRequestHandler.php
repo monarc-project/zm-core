@@ -8,7 +8,6 @@
 namespace Monarc\Core\Controller\Handler;
 
 use Laminas\Diactoros\Response;
-use Laminas\Diactoros\Stream;
 use Laminas\Mvc\Controller\AbstractRestfulController;
 use Laminas\Mvc\MvcEvent;
 use Laminas\Router\RouteMatch;

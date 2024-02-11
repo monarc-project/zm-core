@@ -15,8 +15,6 @@ class OperationalRiskScaleService
 {
     private Entity\UserSuperClass $connectedUser;
 
-    private array $operationalRiskScales = [];
-
     public function __construct(
         private Table\OperationalRiskScaleTable $operationalRiskScaleTable,
         private Table\OperationalRiskScaleTypeTable $operationalRiskScaleTypeTable,
@@ -359,20 +357,6 @@ class OperationalRiskScaleService
 
             $this->operationalRiskScaleTable->save($operationalRiskScale);
         }
-    }
-
-    public function getFromCacheOrFindLikelihoodScale(Entity\Anr $anr): Entity\OperationalRiskScale
-    {
-        $typeLikelihood = Entity\OperationalRiskScaleSuperClass::TYPE_LIKELIHOOD;
-        if (!isset($this->operationalRiskScales[$typeLikelihood])) {
-            $this->operationalRiskScales[$typeLikelihood] = $this->operationalRiskScaleTable->findByAnrAndType(
-                $anr,
-                $typeLikelihood
-            );
-        }
-
-        /* There is only one scale of the TYPE_LIKELIHOOD. */
-        return current($this->operationalRiskScales[$typeLikelihood]);
     }
 
     protected function getCreatedOperationalRiskScaleTypeObject(

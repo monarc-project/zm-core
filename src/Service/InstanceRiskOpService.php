@@ -8,6 +8,7 @@
 namespace Monarc\Core\Service;
 
 use Monarc\Core\Model\Entity;
+use Monarc\Core\Service\Helper\ScalesCacheHelper;
 use Monarc\Core\Service\Traits\OperationalRiskScaleVerificationTrait;
 use Monarc\Core\Table;
 
@@ -24,7 +25,7 @@ class InstanceRiskOpService
         private Table\TranslationTable $translationTable,
         private Table\OperationalRiskScaleTypeTable $operationalRiskScaleTypeTable,
         private ConfigService $configService,
-        private OperationalRiskScaleService $operationalRiskScaleService,
+        private ScalesCacheHelper $scalesCacheHelper,
         ConnectedUserService $connectedUserService
     ) {
         $this->connectedUser = $connectedUserService->getConnectedUser();
@@ -164,7 +165,7 @@ class InstanceRiskOpService
         /** @var Entity\InstanceRiskOp $operationalInstanceRisk */
         $operationalInstanceRisk = $this->instanceRiskOpTable->findByIdAndAnr($id, $anr);
 
-        $likelihoodScale = $this->operationalRiskScaleService->getFromCacheOrFindLikelihoodScale($anr);
+        $likelihoodScale = $this->scalesCacheHelper->getCachedLikelihoodScale($anr);
         if (isset($data['kindOfMeasure'])) {
             $operationalInstanceRisk->setKindOfMeasure((int)$data['kindOfMeasure']);
         }

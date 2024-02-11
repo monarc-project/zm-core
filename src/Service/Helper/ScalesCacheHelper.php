@@ -8,8 +8,10 @@
 namespace Monarc\Core\Service\Helper;
 
 use Monarc\Core\Model\Entity\AnrSuperClass;
+use Monarc\Core\Model\Entity\OperationalRiskScaleSuperClass;
 use Monarc\Core\Model\Entity\ScaleImpactTypeSuperClass;
 use Monarc\Core\Model\Entity\ScaleSuperClass;
+use Monarc\Core\Table\OperationalRiskScaleTable;
 use Monarc\Core\Table\ScaleImpactTypeTable;
 use Monarc\Core\Table\ScaleTable;
 
@@ -19,8 +21,13 @@ class ScalesCacheHelper
 
     private array $cachedScaleImpactTypes = [];
 
-    public function __construct(private ScaleTable $scaleTable, private ScaleImpactTypeTable $scaleImpactTypeTable)
-    {
+    private array $cachedOperationalRiskScales = [];
+
+    public function __construct(
+        private ScaleTable $scaleTable,
+        private ScaleImpactTypeTable $scaleImpactTypeTable,
+        private OperationalRiskScaleTable $operationalRiskScaleTable
+    ) {
     }
 
     public function getCachedScaleByType(AnrSuperClass $anr, int $scaleType): ScaleSuperClass
@@ -69,5 +76,19 @@ class ScalesCacheHelper
         }
 
         return $this->cachedScaleImpactTypes;
+    }
+
+    public function getCachedLikelihoodScale(AnrSuperClass $anr): OperationalRiskScaleSuperClass
+    {
+        $typeLikelihood = OperationalRiskScaleSuperClass::TYPE_LIKELIHOOD;
+        if (!isset($this->cachedOperationalRiskScales[$typeLikelihood])) {
+            $this->cachedOperationalRiskScales[$typeLikelihood] = $this->operationalRiskScaleTable->findByAnrAndType(
+                $anr,
+                $typeLikelihood
+            );
+        }
+
+        /* There is only one scale of the TYPE_LIKELIHOOD. */
+        return current($this->cachedOperationalRiskScales[$typeLikelihood]);
     }
 }
