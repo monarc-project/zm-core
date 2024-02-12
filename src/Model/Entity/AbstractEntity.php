@@ -225,7 +225,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
         if (!$this->squeezeAutoPositionning && isset($this->parameters['implicitPosition']['field'])) {
             $parent_before = $this->get($this->parameters['implicitPosition']['field']);
             if (is_object($parent_before)) {
-                $parent_before = $parent_before->get('uuid') !== null
+                $parent_before = !$parent_before instanceof AnrSuperClass && $parent_before->getUuid() !== null
                     ? $parent_before->getUuid()
                     : $parent_before->get('id');
             }
