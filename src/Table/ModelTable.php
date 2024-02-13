@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -41,12 +41,29 @@ class ModelTable extends AbstractTable
      */
     public function findByAnrIds(array $anrIds): array
     {
-        $qb = $this->getRepository()->createQueryBuilder('m');
+        $queryBuilder = $this->getRepository()->createQueryBuilder('m');
 
-        return $qb
-            ->select()
-            ->where($qb->expr()->in('m.anr', $anrIds))
+        return $queryBuilder
+            ->where($queryBuilder->expr()->in('m.anr', $anrIds))
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * @return Model[]
+     */
+    public function fundGenericsAndSpecificsByIds(array $specificModelsIds = []): array
+    {
+        $queryBuilder = $this->getRepository()->createQueryBuilder('m')
+            ->where('m.isGeneric = 1');
+
+        if (!empty($specificModelsIds)) {
+            $queryBuilder->orWhere($queryBuilder->expr()->andX(
+                $queryBuilder->expr()->eq('m.isGeneric', 0),
+                $queryBuilder->expr()->in('m.id', array_map('\intval', $specificModelsIds))
+            ));
+        }
+
+        return $queryBuilder->getQuery()->getResult();
     }
 }

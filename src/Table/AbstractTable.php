@@ -35,11 +35,6 @@ abstract class AbstractTable
         $this->entityName = $entityName;
     }
 
-    public function getRepository(): EntityRepository
-    {
-        return $this->entityManager->getRepository($this->entityName);
-    }
-
     public function getEntityName(): string
     {
         return $this->entityName;
@@ -315,6 +310,11 @@ abstract class AbstractTable
     public function quote($value, $type = ParameterType::STRING)
     {
         return $this->entityManager->getConnection()->quote($value, $type);
+    }
+
+    protected function getRepository(): EntityRepository
+    {
+        return $this->entityManager->getRepository($this->entityName);
     }
 
     /**
