@@ -8,17 +8,13 @@
 namespace Monarc\Core\Service;
 
 use Monarc\Core\Exception\Exception;
-use Monarc\Core\InputFormatter\FormattedInputParams;
 use Monarc\Core\Model\Entity;
-use Monarc\Core\Service\Traits\PositionUpdateTrait;
 use Monarc\Core\Table\ScaleImpactTypeTable;
 use Monarc\Core\Table\InstanceTable;
 use Monarc\Core\Table\ScaleTable;
 
 class ScaleImpactTypeService
 {
-    use PositionUpdateTrait;
-
     private Entity\UserSuperClass $connectedUser;
 
     public function __construct(
@@ -32,18 +28,17 @@ class ScaleImpactTypeService
         $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
-    public function getList(FormattedInputParams $formattedInputParams): array
+    public function getList(Entity\Anr $anr): array
     {
         $result = [];
         /** @var Entity\ScaleImpactType[] $scaleImpactTypes */
-        $scaleImpactTypes = $this->scaleImpactTypeTable->findByParams($formattedInputParams);
+        $scaleImpactTypes = $this->scaleImpactTypeTable->findByAnr($anr);
         $scaleImpactTypesShortcuts = Entity\ScaleImpactTypeSuperClass::getScaleImpactTypesShortcuts();
         foreach ($scaleImpactTypes as $scaleImpactType) {
             $result[] = array_merge([
                 'id' => $scaleImpactType->getId(),
                 'isHidden' => (int)$scaleImpactType->isHidden(),
                 'isSys' => (int)$scaleImpactType->isSys(),
-                'position' => $scaleImpactType->getPosition(),
                 'type' => $scaleImpactTypesShortcuts[$scaleImpactType->getType()] ?? 'CUS',
             ], $scaleImpactType->getLabels());
         }
@@ -59,8 +54,8 @@ class ScaleImpactTypeService
             ->setScale(
                 $data['scale'] instanceof Entity\Scale ? $data['scale'] : $this->scaleTable->findById($data['scale'])
             )
-            ->setLabels($data)
-            ->setType($data['type'] ?? $this->scaleImpactTypeTable->findMaxPosition(['anr' => $anr]) + 1)
+            ->setLabels($data['labels'])
+            ->setType($data['type'] ?? $this->scaleImpactTypeTable->findMaxTypeValueByAnr($anr) + 1)
             ->setCreator($this->connectedUser->getEmail());
         if (isset($data['isSys'])) {
             $scaleImpactType->setIsSys((bool)$data['isSys']);
@@ -75,27 +70,22 @@ class ScaleImpactTypeService
             $this->instanceConsequenceService->createInstanceConsequence($instance, $scaleImpactType);
         }
 
-        if (empty($data['position'])) {
-            $this->updatePositions($scaleImpactType, $this->scaleImpactTypeTable);
-        } else {
-            $scaleImpactType->setPosition($data['position']);
-        }
-
         $this->scaleImpactTypeTable->save($scaleImpactType, $saveInTheDb);
 
         return $scaleImpactType;
     }
 
     /**
-     * Hide/show or change name of scales impact types on the Evaluation scales page
+     * Hide/show or change label of scales impact types on the Evaluation scales page.
      */
     public function patch(Entity\Anr $anr, int $id, array $data): Entity\ScaleImpactType
     {
         /** @var Entity\ScaleImpactType $scaleImpactType */
         $scaleImpactType = $this->scaleImpactTypeTable->findByIdAndAnr($id, $anr);
 
-        if (isset($data['isHidden'])) {
-            $scaleImpactType->setIsHidden((bool)$data['isHidden']);
+        if (isset($data['isHidden']) && $scaleImpactType->isHidden() !== (bool)$data['isHidden']) {
+            $scaleImpactType->setIsHidden((bool)$data['isHidden'])
+                ->setUpdater($this->connectedUser->getEmail());
             $this->instanceConsequenceService->updateConsequencesByScaleImpactType(
                 $scaleImpactType,
                 (bool)$data['isHidden']
@@ -119,13 +109,14 @@ class ScaleImpactTypeService
         }
 
         $this->scaleImpactTypeTable->remove($scaleImpactType);
+
+        $this->instanceService->refreshAllTheInstancesImpactAndUpdateRisks($anr);
     }
 
     /** Called only from the BackOffice, ScaleService. */
     public function createDefaultScaleImpactTypes(Entity\Scale $scale): void
     {
         $defaultScaleImpactTypes = Entity\ScaleImpactTypeSuperClass::getDefaultScalesImpacts();
-        $position = 1;
         foreach (Entity\ScaleImpactTypeSuperClass::getScaleImpactTypesShortcuts() as $type => $shortcut) {
             $this->create($scale->getAnr(), [
                 'scale' => $scale,
@@ -135,7 +126,6 @@ class ScaleImpactTypeService
                 'label2' => $defaultScaleImpactTypes['label2'][$shortcut],
                 'label3' => $defaultScaleImpactTypes['label3'][$shortcut],
                 'label4' => $defaultScaleImpactTypes['label4'][$shortcut],
-                'position' => $position++,
             ], false);
         }
     }

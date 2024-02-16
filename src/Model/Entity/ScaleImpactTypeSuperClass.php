@@ -9,10 +9,8 @@ namespace Monarc\Core\Model\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
-use Monarc\Core\Model\Entity\Interfaces\PositionedEntityInterface;
 use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\LabelsEntityTrait;
-use Monarc\Core\Model\Entity\Traits\PropertyStateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 
 /**
@@ -23,14 +21,12 @@ use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
-class ScaleImpactTypeSuperClass implements PositionedEntityInterface
+class ScaleImpactTypeSuperClass
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
 
     use LabelsEntityTrait;
-
-    use PropertyStateEntityTrait;
 
     public const SCALE_TYPE_C = 1;
     public const SCALE_TYPE_I = 2;
@@ -97,13 +93,6 @@ class ScaleImpactTypeSuperClass implements PositionedEntityInterface
      */
     protected $isHidden = 0;
 
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="position", type="smallint", options={"unsigned":true})
-     */
-    protected $position;
-
     public function __construct()
     {
         $this->scaleComments = new ArrayCollection();
@@ -114,13 +103,7 @@ class ScaleImpactTypeSuperClass implements PositionedEntityInterface
         return (new static())
             ->setType($scaleImpactType->getType())
             ->setIsSys($scaleImpactType->isSys())
-            ->setIsHidden($scaleImpactType->isHidden())
-            ->setPosition($scaleImpactType->getPosition());
-    }
-
-    public function getImplicitPositionRelationsValues(): array
-    {
-        return ['scale' => $this->scale, 'anr' => $this->anr];
+            ->setIsHidden($scaleImpactType->isHidden());
     }
 
     public function getId(): int
@@ -163,18 +146,6 @@ class ScaleImpactTypeSuperClass implements PositionedEntityInterface
             $this->scaleComments->add($scaleComment);
             $scaleComment->setScaleImpactType($this);
         }
-
-        return $this;
-    }
-
-    public function getPosition(): int
-    {
-        return $this->position;
-    }
-
-    public function setPosition(int $position): self
-    {
-        $this->position = $position;
 
         return $this;
     }

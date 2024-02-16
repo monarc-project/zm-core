@@ -244,5 +244,9 @@ class FixPositionsCleanupDb extends AbstractMigration
         $this->table('operational_risks_scales_comments')
             ->renameColumn('comment_translation_key', 'label_translation_key')
             ->update();
+
+        $this->table('scales_impact_types')
+            ->removeColumn('position')
+            ->update();
     }
 }

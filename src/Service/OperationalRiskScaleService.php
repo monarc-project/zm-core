@@ -44,20 +44,26 @@ class OperationalRiskScaleService
 
         $scaleType = null;
         if ($type === Entity\OperationalRiskScaleSuperClass::TYPE_IMPACT) {
-            $scaleType = $this->getCreatedOperationalRiskScaleTypeObject($anr, $scale);
-            foreach ($languageCodes as $languageCode) {
-                $this->createTranslationObject(
-                    $anr,
-                    Entity\TranslationSuperClass::OPERATIONAL_RISK_SCALE_TYPE,
-                    $scaleType->getLabelTranslationKey(),
-                    $languageCode,
-                    ''
-                );
-            }
-        }
+            foreach (Entity\OperationalRiskScaleTypeSuperClass::getDefaultScalesImpacts() as $scalesImpactData) {
+                $scaleType = $this->getCreatedOperationalRiskScaleTypeObject($anr, $scale);
+                foreach ($languageCodes as $languageCode) {
+                    $this->createTranslationObject(
+                        $anr,
+                        Entity\TranslationSuperClass::OPERATIONAL_RISK_SCALE_TYPE,
+                        $scaleType->getLabelTranslationKey(),
+                        $languageCode,
+                        $scalesImpactData[$languageCode]
+                    );
+                }
 
-        for ($index = $min; $index <= $max; $index++) {
-            $this->createScaleComment($anr, $scale, $scaleType, $index, $index, $languageCodes);
+                for ($index = $min; $index <= $max; $index++) {
+                    $this->createScaleComment($anr, $scale, $scaleType, $index, $index, $languageCodes);
+                }
+            }
+        } else {
+            for ($index = $min; $index <= $max; $index++) {
+                $this->createScaleComment($anr, $scale, $scaleType, $index, $index, $languageCodes);
+            }
         }
 
         $this->operationalRiskScaleTable->flush();
@@ -185,9 +191,11 @@ class OperationalRiskScaleService
         /** @var Entity\OperationalRiskScaleType $operationalRiskScaleType */
         $operationalRiskScaleType = $this->operationalRiskScaleTypeTable->findByIdAndAnr($id, $anr);
 
-        $scaleTypeVisibilityBeforeUpdate = $operationalRiskScaleType->isHidden();
-        if (isset($data['isHidden'])) {
+        if (isset($data['isHidden']) && (bool)$data['isHidden'] !== $operationalRiskScaleType->isHidden()) {
             $operationalRiskScaleType->setIsHidden((bool)$data['isHidden']);
+
+            /* If the scale type visibility is changed, it's necessary to recalculate the total risk's values. */
+            $this->recalculateTotalRisksValues($operationalRiskScaleType);
         }
         if (!empty($data['label'])) {
             $translationKey = $operationalRiskScaleType->getLabelTranslationKey();
@@ -196,18 +204,6 @@ class OperationalRiskScaleService
                     ->findByAnrKeyAndLanguage($operationalRiskScaleType->getAnr(), $translationKey, $data['language']);
                 $translation->setValue($data['label']);
                 $this->translationTable->save($translation, false);
-            }
-        }
-
-        /* If the scale type visibility is changed, it's necessary to recalculate the total risk's values. */
-        if ($scaleTypeVisibilityBeforeUpdate !== $operationalRiskScaleType->isHidden()) {
-            $updatedInstanceRiskIds = [];
-            foreach ($operationalRiskScaleType->getOperationalInstanceRiskScales() as $operationalInstanceRiskScale) {
-                $operationalInstanceRisk = $operationalInstanceRiskScale->getOperationalInstanceRisk();
-                if (!\in_array($operationalInstanceRisk->getId(), $updatedInstanceRiskIds, true)) {
-                    $this->instanceRiskOpService->updateRiskCacheValues($operationalInstanceRisk);
-                    $updatedInstanceRiskIds[] = $operationalInstanceRisk->getId();
-                }
             }
         }
 
@@ -228,6 +224,10 @@ class OperationalRiskScaleService
             foreach ($scaleTypeToDelete->getOperationalRiskScaleComments() as $operationalRiskScaleComment) {
                 $translationsKeys[] = $operationalRiskScaleComment->getLabelTranslationKey();
             }
+
+            /* The scale type visibility is changed to exclude it from the calculation. */
+            $scaleTypeToDelete->setIsHidden(true);
+            $this->recalculateTotalRisksValues($scaleTypeToDelete);
 
             $this->operationalRiskScaleTable->remove($scaleTypeToDelete, false);
         }
@@ -447,5 +447,18 @@ class OperationalRiskScaleService
         }
 
         return null;
+    }
+
+    private function recalculateTotalRisksValues(Entity\OperationalRiskScaleType $operationalRiskScaleType): void
+    {
+        $updatedInstanceRiskIds = [];
+        foreach ($operationalRiskScaleType->getOperationalInstanceRiskScales() as $operationalInstanceRiskScale) {
+            /** @var Entity\InstanceRiskOp $operationalInstanceRisk */
+            $operationalInstanceRisk = $operationalInstanceRiskScale->getOperationalInstanceRisk();
+            if (!\in_array($operationalInstanceRisk->getId(), $updatedInstanceRiskIds, true)) {
+                $this->instanceRiskOpService->updateRiskCacheValues($operationalInstanceRisk);
+                $updatedInstanceRiskIds[] = $operationalInstanceRisk->getId();
+            }
+        }
     }
 }

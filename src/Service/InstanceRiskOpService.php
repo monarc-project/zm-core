@@ -68,10 +68,13 @@ class InstanceRiskOpService
         foreach ($instancesRisksOp as $instanceRiskOp) {
             $scalesData = [];
             foreach ($instanceRiskOp->getOperationalInstanceRiskScales() as $operationalInstanceRiskScale) {
+                /** @var Entity\OperationalRiskScaleType $scaleType */
                 $scaleType = $operationalInstanceRiskScale->getOperationalRiskScaleType();
                 $scalesData[$scaleType->getId()] = [
                     'instanceRiskScaleId' => $operationalInstanceRiskScale->getId(),
-                    'label' => $scaleTypesTranslations[$scaleType->getLabelTranslationKey()]->getValue(),
+                    'label' => isset($scaleTypesTranslations[$scaleType->getLabelTranslationKey()])
+                        ? $scaleTypesTranslations[$scaleType->getLabelTranslationKey()]->getValue()
+                        : '',
                     'netValue' => $operationalInstanceRiskScale->getNetValue(),
                     'brutValue' => $operationalInstanceRiskScale->getBrutValue(),
                     'targetedValue' => $operationalInstanceRiskScale->getTargetedValue(),

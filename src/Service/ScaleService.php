@@ -53,7 +53,7 @@ class ScaleService
     public function create(Entity\Anr $anr, int $type, int $min, int $max): Entity\Scale
     {
         /** @var Entity\Scale $scale */
-        $scale = (new Entity\Scale($anr, compact($type, $min, $max)))->setCreator($this->connectedUser->getEmail());
+        $scale = (new Entity\Scale($anr, compact('type', 'min', 'max')))->setCreator($this->connectedUser->getEmail());
 
         if ($scale->getType() === Entity\ScaleSuperClass::TYPE_IMPACT) {
             $this->scaleImpactTypeService->createDefaultScaleImpactTypes($scale);

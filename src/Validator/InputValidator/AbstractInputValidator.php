@@ -32,7 +32,8 @@ abstract class AbstractInputValidator
         /* The defaultLanguageIndex property is set in the ControllerRequestResponseHandlerTrait from the anr language,
           before the validation is executed. Usually it is done for the FrontOffice side.*/
         $this->defaultLanguageIndex = $config['defaultLanguageIndex'] ?? 1;
-        $this->systemLanguageIndexes = array_column($config['languages'], 'index');
+        $activeLanguages = array_intersect_key($config['languages'], array_flip($config['activeLanguages']));
+        $this->systemLanguageIndexes = array_column($activeLanguages, 'index');
 
         AbstractValidator::setDefaultTranslator($translator);
     }

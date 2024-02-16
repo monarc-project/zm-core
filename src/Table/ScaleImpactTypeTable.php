@@ -7,17 +7,14 @@
 
 namespace Monarc\Core\Table;
 
+use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManager;
 use Monarc\Core\Model\Entity\AnrSuperClass;
 use Monarc\Core\Model\Entity\ScaleImpactType;
 use Monarc\Core\Model\Entity\ScaleImpactTypeSuperClass;
-use Monarc\Core\Table\Interfaces\PositionUpdatableTableInterface;
-use Monarc\Core\Table\Traits\PositionIncrementTableTrait;
 
-class ScaleImpactTypeTable extends AbstractTable implements PositionUpdatableTableInterface
+class ScaleImpactTypeTable extends AbstractTable
 {
-    use PositionIncrementTableTrait;
-
     public function __construct(EntityManager $entityManager, string $entityName = ScaleImpactType::class)
     {
         parent::__construct($entityManager, $entityName);
@@ -28,11 +25,22 @@ class ScaleImpactTypeTable extends AbstractTable implements PositionUpdatableTab
      */
     public function findByAnrIndexedByType(AnrSuperClass $anr): array
     {
-        return $this->getRepository()
-            ->createQueryBuilder('sit', 'sit.type')
+        return $this->getRepository()->createQueryBuilder('sit', 'sit.type')
             ->where('sit.anr = :anr')
             ->setParameter('anr', $anr)
             ->getQuery()
             ->getResult();
+    }
+
+    public function findMaxTypeValueByAnr(AnrSuperClass $anr): int
+    {
+        return (int)$this->getRepository()->createQueryBuilder('sit')
+            ->select('sit.type as type')
+            ->where('sit.anr = :anr')
+            ->setParameter('anr', $anr)
+            ->orderBy('type', Criteria::DESC)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 }

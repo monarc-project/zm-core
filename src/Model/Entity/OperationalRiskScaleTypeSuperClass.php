@@ -144,4 +144,40 @@ class OperationalRiskScaleTypeSuperClass
 
         return $this;
     }
+
+    public static function getDefaultScalesImpacts(): array
+    {
+        return [
+            [
+                'fr' => 'Réputation',
+                'en' => 'Reputation',
+                'de' => 'Ruf',
+                'nl' => 'Reputatie',
+            ],
+            [
+                'fr' => 'Opérationnel',
+                'en' => 'Operational',
+                'de' => 'Einsatzbereit',
+                'nl' => 'Operationeel',
+            ],
+            [
+                'fr' => 'Légal',
+                'en' => 'Legal',
+                'de' => 'Legal',
+                'nl' => 'Legaal',
+            ],
+            [
+                'fr' => 'Financier',
+                'en' => 'Financial',
+                'de' => 'Finanziellen',
+                'nl' => 'Financieel',
+            ],
+            [
+                'fr' => 'Personne',
+                'en' => 'Personal',
+                'de' => 'Person',
+                'nl' => 'Persoon',
+            ],
+        ];
+    }
 }
