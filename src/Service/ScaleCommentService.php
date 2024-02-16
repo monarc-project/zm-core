@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -13,23 +13,14 @@ use Monarc\Core\Table;
 
 class ScaleCommentService
 {
-    private Table\ScaleCommentTable $scaleCommentTable;
-
-    private Table\ScaleTable $scaleTable;
-
-    private Table\ScaleImpactTypeTable $scaleImpactTypeTable;
-
     private Entity\UserSuperClass $connectedUser;
 
     public function __construct(
-        Table\ScaleCommentTable $scaleCommentTable,
-        Table\ScaleTable $scaleTable,
-        Table\ScaleImpactTypeTable $scaleImpactTypeTable,
+        private Table\ScaleCommentTable $scaleCommentTable,
+        private Table\ScaleTable $scaleTable,
+        private Table\ScaleImpactTypeTable $scaleImpactTypeTable,
         ConnectedUserService $connectedUserService
     ) {
-        $this->scaleCommentTable = $scaleCommentTable;
-        $this->scaleTable = $scaleTable;
-        $this->scaleImpactTypeTable = $scaleImpactTypeTable;
         $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
@@ -56,8 +47,9 @@ class ScaleCommentService
     public function create(Entity\Anr $anr, array $data): Entity\ScaleComment
     {
         /** @var Entity\Scale $scale */
-        $scale = $this->scaleTable->findById($data['scaleId']);
+        $scale = $this->scaleTable->findByIdAndAnr($data['scaleId'], $anr);
 
+        /** @var Entity\ScaleComment $scaleComment */
         $scaleComment = (new Entity\ScaleComment())
             ->setAnr($anr)
             ->setScale($scale)
@@ -68,13 +60,12 @@ class ScaleCommentService
 
         if (isset($data['scaleImpactType'])) {
             /** @var Entity\ScaleImpactType $scaleImpactType */
-            $scaleImpactType = $this->scaleImpactTypeTable->findById($data['scaleImpactType']);
+            $scaleImpactType = $this->scaleImpactTypeTable->findByIdAndAnr($data['scaleImpactType'], $anr);
             $scaleComment->setScaleImpactType($scaleImpactType);
         }
 
         $this->scaleCommentTable->save($scaleComment);
 
-        /** @var Entity\ScaleComment $scaleComment */
         return $scaleComment;
     }
 
@@ -82,10 +73,8 @@ class ScaleCommentService
     {
         /** @var Entity\ScaleComment $scaleComment */
         $scaleComment = $this->scaleCommentTable->findByIdAndAnr($id, $anr);
-        $scaleComment->setComments($data)
-            ->setUpdater($this->connectedUser->getEmail());
 
-        $this->scaleCommentTable->save($scaleComment);
+        $this->scaleCommentTable->save($scaleComment->setComments($data)->setUpdater($this->connectedUser->getEmail()));
 
         return $scaleComment;
     }
