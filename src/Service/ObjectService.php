@@ -619,15 +619,15 @@ class ObjectService
     {
         $result = [];
         foreach ($object->getChildrenLinks() as $childLinkObject) {
+            /** @var Entity\MonarcObject $childMonarcObject */
+            $childMonarcObject = $childLinkObject->getChild();
             $result[] = array_merge([
-                'uuid' => $childLinkObject->getChild()->getUuid(),
+                'uuid' => $childMonarcObject->getUuid(),
                 'component_link_id' => $childLinkObject->getId(),
-                'mode' => $childLinkObject->getChild()->getMode(),
-                'scope' => $childLinkObject->getChild()->getScope(),
-                'children' => !$childLinkObject->getChild()->hasChildren()
-                    ? []
-                    : $this->getChildrenTreeList($childLinkObject->getChild()),
-            ], $childLinkObject->getChild()->getLabels(), $childLinkObject->getChild()->getNames());
+                'mode' => $childMonarcObject->getMode(),
+                'scope' => $childMonarcObject->getScope(),
+                'children' => !$childMonarcObject->hasChildren() ? [] : $this->getChildrenTreeList($childMonarcObject),
+            ], $childMonarcObject->getLabels(), $childMonarcObject->getNames());
         }
 
         return $result;
@@ -637,15 +637,17 @@ class ObjectService
     {
         $result = [];
         foreach ($object->getParentsLinks() as $parentLinkObject) {
+            /** @var Entity\MonarcObject $parentMonarcObject */
+            $parentMonarcObject = $parentLinkObject->getParent();
             $result[] = array_merge([
-                'uuid' => $parentLinkObject->getParent()->getUuid(),
+                'uuid' => $parentMonarcObject->getUuid(),
                 'component_link_id' => $parentLinkObject->getId(),
-                'mode' => $parentLinkObject->getParent()->getMode(),
-                'scope' => $parentLinkObject->getParent()->getScope(),
-                'parents' => $parentLinkObject->getParent()->getParents()->isEmpty()
+                'mode' => $parentMonarcObject->getMode(),
+                'scope' => $parentMonarcObject->getScope(),
+                'parents' => $parentMonarcObject->getParents()->isEmpty()
                     ? []
-                    : $this->getParentsTreeList($parentLinkObject->getParent()),
-            ], $parentLinkObject->getParent()->getLabels(), $parentLinkObject->getParent()->getNames());
+                    : $this->getParentsTreeList($parentMonarcObject),
+            ], $parentMonarcObject->getLabels(), $parentMonarcObject->getNames());
         }
 
         return $result;
@@ -796,8 +798,10 @@ class ObjectService
             }
 
             $objectsToFilterOut = [];
-            foreach ($model->getAnr()->getObjects() as $object) {
-                $objectsToFilterOut[$object->getUuid()] = $object->getUuid();
+            if ($model->getAnr() !== null) {
+                foreach ($model->getAnr()->getObjects() as $object) {
+                    $objectsToFilterOut[$object->getUuid()] = $object->getUuid();
+                }
             }
             if (!empty($objectsToFilterOut)) {
                 $formattedInputParams->setFilterFor('uuid', [
@@ -872,7 +876,6 @@ class ObjectService
         }
     }
 
-
     private function getPreparedObjectCategoryData(
         Entity\ObjectCategory $category,
         array $objectsData,
@@ -893,10 +896,8 @@ class ObjectService
         return $result;
     }
 
-    private function getCategoriesAndObjectsTreeList(
-        Entity\ObjectCategory $objectCategory,
-        Entity\Anr $anr
-    ): array {
+    private function getCategoriesAndObjectsTreeList(Entity\ObjectCategory $objectCategory, Entity\Anr $anr): array
+    {
         $result = [];
         $objectsData = $this->getObjectsDataOfCategoryAndAnr($objectCategory, $anr);
         if (!empty($objectsData) || $objectCategory->hasChildren()) {
@@ -924,10 +925,8 @@ class ObjectService
         return $result;
     }
 
-    private function getObjectsDataOfCategoryAndAnr(
-        Entity\ObjectCategory $objectCategory,
-        Entity\Anr $anr
-    ): array {
+    private function getObjectsDataOfCategoryAndAnr(Entity\ObjectCategory $objectCategory, Entity\Anr $anr): array
+    {
         $objectsData = [];
         /** @var Entity\MonarcObject $object */
         foreach ($objectCategory->getObjects() as $object) {

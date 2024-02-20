@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -13,7 +13,6 @@ use Monarc\Core\Model\Entity\Asset;
 use Monarc\Core\Model\Entity\MonarcObject;
 use Monarc\Core\Model\Entity\ObjectCategory;
 use Monarc\Core\Model\Entity\ObjectObject;
-use Monarc\Core\Model\Entity\ObjectObjectSuperClass;
 use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Service\Interfaces\PositionUpdatableServiceInterface;
 use Monarc\Core\Service\Traits\PositionUpdateTrait;
@@ -29,31 +28,16 @@ class ObjectObjectService
     public const MOVE_COMPOSITION_POSITION_UP = 'up';
     public const MOVE_COMPOSITION_POSITION_DOWN = 'down';
 
-    private ObjectObjectTable $objectObjectTable;
-
-    private MonarcObjectTable $monarcObjectTable;
-
-    private InstanceTable $instanceTable;
-
-    private ObjectCategoryTable $objectCategoryTable;
-
-    private InstanceService $instanceService;
-
     private UserSuperClass $connectedUser;
 
     public function __construct(
-        ObjectObjectTable $objectObjectTable,
-        MonarcObjectTable $monarcObjectTable,
-        InstanceTable $instanceTable,
-        ObjectCategoryTable $objectCategoryTable,
-        InstanceService $instanceService,
+        private ObjectObjectTable $objectObjectTable,
+        private MonarcObjectTable $monarcObjectTable,
+        private InstanceTable $instanceTable,
+        private ObjectCategoryTable $objectCategoryTable,
+        private InstanceService $instanceService,
         ConnectedUserService $connectedUserService
     ) {
-        $this->objectObjectTable = $objectObjectTable;
-        $this->monarcObjectTable = $monarcObjectTable;
-        $this->instanceTable = $instanceTable;
-        $this->objectCategoryTable = $objectCategoryTable;
-        $this->instanceService = $instanceService;
         $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
@@ -88,6 +72,7 @@ class ObjectObjectService
         /* Ensure the child object and all its children are linked to the same anrs as parent linked, link if not. */
         $this->validateAndLinkAllChildrenToAnrs($parentObject->getAnrs(), $childObject);
 
+        /** @var ObjectObject $objectObject */
         $objectObject = (new ObjectObject())
             ->setParent($parentObject)
             ->setChild($childObject)
@@ -102,7 +87,6 @@ class ObjectObjectService
             $this->createInstances($parentObject, $childObject, $data);
         }
 
-        /** @var ObjectObject $objectObject */
         return $objectObject;
     }
 
@@ -139,7 +123,7 @@ class ObjectObjectService
 
     public function delete(int $id): void
     {
-        /** @var ObjectObjectSuperClass $objectObject */
+        /** @var ObjectObject $objectObject */
         $objectObject = $this->objectObjectTable->findById($id);
 
         /* Unlink the related instances of the compositions. */
@@ -181,7 +165,7 @@ class ObjectObjectService
     {
         $previousObjectCompositionLink = null;
         if ($data['implicitPosition'] === PositionUpdatableServiceInterface::IMPLICIT_POSITION_AFTER) {
-            /** @var ObjectObjectSuperClass $previousObjectCompositionLink */
+            /** @var ObjectObject $previousObjectCompositionLink */
             $previousObjectCompositionLink = $this->objectObjectTable->findById($data['previous']);
         }
         foreach ($parentObject->getInstances() as $parentObjectInstance) {

@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -15,7 +15,6 @@ use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 
 /**
  * @ORM\Table(name="objects_objects", indexes={
- *      @ORM\Index(name="anr", columns={"anr_id"}),
  *      @ORM\Index(name="father_id", columns={"father_id"}),
  *      @ORM\Index(name="child_id", columns={"child_id"})
  * })
@@ -37,16 +36,6 @@ class ObjectObjectSuperClass implements PositionedEntityInterface
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     protected $id;
-
-    /**
-     * @var AnrSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Anr", cascade={"persist"})
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true)
-     * })
-     */
-    protected $anr;
 
     /**
      * @var ObjectSuperClass
@@ -77,29 +66,12 @@ class ObjectObjectSuperClass implements PositionedEntityInterface
 
     public function getImplicitPositionRelationsValues(): array
     {
-        $fields['parent'] = $this->parent;
-        if ($this->anr !== null) {
-            $fields['anr'] = $this->anr;
-        }
-
-        return $fields;
+        return ['parent' => $this->parent];
     }
 
     public function getId()
     {
         return $this->id;
-    }
-
-    public function getAnr(): AnrSuperClass
-    {
-        return $this->anr;
-    }
-
-    public function setAnr(AnrSuperClass $anr): self
-    {
-        $this->anr = $anr;
-
-        return $this;
     }
 
     public function getParent(): ObjectSuperClass

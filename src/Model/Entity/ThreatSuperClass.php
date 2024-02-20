@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -12,13 +12,11 @@ use Monarc\Core\Model\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Model\Entity\Traits\DescriptionsEntityTrait;
 use Monarc\Core\Model\Entity\Traits\LabelsEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
-use Ramsey\Uuid\Lazy\LazyUuidFromString;
 use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
 
 /**
  * @ORM\Table(name="threats", indexes={
- *      @ORM\Index(name="anr_id", columns={"anr_id","code"}),
- *      @ORM\Index(name="anr_id2", columns={"anr_id"}),
  *      @ORM\Index(name="theme_id", columns={"theme_id"})
  * })
  * @ORM\MappedSuperclass
@@ -39,22 +37,12 @@ class ThreatSuperClass
     public const MODE_SPECIFIC = 1;
 
     /**
-    * @var LazyUuidFromString|string
+    * @var UuidInterface|string
     *
     * @ORM\Column(name="uuid", type="uuid", nullable=false)
     * @ORM\Id
     */
     protected $uuid;
-
-    /**
-     * @var AnrSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Anr", cascade={"persist"})
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true)
-     * })
-     */
-    protected $anr;
 
     /**
      * @var ThemeSuperClass
@@ -149,18 +137,6 @@ class ThreatSuperClass
     public function setUuid(string $uuid): self
     {
         $this->uuid = $uuid;
-
-        return $this;
-    }
-
-    public function getAnr(): ?AnrSuperClass
-    {
-        return $this->anr;
-    }
-
-    public function setAnr(AnrSuperClass $anr): self
-    {
-        $this->anr = $anr;
 
         return $this;
     }

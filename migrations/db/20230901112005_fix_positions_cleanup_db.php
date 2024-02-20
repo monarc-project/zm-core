@@ -248,5 +248,35 @@ class FixPositionsCleanupDb extends AbstractMigration
         $this->table('scales_impact_types')
             ->removeColumn('position')
             ->update();
+
+        /** Remove unused `anr_id` from the tables. */
+        $this->table('amvs')->dropForeignKey('anr_id')->removeColumn('anr_id')->update();
+        $this->table('assets')
+             ->dropForeignKey('anr_id')
+             ->removeIndex(['anr_id', 'code'])
+             ->removeColumn('anr_id')
+             ->save();
+        $this->table('threats')
+             ->dropForeignKey('anr_id')
+             ->removeIndex(['anr_id', 'code'])
+             ->removeColumn('anr_id')
+             ->save();
+        $this->table('themes')
+             ->dropForeignKey('anr_id')
+             ->removeColumn('anr_id')
+             ->save();
+        $this->table('objects_objects')
+             ->dropForeignKey('anr_id')
+             ->removeColumn('anr_id')
+             ->save();
+        $this->table('objects_categories')
+             ->dropForeignKey('anr_id')
+             ->removeColumn('anr_id')
+             ->save();
+        $this->table('vulnerabilities')
+             ->dropForeignKey('anr_id')
+             ->removeIndex(['anr_id', 'code'])
+             ->removeColumn('anr_id')
+             ->save();
     }
 }

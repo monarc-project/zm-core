@@ -18,7 +18,6 @@ use Ramsey\Uuid\UuidInterface;
 
 /**
  * @ORM\Table(name="amvs", indexes={
- *      @ORM\Index(name="anr", columns={"anr_id"}),
  *      @ORM\Index(name="asset", columns={"asset_id"}),
  *      @ORM\Index(name="threat", columns={"threat_id"}),
  *      @ORM\Index(name="vulnerability", columns={"vulnerability_id"}),
@@ -43,16 +42,6 @@ class AmvSuperClass implements PositionedEntityInterface
      * @ORM\Id
      */
     protected $uuid;
-
-    /**
-     * @var AnrSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Anr")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
-     * })
-     */
-    protected $anr;
 
     /**
      * @var InstanceRiskSuperClass[]|ArrayCollection
@@ -120,12 +109,7 @@ class AmvSuperClass implements PositionedEntityInterface
 
     public function getImplicitPositionRelationsValues(): array
     {
-        if ($this->anr !== null) {
-            $fields['anr'] = $this->anr;
-        }
-        $fields['asset'] = $this->asset;
-
-        return $fields;
+        return ['asset' => $this->asset];
     }
 
     /**
@@ -153,18 +137,6 @@ class AmvSuperClass implements PositionedEntityInterface
     public function setUuid($uuid): self
     {
         $this->uuid = $uuid;
-
-        return $this;
-    }
-
-    public function getAnr(): ?AnrSuperClass
-    {
-        return $this->anr;
-    }
-
-    public function setAnr(AnrSuperClass $anr): self
-    {
-        $this->anr = $anr;
 
         return $this;
     }

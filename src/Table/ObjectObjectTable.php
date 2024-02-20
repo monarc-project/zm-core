@@ -9,7 +9,6 @@ namespace Monarc\Core\Table;
 
 use Doctrine\ORM\EntityManager;
 use Monarc\Core\Model\Entity\ObjectObject;
-use Monarc\Core\Model\Entity\ObjectSuperClass;
 use Monarc\Core\Table\Interfaces\PositionUpdatableTableInterface;
 use Monarc\Core\Table\Traits\PositionIncrementTableTrait;
 
@@ -22,7 +21,7 @@ class ObjectObjectTable extends AbstractTable implements PositionUpdatableTableI
         parent::__construct($entityManager, $entityName);
     }
 
-    public function findByParentObjectAndPosition(ObjectSuperClass $parentObject, int $position): ?ObjectObject
+    public function findByParentObjectAndPosition(ObjectObject $parentObject, int $position): ?ObjectObject
     {
         return $this->getRepository()->createQueryBuilder('oo')
             ->where('oo.parent = :parentObject')

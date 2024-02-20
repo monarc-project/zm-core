@@ -18,10 +18,7 @@ use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 
 /**
- * @ORM\Table(name="assets", indexes={
- *      @ORM\Index(name="anr_id", columns={"anr_id","code"}),
- *      @ORM\Index(name="anr_id2", columns={"anr_id"})
- * })
+ * @ORM\Table(name="assets")
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
@@ -49,16 +46,6 @@ class AssetSuperClass
     * @ORM\Id
     */
     protected $uuid;
-
-    /**
-     * @var AnrSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Anr", cascade={"persist"})
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true)
-     * })
-     */
-    protected $anr;
 
     /**
      * @var ArrayCollection|AmvSuperClass[]
@@ -137,18 +124,6 @@ class AssetSuperClass
     public function setUuid(string $uuid): self
     {
         $this->uuid = $uuid;
-
-        return $this;
-    }
-
-    public function getAnr(): ?AnrSuperClass
-    {
-        return $this->anr;
-    }
-
-    public function setAnr(AnrSuperClass $anr): self
-    {
-        $this->anr = $anr;
 
         return $this;
     }

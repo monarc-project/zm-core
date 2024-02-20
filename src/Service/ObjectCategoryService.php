@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -22,19 +22,13 @@ class ObjectCategoryService
 {
     use PositionUpdateTrait;
 
-    private ObjectCategoryTable $objectCategoryTable;
-
-    private ModelTable $modelTable;
-
     private UserSuperClass $connectedUser;
 
     public function __construct(
-        ObjectCategoryTable $objectCategoryTable,
-        ModelTable $modelTable,
+        private ObjectCategoryTable $objectCategoryTable,
+        private ModelTable $modelTable,
         ConnectedUserService $connectedUserService
     ) {
-        $this->objectCategoryTable = $objectCategoryTable;
-        $this->modelTable = $modelTable;
         $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
@@ -85,13 +79,10 @@ class ObjectCategoryService
 
     public function getList(FormattedInputParams $formattedInputParams)
     {
-        $this->prepareCategoryFilter($formattedInputParams);
         $includeChildren = empty($formattedInputParams->getFilterFor('parentId')['value'])
             || empty($formattedInputParams->getFilterFor('lock')['value']);
 
-        /*
-         * Fetch only root categories and populates their children in case if no filter by parentId or categoryId.
-         */
+        /* Fetch only root categories and populate their children in case if no filter by parentId or categoryId. */
         if ($includeChildren && empty($formattedInputParams->getFilterFor('catid')['value'])) {
             $formattedInputParams->setFilterValueFor('parent', null);
         }
@@ -107,11 +98,7 @@ class ObjectCategoryService
         /** @var ObjectCategory[] $objectCategories */
         $objectCategories = $this->objectCategoryTable->findByParams($formattedInputParams);
         foreach ($objectCategories as $objectCategory) {
-            $categoriesData[] = $this->getPreparedObjectCategoryData(
-                $objectCategory,
-                $includeChildren,
-                $model
-            );
+            $categoriesData[] = $this->getPreparedObjectCategoryData($objectCategory, $includeChildren, $model);
         }
 
         return $categoriesData;
@@ -249,33 +236,6 @@ class ObjectCategoryService
             $this->objectCategoryTable->save($childCategory, false);
 
             $this->updateRootOfChildrenTree($childCategory);
-        }
-    }
-
-    private function prepareCategoryFilter(FormattedInputParams $formattedInputParams): void
-    {
-        $lockFilter = $formattedInputParams->getFilterFor('lock');
-        $parentIdFilter = $formattedInputParams->getFilterFor('parentId');
-        $categoryIdFilter = $formattedInputParams->getFilterFor('catid');
-
-        $isParentIdFilterEmpty = empty($parentIdFilter['value']);
-        if (!empty($categoryIdFilter['value'])) {
-            $excludeCategoriesIds = [$categoryIdFilter['value']];
-            if (!$isParentIdFilterEmpty) {
-                $excludeCategoriesIds[] = $parentIdFilter['value'];
-            }
-            $formattedInputParams->setFilterValueFor(
-                'parent',
-                $isParentIdFilterEmpty ? null : $parentIdFilter['value']
-            );
-            $formattedInputParams->setFilterFor('id', [
-                'value' => $excludeCategoriesIds,
-                'operator' => Comparison::NIN,
-            ]);
-        } elseif (!$isParentIdFilterEmpty) {
-            $formattedInputParams->setFilterValueFor('parent', $parentIdFilter['value']);
-        } elseif (empty($lockFilter['value'])) {
-            $formattedInputParams->setFilterValueFor('parent', null);
         }
     }
 

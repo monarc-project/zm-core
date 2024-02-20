@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\InputFormatter\ObjectCategory;
 
+use Doctrine\Common\Collections\Expr\Comparison;
 use Monarc\Core\InputFormatter\AbstractInputFormatter;
 
 class ObjectCategoriesInputFormatter extends AbstractInputFormatter
@@ -21,9 +22,7 @@ class ObjectCategoriesInputFormatter extends AbstractInputFormatter
     public static string $defaultOrderFields = 'position';
 
     protected static array $allowedFilterFields = [
-        'anr' => [
-            'isUsedInQuery' => false,
-        ],
+        'anr',
         'category' => [
             'type' => 'int',
             'fieldName' => 'id',
@@ -46,4 +45,31 @@ class ObjectCategoriesInputFormatter extends AbstractInputFormatter
             'isUsedInQuery' => false,
         ],
     ];
+
+    public function prepareCategoryFilter(): void
+    {
+        $lockFilter = $this->formattedInputParams->getFilterFor('lock');
+        $parentIdFilter = $this->formattedInputParams->getFilterFor('parentId');
+        $categoryIdFilter = $this->formattedInputParams->getFilterFor('catid');
+
+        $isParentIdFilterEmpty = empty($parentIdFilter['value']);
+        if (!empty($categoryIdFilter['value'])) {
+            $excludeCategoriesIds = [$categoryIdFilter['value']];
+            if (!$isParentIdFilterEmpty) {
+                $excludeCategoriesIds[] = $parentIdFilter['value'];
+            }
+            $this->formattedInputParams->setFilterValueFor(
+                'parent',
+                $isParentIdFilterEmpty ? null : $parentIdFilter['value']
+            );
+            $this->formattedInputParams->setFilterFor('id', [
+                'value' => $excludeCategoriesIds,
+                'operator' => Comparison::NIN,
+            ]);
+        } elseif (!$isParentIdFilterEmpty) {
+            $this->formattedInputParams->setFilterValueFor('parent', $parentIdFilter['value']);
+        } elseif (empty($lockFilter['value'])) {
+            $this->formattedInputParams->setFilterValueFor('parent', null);
+        }
+    }
 }
