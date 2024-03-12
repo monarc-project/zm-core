@@ -16,8 +16,6 @@ use Ramsey\Uuid\Lazy\LazyUuidFromString;
 use Ramsey\Uuid\Uuid;
 
 /**
- * ReferentialSuperClass
- *
  * @ORM\Table(name="referentials")
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
@@ -51,6 +49,14 @@ class ReferentialSuperClass extends AbstractEntity
      */
     protected $categories;
 
+    public function __construct($obj = null)
+    {
+        $this->measures = new ArrayCollection();
+        $this->categories = new ArrayCollection();
+
+        parent::__construct($obj);
+    }
+
     /**
      * @ORM\PrePersist
      */
@@ -68,11 +74,6 @@ class ReferentialSuperClass extends AbstractEntity
         return (string)$this->uuid;
     }
 
-    /**
-     * @param string $uuid
-     *
-     * @return self
-     */
     public function setUuid($uuid): self
     {
         $this->uuid = $uuid;
@@ -80,38 +81,32 @@ class ReferentialSuperClass extends AbstractEntity
         return $this;
     }
 
-    /**
-     * @return MeasureSuperClass[]
-     */
     public function getMeasures()
     {
         return $this->measures;
     }
 
-    /**
-     * @param MeasureSuperClass[] $measures
-     */
-    public function setMeasures($measures): self
+    public function addMeasure(MeasureSuperClass $measure): self
     {
-        $this->measures = $measures;
+        if (!$this->measures->contains($measure)) {
+            $this->measures->add($measure);
+            $measure->setReferential($this);
+        }
 
         return $this;
     }
 
-    /**
-     * @return SoaCategorySuperClass[]
-     */
     public function getCategories()
     {
         return $this->categories;
     }
 
-    /**
-     * @param SoaCategorySuperClass[] $categories
-     */
-    public function setCategories($categories): self
+    public function addSoaCategory(SoaCategorySuperClass $soaCategory): self
     {
-        $this->categories = $categories;
+        if (!$this->categories->contains($soaCategory)) {
+            $this->categories->add($soaCategory);
+            $soaCategory->setReferential($this);
+        }
 
         return $this;
     }

@@ -59,14 +59,14 @@ class ThreatSuperClass
      *
      * @ORM\Column(name="status", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $status = 1;
+    protected $status = self::STATUS_ACTIVE;
 
     /**
      * @var int
      *
      * @ORM\Column(name="mode", type="smallint", options={"unsigned":true, "default":0})
      */
-    protected $mode = 0;
+    protected $mode = self::MODE_GENERIC;
 
     /**
      * @var string

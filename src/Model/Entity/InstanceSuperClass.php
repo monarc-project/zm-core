@@ -245,6 +245,7 @@ class InstanceSuperClass implements PositionedEntityInterface
     public function setAnr(AnrSuperClass $anr): self
     {
         $this->anr = $anr;
+        $anr->addInstance($this);
 
         return $this;
     }

@@ -16,8 +16,6 @@ use Ramsey\Uuid\Lazy\LazyUuidFromString;
 use Ramsey\Uuid\Uuid;
 
 /**
- * Measure
- *
  * @ORM\Table(name="measures", indexes={
  *      @ORM\Index(name="category", columns={"soacategory_id"}),
  *      @ORM\Index(name="referential", columns={"referential_uuid"})
@@ -150,9 +148,10 @@ class MeasureSuperClass extends AbstractEntity
         return $this->category;
     }
 
-    public function setCategory($category): self
+    public function setCategory(SoaCategorySuperClass $category): self
     {
         $this->category = $category;
+        $category->addMeasure($this);
 
         return $this;
     }
@@ -165,6 +164,7 @@ class MeasureSuperClass extends AbstractEntity
     public function setReferential(ReferentialSuperClass $referential): self
     {
         $this->referential = $referential;
+        $referential->addMeasure($this);
 
         return $this;
     }
@@ -174,31 +174,11 @@ class MeasureSuperClass extends AbstractEntity
         return $this->amvs;
     }
 
-    /**
-     * @param AmvSuperClass[] $amvs
-     */
-    public function setAmvs($amvs): self
-    {
-        $this->amvs = $amvs;
-
-        return $this;
-    }
-
     public function addAmv(AmvSuperClass $amv): self
     {
         if (!$this->amvs->contains($amv)) {
             $this->amvs->add($amv);
             $amv->addMeasure($this);
-        }
-
-        return $this;
-    }
-
-    public function addOpRisk(RolfRiskSuperClass $riskInput): self
-    {
-        if (!$this->rolfRisks->contains($riskInput)) {
-            $this->rolfRisks->add($riskInput);
-            $riskInput->addMeasure($this);
         }
 
         return $this;
@@ -214,14 +194,9 @@ class MeasureSuperClass extends AbstractEntity
         return $this;
     }
 
-    public function deleteOpRisk(RolfRiskSuperClass $riskInput): self
+    public function getLinkedMeasures()
     {
-        if ($this->rolfRisks->contains($riskInput)) {
-            $this->rolfRisks->removeElement($riskInput);
-            $riskInput->removeMeasure($this);
-        }
-
-        return $this;
+        return $this->linkedMeasures;
     }
 
     public function addLinkedMeasure(MeasureSuperClass $measure): self
@@ -234,19 +209,14 @@ class MeasureSuperClass extends AbstractEntity
         return $this;
     }
 
-    public function deleteLinkedMeasure(MeasureSuperClass $measure): self
+    public function removeLinkedMeasure(MeasureSuperClass $measure): self
     {
         if ($this->linkedMeasures->contains($measure)) {
             $this->linkedMeasures->removeElement($measure);
-            $measure->deleteLinkedMeasure($this);
+            $measure->removeLinkedMeasure($this);
         }
 
         return $this;
-    }
-
-    public function getLinkedMeasures()
-    {
-        return $this->linkedMeasures;
     }
 
     public function getRolfRisks()
@@ -254,18 +224,21 @@ class MeasureSuperClass extends AbstractEntity
         return $this->rolfRisks;
     }
 
-    public function setRolfRisks($rolfRisks): self
-    {
-        $this->rolfRisks = $rolfRisks;
-
-        return $this;
-    }
-
     public function addRolfRisk(RolfRiskSuperClass $rolfRisk): self
     {
         if (!$this->rolfRisks->contains($rolfRisk)) {
             $this->rolfRisks->add($rolfRisk);
             $rolfRisk->addMeasure($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOpRisk(RolfRiskSuperClass $riskInput): self
+    {
+        if ($this->rolfRisks->contains($riskInput)) {
+            $this->rolfRisks->removeElement($riskInput);
+            $riskInput->removeMeasure($this);
         }
 
         return $this;

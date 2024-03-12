@@ -14,8 +14,6 @@ use Monarc\Core\Model\Entity\Traits\LabelsEntityTrait;
 use Monarc\Core\Model\Entity\Traits\UpdateEntityTrait;
 
 /**
- * Thme
- *
  * @ORM\Table(name="rolf_tags", indexes={
  *      @ORM\Index(name="anr", columns={"anr_id"})
  * })
@@ -30,7 +28,7 @@ class RolfTagSuperClass extends AbstractEntity
     use LabelsEntityTrait;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer", nullable=false)
      * @ORM\Id

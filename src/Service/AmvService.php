@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -20,59 +20,23 @@ class AmvService implements PositionUpdatableServiceInterface
 {
     use PositionUpdateTrait;
 
-    private Table\AmvTable $amvTable;
-
-    private Table\AssetTable $assetTable;
-
-    private Table\ThreatTable $threatTable;
-
-    private Table\VulnerabilityTable $vulnerabilityTable;
-
-    private MeasureTable $measureTable;
-
-    private ReferentialTable $referentialTable;
-
-    private Table\ModelTable $modelTable;
-
-    private HistoricalService $historicalService;
-
-    private AssetService $assetService;
-
-    private ThreatService $threatService;
-
-    private VulnerabilityService $vulnerabilityService;
-
-    private InstanceRiskService $instanceRiskService;
-
     private Entity\UserSuperClass $connectedUser;
 
     public function __construct(
-        Table\AmvTable $amvTable,
-        Table\AssetTable $assetTable,
-        Table\ThreatTable $threatTable,
-        Table\VulnerabilityTable $vulnerabilityTable,
-        MeasureTable $measureTable,
-        ReferentialTable $referentialTable,
-        Table\ModelTable $modelTable,
-        HistoricalService $historicalService,
-        AssetService $assetService,
-        ThreatService $threatService,
-        VulnerabilityService $vulnerabilityService,
-        InstanceRiskService $instanceRiskService,
+        private Table\AmvTable $amvTable,
+        private Table\AssetTable $assetTable,
+        private Table\ThreatTable $threatTable,
+        private Table\VulnerabilityTable $vulnerabilityTable,
+        private MeasureTable $measureTable,
+        private ReferentialTable $referentialTable,
+        private Table\ModelTable $modelTable,
+        private HistoricalService $historicalService,
+        private AssetService $assetService,
+        private ThreatService $threatService,
+        private VulnerabilityService $vulnerabilityService,
+        private InstanceRiskService $instanceRiskService,
         ConnectedUserService $connectedUserService
     ) {
-        $this->amvTable = $amvTable;
-        $this->assetTable = $assetTable;
-        $this->threatTable = $threatTable;
-        $this->vulnerabilityTable = $vulnerabilityTable;
-        $this->measureTable = $measureTable;
-        $this->referentialTable = $referentialTable;
-        $this->modelTable = $modelTable;
-        $this->historicalService = $historicalService;
-        $this->assetService = $assetService;
-        $this->threatService = $threatService;
-        $this->vulnerabilityService = $vulnerabilityService;
-        $this->instanceRiskService = $instanceRiskService;
         $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
@@ -171,6 +135,7 @@ class AmvService implements PositionUpdatableServiceInterface
             $amv->setThreat($threat);
         }
         if ($data['vulnerability'] !== $amv->getVulnerability()->getUuid()) {
+            /** @var Entity\Vulnerability $vulnerability */
             $vulnerability = $this->vulnerabilityTable->findById($data['vulnerability']);
             $changedData['vulnerability'] = $amv->getVulnerability()->getCode() . ' => ' . $vulnerability->getCode();
 
@@ -313,9 +278,7 @@ class AmvService implements PositionUpdatableServiceInterface
     ): bool {
         $amvs = $this->amvTable->findByAmv($asset, $threat, $vulnerability);
         foreach ($amvs as $amv) {
-            /** @var Entity\Asset $asset */
-            $asset = $amv->getAsset();
-            if (!$this->checkModelsInstantiation($asset, $modelsIds)) {
+            if (!$this->checkModelsInstantiation($amv->getAsset(), $modelsIds)) {
                 return false;
             }
         }
@@ -379,9 +342,9 @@ class AmvService implements PositionUpdatableServiceInterface
      */
     public function checkAmvIntegrityLevel(
         array $models,
-        ?Entity\AssetSuperClass $asset = null,
-        ?Entity\ThreatSuperClass $threat = null,
-        ?Entity\VulnerabilitySuperClass $vulnerability = null,
+        ?Entity\Asset $asset = null,
+        ?Entity\Threat $threat = null,
+        ?Entity\Vulnerability $vulnerability = null,
         bool $follow = false
     ): bool {
         $amvs = $this->amvTable->findByAmv($asset, $threat, $vulnerability);
@@ -413,61 +376,45 @@ class AmvService implements PositionUpdatableServiceInterface
      */
     private function validateAmvCompliesRequirements(
         Entity\Amv $amv,
-        ?Entity\AssetSuperClass $asset = null,
+        ?Entity\Asset $asset = null,
         array $assetModels = [],
-        ?Entity\ThreatSuperClass $threat = null,
+        ?Entity\Threat $threat = null,
         array $threatModels = [],
-        ?Entity\VulnerabilitySuperClass $vulnerability = null,
+        ?Entity\Vulnerability $vulnerability = null,
         array $vulnerabilityModels = []
     ): void {
+        /** @var Entity\Asset $asset */
         $asset = $asset ?? $amv->getAsset();
         if ($asset->isPrimary()) {
             throw new Exception('Asset can\'t be primary', 412);
         }
 
-        $assetMode = $asset->getMode();
-        if (empty($assetModels)) {
-            $assetModels = $amv->getAsset()->getModels();
-        }
         $assetModelsIds = [];
-        $assetModelsIsRegulator = false;
-        foreach ($assetModels as $model) {
-            if (!is_object($model)) {
+        foreach (empty($assetModels) ? $asset->getModels() : $assetModels as $model) {
+            if (!\is_object($model)) {
                 /** @var Entity\Model $model */
                 $model = $this->modelTable->findById((int)$model);
             }
             $assetModelsIds[] = $model->getId();
-            if ($model->isRegulator()) {
-                $assetModelsIsRegulator = true;
-            }
         }
 
-        $threatMode = $threat === null ? $amv->getThreat()->getMode() : $threat->getMode();
-        if (empty($threatModels)) {
-            $threatModels = $amv->getThreat()->getModels();
-        }
         $threatModelsIds = [];
-        foreach ($threatModels as $model) {
+        foreach (empty($threatModels) ? $amv->getThreat()->getModels() : $threatModels as $model) {
             $threatModelsIds[] = \is_object($model) ? $model->getId() : $model;
         }
 
-        $vulnerabilityMode = $vulnerability === null ? $amv->getVulnerability()->getMode() : $vulnerability->getMode();
-        if (empty($vulnerabilityModels)) {
-            $vulnerabilityModels = $amv->getVulnerability()->getModels();
-        }
         $vulnerabilityModelsIds = [];
-        foreach ($vulnerabilityModels as $model) {
+        foreach (empty($vulnerabilityModels) ? $amv->getVulnerability()->getModels() : $vulnerabilityModels as $model) {
             $vulnerabilityModelsIds[] = \is_object($model) ? $model->getId() : $model;
         }
 
         $this->validateAmvCompliesControl(
-            $assetMode,
-            $threatMode,
-            $vulnerabilityMode,
+            $asset->getMode(),
+            $threat === null ? $amv->getThreat()->getMode() : $threat->getMode(),
+            $vulnerability === null ? $amv->getVulnerability()->getMode() : $vulnerability->getMode(),
             $assetModelsIds,
             $threatModelsIds,
-            $vulnerabilityModelsIds,
-            $assetModelsIsRegulator
+            $vulnerabilityModelsIds
         );
     }
 
@@ -481,7 +428,6 @@ class AmvService implements PositionUpdatableServiceInterface
         $assetModelsIds,
         $threatModelsIds,
         $vulnerabilityModelsIds,
-        bool $assetModelsIsRegulator
     ): void {
         if (!$assetMode && !$threatMode && !$vulnerabilityMode) {
             return;
@@ -496,48 +442,43 @@ class AmvService implements PositionUpdatableServiceInterface
         }
 
         if ($assetMode && (!$threatMode || !$vulnerabilityMode)) { // 1 0 0 || 1 0 1 || 1 1 0
-            // only if there is no regulating model for the asset
-            if (!$assetModelsIsRegulator) {
-                if (!$threatMode && !$vulnerabilityMode) { // 1 0 0
+            if (!$threatMode && !$vulnerabilityMode) { // 1 0 0
+                return;
+            }
+            // We have to check the models.
+            if (empty($assetModelsIds)) {
+                $assetModelsIds = [];
+            } elseif (!\is_array($assetModelsIds)) {
+                $assetModelsIds = [$assetModelsIds];
+            }
+            if ($vulnerabilityMode) { // 1 0 1
+                $toTest = $vulnerabilityModelsIds;
+                if (empty($toTest)) {
+                    $toTest = [];
+                } elseif (!\is_array($toTest)) {
+                    $toTest = [$toTest];
+                }
+            } else { // 1 1 0
+                $toTest = $threatModelsIds;
+                if (empty($toTest)) {
+                    $toTest = [];
+                } elseif (!\is_array($toTest)) {
+                    $toTest = [$toTest];
+                }
+            }
+            $diff1 = array_diff($assetModelsIds, $toTest);
+            if (empty($diff1)) {
+                $diff2 = array_diff($toTest, $assetModelsIds);
+                if (empty($diff2)) {
                     return;
                 }
-                // We have to check the models.
-                if (empty($assetModelsIds)) {
-                    $assetModelsIds = [];
-                } elseif (!\is_array($assetModelsIds)) {
-                    $assetModelsIds = [$assetModelsIds];
-                }
-                if ($vulnerabilityMode) { // 1 0 1
-                    $toTest = $vulnerabilityModelsIds;
-                    if (empty($toTest)) {
-                        $toTest = [];
-                    } elseif (!\is_array($toTest)) {
-                        $toTest = [$toTest];
-                    }
-                } else { // 1 1 0
-                    $toTest = $threatModelsIds;
-                    if (empty($toTest)) {
-                        $toTest = [];
-                    } elseif (!\is_array($toTest)) {
-                        $toTest = [$toTest];
-                    }
-                }
-                $diff1 = array_diff($assetModelsIds, $toTest);
-                if (empty($diff1)) {
-                    $diff2 = array_diff($toTest, $assetModelsIds);
-                    if (empty($diff2)) {
-                        return;
-                    }
-                }
-
-                throw new Exception(
-                    'Specific models relations must be common to asset and '
-                    . ($vulnerabilityMode ? 'vulnerability' : 'threat'),
-                    412
-                );
             }
 
-            throw new Exception('Asset\'s model must not be regulator', 412);
+            throw new Exception(
+                'Specific models relations must be common to asset and '
+                . ($vulnerabilityMode ? 'vulnerability' : 'threat'),
+                412
+            );
         }
 
         if ($assetMode && $threatMode && $vulnerabilityMode) { // 1 1 1 - We have to check the models.

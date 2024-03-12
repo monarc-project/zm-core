@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Model\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits;
 
@@ -33,6 +34,20 @@ class AnrSuperClass
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     protected $id;
+
+    /**
+     * @var ArrayCollection|InstanceSuperClass[]
+     *
+     * @ORM\OneToMany(targetEntity="Instance", mappedBy="anr")
+     */
+    protected $instances;
+
+    /**
+     * @var AnrInstanceMetadataFieldSuperClass[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="AnrInstanceMetadataField", mappedBy="anr")
+     */
+    protected $anrInstanceMetadataFields;
 
     /**
      * Informational risks min threshold setting.
@@ -205,6 +220,12 @@ class AnrSuperClass
      */
     protected $status = self::STATUS_ACTIVE;
 
+    public function __construct()
+    {
+        $this->anrInstanceMetadataFields = new ArrayCollection();
+        $this->instances = new ArrayCollection();
+    }
+
     /**
      * Only the primitive data types properties values are set to the new object.
      * The relation properties have to be recreated manually.
@@ -241,13 +262,42 @@ class AnrSuperClass
         return $this->id;
     }
 
+    public function getInstances()
+    {
+        return $this->instances;
+    }
+
+    public function addInstance(InstanceSuperClass $instance): self
+    {
+        if (!$this->instances->contains($instance)) {
+            $this->instances->add($instance);
+            $instance->setAnr($this);
+        }
+
+        return $this;
+    }
+
+    public function getAnrInstanceMetadataFields()
+    {
+        return $this->anrInstanceMetadataFields;
+    }
+
+    public function addAnrInstanceMetadataField(AnrInstanceMetadataFieldSuperClass $instanceMetadataField): self
+    {
+        if (!$this->anrInstanceMetadataFields->contains($instanceMetadataField)) {
+            $this->anrInstanceMetadataFields->add($instanceMetadataField);
+            $instanceMetadataField->setAnr($this);
+        }
+
+        return $this;
+    }
+
     public function setSeuil1(int $seuil1): self
     {
         $this->seuil1 = $seuil1;
 
         return $this;
     }
-
 
     public function getSeuil1(): int
     {

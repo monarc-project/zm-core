@@ -182,7 +182,7 @@ class RolfRiskSuperClass extends AbstractEntity
     {
         if ($this->measures->contains($measure)) {
             $this->measures->removeElement($measure);
-            $measure->deleteOpRisk($this);
+            $measure->removeOpRisk($this);
         }
 
         return $this;

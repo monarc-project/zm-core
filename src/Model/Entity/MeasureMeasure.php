@@ -10,8 +10,6 @@ namespace Monarc\Core\Model\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
-* Measure Measure
-*
 * @ORM\Table(name="measures_measures", indexes={
 *      @ORM\Index(name="father_id", columns={"father_id"}),
 *      @ORM\Index(name="child_id", columns={"child_id"})

@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -11,35 +11,21 @@ use Monarc\Core\Exception\Exception;
 use Monarc\Core\InputFormatter\FormattedInputParams;
 use Monarc\Core\Model\Entity\Anr;
 use Monarc\Core\Model\Entity\Model;
-use Monarc\Core\Model\Entity\MonarcObject;
+use Monarc\Core\Model\Entity\ObjectSuperClass;
 use Monarc\Core\Model\Entity\UserSuperClass;
 use Monarc\Core\Table\AnrTable;
-use Monarc\Core\Table\AmvTable;
 use Monarc\Core\Table\ModelTable;
 
 class ModelService
 {
-    private ModelTable $modelTable;
-
-    private AmvTable $amvTable;
-
-    private AnrTable $anrTable;
-
-    private AnrService $anrService;
-
     private UserSuperClass $connectedUser;
 
     public function __construct(
-        ModelTable $modelTable,
-        AmvTable $amvTable,
-        AnrTable $anrTable,
-        AnrService $anrService,
+        private ModelTable $modelTable,
+        private AnrTable $anrTable,
+        private AnrService $anrService,
         ConnectedUserService $connectedUserService
     ) {
-        $this->modelTable = $modelTable;
-        $this->amvTable = $amvTable;
-        $this->anrTable = $anrTable;
-        $this->anrService = $anrService;
         $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
@@ -136,7 +122,6 @@ class ModelService
             ])
             ->setDescriptions($model->getDescriptions())
             ->setIsGeneric($model->isGeneric())
-            ->setIsRegulator($model->isRegulator())
             ->setAreScalesUpdatable($model->areScalesUpdatable())
             ->setShowRolfBrut($model->showRolfBrut())
             ->setStatus($model->getStatus())
@@ -177,44 +162,44 @@ class ModelService
 
     /**
      * Verifies the model integrity before update.
+     * It's not allowed to change it to generic if there are specific objects linked.
      */
     private function validateBeforeUpdate(Model $model, array $data): void
     {
-        if (!empty($data['isRegulator']) && !empty($data['isGeneric'])) {
-            throw new Exception('A regulator model can\'t be generic', 412);
-        }
-
-        $modeObject = null;
-        if (!empty($data['isRegulator']) && !$model->isRegulator()) {
-            /* Changes to regulator */
-            foreach ($model->getAssets() as $asset) {
-                $amvs = $this->amvTable->findByAsset($asset);
-                foreach ($amvs as $amv) {
-                    if ($asset->isModeSpecific()
-                        && $amv->getThreat()->isModeGeneric()
-                        && $amv->getVulnerability()->isModeGeneric()
-                    ) {
-                        throw new Exception(
-                            'The modification is forbidden. The level of integrity between the model ' .
-                            'and its objects will be corrupted.',
-                            412
-                        );
-                    }
-                }
-            }
-
-            $modeObject = MonarcObject::MODE_GENERIC;
-        } elseif (!empty($data['isGeneric']) && !$model->isGeneric()) {
-            /* changes to generic */
-            $modeObject = MonarcObject::MODE_SPECIFIC;
-        }
-
-        if ($modeObject !== null && $model->getAnr() !== null) {
+        /* Attempt to change the model to generic */
+        if (!empty($data['isGeneric']) && !$model->isGeneric() && $model->getAnr() !== null) {
             foreach ($model->getAnr()->getObjects() as $object) {
-                if ($object->getMode() === $modeObject) {
+                if ($object->getMode() === ObjectSuperClass::MODE_SPECIFIC) {
                     throw new Exception(
                         'The modification is forbidden. The level of integrity between the model and its objects ' .
                         'will be corrupted.',
+                        412
+                    );
+                }
+            }
+            foreach ($model->getAssets() as $asset) {
+                if ($asset->isModeSpecific()) {
+                    throw new Exception(
+                        'The modification is forbidden. The level of integrity between the model ' .
+                        'and assets will be corrupted.',
+                        412
+                    );
+                }
+            }
+            foreach ($model->getThreats() as $threat) {
+                if ($threat->isModeSpecific()) {
+                    throw new Exception(
+                        'The modification is forbidden. The level of integrity between the model ' .
+                        'and threats will be corrupted.',
+                        412
+                    );
+                }
+            }
+            foreach ($model->getVulnerabilities() as $vulnerability) {
+                if ($vulnerability->isModeSpecific()) {
+                    throw new Exception(
+                        'The modification is forbidden. The level of integrity between the model ' .
+                        'and vulnerabilities will be corrupted.',
                         412
                     );
                 }
@@ -232,9 +217,6 @@ class ModelService
         }
         if (isset($data['isGeneric'])) {
             $model->setIsGeneric((bool)$data['isGeneric']);
-        }
-        if (isset($data['isRegulator'])) {
-            $model->setIsRegulator((bool)$data['isRegulator']);
         }
         if (isset($data['areScalesUpdatable'])) {
             $model->setAreScalesUpdatable((bool)$data['areScalesUpdatable']);
@@ -275,7 +257,6 @@ class ModelService
             'description4' => $model->getDescription(4),
             'isGeneric' => (int)$model->isGeneric(),
             'isDefault' => (int)$model->isDefault(),
-            'isRegulator' => (int)$model->isRegulator(),
             'areScalesUpdatable' => (int)$model->areScalesUpdatable(),
             'showRolfBrut' => (int)$model->showRolfBrut(),
             'status' => $model->getStatus(),

@@ -84,13 +84,6 @@ class Model
     /**
      * @var int
      *
-     * @ORM\Column(name="is_regulator", type="smallint", options={"unsigned":true, "default":0})
-     */
-    protected $isRegulator = 0;
-
-    /**
-     * @var int
-     *
      * @ORM\Column(name="show_rolf_brut", type="smallint", options={"unsigned":true, "default":1})
      */
     protected $showRolfBrut = 1;
@@ -265,18 +258,6 @@ class Model
         return $this;
     }
 
-    public function isRegulator(): bool
-    {
-        return (bool)$this->isRegulator;
-    }
-
-    public function setIsRegulator(bool $isRegulator): self
-    {
-        $this->isRegulator = (int)$isRegulator;
-
-        return $this;
-    }
-
     public function showRolfBrut(): bool
     {
         return (bool)$this->showRolfBrut;
@@ -297,15 +278,6 @@ class Model
 
         /** @var Asset $asset */
         $asset = $forcedAsset ?? $object->getAsset();
-        if ($this->isRegulator()) {
-            if ($object->isModeGeneric()) {
-                throw new Exception('You cannot add a generic object to a regulator model', 412);
-            }
-            if ($asset !== null && $object->isModeSpecific() && $asset->isModeGeneric()) {
-                throw new Exception('You cannot add a specific object with generic asset to a regulator model', 412);
-            }
-        }
-
         if ($asset !== null && !$this->isGeneric() && $asset->isModeSpecific()) {
             foreach ($asset->getModels() as $assetModel) {
                 if ($assetModel->getId() === $this->id) {
@@ -313,11 +285,7 @@ class Model
                 }
             }
 
-            throw new Exception(
-                'You cannot add an object with specific asset unrelated to a '
-                . ($this->isRegulator() ? 'regulator' : 'specific') . ' model',
-                412
-            );
+            throw new Exception('You cannot add an object with specific asset unrelated to a specific model', 412);
         }
     }
 }

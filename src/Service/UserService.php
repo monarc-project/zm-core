@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -15,19 +15,16 @@ use Monarc\Core\Table\UserTable;
 
 class UserService
 {
-    protected UserTable $userTable;
-
-    protected ConnectedUserService $connectedUserService;
+    protected UserSuperClass $connectedUser;
 
     protected int $defaultLanguageIndex;
 
     public function __construct(
-        UserTable $userTable,
+        protected UserTable $userTable,
         ConnectedUserService $connectedUserService,
         array $config
     ) {
-        $this->userTable = $userTable;
-        $this->connectedUserService = $connectedUserService;
+        $this->connectedUser = $connectedUserService->getConnectedUser();
         $this->defaultLanguageIndex = (int)$config['defaultLanguageIndex'];
     }
 
@@ -80,9 +77,7 @@ class UserService
         if (empty($data['language'])) {
             $data['language'] = $this->defaultLanguageIndex;
         }
-
-        $data['creator'] = $this->connectedUserService->getConnectedUser()->getFirstname() . ' '
-            . $this->connectedUserService->getConnectedUser()->getLastname();
+        $data['creator'] = $this->connectedUser->getEmail();
 
         $user = new User($data);
         $this->userTable->save($user);
@@ -145,8 +140,7 @@ class UserService
             $data['dateStart'] = new DateTime($data['dateStart']);
         }
         */
-        $user->setUpdater($this->connectedUserService->getConnectedUser()->getFirstname() . ' '
-            . $this->connectedUserService->getConnectedUser()->getLastname());
+        $user->setUpdater($this->connectedUser->getEmail());
 
         if (!empty($data['role'])) {
             $user->setRoles($data['role']);

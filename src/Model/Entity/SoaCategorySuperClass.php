@@ -12,8 +12,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Model\Entity\Traits\LabelsEntityTrait;
 
 /**
- * CategoriesSuperClass
- *
  * @ORM\Table(name="soacategory", indexes={
  *       @ORM\Index(name="referential", columns={"referential_uuid"})
  * })
@@ -24,7 +22,7 @@ class SoaCategorySuperClass extends AbstractEntity
     use LabelsEntityTrait;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer", nullable=false)
      * @ORM\Id
@@ -33,7 +31,7 @@ class SoaCategorySuperClass extends AbstractEntity
     protected $id;
 
     /**
-     * @var Referential
+     * @var ReferentialSuperClass
      *
      * @ORM\ManyToOne(targetEntity="Referential", inversedBy="categories", cascade={"persist"})
      * @ORM\JoinColumns({
@@ -56,6 +54,13 @@ class SoaCategorySuperClass extends AbstractEntity
      */
     protected $status = 1;
 
+    public function __construct($obj = null)
+    {
+        $this->measures = new ArrayCollection();
+
+        parent::__construct($obj);
+    }
+
     /**
      * @return int
      */
@@ -74,38 +79,30 @@ class SoaCategorySuperClass extends AbstractEntity
         return $this;
     }
 
-    /**
-     * @return MeasureSuperClass[]
-     */
     public function getMeasures()
     {
         return $this->measures;
     }
 
-    /**
-     * @param ArrayCollection|MeasureSuperClass[] $measures
-     */
-    public function setMeasures($measures): self
+    public function addMeasure(MeasureSuperClass $measure): self
     {
-        $this->measures = $measures;
+        if (!$this->measures->contains($measure)) {
+            $this->measures->add($measure);
+            $measure->setCategory($this);
+        }
 
         return $this;
     }
 
-    /**
-     * @return ReferentialSuperClass
-     */
     public function getReferential()
     {
         return $this->referential;
     }
 
-    /**
-     * @param ReferentialSuperClass $referential
-     */
-    public function setReferential($referential): self
+    public function setReferential(ReferentialSuperClass $referential): self
     {
         $this->referential = $referential;
+        $referential->addSoaCategory($this);
 
         return $this;
     }

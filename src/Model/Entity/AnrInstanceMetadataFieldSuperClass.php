@@ -55,6 +55,7 @@ class AnrInstanceMetadataFieldSuperClass
     public function setAnr(AnrSuperClass $anr): self
     {
         $this->anr = $anr;
+        $anr->addAnrInstanceMetadataField($this);
 
         return $this;
     }

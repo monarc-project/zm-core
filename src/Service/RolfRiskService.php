@@ -231,7 +231,7 @@ class RolfRiskService extends AbstractService
         }
         foreach ($rolfRisk->getMeasures() as $m) {
             if (!\in_array($m->getUuid(), array_column($data['measures'], 'uuid'), true)) {
-                $m->deleteOpRisk($rolfRisk);
+                $m->removeOpRisk($rolfRisk);
             }
         }
         unset($data['measures']);

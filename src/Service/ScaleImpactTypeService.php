@@ -122,10 +122,12 @@ class ScaleImpactTypeService
                 'scale' => $scale,
                 'type' => $type,
                 'isSys' => true,
-                'label1' => $defaultScaleImpactTypes['label1'][$shortcut],
-                'label2' => $defaultScaleImpactTypes['label2'][$shortcut],
-                'label3' => $defaultScaleImpactTypes['label3'][$shortcut],
-                'label4' => $defaultScaleImpactTypes['label4'][$shortcut],
+                'labels' => [
+                    'label1' => $defaultScaleImpactTypes['label1'][$shortcut],
+                    'label2' => $defaultScaleImpactTypes['label2'][$shortcut],
+                    'label3' => $defaultScaleImpactTypes['label3'][$shortcut],
+                    'label4' => $defaultScaleImpactTypes['label4'][$shortcut],
+                ],
             ], false);
         }
     }

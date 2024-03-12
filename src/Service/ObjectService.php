@@ -177,14 +177,14 @@ class ObjectService
         }
 
         /* Places uncategorized objects. */
-        $objectsData = [];
+        $uncategorizedObjectsData = [];
         foreach ($anr->getObjects() as $object) {
             if (!$object->hasCategory()) {
-                $objectsData[] = $this->getPreparedObjectData($object, true);
+                $uncategorizedObjectsData[] = $this->getPreparedObjectData($object, true);
             }
         }
-        if (!empty($objectsData)) {
-            $result[] = Entity\ObjectCategorySuperClass::getUndefinedCategoryData($objectsData);
+        if (!empty($uncategorizedObjectsData)) {
+            $result[] = Entity\ObjectCategorySuperClass::getUndefinedCategoryData($uncategorizedObjectsData);
         }
 
         return $result;
@@ -363,14 +363,7 @@ class ObjectService
                     'id' => $object->getCategory()->getId(),
                     'position' => $object->getCategory()->getPosition(),
                 ], $object->getCategory()->getLabels())
-                : [
-                    'id' => -1,
-                    'label1' => 'Sans catégorie',
-                    'label2' => 'Uncategorized',
-                    'label3' => 'Keine Kategorie',
-                    'label4' => 'Geen categorie',
-                    'position' => -1,
-                ];
+                : Entity\ObjectCategorySuperClass::getUndefinedCategoryData([]);
             $result['asset'] = array_merge([
                 'uuid' => $object->getAsset()->getUuid(),
                 'code' => $object->getAsset()->getCode(),
@@ -788,11 +781,9 @@ class ObjectService
                         $assetsFilter[$asset->getUuid()] = $asset->getUuid();
                     }
                 }
-                if (!$model->isRegulator()) {
-                    $assets = $this->assetTable->findByMode(Entity\AssetSuperClass::MODE_GENERIC);
-                    foreach ($assets as $asset) {
-                        $assetsFilter[$asset->getUuid()] = $asset->getUuid();
-                    }
+                $assets = $this->assetTable->findByMode(Entity\AssetSuperClass::MODE_GENERIC);
+                foreach ($assets as $asset) {
+                    $assetsFilter[$asset->getUuid()] = $asset->getUuid();
                 }
                 $formattedInputParams->setFilterValueFor('asset', array_values($assetsFilter));
             }

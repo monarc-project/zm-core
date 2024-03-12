@@ -10,8 +10,6 @@ namespace Monarc\Core\Model\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Instance
- *
  * @ORM\Table(name="instances", indexes={
  *      @ORM\Index(name="anr", columns={"anr_id"}),
  *      @ORM\Index(name="asset_id", columns={"asset_id"}),

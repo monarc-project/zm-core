@@ -14,6 +14,7 @@ class FixPositionsCleanupDb extends AbstractMigration
         /* Cleanup and update data types. */
         $this->table('models')
             ->removeColumn('is_deleted')
+            ->removeColumn('is_regulator')
             ->renameColumn('is_scales_updatable', 'are_scales_updatable')
             ->dropForeignKey('anr_id')
             ->addForeignKey('anr_id', 'anrs', 'id', ['delete' => 'SET_NULL', 'update' => 'CASCADE'])
@@ -252,31 +253,35 @@ class FixPositionsCleanupDb extends AbstractMigration
         /** Remove unused `anr_id` from the tables. */
         $this->table('amvs')->dropForeignKey('anr_id')->removeColumn('anr_id')->update();
         $this->table('assets')
-             ->dropForeignKey('anr_id')
-             ->removeIndex(['anr_id', 'code'])
-             ->removeColumn('anr_id')
-             ->save();
+            ->dropForeignKey('anr_id')
+            ->removeIndex(['anr_id', 'code'])
+            ->removeColumn('anr_id')
+            ->save();
         $this->table('threats')
-             ->dropForeignKey('anr_id')
-             ->removeIndex(['anr_id', 'code'])
-             ->removeColumn('anr_id')
-             ->save();
+            ->dropForeignKey('anr_id')
+            ->removeIndex(['anr_id', 'code'])
+            ->removeColumn('anr_id')
+            ->save();
         $this->table('themes')
-             ->dropForeignKey('anr_id')
-             ->removeColumn('anr_id')
-             ->save();
+            ->dropForeignKey('anr_id')
+            ->removeColumn('anr_id')
+            ->save();
         $this->table('objects_objects')
-             ->dropForeignKey('anr_id')
-             ->removeColumn('anr_id')
-             ->save();
+            ->dropForeignKey('anr_id')
+            ->removeColumn('anr_id')
+            ->save();
         $this->table('objects_categories')
-             ->dropForeignKey('anr_id')
-             ->removeColumn('anr_id')
-             ->save();
+            ->dropForeignKey('anr_id')
+            ->removeColumn('anr_id')
+            ->changeColumn('label1', 'string', ['null' => false, 'default' => '', 'limit' => 2048])
+            ->changeColumn('label2', 'string', ['null' => false, 'default' => '', 'limit' => 2048])
+            ->changeColumn('label3', 'string', ['null' => false, 'default' => '', 'limit' => 2048])
+            ->changeColumn('label4', 'string', ['null' => false, 'default' => '', 'limit' => 2048])
+            ->save();
         $this->table('vulnerabilities')
-             ->dropForeignKey('anr_id')
-             ->removeIndex(['anr_id', 'code'])
-             ->removeColumn('anr_id')
-             ->save();
+            ->dropForeignKey('anr_id')
+            ->removeIndex(['anr_id', 'code'])
+            ->removeColumn('anr_id')
+            ->save();
     }
 }
