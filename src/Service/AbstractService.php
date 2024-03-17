@@ -8,9 +8,9 @@
 namespace Monarc\Core\Service;
 
 use Monarc\Core\Exception\Exception;
-use Monarc\Core\Model\Entity\AbstractEntity;
-use Monarc\Core\Model\Entity\AnrSuperClass;
-use Monarc\Core\Model\Entity\UserSuperClass;
+use Monarc\Core\Entity\AbstractEntity;
+use Monarc\Core\Entity\AnrSuperClass;
+use Monarc\Core\Entity\UserSuperClass;
 use Monarc\Core\Model\GetAndSet;
 use Monarc\Core\Model\Table\AbstractEntityTable;
 use Doctrine\Common\Util\ClassUtils;
@@ -422,7 +422,7 @@ abstract class AbstractService extends AbstractServiceFactory
                 if ($metadata->hasAssociation($propertyname)) {
                     $class = $metadata->getAssociationTargetClass($propertyname);
                     // seems to have some bug with getDbadapter and anr and anr mustn t have uniqid or N identifier
-                    if (ClassUtils::getRealClass($class) !== 'Monarc\FrontOffice\Model\Entity\Anr') {
+                    if (ClassUtils::getRealClass($class) !== 'Monarc\FrontOffice\Entity\Anr') {
                         $valueIdentifier = $entity->getDbAdapter()
                             ->getClassMetadata(ClassUtils::getRealClass($class))
                             ->getIdentifierFieldNames();

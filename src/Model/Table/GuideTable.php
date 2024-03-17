@@ -8,7 +8,7 @@
 namespace Monarc\Core\Model\Table;
 
 use Monarc\Core\Model\Db;
-use Monarc\Core\Model\Entity\Guide;
+use Monarc\Core\Entity\Guide;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**

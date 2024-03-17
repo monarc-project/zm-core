@@ -21,7 +21,7 @@ use Monarc\Core\Validator\FieldValidator\LanguageValidator;
 use Monarc\Core\Validator\InputValidator;
 use Ramsey\Uuid\Doctrine\UuidType;
 use Laminas\Di\Container\AutowireFactory;
-use Monarc\Core\Model\Entity as ModelEntity;
+use Monarc\Core\Entity as ModelEntity;
 use Monarc\Core\Model\Table as DeprecatedTable;
 use Monarc\Core\Table;
 use Monarc\Core\Service\Model\Entity as ServiceModelEntity;
@@ -50,33 +50,33 @@ return [
             'Monarc_core_driver' => [
                 'class' => AnnotationDriver::class,
                 'cache' => 'array',
-                'paths' => [__DIR__ . '/../src/Model/Entity'],
+                'paths' => [__DIR__ . '/../src/Entity'],
             ],
             'orm_default' => [
                 'drivers' => [
-                    'Monarc\Core\Model\Entity' => 'Monarc_core_driver',
+                    'Monarc\Core\Entity' => 'Monarc_core_driver',
                 ],
             ],
             'Monarc_cli_driver' => [
                 'class' => AnnotationDriver::class,
                 'cache' => 'array',
-                'paths' => [__DIR__ . '/../src/Model/Entity'],
+                'paths' => [__DIR__ . '/../src/Entity'],
             ],
             'orm_cli' => [
                 'class' => MappingDriverChain::class,
                 'drivers' => [
-                    'Monarc\Core\Model\Entity' => 'Monarc_cli_driver',
+                    'Monarc\Core\Entity' => 'Monarc_cli_driver',
                 ],
             ],
             'Monarc_cli_fo_driver' => [
                 'class' => AnnotationDriver::class,
                 'cache' => 'array',
-                'paths' => [__DIR__ . '/../src/Model/Entity'],
+                'paths' => [__DIR__ . '/../src/Entity'],
             ],
             'orm_cli_fo' => [
                 'class' => MappingDriverChain::class,
                 'drivers' => [
-                    'Monarc\Core\Model\Entity' => 'Monarc_cli_fo_driver',
+                    'Monarc\Core\Entity' => 'Monarc_cli_fo_driver',
                 ],
             ],
         ],

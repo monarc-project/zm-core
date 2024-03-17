@@ -10,8 +10,8 @@ namespace Monarc\Core\Model\Table;
 use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\NonUniqueResultException;
 use Monarc\Core\Model\Db;
-use Monarc\Core\Model\Entity\RolfRisk;
-use Monarc\Core\Model\Entity\RolfRiskSuperClass;
+use Monarc\Core\Entity\RolfRisk;
+use Monarc\Core\Entity\RolfRiskSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**

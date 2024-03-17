@@ -8,8 +8,8 @@
 namespace Monarc\Core\Service\Traits;
 
 use Monarc\Core\Exception\Exception;
-use Monarc\Core\Model\Entity\OperationalInstanceRiskScaleSuperClass;
-use Monarc\Core\Model\Entity\OperationalRiskScaleSuperClass;
+use Monarc\Core\Entity\OperationalInstanceRiskScaleSuperClass;
+use Monarc\Core\Entity\OperationalRiskScaleSuperClass;
 
 trait OperationalRiskScaleVerificationTrait
 {

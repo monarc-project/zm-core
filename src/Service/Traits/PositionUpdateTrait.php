@@ -10,7 +10,7 @@ namespace Monarc\Core\Service\Traits;
 use Doctrine\ORM\EntityNotFoundException;
 use LogicException;
 use Monarc\Core\Exception\Exception;
-use Monarc\Core\Model\Entity\Interfaces\PositionedEntityInterface;
+use Monarc\Core\Entity\Interfaces\PositionedEntityInterface;
 use Monarc\Core\Service\Interfaces\PositionUpdatableServiceInterface;
 use Monarc\Core\Table\AbstractTable;
 use Monarc\Core\Table\Interfaces\PositionUpdatableTableInterface;

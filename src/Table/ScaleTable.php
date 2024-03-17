@@ -9,9 +9,9 @@ namespace Monarc\Core\Table;
 
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityNotFoundException;
-use Monarc\Core\Model\Entity\AnrSuperClass;
-use Monarc\Core\Model\Entity\Scale;
-use Monarc\Core\Model\Entity\ScaleSuperClass;
+use Monarc\Core\Entity\AnrSuperClass;
+use Monarc\Core\Entity\Scale;
+use Monarc\Core\Entity\ScaleSuperClass;
 
 class ScaleTable extends AbstractTable
 {

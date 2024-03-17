@@ -8,7 +8,7 @@
 namespace Monarc\Core\Service;
 
 use Monarc\Core\Exception\Exception;
-use Monarc\Core\Model\Entity;
+use Monarc\Core\Entity;
 use Monarc\Core\Table\ScaleImpactTypeTable;
 use Monarc\Core\Table\InstanceTable;
 use Monarc\Core\Table\ScaleTable;

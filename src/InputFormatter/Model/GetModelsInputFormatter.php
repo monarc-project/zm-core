@@ -9,7 +9,7 @@ namespace Monarc\Core\InputFormatter\Model;
 
 use Doctrine\ORM\Query\Expr\Comparison;
 use Monarc\Core\InputFormatter\AbstractInputFormatter;
-use Monarc\Core\Model\Entity\Model;
+use Monarc\Core\Entity\Model;
 
 class GetModelsInputFormatter extends AbstractInputFormatter
 {

@@ -9,7 +9,7 @@ namespace Monarc\Core\Model\Table;
 
 use Doctrine\ORM\EntityNotFoundException;
 use Monarc\Core\Model\Db;
-use Monarc\Core\Model\Entity\Referential;
+use Monarc\Core\Entity\Referential;
 use Monarc\Core\Service\ConnectedUserService;
 
 class ReferentialTable extends AbstractEntityTable

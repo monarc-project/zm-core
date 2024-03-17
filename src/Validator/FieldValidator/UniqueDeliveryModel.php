@@ -8,13 +8,13 @@
 namespace Monarc\Core\Validator\FieldValidator;
 
 use Laminas\Validator\AbstractValidator;
-use Monarc\Core\Model\Entity\DeliveriesModels;
+use Monarc\Core\Entity\DeliveriesModels;
 
 /**
  * Class UniqueDeliveryModel is an implementation of AbstractValidator that ensures the uniqueness of DeliveriesModels
  * based on the category.
  * @package Monarc\Core\Validator
- * @see \Monarc\Core\Model\Entity\DeliveriesModels
+ * @see \Monarc\Core\Entity\DeliveriesModels
  * @see \Monarc\Core\Model\Table\DeliveriesModelsTable
  */
 class UniqueDeliveryModel extends AbstractValidator

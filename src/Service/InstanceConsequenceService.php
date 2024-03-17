@@ -7,8 +7,8 @@
 
 namespace Monarc\Core\Service;
 
-use Monarc\Core\Model\Entity;
-use Monarc\Core\Model\Entity\ScaleSuperClass;
+use Monarc\Core\Entity;
+use Monarc\Core\Entity\ScaleSuperClass;
 use Monarc\Core\Service\Helper\ScalesCacheHelper;
 use Monarc\Core\Service\Traits\ImpactVerificationTrait;
 use Monarc\Core\Table;

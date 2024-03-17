@@ -9,9 +9,9 @@ namespace Monarc\Core\Table;
 
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\NonUniqueResultException;
-use Monarc\Core\Model\Entity\UserSuperClass;
-use Monarc\Core\Model\Entity\UserToken;
-use Monarc\Core\Model\Entity\UserTokenSuperClass;
+use Monarc\Core\Entity\UserSuperClass;
+use Monarc\Core\Entity\UserToken;
+use Monarc\Core\Entity\UserTokenSuperClass;
 
 class UserTokenTable extends AbstractTable
 {

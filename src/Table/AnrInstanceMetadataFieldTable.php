@@ -8,7 +8,7 @@
 namespace Monarc\Core\Table;
 
 use Doctrine\ORM\EntityManager;
-use Monarc\Core\Model\Entity\AnrInstanceMetadataField;
+use Monarc\Core\Entity\AnrInstanceMetadataField;
 
 class AnrInstanceMetadataFieldTable extends AbstractTable
 {

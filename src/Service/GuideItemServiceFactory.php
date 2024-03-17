@@ -17,7 +17,7 @@ class GuideItemServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = [
         'table' => 'Monarc\Core\Model\Table\GuideItemTable',
-        'entity' => 'Monarc\Core\Model\Entity\GuideItem',
+        'entity' => 'Monarc\Core\Entity\GuideItem',
         'guideTable' => 'Monarc\Core\Model\Table\GuideTable',
     ];
 }

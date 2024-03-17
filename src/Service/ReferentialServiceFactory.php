@@ -17,6 +17,6 @@ class ReferentialServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = [
         'table' => 'Monarc\Core\Model\Table\ReferentialTable',
-        'entity' => 'Monarc\Core\Model\Entity\Referential',
+        'entity' => 'Monarc\Core\Entity\Referential',
     ];
 }

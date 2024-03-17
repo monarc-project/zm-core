@@ -9,11 +9,11 @@ namespace Monarc\Core\Table;
 
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManager;
-use Monarc\Core\Model\Entity\AnrSuperClass;
-use Monarc\Core\Model\Entity\InstanceRiskOp;
-use Monarc\Core\Model\Entity\InstanceRiskOpSuperClass;
-use Monarc\Core\Model\Entity\ObjectSuperClass;
-use Monarc\Core\Model\Entity\RolfRiskSuperClass;
+use Monarc\Core\Entity\AnrSuperClass;
+use Monarc\Core\Entity\InstanceRiskOp;
+use Monarc\Core\Entity\InstanceRiskOpSuperClass;
+use Monarc\Core\Entity\ObjectSuperClass;
+use Monarc\Core\Entity\RolfRiskSuperClass;
 
 class InstanceRiskOpTable extends AbstractTable
 {

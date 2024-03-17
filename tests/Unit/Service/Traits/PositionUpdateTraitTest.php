@@ -4,9 +4,9 @@ namespace Unit\Service\Traits;
 
 use Doctrine\ORM\EntityManager;
 use Monarc\Core\Exception\Exception;
-use Monarc\Core\Model\Entity\AnrSuperClass;
-use Monarc\Core\Model\Entity\Interfaces\PositionedEntityInterface;
-use Monarc\Core\Model\Entity\Traits\PropertyStateEntityTrait;
+use Monarc\Core\Entity\AnrSuperClass;
+use Monarc\Core\Entity\Interfaces\PositionedEntityInterface;
+use Monarc\Core\Entity\Traits\PropertyStateEntityTrait;
 use Monarc\Core\Service\Interfaces\PositionUpdatableServiceInterface;
 use Monarc\Core\Service\Traits\PositionUpdateTrait;
 use Monarc\Core\Table\AbstractTable;

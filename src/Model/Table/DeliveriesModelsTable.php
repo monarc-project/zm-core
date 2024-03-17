@@ -9,7 +9,7 @@ namespace Monarc\Core\Model\Table;
 
 use Doctrine\ORM\EntityNotFoundException;
 use Monarc\Core\Model\DbCli;
-use Monarc\Core\Model\Entity\DeliveriesModels;
+use Monarc\Core\Entity\DeliveriesModels;
 use Monarc\Core\Service\ConnectedUserService;
 
 class DeliveriesModelsTable extends AbstractEntityTable

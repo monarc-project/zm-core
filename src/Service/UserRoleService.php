@@ -9,7 +9,7 @@ namespace Monarc\Core\Service;
 
 use Doctrine\ORM\NonUniqueResultException;
 use Monarc\Core\Exception\UserNotLoggedInException;
-use Monarc\Core\Model\Entity\UserSuperClass;
+use Monarc\Core\Entity\UserSuperClass;
 use Monarc\Core\Table\UserTable;
 use Monarc\Core\Table\UserTokenTable;
 

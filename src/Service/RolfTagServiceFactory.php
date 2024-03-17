@@ -17,6 +17,6 @@ class RolfTagServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = [
         'table' => 'Monarc\Core\Model\Table\RolfTagTable',
-        'entity' => 'Monarc\Core\Model\Entity\RolfTag',
+        'entity' => 'Monarc\Core\Entity\RolfTag',
     ];
 }

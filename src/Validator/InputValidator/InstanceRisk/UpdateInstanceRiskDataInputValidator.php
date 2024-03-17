@@ -11,7 +11,7 @@ use Laminas\Filter\Callback;
 use Laminas\Filter\StringTrim;
 use Laminas\Filter\ToInt;
 use Laminas\Validator\InArray;
-use Monarc\Core\Model\Entity\InstanceRiskSuperClass;
+use Monarc\Core\Entity\InstanceRiskSuperClass;
 use Monarc\Core\Validator\InputValidator\AbstractInputValidator;
 
 class UpdateInstanceRiskDataInputValidator extends AbstractInputValidator

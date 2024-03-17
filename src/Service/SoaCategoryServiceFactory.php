@@ -17,7 +17,7 @@ class SoaCategoryServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = [
         'table' => 'Monarc\Core\Model\Table\SoaCategoryTable',
-        'entity' => 'Monarc\Core\Model\Entity\SoaCategory',
+        'entity' => 'Monarc\Core\Entity\SoaCategory',
         'referentialTable' => 'Monarc\Core\Model\Table\ReferentialTable',
     ];
 }

@@ -8,10 +8,10 @@
 namespace Monarc\Core\Table;
 
 use Doctrine\ORM\EntityManager;
-use Monarc\Core\Model\Entity\AnrSuperClass;
-use Monarc\Core\Model\Entity\Instance;
-use Monarc\Core\Model\Entity\InstanceSuperClass;
-use Monarc\Core\Model\Entity\ObjectSuperClass;
+use Monarc\Core\Entity\AnrSuperClass;
+use Monarc\Core\Entity\Instance;
+use Monarc\Core\Entity\InstanceSuperClass;
+use Monarc\Core\Entity\ObjectSuperClass;
 use Monarc\Core\Table\Interfaces\PositionUpdatableTableInterface;
 use Monarc\Core\Table\Traits\PositionIncrementTableTrait;
 

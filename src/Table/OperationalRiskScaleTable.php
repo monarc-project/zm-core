@@ -9,9 +9,9 @@ namespace Monarc\Core\Table;
 
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityNotFoundException;
-use Monarc\Core\Model\Entity\AnrSuperClass;
-use Monarc\Core\Model\Entity\OperationalRiskScale;
-use Monarc\Core\Model\Entity\OperationalRiskScaleSuperClass;
+use Monarc\Core\Entity\AnrSuperClass;
+use Monarc\Core\Entity\OperationalRiskScale;
+use Monarc\Core\Entity\OperationalRiskScaleSuperClass;
 
 class OperationalRiskScaleTable extends AbstractTable
 {

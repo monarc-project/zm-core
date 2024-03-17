@@ -7,7 +7,7 @@
 
 namespace Monarc\Core\Service;
 
-use Monarc\Core\Model\Entity\Question;
+use Monarc\Core\Entity\Question;
 
 /**
  * Question Service
@@ -70,7 +70,7 @@ class QuestionService extends AbstractService
         $table = $this->get('table');
         if (!empty($data['anr'])) {
             $data['mode'] = 1;
-            $data['implicitPosition'] = \Monarc\Core\Model\Entity\AbstractEntity::IMP_POS_END;
+            $data['implicitPosition'] = \Monarc\Core\Entity\AbstractEntity::IMP_POS_END;
             $data['type'] = 1; // on force en textarea uniquement
             $data['multichoice'] = 0;
             unset($data['position']);

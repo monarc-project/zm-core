@@ -7,7 +7,7 @@
 
 namespace Monarc\Core\Service;
 
-use Monarc\Core\Model\Entity\QuestionChoice;
+use Monarc\Core\Entity\QuestionChoice;
 use Monarc\Core\Table\AnrTable;
 use Monarc\Core\Model\Table\QuestionChoiceTable;
 use Monarc\Core\Model\Table\QuestionTable;

@@ -7,7 +7,7 @@
 
 namespace Monarc\Core\Service\Export;
 
-use Monarc\Core\Model\Entity\Asset;
+use Monarc\Core\Entity\Asset;
 
 class AssetExportService
 {

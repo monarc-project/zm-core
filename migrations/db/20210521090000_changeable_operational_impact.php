@@ -1,7 +1,7 @@
 <?php
 
-use Monarc\Core\Model\Entity\OperationalRiskScale;
-use Monarc\Core\Model\Entity\Translation;
+use Monarc\Core\Entity\OperationalRiskScale;
+use Monarc\Core\Entity\Translation;
 use Phinx\Migration\AbstractMigration;
 use Ramsey\Uuid\Uuid;
 

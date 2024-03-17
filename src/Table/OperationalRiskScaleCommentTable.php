@@ -9,8 +9,8 @@ namespace Monarc\Core\Table;
 
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManager;
-use Monarc\Core\Model\Entity\AnrSuperClass;
-use Monarc\Core\Model\Entity\OperationalRiskScaleComment;
+use Monarc\Core\Entity\AnrSuperClass;
+use Monarc\Core\Entity\OperationalRiskScaleComment;
 
 class OperationalRiskScaleCommentTable extends AbstractTable
 {

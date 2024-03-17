@@ -8,7 +8,7 @@
 namespace Monarc\Core\Validator\FieldValidator;
 
 use Laminas\Validator\AbstractValidator;
-use Monarc\Core\Model\Entity\AnrSuperClass;
+use Monarc\Core\Entity\AnrSuperClass;
 use Monarc\Core\Table\Interfaces\UniqueCodeTableInterface;
 
 class UniqueCode extends AbstractValidator

@@ -8,7 +8,7 @@
 namespace Monarc\Core\InputFormatter\Threat;
 
 use Monarc\Core\InputFormatter\AbstractInputFormatter;
-use Monarc\Core\Model\Entity\ThreatSuperClass;
+use Monarc\Core\Entity\ThreatSuperClass;
 
 class GetThreatsInputFormatter extends AbstractInputFormatter
 {

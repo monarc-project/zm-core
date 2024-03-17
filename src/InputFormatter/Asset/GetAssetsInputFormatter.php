@@ -8,7 +8,7 @@
 namespace Monarc\Core\InputFormatter\Asset;
 
 use Monarc\Core\InputFormatter\AbstractInputFormatter;
-use Monarc\Core\Model\Entity\AssetSuperClass;
+use Monarc\Core\Entity\AssetSuperClass;
 
 class GetAssetsInputFormatter extends AbstractInputFormatter
 {

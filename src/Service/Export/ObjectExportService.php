@@ -9,7 +9,7 @@ namespace Monarc\Core\Service\Export;
 
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Helper\EncryptDecryptHelperTrait;
-use Monarc\Core\Model\Entity;
+use Monarc\Core\Entity;
 use Monarc\Core\Service;
 use Monarc\Core\Table\MonarcObjectTable;
 

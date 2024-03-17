@@ -9,9 +9,9 @@ namespace Monarc\Core\Model\Table;
 
 use Doctrine\ORM\EntityNotFoundException;
 use Monarc\Core\Model\Db;
-use Monarc\Core\Model\Entity\AnrSuperClass;
-use Monarc\Core\Model\Entity\Measure;
-use Monarc\Core\Model\Entity\MeasureSuperClass;
+use Monarc\Core\Entity\AnrSuperClass;
+use Monarc\Core\Entity\Measure;
+use Monarc\Core\Entity\MeasureSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**

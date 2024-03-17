@@ -7,7 +7,7 @@
 
 namespace Monarc\Core\Service;
 
-use Monarc\Core\Model\Entity;
+use Monarc\Core\Entity;
 use Monarc\Core\Service\Helper\ScalesCacheHelper;
 use Monarc\Core\Service\Traits\OperationalRiskScaleVerificationTrait;
 use Monarc\Core\Table;

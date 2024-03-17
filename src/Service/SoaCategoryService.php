@@ -7,7 +7,7 @@
 
 namespace Monarc\Core\Service;
 
-use Monarc\Core\Model\Entity\SoaCategory;
+use Monarc\Core\Entity\SoaCategory;
 use Monarc\Core\Model\Table\SoaCategoryTable;
 
 /**

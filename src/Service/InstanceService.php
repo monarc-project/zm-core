@@ -8,7 +8,7 @@
 namespace Monarc\Core\Service;
 
 use Monarc\Core\Exception\Exception;
-use Monarc\Core\Model\Entity;
+use Monarc\Core\Entity;
 use Monarc\Core\Service\Traits\InstancePositionDataHelperTrait;
 use Monarc\Core\Service\Traits\PositionUpdateTrait;
 use Monarc\Core\Table;

@@ -8,11 +8,11 @@
 namespace Monarc\Core\Table;
 
 use Doctrine\ORM\EntityManager;
-use Monarc\Core\Model\Entity\AnrSuperClass;
-use Monarc\Core\Model\Entity\InstanceConsequence;
-use Monarc\Core\Model\Entity\InstanceConsequenceSuperClass;
-use Monarc\Core\Model\Entity\InstanceSuperClass;
-use Monarc\Core\Model\Entity\ScaleImpactTypeSuperClass;
+use Monarc\Core\Entity\AnrSuperClass;
+use Monarc\Core\Entity\InstanceConsequence;
+use Monarc\Core\Entity\InstanceConsequenceSuperClass;
+use Monarc\Core\Entity\InstanceSuperClass;
+use Monarc\Core\Entity\ScaleImpactTypeSuperClass;
 
 class InstanceConsequenceTable extends AbstractTable
 {

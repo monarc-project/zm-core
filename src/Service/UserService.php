@@ -9,8 +9,8 @@ namespace Monarc\Core\Service;
 
 use Monarc\Core\Exception\ActionForbiddenException;
 use Monarc\Core\InputFormatter\FormattedInputParams;
-use Monarc\Core\Model\Entity\User;
-use Monarc\Core\Model\Entity\UserSuperClass;
+use Monarc\Core\Entity\User;
+use Monarc\Core\Entity\UserSuperClass;
 use Monarc\Core\Table\UserTable;
 
 class UserService

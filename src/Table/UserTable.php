@@ -9,8 +9,8 @@ namespace Monarc\Core\Table;
 
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityNotFoundException;
-use Monarc\Core\Model\Entity\User;
-use Monarc\Core\Model\Entity\UserSuperClass;
+use Monarc\Core\Entity\User;
+use Monarc\Core\Entity\UserSuperClass;
 
 class UserTable extends AbstractTable
 {

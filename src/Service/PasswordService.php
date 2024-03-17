@@ -9,9 +9,9 @@ namespace Monarc\Core\Service;
 
 use DateTime;
 use Monarc\Core\Exception\Exception;
-use Monarc\Core\Model\Entity\PasswordToken;
-use Monarc\Core\Model\Entity\User;
-use Monarc\Core\Model\Entity\UserSuperClass;
+use Monarc\Core\Entity\PasswordToken;
+use Monarc\Core\Entity\User;
+use Monarc\Core\Entity\UserSuperClass;
 use Monarc\Core\Table\PasswordTokenTable;
 use Monarc\Core\Table\UserTable;
 use Monarc\Core\Validator\FieldValidator\PasswordStrength;

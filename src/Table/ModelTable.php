@@ -8,7 +8,7 @@
 namespace Monarc\Core\Table;
 
 use Doctrine\ORM\EntityManager;
-use Monarc\Core\Model\Entity\Model;
+use Monarc\Core\Entity\Model;
 
 class ModelTable extends AbstractTable
 {

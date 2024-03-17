@@ -12,8 +12,8 @@ use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Laminas\Authentication\Storage\StorageInterface;
-use Monarc\Core\Model\Entity\UserSuperClass;
-use Monarc\Core\Model\Entity\UserTokenSuperClass;
+use Monarc\Core\Entity\UserSuperClass;
+use Monarc\Core\Entity\UserTokenSuperClass;
 use Monarc\Core\Table\UserTokenTable;
 
 class Authentication implements StorageInterface

@@ -7,7 +7,7 @@
 
 namespace Monarc\Core\Service\Traits;
 
-use Monarc\Core\Model\Entity\InstanceSuperClass;
+use Monarc\Core\Entity\InstanceSuperClass;
 use Monarc\Core\Service\Interfaces\PositionUpdatableServiceInterface;
 use Monarc\Core\Table\InstanceTable;
 

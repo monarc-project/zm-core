@@ -9,8 +9,8 @@ namespace Monarc\Core\Model\Table;
 
 use Doctrine\ORM\EntityNotFoundException;
 use Monarc\Core\Model\Db;
-use Monarc\Core\Model\Entity\RolfTag;
-use Monarc\Core\Model\Entity\RolfTagSuperClass;
+use Monarc\Core\Entity\RolfTag;
+use Monarc\Core\Entity\RolfTagSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**

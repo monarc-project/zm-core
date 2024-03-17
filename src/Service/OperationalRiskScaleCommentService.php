@@ -7,8 +7,8 @@
 
 namespace Monarc\Core\Service;
 
-use Monarc\Core\Model\Entity\OperationalRiskScaleComment;
-use Monarc\Core\Model\Entity\UserSuperClass;
+use Monarc\Core\Entity\OperationalRiskScaleComment;
+use Monarc\Core\Entity\UserSuperClass;
 use Monarc\Core\Table\OperationalRiskScaleCommentTable;
 use Monarc\Core\Table\TranslationTable;
 

@@ -10,7 +10,7 @@ namespace Monarc\Core\Service;
 use Doctrine\Common\Collections\Expr\Comparison;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\InputFormatter\FormattedInputParams;
-use Monarc\Core\Model\Entity;
+use Monarc\Core\Entity;
 use Monarc\Core\Service\Traits;
 use Monarc\Core\Table;
 use Monarc\Core\Model\Table\RolfTagTable;

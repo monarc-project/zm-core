@@ -7,11 +7,11 @@
 
 namespace Monarc\Core\Service;
 
-use Monarc\Core\Model\Entity\Anr;
-use Monarc\Core\Model\Entity\TranslationSuperClass;
-use Monarc\Core\Model\Entity\UserSuperClass;
-use Monarc\Core\Model\Entity\SoaScaleComment;
-use Monarc\Core\Model\Entity\Translation;
+use Monarc\Core\Entity\Anr;
+use Monarc\Core\Entity\TranslationSuperClass;
+use Monarc\Core\Entity\UserSuperClass;
+use Monarc\Core\Entity\SoaScaleComment;
+use Monarc\Core\Entity\Translation;
 use Monarc\Core\Table\SoaScaleCommentTable;
 use Monarc\Core\Table\TranslationTable;
 use Ramsey\Uuid\Uuid;

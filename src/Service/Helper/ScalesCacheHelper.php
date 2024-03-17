@@ -7,10 +7,10 @@
 
 namespace Monarc\Core\Service\Helper;
 
-use Monarc\Core\Model\Entity\AnrSuperClass;
-use Monarc\Core\Model\Entity\OperationalRiskScaleSuperClass;
-use Monarc\Core\Model\Entity\ScaleImpactTypeSuperClass;
-use Monarc\Core\Model\Entity\ScaleSuperClass;
+use Monarc\Core\Entity\AnrSuperClass;
+use Monarc\Core\Entity\OperationalRiskScaleSuperClass;
+use Monarc\Core\Entity\ScaleImpactTypeSuperClass;
+use Monarc\Core\Entity\ScaleSuperClass;
 use Monarc\Core\Table\OperationalRiskScaleTable;
 use Monarc\Core\Table\ScaleImpactTypeTable;
 use Monarc\Core\Table\ScaleTable;

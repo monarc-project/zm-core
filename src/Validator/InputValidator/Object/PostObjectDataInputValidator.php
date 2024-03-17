@@ -10,7 +10,7 @@ namespace Monarc\Core\Validator\InputValidator\Object;
 use Laminas\Filter\StringTrim;
 use Laminas\Validator\InArray;
 use Laminas\Validator\StringLength;
-use Monarc\Core\Model\Entity\ObjectSuperClass;
+use Monarc\Core\Entity\ObjectSuperClass;
 use Monarc\Core\Validator\InputValidator\AbstractInputValidator;
 
 class PostObjectDataInputValidator extends AbstractInputValidator

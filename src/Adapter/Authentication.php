@@ -8,7 +8,7 @@
 namespace Monarc\Core\Adapter;
 
 use Doctrine\ORM\EntityNotFoundException;
-use Monarc\Core\Model\Entity\UserSuperClass;
+use Monarc\Core\Entity\UserSuperClass;
 use Monarc\Core\Table\UserTable;
 use Monarc\Core\Service\ConfigService;
 use Laminas\Authentication\Adapter\AbstractAdapter;

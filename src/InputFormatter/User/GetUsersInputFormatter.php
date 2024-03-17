@@ -8,7 +8,7 @@
 namespace Monarc\Core\InputFormatter\User;
 
 use Monarc\Core\InputFormatter\AbstractInputFormatter;
-use Monarc\Core\Model\Entity\UserSuperClass;
+use Monarc\Core\Entity\UserSuperClass;
 
 class GetUsersInputFormatter extends AbstractInputFormatter
 {

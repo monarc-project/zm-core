@@ -9,12 +9,12 @@ namespace Monarc\Core\Table;
 
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Query\Expr;
-use Monarc\Core\Model\Entity\AnrSuperClass;
-use Monarc\Core\Model\Entity\AssetSuperClass;
-use Monarc\Core\Model\Entity\MonarcObject;
-use Monarc\Core\Model\Entity\ObjectCategorySuperClass;
-use Monarc\Core\Model\Entity\ObjectSuperClass;
-use Monarc\Core\Model\Entity\RolfTagSuperClass;
+use Monarc\Core\Entity\AnrSuperClass;
+use Monarc\Core\Entity\AssetSuperClass;
+use Monarc\Core\Entity\MonarcObject;
+use Monarc\Core\Entity\ObjectCategorySuperClass;
+use Monarc\Core\Entity\ObjectSuperClass;
+use Monarc\Core\Entity\RolfTagSuperClass;
 use Monarc\Core\Table\Interfaces\PositionUpdatableTableInterface;
 use Monarc\Core\Table\Traits\PositionIncrementTableTrait;
 

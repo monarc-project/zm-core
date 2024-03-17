@@ -7,7 +7,7 @@
 
 namespace Monarc\Core\Table\Interfaces;
 
-use Monarc\Core\Model\Entity\AnrSuperClass;
+use Monarc\Core\Entity\AnrSuperClass;
 
 interface UniqueCodeTableInterface
 {

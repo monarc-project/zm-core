@@ -7,7 +7,7 @@
 
 namespace Monarc\Core\Service\Export;
 
-use Monarc\Core\Model\Entity;
+use Monarc\Core\Entity;
 
 class AmvExportService
 {

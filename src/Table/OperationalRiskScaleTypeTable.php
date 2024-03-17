@@ -8,9 +8,9 @@
 namespace Monarc\Core\Table;
 
 use Doctrine\ORM\EntityManager;
-use Monarc\Core\Model\Entity\AnrSuperClass;
-use Monarc\Core\Model\Entity\OperationalRiskScaleType;
-use Monarc\Core\Model\Entity\OperationalRiskScaleTypeSuperClass;
+use Monarc\Core\Entity\AnrSuperClass;
+use Monarc\Core\Entity\OperationalRiskScaleType;
+use Monarc\Core\Entity\OperationalRiskScaleTypeSuperClass;
 
 class OperationalRiskScaleTypeTable extends AbstractTable
 {

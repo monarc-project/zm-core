@@ -7,7 +7,7 @@
 
 namespace Monarc\Core\Table\Traits;
 
-use Monarc\Core\Model\Entity\AnrSuperClass;
+use Monarc\Core\Entity\AnrSuperClass;
 use Monarc\Core\Table\AbstractTable;
 use Monarc\Core\Table\Interfaces\UniqueCodeTableInterface;
 

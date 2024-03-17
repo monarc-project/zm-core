@@ -11,7 +11,7 @@ use Laminas\Filter\StringTrim;
 use Laminas\Filter\ToInt;
 use Laminas\Validator\EmailAddress;
 use Laminas\Validator\StringLength;
-use Monarc\Core\Model\Entity\UserSuperClass;
+use Monarc\Core\Entity\UserSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 use Monarc\Core\Validator\FieldValidator\UniqueEmail;
 use Monarc\Core\Validator\InputValidator\AbstractInputValidator;

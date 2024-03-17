@@ -9,7 +9,7 @@ namespace Monarc\Core\Validator\InputValidator\InstanceRiskOp;
 
 use Laminas\Filter\ToInt;
 use Laminas\Validator\InArray;
-use Monarc\Core\Model\Entity\InstanceRiskOpSuperClass;
+use Monarc\Core\Entity\InstanceRiskOpSuperClass;
 use Monarc\Core\Validator\InputValidator\AbstractInputValidator;
 
 class UpdateInstanceRiskOpDataInputValidator extends AbstractInputValidator

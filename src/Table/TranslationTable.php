@@ -8,9 +8,9 @@
 namespace Monarc\Core\Table;
 
 use Doctrine\ORM\EntityManager;
-use Monarc\Core\Model\Entity\AnrSuperClass;
-use Monarc\Core\Model\Entity\Translation;
-use Monarc\Core\Model\Entity\TranslationSuperClass;
+use Monarc\Core\Entity\AnrSuperClass;
+use Monarc\Core\Entity\Translation;
+use Monarc\Core\Entity\TranslationSuperClass;
 
 class TranslationTable extends AbstractTable
 {

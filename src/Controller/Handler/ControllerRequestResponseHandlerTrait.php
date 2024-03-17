@@ -14,7 +14,7 @@ use LogicException;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\InputFormatter\AbstractInputFormatter;
 use Monarc\Core\InputFormatter\FormattedInputParams;
-use Monarc\Core\Model\Entity\AnrSuperClass;
+use Monarc\Core\Entity\AnrSuperClass;
 use Monarc\Core\Validator\InputValidator\AbstractInputValidator;
 use Psr\Http\Server\RequestHandlerInterface;
 

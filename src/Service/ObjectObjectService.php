@@ -8,12 +8,12 @@
 namespace Monarc\Core\Service;
 
 use Monarc\Core\Exception\Exception;
-use Monarc\Core\Model\Entity\Anr;
-use Monarc\Core\Model\Entity\Asset;
-use Monarc\Core\Model\Entity\MonarcObject;
-use Monarc\Core\Model\Entity\ObjectCategory;
-use Monarc\Core\Model\Entity\ObjectObject;
-use Monarc\Core\Model\Entity\UserSuperClass;
+use Monarc\Core\Entity\Anr;
+use Monarc\Core\Entity\Asset;
+use Monarc\Core\Entity\MonarcObject;
+use Monarc\Core\Entity\ObjectCategory;
+use Monarc\Core\Entity\ObjectObject;
+use Monarc\Core\Entity\UserSuperClass;
 use Monarc\Core\Service\Interfaces\PositionUpdatableServiceInterface;
 use Monarc\Core\Service\Traits\PositionUpdateTrait;
 use Monarc\Core\Table\InstanceTable;

@@ -8,8 +8,8 @@
 namespace Monarc\Core\Service\Traits;
 
 use Monarc\Core\Exception\Exception;
-use Monarc\Core\Model\Entity\InstanceRiskSuperClass;
-use Monarc\Core\Model\Entity\ScaleSuperClass;
+use Monarc\Core\Entity\InstanceRiskSuperClass;
+use Monarc\Core\Entity\ScaleSuperClass;
 use Monarc\Core\Table\ScaleTable;
 
 trait ImpactVerificationTrait

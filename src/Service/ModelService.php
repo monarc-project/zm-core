@@ -9,10 +9,10 @@ namespace Monarc\Core\Service;
 
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\InputFormatter\FormattedInputParams;
-use Monarc\Core\Model\Entity\Anr;
-use Monarc\Core\Model\Entity\Model;
-use Monarc\Core\Model\Entity\ObjectSuperClass;
-use Monarc\Core\Model\Entity\UserSuperClass;
+use Monarc\Core\Entity\Anr;
+use Monarc\Core\Entity\Model;
+use Monarc\Core\Entity\ObjectSuperClass;
+use Monarc\Core\Entity\UserSuperClass;
 use Monarc\Core\Table\AnrTable;
 use Monarc\Core\Table\ModelTable;
 

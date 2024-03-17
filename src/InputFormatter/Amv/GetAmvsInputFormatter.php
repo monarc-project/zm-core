@@ -9,7 +9,7 @@ namespace Monarc\Core\InputFormatter\Amv;
 
 use Doctrine\ORM\Query\Expr\Comparison;
 use Monarc\Core\InputFormatter\AbstractInputFormatter;
-use Monarc\Core\Model\Entity\AmvSuperClass;
+use Monarc\Core\Entity\AmvSuperClass;
 
 class GetAmvsInputFormatter extends AbstractInputFormatter
 {

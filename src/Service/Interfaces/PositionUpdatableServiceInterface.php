@@ -7,7 +7,7 @@
 
 namespace Monarc\Core\Service\Interfaces;
 
-use Monarc\Core\Model\Entity\Interfaces\PositionedEntityInterface;
+use Monarc\Core\Entity\Interfaces\PositionedEntityInterface;
 use Monarc\Core\Table\Interfaces\PositionUpdatableTableInterface;
 
 interface PositionUpdatableServiceInterface

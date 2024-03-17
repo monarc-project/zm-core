@@ -9,9 +9,9 @@ namespace Monarc\Core\Table;
 
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManager;
-use Monarc\Core\Model\Entity\AnrSuperClass;
-use Monarc\Core\Model\Entity\ScaleImpactType;
-use Monarc\Core\Model\Entity\ScaleImpactTypeSuperClass;
+use Monarc\Core\Entity\AnrSuperClass;
+use Monarc\Core\Entity\ScaleImpactType;
+use Monarc\Core\Entity\ScaleImpactTypeSuperClass;
 
 class ScaleImpactTypeTable extends AbstractTable
 {

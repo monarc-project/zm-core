@@ -9,7 +9,7 @@ namespace Monarc\Core\Service;
 
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\InputFormatter\FormattedInputParams;
-use Monarc\Core\Model\Entity;
+use Monarc\Core\Entity;
 use Monarc\Core\Model\Table\MeasureTable;
 use Monarc\Core\Model\Table\ReferentialTable;
 use Monarc\Core\Service\Interfaces\PositionUpdatableServiceInterface;

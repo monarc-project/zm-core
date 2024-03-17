@@ -9,9 +9,9 @@ namespace Monarc\Core\Table;
 
 use Doctrine\ORM\EntityManager;
 use Doctrine\Common\Collections\Criteria;
-use Monarc\Core\Model\Entity\SoaScaleComment;
-use Monarc\Core\Model\Entity\AnrSuperClass;
-use Monarc\Core\Model\Entity\SoaScaleCommentSuperClass;
+use Monarc\Core\Entity\SoaScaleComment;
+use Monarc\Core\Entity\AnrSuperClass;
+use Monarc\Core\Entity\SoaScaleCommentSuperClass;
 
 class SoaScaleCommentTable extends AbstractTable
 {

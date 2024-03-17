@@ -8,7 +8,7 @@
 namespace Monarc\Core\Table;
 
 use Doctrine\ORM\EntityManager;
-use Monarc\Core\Model\Entity\Threat;
+use Monarc\Core\Entity\Threat;
 use Monarc\Core\Table\Interfaces\UniqueCodeTableInterface;
 use Monarc\Core\Table\Traits\CodeExistenceValidationTableTrait;
 

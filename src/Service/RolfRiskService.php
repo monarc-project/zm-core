@@ -7,8 +7,8 @@
 
 namespace Monarc\Core\Service;
 
-use Monarc\Core\Model\Entity\AnrSuperClass;
-use Monarc\Core\Model\Entity\RolfRiskSuperClass;
+use Monarc\Core\Entity\AnrSuperClass;
+use Monarc\Core\Entity\RolfRiskSuperClass;
 use Monarc\Core\Table\AnrTable;
 use Monarc\Core\Table\InstanceRiskOpTable;
 use Monarc\Core\Model\Table\MeasureTable;

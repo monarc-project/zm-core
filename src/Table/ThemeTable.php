@@ -8,8 +8,8 @@
 namespace Monarc\Core\Table;
 
 use Doctrine\ORM\EntityManager;
-use Monarc\Core\Model\Entity\Theme;
-use Monarc\Core\Model\Entity\ThemeSuperClass;
+use Monarc\Core\Entity\Theme;
+use Monarc\Core\Entity\ThemeSuperClass;
 
 class ThemeTable extends AbstractTable
 {

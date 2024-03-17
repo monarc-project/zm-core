@@ -24,7 +24,7 @@ abstract class AbstractServiceModelEntity implements FactoryInterface
     // TODO: Before burning this out, we need to removed DB dependency from Entities.
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
-        $class = str_replace('Service\\', '', substr(get_class($this), 0, -18));
+        $class = str_replace('Service\\Model\\', '', substr(get_class($this), 0, -18));
         if (class_exists($class)) {
             $ressources = $this->getRessources();
             $instance = new $class();

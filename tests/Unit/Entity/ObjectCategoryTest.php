@@ -8,8 +8,8 @@
 namespace Unit\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Monarc\Core\Model\Entity\MonarcObject;
-use Monarc\Core\Model\Entity\ObjectCategory;
+use Monarc\Core\Entity\MonarcObject;
+use Monarc\Core\Entity\ObjectCategory;
 use PHPUnit\Framework\TestCase;
 
 class ObjectCategoryTest extends TestCase

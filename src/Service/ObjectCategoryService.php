@@ -9,10 +9,10 @@ namespace Monarc\Core\Service;
 
 use Doctrine\Common\Collections\Expr\Comparison;
 use Monarc\Core\InputFormatter\FormattedInputParams;
-use Monarc\Core\Model\Entity\Model;
-use Monarc\Core\Model\Entity\MonarcObject;
-use Monarc\Core\Model\Entity\ObjectCategory;
-use Monarc\Core\Model\Entity\UserSuperClass;
+use Monarc\Core\Entity\Model;
+use Monarc\Core\Entity\MonarcObject;
+use Monarc\Core\Entity\ObjectCategory;
+use Monarc\Core\Entity\UserSuperClass;
 use Monarc\Core\Service\Interfaces\PositionUpdatableServiceInterface;
 use Monarc\Core\Service\Traits\PositionUpdateTrait;
 use Monarc\Core\Table\ModelTable;

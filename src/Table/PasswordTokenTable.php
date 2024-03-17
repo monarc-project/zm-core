@@ -9,8 +9,8 @@ namespace Monarc\Core\Table;
 
 use DateTime;
 use Doctrine\ORM\EntityManager;
-use Monarc\Core\Model\Entity\PasswordToken;
-use Monarc\Core\Model\Entity\PasswordTokenSuperClass;
+use Monarc\Core\Entity\PasswordToken;
+use Monarc\Core\Entity\PasswordTokenSuperClass;
 
 class PasswordTokenTable extends AbstractTable
 {

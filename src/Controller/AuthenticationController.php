@@ -9,7 +9,7 @@ namespace Monarc\Core\Controller;
 
 use Laminas\Mvc\Controller\AbstractRestfulController;
 use Monarc\Core\Controller\Handler\ControllerRequestResponseHandlerTrait;
-use Monarc\Core\Model\Entity\User;
+use Monarc\Core\Entity\User;
 use Monarc\Core\Service\AuthenticationService;
 
 class AuthenticationController extends AbstractRestfulController

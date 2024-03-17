@@ -20,7 +20,7 @@ class RolfRiskServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = [
         'table' => 'Monarc\Core\Model\Table\RolfRiskTable',
-        'entity' => 'Monarc\Core\Model\Entity\RolfRisk',
+        'entity' => 'Monarc\Core\Entity\RolfRisk',
         'rolfTagTable' => 'Monarc\Core\Model\Table\RolfTagTable',
         'MonarcObjectTable' => MonarcObjectTable::class,
         'measureTable' => 'Monarc\Core\Model\Table\MeasureTable',

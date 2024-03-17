@@ -18,7 +18,7 @@ class QuestionServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = [
         'table' => 'Monarc\Core\Model\Table\QuestionTable',
-        'entity' => 'Monarc\Core\Model\Entity\Question',
+        'entity' => 'Monarc\Core\Entity\Question',
         'choiceTable' => 'Monarc\Core\Model\Table\QuestionChoiceTable',
         'anrTable' => AnrTable::class,
     ];

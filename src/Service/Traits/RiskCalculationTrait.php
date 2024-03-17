@@ -7,7 +7,7 @@
 
 namespace Monarc\Core\Service\Traits;
 
-use Monarc\Core\Model\Entity\InstanceRiskSuperClass;
+use Monarc\Core\Entity\InstanceRiskSuperClass;
 
 trait RiskCalculationTrait
 {

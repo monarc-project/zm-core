@@ -8,7 +8,7 @@
 namespace Monarc\Core\Table;
 
 use Doctrine\ORM\EntityManager;
-use Monarc\Core\Model\Entity\ScaleComment;
+use Monarc\Core\Entity\ScaleComment;
 
 class ScaleCommentTable extends AbstractTable
 {
