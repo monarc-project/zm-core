@@ -25,6 +25,7 @@ class GetThreatsInputFormatter extends AbstractInputFormatter
     ];
 
     protected static array $allowedFilterFields = [
+        'anr',
         'status' => [
             'default' => ThreatSuperClass::STATUS_ACTIVE,
             'type' => 'int',

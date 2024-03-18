@@ -25,6 +25,7 @@ class GetAssetsInputFormatter extends AbstractInputFormatter
     ];
 
     protected static array $allowedFilterFields = [
+        'anr',
         'status' => [
             'default' => AssetSuperClass::STATUS_ACTIVE,
             'type' => 'int',

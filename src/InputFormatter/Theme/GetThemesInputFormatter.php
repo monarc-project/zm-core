@@ -17,4 +17,8 @@ class GetThemesInputFormatter extends AbstractInputFormatter
         'label3',
         'label4',
     ];
+
+    protected static array $allowedFilterFields = [
+        'anr',
+    ];
 }

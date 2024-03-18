@@ -243,7 +243,6 @@ return [
             InputValidator\Model\PostModelDataInputValidator::class => ReflectionBasedAbstractFactory::class,
             InputValidator\Asset\PostAssetDataInputValidator::class => static function (
                 Containerinterface $container,
-                $serviceName
             ) {
                 return new InputValidator\Asset\PostAssetDataInputValidator(
                     $container->get('config'),
@@ -252,18 +251,16 @@ return [
                 );
             },
             InputValidator\Threat\PostThreatDataInputValidator::class => static function (
-                Containerinterface $container,
-                $serviceName
+                Containerinterface $container
             ) {
                 return new InputValidator\Threat\PostThreatDataInputValidator(
                     $container->get('config'),
                     $container->get(InputValidator\InputValidationTranslator::class),
-                    $container->get(Table\ThemeTable::class)
+                    $container->get(Table\ThreatTable::class)
                 );
             },
             InputValidator\Vulnerability\PostVulnerabilityDataInputValidator::class => static function (
                 Containerinterface $container,
-                $serviceName
             ) {
                 return new InputValidator\Vulnerability\PostVulnerabilityDataInputValidator(
                     $container->get('config'),

@@ -377,17 +377,12 @@ class AnrSuperClass
 
     public function getStatusName(): string
     {
-        switch ($this->status) {
-            case self::STATUS_AWAITING_OF_IMPORT:
-                return 'awaiting for import';
-            case self::STATUS_UNDER_IMPORT:
-                return 'under import';
-            case self::STATUS_IMPORT_ERROR:
-                return 'import error';
-            case self::STATUS_ACTIVE:
-            default:
-                return 'active';
-        }
+        return match ($this->status) {
+            self::STATUS_AWAITING_OF_IMPORT => 'awaiting for import',
+            self::STATUS_UNDER_IMPORT => 'under import',
+            self::STATUS_IMPORT_ERROR => 'import error',
+            default => 'active',
+        };
     }
 
     public function isActive(): bool
@@ -529,7 +524,7 @@ class AnrSuperClass
 
     public function getContextAnaRisk(): string
     {
-        return $this->contextAnaRisk;
+        return (string)$this->contextAnaRisk;
     }
 
     public function setContextAnaRisk(string $contextAnaRisk): self
@@ -541,7 +536,7 @@ class AnrSuperClass
 
     public function getContextGestRisk(): string
     {
-        return $this->contextGestRisk;
+        return (string)$this->contextGestRisk;
     }
 
     public function setContextGestRisk(string $contextGestRisk): self
@@ -553,7 +548,7 @@ class AnrSuperClass
 
     public function getSynthThreat(): string
     {
-        return $this->synthThreat;
+        return (string)$this->synthThreat;
     }
 
     public function setSynthThreat(string $synthThreat): self
@@ -565,7 +560,7 @@ class AnrSuperClass
 
     public function getSynthAct(): string
     {
-        return $this->synthAct;
+        return (string)$this->synthAct;
     }
 
     public function setSynthAct(string $synthAct): self
