@@ -247,6 +247,12 @@ class FixPositionsCleanupDb extends AbstractMigration
             ->renameColumn('comment_translation_key', 'label_translation_key')
             ->update();
 
+        /* The unique relation is not correct as it should be possible to instantiate the same operational risk. */
+        $this->table('operational_instance_risks_scales')
+            ->removeIndex(['anr_id', 'instance_risk_op_id', 'operational_risk_scale_type_id'])
+            ->addIndex(['anr_id', 'instance_risk_op_id', 'operational_risk_scale_type_id'], ['unique' => false])
+            ->update();
+
         $this->table('scales_impact_types')
             ->removeColumn('position')
             ->update();

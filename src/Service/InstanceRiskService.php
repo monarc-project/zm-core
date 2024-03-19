@@ -58,9 +58,7 @@ class InstanceRiskService
             $key = $object->isScopeGlobal()
                 ? 'o' . $object->getUuid() . '-' . $threat->getUuid() . '-' . $vulnerability->getUuid()
                 : 'r' . $instanceRisk->getId();
-            if (!$object->isScopeGlobal()
-                || (isset($result[$key]) && $this->areInstanceRiskImpactsHigher($instanceRisk, $result[$key]))
-            ) {
+            if (!isset($result[$key]) || $this->areInstanceRiskImpactsHigher($instanceRisk, $result[$key])) {
                 $result[$key] = [
                     'id' => $instanceRisk->getId(),
                     'oid' => $object->getUuid(),
