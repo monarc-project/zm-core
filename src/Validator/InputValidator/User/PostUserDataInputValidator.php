@@ -157,11 +157,7 @@ class PostUserDataInputValidator extends AbstractInputValidator
                 'name' => 'status',
                 'required' => false,
                 'allow_empty' => true,
-                'filters' => [
-                    [
-                        'name' => 'boolean',
-                    ]
-                ],
+                'filters' => [],
                 'validators' => [],
             ],
         ];

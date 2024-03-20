@@ -54,23 +54,23 @@ abstract class UserSuperClass
     /**
      * @var int
      *
-     * @ORM\Column(name="status", type="smallint", nullable=true)
+     * @ORM\Column(name="status", type="smallint", nullable=false)
      */
-    protected $status;
+    protected $status = self::STATUS_ACTIVE;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="firstname", type="string", length=255, nullable=true)
+     * @ORM\Column(name="firstname", type="string", length=255, nullable=false)
      */
-    protected $firstname;
+    protected $firstname = '';
 
     /**
      * @var string
      *
-     * @ORM\Column(name="lastname", type="string", length=255, nullable=true)
+     * @ORM\Column(name="lastname", type="string", length=255, nullable=false)
      */
-    protected $lastname;
+    protected $lastname = '';
 
     /**
      * @var string
@@ -152,7 +152,7 @@ abstract class UserSuperClass
         }
         $this->language = $data['language'] ?? 1;
         $this->mospApiKey = $data['mospApiKey'] ?? '';
-        $this->status = $data['status'] ?? self::STATUS_ACTIVE;
+        $this->status = isset($data['status']) ? (int)$data['status'] : self::STATUS_ACTIVE;
         $this->creator = $data['creator'];
         $this->setRoles($data['role']);
         $this->userTokens = new ArrayCollection();
