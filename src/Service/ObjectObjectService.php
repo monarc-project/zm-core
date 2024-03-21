@@ -116,9 +116,16 @@ class ObjectObjectService
         );
         /* Some positions are not aligned in the DB, that's why we may have empty result. */
         if ($previousObjectCompositionLink !== null) {
-            $this->objectObjectTable->save($previousObjectCompositionLink->setPosition($objectObject->getPosition()));
+            $this->objectObjectTable->save(
+                $previousObjectCompositionLink->setPosition($objectObject->getPosition())->setUpdater(
+                    $this->connectedUser->getEmail()
+                ),
+                false
+            );
         }
-        $this->objectObjectTable->save($objectObject->setPosition($positionToBeSet));
+        $this->objectObjectTable->save(
+            $objectObject->setPosition($positionToBeSet)->setUpdater($this->connectedUser->getEmail())
+        );
     }
 
     public function delete(int $id): void

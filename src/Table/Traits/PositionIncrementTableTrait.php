@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Table\Traits;
 
+use Monarc\Core\Entity\Interfaces\PositionedEntityInterface;
 use Monarc\Core\Table\AbstractTable;
 use Monarc\Core\Table\Interfaces\PositionUpdatableTableInterface;
 
@@ -29,38 +30,46 @@ trait PositionIncrementTableTrait
         array $params,
         string $updater
     ): void {
-        if (!$this instanceof PositionUpdatableTableInterface
-            || !is_subclass_of($this, AbstractTable::class)
-        ) {
+        if (!$this instanceof PositionUpdatableTableInterface || !is_subclass_of($this, AbstractTable::class)) {
             throw new \LogicException(
                 'The trait "PositionIncrementTableTrait" is used in the wrong table class "' . \get_class($this) . '".'
             );
         }
 
-        $positionShift = $increment > 0 ? '+ ' . $increment : '- ' . abs($increment);
-        $queryBuilder = $this->getRepository()->createQueryBuilder('t')
-            ->update()
-            ->set('t.position', 't.position ' . $positionShift)
-            ->set('t.updater', ':updater')
-            ->setParameter('updater', $updater);
+        if ($increment === 0) {
+            return;
+        }
 
+        $queryBuilder = $this->getRepository()->createQueryBuilder('t');
         foreach ($params as $fieldName => $fieldValue) {
-            if ($fieldValue === null) {
+            if (\is_array($fieldValue)) {
+                $queryBuilder->innerJoin('t.' . $fieldName, $fieldName);
+                foreach ($fieldValue as $relationFieldName => $relationFieldValue) {
+                    $relationFieldParam = $fieldName . '_' . $relationFieldName;
+                    $queryBuilder->andWhere($fieldName . '.' . $relationFieldName . ' = :' . $relationFieldParam)
+                        ->setParameter($relationFieldParam, $relationFieldValue);
+                }
+            } elseif ($fieldValue === null) {
                 $queryBuilder->andWhere('t.' . $fieldName . ' IS NULL');
             } else {
-                $queryBuilder->andWhere('t.' . $fieldName . ' = :' . $fieldName)
-                    ->setParameter($fieldName, $fieldValue);
+                $queryBuilder->andWhere('t.' . $fieldName . ' = :' . $fieldName)->setParameter($fieldName, $fieldValue);
             }
         }
 
-        $queryBuilder->andWhere('t.position >= :positionFrom')
-            ->setParameter('positionFrom', $positionFrom);
+        $queryBuilder->andWhere('t.position >= :positionFrom')->setParameter('positionFrom', $positionFrom);
         if ($positionTo > $positionFrom) {
-            $queryBuilder->andWhere('t.position <= :positionTo')
-                ->setParameter('positionTo', $positionTo);
+            $queryBuilder->andWhere('t.position <= :positionTo')->setParameter('positionTo', $positionTo);
         }
 
-        $queryBuilder->getQuery()->getResult();
+        /** @var PositionedEntityInterface $entity */
+        foreach ($queryBuilder->getQuery()->getResult() as $entity) {
+            $newPosition = $increment > 0
+                ? $entity->getPosition() + $increment
+                : $entity->getPosition() - abs($increment);
+
+            $entity->setPosition($newPosition)->setUpdater($updater);
+            $this->save($entity, false);
+        }
     }
 
     public function findMaxPosition(array $params): int
@@ -69,16 +78,12 @@ trait PositionIncrementTableTrait
 
         foreach ($params as $fieldName => $fieldValue) {
             if ($fieldValue !== null) {
-                $queryBuilder
-                    ->andWhere('t.' . $fieldName . ' = :' . $fieldName)
-                    ->setParameter($fieldName, $fieldValue);
+                $queryBuilder->andWhere('t.' . $fieldName . ' = :' . $fieldName)->setParameter($fieldName, $fieldValue);
             } else {
                 $queryBuilder->andWhere('t.' . $fieldName . ' IS NULL');
             }
         }
 
-        return (int)$queryBuilder
-            ->getQuery()
-            ->getSingleScalarResult();
+        return (int)$queryBuilder->getQuery()->getSingleScalarResult();
     }
 }

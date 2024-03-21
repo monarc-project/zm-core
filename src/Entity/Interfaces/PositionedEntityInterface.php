@@ -42,4 +42,6 @@ interface PositionedEntityInterface
     public function getCreator(): string;
 
     public function getUpdater(): string;
+
+    public function setUpdater(string $updater): self;
 }
