@@ -110,10 +110,10 @@ class ObjectObjectService
         $positionToBeSet = $data['move'] === static::MOVE_COMPOSITION_POSITION_UP
             ? $objectObject->getPosition() - 1
             : $objectObject->getPosition() + 1;
-        $previousObjectCompositionLink = $this->objectObjectTable->findByParentObjectAndPosition(
-            $objectObject->getParent(),
-            $positionToBeSet
-        );
+        /** @var MonarcObject $parentObject */
+        $parentObject = $objectObject->getParent();
+        $previousObjectCompositionLink = $this->objectObjectTable
+            ->findByParentObjectAndPosition($parentObject, $positionToBeSet);
         /* Some positions are not aligned in the DB, that's why we may have empty result. */
         if ($previousObjectCompositionLink !== null) {
             $this->objectObjectTable->save(
