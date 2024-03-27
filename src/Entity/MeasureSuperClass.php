@@ -12,8 +12,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Entity\Traits\LabelsEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
-use Ramsey\Uuid\Lazy\LazyUuidFromString;
 use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
 
 /**
  * @ORM\Table(name="measures", indexes={
@@ -31,7 +31,7 @@ class MeasureSuperClass extends AbstractEntity
     use LabelsEntityTrait;
 
     /**
-     * @var LazyUuidFromString|string
+     * @var UuidInterface|string
      *
      * @ORM\Column(name="uuid", type="uuid", nullable=false)
      * @ORM\Id
@@ -63,8 +63,8 @@ class MeasureSuperClass extends AbstractEntity
      *
      * @ORM\ManyToMany(targetEntity="Measure")
      * @ORM\JoinTable(name="measures_measures",
-     *     joinColumns={@ORM\JoinColumn(name="father_id", referencedColumnName="uuid")},
-     *     inverseJoinColumns={@ORM\JoinColumn(name="child_id", referencedColumnName="uuid")}
+     *     joinColumns={@ORM\JoinColumn(name="master_measure_id", referencedColumnName="uuid")},
+     *     inverseJoinColumns={@ORM\JoinColumn(name="linked_measure_id", referencedColumnName="uuid")}
      * )
      */
     protected $linkedMeasures;

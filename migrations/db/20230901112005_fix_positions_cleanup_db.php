@@ -5,6 +5,7 @@
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
+use Phinx\Db\Adapter\MysqlAdapter;
 use Phinx\Migration\AbstractMigration;
 
 class FixPositionsCleanupDb extends AbstractMigration
@@ -200,6 +201,24 @@ class FixPositionsCleanupDb extends AbstractMigration
                 . ' WHERE uuid = "' . $measureData['uuid'] . '"'
             );
         }
+        /* Correct MeasuresMeasures table structure. */
+        $this->table('measures_measures')
+            ->addColumn('id', 'integer', ['signed' => false, 'after' => MysqlAdapter::FIRST])
+            ->renameColumn('father_id', 'master_measure_id')
+            ->renameColumn('child_id', 'linked_measure_id')
+            ->dropForeignKey(['master_measure_id', 'linked_measure_id'])
+            ->removeColumn('updater')
+            ->removeColumn('updated_at')
+            ->update();
+        $this->execute('SET @a = 0; UPDATE measures_measures SET id = @a := @a + 1;');
+        $this->table('measures_measures')
+            ->changePrimaryKey(['id'])
+            ->addIndex(['master_measure_id', 'linked_measure_id'], ['unique' => true])
+            ->update();
+        $this->table('measures_measures')
+            ->addForeignKey('master_measure_id', 'measures', 'uuid', ['delete' => 'CASCADE', 'update' => 'RESTRICT'])
+            ->addForeignKey('linked_measure_id', 'measures', 'uuid', ['delete' => 'CASCADE', 'update' => 'RESTRICT'])
+            ->update();
 
         /* Rename the `anr_metadatas_on_instances` to `anr_instance_metadata_fields`. */
         $this->table('anr_metadatas_on_instances')->rename('anr_instance_metadata_fields')->update();

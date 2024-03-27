@@ -14,10 +14,6 @@ use Monarc\Core\Entity\Measure;
 use Monarc\Core\Entity\MeasureSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 
-/**
- * Class MeasureTable
- * @package Monarc\Core\Model\Table
- */
 class MeasureTable extends AbstractEntityTable
 {
     public function __construct(Db $dbService, ConnectedUserService $connectedUserService)
@@ -25,7 +21,7 @@ class MeasureTable extends AbstractEntityTable
         parent::__construct($dbService, Measure::class, $connectedUserService);
     }
 
-    public function findByUuid(string $uuid): ?Measure
+    public function findByUuid(string $uuid): Measure
     {
         $measure = $this->getRepository()
             ->createQueryBuilder('m')

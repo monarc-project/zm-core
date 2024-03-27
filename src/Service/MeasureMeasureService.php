@@ -1,78 +1,71 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
 namespace Monarc\Core\Service;
 
+use Monarc\Core\Entity\MeasureMeasure;
 use Monarc\Core\Exception\Exception;
-use Monarc\Core\Model\Table\MeasureMeasureTable;
+use Monarc\Core\Model\Table\MeasureTable;
+use Monarc\Core\Table\MeasureMeasureTable;
 
-/**
- * Measure Service
- *
- * Class MeasureService
- * @package Monarc\Core\Service
- */
-class MeasureMeasureService extends AbstractService
+class MeasureMeasureService
 {
-    protected $dependencies = [];
-    protected $filterColumns = [];
-    protected $forbiddenFields = ['anr'];
-    protected $measureTable;
-    protected $measureEntity;
-
-    /**
-     * @inheritdoc
-     */
-    public function create($data, $last = true)
+    public function __construct(private MeasureMeasureTable $measureMeasureTable, private MeasureTable $measureTable)
     {
-        if ($data['father'] === $data['child']) {
-            throw new Exception('You cannot add yourself as a component', 412);
-        }
-        $measureTable = $this->get('measureTable');
-        $measureMeasureTable = $this->get('table');
-        $measuresMeasures = $measureMeasureTable->getEntityByFields(
-            ['child' => $data['child'], 'father' => $data['father']]
-        );
-
-        if (!empty($measuresMeasures)) { // the link already exist
-            throw new Exception('This component already exist for this object', 412);
-        }
-
-        $father = $measureTable->getEntity($data['father']);
-        $child = $measureTable->getEntity($data['child']);
-        $father->addLinkedMeasure($child); //we add the link for the two measure
-
-        return $measureTable->save($father);
     }
 
-    public function delete($id)
+    public function getList()
     {
-        /** @var MeasureMeasureTable $measureTable */
-        $measureTable = $this->get('measureTable');
-        $father = $measureTable->getEntity($id['father']);
-        $child = $measureTable->getEntity($id['child']);
-        $father->deleteLinkedMeasure($child);
-        $measureTable->save($father);
+        $result = [];
+        /** @var MeasureMeasure $measureMeasure */
+        foreach ($this->measureMeasureTable->findAll() as $measureMeasure) {
+            $result[] = [
+                'masterMeasure' => array_merge([
+                    'uuid' => $measureMeasure->getMasterMeasure()->getUuid(),
+                    'code' => $measureMeasure->getMasterMeasure()->getCode(),
+                ], $measureMeasure->getMasterMeasure()->getLabels()),
+                'linkedMeasure' => array_merge([
+                    'uuid' => $measureMeasure->getLinkedMeasure()->getUuid(),
+                    'code' => $measureMeasure->getLinkedMeasure()->getCode(),
+                ], $measureMeasure->getLinkedMeasure()->getLabels()),
+            ];
+        }
+
+        return $result;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
+    public function create(array $data, bool $saveInDb = true)
     {
-        $data = $this->get('table')->fetchAllFiltered(
-            array_keys($this->get('entity')->getJsonArray()),
-            $page,
-            0,
-            $this->parseFrontendOrder($order),
-            $this->parseFrontendFilter($filter, $this->filterColumns),
-            $filterAnd
-        );
+        if ($data['masterMeasureUuid'] === $data['linkedMeasureUuid']) {
+            throw new Exception('It is not possible to link a control to itself', 412);
+        }
 
-        return \array_slice($data, ($page - 1) * $limit, $limit);
+        $masterMeasure = $this->measureTable->findByUuid($data['masterMeasureUuid']);
+        $linkedMeasure = $this->measureTable->findByUuid($data['linkedMeasureUuid']);
+        $masterMeasure->addLinkedMeasure($linkedMeasure);
+
+        return $this->measureTable->save($masterMeasure, $saveInDb);
+    }
+
+    public function createList(array $data)
+    {
+        foreach ($data as $rowData) {
+            $this->create($rowData, false);
+        }
+
+        $this->measureMeasureTable->flush();
+    }
+
+    public function delete(string $masterMeasureUuid, string $linkedMeasureUuid)
+    {
+        $masterMeasure = $this->measureTable->findByUuid($masterMeasureUuid);
+        $linkedMeasure = $this->measureTable->findByUuid($linkedMeasureUuid);
+        $masterMeasure->removeLinkedMeasure($linkedMeasure);
+
+        $this->measureTable->saveEntity($masterMeasure);
     }
 }

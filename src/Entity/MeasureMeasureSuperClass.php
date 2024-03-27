@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -9,12 +9,11 @@ namespace Monarc\Core\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Entity\Traits\CreateEntityTrait;
-use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 
 /**
  * @ORM\Table(name="measures_measures", indexes={
- *      @ORM\Index(name="father_id", columns={"father_id"}),
- *      @ORM\Index(name="child_id", columns={"child_id"})
+ *      @ORM\Index(name="master_measure_id", columns={"master_measure_id"}),
+ *      @ORM\Index(name="linked_measure_id", columns={"linked_measure_id"})
  * })
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
@@ -22,50 +21,61 @@ use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 class MeasureMeasureSuperClass extends AbstractEntity
 {
     use CreateEntityTrait;
-    use UpdateEntityTrait;
+
+    /**
+     * @var int
+     *
+     * @ORM\Column(name="id", type="integer", nullable=false)
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="IDENTITY")
+     */
+    protected $id;
 
     /**
      * @var MeasureSuperClass
      *
-     * @ORM\Id
      * @ORM\ManyToOne(targetEntity="Measure", cascade={"persist"})
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="father_id", referencedColumnName="uuid", nullable=true)
+     *   @ORM\JoinColumn(name="master_measure_id", referencedColumnName="uuid", nullable=true)
      * })
      */
-    protected $father;
+    protected $masterMeasure;
 
     /**
      * @var MeasureSuperClass
      *
-     * @ORM\Id
      * @ORM\ManyToOne(targetEntity="Measure", cascade={"persist"})
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="child_id", referencedColumnName="uuid", nullable=true)
+     *   @ORM\JoinColumn(name="linked_measure_id", referencedColumnName="uuid", nullable=true)
      * })
      */
-    protected $child;
+    protected $linkedMeasure;
 
-    public function getFather()
+    public function getId()
     {
-        return $this->father;
+        return $this->id;
     }
 
-    public function setFather(MeasureSuperClass $father): self
+    public function getMasterMeasure()
     {
-        $this->father = $father;
+        return $this->masterMeasure;
+    }
+
+    public function setMasterMeasure(MeasureSuperClass $masterMeasure): self
+    {
+        $this->masterMeasure = $masterMeasure;
 
         return $this;
     }
 
-    public function getChild()
+    public function getLinkedMeasure()
     {
-        return $this->child;
+        return $this->linkedMeasure;
     }
 
-    public function setChild(MeasureSuperClass $child): self
+    public function setLinkedMeasure(MeasureSuperClass $linkedMeasure): self
     {
-        $this->child = $child;
+        $this->linkedMeasure = $linkedMeasure;
 
         return $this;
     }
