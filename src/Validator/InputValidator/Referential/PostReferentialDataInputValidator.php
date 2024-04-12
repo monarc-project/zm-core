@@ -5,11 +5,11 @@
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
-namespace Monarc\Core\Validator\InputValidator\Theme;
+namespace Monarc\Core\Validator\InputValidator\Referential;
 
 use Monarc\Core\Validator\InputValidator\AbstractInputValidator;
 
-class PostThemeDataInputValidator extends AbstractInputValidator
+class PostReferentialDataInputValidator extends AbstractInputValidator
 {
     protected function getRules(): array
     {

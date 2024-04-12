@@ -94,6 +94,17 @@ class AssetService
         return $asset;
     }
 
+    public function createList(array $data): array
+    {
+        $createdUuids = [];
+        foreach ($data as $row) {
+            $createdUuids[] = $this->create($row, false)->getUuid();
+        }
+        $this->assetTable->flush();
+
+        return $createdUuids;
+    }
+
     public function getOrCreateAsset(array $assetData): Entity\Asset
     {
         if (!empty($assetData['uuid'])) {

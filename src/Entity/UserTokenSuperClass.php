@@ -1,7 +1,7 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -11,17 +11,15 @@ use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * User Token
- *
  * @ORM\Table(name="user_tokens", indexes={
  *      @ORM\Index(name="user_id", columns={"user_id"})
  * })
  * @ORM\MappedSuperclass
  */
-class UserTokenSuperClass extends AbstractEntity
+class UserTokenSuperClass
 {
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer", precision=0, scale=0, nullable=false, unique=false)
      * @ORM\Id

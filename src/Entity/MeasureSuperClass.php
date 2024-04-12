@@ -1,7 +1,7 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -23,12 +23,14 @@ use Ramsey\Uuid\UuidInterface;
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
-class MeasureSuperClass extends AbstractEntity
+class MeasureSuperClass
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
 
     use LabelsEntityTrait;
+
+    public const STATUS_ACTIVE = 1;
 
     /**
      * @var UuidInterface|string
@@ -49,14 +51,36 @@ class MeasureSuperClass extends AbstractEntity
     protected $referential;
 
     /**
-     * @var SoaCategorySuperClass
+     * @var SoaCategorySuperClass|null
      *
      * @ORM\ManyToOne(targetEntity="SoaCategory", inversedBy="measures", cascade={"persist"})
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="soacategory_id", referencedColumnName="id", nullable=true)
+     *   @ORM\JoinColumn(name="soacategory_id", referencedColumnName="id", nullable=true, onDelete="SET NULL")
      * })
      */
     protected $category;
+
+    /**
+     * @var ArrayCollection|AmvSuperClass[]
+     *
+     * @ORM\ManyToMany(targetEntity="Amv", inversedBy="measures", cascade={"persist"})
+     * @ORM\JoinTable(name="measures_amvs",
+     *  inverseJoinColumns={@ORM\JoinColumn(name="amv_id", referencedColumnName="uuid")},
+     *  joinColumns={@ORM\JoinColumn(name="measure_id", referencedColumnName="uuid"),},
+     * )
+     */
+    protected $amvs;
+
+    /**
+     * @var ArrayCollection|RolfRiskSuperClass[]
+     *
+     * @ORM\ManyToMany(targetEntity="RolfRisk", inversedBy="measures", cascade={"persist"})
+     * @ORM\JoinTable(name="measures_rolf_risks",
+     *  inverseJoinColumns={@ORM\JoinColumn(name="rolf_risk_id", referencedColumnName="id")},
+     *  joinColumns={@ORM\JoinColumn(name="measure_id", referencedColumnName="uuid"),},
+     * )
+     */
+    protected $rolfRisks;
 
     /**
      * @var MeasureSuperClass[]|ArrayCollection
@@ -81,34 +105,10 @@ class MeasureSuperClass extends AbstractEntity
      *
      * @ORM\Column(name="status", type="smallint", options={"unsigned":true, "default":1})
      */
-    protected $status = 1;
+    protected $status = self::STATUS_ACTIVE;
 
-    /**
-     * @var ArrayCollection|AmvSuperClass[]
-     *
-     * @ORM\ManyToMany(targetEntity="Amv", inversedBy="measures", cascade={"persist"})
-     * @ORM\JoinTable(name="measures_amvs",
-     *  inverseJoinColumns={@ORM\JoinColumn(name="amv_id", referencedColumnName="uuid")},
-     *  joinColumns={@ORM\JoinColumn(name="measure_id", referencedColumnName="uuid"),},
-     * )
-     */
-    protected $amvs;
-
-    /**
-     * @var ArrayCollection|RolfRiskSuperClass[]
-     *
-     * @ORM\ManyToMany(targetEntity="RolfRisk", inversedBy="measures", cascade={"persist"})
-     * @ORM\JoinTable(name="measures_rolf_risks",
-     *  inverseJoinColumns={@ORM\JoinColumn(name="rolf_risk_id", referencedColumnName="id")},
-     *  joinColumns={@ORM\JoinColumn(name="measure_id", referencedColumnName="uuid"),},
-     * )
-     */
-    protected $rolfRisks;
-
-    public function __construct($obj = null)
+    public function __construct()
     {
-        parent::__construct($obj);
-
         $this->amvs = new ArrayCollection();
         $this->rolfRisks = new ArrayCollection();
         $this->linkedMeasures = new ArrayCollection();
@@ -143,15 +143,19 @@ class MeasureSuperClass extends AbstractEntity
         return $this;
     }
 
-    public function getCategory()
+    public function getCategory(): ?SoaCategorySuperClass
     {
         return $this->category;
     }
 
-    public function setCategory(SoaCategorySuperClass $category): self
+    public function setCategory(?SoaCategorySuperClass $category): self
     {
+        if ($category === null && $this->category !== null) {
+            $this->category->removeMeasure($this);
+        }
+
         $this->category = $category;
-        $category->addMeasure($this);
+        $category?->addMeasure($this);
 
         return $this;
     }
@@ -266,80 +270,5 @@ class MeasureSuperClass extends AbstractEntity
         $this->status = $status;
 
         return $this;
-    }
-
-    public function getInputFilter($partial = false)
-    {
-        if (!$this->inputFilter) {
-            parent::getInputFilter($partial);
-
-            $texts = ['label1', 'label2', 'label3', 'label4'];
-
-            foreach ($texts as $text) {
-                $this->inputFilter->add(array(
-                    'name' => $text,
-                    'required' => strpos($text, (string)$this->getLanguage()) !== false && !$partial,
-                    'allow_empty' => false,
-                    'filters' => array(),
-                    'validators' => array(),
-                ));
-            }
-
-            $this->inputFilter->add(array(
-                'name' => 'status',
-                'required' => false,
-                'allow_empty' => false,
-                'filters' => array(
-                    array('name' => 'ToInt'),
-                ),
-                'validators' => array(
-                    array(
-                        'name' => 'InArray',
-                        'options' => array(
-                            'haystack' => array(self::STATUS_INACTIVE, self::STATUS_ACTIVE),
-                        ),
-                    ),
-                ),
-            ));
-        }
-        return $this->inputFilter;
-    }
-
-    public function getFiltersForService()
-    {
-        $filterJoin = [
-            [
-                'as' => 'r',
-                'rel' => 'referential',
-            ],
-        ];
-        $filterLeft = [
-            [
-                'as' => 'r1',
-                'rel' => 'referential',
-            ],
-            [
-                'as' => 'c',
-                'rel' => 'category',
-            ],
-        ];
-        $filtersCol = [
-            'r.label1',
-            'r.label2',
-            'r.label3',
-            'r.label4',
-            'c.label1',
-            'c.label2',
-            'c.label3',
-            'c.label4',
-            'r.uuid',
-            'label1',
-            'label2',
-            'label3',
-            'label4',
-            'code',
-        ];
-
-        return [$filterJoin, $filterLeft, $filtersCol];
     }
 }

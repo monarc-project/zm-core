@@ -1,7 +1,7 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -12,15 +12,15 @@ use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Entity\Traits\LabelsEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
-use Ramsey\Uuid\Lazy\LazyUuidFromString;
 use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
 
 /**
  * @ORM\Table(name="referentials")
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
-class ReferentialSuperClass extends AbstractEntity
+class ReferentialSuperClass
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
@@ -28,7 +28,7 @@ class ReferentialSuperClass extends AbstractEntity
     use LabelsEntityTrait;
 
     /**
-     * @var LazyUuidFromString|string
+     * @var UuidInterface|string
      *
      * @ORM\Id
      * @ORM\Column(name="uuid", type="uuid", unique=true)
@@ -49,12 +49,10 @@ class ReferentialSuperClass extends AbstractEntity
      */
     protected $categories;
 
-    public function __construct($obj = null)
+    public function __construct()
     {
         $this->measures = new ArrayCollection();
         $this->categories = new ArrayCollection();
-
-        parent::__construct($obj);
     }
 
     /**
@@ -109,24 +107,5 @@ class ReferentialSuperClass extends AbstractEntity
         }
 
         return $this;
-    }
-
-    public function getInputFilter($partial = false)
-    {
-        if (!$this->inputFilter) {
-            parent::getInputFilter($partial);
-
-            $texts = ['label1', 'label2', 'label3', 'label4'];
-            foreach ($texts as $text) {
-                $this->inputFilter->add(array(
-                    'name' => $text,
-                    'required' => strpos($text, (string)$this->getLanguage()) !== false && !$partial,
-                    'allow_empty' => false,
-                    'filters' => array(),
-                    'validators' => array(),
-                ));
-            }
-        }
-        return $this->inputFilter;
     }
 }

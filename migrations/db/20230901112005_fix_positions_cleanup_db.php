@@ -216,6 +216,7 @@ class FixPositionsCleanupDb extends AbstractMigration
             ->addIndex(['master_measure_id', 'linked_measure_id'], ['unique' => true])
             ->update();
         $this->table('measures_measures')
+            ->changeColumn('id', 'integer', ['identity' => true])
             ->addForeignKey('master_measure_id', 'measures', 'uuid', ['delete' => 'CASCADE', 'update' => 'RESTRICT'])
             ->addForeignKey('linked_measure_id', 'measures', 'uuid', ['delete' => 'CASCADE', 'update' => 'RESTRICT'])
             ->update();

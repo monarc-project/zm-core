@@ -1,7 +1,7 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -17,7 +17,7 @@ use Monarc\Core\Entity\Traits\LabelsEntityTrait;
  * })
  * @ORM\MappedSuperclass
  */
-class SoaCategorySuperClass extends AbstractEntity
+class SoaCategorySuperClass
 {
     use LabelsEntityTrait;
 
@@ -54,29 +54,14 @@ class SoaCategorySuperClass extends AbstractEntity
      */
     protected $status = 1;
 
-    public function __construct($obj = null)
+    public function __construct()
     {
         $this->measures = new ArrayCollection();
-
-        parent::__construct($obj);
     }
 
-    /**
-     * @return int
-     */
     public function getId()
     {
         return $this->id;
-    }
-
-    /**
-     * @param int $id
-     */
-    public function setId($id): self
-    {
-        $this->id = $id;
-
-        return $this;
     }
 
     public function getMeasures()
@@ -89,6 +74,15 @@ class SoaCategorySuperClass extends AbstractEntity
         if (!$this->measures->contains($measure)) {
             $this->measures->add($measure);
             $measure->setCategory($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMeasure(MeasureSuperClass $measure): self
+    {
+        if ($this->measures->contains($measure)) {
+            $this->measures->removeElement($measure);
         }
 
         return $this;
@@ -107,71 +101,15 @@ class SoaCategorySuperClass extends AbstractEntity
         return $this;
     }
 
+    public function setStatus(int $status): self
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
     public function getStatus(): int
     {
         return $this->status;
-    }
-
-    public function getInputFilter($partial = false)
-    {
-        if (!$this->inputFilter) {
-            parent::getInputFilter($partial);
-
-            $texts = ['label1', 'label2', 'label3', 'label4'];
-
-            foreach ($texts as $text) {
-                $this->inputFilter->add([
-                    'name' => $text,
-                    'required' => ((strchr($text, (string)$this->getLanguage())) && (!$partial)) ? true : false,
-                    'allow_empty' => false,
-                    'filters' => [],
-                    'validators' => [],
-                ]);
-            }
-
-            $this->inputFilter->add([
-                'name' => 'status',
-                'required' => false,
-                'allow_empty' => false,
-                'filters' => [
-                    ['name' => 'ToInt'],
-                ],
-                'validators' => [
-                    [
-                        'name' => 'InArray',
-                        'options' => [
-                            'haystack' => [static::STATUS_INACTIVE, static::STATUS_ACTIVE],
-                        ],
-                    ],
-                ],
-            ]);
-        }
-
-        return $this->inputFilter;
-    }
-
-    public function getFiltersForService()
-    {
-        $filterJoin = [
-            [
-                'as' => 'r',
-                'rel' => 'referential',
-            ],
-        ];
-        $filterLeft = [
-            [
-                'as' => 'r1',
-                'rel' => 'referential',
-            ],
-        ];
-        $filtersCol = [
-            'r.label1',
-            'r.label2',
-            'r.label3',
-            'r.label4',
-            'r.uuid',
-        ];
-
-        return [$filterJoin, $filterLeft, $filtersCol];
     }
 }

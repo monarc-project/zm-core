@@ -4,15 +4,15 @@
  * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
+namespace Monarc\Core\Table;
 
-namespace Monarc\Core\Entity;
+use Doctrine\ORM\EntityManager;
+use Monarc\Core\Entity\SoaCategory;
 
-use Doctrine\ORM\Mapping as ORM;
-
-/**
- * @ORM\Table(name="soacategory")
- * @ORM\Entity
- */
-class SoaCategory extends SoaCategorySuperClass
+class SoaCategoryTable extends AbstractTable
 {
+    public function __construct(EntityManager $entityManager, string $entityName = SoaCategory::class)
+    {
+        parent::__construct($entityManager, $entityName);
+    }
 }

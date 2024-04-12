@@ -5,12 +5,11 @@
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
-namespace Monarc\Core\Validator\InputValidator\Asset;
+namespace Monarc\Core\Validator\InputValidator\Measure;
 
 use Laminas\Filter\StringTrim;
-use Laminas\Validator\InArray;
+use Laminas\Filter\ToInt;
 use Laminas\Validator\StringLength;
-use Monarc\Core\Entity\AssetSuperClass;
 use Monarc\Core\Table\Interfaces\UniqueCodeTableInterface;
 use Monarc\Core\Validator\FieldValidator\UniqueCode;
 use Monarc\Core\Validator\InputValidator\AbstractInputValidator;
@@ -20,18 +19,18 @@ use Monarc\Core\Validator\InputValidator\InputValidationTranslator;
 /**
  * Note. For UniqueCode validator $excludeFilter/$includeFilter properties have to be set before calling isValid method.
  */
-class PostAssetDataInputValidator extends AbstractInputValidator
+class PostMeasureDataInputValidator extends AbstractInputValidator
 {
     use FilterFieldsValidationTrait;
 
-    private UniqueCodeTableInterface $assetTable;
+    private UniqueCodeTableInterface $measureTable;
 
     public function __construct(
         array $config,
         InputValidationTranslator $translator,
-        UniqueCodeTableInterface $assetTable
+        UniqueCodeTableInterface $measureTable
     ) {
-        $this->assetTable = $assetTable;
+        $this->measureTable = $measureTable;
 
         parent::__construct($config, $translator);
     }
@@ -58,7 +57,7 @@ class PostAssetDataInputValidator extends AbstractInputValidator
                     [
                         'name' => UniqueCode::class,
                         'options' => [
-                            'uniqueCodeValidationTable' => $this->assetTable,
+                            'uniqueCodeValidationTable' => $this->measureTable,
                             'includeFilter' => $this->includeFilter,
                             'excludeFilter' => $this->excludeFilter,
                         ],
@@ -66,47 +65,34 @@ class PostAssetDataInputValidator extends AbstractInputValidator
                 ],
             ],
             [
-                'name' => 'type',
+                'name' => 'referentialUuid',
                 'required' => true,
-                'filters' => [
-                    [
-                        'name' => 'ToInt'
-                    ],
-                ],
+                'filters' => [],
                 'validators' => [
                     [
-                        'name' => InArray::class,
+                        'name' => StringLength::class,
                         'options' => [
-                            'haystack' => [AssetSuperClass::TYPE_PRIMARY, AssetSuperClass::TYPE_SECONDARY],
+                            'min' => 36,
+                            'max' => 36,
                         ]
                     ],
                 ],
             ],
             [
-                'name' => 'status',
-                'required' => false,
+                'name' => 'categoryId',
+                'required' => true,
                 'filters' => [
-                    [
-                        'name' => 'ToInt'
-                    ],
+                    ['name' => ToInt::class],
                 ],
-                'validators' => [
-                    [
-                        'name' => InArray::class,
-                        'options' => [
-                            'haystack' => [AssetSuperClass::STATUS_ACTIVE, AssetSuperClass::STATUS_INACTIVE],
-                        ]
-                    ],
-                ],
+                'validators' => [],
             ],
         ];
 
-        $labelDescriptionRules = [];
+        $labelRules = [];
         foreach ($this->systemLanguageIndexes as $systemLanguageIndex) {
-            $labelDescriptionRules[] = $this->getLabelRule($systemLanguageIndex);
-            $labelDescriptionRules[] = $this->getDescriptionRule($systemLanguageIndex);
+            $labelRules[] = $this->getLabelRule($systemLanguageIndex);
         }
 
-        return array_merge($labelDescriptionRules, $rules);
+        return array_merge($labelRules, $rules);
     }
 }

@@ -50,6 +50,8 @@ abstract class AbstractInputFormatter
     /**
      * Contains a map of passed order params to the exact fields.
      * Ex. ['asset' => 'asset.code', 'threat' => 'threat.label']
+     * There is a special placeholder available {languageIndex} to specify that language index has to be added.
+     *  example: 'asset.label{languageIndex}'
      */
     protected static array $orderParamsToFieldsMap = [];
 
@@ -96,7 +98,7 @@ abstract class AbstractInputFormatter
         /* Add search filter. */
         if (!empty($inputParams['filter']) && !empty(static::$allowedSearchFields)) {
             $searchFields = array_map(function ($field) {
-                return strpos($field, '{languageIndex}') !== false
+                return str_contains($field, '{languageIndex}')
                     ? str_replace('{languageIndex}', (string)$this->defaultLanguageIndex, $field)
                     : $field;
             }, static::$allowedSearchFields);
@@ -151,7 +153,7 @@ abstract class AbstractInputFormatter
         /* Add order params. */
         $orderFields = $inputParams['order'] ?? static::$defaultOrderFields;
         if (!empty($orderFields)) {
-            $orderFields = \strpos($orderFields, ':') !== false
+            $orderFields = str_contains($orderFields, ':')
                 ? explode(':', $orderFields)
                 : [$orderFields];
 
@@ -160,6 +162,13 @@ abstract class AbstractInputFormatter
                 $orderFieldName = ltrim($orderField, '-');
                 if (isset(static::$orderParamsToFieldsMap[$orderFieldName])) {
                     $orderFieldName = static::$orderParamsToFieldsMap[$orderFieldName];
+                    if (str_contains($orderFieldName, '{languageIndex}')) {
+                        $orderFieldName = str_replace(
+                            '{languageIndex}',
+                            (string)$this->defaultLanguageIndex,
+                            $orderFieldName
+                        );
+                    }
                 }
                 $this->formattedInputParams->addOrder($orderFieldName, $direction);
             }

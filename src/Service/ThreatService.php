@@ -113,6 +113,17 @@ class ThreatService
         return $threat;
     }
 
+    public function createList(array $data): array
+    {
+        $createdUuids = [];
+        foreach ($data as $row) {
+            $createdUuids[] = $this->create($row, false)->getUuid();
+        }
+        $this->threatTable->flush();
+
+        return $createdUuids;
+    }
+
     public function getOrCreateThreat(array $threatData): Entity\Threat
     {
         if (!empty($threatData['uuid'])) {

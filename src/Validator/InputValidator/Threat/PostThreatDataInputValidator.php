@@ -7,27 +7,27 @@
 
 namespace Monarc\Core\Validator\InputValidator\Threat;
 
+use Laminas\Filter\Boolean;
 use Laminas\Filter\StringTrim;
 use Laminas\Filter\ToInt;
+use Laminas\Validator\Callback;
 use Laminas\Validator\InArray;
 use Laminas\Validator\StringLength;
-use Monarc\Core\Entity\AnrSuperClass;
 use Monarc\Core\Entity\ThreatSuperClass;
 use Monarc\Core\Table\Interfaces\UniqueCodeTableInterface;
 use Monarc\Core\Validator\FieldValidator\UniqueCode;
 use Monarc\Core\Validator\InputValidator\AbstractInputValidator;
+use Monarc\Core\Validator\InputValidator\FilterFieldsValidationTrait;
 use Monarc\Core\Validator\InputValidator\InputValidationTranslator;
 
 /**
- * Note. For UniqueCode validator $excludeFilter or/and $anr properties have to be set before calling isValid method.
+ * Note. For UniqueCode validator $excludeFilter/$includeFilter properties have to be set before calling isValid method.
  */
 class PostThreatDataInputValidator extends AbstractInputValidator
 {
+    use FilterFieldsValidationTrait;
+
     private UniqueCodeTableInterface $threatTable;
-
-    private ?AnrSuperClass $anr = null;
-
-    private array $excludeFilter = [];
 
     public function __construct(
         array $config,
@@ -37,20 +37,6 @@ class PostThreatDataInputValidator extends AbstractInputValidator
         $this->threatTable = $threatTable;
 
         parent::__construct($config, $translator);
-    }
-
-    public function setAnr(AnrSuperClass $anr): self
-    {
-        $this->anr = $anr;
-
-        return $this;
-    }
-
-    public function setExcludeFilter(array $excludeFilter): self
-    {
-        $this->excludeFilter = $excludeFilter;
-
-        return $this;
     }
 
     protected function getRules(): array
@@ -76,7 +62,7 @@ class PostThreatDataInputValidator extends AbstractInputValidator
                         'name' => UniqueCode::class,
                         'options' => [
                             'uniqueCodeValidationTable' => $this->threatTable,
-                            'anr' => $this->anr,
+                            'includeFilter' => $this->includeFilter,
                             'excludeFilter' => $this->excludeFilter,
                         ],
                     ],
@@ -85,10 +71,9 @@ class PostThreatDataInputValidator extends AbstractInputValidator
             [
                 'name' => 'c',
                 'required' => true,
+                'allow_empty' => true,
                 'filters' => [
-                    [
-                        'name' => ToInt::class
-                    ],
+                    ['name' => Boolean::class],
                 ],
                 'validators' => [
                     [
@@ -97,15 +82,25 @@ class PostThreatDataInputValidator extends AbstractInputValidator
                             'haystack' => [false, true],
                         ]
                     ],
+                    [
+                        'name' => Callback::class,
+                        'options' => [
+                            'messages' => [
+                                Callback::INVALID_VALUE => 'At least one of C I A criteria has to be selected/set.',
+                            ],
+                            'callback' => function () {
+                                return $this->validateCia();
+                            },
+                        ],
+                    ],
                 ],
             ],
             [
                 'name' => 'i',
                 'required' => true,
+                'allow_empty' => true,
                 'filters' => [
-                    [
-                        'name' => ToInt::class
-                    ],
+                    ['name' => Boolean::class],
                 ],
                 'validators' => [
                     [
@@ -119,10 +114,9 @@ class PostThreatDataInputValidator extends AbstractInputValidator
             [
                 'name' => 'a',
                 'required' => true,
+                'allow_empty' => true,
                 'filters' => [
-                    [
-                        'name' => ToInt::class
-                    ],
+                    ['name' => Boolean::class],
                 ],
                 'validators' => [
                     [
@@ -170,5 +164,10 @@ class PostThreatDataInputValidator extends AbstractInputValidator
         }
 
         return array_merge($labelDescriptionRules, $rules);
+    }
+
+    public function validateCia(): bool
+    {
+        return !empty($this->initialData['c']) || !empty($this->initialData['i']) || !empty($this->initialData['a']);
     }
 }

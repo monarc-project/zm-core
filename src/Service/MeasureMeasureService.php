@@ -7,18 +7,26 @@
 
 namespace Monarc\Core\Service;
 
+use Monarc\Core\Entity\Measure;
 use Monarc\Core\Entity\MeasureMeasure;
+use Monarc\Core\Entity\UserSuperClass;
 use Monarc\Core\Exception\Exception;
-use Monarc\Core\Model\Table\MeasureTable;
+use Monarc\Core\Table\MeasureTable;
 use Monarc\Core\Table\MeasureMeasureTable;
 
 class MeasureMeasureService
 {
-    public function __construct(private MeasureMeasureTable $measureMeasureTable, private MeasureTable $measureTable)
-    {
+    private UserSuperClass $connectedUser;
+
+    public function __construct(
+        private MeasureMeasureTable $measureMeasureTable,
+        private MeasureTable $measureTable,
+        ConnectedUserService $connectedUserService
+    ) {
+        $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
-    public function getList()
+    public function getList(): array
     {
         $result = [];
         /** @var MeasureMeasure $measureMeasure */
@@ -38,34 +46,50 @@ class MeasureMeasureService
         return $result;
     }
 
-    public function create(array $data, bool $saveInDb = true)
+    public function create(array $data, bool $saveInDb = true): MeasureMeasure
     {
         if ($data['masterMeasureUuid'] === $data['linkedMeasureUuid']) {
             throw new Exception('It is not possible to link a control to itself', 412);
         }
 
+        /** @var Measure $masterMeasure */
         $masterMeasure = $this->measureTable->findByUuid($data['masterMeasureUuid']);
+        /** @var Measure $linkedMeasure */
         $linkedMeasure = $this->measureTable->findByUuid($data['linkedMeasureUuid']);
-        $masterMeasure->addLinkedMeasure($linkedMeasure);
 
-        return $this->measureTable->save($masterMeasure, $saveInDb);
+        /** @var MeasureMeasure $measureMeasure */
+        $measureMeasure = (new MeasureMeasure())
+            ->setMasterMeasure($masterMeasure)
+            ->setLinkedMeasure($linkedMeasure)
+            ->setCreator($this->connectedUser->getEmail());
+
+        $this->measureMeasureTable->save($measureMeasure, $saveInDb);
+
+        return $measureMeasure;
     }
 
-    public function createList(array $data)
+    /**
+     * @return int[]
+     */
+    public function createList(array $data): array
     {
+        $createdIds = [];
         foreach ($data as $rowData) {
-            $this->create($rowData, false);
+            $createdIds[] = $this->create($rowData, false)->getId();
         }
-
         $this->measureMeasureTable->flush();
+
+        return $createdIds;
     }
 
-    public function delete(string $masterMeasureUuid, string $linkedMeasureUuid)
+    public function delete(string $masterMeasureUuid, string $linkedMeasureUuid): void
     {
+        /** @var Measure $masterMeasure */
         $masterMeasure = $this->measureTable->findByUuid($masterMeasureUuid);
+        /** @var Measure $linkedMeasure */
         $linkedMeasure = $this->measureTable->findByUuid($linkedMeasureUuid);
         $masterMeasure->removeLinkedMeasure($linkedMeasure);
 
-        $this->measureTable->saveEntity($masterMeasure);
+        $this->measureTable->save($masterMeasure);
     }
 }

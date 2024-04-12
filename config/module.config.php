@@ -140,8 +140,6 @@ return [
             Service\RolfRiskService::class => Service\RolfRiskServiceFactory::class,
             Service\RolfTagService::class => Service\RolfTagServiceFactory::class,
             Service\ReferentialService::class => Service\ReferentialServiceFactory::class,
-            Service\MeasureService::class => Service\MeasureServiceFactory::class,
-            Service\SoaCategoryService::class => Service\SoaCategoryServiceFactory::class,
             Service\DeliveriesModelsService::class => Service\DeliveriesModelsServiceFactory::class,
             /* Services. */
             Service\AmvService::class => AutowireFactory::class,
@@ -158,6 +156,7 @@ return [
             Service\MailService::class => AutowireFactory::class,
             Service\ModelService::class => AutowireFactory::class,
             Service\MeasureMeasureService::class => AutowireFactory::class,
+            Service\MeasureService::class => AutowireFactory::class,
             Service\ObjectService::class => AutowireFactory::class,
             Service\ObjectCategoryService::class => AutowireFactory::class,
             Service\ObjectObjectService::class => AutowireFactory::class,
@@ -165,6 +164,7 @@ return [
             Service\ScaleService::class => AutowireFactory::class,
             Service\ScaleCommentService::class => AutowireFactory::class,
             Service\ScaleImpactTypeService::class => AutowireFactory::class,
+            Service\SoaCategoryService::class => AutowireFactory::class,
             Service\ThemeService::class => AutowireFactory::class,
             Service\ThreatService::class => AutowireFactory::class,
             Service\UserService::class => ReflectionBasedAbstractFactory::class,
@@ -181,8 +181,6 @@ return [
             // TODO: Entities are created in a generic way. Should be removed.
             ModelEntity\DeliveriesModels::class => ServiceModelEntity\DeliveriesModelsServiceModelEntity::class,
             ModelEntity\Referential::class => ServiceModelEntity\ReferentialServiceModelEntity::class,
-            ModelEntity\Measure::class => ServiceModelEntity\MeasureServiceModelEntity::class,
-            ModelEntity\SoaCategory::class => ServiceModelEntity\SoaCategoryServiceModelEntity::class,
             ModelEntity\RolfRisk::class => ServiceModelEntity\RolfRiskServiceModelEntity::class,
             ModelEntity\RolfTag::class => ServiceModelEntity\RolfTagServiceModelEntity::class,
             ModelEntity\GuideItem::class => ServiceModelEntity\GuideItemServiceModelEntity::class,
@@ -195,8 +193,6 @@ return [
             DeprecatedTable\GuideTable::class => AutowireFactory::class,
             DeprecatedTable\GuideItemTable::class => AutowireFactory::class,
             DeprecatedTable\ReferentialTable::class => AutowireFactory::class,
-            DeprecatedTable\MeasureTable::class => AutowireFactory::class,
-            DeprecatedTable\SoaCategoryTable::class => AutowireFactory::class,
             DeprecatedTable\HistoricalTable::class => AutowireFactory::class,
             DeprecatedTable\RolfTagTable::class => AutowireFactory::class,
             DeprecatedTable\RolfRiskTable::class => AutowireFactory::class,
@@ -210,6 +206,7 @@ return [
             Table\InstanceConsequenceTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\ModelTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\MonarcObjectTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\MeasureTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\MeasureMeasureTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\InstanceTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\ObjectCategoryTable::class => Table\Factory\CoreEntityManagerFactory::class,
@@ -224,6 +221,7 @@ return [
             Table\OperationalRiskScaleCommentTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\OperationalInstanceRiskScaleTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\AnrInstanceMetadataFieldTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\SoaCategoryTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\SoaScaleCommentTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\UserTable::class => Table\Factory\ClientEntityManagerFactory::class,
             Table\UserTokenTable::class => Table\Factory\ClientEntityManagerFactory::class,
@@ -290,6 +288,30 @@ return [
             InputValidator\Anr\PatchThresholdsDataInputValidator::class => ReflectionBasedAbstractFactory::class,
             InputValidator\Profile\PatchProfileDataInputValidator::class => ReflectionBasedAbstractFactory::class,
             InputValidator\Scale\UpdateScalesDataInputValidator::class => ReflectionBasedAbstractFactory::class,
+            InputValidator\MeasureMeasure\PostMeasureMeasureDataInputValidator::class =>
+                ReflectionBasedAbstractFactory::class,
+            InputValidator\Measure\PostMeasureDataInputValidator::class  => static function (
+                Containerinterface $container,
+            ) {
+                return new InputValidator\Measure\PostMeasureDataInputValidator(
+                    $container->get('config'),
+                    $container->get(InputValidator\InputValidationTranslator::class),
+                    $container->get(Table\MeasureTable::class)
+                );
+            },
+            InputValidator\Measure\UpdateMeasureDataInputValidator::class  => static function (
+                Containerinterface $container,
+            ) {
+                return new InputValidator\Measure\UpdateMeasureDataInputValidator(
+                    $container->get('config'),
+                    $container->get(InputValidator\InputValidationTranslator::class),
+                    $container->get(Table\MeasureTable::class)
+                );
+            },
+            InputValidator\SoaCategory\PostSoaCategoryDataInputValidator::class =>
+                ReflectionBasedAbstractFactory::class,
+            InputValidator\Referential\PostReferentialDataInputValidator::class =>
+                ReflectionBasedAbstractFactory::class,
 
             ScalesCacheHelper::class => AutowireFactory::class,
         ],

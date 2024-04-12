@@ -5,14 +5,15 @@
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
-namespace Monarc\Core\Entity;
+namespace Monarc\Core\Table;
 
-use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\EntityManager;
+use Monarc\Core\Entity\Referential;
 
-/**
- * @ORM\Table(name="soacategory")
- * @ORM\Entity
- */
-class SoaCategory extends SoaCategorySuperClass
+class ReferentialTable extends AbstractTable
 {
+    public function __construct(EntityManager $entityManager, string $entityName = Referential::class)
+    {
+        parent::__construct($entityManager, $entityName);
+    }
 }

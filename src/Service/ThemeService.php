@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -14,23 +14,18 @@ use Monarc\Core\Table\ThemeTable;
 
 class ThemeService
 {
-    private ThemeTable $themeTable;
-
     private UserSuperClass $connectedUser;
 
-    public function __construct(ThemeTable $themeTable, ConnectedUserService $connectedUserService)
+    public function __construct(private ThemeTable $themeTable, ConnectedUserService $connectedUserService)
     {
-        $this->themeTable = $themeTable;
         $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
     public function getList(FormattedInputParams $params): array
     {
         $result = [];
-
-        /** @var Theme[] $themes */
-        $themes = $this->themeTable->findByParams($params);
-        foreach ($themes as $theme) {
+        /** @var Theme $theme */
+        foreach ($this->themeTable->findByParams($params) as $theme) {
             $result[] = $this->prepareThemeDataResult($theme);
         }
 
@@ -47,6 +42,7 @@ class ThemeService
 
     public function create(array $data, bool $saveInDb = true): Theme
     {
+        /** @var Theme $theme */
         $theme = (new Theme())
             ->setLabels($data)
             ->setCreator($this->connectedUser->getEmail());
@@ -77,12 +73,6 @@ class ThemeService
 
     private function prepareThemeDataResult(Theme $theme): array
     {
-        return [
-            'id' => $theme->getId(),
-            'label1' => $theme->getLabel(1),
-            'label2' => $theme->getLabel(2),
-            'label3' => $theme->getLabel(3),
-            'label4' => $theme->getLabel(4),
-        ];
+        return array_merge(['id' => $theme->getId()], $theme->getLabels());
     }
 }

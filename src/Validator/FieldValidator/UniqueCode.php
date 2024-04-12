@@ -8,7 +8,6 @@
 namespace Monarc\Core\Validator\FieldValidator;
 
 use Laminas\Validator\AbstractValidator;
-use Monarc\Core\Entity\AnrSuperClass;
 use Monarc\Core\Table\Interfaces\UniqueCodeTableInterface;
 
 class UniqueCode extends AbstractValidator
@@ -24,15 +23,12 @@ class UniqueCode extends AbstractValidator
         /** @var UniqueCodeTableInterface $uniqueCodeValidationTable */
         $uniqueCodeValidationTable = $this->getOptions()['uniqueCodeValidationTable'];
 
-        /** @var AnrSuperClass|null $anr */
-        $anr = !empty($this->getOptions()['anr']) && $this->getOptions()['anr'] instanceof AnrSuperClass
-            ? $this->getOptions()['anr']
-            : null;
-
+        /** @var array */
+        $includeFilter = !empty($this->getOptions()['includeFilter']) ? $this->getOptions()['includeFilter'] : [];
         /** @var array */
         $excludeFilter = !empty($this->getOptions()['excludeFilter']) ? $this->getOptions()['excludeFilter'] : [];
 
-        if ($uniqueCodeValidationTable->doesCodeAlreadyExist($value, $anr, $excludeFilter)) {
+        if ($uniqueCodeValidationTable->doesCodeAlreadyExist($value, $includeFilter, $excludeFilter)) {
             $this->error(self::ALREADY_USED);
 
             return false;

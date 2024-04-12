@@ -18,15 +18,15 @@ use Monarc\Core\Entity\Traits\CreateEntityTrait;
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
-class MeasureMeasureSuperClass extends AbstractEntity
+class MeasureMeasureSuperClass
 {
     use CreateEntityTrait;
 
     /**
      * @var int
      *
-     * @ORM\Column(name="id", type="integer", nullable=false)
      * @ORM\Id
+     * @ORM\Column(name="id", type="integer", nullable=false)
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     protected $id;

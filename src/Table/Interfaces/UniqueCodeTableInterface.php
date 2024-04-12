@@ -11,5 +11,5 @@ use Monarc\Core\Entity\AnrSuperClass;
 
 interface UniqueCodeTableInterface
 {
-    public function doesCodeAlreadyExist(string $code, ?AnrSuperClass $anr = null, array $excludeFilter = []): bool;
+    public function doesCodeAlreadyExist(string $code, array $includeFilter = [], array $excludeFilter = []): bool;
 }
