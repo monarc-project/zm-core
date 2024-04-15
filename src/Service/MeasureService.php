@@ -136,7 +136,7 @@ class MeasureService
         $this->measureTable->remove($measure, $saveInDb);
     }
 
-    private function prepareMeasureDataResult(Entity\Measure $measure, bool $includeLinks): array
+    private function prepareMeasureDataResult(Entity\Measure $measure, bool $includeLinks = false): array
     {
         $linkedMeasures = [];
         if ($includeLinks) {

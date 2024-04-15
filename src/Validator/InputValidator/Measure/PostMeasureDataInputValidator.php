@@ -37,6 +37,10 @@ class PostMeasureDataInputValidator extends AbstractInputValidator
 
     protected function getRules(): array
     {
+        if (!empty($this->initialData['referentialUuid'])) {
+            $this->includeFilter['referential'] = $this->initialData['referentialUuid'];
+        }
+
         $rules = [
             [
                 'name' => 'code',

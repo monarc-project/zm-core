@@ -9,21 +9,14 @@ namespace Monarc\Core\Service;
 
 use Monarc\Core\Entity\Measure;
 use Monarc\Core\Entity\MeasureMeasure;
-use Monarc\Core\Entity\UserSuperClass;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Table\MeasureTable;
 use Monarc\Core\Table\MeasureMeasureTable;
 
 class MeasureMeasureService
 {
-    private UserSuperClass $connectedUser;
-
-    public function __construct(
-        private MeasureMeasureTable $measureMeasureTable,
-        private MeasureTable $measureTable,
-        ConnectedUserService $connectedUserService
-    ) {
-        $this->connectedUser = $connectedUserService->getConnectedUser();
+    public function __construct(private MeasureMeasureTable $measureMeasureTable, private MeasureTable $measureTable)
+    {
     }
 
     public function getList(): array
@@ -46,7 +39,7 @@ class MeasureMeasureService
         return $result;
     }
 
-    public function create(array $data, bool $saveInDb = true): MeasureMeasure
+    public function create(array $data, bool $saveInDb = true): Measure
     {
         if ($data['masterMeasureUuid'] === $data['linkedMeasureUuid']) {
             throw new Exception('It is not possible to link a control to itself', 412);
@@ -57,25 +50,20 @@ class MeasureMeasureService
         /** @var Measure $linkedMeasure */
         $linkedMeasure = $this->measureTable->findByUuid($data['linkedMeasureUuid']);
 
-        /** @var MeasureMeasure $measureMeasure */
-        $measureMeasure = (new MeasureMeasure())
-            ->setMasterMeasure($masterMeasure)
-            ->setLinkedMeasure($linkedMeasure)
-            ->setCreator($this->connectedUser->getEmail());
+        $masterMeasure->addLinkedMeasure($linkedMeasure);
+        $this->measureTable->save($linkedMeasure, $saveInDb);
 
-        $this->measureMeasureTable->save($measureMeasure, $saveInDb);
-
-        return $measureMeasure;
+        return $masterMeasure;
     }
 
     /**
-     * @return int[]
+     * @return string[]
      */
     public function createList(array $data): array
     {
         $createdIds = [];
         foreach ($data as $rowData) {
-            $createdIds[] = $this->create($rowData, false)->getId();
+            $createdIds[] = $this->create($rowData, false)->getUuid();
         }
         $this->measureMeasureTable->flush();
 
