@@ -207,6 +207,8 @@ class FixPositionsCleanupDb extends AbstractMigration
             ->renameColumn('father_id', 'master_measure_id')
             ->renameColumn('child_id', 'linked_measure_id')
             ->dropForeignKey(['master_measure_id', 'linked_measure_id'])
+            ->removeColumn('creator')
+            ->removeColumn('created_at')
             ->removeColumn('updater')
             ->removeColumn('updated_at')
             ->update();
@@ -309,6 +311,39 @@ class FixPositionsCleanupDb extends AbstractMigration
             ->dropForeignKey('anr_id')
             ->removeIndex(['anr_id', 'code'])
             ->removeColumn('anr_id')
+            ->save();
+        $this->table('rolf_tags')
+            ->dropForeignKey('anr_id')
+            ->removeIndex(['anr_id', 'code'])
+            ->removeColumn('anr_id')
+            ->save();
+        $this->table('rolf_tags')->addIndex(['code'], ['unique' => true])->save();
+        $this->table('rolf_risks')
+            ->dropForeignKey('anr_id')
+            ->removeIndex(['anr_id', 'code'])
+            ->removeColumn('anr_id')
+            ->save();
+        $this->table('rolf_risks')->addIndex(['code'], ['unique' => true])->save();
+        $this->table('rolf_risks_tags')
+            ->removeColumn('creator')
+            ->removeColumn('created_at')
+            ->removeColumn('updater')
+            ->removeColumn('updated_at')
+            ->save();
+        $this->table('measures_amvs')
+            ->removeColumn('creator')
+            ->removeColumn('created_at')
+            ->removeColumn('updater')
+            ->removeColumn('updated_at')
+            ->save();
+        $this->table('measures_rolf_risks')
+            ->dropForeignKey('anr_id')
+            ->removeIndex(['anr_id'])
+            ->removeColumn('anr_id')
+            ->removeColumn('creator')
+            ->removeColumn('created_at')
+            ->removeColumn('updater')
+            ->removeColumn('updated_at')
             ->save();
     }
 }

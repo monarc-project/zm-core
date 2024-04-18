@@ -15,7 +15,7 @@ use Monarc\Core\Entity\UserTokenSuperClass;
 
 class UserTokenTable extends AbstractTable
 {
-    public function __construct(EntityManager $entityManager, $entityName = UserToken::class)
+    public function __construct(EntityManager $entityManager, string $entityName = UserToken::class)
     {
         parent::__construct($entityManager, $entityName);
     }

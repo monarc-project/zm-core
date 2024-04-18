@@ -90,7 +90,9 @@ class AmvService implements PositionUpdatableServiceInterface
         $this->validateAmvCompliesRequirements($amv);
 
         foreach ($data['measures'] ?? [] as $measureUuid) {
-            $amv->addMeasure($this->measureTable->findByUuid($measureUuid));
+            /** @var Entity\Measure $measure */
+            $measure = $this->measureTable->findByUuid($measureUuid);
+            $amv->addMeasure($measure);
         }
 
         $this->updatePositions($amv, $this->amvTable, $data);
@@ -145,8 +147,10 @@ class AmvService implements PositionUpdatableServiceInterface
         $this->validateAmvCompliesRequirements($amv);
 
         $amv->unlinkMeasures();
-        foreach ($data['measures'] as $measure) {
-            $amv->addMeasure($this->measureTable->findByUuid($measure));
+        foreach ($data['measures'] as $measureUuid) {
+            /** @var Entity\Measure $measure */
+            $measure = $this->measureTable->findByUuid($measureUuid);
+            $amv->addMeasure($measure);
         }
 
         $amv->setUpdater($this->connectedUser->getEmail());
@@ -225,8 +229,9 @@ class AmvService implements PositionUpdatableServiceInterface
     /**
      * Links amv of destination to source depending on the measures_measures (map referential).
      */
-    public function createLinkedAmvs(string $sourceReferentialUuid, string $destinationReferentialUuid): void
+    public function linkMeasuresToAmvs(string $sourceReferentialUuid, string $destinationReferentialUuid): void
     {
+        /** @var Entity\Referential $referential */
         $referential = $this->referentialTable->findByUuid($destinationReferentialUuid);
         foreach ($referential->getMeasures() as $destinationMeasure) {
             foreach ($destinationMeasure->getLinkedMeasures() as $measureLink) {
@@ -238,7 +243,7 @@ class AmvService implements PositionUpdatableServiceInterface
                 }
             }
         }
-        $this->measureTable->getDb()->flush();
+        $this->measureTable->flush();
     }
 
     public function delete(string $id): void

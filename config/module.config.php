@@ -137,9 +137,6 @@ return [
             Service\GuideService::class => Service\GuideServiceFactory::class,
             Service\GuideItemService::class => Service\GuideItemServiceFactory::class,
             Service\HistoricalService::class => Service\HistoricalServiceFactory::class,
-            Service\RolfRiskService::class => Service\RolfRiskServiceFactory::class,
-            Service\RolfTagService::class => Service\RolfTagServiceFactory::class,
-            Service\ReferentialService::class => Service\ReferentialServiceFactory::class,
             Service\DeliveriesModelsService::class => Service\DeliveriesModelsServiceFactory::class,
             /* Services. */
             Service\AmvService::class => AutowireFactory::class,
@@ -147,6 +144,7 @@ return [
             Service\UserRoleService::class => AutowireFactory::class,
             Service\UserProfileService::class => AutowireFactory::class,
             Service\AuthenticationService::class => AutowireFactory::class,
+            Service\AnrInstanceMetadataFieldService::class => AutowireFactory::class,
             Service\AssetService::class => AutowireFactory::class,
             Service\ConfigService::class => ReflectionBasedAbstractFactory::class,
             Service\InstanceService::class => AutowireFactory::class,
@@ -171,7 +169,9 @@ return [
             Service\VulnerabilityService::class => AutowireFactory::class,
             Service\OperationalRiskScaleService::class => AutowireFactory::class,
             Service\OperationalRiskScaleCommentService::class => AutowireFactory::class,
-            Service\AnrInstanceMetadataFieldService::class => AutowireFactory::class,
+            Service\RolfRiskService::class => AutowireFactory::class,
+            Service\RolfTagService::class => AutowireFactory::class,
+            Service\ReferentialService::class => AutowireFactory::class,
             Service\SoaScaleCommentService::class => AutowireFactory::class,
             /* Export services. */
             Service\Export\AssetExportService::class => AutowireFactory::class,
@@ -180,9 +180,6 @@ return [
 
             // TODO: Entities are created in a generic way. Should be removed.
             ModelEntity\DeliveriesModels::class => ServiceModelEntity\DeliveriesModelsServiceModelEntity::class,
-            ModelEntity\Referential::class => ServiceModelEntity\ReferentialServiceModelEntity::class,
-            ModelEntity\RolfRisk::class => ServiceModelEntity\RolfRiskServiceModelEntity::class,
-            ModelEntity\RolfTag::class => ServiceModelEntity\RolfTagServiceModelEntity::class,
             ModelEntity\GuideItem::class => ServiceModelEntity\GuideItemServiceModelEntity::class,
             ModelEntity\Guide::class => ServiceModelEntity\GuideServiceModelEntity::class,
             ModelEntity\Historical::class => ServiceModelEntity\HistoricalServiceModelEntity::class,
@@ -192,40 +189,40 @@ return [
             DeprecatedTable\QuestionChoiceTable::class => AutowireFactory::class,
             DeprecatedTable\GuideTable::class => AutowireFactory::class,
             DeprecatedTable\GuideItemTable::class => AutowireFactory::class,
-            DeprecatedTable\ReferentialTable::class => AutowireFactory::class,
             DeprecatedTable\HistoricalTable::class => AutowireFactory::class,
-            DeprecatedTable\RolfTagTable::class => AutowireFactory::class,
-            DeprecatedTable\RolfRiskTable::class => AutowireFactory::class,
             DeprecatedTable\DeliveriesModelsTable::class => AutowireFactory::class,
+            Table\AnrInstanceMetadataFieldTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\AnrTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\AmvTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\AssetTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\InstanceTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\InstanceConsequenceTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\InstanceRiskTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\InstanceRiskOpTable::class => Table\Factory\CoreEntityManagerFactory::class,
-            Table\ScaleTable::class => Table\Factory\CoreEntityManagerFactory::class,
-            Table\ScaleCommentTable::class => Table\Factory\CoreEntityManagerFactory::class,
-            Table\ScaleImpactTypeTable::class => Table\Factory\CoreEntityManagerFactory::class,
-            Table\AnrTable::class => Table\Factory\CoreEntityManagerFactory::class,
-            Table\InstanceConsequenceTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\ModelTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\MonarcObjectTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\MeasureTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\MeasureMeasureTable::class => Table\Factory\CoreEntityManagerFactory::class,
-            Table\InstanceTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\ObjectCategoryTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\ObjectObjectTable::class => Table\Factory\CoreEntityManagerFactory::class,
-            Table\ThemeTable::class => Table\Factory\CoreEntityManagerFactory::class,
-            Table\AssetTable::class => Table\Factory\CoreEntityManagerFactory::class,
-            Table\AmvTable::class => Table\Factory\CoreEntityManagerFactory::class,
-            Table\ThreatTable::class => Table\Factory\CoreEntityManagerFactory::class,
-            Table\VulnerabilityTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\OperationalRiskScaleTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\OperationalRiskScaleTypeTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\OperationalRiskScaleCommentTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\OperationalInstanceRiskScaleTable::class => Table\Factory\CoreEntityManagerFactory::class,
-            Table\AnrInstanceMetadataFieldTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\PasswordTokenTable::class => Table\Factory\ClientEntityManagerFactory::class,
+            Table\ReferentialTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\RolfTagTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\RolfRiskTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\ScaleTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\ScaleCommentTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\ScaleImpactTypeTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\SoaCategoryTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\SoaScaleCommentTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\ThemeTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\ThreatTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\UserTable::class => Table\Factory\ClientEntityManagerFactory::class,
             Table\UserTokenTable::class => Table\Factory\ClientEntityManagerFactory::class,
-            Table\PasswordTokenTable::class => Table\Factory\ClientEntityManagerFactory::class,
+            Table\VulnerabilityTable::class => Table\Factory\CoreEntityManagerFactory::class,
 
             /* Authentication */
             StorageAuthentication::class => ReflectionBasedAbstractFactory::class,
@@ -239,7 +236,7 @@ return [
             InputValidator\User\PostUserDataInputValidator::class => ReflectionBasedAbstractFactory::class,
             InputValidator\Model\PostModelDataInputValidator::class => ReflectionBasedAbstractFactory::class,
             InputValidator\Asset\PostAssetDataInputValidator::class => static function (
-                Containerinterface $container,
+                Containerinterface $container
             ) {
                 return new InputValidator\Asset\PostAssetDataInputValidator(
                     $container->get('config'),
@@ -257,7 +254,7 @@ return [
                 );
             },
             InputValidator\Vulnerability\PostVulnerabilityDataInputValidator::class => static function (
-                Containerinterface $container,
+                Containerinterface $container
             ) {
                 return new InputValidator\Vulnerability\PostVulnerabilityDataInputValidator(
                     $container->get('config'),
@@ -290,8 +287,8 @@ return [
             InputValidator\Scale\UpdateScalesDataInputValidator::class => ReflectionBasedAbstractFactory::class,
             InputValidator\MeasureMeasure\PostMeasureMeasureDataInputValidator::class =>
                 ReflectionBasedAbstractFactory::class,
-            InputValidator\Measure\PostMeasureDataInputValidator::class  => static function (
-                Containerinterface $container,
+            InputValidator\Measure\PostMeasureDataInputValidator::class => static function (
+                Containerinterface $container
             ) {
                 return new InputValidator\Measure\PostMeasureDataInputValidator(
                     $container->get('config'),
@@ -299,8 +296,8 @@ return [
                     $container->get(Table\MeasureTable::class)
                 );
             },
-            InputValidator\Measure\UpdateMeasureDataInputValidator::class  => static function (
-                Containerinterface $container,
+            InputValidator\Measure\UpdateMeasureDataInputValidator::class => static function (
+                Containerinterface $container
             ) {
                 return new InputValidator\Measure\UpdateMeasureDataInputValidator(
                     $container->get('config'),
@@ -312,6 +309,24 @@ return [
                 ReflectionBasedAbstractFactory::class,
             InputValidator\Referential\PostReferentialDataInputValidator::class =>
                 ReflectionBasedAbstractFactory::class,
+            InputValidator\RolfTag\PostRolfTagDataInputValidator::class => static function (
+                Containerinterface $container
+            ) {
+                return new InputValidator\RolfTag\PostRolfTagDataInputValidator(
+                    $container->get('config'),
+                    $container->get(InputValidator\InputValidationTranslator::class),
+                    $container->get(Table\RolfTagTable::class)
+                );
+            },
+            InputValidator\RolfRisk\PostRolfRiskDataInputValidator::class => static function (
+                Containerinterface $container
+            ) {
+                return new InputValidator\RolfRisk\PostRolfRiskDataInputValidator(
+                    $container->get('config'),
+                    $container->get(InputValidator\InputValidationTranslator::class),
+                    $container->get(Table\RolfRiskTable::class)
+                );
+            },
 
             ScalesCacheHelper::class => AutowireFactory::class,
         ],

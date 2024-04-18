@@ -14,7 +14,7 @@ use Monarc\Core\Entity\UserSuperClass;
 
 class UserTable extends AbstractTable
 {
-    public function __construct(EntityManager $entityManager, $entityName = User::class)
+    public function __construct(EntityManager $entityManager, string $entityName = User::class)
     {
         parent::__construct($entityManager, $entityName);
     }

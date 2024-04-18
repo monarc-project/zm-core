@@ -14,7 +14,7 @@ use Monarc\Core\Entity\TranslationSuperClass;
 
 class TranslationTable extends AbstractTable
 {
-    public function __construct(EntityManager $entityManager, $entityName = Translation::class)
+    public function __construct(EntityManager $entityManager, string $entityName = Translation::class)
     {
         parent::__construct($entityManager, $entityName);
     }

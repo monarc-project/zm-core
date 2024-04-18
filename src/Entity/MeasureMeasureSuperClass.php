@@ -20,8 +20,6 @@ use Monarc\Core\Entity\Traits\CreateEntityTrait;
  */
 class MeasureMeasureSuperClass
 {
-    use CreateEntityTrait;
-
     /**
      * @var int
      *

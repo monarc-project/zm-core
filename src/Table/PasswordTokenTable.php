@@ -14,7 +14,7 @@ use Monarc\Core\Entity\PasswordTokenSuperClass;
 
 class PasswordTokenTable extends AbstractTable
 {
-    public function __construct(EntityManager $entityManager, $entityName = PasswordToken::class)
+    public function __construct(EntityManager $entityManager, string $entityName = PasswordToken::class)
     {
         parent::__construct($entityManager, $entityName);
     }

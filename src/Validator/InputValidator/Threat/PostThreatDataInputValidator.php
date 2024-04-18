@@ -27,15 +27,11 @@ class PostThreatDataInputValidator extends AbstractInputValidator
 {
     use FilterFieldsValidationTrait;
 
-    private UniqueCodeTableInterface $threatTable;
-
     public function __construct(
         array $config,
         InputValidationTranslator $translator,
-        UniqueCodeTableInterface $threatTable
+        protected UniqueCodeTableInterface $threatTable
     ) {
-        $this->threatTable = $threatTable;
-
         parent::__construct($config, $translator);
     }
 

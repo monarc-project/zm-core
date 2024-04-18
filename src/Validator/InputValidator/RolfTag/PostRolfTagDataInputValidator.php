@@ -5,36 +5,36 @@
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
-namespace Monarc\Core\Validator\InputValidator\Vulnerability;
+namespace Monarc\Core\Validator\InputValidator\RolfTag;
 
 use Laminas\Filter\StringTrim;
-use Laminas\Validator\InArray;
 use Laminas\Validator\StringLength;
-use Monarc\Core\Entity\VulnerabilitySuperClass;
 use Monarc\Core\Table\Interfaces\UniqueCodeTableInterface;
 use Monarc\Core\Validator\FieldValidator\UniqueCode;
 use Monarc\Core\Validator\InputValidator\AbstractInputValidator;
 use Monarc\Core\Validator\InputValidator\FilterFieldsValidationTrait;
 use Monarc\Core\Validator\InputValidator\InputValidationTranslator;
 
-/**
- * Note. For UniqueCode validator $excludeFilter/$includeFilter properties have to be set before calling isValid method.
- */
-class PostVulnerabilityDataInputValidator extends AbstractInputValidator
+class PostRolfTagDataInputValidator extends AbstractInputValidator
 {
     use FilterFieldsValidationTrait;
 
     public function __construct(
         array $config,
         InputValidationTranslator $translator,
-        protected UniqueCodeTableInterface $vulnerabilityTable
+        protected UniqueCodeTableInterface $rolfTagTable
     ) {
         parent::__construct($config, $translator);
     }
 
     protected function getRules(): array
     {
-        $rules = [
+        $labelRules = [];
+        foreach ($this->systemLanguageIndexes as $systemLanguageIndex) {
+            $labelRules[] = $this->getLabelRule($systemLanguageIndex);
+        }
+
+        return array_merge([
             [
                 'name' => 'code',
                 'required' => true,
@@ -54,41 +54,13 @@ class PostVulnerabilityDataInputValidator extends AbstractInputValidator
                     [
                         'name' => UniqueCode::class,
                         'options' => [
-                            'uniqueCodeValidationTable' => $this->vulnerabilityTable,
+                            'uniqueCodeValidationTable' => $this->rolfTagTable,
                             'includeFilter' => $this->includeFilter,
                             'excludeFilter' => $this->excludeFilter,
                         ],
                     ],
                 ],
             ],
-            [
-                'name' => 'status',
-                'required' => false,
-                'filters' => [
-                    [
-                        'name' => 'ToInt'
-                    ],
-                ],
-                'validators' => [
-                    [
-                        'name' => InArray::class,
-                        'options' => [
-                            'haystack' => [
-                                VulnerabilitySuperClass::STATUS_ACTIVE,
-                                VulnerabilitySuperClass::STATUS_INACTIVE,
-                            ],
-                        ]
-                    ],
-                ],
-            ],
-        ];
-
-        $labelDescriptionRules = [];
-        foreach ($this->systemLanguageIndexes as $systemLanguageIndex) {
-            $labelDescriptionRules[] = $this->getLabelRule($systemLanguageIndex);
-            $labelDescriptionRules[] = $this->getDescriptionRule($systemLanguageIndex);
-        }
-
-        return array_merge($labelDescriptionRules, $rules);
+        ], $labelRules);
     }
 }

@@ -1,7 +1,7 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -15,15 +15,13 @@ use Monarc\Core\Entity\Traits\LabelsEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 
 /**
- * RolfRisk
- *
  * @ORM\Table(name="rolf_risks", indexes={
- *      @ORM\Index(name="anr", columns={"anr_id"})
+ *      @ORM\Index(name="code", columns={"code"})
  * })
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
-class RolfRiskSuperClass extends AbstractEntity
+class RolfRiskSuperClass
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
@@ -41,16 +39,6 @@ class RolfRiskSuperClass extends AbstractEntity
     protected $id;
 
     /**
-     * @var AnrSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Anr", cascade={"persist"})
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true)
-     * })
-     */
-    protected $anr;
-
-    /**
      * @var RolfTagSuperClass[]|ArrayCollection
      *
      * @ORM\ManyToMany(targetEntity="RolfTag", inversedBy="risks", cascade={"persist"})
@@ -63,6 +51,7 @@ class RolfRiskSuperClass extends AbstractEntity
 
     /**
      * @var MeasureSuperClass[]|ArrayCollection
+     *
      * @ORM\ManyToMany(targetEntity="Measure", mappedBy="rolfRisks", cascade={"persist"})
      * @ORM\JoinTable(name="measures_rolf_risks",
      *  joinColumns={@ORM\JoinColumn(name="rolf_risk_id", referencedColumnName="id")},
@@ -78,10 +67,8 @@ class RolfRiskSuperClass extends AbstractEntity
      */
     protected $code;
 
-    public function __construct($obj = null)
+    public function __construct()
     {
-        parent::__construct($obj);
-
         $this->tags = new ArrayCollection();
         $this->measures = new ArrayCollection();
     }
@@ -89,38 +76,6 @@ class RolfRiskSuperClass extends AbstractEntity
     public function getId()
     {
         return $this->id;
-    }
-
-    public function setId($id): self
-    {
-        $this->id = $id;
-
-        return $this;
-    }
-
-    public function getAnr(): AnrSuperClass
-    {
-        return $this->anr;
-    }
-
-    public function setAnr($anr): self
-    {
-        $this->anr = $anr;
-
-        return $this;
-    }
-
-    /**
-     * TODO: replace all the method usage as well as setTags() to addTag().
-     *
-     * Set Rolf Tag
-     *
-     * @param $id
-     * @param RolfTagSuperclass $rolfTag
-     */
-    public function setTag($id, $rolfTag)
-    {
-        $this->tags[$id] = $rolfTag;
     }
 
     public function addTag(RolfTagSuperClass $rolfTag): self
@@ -133,39 +88,24 @@ class RolfRiskSuperClass extends AbstractEntity
         return $this;
     }
 
-    public function setTags($rolfTags)
+    public function removeTag(RolfTagSuperClass $rolfTag): self
     {
-        $this->tags = $rolfTags;
+        if ($this->tags->contains($rolfTag)) {
+            $this->tags->removeElement($rolfTag);
+            $rolfTag->removeRisk($this);
+        }
+
+        return $this;
     }
 
-    /**
-     * @return RolfTagSuperClass[]
-     */
     public function getTags()
     {
         return $this->tags;
     }
 
-    /**
-     * @return MeasureSuperClass[]
-     */
     public function getMeasures()
     {
         return $this->measures;
-    }
-
-    /**
-     * TODO: remove and use addMeasure instead
-     *
-     * @param MeasureSuperClass[] measures
-     *
-     * @return self
-     */
-    public function setMeasures($measures): self
-    {
-        $this->measures = $measures;
-
-        return $this;
     }
 
     public function addMeasure(MeasureSuperClass $measure): self
@@ -182,8 +122,15 @@ class RolfRiskSuperClass extends AbstractEntity
     {
         if ($this->measures->contains($measure)) {
             $this->measures->removeElement($measure);
-            $measure->removeOpRisk($this);
+            $measure->removeRolfRisk($this);
         }
+
+        return $this;
+    }
+
+    public function removeAllMeasures(): self
+    {
+        $this->measures->clear();
 
         return $this;
     }
@@ -200,34 +147,27 @@ class RolfRiskSuperClass extends AbstractEntity
         return $this;
     }
 
-    public function getInputFilter($partial = false)
+    public function areLabelsDifferent(array $data): bool
     {
-        if (!$this->inputFilter) {
-            parent::getInputFilter($partial);
-
-            $texts = ['label1', 'label2', 'label3', 'label4'];
-            foreach ($texts as $text) {
-                $this->inputFilter->add(array(
-                    'name' => $text,
-                    'required' => false,
-                    'allow_empty' => false,
-                    'filters' => array(),
-                    'validators' => array(),
-                ));
-            }
-
-            $descriptions = ['description1', 'description2', 'description3', 'description4'];
-            foreach ($descriptions as $description) {
-                $this->inputFilter->add(array(
-                    'name' => $description,
-                    'required' => false,
-                    'allow_empty' => true,
-                    'filters' => array(),
-                    'validators' => array(),
-                ));
+        foreach ([1, 2, 3, 4] as $labelNum) {
+            $labelKey = 'label' . $labelNum;
+            if (isset($data[$labelKey]) && $data[$labelKey] !== $this->getLabel($labelNum)) {
+                return true;
             }
         }
 
-        return $this->inputFilter;
+        return false;
+    }
+
+    public function areDescriptionsDifferent(array $data): bool
+    {
+        foreach ([1, 2, 3, 4] as $descriptionNum) {
+            $descriptionKey = 'label' . $descriptionNum;
+            if (isset($data[$descriptionKey]) && $data[$descriptionKey] !== $this->getDescription($descriptionNum)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

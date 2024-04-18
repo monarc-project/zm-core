@@ -16,7 +16,7 @@ class ThreatTable extends AbstractTable implements UniqueCodeTableInterface
 {
     use CodeExistenceValidationTableTrait;
 
-    public function __construct(EntityManager $entityManager, $entityName = Threat::class)
+    public function __construct(EntityManager $entityManager, string $entityName = Threat::class)
     {
         parent::__construct($entityManager, $entityName);
     }

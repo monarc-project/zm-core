@@ -1,7 +1,7 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -14,13 +14,11 @@ use Monarc\Core\Entity\Traits\LabelsEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 
 /**
- * @ORM\Table(name="rolf_tags", indexes={
- *      @ORM\Index(name="anr", columns={"anr_id"})
- * })
+ * @ORM\Table(name="rolf_tags", indexes={@ORM\Index(name="code", columns={"code"})})
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
-class RolfTagSuperClass extends AbstractEntity
+class RolfTagSuperClass
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
@@ -37,16 +35,6 @@ class RolfTagSuperClass extends AbstractEntity
     protected $id;
 
     /**
-     * @var Anr
-     *
-     * @ORM\ManyToOne(targetEntity="Anr", cascade={"persist"})
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true)
-     * })
-     */
-    protected $anr;
-
-    /**
      * @var RolfRiskSuperClass[]|ArrayCollection
      *
      * @ORM\ManyToMany(targetEntity="RolfRisk", mappedBy="tags", cascade={"persist"})
@@ -60,38 +48,14 @@ class RolfTagSuperClass extends AbstractEntity
      */
     protected $code;
 
-    public function __construct($obj = null)
+    public function __construct()
     {
         $this->risks = new ArrayCollection();
-
-        parent::__construct($obj);
     }
 
-    /**
-     * @return int
-     */
     public function getId()
     {
         return $this->id;
-    }
-
-    public function setId($id): self
-    {
-        $this->id = $id;
-
-        return $this;
-    }
-
-    public function getAnr()
-    {
-        return $this->anr;
-    }
-
-    public function setAnr($anr): self
-    {
-        $this->anr = $anr;
-
-        return $this;
     }
 
     public function getRisks()
@@ -109,6 +73,16 @@ class RolfTagSuperClass extends AbstractEntity
         return $this;
     }
 
+    public function removeRisk(RolfRiskSuperClass $rolfRisk): self
+    {
+        if ($this->risks->contains($rolfRisk)) {
+            $this->risks->removeElement($rolfRisk);
+            $rolfRisk->removeTag($this);
+        }
+
+        return $this;
+    }
+
     public function getCode(): string
     {
         return (string)$this->code;
@@ -119,26 +93,5 @@ class RolfTagSuperClass extends AbstractEntity
         $this->code = $code;
 
         return $this;
-    }
-
-    public function getInputFilter($partial = false)
-    {
-        if (!$this->inputFilter) {
-            parent::getInputFilter($partial);
-
-            $texts = ['label1', 'label2', 'label3', 'label4'];
-
-            foreach ($texts as $text) {
-                $this->inputFilter->add(array(
-                    'name' => $text,
-                    'required' => ((strchr($text, (string)$this->getLanguage())) && (!$partial)) ? true : false,
-                    'allow_empty' => false,
-                    'filters' => array(),
-                    'validators' => array(),
-                ));
-            }
-        }
-
-        return $this->inputFilter;
     }
 }

@@ -12,7 +12,7 @@ use Monarc\Core\Entity\Model;
 
 class ModelTable extends AbstractTable
 {
-    public function __construct(EntityManager $entityManager, $entityName = Model::class)
+    public function __construct(EntityManager $entityManager, string $entityName = Model::class)
     {
         parent::__construct($entityManager, $entityName);
     }

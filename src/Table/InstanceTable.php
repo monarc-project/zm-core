@@ -19,7 +19,7 @@ class InstanceTable extends AbstractTable implements PositionUpdatableTableInter
 {
     use PositionIncrementTableTrait;
 
-    public function __construct(EntityManager $entityManager, $entityName = Instance::class)
+    public function __construct(EntityManager $entityManager, string $entityName = Instance::class)
     {
         parent::__construct($entityManager, $entityName);
     }

@@ -65,8 +65,8 @@ class MeasureSuperClass
      *
      * @ORM\ManyToMany(targetEntity="Amv", inversedBy="measures", cascade={"persist"})
      * @ORM\JoinTable(name="measures_amvs",
-     *  inverseJoinColumns={@ORM\JoinColumn(name="amv_id", referencedColumnName="uuid")},
-     *  joinColumns={@ORM\JoinColumn(name="measure_id", referencedColumnName="uuid"),},
+     *   inverseJoinColumns={@ORM\JoinColumn(name="amv_id", referencedColumnName="uuid")},
+     *   joinColumns={@ORM\JoinColumn(name="measure_id", referencedColumnName="uuid")},
      * )
      */
     protected $amvs;
@@ -76,8 +76,8 @@ class MeasureSuperClass
      *
      * @ORM\ManyToMany(targetEntity="RolfRisk", inversedBy="measures", cascade={"persist"})
      * @ORM\JoinTable(name="measures_rolf_risks",
-     *  inverseJoinColumns={@ORM\JoinColumn(name="rolf_risk_id", referencedColumnName="id")},
-     *  joinColumns={@ORM\JoinColumn(name="measure_id", referencedColumnName="uuid"),},
+     *   inverseJoinColumns={@ORM\JoinColumn(name="rolf_risk_id", referencedColumnName="id")},
+     *   joinColumns={@ORM\JoinColumn(name="measure_id", referencedColumnName="uuid")},
      * )
      */
     protected $rolfRisks;
@@ -87,8 +87,8 @@ class MeasureSuperClass
      *
      * @ORM\ManyToMany(targetEntity="Measure")
      * @ORM\JoinTable(name="measures_measures",
-     *     joinColumns={@ORM\JoinColumn(name="master_measure_id", referencedColumnName="uuid")},
-     *     inverseJoinColumns={@ORM\JoinColumn(name="linked_measure_id", referencedColumnName="uuid")}
+     *   joinColumns={@ORM\JoinColumn(name="master_measure_id", referencedColumnName="uuid")},
+     *   inverseJoinColumns={@ORM\JoinColumn(name="linked_measure_id", referencedColumnName="uuid")}
      * )
      */
     protected $linkedMeasures;
@@ -238,11 +238,11 @@ class MeasureSuperClass
         return $this;
     }
 
-    public function removeOpRisk(RolfRiskSuperClass $riskInput): self
+    public function removeRolfRisk(RolfRiskSuperClass $rolfRisk): self
     {
-        if ($this->rolfRisks->contains($riskInput)) {
-            $this->rolfRisks->removeElement($riskInput);
-            $riskInput->removeMeasure($this);
+        if ($this->rolfRisks->contains($rolfRisk)) {
+            $this->rolfRisks->removeElement($rolfRisk);
+            $rolfRisk->removeMeasure($this);
         }
 
         return $this;

@@ -5,37 +5,41 @@
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
-namespace Monarc\Core\Validator\InputValidator\Asset;
+namespace Monarc\Core\Validator\InputValidator\RolfRisk;
 
 use Laminas\Filter\StringTrim;
-use Laminas\Validator\InArray;
+use Laminas\InputFilter\ArrayInput;
 use Laminas\Validator\StringLength;
-use Monarc\Core\Entity\AssetSuperClass;
 use Monarc\Core\Table\Interfaces\UniqueCodeTableInterface;
 use Monarc\Core\Validator\FieldValidator\UniqueCode;
 use Monarc\Core\Validator\InputValidator\AbstractInputValidator;
 use Monarc\Core\Validator\InputValidator\FilterFieldsValidationTrait;
 use Monarc\Core\Validator\InputValidator\InputValidationTranslator;
 
-/**
- * Note. For UniqueCode validator $excludeFilter/$includeFilter properties have to be set before calling isValid method.
- */
-class PostAssetDataInputValidator extends AbstractInputValidator
+class PostRolfRiskDataInputValidator extends AbstractInputValidator
 {
     use FilterFieldsValidationTrait;
 
     public function __construct(
         array $config,
         InputValidationTranslator $translator,
-        protected UniqueCodeTableInterface $assetTable
+        protected UniqueCodeTableInterface $rolfRiskTable
     ) {
-
         parent::__construct($config, $translator);
     }
 
     protected function getRules(): array
     {
-        $rules = [
+        $labelRules = [];
+        foreach ($this->systemLanguageIndexes as $systemLanguageIndex) {
+            $labelRules[] = $this->getLabelRule($systemLanguageIndex);
+        }
+        $descriptionRules = [];
+        foreach ($this->systemLanguageIndexes as $systemLanguageIndex) {
+            $descriptionRules[] = $this->getDescriptionRule($systemLanguageIndex);
+        }
+
+        return array_merge([
             [
                 'name' => 'code',
                 'required' => true,
@@ -55,7 +59,7 @@ class PostAssetDataInputValidator extends AbstractInputValidator
                     [
                         'name' => UniqueCode::class,
                         'options' => [
-                            'uniqueCodeValidationTable' => $this->assetTable,
+                            'uniqueCodeValidationTable' => $this->rolfRiskTable,
                             'includeFilter' => $this->includeFilter,
                             'excludeFilter' => $this->excludeFilter,
                         ],
@@ -63,47 +67,19 @@ class PostAssetDataInputValidator extends AbstractInputValidator
                 ],
             ],
             [
-                'name' => 'type',
-                'required' => true,
-                'filters' => [
-                    [
-                        'name' => 'ToInt'
-                    ],
-                ],
-                'validators' => [
-                    [
-                        'name' => InArray::class,
-                        'options' => [
-                            'haystack' => [AssetSuperClass::TYPE_PRIMARY, AssetSuperClass::TYPE_SECONDARY],
-                        ]
-                    ],
-                ],
+                'name' => 'measures',
+                'required' => false,
+                'type' => ArrayInput::class,
+                'filters' => [],
+                'validators' => [],
             ],
             [
-                'name' => 'status',
+                'name' => 'tags',
                 'required' => false,
-                'filters' => [
-                    [
-                        'name' => 'ToInt'
-                    ],
-                ],
-                'validators' => [
-                    [
-                        'name' => InArray::class,
-                        'options' => [
-                            'haystack' => [AssetSuperClass::STATUS_ACTIVE, AssetSuperClass::STATUS_INACTIVE],
-                        ]
-                    ],
-                ],
+                'type' => ArrayInput::class,
+                'filters' => [],
+                'validators' => [],
             ],
-        ];
-
-        $labelDescriptionRules = [];
-        foreach ($this->systemLanguageIndexes as $systemLanguageIndex) {
-            $labelDescriptionRules[] = $this->getLabelRule($systemLanguageIndex);
-            $labelDescriptionRules[] = $this->getDescriptionRule($systemLanguageIndex);
-        }
-
-        return array_merge($labelDescriptionRules, $rules);
+        ], $labelRules, $descriptionRules);
     }
 }

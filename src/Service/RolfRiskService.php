@@ -1,369 +1,256 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
 namespace Monarc\Core\Service;
 
-use Monarc\Core\Entity\AnrSuperClass;
-use Monarc\Core\Entity\RolfRiskSuperClass;
-use Monarc\Core\Table\AnrTable;
-use Monarc\Core\Table\InstanceRiskOpTable;
-use Monarc\Core\Model\Table\MeasureTable;
-use Monarc\Core\Model\Table\RolfRiskTable;
-use Monarc\Core\Model\Table\RolfTagTable;
-use Monarc\Core\Table\MonarcObjectTable;
+use Monarc\Core\Entity;
+use Monarc\Core\InputFormatter\FormattedInputParams;
+use Monarc\Core\Table;
 
-/**
- * Rolf Risk Service
- *
- * Class RolfRiskService
- * @package Monarc\Core\Service
- */
-class RolfRiskService extends AbstractService
+class RolfRiskService
 {
-    protected $rolfTagTable;
-    /** @var MonarcObjectTable */
-    protected $MonarcObjectTable;
-    /** @var InstanceRiskOpTable */
-    protected $instanceRiskOpTable;
-    /** @var InstanceRiskOpService */
-    protected $instanceRiskOpService;
-    protected $measureTable;
-    protected $referentialTable;
-    protected $dependencies = ['measures'];
-    protected $filterColumns = [
-        'code', 'label1', 'label2', 'label3', 'label4', 'description1', 'description2', 'description3', 'description4'
-    ];
+    private Entity\UserSuperClass $connectedUser;
 
-    /**
-     * @inheritdoc
-     */
-    public function getListSpecific($page = 1, $limit = 25, $order = null, $filter = null, $tag = null, $anr = null)
-    {
-        $filterAnd = [];
-        $filterJoin = [];
-
-        if ($tag !== null) {
-            $filterJoin[] = [
-                'as' => 'g',
-                'rel' => 'tags'
-            ];
-            $filterAnd['g.id'] = $tag;
-        }
-
-        if ($anr !== null) {
-            $filterAnd['anr'] = (int)$anr;
-        }
-
-        return $this->get('table')->fetchAllFiltered(
-            array_keys($this->get('entity')->getJsonArray()),
-            $page,
-            $limit,
-            $this->parseFrontendOrder($order),
-            $this->parseFrontendFilter($filter, $this->filterColumns),
-            $filterAnd,
-            $filterJoin
-        );
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getFilteredSpecificCount(
-        $page = 1,
-        $limit = 25,
-        $order = null,
-        $filter = null,
-        $tag = null,
-        $anr = null
+    public function __construct(
+        private Table\RolfRiskTable $rolfRiskTable,
+        private Table\RolfTagTable $rolfTagTable,
+        private Table\MeasureTable $measureTable,
+        private Table\MonarcObjectTable $monarcObjectTable,
+        private Table\ReferentialTable $referentialTable,
+        private Table\InstanceRiskOpTable $instanceRiskOpTable,
+        private InstanceRiskOpService $instanceRiskOpService,
+        ConnectedUserService $connectedUserService
     ) {
-        $filterAnd = [];
-        $filterJoin = [];
-
-        if ($tag !== null) {
-            $filterJoin[] = [
-                'as' => 'g',
-                'rel' => 'tags'
-            ];
-            $filterAnd['g.id'] = $tag;
-        }
-
-        if ($anr !== null) {
-            $filterAnd['anr'] = (int)$anr;
-        }
-
-        return $this->get('table')->countFiltered(
-            $this->parseFrontendFilter($filter, $this->filterColumns),
-            $filterAnd,
-            $filterJoin
-        );
+        $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function create($data, $last = true)
+    public function getList(FormattedInputParams $formattedInputParams): array
     {
-        /** @var RolfRiskTable $rolfRiskTable */
-        $rolfRiskTable = $this->get('table');
-        $entityClass = $rolfRiskTable->getEntityClass();
+        $rolfRiskData = [];
+        /** @var Entity\RolfRisk $rolfRisk */
+        foreach ($this->rolfRiskTable->findByParams($formattedInputParams) as $rolfRisk) {
+            $rolfRiskData[] = $this->prepareRolfRiskData($rolfRisk);
+        }
 
-        /** @var RolfRiskSuperClass $rolfRisk */
-        $rolfRisk = new $entityClass();
-        $rolfRisk->setCode($data['code'])
+        return $rolfRiskData;
+    }
+
+    public function getCount(FormattedInputParams $formattedInputParams): int
+    {
+        return $this->rolfRiskTable->countByParams($formattedInputParams);
+    }
+
+    public function getRolfRiskData(int $id): array
+    {
+        /** @var Entity\RolfRisk $rolfRisk */
+        $rolfRisk = $this->rolfRiskTable->findById($id);
+
+        return $this->prepareRolfRiskData($rolfRisk);
+    }
+
+    public function create(array $data, $saveInDb = true): Entity\RolfRisk
+    {
+        /** @var Entity\RolfRisk $rolfRisk */
+        $rolfRisk = (new Entity\RolfRisk())
+            ->setCode($data['code'])
             ->setLabels($data)
-            ->setDescriptions($data);
+            ->setDescriptions($data)
+            ->setCreator($this->connectedUser->getEmail());
 
-        $anr = null;
-        if (!empty($data['anr'])) {
-            /** @var AnrTable $anrTable */
-            $anrTable = $this->get('anrTable');
-            /** @var AnrSuperClass $anr */
-            $anr = $anrTable->findById((int)$data['anr']);
-            $rolfRisk->setAnr($anr);
-        }
-
-        foreach ($data['measures'] ?? [] as $measure) {
-            /** @var MeasureTable $measureTable */
-            $measureTable = $this->get('measureTable');
-            if (isset($measure['uuid'], $measure['anr'], $anr)) {
-                $rolfRisk->addMeasure($measureTable->findByAnrAndUuid($anr, $measure['uuid']));
-            } else {
-                $rolfRisk->addMeasure($measureTable->findByUuid((string)$measure));
+        if (!empty($data['measures'])) {
+            /** @var Entity\Measure $measure */
+            foreach ($this->measureTable->findByUuids($data['measures']) as $measure) {
+                $rolfRisk->addMeasure($measure);
             }
         }
-
         if (!empty($data['tags'])) {
-            /** @var RolfTagTable $rolfTagTable */
-            $rolfTagTable = $this->get('rolfTagTable');
-            foreach ($data['tags'] as $rolfTagId) {
-                $rolfTag = $rolfTagTable->findById($rolfTagId);
-                $rolfRisk->addTag($rolfTag);
-            }
-        }
-
-        // Create operation instance risks with the linked rolf tags.
-        /** @var InstanceRiskOpTable $instanceRiskOpTable */
-        $instanceRiskOpTable = $this->get('instanceRiskOpTable');
-        /** @var InstanceRiskOpService $instanceRiskOpService */
-        $instanceRiskOpService = $this->get('instanceRiskOpService');
-        /** @var MonarcObjectTable $monarcObjectTable */
-        $monarcObjectTable = $this->get('MonarcObjectTable');
-        foreach ($rolfRisk->getTags() as $addedRolfTag) {
-            if ($anr === null) {
-                $objects = $monarcObjectTable->findByRolfTag($addedRolfTag);
-            } else {
-                // TODO: Added the correct relation and use $addedRolfTag->getObjects();
-                $objects = $monarcObjectTable->findByAnrAndRolfTag($anr, $addedRolfTag);
-            }
-            foreach ($objects as $object) {
-                foreach ($object->getInstances() as $instance) {
-                    $instanceRiskOpService->createInstanceRiskOpWithScales(
-                        $instance,
-                        $object,
-                        $rolfRisk
-                    );
+            /** @var Entity\RolfTag $tag */
+            foreach ($this->rolfTagTable->findByIds($data['tags']) as $tag) {
+                $rolfRisk->addTag($tag);
+                /* Create operation instance risks for the linked rolf tag. */
+                /** @var Entity\MonarcObject $monarcObject */
+                foreach ($this->monarcObjectTable->findByRolfTag($tag) as $monarcObject) {
+                    foreach ($monarcObject->getInstances() as $instance) {
+                        $this->instanceRiskOpService->createInstanceRiskOpWithScales(
+                            $instance,
+                            $monarcObject,
+                            $rolfRisk
+                        );
+                    }
                 }
-
-                $instanceRiskOpTable->flush();
             }
         }
 
-        $rolfRisk->setUpdater($this->getConnectedUser()->getEmail());
+        $this->rolfRiskTable->save($rolfRisk, $saveInDb);
 
-        $rolfRiskTable->saveEntity($rolfRisk);
-
-        return $rolfRisk->getId();
+        return $rolfRisk;
     }
 
-    public function delete($id)
+    public function createList(array $data): array
     {
-        /** @var RolfRiskTable $rolfRiskTable */
-        $rolfRiskTable = $this->get('table');
-        $rolfRisk = $rolfRiskTable->findById($id);
-
-        /** @var InstanceRiskOpTable $instanceRiskOpTable */
-        $instanceRiskOpTable = $this->get('instanceRiskOpTable');
-
-        $instancesRisksOp = $instanceRiskOpTable->findByRolfRisk($rolfRisk);
-        foreach ($instancesRisksOp as $instanceRiskOp) {
-            $instanceRiskOp->setIsSpecific(true);
-            $instanceRiskOpTable->save($instanceRiskOp, false);
+        $createdRowsNum = [];
+        foreach ($data as $rowNum => $rowData) {
+            $this->create($rowData, false);
+            $createdRowsNum[] = $rowNum;
         }
+        $this->rolfRiskTable->flush();
 
-        $rolfRiskTable->deleteEntity($rolfRisk);
-
-        return true;
+        return $createdRowsNum;
     }
 
-    public function deleteListFromAnr($data, $anrId = null)
+    public function update(int $id, array $data): Entity\RolfRisk
     {
-        foreach ($data as $rolfRiskId) {
-            $this->delete($rolfRiskId);
+        /** @var Entity\RolfRisk $rolfRisk */
+        $rolfRisk = $this->rolfRiskTable->findById($id);
+
+        $rolfRisk->removeAllMeasures();
+        if (!empty($data['measures'])) {
+            /** @var Entity\Measure $measure */
+            foreach ($this->measureTable->findByUuids($data['measures']) as $measure) {
+                $rolfRisk->addMeasure($measure);
+            }
         }
+
+        $rolfTagIds = array_map('\intval', $data['tags']);
+        foreach ($rolfRisk->getTags() as $rolfTag) {
+            $rolfTagIdKey = \array_search($rolfTag->getId(), $rolfTagIds, true);
+            if ($rolfTagIdKey !== false) {
+                unset($rolfTagIds[$rolfTagIdKey]);
+            } else {
+                $rolfRisk->removeTag($rolfTag);
+                /* Set the related operational risks to specific. */
+                foreach ($this->monarcObjectTable->findByRolfTag($rolfTag) as $monarcObject) {
+                    $instancesRisksOp = $this->instanceRiskOpTable->findByObjectAndRolfRisk($monarcObject, $rolfRisk);
+                    foreach ($instancesRisksOp as $instanceRiskOp) {
+                        $this->instanceRiskOpTable->save($instanceRiskOp->setIsSpecific(true), false);
+                    }
+                }
+            }
+        }
+        if (!empty($rolfTagIds)) {
+            /** @var Entity\RolfTag $rolfTag */
+            foreach ($this->rolfTagTable->findByIds($rolfTagIds) as $rolfTag) {
+                $rolfRisk->addTag($rolfTag);
+                /* Create operation instance risks for the linked rolf tag. */
+                /** @var Entity\MonarcObject $monarcObject */
+                foreach ($this->monarcObjectTable->findByRolfTag($rolfTag) as $monarcObject) {
+                    foreach ($monarcObject->getInstances() as $instance) {
+                        $this->instanceRiskOpService->createInstanceRiskOpWithScales(
+                            $instance,
+                            $monarcObject,
+                            $rolfRisk
+                        );
+                    }
+                }
+            }
+        }
+
+        if ($rolfRisk->areLabelsDifferent($data) || $rolfRisk->areDescriptionsDifferent($data)) {
+            $rolfRisk->setLabels($data)->setDescriptions($data);
+            /* If the labels or descriptions changed the operational risks labels have to be updated as well. */
+            foreach ($rolfRisk->getTags() as $rolfTag) {
+                foreach ($this->monarcObjectTable->findByRolfTag($rolfTag) as $monarcObject) {
+                    $instancesRisksOp = $this->instanceRiskOpTable->findByObjectAndRolfRisk($monarcObject, $rolfRisk);
+                    foreach ($instancesRisksOp as $instanceRiskOp) {
+                        $instanceRiskOp->setRiskCacheCode($rolfRisk->getCode())
+                            ->setRiskCacheLabels([
+                                'riskCacheLabel1' => $rolfRisk->getLabel(1),
+                                'riskCacheLabel2' => $rolfRisk->getLabel(2),
+                                'riskCacheLabel3' => $rolfRisk->getLabel(3),
+                                'riskCacheLabel4' => $rolfRisk->getLabel(4),
+                            ])
+                            ->setRiskCacheDescriptions([
+                                'riskCacheDescription1' => $rolfRisk->getDescription(1),
+                                'riskCacheDescription2' => $rolfRisk->getDescription(2),
+                                'riskCacheDescription3' => $rolfRisk->getDescription(3),
+                                'riskCacheDescription4' => $rolfRisk->getDescription(4),
+                            ]);
+
+                        $this->instanceRiskOpTable->save($instanceRiskOp, false);
+                    }
+                }
+            }
+        }
+
+        $this->rolfRiskTable->save($rolfRisk->setCode($data['code'])->setUpdater($this->connectedUser->getEmail()));
+
+        return $rolfRisk;
     }
 
-    public function deleteList($data)
+    public function delete(int $id): void
     {
-        foreach ($data as $rolfRiskId) {
-            $this->delete($rolfRiskId);
+        /** @var Entity\RolfRisk $rolfRisk */
+        $rolfRisk = $this->rolfRiskTable->findById($id);
+        $this->removeRolfRisk($rolfRisk);
+    }
+
+    public function deleteList(array $data): void
+    {
+        /** @var Entity\RolfRisk $rolfRisk */
+        foreach ($this->rolfRiskTable->findByIds($data) as $rolfRisk) {
+            $this->removeRolfRisk($rolfRisk, false);
         }
+        $this->rolfRiskTable->flush();
     }
 
     /**
-     * @inheritdoc
+     * Performs the measures linking to the rolf risks when a new referential mapping is processed.
      */
-    public function update($id, $data)
+    public function linkMeasuresToRisks(string $sourceReferentialUuid, string $destinationReferentialUuid): void
     {
-        $rolfTags = $data['tags'] ?? [];
-        unset($data['tags']);
-
-        /** @var RolfRiskTable $rolfRiskTable */
-        $rolfRiskTable = $this->get('table');
-
-        $rolfRisk = $rolfRiskTable->findById($id);
-        //manage the measures separately because it's the slave of the relation RolfRisks<-->measures
-        foreach ($data['measures'] as $measure) {
-            $this->get('measureTable')->getEntity($measure)->addOpRisk($rolfRisk);
-        }
-        foreach ($rolfRisk->getMeasures() as $m) {
-            if (!\in_array($m->getUuid(), array_column($data['measures'], 'uuid'), true)) {
-                $m->removeOpRisk($rolfRisk);
-            }
-        }
-        unset($data['measures']);
-        $rolfRisk->setDbAdapter($rolfRiskTable->getDb());
-        $rolfRisk->setLanguage($this->getLanguage());
-        if (isset($data['anr'])) {
-            unset($data['anr']);
-        }
-        $rolfRisk->exchangeArray($data);
-        $dependencies = property_exists($this, 'dependencies') ? $this->dependencies : [];
-        $this->setDependencies($rolfRisk, $dependencies);
-
-        $currentTags = [];
-        foreach ($rolfRisk->getTags() as $tag) {
-            $currentTags[$tag->getId()] = $tag;
-        }
-
-        foreach ($rolfRisk->getTags() as $rolfTag) {
-            if (\in_array($rolfTag->getId(), $rolfTags, true)) {
-                unset($rolfTags[\array_search($rolfTag->getId(), $rolfTags, true)]);
-            } else {
-                $rolfRisk->get('tags')->removeElement($rolfTag);
-            }
-        }
-
-        if (!empty($rolfTags)) {
-            $rolfTagTable = $this->get('rolfTagTable');
-            foreach ($rolfTags as $key => $rolfTagId) {
-                if (!empty($rolfTagId)) {
-                    $rolfTag = $rolfTagTable->getEntity($rolfTagId);
-                    $rolfRisk->setTag($key, $rolfTag);
+        /** @var Entity\Referential $destinationReferential */
+        $destinationReferential = $this->referentialTable->findByUuid($destinationReferentialUuid);
+        foreach ($destinationReferential->getMeasures() as $destinationMeasure) {
+            foreach ($destinationMeasure->getLinkedMeasures() as $measureLink) {
+                if ($measureLink->getReferential()->getUuid() === $sourceReferentialUuid) {
+                    foreach ($measureLink->getRolfRisks() as $rolfRisk) {
+                        $destinationMeasure->addRolfRisk($rolfRisk);
+                    }
+                    $this->measureTable->save($destinationMeasure, false);
                 }
             }
         }
-
-        $newTags = [];
-        foreach ($rolfRisk->getTags() as $tag) {
-            $newTags[$tag->getId()] = $tag;
-        }
-
-        $deletedTags = [];
-        foreach ($currentTags as $tagId => $currentTag) {
-            if (!\array_key_exists($tagId, $newTags)) {
-                $deletedTags[] = $tagId;
-            }
-        }
-
-        $addedTags = [];
-        foreach ($newTags as $newTagId => $newTag) {
-            if (!\array_key_exists($newTagId, $currentTags)) {
-                $addedTags[] = $newTag;
-            }
-        }
-
-        /** @var MonarcObjectTable $monarcObjectTable */
-        $monarcObjectTable = $this->get('MonarcObjectTable');
-        /** @var InstanceRiskOpTable $instanceRiskOpTable */
-        $instanceRiskOpTable = $this->get('instanceRiskOpTable');
-        foreach ($deletedTags as $deletedTag) {
-            foreach ($monarcObjectTable->findByRolfTag($deletedTag) as $object) {
-                $instancesRisksOp = $instanceRiskOpTable->findByObjectAndRolfRisk($object, $rolfRisk);
-
-                foreach ($instancesRisksOp as $instanceRiskOp) {
-                    $instanceRiskOp->setIsSpecific(true);
-                    $instanceRiskOpTable->save($instanceRiskOp, false);
-                }
-
-                $instanceRiskOpTable->flush();
-            }
-        }
-
-        /** @var InstanceRiskOpService $instanceRiskOpService */
-        $instanceRiskOpService = $this->get('instanceRiskOpService');
-        foreach ($addedTags as $addedTag) {
-            foreach ($monarcObjectTable->findByRolfTag($addedTag) as $object) {
-                foreach ($object->getInstances() as $instance) {
-                    $instanceRiskOpService->createInstanceRiskOpWithScales(
-                        $instance,
-                        $object,
-                        $rolfRisk
-                    );
-                }
-            }
-        }
-        $instanceRiskOpTable->flush();
-
-        foreach ($currentTags as $currentTag) {
-            // manage the fact that label can changed for OP risk
-            foreach ($monarcObjectTable->findByRolfTag($currentTag) as $object) {
-                $instancesRisksOp = $instanceRiskOpTable->findByObjectAndRolfRisk($object, $rolfRisk);
-
-                foreach ($instancesRisksOp as $instanceRiskOp) {
-                    $instanceRiskOp->setRiskCacheCode($rolfRisk->getCode())
-                        ->setRiskCacheLabels([
-                            'riskCacheLabel1' => $rolfRisk->getLabel(1),
-                            'riskCacheLabel2' => $rolfRisk->getLabel(2),
-                            'riskCacheLabel3' => $rolfRisk->getLabel(3),
-                            'riskCacheLabel4' => $rolfRisk->getLabel(4),
-                        ])
-                        ->setRiskCacheDescriptions([
-                            'riskCacheDescription1' => $rolfRisk->getDescription(1),
-                            'riskCacheDescription2' => $rolfRisk->getDescription(2),
-                            'riskCacheDescription3' => $rolfRisk->getDescription(3),
-                            'riskCacheDescription4' => $rolfRisk->getDescription(4),
-                        ]);
-
-                    $instanceRiskOpTable->save($instanceRiskOp, false);
-                }
-            }
-        }
-
-        $rolfRiskTable->saveEntity($rolfRisk->setUpdater($this->getConnectedUser()->getEmail()));
-
-        return $rolfRisk->getId();
+        $this->measureTable->flush();
     }
 
-    /*
-    * The method automatically links the Amv of the destination from the source depending on the measures_measures
-    */
-    public function createLinkedRisks($source_uuid, $destination)
+    private function removeRolfRisk(Entity\RolfRisk $rolfRisk, bool $saveInDb = true): void
     {
-        $measuresDest = $this->get('referentialTable')->getEntity($destination)->getMeasures();
-        foreach ($measuresDest as $md) {
-            foreach ($md->getLinkedMeasures() as $measureLink) {
-                if ($measureLink->getReferential()->getUuid() === $source_uuid) {
-                    foreach ($measureLink->rolfRisks as $risk) {
-                        $md->addOpRisk($risk);
-                    }
-                    $this->get('measureTable')->save($md, false);
-                }
-            }
+        foreach ($this->instanceRiskOpTable->findByRolfRisk($rolfRisk) as $instanceRiskOp) {
+            $this->instanceRiskOpTable->save($instanceRiskOp->setIsSpecific(true), false);
         }
-        $this->get('measureTable')->getDb()->flush();
+
+        $this->rolfRiskTable->remove($rolfRisk, $saveInDb);
+    }
+
+    private function prepareRolfRiskData(Entity\RolfRisk $rolfRisk): array
+    {
+        $tagsData = [];
+        foreach ($rolfRisk->getTags() as $tag) {
+            $tagsData[] = array_merge([
+                'id' => $tag->getId(),
+                'code' => $tag->getCode(),
+            ], $tag->getLabels());
+        }
+        $measuresData = [];
+        foreach ($rolfRisk->getMeasures() as $measure) {
+            $measuresData[] = array_merge([
+                'uuid' => $measure->getUuid(),
+                'code' => $measure->getCode(),
+                'referential' => [
+                    'uuid' => $measure->getReferential()->getUuid(),
+                ],
+            ], $measure->getLabels());
+        }
+
+        return array_merge([
+            'id' => $rolfRisk->getId(),
+            'code' => $rolfRisk->getCode(),
+            'tags' => $tagsData,
+            'measures' => $measuresData,
+        ], $rolfRisk->getLabels(), $rolfRisk->getDescriptions());
     }
 }

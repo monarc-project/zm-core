@@ -13,7 +13,7 @@ use Monarc\Core\Entity\ThemeSuperClass;
 
 class ThemeTable extends AbstractTable
 {
-    public function __construct(EntityManager $entityManager, $entityName = Theme::class)
+    public function __construct(EntityManager $entityManager, string $entityName = Theme::class)
     {
         parent::__construct($entityManager, $entityName);
     }

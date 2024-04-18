@@ -13,7 +13,6 @@ use Monarc\Core\InputFormatter\FormattedInputParams;
 use Monarc\Core\Entity;
 use Monarc\Core\Service\Traits;
 use Monarc\Core\Table;
-use Monarc\Core\Model\Table\RolfTagTable;
 
 class ObjectService
 {
@@ -35,7 +34,7 @@ class ObjectService
 
     private Table\InstanceTable $instanceTable;
 
-    private RolfTagTable $rolfTagTable;
+    private Table\RolfTagTable $rolfTagTable;
 
     private Table\InstanceRiskOpTable $instanceRiskOpTable;
 
@@ -52,7 +51,7 @@ class ObjectService
         Table\ObjectCategoryTable $objectCategoryTable,
         Table\ObjectObjectTable $objectObjectTable,
         Table\InstanceTable $instanceTable,
-        RolfTagTable $rolfTagTable,
+        Table\RolfTagTable $rolfTagTable,
         Table\InstanceRiskOpTable $instanceRiskOpTable,
         InstanceRiskOpService $instanceRiskOpService,
         ConnectedUserService $connectedUserService
@@ -208,7 +207,8 @@ class ObjectService
             $this->validateAndSetCategory($monarcObject, $data);
         }
         if (!empty($data['rolfTag']) && !$asset->isPrimary()) {
-            $rolfTag = $this->rolfTagTable->findById($data['rolfTag']);
+            /** @var Entity\RolfTag $rolfTag */
+            $rolfTag = $this->rolfTagTable->findById((int)$data['rolfTag']);
             $monarcObject->setRolfTag($rolfTag);
         }
 
