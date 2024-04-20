@@ -52,7 +52,7 @@ class RolfRiskService
         return $this->prepareRolfRiskData($rolfRisk);
     }
 
-    public function create(array $data, $saveInDb = true): Entity\RolfRisk
+    public function create(array $data, bool $saveInDb = true): Entity\RolfRisk
     {
         /** @var Entity\RolfRisk $rolfRisk */
         $rolfRisk = (new Entity\RolfRisk())

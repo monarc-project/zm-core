@@ -165,6 +165,24 @@ abstract class AbstractTable
     }
 
     /**
+     * Performs search by integer IDs list and analysis ID.
+     *
+     * @param int[] $ids
+     *
+     * @return object[]
+     */
+    public function findByIdsAndAnr(array $ids, AnrSuperClass $anr): array
+    {
+        $queryBuilder = $this->getRepository()->createQueryBuilder('t');
+
+        return $queryBuilder->where($queryBuilder->expr()->in('t.id', array_map('\intval', $ids)))
+            ->andWhere('t.anr = :anr')
+            ->setParameter('anr', $anr)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * @return object[]
      */
     public function findByAnr(AnrSuperClass $anr): array

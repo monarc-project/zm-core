@@ -56,9 +56,7 @@ class SoaCategoryService
         /** @var SoaCategory $soaCategory */
         $soaCategory = $this->soaCategoryTable->findById($id);
 
-        $soaCategory->setLabels($data);
-
-        $this->soaCategoryTable->save($soaCategory);
+        $this->soaCategoryTable->save($soaCategory->setLabels($data));
 
         return $soaCategory;
     }
