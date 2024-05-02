@@ -10,6 +10,7 @@ namespace Monarc\Core\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Entity\Interfaces\PositionedEntityInterface;
+use Monarc\Core\Entity\Interfaces\PropertyStateEntityInterface;
 use Monarc\Core\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Entity\Traits\PropertyStateEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
@@ -25,7 +26,7 @@ use Ramsey\Uuid\UuidInterface;
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
-class AmvSuperClass implements PositionedEntityInterface
+class AmvSuperClass implements PositionedEntityInterface, PropertyStateEntityInterface
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;

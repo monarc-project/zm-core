@@ -14,8 +14,6 @@ use Monarc\Core\Entity\Traits\LabelsEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 
 /**
- * Question
- *
  * @ORM\Table(name="questions")
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
@@ -89,12 +87,48 @@ class QuestionSuperClass extends AbstractEntity
         return $this;
     }
 
+    public function getQuestionChoices()
+    {
+        return $this->questionChoices;
+    }
+
     public function addQuestionChoice(QuestionChoiceSuperClass $questionChoice): self
     {
         if (!$this->questionChoices->contains($questionChoice)) {
             $this->questionChoices->add($questionChoice);
             $questionChoice->setQuestion($this);
         }
+
+        return $this;
+    }
+
+    public function setPosition(int $position): self
+    {
+        $this->position = $position;
+
+        return $this;
+    }
+
+    public function getPosition()
+    {
+        return (int)$this->position;
+    }
+
+    public function getType(): int
+    {
+        return $this->type;
+    }
+
+    public function setType(int $type): self
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    public function setIsMultiChoice(bool $isMultiChoice): self
+    {
+        $this->multichoice = (int)$isMultiChoice;
 
         return $this;
     }

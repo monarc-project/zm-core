@@ -9,6 +9,7 @@ namespace Monarc\Core\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Entity\Interfaces\PositionedEntityInterface;
+use Monarc\Core\Entity\Interfaces\PropertyStateEntityInterface;
 use Monarc\Core\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Entity\Traits\PropertyStateEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
@@ -21,7 +22,7 @@ use Monarc\Core\Entity\Traits\UpdateEntityTrait;
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
-class ObjectObjectSuperClass implements PositionedEntityInterface
+class ObjectObjectSuperClass implements PositionedEntityInterface, PropertyStateEntityInterface
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;

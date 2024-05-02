@@ -9,11 +9,10 @@ namespace Monarc\Core\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Entity\Traits\CreateEntityTrait;
+use Monarc\Core\Entity\Traits\LabelsEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 
 /**
- * Question's choices
- *
  * @ORM\Table(name="questions_choices", indexes={
  *      @ORM\Index(name="question_id", columns={"question_id"}),
  * })
@@ -24,6 +23,8 @@ class QuestionChoiceSuperClass extends AbstractEntity
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
+
+    use LabelsEntityTrait;
 
     /**
      * @var int
@@ -45,34 +46,6 @@ class QuestionChoiceSuperClass extends AbstractEntity
     protected $question;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="label1", type="string", length=255, nullable=true)
-     */
-    protected $label1;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label2", type="string", length=255, nullable=true)
-     */
-    protected $label2;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label3", type="string", length=255, nullable=true)
-     */
-    protected $label3;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label4", type="string", length=255, nullable=true)
-     */
-    protected $label4;
-
-    /**
      * @var int
      *
      * @ORM\Column(name="position", type="smallint", options={"unsigned":true})
@@ -89,11 +62,11 @@ class QuestionChoiceSuperClass extends AbstractEntity
 
     /**
      * @param int $id
-     * @return Question
      */
-    public function setId($id)
+    public function setId($id): self
     {
         $this->id = $id;
+
         return $this;
     }
 
@@ -106,6 +79,18 @@ class QuestionChoiceSuperClass extends AbstractEntity
     {
         $this->question = $question;
         $question->addQuestionChoice($this);
+
+        return $this;
+    }
+
+    public function getPosition(): int
+    {
+        return $this->position;
+    }
+
+    public function setPosition(int $position): self
+    {
+        $this->position = $position;
 
         return $this;
     }
@@ -139,6 +124,7 @@ class QuestionChoiceSuperClass extends AbstractEntity
                 'validators' => array()
             ));
         }
+
         return $this->inputFilter;
     }
 }

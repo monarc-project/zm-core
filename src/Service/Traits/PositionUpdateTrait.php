@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -9,6 +9,7 @@ namespace Monarc\Core\Service\Traits;
 
 use Doctrine\ORM\EntityNotFoundException;
 use LogicException;
+use Monarc\Core\Entity\Interfaces\PropertyStateEntityInterface;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Entity\Interfaces\PositionedEntityInterface;
 use Monarc\Core\Service\Interfaces\PositionUpdatableServiceInterface;
@@ -18,8 +19,6 @@ use Monarc\Core\Table\Interfaces\PositionUpdatableTableInterface;
 trait PositionUpdateTrait
 {
     /**
-     * @param PositionedEntityInterface $entity
-     * @param PositionUpdatableTableInterface|AbstractTable $table
      * @param array $data Notes:
      *                    - ['forcePositionUpdate' => true] is used to force the position update for already persisted.
      *                    - ['setOnlyExactPosition' => true] is used to set the predefined position only.
@@ -27,8 +26,8 @@ trait PositionUpdateTrait
      * @throws Exception|LogicException|EntityNotFoundException
      */
     public function updatePositions(
-        PositionedEntityInterface $entity,
-        PositionUpdatableTableInterface $table,
+        PositionedEntityInterface|PropertyStateEntityInterface $entity,
+        PositionUpdatableTableInterface|AbstractTable $table,
         array $data = []
     ): void {
         $this->validateParams($entity, $table, $data);
@@ -123,7 +122,7 @@ trait PositionUpdateTrait
                             'anr' => $entity->getAnr(),
                         ];
                     }
-                    /** @var PositionedEntityInterface $previousEntity */
+                    /** @var PositionedEntityInterface|PropertyStateEntityInterface $previousEntity */
                     $previousEntity = $table->findById($entityKey);
                 }
                 /* Stop positions update if the entity is already on the right place. */

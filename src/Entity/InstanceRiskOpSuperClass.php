@@ -76,11 +76,11 @@ class InstanceRiskOpSuperClass
     protected $object;
 
     /**
-     * @var RolfRiskSuperClass
+     * @var RolfRiskSuperClass|null
      *
      * @ORM\ManyToOne(targetEntity="RolfRisk", cascade={"persist"})
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="rolf_risk_id", referencedColumnName="id", nullable=true)
+     *   @ORM\JoinColumn(name="rolf_risk_id", referencedColumnName="id", nullable=true, onDelete="SET NULL")
      * })
      */
     protected $rolfRisk;
@@ -292,12 +292,12 @@ class InstanceRiskOpSuperClass
         return $this;
     }
 
-    public function getRolfRisk()
+    public function getRolfRisk(): ?RolfRiskSuperClass
     {
         return $this->rolfRisk;
     }
 
-    public function setRolfRisk(RolfRiskSuperClass $rolfRisk): self
+    public function setRolfRisk(?RolfRiskSuperClass $rolfRisk): self
     {
         $this->rolfRisk = $rolfRisk;
 

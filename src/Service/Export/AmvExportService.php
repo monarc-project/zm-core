@@ -14,7 +14,7 @@ class AmvExportService
     /**
      * Currently it can be called from FO (library object export and instance export) and BO (library object export).
      */
-    public function generateExportArray(Entity\AmvSuperClass $amv, bool $withEval = false): array
+    public function prepareExportData(Entity\Amv $amv, bool $withEval = false): array
     {
         $measuresData = [];
         foreach ($amv->getMeasures() as $measure) {
@@ -25,66 +25,68 @@ class AmvExportService
                 'referential' => array_merge([
                     'uuid' => $measure->getReferential()->getUuid(),
                 ], $measure->getReferential()->getLabels()),
-                'category' => array_merge([
+                'category' => $measure->getCategory() !== null ? array_merge([
                     'id' => $measure->getCategory()->getId(),
                     'status' => $measure->getCategory()->getStatus(),
-                ], $measure->getCategory()->getLabels()),
+                ], $measure->getCategory()->getLabels()) : null,
                 'status' => $measure->getStatus(),
             ], $measure->getLabels());
         }
 
         $themeData = [];
-        if ($amv->getThreat()->getTheme() !== null) {
-            $themeData[$amv->getThreat()->getTheme()->getId()] = array_merge([
-                'id' => $amv->getThreat()->getTheme()->getId(),
-            ], $amv->getThreat()->getTheme()->getLabels());
+        $threat = $amv->getThreat();
+        if ($threat->getTheme() !== null) {
+            $themeData[$threat->getTheme()->getId()] = array_merge([
+                'id' => $threat->getTheme()->getId(),
+            ], $threat->getTheme()->getLabels());
         }
         $threatEvaluations = [];
         if ($withEval) {
             $threatEvaluations = [
-                'trend' => $amv->getThreat()->getTrend(),
-                'comment' => $amv->getThreat()->getComment(),
-                'qualification' => $amv->getThreat()->getQualification(),
+                'trend' => $threat->getTrend(),
+                'comment' => $threat->getComment(),
+                'qualification' => $threat->getQualification(),
             ];
         }
+        $vulnerability = $amv->getVulnerability();
 
         return [
             'amv' => [
                 $amv->getUuid() => [
                     'uuid' => $amv->getUuid(),
                     'asset' => $amv->getAsset()->getUuid(),
-                    'threat' => $amv->getThreat()->getUuid(),
-                    'vulnerability' => $amv->getVulnerability()->getUuid(),
+                    'threat' => $threat->getUuid(),
+                    'vulnerability' => $vulnerability->getUuid(),
                     'measures' => array_keys($measuresData),
                     'status' => $amv->getStatus(),
                 ],
             ],
             'threat' => [
-                $amv->getThreat()->getUuid() => array_merge([
-                    'uuid' => $amv->getThreat()->getUuid(),
-                    'theme' => $amv->getThreat()->getTheme() !== null ? $amv->getThreat()->getTheme()->getId() : null,
-                    'status' => $amv->getThreat()->getStatus(),
-                    'mode' => $amv->getThreat()->getMode(),
-                    'code' => $amv->getThreat()->getCode(),
-                    'c' => $amv->getThreat()->getConfidentiality(),
-                    'i' => $amv->getThreat()->getIntegrity(),
-                    'a' => $amv->getThreat()->getAvailability(),
-                ], $amv->getThreat()->getLabels(), $amv->getThreat()->getDescriptions(), $threatEvaluations),
+                $threat->getUuid() => array_merge([
+                    'uuid' => $threat->getUuid(),
+                    'theme' => $threat->getTheme()?->getId(),
+                    'status' => $threat->getStatus(),
+                    'mode' => $threat->getMode(),
+                    'code' => $threat->getCode(),
+                    'c' => $threat->getConfidentiality(),
+                    'i' => $threat->getIntegrity(),
+                    'a' => $threat->getAvailability(),
+                ], $threat->getLabels(), $threat->getDescriptions(), $threatEvaluations),
             ],
             'theme' => $themeData,
             'vulnerability' => [
-                $amv->getVulnerability()->getUuid() => array_merge([
-                    'uuid' => $amv->getVulnerability()->getUuid(),
-                    'status' => $amv->getVulnerability()->getStatus(),
-                    'mode' => $amv->getVulnerability()->getMode(),
-                    'code' => $amv->getVulnerability()->getCode(),
-                ], $amv->getVulnerability()->getLabels(), $amv->getVulnerability()->getDescriptions()),
+                $vulnerability->getUuid() => array_merge([
+                    'uuid' => $vulnerability->getUuid(),
+                    'status' => $vulnerability->getStatus(),
+                    'mode' => $vulnerability->getMode(),
+                    'code' => $vulnerability->getCode(),
+                ], $vulnerability->getLabels(), $vulnerability->getDescriptions()),
             ],
             'measures' => $measuresData,
         ];
     }
 
-    public function generateExportMospArray(Entity\AmvSuperClass $amv, int $languageIndex, string $languageCode): array
+    public function prepareExportDataForMosp(Entity\Amv $amv, int $languageIndex, string $languageCode): array
     {
         $measuresData = [];
         foreach ($amv->getMeasures() as $measure) {
@@ -93,43 +95,45 @@ class AmvExportService
                 'uuid' => $measureUuid,
                 'code' => $measure->getCode(),
                 'label' => $measure->getLabel($languageIndex),
-                'category' => $measure->getCategory()->getLabel($languageIndex),
+                'category' => $measure->getCategory()?->getLabel($languageIndex),
                 'referential' => $measure->getReferential()->getUuid(),
                 'referential_label' => $measure->getReferential()->getLabel($languageIndex),
             ];
         }
+        $threat = $amv->getThreat();
+        $vulnerability = $amv->getVulnerability();
 
         return [
             'amv' => [
                 $amv->getUuid() => [
                     'uuid' => $amv->getUuid(),
                     'asset' => $amv->getAsset()->getUuid(),
-                    'threat' => $amv->getThreat()->getUuid(),
-                    'vulnerability' => $amv->getVulnerability()->getUuid(),
+                    'threat' => $threat->getUuid(),
+                    'vulnerability' => $vulnerability->getUuid(),
                     'measures' => array_keys($measuresData),
                 ],
             ],
             'threat' => [
-                $amv->getThreat()->getUuid() => [
-                    'uuid' => $amv->getThreat()->getUuid(),
-                    'label' => $amv->getThreat()->getLabel($languageIndex),
-                    'description' => $amv->getThreat()->getDescription($languageIndex),
-                    'theme' => $amv->getThreat()->getTheme() !== null
-                        ? $amv->getThreat()->getTheme()->getLabel($languageIndex)
+                $threat->getUuid() => [
+                    'uuid' => $threat->getUuid(),
+                    'label' => $threat->getLabel($languageIndex),
+                    'description' => $threat->getDescription($languageIndex),
+                    'theme' => $threat->getTheme() !== null
+                        ? $threat->getTheme()->getLabel($languageIndex)
                         : '',
-                    'code' => $amv->getThreat()->getCode(),
-                    'c' => (bool)$amv->getThreat()->getConfidentiality(),
-                    'i' => (bool)$amv->getThreat()->getIntegrity(),
-                    'a' => (bool)$amv->getThreat()->getAvailability(),
+                    'code' => $threat->getCode(),
+                    'c' => (bool)$threat->getConfidentiality(),
+                    'i' => (bool)$threat->getIntegrity(),
+                    'a' => (bool)$threat->getAvailability(),
                     'language' => $languageCode,
                 ],
             ],
             'vulnerability' => [
-                $amv->getVulnerability()->getUuid() => [
-                    'uuid' => $amv->getVulnerability()->getUuid(),
-                    'code' => $amv->getVulnerability()->getCode(),
-                    'label' => $amv->getVulnerability()->getLabel($languageIndex),
-                    'description' => $amv->getVulnerability()->getDescription($languageIndex),
+                $vulnerability->getUuid() => [
+                    'uuid' => $vulnerability->getUuid(),
+                    'code' => $vulnerability->getCode(),
+                    'label' => $vulnerability->getLabel($languageIndex),
+                    'description' => $vulnerability->getDescription($languageIndex),
                     'language' => $languageCode,
                 ],
             ],

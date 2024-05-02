@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -11,14 +11,11 @@ use Monarc\Core\Entity\Asset;
 
 class AssetExportService
 {
-    private AmvExportService $amvExportService;
-
-    public function __construct(AmvExportService $amvExportService)
+    public function __construct(private AmvExportService $amvExportService)
     {
-        $this->amvExportService = $amvExportService;
     }
 
-    public function generateExportArray(Asset $asset, bool $withEval = false): array
+    public function prepareExportData(Asset $asset, bool $withEval = false): array
     {
         $assetData = [
             'type' => 'asset',
@@ -37,7 +34,7 @@ class AssetExportService
         ];
 
         foreach ($asset->getAmvs() as $amv) {
-            $amvResult = $this->amvExportService->generateExportArray($amv, $withEval);
+            $amvResult = $this->amvExportService->prepareExportData($amv, $withEval);
             $assetData['amvs'] += $amvResult['amv'];
             $assetData['threats'] += $amvResult['threat'];
             $assetData['themes'] += $amvResult['theme'];
@@ -48,7 +45,7 @@ class AssetExportService
         return $assetData;
     }
 
-    public function generateExportMospArray(Asset $asset, int $languageIndex, string $languageCode): array
+    public function prepareExportDataForMosp(Asset $asset, int $languageIndex, string $languageCode): array
     {
         $assetData = [
             'asset' => [
@@ -67,7 +64,7 @@ class AssetExportService
         ];
 
         foreach ($asset->getAmvs() as $amv) {
-            $amvResult = $this->amvExportService->generateExportMospArray($amv, $languageIndex, $languageCode);
+            $amvResult = $this->amvExportService->prepareExportDataForMosp($amv, $languageIndex, $languageCode);
             $assetData['amvs'] += $amvResult['amv'];
             $assetData['threats'] += $amvResult['threat'];
             $assetData['vuls'] += $amvResult['vulnerability'];

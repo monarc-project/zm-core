@@ -7,14 +7,11 @@
 
 namespace Monarc\Core\Service;
 
-use Monarc\Core\Helper\EncryptDecryptHelperTrait;
 use Monarc\Core\Entity;
 use Monarc\Core\Table;
 
 class AnrService
 {
-    use EncryptDecryptHelperTrait;
-
     private Table\AnrTable $anrTable;
 
     private Table\InstanceTable $instanceTable;
