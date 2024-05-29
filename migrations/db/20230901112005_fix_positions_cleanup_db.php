@@ -296,6 +296,7 @@ class FixPositionsCleanupDb extends AbstractMigration
             ->removeColumn('anr_id')
             ->save();
         $this->table('objects_objects')
+            ->addIndex(['father_id', 'child_id'], ['unique' => true])
             ->dropForeignKey('anr_id')
             ->removeColumn('anr_id')
             ->save();

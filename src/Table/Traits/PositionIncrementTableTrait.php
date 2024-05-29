@@ -1,12 +1,13 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
 namespace Monarc\Core\Table\Traits;
 
+use Doctrine\ORM\QueryBuilder;
 use Monarc\Core\Entity\Interfaces\PositionedEntityInterface;
 use Monarc\Core\Table\AbstractTable;
 use Monarc\Core\Table\Interfaces\PositionUpdatableTableInterface;
@@ -41,20 +42,7 @@ trait PositionIncrementTableTrait
         }
 
         $queryBuilder = $this->getRepository()->createQueryBuilder('t');
-        foreach ($params as $fieldName => $fieldValue) {
-            if (\is_array($fieldValue)) {
-                $queryBuilder->innerJoin('t.' . $fieldName, $fieldName);
-                foreach ($fieldValue as $relationFieldName => $relationFieldValue) {
-                    $relationFieldParam = $fieldName . '_' . $relationFieldName;
-                    $queryBuilder->andWhere($fieldName . '.' . $relationFieldName . ' = :' . $relationFieldParam)
-                        ->setParameter($relationFieldParam, $relationFieldValue);
-                }
-            } elseif ($fieldValue === null) {
-                $queryBuilder->andWhere('t.' . $fieldName . ' IS NULL');
-            } else {
-                $queryBuilder->andWhere('t.' . $fieldName . ' = :' . $fieldName)->setParameter($fieldName, $fieldValue);
-            }
-        }
+        $this->prepareQueryBuilderParams($queryBuilder, $params);
 
         $queryBuilder->andWhere('t.position >= :positionFrom')->setParameter('positionFrom', $positionFrom);
         if ($positionTo > $positionFrom) {
@@ -76,14 +64,26 @@ trait PositionIncrementTableTrait
     {
         $queryBuilder = $this->getRepository()->createQueryBuilder('t')->select('MAX(t.position)');
 
-        foreach ($params as $fieldName => $fieldValue) {
-            if ($fieldValue !== null) {
-                $queryBuilder->andWhere('t.' . $fieldName . ' = :' . $fieldName)->setParameter($fieldName, $fieldValue);
-            } else {
-                $queryBuilder->andWhere('t.' . $fieldName . ' IS NULL');
-            }
-        }
+        $this->prepareQueryBuilderParams($queryBuilder, $params);
 
         return (int)$queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    private function prepareQueryBuilderParams(QueryBuilder $queryBuilder, array $params): void
+    {
+        foreach ($params as $fieldName => $fieldValue) {
+            if (\is_array($fieldValue)) {
+                $queryBuilder->innerJoin('t.' . $fieldName, $fieldName);
+                foreach ($fieldValue as $relationFieldName => $relationFieldValue) {
+                    $relationFieldParam = $fieldName . '_' . $relationFieldName;
+                    $queryBuilder->andWhere($fieldName . '.' . $relationFieldName . ' = :' . $relationFieldParam)
+                        ->setParameter($relationFieldParam, $relationFieldValue);
+                }
+            } elseif ($fieldValue === null) {
+                $queryBuilder->andWhere('t.' . $fieldName . ' IS NULL');
+            } else {
+                $queryBuilder->andWhere('t.' . $fieldName . ' = :' . $fieldName)->setParameter($fieldName, $fieldValue);
+            }
+        }
     }
 }
