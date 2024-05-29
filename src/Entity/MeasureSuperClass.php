@@ -43,7 +43,7 @@ class MeasureSuperClass
     /**
      * @var ReferentialSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Referential", inversedBy="measures", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Referential", inversedBy="measures")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="referential_uuid", referencedColumnName="uuid", nullable=true)
      * })
@@ -53,7 +53,7 @@ class MeasureSuperClass
     /**
      * @var SoaCategorySuperClass|null
      *
-     * @ORM\ManyToOne(targetEntity="SoaCategory", inversedBy="measures", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="SoaCategory", inversedBy="measures")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="soacategory_id", referencedColumnName="id", nullable=true, onDelete="SET NULL")
      * })
@@ -63,7 +63,7 @@ class MeasureSuperClass
     /**
      * @var ArrayCollection|AmvSuperClass[]
      *
-     * @ORM\ManyToMany(targetEntity="Amv", inversedBy="measures", cascade={"persist"})
+     * @ORM\ManyToMany(targetEntity="Amv", inversedBy="measures")
      * @ORM\JoinTable(name="measures_amvs",
      *   inverseJoinColumns={@ORM\JoinColumn(name="amv_id", referencedColumnName="uuid")},
      *   joinColumns={@ORM\JoinColumn(name="measure_id", referencedColumnName="uuid")},
@@ -74,7 +74,7 @@ class MeasureSuperClass
     /**
      * @var ArrayCollection|RolfRiskSuperClass[]
      *
-     * @ORM\ManyToMany(targetEntity="RolfRisk", inversedBy="measures", cascade={"persist"})
+     * @ORM\ManyToMany(targetEntity="RolfRisk", inversedBy="measures")
      * @ORM\JoinTable(name="measures_rolf_risks",
      *   inverseJoinColumns={@ORM\JoinColumn(name="rolf_risk_id", referencedColumnName="id")},
      *   joinColumns={@ORM\JoinColumn(name="measure_id", referencedColumnName="uuid")},

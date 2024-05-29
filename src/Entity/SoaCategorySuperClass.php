@@ -33,7 +33,7 @@ class SoaCategorySuperClass
     /**
      * @var ReferentialSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Referential", inversedBy="categories", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Referential", inversedBy="categories")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="referential_uuid", referencedColumnName="uuid", nullable=true)
      * })

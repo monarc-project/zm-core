@@ -54,7 +54,7 @@ class AmvSuperClass implements PositionedEntityInterface, PropertyStateEntityInt
     /**
      * @var AssetSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Asset", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Asset")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="asset_id", referencedColumnName="uuid", nullable=false)
      * })
@@ -64,7 +64,7 @@ class AmvSuperClass implements PositionedEntityInterface, PropertyStateEntityInt
     /**
      * @var ThreatSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Threat", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Threat")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="threat_id", referencedColumnName="uuid", nullable=false)
      * })
@@ -74,7 +74,7 @@ class AmvSuperClass implements PositionedEntityInterface, PropertyStateEntityInt
     /**
      * @var VulnerabilitySuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Vulnerability", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Vulnerability")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="vulnerability_id", referencedColumnName="uuid", nullable=false)
      * })
@@ -84,7 +84,7 @@ class AmvSuperClass implements PositionedEntityInterface, PropertyStateEntityInt
     /**
      * @var ArrayCollection|MeasureSuperClass[]
      *
-     * @ORM\ManyToMany(targetEntity="Measure", mappedBy="amvs", cascade={"persist"})
+     * @ORM\ManyToMany(targetEntity="Measure", mappedBy="amvs")
      */
     protected $measures;
 

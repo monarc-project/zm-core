@@ -38,14 +38,14 @@ class ReferentialSuperClass
     /**
      * @var MeasureSuperClass[]|ArrayCollection
      *
-     * @ORM\OneToMany(targetEntity="Measure", mappedBy="referential", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="Measure", mappedBy="referential")
      */
     protected $measures;
 
     /**
      * @var SoaCategorySuperClass[]|ArrayCollection
      *
-     * @ORM\OneToMany(targetEntity="SoaCategory", mappedBy="referential", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="SoaCategory", mappedBy="referential")
      */
     protected $categories;
 

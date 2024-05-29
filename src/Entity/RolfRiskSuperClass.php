@@ -41,7 +41,7 @@ class RolfRiskSuperClass
     /**
      * @var RolfTagSuperClass[]|ArrayCollection
      *
-     * @ORM\ManyToMany(targetEntity="RolfTag", inversedBy="risks", cascade={"persist"})
+     * @ORM\ManyToMany(targetEntity="RolfTag", inversedBy="risks")
      * @ORM\JoinTable(name="rolf_risks_tags",
      *  joinColumns={@ORM\JoinColumn(name="rolf_risk_id", referencedColumnName="id")},
      *  inverseJoinColumns={@ORM\JoinColumn(name="rolf_tag_id", referencedColumnName="id")}
@@ -52,7 +52,7 @@ class RolfRiskSuperClass
     /**
      * @var MeasureSuperClass[]|ArrayCollection
      *
-     * @ORM\ManyToMany(targetEntity="Measure", mappedBy="rolfRisks", cascade={"persist"})
+     * @ORM\ManyToMany(targetEntity="Measure", mappedBy="rolfRisks")
      * @ORM\JoinTable(name="measures_rolf_risks",
      *  joinColumns={@ORM\JoinColumn(name="rolf_risk_id", referencedColumnName="id")},
      *  inverseJoinColumns={@ORM\JoinColumn(name="measure_id", referencedColumnName="uuid")}

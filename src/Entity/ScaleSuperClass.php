@@ -40,7 +40,7 @@ class ScaleSuperClass
     /**
      * @var AnrSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Anr", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Anr")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=false, onDelete="CASCADE")
      * })

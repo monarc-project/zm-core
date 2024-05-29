@@ -5,12 +5,12 @@
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
-namespace Monarc\Core\Validator\InputValidator\MeasureMeasure;
+namespace Monarc\Core\Validator\InputValidator\MeasureLink;
 
 use Laminas\Validator\StringLength;
 use Monarc\Core\Validator\InputValidator\AbstractInputValidator;
 
-class PostMeasureMeasureDataInputValidator extends AbstractInputValidator
+class PostMeasureLinkDataInputValidator extends AbstractInputValidator
 {
     protected function getRules(): array
     {

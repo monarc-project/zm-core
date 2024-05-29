@@ -90,19 +90,19 @@ class Model
 
     /**
      * @var Asset[]|ArrayCollection
-     * @ORM\ManyToMany(targetEntity="Asset", mappedBy="models", cascade={"persist"})
+     * @ORM\ManyToMany(targetEntity="Asset", mappedBy="models")
      */
     protected $assets;
 
     /**
      * @var Threat[]|ArrayCollection
-     * @ORM\ManyToMany(targetEntity="Threat", mappedBy="models", cascade={"persist"})
+     * @ORM\ManyToMany(targetEntity="Threat", mappedBy="models")
      */
     protected $threats;
 
     /**
      * @var Vulnerability[]|ArrayCollection
-     * @ORM\ManyToMany(targetEntity="Vulnerability", mappedBy="models", cascade={"persist"})
+     * @ORM\ManyToMany(targetEntity="Vulnerability", mappedBy="models")
      */
     protected $vulnerabilities;
 

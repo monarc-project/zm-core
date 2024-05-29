@@ -37,7 +37,7 @@ class RolfTagSuperClass
     /**
      * @var RolfRiskSuperClass[]|ArrayCollection
      *
-     * @ORM\ManyToMany(targetEntity="RolfRisk", mappedBy="tags", cascade={"persist"})
+     * @ORM\ManyToMany(targetEntity="RolfRisk", mappedBy="tags")
      */
     protected $risks;
 

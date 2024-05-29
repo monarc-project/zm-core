@@ -48,7 +48,7 @@ class InstanceRiskOpSuperClass
     /**
      * @var AnrSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Anr", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Anr")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
      * })
@@ -58,7 +58,7 @@ class InstanceRiskOpSuperClass
     /**
      * @var InstanceSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Instance", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Instance")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="instance_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
      * })
@@ -68,7 +68,7 @@ class InstanceRiskOpSuperClass
     /**
      * @var ObjectSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="MonarcObject", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="MonarcObject")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="object_id", referencedColumnName="uuid", nullable=true)
      * })
@@ -78,7 +78,7 @@ class InstanceRiskOpSuperClass
     /**
      * @var RolfRiskSuperClass|null
      *
-     * @ORM\ManyToOne(targetEntity="RolfRisk", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="RolfRisk")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="rolf_risk_id", referencedColumnName="id", nullable=true, onDelete="SET NULL")
      * })
@@ -231,23 +231,23 @@ class InstanceRiskOpSuperClass
     }
 
     public static function constructFromObject(
-        InstanceRiskOpSuperClass $operationalInstanceRisk
+        InstanceRiskOpSuperClass $sourceOperationalInstanceRisk
     ): InstanceRiskOpSuperClass {
         return (new static())
-            ->setRiskCacheCode($operationalInstanceRisk->getRiskCacheCode())
-            ->setRiskCacheLabels($operationalInstanceRisk->getRiskCacheLabels())
-            ->setRiskCacheDescriptions($operationalInstanceRisk->getRiskCacheDescriptions())
-            ->setBrutProb($operationalInstanceRisk->getBrutProb())
-            ->setNetProb($operationalInstanceRisk->getNetProb())
-            ->setTargetedProb($operationalInstanceRisk->getTargetedProb())
-            ->setRiskCacheCode($operationalInstanceRisk->getRiskCacheCode())
-            ->setCacheBrutRisk($operationalInstanceRisk->getCacheBrutRisk())
-            ->setCacheNetRisk($operationalInstanceRisk->getCacheNetRisk())
-            ->setCacheTargetedRisk($operationalInstanceRisk->getCacheTargetedRisk())
-            ->setKindOfMeasure($operationalInstanceRisk->getKindOfMeasure())
-            ->setComment($operationalInstanceRisk->getComment())
-            ->setMitigation($operationalInstanceRisk->getMitigation())
-            ->setSpecific($operationalInstanceRisk->getSpecific());
+            ->setRiskCacheCode($sourceOperationalInstanceRisk->getRiskCacheCode())
+            ->setRiskCacheLabels($sourceOperationalInstanceRisk->getRiskCacheLabels())
+            ->setRiskCacheDescriptions($sourceOperationalInstanceRisk->getRiskCacheDescriptions())
+            ->setBrutProb($sourceOperationalInstanceRisk->getBrutProb())
+            ->setNetProb($sourceOperationalInstanceRisk->getNetProb())
+            ->setTargetedProb($sourceOperationalInstanceRisk->getTargetedProb())
+            ->setRiskCacheCode($sourceOperationalInstanceRisk->getRiskCacheCode())
+            ->setCacheBrutRisk($sourceOperationalInstanceRisk->getCacheBrutRisk())
+            ->setCacheNetRisk($sourceOperationalInstanceRisk->getCacheNetRisk())
+            ->setCacheTargetedRisk($sourceOperationalInstanceRisk->getCacheTargetedRisk())
+            ->setKindOfMeasure($sourceOperationalInstanceRisk->getKindOfMeasure())
+            ->setComment($sourceOperationalInstanceRisk->getComment())
+            ->setMitigation($sourceOperationalInstanceRisk->getMitigation())
+            ->setSpecific($sourceOperationalInstanceRisk->getSpecific());
     }
 
     public function getId()

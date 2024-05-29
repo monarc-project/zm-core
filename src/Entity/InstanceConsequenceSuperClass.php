@@ -37,7 +37,7 @@ class InstanceConsequenceSuperClass
     /**
      * @var AnrSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Anr", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Anr")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
      * })
@@ -47,7 +47,7 @@ class InstanceConsequenceSuperClass
     /**
      * @var InstanceSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Instance", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Instance")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="instance_id", referencedColumnName="id", nullable=true)
      * })
@@ -57,7 +57,7 @@ class InstanceConsequenceSuperClass
     /**
      * @var ScaleImpactTypeSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="ScaleImpactType", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="ScaleImpactType")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="scale_impact_type_id", referencedColumnName="id", nullable=true)
      * })

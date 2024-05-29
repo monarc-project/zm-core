@@ -54,7 +54,7 @@ class InstanceSuperClass implements PositionedEntityInterface, PropertyStateEnti
     /**
      * @var AnrSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Anr", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Anr")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
      * })
@@ -64,7 +64,7 @@ class InstanceSuperClass implements PositionedEntityInterface, PropertyStateEnti
     /**
      * @var AssetSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Asset", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Asset")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="asset_id", referencedColumnName="uuid", nullable=true)
      * })
@@ -74,7 +74,7 @@ class InstanceSuperClass implements PositionedEntityInterface, PropertyStateEnti
     /**
      * @var ObjectSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="MonarcObject", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="MonarcObject")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="object_id", referencedColumnName="uuid", nullable=true)
      * })
@@ -84,7 +84,7 @@ class InstanceSuperClass implements PositionedEntityInterface, PropertyStateEnti
     /**
      * @var InstanceSuperClass|null
      *
-     * @ORM\ManyToOne(targetEntity="Instance", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Instance")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="root_id", referencedColumnName="id", nullable=true)
      * })
@@ -94,7 +94,7 @@ class InstanceSuperClass implements PositionedEntityInterface, PropertyStateEnti
     /**
      * @var InstanceSuperClass|null
      *
-     * @ORM\ManyToOne(targetEntity="Instance", inversedBy="children", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Instance", inversedBy="children")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="parent_id", referencedColumnName="id", nullable=true)
      * })

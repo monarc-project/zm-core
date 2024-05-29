@@ -33,7 +33,7 @@ class OperationalInstanceRiskScaleSuperClass
     /**
      * @var AnrSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Anr", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Anr")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
      * })
@@ -43,7 +43,7 @@ class OperationalInstanceRiskScaleSuperClass
     /**
      * @var InstanceRiskOpSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="InstanceRiskOp", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="InstanceRiskOp")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="instance_risk_op_id", referencedColumnName="id", onDelete="CASCADE")
      * })
@@ -53,7 +53,7 @@ class OperationalInstanceRiskScaleSuperClass
     /**
      * @var OperationalRiskScaleTypeSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="OperationalRiskScaleType", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="OperationalRiskScaleType")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="operational_risk_scale_type_id", referencedColumnName="id", onDelete="CASCADE")
      * })

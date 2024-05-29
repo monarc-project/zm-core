@@ -27,7 +27,6 @@ class AmvExportService
                 ], $measure->getReferential()->getLabels()),
                 'category' => $measure->getCategory() !== null ? array_merge([
                     'id' => $measure->getCategory()->getId(),
-                    'status' => $measure->getCategory()->getStatus(),
                 ], $measure->getCategory()->getLabels()) : null,
                 'status' => $measure->getStatus(),
             ], $measure->getLabels());

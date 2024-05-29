@@ -49,7 +49,7 @@ class InstanceRiskSuperClass
     /**
      * @var AnrSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Anr", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Anr")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
      * })
@@ -59,7 +59,7 @@ class InstanceRiskSuperClass
     /**
      * @var AmvSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Amv", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Amv")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="amv_id", referencedColumnName="uuid", nullable=true)
      * })
@@ -69,7 +69,7 @@ class InstanceRiskSuperClass
     /**
      * @var AssetSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Asset", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Asset")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="asset_id", referencedColumnName="uuid", nullable=true)
      * })
@@ -79,7 +79,7 @@ class InstanceRiskSuperClass
     /**
      * @var ThreatSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Threat", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Threat")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="threat_id", referencedColumnName="uuid", nullable=true)
      * })
@@ -89,7 +89,7 @@ class InstanceRiskSuperClass
     /**
      * @var VulnerabilitySuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Vulnerability", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Vulnerability")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="vulnerability_id", referencedColumnName="uuid", nullable=true)
      * })
@@ -99,7 +99,7 @@ class InstanceRiskSuperClass
     /**
      * @var InstanceSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Instance", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Instance")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="instance_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
      * })
@@ -202,22 +202,22 @@ class InstanceRiskSuperClass
      */
     protected $cacheTargetedRisk = -1;
 
-    public static function constructFromObject(InstanceRiskSuperClass $instanceRisk): InstanceRiskSuperClass
+    public static function constructFromObject(InstanceRiskSuperClass $sourceInstanceRisk): InstanceRiskSuperClass
     {
         return (new static())
-            ->setSpecific($instanceRisk->getSpecific())
-            ->setIsThreatRateNotSetOrModifiedExternally($instanceRisk->IsThreatRateNotSetOrModifiedExternally())
-            ->setThreatRate($instanceRisk->getThreatRate())
-            ->setVulnerabilityRate($instanceRisk->getVulnerabilityRate())
-            ->setKindOfMeasure($instanceRisk->getKindOfMeasure())
-            ->setReductionAmount($instanceRisk->getReductionAmount())
-            ->setComment($instanceRisk->getComment())
-            ->setCommentAfter($instanceRisk->getCommentAfter())
-            ->setRiskConfidentiality($instanceRisk->getRiskConfidentiality())
-            ->setRiskIntegrity($instanceRisk->getRiskIntegrity())
-            ->setRiskAvailability($instanceRisk->getRiskAvailability())
-            ->setCacheMaxRisk($instanceRisk->getCacheMaxRisk())
-            ->setCacheTargetedRisk($instanceRisk->getCacheTargetedRisk());
+            ->setSpecific($sourceInstanceRisk->getSpecific())
+            ->setIsThreatRateNotSetOrModifiedExternally($sourceInstanceRisk->IsThreatRateNotSetOrModifiedExternally())
+            ->setThreatRate($sourceInstanceRisk->getThreatRate())
+            ->setVulnerabilityRate($sourceInstanceRisk->getVulnerabilityRate())
+            ->setKindOfMeasure($sourceInstanceRisk->getKindOfMeasure())
+            ->setReductionAmount($sourceInstanceRisk->getReductionAmount())
+            ->setComment($sourceInstanceRisk->getComment())
+            ->setCommentAfter($sourceInstanceRisk->getCommentAfter())
+            ->setRiskConfidentiality($sourceInstanceRisk->getRiskConfidentiality())
+            ->setRiskIntegrity($sourceInstanceRisk->getRiskIntegrity())
+            ->setRiskAvailability($sourceInstanceRisk->getRiskAvailability())
+            ->setCacheMaxRisk($sourceInstanceRisk->getCacheMaxRisk())
+            ->setCacheTargetedRisk($sourceInstanceRisk->getCacheTargetedRisk());
     }
 
     public function getId(): int

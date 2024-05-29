@@ -153,7 +153,7 @@ return [
             Service\InstanceConsequenceService::class => AutowireFactory::class,
             Service\MailService::class => AutowireFactory::class,
             Service\ModelService::class => AutowireFactory::class,
-            Service\MeasureMeasureService::class => AutowireFactory::class,
+            Service\MeasureLinkService::class => AutowireFactory::class,
             Service\MeasureService::class => AutowireFactory::class,
             Service\ObjectService::class => AutowireFactory::class,
             Service\ObjectCategoryService::class => AutowireFactory::class,
@@ -202,7 +202,6 @@ return [
             Table\ModelTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\MonarcObjectTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\MeasureTable::class => Table\Factory\CoreEntityManagerFactory::class,
-            Table\MeasureMeasureTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\ObjectCategoryTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\ObjectObjectTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\OperationalRiskScaleTable::class => Table\Factory\CoreEntityManagerFactory::class,
@@ -285,7 +284,7 @@ return [
             InputValidator\Anr\PatchThresholdsDataInputValidator::class => ReflectionBasedAbstractFactory::class,
             InputValidator\Profile\PatchProfileDataInputValidator::class => ReflectionBasedAbstractFactory::class,
             InputValidator\Scale\UpdateScalesDataInputValidator::class => ReflectionBasedAbstractFactory::class,
-            InputValidator\MeasureMeasure\PostMeasureMeasureDataInputValidator::class =>
+            InputValidator\MeasureLink\PostMeasureLinkDataInputValidator::class =>
                 ReflectionBasedAbstractFactory::class,
             InputValidator\Measure\PostMeasureDataInputValidator::class => static function (
                 Containerinterface $container

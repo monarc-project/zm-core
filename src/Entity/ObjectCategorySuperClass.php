@@ -46,7 +46,7 @@ class ObjectCategorySuperClass implements PositionedEntityInterface, PropertySta
     /**
      * @var ObjectCategorySuperClass|null
      *
-     * @ORM\ManyToOne(targetEntity="ObjectCategory", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="ObjectCategory")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="root_id", referencedColumnName="id", nullable=true)
      * })
@@ -56,7 +56,7 @@ class ObjectCategorySuperClass implements PositionedEntityInterface, PropertySta
     /**
      * @var ObjectCategorySuperClass|null
      *
-     * @ORM\ManyToOne(targetEntity="ObjectCategory", inversedBy="children", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="ObjectCategory", inversedBy="children")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="parent_id", referencedColumnName="id", nullable=true)
      * })

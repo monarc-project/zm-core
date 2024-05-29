@@ -56,7 +56,7 @@ class ObjectSuperClass implements PositionedEntityInterface, PropertyStateEntity
     /**
      * @var ObjectCategorySuperClass|null
      *
-     * @ORM\ManyToOne(targetEntity="ObjectCategory", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="ObjectCategory")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="object_category_id", referencedColumnName="id", nullable=true)
      * })
@@ -66,7 +66,7 @@ class ObjectSuperClass implements PositionedEntityInterface, PropertyStateEntity
     /**
      * @var AssetSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Asset", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Asset")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="asset_id", referencedColumnName="uuid", nullable=true, onDelete="SET NULL")
      * })
@@ -76,7 +76,7 @@ class ObjectSuperClass implements PositionedEntityInterface, PropertyStateEntity
     /**
      * @var RolfTagSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="RolfTag", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="RolfTag")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="rolf_tag_id", referencedColumnName="id", nullable=true)
      * })

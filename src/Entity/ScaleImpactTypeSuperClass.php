@@ -47,7 +47,7 @@ class ScaleImpactTypeSuperClass
     protected $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Anr", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Anr")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
      * })
@@ -57,7 +57,7 @@ class ScaleImpactTypeSuperClass
     /**
      * @var ScaleSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Scale", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Scale")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="scale_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
      * })

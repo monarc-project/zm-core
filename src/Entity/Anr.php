@@ -36,7 +36,7 @@ class Anr extends AnrSuperClass
     /**
      * @var ArrayCollection|ObjectCategory[]
      *
-     * @ORM\ManyToMany(targetEntity="ObjectCategory", inversedBy="anrs", cascade={"persist"})
+     * @ORM\ManyToMany(targetEntity="ObjectCategory", inversedBy="anrs")
      * @ORM\JoinTable(name="anrs_objects_categories",
      *  inverseJoinColumns={@ORM\JoinColumn(name="object_category_id", referencedColumnName="id")},
      *  joinColumns={@ORM\JoinColumn(name="anr_id", referencedColumnName="id")},

@@ -8,32 +8,32 @@
 namespace Monarc\Core\Service;
 
 use Monarc\Core\Entity\Measure;
-use Monarc\Core\Entity\MeasureMeasure;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Table\MeasureTable;
-use Monarc\Core\Table\MeasureMeasureTable;
 
-class MeasureMeasureService
+class MeasureLinkService
 {
-    public function __construct(private MeasureMeasureTable $measureMeasureTable, private MeasureTable $measureTable)
+    public function __construct(private MeasureTable $measureTable)
     {
     }
 
     public function getList(): array
     {
         $result = [];
-        /** @var MeasureMeasure $measureMeasure */
-        foreach ($this->measureMeasureTable->findAll() as $measureMeasure) {
-            $result[] = [
-                'masterMeasure' => array_merge([
-                    'uuid' => $measureMeasure->getMasterMeasure()->getUuid(),
-                    'code' => $measureMeasure->getMasterMeasure()->getCode(),
-                ], $measureMeasure->getMasterMeasure()->getLabels()),
-                'linkedMeasure' => array_merge([
-                    'uuid' => $measureMeasure->getLinkedMeasure()->getUuid(),
-                    'code' => $measureMeasure->getLinkedMeasure()->getCode(),
-                ], $measureMeasure->getLinkedMeasure()->getLabels()),
-            ];
+        /** @var Measure $masterMeasure */
+        foreach ($this->measureTable->findAll() as $masterMeasure) {
+            foreach ($masterMeasure->getLinkedMeasures() as $linkedMeasure) {
+                $result[] = [
+                    'masterMeasure' => array_merge([
+                        'uuid' => $masterMeasure->getUuid(),
+                        'code' => $masterMeasure->getCode(),
+                    ], $masterMeasure->getLabels()),
+                    'linkedMeasure' => array_merge([
+                        'uuid' => $linkedMeasure->getUuid(),
+                        'code' => $linkedMeasure->getCode(),
+                    ], $linkedMeasure->getLabels()),
+                ];
+            }
         }
 
         return $result;
@@ -65,7 +65,7 @@ class MeasureMeasureService
         foreach ($data as $rowData) {
             $createdIds[] = $this->create($rowData, false)->getUuid();
         }
-        $this->measureMeasureTable->flush();
+        $this->measureTable->flush();
 
         return $createdIds;
     }

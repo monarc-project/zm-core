@@ -202,7 +202,6 @@ class ObjectExportService
                     ], $measure->getReferential()->getLabels()),
                     'category' => $measure->getCategory() !== null ? array_merge([
                         'id' => $measure->getCategory()->getId(),
-                        'status' => $measure->getCategory()->getStatus(),
                     ], $measure->getCategory()->getLabels()) : null,
                 ], $measure->getLabels());
             }

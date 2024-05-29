@@ -47,7 +47,7 @@ class ThreatSuperClass
     /**
      * @var ThemeSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Theme", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Theme")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="theme_id", referencedColumnName="id", nullable=true)
      * })
