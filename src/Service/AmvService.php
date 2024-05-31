@@ -216,6 +216,8 @@ class AmvService implements PositionUpdatableServiceInterface
                 ->setVulnerability($vulnerability)
                 ->setCreator($this->connectedUser->getEmail());
 
+            $this->updatePositions($amv, $this->amvTable);
+
             $this->createInstanceRiskForInstances($asset, $amv);
 
             $this->amvTable->save($amv);
