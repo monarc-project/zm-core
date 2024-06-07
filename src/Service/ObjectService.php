@@ -524,7 +524,7 @@ class ObjectService
     private function validateAndSetCategory(Entity\MonarcObject $monarcObject, array $data): void
     {
         $hasCategory = $monarcObject->hasCategory();
-        if (!$hasCategory || (int)$data['category'] !== $monarcObject->getCategory()->getId()) {
+        if (!$hasCategory || (int)$data['category'] !== $monarcObject->getCategory()?->getId()) {
             /** @var Entity\ObjectCategory $category */
             $category = $this->objectCategoryTable->findById((int)$data['category']);
 
@@ -534,10 +534,12 @@ class ObjectService
             }
             /* Create the links with anrs for the new root category if they do not exist. */
             if (!$hasCategory
-                || $category->getRootCategory()->getId() !== $monarcObject->getCategory()->getRootCategory()->getId()
+                || $category->getRootCategory()->getId() !== $monarcObject->getCategory()?->getRootCategory()->getId()
             ) {
                 foreach ($monarcObject->getAnrs() as $anr) {
-                    $this->objectCategoryTable->save($category->getRootCategory()->addAnrLink($anr), false);
+                    /** @var Entity\ObjectCategory $rootCategory */
+                    $rootCategory = $category->getRootCategory();
+                    $this->objectCategoryTable->save($rootCategory->addAnrLink($anr), false);
                 }
             }
 

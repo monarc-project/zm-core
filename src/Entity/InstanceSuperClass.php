@@ -233,7 +233,7 @@ class InstanceSuperClass implements PositionedEntityInterface, PropertyStateEnti
         ];
     }
 
-    public function getId(): int
+    public function getId()
     {
         return $this->id;
     }

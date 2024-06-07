@@ -220,7 +220,7 @@ class InstanceRiskSuperClass
             ->setCacheTargetedRisk($sourceInstanceRisk->getCacheTargetedRisk());
     }
 
-    public function getId(): int
+    public function getId()
     {
         return $this->id;
     }

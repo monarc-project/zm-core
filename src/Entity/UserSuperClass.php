@@ -159,7 +159,7 @@ abstract class UserSuperClass
         $this->passwordTokens = new ArrayCollection();
     }
 
-    public function getId(): int
+    public function getId()
     {
         return $this->id;
     }

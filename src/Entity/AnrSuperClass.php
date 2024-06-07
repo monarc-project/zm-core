@@ -257,7 +257,7 @@ class AnrSuperClass
             ->setCacheModelShowRolfBrut($anr->getCacheModelShowRolfBrut());
     }
 
-    public function getId(): int
+    public function getId()
     {
         return $this->id;
     }

@@ -97,7 +97,7 @@ class ObjectCategorySuperClass implements PositionedEntityInterface, PropertySta
         return ['parent' => $this->parent];
     }
 
-    public function getId(): int
+    public function getId()
     {
         return $this->id;
     }

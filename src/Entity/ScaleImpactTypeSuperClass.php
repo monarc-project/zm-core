@@ -106,7 +106,7 @@ class ScaleImpactTypeSuperClass
             ->setIsHidden($scaleImpactType->isHidden());
     }
 
-    public function getId(): int
+    public function getId()
     {
         return $this->id;
     }

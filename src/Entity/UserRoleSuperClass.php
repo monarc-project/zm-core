@@ -52,7 +52,7 @@ class UserRoleSuperClass
         $this->creator = $user->getCreator();
     }
 
-    public function getId(): int
+    public function getId()
     {
         return $this->id;
     }

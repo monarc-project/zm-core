@@ -82,7 +82,7 @@ class OperationalRiskScaleTypeSuperClass
         $this->operationalInstanceRiskScales = new ArrayCollection();
     }
 
-    public function getId(): int
+    public function getId()
     {
         return $this->id;
     }

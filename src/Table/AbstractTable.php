@@ -220,7 +220,7 @@ abstract class AbstractTable
 
         return $queryBuilder
             ->where($queryBuilder->expr()->in('t.uuid', $uuids))
-            ->where('t.anr = :anr')
+            ->andWhere('t.anr = :anr')
             ->setParameter('anr', $anr)
             ->getQuery()
             ->getResult();
