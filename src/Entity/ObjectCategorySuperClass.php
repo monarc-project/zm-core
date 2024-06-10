@@ -75,7 +75,6 @@ class ObjectCategorySuperClass implements PositionedEntityInterface, PropertySta
      * @var ObjectSuperClass[]|ArrayCollection
      *
      * @ORM\OneToMany(targetEntity="MonarcObject", mappedBy="category")
-     * @ORM\OrderBy({"position" = "ASC"})
      */
     protected $objects;
 

@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -9,12 +9,9 @@ namespace Monarc\Core\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
-use Monarc\Core\Entity\Interfaces\PositionedEntityInterface;
-use Monarc\Core\Entity\Interfaces\PropertyStateEntityInterface;
 use Monarc\Core\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Entity\Traits\LabelsEntityTrait;
 use Monarc\Core\Entity\Traits\NamesEntityTrait;
-use Monarc\Core\Entity\Traits\PropertyStateEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 use Ramsey\Uuid\Lazy\LazyUuidFromString;
 use Ramsey\Uuid\Uuid;
@@ -29,15 +26,13 @@ use Ramsey\Uuid\UuidInterface;
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
-class ObjectSuperClass implements PositionedEntityInterface, PropertyStateEntityInterface
+class ObjectSuperClass
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
 
     use LabelsEntityTrait;
     use NamesEntityTrait;
-
-    use PropertyStateEntityTrait;
 
     public const SCOPE_LOCAL = 1;
     public const SCOPE_GLOBAL = 2;
@@ -158,11 +153,6 @@ class ObjectSuperClass implements PositionedEntityInterface, PropertyStateEntity
         $this->instances = new ArrayCollection();
     }
 
-    public function getImplicitPositionRelationsValues(): array
-    {
-        return ['category' => $this->category];
-    }
-
     /**
      * @ORM\PrePersist
      */
@@ -199,8 +189,6 @@ class ObjectSuperClass implements PositionedEntityInterface, PropertyStateEntity
 
     public function setCategory(?ObjectCategorySuperClass $category): self
     {
-        $this->trackPropertyState('category', $this->category);
-
         if ($category !== null) {
             $category->addObject($this);
         } elseif ($this->category !== null) {
@@ -266,18 +254,6 @@ class ObjectSuperClass implements PositionedEntityInterface, PropertyStateEntity
     public function getScopeName(): string
     {
         return $this->scope === static::SCOPE_LOCAL ? 'local' : 'global';
-    }
-
-    public function setPosition(int $position): self
-    {
-        $this->position = $position;
-
-        return $this;
-    }
-
-    public function getPosition(): int
-    {
-        return $this->position;
     }
 
     public function setMode(int $mode): self

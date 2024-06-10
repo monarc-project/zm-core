@@ -47,33 +47,6 @@ class FixPositionsCleanupDb extends AbstractMigration
             $previousAssetUuid = $amvData['asset_id'];
         }
 
-        /* Fix the objects positions. */
-        $objectsQuery = $this->query(
-            'SELECT uuid, object_category_id, position FROM objects ORDER BY object_category_id, position'
-        );
-        $previousObjectCategoryId = null;
-        $expectedObjectPosition = 1;
-        foreach ($objectsQuery->fetchAll() as $objectData) {
-            if ($previousObjectCategoryId === null) {
-                $previousObjectCategoryId = $objectData['object_category_id'];
-            }
-            if ($objectData['object_category_id'] !== $previousObjectCategoryId) {
-                $expectedObjectPosition = 1;
-            }
-            if ($expectedObjectPosition !== $objectData['position']) {
-                $this->execute(
-                    sprintf(
-                        'UPDATE objects SET position = %d WHERE uuid = "%s"',
-                        $expectedObjectPosition,
-                        $objectData['uuid']
-                    )
-                );
-            }
-
-            $expectedObjectPosition++;
-            $previousObjectCategoryId = $objectData['object_category_id'];
-        }
-
         /* Fix the objects compositions positions. */
         $objectsObjectsQuery = $this->query(
             'SELECT id, father_id, position FROM objects_objects ORDER BY father_id, position'
@@ -170,6 +143,7 @@ class FixPositionsCleanupDb extends AbstractMigration
             ->removeColumn('disponibility')
             ->removeColumn('token_import')
             ->removeColumn('original_name')
+            ->removeColumn('position')
             ->dropForeignKey('anr_id')
             ->removeColumn('anr_id')
             ->update();

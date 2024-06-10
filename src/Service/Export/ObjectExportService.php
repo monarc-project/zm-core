@@ -72,7 +72,6 @@ class ObjectExportService
                 'uuid' => $monarcObject->getUuid(),
                 'mode' => $monarcObject->getMode(),
                 'scope' => $monarcObject->getScope(),
-                'position' => $monarcObject->getPosition(),
                 'category' => $monarcObject->hasCategory() ? $monarcObject->getCategory()->getId() : null,
                 'asset' => $monarcObject->getAsset()->getUuid(),
                 'rolfTag' => $monarcObject->hasRolfTag() ? $monarcObject->getRolfTag()->getId() : null,
