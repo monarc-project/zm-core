@@ -219,6 +219,11 @@ class ObjectSuperClass
 
     public function setRolfTag(?RolfTagSuperClass $rolfTag)
     {
+        if ($rolfTag !== null) {
+            $rolfTag->addObject($this);
+        } elseif ($this->rolfTag !== null) {
+            $this->rolfTag->removeObject($this);
+        }
         $this->rolfTag = $rolfTag;
 
         return $this;

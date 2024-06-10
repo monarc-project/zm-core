@@ -42,6 +42,13 @@ class RolfTagSuperClass
     protected $risks;
 
     /**
+     * @var ArrayCollection|ObjectSuperClass[]
+     *
+     * @ORM\OneToMany(targetEntity="MonarcObject", mappedBy="rolfTag")
+     */
+    protected $objects;
+
+    /**
      * @var string
      *
      * @ORM\Column(name="code", type="string", length=255, nullable=true)
@@ -51,6 +58,7 @@ class RolfTagSuperClass
     public function __construct()
     {
         $this->risks = new ArrayCollection();
+        $this->objects = new ArrayCollection();
     }
 
     public function getId()
@@ -78,6 +86,30 @@ class RolfTagSuperClass
         if ($this->risks->contains($rolfRisk)) {
             $this->risks->removeElement($rolfRisk);
             $rolfRisk->removeTag($this);
+        }
+
+        return $this;
+    }
+
+    public function getObjects()
+    {
+        return $this->objects;
+    }
+
+    public function addObject(ObjectSuperClass $object): self
+    {
+        if (!$this->objects->contains($object)) {
+            $this->objects->add($object);
+            $object->setRolfTag($this);
+        }
+
+        return $this;
+    }
+
+    public function removeObject(ObjectSuperClass $object): self
+    {
+        if ($this->objects->contains($object)) {
+            $this->objects->removeElement($object);
         }
 
         return $this;
