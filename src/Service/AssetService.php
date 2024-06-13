@@ -217,7 +217,7 @@ class AssetService
 
     private function validateAssetObjects(Entity\Asset $asset): void
     {
-        if (!empty($asset->hasObjects())) {
+        if ($asset->hasObjects()) {
             if (!$asset->hasModels()) {
                 /*
                  * Check if the asset is compliant with generic/specific model, when they are used as parents,

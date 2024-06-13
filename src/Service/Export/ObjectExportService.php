@@ -63,8 +63,15 @@ class ObjectExportService
 
     private function prepareExportData(Entity\MonarcObject $monarcObject): array
     {
-        $rolfRisksData = $monarcObject->hasRolfTag() ? $this->prepareRolfRisksData($monarcObject->getRolfTag()) : [];
+        /** @var ?Entity\RolfTag $rolfTag */
+        $rolfTag = $monarcObject->getRolfTag();
+        $rolfRisksData = $rolfTag !== null ? $this->prepareRolfRisksData($rolfTag) : [];
+        /** @var ?Entity\ObjectCategory $category */
+        $category = $monarcObject->getCategory();
+        /** @var Entity\Asset $asset */
+        $asset = $monarcObject->getAsset();
 
+        /* TODO: this is the old structure format that has to be updated across all the exports on BO. */
         return [
             'type' => 'object',
             'monarc_version' => $this->configService->getAppVersion()['appVersion'],
@@ -72,21 +79,19 @@ class ObjectExportService
                 'uuid' => $monarcObject->getUuid(),
                 'mode' => $monarcObject->getMode(),
                 'scope' => $monarcObject->getScope(),
-                'category' => $monarcObject->hasCategory() ? $monarcObject->getCategory()->getId() : null,
+                'category' => $category?->getId(),
                 'asset' => $monarcObject->getAsset()->getUuid(),
-                'rolfTag' => $monarcObject->hasRolfTag() ? $monarcObject->getRolfTag()->getId() : null,
+                'rolfTag' => $rolfTag?->getId(),
             ], $monarcObject->getLabels(), $monarcObject->getNames()),
-            'categories' => $monarcObject->hasCategory()
-                ? $this->prepareObjectCategoriesData($monarcObject->getCategory())
-                : [],
-            'asset' => $this->assetExportService->prepareExportData($monarcObject->getAsset()),
+            'categories' => $category !== null ? $this->prepareObjectCategoriesData($category) : [],
+            'asset' => $this->assetExportService->prepareExportData($asset),
             'children' => $monarcObject->hasChildren() ? $this->prepareChildrenObjectsData($monarcObject) : [],
-            'rolfTags' => $monarcObject->hasRolfTag() ? [
-                $monarcObject->getRolfTag()->getId() => array_merge([
-                    'id' => $monarcObject->getRolfTag()->getId(),
-                    'code' => $monarcObject->getRolfTag()->getCode(),
+            'rolfTags' => $rolfTag !== null ? [
+                $rolfTag->getId() => array_merge([
+                    'id' => $rolfTag->getId(),
+                    'code' => $rolfTag->getCode(),
                     'risks' => array_keys($rolfRisksData),
-                ], $monarcObject->getRolfTag()->getLabels()),
+                ], $rolfTag->getLabels()),
             ] : [],
             'rolfRisks' => $rolfRisksData,
         ];
