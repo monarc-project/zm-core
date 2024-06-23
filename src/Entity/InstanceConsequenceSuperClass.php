@@ -143,6 +143,7 @@ class InstanceConsequenceSuperClass
     public function setScaleImpactType(ScaleImpactTypeSuperClass $scaleImpactType): self
     {
         $this->scaleImpactType = $scaleImpactType;
+        $scaleImpactType->addInstanceConsequence($this);
 
         return $this;
     }

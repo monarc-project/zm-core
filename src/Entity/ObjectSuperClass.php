@@ -309,28 +309,9 @@ class ObjectSuperClass
         return $this->parents;
     }
 
-    public function addParent(ObjectSuperClass $object): self
-    {
-        if (!$this->parents->contains($object)) {
-            $this->parents->add($object);
-            $object->addChild($this);
-        }
-
-        return $this;
-    }
-
-    public function removeParent(ObjectSuperClass $object): self
-    {
-        if ($this->parents->contains($object)) {
-            $this->parents->removeElement($object);
-            $object->removeChild($this);
-        }
-
-        return $this;
-    }
-
     /**
      * Note: If the method use used, the order has to be performed manually due to the Doctrine limitation.
+     * It's not allowed to use addParent or addChild methods due to the doctrine limitation of 2 fields relation on FO.
      */
     public function getChildren()
     {
@@ -347,26 +328,6 @@ class ObjectSuperClass
         return $this->children->contains($child);
     }
 
-    public function addChild(ObjectSuperClass $object): self
-    {
-        if (!$this->children->contains($object)) {
-            $this->children->add($object);
-            $object->addParent($this);
-        }
-
-        return $this;
-    }
-
-    public function removeChild(ObjectSuperClass $object): self
-    {
-        if ($this->children->contains($object)) {
-            $this->children->removeElement($object);
-            $object->removeParent($this);
-        }
-
-        return $this;
-    }
-
     /**
      * The links are used to keep the order of the objects' composition.
      */
@@ -377,7 +338,9 @@ class ObjectSuperClass
 
     public function addParentLink(ObjectObjectSuperClass $parentLink): self
     {
-        $this->parentsLinks->add($parentLink);
+        if (!$this->parentsLinks->contains($parentLink)) {
+            $this->parentsLinks->add($parentLink);
+        }
 
         return $this;
     }
@@ -385,6 +348,24 @@ class ObjectSuperClass
     public function getChildrenLinks()
     {
         return $this->childrenLinks;
+    }
+
+    public function addChildLink(ObjectObjectSuperClass $childLink): self
+    {
+        if (!$this->childrenLinks->contains($childLink)) {
+            $this->childrenLinks->add($childLink);
+        }
+
+        return $this;
+    }
+
+    public function removeChildLink(ObjectObjectSuperClass $childLink): self
+    {
+        if ($this->childrenLinks->contains($childLink)) {
+            $this->childrenLinks->removeElement($childLink);
+        }
+
+        return $this;
     }
 
     public function getInstances()

@@ -73,6 +73,13 @@ class ScaleImpactTypeSuperClass
     protected $scaleComments;
 
     /**
+     * @var InstanceConsequenceSuperClass[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="InstanceConsequence", mappedBy="scaleImpactType")
+     */
+    protected $instanceConsequences;
+
+    /**
      * @var int
      *
      * @ORM\Column(name="type", type="smallint", options={"unsigned":true})
@@ -96,6 +103,7 @@ class ScaleImpactTypeSuperClass
     public function __construct()
     {
         $this->scaleComments = new ArrayCollection();
+        $this->instanceConsequences = new ArrayCollection();
     }
 
     public static function constructFromObject(ScaleImpactTypeSuperClass $scaleImpactType): ScaleImpactTypeSuperClass
@@ -145,6 +153,21 @@ class ScaleImpactTypeSuperClass
         if (!$this->scaleComments->contains($scaleComment)) {
             $this->scaleComments->add($scaleComment);
             $scaleComment->setScaleImpactType($this);
+        }
+
+        return $this;
+    }
+
+    public function getInstanceConsequences()
+    {
+        return $this->instanceConsequences;
+    }
+
+    public function addInstanceConsequence(InstanceConsequenceSuperClass $instanceConsequence): self
+    {
+        if (!$this->instanceConsequences->contains($instanceConsequence)) {
+            $this->instanceConsequences->add($instanceConsequence);
+            $instanceConsequence->setScaleImpactType($this);
         }
 
         return $this;

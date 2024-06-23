@@ -315,8 +315,6 @@ class InstanceService
             'root' => $instance->isRoot() ? null : $instance->getRootInstance(),
             'parent' => $instance->hasParent() ? $instance->getParent() : null,
             'level' => $instance->getLevel(),
-            'assetType' => $instance->getAssetType(),
-            'exportable' => $instance->getExportable(),
             'c' => $instance->getConfidentiality(),
             'i' => $instance->getIntegrity(),
             'd' => $instance->getAvailability(),

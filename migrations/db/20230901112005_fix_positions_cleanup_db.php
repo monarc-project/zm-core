@@ -138,7 +138,11 @@ class FixPositionsCleanupDb extends AbstractMigration
             ->update();
 
         /* Clean up unused columns. */
-        $this->table('instances')->removeColumn('disponibility')->update();
+        $this->table('instances')
+            ->removeColumn('disponibility')
+            ->removeColumn('asset_type')
+            ->removeColumn('exportable')
+            ->update();
         $this->table('objects')
             ->removeColumn('disponibility')
             ->removeColumn('token_import')

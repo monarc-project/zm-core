@@ -138,20 +138,6 @@ class InstanceSuperClass implements PositionedEntityInterface, PropertyStateEnti
     protected $level = 1;
 
     /**
-     * @var int
-     *
-     * @ORM\Column(name="asset_type", type="smallint", options={"unsigned":true, "default":3})
-     */
-    protected $assetType = 3;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="exportable", type="smallint", options={"unsigned":true, "default":1})
-     */
-    protected $exportable = 1;
-
-    /**
      * @var int "-1" - means the value is inherited from one of its parents.
      *
      * @ORM\Column(name="c", type="smallint", options={"unsigned":true, "default":1})
@@ -220,9 +206,7 @@ class InstanceSuperClass implements PositionedEntityInterface, PropertyStateEnti
             ->setInheritedIntegrity((int)$instance->isIntegrityInherited())
             ->setInheritedAvailability((int)$instance->isAvailabilityInherited())
             ->setPosition($instance->getPosition())
-            ->setAssetType($instance->getAssetType())
-            ->setLevel($instance->getLevel())
-            ->setExportable($instance->getExportable());
+            ->setLevel($instance->getLevel());
     }
 
     public function getImplicitPositionRelationsValues(): array
@@ -337,30 +321,6 @@ class InstanceSuperClass implements PositionedEntityInterface, PropertyStateEnti
     public function isLevelRoot(): bool
     {
         return $this->level === static::LEVEL_ROOT;
-    }
-
-    public function setAssetType(int $assetType): self
-    {
-        $this->assetType = $assetType;
-
-        return $this;
-    }
-
-    public function getAssetType(): int
-    {
-        return $this->assetType;
-    }
-
-    public function setExportable(int $exportable): self
-    {
-        $this->exportable = $exportable;
-
-        return $this;
-    }
-
-    public function getExportable(): int
-    {
-        return $this->exportable;
     }
 
     public function setConfidentiality(int $c): self

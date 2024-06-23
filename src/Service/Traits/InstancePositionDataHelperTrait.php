@@ -21,8 +21,8 @@ trait InstancePositionDataHelperTrait
         InstanceSuperClass $instance,
         array $data
     ): array {
-        $positionData = [];
-        if (isset($data['position'])) {
+        $positionData = $data;
+        if (isset($data['position']) && empty($data['setOnlyExactPosition'])) {
             $positionData = [
                 'implicitPosition' => PositionUpdatableServiceInterface::IMPLICIT_POSITION_START,
                 'forcePositionUpdate' => true,
