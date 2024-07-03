@@ -118,4 +118,42 @@ class SoaScaleCommentSuperClass
 
         return $this;
     }
+
+    public static function getDefaultCommentsData(): array
+    {
+        return [
+            'fr' => [
+                ['scaleIndex' => 0, 'colour' => '#FFFFFF', 'isHidden' => false, 'comment' => 'Inexistant'],
+                ['scaleIndex' => 1, 'colour' => '#FD661F', 'isHidden' => false, 'comment' => 'Initialisé'],
+                ['scaleIndex' => 2, 'colour' => '#FD661F', 'isHidden' => false, 'comment' => 'Reproductible'],
+                ['scaleIndex' => 3, 'colour' => '#FFBC1C', 'isHidden' => false, 'comment' => 'Défini'],
+                ['scaleIndex' => 4, 'colour' => '#FFBC1C', 'isHidden' => false, 'comment' => 'Géré quantitativement'],
+                ['scaleIndex' => 5, 'colour' => '#D6F107', 'isHidden' => false, 'comment' => 'Optimisé'],
+            ],
+            'en' => [
+                ['scaleIndex' => 0, 'colour' => '#FFFFFF', 'isHidden' => false, 'comment' => 'Non-existent'],
+                ['scaleIndex' => 1, 'colour' => '#FD661F', 'isHidden' => false, 'comment' => 'Initial'],
+                ['scaleIndex' => 2, 'colour' => '#FD661F', 'isHidden' => false, 'comment' => 'Managed'],
+                ['scaleIndex' => 3, 'colour' => '#FFBC1C', 'isHidden' => false, 'comment' => 'Defined'],
+                ['scaleIndex' => 4, 'colour' => '#FFBC1C', 'isHidden' => false, 'comment' => 'Quantitatively managed'],
+                ['scaleIndex' => 5, 'colour' => '#D6F107', 'isHidden' => false, 'comment' => 'Optimized'],
+            ],
+            'de' => [
+                ['scaleIndex' => 0, 'colour' => '#FFFFFF', 'isHidden' => false, 'comment' => 'Nicht vorhanden'],
+                ['scaleIndex' => 1, 'colour' => '#FD661F', 'isHidden' => false, 'comment' => 'Initial'],
+                ['scaleIndex' => 2, 'colour' => '#FD661F', 'isHidden' => false, 'comment' => 'Reproduzierbar'],
+                ['scaleIndex' => 3, 'colour' => '#FFBC1C', 'isHidden' => false, 'comment' => 'Definiert'],
+                ['scaleIndex' => 4, 'colour' => '#FFBC1C', 'isHidden' => false, 'comment' => 'Quantitativ verwaltet'],
+                ['scaleIndex' => 5, 'colour' => '#D6F107', 'isHidden' => false, 'comment' => 'Optimiert'],
+            ],
+            'nl' => [
+                ['scaleIndex' => 0, 'colour' => '#FFFFFF', 'isHidden' => false, 'comment' => 'Onbestaand'],
+                ['scaleIndex' => 1, 'colour' => '#FD661F', 'isHidden' => false, 'comment' => 'Initieel'],
+                ['scaleIndex' => 2, 'colour' => '#FD661F', 'isHidden' => false, 'comment' => 'Beheerst'],
+                ['scaleIndex' => 3, 'colour' => '#FFBC1C', 'isHidden' => false, 'comment' => 'Gedefinieerd'],
+                ['scaleIndex' => 4, 'colour' => '#FFBC1C', 'isHidden' => false, 'comment' => 'Kwantitatief beheerst'],
+                ['scaleIndex' => 5, 'colour' => '#D6F107', 'isHidden' => false, 'comment' => 'Optimaliserend'],
+            ],
+        ];
+    }
 }
