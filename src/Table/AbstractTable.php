@@ -418,7 +418,7 @@ abstract class AbstractTable
             return $this;
         }
 
-        $fieldValueName = strpos($field, '.') !== false ? explode('.', $field)[0] : $field;
+        $fieldValueName = str_contains($field, '.') ? explode('.', $field)[1] : $field;
         $whereCondition = $fieldNameWithAlias . ' ' . $operator . ' :' . $fieldValueName;
         if (\is_array($filterParams['value'])
             && \in_array($operator, [Comparison::IN, Comparison::NIN], true)
@@ -426,6 +426,11 @@ abstract class AbstractTable
             $whereCondition = $operator === Comparison::IN
                 ? $queryBuilder->expr()->in($fieldNameWithAlias, ':' . $fieldValueName)
                 : $queryBuilder->expr()->notIn($fieldNameWithAlias, ':' . $fieldValueName);
+        }
+
+        /* Used for the 2 fields relation to be able to add the anr property to the joining tables. */
+        foreach ($filterParams['relationConditions'] ?? [] as $relationCondition) {
+            $queryBuilder->andWhere($relationCondition);
         }
 
         $queryBuilder
@@ -438,6 +443,7 @@ abstract class AbstractTable
     /**
      * @param QueryBuilder $queryBuilder
      * @param array $order Expected format: ['fieldName' => 'ASC|DESC', ...].
+     *                      The symbol '|' at the end is used to define an SQL function.
      * @param string $tableAlias Alias of applicable the field alias prefix.
      *
      * @return self
@@ -445,8 +451,15 @@ abstract class AbstractTable
     protected function applyQueryOrder(QueryBuilder $queryBuilder, array $order, string $tableAlias): self
     {
         foreach ($order as $field => $direction) {
-            $fieldNameWithAlias = $this->linkRelationAndGetFiledNameWithAlias($queryBuilder, $tableAlias, $field);
-            $queryBuilder->addOrderBy($fieldNameWithAlias, $direction);
+            foreach (str_contains($field, ',') ? explode(',', $field) : [$field] as $name) {
+                $fieldNameWithAlias = $this->linkRelationAndGetFiledNameWithAlias($queryBuilder, $tableAlias, $name);
+                if (str_contains($fieldNameWithAlias, '|')) {
+                    $fieldNameWithAliasParts = explode('|', $fieldNameWithAlias);
+                    $fieldNameWithAlias = current($fieldNameWithAliasParts);
+                    $fieldNameWithAlias = end($fieldNameWithAliasParts) . '(' . $fieldNameWithAlias . ')';
+                }
+                $queryBuilder->addOrderBy($fieldNameWithAlias, $direction);
+            }
         }
 
         return $this;
@@ -471,13 +484,25 @@ abstract class AbstractTable
         string $tableAlias,
         string $field
     ): string {
-        if (strpos($field, '.') !== false) {
+        if (str_contains($field, '.')) {
             $fieldParts = explode('.', $field);
             $relationField = current($fieldParts);
-            $fieldNamePart = end($fieldParts);
+            $fieldNamePart = next($fieldParts);
             if (!\in_array($relationField, $queryBuilder->getAllAliases(), true)) {
                 $joinString = $tableAlias === '' ? $relationField : $tableAlias . '.' . $relationField;
                 $queryBuilder->innerJoin($joinString, $relationField);
+            }
+            /* It's allowed to link maximum 3 levels of the relation separated by dots.
+             Defined in the formatter like in the following example: 'fieldName' => 'measure.referential.uuid'. */
+            $nextFieldNamePart = next($fieldParts);
+            if ($nextFieldNamePart !== false && $fieldNamePart !== $nextFieldNamePart) {
+                $this->linkRelationAndGetFiledNameWithAlias(
+                    $queryBuilder,
+                    $relationField,
+                    $fieldNamePart . '.' . $nextFieldNamePart
+                );
+                $relationField = $fieldNamePart;
+                $fieldNamePart = $nextFieldNamePart;
             }
 
             return $relationField . '.' . $fieldNamePart;

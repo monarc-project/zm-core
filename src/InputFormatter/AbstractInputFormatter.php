@@ -140,12 +140,14 @@ abstract class AbstractInputFormatter
                     'value' => $value,
                     'operator' => $paramValues['operator'] ?? static::DEFAULT_FILTER_OPERATOR,
                     'isUsedInQuery' => $paramValues['isUsedInQuery'] ?? true,
+                    'relationConditions' => $paramValues['relationConditions'] ?? [],
                 ]);
             } elseif (isset($paramValues['default'])) {
                 $this->formattedInputParams->addFilter($filterFieldName, [
                     'value' => $paramValues['default'],
                     'operator' => $paramValues['operator'] ?? static::DEFAULT_FILTER_OPERATOR,
                     'isUsedInQuery' => $paramValues['isUsedInQuery'] ?? true,
+                    'relationConditions' => $paramValues['relationConditions'] ?? [],
                 ]);
             }
         }
