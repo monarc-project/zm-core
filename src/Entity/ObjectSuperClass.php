@@ -93,13 +93,6 @@ class ObjectSuperClass
     protected $scope = self::SCOPE_LOCAL;
 
     /**
-     * @var int
-     *
-     * @ORM\Column(name="position", type="smallint", options={"unsigned":true, "default":0})
-     */
-    protected $position = 0;
-
-    /**
      * @var ArrayCollection|ObjectSuperClass[]
      *
      * @ORM\ManyToMany(targetEntity="MonarcObject", mappedBy="children")
