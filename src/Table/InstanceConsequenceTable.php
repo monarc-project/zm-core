@@ -24,20 +24,6 @@ class InstanceConsequenceTable extends AbstractTable
     /**
      * @return InstanceConsequenceSuperClass[]
      */
-    public function findByAnrAndInstance(AnrSuperClass $anr, InstanceSuperClass $instance): array
-    {
-        return $this->getRepository()->createQueryBuilder('ic')
-            ->where('ic.anr = :anr')
-            ->andWhere('ic.instance = :instance')
-            ->setParameter('anr', $anr)
-            ->setParameter('instance', $instance)
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
-     * @return InstanceConsequenceSuperClass[]
-     */
     public function findByScaleImpactType(ScaleImpactTypeSuperClass $scaleImpactType): array
     {
         return $this->getRepository()->createQueryBuilder('ic')

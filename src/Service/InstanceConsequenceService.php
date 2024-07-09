@@ -78,11 +78,12 @@ class InstanceConsequenceService
         }
 
         if ($siblingInstance !== null) {
-            $instancesConsequences = $this->instanceConsequenceTable->findByAnrAndInstance($anr, $siblingInstance);
-            foreach ($instancesConsequences as $instanceConsequence) {
+            foreach ($siblingInstance->getInstanceConsequences() as $instanceConsequence) {
+                /** @var Entity\ScaleImpactType $scalesImpactType */
+                $scalesImpactType = $instanceConsequence->getScaleImpactType();
                 $this->createInstanceConsequence(
                     $instance,
-                    $instanceConsequence->getScaleImpactType(),
+                    $scalesImpactType,
                     $instanceConsequence->isHidden(),
                     [
                         'confidentiality' => $instanceConsequence->getConfidentiality(),
