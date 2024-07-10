@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Service\Export;
 
+use Monarc\Core\Entity\Asset;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Helper\EncryptDecryptHelperTrait;
 use Monarc\Core\Entity;
@@ -17,12 +18,12 @@ use Monarc\Core\Table\MonarcObjectTable;
 class ObjectExportService
 {
     use EncryptDecryptHelperTrait;
+    use Service\Export\Traits\ObjectExportTrait;
 
     private Entity\UserSuperClass $connectedUser;
 
     public function __construct(
         private MonarcObjectTable $monarcObjectTable,
-        private AssetExportService $assetExportService,
         private Service\ConfigService $configService,
         Service\ConnectedUserService $connectedUserService
     ) {
@@ -61,42 +62,13 @@ class ObjectExportService
         ];
     }
 
-    private function prepareExportData(Entity\MonarcObject $monarcObject): array
+    /** The method is called also from the FrontOffice\ObjectImportService::importFromCommonDatabase. */
+    public function prepareExportData(Entity\MonarcObject $object): array
     {
-        /** @var ?Entity\RolfTag $rolfTag */
-        $rolfTag = $monarcObject->getRolfTag();
-        $rolfRisksData = $rolfTag !== null ? $this->prepareRolfRisksData($rolfTag) : [];
-        /** @var ?Entity\ObjectCategory $category */
-        $category = $monarcObject->getCategory();
-        /** @var Entity\Asset $asset */
-        $asset = $monarcObject->getAsset();
-
-        /* TODO: this is the old structure format that has to be updated across all the exports on BO. */
-        return [
-            'type' => 'object',
-            'monarc_version' => $this->configService->getAppVersion()['appVersion'],
-            'object' => array_merge([
-                'uuid' => $monarcObject->getUuid(),
-                'mode' => $monarcObject->getMode(),
-                'scope' => $monarcObject->getScope(),
-                'category' => $category?->getId(),
-                'asset' => $monarcObject->getAsset()->getUuid(),
-                'rolfTag' => $rolfTag?->getId(),
-            ], $monarcObject->getLabels(), $monarcObject->getNames()),
-            'categories' => $category !== null ? $this->prepareObjectCategoriesData($category) : [],
-            'asset' => $this->assetExportService->prepareExportData($asset),
-            'children' => $monarcObject->hasChildren() ? $this->prepareChildrenObjectsData($monarcObject) : [],
-            'rolfTags' => $rolfTag !== null ? [
-                $rolfTag->getId() => array_merge([
-                    'id' => $rolfTag->getId(),
-                    'code' => $rolfTag->getCode(),
-                    'risks' => array_keys($rolfRisksData),
-                ], $rolfTag->getLabels()),
-            ] : [],
-            'rolfRisks' => $rolfRisksData,
-        ];
+        return $this->prepareObjectData($object);
     }
 
+    /** Prepare export data to be published on MOSP. */
     private function prepareExportDataForMosp(
         Entity\MonarcObject $monarcObject,
         int $languageIndex,
@@ -137,8 +109,7 @@ class ObjectExportService
                     'language' => $languageCode,
                     'version' => 1,
                 ],
-                'asset' => $this->assetExportService
-                    ->prepareExportDataForMosp($asset, $languageIndex, $languageCode),
+                'asset' => $this->prepareAssetExportDataForMosp($asset, $languageIndex, $languageCode),
                 'children' => $monarcObject->hasChildren()
                     ? $this->prepareChildrenObjectsDataForMosp($monarcObject, $languageIndex, $languageCode)
                     : [],
@@ -151,18 +122,6 @@ class ObjectExportService
         ];
     }
 
-    private function prepareChildrenObjectsData(Entity\MonarcObject $monarcObject): array
-    {
-        $result = [];
-        foreach ($monarcObject->getChildrenLinks() as $childLink) {
-            /** @var Entity\MonarcObject $childObject */
-            $childObject = $childLink->getChild();
-            $result[$childObject->getUuid()] = $this->prepareExportData($childObject);
-        }
-
-        return $result;
-    }
-
     private function prepareChildrenObjectsDataForMosp(
         Entity\MonarcObject $monarcObject,
         int $languageIndex,
@@ -170,6 +129,7 @@ class ObjectExportService
     ): array {
         $result = [];
         foreach ($monarcObject->getChildrenLinks() as $childLink) {
+            /** @var Entity\MonarcObject $childObject */
             $childObject = $childLink->getChild();
             $result[$childObject->getUuid()] = $this
                 ->prepareExportDataForMosp($childObject, $languageIndex, $languageCode);
@@ -178,46 +138,92 @@ class ObjectExportService
         return $result;
     }
 
-    private function prepareObjectCategoriesData(Entity\ObjectCategory $objectCategory): array
+    public function prepareAssetExportDataForMosp(Asset $asset, int $languageIndex, string $languageCode): array
     {
-        $result[$objectCategory->getId()] = array_merge([
-            'id' => $objectCategory->getId(),
-        ], $objectCategory->getLabels());
-        if ($objectCategory->hasParent()) {
-            $result = array_merge($result, $this->prepareObjectCategoriesData($objectCategory->getParent()));
-        }
+        $assetData = [
+            'asset' => [
+                'uuid' => $asset->getUuid(),
+                'label' => $asset->getLabel($languageIndex),
+                'description' => $asset->getDescription($languageIndex),
+                'type' => $asset->getTypeName(),
+                'code' => $asset->getCode(),
+                'language' => $languageCode,
+                'version' => 1,
+            ],
+            'amvs' => [],
+            'threats' => [],
+            'vuls' => [],
+            'measures' => [],
+        ];
 
-        return $result;
+        foreach ($asset->getAmvs() as $amv) {
+            $amvResult = $this->prepareAmvExportDataForMosp($amv, $languageIndex, $languageCode);
+            $assetData['amvs'] += $amvResult['amv'];
+            $assetData['threats'] += $amvResult['threat'];
+            $assetData['vuls'] += $amvResult['vulnerability'];
+            $assetData['measures'] += $amvResult['measures'];
+        }
+        $assetData['amvs'] = array_values($assetData['amvs']);
+        $assetData['threats'] = array_values($assetData['threats']);
+        $assetData['vuls'] = array_values($assetData['vuls']);
+        $assetData['measures'] = array_values($assetData['measures']);
+
+        return $assetData;
     }
 
-    private function prepareRolfRisksData(Entity\RolfTag $rolfTag): array
+    public function prepareAmvExportDataForMosp(Entity\Amv $amv, int $languageIndex, string $languageCode): array
     {
-        $rolfRisksData = [];
-        foreach ($rolfTag->getRisks() as $rolfRisk) {
-            $rolfRiskId = $rolfRisk->getId();
-            $measuresData = [];
-            foreach ($rolfRisk->getMeasures() as $measure) {
-                $measureUuid = $measure->getUuid();
-                $measuresData[$measureUuid] = array_merge([
-                    'uuid' => $measureUuid,
-                    'code' => $measure->getCode(),
-                    'referential' => array_merge([
-                        'uuid' => $measure->getReferential()->getUuid(),
-                    ], $measure->getReferential()->getLabels()),
-                    'category' => $measure->getCategory() !== null ? array_merge([
-                        'id' => $measure->getCategory()->getId(),
-                    ], $measure->getCategory()->getLabels()) : null,
-                ], $measure->getLabels());
-            }
-
-            $rolfRisksData[$rolfRiskId] = array_merge([
-                'id' => $rolfRiskId,
-                'code' => $rolfRisk->getCode(),
-                'measures' => $measuresData,
-            ], $rolfRisk->getLabels(), $rolfRisk->getDescriptions());
+        $measuresData = [];
+        foreach ($amv->getMeasures() as $measure) {
+            $measureUuid = $measure->getUuid();
+            $measuresData[] = [
+                'uuid' => $measureUuid,
+                'code' => $measure->getCode(),
+                'label' => $measure->getLabel($languageIndex),
+                'category' => $measure->getCategory()?->getLabel($languageIndex),
+                'referential' => $measure->getReferential()->getUuid(),
+                'referential_label' => $measure->getReferential()->getLabel($languageIndex),
+            ];
         }
+        $threat = $amv->getThreat();
+        $vulnerability = $amv->getVulnerability();
 
-        return $rolfRisksData;
+        return [
+            'amv' => [
+                $amv->getUuid() => [
+                    'uuid' => $amv->getUuid(),
+                    'asset' => $amv->getAsset()->getUuid(),
+                    'threat' => $threat->getUuid(),
+                    'vulnerability' => $vulnerability->getUuid(),
+                    'measures' => array_keys($measuresData),
+                ],
+            ],
+            'threat' => [
+                $threat->getUuid() => [
+                    'uuid' => $threat->getUuid(),
+                    'label' => $threat->getLabel($languageIndex),
+                    'description' => $threat->getDescription($languageIndex),
+                    'theme' => $threat->getTheme() !== null
+                        ? $threat->getTheme()->getLabel($languageIndex)
+                        : '',
+                    'code' => $threat->getCode(),
+                    'c' => (bool)$threat->getConfidentiality(),
+                    'i' => (bool)$threat->getIntegrity(),
+                    'a' => (bool)$threat->getAvailability(),
+                    'language' => $languageCode,
+                ],
+            ],
+            'vulnerability' => [
+                $vulnerability->getUuid() => [
+                    'uuid' => $vulnerability->getUuid(),
+                    'code' => $vulnerability->getCode(),
+                    'label' => $vulnerability->getLabel($languageIndex),
+                    'description' => $vulnerability->getDescription($languageIndex),
+                    'language' => $languageCode,
+                ],
+            ],
+            'measures' => $measuresData,
+        ];
     }
 
     private function generateExportFileName(Entity\MonarcObject $monarcObject, bool $isForMosp = false): string

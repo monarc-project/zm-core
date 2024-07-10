@@ -112,7 +112,7 @@ class ObjectService
         }
 
         $objectData['children'] = $this->getChildrenTreeList($object);
-        $objectData['risks'] = $this->getRisks($object);
+        $objectData['risks'] = $this-> getRisks($object);
         $objectData['oprisks'] = $this->getRisksOp($object);
         $objectData['parents'] = $this->getDirectParents($object);
 

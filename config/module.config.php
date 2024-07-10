@@ -174,9 +174,7 @@ return [
             Service\ReferentialService::class => AutowireFactory::class,
             Service\SoaScaleCommentService::class => AutowireFactory::class,
             /* Export services. */
-            Service\Export\AssetExportService::class => AutowireFactory::class,
             Service\Export\ObjectExportService::class => AutowireFactory::class,
-            Service\Export\AmvExportService::class => InvokableFactory::class,
 
             // TODO: Entities are created in a generic way. Should be removed.
             ModelEntity\DeliveriesModels::class => ServiceModelEntity\DeliveriesModelsServiceModelEntity::class,

@@ -14,13 +14,9 @@ use Monarc\Core\Entity\MonarcObject;
 use Monarc\Core\Entity\ObjectCategorySuperClass;
 use Monarc\Core\Entity\ObjectSuperClass;
 use Monarc\Core\Entity\RolfTagSuperClass;
-use Monarc\Core\Table\Interfaces\PositionUpdatableTableInterface;
-use Monarc\Core\Table\Traits\PositionIncrementTableTrait;
 
-class MonarcObjectTable extends AbstractTable implements PositionUpdatableTableInterface
+class MonarcObjectTable extends AbstractTable
 {
-    use PositionIncrementTableTrait;
-
     public function __construct(EntityManager $entityManager, string $entityName = MonarcObject::class)
     {
         parent::__construct($entityManager, $entityName);
@@ -57,11 +53,37 @@ class MonarcObjectTable extends AbstractTable implements PositionUpdatableTableI
      */
     public function findByRolfTag(RolfTagSuperClass $rolfTag): array
     {
-        return $this->getRepository()
-            ->createQueryBuilder('o')
+        return $this->getRepository()->createQueryBuilder('o')
             ->where('o.rolfTag = :rolfTag')
             ->setParameter('rolfTag', $rolfTag)
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * @return MonarcObject[]
+     */
+    public function findGenericOrSpecificByModelIdsFilteredByNamePart(
+        array $modelIds,
+        string $namePart,
+        int $languageIndex
+    ): array {
+        $queryBuilder = $this->getRepository()->createQueryBuilder('o')
+            ->where('o.mode = ' . ObjectSuperClass::MODE_GENERIC);
+        if (!empty($modelIds)) {
+            $queryBuilder->distinct()
+                ->leftJoin('o.anrs', 'anrs')
+                ->innerJoin('anrs.model', 'm')
+                ->orWhere($queryBuilder->expr()->andX(
+                    $queryBuilder->expr()->eq('o.mode', ObjectSuperClass::MODE_SPECIFIC),
+                    $queryBuilder->expr()->in('m.id', array_map('\intval', $modelIds))
+                ));
+        }
+        if ($namePart !== '') {
+            $queryBuilder->andWhere('o.name' . $languageIndex . ' LIKE :name')
+                ->setParameter('name', '%' . $namePart . '%');
+        }
+
+        return $queryBuilder->getQuery()->getResult();
     }
 }

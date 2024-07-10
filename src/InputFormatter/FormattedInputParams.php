@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\InputFormatter;
 
+/** A DTO class that helps to convert input data to the queries when processed in AbstractTable::findByParams. */
 class FormattedInputParams
 {
     private array $search = [];
