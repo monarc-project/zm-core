@@ -14,7 +14,7 @@ use Monarc\Core\Entity;
 use Monarc\Core\Service;
 use Monarc\Core\Table\MonarcObjectTable;
 
-/** The service is used only on the BO side. */
+/** The service is used on the BO side and from FO when import from the common DB. */
 class ObjectExportService
 {
     use EncryptDecryptHelperTrait;
@@ -65,7 +65,11 @@ class ObjectExportService
     /** The method is called also from the FrontOffice\ObjectImportService::importFromCommonDatabase. */
     public function prepareExportData(Entity\MonarcObject $object): array
     {
-        return $this->prepareObjectData($object);
+        return [
+            'type' => 'object',
+            'monarc_version' => $this->configService->getAppVersion()['appVersion'],
+            'object' => $this->prepareObjectData($object),
+        ];
     }
 
     /** Prepare export data to be published on MOSP. */

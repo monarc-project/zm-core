@@ -276,6 +276,7 @@ class ObjectCategorySuperClass implements PositionedEntityInterface, PropertySta
             'label3' => 'Keine Kategorie',
             'label4' => 'Geen categorie',
             'position' => -1,
+            'parent' => null,
             'child' => [],
             'objects' => $objectsData,
         ];
