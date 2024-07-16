@@ -227,12 +227,12 @@ class InstanceRiskSuperClass
 
     // TODO: the nullable value is added for the multi-fields relation issue (when we remove a relation, e.g. amv).
     // TODO: remove when #240 is done.
-    public function getAnr(): ?AnrSuperClass
+    public function getAnr(): AnrSuperClass
     {
         return $this->anr;
     }
 
-    public function setAnr(?AnrSuperClass $anr): self
+    public function setAnr(AnrSuperClass $anr): self
     {
         $this->anr = $anr;
 

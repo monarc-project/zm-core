@@ -446,6 +446,15 @@ class InstanceSuperClass implements PositionedEntityInterface, PropertyStateEnti
         return $this;
     }
 
+    public function removeInstanceRisk(InstanceRiskSuperClass $instanceRisk): self
+    {
+        if ($this->instanceRisks->contains($instanceRisk)) {
+            $this->instanceRisks->removeElement($instanceRisk);
+        }
+
+        return $this;
+    }
+
     public function removeAllInstanceRisks(): self
     {
         foreach ($this->instanceRisks as $instanceRisk) {
@@ -465,6 +474,15 @@ class InstanceSuperClass implements PositionedEntityInterface, PropertyStateEnti
         if (!$this->operationalInstanceRisks->contains($operationalInstanceRisk)) {
             $this->operationalInstanceRisks->add($operationalInstanceRisk);
             $operationalInstanceRisk->setInstance($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOperationalInstanceRisk(InstanceRiskOpSuperClass $operationalInstanceRisk): self
+    {
+        if ($this->operationalInstanceRisks->contains($operationalInstanceRisk)) {
+            $this->operationalInstanceRisks->removeElement($operationalInstanceRisk);
         }
 
         return $this;
