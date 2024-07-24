@@ -47,16 +47,6 @@ class InstanceRiskSuperClass
     protected $id;
 
     /**
-     * @var AnrSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Anr")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
-     * })
-     */
-    protected $anr;
-
-    /**
      * @var AmvSuperClass
      *
      * @ORM\ManyToOne(targetEntity="Amv")
@@ -105,6 +95,16 @@ class InstanceRiskSuperClass
      * })
      */
     protected $instance;
+
+    /**
+     * @var AnrSuperClass
+     *
+     * @ORM\ManyToOne(targetEntity="Anr")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
+     * })
+     */
+    protected $anr;
 
     /**
      * @var int
