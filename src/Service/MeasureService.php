@@ -67,6 +67,9 @@ class MeasureService
             ->setReferential($referential)
             ->setCategory($soaCategory)
             ->setCreator($this->connectedUser->getEmail());
+        if (!empty($data['uuid'])) {
+            $measure->setUuid($data['uuid']);
+        }
 
         $this->measureTable->save($measure, $saveInDb);
 

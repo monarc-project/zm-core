@@ -98,6 +98,11 @@ class RolfRiskSuperClass
         return $this;
     }
 
+    public function hasRolfTag(RolfTagSuperClass $rolfTag): bool
+    {
+        return $this->tags->contains($rolfTag);
+    }
+
     public function getTags()
     {
         return $this->tags;

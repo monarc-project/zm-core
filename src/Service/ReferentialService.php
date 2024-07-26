@@ -40,6 +40,9 @@ class ReferentialService
     {
         /** @var Referential $referential */
         $referential = (new Referential())->setLabels($data);
+        if (!empty($data['uuid'])) {
+            $referential->setUuid($data['uuid']);
+        }
 
         $this->referentialTable->save($referential, $saveInDb);
 
