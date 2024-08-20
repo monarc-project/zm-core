@@ -61,6 +61,13 @@ class RolfRiskSuperClass
     protected $measures;
 
     /**
+     * @var InstanceRiskOpSuperClass[]|ArrayCollection
+     *
+     * @ORM\OneToMany(targetEntity="InstanceRiskOp", mappedBy="rolfRisk")
+     */
+    protected $operationalInstanceRisks;
+
+    /**
      * @var string
      *
      * @ORM\Column(name="code", type="string", length=255, nullable=true)
@@ -71,6 +78,7 @@ class RolfRiskSuperClass
     {
         $this->tags = new ArrayCollection();
         $this->measures = new ArrayCollection();
+        $this->operationalInstanceRisks = new ArrayCollection();
     }
 
     public function getId()
@@ -136,6 +144,30 @@ class RolfRiskSuperClass
     public function removeAllMeasures(): self
     {
         $this->measures->clear();
+
+        return $this;
+    }
+
+    public function getOperationalInstanceRisks()
+    {
+        return $this->operationalInstanceRisks;
+    }
+
+    public function addOperationalInstanceRisk(InstanceRiskOpSuperClass $operationalInstanceRisk): self
+    {
+        if (!$this->operationalInstanceRisks->contains($operationalInstanceRisk)) {
+            $this->operationalInstanceRisks->add($operationalInstanceRisk);
+            $operationalInstanceRisk->setRolfRisk($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOperationalInstanceRisk(InstanceRiskOpSuperClass $operationalInstanceRisk): self
+    {
+        if ($this->operationalInstanceRisks->contains($operationalInstanceRisk)) {
+            $this->operationalInstanceRisks->removeElement($operationalInstanceRisk);
+        }
 
         return $this;
     }

@@ -18,7 +18,7 @@ trait EncryptDecryptHelperTrait
      */
     protected function encrypt(string $data, string $key)
     {
-        return openssl_encrypt($data, 'AES-256-CBC', hash('sha512', $key));
+        return @openssl_encrypt($data, 'AES-256-CBC', hash('sha512', $key));
     }
 
     /**
