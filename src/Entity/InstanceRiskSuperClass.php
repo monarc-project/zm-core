@@ -97,6 +97,9 @@ class InstanceRiskSuperClass
     protected $instance;
 
     /**
+     * NOTE. The anr relation has to be on the last position to avoid setting null when amv is set to null.
+     * Doctrine's double field relation issue.
+     *
      * @var AnrSuperClass
      *
      * @ORM\ManyToOne(targetEntity="Anr")
@@ -115,7 +118,7 @@ class InstanceRiskSuperClass
 
     /**
      * The field is to mark if the threatRate value is not set or is modified externally.
-     * 1 - means that the threatRate values is not set yet of set from the "Threats assessment" menu,
+     * 1 - means that the threatRate values is not set yet manually, but could be set from the "Threats assessment" menu
      * for all the instance risks that are composed with the threat.
      * 0 - means the value is set manually on the risks table.
      *
@@ -225,8 +228,6 @@ class InstanceRiskSuperClass
         return $this->id;
     }
 
-    // TODO: the nullable value is added for the multi-fields relation issue (when we remove a relation, e.g. amv).
-    // TODO: remove when #240 is done.
     public function getAnr(): AnrSuperClass
     {
         return $this->anr;
