@@ -269,20 +269,17 @@ abstract class AbstractEntityTable
                     || (isset($params['implicitPosition']['changes']['parent']) && $params['implicitPosition']['changes']['parent']['before'] != $params['implicitPosition']['changes']['parent']['after'])
                     || (isset($params['implicitPosition']['changes']['position']) && $params['implicitPosition']['changes']['position']['before'] != $params['implicitPosition']['changes']['position']['after'])
                 ) {
-                    throw Exception('The method "autopose" does not exist.', 412);
-                    $this->autopose($entity, !$entity->uuid, $params['implicitPosition']['changes']);
+                    $this->autopose($entity, !$entity->getUuid(), $params['implicitPosition']['changes']);
                     $clean_params = true;
                 }
             }
         } else { //id
             if (isset($params['implicitPosition']['changes'])) {
-
-                if ((!$entity->id)
+                if (!$entity->getId()
                     || (isset($params['implicitPosition']['changes']['parent']) && $params['implicitPosition']['changes']['parent']['before'] != $params['implicitPosition']['changes']['parent']['after'])
                     || (isset($params['implicitPosition']['changes']['position']) && $params['implicitPosition']['changes']['position']['before'] != $params['implicitPosition']['changes']['position']['after'])
                 ) {
-                    throw Exception('The method "autopose" does not exist.', 412);
-                    $this->autopose($entity, !$entity->id, $params['implicitPosition']['changes']);
+                    $this->autopose($entity, !$entity->getId(), $params['implicitPosition']['changes']);
                     $clean_params = true;
                 }
             }
@@ -293,9 +290,9 @@ abstract class AbstractEntityTable
         }
 
         if ($this->getClassMetadata()->getIdentifierFieldNames()) {
-            foreach ($ids as $key => $value) {
-                if ($value === 'uuid' && !$entity->get('uuid')) { //uuid have to be generated and setted
-                    $entity->set('uuid', Uuid::uuid4());
+            foreach ($ids as $value) {
+                if ($value === 'uuid' && !$entity->getUuid()) {//uuid have to be generated and setted
+                    $entity->setUuid((string)Uuid::uuid4());
                 }
             }
         }
@@ -329,7 +326,8 @@ abstract class AbstractEntityTable
 
         if ($this != null && isset($entity->parameters['implicitPosition']['field']) && $entity->getDbAdapter() != null)
             $implicitPositionFieldIds = $entity->getDbAdapter()->getClassMetadata($this->getClassMetadata()->getAssociationTargetClass($entity->parameters['implicitPosition']['field']))->getIdentifierFieldNames();
-        $implicitPositionFieldMainId = (in_array('uuid', $implicitPositionFieldIds)) ? 'uuid' : 'id';// the value of the name of the id (id or uuid) use for sql request for the implicit position
+        // the value of the name of the id (id or uuid) use for sql request for the implicit position
+        $implicitPositionMethod = \in_array('uuid', $implicitPositionFieldIds, true) ? 'getUuid' : 'getId';
 
         if ($entity != null)
             $classIdentifier = $this->getDb()->getClassMetadata(ClassUtils::getRealClass(get_class($entity)))->getIdentifierFieldNames();
@@ -371,10 +369,11 @@ abstract class AbstractEntityTable
                             $subquery->andWhere($entity->parameters['implicitPosition']['field'] . '.anr = :implicitPositionFieldAnr')
                                 ->andWhere($entity->parameters['implicitPosition']['field'] . '.uuid = :implicitPositionFieldUuid')
                                 ->setParameter(':implicitPositionFieldUuid', $entity->get($entity->parameters['implicitPosition']['field'])->getUuid())
-                                ->setParameter(':implicitPositionFieldAnr', $entity->get('anr')->get('id'));
+                                ->setParameter(':implicitPositionFieldAnr', $entity->getAnr()->getId());
                         } else {
                             $bros->where('bro.' . $entity->parameters['implicitPosition']['field'] . ' = :parentid');
-                            $params[':parentid'] = $entity->get($entity->parameters['implicitPosition']['field'])->get($implicitPositionFieldMainId);
+                            $params[':parentid'] = $entity->get($entity->parameters['implicitPosition']['field'])
+                                ->{$implicitPositionMethod}();
                         }
                     }
                 }
@@ -483,7 +482,8 @@ abstract class AbstractEntityTable
                             ->setParameter(':implicitPositionFieldAnr', $entity->get('anr')->get('id'));
                     } else {
                         $bros->where('bro.' . $entity->parameters['implicitPosition']['field'] . ' = :parentid');
-                        $params[':parentid'] = $entity->get($entity->parameters['implicitPosition']['field'])->get($implicitPositionFieldMainId);
+                        $params[':parentid'] = $entity->get($entity->parameters['implicitPosition']['field'])
+                            ->{$implicitPositionMethod}();
                     }
                 }
 

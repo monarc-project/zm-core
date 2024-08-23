@@ -131,12 +131,7 @@ class MeasureSuperClass
         return (string)$this->uuid;
     }
 
-    /**
-     * @param string $uuid
-     *
-     * @return self
-     */
-    public function setUuid($uuid): self
+    public function setUuid(string $uuid): self
     {
         $this->uuid = $uuid;
 

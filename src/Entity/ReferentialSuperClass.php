@@ -72,7 +72,7 @@ class ReferentialSuperClass
         return (string)$this->uuid;
     }
 
-    public function setUuid($uuid): self
+    public function setUuid(string $uuid): self
     {
         $this->uuid = $uuid;
 

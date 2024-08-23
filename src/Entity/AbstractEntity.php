@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Entity;
 
+use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Db;
 use Monarc\Core\Model\GetAndSet;
 use Laminas\InputFilter\InputFilter;
@@ -15,12 +16,7 @@ use Laminas\InputFilter\InputFilterInterface;
 use Doctrine\Common\Util\ClassUtils;
 
 /**
- * TODO: detach the class from its children.
- *  - remove the DB dependency;
- *  - extract the logic to a separate service.
- *
- * Class AbstractEntity
- * @package Monarc\Core\Entity
+ * TODO: remove it when all the usages are cleaned up.
  */
 abstract class AbstractEntity implements InputFilterAwareInterface
 {
@@ -32,29 +28,9 @@ abstract class AbstractEntity implements InputFilterAwareInterface
     protected $parameters = [];
     protected $squeezeAutoPositionning = false;
 
-    const STATUS_INACTIVE = 0;
-    const STATUS_ACTIVE = 1;
-    const STATUS_DELETED = 3;
-
-    const MODE_GENERIC = 0;
-    const MODE_SPECIFIC = 1;
-
-    const TYPE_PRIMARY = 1;
-    const TYPE_SECONDARY = 2;
-
-    const BACK_OFFICE = 'back';
-    const FRONT_OFFICE = 'front';
-
-    const CONTEXT_BDC = 'bdc';
-    const CONTEXT_ANR = 'anr';
-
-    const SOURCE_COMMON = 'common';
-    const SOURCE_CLIENT = 'cli';
-
     const IMP_POS_START = 1;
     const IMP_POS_END = 2;
     const IMP_POS_AFTER = 3;
-
 
     /**
      * @param mixed $obj (extends AbstractEntity OR array)
@@ -62,8 +38,8 @@ abstract class AbstractEntity implements InputFilterAwareInterface
     public function __construct($obj = null)
     {
         if (!empty($obj)) {
-            if (is_object($obj)) {
-                if (is_subclass_of($obj, 'Monarc\Core\Entity\AbstractEntity') && method_exists($obj, 'getJsonArray')) {
+            if (\is_object($obj)) {
+                if ($obj instanceof self && method_exists($obj, 'getJsonArray')) {
                     $obj = $obj->getJsonArray();
                     foreach ($obj as $k => $v) {
                         if ($this->__isset($k)) {
@@ -82,8 +58,6 @@ abstract class AbstractEntity implements InputFilterAwareInterface
     }
 
     /**
-     * Get Array Copy
-     *
      * @return array
      */
     public function getArrayCopy()
@@ -92,12 +66,11 @@ abstract class AbstractEntity implements InputFilterAwareInterface
     }
 
     /**
-     * Get Json Array
-     *
      * @param array $fields
+     *
      * @return array
      */
-    public function getJsonArray($fields = array())
+    public function getJsonArray($fields = [])
     {
         $array = get_object_vars($this);
         if (isset($array['uuid'])) {
@@ -130,13 +103,14 @@ abstract class AbstractEntity implements InputFilterAwareInterface
 
     /**
      * @param $dbadapter
+     *
      * @return $this
-     * @throws \Monarc\Core\Exception\Exception
+     * @throws Exception
      */
     public function setDbAdapter($dbadapter)
     {
-        if ($dbadapter == null) {
-            throw new \Monarc\Core\Exception\Exception("Trying to call setDbAdapter with a null adapter");
+        if ($dbadapter === null) {
+            throw new Exception('Trying to call setDbAdapter with a null adapter');
         }
 
         $this->dbadapter = $dbadapter;
@@ -171,32 +145,33 @@ abstract class AbstractEntity implements InputFilterAwareInterface
     /**
      * @param array $options
      * @param bool $partial
+     *
      * @return $this
-     * @throws \Monarc\Core\Exception\Exception
+     * @throws Exception
      */
     public function exchangeArray(array $options, $partial = false)
     {
         $keys = array_keys($options);
         $keys = array_combine($keys, $keys);
 
-        $filter = $this->getInputFilter($partial)
-            ->setData($options)
-            ->setValidationGroup(InputFilterInterface::VALIDATE_ALL);
+        $filter = $this->getInputFilter($partial)->setData($options)->setValidationGroup(
+            InputFilterInterface::VALIDATE_ALL
+        );
 
         $isValid = $filter->isValid();
 
         if (!$isValid) {
-            $field_errors = array();
+            $field_errors = [];
 
             foreach ($filter->getInvalidInput() as $field => $error) {
                 foreach ($error->getMessages() as $message) {
-                    if ($message != 'Value is required and can\'t be empty') {
+                    if ($message !== 'Value is required and can\'t be empty') {
                         $field_errors[] = $message;
                         break;
                     }
                 }
 
-                if (!count($field_errors)) {
+                if (empty($field_errors)) {
                     if (!empty($field)) {
                         $field = strtr($field, ['1' => '', '2' => '', '3' => '', '4' => '']);
                         $field_errors[] = ucfirst($field) . ' is required';
@@ -204,43 +179,55 @@ abstract class AbstractEntity implements InputFilterAwareInterface
                     }
                 }
             }
-            throw new \Monarc\Core\Exception\Exception(implode(", ", $field_errors), '412');
+            throw new Exception(implode(', ', $field_errors), '412');
         }
 
-       $options = $filter->getValues();
+        $options = $filter->getValues();
 
+        //position should not be sent by HTTP requests
         if (isset($options['implicitPosition'])) {
             if (isset($options['position'])) {
-                unset($options['position']);//position should not be sent by HTTP requests
+                unset($options['position']);
             }
-            if (isset($this->parameters['implicitPosition']['root']) && isset($options[$this->parameters['implicitPosition']['root']])) {
+            if (isset(
+                $this->parameters['implicitPosition']['root'],
+                $options[$this->parameters['implicitPosition']['root']]
+            )) {
                 unset($options[$this->parameters['implicitPosition']['root']]);
             }
         }
 
-
         //Abstract handling on recursive trees
-        $parent_before = $parent_after = null;
+        $parent_after = null;
+        $parent_before = null;
 
         if (!$this->squeezeAutoPositionning && isset($this->parameters['implicitPosition']['field'])) {
             $parent_before = $this->get($this->parameters['implicitPosition']['field']);
-            if (is_object($parent_before)) {
-                $parent_before = !$parent_before instanceof AnrSuperClass && $parent_before->get('uuid') !== null
-                    ? $parent_before->get('uuid')
-                    : $parent_before->get('id');
+            if (\is_object($parent_before)) {
+                $parent_before = !$parent_before instanceof AnrSuperClass && method_exists(
+                    $parent_before,
+                    'getUuid'
+                ) && $parent_before->getUuid() !== null
+                    ? $parent_before->getUuid()
+                    : $parent_before->getId();
             }
-            $parent_after = array_key_exists($this->parameters['implicitPosition']['field'], $options) ? $options[$this->parameters['implicitPosition']['field']] : null;
+            $parent_after = $options[$this->parameters['implicitPosition']['field']] ?? null;
 
             $this->parameters['implicitPosition']['changes'] = [
-                'parent' => ['before' => $parent_before, 'after' => $parent_after]
+                'parent' => ['before' => $parent_before, 'after' => $parent_after],
             ];
         }
 
-        //Absact handling of positions
+        // Abstract handling of positions
         if (!$this->squeezeAutoPositionning && isset($options['implicitPosition'])) {
-            $this->calculatePosition($options['implicitPosition'], isset($options['previous']) ? $options['previous'] : null, $parent_before, $parent_after, $options);
-            unset($options['implicitPosition']);
-            unset($options['previous']);
+            $this->calculatePosition(
+                $options['implicitPosition'],
+                $options['previous'] ?? null,
+                $parent_before,
+                $parent_after,
+                $options
+            );
+            unset($options['implicitPosition'], $options['previous']);
         }
         foreach ($options as $k => $v) {
             if ($this->__isset($k) && isset($keys[$k])) {
@@ -260,53 +247,48 @@ abstract class AbstractEntity implements InputFilterAwareInterface
     }
 
     /**
-     * TODO: Refactor me! Get rid of the DB dependency from entities classes.
-     * @param int $mode
-     * @param null $previous
-     * @param null $parent_before
-     * @param null $parent_after
      * @param array $options
      */
-    private function calculatePosition($mode = self::IMP_POS_END, $previous = null, $parent_before = null, $parent_after = null, $options = [])
-    {
+    private function calculatePosition(
+        $mode = self::IMP_POS_END,
+        $previous = null,
+        $parent_before = null,
+        $parent_after = null,
+        $options = []
+    ) {
         $fallback = false;
         $initial_position = $this->get('position');
 
         $isParentable = !isset($this->parameters['isParentRelative']) || $this->parameters['isParentRelative'];
 
-        if ($mode == self::IMP_POS_START) {
-            $this->set('position', 1);//heading
-        } else if ($mode == self::IMP_POS_AFTER && !empty($previous)) {
+        if ($mode === self::IMP_POS_START) {
+            $this->setPosition(1);
+        } elseif ($mode === self::IMP_POS_AFTER && !empty($previous)) {
             //Get the position of the previous element
-            $prec = null;
-            if (array_key_exists('uuid', $options)) {
-                $prec = $this->getDbAdapter()->getRepository(get_class($this))->createQueryBuilder('t')
-                    ->select()
-                    ->where('t.uuid = :previousid')
-                    ->setParameter(':previousid', $previous);
-                    if(array_key_exists('anr', $options) && !is_null($options['anr'])){ //fo with uuid
-                      $prec->andWhere('t.anr = :anrid')
-                            ->setParameter(':anrid', $options['anr']);
-                    }
+            if (\array_key_exists('uuid', $options)) {
+                $prec = $this->getDbAdapter()->getRepository(\get_class($this))->createQueryBuilder('t')->select()
+                    ->where('t.uuid = :previousid')->setParameter(':previousid', $previous);
+                if (\array_key_exists('anr', $options) && $options['anr'] !== null) {
+                    //fo with uuid
+                    $prec->andWhere('t.anr = :anrid')->setParameter(':anrid', $options['anr']);
+                }
             } else {
-                $prec = $this->getDbAdapter()->getRepository(get_class($this))->createQueryBuilder('t')
-                    ->select()
-                    ->where('t.id = :previousid')
-                    ->setParameter(':previousid', $previous);
+                $prec = $this->getDbAdapter()->getRepository(\get_class($this))->createQueryBuilder('t')->select()
+                    ->where('t.id = :previousid')->setParameter(':previousid', $previous);
             }
             if (!empty($this->parameters['implicitPosition']['subField'])) {
                 foreach ($this->parameters['implicitPosition']['subField'] as $k) {
                     $sub = $this->get($k);
                     if (!empty($sub)) {
-                        $sub = is_object($sub) ? $sub->get('id') : $sub;
+                        $sub = \is_object($sub) ? $sub->getId() : $sub;
                     } else {
-                        $sub = empty($options[$k]) || is_null($options[$k]) ? null : (is_object($options[$k]) ? $options[$k]->get('id') : $options[$k]);
+                        $subValue = \is_object($options[$k]) ? $options[$k]->getId() : $options[$k];
+                        $sub = empty($options[$k]) ? null : $subValue;
                     }
-                    if (is_null($sub)) {
+                    if ($sub === null) {
                         $prec->andWhere('t.' . $k . ' IS NULL');
                     } else {
-                        $prec->andWhere('t.' . $k . ' = :' . $k)
-                            ->setParameter(':' . $k, $sub);
+                        $prec->andWhere('t.' . $k . ' = :' . $k)->setParameter(':' . $k, $sub);
                     }
                 }
             }
@@ -317,73 +299,116 @@ abstract class AbstractEntity implements InputFilterAwareInterface
                 $prec_parent_id = null;
 
                 if ($isParentable) {
-                    $identifiers = $prec->get($this->parameters['implicitPosition']['field']) === null ? [] : $this->getDbAdapter()->getClassMetadata(ClassUtils::getRealClass(get_class($prec->get($this->parameters['implicitPosition']['field']))))->getIdentifierFieldNames();
-                    if (in_array('uuid', $identifiers)) {
-                        $prec_parent_id = $prec->get($this->parameters['implicitPosition']['field']) === null ? null : $prec->get($this->parameters['implicitPosition']['field'])->getUuid();
+                    $identifiers = $prec->get($this->parameters['implicitPosition']['field']) === null
+                        ? []
+                        : $this->getDbAdapter()->getClassMetadata(ClassUtils::getRealClass(
+                            \get_class($prec->get($this->parameters['implicitPosition']['field']))
+                        ))->getIdentifierFieldNames();
+                    if (\in_array('uuid', $identifiers, true)) {
+                        $prec_parent_id = $prec->get($this->parameters['implicitPosition']['field']) === null
+                            ? null
+                            : $prec->get($this->parameters['implicitPosition']['field'])->getUuid();
                     } else {
-                        $prec_parent_id = $prec->get($this->parameters['implicitPosition']['field']) === null ? null : $prec->get($this->parameters['implicitPosition']['field'])->get('id');
+                        $prec_parent_id = $prec->get($this->parameters['implicitPosition']['field']) === null
+                            ? null
+                            : $prec->get($this->parameters['implicitPosition']['field'])->getId();
                     }
                 }
-                $parent_after_id = (is_array($parent_after)&&array_key_exists('uuid', $parent_after))?$parent_after['uuid']:$parent_after;
+                $parent_after_id = (is_array($parent_after) && array_key_exists('uuid', $parent_after))
+                    ? $parent_after['uuid'] : $parent_after;
                 if ($parent_after_id == $prec_parent_id || !$isParentable) {
-                    $prec_position = $prec->get('position');
-                    $this->set('position', ((!$this->id  && !$this->get('uuid'))|| $parent_before != $parent_after_id || $this->get('position') > $prec_position) ? $prec_position + 1 : $prec_position);
-                } else $fallback = true;//end
-            } else $fallback = true;//end
-        } else $fallback = true;//end
+                    $prec_position = $prec->getPosition();
+                    $position = (((!method_exists($this, 'getId') || !$this->getId())
+                        && (!method_exists($this, 'getUuid') || !$this->getUuid()))
+                        || $parent_before !== $parent_after_id
+                        || $this->getPosition() > $prec_position)? $prec_position + 1 : $prec_position;
+                    $this->setPosition($position);
+                } else {
+                    $fallback = true;
+                }
+            } else {
+                $fallback = true;
+            }
+        } else {
+            $fallback = true;
+        }
 
-        if ($fallback) {//$mode = end
-            $max = 0;
-            $qb = $this->getDbAdapter()->getRepository(get_class($this))->createQueryBuilder('t')
+        if ($fallback) {
+            $qb = $this->getDbAdapter()
+                ->getRepository(\get_class($this))
+                ->createQueryBuilder('t')
                 ->select('MAX(t.position)');
 
             if ($isParentable) {
-              if(is_array($parent_after)) //manage fo with uuid key = (anr,uuid)
-                {
-                  $qb->innerJoin('t.'.$this->parameters['implicitPosition']['field'] ,$this->parameters['implicitPosition']['field']);
-                  $qb->where(!is_null($parent_after) ? $this->parameters['implicitPosition']['field'] . '.anr = :parentAnr' : 't.' . $this->parameters['implicitPosition']['field'] . ' IS NULL');
-                  $qb->andWhere(!is_null($parent_after) ? $this->parameters['implicitPosition']['field'] . '.uuid = :parentUuid' : 't.' . $this->parameters['implicitPosition']['field'] . ' IS NULL');
-                }else {
-                $qb->where(!is_null($parent_after) ? 't.' . $this->parameters['implicitPosition']['field'] . ' = :parentid' : 't.' . $this->parameters['implicitPosition']['field'] . ' IS NULL');
+                //manage fo with uuid key = (anr,uuid)
+                if (\is_array($parent_after)) {
+                    $qb->innerJoin(
+                        't.' . $this->parameters['implicitPosition']['field'],
+                        $this->parameters['implicitPosition']['field']
+                    );
+                    $qb->where(
+                        !empty($parent_after)
+                            ? $this->parameters['implicitPosition']['field'] . '.anr = :parentAnr'
+                            : 't.' . $this->parameters['implicitPosition']['field'] . ' IS NULL'
+                    );
+                    $qb->andWhere(
+                        !empty($parent_after)
+                            ? $this->parameters['implicitPosition']['field'] . '.uuid = :parentUuid'
+                            : 't.' . $this->parameters['implicitPosition']['field'] . ' IS NULL'
+                    );
+                } else {
+                    $qb->where(
+                        !empty($parent_after)
+                            ? 't.' . $this->parameters['implicitPosition']['field'] . ' = :parentid'
+                            : 't.' . $this->parameters['implicitPosition']['field'] . ' IS NULL'
+                    );
                 }
-                if (!is_null($parent_after)) {
-                  if(is_array($parent_after))
-                  {
-                    $qb->setParameter(':parentAnr', $parent_after['anr']);
-                    $qb->setParameter(':parentUuid', $parent_after['uuid']);
-                  }else
-                    $qb->setParameter(':parentid', $parent_after);
+                if ($parent_after !== null) {
+                    if (\is_array($parent_after)) {
+                        $qb->setParameter(':parentAnr', $parent_after['anr']);
+                        $qb->setParameter(':parentUuid', $parent_after['uuid']);
+                    } else {
+                        $qb->setParameter(':parentid', $parent_after);
+                    }
                 }
 
                 if (!empty($this->parameters['implicitPosition']['subField'])) {
                     foreach ($this->parameters['implicitPosition']['subField'] as $k) {
                         $sub = $this->get($k);
                         if (!empty($sub)) {
-                            $sub = is_object($sub) ? $sub->get('id') : $sub;
+                            $sub = \is_object($sub) ? $sub->get('id') : $sub;
                         } else {
-                            $sub = empty($options[$k]) || is_null($options[$k]) ? null : (is_object($options[$k]) ? $options[$k]->get('id') : $options[$k]);
+                            $subValue = \is_object($options[$k]) ? $options[$k]->getId() : $options[$k];
+                            $sub = empty($options[$k]) ? null : $subValue;
                         }
-                        if (is_null($sub)) {
+                        if ($sub === null) {
                             $qb->andWhere('t.' . $k . ' IS NULL');
                         } else {
-                            $qb->andWhere('t.' . $k . ' = :' . $k)
-                                ->setParameter(':' . $k, $sub);
+                            $qb->andWhere('t.' . $k . ' = :' . $k)->setParameter(':' . $k, $sub);
                         }
                     }
                 }
             }
 
             $max = $qb->getQuery()->getSingleScalarResult();
-            $parent_after_id = (is_array($parent_after)&&array_key_exists('uuid', $parent_after))?$parent_after['uuid']:$parent_after; //in case of uuid to compare just on the uuid
+            $parent_after_id = \is_array($parent_after) && \array_key_exists('uuid', $parent_after)
+                ? $parent_after['uuid']
+                : $parent_after; //in case of uuid to compare just on the uuid
 
-            if ((!$this->id && !$this->get('uuid'))  || $parent_before != $parent_after_id) {
-                $this->set('position', $max + 1);
+            if (((!method_exists($this, 'getId') || !$this->getId())
+                && (!method_exists($this, 'getUuid') || !$this->getUuid()))
+                || $parent_before !== $parent_after_id
+            ) {
+                $this->setPosition($max + 1);
             } else {//internal movement
-                $this->set('position', $max);//in this case we're not adding something, no +1
+                $this->setPosition($max); //in this case we're not adding something, no +1
             }
         }
         //assign cache value for brothers & children (algorithm delegated to AbstractEntityTable ::save)
-        $this->parameters['implicitPosition']['changes']['position'] = ['before' => $initial_position, 'after' => $this->get('position')];
+        $this->parameters['implicitPosition']['changes']['position'] = [
+            'before' => $initial_position,
+            'after' => $this->getPosition(),
+        ];
     }
 
     /**
@@ -396,6 +421,7 @@ abstract class AbstractEntity implements InputFilterAwareInterface
 
     /**
      * @param bool $partial
+     *
      * @return InputFilter
      */
     public function getInputFilter($partial = false)
@@ -406,50 +432,51 @@ abstract class AbstractEntity implements InputFilterAwareInterface
             foreach ($attributes as $k => $v) {
                 switch ($k) {
                     case 'id':
-                        $inputFilter->add(array(
+                        $inputFilter->add([
                             'name' => 'id',
                             'required' => false,
-                            'filters' => array(
-                                array('name' => 'ToInt',),
-                            ),
-                            'validators' => array(),
-                        ));
+                            'filters' => [
+                                ['name' => 'ToInt',],
+                            ],
+                            'validators' => [],
+                        ]);
                         break;
                     case 'position':
                         if (!$this->squeezeAutoPositionning && isset($this->parameters['implicitPosition']['field'])) {
-                            $inputFilter->add(array(//TIPs - previous is not a real attribute of the entity
+                            //TIPs - previous is not a real attribute of the entity
+                            $inputFilter->add([
                                 'name' => 'previous',
                                 'required' => false,
                                 'allow_empty' => true,
                                 'continue_if_empty' => true,
-                                // 'filters' => [['name' => 'ToInt']],
-                                'validators' => array()
-                            ));
-                            $inputFilter->add(array(
+                                'validators' => [],
+                            ]);
+                            $inputFilter->add([
                                 'name' => 'implicitPosition',
                                 'required' => false,
                                 'allow_empty' => true,
                                 'continue_if_empty' => true,
-                                'filters' => array(),
-                                'validators' => array(
-                                    array(
+                                'filters' => [],
+                                'validators' => [
+                                    [
                                         'name' => 'InArray',
-                                        'options' => array(
-                                            'haystack' => [null, 1, 2, 3], // null: 0 traitement / 1: start / 2: end / 3: after elem
-                                        ),
+                                        'options' => [
+                                            'haystack' => [null, 1, 2, 3],
+                                            // null: 0 traitement / 1: start / 2: end / 3: after elem
+                                        ],
                                         'default' => null,
-                                    )
-                                )
-                            ));
-                        }else{
-                             $inputFilter->add(array(
+                                    ],
+                                ],
+                            ]);
+                        } else {
+                            $inputFilter->add([
                                 'name' => 'position',
                                 'required' => false,
                                 'allow_empty' => true,
                                 'continue_if_empty' => true,
                                 'filters' => [['name' => 'ToInt']],
-                                'validators' => array()
-                            ));
+                                'validators' => [],
+                            ]);
                         }
                         break;
                     case 'updatedAt':
@@ -462,29 +489,32 @@ abstract class AbstractEntity implements InputFilterAwareInterface
                     case 'squeezeAutoPositionning':
                         break;
                     default:
-                        $inputFilter->add(array(
+                        $inputFilter->add([
                             'name' => $k,
                             'required' => false,
                             'allow_empty' => true,
                             'continue_if_empty' => true,
-                            'filters' => array(),
-                            'validators' => array(),
-                        ));
+                            'filters' => [],
+                            'validators' => [],
+                        ]);
                         break;
                 }
             }
             $this->inputFilter = $inputFilter;
         }
+
         return $this->inputFilter;
     }
 
     /**
      * @param InputFilterInterface $inputFilter
+     *
      * @return $this
      */
     public function setInputFilter(InputFilterInterface $inputFilter)
     {
         $this->inputFilter = $inputFilter;
+
         return $this;
     }
 
