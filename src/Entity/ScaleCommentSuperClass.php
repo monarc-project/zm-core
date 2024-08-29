@@ -164,7 +164,7 @@ class ScaleCommentSuperClass
 
     public function setScaleIndex(int $scaleIndex): self
     {
-        if (!\in_array($scaleIndex, $this->getScaleIndexAvailableValues(), true)) {
+        if ($this->scale !== null && !\in_array($scaleIndex, $this->getScaleIndexAvailableValues(), true)) {
             throw new \LogicException(sprintf('The scale index "%d" is out of bounds.', $scaleIndex));
         }
 
@@ -216,7 +216,7 @@ class ScaleCommentSuperClass
         ];
     }
 
-    public function getScaleIndexAvailableValues()
+    protected function getScaleIndexAvailableValues()
     {
         $values = [];
 

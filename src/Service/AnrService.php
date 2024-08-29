@@ -330,6 +330,7 @@ class AnrService
     private function duplicateScales(Entity\Anr $newAnr, Entity\Anr $anr): array
     {
         $newScaleImpactTypes = [];
+        /** @var Entity\Scale $scale */
         foreach ($this->scaleTable->findByAnr($anr) as $scale) {
             $newScale = Entity\Scale::constructFromObject($scale)
                 ->setAnr($newAnr)
