@@ -128,7 +128,7 @@ class AnrService
             'label4' => $newAnr->getLabel(4) . $suffix,
         ]);
 
-        foreach ($newAnr->getObjects() as $object) {
+        foreach ($anr->getObjects() as $object) {
             $newAnr->addObject($object);
         }
 
