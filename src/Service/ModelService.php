@@ -67,7 +67,7 @@ class ModelService
 
         if (!empty($data['metadataFields'])) {
             foreach ($data['metadataFields'] as $metadataFieldData) {
-                $this->anrInstanceMetadataFieldService->create($anr, [$metadataFieldData], false);
+                $this->anrInstanceMetadataFieldService->create($anr, ['metadataField' => [$metadataFieldData]], false);
             }
         }
 
