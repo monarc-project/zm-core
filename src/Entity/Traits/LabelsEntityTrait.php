@@ -53,6 +53,9 @@ trait LabelsEntityTrait
             if (isset($labels[$key])) {
                 $this->{$key} = $labels[$key];
             }
+            if ($this->{$key} === null) {
+                $this->{$key} = '';
+            }
         }
 
         return $this;
