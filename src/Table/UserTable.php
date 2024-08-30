@@ -19,12 +19,17 @@ class UserTable extends AbstractTable
         parent::__construct($entityManager, $entityName);
     }
 
-    public function findByEmail(string $email): UserSuperClass
+    public function findByEmail(string $email, ?string $excludeEmail = null): UserSuperClass
     {
-        $user = $this->getRepository()->createQueryBuilder('u')
+        $queryBuilder = $this->getRepository()->createQueryBuilder('u')
             ->where('u.email = :email')
-            ->setParameter(':email', $email)
-            ->getQuery()
+            ->setParameter(':email', $email);
+        if ($excludeEmail !== null) {
+            $queryBuilder->andWhere('u.email <> :excludeEmail')
+                ->setParameter('excludeEmail', $excludeEmail);
+        }
+
+        $user = $queryBuilder->getQuery()
             ->setMaxResults(1)
             ->getOneOrNullResult();
 

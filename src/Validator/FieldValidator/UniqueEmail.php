@@ -23,9 +23,10 @@ class UniqueEmail extends AbstractValidator
     {
         /** @var UserTable $userTable */
         $userTable = $this->getOptions()['userTable'];
+        $excludeEmail = !empty($this->getOptions()['excludeEmail']) ? $this->getOptions()['excludeEmail'] : null;
 
         try {
-            $userTable->findByEmail($value);
+            $userTable->findByEmail($value, $excludeEmail);
         } catch (EntityNotFoundException $e) {
             return true;
         }

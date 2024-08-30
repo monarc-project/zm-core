@@ -16,10 +16,13 @@ use Monarc\Core\Service\ConnectedUserService;
 use Monarc\Core\Validator\FieldValidator\UniqueEmail;
 use Monarc\Core\Validator\InputValidator\AbstractInputValidator;
 use Monarc\Core\Table\UserTable;
+use Monarc\Core\Validator\InputValidator\FilterFieldsValidationTrait;
 use Monarc\Core\Validator\InputValidator\InputValidationTranslator;
 
 class PatchProfileDataInputValidator extends AbstractInputValidator
 {
+    use FilterFieldsValidationTrait;
+
     protected UserTable $userTable;
 
     protected ?UserSuperClass $connectedUser;
@@ -92,6 +95,7 @@ class PatchProfileDataInputValidator extends AbstractInputValidator
                         'options' => [
                             'userTable' => $this->userTable,
                             'currentUserId' => $this->connectedUser !== null ? $this->connectedUser->getId() : 0,
+                            'excludeEmail' => $this->excludeFilter['email'] ?? null,
                         ],
                     ],
                 ],
