@@ -43,5 +43,6 @@ class GetMeasuresInputFormatter extends AbstractInputFormatter
 
     protected static array $orderParamsToFieldsMap = [
         'category' => 'category.label{languageIndex}',
+        'code' => 'code|LENGTH,code',
     ];
 }
