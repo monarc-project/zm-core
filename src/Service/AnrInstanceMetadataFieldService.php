@@ -81,9 +81,11 @@ class AnrInstanceMetadataFieldService
         ];
     }
 
-    public function create(Anr $anr, array $data): AnrInstanceMetadataField
+    public function create(Anr $anr, array $data, bool $saveInDb = true): AnrInstanceMetadataField
     {
+        // TODO: check why front-end doesn't pass the param when called.
         $metadataFieldData = current($data['metadataField']);
+        /** @var AnrInstanceMetadataField $metadataField */
         $metadataField = (new AnrInstanceMetadataField())
             ->setLabelTranslationKey((string)Uuid::uuid4())
             ->setAnr($anr)
@@ -103,7 +105,6 @@ class AnrInstanceMetadataFieldService
 
         $this->anrInstanceMetadataFieldTable->save($metadataField);
 
-        /** @var AnrInstanceMetadataField $metadataField */
         return $metadataField;
     }
 

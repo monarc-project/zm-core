@@ -24,6 +24,7 @@ class ModelService
         private ModelTable $modelTable,
         private AnrTable $anrTable,
         private AnrService $anrService,
+        private AnrInstanceMetadataFieldService $anrInstanceMetadataFieldService,
         ConnectedUserService $connectedUserService
     ) {
         $this->connectedUser = $connectedUserService->getConnectedUser();
@@ -63,6 +64,12 @@ class ModelService
         $model = (new Model())->setAnr($anr);
         $model = $this->setModelData($model, $data)
             ->setCreator($this->connectedUser->getEmail());
+
+        if (!empty($data['metadataFields'])) {
+            foreach ($data['metadataFields'] as $metadataFieldData) {
+                $this->anrInstanceMetadataFieldService->create($anr, [$metadataFieldData], false);
+            }
+        }
 
         $this->modelTable->save($model);
 
