@@ -172,7 +172,10 @@ class ObjectService
     {
         $result = [];
         foreach ($anr->getObjectCategories() as $objectCategory) {
-            $result[] = $this->getCategoriesAndObjectsTreeList($objectCategory, $anr);
+            $objectsCategoriesData = $this->getCategoriesAndObjectsTreeList($objectCategory, $anr);
+            if (!empty($objectsCategoriesData)) {
+                $result[] = $objectsCategoriesData;
+            }
         }
 
         /* Places uncategorized objects. */
