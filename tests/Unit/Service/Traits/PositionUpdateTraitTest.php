@@ -403,6 +403,7 @@ class PositionUpdateTraitTest extends TestCase
         return new class($currentPosition) implements PositionedEntityInterface {
             private int $position;
             private int $getAnrTimesCalled = 0;
+            private string $updater = '';
 
             // TODO: perform the used PropertyStateEntityTrait methods testing.
             use PropertyStateEntityTrait;
@@ -449,6 +450,13 @@ class PositionUpdateTraitTest extends TestCase
             public function getUpdater(): string
             {
                 return 'updater';
+            }
+
+            public function setUpdater(string $updater): PositionedEntityInterface
+            {
+                $this->updater = $updater;
+
+                return $this;
             }
         };
     }
