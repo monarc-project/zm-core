@@ -75,5 +75,8 @@
         "allow-plugins": {
             "laminas/laminas-dependency-plugin": true
         }
+    },
+    "scripts": {
+        "tests": "vendor/bin/phpunit"
     }
 }
