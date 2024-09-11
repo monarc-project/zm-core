@@ -27,8 +27,8 @@ The entity should have a single responsibility and do not perform any database r
 
 For generating migrating file & migrate DB with adding/deleting/changing column:
 
-	php ./vendor/bin/doctrine-module migrations:diff
-	php ./vendor/bin/doctrine-module migrations:migrate
+    php ./vendor/bin/doctrine-module migrations:diff
+    php ./vendor/bin/doctrine-module migrations:migrate
 
 
 Entity Table
@@ -59,7 +59,13 @@ In most of the cases it works well with `Laminas\Di\Container\AutowireFactory`:
 Controller
 ----------
 
-Controller should extend `Laminas\Mvc\Controller\AbstractRestfulController`.
+One of the controller can be extend when particular ones created:
+- `Laminas\Mvc\Controller\AbstractRestfulController`
+- `Monarc\Core\Controller\Handler\AbstractRestfulControllerRequestHandler`
+
+There is a trait helper class that can be used in the controllers to help with the output rendering:
+`Monarc\Core\Controller\Handler\ControllerRequestResponseHandlerTrait`
+
 
 Restful application methods to be defined:
 
@@ -69,7 +75,7 @@ Restful application methods to be defined:
 * update($id, $data)
 * delete($id)
 
-In `module.config.php`, controllers are usually defined in the factories container like:
+In `module.config.php`, controllers are usually defined in the configuration like:
 
     ControllerNameSpace\MyController::class => AutowireFactory::class,
 
@@ -129,11 +135,12 @@ License
 This software is licensed under
 [GNU Affero General Public License version 3](http://www.gnu.org/licenses/agpl-3.0.html)
 
-- Copyright (C) 2016-2020 Jérôme Lombardi - https://github.com/jerolomb
-- Copyright (C) 2016-2020 Juan Rocha - https://github.com/jfrocha
-- Copyright (C) 2016-2020 SMILE gie securitymadein.lu
-- Copyright (C) 2017-2020 Cédric Bonhomme - https://www.cedricbonhomme.org
-- Copyright (C) 2019-2021 Ruslan Baidan
+- Copyright (C) 2022-2024 Luxembourg House of Cybersecurity https://lhc.lu
+- Copyright (C) 2016-2022 SMILE gie securitymadein.lu
+- Copyright (C) 2016-2024 Jérôme Lombardi - https://github.com/jerolomb
+- Copyright (C) 2016-2024 Juan Rocha - https://github.com/jfrocha
+- Copyright (C) 2017-2024 Cédric Bonhomme - https://www.cedricbonhomme.org
+- Copyright (C) 2019-2024 Ruslan Baidan - https://github.com/ruslanbaidan
 - Copyright (C) 2016-2017 Guillaume Lesniak
 - Copyright (C) 2016-2017 Thomas Metois
 - Copyright (C) 2016-2017 Jérôme De Almeida
