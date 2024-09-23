@@ -49,6 +49,8 @@ class ScaleCommentService
         /** @var Entity\Scale $scale */
         $scale = $this->scaleTable->findByIdAndAnr($data['scaleId'], $anr);
 
+        Entity\ScaleCommentSuperClass::validateScaleIndexValue($scale, $data['scaleIndex']);
+
         /** @var Entity\ScaleComment $scaleComment */
         $scaleComment = (new Entity\ScaleComment())
             ->setAnr($anr)

@@ -10,6 +10,7 @@ namespace Monarc\Core\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
+use Monarc\Core\Exception\Exception;
 
 /**
  * @ORM\Table(name="scales_comments", indexes={
@@ -164,10 +165,6 @@ class ScaleCommentSuperClass
 
     public function setScaleIndex(int $scaleIndex): self
     {
-        if ($this->scale !== null && !\in_array($scaleIndex, $this->getScaleIndexAvailableValues(), true)) {
-            throw new \LogicException(sprintf('The scale index "%d" is out of bounds.', $scaleIndex));
-        }
-
         $this->scaleIndex = $scaleIndex;
 
         return $this;
@@ -216,14 +213,10 @@ class ScaleCommentSuperClass
         ];
     }
 
-    protected function getScaleIndexAvailableValues()
+    public static function validateScaleIndexValue(ScaleSuperClass $scale, int $indexValue): void
     {
-        $values = [];
-
-        for ($i = $this->scale->getMin(); $i <= $this->scale->getMax(); $i++) {
-            $values[] = $i;
+        if ($indexValue < $scale->getMin() || $indexValue > $scale->getMax()) {
+            throw new Exception(sprintf('The scale index "%d" is out of bounds.', $indexValue));
         }
-
-        return $values;
     }
 }
