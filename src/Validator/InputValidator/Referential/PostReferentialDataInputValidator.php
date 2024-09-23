@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Validator\InputValidator\Referential;
 
+use Laminas\Validator\StringLength;
 use Monarc\Core\Validator\InputValidator\AbstractInputValidator;
 
 class PostReferentialDataInputValidator extends AbstractInputValidator
@@ -18,6 +19,21 @@ class PostReferentialDataInputValidator extends AbstractInputValidator
             $labelRules[] = $this->getLabelRule($systemLanguageIndex);
         }
 
-        return $labelRules;
+        return array_merge([
+            [
+                'name' => 'uuid',
+                'required' => false,
+                'filters' => [],
+                'validators' => [
+                    [
+                        'name' => StringLength::class,
+                        'options' => [
+                            'min' => 36,
+                            'max' => 36,
+                        ]
+                    ],
+                ],
+            ],
+        ], $labelRules);
     }
 }
