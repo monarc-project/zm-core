@@ -56,7 +56,7 @@ abstract class AbstractInputFormatter
     protected static array $orderParamsToFieldsMap = [];
 
     /**
-     * The default order fields string.
+     * The default order fields string. It is always added to the query in addition the order list request param.
      * Ex. '-position:name:-date'. '-' means descending order, ':' fields separation.
      */
     protected static string $defaultOrderFields = '';
@@ -153,7 +153,13 @@ abstract class AbstractInputFormatter
         }
 
         /* Add order params. */
-        $orderFields = $inputParams['order'] ?? static::$defaultOrderFields;
+        $orderFields = !empty($inputParams['order']) ? $inputParams['order'] : '';
+        /* Merge with the default ones in case if set. */
+        if (!empty(static::$defaultOrderFields)) {
+            $orderFields = $orderFields === ''
+                ? static::$defaultOrderFields
+                : $orderFields .':' . static::$defaultOrderFields;
+        }
         if (!empty($orderFields)) {
             $orderFields = str_contains($orderFields, ':')
                 ? explode(':', $orderFields)

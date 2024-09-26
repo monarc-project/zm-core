@@ -418,14 +418,14 @@ abstract class AbstractTable
             return $this;
         }
 
-        $fieldValueName = str_contains($field, '.') ? explode('.', $field)[1] : $field;
-        $whereCondition = $fieldNameWithAlias . ' ' . $operator . ' :' . $fieldValueName;
+        $paramName = str_contains($field, '.') ? str_replace('.', '_', $field) : $field;
+        $whereCondition = $fieldNameWithAlias . ' ' . $operator . ' :' . $paramName;
         if (\is_array($filterParams['value'])
             && \in_array($operator, [Comparison::IN, Comparison::NIN], true)
         ) {
             $whereCondition = $operator === Comparison::IN
-                ? $queryBuilder->expr()->in($fieldNameWithAlias, ':' . $fieldValueName)
-                : $queryBuilder->expr()->notIn($fieldNameWithAlias, ':' . $fieldValueName);
+                ? $queryBuilder->expr()->in($fieldNameWithAlias, ':' . $paramName)
+                : $queryBuilder->expr()->notIn($fieldNameWithAlias, ':' . $paramName);
         }
 
         /* Used for the 2 fields relation to be able to add the anr property to the joining tables. */
@@ -435,7 +435,7 @@ abstract class AbstractTable
 
         $queryBuilder
             ->andWhere($whereCondition)
-            ->setParameter($fieldValueName, $filterParams['value']);
+            ->setParameter($paramName, $filterParams['value']);
 
         return $this;
     }

@@ -65,4 +65,6 @@ class GetAmvsInputFormatter extends AbstractInputFormatter
         'threat' => 'threat.code',
         'vulnerability' => 'vulnerability.code',
     ];
+
+    public static string $defaultOrderFields = 'position';
 }

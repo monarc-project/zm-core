@@ -43,6 +43,20 @@ class PostMeasureDataInputValidator extends AbstractInputValidator
 
         $rules = [
             [
+                'name' => 'uuid',
+                'required' => false,
+                'filters' => [],
+                'validators' => [
+                    [
+                        'name' => StringLength::class,
+                        'options' => [
+                            'min' => 36,
+                            'max' => 36,
+                        ]
+                    ],
+                ],
+            ],
+            [
                 'name' => 'code',
                 'required' => true,
                 'filters' => [
