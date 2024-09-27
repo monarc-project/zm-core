@@ -209,7 +209,7 @@ class ObjectService
         if (!empty($data['category'])) {
             $this->validateAndSetCategory($monarcObject, $data);
         }
-        if (!empty($data['rolfTag']) && !$asset->isPrimary()) {
+        if (!empty($data['rolfTag']) && $asset->isPrimary()) {
             /** @var Entity\RolfTag $rolfTag */
             $rolfTag = $this->rolfTagTable->findById((int)$data['rolfTag']);
             $monarcObject->setRolfTag($rolfTag);

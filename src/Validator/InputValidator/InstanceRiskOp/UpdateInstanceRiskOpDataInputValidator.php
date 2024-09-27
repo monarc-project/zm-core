@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Validator\InputValidator\InstanceRiskOp;
 
+use Laminas\Filter\StringTrim;
 use Laminas\Filter\ToInt;
 use Laminas\Validator\InArray;
 use Monarc\Core\Entity\InstanceRiskOpSuperClass;
@@ -17,6 +18,16 @@ class UpdateInstanceRiskOpDataInputValidator extends AbstractInputValidator
     protected function getRules(): array
     {
         return [
+            [
+                'name' => 'comment',
+                'required' => false,
+                'filters' => [
+                    [
+                        'name' => StringTrim::class,
+                    ],
+                ],
+                'validators' => [],
+            ],
             [
                 'name' => 'netProb',
                 'required' => false,
