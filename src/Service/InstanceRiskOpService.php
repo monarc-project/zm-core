@@ -1,170 +1,57 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
 namespace Monarc\Core\Service;
 
-use Doctrine\ORM\EntityNotFoundException;
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
-use Monarc\Core\Exception\Exception;
-use Monarc\Core\Model\Entity\AnrSuperClass;
-use Monarc\Core\Model\Entity\Asset;
-use Monarc\Core\Model\Entity\InstanceRiskOp;
-use Monarc\Core\Model\Entity\InstanceRiskOpSuperClass;
-use Monarc\Core\Model\Entity\InstanceRiskOwner;
-use Monarc\Core\Model\Entity\InstanceRiskOwnerSuperClass;
-use Monarc\Core\Model\Entity\InstanceSuperClass;
-use Monarc\Core\Model\Entity\ObjectSuperClass;
-use Monarc\Core\Model\Entity\OperationalInstanceRiskScale;
-use Monarc\Core\Model\Entity\OperationalInstanceRiskScaleSuperClass;
-use Monarc\Core\Model\Entity\OperationalRiskScale;
-use Monarc\Core\Model\Entity\OperationalRiskScaleSuperClass;
-use Monarc\Core\Model\Entity\OperationalRiskScaleType;
-use Monarc\Core\Model\Entity\OperationalRiskScaleTypeSuperClass;
-use Monarc\Core\Model\Entity\RolfRiskSuperClass;
-use Monarc\Core\Model\Entity\Translation;
-use Monarc\Core\Model\Entity\UserSuperClass;
-use Monarc\Core\Model\Table\AnrTable;
-use Monarc\Core\Model\Table\InstanceRiskOpTable;
-use Monarc\Core\Model\Table\InstanceRiskOwnerTable;
-use Monarc\Core\Model\Table\InstanceTable;
-use Monarc\Core\Model\Table\OperationalInstanceRiskScaleTable;
-use Monarc\Core\Model\Table\OperationalRiskScaleTable;
-use Monarc\Core\Model\Table\OperationalRiskScaleTypeTable;
-use Monarc\Core\Model\Table\RolfTagTable;
-use Monarc\Core\Model\Table\TranslationTable;
+use Monarc\Core\Entity;
+use Monarc\Core\Service\Helper\ScalesCacheHelper;
+use Monarc\Core\Service\Traits\OperationalRiskScaleVerificationTrait;
+use Monarc\Core\Table;
 
 class InstanceRiskOpService
 {
-    protected AnrTable $anrTable;
+    use OperationalRiskScaleVerificationTrait;
 
-    protected InstanceTable $instanceTable;
-
-    protected InstanceRiskOpTable $instanceRiskOpTable;
-
-    protected RolfTagTable $rolfTagTable;
-
-    protected UserSuperClass $connectedUser;
-
-    protected OperationalInstanceRiskScaleTable $operationalInstanceRiskScaleTable;
-
-    protected TranslationTable $translationTable;
-
-    protected TranslateService $translateService;
-
-    protected ConfigService $configService;
-
-    protected OperationalRiskScaleTable $operationalRiskScaleTable;
-
-    protected OperationalRiskScaleTypeTable $operationalRiskScaleTypeTable;
-
-    protected InstanceRiskOwnerTable $instanceRiskOwnerTable;
-
-    protected array $operationalRiskScales = [];
+    private Entity\UserSuperClass $connectedUser;
 
     public function __construct(
-        AnrTable $anrTable,
-        InstanceTable $instanceTable,
-        InstanceRiskOpTable $instanceRiskOpTable,
-        OperationalInstanceRiskScaleTable $operationalInstanceRiskScaleTable,
-        RolfTagTable $rolfTagTable,
-        ConnectedUserService $connectedUserService,
-        TranslationTable $translationTable,
-        TranslateService $translateService,
-        OperationalRiskScaleTable $operationalRiskScaleTable,
-        OperationalRiskScaleTypeTable $operationalRiskScaleTypeTable,
-        InstanceRiskOwnerTable $instanceRiskOwnerTable,
-        ConfigService $configService
+        private Table\InstanceTable $instanceTable,
+        private Table\InstanceRiskOpTable $instanceRiskOpTable,
+        private Table\OperationalInstanceRiskScaleTable $operationalInstanceRiskScaleTable,
+        private Table\TranslationTable $translationTable,
+        private Table\OperationalRiskScaleTypeTable $operationalRiskScaleTypeTable,
+        private ConfigService $configService,
+        private ScalesCacheHelper $scalesCacheHelper,
+        ConnectedUserService $connectedUserService
     ) {
-        $this->anrTable = $anrTable;
-        $this->instanceTable = $instanceTable;
-        $this->instanceRiskOpTable = $instanceRiskOpTable;
-        $this->operationalInstanceRiskScaleTable = $operationalInstanceRiskScaleTable;
-        $this->rolfTagTable = $rolfTagTable;
         $this->connectedUser = $connectedUserService->getConnectedUser();
-        $this->translationTable = $translationTable;
-        $this->translateService = $translateService;
-        $this->operationalRiskScaleTable = $operationalRiskScaleTable;
-        $this->operationalRiskScaleTypeTable = $operationalRiskScaleTypeTable;
-        $this->instanceRiskOwnerTable = $instanceRiskOwnerTable;
-        $this->configService = $configService;
     }
 
-    public function createInstanceRisksOp(InstanceSuperClass $instance, ObjectSuperClass $object): void
-    {
-        if ($object->getAsset() === null
-            || $object->getRolfTag() === null
-            || $object->getAsset()->getType() !== Asset::TYPE_PRIMARY
-        ) {
-            return;
-        }
-
-        $otherInstance = $this->instanceTable->findOneByAnrAndObjectExcludeInstance(
-            $instance->getAnr(),
-            $object,
-            $instance
-        );
-
-        if ($otherInstance !== null && $object->isScopeGlobal()) {
-            foreach ($this->instanceRiskOpTable->findByInstance($otherInstance) as $instanceRiskOp) {
-                $newInstanceRiskOp = (clone $instanceRiskOp)
-                    ->setAnr($instance->getAnr())
-                    ->setInstance($instance)
-                    ->setCreator($this->connectedUser->getFirstname() . ' ' . $this->connectedUser->getLastname());
-                $this->instanceRiskOpTable->saveEntity($newInstanceRiskOp, false);
-
-                $operationalInstanceRiskScales = $this->operationalInstanceRiskScaleTable->findByInstanceRiskOp(
-                    $instanceRiskOp
-                );
-                foreach ($operationalInstanceRiskScales as $operationalInstanceRiskScale) {
-                    $operationalInstanceRiskScaleClone = (clone $operationalInstanceRiskScale)
-                        ->setCreator($this->connectedUser->getEmail());
-                    $this->operationalInstanceRiskScaleTable->save($operationalInstanceRiskScaleClone, false);
-                }
-            }
-        } else {
-            $rolfTag = $this->rolfTagTable->findById($object->getRolfTag()->getId());
-            foreach ($rolfTag->getRisks() as $rolfRisk) {
-                $this->createInstanceRiskOpWithScales(
-                    $instance,
-                    $object,
-                    $rolfRisk
-                );
-            }
-        }
-
-        $this->instanceRiskOpTable->getDb()->flush();
-    }
-
-    public function getOperationalRisks(int $anrId, int $instanceId = null, array $params = [])
+    public function getOperationalRisks(Entity\AnrSuperClass $anr, int $instanceId = null, array $params = []): array
     {
         $instancesInfos = [];
         if ($instanceId === null) {
-            $instances = $this->instanceTable->findByAnrId($anrId);
+            $instances = $this->instanceTable->findByAnr($anr);
         } else {
-            $instance = $this->instanceTable->findById($instanceId);
-            $this->instanceTable->initTree($instance);
-            $instances = $this->extractInstanceAndChildInstances($instance);
+            /** @var Entity\Instance $instance */
+            $instance = $this->instanceTable->findByIdAndAnr($instanceId, $anr);
+            $instances = $instance->getSelfAndChildrenInstances();
         }
         foreach ($instances as $instance) {
-            if ($instance->getAsset()->getType() === Asset::TYPE_PRIMARY) {
-                $instancesInfos[$instance->getId()] = [
+            if ($instance->getAsset()->getType() === Entity\AssetSuperClass::TYPE_PRIMARY) {
+                $instancesInfos[$instance->getId()] = array_merge([
                     'id' => $instance->getId(),
                     'scope' => $instance->getObject()->getScope(),
-                    'name1' => $instance->getName1(),
-                    'name2' => $instance->getName2(),
-                    'name3' => $instance->getName3(),
-                    'name4' => $instance->getName4()
-                ];
+                ], $instance->getNames());
             }
         }
 
         $instancesRisksOp = $this->instanceRiskOpTable->getInstancesRisksOp(
-            $anrId,
+            $anr,
             array_keys($instancesInfos),
             $params
         );
@@ -173,18 +60,21 @@ class InstanceRiskOpService
             $anr = current($instancesRisksOp)->getAnr();
             $scaleTypesTranslations = $this->translationTable->findByAnrTypesAndLanguageIndexedByKey(
                 $anr,
-                [Translation::OPERATIONAL_RISK_SCALE_TYPE],
-                $this->getAnrLanguageCode($anr)
+                [Entity\TranslationSuperClass::OPERATIONAL_RISK_SCALE_TYPE],
+                $this->getUiSelectedLanguageCode()
             );
         }
         $result = [];
         foreach ($instancesRisksOp as $instanceRiskOp) {
             $scalesData = [];
             foreach ($instanceRiskOp->getOperationalInstanceRiskScales() as $operationalInstanceRiskScale) {
+                /** @var Entity\OperationalRiskScaleType $scaleType */
                 $scaleType = $operationalInstanceRiskScale->getOperationalRiskScaleType();
                 $scalesData[$scaleType->getId()] = [
                     'instanceRiskScaleId' => $operationalInstanceRiskScale->getId(),
-                    'label' => $scaleTypesTranslations[$scaleType->getLabelTranslationKey()]->getValue(),
+                    'label' => isset($scaleTypesTranslations[$scaleType->getLabelTranslationKey()])
+                        ? $scaleTypesTranslations[$scaleType->getLabelTranslationKey()]->getValue()
+                        : '',
                     'netValue' => $operationalInstanceRiskScale->getNetValue(),
                     'brutValue' => $operationalInstanceRiskScale->getBrutValue(),
                     'targetedValue' => $operationalInstanceRiskScale->getTargetedValue(),
@@ -194,7 +84,7 @@ class InstanceRiskOpService
 
             $result[] = [
                 'id' => $instanceRiskOp->getId(),
-                'rolfRisk' => $instanceRiskOp->getRolfRisk() ? $instanceRiskOp->getRolfRisk()->getId() : null,
+                'rolfRisk' => $instanceRiskOp->getRolfRisk()?->getId(),
                 'label1' => $instanceRiskOp->getRiskCacheLabel(1),
                 'label2' => $instanceRiskOp->getRiskCacheLabel(2),
                 'label3' => $instanceRiskOp->getRiskCacheLabel(3),
@@ -212,48 +102,42 @@ class InstanceRiskOpService
                 'scales' => $scalesData,
                 'kindOfMeasure' => $instanceRiskOp->getKindOfMeasure(),
                 'comment' => $instanceRiskOp->getComment(),
-                't' => $instanceRiskOp->getKindOfMeasure() === InstanceRiskOp::KIND_NOT_TREATED,
+                't' => $instanceRiskOp->isTreated(),
                 'position' => $instanceRiskOp->getInstance()->getPosition(),
                 'instanceInfos' => $instancesInfos[$instanceRiskOp->getInstance()->getId()] ?? [],
-                'context' => $instanceRiskOp->getContext(),
-                'owner' => $instanceRiskOp->getInstanceRiskOwner()
-                    ? $instanceRiskOp->getInstanceRiskOwner()->getName()
-                    : '',
             ];
         }
 
         return $result;
     }
 
-    /**
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
-    public function deleteOperationalRisks(InstanceSuperClass $instance): void
-    {
-        $operationalRisks = $this->instanceRiskOpTable->findByInstance($instance);
-        foreach ($operationalRisks as $operationalRisk) {
-            $this->instanceRiskOpTable->deleteEntity($operationalRisk, false);
+    public function createInstanceRisksOp(
+        Entity\Instance $instance,
+        Entity\MonarcObject $monarcObject,
+        bool $saveInDb = true
+    ): void {
+        if ($monarcObject->getRolfTag() === null || !$monarcObject->getAsset()->isPrimary()) {
+            return;
         }
-        $this->instanceRiskOpTable->getDb()->flush();
+
+        foreach ($monarcObject->getRolfTag()->getRisks() as $rolfRisk) {
+            $this->createInstanceRiskOpWithScales($instance, $monarcObject, $rolfRisk);
+        }
+
+        if ($saveInDb) {
+            $this->instanceRiskOpTable->flush();
+        }
     }
 
-    /**
-     * @throws EntityNotFoundException
-     * @throws ORMException
-     * @throws OptimisticLockException
-     * @throws Exception
-     */
-    public function updateScaleValue($id, $data): array
+    public function updateScaleValue(Entity\Anr $anr, int $id, array $data): Entity\InstanceRiskOp
     {
-        /** @var OperationalInstanceRiskScale $operationInstanceRiskScale */
-        $operationInstanceRiskScale = $this->operationalInstanceRiskScaleTable->findById($data['instanceRiskScaleId']);
-        if ($operationInstanceRiskScale === null) {
-            throw EntityNotFoundException::fromClassNameAndIdentifier(
-                \get_class($this->operationalInstanceRiskScaleTable),
-                $data['instanceRiskScaleId']
-            );
-        }
+        /** @var Entity\InstanceRiskOp $operationalInstanceRisk */
+        $operationalInstanceRisk = $this->instanceRiskOpTable->findByIdAndAnr($id, $anr);
+        /** @var Entity\OperationalInstanceRiskScale $operationInstanceRiskScale */
+        $operationInstanceRiskScale = $this->operationalInstanceRiskScaleTable->findByIdAndAnr(
+            (int)$data['instanceRiskScaleId'],
+            $anr
+        );
 
         if (isset($data['netValue']) && $operationInstanceRiskScale->getNetValue() !== (int)$data['netValue']) {
             $this->verifyScaleValue($operationInstanceRiskScale, (int)$data['netValue']);
@@ -272,26 +156,19 @@ class InstanceRiskOpService
 
         $operationInstanceRiskScale->setUpdater($this->connectedUser->getEmail());
 
-        $operationalInstanceRisk = $this->instanceRiskOpTable->findById($id);
-
         $this->updateRiskCacheValues($operationalInstanceRisk);
 
         $this->operationalInstanceRiskScaleTable->save($operationInstanceRiskScale);
 
-        return $operationalInstanceRisk->getJsonArray();
+        return $operationalInstanceRisk;
     }
 
-    /**
-     * @throws EntityNotFoundException
-     * @throws Exception
-     * @throws ORMException
-     */
-    public function update(int $id, array $data): array
+    public function update(Entity\Anr $anr, int $id, array $data): Entity\InstanceRiskOp
     {
-        // TODO: implement Permissions validator and inject it here. similar to \Monarc\Core\Service\AbstractService::deleteFromAnr
+        /** @var Entity\InstanceRiskOp $operationalInstanceRisk */
+        $operationalInstanceRisk = $this->instanceRiskOpTable->findByIdAndAnr($id, $anr);
 
-        /** @var InstanceRiskOpSuperClass $operationalInstanceRisk */
-        $operationalInstanceRisk = $this->instanceRiskOpTable->findById($id);
+        $likelihoodScale = $this->scalesCacheHelper->getCachedLikelihoodScale($anr);
         if (isset($data['kindOfMeasure'])) {
             $operationalInstanceRisk->setKindOfMeasure((int)$data['kindOfMeasure']);
         }
@@ -299,110 +176,62 @@ class InstanceRiskOpService
             $operationalInstanceRisk->setComment($data['comment']);
         }
         if (isset($data['netProb']) && $operationalInstanceRisk->getNetProb() !== $data['netProb']) {
-            $this->verifyScaleProbabilityValue($operationalInstanceRisk->getAnr(), (int)$data['netProb']);
+            $this->verifyScaleProbabilityValue((int)$data['netProb'], $likelihoodScale);
             $operationalInstanceRisk->setNetProb((int)$data['netProb']);
         }
         if (isset($data['brutProb']) && $operationalInstanceRisk->getBrutProb() !== $data['brutProb']) {
-            $this->verifyScaleProbabilityValue($operationalInstanceRisk->getAnr(), (int)$data['brutProb']);
+            $this->verifyScaleProbabilityValue((int)$data['brutProb'], $likelihoodScale);
             $operationalInstanceRisk->setBrutProb((int)$data['brutProb']);
         }
         if (isset($data['targetedProb']) && $operationalInstanceRisk->getTargetedProb() !== $data['targetedProb']) {
-            $this->verifyScaleProbabilityValue($operationalInstanceRisk->getAnr(), (int)$data['targetedProb']);
+            $this->verifyScaleProbabilityValue((int)$data['targetedProb'], $likelihoodScale);
             $operationalInstanceRisk->setTargetedProb((int)$data['targetedProb']);
         }
-        if (\array_key_exists('owner', $data)) {
-            $this->processRiskOwnerName((string)$data['owner'], $operationalInstanceRisk);
-        }
-        if (isset($data['context'])) {
-            $operationalInstanceRisk->setContext($data['context']);
-        }
 
-        $operationalInstanceRisk->setUpdater(
-            $this->connectedUser->getFirstname() . ' ' . $this->connectedUser->getLastname()
-        );
+        $operationalInstanceRisk->setUpdater($this->connectedUser->getEmail());
 
         $this->updateRiskCacheValues($operationalInstanceRisk);
 
-        $this->instanceRiskOpTable->saveEntity($operationalInstanceRisk);
+        $this->instanceRiskOpTable->save($operationalInstanceRisk);
 
-        return $operationalInstanceRisk->getJsonArray();
+        return $operationalInstanceRisk;
     }
 
-    public function updateRiskCacheValues(
-        InstanceRiskOpSuperClass $operationalInstanceRisk,
-        bool $flushChanges = false
-    ): void {
+    public function updateRiskCacheValues(Entity\InstanceRiskOp $operationalInstanceRisk): void
+    {
         foreach (['Brut', 'Net', 'Targeted'] as $valueType) {
             $max = -1;
             $probVal = $operationalInstanceRisk->{'get' . $valueType . 'Prob'}();
             if ($probVal !== -1) {
                 foreach ($operationalInstanceRisk->getOperationalInstanceRiskScales() as $riskScale) {
-                    if ($riskScale->getOperationalRiskScaleType()->isHidden()) {
-                        continue;
-                    }
-                    $scaleValue = $riskScale->{'get' . $valueType . 'Value'}();
-                    if ($scaleValue > -1 && ($probVal * $scaleValue) > $max) {
-                        $max = $probVal * $scaleValue;
+                    if (!$riskScale->getOperationalRiskScaleType()->isHidden()) {
+                        $scaleValue = $riskScale->{'get' . $valueType . 'Value'}();
+                        if ($scaleValue > -1 && ($probVal * $scaleValue) > $max) {
+                            $max = $probVal * $scaleValue;
+                        }
                     }
                 }
             }
 
             if ($operationalInstanceRisk->{'getCache' . $valueType . 'Risk'}() !== $max) {
                 $operationalInstanceRisk
-                    ->setUpdater($this->connectedUser->getFirstname() . ' ' . $this->connectedUser->getLastname())
+                    ->setUpdater($this->connectedUser->getEmail())
                     ->{'setCache' . $valueType . 'Risk'}($max);
-                $this->instanceRiskOpTable->saveEntity($operationalInstanceRisk, false);
+                $this->instanceRiskOpTable->save($operationalInstanceRisk, false);
             }
-        }
-
-        if ($flushChanges === true) {
-            $this->instanceRiskOpTable->getDb()->flush();
         }
     }
 
     public function createInstanceRiskOpWithScales(
-        InstanceSuperClass $instance,
-        ObjectSuperClass $object,
-        RolfRiskSuperClass $rolfRisk,
-        $flushChanges = false
-    ): InstanceRiskOpSuperClass {
-        $instanceRiskOp = $this->createInstanceRiskOpObjectFromInstanceObjectAndRolfRisk(
-            $instance,
-            $object,
-            $rolfRisk
-        );
-
-        $this->instanceRiskOpTable->saveEntity($instanceRiskOp, false);
-
-        $operationalRiskScaleTypes = $this->operationalRiskScaleTypeTable->findByAnrAndScaleType(
-            $instance->getAnr(),
-            OperationalRiskScale::TYPE_IMPACT
-        );
-        foreach ($operationalRiskScaleTypes as $operationalRiskScaleType) {
-            $operationalInstanceRiskScale = $this->createOperationalInstanceRiskScaleObject(
-                $instanceRiskOp,
-                $operationalRiskScaleType,
-            );
-
-            $this->operationalInstanceRiskScaleTable->save($operationalInstanceRiskScale, false);
-        }
-
-        if ($flushChanges) {
-            $this->instanceRiskOpTable->getDb()->flush();
-        }
-
-        return $instanceRiskOp;
-    }
-
-    protected function createInstanceRiskOpObjectFromInstanceObjectAndRolfRisk(
-        InstanceSuperClass $instance,
-        ObjectSuperClass $object,
-        RolfRiskSuperClass $rolfRisk
-    ): InstanceRiskOpSuperClass {
-        return (new InstanceRiskOp())
+        Entity\Instance $instance,
+        Entity\MonarcObject $monarcObject,
+        Entity\RolfRisk $rolfRisk
+    ): Entity\InstanceRiskOp {
+        /** @var Entity\InstanceRiskOp $instanceRiskOp */
+        $instanceRiskOp = (new Entity\InstanceRiskOp())
             ->setAnr($instance->getAnr())
             ->setInstance($instance)
-            ->setObject($object)
+            ->setObject($monarcObject)
             ->setRolfRisk($rolfRisk)
             ->setRiskCacheCode($rolfRisk->getCode())
             ->setRiskCacheLabels([
@@ -416,122 +245,40 @@ class InstanceRiskOpService
                 'riskCacheDescription2' => $rolfRisk->getDescription(2),
                 'riskCacheDescription3' => $rolfRisk->getDescription(3),
                 'riskCacheDescription4' => $rolfRisk->getDescription(4),
-            ]);
+            ])
+            ->setCreator($this->connectedUser->getEmail());
+
+        $this->instanceRiskOpTable->save($instanceRiskOp, false);
+
+        $operationalRiskScaleTypes = $this->operationalRiskScaleTypeTable->findByAnrAndScaleType(
+            $instance->getAnr(),
+            Entity\OperationalRiskScaleSuperClass::TYPE_IMPACT
+        );
+        foreach ($operationalRiskScaleTypes as $operationalRiskScaleType) {
+            $operationalInstanceRiskScale = $this->createOperationalInstanceRiskScaleObject(
+                $instanceRiskOp,
+                $operationalRiskScaleType,
+            );
+
+            $this->operationalInstanceRiskScaleTable->save($operationalInstanceRiskScale, false);
+        }
+
+        return $instanceRiskOp;
     }
 
     public function createOperationalInstanceRiskScaleObject(
-        InstanceRiskOpSuperClass $instanceRiskOp,
-        OperationalRiskScaleTypeSuperClass $operationalRiskScaleType
-    ): OperationalInstanceRiskScaleSuperClass {
-        return (new OperationalInstanceRiskScale())
+        Entity\InstanceRiskOpSuperClass $instanceRiskOp,
+        Entity\OperationalRiskScaleTypeSuperClass $operationalRiskScaleType
+    ): Entity\OperationalInstanceRiskScaleSuperClass {
+        return (new Entity\OperationalInstanceRiskScale())
             ->setAnr($instanceRiskOp->getAnr())
             ->setOperationalInstanceRisk($instanceRiskOp)
             ->setOperationalRiskScaleType($operationalRiskScaleType)
             ->setCreator($this->connectedUser->getEmail());
     }
 
-    protected function getAnrLanguageCode(AnrSuperClass $anr): string
+    private function getUiSelectedLanguageCode(): string
     {
-        return strtolower($this->configService->getLanguageCodes()[$anr->getLanguage()]);
-    }
-
-    /**
-     * @throws Exception
-     */
-    protected function verifyScaleValue(
-        OperationalInstanceRiskScaleSuperClass $operationalInstanceRiskScale,
-        int $scaleValue
-    ): void {
-        $operationalRiskScaleType = $operationalInstanceRiskScale->getOperationalRiskScaleType();
-        $allowedValues = [];
-        foreach ($operationalRiskScaleType->getOperationalRiskScaleComments() as $operationalRiskScaleComment) {
-            if (!$operationalRiskScaleComment->isHidden()) {
-                $allowedValues[] = $operationalRiskScaleComment->getScaleValue();
-            }
-        }
-
-        if ($scaleValue !== -1 && !\in_array($scaleValue, $allowedValues, true)) {
-            throw new Exception(sprintf(
-                'The value %d should be between one of [%s]',
-                $scaleValue,
-                implode(', ', $allowedValues)
-            ), 412);
-        }
-    }
-
-    /**
-     * @throws Exception
-     */
-    protected function verifyScaleProbabilityValue(AnrSuperClass $anr, int $scaleProbabilityValue): void
-    {
-        if (!isset($this->operationalRiskScales[OperationalRiskScaleSuperClass::TYPE_LIKELIHOOD])) {
-            $this->operationalRiskScales[OperationalRiskScaleSuperClass::TYPE_LIKELIHOOD] = $this
-                ->operationalRiskScaleTable->findByAnrAndType($anr, OperationalRiskScaleSuperClass::TYPE_LIKELIHOOD);
-        }
-        /* There is only one scale of the TYPE_LIKELIHOOD. */
-        $operationalRiskScale = current($this->operationalRiskScales[OperationalRiskScaleSuperClass::TYPE_LIKELIHOOD]);
-        if ($scaleProbabilityValue !== -1
-            && ($scaleProbabilityValue < $operationalRiskScale->getMin()
-                || $scaleProbabilityValue > $operationalRiskScale->getMax()
-            )
-        ) {
-            throw new Exception(sprintf(
-                'The value %d should be between %d and %d.',
-                $scaleProbabilityValue,
-                $operationalRiskScale->getMin(),
-                $operationalRiskScale->getMax()
-            ), 412);
-        }
-    }
-
-
-    /**
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
-    protected function processRiskOwnerName(
-        string $ownerName,
-        InstanceRiskOpSuperClass $operationalInstanceRisk
-    ): void {
-        if (empty($ownerName)) {
-            $operationalInstanceRisk->setInstanceRiskOwner(null);
-        } else {
-            $instanceRiskOwner = $this->instanceRiskOwnerTable->findByAnrAndName(
-                $operationalInstanceRisk->getAnr(),
-                $ownerName
-            );
-            if ($instanceRiskOwner === null) {
-                $instanceRiskOwner = $this->createInstanceRiskOwnerObject(
-                    $operationalInstanceRisk->getAnr(),
-                    $ownerName
-                );
-
-                $this->instanceRiskOwnerTable->save($instanceRiskOwner, false);
-
-                $operationalInstanceRisk->setInstanceRiskOwner($instanceRiskOwner);
-            } elseif ($operationalInstanceRisk->getInstanceRiskOwner() === null
-                || $operationalInstanceRisk->getInstanceRiskOwner()->getId() !== $instanceRiskOwner->getId()
-            ) {
-                $operationalInstanceRisk->setInstanceRiskOwner($instanceRiskOwner);
-            }
-        }
-    }
-
-    protected function createInstanceRiskOwnerObject(AnrSuperClass $anr, string $ownerName): InstanceRiskOwnerSuperClass
-    {
-        return (new InstanceRiskOwner())
-            ->setAnr($anr)
-            ->setName($ownerName)
-            ->setCreator($this->connectedUser->getEmail());
-    }
-
-    private function extractInstanceAndChildInstances(InstanceSuperClass $instance): array
-    {
-        $childInstances = [];
-        foreach ($instance->getParameterValues('children') as $childInstance) {
-            $childInstances = array_merge($childInstances, $this->extractInstanceAndChildInstances($childInstance));
-        }
-
-        return array_merge([$instance], $childInstances);
+        return strtolower($this->configService->getLanguageCodes()[$this->connectedUser->getLanguage()]);
     }
 }

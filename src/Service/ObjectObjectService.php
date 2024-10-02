@@ -1,426 +1,221 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
 namespace Monarc\Core\Service;
 
 use Monarc\Core\Exception\Exception;
-use Monarc\Core\Model\Entity\MonarcObject;
-use Monarc\Core\Model\Entity\ObjectObjectSuperClass;
-use Monarc\Core\Model\Table\AnrTable;
-use Monarc\Core\Model\Table\InstanceTable;
-use Monarc\Core\Model\Table\MonarcObjectTable;
-use Monarc\Core\Model\Table\ObjectObjectTable;
-use Laminas\EventManager\EventManager;
-use Doctrine\ORM\Mapping\MappingException;
-use Doctrine\ORM\Query\QueryException;
-use Laminas\EventManager\SharedEventManager;
-use function in_array;
-use function is_object;
+use Monarc\Core\Entity\Anr;
+use Monarc\Core\Entity\Asset;
+use Monarc\Core\Entity\MonarcObject;
+use Monarc\Core\Entity\ObjectCategory;
+use Monarc\Core\Entity\ObjectObject;
+use Monarc\Core\Entity\UserSuperClass;
+use Monarc\Core\Service\Interfaces\PositionUpdatableServiceInterface;
+use Monarc\Core\Service\Traits\PositionUpdateTrait;
+use Monarc\Core\Table\InstanceTable;
+use Monarc\Core\Table\MonarcObjectTable;
+use Monarc\Core\Table\ObjectCategoryTable;
+use Monarc\Core\Table\ObjectObjectTable;
 
-/**
- * Object Object Service
- *
- * Class ObjectObjectService
- * @package Monarc\Core\Service
- */
-class ObjectObjectService extends AbstractService
+class ObjectObjectService
 {
-    protected $anrTable;
-    protected $userAnrTable;
-    protected $MonarcObjectTable;
-    protected $instanceTable;
-    protected $childTable;
-    protected $fatherTable;
-    protected $modelTable;
-    protected $dependencies = ['[child](object)', '[father](object)', '[anr](object)'];
+    use PositionUpdateTrait;
 
-    /** @var SharedEventManager */
-    private $sharedManager;
+    public const MOVE_COMPOSITION_POSITION_UP = 'up';
+    public const MOVE_COMPOSITION_POSITION_DOWN = 'down';
 
-    /**
-     * @inheritdoc
-     */
-    public function create($data, $last = true, $context = MonarcObject::BACK_OFFICE)
+    private UserSuperClass $connectedUser;
+
+    public function __construct(
+        private ObjectObjectTable $objectObjectTable,
+        private MonarcObjectTable $monarcObjectTable,
+        private InstanceTable $instanceTable,
+        private ObjectCategoryTable $objectCategoryTable,
+        private InstanceService $instanceService,
+        ConnectedUserService $connectedUserService
+    ) {
+        $this->connectedUser = $connectedUserService->getConnectedUser();
+    }
+
+    public function create(array $data): ObjectObject
     {
-        if ($data['father'] == $data['child']) {
-            throw new Exception('You cannot add yourself as a component', 412);
+        if ($data['parent'] === $data['child']) {
+            throw new Exception('It\'s not allowed to compose the same child object as parent.', 412);
         }
 
-        /** @var ObjectObjectTable $objectObjectTable */
-        $objectObjectTable = $this->get('table');
-
-        //verify child not already existing
-        if (isset($data['father']['anr'], $data['father']['uuid'], $data['child']['anr'], $data['child']['uuid'])) {
-            $objectsObjects = $objectObjectTable->getEntityByFields([
-                'anr' => empty($data['anr']) ? null : $data['anr'],
-                'father' => $data['father'],
-                'child' => $data['child']
-            ]);
-        } else {
-            $queryParams = [
-                'father' => $data['father'],
-                'child' => $data['child'],
-            ];
-            if (!empty($data['anr'])) {
-                $queryParams['anr'] = $data['anr'];
-            }
-            $objectsObjects = $objectObjectTable->getEntityByFields($queryParams);
-        }
-        if (!empty($objectsObjects)) {
-            throw new Exception('This component already exist for this object', 412);
+        /** @var MonarcObject $parentObject */
+        $parentObject = $this->monarcObjectTable->findById($data['parent']);
+        /** @var MonarcObject $childObject */
+        $childObject = $this->monarcObjectTable->findById($data['child']);
+        if ($parentObject->hasChild($childObject)) {
+            throw new Exception('The object is already presented in the composition.', 412);
         }
 
-        $recursiveParentsListIds = $this->getRecursiveParentsListId($data['father'], $data['anr'] ?? null);
-        $childUuid = $data['child']['uuid'] ?? $data['child'];
-        if (isset($recursiveParentsListIds[$childUuid])) {
-            throw new Exception('You cannot create a cyclic dependency', 412);
+        if ($parentObject->isModeGeneric() && $childObject->isModeSpecific()) {
+            throw new Exception('It\'s not allowed to add a specific object to a generic parent', 412);
         }
 
-        /** @var MonarcObjectTable $monarcObjectTable */
-        $monarcObjectTable = $this->get('MonarcObjectTable');
+        /* Validate if one of the parents is the current child or its children. */
+        $this->validateIfObjectOrItsChildrenLinkedToOneOfParents($childObject, $parentObject);
 
-        // Ensure that we're not trying to add a specific item if the father is generic
-        try {
-            $father = $monarcObjectTable->getEntity($data['father']);
-            $child = $monarcObjectTable->getEntity($data['child']);
-        } catch (MappingException $e) {
-            $father = $monarcObjectTable->getEntity(['uuid' => $data['father'], 'anr' => $data['anr']]);
-            $child = $monarcObjectTable->getEntity(['uuid' => $data['child'], 'anr' => $data['anr']]);
+        // Ensure that we're not trying to add a specific item if the father is generic.
+        /** @var Asset $asset */
+        $asset = $parentObject->getAsset();
+        foreach ($asset->getModels() as $model) {
+            $model->validateObjectAcceptance($childObject);
         }
 
-        // on doit déterminer si par voie de conséquence, cet objet ne va pas se retrouver dans un modèle dans lequel il n'a pas le droit d'être
-        if ($context === MonarcObject::BACK_OFFICE) {
-            $models = $father->get('asset')->get('models');
-            foreach ($models as $m) {
-                $this->get('modelTable')->canAcceptObject($m->get('id'), $child, $context);
-            }
+        /* Ensure the child object and all its children are linked to the same anrs as parent linked, link if not. */
+        $this->validateAndLinkAllChildrenToAnrs($parentObject->getAnrs(), $childObject);
+
+        /** @var ObjectObject $objectObject */
+        $objectObject = (new ObjectObject())
+            ->setParent($parentObject)
+            ->setChild($childObject)
+            ->setCreator($this->connectedUser->getEmail());
+
+        $this->updatePositions($objectObject, $this->objectObjectTable, $data);
+
+        $this->objectObjectTable->save($objectObject);
+
+        /* Create instances of child object if necessary. */
+        if ($parentObject->hasInstances()) {
+            $this->createInstances($parentObject, $childObject, $data);
         }
 
-        if ($father->mode === ObjectObjectSuperClass::MODE_GENERIC
-            && $child->mode === ObjectObjectSuperClass::MODE_SPECIFIC
+        return $objectObject;
+    }
+
+    public function shiftPositionInComposition(int $id, array $data): void
+    {
+        /** @var ObjectObject $objectObject */
+        $objectObject = $this->objectObjectTable->findById($id);
+
+        /* Validate if the position is within the bounds of shift. */
+        if (($data['move'] === static::MOVE_COMPOSITION_POSITION_UP && $objectObject->getPosition() <= 1)
+            || (
+                $data['move'] === static::MOVE_COMPOSITION_POSITION_DOWN
+                && $objectObject->getPosition() >= $this->objectObjectTable->findMaxPosition(
+                    $objectObject->getImplicitPositionRelationsValues()
+                )
+            )
         ) {
-            throw new Exception('You cannot add a specific object to a generic parent', 412);
-        }
-
-        if (!empty($data['implicitPosition'])) {
-            unset($data['position']);
-        } elseif (!empty($data['position'])) {
-            unset($data['implicitPosition']);
-        }
-
-        /** @var ObjectObjectSuperClass $entity */
-        $objectObject = $this->get('entity');
-
-        $objectObject->exchangeArray($data);
-
-        $this->setDependencies($objectObject, $this->dependencies);
-
-        $objectObject->setCreator(
-            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
-        );
-
-        $id = $objectObjectTable->save($objectObject);
-
-        //link to anr
-        $parentAnrs = [];
-        $childAnrs = [];
-        if ($father->anrs) {
-            foreach ($father->anrs as $anr) {
-                $parentAnrs[] = $anr->id;
-            }
-        }
-        if ($child->anrs) {
-            foreach ($child->anrs as $anr) {
-                $childAnrs[] = $anr->id;
-            }
-        }
-
-        /** @var AnrTable $anrTable */
-        $anrTable = $this->get('anrTable');
-        foreach ($parentAnrs as $anrId) {
-            if (!in_array($anrId, $childAnrs)) {
-                $child->addAnr($anrTable->getEntity($anrId));
-            }
-        }
-
-        $monarcObjectTable->save($child);
-
-        //create instance
-        /** @var InstanceTable $instanceTable */
-        $instanceTable = $this->get('instanceTable');
-        try {
-            $instancesParent = $instanceTable->getEntityByFields(['object' => $father->getUuid()]);
-        } catch (QueryException | MappingException $e) {
-            $instancesParent = $instanceTable->getEntityByFields(['object' => ['uuid' => $father->getUuid(), 'anr' => $data['anr']]]);
-        }
-
-        foreach ($instancesParent as $instanceParent) {
-            $anrId = $instanceParent->anr->id;
-
-            $previousInstance = false;
-            if ($data['implicitPosition'] == 3) {
-                $previousObject = $objectObjectTable->get($data['previous'])['child'];
-                try {
-                    $instances = $instanceTable->getEntityByFields(['anr' => $data['anr'], 'object' => $previousObject->getUuid()]);
-                } catch (QueryException | MappingException $e) {
-                    $instances = $instanceTable->getEntityByFields([
-                        'anr' => $data['anr'],
-                        'object' => [
-                            'uuid' => $previousObject->getUuid(),
-                            'anr' => $data['anr']
-                        ]
-                    ]);
-                }
-                foreach ($instances as $instance) {
-                    $previousInstance = $instance->id;
-                }
-            }
-
-            $dataInstance = [
-                'object' => $child->getUuid(),
-                'parent' => $instanceParent->id,
-                'root' => ($instanceParent->root) ? $instanceParent->root->id : $instanceParent->id,
-                'implicitPosition' => $data['implicitPosition'],
-                'c' => -1,
-                'i' => -1,
-                'd' => -1,
-            ];
-
-            if ($previousInstance) {
-                $dataInstance['previous'] = $previousInstance;
-            }
-
-            //if father instance exist, create instance for child
-            $eventManager = new EventManager($this->sharedManager, ['addcomponent']);
-            $eventManager->trigger('createinstance', $this, compact(['anrId', 'dataInstance']));
-        }
-
-        return $id;
-    }
-
-    public function setSharedManager(SharedEventManager $sharedManager)
-    {
-        $this->sharedManager = $sharedManager;
-    }
-
-    /**
-     * Fetch and returns the children of the object
-     *
-     * @param int $objectId The object ID
-     *
-     * @return array The children objects
-     */
-    public function getChildren($objectId, $anrId = null)
-    {
-        /** @var ObjectObjectTable $table */
-        $table = $this->get('table');
-        if (is_object($objectId)) {
-            $objectId = $objectId->getUuid();
-        }
-        if ($objectId !== null) {
-            try {
-                return $table->getEntityByFields(['father' => $objectId], ['position' => 'DESC']);
-            } catch (MappingException | QueryException $e) {
-                return $table->getEntityByFields(['father' => ['uuid' => $objectId, 'anr' => $anrId]], ['position' => 'DESC']);
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Recursively fetches and return the children
-     *
-     * @param string|array $fatherId The parent object ID
-     * @param int $anrId The ANR ID
-     *
-     * @return array The children
-     */
-    public function getRecursiveChildren($fatherId, $anrId = null, $excludeParentRelationObjectObjectIds = [])
-    {
-        /** @var ObjectObjectTable $table */
-        $table = $this->get('table');
-
-        $queryParams['father'] = $fatherId;
-        if ($anrId !== null) {
-            $queryParams = [
-                'father' => [
-                    'uuid' => $fatherId,
-                    'anr' => $anrId,
-                ]
-            ];
-        }
-
-        /**
-         * Infinite loop prevention.
-         * Fetch all the fathers (parent relations) of the current father to check if its children are not fathers.
-         * @var ObjectObjectSuperClass[] $fathersOfFatherObjectObjects
-         */
-        if (empty($excludeParentRelationObjectObjectIds)) {
-            $fathersOfFatherObjectObjects = $table->getEntityByFields(['child' => $queryParams['father']]);
-            if (!empty($fathersOfFatherObjectObjects)) {
-                $excludeParentRelationObjectObjectIds = array_column($fathersOfFatherObjectObjects, 'id');
-            }
-        }
-
-        $children = $table->getEntityByFields($queryParams, ['position' => 'ASC']);
-
-        $childrenResult = [];
-        /** @var ObjectObjectSuperClass $child */
-        foreach ($children as $child) {
-            $queryParams = [
-                'uuid' => $child->getChild()->getUuid(),
-            ];
-            if ($child->getChild()->getAnr() !== null) {
-                $queryParams['anr'] = $child->getChild()->getAnr();
-            }
-            $objectChild = $this->get('MonarcObjectTable')->get($queryParams);
-
-            /** Infinite loop prevention. */
-            if (!in_array($child->getId(), $excludeParentRelationObjectObjectIds, true)) {
-                $objectChild['children'] = $this->getRecursiveChildren(
-                    $child->getChild()->getUuid(),
-                    $child->getChild()->getAnr() ? $child->getChild()->getAnr()->getId() : null,
-                    $excludeParentRelationObjectObjectIds
-                );
-            }
-            $objectChild['component_link_id'] = $child->getId();
-            $childrenResult[] = $objectChild;
-        }
-
-        return $childrenResult;
-    }
-
-    /**
-     * Recursively fetches and returns the parent objects
-     *
-     * @param string $parent_id The parent object ID
-     *
-     * @return array The parents
-     */
-    public function getRecursiveParents($parent_id)
-    {
-        /** @var ObjectObjectTable $table */
-        $table = $this->get('table');
-
-        $parents = $table->getEntityByFields(['child' => $parent_id], ['position' => 'ASC']);
-        $array_parents = [];
-
-        foreach ($parents as $parent) {
-            /** @var ObjectObjectSuperClass $parent */
-            $parent_array = $parent->getJsonArray();
-
-            $object_parent = $this->get('MonarcObjectTable')->get($parent_array['father']);
-            $object_parent['parents'] = $this->getRecursiveParents($parent_array['father']);
-            $object_parent['component_link_id'] = $parent_array['id'];
-            $array_parents[] = $object_parent;
-        }
-
-        return $array_parents;
-    }
-
-    /**
-     * Returns a list of parents recursively
-     */
-    private function getRecursiveParentsListId($parent, $anrId = null)
-    {
-        if ($anrId !== null && isset($parent['uuid'])) {
-            $parentIds[$parent['uuid']] = $parent['uuid'];
-            $queryParams = ['child' => $parent];
-        } else {
-            $parentIds[$parent] = $parent;
-            $queryParams = ['child' => $parent];
-        }
-
-        if ($anrId !== null) {
-            $queryParams['anr'] = $anrId;
-        }
-
-        /** @var ObjectObjectTable $table */
-        $table = $this->get('table');
-        $parents = $table->getEntityByFields($queryParams, ['position' => 'ASC']);
-
-        /** @var ObjectObjectSuperClass $parentObject */
-        foreach ($parents as $parentObject) {
-            $parentParam = $parentObject->getFather()->getUuid();
-            if ($anrId !== null) {
-                $parentParam = [
-                    'uuid' => $parentObject->getFather()->getUuid(),
-                    'anr' => $anrId,
-                ];
-            }
-            $parentIds = array_merge($parentIds, $this->getRecursiveParentsListId($parentParam, $anrId));
-        }
-
-        return $parentIds;
-    }
-
-    /**
-     * Moves an object's position
-     *
-     * @param int $id The object ID to move
-     * @param string $direction The direction to move the object towards, either 'up' or 'down'
-     */
-    public function moveObject($id, $direction)
-    {
-        $entity = $this->get('table')->getEntity($id);
-
-        if ($entity->position == 1 && $direction == 'up') {
-            // Nothing to do
             return;
         }
 
-        $this->manageRelativePositionUpdate('father', $entity, $direction);
+        $positionToBeSet = $data['move'] === static::MOVE_COMPOSITION_POSITION_UP
+            ? $objectObject->getPosition() - 1
+            : $objectObject->getPosition() + 1;
+        /** @var MonarcObject $parentObject */
+        $parentObject = $objectObject->getParent();
+        $previousObjectCompositionLink = $this->objectObjectTable
+            ->findByParentObjectAndPosition($parentObject, $positionToBeSet);
+        /* Some positions are not aligned in the DB, that's why we may have empty result. */
+        if ($previousObjectCompositionLink !== null) {
+            $this->objectObjectTable->save(
+                $previousObjectCompositionLink->setPosition($objectObject->getPosition())->setUpdater(
+                    $this->connectedUser->getEmail()
+                ),
+                false
+            );
+        }
+        $this->objectObjectTable->save(
+            $objectObject->setPosition($positionToBeSet)->setUpdater($this->connectedUser->getEmail())
+        );
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function delete($id)
+    public function delete(int $id): void
     {
-        /** @var ObjectObjectTable $table */
-        $table = $this->get('table');
-        $objectObject = $table->getEntity($id);
+        /** @var ObjectObject $objectObject */
+        $objectObject = $this->objectObjectTable->findById($id);
 
-        if (!$objectObject) {
-            throw new Exception('Entity does not exist', 412);
-        }
-
-        //delete instance instance
-        /** @var InstanceTable $instanceTable */
-        $instanceTable = $this->get('instanceTable');
-        try {
-            $childInstances = $instanceTable->getEntityByFields(['object' => $objectObject->getChild()->getUuid()]);
-            $fatherInstances = $instanceTable->getEntityByFields(['object' => $objectObject->getFather()->getUuid()]);
-        } catch (QueryException | MappingException $e) {
-            $childInstances = $instanceTable->getEntityByFields([
-                'object' => [
-                    'uuid' => $objectObject->getChild()->getUuid(),
-                    'anr' => $objectObject->anr->id
-                ]
-            ]);
-            $fatherInstances = $instanceTable->getEntityByFields([
-                'object' => [
-                    'uuid' => $objectObject->getFather()->getUuid(),
-                    'anr' => $objectObject->anr->id
-                ]
-            ]);
-        }
-
-        foreach ($childInstances as $childInstance) {
-            foreach ($fatherInstances as $fatherInstance) {
-                if ($childInstance->parent && $childInstance->parent->id == $fatherInstance->id) {
-                    $childInstance->parent = null;
-                    $childInstance->root = null;
-                    $instanceTable->delete($childInstance->id);
+        /* Unlink the related instances of the compositions. */
+        foreach ($objectObject->getChild()->getInstances() as $childObjectInstance) {
+            foreach ($objectObject->getParent()->getInstances() as $parentObjectInstance) {
+                if ($childObjectInstance->hasParent()
+                    && $childObjectInstance->getParent()->getId() === $parentObjectInstance->getId()
+                ) {
+                    $childObjectInstance->setParent(null);
+                    $childObjectInstance->setRoot(null);
+                    $this->instanceTable->remove($childObjectInstance, false);
                 }
             }
         }
 
-        parent::delete($id);
+        /* Shift positions to fill in the gap of the object being removed. */
+        $this->shiftPositionsForRemovingEntity($objectObject, $this->objectObjectTable);
+
+        $this->objectObjectTable->remove($objectObject);
+    }
+
+    private function validateIfObjectOrItsChildrenLinkedToOneOfParents(
+        MonarcObject $childObject,
+        MonarcObject $parentObject
+    ): void {
+        if ($parentObject->isObjectOneOfParents($childObject)) {
+            throw new Exception('It\'s not allowed to make a composition with circular dependency.', 412);
+        }
+
+        foreach ($childObject->getChildren() as $childOfChildObject) {
+            $this->validateIfObjectOrItsChildrenLinkedToOneOfParents($childOfChildObject, $parentObject);
+        }
+    }
+
+    /**
+     * New instance is created when the composition parent object is presented in the analysis.
+     */
+    private function createInstances(MonarcObject $parentObject, MonarcObject $childObject, array $data): void
+    {
+        $previousObjectCompositionLink = null;
+        if ($data['implicitPosition'] === PositionUpdatableServiceInterface::IMPLICIT_POSITION_AFTER) {
+            /** @var ObjectObject $previousObjectCompositionLink */
+            $previousObjectCompositionLink = $this->objectObjectTable->findById($data['previous']);
+        }
+        foreach ($parentObject->getInstances() as $parentObjectInstance) {
+            $instanceData = [
+                'object' => $childObject,
+                'parent' => $parentObjectInstance,
+                'implicitPosition' => $data['implicitPosition'],
+            ];
+            if ($previousObjectCompositionLink !== null) {
+                foreach ($previousObjectCompositionLink->getChild()->getInstances() as $previousObjectInstance) {
+                    if ($previousObjectInstance->hasParent()
+                        && $previousObjectInstance->getParent()->getId() === $parentObjectInstance->getId()
+                    ) {
+                        $instanceData['previous'] = $previousObjectInstance->getId();
+                    }
+                }
+            }
+
+            /** @var Anr $anr */
+            $anr = $parentObjectInstance->getAnr();
+            $this->instanceService->instantiateObjectToAnr($anr, $instanceData);
+        }
+    }
+
+    private function validateAndLinkAllChildrenToAnrs(iterable $anrs, MonarcObject $object): void
+    {
+        foreach ($anrs as $anr) {
+            if (!$object->hasAnrLink($anr)) {
+                $object->addAnr($anr);
+                $this->monarcObjectTable->save($object, false);
+            }
+            /* Link the object's root category if not linked. */
+            if ($object->hasCategory()) {
+                /** @var ObjectCategory $rootCategory */
+                $rootCategory = $object->getCategory()->getRootCategory();
+                if (!$rootCategory->hasAnrLink($anr)) {
+                    $rootCategory->addAnrLink($anr);
+                    $this->objectCategoryTable->save($rootCategory, false);
+                }
+            }
+        }
+        foreach ($object->getChildren() as $childObject) {
+            $this->validateAndLinkAllChildrenToAnrs($anrs, $childObject);
+        }
     }
 }

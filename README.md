@@ -27,8 +27,8 @@ The entity should have a single responsibility and do not perform any database r
 
 For generating migrating file & migrate DB with adding/deleting/changing column:
 
-	php ./vendor/bin/doctrine-module migrations:diff
-	php ./vendor/bin/doctrine-module migrations:migrate
+    php ./vendor/bin/doctrine-module migrations:diff
+    php ./vendor/bin/doctrine-module migrations:migrate
 
 
 Entity Table
@@ -59,7 +59,13 @@ In most of the cases it works well with `Laminas\Di\Container\AutowireFactory`:
 Controller
 ----------
 
-Controller should extend `Laminas\Mvc\Controller\AbstractRestfulController`.
+One of the controller can be extend when particular ones created:
+- `Laminas\Mvc\Controller\AbstractRestfulController`
+- `Monarc\Core\Controller\Handler\AbstractRestfulControllerRequestHandler`
+
+There is a trait helper class that can be used in the controllers to help with the output rendering:
+`Monarc\Core\Controller\Handler\ControllerRequestResponseHandlerTrait`
+
 
 Restful application methods to be defined:
 
@@ -69,7 +75,7 @@ Restful application methods to be defined:
 * update($id, $data)
 * delete($id)
 
-In `module.config.php`, controllers are usually defined in the factories container like:
+In `module.config.php`, controllers are usually defined in the configuration like:
 
     ControllerNameSpace\MyController::class => AutowireFactory::class,
 
@@ -89,6 +95,30 @@ or, in case if config needs to be injected:
     ServiceNamescpace\MyService::class => Laminas\ServiceManager\AbstractFactory\ReflectionBasedAbstractFactory::class,
 
 
+Input Formatters
+-------
+
+The input formatters classes aim to perform the [GET] requests data filtering, validating and transforming into a format that can be used directly to prepare the database queries.
+The formatters classes are enriched with possibilities of handling and preparing the data for search by text, filter by params, ordering and pagination.
+
+Tha basic classes are `InputFormatter\AbstractInputFormatter`, `InputFormatter\FormattedInputParams`.
+The instantiated objects inherited the basic classes are used in the Controllers and the formatted results are passed to the services and to the table classes methods.
+The tables' classes, inherited the `Table\AbstractTable` have a certain method `findByParams` where the `FormattedInputParams` object is accepted and processed to generate the query.  
+
+The trait's method `Controller\Handler\ControllerRequestResponseHandlerTrait::getFormattedInputParams` helps in the process.
+
+
+Validators
+-------
+
+The validators classes are responsible to validate the post, put and patch requests' data. 
+Every child class of `Validator\InputValidator\AbstractInputValidator` have to describe a set rules that are used to validate the incoming data.  
+The validated data can be obtained with use of the methods `getValidData`, `getValidDataSets` if `isValid` result is `true`.
+
+The trait's method `Controller\Handler\ControllerRequestResponseHandlerTrait::validatePostParams` helps in the process.
+It can also handle the batch data requests, that are used for the import operations.
+
+
 Tests Coverage
 --------------
 
@@ -105,11 +135,12 @@ License
 This software is licensed under
 [GNU Affero General Public License version 3](http://www.gnu.org/licenses/agpl-3.0.html)
 
-- Copyright (C) 2016-2020 Jérôme Lombardi - https://github.com/jerolomb
-- Copyright (C) 2016-2020 Juan Rocha - https://github.com/jfrocha
-- Copyright (C) 2016-2020 SMILE gie securitymadein.lu
-- Copyright (C) 2017-2020 Cédric Bonhomme - https://www.cedricbonhomme.org
-- Copyright (C) 2019-2021 Ruslan Baidan
+- Copyright (C) 2022-2024 Luxembourg House of Cybersecurity https://lhc.lu
+- Copyright (C) 2016-2022 SMILE gie securitymadein.lu
+- Copyright (C) 2016-2024 Jérôme Lombardi - https://github.com/jerolomb
+- Copyright (C) 2016-2024 Juan Rocha - https://github.com/jfrocha
+- Copyright (C) 2017-2024 Cédric Bonhomme - https://www.cedricbonhomme.org
+- Copyright (C) 2019-2024 Ruslan Baidan - https://github.com/ruslanbaidan
 - Copyright (C) 2016-2017 Guillaume Lesniak
 - Copyright (C) 2016-2017 Thomas Metois
 - Copyright (C) 2016-2017 Jérôme De Almeida

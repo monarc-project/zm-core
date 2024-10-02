@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
  * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
@@ -117,13 +117,13 @@ class AuthenticationService
     }
 
     /**
-     * Disconnects an user and invalidates the token
+     * Disconnects user and invalidates the token.
      *
      * @param array $data Array with 'token'
      *
      * @return bool True if the token existed and got removed, false otherwise
      */
-    public function logout($data)
+    public function logout($data): bool
     {
         if (!empty($data['token']) && $this->authenticationStorage->hasUserToken($data['token'])) {
             $this->authenticationStorage->removeUserToken($data['token']);
@@ -141,7 +141,7 @@ class AuthenticationService
      *
      * @return bool True if the token is valid, false otherwise
      */
-    public function checkConnect($data)
+    public function checkConnect($data): bool
     {
         if (empty($data['token'])) {
             return false;

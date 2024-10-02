@@ -1,63 +1,56 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2021 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
 namespace Monarc\Core\Service;
 
-use Doctrine\ORM\EntityNotFoundException;
-use Monarc\Core\Model\Entity\OperationalRiskScaleCommentSuperClass;
-use Monarc\Core\Model\Table\AnrTable;
-use Monarc\Core\Model\Table\OperationalRiskScaleCommentTable;
-use Monarc\Core\Model\Table\TranslationTable;
+use Monarc\Core\Entity\OperationalRiskScaleComment;
+use Monarc\Core\Entity\UserSuperClass;
+use Monarc\Core\Table\OperationalRiskScaleCommentTable;
+use Monarc\Core\Table\TranslationTable;
 
 class OperationalRiskScaleCommentService
 {
-    protected AnrTable $anrTable;
+    private OperationalRiskScaleCommentTable $operationalRiskScaleCommentTable;
 
-    protected OperationalRiskScaleCommentTable $operationalRiskScaleCommentTable;
+    private TranslationTable $translationTable;
 
-    protected TranslationTable $translationTable;
-
-    protected ConfigService $configService;
+    private UserSuperClass $connectedUser;
 
     public function __construct(
-        AnrTable $anrTable,
         OperationalRiskScaleCommentTable $operationalRiskScaleCommentTable,
         TranslationTable $translationTable,
-        ConfigService $configService
+        ConnectedUserService $connectedUserService
     ) {
-        $this->anrTable = $anrTable;
         $this->operationalRiskScaleCommentTable = $operationalRiskScaleCommentTable;
         $this->translationTable = $translationTable;
-        $this->configService = $configService;
+        $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
-    public function update(int $id, array $data): int
+    public function update(int $id, array $data): OperationalRiskScaleComment
     {
-        /** @var OperationalRiskScaleCommentSuperClass|null $operationalRiskScaleComment */
+        /** @var OperationalRiskScaleComment $operationalRiskScaleComment */
         $operationalRiskScaleComment = $this->operationalRiskScaleCommentTable->findById($id);
-        if ($operationalRiskScaleComment === null) {
-            throw new EntityNotFoundException(sprintf('Operational risk scale comment ID (%d) does not exist,', $id));
-        }
 
         if (isset($data['scaleValue'])) {
             $operationalRiskScaleComment->setScaleValue((int)$data['scaleValue']);
         }
 
-        if (!empty($data['comment'])) {
-            $anr = $this->anrTable->findById($data['anr']);
-            $languageCode = $data['language'] ?? $this->configService->getActiveLanguageCodes()[$anr->getLanguage()];
+        if (isset($data['comment'])) {
+            $translation = $this->translationTable->findByAnrKeyAndLanguage(
+                $operationalRiskScaleComment->getAnr(),
+                $operationalRiskScaleComment->getLabelTranslationKey(),
+                $data['language'] ?? 'fr'
+            );
+            $translation->setValue($data['comment'])->setUpdater($this->connectedUser->getEmail());
 
-            $translationKey = $operationalRiskScaleComment->getCommentTranslationKey();
-            $translation = $this->translationTable->findByAnrKeyAndLanguage($anr, $translationKey, $languageCode);
-            $translation->setValue($data['comment']);
             $this->translationTable->save($translation, false);
         }
         $this->operationalRiskScaleCommentTable->save($operationalRiskScaleComment);
 
-        return $operationalRiskScaleComment->getId();
+        return $operationalRiskScaleComment;
     }
 }

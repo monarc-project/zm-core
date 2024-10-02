@@ -2,7 +2,7 @@
 
 use Phinx\Migration\AbstractMigration;
 use Ramsey\Uuid\Uuid;
-use Monarc\Core\Model\Entity\Translation;
+use Monarc\Core\Entity\Translation;
 
 class AddCustomizableSoaScale extends AbstractMigration
 {

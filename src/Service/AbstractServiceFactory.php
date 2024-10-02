@@ -54,14 +54,14 @@ abstract class AbstractServiceFactory implements FactoryInterface
                 $instance = new $class($container->get($ressources));
             }
 
-            $instance->setLanguage($this->getDefaultLanguage($container));
             $conf = $container->get('Config');
+            $instance->setLanguage($conf['defaultLanguageIndex'] ?? 1);
             $instance->setMonarcConf(isset($conf['monarc']) ? $conf['monarc'] : []);
 
             return $instance;
         }
 
-        return false;
+        throw new \LogicException(sprintf('The declared class "%s" can\'t be created', $class));
     }
 
     /**
@@ -72,41 +72,6 @@ abstract class AbstractServiceFactory implements FactoryInterface
     public function getRessources()
     {
         return $this->ressources;
-    }
-
-    /**
-     * Get Default Language
-     *
-     * @param $sm
-     * @return mixed
-     */
-    public function getDefaultLanguage($sm)
-    {
-        $request = $sm->get('Request');
-        if(!$request instanceof \Laminas\Console\Request){
-            /** @var TreeRouteStack $router */
-            $router = $sm->get('Router');
-            /** @var RouteMatch $match */
-            $match = $router->match($request);
-            if($match && strpos($match->getMatchedRouteName(), 'monarc_api_global_client_anr/') === 0){
-                $anrId = $match->getParam('anrid', false);
-
-                if ($anrId) {
-                    /** @var AnrTable $anrTable */
-                    // TODO: the FrontOffice dependency should not be presented in core.
-                    $anrTable = $sm->get('Monarc\FrontOffice\Model\Table\AnrTable');
-                    $anr = $anrTable->getEntity($anrId);
-
-                    if ($anr->get('language')) {
-                        return $anr->get('language');
-                    }
-                }
-            }
-        }
-
-        $config = $sm->get('Config');
-
-        return $config['defaultLanguageIndex'];
     }
 
     /**

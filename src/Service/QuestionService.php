@@ -7,7 +7,7 @@
 
 namespace Monarc\Core\Service;
 
-use Monarc\Core\Model\Entity\Question;
+use Monarc\Core\Entity\Question;
 
 /**
  * Question Service
@@ -20,6 +20,7 @@ class QuestionService extends AbstractService
     protected $choiceTable;
     protected $anrTable;
     protected $userAnrTable;
+
     protected $dependencies = ['anr'];
 
     /**
@@ -69,24 +70,20 @@ class QuestionService extends AbstractService
         $table = $this->get('table');
         if (!empty($data['anr'])) {
             $data['mode'] = 1;
-            $data['implicitPosition'] = \Monarc\Core\Model\Entity\AbstractEntity::IMP_POS_END;
+            $data['implicitPosition'] = \Monarc\Core\Entity\AbstractEntity::IMP_POS_END;
             $data['type'] = 1; // on force en textarea uniquement
             $data['multichoice'] = 0;
             unset($data['position']);
         }
         //bo case manage position
-        // quick fix : TO DO : improve the position management
+        // quick fix : TO-DO : improve the position management
         if (!empty($data['implicitPosition']) && empty($data['anr'])) {
             if ($data['implicitPosition'] == 1) { //the first
-                if ($data['position'] != $table->minQuestionPosition()) {
-                    $table->movePosition(0);
-                    $data['position'] = 1;
-                }
+                $table->movePosition(0);
+                $data['position'] = 1;
             } else {
                 if ($data['implicitPosition'] == 2) { // the last
-                    if ($data['position'] != $table->maxQuestionPosition()) {
-                        $data['position'] = $table->maxQuestionPosition() + 1;
-                    }
+                    $data['position'] = $table->maxQuestionPosition() + 1;
                 } else { //in the middle
                     if ($data['previous']) {
                         $previous = $this->get('table')->getEntity($data['previous']);

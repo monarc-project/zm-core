@@ -17,6 +17,6 @@ class HistoricalServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = [
         'table' => 'Monarc\Core\Model\Table\HistoricalTable',
-        'entity' => 'Monarc\Core\Model\Entity\Historical',
+        'entity' => 'Monarc\Core\Entity\Historical',
     ];
 }

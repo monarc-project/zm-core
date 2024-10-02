@@ -1,159 +1,278 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
 namespace Monarc\Core\Service;
 
-use Monarc\Core\Model\Entity\Threat;
-use Monarc\Core\Model\Table\AnrTable;
-use Monarc\Core\Model\Table\InstanceRiskTable;
-use Monarc\Core\Model\Table\ThreatTable;
+use Doctrine\ORM\EntityNotFoundException;
+use Monarc\Core\Exception\Exception;
+use Monarc\Core\InputFormatter\FormattedInputParams;
+use Monarc\Core\Entity;
+use Monarc\Core\Table;
 
-/**
- * Threat Service
- *
- * Class ThreatService
- * @package Monarc\Core\Service
- */
-class ThreatService extends AbstractService
+class ThreatService
 {
-    protected $anrTable;
-    protected $instanceRiskService;
-    protected $instanceRiskTable;
-    protected $modelTable;
-    protected $modelService;
-    protected $themeTable;
-    protected $amvService;
-    protected $filterColumns = [
-        'label1', 'label2', 'label3', 'label4',
-        'description1', 'description2', 'description3', 'description4',
-        'code',
-    ];
-    protected $dependencies = ['anr', 'theme', 'model[s]()'];
-    protected $forbiddenFields = ['anr'];
+    private Table\ThreatTable $threatTable;
 
-    public function create($data, $last = true)
-    {
-        /** @var ThreatTable $threatTable */
-        $threatTable = $this->get('table');
-        $entityClass = $threatTable->getEntityClass();
+    private Table\InstanceRiskTable $instanceRiskTable;
 
-        /** @var Threat $threat */
-        $threat = new $entityClass();
-        $threat->setLanguage($this->getLanguage());
-        $threat->setDbAdapter($threatTable->getDb());
+    private Table\ModelTable $modelTable;
 
-        if (!empty($data['anr'])) {
-            /** @var AnrTable $anrTable */
-            $anrTable = $this->get('anrTable');
-            $anr = $anrTable->findById($data['anr']);
+    private Table\ThemeTable $themeTable;
 
-            $threat->setAnr($anr);
-        }
+    private InstanceRiskService $instanceRiskService;
 
-        $threat->exchangeArray($data);
-        $this->setDependencies($threat, $this->dependencies);
+    private AmvService $amvService;
 
-        $threat->setCreator(
-            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
-        );
+    private Entity\UserSuperClass $connectedUser;
 
-        return $threatTable->save($threat, $last);
+    public function __construct(
+        Table\ThreatTable $threatTable,
+        Table\InstanceRiskTable $instanceRiskTable,
+        Table\ModelTable $modelTable,
+        Table\ThemeTable $themeTable,
+        InstanceRiskService $instanceRiskService,
+        AmvService $amvService,
+        ConnectedUserService $connectedUserService
+    ) {
+        $this->threatTable = $threatTable;
+        $this->instanceRiskTable = $instanceRiskTable;
+        $this->modelTable = $modelTable;
+        $this->themeTable = $themeTable;
+        $this->instanceRiskService = $instanceRiskService;
+        $this->amvService = $amvService;
+        $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function update($id, $data)
+    public function getList(FormattedInputParams $params): array
     {
-        $this->filterPatchFields($data);
+        $result = [];
 
-        /** @var Threat $threat */
-        $threat = $this->get('table')->getEntity($id);
-        $threat->setDbAdapter($this->get('table')->getDb());
-        $threat->setLanguage($this->getLanguage());
-
-        $needUpdateRisks = ($threat->c != $data['c'] || $threat->i != $data['i'] || $threat->a != $data['a']);
-
-        if ($threat->mode == Threat::MODE_SPECIFIC && $data['mode'] == Threat::MODE_GENERIC) {
-            //delete models
-            unset($data['models']);
+        /** @var Entity\Threat[] $threats */
+        $threats = $this->threatTable->findByParams($params);
+        foreach ($threats as $threat) {
+            $result[] = $this->prepareThreatDataResult($threat);
         }
 
-        $models = $data['models'] ?? [];
-        $follow = $data['follow'] ?? null;
-        unset($data['models'], $data['follow']);
+        return $result;
+    }
 
-        $threat->exchangeArray($data);
-        if ($threat->get('models')) {
-            $threat->get('models')->initialize();
+    public function getCount(FormattedInputParams $params): int
+    {
+        return $this->threatTable->countByParams($params);
+    }
+
+    public function getThreatData(string $uuid): array
+    {
+        /** @var Entity\Threat $threat */
+        $threat = $this->threatTable->findByUuid($uuid);
+
+        return $this->prepareThreatDataResult($threat);
+    }
+
+    public function create(array $data, bool $saveInDb = true): Entity\Threat
+    {
+        /** @var Entity\Threat */
+        $threat = (new Entity\Threat())
+            ->setCode($data['code'])
+            ->setLabels($data)
+            ->setDescriptions($data)
+            ->setConfidentiality((int)$data['c'])
+            ->setIntegrity((int)$data['i'])
+            ->setAvailability((int)$data['a'])
+            ->setCreator($this->connectedUser->getEmail());
+        if (isset($data['mode'])) {
+            $threat->setMode((int)$data['mode']);
+        }
+        if (isset($data['status'])) {
+            $threat->setStatus($data['status']);
         }
 
-        if (!$this->get('amvService')->checkAMVIntegrityLevel($models, null, $threat, null, $follow)) {
-            throw new \Monarc\Core\Exception\Exception('Integrity AMV links violation', 412);
+        if (!empty($data['theme'])) {
+            /** @var Entity\Theme $theme */
+            $theme = $data['theme'] instanceof Entity\Theme
+                ? $data['theme']
+                : $this->themeTable->findById((int)$data['theme']);
+
+            $threat->setTheme($theme);
         }
 
-        if (($follow) && (!$this->get('amvService')->ensureAssetsIntegrityIfEnforced($models, null, $threat, null))) {
-            throw new \Monarc\Core\Exception\Exception('Assets Integrity', 412);
-        }
-
-        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($threat, $dependencies);
-
-        switch ($threat->get('mode')) {
-            case Threat::MODE_SPECIFIC:
-                if (empty($models)) {
-                    $threat->set('models', []);
-                } else {
-                    $modelsObj = [];
-                    foreach ($models as $mid) {
-                        $modelsObj[] = $this->get('modelTable')->getEntity($mid);
-                    }
-                    $threat->set('models', $modelsObj);
-                }
-                if ($follow) {
-                    $this->get('amvService')->enforceAMVtoFollow($threat->get('models'), null, $threat, null);
-                }
-                break;
-            case Threat::MODE_GENERIC:
-                $threat->set('models', []);
-                break;
-        }
-
-        $threat->setUpdater($this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname());
-
-        $id = $this->get('table')->save($threat);
-
-        if ($needUpdateRisks) {
-            //retrieve instances risks
-            /** @var InstanceRiskTable $instanceRiskTable */
-            $instanceRiskTable = $this->get('instanceRiskTable');
-            $instancesRisks = $instanceRiskTable->getEntityByFields(['threat' => $id]);
-
-            /** @var InstanceRiskService $instanceRiskService */
-            $instanceRiskService = $this->get('instanceRiskService');
-            $i = 1;
-            $nbInstancesRisks = count($instancesRisks);
-            foreach ($instancesRisks as $instanceRisk) {
-                $instanceRiskService->updateRisks($instanceRisk, ($i == $nbInstancesRisks));
-                $i++;
+        if (!empty($data['models']) && $threat->isModeSpecific()) {
+            /** @var Entity\Model[] $models */
+            $models = $this->modelTable->findByIds($data['models']);
+            foreach ($models as $model) {
+                $threat->addModel($model);
             }
         }
 
-        return $id;
+        $this->threatTable->save($threat, $saveInDb);
+
+        return $threat;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function patch($id, $data)
+    public function createList(array $data): array
     {
-        //security
-        $this->filterPatchFields($data);
+        $createdUuids = [];
+        foreach ($data as $row) {
+            $createdUuids[] = $this->create($row, false)->getUuid();
+        }
+        $this->threatTable->flush();
 
-        parent::patch($id, $data);
+        return $createdUuids;
+    }
+
+    public function getOrCreateThreat(array $threatData): Entity\Threat
+    {
+        if (!empty($threatData['uuid'])) {
+            try {
+                /** @var Entity\Threat $threat */
+                $threat = $this->threatTable->findByUuid($threatData['uuid']);
+
+                return $threat;
+            } catch (EntityNotFoundException $e) {
+            }
+        }
+
+        if (isset($threatData['theme'])) {
+            $threatData['theme'] = $this->themeTable->findById((int)$threatData['theme']);
+        }
+
+        return $this->create($threatData, false);
+    }
+
+    public function update(string $uuid, array $data): void
+    {
+        /** @var Entity\Threat $threat */
+        $threat = $this->threatTable->findByUuid($uuid);
+
+        $areCiaChanged = $threat->getConfidentiality() !== (int)$data['c']
+            || $threat->getIntegrity() !== (int)$data['i']
+            || $threat->getAvailability() !== (int)$data['a'];
+
+        $threat->setCode($data['code'])
+            ->setLabels($data)
+            ->setDescriptions($data)
+            ->setConfidentiality((int)$data['c'])
+            ->setIntegrity((int)$data['i'])
+            ->setAvailability((int)$data['a'])
+            ->setUpdater($this->connectedUser->getEmail());
+        if (isset($data['mode'])) {
+            $threat->setMode($data['mode']);
+        }
+        if (isset($data['status'])) {
+            $threat->setStatus($data['status']);
+        }
+        if (isset($data['trend'])) {
+            $threat->setTrend((int)$data['trend']);
+        }
+        if (isset($data['qualification'])) {
+            $threat->setQualification((int)$data['qualification']);
+        }
+        if (isset($data['comment'])) {
+            $threat->setComment($data['comment']);
+        }
+
+        $follow = isset($data['follow']) && (bool)$data['follow'];
+        $modelsIds = $threat->isModeSpecific() && !empty($data['models'])
+            ? $data['models']
+            : [];
+
+        if (!$this->amvService->checkAmvIntegrityLevel($modelsIds, null, $threat, null, $follow)) {
+            throw new Exception('Integrity AMV links violation', 412);
+        }
+
+        if ($follow && !$this->amvService->ensureAssetsIntegrityIfEnforced($modelsIds, null, $threat)) {
+            throw new Exception('Assets Integrity', 412);
+        }
+
+        if (!empty($data['theme']) && (
+            $threat->getTheme() === null || $threat->getTheme()->getId() !== (int)$data['theme']
+        )) {
+            /** @var Entity\Theme $theme */
+            $theme = $this->themeTable->findById((int)$data['theme']);
+            $threat->setTheme($theme);
+        }
+
+        $threat->unlinkModels();
+        if (!empty($modelsIds) && $threat->isModeSpecific()) {
+            /** @var Entity\Model[] $models */
+            $models = $this->modelTable->findByIds($modelsIds);
+            foreach ($models as $model) {
+                $threat->addModel($model);
+            }
+            if ($follow) {
+                $this->amvService->enforceAmvToFollow($threat->getModels(), null, $threat);
+            }
+        }
+
+        $this->threatTable->save($threat);
+
+        if ($areCiaChanged) {
+            $instancesRisks = $this->instanceRiskTable->findByThreat($threat);
+            foreach ($instancesRisks as $instanceRisk) {
+                $this->instanceRiskService->recalculateRiskRates($instanceRisk);
+                $this->instanceRiskTable->save($instanceRisk, false);
+            }
+            $this->instanceRiskTable->flush();
+        }
+    }
+
+    public function patch(string $uuid, array $data): void
+    {
+        /** @var Entity\Threat $threat */
+        $threat = $this->threatTable->findByUuid($uuid);
+
+        $threat->setStatus((int)$data['status'])
+            ->setUpdater($this->connectedUser->getEmail());
+
+        $this->threatTable->save($threat);
+    }
+
+    public function delete(string $uuid): void
+    {
+        $threat = $this->threatTable->findByUuid($uuid);
+
+        $this->threatTable->remove($threat);
+    }
+
+    public function deleteList(array $data): void
+    {
+        $threats = $this->threatTable->findByUuids($data);
+
+        $this->threatTable->removeList($threats);
+    }
+
+    private function prepareThreatDataResult(Entity\Threat $threat): array
+    {
+        $models = [];
+        foreach ($threat->getModels() as $model) {
+            $models[] = [
+                'id' => $model->getId(),
+            ];
+        }
+        $themeData = null;
+        if ($threat->getTheme() !== null) {
+            $themeData = array_merge([
+                'id' => $threat->getTheme()->getId(),
+            ], $threat->getTheme()->getLabels());
+        }
+
+        return array_merge($threat->getLabels(), $threat->getDescriptions(), [
+            'uuid' => $threat->getUuid(),
+            'code' => $threat->getCode(),
+            'c' => $threat->getConfidentiality(),
+            'i' => $threat->getIntegrity(),
+            'a' => $threat->getAvailability(),
+            'theme' => $themeData,
+            'trend' => $threat->getTrend(),
+            'qualification' => $threat->getQualification(),
+            'mode' => $threat->getMode(),
+            'comment' => $threat->getComment(),
+            'models' => $models,
+            'status' => $threat->getStatus(),
+        ]);
     }
 }

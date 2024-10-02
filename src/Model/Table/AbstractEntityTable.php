@@ -14,8 +14,8 @@ use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\MappingException;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\Model\Db;
-use Monarc\Core\Model\Entity\AbstractEntity;
-use Monarc\Core\Model\Entity\UserSuperClass;
+use Monarc\Core\Entity\AbstractEntity;
+use Monarc\Core\Entity\UserSuperClass;
 use Monarc\Core\Service\ConnectedUserService;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\Exception\InvalidUuidStringException;
@@ -176,7 +176,7 @@ abstract class AbstractEntityTable
      *
      * @return bool|array
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function get($id, $fields = [])
     {
@@ -243,7 +243,7 @@ abstract class AbstractEntityTable
      *
      * @return mixed|null
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function save(AbstractEntity $entity, $last = true)
     {
@@ -265,31 +265,21 @@ abstract class AbstractEntityTable
         $clean_params = false;
         if (in_array('uuid', $ids)) { //uuid
             if (isset($params['implicitPosition']['changes'])) {
-                if (isset($entity->parameters['implicitPosition']['root']) && (!$entity->uuid || $params['implicitPosition']['changes']['parent']['before'] != $params['implicitPosition']['changes']['parent']['after'])) {
-                    $this->updateRootTree($entity, !$entity->uuid, $params['implicitPosition']['changes']);
-                    $clean_params = true;
-                }
-
                 if ((!$entity->uuid)
                     || (isset($params['implicitPosition']['changes']['parent']) && $params['implicitPosition']['changes']['parent']['before'] != $params['implicitPosition']['changes']['parent']['after'])
                     || (isset($params['implicitPosition']['changes']['position']) && $params['implicitPosition']['changes']['position']['before'] != $params['implicitPosition']['changes']['position']['after'])
                 ) {
-                    $this->autopose($entity, !$entity->uuid, $params['implicitPosition']['changes']);
+                    $this->autopose($entity, !$entity->getUuid(), $params['implicitPosition']['changes']);
                     $clean_params = true;
                 }
             }
         } else { //id
             if (isset($params['implicitPosition']['changes'])) {
-                if (isset($entity->parameters['implicitPosition']['root']) && (!$entity->id || $params['implicitPosition']['changes']['parent']['before'] != $params['implicitPosition']['changes']['parent']['after'])) {
-                    $this->updateRootTree($entity, !$entity->id, $params['implicitPosition']['changes']);
-                    $clean_params = true;
-                }
-
-                if ((!$entity->id)
+                if (!$entity->getId()
                     || (isset($params['implicitPosition']['changes']['parent']) && $params['implicitPosition']['changes']['parent']['before'] != $params['implicitPosition']['changes']['parent']['after'])
                     || (isset($params['implicitPosition']['changes']['position']) && $params['implicitPosition']['changes']['position']['before'] != $params['implicitPosition']['changes']['position']['after'])
                 ) {
-                    $this->autopose($entity, !$entity->id, $params['implicitPosition']['changes']);
+                    $this->autopose($entity, !$entity->getId(), $params['implicitPosition']['changes']);
                     $clean_params = true;
                 }
             }
@@ -300,9 +290,9 @@ abstract class AbstractEntityTable
         }
 
         if ($this->getClassMetadata()->getIdentifierFieldNames()) {
-            foreach ($ids as $key => $value) {
-                if ($value === 'uuid' && !$entity->get('uuid')) { //uuid have to be generated and setted
-                    $entity->set('uuid', Uuid::uuid4());
+            foreach ($ids as $value) {
+                if ($value === 'uuid' && !$entity->getUuid()) {//uuid have to be generated and setted
+                    $entity->setUuid((string)Uuid::uuid4());
                 }
             }
         }
@@ -318,38 +308,7 @@ abstract class AbstractEntityTable
     }
 
     /**
-     * @param $entity
-     * @param $was_new
-     * @param array $changes
-     */
-    protected function updateRootTree($entity, $was_new, $changes = [])
-    {
-        $this->initTree($entity, 'position');//need to be called first to allow tree repositionning
-        $rootField = $entity->parameters['implicitPosition']['root'];
-        if (!is_null($entity->get($entity->parameters['implicitPosition']['field']))) {
-            $father = $this->getEntity($entity->get($entity->parameters['implicitPosition']['field'])->get('id'));
-            $entity->set($rootField, ($father->get($rootField) === null) ? $father : $father->get($rootField));
-        } else {
-            $entity->set($rootField, null);
-        }
-
-        if (!$was_new && $changes['parent']['before'] != $changes['parent']['after']) {
-            $temp = isset($entity->parameters['children']) ? $entity->parameters['children'] : [];
-            while (!empty($temp)) {
-                $sub = array_shift($temp);
-                $sub->set($rootField, ((is_null($entity->get($rootField))) ? $entity : $entity->get($rootField)));
-                $this->save($sub, false);
-                if (!empty($sub->parameters['children'])) {
-                    foreach ($sub->parameters['children'] as $subsub) {
-                        array_unshift($temp, $subsub);
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * TODO: refactor the massive method.
+     * TODO: Remove...
      *
      * @param $entity
      * @param $was_new
@@ -367,7 +326,8 @@ abstract class AbstractEntityTable
 
         if ($this != null && isset($entity->parameters['implicitPosition']['field']) && $entity->getDbAdapter() != null)
             $implicitPositionFieldIds = $entity->getDbAdapter()->getClassMetadata($this->getClassMetadata()->getAssociationTargetClass($entity->parameters['implicitPosition']['field']))->getIdentifierFieldNames();
-        $implicitPositionFieldMainId = (in_array('uuid', $implicitPositionFieldIds)) ? 'uuid' : 'id';// the value of the name of the id (id or uuid) use for sql request for the implicit position
+        // the value of the name of the id (id or uuid) use for sql request for the implicit position
+        $implicitPositionMethod = \in_array('uuid', $implicitPositionFieldIds, true) ? 'getUuid' : 'getId';
 
         if ($entity != null)
             $classIdentifier = $this->getDb()->getClassMetadata(ClassUtils::getRealClass(get_class($entity)))->getIdentifierFieldNames();
@@ -409,10 +369,11 @@ abstract class AbstractEntityTable
                             $subquery->andWhere($entity->parameters['implicitPosition']['field'] . '.anr = :implicitPositionFieldAnr')
                                 ->andWhere($entity->parameters['implicitPosition']['field'] . '.uuid = :implicitPositionFieldUuid')
                                 ->setParameter(':implicitPositionFieldUuid', $entity->get($entity->parameters['implicitPosition']['field'])->getUuid())
-                                ->setParameter(':implicitPositionFieldAnr', $entity->get('anr')->get('id'));
+                                ->setParameter(':implicitPositionFieldAnr', $entity->getAnr()->getId());
                         } else {
                             $bros->where('bro.' . $entity->parameters['implicitPosition']['field'] . ' = :parentid');
-                            $params[':parentid'] = $entity->get($entity->parameters['implicitPosition']['field'])->get($implicitPositionFieldMainId);
+                            $params[':parentid'] = $entity->get($entity->parameters['implicitPosition']['field'])
+                                ->{$implicitPositionMethod}();
                         }
                     }
                 }
@@ -492,6 +453,7 @@ abstract class AbstractEntityTable
                 ->setParameters($params);
             $bros->getQuery()->getResult();
 
+            throw Exception('The method "autopose" does not exist.', 412);
             $this->autopose($entity, $was_new, $changes, true);//TIPS : we simulate the new option to move new brothers up
         } else {//we're not new, the parent is the same, so we "just" have to change internal positions
             $avant = $changes['position']['before'];
@@ -520,7 +482,8 @@ abstract class AbstractEntityTable
                             ->setParameter(':implicitPositionFieldAnr', $entity->get('anr')->get('id'));
                     } else {
                         $bros->where('bro.' . $entity->parameters['implicitPosition']['field'] . ' = :parentid');
-                        $params[':parentid'] = $entity->get($entity->parameters['implicitPosition']['field'])->get($implicitPositionFieldMainId);
+                        $params[':parentid'] = $entity->get($entity->parameters['implicitPosition']['field'])
+                            ->{$implicitPositionMethod}();
                     }
                 }
 
@@ -595,7 +558,7 @@ abstract class AbstractEntityTable
     }
 
     /**
-     * TODO: refactor the massive method.
+     * TODO: Remove ...
      *
      * @param AbstractEntity $entity
      * @param array $params
@@ -709,108 +672,5 @@ abstract class AbstractEntityTable
     public function getReference($id)
     {
         return $this->getDb()->getReference($this->getEntityClass(), $id);
-    }
-
-    /**
-     * @param $id
-     *
-     * @return array
-     */
-    public function getDescendants($id): array
-    {
-        $childList = [];
-        $this->getRecursiveChild($childList, $id);
-
-        return $childList;
-    }
-
-    /**
-     * Get Recursive Child
-     *
-     * @param $childList
-     * @param $id
-     */
-    protected function getRecursiveChild(&$childList, $id)
-    {
-        $children = $this->getRepository()->createQueryBuilder('t')
-            ->select(array('t.id'))
-            ->where('t.parent = :parent')
-            ->setParameter(':parent', $id)
-            ->getQuery()
-            ->getResult();
-
-        if (count($children)) {
-            foreach ($children as $child) {
-                $childList[] = $child['id'];
-                $this->getRecursiveChild($childList, $child['id']);
-            }
-        }
-    }
-
-    /**
-     * @param $childList
-     * @param $id
-     */
-    protected function getRecursiveChildObjects(&$childList, $id)
-    {
-        $children = $this->getRepository()->createQueryBuilder('t')
-            ->select()
-            ->where('t.parent = :parent')
-            ->setParameter(':parent', $id)
-            ->getQuery()
-            ->getResult();
-
-        foreach ($children as $child) {
-            $childList[] = $child;
-            $this->getRecursiveChildObjects($childList, $child->id);
-        }
-    }
-
-    /**
-     * Optimized method to avoid recursive call with multiple SQL queries
-     *
-     * @param $entity
-     * @param null $order_by
-     */
-    public function initTree($entity, $order_by = null)
-    {
-        $rootField = $entity->parameters['implicitPosition']['root'] ?? 'root';
-        $parentField = $entity->parameters['implicitPosition']['field'] ?? 'parent';
-
-        $ref = $entity->get($rootField) === null
-            ? $entity->get('id')
-            : $entity->get($rootField)->get('id');
-
-        $qb = $this->getRepository()->createQueryBuilder('t');
-
-        $qb->select()
-            ->where('t.' . $rootField . ' = :ref')
-            ->setParameter(':ref', $ref);
-
-        if ($order_by !== null) {
-            $qb->orderBy('t.' . $order_by, 'DESC');
-        }
-
-        $descendants = $qb->getQuery()->getResult();
-
-        $family = array();
-        foreach ($descendants as $c) {
-            //root is null but [null] on an array is not pretty cool
-            $family[$c->get($parentField) === null ? 0 : $c->get($parentField)->get('id')][] = $c;
-        }
-
-        if (!empty($family)) {
-            $temp = array();
-            $temp[] = $entity;
-            while (!empty($temp)) {
-                $current = array_shift($temp);
-                if (!empty($family[$current->get('id')])) {
-                    foreach ($family[$current->get('id')] as $fam) {
-                        $current->addParameterValue('children', $fam->getId(), $fam);
-                        array_unshift($temp, $fam);
-                    }
-                }
-            }
-        }
     }
 }

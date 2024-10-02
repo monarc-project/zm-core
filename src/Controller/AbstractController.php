@@ -7,19 +7,20 @@
 
 namespace Monarc\Core\Controller;
 
-use Laminas\Http\Response;
+use Monarc\Core\Controller\Handler\AbstractRestfulControllerRequestHandler;
+use Monarc\Core\Controller\Handler\ControllerRequestResponseHandlerTrait;
 use Monarc\Core\Exception\Exception;
-use Monarc\Core\Model\Entity\AbstractEntity;
+use Monarc\Core\Entity\AbstractEntity;
 use Monarc\Core\Service\AbstractServiceFactory;
-use Laminas\Mvc\Controller\AbstractRestfulController;
-use Laminas\View\Model\JsonModel;
 
 /**
  * Abstract Controller used on every REST API controllers
  * @package Monarc\Core\Controller
  */
-abstract class AbstractController extends AbstractRestfulController
+abstract class AbstractController extends AbstractRestfulControllerRequestHandler
 {
+    use ControllerRequestResponseHandlerTrait;
+
     /**
      * The service used by the controller.
      * @var \Monarc\Core\Service\AbstractService
@@ -86,10 +87,10 @@ abstract class AbstractController extends AbstractRestfulController
             }
         }
 
-        return new JsonModel(array(
+        return $this->getPreparedJsonResponse([
             'count' => $service->getFilteredCount($filter),
             $this->name => $entities
-        ));
+        ]);
     }
 
     /**
@@ -105,7 +106,7 @@ abstract class AbstractController extends AbstractRestfulController
             $this->formatDependencies($entity, $this->dependencies);
         }
 
-        return new JsonModel($entity);
+        return $this->getPreparedJsonResponse($entity);
     }
 
     /**
@@ -125,8 +126,7 @@ abstract class AbstractController extends AbstractRestfulController
           $id = $this->getService()->create($new_data);
           array_push($created_objects, $id);
       }
-      return new JsonModel([
-          'status' => 'ok',
+      return $this->getSuccessfulJsonResponse([
           'id' => count($created_objects)==1 ? $created_objects[0]: $created_objects,
       ]);
     }
@@ -139,9 +139,9 @@ abstract class AbstractController extends AbstractRestfulController
     public function delete($id)
     {
         if($this->getService()->delete($id)){
-            return new JsonModel(array('status' => 'ok'));
+            return $this->getSuccessfulJsonResponse();
         }else{
-            return new JsonModel(array('status' => 'ko')); // Todo: peux être retourner un message d'erreur
+            return $this->getPreparedJsonResponse(['status' => 'ko']); // Todo: peux être retourner un message d'erreur
         }
     }
 
@@ -153,9 +153,9 @@ abstract class AbstractController extends AbstractRestfulController
     public function deleteList($data)
     {
         if($this->getService()->deleteList($data)){
-            return new JsonModel(array('status' => 'ok'));
+            return $this->getSuccessfulJsonResponse();
         }else{
-            return new JsonModel(array('status' => 'ko')); // Todo: peux être retourner un message d'erreur
+            return $this->getPreparedJsonResponse(['status' => 'ko']); // Todo: peux être retourner un message d'erreur
         }
     }
 
@@ -169,7 +169,7 @@ abstract class AbstractController extends AbstractRestfulController
     {
         $this->getService()->update($id, $data);
 
-        return new JsonModel(array('status' => 'ok'));
+        return $this->getSuccessfulJsonResponse();
     }
 
     /**
@@ -183,10 +183,12 @@ abstract class AbstractController extends AbstractRestfulController
     {
         $this->getService()->patch($id, $data);
 
-        return new JsonModel(array('status' => 'ok'));
+        return $this->getSuccessfulJsonResponse();
     }
 
     /**
+     * TODO: Replace the formatter with a proper data normalisation layer.
+     *
      * Automatically loads the dependencies of the entity based on the class' "dependencies" field
      * @param AbstractEntity $entity The entity for which the deps should be resolved
      * @param array $dependencies The dependencies fields
@@ -197,7 +199,7 @@ abstract class AbstractController extends AbstractRestfulController
         foreach($dependencies as $dependency) {
             if (!empty($entity[$dependency])) {
                 if (is_object($entity[$dependency])) {
-                    if (is_a($entity[$dependency], 'Monarc\Core\Model\Entity\AbstractEntity')) {
+                    if (is_a($entity[$dependency], 'Monarc\Core\Entity\AbstractEntity')) {
                         if(is_a($entity[$dependency], $EntityDependency)) { // fetch more info
                             $entity[$dependency] = $entity[$dependency]->getJsonArray();
                             if(!empty($subField)) {
@@ -232,7 +234,7 @@ abstract class AbstractController extends AbstractRestfulController
                                     $entity[$dependency][] = $temp;
                                   }
                               }
-                              else if (is_a($d, 'Monarc\Core\Model\Entity\AbstractEntity')) {
+                              else if (is_a($d, 'Monarc\Core\Entity\AbstractEntity')) {
                                   $entity[$dependency][] = $d->getJsonArray();
                               } else {
                                   $entity[$dependency][] = $d;
@@ -242,7 +244,7 @@ abstract class AbstractController extends AbstractRestfulController
                     }
                 } else if (is_array($entity[$dependency])) {
                     foreach($entity[$dependency] as $key => $value) {
-                        if (is_a($entity[$dependency][$key], 'Monarc\Core\Model\Entity\AbstractEntity')) {
+                        if (is_a($entity[$dependency][$key], 'Monarc\Core\Entity\AbstractEntity')) {
                             $entity[$dependency][$key] = $entity[$dependency][$key]->getJsonArray();
                             unset($entity[$dependency][$key]['__initializer__']);
                             unset($entity[$dependency][$key]['__cloner__']);
@@ -252,54 +254,5 @@ abstract class AbstractController extends AbstractRestfulController
                 }
             }
         }
-    }
-
-    /**
-     * Computes a recursive array based on the parents
-     * @param array $array The source array
-     * @param int $parent The parent ID
-     * @param int $level The current recursion level
-     * @param array $fields The fields to keep
-     * @return array A recursive array of all the children
-     * @throws Exception If there is no parent
-     */
-    public function recursiveArray($array, $parent, $level, $fields)
-    {
-        $recursiveArray = [];
-        foreach ($array AS $node) {
-
-            $parentId = null;
-            if (array_key_exists('parent', $node)) {
-                if (!is_null($node['parent'])) {
-                    $parentId = $node['parent']->id;
-                }
-            } else if (array_key_exists('parentId', $node)) {
-                if (!is_null($node['parentId'])) {
-                    $parentId = $node['parentId'];
-                }
-            } else {
-                throw new Exception('Parent missing', 412);
-            }
-
-            $nodeArray = [];
-
-            if ($parent == $parentId) {
-                foreach($fields as $field) {
-                    if (array_key_exists($field, $node)) {
-                        $nodeArray[$field] = $node[$field];
-                    }
-                }
-                $child = $this->recursiveArray($array, $node['id'], ($level + 1), $fields);
-                if ($child) {
-                    $nodeArray['child'] = $child;
-                }
-
-            }
-            if (!empty($nodeArray)) {
-                $recursiveArray[] = $nodeArray;
-            }
-        }
-
-        return $recursiveArray;
     }
 }

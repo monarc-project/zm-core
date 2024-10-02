@@ -7,14 +7,11 @@
 
 namespace Monarc\Core\Model\Table;
 
+use Doctrine\ORM\EntityNotFoundException;
 use Monarc\Core\Model\DbCli;
-use Monarc\Core\Model\Entity\DeliveriesModels;
+use Monarc\Core\Entity\DeliveriesModels;
 use Monarc\Core\Service\ConnectedUserService;
 
-/**
- * Class DeliveriesModelsTable
- * @package Monarc\Core\Model\Table
- */
 class DeliveriesModelsTable extends AbstractEntityTable
 {
     public function __construct(DbCli $dbService, ConnectedUserService $connectedUserService)
@@ -22,13 +19,17 @@ class DeliveriesModelsTable extends AbstractEntityTable
         parent::__construct($dbService, DeliveriesModels::class, $connectedUserService);
     }
 
-    /**
-     * Delete
-     *
-     * @param $id
-     * @param bool $last
-     * @return bool
-     */
+    public function findById(int $id): DeliveriesModels
+    {
+        /** @var ?DeliveriesModels $deliveryModel */
+        $deliveryModel = $this->getRepository()->find($id);
+        if ($deliveryModel === null) {
+            throw EntityNotFoundException::fromClassNameAndIdentifier(DeliveriesModels::class, [$id]);
+        }
+
+        return $deliveryModel;
+    }
+
     public function delete($id, $last = true): bool
     {
         $c = $this->getEntityClass();

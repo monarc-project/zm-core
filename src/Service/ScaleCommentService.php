@@ -1,105 +1,83 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
 namespace Monarc\Core\Service;
 
-use Monarc\Core\Model\Entity\ScaleComment;
+use Monarc\Core\InputFormatter\FormattedInputParams;
+use Monarc\Core\Entity;
+use Monarc\Core\Table;
 
-/**
- * Scale Comment Service
- *
- * Class ScaleCommentService
- * @package Monarc\Core\Service
- */
-class ScaleCommentService extends AbstractService
+class ScaleCommentService
 {
-    protected $anrTable;
-    protected $scaleTable;
-    protected $scaleService;
-    protected $scaleImpactTypeService;
-    protected $scaleImpactTypeTable;
-    protected $dependencies = ['anr', 'scale', 'scaleImpactType'];
-    protected $forbiddenFields = ['anr', 'scale'];
+    private Entity\UserSuperClass $connectedUser;
 
-    /**
-     * @inheritdoc
-     */
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
-    {
-        return $this->get('table')->fetchAllFiltered(
-            array_keys($this->get('entity')->getJsonArray()),
-            $page,
-            $limit,
-            $this->parseFrontendOrder($order),
-            $this->parseFrontendFilter($filter, $this->filterColumns),
-            $filterAnd
-        );
+    public function __construct(
+        private Table\ScaleCommentTable $scaleCommentTable,
+        private Table\ScaleTable $scaleTable,
+        private Table\ScaleImpactTypeTable $scaleImpactTypeTable,
+        ConnectedUserService $connectedUserService
+    ) {
+        $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function create($data, $last = true)
+    public function getList(FormattedInputParams $formattedInputParams): array
     {
-        /** @var ScaleComment $scaleComment */
-        $scaleComment = $this->get('entity');
-        if (isset($data['scale'])) {
-            $scale = $this->get('scaleTable')->getEntity($data['scale']);
-            $scaleComment->setScale($scale);
-            if ($scale->type != 1) {
-                unset($data['scaleImpactType']);
-            }
+        $result = [];
+        /** @var Entity\ScaleComment[] $scaleComments */
+        $scaleComments = $this->scaleCommentTable->findByParams($formattedInputParams);
+        foreach ($scaleComments as $scaleComment) {
+            $result[] = array_merge([
+                'id' => $scaleComment->getId(),
+                'scaleIndex' => $scaleComment->getScaleIndex(),
+                'scaleValue' => $scaleComment->getScaleValue(),
+                'scaleImpactType' => $scaleComment->getScaleImpactType() === null ? null : [
+                    'id' => $scaleComment->getScaleImpactType()->getId(),
+                    'type' => $scaleComment->getScaleImpactType()->getType(),
+                ]
+            ], $scaleComment->getComments());
         }
-        $scaleComment->exchangeArray($data);
 
-        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($scaleComment, $dependencies);
-
-        $scaleComment->setCreator(
-            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
-        );
-
-        return $this->get('table')->save($scaleComment);
+        return $result;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function update($id, $data)
+    public function create(Entity\Anr $anr, array $data): Entity\ScaleComment
     {
-        /** @var ScaleComment $scaleComment */
-        $scaleComment = $this->get('table')->getEntity($id);
-        if (isset($data['scale'])) {
-            $scale = $this->get('scaleTable')->getEntity($data['scale']);
-            $scaleComment->setScale($scale);
-            if ($scale->type != 1) {
-                unset($data['scaleImpactType']);
-            }
+        /** @var Entity\Scale $scale */
+        $scale = $this->scaleTable->findByIdAndAnr($data['scaleId'], $anr);
+
+        Entity\ScaleCommentSuperClass::validateScaleIndexValue($scale, $data['scaleIndex']);
+
+        /** @var Entity\ScaleComment $scaleComment */
+        $scaleComment = (new Entity\ScaleComment())
+            ->setAnr($anr)
+            ->setScale($scale)
+            ->setComments($data)
+            ->setScaleIndex($data['scaleIndex'])
+            ->setScaleValue($data['scaleValue'])
+            ->setCreator($this->connectedUser->getEmail());
+
+        if (isset($data['scaleImpactType'])) {
+            /** @var Entity\ScaleImpactType $scaleImpactType */
+            $scaleImpactType = $this->scaleImpactTypeTable->findByIdAndAnr($data['scaleImpactType'], $anr);
+            $scaleComment->setScaleImpactType($scaleImpactType);
         }
-        $scaleComment->exchangeArray($data);
 
-        $dependencies = (property_exists($this, 'dependencies')) ? $this->dependencies : [];
-        $this->setDependencies($scaleComment, $dependencies);
+        $this->scaleCommentTable->save($scaleComment);
 
-        $scaleComment->setUpdater(
-            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
-        );
-
-        return $this->get('table')->save($scaleComment);
+        return $scaleComment;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function patch($id, $data)
+    public function update(Entity\Anr $anr, int $id, array $data): Entity\ScaleComment
     {
-        //security
-        $this->filterPatchFields($data);
+        /** @var Entity\ScaleComment $scaleComment */
+        $scaleComment = $this->scaleCommentTable->findByIdAndAnr($id, $anr);
 
-        return parent::patch($id, $data);
+        $this->scaleCommentTable->save($scaleComment->setComments($data)->setUpdater($this->connectedUser->getEmail()));
+
+        return $scaleComment;
     }
 }

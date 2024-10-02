@@ -41,7 +41,7 @@
         }
     ],
     "require": {
-        "php": "^7.4 || ^8.0",
+        "php": "^8.0",
         "ext-json": "*",
         "ext-openssl": "*",
         "ext-intl": "*",
@@ -57,10 +57,14 @@
         "laminas/laminas-filter": "^2.9",
         "laminas/laminas-inputfilter": "^2.10",
         "laminas/laminas-dependency-plugin": "^2.0",
-        "robthree/twofactorauth": "^1.8"
+        "laminas/laminas-mvc-middleware": "^2.2",
+        "robthree/twofactorauth": "^1.8",
+        "laminas/laminas-i18n-resources": "^2.9",
+        "laminas/laminas-mvc-i18n": "^1.7"
     },
     "require-dev": {
-        "roave/security-advisories": "dev-latest"
+        "roave/security-advisories": "dev-latest",
+        "phpunit/phpunit": "^9.5"
     },
     "autoload": {
         "psr-4": {
@@ -71,5 +75,8 @@
         "allow-plugins": {
             "laminas/laminas-dependency-plugin": true
         }
+    },
+    "scripts": {
+        "tests": "vendor/bin/phpunit"
     }
 }

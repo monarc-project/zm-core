@@ -15,10 +15,7 @@ use Interop\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 
 /**
- * Doctrine Cache Service Factory
- *
- * Class DoctrineCacheServiceFactory
- * @package Monarc\Core\Service
+ * Used in the global.php config.
  */
 class DoctrineCacheServiceFactory implements FactoryInterface
 {

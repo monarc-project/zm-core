@@ -17,6 +17,6 @@ class DeliveriesModelsServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = [
         'table' => 'Monarc\Core\Model\Table\DeliveriesModelsTable',
-        'entity' => 'Monarc\Core\Model\Entity\DeliveriesModels',
+        'entity' => 'Monarc\Core\Entity\DeliveriesModels',
     ];
 }

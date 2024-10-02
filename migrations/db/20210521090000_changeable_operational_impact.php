@@ -1,7 +1,7 @@
 <?php
 
-use Monarc\Core\Model\Entity\OperationalRiskScale;
-use Monarc\Core\Model\Entity\Translation;
+use Monarc\Core\Entity\OperationalRiskScale;
+use Monarc\Core\Entity\Translation;
 use Phinx\Migration\AbstractMigration;
 use Ramsey\Uuid\Uuid;
 
@@ -177,7 +177,7 @@ class ChangeableOperationalImpact extends AbstractMigration
             foreach ($scaleValues as $valueKey => $scaleValue) {
                 $commentTranslationKey = '';
                 if ($scaleType === OperationalRiskScale::TYPE_IMPACT && $scaleValue >= $scaleData['min']) {
-                    $commentTranslationKey = Uuid::uuid4();
+                    $commentTranslationKey = (string)Uuid::uuid4();
                     $operationalRisksScalesCommentsTable->insert([
                         'anr_id' => $scaleData['anr_id'],
                         'operational_risk_scale_id' => $currentScalesByAnrAndType[$scaleData['anr_id']][$scaleType],
@@ -189,7 +189,7 @@ class ChangeableOperationalImpact extends AbstractMigration
                         'creator' => 'Migration script',
                     ])->saveData();
                 } elseif ($scaleType === OperationalRiskScale::TYPE_LIKELIHOOD) {
-                    $commentTranslationKey = Uuid::uuid4();
+                    $commentTranslationKey = (string)Uuid::uuid4();
                     $operationalRisksScalesCommentsTable->insert([
                         'anr_id' => $scaleData['anr_id'],
                         'operational_risk_scale_id' => $currentScalesByAnrAndType[$scaleData['anr_id']][$scaleType],

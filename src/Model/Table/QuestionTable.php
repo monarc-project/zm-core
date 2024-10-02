@@ -8,7 +8,7 @@
 namespace Monarc\Core\Model\Table;
 
 use Monarc\Core\Model\Db;
-use Monarc\Core\Model\Entity\Question;
+use Monarc\Core\Entity\Question;
 use Monarc\Core\Service\ConnectedUserService;
 
 /**

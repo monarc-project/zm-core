@@ -17,6 +17,6 @@ class GuideServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = [
         'table' => 'Monarc\Core\Model\Table\GuideTable',
-        'entity' => 'Monarc\Core\Model\Entity\Guide',
+        'entity' => 'Monarc\Core\Entity\Guide',
     ];
 }

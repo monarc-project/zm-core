@@ -1,51 +1,43 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
 namespace Monarc\Core\Service;
 
-use Monarc\Core\Model\Entity\UserSuperClass;
-use Monarc\Core\Model\Entity\UserTokenSuperClass;
-use Monarc\Core\Storage\Authentication as AuthenticationStorage;
+use Monarc\Core\Entity\UserSuperClass;
 use Laminas\Http\PhpEnvironment\Request;
+use Monarc\Core\Table\UserTokenTable;
 
 /**
- * Determines and returns the system logged in user.
- *
- * Class ConnectedUserService
- * @package Monarc\Core\Service
+ * Determines and returns the system logged-in user.
  */
 class ConnectedUserService
 {
-    /** @var UserSuperClass|null */
-    protected $connectedUser;
+    protected ?UserSuperClass $connectedUser = null;
 
-    /** @var Request */
-    private $request;
+    private Request $request;
 
-    /** @var AuthenticationStorage */
-    private $authenticationStorage;
+    private UserTokenTable $userTokenTable;
 
-    public function __construct(Request $request, AuthenticationStorage $authenticationStorage)
+    public function __construct(Request $request, UserTokenTable $userTokenTable)
     {
         $this->request = $request;
-        $this->authenticationStorage = $authenticationStorage;
+        $this->userTokenTable = $userTokenTable;
     }
 
     /**
-     * For logged in users it will always return User's object instance.
+     * Returns User's object instance when user is logged-in.
      */
     public function getConnectedUser(): ?UserSuperClass
     {
         if ($this->connectedUser === null) {
             $token = $this->request->getHeader('token');
             if (!empty($token)) {
-                /** @var UserTokenSuperClass $userToken */
-                $userToken = $this->authenticationStorage->getUserToken($token->getFieldValue());
-                if ($userToken) {
+                $userToken = $this->userTokenTable->findByToken($token->getFieldValue());
+                if ($userToken !== null) {
                     $this->connectedUser = $userToken->getUser();
                 }
             }

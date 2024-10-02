@@ -1,38 +1,81 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
 namespace Monarc\Core\Service;
 
-/**
- * Referential Service
- *
- * Class ReferentialService
- * @package Monarc\Core\Service
- */
-class ReferentialService extends AbstractService
+use Monarc\Core\Entity\Referential;
+use Monarc\Core\InputFormatter\FormattedInputParams;
+use Monarc\Core\Table\ReferentialTable;
+
+class ReferentialService
 {
-    protected $dependencies = ['anr', 'amvs'];
-    protected $filterColumns = ['uuid', 'label1', 'label2', 'label3', 'label4'];
-    protected $forbiddenFields = ['anr'];
-
-    /**
-     * @inheritdoc
-     */
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null, $filterJoin = null)
+    public function __construct(private ReferentialTable $referentialTable)
     {
-        $data = $this->get('table')->fetchAllFiltered(
-            array_keys($this->get('entity')->getJsonArray()),
-            1,
-            0,
-            $this->parseFrontendOrder($order),
-            $this->parseFrontendFilter($filter, $this->filterColumns),
-            $filterAnd
-        );
+    }
 
-        return array_slice($data, ($page - 1) * $limit, $limit, false);
+    public function getList(FormattedInputParams $params): array
+    {
+        $result = [];
+        /** @var Referential $referential */
+        foreach ($this->referentialTable->findByParams($params) as $referential) {
+            $result[] = $this->prepareReferentialDataResult($referential);
+        }
+
+        return $result;
+    }
+
+    public function getReferentialData(string $uuid): array
+    {
+        /** @var Referential $referential */
+        $referential = $this->referentialTable->findByUuid($uuid);
+
+        return $this->prepareReferentialDataResult($referential);
+    }
+
+    public function create(array $data, bool $saveInDb = true): Referential
+    {
+        /** @var Referential $referential */
+        $referential = (new Referential())->setLabels($data);
+        if (!empty($data['uuid'])) {
+            $referential->setUuid($data['uuid']);
+        }
+
+        $this->referentialTable->save($referential, $saveInDb);
+
+        return $referential;
+    }
+
+    public function update(string $uuid, array $data): Referential
+    {
+        /** @var Referential $referential */
+        $referential = $this->referentialTable->findByUuid($uuid);
+
+        $referential->setLabels($data);
+
+        $this->referentialTable->save($referential);
+
+        return $referential;
+    }
+
+    public function delete(string $uuid): void
+    {
+        /** @var Referential $referential */
+        $referential = $this->referentialTable->findByUuid($uuid);
+
+        $this->referentialTable->remove($referential);
+    }
+
+    private function prepareReferentialDataResult(Referential $referential): array
+    {
+        $measures = [];
+        foreach ($referential->getMeasures() as $measure) {
+            $measures[] = ['uuid' => $measure->getUuid()];
+        }
+
+        return array_merge(['uuid' => $referential->getUuid()], $referential->getLabels(), ['measures' => $measures]);
     }
 }

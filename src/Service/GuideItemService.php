@@ -7,7 +7,7 @@
 
 namespace Monarc\Core\Service;
 
-use Monarc\Core\Model\Entity\GuideItem;
+use Monarc\Core\Entity\GuideItem;
 
 /**
  * Guide Item Service

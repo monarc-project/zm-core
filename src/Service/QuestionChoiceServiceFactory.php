@@ -7,6 +7,11 @@
 
 namespace Monarc\Core\Service;
 
+use Monarc\Core\Table\AnrTable;
+use Monarc\Core\Model\Table\QuestionChoiceTable;
+use Monarc\Core\Entity\QuestionChoice;
+use Monarc\Core\Model\Table\QuestionTable;
+
 /**
  * Question Choice Service Factory
  *
@@ -16,9 +21,9 @@ namespace Monarc\Core\Service;
 class QuestionChoiceServiceFactory extends AbstractServiceFactory
 {
     protected $ressources = [
-        'table' => 'Monarc\Core\Model\Table\QuestionChoiceTable',
-        'entity' => 'Monarc\Core\Model\Entity\QuestionChoice',
-        'anrTable' => 'Monarc\Core\Model\Table\AnrTable',
-        'questionTable' => 'Monarc\Core\Model\Table\QuestionTable',
+        'table' => QuestionChoiceTable::class,
+        'entity' => QuestionChoice::class,
+        'anrTable' => AnrTable::class,
+        'questionTable' => QuestionTable::class,
     ];
 }

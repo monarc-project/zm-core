@@ -14,7 +14,7 @@ use Doctrine\ORM\ORMException;
 use Doctrine\ORM\ORMInvalidArgumentException;
 use Doctrine\ORM\TransactionRequiredException;
 use Monarc\Core\Exception\Exception;
-use Monarc\Core\Model\Entity\AbstractEntity;
+use Monarc\Core\Entity\AbstractEntity;
 use Ramsey\Uuid\Uuid;
 
 /**
