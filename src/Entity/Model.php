@@ -145,7 +145,7 @@ class Model
         return $this;
     }
 
-    public function removeAsset(AssetSuperClass $asset): self
+    public function removeAsset(Asset $asset): self
     {
         if ($this->assets->contains($asset)) {
             $this->assets->removeElement($asset);
@@ -170,7 +170,7 @@ class Model
         return $this;
     }
 
-    public function removeThreat(ThreatSuperClass $threat): self
+    public function removeThreat(Threat $threat): self
     {
         if ($this->threats->contains($threat)) {
             $this->threats->removeElement($threat);
@@ -195,7 +195,7 @@ class Model
         return $this;
     }
 
-    public function removeVulnerability(VulnerabilitySuperClass $vulnerability): self
+    public function removeVulnerability(Vulnerability $vulnerability): self
     {
         if ($this->vulnerabilities->contains($vulnerability)) {
             $this->vulnerabilities->removeElement($vulnerability);
