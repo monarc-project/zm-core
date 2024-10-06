@@ -182,7 +182,8 @@ class FixPositionsCleanupDb extends AbstractMigration
         /* Correct MeasuresMeasures table structure. */
         $this->table('measures_measures')
             ->addColumn('id', 'integer', ['signed' => false, 'after' => MysqlAdapter::FIRST])
-            ->dropForeignKey(['child_id', 'father_id'])
+            ->dropForeignKey('child_id')
+            ->dropForeignKey('father_id')
             ->renameColumn('father_id', 'master_measure_id')
             ->renameColumn('child_id', 'linked_measure_id')
             ->removeColumn('creator')
