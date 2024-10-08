@@ -180,8 +180,8 @@ class FixPositionsCleanupDb extends AbstractMigration
             );
         }
         /* Correct MeasuresMeasures table structure. */
-        $this->execute('ALTER TABLE `measures_measures` DROP FOREIGN KEY IF EXISTS `measures_measures_ibfk_1`');
-        $this->execute('ALTER TABLE `measures_measures` DROP FOREIGN KEY IF EXISTS `measures_measures_ibfk_2`');
+        $this->execute('ALTER TABLE `measures_measures` DROP FOREIGN KEY `measures_measures_ibfk_1`');
+        $this->execute('ALTER TABLE `measures_measures` DROP FOREIGN KEY `measures_measures_ibfk_2`');
         $this->table('measures_measures')
             ->addColumn('id', 'integer', ['signed' => false, 'after' => MysqlAdapter::FIRST])
             ->renameColumn('father_id', 'master_measure_id')
