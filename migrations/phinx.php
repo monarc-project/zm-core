@@ -33,7 +33,7 @@ return array(
             'user' => $globalConf['doctrine']['connection']['orm_default']['params']['user'],
             'pass' => $globalConf['doctrine']['connection']['orm_default']['params']['password'],
             'port' => $globalConf['doctrine']['connection']['orm_default']['params']['port'],
-            'charset' => 'utf8',
+            'charset' => 'utf8mb4',
         ),
     ),
 );
