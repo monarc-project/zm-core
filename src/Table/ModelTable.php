@@ -55,7 +55,8 @@ class ModelTable extends AbstractTable
     public function fundGenericsAndSpecificsByIds(array $specificModelsIds = []): array
     {
         $queryBuilder = $this->getRepository()->createQueryBuilder('m')
-            ->where('m.isGeneric = 1');
+            ->where('m.isGeneric = 1')
+            ->andWhere('m.anr IS NOT NULL');
 
         if (!empty($specificModelsIds)) {
             $queryBuilder->orWhere($queryBuilder->expr()->andX(
