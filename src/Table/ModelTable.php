@@ -52,7 +52,7 @@ class ModelTable extends AbstractTable
     /**
      * @return Model[]
      */
-    public function fundGenericsAndSpecificsByIds(array $specificModelsIds = []): array
+    public function findGenericsAndSpecificsByIds(array $specificModelsIds = []): array
     {
         $queryBuilder = $this->getRepository()->createQueryBuilder('m')
             ->where('m.isGeneric = 1')
