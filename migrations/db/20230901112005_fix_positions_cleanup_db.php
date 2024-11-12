@@ -279,6 +279,9 @@ class FixPositionsCleanupDb extends AbstractMigration
             ->dropForeignKey('anr_id')
             ->removeColumn('anr_id')
             ->save();
+        $this->execute('UPDATE objects_categories SET label2 = "" WHERE label2 IS NULL');
+        $this->execute('UPDATE objects_categories SET label3 = "" WHERE label3 IS NULL');
+        $this->execute('UPDATE objects_categories SET label4 = "" WHERE label4 IS NULL');
         $this->table('objects_categories')
             ->dropForeignKey('anr_id')
             ->removeColumn('anr_id')
