@@ -499,12 +499,12 @@ class InstanceSuperClass implements PositionedEntityInterface, PropertyStateEnti
 
     /**
      * Returns the instance hierarchy array ordered from its root through all the children to the instance itself.
-     * Each element is a normalized array of the instances' names.
+     * Each element is a normalized array of the instances' names, ids, parent and root objects.
      */
     public function getHierarchyArray(): array
     {
         if ($this->isRoot()) {
-            return [$this->getNames()];
+            return [array_merge($this->getNames(), ['id' => $this->id, 'root' => null, 'parent' => null])];
         }
 
         return $this->getParents();
@@ -513,10 +513,18 @@ class InstanceSuperClass implements PositionedEntityInterface, PropertyStateEnti
     private function getParents(): array
     {
         if ($this->isRoot() || $this->getParent() === null) {
-            return [$this->getNames()];
+            return [array_merge($this->getNames(), ['id' => $this->getId(), 'root' => null, 'parent' => null])];
         }
 
-        return array_merge($this->getParent()->getParents(), [$this->getNames()]);
+        return array_merge(
+            $this->getParent()->getParents(),
+            [
+                array_merge(
+                    $this->getNames(),
+                    ['id' => $this->getId(), 'root' => $this->getRoot(), 'parent' => $this->getParent()]
+                )
+            ]
+        );
     }
 
     /**
