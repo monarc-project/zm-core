@@ -110,6 +110,7 @@ class ScaleImpactTypeSuperClass
     {
         return (new static())
             ->setType($scaleImpactType->getType())
+            ->setLabels($scaleImpactType->getLabels())
             ->setIsSys($scaleImpactType->isSys())
             ->setIsHidden($scaleImpactType->isHidden());
     }
