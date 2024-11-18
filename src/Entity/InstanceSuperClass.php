@@ -504,27 +504,30 @@ class InstanceSuperClass implements PositionedEntityInterface, PropertyStateEnti
     public function getHierarchyArray(): array
     {
         if ($this->isRoot()) {
-            return [array_merge($this->getNames(), ['id' => $this->id, 'root' => null, 'parent' => null])];
+            return [array_merge(
+                $this->getNames(),
+                ['id' => $this->id, 'root' => null, 'parent' => null, 'position' => $this->position]
+            )];
         }
 
-        return $this->getParents();
+        return $this->getParentsArray();
     }
 
-    private function getParents(): array
+    private function getParentsArray(): array
     {
         if ($this->isRoot() || $this->getParent() === null) {
-            return [array_merge($this->getNames(), ['id' => $this->getId(), 'root' => null, 'parent' => null])];
+            return [array_merge(
+                $this->getNames(),
+                ['id' => $this->getId(), 'root' => null, 'parent' => null, 'position' => $this->getPosition()]
+            )];
         }
 
-        return array_merge(
-            $this->getParent()->getParents(),
-            [
-                array_merge(
-                    $this->getNames(),
-                    ['id' => $this->getId(), 'root' => $this->getRoot(), 'parent' => $this->getParent()]
-                )
-            ]
-        );
+        return array_merge($this->getParent()->getParentsArray(), [array_merge($this->getNames(), [
+            'id' => $this->getId(),
+            'root' => $this->getRoot(),
+            'parent' => $this->getParent(),
+            'position' => $this->getPosition(),
+        ])]);
     }
 
     /**
