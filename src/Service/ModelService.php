@@ -148,8 +148,10 @@ class ModelService
         /** @var Model $model */
         $model = $this->modelTable->findById($id);
         $model->setStatus(Model::STATUS_DELETED);
+        $anr = $model->getAnr();
+        $model->setAnr(null);
 
-        $this->anrTable->remove($model->getAnr(), false);
+        $this->anrTable->remove($anr);
 
         $this->modelTable->save($model);
     }

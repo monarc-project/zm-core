@@ -56,11 +56,12 @@ class ModelTable extends AbstractTable
     {
         $queryBuilder = $this->getRepository()->createQueryBuilder('m')
             ->where('m.isGeneric = 1')
-            ->andWhere('m.anr IS NOT NULL');
+            ->andWhere('m.status = ' . Model::STATUS_ACTIVE);
 
         if (!empty($specificModelsIds)) {
             $queryBuilder->orWhere($queryBuilder->expr()->andX(
                 $queryBuilder->expr()->eq('m.isGeneric', 0),
+                $queryBuilder->expr()->eq('m.status', Model::STATUS_ACTIVE),
                 $queryBuilder->expr()->in('m.id', array_map('\intval', $specificModelsIds))
             ));
         }

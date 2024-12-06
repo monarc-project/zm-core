@@ -123,7 +123,7 @@ class Model
         return $this->anr;
     }
 
-    public function setAnr(Anr $anr): self
+    public function setAnr(?Anr $anr): self
     {
         $this->anr = $anr;
 
