@@ -166,4 +166,9 @@ class ConfigService
     {
         return $this->config['twoFactorAuthEnforced'] ?? false;
     }
+
+    public function getCaptchaConfig(): array
+    {
+        return $this->config['captcha'] ?? ['enabled' => false];
+    }
 }

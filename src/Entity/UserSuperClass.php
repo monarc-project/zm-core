@@ -10,7 +10,6 @@ namespace Monarc\Core\Entity;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
-use Monarc\Core\Entity\Traits;
 
 /**
  * @ORM\Table(name="users")

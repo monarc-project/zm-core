@@ -21,22 +21,13 @@ class AuthenticationService
     public const TWO_FA_CODE_REQUIRED = '2FARequired';
     public const TWO_FA_CODE_TO_BE_CONFIGURED = '2FAToBeConfigured';
 
-    private ConfigService $configService;
-
-    private AuthenticationStorage $authenticationStorage;
-
-    private AuthenticationAdapter $authenticationAdapter;
-
     private TwoFactorAuth $tfa;
 
     public function __construct(
-        ConfigService $configService,
-        AuthenticationStorage $authenticationStorage,
-        AuthenticationAdapter $authenticationAdapter
+        private ConfigService $configService,
+        private AuthenticationStorage $authenticationStorage,
+        private AuthenticationAdapter $authenticationAdapter
     ) {
-        $this->configService = $configService;
-        $this->authenticationStorage = $authenticationStorage;
-        $this->authenticationAdapter = $authenticationAdapter;
         $qr = new EndroidQrCodeProvider();
         $this->tfa = new TwoFactorAuth('MONARC', 6, 30, 'sha1', $qr);
     }
@@ -68,7 +59,6 @@ class AuthenticationService
                 // authentication with 2FA revocery code
                 $token = $data['recoveryCode'];
             }
-
 
             if (isset($data['verificationCode']) && isset($data['otpSecret'])) {
                 // activation of 2FA via login page (when user must activate 2FA on a 2FA enforced instance)

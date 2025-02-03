@@ -8,7 +8,9 @@
 namespace Monarc\Core\Adapter;
 
 use Doctrine\ORM\EntityNotFoundException;
+use Monarc\Core\Entity\ActionHistorySuperClass;
 use Monarc\Core\Entity\UserSuperClass;
+use Monarc\Core\Service\ActionHistoryService;
 use Monarc\Core\Table\UserTable;
 use Monarc\Core\Service\ConfigService;
 use Laminas\Authentication\Adapter\AbstractAdapter;
@@ -24,19 +26,14 @@ class Authentication extends AbstractAdapter
     public const TWO_FA_TO_SET_UP = 3;
     public const TWO_FA_FAILED = 4;
 
-    /** @var UserTable */
-    private $userTable;
-
     /** @var UserSuperClass */
     protected $user;
 
-    /** @var ConfigService */
-    private $configService;
-
-    public function __construct(UserTable $userTable, ConfigService $configService)
-    {
-        $this->userTable = $userTable;
-        $this->configService = $configService;
+    public function __construct(
+        private UserTable $userTable,
+        private ConfigService $configService,
+        private ActionHistoryService $actionHistoryService
+    ) {
     }
 
     /**
@@ -70,16 +67,31 @@ class Authentication extends AbstractAdapter
         $credential = $this->getCredential();
         try {
             $user = $this->userTable->findByEmail($identity);
-        } catch (EntityNotFoundException $e) {
-            return new Result(Result::FAILURE_IDENTITY_NOT_FOUND, $this->getIdentity());
+        } catch (EntityNotFoundException) {
+            $this->actionHistoryService->createActionHistory(ActionHistorySuperClass::ACTION_LOGIN_ATTEMPT, [
+                'identity' => $identity,
+                'comment' => 'email is not found',
+            ], ActionHistorySuperClass::STATUS_FAILURE);
+
+            return new Result(Result::FAILURE_IDENTITY_NOT_FOUND, $identity);
         }
 
         if (!$user->isActive()) {
-            return new Result(Result::FAILURE_IDENTITY_NOT_FOUND, $this->getIdentity());
+            $this->actionHistoryService->createActionHistory(ActionHistorySuperClass::ACTION_LOGIN_ATTEMPT, [
+                'identity' => $identity,
+                'comment' => 'user is inactive',
+            ], ActionHistorySuperClass::STATUS_FAILURE, $user);
+
+            return new Result(Result::FAILURE_IDENTITY_NOT_FOUND, $identity);
         }
 
         if (!password_verify($credential, $user->getPassword())) {
-            return new Result(Result::FAILURE_CREDENTIAL_INVALID, $this->getIdentity());
+            $this->actionHistoryService->createActionHistory(ActionHistorySuperClass::ACTION_LOGIN_ATTEMPT, [
+                'identity' => $identity,
+                'comment' => 'password is incorrect',
+            ], ActionHistorySuperClass::STATUS_FAILURE, $user);
+
+            return new Result(Result::FAILURE_CREDENTIAL_INVALID, $identity);
         }
 
         $this->setUser($user);
@@ -88,17 +100,22 @@ class Authentication extends AbstractAdapter
         if (!$user->isTwoFactorAuthEnabled()) {
             /* Validate if 2FA is enforced on the platform. */
             if (!$this->configService->isTwoFactorAuthEnforced()) {
-                return new Result(Result::SUCCESS, $this->getIdentity());
+                $this->actionHistoryService->createActionHistory(ActionHistorySuperClass::ACTION_LOGIN_ATTEMPT, [
+                    'identity' => $identity,
+                    'comment' => 'successfully logged in without 2FA',
+                ], ActionHistorySuperClass::STATUS_SUCCESS, $user);
+
+                return new Result(Result::SUCCESS, $identity);
             }
 
             if (empty($token)) {
                 /* 2FA enforced and missing tokens in order to activate 2FA */
-                return new Result(static::TWO_FA_TO_SET_UP, $this->getIdentity());
+                return new Result(static::TWO_FA_TO_SET_UP, $identity);
             }
 
             /* 2FA enforced and received tokens in order to activate 2FA */
             /* tokens are the verification code and the otp secret */
-            $tokens = explode(":", $token);
+            $tokens = explode(':', $token);
             // verify the submitted OTP token
             $tfa = new TwoFactorAuth('MONARC TwoFactorAuth');
             if ($tokens !== false && $tfa->verifyCode($tokens[0], $tokens[1])) {
@@ -106,21 +123,31 @@ class Authentication extends AbstractAdapter
                 $user->setTwoFactorAuthEnabled(true);
                 $this->userTable->save($user);
 
-                return new Result(Result::SUCCESS, $this->getIdentity());
+                $this->actionHistoryService->createActionHistory(ActionHistorySuperClass::ACTION_LOGIN_ATTEMPT, [
+                    'identity' => $identity,
+                    'comment' => 'successfully logged in with 2FA initial setup',
+                ], ActionHistorySuperClass::STATUS_SUCCESS, $user);
+
+                return new Result(Result::SUCCESS, $identity);
             }
 
-            return new Result(static::TWO_FA_TO_SET_UP, $this->getIdentity());
+            return new Result(static::TWO_FA_TO_SET_UP, $identity);
         }
 
         /* Validate if the 2FA token has been submitted. */
         if (empty($token)) {
-            return new Result(static::TWO_FA_REQUIRED, $this->getIdentity());
+            return new Result(static::TWO_FA_REQUIRED, $identity);
         }
 
         /* Verify the submitted OTP token. */
         $tfa = new TwoFactorAuth('MONARC TwoFactorAuth');
         if ($tfa->verifyCode($user->getSecretKey(), $token)) {
-            return new Result(Result::SUCCESS, $this->getIdentity());
+            $this->actionHistoryService->createActionHistory(ActionHistorySuperClass::ACTION_LOGIN_ATTEMPT, [
+                'identity' => $identity,
+                'comment' => 'successfully logged in with 2FA OTP code',
+            ], ActionHistorySuperClass::STATUS_SUCCESS, $user);
+
+            return new Result(Result::SUCCESS, $identity);
         }
 
         /* Verify the submitted recovery code. */
@@ -131,10 +158,20 @@ class Authentication extends AbstractAdapter
                 $user->setRecoveryCodes($recoveryCodes);
                 $this->userTable->save($user);
 
-                return new Result(Result::SUCCESS, $this->getIdentity());
+                $this->actionHistoryService->createActionHistory(ActionHistorySuperClass::ACTION_LOGIN_ATTEMPT, [
+                    'identity' => $identity,
+                    'comment' => 'successfully logged in with 2FA recovery code',
+                ], ActionHistorySuperClass::STATUS_SUCCESS, $user);
+
+                return new Result(Result::SUCCESS, $identity);
             }
         }
 
-        return new Result(static::TWO_FA_FAILED, $this->getIdentity());
+        $this->actionHistoryService->createActionHistory(ActionHistorySuperClass::ACTION_LOGIN_ATTEMPT, [
+            'identity' => $identity,
+            'comment' => '2FA validation failed',
+        ], ActionHistorySuperClass::STATUS_FAILURE, $user);
+
+        return new Result(static::TWO_FA_FAILED, $identity);
     }
 }
