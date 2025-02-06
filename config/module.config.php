@@ -189,6 +189,7 @@ return [
             DeprecatedTable\GuideItemTable::class => AutowireFactory::class,
             DeprecatedTable\HistoricalTable::class => AutowireFactory::class,
             DeprecatedTable\DeliveriesModelsTable::class => AutowireFactory::class,
+            Table\ActionHistoryTable::class => Table\Factory\ClientEntityManagerFactory::class,
             Table\AnrInstanceMetadataFieldTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\AnrTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\AmvTable::class => Table\Factory\CoreEntityManagerFactory::class,
