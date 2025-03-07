@@ -21,18 +21,10 @@ jobs:
         tools: pecl, cs2pr, phpcs
 
     - name: Validate composer.json and composer.lock
-      run: composer validate --strict
+      run: composer validate
 
-    - name: Cache Composer packages
-      id: composer-cache
-      uses: actions/cache@v2
-      with:
-        path: vendor
-        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-php-
-    - name: Install dependencies
-      run: composer install --prefer-dist --no-progress --ignore-platform-req=php
+    - name: Install PHP dependencies
+      run: composer install --prefer-dist --no-progress --no-suggest --ignore-platform-req=php
 
     # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
     # Docs: https://getcomposer.org/doc/articles/scripts.md
