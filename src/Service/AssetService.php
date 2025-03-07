@@ -105,7 +105,7 @@ class AssetService
         return $createdUuids;
     }
 
-    public function getOrCreateAsset(array $assetData): Entity\Asset
+    public function getOrCreateAsset(array $assetData, bool $saveInDb = false): Entity\Asset
     {
         if (!empty($assetData['uuid'])) {
             try {
@@ -113,11 +113,11 @@ class AssetService
                 $asset = $this->assetTable->findByUuid($assetData['uuid']);
 
                 return $asset;
-            } catch (EntityNotFoundException $e) {
+            } catch (EntityNotFoundException) {
             }
         }
 
-        return $this->create($assetData, false);
+        return $this->create($assetData, $saveInDb);
     }
 
     public function update(string $uuid, array $data)

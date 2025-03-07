@@ -22,6 +22,8 @@ class AmvService implements PositionUpdatableServiceInterface
 
     private Entity\UserSuperClass $connectedUser;
 
+    private array $cachedData = [];
+
     public function __construct(
         private Table\AmvTable $amvTable,
         private Table\AssetTable $assetTable,
@@ -206,9 +208,21 @@ class AmvService implements PositionUpdatableServiceInterface
                 continue;
             }
 
-            $asset = $this->assetService->getOrCreateAsset($amvData['asset']);
-            $threat = $this->threatService->getOrCreateThreat($amvData['threat']);
-            $vulnerability = $this->vulnerabilityService->getOrCreateVulnerability($amvData['vulnerability']);
+            if (!isset($this->cachedData['assets'][$amvData['asset']['code']])) {
+                $this->cachedData['assets'][$amvData['asset']['code']] = $this->assetService
+                    ->getOrCreateAsset($amvData['asset']);
+            }
+            $asset = $this->cachedData['assets'][$amvData['asset']['code']];
+            if (!isset($this->cachedData['threats'][$amvData['threat']['code']])) {
+                $this->cachedData['threats'][$amvData['threat']['code']] = $this->threatService
+                    ->getOrCreateThreat($amvData['threat']);
+            }
+            $threat = $this->cachedData['threats'][$amvData['threat']['code']];
+            if (!isset($this->cachedData['vulnerabilities'][$amvData['vulnerability']['code']])) {
+                $this->cachedData['vulnerabilities'][$amvData['vulnerability']['code']] = $this->vulnerabilityService
+                    ->getOrCreateVulnerability($amvData['vulnerability']);
+            }
+            $vulnerability = $this->cachedData['vulnerabilities'][$amvData['vulnerability']['code']];
 
             $amv = (new Entity\Amv())
                 ->setAsset($asset)

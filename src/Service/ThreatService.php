@@ -124,7 +124,7 @@ class ThreatService
         return $createdUuids;
     }
 
-    public function getOrCreateThreat(array $threatData): Entity\Threat
+    public function getOrCreateThreat(array $threatData, bool $saveInDb = false): Entity\Threat
     {
         if (!empty($threatData['uuid'])) {
             try {
@@ -132,7 +132,7 @@ class ThreatService
                 $threat = $this->threatTable->findByUuid($threatData['uuid']);
 
                 return $threat;
-            } catch (EntityNotFoundException $e) {
+            } catch (EntityNotFoundException) {
             }
         }
 
@@ -140,7 +140,7 @@ class ThreatService
             $threatData['theme'] = $this->themeTable->findById((int)$threatData['theme']);
         }
 
-        return $this->create($threatData, false);
+        return $this->create($threatData, $saveInDb);
     }
 
     public function update(string $uuid, array $data): void
