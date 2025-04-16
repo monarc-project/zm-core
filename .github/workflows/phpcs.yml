@@ -32,7 +32,7 @@ jobs:
     # We need to run to validate only files' changes.
     - name: Get changed files using a comma separator
       id: changed-files-comma
-      uses: tj-actions/changed-files@v41
+      uses: tj-actions/changed-files@v46
       with:
         separator: " "
         files: |
