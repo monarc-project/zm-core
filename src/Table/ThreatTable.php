@@ -29,7 +29,7 @@ class ThreatTable extends AbstractTable implements UniqueCodeTableInterface
         return $this->getRepository()
             ->createQueryBuilder('t')
             ->where('t.mode = :mode')
-            ->setParameter(':mode', $mode)
+            ->setParameter('mode', $mode)
             ->getQuery()
             ->getResult();
     }

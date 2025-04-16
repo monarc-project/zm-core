@@ -23,7 +23,7 @@ class UserTable extends AbstractTable
     {
         $queryBuilder = $this->getRepository()->createQueryBuilder('u')
             ->where('u.email = :email')
-            ->setParameter(':email', $email);
+            ->setParameter('email', $email);
         if ($excludeEmail !== null) {
             $queryBuilder->andWhere('u.email <> :excludeEmail')
                 ->setParameter('excludeEmail', $excludeEmail);

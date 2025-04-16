@@ -69,6 +69,11 @@ EMAIL_MESSAGE;
         if ($passwordToken) {
             $this->validatePassword($password);
 
+            if ($passwordToken->getUser()->isTwoFactorAuthEnabled()) {
+                $passwordToken->getUser()->setTwoFactorAuthEnabled(false)
+                    ->setRecoveryCodes([])
+                    ->setSecretKey('');
+            }
             $this->userTable->save($passwordToken->getUser()->setPassword($password));
 
             $this->passwordTokenTable->deleteToken($token);
@@ -126,6 +131,11 @@ EMAIL_MESSAGE;
     {
         /** @var UserSuperClass $user */
         $user = $this->userTable->findById($userId);
+        if ($user->isTwoFactorAuthEnabled()) {
+            $user->setTwoFactorAuthEnabled(false)
+                ->setRecoveryCodes([])
+                ->setSecretKey('');
+        }
 
         $this->userTable->save($user->resetPassword());
     }

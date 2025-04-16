@@ -29,7 +29,7 @@ class AssetTable extends AbstractTable implements UniqueCodeTableInterface
         return $this->getRepository()
             ->createQueryBuilder('a')
             ->where('a.mode = :mode')
-            ->setParameter(':mode', $mode)
+            ->setParameter('mode', $mode)
             ->getQuery()
             ->getResult();
     }
