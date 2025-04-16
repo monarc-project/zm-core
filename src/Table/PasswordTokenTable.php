@@ -25,8 +25,8 @@ class PasswordTokenTable extends AbstractTable
             ->select('pt')
             ->where('pt.token = :token')
             ->andWhere('pt.dateEnd >= :date')
-            ->setParameter(':token', $token)
-            ->setParameter(':date', $date->format('Y-m-d H:i:s'))
+            ->setParameter('token', $token)
+            ->setParameter('date', $date->format('Y-m-d H:i:s'))
             ->setMaxResults(1)
             ->getQuery()
             ->getResult();
@@ -39,7 +39,7 @@ class PasswordTokenTable extends AbstractTable
         $this->getRepository()->createQueryBuilder('pt')
             ->delete()
             ->where('pt.dateEnd < :date')
-            ->setParameter(':date', (new DateTime())->format('Y-m-d H:i:s'))
+            ->setParameter('date', (new DateTime())->format('Y-m-d H:i:s'))
             ->getQuery()
             ->getResult();
     }
@@ -54,7 +54,7 @@ class PasswordTokenTable extends AbstractTable
         $this->getRepository()->createQueryBuilder('t')
             ->delete()
             ->where('t.token = :token')
-            ->setParameter(':token', $token)
+            ->setParameter('token', $token)
             ->getQuery()
             ->getResult();
     }

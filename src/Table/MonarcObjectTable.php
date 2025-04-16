@@ -28,7 +28,7 @@ class MonarcObjectTable extends AbstractTable
             ->select('COUNT(o.uuid)')
             ->where('o.asset = :asset')
             ->andWhere('o.mode = ' . ObjectSuperClass::MODE_GENERIC)
-            ->setParameter(':asset', $asset)
+            ->setParameter('asset', $asset)
             ->getQuery()
             ->getSingleScalarResult();
     }
