@@ -366,13 +366,34 @@ class InstanceService
         if (!empty($data['parent'])
             && (!$instance->hasParent() || $instance->getParent()->getId() !== $data['parent'])
         ) {
+            /* A new parent is set (or just set if it was empty). */
             /** @var Entity\Instance|null $parentInstance */
             $parentInstance = $this->instanceTable->findById((int)$data['parent'], false);
             if ($parentInstance !== null) {
+                /* Validate if parent is not a child of this instance. */
+                if ($parentInstance->isInstanceOneOfParents($instance)) {
+                    throw new Exception('The parent instance or one of its parents is a child of the instance.', 412);
+                }
+                /* Update children's root instance if changed. */
+                $parentRoot = $parentInstance->getRootInstance();
+                if ($parentRoot->getId() !== $instance->getRootInstance()->getId()) {
+                    $this->updateRootOfChildrenInstances($instance, $parentRoot);
+                }
                 $instance->setParent($parentInstance)->setRoot($parentInstance->getRoot() ?? $parentInstance);
             }
         } elseif (empty($data['parent']) && $instance->hasParent()) {
+            /* Parent was set before, and now it set as empty (the instance becomes root). */
             $instance->setParent(null)->setRoot(null);
+            /* Set current instance as root for all its children. */
+            $this->updateRootOfChildrenInstances($instance, $instance);
+        }
+    }
+
+    private function updateRootOfChildrenInstances(Entity\Instance $instance, Entity\Instance $rootInstance): void
+    {
+        foreach ($instance->getChildren() as $childInstance) {
+            $this->instanceTable->save($childInstance->setRoot($rootInstance), false);
+            $this->updateRootOfChildrenInstances($childInstance, $rootInstance);
         }
     }
 }

@@ -301,6 +301,19 @@ class InstanceSuperClass implements PositionedEntityInterface, PropertyStateEnti
         return $this->parent !== null;
     }
 
+    public function isInstanceOneOfParents($instanceToCheck): bool
+    {
+        if ($this->parent === null) {
+            return false;
+        }
+
+        if ($this->parent->getId() === $instanceToCheck->getId()) {
+            return true;
+        }
+
+        return $this->parent->isInstanceOneOfParents($instanceToCheck);
+    }
+
     public function getChildren()
     {
         return $this->children;
