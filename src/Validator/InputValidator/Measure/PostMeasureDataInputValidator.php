@@ -37,9 +37,7 @@ class PostMeasureDataInputValidator extends AbstractInputValidator
 
     protected function getRules(): array
     {
-        if (!empty($this->initialData['referentialUuid'])) {
-            $this->includeFilter['referential'] = $this->initialData['referentialUuid'];
-        }
+        $this->initIncludeFilter();
 
         $rules = [
             [
@@ -112,5 +110,12 @@ class PostMeasureDataInputValidator extends AbstractInputValidator
         }
 
         return array_merge($labelRules, $rules);
+    }
+
+    protected function initIncludeFilter(): void
+    {
+        if (!empty($this->initialData['referentialUuid'])) {
+            $this->includeFilter['referential'] = $this->initialData['referentialUuid'];
+        }
     }
 }

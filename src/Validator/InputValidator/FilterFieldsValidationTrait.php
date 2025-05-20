@@ -9,9 +9,9 @@ namespace Monarc\Core\Validator\InputValidator;
 
 trait FilterFieldsValidationTrait
 {
-    private array $includeFilter = [];
+    protected array $includeFilter = [];
 
-    private array $excludeFilter = [];
+    protected array $excludeFilter = [];
 
     public function setIncludeFilter(array $includeFilter): self
     {
