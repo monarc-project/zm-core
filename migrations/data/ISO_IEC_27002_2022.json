@@ -9,7 +9,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.1,
+      "code": "5.1",
       "label1": "Politiques de sécurité de l'information",
       "label2": "Policies for information security",
       "label3": "Informationssicherheitspolitik und -richtlinien",
@@ -61,7 +61,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.2,
+      "code": "5.2",
       "label1": "Fonctions et responsabilités liées à la sécurité de l'information",
       "label2": "Information security roles and responsibilities",
       "label3": "Informationssicherheitsrollen und -verantwortlichkeiten",
@@ -120,7 +120,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.3,
+      "code": "5.3",
       "label1": "Séparation des tâches",
       "label2": "Segregation of duties",
       "label3": "Aufgabentrennung",
@@ -138,7 +138,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.4,
+      "code": "5.4",
       "label1": "Responsabilités de la direction",
       "label2": "Management responsibilities",
       "label3": "Verantwortlichkeiten der Leitung",
@@ -258,7 +258,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.5,
+      "code": "5.5",
       "label1": "Contacts avec les autorités",
       "label2": "Contact with authorities",
       "label3": "Kontakt mit Behörden",
@@ -280,7 +280,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.6,
+      "code": "5.6",
       "label1": "Contacts avec des groupes d’intérêt spécifiques",
       "label2": "Contact with special interest groups",
       "label3": "Kontakt mit speziellen Interessengruppen",
@@ -303,7 +303,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.7,
+      "code": "5.7",
       "label1": "Renseignements sur les menaces",
       "label2": "Threat intelligence",
       "label3": "Informationen über die Bedrohungslage",
@@ -318,7 +318,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.8,
+      "code": "5.8",
       "label1": "Sécurité de l'information dans la gestion de projet",
       "label2": "Information security in project management",
       "label3": "Informationssicherheit im Projektmanagement",
@@ -345,7 +345,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.9,
+      "code": "5.9",
       "label1": "Inventaire des informations et autres actifs associés",
       "label2": "Inventory of information and other associated assets",
       "label3": "Inventar der Informationen und anderer damit verbundener Werte",
@@ -391,7 +391,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.10,
+      "code": "5.10",
       "label1": "Utilisation correcte des informations et autres actifs associés",
       "label2": "Acceptable use of information and other associated assets",
       "label3": "Zulässiger Gebrauch von Informationen und anderen damit verbundenen Werten",
@@ -434,7 +434,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.11,
+      "code": "5.11",
       "label1": "Restitution des actifs",
       "label2": "Return of assets",
       "label3": "Rückgabe von Werten",
@@ -451,7 +451,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.12,
+      "code": "5.12",
       "label1": "Classification des informations",
       "label2": "Classification of information",
       "label3": "Klassifizierung von Informationen",
@@ -528,7 +528,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.13,
+      "code": "5.13",
       "label1": "Marquage des informations",
       "label2": "Labelling of information",
       "label3": "Kennzeichnung von Informationen",
@@ -555,7 +555,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.14,
+      "code": "5.14",
       "label1": "Transfert des informations",
       "label2": "Information transfer",
       "label3": "Informationsübermittlung",
@@ -638,7 +638,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.15,
+      "code": "5.15",
       "label1": "Contrôle d'accès",
       "label2": "Access control",
       "label3": "Zugangssteuerung",
@@ -748,7 +748,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.16,
+      "code": "5.16",
       "label1": "Gestion des identités",
       "label2": "Identity management",
       "label3": "Identitätsmanagement",
@@ -823,7 +823,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.17,
+      "code": "5.17",
       "label1": "Informations d'authentification",
       "label2": "Authentication information",
       "label3": "Authentisierungsinformationen",
@@ -877,7 +877,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.18,
+      "code": "5.18",
       "label1": "Droits d'accès",
       "label2": "Access rights",
       "label3": "Zugangsrechte",
@@ -949,7 +949,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.19,
+      "code": "5.19",
       "label1": "Sécurité de l'information dans les relations avec les fournisseurs",
       "label2": "Information security in supplier relationships",
       "label3": "Informationssicherheit in Lieferantenbeziehungen",
@@ -991,7 +991,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.20,
+      "code": "5.20",
       "label1": "La sécurité de l'information dans les accords conclus avec les fournisseurs",
       "label2": "Addressing information security within supplier agreements",
       "label3": "Behandlung von Informationssicherheit in Lieferantenvereinbarungen",
@@ -1062,7 +1062,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.21,
+      "code": "5.21",
       "label1": "Gestion de la sécurité de l'information dans la chaîne d'approvisionnement TIC",
       "label2": "Managing information security in the ICT supply chain",
       "label3": "Umgang mit der Informationssicherheit in der IKT-Lieferkette",
@@ -1079,7 +1079,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.22,
+      "code": "5.22",
       "label1": "Surveillance",
       "label2": "Monitoring, review and change management of supplier services",
       "label3": "Überwachung, Überprüfung und Änderungsmanagement von Lieferantendienstleistungen",
@@ -1131,7 +1131,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.23,
+      "code": "5.23",
       "label1": "Sécurité de l'information dans l'utilisation de services en nuage",
       "label2": "Information security for use of cloud services",
       "label3": "Informationssicherheit für die Nutzung von Cloud-Diensten",
@@ -1146,7 +1146,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.24,
+      "code": "5.24",
       "label1": "Planification et préparation de la gestion des incidents de sécurité de l'information",
       "label2": "Information security incident management planning and preparation",
       "label3": "Planung und Vorbereitung der Handhabung von Informationssicherheitsvorfällen",
@@ -1182,7 +1182,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.25,
+      "code": "5.25",
       "label1": "Évaluation des événements de sécurité de l'information et prise de décision",
       "label2": "Assessment and decision on information security events",
       "label3": "Beurteilung und Entscheidung über Informationssicherheitsereignisse",
@@ -1205,7 +1205,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.26,
+      "code": "5.26",
       "label1": "Réponse aux incidents de sécurité de l'information",
       "label2": "Response to information security incidents",
       "label3": "Reaktion auf Informationssicherheitsvorfälle",
@@ -1232,7 +1232,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.27,
+      "code": "5.27",
       "label1": "Tirer des enseignements des incidents de sécurité de l'information",
       "label2": "Learning from information security incidents",
       "label3": "Erkenntnisse aus Informationssicherheitsvorfällen",
@@ -1255,7 +1255,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.28,
+      "code": "5.28",
       "label1": "Collecte des preuves",
       "label2": "Collection of evidence",
       "label3": "Sammeln von Beweismaterial",
@@ -1289,7 +1289,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.29,
+      "code": "5.29",
       "label1": "Sécurité de l'information pendant une perturbation",
       "label2": "Information security during disruption",
       "label3": "Informationssicherheit bei Störungen",
@@ -1361,7 +1361,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.30,
+      "code": "5.30",
       "label1": "Préparation des TIC pour la continuité d'activité",
       "label2": "ICT readiness for business continuity",
       "label3": "IKT-Bereitschaft für Business-Continuity",
@@ -1424,7 +1424,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.31,
+      "code": "5.31",
       "label1": "Exigences légales",
       "label2": "Legal, statutory, regulatory and contractual requirements",
       "label3": "Juristische, gesetzliche, regulatorische und vertragliche Anforderungen",
@@ -1461,7 +1461,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.32,
+      "code": "5.32",
       "label1": "Droits de propriété intellectuelle",
       "label2": "Intellectual property rights",
       "label3": "Geistige Eigentumsrechte",
@@ -1520,7 +1520,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.33,
+      "code": "5.33",
       "label1": "Protection des enregistrements",
       "label2": "Protection of records",
       "label3": "Schutz von Aufzeichnungen",
@@ -1538,7 +1538,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.34,
+      "code": "5.34",
       "label1": "Protection de la vie privée et des DCP",
       "label2": "Privacy and protection of PII",
       "label3": "Datenschutz und Schutz personenbezogener Daten (pbD)",
@@ -1556,7 +1556,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.35,
+      "code": "5.35",
       "label1": "Révision indépendante de la sécurité de l'information",
       "label2": "Independent review of information security",
       "label3": "Unabhängige Überprüfung der Informationssicherheit",
@@ -1610,7 +1610,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.36,
+      "code": "5.36",
       "label1": "Conformité aux politiques",
       "label2": "Compliance with policies, rules and standards for information security",
       "label3": "Einhaltung von Richtlinien, Vorschriften und Normen für die Informationssicherheit",
@@ -1668,7 +1668,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.37,
+      "code": "5.37",
       "label1": "Procédures d'exploitation documentées",
       "label2": "Documented operating procedures",
       "label3": "Dokumentierte Betriebsabläufe",
@@ -1831,7 +1831,7 @@
         "label3": "Personenbezogene Maßnahmen",
         "label4": "Mensgerichte beheersmaatregelen"
       },
-      "code": 6.1,
+      "code": "6.1",
       "label1": "Sélection des candidats",
       "label2": "Screening",
       "label3": "Sicherheitsüberprüfung",
@@ -1853,7 +1853,7 @@
         "label3": "Personenbezogene Maßnahmen",
         "label4": "Mensgerichte beheersmaatregelen"
       },
-      "code": 6.2,
+      "code": "6.2",
       "label1": "Termes et conditions du contrat de travail",
       "label2": "Terms and conditions of employment",
       "label3": "Beschäftigungs- und Vertragsbedingungen",
@@ -1882,7 +1882,7 @@
         "label3": "Personenbezogene Maßnahmen",
         "label4": "Mensgerichte beheersmaatregelen"
       },
-      "code": 6.3,
+      "code": "6.3",
       "label1": "Sensibilisation",
       "label2": "Information security awareness, education and training",
       "label3": "Informationssicherheitsbewusstsein, -ausbildung und -schulung",
@@ -2233,7 +2233,7 @@
         "label3": "Personenbezogene Maßnahmen",
         "label4": "Mensgerichte beheersmaatregelen"
       },
-      "code": 6.4,
+      "code": "6.4",
       "label1": "Processus disciplinaire",
       "label2": "Disciplinary process",
       "label3": "Maßregelungsprozess",
@@ -2442,7 +2442,7 @@
         "label3": "Personenbezogene Maßnahmen",
         "label4": "Mensgerichte beheersmaatregelen"
       },
-      "code": 6.5,
+      "code": "6.5",
       "label1": "Responsabilités après la fin ou le changement d’un emploi",
       "label2": "Responsibilities after termination or change of employment",
       "label3": "Verantwortlichkeiten bei Beendigung oder Änderung der Beschäftigung",
@@ -2460,7 +2460,7 @@
         "label3": "Personenbezogene Maßnahmen",
         "label4": "Mensgerichte beheersmaatregelen"
       },
-      "code": 6.6,
+      "code": "6.6",
       "label1": "Accords de confidentialité ou de non-divulgation",
       "label2": "Confidentiality or non-disclosure agreements",
       "label3": "Vertraulichkeits- oder Geheimhaltungsvereinbarungen",
@@ -2477,7 +2477,7 @@
         "label3": "Personenbezogene Maßnahmen",
         "label4": "Mensgerichte beheersmaatregelen"
       },
-      "code": 6.7,
+      "code": "6.7",
       "label1": "Travail à distance",
       "label2": "Remote working",
       "label3": "Remote-Arbeit",
@@ -2533,7 +2533,7 @@
         "label3": "Personenbezogene Maßnahmen",
         "label4": "Mensgerichte beheersmaatregelen"
       },
-      "code": 6.8,
+      "code": "6.8",
       "label1": "Déclaration des événements de sécurité de l'information",
       "label2": "Information security event reporting",
       "label3": "Meldung von Informationssicherheitsereignissen",
@@ -2561,7 +2561,7 @@
         "label3": "Physische Maßnahmen",
         "label4": "Fysieke beheersmaatregelen"
       },
-      "code": 7.1,
+      "code": "7.1",
       "label1": "Périmètres de sécurité physique",
       "label2": "Physical security perimeters",
       "label3": "Physische Sicherheitsperimeter",
@@ -2642,7 +2642,7 @@
         "label3": "Physische Maßnahmen",
         "label4": "Fysieke beheersmaatregelen"
       },
-      "code": 7.2,
+      "code": "7.2",
       "label1": "Les entrées physiques",
       "label2": "Physical entry",
       "label3": "Physischer Zutritt",
@@ -2686,7 +2686,7 @@
         "label3": "Physische Maßnahmen",
         "label4": "Fysieke beheersmaatregelen"
       },
-      "code": 7.3,
+      "code": "7.3",
       "label1": "Sécurisation des bureaux",
       "label2": "Securing offices, rooms and facilities",
       "label3": "Sichern von Büros, Räumen und Einrichtungen",
@@ -2734,7 +2734,7 @@
         "label3": "Physische Maßnahmen",
         "label4": "Fysieke beheersmaatregelen"
       },
-      "code": 7.4,
+      "code": "7.4",
       "label1": "Surveillance de la sécurité physique",
       "label2": "Physical security monitoring",
       "label3": "Physische Sicherheitsüberwachung",
@@ -2772,7 +2772,7 @@
         "label3": "Physische Maßnahmen",
         "label4": "Fysieke beheersmaatregelen"
       },
-      "code": 7.5,
+      "code": "7.5",
       "label1": "Protection contre les menaces physiques et environnementales",
       "label2": "Protecting against physical and environmental threats",
       "label3": "Schutz vor physischen und umweltbedingten Bedrohungen",
@@ -2928,7 +2928,7 @@
         "label3": "Physische Maßnahmen",
         "label4": "Fysieke beheersmaatregelen"
       },
-      "code": 7.6,
+      "code": "7.6",
       "label1": "Travail dans les zones sécurisées",
       "label2": "Working in secure areas",
       "label3": "Arbeiten in Sicherheitsbereichen",
@@ -2951,7 +2951,7 @@
         "label3": "Physische Maßnahmen",
         "label4": "Fysieke beheersmaatregelen"
       },
-      "code": 7.7,
+      "code": "7.7",
       "label1": "Bureau vide et écran vide",
       "label2": "Clear desk and clear screen",
       "label3": "Aufgeräumte Arbeitsumgebung und Bildschirmsperren",
@@ -2985,7 +2985,7 @@
         "label3": "Physische Maßnahmen",
         "label4": "Fysieke beheersmaatregelen"
       },
-      "code": 7.8,
+      "code": "7.8",
       "label1": "Emplacement et protection du matériel",
       "label2": "Equipment siting and protection",
       "label3": "Platzierung und Schutz von Geräten und Betriebsmitteln",
@@ -3121,7 +3121,7 @@
         "label3": "Physische Maßnahmen",
         "label4": "Fysieke beheersmaatregelen"
       },
-      "code": 7.9,
+      "code": "7.9",
       "label1": "Sécurité des actifs hors des locaux",
       "label2": "Security of assets off-premises",
       "label3": "Sicherheit von Werten außerhalb der Räumlichkeiten",
@@ -3147,7 +3147,7 @@
         "label3": "Physische Maßnahmen",
         "label4": "Fysieke beheersmaatregelen"
       },
-      "code": 7.10,
+      "code": "7.10",
       "label1": "Supports de stockage",
       "label2": "Storage media",
       "label3": "Speichermedien",
@@ -3198,7 +3198,7 @@
         "label3": "Physische Maßnahmen",
         "label4": "Fysieke beheersmaatregelen"
       },
-      "code": 7.11,
+      "code": "7.11",
       "label1": "Services supports",
       "label2": "Supporting utilities",
       "label3": "Versorgungseinrichtungen",
@@ -3281,7 +3281,7 @@
         "label3": "Physische Maßnahmen",
         "label4": "Fysieke beheersmaatregelen"
       },
-      "code": 7.12,
+      "code": "7.12",
       "label1": "Sécurité du câblage",
       "label2": "Cabling security",
       "label3": "Sicherheit der Verkabelung",
@@ -3303,7 +3303,7 @@
         "label3": "Physische Maßnahmen",
         "label4": "Fysieke beheersmaatregelen"
       },
-      "code": 7.13,
+      "code": "7.13",
       "label1": "Maintenance du matériel",
       "label2": "Equipment maintenance",
       "label3": "Instandhaltung von Geräten und Betriebsmitteln",
@@ -3398,7 +3398,7 @@
         "label3": "Physische Maßnahmen",
         "label4": "Fysieke beheersmaatregelen"
       },
-      "code": 7.14,
+      "code": "7.14",
       "label1": "Élimination ou recyclage sécurisé(e) du matériel",
       "label2": "Secure disposal or re-use of equipment",
       "label3": "Sichere Entsorgung oder Wiederverwendung von Geräten und Betriebsmitteln",
@@ -3458,7 +3458,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.1,
+      "code": "8.1",
       "label1": "Terminaux finaux des utilisateurs",
       "label2": "User endpoint devices",
       "label3": "Endpunktgeräte des Benutzers",
@@ -3492,7 +3492,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.2,
+      "code": "8.2",
       "label1": "Droits d'accès privilégiés",
       "label2": "Privileged access rights",
       "label3": "Privilegierte Zugangsrechte",
@@ -3612,7 +3612,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.3,
+      "code": "8.3",
       "label1": "Restrictions d'accès aux informations",
       "label2": "Information access restriction",
       "label3": "Informationszugangsbeschränkung",
@@ -3641,7 +3641,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.4,
+      "code": "8.4",
       "label1": "Accès aux codes source",
       "label2": "Access to source code",
       "label3": "Zugriff auf den Quellcode",
@@ -3658,7 +3658,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.5,
+      "code": "8.5",
       "label1": "Authentification sécurisée",
       "label2": "Secure authentication",
       "label3": "Sichere Authentisierung",
@@ -3709,7 +3709,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.6,
+      "code": "8.6",
       "label1": "Dimensionnement",
       "label2": "Capacity management",
       "label3": "Kapazitätssteuerung",
@@ -3784,7 +3784,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.7,
+      "code": "8.7",
       "label1": "Protection contre les programmes malveillants (malware)",
       "label2": "Protection against malware",
       "label3": "Schutz gegen Schadsoftware",
@@ -3874,7 +3874,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.8,
+      "code": "8.8",
       "label1": "Gestion des vulnérabilités techniques",
       "label2": "Management of technical vulnerabilities",
       "label3": "Handhabung von technischen Schwachstellen",
@@ -3932,7 +3932,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.9,
+      "code": "8.9",
       "label1": "Gestion des configurations",
       "label2": "Configuration management",
       "label3": "Konfigurationsmanagement",
@@ -3998,7 +3998,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.10,
+      "code": "8.10",
       "label1": "Suppression des informations",
       "label2": "Information deletion",
       "label3": "Löschung von Informationen",
@@ -4023,7 +4023,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.11,
+      "code": "8.11",
       "label1": "Masquage des données",
       "label2": "Data masking",
       "label3": "Datenmaskierung",
@@ -4040,7 +4040,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.12,
+      "code": "8.12",
       "label1": "Prévention de la fuite de données",
       "label2": "Data leakage prevention",
       "label3": "Verhinderung von Datenlecks",
@@ -4072,7 +4072,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.13,
+      "code": "8.13",
       "label1": "Sauvegarde des informations",
       "label2": "Information backup",
       "label3": "Sicherung von Informationen",
@@ -4158,7 +4158,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.14,
+      "code": "8.14",
       "label1": "Redondance des moyens de traitement de l'information",
       "label2": "Redundancy of information processing facilities",
       "label3": "Redundanz von informationsverarbeitenden Einrichtungen",
@@ -4176,7 +4176,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.15,
+      "code": "8.15",
       "label1": "Journalisation",
       "label2": "Logging",
       "label3": "Protokollierung",
@@ -4341,7 +4341,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.16,
+      "code": "8.16",
       "label1": "Activités de surveillance",
       "label2": "Monitoring activities",
       "label3": "Überwachung von Aktivitäten",
@@ -4444,7 +4444,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.17,
+      "code": "8.17",
       "label1": "Synchronisation des horloges",
       "label2": "Clock synchronization",
       "label3": "Uhrensynchronisation",
@@ -4464,7 +4464,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.18,
+      "code": "8.18",
       "label1": "Utilisation de programmes utilitaires à privilèges",
       "label2": "Use of privileged utility programs",
       "label3": "Gebrauch von Hilfsprogrammen mit privilegierten Rechten",
@@ -4498,7 +4498,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.19,
+      "code": "8.19",
       "label1": "Installation de logiciels sur des systèmes opérationnels",
       "label2": "Installation of software on operational systems",
       "label3": "Installation von Software auf Systemen in Betrieb",
@@ -4560,7 +4560,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.20,
+      "code": "8.20",
       "label1": "Sécurité des réseaux",
       "label2": "Networks security",
       "label3": "Netzwerksicherheit",
@@ -4665,7 +4665,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.21,
+      "code": "8.21",
       "label1": "Sécurité des services réseau",
       "label2": "Security of network services",
       "label3": "Sicherheit von Netzwerkdiensten",
@@ -4700,7 +4700,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.22,
+      "code": "8.22",
       "label1": "Cloisonnement des réseaux",
       "label2": "Segregation of networks",
       "label3": "Trennung von Netzwerken",
@@ -4762,7 +4762,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.23,
+      "code": "8.23",
       "label1": "Filtrage web",
       "label2": "Web filtering",
       "label3": "Webfilterung",
@@ -4785,7 +4785,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.24,
+      "code": "8.24",
       "label1": "Utilisation de la cryptographie",
       "label2": "Use of cryptography",
       "label3": "Verwendung von Kryptographie",
@@ -4849,7 +4849,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.25,
+      "code": "8.25",
       "label1": "Cycle de vie de développement sécurisé",
       "label2": "Secure development life cycle",
       "label3": "Lebenszyklus einer sicheren Entwicklung",
@@ -4879,7 +4879,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.26,
+      "code": "8.26",
       "label1": "Exigences de sécurité des applications",
       "label2": "Application security requirements",
       "label3": "Anforderungen an die Anwendungssicherheit",
@@ -4897,7 +4897,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.27,
+      "code": "8.27",
       "label1": "Principes d'ingénierie et d'architecture des système sécurisés",
       "label2": "Secure system architecture and engineering principles",
       "label3": "Sichere Systemarchitektur und Entwicklungsgrundsätze",
@@ -4915,7 +4915,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.28,
+      "code": "8.28",
       "label1": "Codage sécurisé",
       "label2": "Secure coding",
       "label3": "Sichere Codierung",
@@ -4935,7 +4935,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.29,
+      "code": "8.29",
       "label1": "Tests de sécurité dans le développement et l'acceptation",
       "label2": "Security testing in development and acceptance",
       "label3": "Sicherheitsprüfung bei Entwicklung und Abnahme",
@@ -5011,7 +5011,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.30,
+      "code": "8.30",
       "label1": "Développement externalisé",
       "label2": "Outsourced development",
       "label3": "Ausgegliederte Entwicklung",
@@ -5032,7 +5032,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.31,
+      "code": "8.31",
       "label1": "Séparation des environnements de développement",
       "label2": "Separation of development, test and production environments",
       "label3": "Trennung von Entwicklungs-, Test- und Produktionsumgebungen",
@@ -5052,7 +5052,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.32,
+      "code": "8.32",
       "label1": "Gestion des changements",
       "label2": "Change management",
       "label3": "Änderungssteuerung",
@@ -5170,7 +5170,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.33,
+      "code": "8.33",
       "label1": "Informations de test",
       "label2": "Test information",
       "label3": "Testdaten",
@@ -5187,7 +5187,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.34,
+      "code": "8.34",
       "label1": "Protection des systèmes d'information pendant les tests d'audit",
       "label2": "Protection of information systems during audit testing",
       "label3": "Schutz der Informationssysteme während Tests im Rahmen von Audits",
