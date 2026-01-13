@@ -64,11 +64,13 @@ final class AddIso27002v2022 extends AbstractMigration
             );
 
             // Fetch the category ID using referential_uuid and label2[English]
-            $categoryEnglishLabel = $category['label2'];
+            $quotedReferentialUuid = $adapter->quote($referentialUuid);
+            $quotedCategoryLabel   = $adapter->quote($category['label2']);
+
             $categoryRow = $this->fetchRow(
-                "SELECT id FROM soacategory 
-                WHERE referential_uuid = $adapter->quote($referentialUuid) 
-                AND label2 = $adapter->quote($categoryEnglishLabel)"
+                "SELECT id FROM soacategory
+                WHERE referential_uuid = $quotedReferentialUuid
+                AND label2 = $quotedCategoryLabel"
             );
             
             if (!$categoryRow) {
@@ -115,8 +117,9 @@ final class AddIso27002v2022 extends AbstractMigration
 
                 foreach ($amvs as $amvUuid) {
                     // Check if the AMV exists
+                    $quotedAmvUuid = $adapter->quote($amvUuid);
                     $exists = $this->fetchRow(
-                        "SELECT 1 FROM amvs WHERE uuid = " . $adapter->quote($amvUuid)
+                        "SELECT 1 FROM amvs WHERE uuid = $quotedAmvUuid"
                     );
 
                     if ($exists) {
