@@ -64,13 +64,10 @@ final class AddIso27002v2022 extends AbstractMigration
 
             // Fetch the category ID using referential_uuid and label2[English]
             $categoryRow = $this->fetchRow(
-                'SELECT id FROM soacategory WHERE referential_uuid = :referential_uuid AND label2 = :label2',
-                [
-                    'referential_uuid' => $referentialUuid,
-                    'label2'=> $category['label2'],
-                ]
+                'SELECT id FROM soacategory WHERE referential_uuid = ? AND label2 = ?',
+                [$referentialUuid, $category['label2']]
             );
-
+            
             if (!$categoryRow) {
                 throw new RuntimeException("Failed to fetch category ID for " . $category['label2']);
             }
@@ -116,8 +113,8 @@ final class AddIso27002v2022 extends AbstractMigration
                 foreach ($amvs as $amvUuid) {
                     // Check if the AMV exists
                     $exists = $this->fetchRow(
-                        'SELECT 1 FROM amvs WHERE uuid = :amv_uuid',
-                        ['amv_uuid' => $amvUuid]
+                        'SELECT 1 FROM amvs WHERE uuid = ?',
+                        [$amvUuid]
                     );
 
                     if ($exists) {
