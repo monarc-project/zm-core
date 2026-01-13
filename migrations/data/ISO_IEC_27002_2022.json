@@ -391,7 +391,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.1,
+      "code": 5.10,
       "label1": "Utilisation correcte des informations et autres actifs associés",
       "label2": "Acceptable use of information and other associated assets",
       "label3": "Zulässiger Gebrauch von Informationen und anderen damit verbundenen Werten",
@@ -991,7 +991,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.2,
+      "code": 5.20,
       "label1": "La sécurité de l'information dans les accords conclus avec les fournisseurs",
       "label2": "Addressing information security within supplier agreements",
       "label3": "Behandlung von Informationssicherheit in Lieferantenvereinbarungen",
@@ -1361,7 +1361,7 @@
         "label3": "Organisatorische Maßnahmen",
         "label4": "Organisatorische maatregelen"
       },
-      "code": 5.3,
+      "code": 5.30,
       "label1": "Préparation des TIC pour la continuité d'activité",
       "label2": "ICT readiness for business continuity",
       "label3": "IKT-Bereitschaft für Business-Continuity",
@@ -3147,7 +3147,7 @@
         "label3": "Physische Maßnahmen",
         "label4": "Fysieke beheersmaatregelen"
       },
-      "code": 7.1,
+      "code": 7.10,
       "label1": "Supports de stockage",
       "label2": "Storage media",
       "label3": "Speichermedien",
@@ -3998,7 +3998,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.1,
+      "code": 8.10,
       "label1": "Suppression des informations",
       "label2": "Information deletion",
       "label3": "Löschung von Informationen",
@@ -4560,7 +4560,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.2,
+      "code": 8.20,
       "label1": "Sécurité des réseaux",
       "label2": "Networks security",
       "label3": "Netzwerksicherheit",
@@ -5011,7 +5011,7 @@
         "label3": "Technologische Maßnahmen",
         "label4": "Technologische beheersmaatregelen"
       },
-      "code": 8.3,
+      "code": 8.30,
       "label1": "Développement externalisé",
       "label2": "Outsourced development",
       "label3": "Ausgegliederte Entwicklung",
