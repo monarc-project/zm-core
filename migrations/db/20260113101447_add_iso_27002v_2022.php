@@ -95,7 +95,7 @@ final class AddIso27002v2022 extends AbstractMigration
                     'uuid'        => $measure['uuid'],
                     'soacategory_id' => $categoryId,
                     'referential_uuid' => $referentialUuid,
-                    'code'        => $measure['code'],
+                    'code'        => (string)$measure['code'],
                     'label1'      => $measure['label1'],
                     'label2'      => $measure['label2'],
                     'label3'      => $measure['label3'],
