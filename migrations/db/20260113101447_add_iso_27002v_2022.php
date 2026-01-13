@@ -131,7 +131,9 @@ final class AddIso27002v2022 extends AbstractMigration
 
                 if (!empty($values)) {
                     $params['measure_id'] = $measure['uuid'];
+                    $this->output->writeln("Linking " . count($values) . " AMVs to measure " . $measure['uuid']);
                     $sql = 'INSERT INTO measures_amvs (measure_id, amv_id) VALUES ' . implode(', ', $values);
+                    $this->output->writeln("Executing SQL: " . $sql);
                     $this->execute($sql, $params);
                 }   
             }
