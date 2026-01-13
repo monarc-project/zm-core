@@ -7,6 +7,7 @@ final class AddIso27002v2022 extends AbstractMigration
 {
     public function up(): void
     {
+        $adapter = $this->getAdapter();
         $jsonPath = __DIR__ . '/../data/ISO_IEC_27002_2022.json';
         
         if (!file_exists($jsonPath)) {
@@ -63,9 +64,11 @@ final class AddIso27002v2022 extends AbstractMigration
             );
 
             // Fetch the category ID using referential_uuid and label2[English]
+            $categoryEnglishLabel = $category['label2'];
             $categoryRow = $this->fetchRow(
-                'SELECT id FROM soacategory WHERE referential_uuid = ? AND label2 = ?',
-                [$referentialUuid, $category['label2']]
+                "SELECT id FROM soacategory 
+                WHERE referential_uuid = $adapter->quote($referentialUuid) 
+                AND label2 = $adapter->quote($categoryEnglishLabel)"
             );
             
             if (!$categoryRow) {
@@ -113,8 +116,7 @@ final class AddIso27002v2022 extends AbstractMigration
                 foreach ($amvs as $amvUuid) {
                     // Check if the AMV exists
                     $exists = $this->fetchRow(
-                        'SELECT 1 FROM amvs WHERE uuid = ?',
-                        [$amvUuid]
+                        "SELECT 1 FROM amvs WHERE uuid = " . $adapter->quote($amvUuid)
                     );
 
                     if ($exists) {
