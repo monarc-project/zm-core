@@ -1,7 +1,7 @@
 {
   "uuid": "831acc76-2bcc-4376-836a-f6b0ee6df568",
   "label": "ISO/IEC 27002:2022",
-  "controls": [
+  "measures": [
     {
       "category": {
         "label1": "Mesures de sécurité organisationnelles",
