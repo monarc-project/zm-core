@@ -271,6 +271,10 @@ class ObjectService
 
     public function attachObjectToAnr(string $objectUuid, Entity\Anr $anr): Entity\MonarcObject
     {
+        if (empty($anr->getModel())) {
+            throw new Exception('The ANR has no model linked to validate the object.', 412);
+        }
+
         /** @var Entity\MonarcObject $monarcObject */
         $monarcObject = $this->monarcObjectTable->findByUuid($objectUuid);
 
@@ -281,6 +285,10 @@ class ObjectService
 
     public function attachCategoryObjectsToAnr(int $categoryId, Entity\Anr $anr): void
     {
+        if (empty($anr->getModel())) {
+            throw new Exception('The ANR has no model linked to validate the object.', 412);
+        }
+
         /** @var Entity\ObjectCategory $objectCategory */
         $objectCategory = $this->objectCategoryTable->findById($categoryId);
 

@@ -318,6 +318,9 @@ class AmvService implements PositionUpdatableServiceInterface
             foreach ($asset->getInstances() as $instance) {
                 /** @var Entity\Anr $anr */
                 $anr = $instance->getAnr();
+                if (empty($anr->getModel())) {
+                    continue;
+                }
                 if (!isset($modelsIds[$anr->getModel()->getId()])) {
                     // Don't remove asset of specific model if linked to asset by instance, in anr by object.
                     return false;
