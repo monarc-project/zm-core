@@ -51,7 +51,6 @@
         "doctrine/doctrine-orm-module": "^5.1",
         "ramsey/uuid-doctrine": "^1.5",
         "laminas/laminas-log": "^2.11",
-        "ocramius/proxy-manager": "^2.13",
         "laminas/laminas-mail": "^2.10",
         "laminas/laminas-i18n": "^2.9",
         "laminas/laminas-filter": "^2.9",
@@ -60,7 +59,8 @@
         "laminas/laminas-mvc-middleware": "^2.2",
         "robthree/twofactorauth": "^1.8",
         "laminas/laminas-i18n-resources": "^2.9",
-        "laminas/laminas-mvc-i18n": "^1.7"
+        "laminas/laminas-mvc-i18n": "^1.7",
+        "friendsofphp/proxy-manager-lts": "^1.0"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",
@@ -72,6 +72,9 @@
         }
     },
     "config": {
+        "platform": {
+            "php": "8.1.0"
+        },
         "allow-plugins": {
             "laminas/laminas-dependency-plugin": true
         }
