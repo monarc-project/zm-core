@@ -423,19 +423,23 @@ class AmvService implements PositionUpdatableServiceInterface
         }
 
         $threatModelsIds = [];
-        foreach (empty($threatModels) ? $amv->getThreat()->getModels() : $threatModels as $model) {
+        /** @var Entity\Threat $currentThreat */
+        $currentThreat = $amv->getThreat();
+        foreach (empty($threatModels) ? $currentThreat->getModels() : $threatModels as $model) {
             $threatModelsIds[] = \is_object($model) ? $model->getId() : $model;
         }
 
         $vulnerabilityModelsIds = [];
-        foreach (empty($vulnerabilityModels) ? $amv->getVulnerability()->getModels() : $vulnerabilityModels as $model) {
+        /** @var Entity\Vulnerability $currentVulnerability */
+        $currentVulnerability = $amv->getVulnerability();
+        foreach (empty($vulnerabilityModels) ? $currentVulnerability->getModels() : $vulnerabilityModels as $model) {
             $vulnerabilityModelsIds[] = \is_object($model) ? $model->getId() : $model;
         }
 
         $this->validateAmvCompliesControl(
             $asset->getMode(),
-            $threat === null ? $amv->getThreat()->getMode() : $threat->getMode(),
-            $vulnerability === null ? $amv->getVulnerability()->getMode() : $vulnerability->getMode(),
+            $threat === null ? $currentThreat->getMode() : $threat->getMode(),
+            $vulnerability === null ? $currentVulnerability->getMode() : $vulnerability->getMode(),
             $assetModelsIds,
             $threatModelsIds,
             $vulnerabilityModelsIds

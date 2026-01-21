@@ -114,6 +114,21 @@ class UserService
         $this->userTable->remove($user);
     }
 
+    public function resetTwoFactorAuth(int $userId): UserSuperClass
+    {
+        /** @var UserSuperClass $user */
+        $user = $this->userTable->findById($userId);
+
+        $user->setTwoFactorAuthEnabled(false)
+            ->setSecretKey('')
+            ->setRecoveryCodes([]);
+        $user->setUpdater($this->connectedUser->getEmail());
+
+        $this->userTable->save($user);
+
+        return $user;
+    }
+
     protected function getUpdatedUser(int $userId, array $data): UserSuperClass
     {
         /** @var UserSuperClass $user */
