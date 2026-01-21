@@ -24,7 +24,7 @@ jobs:
       run: composer validate
 
     - name: Install PHP dependencies
-      run: composer install --prefer-dist --no-progress --no-suggest --ignore-platform-req=php
+      run: composer install --prefer-dist --no-progress --no-suggest
 
     # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
     # Docs: https://getcomposer.org/doc/articles/scripts.md
