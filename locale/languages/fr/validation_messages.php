@@ -10,7 +10,7 @@ return [
     'The language index "%s" is not supported' => 'L\'index de langue "%s" n\'est pas pris en charge',
 
     // Monarc\Core\Validator\FieldValidator\PasswordStrength
-    'be at least 8 characters in length' => 'comporter au moins 8 caractères',
+    'be at least 12 characters in length' => 'comporter au moins 12 caractères',
     'contain at least one uppercase letter' => 'contient au moins une lettre majuscule',
     'contain at least one lowercase letter' => 'contenir au moins une lettre minuscule',
     'contain at least one digit character' => 'contenir au moins un caractère numérique',

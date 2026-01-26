@@ -18,7 +18,7 @@ class PasswordStrength extends AbstractValidator
     private const SPECIAL = 'special';
 
     protected $messageTemplates = [
-        self::LENGTH => 'be at least 8 characters in length',
+        self::LENGTH => 'be at least 12 characters in length',
         self::UPPER => 'contain at least one uppercase letter',
         self::LOWER => 'contain at least one lowercase letter',
         self::DIGIT => 'contain at least one digit character',
@@ -34,7 +34,7 @@ class PasswordStrength extends AbstractValidator
 
         $isValid = true;
 
-        if (\strlen($value) < 8) {
+        if (\strlen($value) < 12) {
             $this->error(self::LENGTH);
             $isValid = false;
         }

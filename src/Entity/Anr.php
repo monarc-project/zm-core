@@ -20,9 +20,9 @@ class Anr extends AnrSuperClass
     use Traits\DescriptionsEntityTrait;
 
     /**
-     * @var Model
+     * @var Model|null
      *
-     * @ORM\OneToOne(targetEntity="Model",  mappedBy="anr")
+     * @ORM\OneToOne(targetEntity="Model", mappedBy="anr")
      */
     protected $model;
 
@@ -66,14 +66,14 @@ class Anr extends AnrSuperClass
         return $newAnr->setLabels($anr->getLabels())->setDescriptions($anr->getDescriptions());
     }
 
-    public function setModel(Model $model): self
+    public function setModel(?Model $model): self
     {
         $this->model = $model;
 
         return $this;
     }
 
-    public function getModel(): Model
+    public function getModel(): ?Model
     {
         return $this->model;
     }
