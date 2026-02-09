@@ -136,5 +136,8 @@ final class AddIso27002v2022 extends AbstractMigration
                 }   
             }
         }
+
+        // Remove the old ISO 27002:2013 referential and its related data by the cascade delete.
+        $this->execute('DELETE FROM referentials WHERE uuid = "98ca84fb-db87-11e8-ac77-0800279aaa2b"');
     }
 }
