@@ -45,6 +45,7 @@
         "ext-json": "*",
         "ext-openssl": "*",
         "ext-intl": "*",
+        "ext-gettext": "*",
         "robmorgan/phinx": "^0.13.4",
         "laminas/laminas-mvc": "^3.1",
         "laminas/laminas-di": "^3.1",
