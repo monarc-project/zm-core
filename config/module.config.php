@@ -376,7 +376,7 @@ return [
     ],
 
     'cases' => [
-        'name' => 'Cases',
+        'name' => 'NC3',
         'mail' => 'info@monarc.lu',
     ],
 
@@ -425,15 +425,6 @@ return [
         'zh' => [
             'index' => 11,
             'label' => 'Chinese',
-        ],
-    ],
-
-    'dependencies' => [
-        'auto' => [
-            'aot' => [
-                'namespace' => 'AppAoT\Generated',
-                'directory' => __DIR__ . '/../src/var/dependencies',
-            ],
         ],
     ],
 ];
