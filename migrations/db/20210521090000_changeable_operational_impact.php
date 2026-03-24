@@ -125,7 +125,8 @@ class ChangeableOperationalImpact extends AbstractMigration
             INNER JOIN scales_comments sc ON sc.scale_id = s.id
             LEFT JOIN scales_impact_types sit ON sit.scale_id = s.id AND sit.id = sc.scale_type_impact_id
           WHERE s.type = 1 AND sit.type > 3 OR s.type = 2
-          GROUP BY s.anr_id, s.id, sit.id
+          GROUP BY s.anr_id, s.id, s.type, s.min, s.max,
+                   sit.id, sit.label1, sit.label2, sit.label3, sit.label4, sit.type, sit.is_hidden
           ORDER BY s.anr_id, s.id'
         );
 
