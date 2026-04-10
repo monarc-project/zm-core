@@ -48,7 +48,7 @@ class ObjectExportService
         $monarcObject = $this->monarcObjectTable->findByUuid($data['id']);
         if ($isForMosp) {
             $languageIndex = $this->connectedUser->getLanguage();
-            $languageCode = $this->configService->getLanguageCodes()[$languageIndex];
+            $languageCode = strtoupper($this->configService->getLanguageCodes()[$languageIndex]);
             $exportData = $this->prepareExportDataForMosp($monarcObject, $languageIndex, $languageCode);
         } else {
             $exportData = $this->prepareExportData($monarcObject);
