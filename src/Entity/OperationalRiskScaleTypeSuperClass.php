@@ -153,30 +153,35 @@ class OperationalRiskScaleTypeSuperClass
                 'en' => 'Reputation',
                 'de' => 'Ruf',
                 'nl' => 'Reputatie',
+                'pt' => 'Reputação',
             ],
             [
                 'fr' => 'Opérationnel',
                 'en' => 'Operational',
                 'de' => 'Einsatzbereit',
                 'nl' => 'Operationeel',
+                'pt' => 'Operacional',
             ],
             [
                 'fr' => 'Légal',
                 'en' => 'Legal',
                 'de' => 'Legal',
                 'nl' => 'Legaal',
+                'pt' => 'Legal',
             ],
             [
                 'fr' => 'Financier',
                 'en' => 'Financial',
                 'de' => 'Finanziellen',
                 'nl' => 'Financieel',
+                'pt' => 'Financeiro',
             ],
             [
                 'fr' => 'Personne',
                 'en' => 'Personal',
                 'de' => 'Person',
                 'nl' => 'Persoon',
+                'pt' => 'Pessoal',
             ],
         ];
     }

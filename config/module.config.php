@@ -375,56 +375,5 @@ return [
         'monarc_api_config',
     ],
 
-    'cases' => [
-        'name' => 'NC3',
-        'mail' => 'info@monarc.lu',
-    ],
-
     'defaultLanguageIndex' => 1,
-    'languages' => [
-        'fr' => [
-            'index' => 1,
-            'label' => 'Français',
-        ],
-        'en' => [
-            'index' => 2,
-            'label' => 'English',
-        ],
-        'de' => [
-            'index' => 3,
-            'label' => 'Deutsch',
-        ],
-        'nl' => [
-            'index' => 4,
-            'label' => 'Nederlands',
-        ],
-        'es' => [
-            'index' => 5,
-            'label' => 'Spanish',
-        ],
-        'ro' => [
-            'index' => 6,
-            'label' => 'Romanian',
-        ],
-        'it' => [
-            'index' => 7,
-            'label' => 'Italian',
-        ],
-        'ja' => [
-            'index' => 8,
-            'label' => 'Japanese',
-        ],
-        'pl' => [
-            'index' => 9,
-            'label' => 'Polish',
-        ],
-        'pt' => [
-            'index' => 10,
-            'label' => 'Portuguese',
-        ],
-        'zh' => [
-            'index' => 11,
-            'label' => 'Chinese',
-        ],
-    ],
 ];

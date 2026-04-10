@@ -154,6 +154,14 @@ class SoaScaleCommentSuperClass
                 ['scaleIndex' => 4, 'colour' => '#FFBC1C', 'isHidden' => false, 'comment' => 'Kwantitatief beheerst'],
                 ['scaleIndex' => 5, 'colour' => '#D6F107', 'isHidden' => false, 'comment' => 'Optimaliserend'],
             ],
+            'pt' => [
+                ['scaleIndex' => 0, 'colour' => '#FFFFFF', 'isHidden' => false, 'comment' => 'Inexistente'],
+                ['scaleIndex' => 1, 'colour' => '#FD661F', 'isHidden' => false, 'comment' => 'Inicial'],
+                ['scaleIndex' => 2, 'colour' => '#FD661F', 'isHidden' => false, 'comment' => 'Gerenciado'],
+                ['scaleIndex' => 3, 'colour' => '#FFBC1C', 'isHidden' => false, 'comment' => 'Definido'],
+                ['scaleIndex' => 4, 'colour' => '#FFBC1C', 'isHidden' => false, 'comment' => 'Gerenciado quantitativamente'],
+                ['scaleIndex' => 5, 'colour' => '#D6F107', 'isHidden' => false, 'comment' => 'Otimizado'],
+            ],
         ];
     }
 }
