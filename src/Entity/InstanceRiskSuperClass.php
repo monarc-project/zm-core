@@ -16,6 +16,7 @@ use Monarc\Core\Entity\Traits\UpdateEntityTrait;
  *      @ORM\Index(name="anr", columns={"anr_id"}),
  *      @ORM\Index(name="amv_id", columns={"amv_id"}),
  *      @ORM\Index(name="asset_id", columns={"asset_id"}),
+ *      @ORM\Index(name="risk_source_id", columns={"risk_source_id"}),
  *      @ORM\Index(name="threat_id", columns={"threat_id"}),
  *      @ORM\Index(name="vulnerability_id", columns={"vulnerability_id"}),
  *      @ORM\Index(name="instance_id", columns={"instance_id"})
@@ -65,6 +66,16 @@ class InstanceRiskSuperClass
      * })
      */
     protected $asset;
+
+    /**
+     * @var RiskSource|null
+     *
+     * @ORM\ManyToOne(targetEntity="RiskSource")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="risk_source_id", referencedColumnName="id", nullable=true, onDelete="SET NULL")
+     * })
+     */
+    protected $riskSource;
 
     /**
      * @var ThreatSuperClass
@@ -220,7 +231,8 @@ class InstanceRiskSuperClass
             ->setRiskIntegrity($sourceInstanceRisk->getRiskIntegrity())
             ->setRiskAvailability($sourceInstanceRisk->getRiskAvailability())
             ->setCacheMaxRisk($sourceInstanceRisk->getCacheMaxRisk())
-            ->setCacheTargetedRisk($sourceInstanceRisk->getCacheTargetedRisk());
+            ->setCacheTargetedRisk($sourceInstanceRisk->getCacheTargetedRisk())
+            ->setRiskSource($sourceInstanceRisk->getRiskSource());
     }
 
     public function getId()
@@ -507,6 +519,18 @@ class InstanceRiskSuperClass
     public function setCommentAfter(string $commentAfter): self
     {
         $this->commentAfter = $commentAfter;
+
+        return $this;
+    }
+    
+    public function getRiskSource(): ?RiskSourceSuperClass
+    {
+        return $this->riskSource;
+    }
+
+    public function setRiskSource(?RiskSourceSuperClass $riskSource): self
+    {
+        $this->riskSource = $riskSource;
 
         return $this;
     }

@@ -159,6 +159,7 @@ return [
             Service\ObjectCategoryService::class => AutowireFactory::class,
             Service\ObjectObjectService::class => AutowireFactory::class,
             Service\PasswordService::class => AutowireFactory::class,
+            Service\RiskSourceService::class => AutowireFactory::class,
             Service\ScaleService::class => AutowireFactory::class,
             Service\ScaleCommentService::class => AutowireFactory::class,
             Service\ScaleImpactTypeService::class => AutowireFactory::class,
@@ -209,6 +210,7 @@ return [
             Table\OperationalInstanceRiskScaleTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\PasswordTokenTable::class => Table\Factory\ClientEntityManagerFactory::class,
             Table\ReferentialTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\RiskSourceTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\RolfTagTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\RolfRiskTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\ScaleTable::class => Table\Factory\CoreEntityManagerFactory::class,
@@ -306,6 +308,10 @@ return [
             InputValidator\SoaCategory\PostSoaCategoryDataInputValidator::class =>
                 ReflectionBasedAbstractFactory::class,
             InputValidator\Referential\PostReferentialDataInputValidator::class =>
+                ReflectionBasedAbstractFactory::class,
+            InputValidator\RiskSource\PostRiskSourceDataInputValidator::class =>
+                ReflectionBasedAbstractFactory::class,
+            InputValidator\RiskSource\PatchRiskSourceDataInputValidator::class =>
                 ReflectionBasedAbstractFactory::class,
             InputValidator\RolfTag\PostRolfTagDataInputValidator::class => static function (
                 Containerinterface $container

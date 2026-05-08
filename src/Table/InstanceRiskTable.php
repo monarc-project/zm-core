@@ -45,6 +45,7 @@ class InstanceRiskTable extends AbstractTable
         $queryBuilder = $this->getRepository()->createQueryBuilder('ir')
             ->innerJoin('ir.instance', 'i')
             ->innerJoin('i.object', 'o')
+            ->leftJoin('ir.riskSource', 'rs')
             ->innerJoin('ir.threat', 't')
             ->innerJoin('ir.vulnerability', 'v')
             ->innerJoin('ir.asset', 'a')
@@ -81,6 +82,7 @@ class InstanceRiskTable extends AbstractTable
         if (!empty($params['keywords'])) {
             $queryBuilder->andWhere(
                 'a.label' . $languageIndex . ' LIKE :keywords OR ' .
+                'rs.label LIKE :keywords OR ' .
                 't.label' . $languageIndex . ' LIKE :keywords OR ' .
                 'v.label' . $languageIndex . ' LIKE :keywords OR ' .
                 'i.name' . $languageIndex . ' LIKE :keywords OR ' .
@@ -103,6 +105,9 @@ class InstanceRiskTable extends AbstractTable
                 break;
             case 'auditOrder':
                 $queryBuilder->orderBy('amv.position', $orderDirection);
+                break;
+            case 'riskSource':
+                $queryBuilder->orderBy('rs.label', $orderDirection);
                 break;
             case 'c_impact':
                 $queryBuilder->orderBy('i.c', $orderDirection);

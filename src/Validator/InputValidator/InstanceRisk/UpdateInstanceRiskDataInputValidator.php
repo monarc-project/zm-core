@@ -56,6 +56,25 @@ class UpdateInstanceRiskDataInputValidator extends AbstractInputValidator
                 'validators' => [],
             ],
             [
+                'name' => 'riskSourceId',
+                'required' => false,
+                'filters' => [
+                    [
+                        'name' => Callback::class,
+                        'options' => [
+                            'callback' => function ($value) {
+                                if ($value === null || $value === '') {
+                                    return null;
+                                }
+
+                                return (int)$value;
+                            },
+                        ],
+                    ],
+                ],
+                'validators' => [],
+            ],
+            [
                 'name' => 'comment',
                 'required' => false,
                 'filters' => [
