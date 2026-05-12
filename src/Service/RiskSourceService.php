@@ -8,14 +8,10 @@
 namespace Monarc\Core\Service;
 
 use Monarc\Core\Entity\RiskSource;
-use Monarc\Core\Entity\Translation;
-use Monarc\Core\Entity\TranslationSuperClass;
 use Monarc\Core\Entity\UserSuperClass;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\InputFormatter\FormattedInputParams;
 use Monarc\Core\Table\RiskSourceTable;
-use Monarc\Core\Table\TranslationTable;
-use Ramsey\Uuid\Uuid;
 
 class RiskSourceService
 {
@@ -23,7 +19,6 @@ class RiskSourceService
 
     public function __construct(
         private RiskSourceTable $riskSourceTable,
-        private TranslationTable $translationTable,
         private ConfigService $configService,
         ConnectedUserService $connectedUserService
     ) {
@@ -54,26 +49,12 @@ class RiskSourceService
     public function create(array $data): RiskSource
     {
         $labels = $this->normalizeLabels($data);
-        $labelTranslationKey = Uuid::uuid4()->toString();
 
         $riskSource = (new RiskSource())
-            ->setLabelTranslationKey($labelTranslationKey)
-            ->setLabel($this->getPrimaryLabel($labels, trim((string)$data['label'])))
+            ->setLabelTranslations($labels)
             ->setIsDefault(false)
             ->setIsActive((bool)($data['isActive'] ?? true))
             ->setCreator($this->connectedUser->getEmail());
-
-        foreach ($labels as $languageCode => $label) {
-            $this->translationTable->save(
-                (new Translation())
-                    ->setType(TranslationSuperClass::RISK_SOURCE)
-                    ->setKey($labelTranslationKey)
-                    ->setLang($languageCode)
-                    ->setValue($label)
-                    ->setCreator($this->connectedUser->getEmail()),
-                false
-            );
-        }
 
         $this->riskSourceTable->save($riskSource);
 
@@ -83,36 +64,12 @@ class RiskSourceService
     public function update(int $id, array $data): RiskSource
     {
         $riskSource = $this->get($id);
-
-        if (isset($data['label'])) {
-            $riskSource->setLabel(trim((string)$data['label']));
-        }
         if (isset($data['isActive'])) {
             $riskSource->setIsActive((bool)$data['isActive']);
         }
         if (!empty($data['labels']) || isset($data['label'])) {
             $labels = $this->normalizeLabels($data);
-            if ($riskSource->getLabelTranslationKey() === '') {
-                $riskSource->setLabelTranslationKey(Uuid::uuid4()->toString());
-            }
-
-            foreach ($labels as $languageCode => $label) {
-                $translation = $this->translationTable->findByTypeKeyAndLanguage(
-                    TranslationSuperClass::RISK_SOURCE,
-                    $riskSource->getLabelTranslationKey(),
-                    $languageCode
-                );
-                if ($translation === null) {
-                    $translation = (new Translation())
-                        ->setType(TranslationSuperClass::RISK_SOURCE)
-                        ->setKey($riskSource->getLabelTranslationKey())
-                        ->setLang($languageCode);
-                }
-                $translation->setValue($label)->setUpdater($this->connectedUser->getEmail());
-                $this->translationTable->save($translation, false);
-            }
-
-            $riskSource->setLabel($this->getPrimaryLabel($labels, $riskSource->getLabel()));
+            $riskSource->setLabelTranslations($labels);
         }
 
         $riskSource->setUpdater($this->connectedUser->getEmail());
@@ -125,8 +82,12 @@ class RiskSourceService
     public function delete(int $id): void
     {
         $riskSource = $this->get($id);
-        if ($riskSource->getLabelTranslationKey() !== '') {
-            $this->translationTable->deleteListByKeys([$riskSource->getLabelTranslationKey()]);
+
+        if ($riskSource->isDefault()) {
+            throw new Exception('Default risk sources cannot be removed.', 412);
+        }
+        if ($this->riskSourceTable->isUsedInRisks($riskSource)) {
+            throw new Exception('Risk source linked to instance risks cannot be removed.', 412);
         }
 
         $this->riskSourceTable->remove($riskSource);
@@ -139,24 +100,12 @@ class RiskSourceService
     public function getDisplayLabelsByRiskSourceId(array $riskSources): array
     {
         $labelsById = [];
-        $keys = [];
         foreach ($riskSources as $riskSource) {
-            if ($riskSource->getLabelTranslationKey() !== '') {
-                $keys[] = $riskSource->getLabelTranslationKey();
-            }
-        }
-
-        $translations = $this->translationTable->findByTypeAndLanguageIndexedByKeys(
-            TranslationSuperClass::RISK_SOURCE,
-            $keys,
-            $this->getCurrentLanguageCode()
-        );
-
-        foreach ($riskSources as $riskSource) {
-            $translationKey = $riskSource->getLabelTranslationKey();
-            $labelsById[$riskSource->getId()] = $translationKey !== ''
-                ? ($translations[$translationKey]?->getValue() ?? $riskSource->getLabel())
-                : $riskSource->getLabel();
+            $labelsById[$riskSource->getId()] = $this->resolveDisplayValue(
+                $riskSource->getLabelTranslations(),
+                $riskSource->getLabel(),
+                $this->getCurrentLanguageCode()
+            );
         }
 
         return $labelsById;
@@ -164,28 +113,16 @@ class RiskSourceService
 
     public function getDisplayLabel(RiskSource $riskSource): string
     {
-        return $this->getDisplayLabelsByRiskSourceId([$riskSource])[$riskSource->getId()] ?? $riskSource->getLabel();
+        return $this->resolveDisplayValue(
+            $riskSource->getLabelTranslations(),
+            $riskSource->getLabel(),
+            $this->getCurrentLanguageCode()
+        );
     }
 
     public function getLabels(RiskSource $riskSource): array
     {
-        $labels = [];
-        foreach ($this->getSupportedLanguageCodes() as $languageCode) {
-            $labels[$languageCode] = $riskSource->getLabel();
-        }
-
-        if ($riskSource->getLabelTranslationKey() === '') {
-            return $labels;
-        }
-
-        foreach ($this->translationTable->findByTypeAndKey(
-            TranslationSuperClass::RISK_SOURCE,
-            $riskSource->getLabelTranslationKey()
-        ) as $translation) {
-            $labels[$translation->getLang()] = $translation->getValue();
-        }
-
-        return $labels;
+        return $this->getLabelsWithFallback($riskSource->getLabelTranslations(), $riskSource->getLabel());
     }
 
     private function normalizeLabels(array $data): array
@@ -207,11 +144,11 @@ class RiskSourceService
         return $labels;
     }
 
-    private function getPrimaryLabel(array $labels, string $fallbackLabel): string
+    private function resolveDisplayValue(array $labels, string $fallbackLabel, ?string $languageCode = null): string
     {
-        $currentLanguageCode = $this->getCurrentLanguageCode();
-        if (isset($labels[$currentLanguageCode])) {
-            return $labels[$currentLanguageCode];
+        $languageCode ??= $this->getCurrentLanguageCode();
+        if (isset($labels[$languageCode]) && $labels[$languageCode] !== '') {
+            return $labels[$languageCode];
         }
 
         $defaultLanguageCode = $this->configService
@@ -225,6 +162,20 @@ class RiskSourceService
         }
 
         return $fallbackLabel;
+    }
+
+    /**
+     * @param array<string, string> $labels
+     * @return array<string, string>
+     */
+    private function getLabelsWithFallback(array $labels, string $fallbackLabel): array
+    {
+        $localizedLabels = [];
+        foreach ($this->getSupportedLanguageCodes() as $languageCode) {
+            $localizedLabels[$languageCode] = $this->resolveDisplayValue($labels, $fallbackLabel, $languageCode);
+        }
+
+        return $localizedLabels;
     }
 
     private function getCurrentLanguageCode(): string

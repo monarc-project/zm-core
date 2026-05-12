@@ -209,6 +209,7 @@ return [
             Table\OperationalRiskScaleCommentTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\OperationalInstanceRiskScaleTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\PasswordTokenTable::class => Table\Factory\ClientEntityManagerFactory::class,
+            Table\ReassessmentTriggerTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\ReferentialTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\RiskSourceTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\RolfTagTable::class => Table\Factory\CoreEntityManagerFactory::class,
@@ -230,6 +231,7 @@ return [
             Service\ConnectedUserService::class => AutowireFactory::class,
             /* Translation */
             Service\TranslateService::class => Service\TranslateServiceFactory::class,
+            Service\ReassessmentTriggerService::class => AutowireFactory::class,
 
             /* Validators */
             InputValidator\InputValidationTranslator::class => ReflectionBasedAbstractFactory::class,
@@ -308,6 +310,10 @@ return [
             InputValidator\SoaCategory\PostSoaCategoryDataInputValidator::class =>
                 ReflectionBasedAbstractFactory::class,
             InputValidator\Referential\PostReferentialDataInputValidator::class =>
+                ReflectionBasedAbstractFactory::class,
+            InputValidator\ReassessmentTrigger\PostReassessmentTriggerDataInputValidator::class =>
+                ReflectionBasedAbstractFactory::class,
+            InputValidator\ReassessmentTrigger\PatchReassessmentTriggerDataInputValidator::class =>
                 ReflectionBasedAbstractFactory::class,
             InputValidator\RiskSource\PostRiskSourceDataInputValidator::class =>
                 ReflectionBasedAbstractFactory::class,

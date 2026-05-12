@@ -15,8 +15,7 @@ use Monarc\Core\Entity\Traits\UpdateEntityTrait;
  * @ORM\Table(
  *     name="risk_sources",
  *     indexes={
- *         @ORM\Index(name="risk_sources_is_active_indx", columns={"is_active"}),
- *         @ORM\Index(name="risk_sources_label_indx", columns={"label"})
+ *         @ORM\Index(name="risk_sources_is_active_indx", columns={"is_active"})
  *     }
  * )
  * @ORM\MappedSuperclass
@@ -34,7 +33,7 @@ class RiskSourceSuperClass
      */
     protected int $id;
 
-    /** @ORM\Column(name="label", type="string", length=255, nullable=false) */
+    /** @ORM\Column(name="label", type="text", nullable=false) */
     protected string $label;
 
     /** @ORM\Column(name="is_default", type="boolean", nullable=false, options={"default": 0}) */
@@ -82,5 +81,58 @@ class RiskSourceSuperClass
         $this->isActive = $isActive;
 
         return $this;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function getLabelTranslations(): array
+    {
+        return $this->decodeTranslations($this->label);
+    }
+
+    /**
+     * @param array<string, string> $labelTranslations
+     */
+    public function setLabelTranslations(array $labelTranslations): self
+    {
+        $this->label = $this->encodeTranslations($labelTranslations);
+
+        return $this;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function decodeTranslations(string $value): array
+    {
+        if ($value === '') {
+            return [];
+        }
+
+        $decoded = json_decode($value, true);
+        if (!is_array($decoded)) {
+            return [];
+        }
+
+        $translations = [];
+        foreach ($decoded as $languageCode => $translationValue) {
+            $translations[(string)$languageCode] = trim((string)$translationValue);
+        }
+
+        return $translations;
+    }
+
+    /**
+     * @param array<string, string> $translations
+     */
+    private function encodeTranslations(array $translations): string
+    {
+        $normalizedTranslations = [];
+        foreach ($translations as $languageCode => $translationValue) {
+            $normalizedTranslations[(string)$languageCode] = trim((string)$translationValue);
+        }
+
+        return json_encode($normalizedTranslations, JSON_THROW_ON_ERROR);
     }
 }
