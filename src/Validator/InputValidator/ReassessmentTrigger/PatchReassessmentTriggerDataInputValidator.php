@@ -54,6 +54,24 @@ class PatchReassessmentTriggerDataInputValidator extends AbstractInputValidator
                 ],
             ],
             [
+                'name' => 'monitoringApproach',
+                'required' => false,
+                'allow_empty' => true,
+                'filters' => [
+                    [
+                        'name' => StringTrim::class,
+                    ],
+                ],
+                'validators' => [
+                    [
+                        'name' => StringLength::class,
+                        'options' => [
+                            'min' => 1,
+                        ],
+                    ],
+                ],
+            ],
+            [
                 'name' => 'isActive',
                 'required' => false,
                 'allow_empty' => true,

@@ -54,10 +54,12 @@ class ReassessmentTriggerService
         }
 
         $descriptionTranslations = $this->normalizeTranslations($data, 'description', true);
+        $monitoringApproachTranslations = $this->normalizeTranslations($data, 'monitoringApproach', true);
 
         $reassessmentTrigger = (new ReassessmentTrigger())
             ->setTriggerType($this->encodeTranslations($triggerTypeTranslations))
             ->setDescription($this->encodeTranslations($descriptionTranslations))
+            ->setMonitoringApproachTranslations($monitoringApproachTranslations)
             ->setIsActive((bool)($data['isActive'] ?? true))
             ->setCreator($this->connectedUser->getEmail());
 
@@ -82,6 +84,11 @@ class ReassessmentTriggerService
         if (array_key_exists('descriptions', $data) || array_key_exists('description', $data)) {
             $reassessmentTrigger->setDescription(
                 $this->encodeTranslations($this->normalizeTranslations($data, 'description', true))
+            );
+        }
+        if (array_key_exists('monitoringApproaches', $data) || array_key_exists('monitoringApproach', $data)) {
+            $reassessmentTrigger->setMonitoringApproachTranslations(
+                $this->normalizeTranslations($data, 'monitoringApproach', true)
             );
         }
 
@@ -124,6 +131,7 @@ class ReassessmentTriggerService
                 'id' => $reassessmentTrigger->getId(),
                 'triggerType' => $this->getDisplayTriggerType($reassessmentTrigger, $languageCode),
                 'description' => $this->getDisplayDescription($reassessmentTrigger, $languageCode),
+                'monitoringApproach' => $this->getDisplayMonitoringApproach($reassessmentTrigger, $languageCode),
                 'isActive' => $reassessmentTrigger->isActive(),
                 'position' => $reassessmentTrigger->getPosition(),
             ];
@@ -169,6 +177,28 @@ class ReassessmentTriggerService
         return $this->getTranslationsWithFallback(
             $reassessmentTrigger->getDescriptionTranslations(),
             $reassessmentTrigger->getDescription()
+        );
+    }
+
+    public function getDisplayMonitoringApproach(
+        ReassessmentTrigger $reassessmentTrigger,
+        ?string $languageCode = null
+    ): string {
+        return $this->resolveDisplayValue(
+            $reassessmentTrigger->getMonitoringApproachTranslations(),
+            $reassessmentTrigger->getMonitoringApproach() ?? '',
+            $languageCode
+        );
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function getMonitoringApproaches(ReassessmentTrigger $reassessmentTrigger): array
+    {
+        return $this->getTranslationsWithFallback(
+            $reassessmentTrigger->getMonitoringApproachTranslations(),
+            $reassessmentTrigger->getMonitoringApproach() ?? ''
         );
     }
 

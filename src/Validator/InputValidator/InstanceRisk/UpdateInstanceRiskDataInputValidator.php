@@ -10,7 +10,9 @@ namespace Monarc\Core\Validator\InputValidator\InstanceRisk;
 use Laminas\Filter\Callback;
 use Laminas\Filter\StringTrim;
 use Laminas\Filter\ToInt;
+use Laminas\Validator\Date;
 use Laminas\Validator\InArray;
+use Laminas\Validator\StringLength;
 use Monarc\Core\Entity\InstanceRiskSuperClass;
 use Monarc\Core\Validator\InputValidator\AbstractInputValidator;
 
@@ -83,6 +85,59 @@ class UpdateInstanceRiskDataInputValidator extends AbstractInputValidator
                     ],
                 ],
                 'validators' => [],
+            ],
+            [
+                'name' => 'lastReviewDate',
+                'required' => false,
+                'allow_empty' => true,
+                'filters' => [
+                    [
+                        'name' => Callback::class,
+                        'options' => [
+                            'callback' => static function ($value): ?string {
+                                $value = trim((string)$value);
+
+                                return $value === '' ? null : $value;
+                            },
+                        ],
+                    ],
+                ],
+                'validators' => [
+                    [
+                        'name' => Date::class,
+                        'options' => [
+                            'format' => 'Y-m-d',
+                        ],
+                    ],
+                ],
+            ],
+            [
+                'name' => 'reviewFrequency',
+                'required' => false,
+                'allow_empty' => true,
+                'filters' => [
+                    [
+                        'name' => StringTrim::class,
+                    ],
+                    [
+                        'name' => Callback::class,
+                        'options' => [
+                            'callback' => static function ($value): ?string {
+                                $value = trim((string)$value);
+
+                                return $value === '' ? null : $value;
+                            },
+                        ],
+                    ],
+                ],
+                'validators' => [
+                    [
+                        'name' => StringLength::class,
+                        'options' => [
+                            'max' => 50,
+                        ],
+                    ],
+                ],
             ],
             [
                 'name' => 'kindOfMeasure',

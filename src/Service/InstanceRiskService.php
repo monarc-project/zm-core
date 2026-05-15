@@ -7,7 +7,9 @@
 
 namespace Monarc\Core\Service;
 
+use DateTime;
 use Monarc\Core\Entity;
+use Monarc\Core\Exception\Exception;
 use Monarc\Core\Service\Traits\ImpactVerificationTrait;
 use Monarc\Core\Table;
 use Monarc\Core\Service\Traits\RiskCalculationTrait;
@@ -100,6 +102,8 @@ class InstanceRiskService
                     'comment' => $instanceRisk->getComment(),
                     'scope' => $object->getScope(),
                     'kindOfMeasure' => $instanceRisk->getKindOfMeasure(),
+                    'lastReviewDate' => $instanceRisk->getLastReviewDate()?->format('Y-m-d'),
+                    'reviewFrequency' => $instanceRisk->getReviewFrequency(),
                     't' => $instanceRisk->isTreated(),
                     'tid' => $threat->getUuid(),
                     'vid' => $vulnerability->getUuid(),
@@ -238,6 +242,13 @@ class InstanceRiskService
                     : $this->riskSourceTable->findById((int)$riskSourceId)
             );
         }
+        if (array_key_exists('lastReviewDate', $data)) {
+            $instanceRisk->setLastReviewDate($this->prepareLastReviewDate($instanceRisk, $data['lastReviewDate']));
+        }
+        if (array_key_exists('reviewFrequency', $data)) {
+            $reviewFrequency = trim((string)$data['reviewFrequency']);
+            $instanceRisk->setReviewFrequency($reviewFrequency === '' ? null : $reviewFrequency);
+        }
         if (isset($data['reductionAmount'])) {
             $instanceRisk->setReductionAmount((int)$data['reductionAmount']);
         }
@@ -258,5 +269,27 @@ class InstanceRiskService
         $instanceRisk->setUpdater($this->connectedUser->getEmail());
 
         $this->recalculateRiskRates($instanceRisk);
+    }
+
+    private function prepareLastReviewDate(Entity\InstanceRisk $instanceRisk, mixed $lastReviewDate): ?DateTime
+    {
+        if ($lastReviewDate === null || $lastReviewDate === '') {
+            return null;
+        }
+
+        $normalizedDate = DateTime::createFromFormat('Y-m-d', (string)$lastReviewDate);
+        if ($normalizedDate === false) {
+            throw new Exception('Invalid last review date format.', 412);
+        }
+
+        $currentLastReviewDate = $instanceRisk->getLastReviewDate();
+        if ($currentLastReviewDate !== null) {
+            $normalizedCurrentDate = DateTime::createFromFormat('Y-m-d', $currentLastReviewDate->format('Y-m-d'));
+            if ($normalizedCurrentDate !== false && $normalizedDate <= $normalizedCurrentDate) {
+                throw new Exception('Last review date must be later than the existing last review date.', 412);
+            }
+        }
+
+        return $normalizedDate;
     }
 }

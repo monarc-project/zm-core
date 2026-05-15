@@ -45,6 +45,9 @@ class ReassessmentTriggerSuperClass implements PositionedEntityInterface, Proper
     /** @ORM\Column(name="description", type="text", nullable=false) */
     protected string $description;
 
+    /** @ORM\Column(name="monitoring_approach", type="text", nullable=true) */
+    protected ?string $monitoringApproach = null;
+
     /** @ORM\Column(name="is_active", type="boolean", nullable=false, options={"default": 1}) */
     protected bool $isActive = true;
 
@@ -88,6 +91,18 @@ class ReassessmentTriggerSuperClass implements PositionedEntityInterface, Proper
     public function setIsActive(bool $isActive): self
     {
         $this->isActive = $isActive;
+
+        return $this;
+    }
+
+    public function getMonitoringApproach(): ?string
+    {
+        return $this->monitoringApproach;
+    }
+
+    public function setMonitoringApproach(?string $monitoringApproach): self
+    {
+        $this->monitoringApproach = $monitoringApproach;
 
         return $this;
     }
@@ -141,6 +156,26 @@ class ReassessmentTriggerSuperClass implements PositionedEntityInterface, Proper
     public function setDescriptionTranslations(array $descriptionTranslations): self
     {
         $this->description = $this->encodeTranslations($descriptionTranslations);
+
+        return $this;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function getMonitoringApproachTranslations(): array
+    {
+        return $this->decodeTranslations($this->monitoringApproach);
+    }
+
+    /**
+     * @param array<string, string> $monitoringApproachTranslations
+     */
+    public function setMonitoringApproachTranslations(array $monitoringApproachTranslations): self
+    {
+        $this->monitoringApproach = $monitoringApproachTranslations === []
+            ? null
+            : $this->encodeTranslations($monitoringApproachTranslations);
 
         return $this;
     }

@@ -14,6 +14,7 @@ class GetReassessmentTriggersInputFormatter extends AbstractInputFormatter
 {
     protected static array $allowedSearchFields = [
         'description',
+        'monitoringApproach',
         'triggerType',
     ];
 

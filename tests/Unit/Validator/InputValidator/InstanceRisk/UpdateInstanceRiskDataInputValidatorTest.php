@@ -21,7 +21,7 @@ class UpdateInstanceRiskDataInputValidatorTest extends TestCase
     /**
      * @covers UpdateInstanceRiskDataInputValidator::getRules
      */
-    public function testValidatorCastsRiskSourceIdentifiersAndAllowsNull(): void
+    public function testValidatorCastsRiskSourceIdentifiersAndFormatsReviewFields(): void
     {
         $validator = new UpdateInstanceRiskDataInputValidator(
             ['defaultLanguageIndex' => 1],
@@ -32,6 +32,8 @@ class UpdateInstanceRiskDataInputValidatorTest extends TestCase
             'riskSourceId' => '5',
             'threatRate' => '3',
             'vulnerabilityRate' => '-',
+            'lastReviewDate' => '2026-05-15',
+            'reviewFrequency' => ' Quarterly ',
         ]));
 
         $validatedData = $validator->getValidData();
@@ -39,6 +41,8 @@ class UpdateInstanceRiskDataInputValidatorTest extends TestCase
         self::assertSame(5, $validatedData['riskSourceId']);
         self::assertSame(3, $validatedData['threatRate']);
         self::assertSame(-1, $validatedData['vulnerabilityRate']);
+        self::assertSame('2026-05-15', $validatedData['lastReviewDate']);
+        self::assertSame('Quarterly', $validatedData['reviewFrequency']);
     }
 
     private function createTranslator(): InputValidationTranslator

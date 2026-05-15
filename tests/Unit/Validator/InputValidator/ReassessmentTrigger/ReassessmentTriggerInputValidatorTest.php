@@ -36,17 +36,21 @@ class ReassessmentTriggerInputValidatorTest extends TestCase
     /**
      * @covers \Monarc\Core\Validator\InputValidator\ReassessmentTrigger\PostReassessmentTriggerDataInputValidator::getRules
      */
-    public function testPostValidatorRejectsUnknownTriggerType(): void
+    public function testPostValidatorAllowsOptionalMonitoringApproach(): void
     {
         $validator = new PostReassessmentTriggerDataInputValidator(
             ['defaultLanguageIndex' => 1],
             $this->createTranslator()
         );
 
-        self::assertFalse($validator->isValid([
+        self::assertTrue($validator->isValid([
             'triggerType' => 'made_up_type',
-            'description' => 'Invalid trigger type',
+            'description' => 'Valid trigger type',
+            'monitoringApproach' => '  Monitor regulatory updates and supplier notices.  ',
         ]));
+
+        $validatedData = $validator->getValidData();
+        self::assertSame('Monitor regulatory updates and supplier notices.', $validatedData['monitoringApproach']);
     }
 
     /**
@@ -63,12 +67,14 @@ class ReassessmentTriggerInputValidatorTest extends TestCase
             'triggerType' => ' ',
             'isActive' => '0',
             'position' => '4',
+            'monitoringApproach' => '  SOC alerts  ',
         ]));
 
         $validatedData = $validator->getValidData();
         self::assertNull($validatedData['triggerType']);
         self::assertFalse($validatedData['isActive']);
         self::assertSame(4, $validatedData['position']);
+        self::assertSame('SOC alerts', $validatedData['monitoringApproach']);
     }
 
     private function createTranslator(): InputValidationTranslator

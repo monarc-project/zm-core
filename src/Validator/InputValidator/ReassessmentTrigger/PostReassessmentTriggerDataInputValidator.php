@@ -55,6 +55,27 @@ class PostReassessmentTriggerDataInputValidator extends AbstractInputValidator
                 ],
             ],
             [
+                'name' => 'monitoringApproach',
+                'required' => false,
+                'allow_empty' => true,
+                'filters' => [
+                    [
+                        'name' => StringTrim::class,
+                    ],
+                    [
+                        'name' => Callback::class,
+                        'options' => [
+                            'callback' => static function ($value): ?string {
+                                $value = trim((string)$value);
+
+                                return $value === '' ? null : $value;
+                            },
+                        ],
+                    ],
+                ],
+                'validators' => [],
+            ],
+            [
                 'name' => 'isActive',
                 'required' => false,
                 'allow_empty' => true,

@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Entity;
 
+use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
@@ -216,6 +217,20 @@ class InstanceRiskSuperClass
      */
     protected $cacheTargetedRisk = -1;
 
+    /**
+     * @var DateTime|null
+     *
+     * @ORM\Column(name="last_review_date", type="date", nullable=true)
+     */
+    protected $lastReviewDate;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(name="review_frequency", type="string", length=50, nullable=true)
+     */
+    protected $reviewFrequency;
+
     public static function constructFromObject(InstanceRiskSuperClass $sourceInstanceRisk): InstanceRiskSuperClass
     {
         return (new static())
@@ -232,6 +247,8 @@ class InstanceRiskSuperClass
             ->setRiskAvailability($sourceInstanceRisk->getRiskAvailability())
             ->setCacheMaxRisk($sourceInstanceRisk->getCacheMaxRisk())
             ->setCacheTargetedRisk($sourceInstanceRisk->getCacheTargetedRisk())
+            ->setLastReviewDate($sourceInstanceRisk->getLastReviewDate())
+            ->setReviewFrequency($sourceInstanceRisk->getReviewFrequency())
             ->setRiskSource($sourceInstanceRisk->getRiskSource());
     }
 
@@ -441,6 +458,30 @@ class InstanceRiskSuperClass
     public function getCacheTargetedRisk(): int
     {
         return (int)$this->cacheTargetedRisk;
+    }
+
+    public function getLastReviewDate(): ?DateTime
+    {
+        return $this->lastReviewDate;
+    }
+
+    public function setLastReviewDate(?DateTime $lastReviewDate): self
+    {
+        $this->lastReviewDate = $lastReviewDate;
+
+        return $this;
+    }
+
+    public function getReviewFrequency(): ?string
+    {
+        return $this->reviewFrequency;
+    }
+
+    public function setReviewFrequency(?string $reviewFrequency): self
+    {
+        $this->reviewFrequency = $reviewFrequency;
+
+        return $this;
     }
 
     public function setComment(string $comment): self
