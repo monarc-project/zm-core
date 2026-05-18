@@ -10,6 +10,7 @@ namespace Monarc\Core\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
+use Monarc\Core\Traits\TranslationNormalizationTrait;
 
 /**
  * @ORM\Table(
@@ -25,6 +26,7 @@ class RiskSourceSuperClass
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
+    use TranslationNormalizationTrait;
 
     /**
      * @ORM\Column(name="id", type="integer", nullable=false, options={"unsigned": true})
@@ -111,16 +113,7 @@ class RiskSourceSuperClass
         }
 
         $decoded = json_decode($value, true);
-        if (!is_array($decoded)) {
-            return [];
-        }
-
-        $translations = [];
-        foreach ($decoded as $languageCode => $translationValue) {
-            $translations[(string)$languageCode] = trim((string)$translationValue);
-        }
-
-        return $translations;
+        return $this->normalizeTranslations($decoded);
     }
 
     /**
@@ -128,11 +121,6 @@ class RiskSourceSuperClass
      */
     private function encodeTranslations(array $translations): string
     {
-        $normalizedTranslations = [];
-        foreach ($translations as $languageCode => $translationValue) {
-            $normalizedTranslations[(string)$languageCode] = trim((string)$translationValue);
-        }
-
-        return json_encode($normalizedTranslations, JSON_THROW_ON_ERROR);
+        return json_encode($this->normalizeTranslations($translations), JSON_THROW_ON_ERROR);
     }
 }

@@ -9,7 +9,6 @@ namespace Monarc\Core\Service;
 
 use Monarc\Core\Entity\ReassessmentTrigger;
 use Monarc\Core\Entity\UserSuperClass;
-use Monarc\Core\Exception\Exception;
 use Monarc\Core\InputFormatter\FormattedInputParams;
 use Monarc\Core\Table\ReassessmentTriggerTable;
 
@@ -37,7 +36,7 @@ class ReassessmentTriggerService
     {
         return $this->reassessmentTriggerTable->countByParams($params, 'id');
     }
-
+    
     public function get(int $id): ReassessmentTrigger
     {
         /** @var ReassessmentTrigger $reassessmentTrigger */
@@ -48,18 +47,10 @@ class ReassessmentTriggerService
 
     public function create(array $data): ReassessmentTrigger
     {
-        $triggerTypeTranslations = $this->normalizeTranslations($data, 'triggerType');
-        if ($triggerTypeTranslations === []) {
-            throw new Exception('Reassessment trigger type is required.', 412);
-        }
-
-        $descriptionTranslations = $this->normalizeTranslations($data, 'description');
-        $monitoringApproachTranslations = $this->normalizeTranslations($data, 'monitoringApproach');
-
         $reassessmentTrigger = (new ReassessmentTrigger())
-            ->setTriggerType($this->encodeTranslations($triggerTypeTranslations))
-            ->setDescription($this->encodeTranslations($descriptionTranslations))
-            ->setMonitoringApproachTranslations($monitoringApproachTranslations)
+            ->setTriggerTypeTranslations($data['triggerTypes'])
+            ->setDescriptionTranslations($data['descriptions'])
+            ->setMonitoringApproachTranslations($data['monitoringApproaches'])
             ->setIsActive((bool)($data['isActive'] ?? true))
             ->setCreator($this->connectedUser->getEmail());
 
@@ -73,26 +64,16 @@ class ReassessmentTriggerService
     {
         $reassessmentTrigger = $this->get($id);
 
-        if (array_key_exists('triggerTypes', $data) || array_key_exists('triggerType', $data)) {
-            $triggerTypeTranslations = $this->normalizeTranslations($data, 'triggerType');
-            if ($triggerTypeTranslations === []) {
-                throw new Exception('Reassessment trigger type is required.', 412);
-            }
-            $reassessmentTrigger->setTriggerType($this->encodeTranslations($triggerTypeTranslations));
+        if (array_key_exists('triggerTypes', $data)) {
+            $reassessmentTrigger->setTriggerTypeTranslations($data['triggerTypes']);
         }
-
-        if (array_key_exists('descriptions', $data) || array_key_exists('description', $data)) {
-            $reassessmentTrigger->setDescription(
-                $this->encodeTranslations($this->normalizeTranslations($data, 'description'))
-            );
+        if (array_key_exists('descriptions', $data)) {
+            $reassessmentTrigger->setDescriptionTranslations($data['descriptions']);
         }
-        if (array_key_exists('monitoringApproaches', $data) || array_key_exists('monitoringApproach', $data)) {
-            $reassessmentTrigger->setMonitoringApproachTranslations(
-                $this->normalizeTranslations($data, 'monitoringApproach')
-            );
+        if (array_key_exists('monitoringApproaches', $data)) {
+            $reassessmentTrigger->setMonitoringApproachTranslations($data['monitoringApproaches']);
         }
-
-        if (array_key_exists('isActive', $data)) {
+        if (isset($data['isActive'])) {
             $reassessmentTrigger->setIsActive((bool)$data['isActive']);
         }
 
@@ -121,6 +102,8 @@ class ReassessmentTriggerService
     }
 
     /**
+     * It is called from the ng-client (FO) to fetch the predefined data from the common DB. 
+     *
      * @return array<int, array<string, mixed>>
      */
     public function getSelectionData(string $languageCode, bool $includeInactive = false): array
@@ -203,58 +186,6 @@ class ReassessmentTriggerService
     }
 
     /**
-     * @param array<string, mixed> $data
-     * @return array<string, string>
-     */
-    private function normalizeTranslations(array $data, string $fieldName): array
-    {
-        $supportedLanguageCodes = array_fill_keys($this->getSupportedLanguageCodes(), true);
-        $translations = [];
-        $multiValueFieldName = $this->getTranslationsFieldName($fieldName);
-        if (isset($data[$multiValueFieldName]) && is_array($data[$multiValueFieldName])) {
-            foreach ($data[$multiValueFieldName] as $languageCode => $value) {
-                $languageCode = (string)$languageCode;
-                $value = trim((string)$value);
-                if (!isset($supportedLanguageCodes[$languageCode]) || $value === '') {
-                    continue;
-                }
-
-                $translations[$languageCode] = $value;
-            }
-        }
-
-        if ($translations === [] && array_key_exists($fieldName, $data)) {
-            $value = trim((string)$data[$fieldName]);
-            if ($value !== '') {
-                $translations[$this->getCurrentLanguageCode()] = $value;
-            }
-        }
-
-        return $translations;
-    }
-
-    private function getTranslationsFieldName(string $fieldName): string
-    {
-        return match ($fieldName) {
-            'monitoringApproach' => 'monitoringApproaches',
-            default => $fieldName . 's',
-        };
-    }
-
-    /**
-     * @param array<string, string> $translations
-     */
-    private function encodeTranslations(array $translations): string
-    {
-        $normalizedTranslations = [];
-        foreach ($translations as $languageCode => $value) {
-            $normalizedTranslations[(string)$languageCode] = trim((string)$value);
-        }
-
-        return json_encode($normalizedTranslations, JSON_THROW_ON_ERROR);
-    }
-
-    /**
      * @param array<string, string> $translations
      */
     private function resolveDisplayValue(array $translations, string $fallbackValue, ?string $languageCode = null): string
@@ -306,16 +237,6 @@ class ReassessmentTriggerService
             ?? $this->configService->getLanguageCodes()[$this->configService
                 ->getConfigOption('defaultLanguageIndex', 1)]
             ?? 'en';
-    }
-
-    /**
-     * @return string[]
-     */
-    private function getSupportedLanguageCodes(): array
-    {
-        $languageCodes = $this->configService->getActiveLanguageCodes();
-
-        return $languageCodes !== [] ? $languageCodes : $this->configService->getLanguageCodes();
     }
 
     private function applyCreatePosition(ReassessmentTrigger $reassessmentTrigger, array $data): void

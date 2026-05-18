@@ -13,6 +13,7 @@ use Monarc\Core\Entity\Interfaces\PropertyStateEntityInterface;
 use Monarc\Core\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Entity\Traits\PropertyStateEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
+use Monarc\Core\Traits\TranslationNormalizationTrait;
 
 /**
  * @ORM\Table(
@@ -31,6 +32,7 @@ class ReassessmentTriggerSuperClass implements PositionedEntityInterface, Proper
     use PropertyStateEntityTrait;
     use CreateEntityTrait;
     use UpdateEntityTrait;
+    use TranslationNormalizationTrait;
 
     /**
      * @ORM\Column(name="id", type="integer", nullable=false, options={"unsigned": true})
@@ -190,16 +192,7 @@ class ReassessmentTriggerSuperClass implements PositionedEntityInterface, Proper
         }
 
         $decoded = json_decode($value, true);
-        if (!is_array($decoded)) {
-            return [];
-        }
-
-        $translations = [];
-        foreach ($decoded as $languageCode => $translationValue) {
-            $translations[(string)$languageCode] = trim((string)$translationValue);
-        }
-
-        return $translations;
+        return $this->normalizeTranslations($decoded);
     }
 
     /**
@@ -207,11 +200,6 @@ class ReassessmentTriggerSuperClass implements PositionedEntityInterface, Proper
      */
     private function encodeTranslations(array $translations): string
     {
-        $normalizedTranslations = [];
-        foreach ($translations as $languageCode => $translationValue) {
-            $normalizedTranslations[(string)$languageCode] = trim((string)$translationValue);
-        }
-
-        return json_encode($normalizedTranslations, JSON_THROW_ON_ERROR);
+        return json_encode($this->normalizeTranslations($translations), JSON_THROW_ON_ERROR);
     }
 }

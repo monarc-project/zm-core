@@ -54,6 +54,49 @@ class ReassessmentTriggerInputValidatorTest extends TestCase
     }
 
     /**
+     * @covers \Monarc\Core\Validator\InputValidator\ReassessmentTrigger\PostReassessmentTriggerDataInputValidator::getRules
+     */
+    public function testPostValidatorKeepsPluralTranslationFields(): void
+    {
+        $validator = new PostReassessmentTriggerDataInputValidator(
+            ['defaultLanguageIndex' => 1],
+            $this->createTranslator()
+        );
+
+        self::assertTrue($validator->isValid([
+            'triggerType' => 'System change',
+            'triggerTypes' => [
+                'en' => 'System change',
+                'fr' => 'Changement du systeme',
+            ],
+            'description' => 'English description',
+            'descriptions' => [
+                'en' => 'English description',
+                'de' => 'Deutsche Beschreibung',
+            ],
+            'monitoringApproach' => 'SOC alerts',
+            'monitoringApproaches' => [
+                'en' => 'SOC alerts',
+                'fr' => 'Alertes SOC',
+            ],
+        ]));
+
+        $validatedData = $validator->getValidData();
+        self::assertSame([
+            'en' => 'System change',
+            'fr' => 'Changement du systeme',
+        ], $validatedData['triggerTypes']);
+        self::assertSame([
+            'en' => 'English description',
+            'de' => 'Deutsche Beschreibung',
+        ], $validatedData['descriptions']);
+        self::assertSame([
+            'en' => 'SOC alerts',
+            'fr' => 'Alertes SOC',
+        ], $validatedData['monitoringApproaches']);
+    }
+
+    /**
      * @covers \Monarc\Core\Validator\InputValidator\ReassessmentTrigger\PatchReassessmentTriggerDataInputValidator::getRules
      */
     public function testPatchValidatorAcceptsPartialPayloadAndAllowsNullType(): void
@@ -75,6 +118,69 @@ class ReassessmentTriggerInputValidatorTest extends TestCase
         self::assertFalse($validatedData['isActive']);
         self::assertSame(4, $validatedData['position']);
         self::assertSame('SOC alerts', $validatedData['monitoringApproach']);
+    }
+
+    /**
+     * @covers \Monarc\Core\Validator\InputValidator\ReassessmentTrigger\PatchReassessmentTriggerDataInputValidator::getValidData
+     */
+    public function testPatchValidatorDoesNotReturnMissingOptionalFields(): void
+    {
+        $validator = new PatchReassessmentTriggerDataInputValidator(
+            ['defaultLanguageIndex' => 1],
+            $this->createTranslator()
+        );
+
+        self::assertTrue($validator->isValid([
+            'position' => '4',
+        ]));
+
+        $validatedData = $validator->getValidData();
+        self::assertSame(['position' => 4], $validatedData);
+        self::assertArrayNotHasKey('isActive', $validatedData);
+        self::assertArrayNotHasKey('triggerType', $validatedData);
+        self::assertArrayNotHasKey('description', $validatedData);
+        self::assertArrayNotHasKey('monitoringApproach', $validatedData);
+    }
+
+    /**
+     * @covers \Monarc\Core\Validator\InputValidator\ReassessmentTrigger\PatchReassessmentTriggerDataInputValidator::getRules
+     * @covers \Monarc\Core\Validator\InputValidator\ReassessmentTrigger\PatchReassessmentTriggerDataInputValidator::getValidData
+     */
+    public function testPatchValidatorKeepsPluralTranslationFields(): void
+    {
+        $validator = new PatchReassessmentTriggerDataInputValidator(
+            ['defaultLanguageIndex' => 1],
+            $this->createTranslator()
+        );
+
+        self::assertTrue($validator->isValid([
+            'triggerTypes' => [
+                'en' => 'System change',
+                'fr' => 'Changement du systeme',
+            ],
+            'descriptions' => [
+                'en' => 'English description',
+                'de' => 'Deutsche Beschreibung',
+            ],
+            'monitoringApproaches' => [
+                'en' => 'SOC alerts',
+                'fr' => 'Alertes SOC',
+            ],
+        ]));
+
+        $validatedData = $validator->getValidData();
+        self::assertSame([
+            'en' => 'System change',
+            'fr' => 'Changement du systeme',
+        ], $validatedData['triggerTypes']);
+        self::assertSame([
+            'en' => 'English description',
+            'de' => 'Deutsche Beschreibung',
+        ], $validatedData['descriptions']);
+        self::assertSame([
+            'en' => 'SOC alerts',
+            'fr' => 'Alertes SOC',
+        ], $validatedData['monitoringApproaches']);
     }
 
     private function createTranslator(): InputValidationTranslator

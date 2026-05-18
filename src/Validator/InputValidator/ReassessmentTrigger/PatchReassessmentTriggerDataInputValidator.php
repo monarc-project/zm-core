@@ -11,10 +11,26 @@ use Laminas\Filter\Callback;
 use Laminas\Filter\StringTrim;
 use Laminas\Validator\NumberComparison;
 use Laminas\Validator\StringLength;
+use Monarc\Core\Traits\TranslationNormalizationTrait;
 use Monarc\Core\Validator\InputValidator\AbstractInputValidator;
 
 class PatchReassessmentTriggerDataInputValidator extends AbstractInputValidator
 {
+    use TranslationNormalizationTrait;
+
+    public function getValidData(int $validatedSetNum = 0): array
+    {
+        $validData = parent::getValidData($validatedSetNum);
+
+        foreach (array_keys($validData) as $fieldName) {
+            if (!array_key_exists($fieldName, $this->initialData)) {
+                unset($validData[$fieldName]);
+            }
+        }
+
+        return $validData;
+    }
+
     protected function getRules(): array
     {
         return [
@@ -31,6 +47,20 @@ class PatchReassessmentTriggerDataInputValidator extends AbstractInputValidator
 
                                 return $value === '' ? null : $value;
                             },
+                        ],
+                    ],
+                ],
+                'validators' => [],
+            ],
+            [
+                'name' => 'triggerTypes',
+                'required' => false,
+                'allow_empty' => true,
+                'filters' => [
+                    [
+                        'name' => Callback::class,
+                        'options' => [
+                            'callback' => [$this, 'normalizeTranslations'],
                         ],
                     ],
                 ],
@@ -54,6 +84,20 @@ class PatchReassessmentTriggerDataInputValidator extends AbstractInputValidator
                 ],
             ],
             [
+                'name' => 'descriptions',
+                'required' => false,
+                'allow_empty' => true,
+                'filters' => [
+                    [
+                        'name' => Callback::class,
+                        'options' => [
+                            'callback' => [$this, 'normalizeTranslations'],
+                        ],
+                    ],
+                ],
+                'validators' => [],
+            ],
+            [
                 'name' => 'monitoringApproach',
                 'required' => false,
                 'allow_empty' => true,
@@ -70,6 +114,20 @@ class PatchReassessmentTriggerDataInputValidator extends AbstractInputValidator
                         ],
                     ],
                 ],
+            ],
+            [
+                'name' => 'monitoringApproaches',
+                'required' => false,
+                'allow_empty' => true,
+                'filters' => [
+                    [
+                        'name' => Callback::class,
+                        'options' => [
+                            'callback' => [$this, 'normalizeTranslations'],
+                        ],
+                    ],
+                ],
+                'validators' => [],
             ],
             [
                 'name' => 'isActive',

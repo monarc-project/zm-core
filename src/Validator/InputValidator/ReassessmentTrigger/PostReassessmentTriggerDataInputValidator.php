@@ -11,10 +11,13 @@ use Laminas\Filter\Callback;
 use Laminas\Filter\StringTrim;
 use Laminas\Validator\Between;
 use Laminas\Validator\StringLength;
+use Monarc\Core\Traits\TranslationNormalizationTrait;
 use Monarc\Core\Validator\InputValidator\AbstractInputValidator;
 
 class PostReassessmentTriggerDataInputValidator extends AbstractInputValidator
 {
+    use TranslationNormalizationTrait;
+
     protected function getRules(): array
     {
         return [
@@ -31,6 +34,20 @@ class PostReassessmentTriggerDataInputValidator extends AbstractInputValidator
 
                                 return $value === '' ? null : $value;
                             },
+                        ],
+                    ],
+                ],
+                'validators' => [],
+            ],
+            [
+                'name' => 'triggerTypes',
+                'required' => false,
+                'allow_empty' => true,
+                'filters' => [
+                    [
+                        'name' => Callback::class,
+                        'options' => [
+                            'callback' => [$this, 'normalizeTranslations'],
                         ],
                     ],
                 ],
@@ -55,6 +72,20 @@ class PostReassessmentTriggerDataInputValidator extends AbstractInputValidator
                 ],
             ],
             [
+                'name' => 'descriptions',
+                'required' => false,
+                'allow_empty' => true,
+                'filters' => [
+                    [
+                        'name' => Callback::class,
+                        'options' => [
+                            'callback' => [$this, 'normalizeTranslations'],
+                        ],
+                    ],
+                ],
+                'validators' => [],
+            ],
+            [
                 'name' => 'monitoringApproach',
                 'required' => false,
                 'allow_empty' => true,
@@ -70,6 +101,20 @@ class PostReassessmentTriggerDataInputValidator extends AbstractInputValidator
 
                                 return $value === '' ? null : $value;
                             },
+                        ],
+                    ],
+                ],
+                'validators' => [],
+            ],
+            [
+                'name' => 'monitoringApproaches',
+                'required' => false,
+                'allow_empty' => true,
+                'filters' => [
+                    [
+                        'name' => Callback::class,
+                        'options' => [
+                            'callback' => [$this, 'normalizeTranslations'],
                         ],
                     ],
                 ],
