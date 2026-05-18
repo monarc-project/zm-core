@@ -48,13 +48,13 @@ class ReassessmentTriggerService
 
     public function create(array $data): ReassessmentTrigger
     {
-        $triggerTypeTranslations = $this->normalizeTranslations($data, 'triggerType', false);
+        $triggerTypeTranslations = $this->normalizeTranslations($data, 'triggerType');
         if ($triggerTypeTranslations === []) {
             throw new Exception('Reassessment trigger type is required.', 412);
         }
 
-        $descriptionTranslations = $this->normalizeTranslations($data, 'description', true);
-        $monitoringApproachTranslations = $this->normalizeTranslations($data, 'monitoringApproach', true);
+        $descriptionTranslations = $this->normalizeTranslations($data, 'description');
+        $monitoringApproachTranslations = $this->normalizeTranslations($data, 'monitoringApproach');
 
         $reassessmentTrigger = (new ReassessmentTrigger())
             ->setTriggerType($this->encodeTranslations($triggerTypeTranslations))
@@ -74,7 +74,7 @@ class ReassessmentTriggerService
         $reassessmentTrigger = $this->get($id);
 
         if (array_key_exists('triggerTypes', $data) || array_key_exists('triggerType', $data)) {
-            $triggerTypeTranslations = $this->normalizeTranslations($data, 'triggerType', false);
+            $triggerTypeTranslations = $this->normalizeTranslations($data, 'triggerType');
             if ($triggerTypeTranslations === []) {
                 throw new Exception('Reassessment trigger type is required.', 412);
             }
@@ -83,12 +83,12 @@ class ReassessmentTriggerService
 
         if (array_key_exists('descriptions', $data) || array_key_exists('description', $data)) {
             $reassessmentTrigger->setDescription(
-                $this->encodeTranslations($this->normalizeTranslations($data, 'description', true))
+                $this->encodeTranslations($this->normalizeTranslations($data, 'description'))
             );
         }
         if (array_key_exists('monitoringApproaches', $data) || array_key_exists('monitoringApproach', $data)) {
             $reassessmentTrigger->setMonitoringApproachTranslations(
-                $this->normalizeTranslations($data, 'monitoringApproach', true)
+                $this->normalizeTranslations($data, 'monitoringApproach')
             );
         }
 
@@ -163,7 +163,7 @@ class ReassessmentTriggerService
      */
     public function getTriggerTypes(ReassessmentTrigger $reassessmentTrigger): array
     {
-        return $this->getTranslationsWithFallback(
+        return $this->getEditableTranslations(
             $reassessmentTrigger->getTriggerTypeTranslations(),
             $reassessmentTrigger->getTriggerType() ?? ''
         );
@@ -174,7 +174,7 @@ class ReassessmentTriggerService
      */
     public function getDescriptions(ReassessmentTrigger $reassessmentTrigger): array
     {
-        return $this->getTranslationsWithFallback(
+        return $this->getEditableTranslations(
             $reassessmentTrigger->getDescriptionTranslations(),
             $reassessmentTrigger->getDescription()
         );
@@ -196,7 +196,7 @@ class ReassessmentTriggerService
      */
     public function getMonitoringApproaches(ReassessmentTrigger $reassessmentTrigger): array
     {
-        return $this->getTranslationsWithFallback(
+        return $this->getEditableTranslations(
             $reassessmentTrigger->getMonitoringApproachTranslations(),
             $reassessmentTrigger->getMonitoringApproach() ?? ''
         );
@@ -206,25 +206,39 @@ class ReassessmentTriggerService
      * @param array<string, mixed> $data
      * @return array<string, string>
      */
-    private function normalizeTranslations(array $data, string $fieldName, bool $allowEmpty): array
+    private function normalizeTranslations(array $data, string $fieldName): array
     {
+        $supportedLanguageCodes = array_fill_keys($this->getSupportedLanguageCodes(), true);
         $translations = [];
-        $multiValueFieldName = $fieldName . 's';
+        $multiValueFieldName = $this->getTranslationsFieldName($fieldName);
         if (isset($data[$multiValueFieldName]) && is_array($data[$multiValueFieldName])) {
             foreach ($data[$multiValueFieldName] as $languageCode => $value) {
-                $translations[(string)$languageCode] = trim((string)$value);
+                $languageCode = (string)$languageCode;
+                $value = trim((string)$value);
+                if (!isset($supportedLanguageCodes[$languageCode]) || $value === '') {
+                    continue;
+                }
+
+                $translations[$languageCode] = $value;
             }
         }
 
         if ($translations === [] && array_key_exists($fieldName, $data)) {
-            $translations[$this->getCurrentLanguageCode()] = trim((string)$data[$fieldName]);
-        }
-
-        if (!$allowEmpty) {
-            $translations = array_filter($translations, static fn (string $value): bool => $value !== '');
+            $value = trim((string)$data[$fieldName]);
+            if ($value !== '') {
+                $translations[$this->getCurrentLanguageCode()] = $value;
+            }
         }
 
         return $translations;
+    }
+
+    private function getTranslationsFieldName(string $fieldName): string
+    {
+        return match ($fieldName) {
+            'monitoringApproach' => 'monitoringApproaches',
+            default => $fieldName . 's',
+        };
     }
 
     /**
@@ -270,14 +284,20 @@ class ReassessmentTriggerService
      * @param array<string, string> $translations
      * @return array<string, string>
      */
-    private function getTranslationsWithFallback(array $translations, string $fallbackValue): array
+    private function getEditableTranslations(array $translations, string $fallbackValue): array
     {
-        $localizedValues = [];
-        foreach ($this->getSupportedLanguageCodes() as $languageCode) {
-            $localizedValues[$languageCode] = $this->resolveDisplayValue($translations, $fallbackValue, $languageCode);
+        if ($translations !== []) {
+            return $translations;
         }
 
-        return $localizedValues;
+        $fallbackValue = trim($fallbackValue);
+        if ($fallbackValue === '') {
+            return [];
+        }
+
+        return [
+            $this->getCurrentLanguageCode() => $fallbackValue,
+        ];
     }
 
     private function getCurrentLanguageCode(): string
