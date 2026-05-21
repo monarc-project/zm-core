@@ -7,7 +7,6 @@
 
 namespace Monarc\Core\Entity;
 
-use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
@@ -17,7 +16,6 @@ use Monarc\Core\Entity\Traits\UpdateEntityTrait;
  *      @ORM\Index(name="anr", columns={"anr_id"}),
  *      @ORM\Index(name="amv_id", columns={"amv_id"}),
  *      @ORM\Index(name="asset_id", columns={"asset_id"}),
- *      @ORM\Index(name="risk_source_id", columns={"risk_source_id"}),
  *      @ORM\Index(name="threat_id", columns={"threat_id"}),
  *      @ORM\Index(name="vulnerability_id", columns={"vulnerability_id"}),
  *      @ORM\Index(name="instance_id", columns={"instance_id"})
@@ -67,16 +65,6 @@ class InstanceRiskSuperClass
      * })
      */
     protected $asset;
-
-    /**
-     * @var RiskSource|null
-     *
-     * @ORM\ManyToOne(targetEntity="RiskSource")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="risk_source_id", referencedColumnName="id", nullable=true, onDelete="SET NULL")
-     * })
-     */
-    protected $riskSource;
 
     /**
      * @var ThreatSuperClass
@@ -217,20 +205,6 @@ class InstanceRiskSuperClass
      */
     protected $cacheTargetedRisk = -1;
 
-    /**
-     * @var DateTime|null
-     *
-     * @ORM\Column(name="last_review_date", type="date", nullable=true)
-     */
-    protected $lastReviewDate;
-
-    /**
-     * @var string|null
-     *
-     * @ORM\Column(name="review_frequency", type="string", length=50, nullable=true)
-     */
-    protected $reviewFrequency;
-
     public static function constructFromObject(InstanceRiskSuperClass $sourceInstanceRisk): InstanceRiskSuperClass
     {
         return (new static())
@@ -246,10 +220,7 @@ class InstanceRiskSuperClass
             ->setRiskIntegrity($sourceInstanceRisk->getRiskIntegrity())
             ->setRiskAvailability($sourceInstanceRisk->getRiskAvailability())
             ->setCacheMaxRisk($sourceInstanceRisk->getCacheMaxRisk())
-            ->setCacheTargetedRisk($sourceInstanceRisk->getCacheTargetedRisk())
-            ->setLastReviewDate($sourceInstanceRisk->getLastReviewDate())
-            ->setReviewFrequency($sourceInstanceRisk->getReviewFrequency())
-            ->setRiskSource($sourceInstanceRisk->getRiskSource());
+            ->setCacheTargetedRisk($sourceInstanceRisk->getCacheTargetedRisk());
     }
 
     public function getId()
@@ -460,30 +431,6 @@ class InstanceRiskSuperClass
         return (int)$this->cacheTargetedRisk;
     }
 
-    public function getLastReviewDate(): ?DateTime
-    {
-        return $this->lastReviewDate;
-    }
-
-    public function setLastReviewDate(?DateTime $lastReviewDate): self
-    {
-        $this->lastReviewDate = $lastReviewDate;
-
-        return $this;
-    }
-
-    public function getReviewFrequency(): ?string
-    {
-        return $this->reviewFrequency;
-    }
-
-    public function setReviewFrequency(?string $reviewFrequency): self
-    {
-        $this->reviewFrequency = $reviewFrequency;
-
-        return $this;
-    }
-
     public function setComment(string $comment): self
     {
         $this->comment = $comment;
@@ -560,18 +507,6 @@ class InstanceRiskSuperClass
     public function setCommentAfter(string $commentAfter): self
     {
         $this->commentAfter = $commentAfter;
-
-        return $this;
-    }
-    
-    public function getRiskSource(): ?RiskSourceSuperClass
-    {
-        return $this->riskSource;
-    }
-
-    public function setRiskSource(?RiskSourceSuperClass $riskSource): self
-    {
-        $this->riskSource = $riskSource;
 
         return $this;
     }

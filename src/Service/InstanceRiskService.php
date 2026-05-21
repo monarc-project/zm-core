@@ -282,14 +282,6 @@ class InstanceRiskService
             throw new Exception('Invalid last review date format.', 412);
         }
 
-        $currentLastReviewDate = $instanceRisk->getLastReviewDate();
-        if ($currentLastReviewDate !== null) {
-            $normalizedCurrentDate = DateTime::createFromFormat('Y-m-d', $currentLastReviewDate->format('Y-m-d'));
-            if ($normalizedCurrentDate !== false && $normalizedDate <= $normalizedCurrentDate) {
-                throw new Exception('Last review date must be later than the existing last review date.', 412);
-            }
-        }
-
         return $normalizedDate;
     }
 }

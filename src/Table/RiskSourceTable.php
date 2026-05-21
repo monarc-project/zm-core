@@ -9,7 +9,6 @@ namespace Monarc\Core\Table;
 
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManager;
-use Monarc\Core\Entity\InstanceRisk;
 use Monarc\Core\Entity\RiskSource;
 
 class RiskSourceTable extends AbstractTable
@@ -53,16 +52,5 @@ class RiskSourceTable extends AbstractTable
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
-    }
-
-    public function isUsedInRisks(RiskSource $riskSource): bool
-    {
-        return (bool)$this->entityManager->createQueryBuilder()
-            ->select('COUNT(ir.id)')
-            ->from(InstanceRisk::class, 'ir')
-            ->where('ir.riskSource = :riskSource')
-            ->setParameter('riskSource', $riskSource)
-            ->getQuery()
-            ->getSingleScalarResult();
     }
 }

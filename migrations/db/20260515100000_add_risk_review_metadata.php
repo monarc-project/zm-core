@@ -11,11 +11,6 @@ class AddRiskReviewMetadata extends AbstractMigration
 {
     public function up(): void
     {
-        $this->table('instances_risks')
-            ->addColumn('last_review_date', 'date', ['null' => true, 'after' => 'comment_after'])
-            ->addColumn('review_frequency', 'string', ['limit' => 50, 'null' => true, 'after' => 'last_review_date'])
-            ->update();
-
         $this->table('anr_reassessment_triggers')
             ->addColumn('monitoring_approach', 'text', ['null' => true, 'after' => 'description'])
             ->update();
@@ -106,11 +101,6 @@ class AddRiskReviewMetadata extends AbstractMigration
 
     public function down(): void
     {
-        $this->table('instances_risks')
-            ->removeColumn('review_frequency')
-            ->removeColumn('last_review_date')
-            ->update();
-
         $this->table('anr_reassessment_triggers')
             ->removeColumn('monitoring_approach')
             ->update();

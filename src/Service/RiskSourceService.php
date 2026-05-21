@@ -86,9 +86,6 @@ class RiskSourceService
         if ($riskSource->isDefault()) {
             throw new Exception('Default risk sources cannot be removed.', 412);
         }
-        if ($this->riskSourceTable->isUsedInRisks($riskSource)) {
-            throw new Exception('Risk source linked to instance risks cannot be removed.', 412);
-        }
 
         $this->riskSourceTable->remove($riskSource);
     }

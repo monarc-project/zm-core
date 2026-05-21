@@ -114,10 +114,6 @@ class RiskSourceServiceTest extends TestCase
             ->with(9)
             ->willReturn($riskSource);
         $table->expects($this->once())
-            ->method('isUsedInRisks')
-            ->with($riskSource)
-            ->willReturn(false);
-        $table->expects($this->once())
             ->method('remove')
             ->with($riskSource);
 
@@ -139,7 +135,6 @@ class RiskSourceServiceTest extends TestCase
             ->method('findById')
             ->with(4)
             ->willReturn($riskSource);
-        $table->expects($this->never())->method('isUsedInRisks');
         $table->expects($this->never())->method('remove');
 
         $service = $this->createService($table);
@@ -152,30 +147,6 @@ class RiskSourceServiceTest extends TestCase
     /**
      * @covers RiskSourceService::delete
      */
-    public function testDeleteRejectsRiskSourceLinkedToInstanceRisks(): void
-    {
-        $riskSource = (new RiskSource())
-            ->setLabelTranslations(['en' => 'Used source'])
-            ->setIsDefault(false);
-
-        $table = $this->createMock(RiskSourceTable::class);
-        $table->expects($this->once())
-            ->method('findById')
-            ->with(5)
-            ->willReturn($riskSource);
-        $table->expects($this->once())
-            ->method('isUsedInRisks')
-            ->with($riskSource)
-            ->willReturn(true);
-        $table->expects($this->never())->method('remove');
-
-        $service = $this->createService($table);
-
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Risk source linked to instance risks cannot be removed.');
-        $service->delete(5);
-    }
-
     private function createService(RiskSourceTable $riskSourceTable): RiskSourceService
     {
         $connectedUserService = $this->createMock(ConnectedUserService::class);
