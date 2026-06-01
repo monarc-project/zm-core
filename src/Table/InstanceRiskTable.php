@@ -9,6 +9,7 @@ namespace Monarc\Core\Table;
 
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\QueryBuilder;
 use Monarc\Core\Entity\AnrSuperClass;
 use Monarc\Core\Entity\InstanceRisk;
 use Monarc\Core\Entity\InstanceRiskSuperClass;
@@ -53,6 +54,8 @@ class InstanceRiskTable extends AbstractTable
             ->andWhere('ir.cacheMaxRisk >= -1')
             ->setParameter('anr', $anr);
 
+        $this->applyExtraJoins($queryBuilder);
+
         if (!empty($params['instanceIds'])) {
             $queryBuilder->andWhere($queryBuilder->expr()->in('i.id', array_map('\intval', $params['instanceIds'])));
         }
@@ -84,6 +87,7 @@ class InstanceRiskTable extends AbstractTable
                 't.label' . $languageIndex . ' LIKE :keywords OR ' .
                 'v.label' . $languageIndex . ' LIKE :keywords OR ' .
                 'i.name' . $languageIndex . ' LIKE :keywords OR ' .
+                $this->getExtraKeywordsCondition() .
                 'ir.comment LIKE :keywords'
             )->setParameter('keywords', '%' . $params['keywords'] . '%');
         }
@@ -128,12 +132,19 @@ class InstanceRiskTable extends AbstractTable
             case 'targetRisk':
                 $queryBuilder->orderBy('ir.cacheTargetedRisk', $orderDirection);
                 break;
-            default:
             case 'maxRisk':
                 $queryBuilder->orderBy('ir.cacheMaxRisk', $orderDirection);
                 break;
         }
-        if ($params['order'] !== 'instance') {
+
+        $this->applyExtraOrderBy($queryBuilder, $orderField, $orderDirection);
+
+        if (empty($queryBuilder->getDQLPart('orderBy'))) {
+            // No sorting has been applied, set a default
+            $queryBuilder->orderBy('ir.cacheMaxRisk', $orderDirection);
+        }
+
+        if ($orderField !== 'instance') {
             $queryBuilder->addOrderBy('i.name' . $languageIndex, Criteria::ASC);
         }
         $queryBuilder->addOrderBy('t.code', Criteria::ASC)
@@ -141,6 +152,25 @@ class InstanceRiskTable extends AbstractTable
 
         return $queryBuilder->getQuery()->getResult();
     }
+
+    /**
+     * Hook for subclasses to add extra joins to the query.
+     */
+    protected function applyExtraJoins(QueryBuilder $queryBuilder): void {}
+
+    /**
+     * Hook for subclasses to contribute extra conditions to the keywords filter.
+     * Must return either an empty string or a DQL fragment ending with ' OR '.
+     */
+    protected function getExtraKeywordsCondition(): string
+    {
+        return '';
+    }
+
+    /**
+     * Hook for subclasses to apply ordering by fields not known to core.
+     */
+    protected function applyExtraOrderBy(QueryBuilder $queryBuilder, string $orderField, string $direction): void {}
 
     public function findByInstanceAndInstanceRiskRelations(
         InstanceSuperClass $instance,

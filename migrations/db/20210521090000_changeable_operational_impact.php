@@ -266,7 +266,7 @@ class ChangeableOperationalImpact extends AbstractMigration
     private function createTranslations(array $data, string $type, string $fieldName, string $translationKey): void
     {
         $translations = [];
-        foreach ([1 => 'fr', 2 => 'en', 3 => 'de', 4 => 'nl'] as $langKey => $langLabel) {
+        foreach ($this->getLanguageIndexToCodeMap() as $langKey => $langLabel) {
             if (!empty($data[$fieldName . $langKey])) {
                 $translations[] = [
                     'anr_id' => $data['anr_id'],
@@ -279,6 +279,29 @@ class ChangeableOperationalImpact extends AbstractMigration
             }
         }
         $this->table('translations')->insert($translations)->save();
+    }
+
+    private function getLanguageIndexToCodeMap(): array
+    {
+        $config = [];
+        $base = getcwd() . '/config/autoload/';
+        foreach (['global.php', 'local.php'] as $file) {
+            $path = $base . $file;
+            if (file_exists($path)) {
+                $config = array_replace_recursive($config, require $path);
+            }
+        }
+
+        if (!empty($config['languages']) && is_array($config['languages'])) {
+            $map = [];
+            foreach ($config['languages'] as $code => $langData) {
+                $map[(int)$langData['index']] = $code;
+            }
+            ksort($map);
+            return $map;
+        }
+
+        return [1 => 'fr', 2 => 'en', 3 => 'de', 4 => 'nl'];
     }
 
     private function createOperationalInstanceRisksScales(array $currentScaleTypesByAnr): void

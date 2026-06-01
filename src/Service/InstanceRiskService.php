@@ -7,7 +7,9 @@
 
 namespace Monarc\Core\Service;
 
+use DateTime;
 use Monarc\Core\Entity;
+use Monarc\Core\Exception\Exception;
 use Monarc\Core\Service\Traits\ImpactVerificationTrait;
 use Monarc\Core\Table;
 use Monarc\Core\Service\Traits\RiskCalculationTrait;

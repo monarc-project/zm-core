@@ -295,18 +295,28 @@ class FixPositionsCleanupDb extends AbstractMigration
             ->removeIndex(['anr_id', 'code'])
             ->removeColumn('anr_id')
             ->save();
-        $this->table('rolf_tags')
-            ->dropForeignKey('anr_id')
-            ->removeIndex(['anr_id', 'code'])
-            ->removeColumn('anr_id')
-            ->save();
-        $this->table('rolf_tags')->addIndex(['code'], ['unique' => true])->save();
-        $this->table('rolf_risks')
-            ->dropForeignKey('anr_id')
-            ->removeIndex(['anr_id', 'code'])
-            ->removeColumn('anr_id')
-            ->save();
-        $this->table('rolf_risks')->addIndex(['code'], ['unique' => true])->save();
+        $rolfTagsTable = $this->table('rolf_tags');
+        if ($rolfTagsTable->hasColumn('anr_id')) {
+            if ($rolfTagsTable->hasForeignKey('anr_id')) {
+                $rolfTagsTable->dropForeignKey('anr_id')->save();
+            }
+            $this->dropIndexesOnColumn('rolf_tags', 'anr_id');
+            $rolfTagsTable->removeColumn('anr_id')->save();
+        }
+        if (!$rolfTagsTable->hasIndex(['code'])) {
+            $rolfTagsTable->addIndex(['code'], ['unique' => true])->save();
+        }
+        $rolfRisksTable = $this->table('rolf_risks');
+        if ($rolfRisksTable->hasColumn('anr_id')) {
+            if ($rolfRisksTable->hasForeignKey('anr_id')) {
+                $rolfRisksTable->dropForeignKey('anr_id')->save();
+            }
+            $this->dropIndexesOnColumn('rolf_risks', 'anr_id');
+            $rolfRisksTable->removeColumn('anr_id')->save();
+        }
+        if (!$rolfRisksTable->hasIndex(['code'])) {
+            $rolfRisksTable->addIndex(['code'], ['unique' => true])->save();
+        }
         $this->table('rolf_risks_tags')
             ->removeColumn('creator')
             ->removeColumn('created_at')
@@ -328,5 +338,23 @@ class FixPositionsCleanupDb extends AbstractMigration
             ->removeColumn('updater')
             ->removeColumn('updated_at')
             ->save();
+    }
+
+    /**
+     * Drops all non-PRIMARY indexes that include the given column.
+     * Uses SHOW INDEX which only requires SELECT privilege on the table (no information_schema access needed).
+     */
+    private function dropIndexesOnColumn(string $tableName, string $columnName): void
+    {
+        $rows = $this->fetchAll("SHOW INDEX FROM `{$tableName}`");
+        $namesToDrop = [];
+        foreach ($rows as $row) {
+            if ($row['Column_name'] === $columnName && $row['Key_name'] !== 'PRIMARY') {
+                $namesToDrop[$row['Key_name']] = true;
+            }
+        }
+        foreach (array_keys($namesToDrop) as $indexName) {
+            $this->execute("ALTER TABLE `{$tableName}` DROP INDEX `{$indexName}`");
+        }
     }
 }
