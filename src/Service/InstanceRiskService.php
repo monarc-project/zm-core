@@ -25,21 +25,17 @@ class InstanceRiskService
 
     private Table\ScaleTable $scaleTable;
 
-    private Table\RiskSourceTable $riskSourceTable;
-
     private Entity\UserSuperClass $connectedUser;
 
     public function __construct(
         Table\InstanceRiskTable $instanceRiskTable,
         Table\InstanceTable $instanceTable,
         Table\ScaleTable $scaleTable,
-        Table\RiskSourceTable $riskSourceTable,
         ConnectedUserService $connectedUserService
     ) {
         $this->instanceRiskTable = $instanceRiskTable;
         $this->instanceTable = $instanceTable;
         $this->scaleTable = $scaleTable;
-        $this->riskSourceTable = $riskSourceTable;
         $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
@@ -61,7 +57,6 @@ class InstanceRiskService
             $object = $instanceRisk->getInstance()->getObject();
             $threat = $instanceRisk->getThreat();
             $vulnerability = $instanceRisk->getVulnerability();
-            $riskSource = $instanceRisk->getRiskSource();
             $key = $object->isScopeGlobal()
                 ? 'o' . $object->getUuid() . '-' . $threat->getUuid() . '-' . $vulnerability->getUuid()
                 : 'r' . $instanceRisk->getId();
@@ -74,8 +69,6 @@ class InstanceRiskService
                     'asset' => $instanceRisk->getAsset()->getUuid(),
                     'assetLabel' . $languageIndex => $instanceRisk->getAsset()->getLabel($languageIndex),
                     'assetDescription' . $languageIndex => $instanceRisk->getAsset()->getDescription($languageIndex),
-                    'riskSourceId' => $riskSource?->getId(),
-                    'riskSourceLabel' => $riskSource?->getLabel() ?? '',
                     'threat' => $threat->getUuid(),
                     'threatCode' => $threat->getCode(),
                     'threatLabel' . $languageIndex => $threat->getLabel($languageIndex),
@@ -102,8 +95,6 @@ class InstanceRiskService
                     'comment' => $instanceRisk->getComment(),
                     'scope' => $object->getScope(),
                     'kindOfMeasure' => $instanceRisk->getKindOfMeasure(),
-                    'lastReviewDate' => $instanceRisk->getLastReviewDate()?->format('Y-m-d'),
-                    'reviewFrequency' => $instanceRisk->getReviewFrequency(),
                     't' => $instanceRisk->isTreated(),
                     'tid' => $threat->getUuid(),
                     'vid' => $vulnerability->getUuid(),
@@ -234,21 +225,6 @@ class InstanceRiskService
 
     private function updateInstanceRiskData(Entity\InstanceRisk $instanceRisk, array $data): void
     {
-        if (array_key_exists('riskSourceId', $data)) {
-            $riskSourceId = $data['riskSourceId'];
-            $instanceRisk->setRiskSource(
-                $riskSourceId === null || $riskSourceId === ''
-                    ? null
-                    : $this->riskSourceTable->findById((int)$riskSourceId)
-            );
-        }
-        if (array_key_exists('lastReviewDate', $data)) {
-            $instanceRisk->setLastReviewDate($this->prepareLastReviewDate($instanceRisk, $data['lastReviewDate']));
-        }
-        if (array_key_exists('reviewFrequency', $data)) {
-            $reviewFrequency = trim((string)$data['reviewFrequency']);
-            $instanceRisk->setReviewFrequency($reviewFrequency === '' ? null : $reviewFrequency);
-        }
         if (isset($data['reductionAmount'])) {
             $instanceRisk->setReductionAmount((int)$data['reductionAmount']);
         }
@@ -269,19 +245,5 @@ class InstanceRiskService
         $instanceRisk->setUpdater($this->connectedUser->getEmail());
 
         $this->recalculateRiskRates($instanceRisk);
-    }
-
-    private function prepareLastReviewDate(Entity\InstanceRisk $instanceRisk, mixed $lastReviewDate): ?DateTime
-    {
-        if ($lastReviewDate === null || $lastReviewDate === '') {
-            return null;
-        }
-
-        $normalizedDate = DateTime::createFromFormat('Y-m-d', (string)$lastReviewDate);
-        if ($normalizedDate === false) {
-            throw new Exception('Invalid last review date format.', 412);
-        }
-
-        return $normalizedDate;
     }
 }
