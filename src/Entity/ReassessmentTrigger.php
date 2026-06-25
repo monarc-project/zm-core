@@ -13,7 +13,6 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Table(
  *     name="anr_reassessment_triggers",
  *     indexes={
- *         @ORM\Index(name="anr_reassessment_triggers_trigger_type_indx", columns={"trigger_type"}),
  *         @ORM\Index(name="anr_reassessment_triggers_position_indx", columns={"position"}),
  *         @ORM\Index(name="anr_reassessment_triggers_is_active_indx", columns={"is_active"})
  *     }

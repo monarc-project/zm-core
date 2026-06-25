@@ -23,7 +23,6 @@ class AddReassessmentTriggers extends AbstractMigration
                 `updater` varchar(255) DEFAULT NULL,
                 `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
                 PRIMARY KEY (`id`),
-                KEY `anr_reassessment_triggers_trigger_type_indx` (`trigger_type`),
                 KEY `anr_reassessment_triggers_position_indx` (`position`),
                 KEY `anr_reassessment_triggers_is_active_indx` (`is_active`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;'
