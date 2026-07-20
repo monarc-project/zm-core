@@ -73,7 +73,7 @@ class MonarcObjectTable extends AbstractTable
         if (!empty($modelIds)) {
             $queryBuilder->distinct()
                 ->leftJoin('o.anrs', 'anrs')
-                ->innerJoin('anrs.model', 'm')
+                ->leftJoin('anrs.model', 'm')
                 ->orWhere($queryBuilder->expr()->andX(
                     $queryBuilder->expr()->eq('o.mode', ObjectSuperClass::MODE_SPECIFIC),
                     $queryBuilder->expr()->in('m.id', array_map('\intval', $modelIds))
