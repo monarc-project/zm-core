@@ -106,7 +106,7 @@ class PostMeasureDataInputValidator extends AbstractInputValidator
 
         $labelRules = [];
         foreach ($this->systemLanguageIndexes as $systemLanguageIndex) {
-            $labelRules[] = $this->getLabelRule($systemLanguageIndex);
+            $labelRules[] = $this->getLabelRule($systemLanguageIndex, 2048);
         }
 
         return array_merge($labelRules, $rules);
