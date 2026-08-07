@@ -13,7 +13,7 @@ class RiskSourceInputValidatorTest extends TestCase
     /**
      * @covers \Monarc\Core\Validator\InputValidator\RiskSource\PostRiskSourceDataInputValidator::getRules
      */
-    public function testPostValidatorTrimsLabelAndCastsBooleanField(): void
+    public function testPostValidatorTrimsLabelsAndCastsBooleanField(): void
     {
         $validator = new PostRiskSourceDataInputValidator(
             ['defaultLanguageIndex' => 1],
@@ -21,12 +21,12 @@ class RiskSourceInputValidatorTest extends TestCase
         );
 
         self::assertTrue($validator->isValid([
-            'label' => '  Supplier failure  ',
+            'labels' => ['fr' => '  Supplier failure  '],
             'isActive' => '0',
         ]));
 
         $validatedData = $validator->getValidData();
-        self::assertSame('Supplier failure', $validatedData['label']);
+        self::assertSame(['fr' => 'Supplier failure'], $validatedData['labels']);
         self::assertFalse($validatedData['isActive']);
     }
 
@@ -41,6 +41,7 @@ class RiskSourceInputValidatorTest extends TestCase
         );
 
         self::assertTrue($validator->isValid([
+            'labels' => ['fr' => 'Supplier failure'],
             'isActive' => '1',
         ]));
 
@@ -59,11 +60,11 @@ class RiskSourceInputValidatorTest extends TestCase
         );
 
         self::assertTrue($validator->isValid([
-            'label' => ' Supplier / third party ',
+            'labels' => ['fr' => ' Supplier / third party '],
         ]));
 
         $validatedData = $validator->getValidData();
-        self::assertSame('Supplier / third party', $validatedData['label']);
+        self::assertSame(['fr' => 'Supplier / third party'], $validatedData['labels']);
         self::assertTrue(!array_key_exists('isActive', $validatedData) || $validatedData['isActive'] === null);
     }
 
@@ -77,14 +78,14 @@ class RiskSourceInputValidatorTest extends TestCase
             $this->createTranslator()
         );
 
-        self::assertTrue($validator->isValid(['label' => 'ttt']));
+        self::assertTrue($validator->isValid(['labels' => ['fr' => 'ttt']]));
         self::assertTrue($validator->getValidData()['isActive']);
     }
 
     /**
      * @covers \Monarc\Core\Validator\InputValidator\RiskSource\PostRiskSourceDataInputValidator::getRules
      */
-    public function testPostValidatorRejectsEmptyLabel(): void
+    public function testPostValidatorRejectsMissingLabels(): void
     {
         $validator = new PostRiskSourceDataInputValidator(
             ['defaultLanguageIndex' => 1],
@@ -92,7 +93,7 @@ class RiskSourceInputValidatorTest extends TestCase
         );
 
         self::assertFalse($validator->isValid([
-            'label' => '   ',
+            'labels' => [],
         ]));
     }
 

@@ -9,12 +9,16 @@ namespace Monarc\Core\Service;
 
 use Monarc\Core\Entity\RiskSource;
 use Monarc\Core\Entity\UserSuperClass;
-use Monarc\Core\Exception\Exception;
 use Monarc\Core\InputFormatter\FormattedInputParams;
 use Monarc\Core\Table\RiskSourceTable;
+use Monarc\Core\Traits\TranslationNormalizationTrait;
+use Monarc\Core\Traits\TranslationResolverTrait;
 
 class RiskSourceService
 {
+    use TranslationNormalizationTrait;
+    use TranslationResolverTrait;
+
     private UserSuperClass $connectedUser;
 
     public function __construct(
@@ -48,10 +52,10 @@ class RiskSourceService
 
     public function create(array $data): RiskSource
     {
-        $labels = $this->normalizeLabels($data);
-
         $riskSource = (new RiskSource())
-            ->setLabelTranslations($labels)
+            ->setLabelTranslations(
+                $this->normalizeTranslations($data['labels'] ?? [], $this->getSupportedLanguageCodes())
+            )
             ->setIsDefault(false)
             ->setIsActive((bool)($data['isActive'] ?? true))
             ->setCreator($this->connectedUser->getEmail());
@@ -67,9 +71,10 @@ class RiskSourceService
         if (isset($data['isActive'])) {
             $riskSource->setIsActive((bool)$data['isActive']);
         }
-        if (!empty($data['labels']) || isset($data['label'])) {
-            $labels = $this->normalizeLabels($data);
-            $riskSource->setLabelTranslations($labels);
+        if (!empty($data['labels'])) {
+            $riskSource->setLabelTranslations(
+                $this->normalizeTranslations($data['labels'], $this->getSupportedLanguageCodes())
+            );
         }
 
         $riskSource->setUpdater($this->connectedUser->getEmail());
@@ -83,10 +88,6 @@ class RiskSourceService
     {
         $riskSource = $this->get($id);
 
-        if ($riskSource->isDefault()) {
-            throw new Exception('Default risk sources cannot be removed.', 412);
-        }
-
         $this->riskSourceTable->remove($riskSource);
     }
 
@@ -98,7 +99,7 @@ class RiskSourceService
     {
         $labelsById = [];
         foreach ($riskSources as $riskSource) {
-            $labelsById[$riskSource->getId()] = $this->resolveDisplayValue(
+            $labelsById[$riskSource->getId()] = $this->resolveTranslation(
                 $riskSource->getLabelTranslations(),
                 $riskSource->getLabel(),
                 $this->getCurrentLanguageCode()
@@ -110,7 +111,7 @@ class RiskSourceService
 
     public function getDisplayLabel(RiskSource $riskSource): string
     {
-        return $this->resolveDisplayValue(
+        return $this->resolveTranslation(
             $riskSource->getLabelTranslations(),
             $riskSource->getLabel(),
             $this->getCurrentLanguageCode()
@@ -119,74 +120,6 @@ class RiskSourceService
 
     public function getLabels(RiskSource $riskSource): array
     {
-        return $this->getLabelsWithFallback($riskSource->getLabelTranslations(), $riskSource->getLabel());
-    }
-
-    private function normalizeLabels(array $data): array
-    {
-        $labels = [];
-        if (isset($data['labels']) && is_array($data['labels'])) {
-            foreach ($data['labels'] as $languageCode => $label) {
-                $trimmedLabel = trim((string)$label);
-                if ($trimmedLabel !== '') {
-                    $labels[(string)$languageCode] = $trimmedLabel;
-                }
-            }
-        }
-
-        if ($labels === [] && isset($data['label'])) {
-            $labels[$this->getCurrentLanguageCode()] = trim((string)$data['label']);
-        }
-
-        return $labels;
-    }
-
-    private function resolveDisplayValue(array $labels, string $fallbackLabel, ?string $languageCode = null): string
-    {
-        $languageCode ??= $this->getCurrentLanguageCode();
-        if (isset($labels[$languageCode]) && $labels[$languageCode] !== '') {
-            return $labels[$languageCode];
-        }
-
-        $defaultLanguageCode = $this->configService
-            ->getLanguageCodes()[$this->configService->getConfigOption('defaultLanguageIndex', 1)] ?? null;
-        if ($defaultLanguageCode !== null && isset($labels[$defaultLanguageCode])) {
-            return $labels[$defaultLanguageCode];
-        }
-
-        if ($labels !== []) {
-            return (string)reset($labels);
-        }
-
-        return $fallbackLabel;
-    }
-
-    /**
-     * @param array<string, string> $labels
-     * @return array<string, string>
-     */
-    private function getLabelsWithFallback(array $labels, string $fallbackLabel): array
-    {
-        $localizedLabels = [];
-        foreach ($this->getSupportedLanguageCodes() as $languageCode) {
-            $localizedLabels[$languageCode] = $this->resolveDisplayValue($labels, $fallbackLabel, $languageCode);
-        }
-
-        return $localizedLabels;
-    }
-
-    private function getCurrentLanguageCode(): string
-    {
-        return $this->configService->getLanguageCodes()[$this->connectedUser->getLanguage()]
-            ?? $this->configService->getLanguageCodes()[$this->configService
-                ->getConfigOption('defaultLanguageIndex', 1)]
-            ?? 'en';
-    }
-
-    private function getSupportedLanguageCodes(): array
-    {
-        $languageCodes = $this->configService->getActiveLanguageCodes();
-
-        return $languageCodes !== [] ? $languageCodes : $this->configService->getLanguageCodes();
+        return $this->resolveTranslations($riskSource->getLabelTranslations(), $riskSource->getLabel());
     }
 }

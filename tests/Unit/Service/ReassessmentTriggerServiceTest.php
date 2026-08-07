@@ -15,6 +15,31 @@ class ReassessmentTriggerServiceTest extends TestCase
     /**
      * @covers ReassessmentTriggerService::create
      */
+    public function testCreateStoresTranslationFields(): void
+    {
+        $table = $this->createMock(ReassessmentTriggerTable::class);
+        $table->expects($this->once())
+            ->method('save')
+            ->with($this->callback(function (ReassessmentTrigger $reassessmentTrigger) {
+                return $reassessmentTrigger->getTriggerTypeTranslations() === ['fr' => 'Periodic review']
+                    && $reassessmentTrigger->getDescriptionTranslations() === ['fr' => 'Review trigger']
+                    && $reassessmentTrigger->getMonitoringApproachTranslations() === ['fr' => 'SOC alerts'];
+            }));
+
+        $reassessmentTrigger = $this->createService($table)->create([
+            'triggerTypes' => ['fr' => 'Periodic review'],
+            'descriptions' => ['fr' => 'Review trigger'],
+            'monitoringApproaches' => ['fr' => 'SOC alerts'],
+        ]);
+
+        self::assertSame(['fr' => 'Periodic review'], $reassessmentTrigger->getTriggerTypeTranslations());
+        self::assertSame(['fr' => 'Review trigger'], $reassessmentTrigger->getDescriptionTranslations());
+        self::assertSame(['fr' => 'SOC alerts'], $reassessmentTrigger->getMonitoringApproachTranslations());
+    }
+
+    /**
+     * @covers ReassessmentTriggerService::create
+     */
     public function testCreateStoresMonitoringApproachesForMultipleLanguages(): void
     {
         $table = $this->createMock(ReassessmentTriggerTable::class);
@@ -85,9 +110,43 @@ class ReassessmentTriggerServiceTest extends TestCase
     }
 
     /**
+     * @covers ReassessmentTriggerService::getTriggerTypes
+     * @covers ReassessmentTriggerService::getDescriptions
+     * @covers ReassessmentTriggerService::getMonitoringApproaches
+     */
+    public function testGetTranslationsUsesSupportedLanguagesAndFallbacks(): void
+    {
+        $reassessmentTrigger = (new ReassessmentTrigger())
+            ->setTriggerTypeTranslations(['en' => 'Periodic review'])
+            ->setDescriptionTranslations(['de' => 'Deutsche Beschreibung'])
+            ->setMonitoringApproachTranslations(['en' => 'SOC alerts']);
+
+        $service = $this->createService($this->createMock(ReassessmentTriggerTable::class));
+
+        self::assertSame([
+            'fr' => 'Periodic review',
+            'en' => 'Periodic review',
+            'de' => 'Periodic review',
+            'nl' => 'Periodic review',
+        ], $service->getTriggerTypes($reassessmentTrigger));
+        self::assertSame([
+            'fr' => 'Deutsche Beschreibung',
+            'en' => 'Deutsche Beschreibung',
+            'de' => 'Deutsche Beschreibung',
+            'nl' => 'Deutsche Beschreibung',
+        ], $service->getDescriptions($reassessmentTrigger));
+        self::assertSame([
+            'fr' => 'SOC alerts',
+            'en' => 'SOC alerts',
+            'de' => 'SOC alerts',
+            'nl' => 'SOC alerts',
+        ], $service->getMonitoringApproaches($reassessmentTrigger));
+    }
+
+    /**
      * @covers ReassessmentTriggerService::update
      */
-    public function testUpdateClearsMonitoringApproachWhenAllValuesAreEmpty(): void
+    public function testUpdateDoesNotClearMonitoringApproachWhenEmptyTranslationsAreIgnored(): void
     {
         $reassessmentTrigger = (new ReassessmentTrigger())
             ->setTriggerTypeTranslations(['en' => 'Periodic review'])
@@ -102,17 +161,17 @@ class ReassessmentTriggerServiceTest extends TestCase
         $table->expects($this->once())
             ->method('save')
             ->with($this->callback(function (ReassessmentTrigger $updatedTrigger) {
-                return $updatedTrigger->getMonitoringApproach() === null
-                    && $updatedTrigger->getMonitoringApproachTranslations() === [];
+                return $updatedTrigger->getMonitoringApproachTranslations() === [
+                    'en' => 'Existing monitoring approach',
+                ];
             }));
 
         $service = $this->createService($table);
         $updatedTrigger = $service->update(3, [
-            'monitoringApproach' => '',
+            'monitoringApproaches' => [],
         ]);
 
-        self::assertNull($updatedTrigger->getMonitoringApproach());
-        self::assertSame([], $updatedTrigger->getMonitoringApproachTranslations());
+        self::assertSame(['en' => 'Existing monitoring approach'], $updatedTrigger->getMonitoringApproachTranslations());
     }
 
     private function createService(ReassessmentTriggerTable $reassessmentTriggerTable): ReassessmentTriggerService
@@ -132,6 +191,7 @@ class ReassessmentTriggerServiceTest extends TestCase
         $configService = $this->createMock(ConfigService::class);
         $configService->method('getLanguageCodes')->willReturn([1 => 'fr', 2 => 'en', 3 => 'de', 4 => 'nl']);
         $configService->method('getActiveLanguageCodes')->willReturn(['fr', 'en', 'de', 'nl']);
+        $configService->method('getDefaultLanguageCode')->willReturn('fr');
         $configService->method('getConfigOption')->willReturnMap([
             ['defaultLanguageIndex', 1, 1],
         ]);

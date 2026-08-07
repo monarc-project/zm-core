@@ -8,9 +8,8 @@
 namespace Monarc\Core\Validator\InputValidator\ReassessmentTrigger;
 
 use Laminas\Filter\Callback;
-use Laminas\Filter\StringTrim;
-use Laminas\Validator\Between;
-use Laminas\Validator\StringLength;
+use Laminas\InputFilter\ArrayInput;
+use Laminas\Validator\NumberComparison;
 use Monarc\Core\Traits\TranslationNormalizationTrait;
 use Monarc\Core\Validator\InputValidator\AbstractInputValidator;
 
@@ -22,85 +21,30 @@ class PostReassessmentTriggerDataInputValidator extends AbstractInputValidator
     {
         return [
             [
-                'name' => 'triggerType',
-                'required' => false,
-                'allow_empty' => true,
-                'filters' => [
-                    [
-                        'name' => Callback::class,
-                        'options' => [
-                            'callback' => static function ($value): ?string {
-                                $value = trim((string)$value);
-
-                                return $value === '' ? null : $value;
-                            },
-                        ],
-                    ],
-                ],
-                'validators' => [],
-            ],
-            [
                 'name' => 'triggerTypes',
-                'required' => false,
-                'allow_empty' => true,
-                'filters' => [
-                    [
-                        'name' => Callback::class,
-                        'options' => [
-                            'callback' => [$this, 'normalizeTranslations'],
-                        ],
-                    ],
-                ],
-                'validators' => [],
-            ],
-            [
-                'name' => 'description',
                 'required' => true,
                 'allow_empty' => false,
+                'type' => ArrayInput::class,
                 'filters' => [
                     [
-                        'name' => StringTrim::class,
-                    ],
-                ],
-                'validators' => [
-                    [
-                        'name' => StringLength::class,
+                        'name' => Callback::class,
                         'options' => [
-                            'min' => 1,
+                            'callback' => [$this, 'normalizeTranslationValue'],
                         ],
                     ],
                 ],
+                'validators' => [],
             ],
             [
                 'name' => 'descriptions',
-                'required' => false,
-                'allow_empty' => true,
+                'required' => true,
+                'allow_empty' => false,
+                'type' => ArrayInput::class,
                 'filters' => [
                     [
                         'name' => Callback::class,
                         'options' => [
-                            'callback' => [$this, 'normalizeTranslations'],
-                        ],
-                    ],
-                ],
-                'validators' => [],
-            ],
-            [
-                'name' => 'monitoringApproach',
-                'required' => false,
-                'allow_empty' => true,
-                'filters' => [
-                    [
-                        'name' => StringTrim::class,
-                    ],
-                    [
-                        'name' => Callback::class,
-                        'options' => [
-                            'callback' => static function ($value): ?string {
-                                $value = trim((string)$value);
-
-                                return $value === '' ? null : $value;
-                            },
+                            'callback' => [$this, 'normalizeTranslationValue'],
                         ],
                     ],
                 ],
@@ -108,13 +52,14 @@ class PostReassessmentTriggerDataInputValidator extends AbstractInputValidator
             ],
             [
                 'name' => 'monitoringApproaches',
-                'required' => false,
-                'allow_empty' => true,
+                'required' => true,
+                'allow_empty' => false,
+                'type' => ArrayInput::class,
                 'filters' => [
                     [
                         'name' => Callback::class,
                         'options' => [
-                            'callback' => [$this, 'normalizeTranslations'],
+                            'callback' => [$this, 'normalizeTranslationValue'],
                         ],
                     ],
                 ],
@@ -160,7 +105,7 @@ class PostReassessmentTriggerDataInputValidator extends AbstractInputValidator
                 ],
                 'validators' => [
                     [
-                        'name' => Between::class,
+                        'name' => NumberComparison::class,
                         'options' => [
                             'min' => 1,
                             'max' => PHP_INT_MAX,

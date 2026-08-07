@@ -113,6 +113,7 @@ class RiskSourceSuperClass
         }
 
         $decoded = json_decode($value, true);
+
         return $this->normalizeTranslations($decoded);
     }
 

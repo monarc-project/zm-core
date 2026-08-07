@@ -72,6 +72,11 @@ class ConfigService
         return $this->languageCodes;
     }
 
+    public function getDefaultLanguageCode(): string
+    {
+        return $this->getLanguageCodes()[$this->config['defaultLanguageIndex'] ?? 1] ?? 'fr';
+    }
+
     public function getActiveLanguageCodes(): array
     {
         if (empty($this->activeLanguageCodes)) {

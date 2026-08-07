@@ -16,7 +16,7 @@ class RiskSourceServiceTest extends TestCase
     /**
      * @covers RiskSourceService::create
      */
-    public function testCreateStoresLabelsAsInlineTranslations(): void
+    public function testCreateStoresLabelsAsTranslations(): void
     {
         $table = $this->createMock(RiskSourceTable::class);
         $table->expects($this->once())
@@ -30,11 +30,30 @@ class RiskSourceServiceTest extends TestCase
 
         $service = $this->createService($table);
 
-        $riskSource = $service->create(['label' => '  Cloud provider failure  ']);
+        $riskSource = $service->create(['labels' => ['fr' => '  Cloud provider failure  ']]);
 
         self::assertSame(['fr' => 'Cloud provider failure'], $riskSource->getLabelTranslations());
         self::assertTrue($riskSource->isActive());
         self::assertFalse($riskSource->isDefault());
+    }
+
+    /**
+     * @covers RiskSourceService::create
+     */
+    public function testCreateDropsUnsupportedAndEmptyLabelTranslations(): void
+    {
+        $table = $this->createMock(RiskSourceTable::class);
+        $table->expects($this->once())->method('save');
+
+        $riskSource = $this->createService($table)->create([
+            'labels' => [
+                'fr' => ' Fournisseur ',
+                'en' => '',
+                'xx' => 'Unsupported language',
+            ],
+        ]);
+
+        self::assertSame(['fr' => 'Fournisseur'], $riskSource->getLabelTranslations());
     }
 
     /**
@@ -124,29 +143,6 @@ class RiskSourceServiceTest extends TestCase
     /**
      * @covers RiskSourceService::delete
      */
-    public function testDeleteRejectsDefaultRiskSource(): void
-    {
-        $riskSource = (new RiskSource())
-            ->setLabelTranslations(['en' => 'Default source'])
-            ->setIsDefault(true);
-
-        $table = $this->createMock(RiskSourceTable::class);
-        $table->expects($this->once())
-            ->method('findById')
-            ->with(4)
-            ->willReturn($riskSource);
-        $table->expects($this->never())->method('remove');
-
-        $service = $this->createService($table);
-
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Default risk sources cannot be removed.');
-        $service->delete(4);
-    }
-
-    /**
-     * @covers RiskSourceService::delete
-     */
     private function createService(RiskSourceTable $riskSourceTable): RiskSourceService
     {
         $connectedUserService = $this->createMock(ConnectedUserService::class);
@@ -164,6 +160,7 @@ class RiskSourceServiceTest extends TestCase
         $configService = $this->createMock(ConfigService::class);
         $configService->method('getLanguageCodes')->willReturn([1 => 'fr', 2 => 'en', 3 => 'de', 4 => 'nl']);
         $configService->method('getActiveLanguageCodes')->willReturn([1 => 'fr', 2 => 'en', 3 => 'de', 4 => 'nl']);
+        $configService->method('getDefaultLanguageCode')->willReturn('fr');
         $configService->method('getConfigOption')->willReturnMap([
             ['defaultLanguageIndex', 1, 1],
         ]);

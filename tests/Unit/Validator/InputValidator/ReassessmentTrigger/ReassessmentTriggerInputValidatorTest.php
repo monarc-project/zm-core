@@ -13,7 +13,7 @@ class ReassessmentTriggerInputValidatorTest extends TestCase
     /**
      * @covers \Monarc\Core\Validator\InputValidator\ReassessmentTrigger\PostReassessmentTriggerDataInputValidator::getRules
      */
-    public function testPostValidatorTrimsDescriptionAndDefaultsIsActive(): void
+    public function testPostValidatorTrimsTranslationsAndDefaultsIsActive(): void
     {
         $validator = new PostReassessmentTriggerDataInputValidator(
             ['defaultLanguageIndex' => 1],
@@ -21,36 +21,17 @@ class ReassessmentTriggerInputValidatorTest extends TestCase
         );
 
         self::assertTrue($validator->isValid([
-            'triggerType' => 'security_incident',
-            'description' => '  Reassess after a critical incident.  ',
+            'triggerTypes' => ['fr' => 'security_incident'],
+            'descriptions' => ['fr' => '  Reassess after a critical incident.  '],
+            'monitoringApproaches' => ['fr' => 'SOC alerts'],
             'position' => '2',
         ]));
 
         $validatedData = $validator->getValidData();
-        self::assertSame('security_incident', $validatedData['triggerType']);
-        self::assertSame('Reassess after a critical incident.', $validatedData['description']);
+        self::assertSame(['fr' => 'security_incident'], $validatedData['triggerTypes']);
+        self::assertSame(['fr' => 'Reassess after a critical incident.'], $validatedData['descriptions']);
         self::assertTrue($validatedData['isActive']);
         self::assertSame(2, $validatedData['position']);
-    }
-
-    /**
-     * @covers \Monarc\Core\Validator\InputValidator\ReassessmentTrigger\PostReassessmentTriggerDataInputValidator::getRules
-     */
-    public function testPostValidatorAllowsOptionalMonitoringApproach(): void
-    {
-        $validator = new PostReassessmentTriggerDataInputValidator(
-            ['defaultLanguageIndex' => 1],
-            $this->createTranslator()
-        );
-
-        self::assertTrue($validator->isValid([
-            'triggerType' => 'made_up_type',
-            'description' => 'Valid trigger type',
-            'monitoringApproach' => '  Monitor regulatory updates and supplier notices.  ',
-        ]));
-
-        $validatedData = $validator->getValidData();
-        self::assertSame('Monitor regulatory updates and supplier notices.', $validatedData['monitoringApproach']);
     }
 
     /**
@@ -64,17 +45,14 @@ class ReassessmentTriggerInputValidatorTest extends TestCase
         );
 
         self::assertTrue($validator->isValid([
-            'triggerType' => 'System change',
             'triggerTypes' => [
                 'en' => 'System change',
                 'fr' => 'Changement du systeme',
             ],
-            'description' => 'English description',
             'descriptions' => [
                 'en' => 'English description',
                 'de' => 'Deutsche Beschreibung',
             ],
-            'monitoringApproach' => 'SOC alerts',
             'monitoringApproaches' => [
                 'en' => 'SOC alerts',
                 'fr' => 'Alertes SOC',
@@ -99,7 +77,7 @@ class ReassessmentTriggerInputValidatorTest extends TestCase
     /**
      * @covers \Monarc\Core\Validator\InputValidator\ReassessmentTrigger\PatchReassessmentTriggerDataInputValidator::getRules
      */
-    public function testPatchValidatorAcceptsPartialPayloadAndAllowsNullType(): void
+    public function testPatchValidatorAcceptsTranslationPayload(): void
     {
         $validator = new PatchReassessmentTriggerDataInputValidator(
             ['defaultLanguageIndex' => 1],
@@ -107,23 +85,22 @@ class ReassessmentTriggerInputValidatorTest extends TestCase
         );
 
         self::assertTrue($validator->isValid([
-            'triggerType' => ' ',
+            'triggerTypes' => ['fr' => 'System change'],
+            'descriptions' => ['fr' => 'Description'],
+            'monitoringApproaches' => ['fr' => 'SOC alerts'],
             'isActive' => '0',
             'position' => '4',
-            'monitoringApproach' => '  SOC alerts  ',
         ]));
 
         $validatedData = $validator->getValidData();
-        self::assertNull($validatedData['triggerType']);
         self::assertFalse($validatedData['isActive']);
         self::assertSame(4, $validatedData['position']);
-        self::assertSame('SOC alerts', $validatedData['monitoringApproach']);
     }
 
     /**
      * @covers \Monarc\Core\Validator\InputValidator\ReassessmentTrigger\PatchReassessmentTriggerDataInputValidator::getValidData
      */
-    public function testPatchValidatorDoesNotReturnMissingOptionalFields(): void
+    public function testPatchValidatorReturnsNullForMissingOptionalFields(): void
     {
         $validator = new PatchReassessmentTriggerDataInputValidator(
             ['defaultLanguageIndex' => 1],
@@ -131,15 +108,15 @@ class ReassessmentTriggerInputValidatorTest extends TestCase
         );
 
         self::assertTrue($validator->isValid([
+            'triggerTypes' => ['fr' => 'System change'],
+            'descriptions' => ['fr' => 'Description'],
+            'monitoringApproaches' => ['fr' => 'SOC alerts'],
             'position' => '4',
         ]));
 
         $validatedData = $validator->getValidData();
-        self::assertSame(['position' => 4], $validatedData);
-        self::assertArrayNotHasKey('isActive', $validatedData);
-        self::assertArrayNotHasKey('triggerType', $validatedData);
-        self::assertArrayNotHasKey('description', $validatedData);
-        self::assertArrayNotHasKey('monitoringApproach', $validatedData);
+        self::assertSame(4, $validatedData['position']);
+        self::assertNull($validatedData['isActive']);
     }
 
     /**

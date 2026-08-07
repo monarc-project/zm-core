@@ -8,33 +8,31 @@
 namespace Monarc\Core\Validator\InputValidator\RiskSource;
 
 use Laminas\Filter\Callback;
-use Laminas\Filter\StringTrim;
-use Laminas\Validator\StringLength;
+use Laminas\InputFilter\ArrayInput;
+use Monarc\Core\Traits\TranslationNormalizationTrait;
 use Monarc\Core\Validator\InputValidator\AbstractInputValidator;
 
 class PostRiskSourceDataInputValidator extends AbstractInputValidator
 {
+    use TranslationNormalizationTrait;
+
     protected function getRules(): array
     {
         return [
             [
-                'name' => 'label',
+                'name' => 'labels',
                 'required' => true,
                 'allow_empty' => false,
+                'type' => ArrayInput::class,
                 'filters' => [
                     [
-                        'name' => StringTrim::class,
-                    ],
-                ],
-                'validators' => [
-                    [
-                        'name' => StringLength::class,
+                        'name' => Callback::class,
                         'options' => [
-                            'min' => 1,
-                            'max' => 255,
+                            'callback' => [$this, 'normalizeTranslationValue'],
                         ],
                     ],
                 ],
+                'validators' => [],
             ],
             [
                 'name' => 'isActive',

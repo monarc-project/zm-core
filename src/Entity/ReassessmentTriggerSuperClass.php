@@ -189,8 +189,8 @@ class ReassessmentTriggerSuperClass implements PositionedEntityInterface, Proper
         if ($value === null || $value === '') {
             return [];
         }
-
         $decoded = json_decode($value, true);
+
         return $this->normalizeTranslations($decoded);
     }
 

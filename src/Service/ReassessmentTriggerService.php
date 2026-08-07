@@ -11,11 +11,17 @@ use Monarc\Core\Entity\ReassessmentTrigger;
 use Monarc\Core\Entity\UserSuperClass;
 use Monarc\Core\InputFormatter\FormattedInputParams;
 use Monarc\Core\Table\ReassessmentTriggerTable;
+use Monarc\Core\Traits\TranslationNormalizationTrait;
+use Monarc\Core\Traits\TranslationResolverTrait;
 
 class ReassessmentTriggerService
 {
+    use TranslationNormalizationTrait;
+    use TranslationResolverTrait;
+
     private UserSuperClass $connectedUser;
 
+    /* ConfigService is used in TranslationResolverTrait. */
     public function __construct(
         private ReassessmentTriggerTable $reassessmentTriggerTable,
         private ConfigService $configService,
@@ -48,9 +54,15 @@ class ReassessmentTriggerService
     public function create(array $data): ReassessmentTrigger
     {
         $reassessmentTrigger = (new ReassessmentTrigger())
-            ->setTriggerTypeTranslations($data['triggerTypes'])
-            ->setDescriptionTranslations($data['descriptions'])
-            ->setMonitoringApproachTranslations($data['monitoringApproaches'])
+            ->setTriggerTypeTranslations(
+                $this->normalizeTranslations($data['triggerTypes'] ?? [], $this->getSupportedLanguageCodes())
+            )
+            ->setDescriptionTranslations(
+                $this->normalizeTranslations($data['descriptions'] ?? [], $this->getSupportedLanguageCodes())
+            )
+            ->setMonitoringApproachTranslations(
+                $this->normalizeTranslations($data['monitoringApproaches'] ?? [], $this->getSupportedLanguageCodes())
+            )
             ->setIsActive((bool)($data['isActive'] ?? true))
             ->setCreator($this->connectedUser->getEmail());
 
@@ -64,14 +76,19 @@ class ReassessmentTriggerService
     {
         $reassessmentTrigger = $this->get($id);
 
-        if (array_key_exists('triggerTypes', $data)) {
-            $reassessmentTrigger->setTriggerTypeTranslations($data['triggerTypes']);
+        if (!empty($data['triggerTypes'])) {
+            $reassessmentTrigger->setTriggerTypeTranslations(
+                $this->normalizeTranslations($data['triggerTypes'], $this->getSupportedLanguageCodes())
+            );
         }
-        if (array_key_exists('descriptions', $data)) {
-            $reassessmentTrigger->setDescriptionTranslations($data['descriptions']);
+        if (!empty($data['descriptions'])) {
+            $reassessmentTrigger->setDescriptionTranslations(
+                $this->normalizeTranslations($data['descriptions'], $this->getSupportedLanguageCodes()));
         }
-        if (array_key_exists('monitoringApproaches', $data)) {
-            $reassessmentTrigger->setMonitoringApproachTranslations($data['monitoringApproaches']);
+        if (!empty($data['monitoringApproaches'])) {
+            $reassessmentTrigger->setMonitoringApproachTranslations(
+                $this->normalizeTranslations($data['monitoringApproaches'], $this->getSupportedLanguageCodes())
+            );
         }
         if (isset($data['isActive'])) {
             $reassessmentTrigger->setIsActive((bool)$data['isActive']);
@@ -125,7 +142,7 @@ class ReassessmentTriggerService
 
     public function getDisplayTriggerType(ReassessmentTrigger $reassessmentTrigger, ?string $languageCode = null): string
     {
-        return $this->resolveDisplayValue(
+        return $this->resolveTranslation(
             $reassessmentTrigger->getTriggerTypeTranslations(),
             $reassessmentTrigger->getTriggerType() ?? '',
             $languageCode
@@ -134,7 +151,7 @@ class ReassessmentTriggerService
 
     public function getDisplayDescription(ReassessmentTrigger $reassessmentTrigger, ?string $languageCode = null): string
     {
-        return $this->resolveDisplayValue(
+        return $this->resolveTranslation(
             $reassessmentTrigger->getDescriptionTranslations(),
             $reassessmentTrigger->getDescription(),
             $languageCode
@@ -146,7 +163,7 @@ class ReassessmentTriggerService
      */
     public function getTriggerTypes(ReassessmentTrigger $reassessmentTrigger): array
     {
-        return $this->getEditableTranslations(
+        return $this->resolveTranslations(
             $reassessmentTrigger->getTriggerTypeTranslations(),
             $reassessmentTrigger->getTriggerType() ?? ''
         );
@@ -157,7 +174,7 @@ class ReassessmentTriggerService
      */
     public function getDescriptions(ReassessmentTrigger $reassessmentTrigger): array
     {
-        return $this->getEditableTranslations(
+        return $this->resolveTranslations(
             $reassessmentTrigger->getDescriptionTranslations(),
             $reassessmentTrigger->getDescription()
         );
@@ -167,7 +184,7 @@ class ReassessmentTriggerService
         ReassessmentTrigger $reassessmentTrigger,
         ?string $languageCode = null
     ): string {
-        return $this->resolveDisplayValue(
+        return $this->resolveTranslation(
             $reassessmentTrigger->getMonitoringApproachTranslations(),
             $reassessmentTrigger->getMonitoringApproach() ?? '',
             $languageCode
@@ -179,64 +196,10 @@ class ReassessmentTriggerService
      */
     public function getMonitoringApproaches(ReassessmentTrigger $reassessmentTrigger): array
     {
-        return $this->getEditableTranslations(
+        return $this->resolveTranslations(
             $reassessmentTrigger->getMonitoringApproachTranslations(),
             $reassessmentTrigger->getMonitoringApproach() ?? ''
         );
-    }
-
-    /**
-     * @param array<string, string> $translations
-     */
-    private function resolveDisplayValue(array $translations, string $fallbackValue, ?string $languageCode = null): string
-    {
-        $languageCode ??= $this->getCurrentLanguageCode();
-        if (isset($translations[$languageCode]) && $translations[$languageCode] !== '') {
-            return $translations[$languageCode];
-        }
-
-        $defaultLanguageCode = $this->configService->getLanguageCodes()[
-            $this->configService->getConfigOption('defaultLanguageIndex', 1)
-        ] ?? null;
-        if ($defaultLanguageCode !== null && isset($translations[$defaultLanguageCode])) {
-            return $translations[$defaultLanguageCode];
-        }
-
-        foreach ($translations as $translation) {
-            if ($translation !== '') {
-                return $translation;
-            }
-        }
-
-        return $fallbackValue;
-    }
-
-    /**
-     * @param array<string, string> $translations
-     * @return array<string, string>
-     */
-    private function getEditableTranslations(array $translations, string $fallbackValue): array
-    {
-        if ($translations !== []) {
-            return $translations;
-        }
-
-        $fallbackValue = trim($fallbackValue);
-        if ($fallbackValue === '') {
-            return [];
-        }
-
-        return [
-            $this->getCurrentLanguageCode() => $fallbackValue,
-        ];
-    }
-
-    private function getCurrentLanguageCode(): string
-    {
-        return $this->configService->getLanguageCodes()[$this->connectedUser->getLanguage()]
-            ?? $this->configService->getLanguageCodes()[$this->configService
-                ->getConfigOption('defaultLanguageIndex', 1)]
-            ?? 'en';
     }
 
     private function applyCreatePosition(ReassessmentTrigger $reassessmentTrigger, array $data): void
@@ -250,13 +213,7 @@ class ReassessmentTriggerService
             return;
         }
 
-        $this->reassessmentTriggerTable->incrementPositions(
-            $position,
-            -1,
-            1,
-            [],
-            $this->connectedUser->getEmail()
-        );
+        $this->reassessmentTriggerTable->incrementPositions($position, -1, 1, [], $this->connectedUser->getEmail());
         $reassessmentTrigger->setPosition($position);
     }
 
@@ -267,21 +224,11 @@ class ReassessmentTriggerService
         $newPosition = max(1, min($newPosition, $maxPosition));
 
         if ($newPosition < $oldPosition) {
-            $this->reassessmentTriggerTable->incrementPositions(
-                $newPosition,
-                $oldPosition - 1,
-                1,
-                [],
-                $this->connectedUser->getEmail()
-            );
+            $this->reassessmentTriggerTable
+                ->incrementPositions($newPosition, $oldPosition - 1, 1, [], $this->connectedUser->getEmail());
         } elseif ($newPosition > $oldPosition) {
-            $this->reassessmentTriggerTable->incrementPositions(
-                $oldPosition + 1,
-                $newPosition,
-                -1,
-                [],
-                $this->connectedUser->getEmail()
-            );
+            $this->reassessmentTriggerTable
+                ->incrementPositions($oldPosition + 1, $newPosition, -1, [], $this->connectedUser->getEmail());
         }
 
         $reassessmentTrigger->setPosition($newPosition);
