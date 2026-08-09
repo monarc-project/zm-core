@@ -40,19 +40,9 @@ class ConfigService
         $languages = $this->config['languages'];
         $defaultLanguageIndex = $this->config['defaultLanguageIndex'];
 
-        $activeLanguages = $this->config['activeLanguages'] ?? [];
-
         $l = [];
-        if (empty($activeLanguages)) {
-            foreach ($languages as $k => $v) {
-                $l[$v['index']] = $v['label'];
-            }
-        } else {
-            foreach ($activeLanguages as $k) {
-                if (isset($languages[$k])) {
-                    $l[$languages[$k]['index']] = $languages[$k]['label'];
-                }
-            }
+        foreach ($languages as $language) {
+            $l[$language['index']] = $language['label'];
         }
 
         return [
