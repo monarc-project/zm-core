@@ -43,14 +43,4 @@ class RiskSourceTable extends AbstractTable
             ->getQuery()
             ->getResult();
     }
-
-    public function findOneByLabel(string $label): ?RiskSource
-    {
-        return $this->getRepository()->createQueryBuilder('rs')
-            ->where('LOWER(rs.label) = :label')
-            ->setParameter('label', mb_strtolower(trim($label)))
-            ->setMaxResults(1)
-            ->getQuery()
-            ->getOneOrNullResult();
-    }
 }

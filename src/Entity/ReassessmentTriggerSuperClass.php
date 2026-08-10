@@ -138,7 +138,9 @@ class ReassessmentTriggerSuperClass implements PositionedEntityInterface, Proper
      */
     public function setTriggerTypeTranslations(array $triggerTypeTranslations): self
     {
-        $this->triggerType = $this->encodeTranslations($triggerTypeTranslations);
+        $this->triggerType = $triggerTypeTranslations === []
+            ? null
+            : $this->encodeTranslations($triggerTypeTranslations);
 
         return $this;
     }
