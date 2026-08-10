@@ -10,8 +10,9 @@ class ConfigServiceTest extends TestCase
     /**
      * @covers ConfigService::getLanguage
      * @covers ConfigService::getActiveLanguageCodes
+     * @covers ConfigService::getUiLanguageCodes
      */
-    public function testLanguageCatalogueIsNotLimitedToLanguagesActiveForAnalysisCreation(): void
+    public function testLanguageCatalogueDefinesDataLanguagesAndActiveLanguagesDefineUiLanguages(): void
     {
         $service = new ConfigService([
             'defaultLanguageIndex' => 1,
@@ -27,6 +28,7 @@ class ConfigServiceTest extends TestCase
             'languages' => [1 => 'Français', 2 => 'English', 3 => 'Deutsch'],
             'defaultLanguageIndex' => 1,
         ], $service->getLanguage());
-        self::assertSame([1 => 'fr', 2 => 'en'], $service->getActiveLanguageCodes());
+        self::assertSame([1 => 'fr', 2 => 'en', 3 => 'de'], $service->getActiveLanguageCodes());
+        self::assertSame(['fr', 'en'], $service->getUiLanguageCodes());
     }
 }
