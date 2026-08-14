@@ -18,9 +18,10 @@ class FixOpScalesTranslations extends AbstractMigration
             group by st.label_translation_key, st.anr_id'
         );
         $translationsTable = $this->table('translations');
+        $languages = $this->getLanguageCodes();
         foreach ($scalesTypesQuery->fetchAll() as $scaleTypeData) {
-            if ((int)$scaleTypeData['langs_cnt'] < 4) {
-                foreach (['fr', 'en', 'de', 'nl'] as $lang) {
+            if ((int)$scaleTypeData['langs_cnt'] < count($languages)) {
+                foreach ($languages as $lang) {
                     $existsForTheLang = $this->fetchRow(
                         'select count(*) cnt from `translations`
                         where translation_key = "' . $scaleTypeData['label_translation_key'] . '"
@@ -51,8 +52,8 @@ class FixOpScalesTranslations extends AbstractMigration
         );
         $translationsTable = $this->table('translations');
         foreach ($scalesCommentsQuery->fetchAll() as $scaleCommentData) {
-            if ((int)$scaleCommentData['langs_cnt'] < 4) {
-                foreach (['fr', 'en', 'de', 'nl'] as $lang) {
+            if ((int)$scaleCommentData['langs_cnt'] < count($languages)) {
+                foreach ($languages as $lang) {
                     $existsForTheLang = $this->fetchRow(
                         'select count(*) cnt from `translations`
                         where translation_key = "' . $scaleCommentData['comment_translation_key'] . '"
@@ -72,5 +73,23 @@ class FixOpScalesTranslations extends AbstractMigration
                 }
             }
         }
+    }
+
+    private function getLanguageCodes(): array
+    {
+        $config = [];
+        $base = getcwd() . '/config/autoload/';
+        foreach (['global.php', 'local.php'] as $file) {
+            $path = $base . $file;
+            if (file_exists($path)) {
+                $config = array_replace_recursive($config, require $path);
+            }
+        }
+
+        if (!empty($config['languages']) && is_array($config['languages'])) {
+            return array_keys($config['languages']);
+        }
+
+        return ['fr', 'en', 'de', 'nl'];
     }
 }

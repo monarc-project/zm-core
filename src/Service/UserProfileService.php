@@ -16,7 +16,11 @@ class UserProfileService
 
     private UserSuperClass $connectedUser;
 
-    public function __construct(UserTable $userTable, ConnectedUserService $connectedUserService)
+    public function __construct(
+        UserTable $userTable,
+        private ConfigService $configService,
+        ConnectedUserService $connectedUserService
+    )
     {
         $this->userTable = $userTable;
         $this->connectedUser = $connectedUserService->getConnectedUser();
@@ -43,7 +47,13 @@ class UserProfileService
             $this->connectedUser->setEmail($data['email']);
         }
         if (isset($data['language'])) {
-            $this->connectedUser->setLanguage((int)$data['language']);
+            $languageIndex = (int)$data['language'];
+            $activeLanguageIndexes = array_keys($this->configService->getActiveLanguageCodes());
+            $this->connectedUser->setLanguage(
+                \in_array($languageIndex, $activeLanguageIndexes, true)
+                    ? $languageIndex
+                    : ($this->configService->getConfigOption('defaultLanguageIndex', 1))
+            );
         }
         if (isset($data['mospApiKey'])) {
             $this->connectedUser->setMospApiKey($data['mospApiKey']);

@@ -82,7 +82,7 @@ abstract class UserSuperClass
      *
      * @ORM\Column(name="password", type="string", length=255, nullable=true)
      */
-    protected $password;
+    protected $password = '';
 
     /**
      * @var boolean
@@ -200,7 +200,7 @@ abstract class UserSuperClass
 
     public function getPassword(): string
     {
-        return $this->password;
+        return $this->password ?? '';
     }
 
     public function setPassword(string $password): self

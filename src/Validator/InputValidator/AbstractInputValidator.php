@@ -98,7 +98,7 @@ abstract class AbstractInputValidator
 
     abstract protected function getRules(): array;
 
-    protected function getLabelRule(int $languageIndex): array
+    protected function getLabelRule(int $languageIndex, int $maxLength = 255): array
     {
         return [
             'name' => 'label' . $languageIndex,
@@ -113,7 +113,7 @@ abstract class AbstractInputValidator
                     'name' => StringLength::class,
                     'options' => [
                         'min' => 1,
-                        'max' => 255,
+                        'max' => $maxLength,
                     ]
                 ],
             ],

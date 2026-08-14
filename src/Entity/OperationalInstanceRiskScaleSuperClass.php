@@ -81,6 +81,15 @@ class OperationalInstanceRiskScaleSuperClass
      */
     protected $targetedValue = -1;
 
+    public static function constructFromObject(
+        OperationalInstanceRiskScaleSuperClass $operationalInstanceRiskScale
+    ): OperationalInstanceRiskScaleSuperClass {
+        return (new static())
+            ->setBrutValue($operationalInstanceRiskScale->getBrutValue())
+            ->setNetValue($operationalInstanceRiskScale->getNetValue())
+            ->setTargetedValue($operationalInstanceRiskScale->getTargetedValue());
+    }
+
     public function getId()
     {
         return $this->id;

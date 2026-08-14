@@ -64,6 +64,59 @@ class TranslationTable extends AbstractTable
             ->getOneOrNullResult();
     }
 
+    /**
+     * @return TranslationSuperClass[]
+     */
+    public function findByTypeAndLanguageIndexedByKeys(string $type, array $keys, string $lang): array
+    {
+        if ($keys === []) {
+            return [];
+        }
+
+        $queryBuilder = $this->getRepository()->createQueryBuilder('t', 't.key');
+
+        return $queryBuilder
+            ->where('t.anr IS NULL')
+            ->andWhere('t.type = :type')
+            ->andWhere($queryBuilder->expr()->in('t.key', ':keys'))
+            ->andWhere('t.lang = :lang')
+            ->setParameter('type', $type)
+            ->setParameter('keys', array_values(array_unique($keys)))
+            ->setParameter('lang', $lang)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return TranslationSuperClass[]
+     */
+    public function findByTypeAndKey(string $type, string $key): array
+    {
+        return $this->getRepository()->createQueryBuilder('t')
+            ->where('t.anr IS NULL')
+            ->andWhere('t.type = :type')
+            ->andWhere('t.key = :key')
+            ->setParameter('type', $type)
+            ->setParameter('key', $key)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findByTypeKeyAndLanguage(string $type, string $key, string $lang): ?TranslationSuperClass
+    {
+        return $this->getRepository()->createQueryBuilder('t')
+            ->where('t.anr IS NULL')
+            ->andWhere('t.type = :type')
+            ->andWhere('t.key = :key')
+            ->andWhere('t.lang = :lang')
+            ->setParameter('type', $type)
+            ->setParameter('key', $key)
+            ->setParameter('lang', $lang)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     public function deleteListByAnrAndKeys(AnrSuperClass $anr, array $keys): void
     {
         $queryBuilder = $this->getRepository()->createQueryBuilder('t');
@@ -72,6 +125,22 @@ class TranslationTable extends AbstractTable
             ->where('t.anr = :anr')
             ->andWhere($queryBuilder->expr()->in('t.key', $keys))
             ->setParameter('anr', $anr)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function deleteListByKeys(array $keys): void
+    {
+        if ($keys === []) {
+            return;
+        }
+
+        $queryBuilder = $this->getRepository()->createQueryBuilder('t');
+        $queryBuilder
+            ->delete()
+            ->where('t.anr IS NULL')
+            ->andWhere($queryBuilder->expr()->in('t.key', ':keys'))
+            ->setParameter('keys', array_values(array_unique($keys)))
             ->getQuery()
             ->getResult();
     }

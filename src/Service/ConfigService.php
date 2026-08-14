@@ -20,8 +20,6 @@ class ConfigService
 
     private array $languageCodes = [];
 
-    private array $activeLanguageCodes = [];
-
     public function __construct(array $config)
     {
         $this->config = $config;
@@ -39,20 +37,9 @@ class ConfigService
     {
         $languages = $this->config['languages'];
         $defaultLanguageIndex = $this->config['defaultLanguageIndex'];
-
-        $activeLanguages = $this->config['activeLanguages'] ?? [];
-
         $l = [];
-        if (empty($activeLanguages)) {
-            foreach ($languages as $k => $v) {
-                $l[$v['index']] = $v['label'];
-            }
-        } else {
-            foreach ($activeLanguages as $k) {
-                if (isset($languages[$k])) {
-                    $l[$languages[$k]['index']] = $languages[$k]['label'];
-                }
-            }
+        foreach ($languages as $language) {
+            $l[$language['index']] = $language['label'];
         }
 
         return [
@@ -72,18 +59,21 @@ class ConfigService
         return $this->languageCodes;
     }
 
+    public function getDefaultLanguageCode(): string
+    {
+        return $this->getLanguageCodes()[$this->config['defaultLanguageIndex'] ?? 1] ?? 'fr';
+    }
+
     public function getActiveLanguageCodes(): array
     {
-        if (empty($this->activeLanguageCodes)) {
-            $activeLanguages = $this->config['activeLanguages'] ?? [];
-            foreach ($this->config['languages'] as $languageCode => $languageData) {
-                if (\in_array($languageCode, $activeLanguages, true)) {
-                    $this->activeLanguageCodes[$languageData['index']] = $languageCode;
-                }
-            }
-        }
+        return $this->getLanguageCodes();
+    }
 
-        return $this->activeLanguageCodes;
+    public function getUiLanguageCodes(): array
+    {
+        return array_values(array_unique(
+            $this->config['activeLanguages'] ?? array_values($this->getLanguageCodes())
+        ));
     }
 
     public function getHost(): string

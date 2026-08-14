@@ -118,6 +118,13 @@ class AnrSuperClass
     /**
      * @var int
      *
+     * @ORM\Column(name="init_reassessment_strategy", type="smallint", options={"unsigned":true, "default":0})
+     */
+    protected $initReassessmentStrategy = 0;
+
+    /**
+     * @var int
+     *
      * @ORM\Column(name="init_def_context", type="smallint", options={"unsigned":true, "default":0})
      */
     protected $initDefContext = 0;
@@ -170,6 +177,13 @@ class AnrSuperClass
      * @ORM\Column(name="manage_risks", type="smallint", options={"unsigned":true, "default":0})
      */
     protected $manageRisks = 0;
+
+    /**
+     * @var int
+     *
+     * @ORM\Column(name="manage_reassessment_triggers", type="smallint", options={"unsigned":true, "default":0})
+     */
+    protected $manageReassessmentTriggers = 0;
 
     /**
      * @var string
@@ -243,6 +257,7 @@ class AnrSuperClass
             ->setInitEvalContext($anr->getInitEvalContext())
             ->setInitDefContext($anr->getInitDefContext())
             ->setInitRiskContext($anr->getInitRiskContext())
+            ->setInitReassessmentStrategy($anr->getInitReassessmentStrategy())
             ->setInitLivrableDone($anr->getInitLivrableDone())
             ->setEvalRisks($anr->getEvalRisks())
             ->setEvalPlanRisks($anr->getEvalPlanRisks())
@@ -250,6 +265,7 @@ class AnrSuperClass
             ->setContextAnaRisk($anr->getContextAnaRisk())
             ->setContextGestRisk($anr->getContextGestRisk())
             ->setManageRisks($anr->getManageRisks())
+            ->setManageReassessmentTriggers($anr->getManageReassessmentTriggers())
             ->setModelSummary($anr->getModelSummary())
             ->setModelLivrableDone($anr->getModelLivrableDone())
             ->setSynthAct($anr->getSynthAct())
@@ -426,6 +442,18 @@ class AnrSuperClass
         return $this;
     }
 
+    public function getInitReassessmentStrategy(): int
+    {
+        return $this->initReassessmentStrategy;
+    }
+
+    public function setInitReassessmentStrategy(int $initReassessmentStrategy): self
+    {
+        $this->initReassessmentStrategy = $initReassessmentStrategy;
+
+        return $this;
+    }
+
     public function getInitDefContext(): int
     {
         return $this->initDefContext;
@@ -518,6 +546,18 @@ class AnrSuperClass
     public function setManageRisks(int $manageRisks): self
     {
         $this->manageRisks = $manageRisks;
+
+        return $this;
+    }
+
+    public function getManageReassessmentTriggers(): int
+    {
+        return $this->manageReassessmentTriggers;
+    }
+
+    public function setManageReassessmentTriggers(int $manageReassessmentTriggers): self
+    {
+        $this->manageReassessmentTriggers = $manageReassessmentTriggers;
 
         return $this;
     }
