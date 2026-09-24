@@ -8,6 +8,7 @@
 namespace Monarc\Core\Storage;
 
 use DateTime;
+use DateTimeZone;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
@@ -46,7 +47,7 @@ class Authentication implements StorageInterface
             $userToken
                 ->setUser($user)
                 ->setToken($token)
-                ->setDateEnd(new DateTime(sprintf('+%d min', $this->authTtl)));
+                ->setDateEnd($this->expiry());
 
             $this->userTokenTable->save($userToken);
 
@@ -70,7 +71,7 @@ class Authentication implements StorageInterface
      */
     public function refreshUserToken(UserTokenSuperClass $userToken): void
     {
-        $userToken->setDateEnd(new DateTime(sprintf('+%d min', $this->authTtl)));
+        $userToken->setDateEnd($this->expiry());
 
         $this->userTokenTable->save($userToken);
     }
@@ -113,8 +114,24 @@ class Authentication implements StorageInterface
         $this->userTokenTable->flush();
     }
 
-    public function isEmpty(){}
-    public function read(){}
-    public function write($contents){}
-    public function clear(){}
+    private function expiry(): DateTime
+    {
+        return new DateTime(sprintf('+%d min', $this->authTtl), new DateTimeZone('UTC'));
+    }
+
+    public function isEmpty()
+    {
+    }
+
+    public function read()
+    {
+    }
+
+    public function write($contents)
+    {
+    }
+
+    public function clear()
+    {
+    }
 }

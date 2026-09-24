@@ -19,6 +19,10 @@ use Monarc\Core\Service;
 use Monarc\Core\Storage\Authentication as StorageAuthentication;
 use Monarc\Core\Validator\FieldValidator\LanguageValidator;
 use Monarc\Core\Validator\InputValidator;
+use Monarc\Core\Scenario\Feature\ScenarioCapability;
+use Monarc\Core\Scenario\Service\NullScenarioAuthenticationService;
+use Monarc\Core\Scenario\Service\ScenarioAuthenticationService;
+use Monarc\Core\Scenario\Table\CatalogTable;
 use Ramsey\Uuid\Doctrine\UuidType;
 use Laminas\Di\Container\AutowireFactory;
 use Monarc\Core\Entity as ModelEntity;
@@ -128,6 +132,18 @@ return [
             ModelEntity\QuestionChoice::class => ModelEntity\QuestionChoice::class,
         ],
         'factories' => [
+            ScenarioCapability::class => static function ($container): ScenarioCapability {
+                $config = $container->get('Config');
+                $capability = new ScenarioCapability($config['scenario'] ?? []);
+                // Validate the final application configuration before a
+                // Scenario route can choose an identity flow.
+                $capability->identityMode();
+
+                return $capability;
+            },
+            ScenarioAuthenticationService::class => static function (): ScenarioAuthenticationService {
+                return new NullScenarioAuthenticationService();
+            },
             Db::class => DbFactory::class,
             DbCli::class => DbCliFactory::class,
 
@@ -217,6 +233,7 @@ return [
             Table\ScaleTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\ScaleCommentTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\ScaleImpactTypeTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            CatalogTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\SoaCategoryTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\SoaScaleCommentTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\ThemeTable::class => Table\Factory\CoreEntityManagerFactory::class,
@@ -380,11 +397,17 @@ return [
         'doctrineLog' => false, // enable doctrine log (data/log/date('Y-m-d')-doctrine.log)
     ],
 
+    'scenario' => [
+        'enabled' => false,
+    ],
+
     'permissions' => [
         'monarc',
         'auth',
         'monarc_api_admin_passwords',
         'monarc_api_config',
+        'scenario_v1_health',
+        'scenario_v1_ready',
     ],
 
     'defaultLanguageIndex' => 1,

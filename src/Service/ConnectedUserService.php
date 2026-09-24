@@ -7,6 +7,8 @@
 
 namespace Monarc\Core\Service;
 
+use DateTime;
+use DateTimeZone;
 use Monarc\Core\Entity\UserSuperClass;
 use Laminas\Http\PhpEnvironment\Request;
 use Monarc\Core\Table\UserTokenTable;
@@ -37,7 +39,7 @@ class ConnectedUserService
             $token = $this->request->getHeader('token');
             if (!empty($token)) {
                 $userToken = $this->userTokenTable->findByToken($token->getFieldValue());
-                if ($userToken !== null) {
+                if ($userToken !== null && $userToken->getDateEnd() > $this->now()) {
                     $this->connectedUser = $userToken->getUser();
                 }
             }
@@ -52,5 +54,10 @@ class ConnectedUserService
     public function setConnectedUser(UserSuperClass $user): void
     {
         $this->connectedUser = $user;
+    }
+
+    private function now(): DateTime
+    {
+        return new DateTime('now', new DateTimeZone('UTC'));
     }
 }

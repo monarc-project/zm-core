@@ -1,0 +1,617 @@
+openapi: 3.0.3
+info:
+  title: MONARC Scenario API
+  version: v1
+  description: >-
+    Versioned contract for the Scenario bounded domain. Scenario mutations and
+    data endpoints are added incrementally; v1 includes the BackOffice Scenario
+    Library catalog lifecycle.
+servers:
+  - url: /api/scenario/v1
+security:
+  - monarcToken: []
+paths:
+  /health:
+    get:
+      operationId: getScenarioHealth
+      summary: Process liveness probe
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: The Scenario API process is alive.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProbeStatus'
+  /ready:
+    get:
+      operationId: getScenarioReadiness
+      summary: Dependency readiness probe
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: The Scenario API dependency is usable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProbeStatus'
+        '503':
+          description: A required dependency is not usable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProbeStatus'
+  /auth/bridge/issue:
+    post:
+      operationId: issueScenarioLegacyHandoff
+      summary: Issue a one-time legacy Scenario handoff
+      description: Requires the existing MONARC token over the same origin. The token is never part of the request body or response.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LegacyHandoffIssueRequest'
+      responses:
+        '200':
+          description: A short-lived one-time code.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegacyHandoffIssueResponse'
+        '401':
+          $ref: '#/components/responses/InvalidHandoff'
+  /auth/bridge/consume:
+    post:
+      operationId: consumeScenarioLegacyHandoff
+      summary: Consume a one-time legacy handoff through the internal BFF channel
+      security:
+        - scenarioBridgeService: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LegacyHandoffConsumeRequest'
+      responses:
+        '200':
+          description: An opaque Scenario session; do not expose it outside the BFF.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioSession'
+        '401':
+          $ref: '#/components/responses/InvalidHandoff'
+  /auth/session/resolve:
+    post:
+      operationId: resolveScenarioSession
+      summary: Resolve and re-authorise an opaque Scenario session
+      security:
+        - scenarioBridgeService: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScenarioSessionReference'
+      responses:
+        '200':
+          description: The still-authorised session context.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioSession'
+        '401':
+          $ref: '#/components/responses/InvalidHandoff'
+  /auth/session/revoke:
+    post:
+      operationId: revokeScenarioSession
+      summary: Revoke an opaque Scenario session
+      security:
+        - scenarioBridgeService: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScenarioSessionReference'
+      responses:
+        '200':
+          description: Revocation completed without revealing whether the session existed.
+  /anrs/{anrId}/analysis:
+    get:
+      operationId: getScenarioAnalysis
+      summary: Resume an authorised scenario-analysis draft or workspace
+      parameters: [{$ref: '#/components/parameters/AnrId'}]
+      responses:
+        '200': {description: Scenario analysis metadata, content: {application/json: {schema: {$ref: '#/components/schemas/ScenarioAnalysis'}}}}
+        '404': {description: No scenario metadata has been created for this authorised analysis.}
+    post:
+      operationId: createScenarioAnalysisMetadata
+      summary: Initialise an incomplete authorised scenario-analysis draft
+      parameters: [{$ref: '#/components/parameters/AnrId'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/ScenarioAnalysisCreate'}}}}
+      responses:
+        '200': {description: Draft metadata created, content: {application/json: {schema: {$ref: '#/components/schemas/ScenarioAnalysis'}}}}
+        '409': {$ref: '#/components/responses/RevisionConflict'}
+  /anrs/{anrId}/analysis/{id}:
+    patch:
+      operationId: updateScenarioAnalysisLifecycle
+      summary: Update lifecycle or review metadata using optimistic concurrency
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}, {$ref: '#/components/parameters/IfMatch'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/ScenarioAnalysisUpdate'}}}}
+      responses:
+        '200': {description: Updated metadata, content: {application/json: {schema: {$ref: '#/components/schemas/ScenarioAnalysis'}}}}
+        '409': {$ref: '#/components/responses/RevisionConflict'}
+  /anrs/{anrId}/template:
+    get:
+      operationId: getScenarioTemplateSnapshot
+      summary: Read the authorised Scenario ANR's immutable template snapshot
+      parameters: [{$ref: '#/components/parameters/AnrId'}]
+      responses:
+        '200': {description: Selected template and immutable snapshot, content: {application/json: {schema: {$ref: '#/components/schemas/ScenarioTemplateResult'}}}}
+        '404': {description: No template has been selected for this Scenario ANR.}
+    post:
+      operationId: instantiateScenarioCatalogTemplate
+      summary: Instantiate one published catalog template into an authorised Scenario ANR
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/IfMatch'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/ScenarioTemplateInstantiation'}}}}
+      responses:
+        '200': {description: Immutable client snapshot, including local-tailoring records.}
+        '403': {description: The caller cannot create within the target ANR.}
+        '404': {description: The requested template version is unavailable for new use.}
+        '409': {$ref: '#/components/responses/RevisionConflict'}
+  /frontoffice/templates:
+    get:
+      operationId: listFrontOfficePublishedScenarioTemplates
+      summary: List only currently published Scenario template releases for an authorised FrontOffice session
+      security:
+        - scenarioBridgeService: []
+          scenarioSession: []
+      parameters: [{$ref: '#/components/parameters/CatalogLocale'}, {$ref: '#/components/parameters/Page'}, {$ref: '#/components/parameters/PageSize'}, {$ref: '#/components/parameters/CatalogSearch'}]
+      responses:
+        '200': {description: Published-template projection, content: {application/json: {schema: {$ref: '#/components/schemas/FrontOfficeTemplatePage'}}}}
+        '401': {description: Missing or expired Scenario session.}
+        '403': {description: Session is not a current FrontOffice user session.}
+  /backoffice/catalog/events:
+    get:
+      operationId: listScenarioCatalogEvents
+      summary: List published or deprecated event definitions
+      parameters: [{$ref: '#/components/parameters/CatalogLocale'}, {$ref: '#/components/parameters/Page'}, {$ref: '#/components/parameters/PageSize'}, {$ref: '#/components/parameters/CatalogSearch'}]
+      responses:
+        '200':
+          description: A paginated public catalog page; drafts are never returned to unauthorised callers.
+          content: {application/json: {schema: {$ref: '#/components/schemas/CatalogPage'}}}
+    post:
+      operationId: createScenarioCatalogEventDraft
+      summary: Create an event-definition draft
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CatalogWrite'}}}}
+      responses:
+        '200': {description: Draft created, content: {application/json: {schema: {$ref: '#/components/schemas/CatalogResource'}}}}
+  /backoffice/catalog/events/{id}:
+    get:
+      operationId: getScenarioCatalogEvent
+      summary: Read a catalog event version
+      parameters: [{$ref: '#/components/parameters/CatalogId'}, {$ref: '#/components/parameters/CatalogLocale'}, {$ref: '#/components/parameters/CatalogVersion'}]
+      responses: {'200': {description: Catalog event, content: {application/json: {schema: {$ref: '#/components/schemas/CatalogResource'}}}}}
+    put:
+      operationId: updateScenarioCatalogEventDraft
+      summary: Update a draft or create the next immutable version
+      parameters: [{$ref: '#/components/parameters/CatalogId'}, {$ref: '#/components/parameters/IfMatch'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CatalogWrite'}}}}
+      responses: {'200': {description: Updated draft}, '409': {$ref: '#/components/responses/RevisionConflict'}}
+  /backoffice/catalog/events/{id}/versions:
+    get:
+      operationId: listScenarioCatalogEventVersions
+      summary: List readable event-definition versions
+      parameters: [{$ref: '#/components/parameters/CatalogId'}, {$ref: '#/components/parameters/CatalogLocale'}]
+      responses: {'200': {description: Readable event versions, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/CatalogResource'}}}}}}
+  /backoffice/catalog/templates:
+    get:
+      operationId: listScenarioCatalogTemplates
+      summary: List published or deprecated scenario templates
+      parameters: [{$ref: '#/components/parameters/CatalogLocale'}, {$ref: '#/components/parameters/Page'}, {$ref: '#/components/parameters/PageSize'}, {$ref: '#/components/parameters/CatalogSearch'}]
+      responses: {'200': {description: Catalog page, content: {application/json: {schema: {$ref: '#/components/schemas/CatalogPage'}}}}}
+    post:
+      operationId: createScenarioCatalogTemplateDraft
+      summary: Create a scenario-template draft
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CatalogWrite'}}}}
+      responses: {'200': {description: Draft created}}
+  /backoffice/catalog/templates/{id}:
+    get:
+      operationId: getScenarioCatalogTemplate
+      summary: Read a catalog template version
+      parameters: [{$ref: '#/components/parameters/CatalogId'}, {$ref: '#/components/parameters/CatalogLocale'}, {$ref: '#/components/parameters/CatalogVersion'}]
+      responses: {'200': {description: Catalog template, content: {application/json: {schema: {$ref: '#/components/schemas/CatalogResource'}}}}}
+    put:
+      operationId: updateScenarioCatalogTemplateDraft
+      summary: Update a draft or create the next immutable template version
+      parameters: [{$ref: '#/components/parameters/CatalogId'}, {$ref: '#/components/parameters/IfMatch'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CatalogWrite'}}}}
+      responses: {'200': {description: Updated draft}, '409': {$ref: '#/components/responses/RevisionConflict'}}
+  /backoffice/catalog/templates/{id}/versions:
+    get:
+      operationId: listScenarioCatalogTemplateVersions
+      summary: List readable scenario-template versions
+      parameters: [{$ref: '#/components/parameters/CatalogId'}, {$ref: '#/components/parameters/CatalogLocale'}]
+      responses: {'200': {description: Readable template versions, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/CatalogResource'}}}}}}
+  /backoffice/catalog/{kind}/{id}/{action}:
+    post:
+      operationId: transitionScenarioCatalogLifecycle
+      summary: Review, publish, or deprecate a catalog version
+      parameters: [{$ref: '#/components/parameters/CatalogKind'}, {$ref: '#/components/parameters/CatalogId'}, {$ref: '#/components/parameters/CatalogAction'}, {$ref: '#/components/parameters/IfMatch'}]
+      responses: {'200': {description: Lifecycle transition completed}, '409': {$ref: '#/components/responses/RevisionConflict'}}
+components:
+  securitySchemes:
+    monarcToken:
+      type: apiKey
+      in: header
+      name: token
+      description: Legacy MONARC authentication during the approved transition.
+    scenarioBridgeService:
+      type: apiKey
+      in: header
+      name: X-Scenario-Service-Token
+      description: Internal BFF-to-MONARC credential supplied by the approved secret manager.
+    scenarioSession:
+      type: apiKey
+      in: header
+      name: X-Scenario-Session
+      description: Opaque, BFF-held Scenario session used only with scenarioBridgeService.
+  parameters:
+    CatalogLocale:
+      name: locale
+      in: query
+      required: false
+      schema: {type: string, pattern: '^[a-z]{2,3}(?:-[A-Z]{2})?$'}
+      description: Preferred catalogue-content locale. English is used as the fallback.
+    AnrId:
+      name: anrId
+      in: path
+      required: true
+      schema: {type: integer, minimum: 1}
+    ScenarioId:
+      name: id
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+    CatalogVersion:
+      name: version
+      in: query
+      required: false
+      schema: {type: integer, minimum: 1}
+      description: Immutable catalogue version to read. Omit only when requesting the current authoring version.
+    Page:
+      name: page
+      in: query
+      required: false
+      schema: {type: integer, minimum: 1, default: 1}
+    PageSize:
+      name: pageSize
+      in: query
+      required: false
+      schema: {type: integer, minimum: 1, maximum: 100, default: 25}
+    CatalogSearch:
+      name: search
+      in: query
+      required: false
+      schema: {type: string, maxLength: 100}
+    CatalogId:
+      name: id
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+    CatalogKind:
+      name: kind
+      in: path
+      required: true
+      schema: {type: string, enum: [events, templates]}
+    CatalogAction:
+      name: action
+      in: path
+      required: true
+      schema: {type: string, enum: [review, publish, deprecate]}
+    IfMatch:
+      name: If-Match
+      in: header
+      required: true
+      schema: {type: integer, minimum: 1}
+    CorrelationId:
+      name: X-Correlation-ID
+      in: header
+      required: false
+      schema:
+        type: string
+        maxLength: 128
+      description: Caller-supplied request correlation identifier.
+  headers:
+    CorrelationId:
+      description: Request correlation identifier returned when the server has one.
+      schema:
+        type: string
+        maxLength: 128
+  responses:
+    InvalidHandoff:
+      description: Privacy-safe failure for malformed, expired, replayed or unauthorised handoffs and sessions.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    RevisionConflict:
+      description: The catalog version changed; reload it before retrying.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    CatalogPage:
+      allOf:
+        - $ref: '#/components/schemas/Page'
+        - type: object
+          properties: {items: {type: array, items: {$ref: '#/components/schemas/CatalogResource'}}}
+    FrontOfficeTemplatePage:
+      allOf:
+        - $ref: '#/components/schemas/Page'
+        - type: object
+          properties: {items: {type: array, items: {$ref: '#/components/schemas/FrontOfficeTemplate'}}}
+    FrontOfficeTemplate:
+      type: object
+      required: [stableUuid, version, title, description, locale, provenance]
+      properties:
+        stableUuid: {type: string, format: uuid}
+        version: {type: integer, minimum: 1}
+        title: {type: string}
+        description: {type: string}
+        locale: {type: string}
+        provenance: {type: string}
+        releaseUuid: {type: string, format: uuid, nullable: true}
+        releasedAt: {type: string, format: date-time, nullable: true}
+    ScenarioTemplateResult:
+      type: object
+      required: [analysis, snapshot]
+      properties:
+        analysis: {$ref: '#/components/schemas/ScenarioAnalysis'}
+        snapshot: {$ref: '#/components/schemas/ScenarioTemplateSnapshot'}
+    ScenarioTemplateSnapshot:
+      type: object
+      required: [uuid, catalogTemplateUuid, catalogTemplateVersion, catalogReleaseChecksum, catalogProvenance, payload, records]
+      properties:
+        uuid: {type: string, format: uuid}
+        catalogTemplateUuid: {type: string, format: uuid}
+        catalogTemplateVersion: {type: integer, minimum: 1}
+        catalogReleaseChecksum: {type: string}
+        catalogProvenance: {type: string}
+        payload: {type: object, additionalProperties: true}
+        records: {type: array, items: {type: object, additionalProperties: true}}
+    CatalogResource:
+      type: object
+      required: [stableUuid, version, lifecycle, revision]
+      properties:
+        stableUuid: {type: string, format: uuid}
+        version: {type: integer, minimum: 1}
+        semanticVersion: {type: string, pattern: '^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?$'}
+        lifecycle: {type: string, enum: [draft, review, published, deprecated]}
+        revision: {type: integer, minimum: 1}
+        provenance: {type: string}
+        authorId: {type: integer, minimum: 1}
+        reviewerId: {type: integer, minimum: 1, nullable: true}
+        publishedAt: {type: string, format: date-time, nullable: true}
+        deprecatedAt: {type: string, format: date-time, nullable: true}
+        category: {type: string}
+        guidance: {type: string, nullable: true}
+        assessmentGuidance: {type: string, nullable: true}
+        translation: {$ref: '#/components/schemas/CatalogTranslation'}
+        translations: {type: array, items: {$ref: '#/components/schemas/CatalogTranslation'}}
+    CatalogWrite:
+      type: object
+      required: [provenance, translations]
+      properties:
+        provenance: {type: string, maxLength: 65535}
+        category: {type: string, maxLength: 100}
+        semanticVersion: {type: string, pattern: '^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?$'}
+        tags: {type: array, maxItems: 30, items: {type: string, maxLength: 100}}
+        references: {type: array, items: {$ref: '#/components/schemas/CatalogReference'}}
+        suggestions: {type: array, items: {$ref: '#/components/schemas/CatalogSuggestion'}}
+        eventRefs: {type: array, items: {$ref: '#/components/schemas/CatalogVersionReference'}}
+        translations: {type: object, additionalProperties: {$ref: '#/components/schemas/CatalogTranslation'}}
+    CatalogTranslation:
+      type: object
+      required: [title, description]
+      properties:
+        title: {type: string, minLength: 1, maxLength: 255}
+        description: {type: string}
+        riskSourceGuidance: {type: string}
+        causeGuidance: {type: string}
+        consequenceGuidance: {type: string}
+        subjectGuidance: {type: string}
+        controlGuidance: {type: string}
+        monitoringGuidance: {type: string}
+    CatalogReference:
+      type: object
+      required: [type, value]
+      properties:
+        type: {type: string, maxLength: 32}
+        value: {type: string, maxLength: 255}
+    CatalogVersionReference:
+      type: object
+      required: [stableUuid, version]
+      properties:
+        stableUuid: {type: string, format: uuid}
+        version: {type: integer, minimum: 1}
+    CatalogSuggestion:
+      type: object
+      required: [type, referenceType, referenceValue]
+      properties:
+        type: {type: string, maxLength: 32}
+        referenceType: {type: string, maxLength: 32}
+        referenceValue: {type: string, maxLength: 255}
+        guidance: {type: string}
+    ProbeStatus:
+      type: object
+      required: [status, service, version, enabled]
+      properties:
+        status:
+          type: string
+          enum: [ok, ready, not_ready]
+        service:
+          type: string
+          enum: [scenario]
+        version:
+          type: string
+          enum: [v1]
+        enabled:
+          type: boolean
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, correlationId]
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            correlationId:
+              type: string
+    Page:
+      type: object
+      required: [items, page, pageSize, total]
+      properties:
+        items:
+          type: array
+          items: {}
+        page:
+          type: integer
+          minimum: 1
+        pageSize:
+          type: integer
+          minimum: 1
+        total:
+          type: integer
+          minimum: 0
+    ScenarioIdentifier:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+          format: uuid
+        anrId:
+          type: integer
+          minimum: 1
+          description: Legacy numeric ANR identifier where an ANR scope is needed.
+    ScenarioAnalysis:
+      type: object
+      required: [uuid, anrId, lifecycle, languageCode, revision, createdAt, updatedAt]
+      properties:
+        uuid: {type: string, format: uuid}
+        anrId: {type: integer, minimum: 1}
+        lifecycle: {type: string, enum: [draft, active, monitored, closed, archived]}
+        ownerId: {type: integer, minimum: 1, nullable: true}
+        languageCode: {type: string}
+        nextReviewAt: {type: string, format: date-time, nullable: true}
+        sourceAnrId: {type: integer, minimum: 1, nullable: true}
+        revision: {type: integer, minimum: 1}
+        createdAt: {type: string, format: date-time}
+        updatedAt: {type: string, format: date-time}
+    ScenarioAnalysisCreate:
+      type: object
+      additionalProperties: false
+      required: [languageCode]
+      properties:
+        languageCode: {type: string, pattern: '^[a-z]{2,3}(?:-[A-Z]{2})?$'}
+        nextReviewAt: {type: string, format: date-time}
+        sourceAnrId: {type: integer, minimum: 1}
+    ScenarioAnalysisUpdate:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        lifecycle: {type: string, enum: [draft, active, monitored, closed, archived]}
+        nextReviewAt: {type: string, format: date-time, nullable: true}
+        rationale: {type: string, maxLength: 2000, nullable: true}
+    ScenarioTemplateInstantiation:
+      type: object
+      additionalProperties: false
+      required: [templateUuid, templateVersion]
+      properties:
+        templateUuid: {type: string, format: uuid}
+        templateVersion: {type: integer, minimum: 1}
+    LegacyHandoffIssueRequest:
+      type: object
+      additionalProperties: false
+      required: [nonce, returnPath]
+      properties:
+        anrId:
+          type: integer
+          minimum: 1
+          description: Required for FrontOffice ANR-scoped handoffs; omitted for BackOffice catalog handoffs.
+        nonce:
+          type: string
+          minLength: 16
+          maxLength: 256
+        returnPath:
+          type: string
+          pattern: '^/(?!/)'
+          maxLength: 255
+    LegacyHandoffIssueResponse:
+      type: object
+      required: [code, expiresAt, returnPath]
+      properties:
+        code:
+          type: string
+          minLength: 32
+          maxLength: 512
+        expiresAt:
+          type: integer
+          format: int64
+        returnPath:
+          type: string
+    LegacyHandoffConsumeRequest:
+      type: object
+      required: [code, nonce, audience]
+      properties:
+        code:
+          type: string
+          minLength: 32
+          maxLength: 512
+        nonce:
+          type: string
+          minLength: 16
+          maxLength: 256
+        audience:
+          type: string
+          enum: [scenario-ui]
+    ScenarioSessionReference:
+      type: object
+      required: [session]
+      properties:
+        session:
+          type: string
+          minLength: 32
+          maxLength: 512
+    ScenarioSession:
+      type: object
+      required: [session, subject, office, expiresAt]
+      properties:
+        session:
+          type: string
+          description: Opaque value intended only for the BFF session cookie.
+        subject:
+          type: string
+        anrId:
+          type: integer
+          minimum: 1
+          description: Present for FrontOffice ANR-scoped sessions; omitted for BackOffice catalog sessions.
+        office:
+          type: string
+          enum: [frontoffice, backoffice]
+        expiresAt:
+          type: integer
+          format: int64

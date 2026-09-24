@@ -8,12 +8,15 @@
 namespace Monarc\Core\Service;
 
 use DateTime;
+use DateTimeZone;
 use Exception;
 use Laminas\Authentication\Result;
 use Monarc\Core\Adapter\Authentication as AuthenticationAdapter;
+use Monarc\Core\Scenario\Service\ScenarioAuthenticationService;
 use Monarc\Core\Storage\Authentication as AuthenticationStorage;
 use RobThree\Auth\Providers\Qr\EndroidQrCodeProvider;
 use RobThree\Auth\TwoFactorAuth;
+use Throwable;
 
 class AuthenticationService
 {
@@ -26,7 +29,8 @@ class AuthenticationService
     public function __construct(
         private ConfigService $configService,
         private AuthenticationStorage $authenticationStorage,
-        private AuthenticationAdapter $authenticationAdapter
+        private AuthenticationAdapter $authenticationAdapter,
+        private ScenarioAuthenticationService $scenarioAuthenticationService
     ) {
         $qr = new EndroidQrCodeProvider();
         $this->tfa = new TwoFactorAuth('MONARC', 6, 30, 'sha1', $qr);
@@ -115,8 +119,18 @@ class AuthenticationService
      */
     public function logout($data): bool
     {
-        if (!empty($data['token']) && $this->authenticationStorage->hasUserToken($data['token'])) {
+        if (!empty($data['token'])) {
+            $userToken = $this->authenticationStorage->getUserToken($data['token']);
+            if ($userToken === null) {
+                return false;
+            }
+
             $this->authenticationStorage->removeUserToken($data['token']);
+            try {
+                $this->scenarioAuthenticationService->revokeUserSessions($userToken->getUser()->getId());
+            } catch (Throwable) {
+                // Scenario is optional.
+            }
 
             return true;
         }
@@ -138,7 +152,7 @@ class AuthenticationService
         }
 
         $userToken = $this->authenticationStorage->getUserToken($data['token']);
-        if ($userToken !== null && $userToken->getDateEnd() > new DateTime()) {
+        if ($userToken !== null && $userToken->getDateEnd() > $this->now()) {
             $this->authenticationStorage->refreshUserToken($userToken);
 
             return true;
@@ -149,5 +163,10 @@ class AuthenticationService
         }
 
         return false;
+    }
+
+    private function now(): DateTime
+    {
+        return new DateTime('now', new DateTimeZone('UTC'));
     }
 }

@@ -25,7 +25,7 @@ class RequestConverter
             self::convertUploadedFiles($psr7Request->getUploadedFiles()),
             $psr7Request->getServerParams()
         );
-        $laminasRequest->setContent($psr7Request->getBody());
+        $laminasRequest->setContent((string) $psr7Request->getBody());
         $laminasRequest->setAttributes($psr7Request->getAttributes());
 
         return $laminasRequest;

@@ -2,9 +2,7 @@
 
 chdir(dirname(__DIR__));
 
-if (date_default_timezone_get() !== ini_get('date.timezone')) {
-    date_default_timezone_set('Europe/Luxembourg');
-}
+date_default_timezone_set('UTC');
 
 putenv('TESTS_DIR=' . dirname(__DIR__) . '/tests');
 putenv('APPLICATION_ENV=testing');
