@@ -147,6 +147,186 @@ paths:
       responses:
         '200': {description: Updated metadata, content: {application/json: {schema: {$ref: '#/components/schemas/ScenarioAnalysis'}}}}
         '409': {$ref: '#/components/responses/RevisionConflict'}
+  /anrs/{anrId}/risk-scenarios:
+    get:
+      operationId: listScenarioRiskScenarios
+      summary: List editable risk stories in stable creation order
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/Page'}, {$ref: '#/components/parameters/PageSize'}]
+      responses:
+        '200': {description: Paginated authorised risk stories, content: {application/json: {schema: {$ref: '#/components/schemas/RiskScenarioPage'}}}}
+        '403': {description: Scenario capability or ANR access is unavailable.}
+    post:
+      operationId: createScenarioRiskScenario
+      summary: Create an incomplete editable risk story
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/CorrelationId'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/RiskScenarioWrite'}}}}
+      responses:
+        '200': {description: Risk story created, content: {application/json: {schema: {$ref: '#/components/schemas/RiskScenario'}}}}
+        '422': {description: The risk-story payload is invalid.}
+  /anrs/{anrId}/risk-story-references:
+    get:
+      operationId: listScenarioRiskStoryReferences
+      summary: List a bounded, authorised projection for a risk-story picker
+      parameters:
+        - $ref: '#/components/parameters/AnrId'
+        - name: kind
+          in: query
+          required: true
+          schema: {type: string, enum: [risk-source, threat, vulnerability, asset, process, object, information, supplier, objective, control]}
+        - name: query
+          in: query
+          schema: {type: string, maxLength: 100}
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200': {description: Authorised reference candidates, content: {application/json: {schema: {$ref: '#/components/schemas/RiskStoryReferencePage'}}}}
+        '403': {description: Scenario capability or ANR access is unavailable.}
+        '422': {description: The reference kind is invalid.}
+  /anrs/{anrId}/risk-scenarios/{id}:
+    get:
+      operationId: getScenarioRiskScenario
+      summary: Read one editable risk story
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}]
+      responses:
+        '200': {description: Authorised risk story, content: {application/json: {schema: {$ref: '#/components/schemas/RiskScenario'}}}}
+        '404': {description: Risk story was not found in the authorised ANR.}
+    patch:
+      operationId: updateScenarioRiskScenario
+      summary: Update an editable risk story using optimistic concurrency
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}, {$ref: '#/components/parameters/IfMatch'}, {$ref: '#/components/parameters/CorrelationId'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/RiskScenarioUpdate'}}}}
+      responses:
+        '200': {description: Updated risk story, content: {application/json: {schema: {$ref: '#/components/schemas/RiskScenario'}}}}
+        '409': {$ref: '#/components/responses/RevisionConflict'}
+        '422': {description: The risk-story payload is invalid.}
+    delete:
+      operationId: deleteScenarioRiskScenario
+      summary: Delete an editable risk story using optimistic concurrency
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}, {$ref: '#/components/parameters/IfMatch'}, {$ref: '#/components/parameters/CorrelationId'}]
+      responses:
+        '204': {description: Risk story deleted.}
+        '409': {$ref: '#/components/responses/RevisionConflict'}
+        '404': {description: Risk story was not found in the authorised ANR.}
+  /anrs/{anrId}/risk-scenarios/{id}/risk-source:
+    get:
+      operationId: getScenarioRiskSource
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}]
+      responses: {'200': {description: Local risk source, content: {application/json: {schema: {$ref: '#/components/schemas/RiskStoryRecord'}}}}}
+    post:
+      operationId: saveScenarioRiskSource
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}, {$ref: '#/components/parameters/IfMatch'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/RiskSourceWrite'}}}}
+      responses: {'200': {description: Risk source saved}, '409': {$ref: '#/components/responses/RevisionConflict'}}
+    patch:
+      operationId: updateScenarioRiskSource
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}, {$ref: '#/components/parameters/IfMatch'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/RiskSourceUpdate'}}}}
+      responses: {'200': {description: Risk source updated}, '409': {$ref: '#/components/responses/RevisionConflict'}}
+  /anrs/{anrId}/risk-scenarios/{id}/cause:
+    get:
+      operationId: getScenarioCause
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}]
+      responses: {'200': {description: Local cause, content: {application/json: {schema: {$ref: '#/components/schemas/RiskStoryRecord'}}}}}
+    post:
+      operationId: saveScenarioCause
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}, {$ref: '#/components/parameters/IfMatch'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CauseWrite'}}}}
+      responses: {'200': {description: Cause saved}, '409': {$ref: '#/components/responses/RevisionConflict'}}
+    patch:
+      operationId: updateScenarioCause
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}, {$ref: '#/components/parameters/IfMatch'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CauseUpdate'}}}}
+      responses: {'200': {description: Cause updated}, '409': {$ref: '#/components/responses/RevisionConflict'}}
+  /anrs/{anrId}/risk-scenarios/{id}/events:
+    get:
+      operationId: listScenarioEvents
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}]
+      responses: {'200': {description: Events in the risk story, content: {application/json: {schema: {$ref: '#/components/schemas/RiskStoryNodePage'}}}}}
+    post:
+      operationId: createScenarioEvent
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}, {$ref: '#/components/parameters/IfMatch'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/RiskStoryNodeWrite'}}}}
+      responses: {'200': {description: Event created}, '409': {$ref: '#/components/responses/RevisionConflict'}}
+  /anrs/{anrId}/risk-scenarios/{id}/events/{resourceId}:
+    patch:
+      operationId: updateScenarioEvent
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}, {$ref: '#/components/parameters/ResourceId'}, {$ref: '#/components/parameters/IfMatch'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/RiskStoryNodeUpdate'}}}}
+      responses: {'200': {description: Event updated}, '409': {$ref: '#/components/responses/RevisionConflict'}}
+    delete:
+      operationId: deleteScenarioEvent
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}, {$ref: '#/components/parameters/ResourceId'}, {$ref: '#/components/parameters/IfMatch'}]
+      responses: {'204': {description: Event and dependent graph relations removed}, '409': {$ref: '#/components/responses/RevisionConflict'}}
+  /anrs/{anrId}/risk-scenarios/{id}/consequences:
+    get:
+      operationId: listScenarioConsequences
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}]
+      responses: {'200': {description: Consequences in the risk story, content: {application/json: {schema: {$ref: '#/components/schemas/RiskStoryNodePage'}}}}}
+    post:
+      operationId: createScenarioConsequence
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}, {$ref: '#/components/parameters/IfMatch'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/RiskStoryNodeWrite'}}}}
+      responses: {'200': {description: Consequence created}, '409': {$ref: '#/components/responses/RevisionConflict'}}
+  /anrs/{anrId}/risk-scenarios/{id}/consequences/{resourceId}:
+    patch:
+      operationId: updateScenarioConsequence
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}, {$ref: '#/components/parameters/ResourceId'}, {$ref: '#/components/parameters/IfMatch'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/RiskStoryNodeUpdate'}}}}
+      responses: {'200': {description: Consequence updated}, '409': {$ref: '#/components/responses/RevisionConflict'}}
+    delete:
+      operationId: deleteScenarioConsequence
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}, {$ref: '#/components/parameters/ResourceId'}, {$ref: '#/components/parameters/IfMatch'}]
+      responses: {'204': {description: Consequence and dependent relations removed}, '409': {$ref: '#/components/responses/RevisionConflict'}}
+  /anrs/{anrId}/risk-scenarios/{id}/edges:
+    get:
+      operationId: listScenarioEventEdges
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}]
+      responses: {'200': {description: Directed event edges, content: {application/json: {schema: {$ref: '#/components/schemas/RiskStoryRelationPage'}}}}}
+    post:
+      operationId: createScenarioEventEdge
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}, {$ref: '#/components/parameters/IfMatch'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/EventEdgeWrite'}}}}
+      responses: {'200': {description: Event edge created}, '409': {$ref: '#/components/responses/RevisionConflict'}}
+  /anrs/{anrId}/risk-scenarios/{id}/event-consequences:
+    get:
+      operationId: listScenarioEventConsequences
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}]
+      responses: {'200': {description: Event-to-consequence relations, content: {application/json: {schema: {$ref: '#/components/schemas/RiskStoryRelationPage'}}}}}
+    post:
+      operationId: createScenarioEventConsequence
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}, {$ref: '#/components/parameters/IfMatch'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/EventConsequenceWrite'}}}}
+      responses: {'200': {description: Event-to-consequence relation created}, '409': {$ref: '#/components/responses/RevisionConflict'}}
+  /anrs/{anrId}/risk-scenarios/{id}/{relationResource}/{resourceId}:
+    delete:
+      operationId: deleteScenarioRelation
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}, {$ref: '#/components/parameters/RelationResource'}, {$ref: '#/components/parameters/ResourceId'}, {$ref: '#/components/parameters/IfMatch'}]
+      responses: {'204': {description: Relation deleted}, '409': {$ref: '#/components/responses/RevisionConflict'}}
+  /anrs/{anrId}/risk-scenarios/{id}/subject-links:
+    get:
+      operationId: listScenarioSubjectLinks
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}]
+      responses: {'200': {description: Subject links, content: {application/json: {schema: {$ref: '#/components/schemas/RiskStoryRelationPage'}}}}}
+    post:
+      operationId: createScenarioSubjectLink
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}, {$ref: '#/components/parameters/IfMatch'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/SubjectLinkWrite'}}}}
+      responses: {'200': {description: Subject link created}, '403': {description: Referenced subject is unavailable}, '409': {$ref: '#/components/responses/RevisionConflict'}}
+  /anrs/{anrId}/risk-scenarios/{id}/control-links:
+    get:
+      operationId: listScenarioControlLinks
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}]
+      responses: {'200': {description: Control links, content: {application/json: {schema: {$ref: '#/components/schemas/RiskStoryRelationPage'}}}}}
+    post:
+      operationId: createScenarioControlLink
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}, {$ref: '#/components/parameters/IfMatch'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/ControlLinkWrite'}}}}
+      responses: {'200': {description: Control link created}, '403': {description: Referenced control is unavailable}, '409': {$ref: '#/components/responses/RevisionConflict'}}
+  /anrs/{anrId}/risk-scenarios/{id}/completeness:
+    get:
+      operationId: getScenarioRiskStoryCompleteness
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}]
+      responses: {'200': {description: SRA-11 completeness report, content: {application/json: {schema: {$ref: '#/components/schemas/RiskStoryCompleteness'}}}}}
   /anrs/{anrId}/template:
     get:
       operationId: getScenarioTemplateSnapshot
@@ -279,6 +459,16 @@ components:
       in: path
       required: true
       schema: {type: string, format: uuid}
+    ResourceId:
+      name: resourceId
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+    RelationResource:
+      name: relationResource
+      in: path
+      required: true
+      schema: {type: string, enum: [edges, event-consequences, subject-links, control-links]}
     CatalogVersion:
       name: version
       in: query
@@ -528,6 +718,207 @@ components:
         languageCode: {type: string, pattern: '^[a-z]{2,3}(?:-[A-Z]{2})?$'}
         nextReviewAt: {type: string, format: date-time}
         sourceAnrId: {type: integer, minimum: 1}
+    RiskScenarioPage:
+      allOf:
+        - $ref: '#/components/schemas/Page'
+        - type: object
+          properties: {items: {type: array, items: {$ref: '#/components/schemas/RiskScenario'}}}
+    RiskStoryReference:
+      type: object
+      required: [value, label, type, available]
+      properties:
+        value: {type: string}
+        label: {type: string}
+        type: {type: string}
+        available: {type: boolean}
+    RiskStoryReferencePage:
+      allOf:
+        - $ref: '#/components/schemas/Page'
+        - type: object
+          properties: {items: {type: array, items: {$ref: '#/components/schemas/RiskStoryReference'}}}
+    RiskScenario:
+      type: object
+      required: [uuid, anrId, title, revision, createdAt, updatedAt]
+      properties:
+        uuid: {type: string, format: uuid}
+        anrId: {type: integer, minimum: 1}
+        title: {type: string, maxLength: 255}
+        sourceSnapshotUuid: {type: string, format: uuid, nullable: true}
+        sourceInstanceRecordUuid: {type: string, format: uuid, nullable: true}
+        provenance: {type: string, nullable: true}
+        riskSource: {$ref: '#/components/schemas/RiskStoryRecord', nullable: true}
+        cause: {$ref: '#/components/schemas/RiskStoryRecord', nullable: true}
+        events: {type: array, items: {$ref: '#/components/schemas/RiskStoryNode'}}
+        consequences: {type: array, items: {$ref: '#/components/schemas/RiskStoryNode'}}
+        edges: {type: array, items: {$ref: '#/components/schemas/RiskStoryRelation'}}
+        eventConsequences: {type: array, items: {$ref: '#/components/schemas/RiskStoryRelation'}}
+        subjectLinks: {type: array, items: {$ref: '#/components/schemas/RiskStoryRelation'}}
+        controlLinks: {type: array, items: {$ref: '#/components/schemas/RiskStoryRelation'}}
+        revision: {type: integer, minimum: 1}
+        createdAt: {type: string, format: date-time}
+        updatedAt: {type: string, format: date-time}
+    RiskScenarioWrite:
+      type: object
+      additionalProperties: false
+      required: [title]
+      properties:
+        title: {type: string, minLength: 1, maxLength: 255}
+        sourceSnapshotUuid: {type: string, format: uuid, nullable: true}
+        sourceInstanceRecordUuid: {type: string, format: uuid, nullable: true}
+        provenance: {type: string, maxLength: 255}
+    RiskScenarioUpdate:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        title: {type: string, minLength: 1, maxLength: 255}
+        sourceSnapshotUuid: {type: string, format: uuid, nullable: true}
+        sourceInstanceRecordUuid: {type: string, format: uuid, nullable: true}
+        provenance: {type: string, maxLength: 255, nullable: true}
+    RiskStoryRecord:
+      type: object
+      required: [uuid, title, revision]
+      properties:
+        uuid: {type: string, format: uuid}
+        title: {type: string, maxLength: 255}
+        narrative: {type: string, nullable: true}
+        legacyRiskSourceId: {type: string, nullable: true}
+        threatReferenceUuid: {type: string, format: uuid, nullable: true}
+        vulnerabilityReferenceUuid: {type: string, format: uuid, nullable: true}
+        revision: {type: integer, minimum: 1}
+        scenarioRevision: {type: integer, minimum: 1}
+    RiskSourceWrite:
+      type: object
+      additionalProperties: false
+      required: [title]
+      properties:
+        title: {type: string, minLength: 1, maxLength: 255}
+        narrative: {type: string, maxLength: 65535}
+        legacyRiskSourceId: {type: string, maxLength: 36}
+    RiskSourceUpdate:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        title: {type: string, minLength: 1, maxLength: 255}
+        narrative: {type: string, maxLength: 65535, nullable: true}
+        legacyRiskSourceId: {type: string, maxLength: 36, nullable: true}
+    CauseWrite:
+      type: object
+      additionalProperties: false
+      required: [title]
+      properties:
+        title: {type: string, minLength: 1, maxLength: 255}
+        narrative: {type: string, maxLength: 65535}
+        threatReferenceUuid: {type: string, format: uuid}
+        vulnerabilityReferenceUuid: {type: string, format: uuid}
+    CauseUpdate:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        title: {type: string, minLength: 1, maxLength: 255}
+        narrative: {type: string, maxLength: 65535, nullable: true}
+        threatReferenceUuid: {type: string, format: uuid, nullable: true}
+        vulnerabilityReferenceUuid: {type: string, format: uuid, nullable: true}
+    RiskStoryNode:
+      type: object
+      required: [uuid, title, revision]
+      properties:
+        uuid: {type: string, format: uuid}
+        title: {type: string, maxLength: 255}
+        narrative: {type: string, nullable: true}
+        revision: {type: integer, minimum: 1}
+        scenarioRevision: {type: integer, minimum: 1}
+    RiskStoryNodePage:
+      type: object
+      required: [items]
+      properties: {items: {type: array, items: {$ref: '#/components/schemas/RiskStoryNode'}}}
+    RiskStoryNodeWrite:
+      type: object
+      additionalProperties: false
+      required: [title]
+      properties:
+        title: {type: string, minLength: 1, maxLength: 255}
+        narrative: {type: string, maxLength: 65535}
+    RiskStoryNodeUpdate:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        title: {type: string, minLength: 1, maxLength: 255}
+        narrative: {type: string, maxLength: 65535, nullable: true}
+    RiskStoryRelation:
+      type: object
+      required: [uuid, revision]
+      properties:
+        uuid: {type: string, format: uuid}
+        revision: {type: integer, minimum: 1}
+        scenarioRevision: {type: integer, minimum: 1}
+        fromEventUuid: {type: string, format: uuid}
+        toEventUuid: {type: string, format: uuid}
+        eventUuid: {type: string, format: uuid}
+        consequenceUuid: {type: string, format: uuid}
+        targetType: {type: string, enum: [risk_scenario, event, consequence]}
+        targetUuid: {type: string, format: uuid}
+        subjectType: {type: string, enum: [asset, process, object, information, supplier, objective]}
+        subjectReferenceUuid: {type: string, format: uuid}
+        controlReferenceUuid: {type: string, format: uuid}
+        relationshipIntent: {type: string, enum: [existing, proposed]}
+        narrative: {type: string, nullable: true}
+    RiskStoryRelationPage:
+      type: object
+      required: [items]
+      properties: {items: {type: array, items: {$ref: '#/components/schemas/RiskStoryRelation'}}}
+    EventEdgeWrite:
+      type: object
+      additionalProperties: false
+      required: [fromEventUuid, toEventUuid]
+      properties:
+        fromEventUuid: {type: string, format: uuid}
+        toEventUuid: {type: string, format: uuid}
+    EventConsequenceWrite:
+      type: object
+      additionalProperties: false
+      required: [eventUuid, consequenceUuid]
+      properties:
+        eventUuid: {type: string, format: uuid}
+        consequenceUuid: {type: string, format: uuid}
+    SubjectLinkWrite:
+      type: object
+      additionalProperties: false
+      required: [subjectType, subjectReferenceUuid]
+      properties:
+        targetType: {type: string, enum: [risk_scenario, event, consequence]}
+        targetUuid: {type: string, format: uuid}
+        subjectType: {type: string, enum: [asset, process, object, information, supplier, objective]}
+        subjectReferenceUuid: {type: string, format: uuid}
+        relationshipIntent: {type: string, maxLength: 32}
+        narrative: {type: string, maxLength: 65535}
+    ControlLinkWrite:
+      type: object
+      additionalProperties: false
+      required: [controlReferenceUuid, relationshipIntent]
+      properties:
+        targetType: {type: string, enum: [risk_scenario, event, consequence]}
+        targetUuid: {type: string, format: uuid}
+        controlReferenceUuid: {type: string, format: uuid}
+        relationshipIntent: {type: string, enum: [existing, proposed]}
+        narrative: {type: string, maxLength: 65535}
+    RiskStoryCompleteness:
+      type: object
+      required: [complete, warnings]
+      properties:
+        complete: {type: boolean}
+        warnings:
+          type: array
+          items:
+            type: object
+            required: [code, message]
+            properties:
+              riskScenarioUuid: {type: string, format: uuid}
+              code: {type: string}
+              message: {type: string}
     ScenarioAnalysisUpdate:
       type: object
       additionalProperties: false
