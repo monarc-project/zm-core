@@ -280,7 +280,7 @@ paths:
         - name: kind
           in: query
           required: true
-          schema: {type: string, enum: [risk-source, threat, vulnerability, asset, process, object, information, supplier, objective, control]}
+          schema: {type: string, enum: [asset, asset-type, threat, vulnerability, control, recommendation-set, recommendation, risk-source]}
         - name: query
           in: query
           schema: {type: string, maxLength: 100}
@@ -290,6 +290,51 @@ paths:
         '200': {description: Authorised reference candidates, content: {application/json: {schema: {$ref: '#/components/schemas/RiskStoryReferencePage'}}}}
         '403': {description: Scenario capability or ANR access is unavailable.}
         '422': {description: The reference kind is invalid.}
+    post:
+      operationId: createScenarioContextualRiskSource
+      summary: Create the one supported minimal local contextual reference
+      parameters: [{$ref: '#/components/parameters/AnrId'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/ContextualRiskSourceWrite'}}}}
+      responses:
+        '200': {description: Local risk source created, content: {application/json: {schema: {$ref: '#/components/schemas/RiskStoryReference'}}}}
+        '403': {description: Scenario capability or ANR access is unavailable.}
+        '422': {description: The contextual reference payload is invalid.}
+  /anrs/{anrId}/interested-party-references:
+    get:
+      operationId: listScenarioInterestedPartyReferences
+      summary: List authorised analysis-level interested parties and Scenario link status
+      parameters:
+        - $ref: '#/components/parameters/AnrId'
+        - name: query
+          in: query
+          schema: {type: string, maxLength: 100}
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200': {description: Interested-party references, content: {application/json: {schema: {$ref: '#/components/schemas/ScenarioInterestedPartyReferencePage'}}}}
+        '403': {description: Scenario capability or ANR access is unavailable.}
+    post:
+      operationId: attachScenarioInterestedPartyReference
+      parameters:
+        - $ref: '#/components/parameters/AnrId'
+        - $ref: '#/components/parameters/IfMatch'
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/ScenarioInterestedPartyReferenceWrite'}}}}
+      responses:
+        '200': {description: Scenario interested-party snapshot attached, content: {application/json: {schema: {$ref: '#/components/schemas/ScenarioInterestedPartyReference'}}}}
+        '409': {description: Analysis revision conflict.}
+  /anrs/{anrId}/interested-party-references/{id}:
+    delete:
+      operationId: detachScenarioInterestedPartyReference
+      parameters:
+        - $ref: '#/components/parameters/AnrId'
+        - $ref: '#/components/parameters/IfMatch'
+        - name: id
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+      responses:
+        '204': {description: Scenario interested-party snapshot detached.}
+        '409': {description: Analysis revision conflict.}
   /anrs/{anrId}/risk-scenarios/{id}:
     get:
       operationId: getScenarioRiskScenario
@@ -859,13 +904,53 @@ components:
       properties:
         value: {type: string}
         label: {type: string}
+        group: {type: string}
         type: {type: string}
         available: {type: boolean}
     RiskStoryReferencePage:
       allOf:
         - $ref: '#/components/schemas/Page'
         - type: object
-          properties: {items: {type: array, items: {$ref: '#/components/schemas/RiskStoryReference'}}}
+          properties:
+            items: {type: array, items: {$ref: '#/components/schemas/RiskStoryReference'}}
+            availability: {type: string, enum: [available, unavailable]}
+            message: {type: string}
+    ContextualRiskSourceWrite:
+      type: object
+      additionalProperties: false
+      required: [kind, label]
+      properties:
+        kind: {type: string, enum: [risk-source]}
+        label: {type: string, minLength: 1, maxLength: 255}
+    ScenarioInterestedPartyReferenceWrite:
+      type: object
+      additionalProperties: false
+      required: [interestedPartyId]
+      properties:
+        interestedPartyId: {type: integer, minimum: 1}
+    ScenarioInterestedPartyReference:
+      type: object
+      required: [interestedPartyId, stakeholder, requirement, linked]
+      properties:
+        interestedPartyId: {type: integer, minimum: 1}
+        stakeholder: {type: string}
+        requirement: {type: string}
+        linked: {type: boolean}
+        linkUuid: {type: string, format: uuid, nullable: true}
+        referenceSnapshot:
+          type: object
+          nullable: true
+          properties:
+            stakeholder: {type: string}
+            requirement: {type: string}
+            sourceScope: {type: string}
+    ScenarioInterestedPartyReferencePage:
+      allOf:
+        - $ref: '#/components/schemas/Page'
+        - type: object
+          properties:
+            items: {type: array, items: {$ref: '#/components/schemas/ScenarioInterestedPartyReference'}}
+            analysisRevision: {type: integer, minimum: 1}
     RiskScenario:
       type: object
       required: [uuid, anrId, title, revision, createdAt, updatedAt]
@@ -913,8 +998,32 @@ components:
         title: {type: string, maxLength: 255}
         narrative: {type: string, nullable: true}
         legacyRiskSourceId: {type: string, nullable: true}
+        referenceSnapshot:
+          type: object
+          nullable: true
+          properties:
+            kind: {type: string}
+            identity: {type: string}
+            label: {type: string}
+            sourceScope: {type: string}
         threatReferenceUuid: {type: string, format: uuid, nullable: true}
+        threatReferenceSnapshot:
+          type: object
+          nullable: true
+          properties:
+            kind: {type: string}
+            identity: {type: string}
+            label: {type: string}
+            sourceScope: {type: string}
         vulnerabilityReferenceUuid: {type: string, format: uuid, nullable: true}
+        vulnerabilityReferenceSnapshot:
+          type: object
+          nullable: true
+          properties:
+            kind: {type: string}
+            identity: {type: string}
+            label: {type: string}
+            sourceScope: {type: string}
         revision: {type: integer, minimum: 1}
         scenarioRevision: {type: integer, minimum: 1}
     RiskSourceWrite:
@@ -994,6 +1103,14 @@ components:
         subjectType: {type: string, enum: [asset, process, object, information, supplier, objective]}
         subjectReferenceUuid: {type: string, format: uuid}
         controlReferenceUuid: {type: string, format: uuid}
+        referenceSnapshot:
+          type: object
+          nullable: true
+          properties:
+            kind: {type: string}
+            identity: {type: string, format: uuid}
+            label: {type: string}
+            sourceScope: {type: string}
         relationshipIntent: {type: string, enum: [existing, proposed]}
         narrative: {type: string, nullable: true}
     RiskStoryRelationPage:
