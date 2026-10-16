@@ -165,7 +165,9 @@ final class CatalogTable
             'stable_uuid' => $uuid,
             'version' => $version,
             'semantic_version' => $data['semanticVersion'] ?? $version . '.0.0',
-            'provenance' => $data['provenance'],
+            // Provenance is technical lineage. Actor and timestamps are stored in
+            // adjacent immutable columns; no workshop participant supplies it.
+            'provenance' => $this->generatedProvenance($kind, $uuid, $version),
             'author_id' => $authorId,
         ];
         if ($kind === 'event') {
@@ -182,7 +184,6 @@ final class CatalogTable
     public function updateDraft(string $kind, int $id, array $data, int $revision): bool
     {
         $fields = [
-            'provenance' => $data['provenance'],
             'semantic_version' => $data['semanticVersion'] ?? ($revision . '.0.0'),
             'revision' => $revision + 1,
         ];
@@ -193,7 +194,6 @@ final class CatalogTable
             $fields['assessment_guidance'] = $data['assessmentGuidance'] ?? null;
         }
         $parameters = [
-            'provenance' => $fields['provenance'],
             'semanticVersion' => $fields['semantic_version'],
             'nextRevision' => $fields['revision'],
             'id' => $id,
@@ -211,7 +211,7 @@ final class CatalogTable
 
         return $this->connection->executeStatement(
             'UPDATE ' . $this->table($kind)
-            . ' SET provenance = :provenance, semantic_version = :semanticVersion, revision = :nextRevision'
+            . ' SET semantic_version = :semanticVersion, revision = :nextRevision'
             . $set . ' WHERE id = :id AND lifecycle = :lifecycle AND revision = :revision',
             $parameters
         ) === 1;
@@ -227,7 +227,7 @@ final class CatalogTable
                 $foreignKey => $id,
                 'locale' => $locale,
                 'title' => $translation['title'],
-                'description' => $translation['description'],
+                'description' => $translation['description'] ?? '',
             ];
             foreach ([
                 'riskSourceGuidance',
@@ -380,6 +380,11 @@ final class CatalogTable
             'template' => 'template_id',
             default => throw new InvalidArgumentException('Invalid catalog resource type.'),
         };
+    }
+
+    private function generatedProvenance(string $kind, string $uuid, int $version): string
+    {
+        return sprintf('catalog:%s:%s:v%d', $kind, $uuid, $version);
     }
 
 

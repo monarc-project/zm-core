@@ -77,6 +77,49 @@ paths:
       responses:
         '200': {description: Assigned profile version, content: {application/json: {schema: {$ref: '#/components/schemas/CriteriaProfile'}}}}
         '409': {$ref: '#/components/responses/RevisionConflict'}
+  /anrs/{anrId}/criteria-definition/source:
+    get:
+      operationId: getScenarioOperationalRiskCriteriaSource
+      summary: Read the current authorised ANR operational-risk scales for explicit Scenario criteria derivation
+      parameters: [{$ref: '#/components/parameters/AnrId'}]
+      responses:
+        '200': {description: Current operational-risk scale mapping or incomplete-source guidance, content: {application/json: {schema: {$ref: '#/components/schemas/OperationalRiskCriteriaSource'}}}}
+        '403': {$ref: '#/components/responses/Forbidden'}
+  /anrs/{anrId}/criteria-definition/draft:
+    get:
+      operationId: getScenarioCriteriaDefinition
+      summary: Read the editable Scenario-only criteria draft or immutable lock evidence
+      parameters: [{$ref: '#/components/parameters/AnrId'}]
+      responses:
+        '200': {description: Criteria definition state, content: {application/json: {schema: {$ref: '#/components/schemas/ScenarioCriteriaDefinition'}}}}
+        '403': {$ref: '#/components/responses/Forbidden'}
+    post:
+      operationId: createScenarioCriteriaDraftFromOperationalScales
+      summary: Explicitly derive a Scenario-only criteria draft from current operational-risk scales
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/IfMatch'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CriteriaDraftCreate'}}}}
+      responses:
+        '200': {description: Editable criteria draft, content: {application/json: {schema: {$ref: '#/components/schemas/CriteriaDraft'}}}}
+        '409': {$ref: '#/components/responses/RevisionConflict'}
+        '422': {description: The current operational-risk scales are incomplete for qualitative Scenario criteria.}
+    patch:
+      operationId: updateScenarioCriteriaDraft
+      summary: Update Scenario-only derived criteria before Context Establishment is locked
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/IfMatch'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CriteriaDraftUpdate'}}}}
+      responses:
+        '200': {description: Updated criteria draft, content: {application/json: {schema: {$ref: '#/components/schemas/CriteriaDraft'}}}}
+        '409': {$ref: '#/components/responses/RevisionConflict'}
+  /anrs/{anrId}/criteria-definition/lock:
+    post:
+      operationId: lockScenarioCriteriaDefinition
+      summary: Lock the Scenario criteria draft into an immutable assigned profile and source snapshot
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/IfMatch'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CriteriaDraftCreate'}}}}
+      responses:
+        '200': {description: Immutable criteria lock evidence, content: {application/json: {schema: {$ref: '#/components/schemas/ScenarioCriteriaLock'}}}}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '409': {$ref: '#/components/responses/RevisionConflict'}
   /anrs/{anrId}/risk-scenarios/{scenarioId}/assessments:
     get:
       operationId: listScenarioAssessments
@@ -92,6 +135,16 @@ paths:
       responses:
         '200': {description: Assessment snapshot, content: {application/json: {schema: {$ref: '#/components/schemas/Assessment'}}}}
         '409': {$ref: '#/components/responses/RevisionConflict'}
+  /anrs/{anrId}/risk-scenarios/{scenarioId}/assessments/reduce:
+    post:
+      operationId: applyScenarioRiskReduction
+      summary: Apply the latest proposed residual assessment as current risk after treatment completion
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}, {$ref: '#/components/parameters/IfMatch'}]
+      responses:
+        '200': {description: New immutable current assessment, content: {application/json: {schema: {$ref: '#/components/schemas/Assessment'}}}}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '409': {$ref: '#/components/responses/RevisionConflict'}
+        '422': {description: A proposed residual assessment or terminal treatment-plan state is required.}
   /anrs/{anrId}/risk-scenarios/{scenarioId}/assessments/treatments:
     get:
       operationId: listScenarioTreatments
@@ -104,6 +157,42 @@ paths:
       parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}, {$ref: '#/components/parameters/IfMatch'}]
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/TreatmentWrite'}}}}
       responses: {'200': {description: Treatment record, content: {application/json: {schema: {$ref: '#/components/schemas/Treatment'}}}}, '409': {$ref: '#/components/responses/RevisionConflict'}}
+  /anrs/{anrId}/risk-scenarios/{scenarioId}/assessments/treatments/{treatmentId}:
+    get:
+      operationId: getScenarioTreatment
+      summary: Read one authorised Scenario treatment plan and immutable recommendation guidance
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}, {$ref: '#/components/parameters/TreatmentId'}]
+      responses: {'200': {description: Treatment plan, content: {application/json: {schema: {$ref: '#/components/schemas/Treatment'}}}}, '404': {$ref: '#/components/responses/NotFound'}}
+    patch:
+      operationId: updateScenarioTreatment
+      summary: Update a non-terminal Scenario treatment plan without changing an assessment or acceptance
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}, {$ref: '#/components/parameters/TreatmentId'}, {$ref: '#/components/parameters/IfMatch'}, {$ref: '#/components/parameters/ScenarioRevision'}, {$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/TreatmentUpdate'}}}}
+      responses: {'200': {description: Updated treatment plan, content: {application/json: {schema: {$ref: '#/components/schemas/Treatment'}}}}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/RevisionConflict'}, '422': {description: Invalid terminal transition or treatment update.}}
+  /anrs/{anrId}/risk-scenarios/{scenarioId}/assessments/treatments/{treatmentId}/recommendations/{implementationId}:
+    get:
+      operationId: getScenarioTreatmentRecommendationImplementation
+      summary: Read one selected recommendation implementation item in its authorised treatment plan
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}, {$ref: '#/components/parameters/TreatmentId'}, {$ref: '#/components/parameters/ImplementationId'}]
+      responses: {'200': {description: Recommendation implementation item, content: {application/json: {schema: {$ref: '#/components/schemas/TreatmentRecommendationImplementation'}}}}, '404': {$ref: '#/components/responses/NotFound'}}
+    patch:
+      operationId: updateScenarioTreatmentRecommendationImplementation
+      summary: Track selected recommendation implementation without changing score, acceptance, or legacy risk state
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}, {$ref: '#/components/parameters/TreatmentId'}, {$ref: '#/components/parameters/ImplementationId'}, {$ref: '#/components/parameters/IfMatch'}, {$ref: '#/components/parameters/ScenarioRevision'}, {$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/TreatmentRecommendationImplementationUpdate'}}}}
+      responses: {'200': {description: Updated recommendation implementation item, content: {application/json: {schema: {$ref: '#/components/schemas/TreatmentRecommendationImplementation'}}}}, '403': {$ref: '#/components/responses/Forbidden'}, '409': {$ref: '#/components/responses/RevisionConflict'}, '422': {description: Evidence or rationale is required for the selected implementation state.}}
+  /anrs/{anrId}/risk-scenarios/{scenarioId}/assessments/treatments/{treatmentId}/history:
+    get:
+      operationId: listScenarioTreatmentHistory
+      summary: Read append-only treatment and recommendation implementation history
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}, {$ref: '#/components/parameters/TreatmentId'}]
+      responses: {'200': {description: Treatment history, content: {application/json: {schema: {$ref: '#/components/schemas/TreatmentHistoryList'}}}}, '404': {$ref: '#/components/responses/NotFound'}}
+  /anrs/{anrId}/treatment-owners:
+    get:
+      operationId: listScenarioTreatmentOwners
+      summary: List users currently authorised for ownership in the authorised Scenario analysis
+      parameters: [{$ref: '#/components/parameters/AnrId'}]
+      responses: {'200': {description: Authorised owner choices, content: {application/json: {schema: {$ref: '#/components/schemas/TreatmentOwnerList'}}}}, '403': {$ref: '#/components/responses/Forbidden'}}
   /anrs/{anrId}/risk-scenarios/{scenarioId}/assessments/monitoring:
     get:
       operationId: listScenarioMonitoring
@@ -136,14 +225,14 @@ paths:
       responses: {'200': {description: Supervisor configuration, content: {application/json: {schema: {$ref: '#/components/schemas/ScenarioSupervisorList'}}}}, '403': {$ref: '#/components/responses/Forbidden'}}
     post:
       operationId: createScenarioResidualRiskApprover
-      summary: Link a local user as an active residual-risk approver
+      summary: Add an active residual-risk approver, linked or external
       parameters: [{$ref: '#/components/parameters/AnrId'}]
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/ScenarioSupervisorWrite'}}}}
       responses: {'200': {description: Supervisor configuration, content: {application/json: {schema: {$ref: '#/components/schemas/ScenarioSupervisor'}}}}, '403': {$ref: '#/components/responses/Forbidden'}}
   /anrs/{anrId}/decision-authority/supervisors/{supervisorId}:
     patch:
       operationId: updateScenarioResidualRiskApprover
-      summary: Update the linked local user or active state of a residual-risk approver
+      summary: Update a linked or external supervisor and its active state
       parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/SupervisorId'}]
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/ScenarioSupervisorWrite'}}}}
       responses: {'200': {description: Supervisor configuration, content: {application/json: {schema: {$ref: '#/components/schemas/ScenarioSupervisor'}}}}, '403': {$ref: '#/components/responses/Forbidden'}, '404': {$ref: '#/components/responses/NotFound'}}
@@ -153,6 +242,13 @@ paths:
       summary: Search linkable local users when the current user may manage links
       parameters: [{$ref: '#/components/parameters/AnrId'}, {name: query, in: query, required: false, schema: {type: string, maxLength: 100}}]
       responses: {'200': {description: Linkable local users, content: {application/json: {schema: {$ref: '#/components/schemas/ScenarioLinkableUserList'}}}}, '403': {$ref: '#/components/responses/Forbidden'}}
+  /anrs/{anrId}/decision-authority/users:
+    post:
+      operationId: createScenarioSupervisorUser
+      summary: Create a local FrontOffice user for a Scenario supervisor
+      parameters: [{$ref: '#/components/parameters/AnrId'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/ScenarioSupervisorUserWrite'}}}}
+      responses: {'200': {description: Created local user, content: {application/json: {schema: {$ref: '#/components/schemas/ScenarioLinkableUser'}}}}, '403': {$ref: '#/components/responses/Forbidden'}}
   /auth/bridge/issue:
     post:
       operationId: issueScenarioLegacyHandoff
@@ -255,6 +351,124 @@ paths:
       responses:
         '200': {description: Updated metadata, content: {application/json: {schema: {$ref: '#/components/schemas/ScenarioAnalysis'}}}}
         '409': {$ref: '#/components/responses/RevisionConflict'}
+  /anrs/{anrId}/method-context/trends:
+    get:
+      operationId: listScenarioTrendQuestions
+      summary: List the BackOffice-configured trend questions copied to the authorised Scenario ANR
+      parameters: [{$ref: '#/components/parameters/AnrId'}]
+      responses:
+        '200': {description: Trend questions and current answers, content: {application/json: {schema: {$ref: '#/components/schemas/TrendQuestionPage'}}}}
+  /anrs/{anrId}/method-context/trends/{id}:
+    patch:
+      operationId: updateScenarioTrendQuestionResponse
+      summary: Save one authorised Scenario trend-question answer
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {name: id, in: path, required: true, schema: {type: integer, minimum: 1}}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/TrendQuestionResponseWrite'}}}}
+      responses:
+        '200': {description: Updated trend question, content: {application/json: {schema: {$ref: '#/components/schemas/TrendQuestion'}}}}
+        '422': {description: Invalid answer.}
+  /anrs/{anrId}/method-context/reassessment:
+    get:
+      operationId: getScenarioReassessmentStrategy
+      summary: Read the existing per-ANR reassessment strategy for the authorised Scenario analysis
+      parameters: [{$ref: '#/components/parameters/AnrId'}]
+      responses:
+        '200': {description: Reassessment strategy, content: {application/json: {schema: {$ref: '#/components/schemas/ReassessmentStrategy'}}}}
+    patch:
+      operationId: updateScenarioReassessmentStrategy
+      summary: Update the review date or cadence for the authorised Scenario analysis
+      parameters: [{$ref: '#/components/parameters/AnrId'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/ReassessmentStrategyWrite'}}}}
+      responses:
+        '200': {description: Updated reassessment strategy, content: {application/json: {schema: {$ref: '#/components/schemas/ReassessmentStrategy'}}}}
+        '422': {description: Invalid reassessment strategy.}
+  /anrs/{anrId}/method-context/reassessment-triggers:
+    get:
+      operationId: listScenarioReassessmentTriggers
+      summary: List reassessment trigger criteria for the authorised Scenario analysis
+      parameters: [{$ref: '#/components/parameters/AnrId'}]
+      responses:
+        '200': {description: Trigger criteria, content: {application/json: {schema: {$ref: '#/components/schemas/ReassessmentTriggerPage'}}}}
+    post:
+      operationId: createScenarioReassessmentTrigger
+      summary: Add a reassessment trigger criterion to the authorised Scenario analysis
+      parameters: [{$ref: '#/components/parameters/AnrId'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/ReassessmentTriggerWrite'}}}}
+      responses:
+        '200': {description: Created trigger criterion, content: {application/json: {schema: {$ref: '#/components/schemas/ReassessmentTrigger'}}}}
+        '422': {description: Invalid trigger criterion.}
+  /anrs/{anrId}/method-context/reassessment-triggers/{id}:
+    patch:
+      operationId: updateScenarioReassessmentTrigger
+      summary: Update an authorised Scenario reassessment trigger criterion
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {name: id, in: path, required: true, schema: {type: integer, minimum: 1}}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/ReassessmentTriggerUpdate'}}}}
+      responses: {'200': {description: Updated trigger criterion, content: {application/json: {schema: {$ref: '#/components/schemas/ReassessmentTrigger'}}}}}
+    delete:
+      operationId: deleteScenarioReassessmentTrigger
+      summary: Remove an authorised Scenario reassessment trigger criterion
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {name: id, in: path, required: true, schema: {type: integer, minimum: 1}}]
+      responses: {'204': {description: Trigger criterion removed.}}
+  /anrs/{anrId}/reviews/schedule:
+    get:
+      operationId: getScenarioReviewSchedule
+      summary: Read the derived Scenario reassessment schedule and acceptance-decision guidance
+      parameters: [{$ref: '#/components/parameters/AnrId'}]
+      responses:
+        '200': {description: Derived schedule state, active review cases, and decision-required indicators, content: {application/json: {schema: {$ref: '#/components/schemas/ReviewScheduleSummary'}}}}
+        '403': {$ref: '#/components/responses/Forbidden'}
+  /anrs/{anrId}/reviews/cases:
+    get:
+      operationId: listScenarioReviewCases
+      summary: List append-only evidence and current state for authorised review cases
+      parameters: [{$ref: '#/components/parameters/AnrId'}]
+      responses:
+        '200': {description: Review cases, content: {application/json: {schema: {$ref: '#/components/schemas/ReviewCaseList'}}}}
+    post:
+      operationId: createScenarioReviewCase
+      summary: Initiate an idempotent scheduled or manual review case
+      parameters: [{$ref: '#/components/parameters/AnrId'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/ReviewCaseCreate'}}}}
+      responses:
+        '200': {description: Initiated review case, content: {application/json: {schema: {$ref: '#/components/schemas/ReviewCase'}}}}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '409': {$ref: '#/components/responses/RevisionConflict'}
+        '422': {description: Schedule or scope does not permit the requested review.}
+  /anrs/{anrId}/reviews/cases/{caseId}:
+    get:
+      operationId: getScenarioReviewCase
+      summary: Read one review case in its authorised ANR scope
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/CaseId'}]
+      responses:
+        '200': {description: Review case, content: {application/json: {schema: {$ref: '#/components/schemas/ReviewCase'}}}}
+        '404': {$ref: '#/components/responses/NotFound'}
+  /anrs/{anrId}/reviews/cases/{caseId}/{action}:
+    patch:
+      operationId: transitionScenarioReviewCase
+      summary: Start, assign, re-scope, disposition, complete, or dismiss an authorised review case
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/CaseId'}, {$ref: '#/components/parameters/ReviewAction'}, {$ref: '#/components/parameters/IfMatch'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/ReviewCaseTransition'}}}}
+      responses:
+        '200': {description: Updated review case, content: {application/json: {schema: {$ref: '#/components/schemas/ReviewCase'}}}}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '409': {$ref: '#/components/responses/RevisionConflict'}
+        '422': {description: Invalid review state transition, scope, or evidence.}
+  /anrs/{anrId}/reviews/occurrences:
+    get:
+      operationId: listScenarioTriggerOccurrences
+      summary: List explicit reassessment trigger occurrences for the authorised Scenario analysis
+      parameters: [{$ref: '#/components/parameters/AnrId'}]
+      responses:
+        '200': {description: Trigger occurrences, content: {application/json: {schema: {$ref: '#/components/schemas/TriggerOccurrenceList'}}}}
+    post:
+      operationId: createScenarioTriggerOccurrence
+      summary: Record an explicit trigger occurrence and link it to a compatible review case
+      parameters: [{$ref: '#/components/parameters/AnrId'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/TriggerOccurrenceWrite'}}}}
+      responses:
+        '200': {description: Trigger occurrence, content: {application/json: {schema: {$ref: '#/components/schemas/TriggerOccurrence'}}}}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '422': {description: Invalid explicit trigger occurrence or review scope.}
   /anrs/{anrId}/risk-scenarios:
     get:
       operationId: listScenarioRiskScenarios
@@ -480,6 +694,14 @@ paths:
       operationId: getScenarioRiskScenarioCompleteness
       parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}]
       responses: {'200': {description: SRA-11 completeness report, content: {application/json: {schema: {$ref: '#/components/schemas/RiskScenarioCompleteness'}}}}}
+  /anrs/{anrId}/risk-scenarios/{id}/status:
+    get:
+      operationId: getScenarioRiskScenarioStatus
+      summary: Read the minimal revision status used for background conflict detection
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/ScenarioId'}]
+      responses:
+        '200': {description: Authorised risk-scenario revision status, content: {application/json: {schema: {$ref: '#/components/schemas/RiskScenarioStatus'}}}}
+        '404': {description: Risk scenario was not found in the authorised ANR.}
   /anrs/{anrId}/template:
     get:
       operationId: getScenarioTemplateSnapshot
@@ -612,6 +834,26 @@ components:
       in: path
       required: true
       schema: {type: string, format: uuid}
+    CaseId:
+      name: caseId
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+    ReviewAction:
+      name: action
+      in: path
+      required: true
+      schema: {type: string, enum: [start, assign, scope, dispositions, complete, dismiss]}
+    TreatmentId:
+      name: treatmentId
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+    ImplementationId:
+      name: implementationId
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
     ProfileVersionId:
       name: profileVersionId
       in: path
@@ -673,6 +915,18 @@ components:
       in: header
       required: true
       schema: {type: integer, minimum: 0}
+    ScenarioRevision:
+      name: X-Scenario-Revision
+      in: header
+      required: true
+      schema: {type: integer, minimum: 1}
+      description: Current risk-scenario revision, required alongside the treatment revision in If-Match.
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: {type: string, format: uuid}
+      description: Stable key for retrying one treatment-plan mutation without duplicating history evidence.
     CorrelationId:
       name: X-Correlation-ID
       in: header
@@ -773,9 +1027,8 @@ components:
         translations: {type: array, items: {$ref: '#/components/schemas/CatalogTranslation'}}
     CatalogWrite:
       type: object
-      required: [provenance, translations]
+      required: [translations]
       properties:
-        provenance: {type: string, maxLength: 65535}
         category: {type: string, maxLength: 100}
         semanticVersion: {type: string, pattern: '^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?$'}
         tags: {type: array, maxItems: 30, items: {type: string, maxLength: 100}}
@@ -785,7 +1038,7 @@ components:
         translations: {type: object, additionalProperties: {$ref: '#/components/schemas/CatalogTranslation'}}
     CatalogTranslation:
       type: object
-      required: [title, description]
+      required: [title]
       properties:
         title: {type: string, minLength: 1, maxLength: 255}
         description: {type: string}
@@ -879,8 +1132,20 @@ components:
         anrId: {type: integer, minimum: 1}
         lifecycle: {type: string, enum: [draft, active, monitored, closed, archived]}
         ownerId: {type: integer, minimum: 1, nullable: true}
+        analysisIdentity:
+          type: object
+          properties:
+            title: {type: string}
+            description: {type: string}
+            languageCode: {type: string}
+            ownerId: {type: integer, minimum: 1, nullable: true}
         languageCode: {type: string}
         nextReviewAt: {type: string, format: date-time, nullable: true}
+        riskAnalysisContext: {type: string, maxLength: 65535, nullable: true}
+        trendsSummary: {type: string, maxLength: 65535, nullable: true}
+        managementOrganisation: {type: string, maxLength: 65535, nullable: true}
+        criteriaLockedAt: {type: string, format: date-time, nullable: true}
+        criteriaLockedBy: {type: integer, minimum: 1, nullable: true}
         sourceAnrId: {type: integer, minimum: 1, nullable: true}
         revision: {type: integer, minimum: 1}
         createdAt: {type: string, format: date-time}
@@ -891,7 +1156,6 @@ components:
       required: [languageCode]
       properties:
         languageCode: {type: string, pattern: '^[a-z]{2,3}(?:-[A-Z]{2})?$'}
-        nextReviewAt: {type: string, format: date-time}
         sourceAnrId: {type: integer, minimum: 1}
     RiskScenarioPage:
       allOf:
@@ -907,6 +1171,8 @@ components:
         group: {type: string}
         type: {type: string}
         available: {type: boolean}
+        importance: {type: integer, minimum: 0, maximum: 3, description: Recommendation importance when the reference is a recommendation.}
+        position: {type: integer, minimum: 0, description: Recommendation plan position when the reference is a recommendation.}
     RiskScenarioReferencePage:
       allOf:
         - $ref: '#/components/schemas/Page'
@@ -960,7 +1226,8 @@ components:
         title: {type: string, maxLength: 255}
         sourceSnapshotUuid: {type: string, format: uuid, nullable: true}
         sourceInstanceRecordUuid: {type: string, format: uuid, nullable: true}
-        provenance: {type: string, nullable: true}
+        description: {type: string, nullable: true}
+        summaryAddendum: {type: string, nullable: true}
         riskSource: {$ref: '#/components/schemas/RiskScenarioRecord', nullable: true}
         cause: {$ref: '#/components/schemas/RiskScenarioRecord', nullable: true}
         events: {type: array, items: {$ref: '#/components/schemas/RiskScenarioNode'}}
@@ -972,6 +1239,12 @@ components:
         revision: {type: integer, minimum: 1}
         createdAt: {type: string, format: date-time}
         updatedAt: {type: string, format: date-time}
+    RiskScenarioStatus:
+      type: object
+      required: [uuid, revision]
+      properties:
+        uuid: {type: string, format: uuid}
+        revision: {type: integer, minimum: 1}
     RiskScenarioWrite:
       type: object
       additionalProperties: false
@@ -980,7 +1253,8 @@ components:
         title: {type: string, minLength: 1, maxLength: 255}
         sourceSnapshotUuid: {type: string, format: uuid, nullable: true}
         sourceInstanceRecordUuid: {type: string, format: uuid, nullable: true}
-        provenance: {type: string, maxLength: 255}
+        description: {type: string, maxLength: 65535}
+        summaryAddendum: {type: string, maxLength: 65535}
     RiskScenarioUpdate:
       type: object
       additionalProperties: false
@@ -989,14 +1263,15 @@ components:
         title: {type: string, minLength: 1, maxLength: 255}
         sourceSnapshotUuid: {type: string, format: uuid, nullable: true}
         sourceInstanceRecordUuid: {type: string, format: uuid, nullable: true}
-        provenance: {type: string, maxLength: 255, nullable: true}
+        description: {type: string, maxLength: 65535, nullable: true}
+        summaryAddendum: {type: string, maxLength: 65535, nullable: true}
     RiskScenarioRecord:
       type: object
       required: [uuid, title, revision]
       properties:
         uuid: {type: string, format: uuid}
         title: {type: string, maxLength: 255}
-        narrative: {type: string, nullable: true}
+        description: {type: string, nullable: true}
         legacyRiskSourceId: {type: string, nullable: true}
         referenceSnapshot:
           type: object
@@ -1029,26 +1304,22 @@ components:
     RiskSourceWrite:
       type: object
       additionalProperties: false
-      required: [title]
+      required: [legacyRiskSourceId]
       properties:
-        title: {type: string, minLength: 1, maxLength: 255}
-        narrative: {type: string, maxLength: 65535}
-        legacyRiskSourceId: {type: string, maxLength: 36}
+        legacyRiskSourceId: {type: string, minLength: 1, maxLength: 36}
     RiskSourceUpdate:
+      type: object
+      additionalProperties: false
+      required: [legacyRiskSourceId]
+      properties:
+        legacyRiskSourceId: {type: string, minLength: 1, maxLength: 36}
+    CauseWrite:
       type: object
       additionalProperties: false
       minProperties: 1
       properties:
         title: {type: string, minLength: 1, maxLength: 255}
-        narrative: {type: string, maxLength: 65535, nullable: true}
-        legacyRiskSourceId: {type: string, maxLength: 36, nullable: true}
-    CauseWrite:
-      type: object
-      additionalProperties: false
-      required: [title]
-      properties:
-        title: {type: string, minLength: 1, maxLength: 255}
-        narrative: {type: string, maxLength: 65535}
+        description: {type: string, maxLength: 65535}
         threatReferenceUuid: {type: string, format: uuid}
         vulnerabilityReferenceUuid: {type: string, format: uuid}
     CauseUpdate:
@@ -1057,7 +1328,7 @@ components:
       minProperties: 1
       properties:
         title: {type: string, minLength: 1, maxLength: 255}
-        narrative: {type: string, maxLength: 65535, nullable: true}
+        description: {type: string, maxLength: 65535, nullable: true}
         threatReferenceUuid: {type: string, format: uuid, nullable: true}
         vulnerabilityReferenceUuid: {type: string, format: uuid, nullable: true}
     RiskScenarioNode:
@@ -1066,7 +1337,7 @@ components:
       properties:
         uuid: {type: string, format: uuid}
         title: {type: string, maxLength: 255}
-        narrative: {type: string, nullable: true}
+        description: {type: string, nullable: true}
         revision: {type: integer, minimum: 1}
         riskScenarioRevision: {type: integer, minimum: 1}
     RiskScenarioNodePage:
@@ -1079,14 +1350,14 @@ components:
       required: [title]
       properties:
         title: {type: string, minLength: 1, maxLength: 255}
-        narrative: {type: string, maxLength: 65535}
+        description: {type: string, maxLength: 65535}
     RiskScenarioNodeUpdate:
       type: object
       additionalProperties: false
       minProperties: 1
       properties:
         title: {type: string, minLength: 1, maxLength: 255}
-        narrative: {type: string, maxLength: 65535, nullable: true}
+        description: {type: string, maxLength: 65535, nullable: true}
     RiskScenarioRelation:
       type: object
       required: [uuid, revision]
@@ -1112,7 +1383,7 @@ components:
             label: {type: string}
             sourceScope: {type: string}
         relationshipIntent: {type: string, enum: [existing, proposed]}
-        narrative: {type: string, nullable: true}
+        description: {type: string, nullable: true}
     RiskScenarioRelationPage:
       type: object
       required: [items]
@@ -1141,7 +1412,7 @@ components:
         subjectType: {type: string, enum: [asset, process, object, information, supplier, objective]}
         subjectReferenceUuid: {type: string, format: uuid}
         relationshipIntent: {type: string, maxLength: 32}
-        narrative: {type: string, maxLength: 65535}
+        description: {type: string, maxLength: 65535}
     ControlLinkWrite:
       type: object
       additionalProperties: false
@@ -1151,7 +1422,7 @@ components:
         targetUuid: {type: string, format: uuid}
         controlReferenceUuid: {type: string, format: uuid}
         relationshipIntent: {type: string, enum: [existing, proposed]}
-        narrative: {type: string, maxLength: 65535}
+        description: {type: string, maxLength: 65535}
     RiskScenarioCompleteness:
       type: object
       required: [complete, warnings]
@@ -1172,8 +1443,226 @@ components:
       minProperties: 1
       properties:
         lifecycle: {type: string, enum: [draft, active, monitored, closed, archived]}
+        justification: {type: string, maxLength: 2000, nullable: true}
+        riskAnalysisContext: {type: string, maxLength: 65535, nullable: true}
+        trendsSummary: {type: string, maxLength: 65535, nullable: true}
+        managementOrganisation: {type: string, maxLength: 65535, nullable: true}
+    TrendQuestion:
+      type: object
+      required: [id, label, type, multiple, choices]
+      properties:
+        id: {type: integer, minimum: 1}
+        label: {type: string}
+        type: {type: integer, enum: [1, 2]}
+        multiple: {type: boolean}
+        response: {}
+        choices: {type: array, items: {$ref: '#/components/schemas/TrendQuestionChoice'}}
+    TrendQuestionChoice:
+      type: object
+      required: [id, label]
+      properties:
+        id: {type: integer, minimum: 1}
+        label: {type: string}
+    TrendQuestionPage:
+      type: object
+      required: [items]
+      properties:
+        items: {type: array, items: {$ref: '#/components/schemas/TrendQuestion'}}
+    TrendQuestionResponseWrite:
+      type: object
+      additionalProperties: false
+      required: [response]
+      properties: {response: {}}
+    ReassessmentTrigger:
+      type: object
+      required: [id, description, isActive, position]
+      properties:
+        id: {type: integer, minimum: 1}
+        triggerType: {type: string, nullable: true}
+        description: {type: string}
+        monitoringApproach: {type: string, nullable: true}
+        isActive: {type: boolean}
+        position: {type: integer, minimum: 1}
+    ReassessmentTriggerPage:
+      type: object
+      required: [items]
+      properties: {items: {type: array, items: {$ref: '#/components/schemas/ReassessmentTrigger'}}}
+    ReassessmentTriggerWrite:
+      type: object
+      additionalProperties: false
+      required: [triggerType, description, monitoringApproach]
+      properties:
+        triggerType: {type: string, minLength: 1}
+        description: {type: string, minLength: 1}
+        monitoringApproach: {type: string, minLength: 1}
+        isActive: {type: boolean}
+    ReassessmentTriggerUpdate:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        triggerType: {type: string, minLength: 1}
+        description: {type: string, minLength: 1}
+        monitoringApproach: {type: string, minLength: 1}
+        isActive: {type: boolean}
+        position: {type: integer, minimum: 1}
+    ReassessmentStrategy:
+      type: object
+      required: [reviewFrequency, availableReviewFrequencies, triggers]
+      properties:
+        lastReviewAt: {type: string, format: date, nullable: true}
+        reviewFrequency: {type: string}
+        availableReviewFrequencies: {type: array, items: {type: string}}
+        triggers: {type: array, items: {$ref: '#/components/schemas/ReassessmentTrigger'}}
+    ReassessmentStrategyWrite:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        lastReviewAt: {type: string, format: date, nullable: true}
+        reviewFrequency: {type: string}
+    ReviewScheduleSummary:
+      type: object
+      required: [state, activeCases, acceptanceStaleness, canEdit]
+      properties:
+        state: {type: string, enum: [not_scheduled, upcoming, due, overdue]}
         nextReviewAt: {type: string, format: date-time, nullable: true}
-        rationale: {type: string, maxLength: 2000, nullable: true}
+        lastReviewAt: {type: string, format: date, nullable: true}
+        reviewFrequency: {type: string, nullable: true}
+        guidance: {type: string, nullable: true}
+        activeCases: {type: array, items: {$ref: '#/components/schemas/ReviewCaseSummary'}}
+        acceptanceStaleness: {type: array, items: {$ref: '#/components/schemas/AcceptanceStaleness'}}
+        canEdit: {type: boolean, description: Informative UI capability only; the backend remains authoritative.}
+    AcceptanceStaleness:
+      type: object
+      required: [riskScenarioUuid, state]
+      properties:
+        riskScenarioUuid: {type: string, format: uuid}
+        state: {type: string, enum: [current, absent, reassessment_decision_required]}
+        latestProposedResidualAssessmentUuid: {type: string, format: uuid, nullable: true}
+        latestAcceptanceUuid: {type: string, format: uuid, nullable: true}
+    ReviewCaseCreate:
+      type: object
+      additionalProperties: false
+      required: [reason, analysisWide, riskScenarioUuids, idempotencyKey]
+      properties:
+        reason: {type: string, enum: [scheduled, manual]}
+        analysisWide: {type: boolean}
+        riskScenarioUuids: {type: array, uniqueItems: true, items: {type: string, format: uuid}}
+        idempotencyKey: {type: string, format: uuid}
+    ReviewDispositionWrite:
+      type: object
+      additionalProperties: false
+      required: [riskScenarioUuid, riskScenarioRevision, disposition]
+      properties:
+        riskScenarioUuid: {type: string, format: uuid}
+        riskScenarioRevision: {type: integer, minimum: 1}
+        disposition: {type: string, enum: [no_material_change, reassessed, treatment_follow_up, not_applicable]}
+        rationale: {type: string, nullable: true}
+        reassessedAssessmentUuid: {type: string, format: uuid, nullable: true}
+        treatmentUuids: {type: array, uniqueItems: true, items: {type: string, format: uuid}}
+    ReviewCaseTransition:
+      type: object
+      additionalProperties: false
+      required: [idempotencyKey]
+      properties:
+        idempotencyKey: {type: string, format: uuid}
+        assignedReviewerId: {type: integer, minimum: 1}
+        analysisWide: {type: boolean}
+        riskScenarioUuids: {type: array, uniqueItems: true, items: {type: string, format: uuid}}
+        dispositions: {type: array, items: {$ref: '#/components/schemas/ReviewDispositionWrite'}}
+        satisfiesScheduledReview: {type: boolean}
+        rationale: {type: string, nullable: true}
+    ReviewCaseSummary:
+      type: object
+      required: [uuid, reason, status, scopeType, revision, createdAt, updatedAt]
+      properties:
+        uuid: {type: string, format: uuid}
+        reason: {type: string, enum: [scheduled, trigger, manual]}
+        status: {type: string, enum: [open, in_progress, awaiting_decision, completed, dismissed]}
+        scopeType: {type: string, enum: [analysis_wide, risk_scenarios]}
+        scheduledFor: {type: string, format: date-time, nullable: true}
+        occurrenceContextAt: {type: string, format: date-time, nullable: true}
+        revision: {type: integer, minimum: 1}
+        createdAt: {type: string, format: date-time}
+        updatedAt: {type: string, format: date-time}
+    ReviewCaseScope:
+      type: object
+      required: [uuid, riskScenarioUuid, startRevision, treatments]
+      properties:
+        uuid: {type: string, format: uuid}
+        riskScenarioUuid: {type: string, format: uuid}
+        startRevision: {type: integer, minimum: 1}
+        disposition: {type: string, nullable: true}
+        rationale: {type: string, nullable: true}
+        reassessedAssessmentUuid: {type: string, format: uuid, nullable: true}
+        treatments: {type: array, items: {type: object}}
+    ReviewCaseHistory:
+      type: object
+      required: [uuid, action, evidenceIds, createdAt]
+      properties:
+        uuid: {type: string, format: uuid}
+        action: {type: string}
+        actorId: {type: integer, minimum: 1, nullable: true}
+        priorStatus: {type: string, nullable: true}
+        newStatus: {type: string, nullable: true}
+        reason: {type: string, nullable: true}
+        scope: {type: object, nullable: true}
+        evidenceIds: {type: object}
+        createdAt: {type: string, format: date-time}
+    ReviewCase:
+      allOf:
+        - {$ref: '#/components/schemas/ReviewCaseSummary'}
+        - type: object
+          required: [startSnapshot, scopes, occurrences, history]
+          properties:
+            initiatedBy: {type: integer, minimum: 1, nullable: true}
+            assignedReviewerId: {type: integer, minimum: 1, nullable: true}
+            satisfiesScheduledReview: {type: boolean, nullable: true}
+            completionRationale: {type: string, nullable: true}
+            dismissalRationale: {type: string, nullable: true}
+            startSnapshot: {type: object}
+            scopes: {type: array, items: {$ref: '#/components/schemas/ReviewCaseScope'}}
+            occurrences: {type: array, items: {$ref: '#/components/schemas/TriggerOccurrence'}}
+            history: {type: array, items: {$ref: '#/components/schemas/ReviewCaseHistory'}}
+    ReviewCaseList:
+      type: object
+      required: [items]
+      properties: {items: {type: array, items: {$ref: '#/components/schemas/ReviewCase'}}}
+    TriggerOccurrenceWrite:
+      type: object
+      additionalProperties: false
+      required: [triggerId, analysisWide, riskScenarioUuids, occurredAt, triageRationale, idempotencyKey]
+      anyOf:
+        - required: [sourceObservationUuid]
+        - required: [sourceText]
+      properties:
+        triggerId: {type: integer, minimum: 1}
+        analysisWide: {type: boolean}
+        riskScenarioUuids: {type: array, uniqueItems: true, items: {type: string, format: uuid}}
+        occurredAt: {type: string, format: date-time}
+        sourceObservationUuid: {type: string, format: uuid}
+        sourceText: {type: string, minLength: 1}
+        triageRationale: {type: string, minLength: 1}
+        idempotencyKey: {type: string, format: uuid}
+    TriggerOccurrence:
+      type: object
+      required: [uuid, reviewCaseUuid, triggerId, trigger, occurredAt, triageRationale, createdAt]
+      properties:
+        uuid: {type: string, format: uuid}
+        reviewCaseUuid: {type: string, format: uuid}
+        triggerId: {type: integer, minimum: 1}
+        trigger: {type: object}
+        occurredAt: {type: string, format: date-time}
+        reporterId: {type: integer, minimum: 1, nullable: true}
+        sourceObservationUuid: {type: string, format: uuid, nullable: true}
+        sourceText: {type: string, nullable: true}
+        triageRationale: {type: string}
+        createdAt: {type: string, format: date-time}
+    TriggerOccurrenceList:
+      type: object
+      required: [items]
+      properties: {items: {type: array, items: {$ref: '#/components/schemas/TriggerOccurrence'}}}
     ScenarioTemplateInstantiation:
       type: object
       additionalProperties: false
@@ -1268,6 +1757,7 @@ components:
         title: {type: string}
         revision: {type: integer, minimum: 1}
         version: {type: integer, minimum: 1}
+        isLocked: {type: boolean}
         payload: {$ref: '#/components/schemas/CriteriaProfileWrite'}
     CriteriaProfileWrite:
       type: object
@@ -1278,6 +1768,8 @@ components:
         likelihoodLabels: {type: array, items: {$ref: '#/components/schemas/OrderedLabel'}}
         consequenceLabels: {type: array, items: {$ref: '#/components/schemas/OrderedLabel'}}
         dimensions: {type: array, items: {type: string}}
+        dimensionLabels: {type: object, additionalProperties: {type: string}}
+        dimensionLevels: {type: object, additionalProperties: {type: array, items: {$ref: '#/components/schemas/OrderedLabel'}}}
         aggregationPolicy: {type: string, enum: [highest_consequence_dimension]}
         bands: {type: object}
         acceptanceRules: {type: object}
@@ -1293,19 +1785,190 @@ components:
       type: object
       required: [value, label]
       properties:
-        value: {type: integer, minimum: 1, maximum: 5}
+        value: {type: integer, minimum: 0, maximum: 255}
         label: {type: string}
+        description: {type: string, nullable: true}
+    CriteriaDraftCreate:
+      type: object
+      additionalProperties: false
+    CriteriaDraftLevel:
+      type: object
+      required: [uuid, value, label, enabled, sourceLabel]
+      properties:
+        uuid: {type: string, format: uuid}
+        value: {type: integer, minimum: 0, maximum: 255}
+        label: {type: string, minLength: 1}
+        description: {type: string, nullable: true}
+        enabled: {type: boolean}
+        overridden: {type: boolean}
+        sourceLabel: {type: string}
+        source: {$ref: '#/components/schemas/OperationalRiskScaleLevelSource'}
+    CriteriaDraftDimension:
+      type: object
+      required: [uuid, key, label, enabled, sourceLabel, levels]
+      properties:
+        uuid: {type: string, format: uuid}
+        key: {type: string}
+        label: {type: string, minLength: 1}
+        enabled: {type: boolean}
+        overridden: {type: boolean}
+        sourceLabel: {type: string}
+        source: {$ref: '#/components/schemas/OperationalRiskDimensionSource'}
+        levels: {type: array, items: {$ref: '#/components/schemas/CriteriaDraftLevel'}}
+    CriteriaDraftLevelUpdate:
+      type: object
+      additionalProperties: false
+      required: [uuid, value, label, description, enabled]
+      properties:
+        uuid: {type: string, format: uuid}
+        value: {type: integer, minimum: 0, maximum: 255}
+        label: {type: string, minLength: 1}
+        description: {type: string, nullable: true}
+        enabled: {type: boolean}
+        source: {$ref: '#/components/schemas/OperationalRiskScaleLevelSource'}
+    CriteriaDraftDimensionUpdate:
+      type: object
+      additionalProperties: false
+      required: [uuid, key, label, enabled, levels]
+      properties:
+        uuid: {type: string, format: uuid}
+        key: {type: string}
+        label: {type: string, minLength: 1}
+        enabled: {type: boolean}
+        source: {$ref: '#/components/schemas/OperationalRiskDimensionSource'}
+        levels: {type: array, items: {$ref: '#/components/schemas/CriteriaDraftLevelUpdate'}}
+    CriteriaDraft:
+      type: object
+      required: [uuid, identifier, title, revision, aggregationPolicy, bands, acceptanceRules, source, likelihoodLevels, dimensions]
+      properties:
+        uuid: {type: string, format: uuid}
+        identifier: {type: string}
+        title: {type: string}
+        revision: {type: integer, minimum: 1}
+        aggregationPolicy: {type: string, enum: [highest_consequence_dimension]}
+        bands: {$ref: '#/components/schemas/ScenarioRiskBands'}
+        acceptanceRules: {type: object}
+        source: {$ref: '#/components/schemas/CriteriaDraftProvenance'}
+        likelihoodLevels: {type: array, items: {$ref: '#/components/schemas/CriteriaDraftLevelUpdate'}}
+        dimensions: {type: array, items: {$ref: '#/components/schemas/CriteriaDraftDimensionUpdate'}}
+    OperationalRiskScaleLevelSource:
+      type: object
+      readOnly: true
+      required: [scaleId, commentId, scaleIndex, scaleValue, min, max, label]
+      properties:
+        scaleId: {type: integer, minimum: 1}
+        scaleTypeId: {type: integer, minimum: 1, nullable: true}
+        commentId: {type: integer, minimum: 1}
+        scaleIndex: {type: integer, minimum: 0}
+        scaleValue: {type: integer}
+        min: {type: integer}
+        max: {type: integer}
+        label: {type: string}
+        comment: {type: string, nullable: true}
+    OperationalRiskDimensionSource:
+      type: object
+      readOnly: true
+      required: [scaleId, scaleTypeId, label]
+      properties:
+        scaleId: {type: integer, minimum: 1}
+        scaleTypeId: {type: integer, minimum: 1}
+        label: {type: string}
+    CriteriaDraftProvenance:
+      type: object
+      readOnly: true
+      required: [sourceAnrId, languageCode, readAt]
+      properties:
+        sourceAnrId: {type: integer, minimum: 1}
+        languageCode: {type: string}
+        readAt: {type: string, format: date-time}
+    CriteriaDraftUpdate:
+      type: object
+      additionalProperties: false
+      required: [title, aggregationPolicy, bands, acceptanceRules, likelihoodLevels, dimensions]
+      properties:
+        title: {type: string, minLength: 1, maxLength: 255}
+        aggregationPolicy: {type: string, enum: [highest_consequence_dimension]}
+        bands: {$ref: '#/components/schemas/ScenarioRiskBands'}
+        acceptanceRules: {type: object}
+        likelihoodLevels: {type: array, items: {$ref: '#/components/schemas/CriteriaDraftLevel'}}
+        dimensions: {type: array, items: {$ref: '#/components/schemas/CriteriaDraftDimension'}}
+    OperationalRiskCriteriaSource:
+      type: object
+      required: [sourceAnrId, languageCode, readAt, complete, guidance, thresholds, likelihoodLevels, dimensions]
+      properties:
+        sourceAnrId: {type: integer, minimum: 1}
+        languageCode: {type: string}
+        readAt: {type: string, format: date-time}
+        complete: {type: boolean}
+        guidance: {type: array, items: {type: string}}
+        thresholds: {$ref: '#/components/schemas/OperationalRiskThresholds'}
+        likelihoodLevels: {type: array, items: {$ref: '#/components/schemas/CriteriaDraftLevel'}}
+        dimensions: {type: array, items: {$ref: '#/components/schemas/CriteriaDraftDimension'}}
+    OperationalRiskThresholds:
+      type: object
+      required: [low, high]
+      properties:
+        low: {type: integer, minimum: 0}
+        high: {type: integer, minimum: 0}
+    ScenarioRiskBands:
+      type: object
+      required: [matrix, thresholds]
+      properties:
+        matrix: {type: object, description: Qualitative band for each likelihood and impact pair.}
+        thresholds: {$ref: '#/components/schemas/OperationalRiskThresholds'}
+    ScenarioCriteriaLock:
+      type: object
+      required: [uuid, lockedAt, lockedBy, analysisRevision, profile, sourceSnapshot, auditEvents]
+      properties:
+        uuid: {type: string, format: uuid}
+        lockedAt: {type: string, format: date-time}
+        lockedBy: {type: integer, minimum: 1}
+        analysisRevision: {type: integer, minimum: 1}
+        profile: {$ref: '#/components/schemas/CriteriaProfile'}
+        sourceSnapshot: {$ref: '#/components/schemas/ScenarioCriteriaSourceSnapshot'}
+        auditEvents:
+          type: array
+          items:
+            type: object
+            required: [action, targetUuid, createdAt]
+            properties:
+              action: {type: string}
+              targetUuid: {type: string, format: uuid}
+              createdAt: {type: string, format: date-time}
+    ScenarioCriteriaSourceLevel:
+      allOf:
+        - {$ref: '#/components/schemas/OperationalRiskScaleLevelSource'}
+        - type: object
+          required: [kind]
+          properties:
+            kind: {type: string, enum: [likelihood, consequence]}
+            dimensionKey: {type: string, nullable: true}
+    ScenarioCriteriaSourceSnapshot:
+      type: object
+      required: [sourceAnrId, languageCode, readAt, levels]
+      properties:
+        sourceAnrId: {type: integer, minimum: 1}
+        languageCode: {type: string}
+        readAt: {type: string, format: date-time}
+        levels: {type: array, items: {$ref: '#/components/schemas/ScenarioCriteriaSourceLevel'}}
+    ScenarioCriteriaDefinition:
+      type: object
+      required: [status]
+      properties:
+        status: {type: string, enum: [empty, draft, locked]}
+        draft: {$ref: '#/components/schemas/CriteriaDraft'}
+        locked: {$ref: '#/components/schemas/ScenarioCriteriaLock'}
     AssessmentWrite:
       type: object
-      required: [assessmentType, profileVersionUuid, likelihood, dimensionSeverities, rationale]
+      required: [assessmentType, profileVersionUuid, likelihood, dimensionSeverities, justification]
       properties:
         assessmentType: {type: string, enum: [inherent, current, proposed_residual]}
         profileVersionUuid: {type: string, format: uuid}
-        likelihood: {type: integer, minimum: 1, maximum: 5}
-        dimensionSeverities: {type: object, additionalProperties: {type: integer, minimum: 1, maximum: 5}}
+        likelihood: {type: integer, minimum: 0, maximum: 255}
+        dimensionSeverities: {type: object, additionalProperties: {type: integer, minimum: 0, maximum: 255}}
         controlReferences: {type: array, items: {type: string, format: uuid}}
         evidenceReferences: {type: array, items: {type: string, format: uuid}}
-        rationale: {type: string, minLength: 1}
+        justification: {type: string, minLength: 1, description: Written assessment justification.}
         legacyComparison: {type: object, nullable: true, description: Labelled comparison evidence only; never a Scenario score.}
     Assessment:
       type: object
@@ -1317,6 +1980,13 @@ components:
         calculation: {type: object, description: Immutable explainable calculation snapshot.}
         legacyComparison: {type: object, nullable: true, description: Labelled legacy comparison evidence only.}
         supersedesUuid: {type: string, format: uuid, nullable: true}
+        performedBy:
+          type: object
+          description: User identity resolved for the recorded immutable assessment action.
+          required: [name]
+          properties:
+            name: {type: string}
+            email: {type: string, format: email, nullable: true}
     AssessmentList:
       type: object
       required: [items]
@@ -1324,6 +1994,7 @@ components:
         items: {type: array, items: {$ref: '#/components/schemas/Assessment'}}
     TreatmentWrite:
       type: object
+      additionalProperties: false
       required: [treatmentType, actionText, status]
       properties:
         treatmentType: {type: string, enum: [avoid, modify, share, retain]}
@@ -1331,29 +2002,128 @@ components:
         ownerId: {type: integer, minimum: 1, nullable: true}
         dueAt: {type: string, format: date-time, nullable: true}
         status: {type: string, enum: [planned, in_progress, completed, cancelled]}
+        recommendationReferences:
+          type: array
+          description: Legacy shorthand for current-analysis recommendations selected as immutable treatment guidance. New clients should use recommendationSelections to record treatment-specific priority.
+          uniqueItems: true
+          items: {type: string, format: uuid}
+        recommendationSelections:
+          type: array
+          description: Current-analysis recommendations selected as immutable treatment guidance, with treatment-specific importance. This does not modify the Knowledge Base recommendation importance.
+          items:
+            type: object
+            additionalProperties: false
+            required: [recommendationUuid, treatmentImportance]
+            properties:
+              recommendationUuid: {type: string, format: uuid}
+              treatmentImportance: {type: integer, minimum: 0, maximum: 3, description: Treatment-plan priority; 0 means not set.}
+        completionEvidence: {type: string, nullable: true, description: Required when a recommendation-free treatment is completed.}
+        cancellationRationale: {type: string, nullable: true, description: Required when a treatment is cancelled.}
+    TreatmentUpdate:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        treatmentType: {type: string, enum: [avoid, modify, share, retain]}
+        actionText: {type: string, minLength: 1}
+        ownerId: {type: integer, minimum: 1, nullable: true}
+        dueAt: {type: string, format: date-time, nullable: true}
+        status: {type: string, enum: [planned, in_progress, completed, cancelled]}
+        completionEvidence: {type: string, nullable: true}
+        cancellationRationale: {type: string, nullable: true}
+    TreatmentOwner:
+      type: object
+      required: [id, name, email]
+      properties:
+        id: {type: integer, minimum: 1}
+        name: {type: string}
+        email: {type: string, format: email}
+    TreatmentOwnerList:
+      type: object
+      required: [items, canEdit]
+      properties:
+        items: {type: array, items: {$ref: '#/components/schemas/TreatmentOwner'}}
+        canEdit: {type: boolean, description: Informative UI capability only; the backend remains authoritative.}
+    TreatmentRecommendationImplementationUpdate:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        status: {type: string, enum: [not_started, in_progress, implemented, not_applicable]}
+        ownerId: {type: integer, minimum: 1, nullable: true}
+        targetAt: {type: string, format: date-time, nullable: true}
+        workingNote: {type: string, nullable: true}
+        completionEvidence: {type: string, nullable: true, description: Required for implemented status.}
+        notApplicableRationale: {type: string, nullable: true, description: Required for not-applicable status.}
+    TreatmentRecommendationImplementation:
+      allOf:
+        - {$ref: '#/components/schemas/TreatmentRecommendationImplementationUpdate'}
+        - type: object
+          required: [uuid, revision, recommendationUuid, code, description, recommendationSetLabel, status]
+          properties:
+            uuid: {type: string, format: uuid}
+            revision: {type: integer, minimum: 1}
+            recommendationUuid: {type: string, format: uuid}
+            code: {type: string}
+            description: {type: string}
+            importance: {type: integer, minimum: 0, maximum: 3, description: Immutable source recommendation importance; 0 means not set.}
+            position: {type: integer, minimum: 0, description: Immutable source recommendation plan position; 0 means not set.}
+            treatmentImportance: {type: integer, minimum: 0, maximum: 3, description: Immutable treatment-plan priority selected when this recommendation was added; 0 means not set.}
+            recommendationSetUuid: {type: string, format: uuid, nullable: true}
+            recommendationSetLabel: {type: string}
+            owner: {$ref: '#/components/schemas/TreatmentOwner', nullable: true}
+            implementedBy: {type: integer, minimum: 1, nullable: true}
+            implementedAt: {type: string, format: date-time, nullable: true}
+    TreatmentHistoryEntry:
+      type: object
+      required: [uuid, action, actor, after, createdAt]
+      properties:
+        uuid: {type: string, format: uuid}
+        action: {type: string}
+        implementationUuid: {type: string, format: uuid, nullable: true}
+        recommendation: {type: object, nullable: true}
+        actor: {type: object, required: [name], properties: {name: {type: string}, email: {type: string, format: email, nullable: true}}}
+        owner: {type: object, nullable: true}
+        before: {type: object, nullable: true}
+        after: {type: object}
+        createdAt: {type: string, format: date-time}
+    TreatmentHistoryList:
+      type: object
+      required: [items]
+      properties: {items: {type: array, items: {$ref: '#/components/schemas/TreatmentHistoryEntry'}}}
     Treatment:
       allOf:
         - {$ref: '#/components/schemas/TreatmentWrite'}
         - type: object
-          required: [uuid, revision]
-          properties: {uuid: {type: string, format: uuid}, revision: {type: integer, minimum: 1}}
+          required: [uuid, revision, recommendations]
+          properties:
+            uuid: {type: string, format: uuid}
+            revision: {type: integer, minimum: 1}
+            owner: {$ref: '#/components/schemas/TreatmentOwner', nullable: true}
+            recommendations: {type: array, items: {$ref: '#/components/schemas/TreatmentRecommendationImplementation'}}
+            createdAt: {type: string, format: date-time}
+            updatedAt: {type: string, format: date-time}
     TreatmentList:
       type: object
       required: [items]
       properties: {items: {type: array, items: {$ref: '#/components/schemas/Treatment'}}}
     MonitoringWrite:
       type: object
-      required: [indicator, reassessmentTrigger]
+      required: [indicator, reassessmentTriggerId]
       properties:
         indicator: {type: string, minLength: 1, maxLength: 255}
-        reassessmentTrigger: {type: string, minLength: 1}
+        reassessmentTriggerId: {type: integer, minimum: 1, description: Active Context Establishment reassessment trigger ID}
         observation: {type: string, nullable: true}
     Monitoring:
       allOf:
         - {$ref: '#/components/schemas/MonitoringWrite'}
         - type: object
           required: [uuid, revision]
-          properties: {uuid: {type: string, format: uuid}, revision: {type: integer, minimum: 1}}
+          properties:
+            uuid: {type: string, format: uuid}
+            revision: {type: integer, minimum: 1}
+            reassessmentTrigger: {type: string, description: Immutable trigger label snapshot at monitoring-record time}
+            reassessmentTriggerId: {type: integer, nullable: true, description: Linked Context Establishment reassessment trigger ID}
     MonitoringList:
       type: object
       required: [items]
@@ -1380,17 +2150,21 @@ components:
       properties: {items: {type: array, items: {$ref: '#/components/schemas/Acceptance'}}}
     ScenarioSupervisorWrite:
       type: object
-      required: [linkedUserId, isActive]
+      required: [isActive]
       additionalProperties: false
       properties:
-        linkedUserId: {type: integer, minimum: 1}
+        linkedUserId: {type: integer, minimum: 1, nullable: true}
+        name: {type: string, maxLength: 255}
+        email: {type: string, format: email}
+        rolePosition: {type: string, maxLength: 255}
+        roles: {type: array, items: {type: string}}
         isActive: {type: boolean}
     ScenarioSupervisor:
       type: object
-      required: [id, linkedUserId, name, email, roles, isActive]
+      required: [id, name, roles, isActive]
       properties:
         id: {type: integer, minimum: 1}
-        linkedUserId: {type: integer, minimum: 1}
+        linkedUserId: {type: integer, minimum: 1, nullable: true}
         name: {type: string}
         email: {type: string, format: email}
         roles: {type: array, items: {type: string}}
@@ -1398,7 +2172,10 @@ components:
     ScenarioSupervisorList:
       type: object
       required: [items]
-      properties: {items: {type: array, items: {$ref: '#/components/schemas/ScenarioSupervisor'}}}
+      properties:
+        items: {type: array, items: {$ref: '#/components/schemas/ScenarioSupervisor'}}
+        canManage: {type: boolean}
+        canCreateUsers: {type: boolean}
     ScenarioLinkableUser:
       type: object
       required: [id, firstname, lastname, email]
@@ -1406,6 +2183,14 @@ components:
         id: {type: integer, minimum: 1}
         firstname: {type: string}
         lastname: {type: string}
+        email: {type: string, format: email}
+    ScenarioSupervisorUserWrite:
+      type: object
+      required: [firstname, lastname, email]
+      additionalProperties: false
+      properties:
+        firstname: {type: string, minLength: 1, maxLength: 100}
+        lastname: {type: string, minLength: 1, maxLength: 100}
         email: {type: string, format: email}
     ScenarioLinkableUserList:
       type: object
