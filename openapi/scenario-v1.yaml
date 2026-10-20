@@ -445,7 +445,7 @@ paths:
   /anrs/{anrId}/reviews/cases/{caseId}/{action}:
     patch:
       operationId: transitionScenarioReviewCase
-      summary: Start, assign, re-scope, disposition, complete, or dismiss an authorised review case
+      summary: Assign, re-scope, record dispositions, complete, or dismiss an authorised review case
       parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/CaseId'}, {$ref: '#/components/parameters/ReviewAction'}, {$ref: '#/components/parameters/IfMatch'}]
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/ReviewCaseTransition'}}}}
       responses:
@@ -469,6 +469,30 @@ paths:
         '200': {description: Trigger occurrence, content: {application/json: {schema: {$ref: '#/components/schemas/TriggerOccurrence'}}}}
         '403': {$ref: '#/components/responses/Forbidden'}
         '422': {description: Invalid explicit trigger occurrence or review scope.}
+  /anrs/{anrId}/risk-register:
+    get:
+      operationId: listScenarioRiskRegister
+      summary: Read the authorised, criteria-version-aware Scenario risk register
+      parameters:
+        - {$ref: '#/components/parameters/AnrId'}
+        - {$ref: '#/components/parameters/Page'}
+        - {$ref: '#/components/parameters/PageSize'}
+        - {name: text, in: query, schema: {type: string, maxLength: 120}}
+        - {name: lifecycle, in: query, schema: {type: string, enum: [draft, active, monitored, closed, archived]}}
+        - {name: completeness, in: query, schema: {type: string, enum: [complete, incomplete]}}
+        - {name: band, in: query, schema: {type: string, enum: [low, medium, high, critical]}}
+        - {name: profileVersion, in: query, schema: {type: string, format: uuid}}
+        - {name: treatmentState, in: query, schema: {type: string, enum: [absent, action_required, complete]}}
+        - {name: reviewState, in: query, schema: {type: string, enum: [not_scheduled, upcoming, due, overdue, active]}}
+        - {name: triggerOccurred, in: query, schema: {type: boolean}}
+        - {name: acceptanceState, in: query, schema: {type: string, enum: [absent, current, decision_required, stale]}}
+        - {name: subject, in: query, schema: {type: string, maxLength: 120}}
+        - {name: sort, in: query, schema: {type: string, enum: [title, updatedAt, lifecycle], default: updatedAt}}
+        - {name: direction, in: query, schema: {type: string, enum: [asc, desc], default: desc}}
+      responses:
+        '200': {description: Paginated compact current-evidence projection, content: {application/json: {schema: {$ref: '#/components/schemas/ScenarioRiskRegisterPage'}}}}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '422': {description: Invalid register query.}
   /anrs/{anrId}/risk-scenarios:
     get:
       operationId: listScenarioRiskScenarios
@@ -843,7 +867,7 @@ components:
       name: action
       in: path
       required: true
-      schema: {type: string, enum: [start, assign, scope, dispositions, complete, dismiss]}
+      schema: {type: string, enum: [assign, scope, dispositions, complete, dismiss]}
     TreatmentId:
       name: treatmentId
       in: path
@@ -2196,3 +2220,29 @@ components:
       type: object
       required: [items]
       properties: {items: {type: array, items: {$ref: '#/components/schemas/ScenarioLinkableUser'}}}
+    ScenarioRiskRegisterRow:
+      type: object
+      required: [uuid, title, lifecycle, completeness, context, evaluations, treatment, review, acceptance, updatedAt]
+      properties:
+        uuid: {type: string, format: uuid}
+        title: {type: string}
+        narrative: {type: string, nullable: true}
+        lifecycle: {type: string}
+        completeness: {type: string, enum: [complete, incomplete]}
+        context: {type: object, description: Current risk-source, event, consequence and affected-subject context.}
+        evaluations: {type: object, description: Current qualitative evidence and its criteria-profile version; never a cross-version ranking.}
+        treatment: {type: object}
+        review: {type: object}
+        acceptance: {type: object}
+        updatedAt: {type: string, format: date-time}
+    ScenarioRiskRegisterPage:
+      type: object
+      required: [items, total, page, pageSize, appliedFilters, supported, summary]
+      properties:
+        items: {type: array, items: {$ref: '#/components/schemas/ScenarioRiskRegisterRow'}}
+        total: {type: integer, minimum: 0}
+        page: {type: integer, minimum: 1}
+        pageSize: {type: integer, minimum: 1, maximum: 100}
+        appliedFilters: {type: object}
+        supported: {type: object}
+        summary: {type: object}
