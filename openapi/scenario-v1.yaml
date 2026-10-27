@@ -354,10 +354,18 @@ paths:
   /anrs/{anrId}/method-context/trends:
     get:
       operationId: listScenarioTrendQuestions
-      summary: List the BackOffice-configured trend questions copied to the authorised Scenario ANR
+      summary: List trend questions available to the authorised Scenario ANR
       parameters: [{$ref: '#/components/parameters/AnrId'}]
       responses:
         '200': {description: Trend questions and current answers, content: {application/json: {schema: {$ref: '#/components/schemas/TrendQuestionPage'}}}}
+    post:
+      operationId: createScenarioTrendQuestion
+      summary: Create an analysis-local free-text trend question
+      parameters: [{$ref: '#/components/parameters/AnrId'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/TrendQuestionCreate'}}}}
+      responses:
+        '200': {description: Trend question created, content: {application/json: {schema: {$ref: '#/components/schemas/TrendQuestion'}}}}
+        '422': {description: Invalid question.}
   /anrs/{anrId}/method-context/trends/{id}:
     patch:
       operationId: updateScenarioTrendQuestionResponse
@@ -744,6 +752,36 @@ paths:
         '403': {description: The caller cannot create within the target ANR.}
         '404': {description: The requested template version is unavailable for new use.}
         '409': {$ref: '#/components/responses/RevisionConflict'}
+  /anrs/{anrId}/template/event-evaluations:
+    get:
+      operationId: listScenarioTemplateEventEvaluations
+      summary: Read the selected template's grouped available-event evaluation evidence
+      parameters: [{$ref: '#/components/parameters/AnrId'}]
+      responses:
+        '200': {description: Template-model event evaluations, content: {application/json: {schema: {$ref: '#/components/schemas/ScenarioTemplateEventEvaluationList'}}}}
+  /anrs/{anrId}/template/event-evaluations/{id}:
+    patch:
+      operationId: updateScenarioTemplateEventEvaluation
+      summary: Save one analysis-local template available-event evaluation
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/TemplateEventRecordId'}, {$ref: '#/components/parameters/IfMatch'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/ScenarioTemplateEventEvaluationWrite'}}}}
+      responses:
+        '200': {description: Saved evaluation, content: {application/json: {schema: {$ref: '#/components/schemas/ScenarioTemplateEventEvaluationList'}}}}
+        '403': {description: The caller has read-only access to the Scenario ANR.}
+        '404': {description: The template event record is not part of the authorised ANR snapshot.}
+        '409': {$ref: '#/components/responses/RevisionConflict'}
+        '422': {description: Invalid evaluation payload.}
+  /anrs/{anrId}/template/risk-scenarios:
+    post:
+      operationId: createScenarioRiskScenariosFromTemplateModels
+      summary: Explicitly create independent local risk-scenario drafts from immutable evaluated template models
+      parameters: [{$ref: '#/components/parameters/AnrId'}, {$ref: '#/components/parameters/IfMatch'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/ScenarioTemplateModelRiskScenarioCreation'}}}}
+      responses:
+        '200': {description: Created or idempotently replayed local risk-scenario drafts, content: {application/json: {schema: {$ref: '#/components/schemas/ScenarioTemplateModelRiskScenarioCreationResult'}}}}
+        '403': {description: The caller has read-only access to the Scenario ANR.}
+        '409': {$ref: '#/components/responses/RevisionConflict'}
+        '422': {description: Invalid model/event snapshot membership or creation payload.}
   /frontoffice/templates:
     get:
       operationId: listFrontOfficePublishedScenarioTemplates
@@ -854,6 +892,11 @@ components:
       required: true
       schema: {type: integer, minimum: 1}
     ScenarioId:
+      name: id
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+    TemplateEventRecordId:
       name: id
       in: path
       required: true
@@ -1049,6 +1092,8 @@ components:
         assessmentGuidance: {type: string, nullable: true}
         translation: {$ref: '#/components/schemas/CatalogTranslation'}
         translations: {type: array, items: {$ref: '#/components/schemas/CatalogTranslation'}}
+        riskScenarioModels: {type: array, items: {$ref: '#/components/schemas/CatalogTemplateRiskScenarioModel'}}
+        publicationWarnings: {type: object, additionalProperties: true}
     CatalogWrite:
       type: object
       required: [translations]
@@ -1059,11 +1104,142 @@ components:
         references: {type: array, items: {$ref: '#/components/schemas/CatalogReference'}}
         suggestions: {type: array, items: {$ref: '#/components/schemas/CatalogSuggestion'}}
         eventRefs: {type: array, items: {$ref: '#/components/schemas/CatalogVersionReference'}}
+        riskScenarioModels: {type: array, maxItems: 100, items: {$ref: '#/components/schemas/CatalogTemplateRiskScenarioModelWrite'}}
         translations: {type: object, additionalProperties: {$ref: '#/components/schemas/CatalogTranslation'}}
+    CatalogTemplateRiskScenarioModel:
+      type: object
+      required: [stableUuid, title, position, revision, eventLinks]
+      properties:
+        stableUuid: {type: string, format: uuid}
+        title: {type: string, maxLength: 255}
+        description: {type: string, nullable: true}
+        position: {type: integer, minimum: 1}
+        revision: {type: integer, minimum: 1}
+        eventLinks: {type: array, items: {$ref: '#/components/schemas/CatalogTemplateModelEventLink'}}
+    CatalogTemplateRiskScenarioModelWrite:
+      type: object
+      required: [title, eventLinks]
+      properties:
+        stableUuid: {type: string, format: uuid}
+        title: {type: string, minLength: 1, maxLength: 255}
+        description: {type: string, nullable: true}
+        position: {type: integer, minimum: 1}
+        eventLinks: {type: array, maxItems: 100, items: {$ref: '#/components/schemas/CatalogTemplateModelEventLinkWrite'}}
+    CatalogTemplateModelEventLink:
+      type: object
+      required: [stableUuid, version, title, position]
+      properties:
+        stableUuid: {type: string, format: uuid}
+        version: {type: integer, minimum: 1}
+        title: {type: string}
+        guidance: {type: string, nullable: true}
+        position: {type: integer, minimum: 1}
+    CatalogTemplateModelEventLinkWrite:
+      type: object
+      required: [stableUuid, version]
+      properties:
+        stableUuid: {type: string, format: uuid}
+        version: {type: integer, minimum: 1}
+        guidance: {type: string, nullable: true}
+        position: {type: integer, minimum: 1}
+    ScenarioTemplateEventEvaluationWrite:
+      type: object
+      required: [state]
+      properties:
+        state: {type: string, enum: [not_evaluated, relevant, not_relevant, requires_follow_up]}
+        comment: {type: string, maxLength: 65535, nullable: true}
+    ScenarioTemplateEventEvaluation:
+      type: object
+      required: [eventRecordUuid, eventStableUuid, eventVersion, eventTitle, state, comment, revision]
+      properties:
+        eventRecordUuid: {type: string, format: uuid}
+        eventStableUuid: {type: string, format: uuid}
+        eventVersion: {type: integer, minimum: 1}
+        eventTitle: {type: string}
+        guidance: {type: string, nullable: true}
+        state: {type: string, enum: [not_evaluated, relevant, not_relevant, requires_follow_up]}
+        comment: {type: string, nullable: true}
+        revision: {type: integer, minimum: 0}
+        actorId: {type: integer, nullable: true}
+        evaluatedAt: {type: string, format: date-time, nullable: true}
+    ScenarioTemplateEventEvaluationGroup:
+      type: object
+      required: [modelRecordUuid, modelStableUuid, title, position, sourceRevision, events]
+      properties:
+        modelRecordUuid: {type: string, format: uuid}
+        modelStableUuid: {type: string, format: uuid}
+        title: {type: string}
+        description: {type: string, nullable: true}
+        position: {type: integer, minimum: 1}
+        sourceRevision: {type: integer, minimum: 1}
+        events: {type: array, items: {$ref: '#/components/schemas/ScenarioTemplateEventEvaluation'}}
+        existingDerivations:
+          type: array
+          description: Visible only to an authorised writer; readers cannot enumerate local derivations.
+          items: {$ref: '#/components/schemas/ScenarioTemplateModelRiskScenarioDerivationSummary'}
+    ScenarioTemplateEventEvaluationList:
+      type: object
+      required: [compatibility, canEdit, groups]
+      properties:
+        compatibility: {type: string, enum: [modeled, no_template, legacy_snapshot, no_models, no_events]}
+        canEdit: {type: boolean}
+        template:
+          allOf:
+            - {$ref: '#/components/schemas/ScenarioTemplateEventEvaluationTemplate'}
+          nullable: true
+        groups: {type: array, items: {$ref: '#/components/schemas/ScenarioTemplateEventEvaluationGroup'}}
+    ScenarioTemplateEventEvaluationTemplate:
+      type: object
+      required: [snapshotUuid, stableUuid, version, title]
+      properties:
+        snapshotUuid: {type: string, format: uuid}
+        stableUuid: {type: string, format: uuid}
+        version: {type: integer, minimum: 1}
+        title: {type: string}
+    ScenarioTemplateModelRiskScenarioCreation:
+      type: object
+      required: [idempotencyKey, sourceRevision, models]
+      properties:
+        idempotencyKey: {type: string, minLength: 8, maxLength: 128, pattern: '^[A-Za-z0-9_-]+$'}
+        sourceRevision: {type: integer, minimum: 1}
+        models:
+          type: array
+          minItems: 1
+          maxItems: 20
+          items: {$ref: '#/components/schemas/ScenarioTemplateModelRiskScenarioCreateItem'}
+    ScenarioTemplateModelRiskScenarioCreateItem:
+      type: object
+      required: [modelRecordUuid, sourceRevision, title, eventRecordUuids]
+      properties:
+        modelRecordUuid: {type: string, format: uuid}
+        sourceRevision: {type: integer, minimum: 1}
+        title: {type: string, minLength: 1, maxLength: 255}
+        description: {type: string, maxLength: 65535, nullable: true}
+        eventRecordUuids:
+          type: array
+          maxItems: 100
+          items: {type: string, format: uuid}
+          uniqueItems: true
+    ScenarioTemplateModelRiskScenarioCreationResult:
+      type: object
+      required: [replayed, items]
+      properties:
+        replayed: {type: boolean}
+        items:
+          type: array
+          items: {$ref: '#/components/schemas/ScenarioTemplateModelRiskScenarioDerivationSummary'}
+    ScenarioTemplateModelRiskScenarioDerivationSummary:
+      type: object
+      required: [riskScenarioUuid, title, createdAt]
+      properties:
+        riskScenarioUuid: {type: string, format: uuid}
+        title: {type: string}
+        createdAt: {type: string, format: date-time}
     CatalogTranslation:
       type: object
       required: [title]
       properties:
+        locale: {type: string}
         title: {type: string, minLength: 1, maxLength: 255}
         description: {type: string}
         riskSourceGuidance: {type: string}
@@ -1497,6 +1673,12 @@ components:
       additionalProperties: false
       required: [response]
       properties: {response: {}}
+    TrendQuestionCreate:
+      type: object
+      additionalProperties: false
+      required: [label]
+      properties:
+        label: {type: string, minLength: 1, maxLength: 255}
     ReassessmentTrigger:
       type: object
       required: [id, description, isActive, position]
@@ -2245,4 +2427,19 @@ components:
         pageSize: {type: integer, minimum: 1, maximum: 100}
         appliedFilters: {type: object}
         supported: {type: object}
-        summary: {type: object}
+        summary: {$ref: '#/components/schemas/ScenarioRiskRegisterSummary'}
+    ScenarioRiskRegisterSummary:
+      type: object
+      required: [total, treatmentActionRequired, activeReview, dueReview, overdueReview, decisionRequired, bandLow, bandMedium, bandHigh, bandCritical, noCurrentAssessment]
+      properties:
+        total: {type: integer, minimum: 0}
+        treatmentActionRequired: {type: integer, minimum: 0}
+        activeReview: {type: integer, minimum: 0}
+        dueReview: {type: integer, minimum: 0}
+        overdueReview: {type: integer, minimum: 0}
+        decisionRequired: {type: integer, minimum: 0}
+        bandLow: {type: integer, minimum: 0}
+        bandMedium: {type: integer, minimum: 0}
+        bandHigh: {type: integer, minimum: 0}
+        bandCritical: {type: integer, minimum: 0}
+        noCurrentAssessment: {type: integer, minimum: 0, description: Risk scenarios with no current assessment evidence.}

@@ -33,6 +33,18 @@ class MonarcObjectTable extends AbstractTable
             ->getSingleScalarResult();
     }
 
+    /**
+     * @return MonarcObject[]
+     */
+    public function findByMode(int $mode): array
+    {
+        return $this->getRepository()->createQueryBuilder('object')
+            ->where('object.mode = :mode')
+            ->setParameter('mode', $mode)
+            ->getQuery()
+            ->getResult();
+    }
+
     public function hasObjectsUnderRootCategoryExcludeObject(
         ObjectCategorySuperClass $rootCategory,
         ObjectSuperClass $excludeObject

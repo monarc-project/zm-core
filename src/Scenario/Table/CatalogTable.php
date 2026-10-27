@@ -111,6 +111,59 @@ final class CatalogTable
         );
     }
 
+    /** @return array<int, string> */
+    public function findTags(string $kind, int $id): array
+    {
+        return $this->connection->fetchFirstColumn(
+            'SELECT t.label FROM scenario_catalog_tags t INNER JOIN scenario_catalog_tag_links l ON l.tag_id = t.id '
+            . 'WHERE l.resource_type = ? AND l.resource_id = ? ORDER BY t.label',
+            [$kind, $id]
+        );
+    }
+
+    /** @return array<int, array{type: string, value: string}> */
+    public function findReferences(string $kind, int $id): array
+    {
+        return array_map(
+            static fn (array $reference): array => [
+                'type' => $reference['reference_type'],
+                'value' => $reference['reference_value'],
+            ],
+            $this->relations('scenario_catalog_references', $kind, $id)
+        );
+    }
+
+    /** @return array<int, array{type: string, referenceType: string, referenceValue: string, guidance: ?string}> */
+    public function findSuggestions(string $kind, int $id): array
+    {
+        return array_map(
+            static fn (array $suggestion): array => [
+                'type' => $suggestion['suggestion_type'],
+                'referenceType' => $suggestion['reference_type'],
+                'referenceValue' => $suggestion['reference_value'],
+                'guidance' => $suggestion['guidance'],
+            ],
+            $this->relations('scenario_catalog_suggestions', $kind, $id)
+        );
+    }
+
+    /** @return array<int, array{stableUuid: string, version: int}> */
+    public function findTemplateEventReferences(int $templateId): array
+    {
+        return array_map(
+            static fn (array $event): array => [
+                'stableUuid' => $event['stable_uuid'],
+                'version' => (int) $event['version'],
+            ],
+            $this->connection->fetchAllAssociative(
+                'SELECT e.stable_uuid, e.version FROM scenario_catalog_template_events link '
+                . 'INNER JOIN scenario_catalog_events e ON e.id = link.event_id '
+                . 'WHERE link.template_id = ? ORDER BY link.position',
+                [$templateId]
+            )
+        );
+    }
+
     /**
      * Returns the complete, published template release required by a client
      * instantiation.  This intentionally returns database-shaped data: each
@@ -149,6 +202,7 @@ final class CatalogTable
             $event['suggestions'] = $this->relations('scenario_catalog_suggestions', 'event', (int) $event['id']);
         }
         unset($event);
+        $template['risk_scenario_models'] = $this->findTemplateRiskModels($templateId);
         $template['release'] = $this->connection->fetchAssociative(
             'SELECT * FROM scenario_catalog_releases WHERE resource_type = ? AND resource_uuid = ? '
             . 'AND resource_version = ? ORDER BY id DESC LIMIT 1',
@@ -156,6 +210,62 @@ final class CatalogTable
         ) ?: null;
 
         return $template;
+    }
+
+    /**
+     * Version-local template models and their immutable event-release links.
+     * The title snapshot is deliberately read from the link rather than the
+     * current catalog translation so a later event release cannot rewrite it.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function findTemplateRiskModels(int $templateId): array
+    {
+        $models = $this->connection->fetchAllAssociative(
+            'SELECT * FROM scenario_catalog_template_risk_models WHERE template_id = ? ORDER BY position, id',
+            [$templateId]
+        );
+        foreach ($models as &$model) {
+            $model['events'] = $this->connection->fetchAllAssociative(
+                'SELECT event_stable_uuid AS stable_uuid, event_version, event_title_snapshot, guidance, position '
+                . 'FROM scenario_catalog_template_model_events WHERE model_id = ? ORDER BY position, id',
+                [(int) $model['id']]
+            );
+        }
+        unset($model);
+
+        return $models;
+    }
+
+    /** @return array<int, string> */
+    public function templateModelEventWarnings(int $templateId): array
+    {
+        return array_values(array_filter($this->connection->fetchFirstColumn(
+            'SELECT m.title FROM scenario_catalog_template_risk_models m '
+            . 'LEFT JOIN scenario_catalog_template_model_events l ON l.model_id = m.id '
+            . 'WHERE m.template_id = ? GROUP BY m.id, m.title HAVING COUNT(l.id) = 0 ORDER BY m.position',
+            [$templateId]
+        ), 'is_string'));
+    }
+
+    public function assertTemplateEventLinksPublishable(int $templateId): void
+    {
+        $unavailable = (int) $this->connection->fetchOne(
+            'SELECT SUM(unavailable) FROM ('
+            . 'SELECT COUNT(*) AS unavailable FROM scenario_catalog_template_events l '
+            . 'INNER JOIN scenario_catalog_events e ON e.id = l.event_id '
+            . 'WHERE l.template_id = ? AND e.lifecycle <> ? '
+            . 'UNION ALL '
+            . 'SELECT COUNT(*) AS unavailable FROM scenario_catalog_template_model_events l '
+            . 'INNER JOIN scenario_catalog_template_risk_models m ON m.id = l.model_id '
+            . 'INNER JOIN scenario_catalog_events e ON e.id = l.event_id '
+            . 'WHERE m.template_id = ? AND e.lifecycle <> ?'
+            . ') template_event_links',
+            [$templateId, 'published', $templateId, 'published']
+        );
+        if ($unavailable > 0) {
+            throw new InvalidArgumentException('Template event definitions must be published and non-deprecated.');
+        }
     }
 
 
@@ -229,14 +339,10 @@ final class CatalogTable
                 'title' => $translation['title'],
                 'description' => $translation['description'] ?? '',
             ];
-            foreach ([
-                'riskSourceGuidance',
-                'causeGuidance',
-                'monitoringGuidance',
-                'consequenceGuidance',
-                'subjectGuidance',
-                'controlGuidance',
-            ] as $field) {
+            $guidanceFields = $kind === 'event'
+                ? ['riskSourceGuidance', 'causeGuidance', 'monitoringGuidance']
+                : ['consequenceGuidance', 'subjectGuidance', 'controlGuidance', 'monitoringGuidance'];
+            foreach ($guidanceFields as $field) {
                 $column = strtolower(preg_replace('/[A-Z]/', '_$0', $field));
                 if (array_key_exists($field, $translation)) {
                     $fields[$column] = $translation[$field];
@@ -248,11 +354,20 @@ final class CatalogTable
 
     public function replaceRelations(string $kind, int $id, array $data): void
     {
-        $this->connection->delete('scenario_catalog_tag_links', ['resource_type' => $kind, 'resource_id' => $id]);
-        $this->connection->delete('scenario_catalog_references', ['resource_type' => $kind, 'resource_id' => $id]);
-        $this->connection->delete('scenario_catalog_suggestions', ['resource_type' => $kind, 'resource_id' => $id]);
-        if ($kind === 'template') {
+        if (array_key_exists('tags', $data)) {
+            $this->connection->delete('scenario_catalog_tag_links', ['resource_type' => $kind, 'resource_id' => $id]);
+        }
+        if (array_key_exists('references', $data)) {
+            $this->connection->delete('scenario_catalog_references', ['resource_type' => $kind, 'resource_id' => $id]);
+        }
+        if (array_key_exists('suggestions', $data)) {
+            $this->connection->delete('scenario_catalog_suggestions', ['resource_type' => $kind, 'resource_id' => $id]);
+        }
+        if ($kind === 'template' && array_key_exists('eventRefs', $data)) {
             $this->connection->delete('scenario_catalog_template_events', ['template_id' => $id]);
+        }
+        if ($kind === 'template' && array_key_exists('riskScenarioModels', $data)) {
+            $this->connection->delete('scenario_catalog_template_risk_models', ['template_id' => $id]);
         }
         foreach ($data['tags'] ?? [] as $tag) {
             $tagId = $this->connection->fetchOne('SELECT id FROM scenario_catalog_tags WHERE label = ?', [$tag]);
@@ -282,14 +397,60 @@ final class CatalogTable
         if ($kind === 'template') {
             foreach ($data['eventRefs'] ?? [] as $position => $eventReference) {
                 $eventId = $this->connection->fetchOne(
-                    'SELECT id FROM scenario_catalog_events WHERE stable_uuid = ? AND version = ?',
-                    [$eventReference['stableUuid'], $eventReference['version']]
+                    'SELECT id FROM scenario_catalog_events WHERE stable_uuid = ? AND version = ? '
+                    . 'AND lifecycle = ?',
+                    [$eventReference['stableUuid'], $eventReference['version'], 'published']
                 );
                 if ($eventId === false) {
-                    throw new InvalidArgumentException('Referenced event definition does not exist.');
+                    throw new InvalidArgumentException('Referenced event definition is unavailable.');
                 }
                 $this->connection->insert('scenario_catalog_template_events', [
                     'template_id' => $id, 'event_id' => $eventId, 'position' => $position + 1,
+                ]);
+            }
+            if (array_key_exists('riskScenarioModels', $data)) {
+                $this->replaceTemplateRiskModels($id, $data['riskScenarioModels']);
+            }
+        }
+    }
+
+    /** @param array<int, array<string, mixed>> $models */
+    private function replaceTemplateRiskModels(int $templateId, array $models): void
+    {
+        foreach ($models as $modelPosition => $model) {
+            $modelUuid = $model['stableUuid'] ?? \Ramsey\Uuid\Uuid::uuid4()->toString();
+            $this->connection->insert('scenario_catalog_template_risk_models', [
+                'template_id' => $templateId,
+                'stable_uuid' => $modelUuid,
+                'title' => $model['title'],
+                'description' => $model['description'] ?? null,
+                'position' => $modelPosition + 1,
+            ]);
+            $modelId = (int) $this->connection->lastInsertId();
+            foreach ($model['eventLinks'] as $eventPosition => $eventLink) {
+                $event = $this->connection->fetchAssociative(
+                    'SELECT e.id, e.stable_uuid, e.version, '
+                    . 'COALESCE(en.title, fallback.title) AS title '
+                    . 'FROM scenario_catalog_events e '
+                    . 'LEFT JOIN scenario_catalog_event_translations en '
+                    . 'ON en.event_id = e.id AND en.locale = ? '
+                    . 'LEFT JOIN scenario_catalog_event_translations fallback '
+                    . 'ON fallback.event_id = e.id '
+                    . 'WHERE e.stable_uuid = ? AND e.version = ? AND e.lifecycle = ? '
+                    . 'ORDER BY fallback.locale LIMIT 1',
+                    ['en', $eventLink['stableUuid'], $eventLink['version'], 'published']
+                );
+                if ($event === false || !is_string($event['title']) || $event['title'] === '') {
+                    throw new InvalidArgumentException('Referenced event definition is unavailable.');
+                }
+                $this->connection->insert('scenario_catalog_template_model_events', [
+                    'model_id' => $modelId,
+                    'event_id' => (int) $event['id'],
+                    'event_stable_uuid' => $event['stable_uuid'],
+                    'event_version' => (int) $event['version'],
+                    'event_title_snapshot' => $event['title'],
+                    'guidance' => $eventLink['guidance'] ?? null,
+                    'position' => $eventPosition + 1,
                 ]);
             }
         }

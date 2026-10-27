@@ -176,6 +176,7 @@ return [
             Service\ObjectObjectService::class => AutowireFactory::class,
             Service\PasswordService::class => AutowireFactory::class,
             Service\RiskSourceService::class => AutowireFactory::class,
+            Service\ReassessmentTriggerService::class => AutowireFactory::class,
             Service\ScaleService::class => AutowireFactory::class,
             Service\ScaleCommentService::class => AutowireFactory::class,
             Service\ScaleImpactTypeService::class => AutowireFactory::class,
@@ -248,7 +249,6 @@ return [
             Service\ConnectedUserService::class => AutowireFactory::class,
             /* Translation */
             Service\TranslateService::class => Service\TranslateServiceFactory::class,
-            Service\ReassessmentTriggerService::class => AutowireFactory::class,
 
             /* Validators */
             InputValidator\InputValidationTranslator::class => ReflectionBasedAbstractFactory::class,
