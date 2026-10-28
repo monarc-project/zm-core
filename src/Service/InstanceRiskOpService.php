@@ -31,7 +31,7 @@ class InstanceRiskOpService
         $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
-    public function getOperationalRisks(Entity\AnrSuperClass $anr, int $instanceId = null, array $params = []): array
+    public function getOperationalRisks(Entity\AnrSuperClass $anr, ?int $instanceId = null, array $params = []): array
     {
         $instancesInfos = [];
         if ($instanceId === null) {

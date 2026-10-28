@@ -270,7 +270,7 @@ class Model
         return $this;
     }
 
-    public function validateObjectAcceptance(MonarcObject $object, Asset $forcedAsset = null): void
+    public function validateObjectAcceptance(MonarcObject $object, ?Asset $forcedAsset = null): void
     {
         if ($this->isGeneric() && $object->isModeSpecific()) {
             throw new Exception('You cannot add a specific object to a generic model', 412);

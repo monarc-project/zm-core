@@ -129,7 +129,6 @@ class ObjectCategoryTest extends TestCase
     {
         $reflectionObject = new \ReflectionObject($object);
         $property = $reflectionObject->getProperty($property);
-        $property->setAccessible(true);
         $property->setValue($object, $value);
 
         return $object;

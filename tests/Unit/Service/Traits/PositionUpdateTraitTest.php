@@ -331,7 +331,7 @@ class PositionUpdateTraitTest extends TestCase
         int $expectedMaxPos,
         PositionedEntityInterface $entity,
         bool $isNewEntity = true,
-        PositionedEntityInterface $previousEntity = null
+        ?PositionedEntityInterface $previousEntity = null
     ): PositionUpdatableTableInterface {
         return new class(
             $expectedMaxPos,

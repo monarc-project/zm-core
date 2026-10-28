@@ -2,10 +2,11 @@
 namespace Monarc\Core\Service;
 
 use Interop\Container\ContainerInterface;
+use Monolog\Handler\StreamHandler;
+use Monolog\Level;
+use Monolog\Logger;
 use Monarc\Core\Log\SqlLogger;
 use RuntimeException;
-use Laminas\Log\Logger;
-use Laminas\Log\Writer\Stream;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 
 /**
@@ -22,7 +23,7 @@ class DoctrineLoggerFactory implements FactoryInterface
      *
      * @return SqlLogger
      */
-    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
+    public function __invoke(ContainerInterface $container, $requestedName, ?array $options = null)
     {
         $env = getenv('APP_ENV') ?: 'production';
         $config = $container->get('Config');
@@ -39,10 +40,8 @@ class DoctrineLoggerFactory implements FactoryInterface
                 }
             }
 
-            $writer = new Stream($dataPath.date('Y-m-d').'-doctrine.log');
-
-            $log = new Logger();
-            $log->addWriter($writer);
+            $log = new Logger('doctrine');
+            $log->pushHandler(new StreamHandler($dataPath.date('Y-m-d').'-doctrine.log', Level::Debug));
 
             $sqlLogger = new SqlLogger($log);
             $sqlLogger->enabled = true;
@@ -50,7 +49,7 @@ class DoctrineLoggerFactory implements FactoryInterface
             return $sqlLogger;
         }
 
-        $log = new Logger();
+        $log = new Logger('doctrine');
         $sqlLogger = new SqlLogger($log);
         $sqlLogger->enabled = false;
 

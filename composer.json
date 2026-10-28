@@ -41,7 +41,7 @@
         }
     ],
     "require": {
-        "php": "^8.0",
+        "php": ">=8.4.27 <8.5.0",
         "ext-json": "*",
         "ext-openssl": "*",
         "ext-intl": "*",
@@ -49,14 +49,13 @@
         "robmorgan/phinx": "^0.13.4",
         "laminas/laminas-mvc": "^3.1",
         "laminas/laminas-di": "^3.1",
-        "doctrine/doctrine-orm-module": "^5.1",
+        "doctrine/doctrine-orm-module": "^6.3",
         "ramsey/uuid-doctrine": "^1.5",
-        "laminas/laminas-log": "^2.11",
-        "laminas/laminas-mail": "^2.10",
+        "monolog/monolog": "^3.9",
+        "symfony/mailer": "^6.4",
         "laminas/laminas-i18n": "^2.9",
         "laminas/laminas-filter": "^2.9",
         "laminas/laminas-inputfilter": "^2.10",
-        "laminas/laminas-dependency-plugin": "^2.0",
         "laminas/laminas-mvc-middleware": "^2.2",
         "robthree/twofactorauth": "^1.8",
         "laminas/laminas-i18n-resources": "^2.9",
@@ -72,9 +71,14 @@
             "Monarc\\Core\\": "src/"
         }
     },
+    "extra": {
+        "branch-alias": {
+            "dev-feature/php84": "2.15.x-dev"
+        }
+    },
     "config": {
-        "allow-plugins": {
-            "laminas/laminas-dependency-plugin": true
+        "platform": {
+            "php": "8.4.27"
         }
     },
     "scripts": {

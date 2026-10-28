@@ -65,7 +65,7 @@ trait ControllerRequestResponseHandlerTrait
     /**
      * @return JsonModel|JsonResponse
      */
-    protected function getPreparedJsonResponse(array $responseData = null): object
+    protected function getPreparedJsonResponse(?array $responseData = null): object
     {
         if ($this instanceof RequestHandlerInterface) {
             return new JsonResponse($responseData);

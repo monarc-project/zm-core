@@ -36,7 +36,7 @@ abstract class AbstractServiceFactory implements FactoryInterface
      */
     protected $monarcConf = [];
 
-    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
+    public function __invoke(ContainerInterface $container, $requestedName, ?array $options = null)
     {
         $class = (property_exists($this, 'class')) ? $this->class : substr(get_class($this), 0, -7);
 
