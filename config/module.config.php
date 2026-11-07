@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2026 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -124,18 +124,16 @@ return [
     ],
     'service_manager' => [
         'invokables' => [
-            ModelEntity\Question::class => ModelEntity\Question::class,
-            ModelEntity\QuestionChoice::class => ModelEntity\QuestionChoice::class,
         ],
         'factories' => [
             Db::class => DbFactory::class,
             DbCli::class => DbCliFactory::class,
 
             // TODO: Services to refactor and replace with autowiring.
-            Service\QuestionService::class => Service\QuestionServiceFactory::class,
-            Service\QuestionChoiceService::class => Service\QuestionChoiceServiceFactory::class,
-            Service\GuideService::class => Service\GuideServiceFactory::class,
-            Service\GuideItemService::class => Service\GuideItemServiceFactory::class,
+            Service\QuestionService::class => AutowireFactory::class,
+            Service\QuestionChoiceService::class => AutowireFactory::class,
+            Service\GuideService::class => AutowireFactory::class,
+            Service\GuideItemService::class => AutowireFactory::class,
             Service\HistoricalService::class => Service\HistoricalServiceFactory::class,
             Service\DeliveriesModelsService::class => Service\DeliveriesModelsServiceFactory::class,
             /* Services. */
@@ -179,15 +177,13 @@ return [
 
             // TODO: Entities are created in a generic way. Should be removed.
             ModelEntity\DeliveriesModels::class => ServiceModelEntity\DeliveriesModelsServiceModelEntity::class,
-            ModelEntity\GuideItem::class => ServiceModelEntity\GuideItemServiceModelEntity::class,
-            ModelEntity\Guide::class => ServiceModelEntity\GuideServiceModelEntity::class,
             ModelEntity\Historical::class => ServiceModelEntity\HistoricalServiceModelEntity::class,
 
             /* Table classes */
-            DeprecatedTable\QuestionTable::class => AutowireFactory::class,
-            DeprecatedTable\QuestionChoiceTable::class => AutowireFactory::class,
-            DeprecatedTable\GuideTable::class => AutowireFactory::class,
-            DeprecatedTable\GuideItemTable::class => AutowireFactory::class,
+            Table\QuestionTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\QuestionChoiceTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\GuideTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\GuideItemTable::class => Table\Factory\CoreEntityManagerFactory::class,
             DeprecatedTable\HistoricalTable::class => AutowireFactory::class,
             DeprecatedTable\DeliveriesModelsTable::class => AutowireFactory::class,
             Table\ActionHistoryTable::class => Table\Factory\ClientEntityManagerFactory::class,
@@ -233,6 +229,10 @@ return [
             Service\TranslateService::class => Service\TranslateServiceFactory::class,
             Service\ReassessmentTriggerService::class => AutowireFactory::class,
 
+            InputValidator\Guide\GuideDataInputValidator::class => ReflectionBasedAbstractFactory::class,
+            InputValidator\Guide\GuideItemDataInputValidator::class => ReflectionBasedAbstractFactory::class,
+            InputValidator\Question\QuestionDataInputValidator::class => ReflectionBasedAbstractFactory::class,
+            InputValidator\Question\QuestionChoiceDataInputValidator::class => ReflectionBasedAbstractFactory::class,
             /* Validators */
             InputValidator\InputValidationTranslator::class => ReflectionBasedAbstractFactory::class,
             InputValidator\User\PostUserDataInputValidator::class => ReflectionBasedAbstractFactory::class,

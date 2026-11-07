@@ -1,7 +1,7 @@
 <?php
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2026 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -14,9 +14,7 @@ use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 use Monarc\Core\Validator\FieldValidator\UniqueDeliveryModel;
 
 /**
- * @ORM\Table(name="deliveries_models", indexes={
- *      @ORM\Index(name="anr_id", columns={"anr_id"})
- * })
+ * @ORM\Table(name="deliveries_models")
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks()
  */
@@ -85,16 +83,6 @@ class DeliveriesModels extends AbstractEntity
      */
     protected $editable;
 
-    /**
-     * @var AnrSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Anr")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true)
-     * })
-     */
-    protected $anr;
-
     public function getPath(int $languageIndex): string
     {
         if (!\in_array($languageIndex, range(1, 4), true)) {
@@ -136,7 +124,7 @@ class DeliveriesModels extends AbstractEntity
         if (!$this->inputFilter) {
             $dirFile = './data/';
             $appconfdir = getenv('APP_CONF_DIR') ?: '';
-            if( ! empty($appconfdir) ){
+            if (!empty($appconfdir)) {
                 $dirFile = $appconfdir . '/data/';
             }
             $dirFile .= 'monarc/models/';
@@ -223,7 +211,7 @@ class DeliveriesModels extends AbstractEntity
 
         $dirFile = './data';
         $appconfdir = getenv('APP_CONF_DIR') ? getenv('APP_CONF_DIR') : '';
-        if( ! empty($appconfdir) ){
+        if (!empty($appconfdir)) {
             $dirFile = $appconfdir . DIRECTORY_SEPARATOR . 'data';
         }
         $dirFile .= DIRECTORY_SEPARATOR . 'monarc/models';

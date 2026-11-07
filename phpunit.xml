@@ -1,27 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit bootstrap="tests/bootstrap.php"
-         beStrictAboutCoversAnnotation="true"
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd"
+         bootstrap="tests/bootstrap.php"
+         defaultTestSuite="Unit"
+         beStrictAboutCoverageMetadata="true"
+         requireCoverageMetadata="true"
          beStrictAboutOutputDuringTests="true"
-         beStrictAboutTestsThatDoNotTestAnything="true"
-         beStrictAboutTodoAnnotatedTests="true"
-         forceCoversAnnotation="true"
-         verbose="true">
-
+         failOnRisky="true"
+         failOnWarning="true"
+         failOnDeprecation="true"
+         failOnNotice="true"
+         failOnPhpunitDeprecation="true">
     <testsuites>
-        <testsuite name="Unit">
-            <directory suffix="Test.php">tests/Unit</directory>
-        </testsuite>
+        <testsuite name="Unit"><directory suffix="Test.php">tests/Unit</directory></testsuite>
     </testsuites>
-
-    <!--
-    <logging>
-        <log type="coverage-html" target="coverage"/>
-    </logging>
-    -->
-
-    <filter>
-        <whitelist>
+    <source>
+        <include>
             <directory suffix=".php">src</directory>
-        </whitelist>
-    </filter>
+        </include>
+    </source>
 </phpunit>
