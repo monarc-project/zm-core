@@ -102,14 +102,21 @@ class GuideRuntimeChecks
                 );
                 foreach ([$guideController, $itemController] as $controller) {
                     foreach (['POST', 'PUT', 'PATCH', 'DELETE'] as $method) {
+                        $phase = 'FrontOffice guide ' . $method . ' returns 405';
+                        $data = ['description3' => 'Attempted write'];
+                        $body = (new \Laminas\Diactoros\StreamFactory())->createStream(json_encode($data));
                         $request = (new \Laminas\Diactoros\ServerRequest([], [], '/api/guides', $method))
+                            ->withParsedBody($data)->withHeader('Content-Type', 'application/json')->withBody($body)
                             ->withAttribute(\Laminas\Router\RouteMatch::class, new \Laminas\Router\RouteMatch([]));
+                        $response = $controller->handle($request);
+                        $phase .= ' (received ' . $response->getStatusCode() . ')';
                         self::assert(
-                            $controller->handle($request)->getStatusCode() === 405,
+                            $response->getStatusCode() === 405,
                             'FrontOffice guide writes are unsupported'
                         );
                     }
                 }
+                $phase = 'read-only FrontOffice guides unchanged';
                 self::assert($guides->getEntity($guide)['description3'] === 'Runtime guide', 'guide unchanged');
                 self::assert($items->getEntity($item)['description3'] === 'Runtime item', 'item unchanged');
             } else {

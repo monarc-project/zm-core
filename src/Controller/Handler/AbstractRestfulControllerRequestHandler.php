@@ -42,6 +42,10 @@ abstract class AbstractRestfulControllerRequestHandler extends AbstractRestfulCo
 
         /* Handles the case of the missing controller's action or other dispatching issues. */
         if ($result instanceof ViewModel) {
+            if ($this->getResponse()->getStatusCode() === 405) {
+                return new JsonResponse($result->getVariables(), 405);
+            }
+
             $content = json_encode([
                 'errors' => [
                     [
