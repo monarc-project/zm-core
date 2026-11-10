@@ -1,6 +1,9 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
+/**
+ * @link      https://github.com/monarc-project for the canonical source repository
+ * @copyright Copyright (c) 2016-2026 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
+ * @license   MONARC is licensed under GNU Affero General Public License version 3
+ */
 
 namespace Monarc\Core\Service;
 
@@ -11,6 +14,7 @@ use Doctrine\ORM\Cache\DefaultCacheFactory;
 use Doctrine\ORM\Cache\RegionsConfiguration;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\Mapping\EntityListenerResolver;
+use Doctrine\ORM\Proxy\ProxyFactory;
 use DoctrineORMModule\Options\Configuration as DoctrineORMModuleConfiguration;
 use DoctrineORMModule\Service\DBALConfigurationFactory;
 use Laminas\ServiceManager\Exception\InvalidArgumentException;
@@ -49,7 +53,9 @@ final class DoctrineConfigurationFactory extends DBALConfigurationFactory
         }
 
         $config = new Configuration();
-        $config->setAutoGenerateProxyClasses($options->getGenerateProxies());
+        $generateProxies = $options->getGenerateProxies();
+        $config->setAutoGenerateProxyClasses($generateProxies && getenv('APP_ENV') === 'development'
+            ? ProxyFactory::AUTOGENERATE_EVAL : $generateProxies);
         $config->setProxyDir($options->getProxyDir());
         $config->setProxyNamespace($options->getProxyNamespace());
         $config->setEntityNamespaces($options->getEntityNamespaces());
@@ -172,7 +178,11 @@ final class DoctrineConfigurationFactory extends DBALConfigurationFactory
                 }
                 $middleware = $serviceLocator->get($middlewareName);
                 if (!$middleware instanceof Middleware) {
-                    throw new UnexpectedValueException(sprintf('Invalid middleware with %s name. %s expected.', $middlewareName, Middleware::class));
+                    throw new UnexpectedValueException(sprintf(
+                        'Invalid middleware with %s name. %s expected.',
+                        $middlewareName,
+                        Middleware::class
+                    ));
                 }
                 $middlewares[] = $middleware;
             }

@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2022 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2026 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -14,6 +14,7 @@ use Monarc\Core\Adapter\Authentication as AuthenticationAdapter;
 use Monarc\Core\Storage\Authentication as AuthenticationStorage;
 use RobThree\Auth\Providers\Qr\EndroidQrCodeProvider;
 use RobThree\Auth\TwoFactorAuth;
+use RobThree\Auth\Algorithm;
 
 class AuthenticationService
 {
@@ -29,7 +30,7 @@ class AuthenticationService
         private AuthenticationAdapter $authenticationAdapter
     ) {
         $qr = new EndroidQrCodeProvider();
-        $this->tfa = new TwoFactorAuth('MONARC', 6, 30, 'sha1', $qr);
+        $this->tfa = new TwoFactorAuth($qr, 'MONARC', 6, 30, Algorithm::Sha1);
     }
 
     public static function getAvailable2FATokens(): array

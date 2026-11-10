@@ -172,9 +172,37 @@ class QuestionRuntimeChecks
                 $snapshot->completeCopy($copied);
                 $copies = $questions->getList((new GetQuestionsInputFormatter())->format([]), $foreign);
                 self::check(
-                    count($copies) === 1 && $copies[0]['response'] === (string)$copies[0]['choices'][1]['id'],
+                    count($copies) === 1 && count($copies[0]['choices']) === 1
+                    && $copies[0]['response'] === (string)$copies[0]['choices'][0]['id'],
                     'single choice remapping'
                 );
+                $phase = 'analysis import tolerates mismatches';
+                $snapshot->replace($anr, ['questions' => [
+                    ['id' => 100, 'type' => 2, 'isMultiChoice' => true, 'response' => '[200,201,999]',
+                        'questionChoices' => [
+                            ['id' => 200, 'label' => 'Keep'],
+                            ['id' => 200, 'label' => 'Ignore duplicate'],
+                            ['id' => 201, 'question' => 101],
+                        ],
+                    ],
+                    ['id' => 100, 'type' => 1, 'label' => 'Ignore duplicate question'],
+                    ['id' => 101, 'type' => 6],
+                ]]);
+                $restored = $questions->getList((new GetQuestionsInputFormatter())->format([]), $anr);
+                self::check(
+                    count($restored) === 1 && count($restored[0]['choices']) === 1
+                    && $restored[0]['response'] === '[' . $restored[0]['choices'][0]['id'] . ']',
+                    'mismatches are skipped and valid multiple answers are remapped'
+                );
+                $phase = 'analysis import preserves wholly unusable snapshots';
+                $snapshot->replace($anr, ['questions' => [['type' => 6]]]);
+                self::check(
+                    json_encode($restored) === json_encode(
+                        $questions->getList((new GetQuestionsInputFormatter())->format([]), $anr)
+                    ),
+                    'wholly unusable snapshots retain existing questions'
+                );
+                $result['importMismatches'] = 'skipped; valid answers retained';
                 $snapshot->replace($anr, ['questions' => []]);
                 self::check(
                     $questions->getCount((new GetQuestionsInputFormatter())->format([]), $anr) === 0,

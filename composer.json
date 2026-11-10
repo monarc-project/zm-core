@@ -57,7 +57,7 @@
         "laminas/laminas-filter": "^2.9",
         "laminas/laminas-inputfilter": "^2.10",
         "laminas/laminas-mvc-middleware": "^2.2",
-        "robthree/twofactorauth": "^1.8",
+        "robthree/twofactorauth": "^3.0.3",
         "laminas/laminas-i18n-resources": "^2.9",
         "laminas/laminas-mvc-i18n": "^1.7",
         "friendsofphp/proxy-manager-lts": "^1.0"

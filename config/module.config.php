@@ -130,10 +130,6 @@ return [
             DbCli::class => DbCliFactory::class,
 
             // TODO: Services to refactor and replace with autowiring.
-            Service\QuestionService::class => AutowireFactory::class,
-            Service\QuestionChoiceService::class => AutowireFactory::class,
-            Service\GuideService::class => AutowireFactory::class,
-            Service\GuideItemService::class => AutowireFactory::class,
             Service\HistoricalService::class => Service\HistoricalServiceFactory::class,
             Service\DeliveriesModelsService::class => Service\DeliveriesModelsServiceFactory::class,
             /* Services. */
@@ -172,6 +168,10 @@ return [
             Service\RolfTagService::class => AutowireFactory::class,
             Service\ReferentialService::class => AutowireFactory::class,
             Service\SoaScaleCommentService::class => AutowireFactory::class,
+            Service\QuestionService::class => AutowireFactory::class,
+            Service\QuestionChoiceService::class => AutowireFactory::class,
+            Service\GuideService::class => AutowireFactory::class,
+            Service\GuideItemService::class => AutowireFactory::class,
             /* Export services. */
             Service\Export\ObjectExportService::class => AutowireFactory::class,
 
@@ -180,12 +180,9 @@ return [
             ModelEntity\Historical::class => ServiceModelEntity\HistoricalServiceModelEntity::class,
 
             /* Table classes */
-            Table\QuestionTable::class => Table\Factory\CoreEntityManagerFactory::class,
-            Table\QuestionChoiceTable::class => Table\Factory\CoreEntityManagerFactory::class,
-            Table\GuideTable::class => Table\Factory\CoreEntityManagerFactory::class,
-            Table\GuideItemTable::class => Table\Factory\CoreEntityManagerFactory::class,
             DeprecatedTable\HistoricalTable::class => AutowireFactory::class,
             DeprecatedTable\DeliveriesModelsTable::class => AutowireFactory::class,
+
             Table\ActionHistoryTable::class => Table\Factory\ClientEntityManagerFactory::class,
             Table\AnrInstanceMetadataFieldTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\AnrTable::class => Table\Factory\CoreEntityManagerFactory::class,
@@ -220,6 +217,10 @@ return [
             Table\UserTable::class => Table\Factory\ClientEntityManagerFactory::class,
             Table\UserTokenTable::class => Table\Factory\ClientEntityManagerFactory::class,
             Table\VulnerabilityTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\QuestionTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\QuestionChoiceTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\GuideTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\GuideItemTable::class => Table\Factory\CoreEntityManagerFactory::class,
 
             /* Authentication */
             StorageAuthentication::class => ReflectionBasedAbstractFactory::class,

@@ -95,7 +95,8 @@ try {
     $phase = 'service container';
     // An unsaved identity initializes services that require a connected user.
     // No login, user token, persisted user or database write is involved.
-    $container->get(ConnectedUserService::class)->setConnectedUser(new User([
+    $runtimeUserClass = $isFrontOffice ? Monarc\FrontOffice\Entity\User::class : User::class;
+    $container->get(ConnectedUserService::class)->setConnectedUser(new $runtimeUserClass([
         'firstname' => 'Local',
         'lastname' => 'Readiness',
         'email' => 'readiness@example.invalid',
@@ -122,6 +123,18 @@ try {
         require_once __DIR__ . '/Runtime/QuestionRuntimeChecks.php';
         $questionChecks = Monarc\Core\Tests\Runtime\QuestionRuntimeChecks::run($container, $office, $phase);
     }
+    $interviewChecks = [];
+    if ($isFrontOffice && in_array('--interviews', $argv, true)) {
+        $phase = 'interview workflows';
+        require_once dirname(__DIR__, 2) . '/zm-client/tests/Runtime/InterviewRuntimeChecks.php';
+        $interviewChecks = MonarcFrontOfficeTests\Runtime\InterviewRuntimeChecks::run($container, $phase);
+    }
+    $ropaChecks = [];
+    if ($isFrontOffice && in_array('--ropa', $argv, true)) {
+        $phase = 'ROPA workflows';
+        require_once dirname(__DIR__, 2) . '/zm-client/tests/Runtime/RopaRuntimeChecks.php';
+        $ropaChecks = MonarcFrontOfficeTests\Runtime\RopaRuntimeChecks::run($container, $phase);
+    }
     echo json_encode([
         'office' => $office,
         'php' => PHP_VERSION,
@@ -135,6 +148,8 @@ try {
         'guideCount' => count($guides),
         'guideChecks' => $guideChecks,
         'questionChecks' => $questionChecks,
+        'interviewChecks' => $interviewChecks,
+        'ropaChecks' => $ropaChecks,
         'result' => 'passed',
     ], JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR) . PHP_EOL;
 } catch (Throwable $error) {
