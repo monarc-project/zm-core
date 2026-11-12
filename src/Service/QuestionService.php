@@ -42,26 +42,26 @@ class QuestionService
         return $this->questionTable->countByParams($params);
     }
 
-    public function getEntity(int $id, ?AnrSuperClass $anr = null): array
+    public function getQuestionData(int $id, ?AnrSuperClass $anr = null): array
     {
         return $this->serialize($this->questionTable->findById($id));
     }
 
     public function serialize(QuestionSuperClass $question, bool $withChoices = false): array
     {
-        $data = array_merge($this->content($question), [
+        $questionData = array_merge($this->content($question), [
             'type' => $question->getType(), 'multichoice' => (int)$question->isMultiChoice(),
             // Legacy JSON represented the collection as an object; choices is the populated list field.
             'questionChoices' => new \stdClass(),
         ]);
 
         if ($withChoices && $question->getType() === 2) {
-            $data['choices'] = array_map(function ($choice): array {
+            $questionData['choices'] = array_map(function ($choice): array {
                 return array_merge($this->content($choice), ['question' => new \stdClass()]);
             }, $this->questionChoiceTable->findChoicesOfQuestion($question));
         }
 
-        return $data;
+        return $questionData;
     }
 
     public function create(array $data, ?AnrSuperClass $anr = null): int
@@ -134,31 +134,35 @@ class QuestionService
         }
     }
 
-    private function content(QuestionSuperClass|QuestionChoiceSuperClass $entity): array
+    private function content(QuestionSuperClass|QuestionChoiceSuperClass $questionOrChoice): array
     {
-        $data = array_merge(['id' => $entity->getId()], $entity->getLabels(), [
-            'position' => $entity->getPosition(), 'creator' => $entity->getCreator(),
-            'createdAt' => $entity->getCreatedAt(), 'updater' => $entity->getUpdater(),
-            'updatedAt' => $entity->getUpdatedAt(),
+        $questionOrChoiceData = array_merge(['id' => $questionOrChoice->getId()], $questionOrChoice->getLabels(), [
+            'position' => $questionOrChoice->getPosition(), 'creator' => $questionOrChoice->getCreator(),
+            'createdAt' => $questionOrChoice->getCreatedAt(), 'updater' => $questionOrChoice->getUpdater(),
+            'updatedAt' => $questionOrChoice->getUpdatedAt(),
         ]);
 
-        return $data;
+        return $questionOrChoiceData;
     }
 
-    private function numberQuestions(array $records): void
+    private function numberQuestions(array $questions): void
     {
-        foreach ($records as $index => $record) {
-            $record->setPosition($index + 1);
+        foreach ($questions as $index => $question) {
+            $question->setPosition($index + 1);
         }
     }
 
-    private function placeQuestion(QuestionSuperClass $record, array $siblings, array $data, bool $isNew = false): void
-    {
-        $siblings = array_values(array_filter($siblings, fn ($sibling): bool => $sibling !== $record));
+    private function placeQuestion(
+        QuestionSuperClass $question,
+        array $siblings,
+        array $data,
+        bool $isNew = false
+    ): void {
+        $siblings = array_values(array_filter($siblings, fn ($sibling): bool => $sibling !== $question));
         if (count($siblings) >= 65535) {
             throw new Exception('Too many records', 412);
         }
-        $position = $isNew ? count($siblings) + 1 : max(1, $record->getPosition());
+        $position = $isNew ? count($siblings) + 1 : max(1, $question->getPosition());
         if (($data['implicitPosition'] ?? null) === 1) {
             $position = 1;
         } elseif (($data['implicitPosition'] ?? null) === 2) {
@@ -176,7 +180,7 @@ class QuestionService
         } elseif (isset($data['position'])) {
             $position = max(1, $data['position']);
         }
-        array_splice($siblings, min($position, count($siblings) + 1) - 1, 0, [$record]);
+        array_splice($siblings, min($position, count($siblings) + 1) - 1, 0, [$question]);
 
         $this->numberQuestions($siblings);
     }

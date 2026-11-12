@@ -43,21 +43,21 @@ class QuestionChoiceService
         return $this->questionChoiceTable->countByParams($this->choiceParams($params, $anr));
     }
 
-    public function getEntity(int $id, ?AnrSuperClass $anr = null): array
+    public function getQuestionChoiceData(int $id, ?AnrSuperClass $anr = null): array
     {
         return $this->serialize($this->questionChoiceTable->findById($id));
     }
 
     public function serialize(QuestionChoiceSuperClass $choice): array
     {
-        $data = array_merge(['id' => $choice->getId()], $choice->getLabels(), [
+        $questionChoiceData = array_merge(['id' => $choice->getId()], $choice->getLabels(), [
             'position' => $choice->getPosition(), 'creator' => $choice->getCreator(),
             'createdAt' => $choice->getCreatedAt(), 'updater' => $choice->getUpdater(),
             'updatedAt' => $choice->getUpdatedAt(),
             'question' => new \stdClass(),
         ]);
 
-        return $data;
+        return $questionChoiceData;
     }
 
     public function create(array $data, ?AnrSuperClass $anr = null): int
@@ -159,26 +159,26 @@ class QuestionChoiceService
         return $question;
     }
 
-    private function numberChoices(array $records): void
+    private function numberChoices(array $questionChoices): void
     {
-        foreach ($records as $index => $record) {
-            $record->setPosition($index + 1);
+        foreach ($questionChoices as $index => $questionChoice) {
+            $questionChoice->setPosition($index + 1);
         }
     }
 
     private function placeChoice(
-        QuestionChoiceSuperClass $record,
+        QuestionChoiceSuperClass $questionChoice,
         array $siblings,
         array $data,
         bool $isNew = false
     ): void {
-        $siblings = array_values(array_filter($siblings, fn ($sibling): bool => $sibling !== $record));
+        $siblings = array_values(array_filter($siblings, fn ($sibling): bool => $sibling !== $questionChoice));
         if (count($siblings) >= 65535) {
             throw new Exception('Too many records', 412);
         }
-        $position = $data['position'] ?? ($isNew ? count($siblings) + 1 : max(1, $record->getPosition()));
+        $position = $data['position'] ?? ($isNew ? count($siblings) + 1 : max(1, $questionChoice->getPosition()));
         $position = max(1, $position);
-        array_splice($siblings, min($position, count($siblings) + 1) - 1, 0, [$record]);
+        array_splice($siblings, min($position, count($siblings) + 1) - 1, 0, [$questionChoice]);
         $this->numberChoices($siblings);
     }
 }

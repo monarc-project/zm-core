@@ -102,12 +102,12 @@ class QuestionRuntimeChecks
             $other = $service->create($questionDataInputValidator->validate([
                 'label3' => 'Second', 'type' => 1, 'multichoice' => 0, 'implicitPosition' => 1,
             ]));
-            self::check($service->getEntity($q)['position'] === 2, 'insertion');
+            self::check($service->getQuestionData($q)['position'] === 2, 'insertion');
             $service->update(
                 $q,
                 $questionDataInputValidator->validate(['implicitPosition' => 1, 'label4' => 'Fourth'], true)
             );
-            self::check($service->getEntity($other)['position'] === 2, 'movement');
+            self::check($service->getQuestionData($other)['position'] === 2, 'movement');
             $choices->replaceList(
                 $questionChoiceDataInputValidator->validateReplacement(
                     ['questionId' => $q, 'choice' => [['label3' => 'A'], ['label3' => 'B']]]
@@ -158,8 +158,8 @@ class QuestionRuntimeChecks
                     $analysisQuestionDataInputValidator->validate(['response' => '0'], true),
                     $anr
                 );
-                self::check($questions->getEntity($custom, $anr)['response'] === '0', 'zero response');
-                self::reject(fn () => $questions->getEntity($custom, $foreign), EntityNotFoundException::class);
+                self::check($questions->getQuestionData($custom, $anr)['response'] === '0', 'zero response');
+                self::reject(fn () => $questions->getQuestionData($custom, $foreign), EntityNotFoundException::class);
                 $phase = 'analysis import and cloning';
                 $snapshot->replace($anr, ['questions' => [1 => [
                     'id' => 100, 'type' => 2, 'isMultiChoice' => false, 'label' => 'Question',
@@ -212,7 +212,7 @@ class QuestionRuntimeChecks
             }
             $phase = 'question delete ordering';
             $service->delete($q);
-            self::check($service->getEntity($other)['position'] === 1, 'delete ordering');
+            self::check($service->getQuestionData($other)['position'] === 1, 'delete ordering');
             $service->delete($other);
             $phase = 'retained legacy delivery read';
             $result['legacyDeliveryReadCount'] = count($container->get(

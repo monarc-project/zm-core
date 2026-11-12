@@ -41,7 +41,7 @@ class GuideItemService
         return $this->guideItemTable->countByParams($params);
     }
 
-    public function getEntity(int $id): array
+    public function getGuideItemData(int $id): array
     {
         return $this->serialize($this->guideItemTable->findById($id));
     }

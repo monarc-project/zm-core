@@ -59,8 +59,8 @@ class QuestionWorkflowTest extends TestCase
         $choice = $this->env->choiceService->create(
             $this->env->choiceValidator->validate(['question' => $question, 'label1' => 'Answer'])
         );
-        self::assertSame('guide@example.invalid', $this->env->service->getEntity($question)['creator']);
-        self::assertSame('guide@example.invalid', $this->env->choiceService->getEntity($choice)['creator']);
+        self::assertSame('guide@example.invalid', $this->env->service->getQuestionData($question)['creator']);
+        self::assertSame('guide@example.invalid', $this->env->choiceService->getQuestionChoiceData($choice)['creator']);
         $metadata = $this->env->manager->getClassMetadata(QuestionChoice::class);
         self::assertFalse($metadata->associationMappings['question']['joinColumns'][0]['nullable']);
         self::assertSame($question, $this->env->choices->findById($choice)->getQuestion()->getId());
@@ -81,8 +81,8 @@ class QuestionWorkflowTest extends TestCase
             $this->env->validator->validate(['implicitPosition' => 1, 'label4' => 'Other'], true)
         );
         self::assertSame(['A', 'B', 'C'], $this->labels());
-        self::assertSame('Other', $this->env->service->getEntity($a)['label4']);
-        self::assertSame('guide@example.invalid', $this->env->service->getEntity($a)['updater']);
+        self::assertSame('Other', $this->env->service->getQuestionData($a)['label4']);
+        self::assertSame('guide@example.invalid', $this->env->service->getQuestionData($a)['updater']);
         $this->env->service->update(
             $b,
             $this->env->validator->validate(['position' => 70000, 'multichoice' => false], true)
@@ -100,10 +100,10 @@ class QuestionWorkflowTest extends TestCase
             $a,
             $this->env->validator->validate(['label1' => null, 'label2' => '', 'multichoice' => 0], true)
         );
-        self::assertSame('A', $this->env->service->getEntity($a)['label1']);
-        self::assertSame('', $this->env->service->getEntity($a)['label2']);
+        self::assertSame('A', $this->env->service->getQuestionData($a)['label1']);
+        self::assertSame('', $this->env->service->getQuestionData($a)['label2']);
         $this->env->manager->clear();
-        self::assertSame('A', $this->env->service->getEntity($a)['label1']);
+        self::assertSame('A', $this->env->service->getQuestionData($a)['label1']);
     }
 
     public function testChoiceReplacementValidatesEveryRowBeforeRemovalAndEmptyReplacementFlushes(): void
@@ -173,7 +173,7 @@ class QuestionWorkflowTest extends TestCase
         $this->env->choiceService->update($b, $this->env->choiceValidator->validate(['question' => $other], true));
         self::assertSame([1], array_column($this->choices($q), 'position'));
         self::assertSame($other, $this->env->choices->findById($b)->getQuestion()->getId());
-        self::assertInstanceOf(\stdClass::class, $this->env->choiceService->getEntity($b)['question']);
+        self::assertInstanceOf(\stdClass::class, $this->env->choiceService->getQuestionChoiceData($b)['question']);
         $this->env->manager->clear();
         self::assertCount(1, $this->env->questions->findById($other)->getQuestionChoices());
         $this->env->service->delete($other);
@@ -203,7 +203,7 @@ class QuestionWorkflowTest extends TestCase
             fn () => $this->env->choiceService->create($this->env->choiceValidator->validate(['question' => 999])),
             EntityNotFoundException::class
         );
-        self::assertSame('Kept', $this->env->service->getEntity($q)['label1']);
+        self::assertSame('Kept', $this->env->service->getQuestionData($q)['label1']);
         self::assertSame(0, $this->env->choices->countAll());
     }
 
@@ -244,8 +244,8 @@ class QuestionWorkflowTest extends TestCase
     public function testGlobalDefinitionsIgnoreAnalysisFieldsFromThePayload(): void
     {
         $id = $this->question('Global', ['anr' => 22]);
-        self::assertSame('Global', $this->env->service->getEntity($id)['label1']);
-        self::assertArrayNotHasKey('anr', $this->env->service->getEntity($id));
+        self::assertSame('Global', $this->env->service->getQuestionData($id)['label1']);
+        self::assertArrayNotHasKey('anr', $this->env->service->getQuestionData($id));
     }
 
     /** @dataProvider invalidQueries */

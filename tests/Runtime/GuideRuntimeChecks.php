@@ -117,8 +117,8 @@ class GuideRuntimeChecks
                     }
                 }
                 $phase = 'read-only FrontOffice guides unchanged';
-                self::assert($guides->getEntity($guide)['description3'] === 'Runtime guide', 'guide unchanged');
-                self::assert($items->getEntity($item)['description3'] === 'Runtime item', 'item unchanged');
+                self::assert($guides->getGuideData($guide)['description3'] === 'Runtime guide', 'guide unchanged');
+                self::assert($items->getGuideItemData($item)['description3'] === 'Runtime item', 'item unchanged');
             } else {
                 $phase = 'guide create';
                 $created = self::decode($guideController->create([
@@ -126,7 +126,7 @@ class GuideRuntimeChecks
                 ]));
                 $guide = $created['id'];
                 $other = $guides->create(['type' => 2, 'isWithItems' => 0]);
-                self::assert($guides->getEntity($guide)['type'] === 'Risk analysis context', 'guide label');
+                self::assert($guides->getGuideData($guide)['type'] === 'Risk analysis context', 'guide label');
                 try {
                     $guides->create(['type' => 1, 'isWithItems' => 1]);
                     throw new \RuntimeException('Duplicate category was accepted.');
@@ -145,15 +145,15 @@ class GuideRuntimeChecks
                 }
                 $phase = 'item movement';
                 $itemController->patch($first, ['implicitPosition' => 1, 'description4' => 'Updated']);
-                self::assert($items->getEntity($first)['position'] === 1, 'item movement');
-                self::assert($items->getEntity($second)['position'] === 2, 'sibling ordering');
-                self::assert($items->getEntity($first)['description1'] === 'First', 'partial edit');
+                self::assert($items->getGuideItemData($first)['position'] === 1, 'item movement');
+                self::assert($items->getGuideItemData($second)['position'] === 2, 'sibling ordering');
+                self::assert($items->getGuideItemData($first)['description1'] === 'First', 'partial edit');
                 $params = (new GetGuideItemsInputFormatter())->format(['guide' => $guide, 'filter' => 'First']);
                 self::assert($items->getCount($params) === 1 && count($items->getList($params)) === 1, 'scoped count');
                 $guideController->update($guide, ['type' => 1, 'isWithItems' => 0, 'description3' => 'Edited']);
-                self::assert($guides->getEntity($guide)['description3'] === 'Edited', 'guide update');
+                self::assert($guides->getGuideData($guide)['description3'] === 'Edited', 'guide update');
                 $itemController->delete($first);
-                self::assert($items->getEntity($second)['position'] === 1, 'delete ordering');
+                self::assert($items->getGuideItemData($second)['position'] === 1, 'delete ordering');
                 $phase = 'guide deletion';
                 $guideController->deleteList([$guide, $other]);
                 self::assert($guides->getCount((new GetGuidesInputFormatter())->format([])) === 0, 'guide deletion');

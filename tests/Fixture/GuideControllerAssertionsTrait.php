@@ -68,8 +68,8 @@ trait GuideControllerAssertionsTrait
             $this->env->itemService
         );
         $item = $this->decode($items->create($data))['id'];
-        self::assertSame($guide, $this->env->itemService->getEntity($item)['guide']['id']);
-        self::assertSame('Item', $this->env->itemService->getEntity($item)['description1']);
+        self::assertSame($guide, $this->env->itemService->getGuideItemData($item)['guide']['id']);
+        self::assertSame('Item', $this->env->itemService->getGuideItemData($item)['description1']);
     }
 
     public function testGuideAndItemControllersKeepTheirPayloadContractsAcrossCrud(): void
@@ -158,7 +158,7 @@ trait GuideControllerAssertionsTrait
         } catch (Exception $error) {
             self::assertSame(412, $error->getCode());
         }
-        self::assertSame('kept', $this->env->guideService->getEntity($id)['description1']);
+        self::assertSame('kept', $this->env->guideService->getGuideData($id)['description1']);
     }
 
     /** @dataProvider unsupportedVerbs */

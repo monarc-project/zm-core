@@ -50,7 +50,7 @@ class GuideService
         return $this->guideTable->countByParams($params);
     }
 
-    public function getEntity(int $id): array
+    public function getGuideData(int $id): array
     {
         return $this->serialize($this->guideTable->findById($id));
     }
