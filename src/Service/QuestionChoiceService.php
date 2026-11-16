@@ -93,11 +93,16 @@ class QuestionChoiceService
 
     public function replaceList(array $data, ?AnrSuperClass $anr = null): void
     {
-        $question = $this->requireQuestion($data['questionId'], $anr);
-        // Resolve the parent and prepare the validated choices before scheduling any removal.
+        $question = $this->questionTable->findById((int)$data['questionId']);
+        if ($question->getType() !== QuestionSuperClass::TYPE_CHOICE) {
+            return;
+        }
+        if (!is_array($data['choice'] ?? null)) {
+            throw new Exception('Invalid choice list', 412);
+        }
         $newChoices = [];
         foreach ($data['choice'] as $row) {
-            $newChoices[] = (new QuestionChoice())->setLabels($row)->setPosition($row['position'])
+            $newChoices[] = (new QuestionChoice())->setLabels($row)->setPosition(count($newChoices) + 1)
                 ->setCreator($this->connectedUser->getEmail());
         }
         $this->questionChoiceTable->beginTransaction();
@@ -153,7 +158,7 @@ class QuestionChoiceService
     private function requireQuestion(int $id, ?AnrSuperClass $anr): QuestionSuperClass
     {
         $question = $this->questionTable->findById($id);
-        if ($question->getType() !== 2) {
+        if ($question->getType() !== QuestionSuperClass::TYPE_CHOICE) {
             throw new Exception('Choices require a choice question', 412);
         }
         return $question;

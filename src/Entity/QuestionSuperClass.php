@@ -20,6 +20,8 @@ use Monarc\Core\Entity\Traits\UpdateEntityTrait;
  */
 class QuestionSuperClass
 {
+    public const TYPE_CHOICE = 2;
+
     use CreateEntityTrait;
     use UpdateEntityTrait;
 

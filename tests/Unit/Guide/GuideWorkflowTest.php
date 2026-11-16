@@ -148,7 +148,7 @@ class GuideWorkflowTest extends TestCase
         return [
             [[]], [['type' => 0, 'isWithItems' => 1]], [['type' => 5, 'isWithItems' => 1]],
             [['type' => 'label', 'isWithItems' => 0]], [['type' => 1, 'isWithItems' => null]],
-            [['type' => 1, 'isWithItems' => 2]], [['type' => 1, 'isWithItems' => 'bad']],
+            [['type' => 1, 'isWithItems' => 2]], [['type' => 1, 'isWithItems' => []]],
             [['type' => 1, 'isWithItems' => 1, 'description1' => []]],
         ];
     }
@@ -193,7 +193,7 @@ class GuideWorkflowTest extends TestCase
         return [
             [['guide' => null]], [['guide' => []]], [['implicitPosition' => 0]],
             [['implicitPosition' => 4]], [['implicitPosition' => 3]], [['previous' => 'invalid']],
-            [['description2' => null]], [['description1' => false]], [['position' => 'invalid']],
+            [['description2' => null]], [['description1' => false]], [['position' => -1]],
         ];
     }
 

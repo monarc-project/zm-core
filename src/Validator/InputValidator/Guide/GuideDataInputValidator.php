@@ -11,19 +11,12 @@ use Monarc\Core\Validator\InputValidator\AbstractInputValidator;
 
 class GuideDataInputValidator extends AbstractInputValidator
 {
-    protected array $integerFields = ['type', 'isWithItems'];
-
-    protected array $defaultValues = ['description1' => null, 'description2' => null,
-        'description3' => null, 'description4' => null];
-
-    public function validate(array $data, bool $partial = false): array
-    {
-        if (isset($data['isWithItems']) && is_bool($data['isWithItems'])) {
-            $data['isWithItems'] = (int)$data['isWithItems'];
-        }
-
-        return parent::validate($data, $partial);
-    }
+    protected array $defaultValues = [
+        'description1' => null,
+        'description2' => null,
+        'description3' => null,
+        'description4' => null,
+    ];
 
     protected function getRules(): array
     {

@@ -30,8 +30,6 @@ abstract class AbstractInputValidator
 
     protected array $initialData = [];
 
-    protected array $integerFields = [];
-
     protected array $defaultValues = [];
 
     private array $validData = [];
@@ -48,6 +46,13 @@ abstract class AbstractInputValidator
         $this->systemLanguageIndexes = [1, 2, 3, 4];
 
         AbstractValidator::setDefaultTranslator($translator);
+    }
+
+    public function resetValidation(): void
+    {
+        $this->inputFilter = new InputFilter();
+        $this->areRulesInitialized = false;
+        $this->validData = [];
     }
 
     public function isValid(array $data): bool
@@ -78,7 +83,10 @@ abstract class AbstractInputValidator
     {
         $errorMessages = [];
         foreach ($this->getErrorMessages() as $field => $messages) {
-            $errorMessages[$field] = array_map('htmlentities', array_values($messages));
+            $errorMessages[$field] = [];
+            array_walk_recursive($messages, static function ($message) use (&$errorMessages, $field): void {
+                $errorMessages[$field][] = htmlentities($message);
+            });
         }
 
         $result = [
@@ -115,11 +123,6 @@ abstract class AbstractInputValidator
             throw new Exception(json_encode(['validationErrors' => $filter->getMessages()], JSON_THROW_ON_ERROR), 412);
         }
         $values = array_intersect_key($filter->getValues(), $data);
-        foreach ($this->integerFields as $field) {
-            if (isset($values[$field])) {
-                $values[$field] = (int)$values[$field];
-            }
-        }
 
         return $partial ? $values : $values + $this->defaultValues;
     }
@@ -146,8 +149,11 @@ abstract class AbstractInputValidator
         }
 
         return [
-            'name' => $name, 'required' => $required, 'allow_empty' => !$required,
+            'name' => $name,
+            'required' => $required,
+            'allow_empty' => !$required,
             'continue_if_empty' => $required,
+            'filters' => [['name' => 'ToInt']],
             'validators' => $validators,
         ];
     }

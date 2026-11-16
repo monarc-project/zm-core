@@ -47,27 +47,29 @@ trait GuideControllerAssertionsTrait
         $guideDataInputValidator = $this->createMock(
             \Monarc\Core\Validator\InputValidator\Guide\GuideDataInputValidator::class
         );
-        $guideDataInputValidator->expects(self::once())->method('validate')->with($data)
-            ->willReturn(['type' => 1, 'isWithItems' => 1]);
+        $guideDataInputValidator->expects(self::once())->method('isValid')->with($data)->willReturn(true);
+        $guideDataInputValidator->expects(self::never())->method('validate');
+        $guideDataInputValidator->method('getValidData')->willReturn(['type' => 1, 'isWithItems' => 1]);
         $guides = new $this->guideControllerClass(
             new GetGuidesInputFormatter(),
             $guideDataInputValidator,
             $this->env->guideService
         );
-        $guide = $this->decode($guides->create($data))['id'];
+        $guide = $this->request($guides, 'POST', data: $data)['id'];
 
         $data = ['guide' => (string)$guide, 'description1' => 'Item'];
         $guideItemDataInputValidator = $this->createMock(
             \Monarc\Core\Validator\InputValidator\Guide\GuideItemDataInputValidator::class
         );
-        $guideItemDataInputValidator->expects(self::once())->method('validate')->with($data)
-            ->willReturn(['guide' => $guide, 'description1' => 'Item']);
+        $guideItemDataInputValidator->expects(self::once())->method('isValid')->with($data)->willReturn(true);
+        $guideItemDataInputValidator->expects(self::never())->method('validate');
+        $guideItemDataInputValidator->method('getValidData')->willReturn(['guide' => $guide, 'description1' => 'Item']);
         $items = new $this->itemControllerClass(
             new GetGuideItemsInputFormatter(),
             $guideItemDataInputValidator,
             $this->env->itemService
         );
-        $item = $this->decode($items->create($data))['id'];
+        $item = $this->request($items, 'POST', data: $data)['id'];
         self::assertSame($guide, $this->env->itemService->getGuideItemData($item)['guide']['id']);
         self::assertSame('Item', $this->env->itemService->getGuideItemData($item)['description1']);
     }
@@ -79,7 +81,11 @@ trait GuideControllerAssertionsTrait
             $this->env->guideValidator,
             $this->env->guideService
         );
-        $created = $this->decode($controller->create(['type' => 1, 'isWithItems' => 1, 'description3' => 'Guide']));
+        $created = $this->request($controller, 'POST', data: [
+            'type' => 1,
+            'isWithItems' => 1,
+            'description3' => 'Guide',
+        ]);
         self::assertSame('ok', $created['status']);
         $id = $created['id'];
         self::assertIsInt($id);
@@ -93,7 +99,7 @@ trait GuideControllerAssertionsTrait
             $this->env->itemValidator,
             $this->env->itemService
         );
-        $child = $this->decode($items->create(['guide' => (string)$id, 'description1' => 'First']));
+        $child = $this->request($items, 'POST', data: ['guide' => (string)$id, 'description1' => 'First']);
         $items->create(['guide' => $id, 'description1' => 'Second']);
         $response = $this->request($items, 'GET', null, ['guide' => (string)$id, 'limit' => 1]);
         self::assertSame(2, $response['count']);
@@ -120,14 +126,14 @@ trait GuideControllerAssertionsTrait
             $this->env->guideValidator,
             $this->env->guideService
         );
-        $guide = $this->decode($guides->create(['type' => 1, 'isWithItems' => 1]))['id'];
+        $guide = $this->request($guides, 'POST', data: ['type' => 1, 'isWithItems' => 1])['id'];
         self::assertIsInt($guide);
         $items = new $this->itemControllerClass(
             new GetGuideItemsInputFormatter(),
             $this->env->itemValidator,
             $this->env->itemService
         );
-        $one = $this->decode($items->create(['guide' => $guide, 'description1' => 'One']))['id'];
+        $one = $this->request($items, 'POST', data: ['guide' => $guide, 'description1' => 'One'])['id'];
         $two = $this->decode($items->create(['guide' => $guide, 'description1' => 'Two']))['id'];
         $ids = [$one, $two];
         self::assertIsInt($one);
@@ -144,10 +150,10 @@ trait GuideControllerAssertionsTrait
             $this->env->guideService
         );
         try {
-            $controller->create(['type' => 9, 'isWithItems' => 1]);
+            $this->request($controller, 'POST', data: ['type' => 9, 'isWithItems' => 1]);
             self::fail('Invalid guide must be rejected');
         } catch (Exception $error) {
-            self::assertSame(412, $error->getCode());
+            self::assertSame(400, $error->getCode());
         }
         self::assertSame(0, $this->env->guides->countAll());
         $id = $this->env->guideService->create($this->env->guideValidator->validate(['type' => 1, 'isWithItems' => 1]));
@@ -156,7 +162,7 @@ trait GuideControllerAssertionsTrait
             $controller->update($id, ['description1' => 'invalid PUT']);
             self::fail('PUT requires its mandatory fields');
         } catch (Exception $error) {
-            self::assertSame(412, $error->getCode());
+            self::assertSame(400, $error->getCode());
         }
         self::assertSame('kept', $this->env->guideService->getGuideData($id)['description1']);
     }
@@ -221,11 +227,18 @@ trait GuideControllerAssertionsTrait
         }
     }
 
-    private function request(object $controller, string $method, ?int $id = null, array $query = []): array
-    {
+    private function request(
+        object $controller,
+        string $method,
+        ?int $id = null,
+        array $query = [],
+        ?array $data = null
+    ): array {
         $match = new RouteMatch($id === null ? [] : ['id' => (string)$id]);
         $request = (new ServerRequest([], [], '/api/guides-items', $method))
-            ->withQueryParams($query)->withAttribute(RouteMatch::class, $match);
+            ->withQueryParams($query)->withAttribute(RouteMatch::class, $match)
+            ->withParsedBody($data)->withHeader('Content-Type', 'application/json')
+            ->withBody((new \Laminas\Diactoros\StreamFactory())->createStream(json_encode($data ?? [])));
 
         return $this->decode($controller->handle($request));
     }

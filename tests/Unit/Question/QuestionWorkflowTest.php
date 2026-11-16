@@ -98,7 +98,7 @@ class QuestionWorkflowTest extends TestCase
         self::assertSame([1, 2], array_column($this->rows(), 'position'));
         $this->env->service->update(
             $a,
-            $this->env->validator->validate(['label1' => null, 'label2' => '', 'multichoice' => 0], true)
+            $this->env->validator->validate(['label2' => '', 'multichoice' => 0], true)
         );
         self::assertSame('A', $this->env->service->getQuestionData($a)['label1']);
         self::assertSame('', $this->env->service->getQuestionData($a)['label2']);
@@ -106,29 +106,32 @@ class QuestionWorkflowTest extends TestCase
         self::assertSame('A', $this->env->service->getQuestionData($a)['label1']);
     }
 
-    public function testChoiceReplacementValidatesEveryRowBeforeRemovalAndEmptyReplacementFlushes(): void
+    public function testChoiceReplacementUsesPayloadOrderAndEmptyReplacementFlushes(): void
     {
         $q = $this->question('Choices');
         $other = $this->question('Other');
-        $this->env->choiceService->replaceList($this->env->choiceValidator->validateReplacement([
-            'questionId' => $q, 'choice' => [
-                ['label1' => 'One', 'position' => 88], ['label3' => 'Two'],
+        $this->env->choiceService->replaceList([
+            'questionId' => $q,
+            'choice' => [
+                'first' => ['label1' => 'One', 'position' => 88],
+                'second' => ['label1' => 'Two', 'label3' => 'Translation'],
             ],
-        ]));
+        ]);
         self::assertSame([1, 2], array_column($this->choices($q), 'position'));
         $ids = array_column($this->choices($q), 'id');
-        $this->reject(fn () => $this->env->choiceService->replaceList(
-            $this->env->choiceValidator->validateReplacement(['questionId' => $q, 'choice' => [
-                ['label1' => 'Valid'], ['label2' => ['invalid']],
-            ]])
-        ));
+        $this->reject(fn () => $this->env->choiceService->replaceList([
+            'questionId' => $q,
+            'choice' => 'invalid',
+        ]));
         self::assertSame($ids, array_column($this->choices($q), 'id'));
-        $this->env->choiceService->replaceList($this->env->choiceValidator->validateReplacement(['questionId' => $q,
-            'choice' => [['label1' => 'Content only', 'question' => $other]]]));
+        $this->env->choiceService->replaceList([
+            'questionId' => $q,
+            'choice' => [['label1' => 'Content only', 'question' => $other]]
+        ]);
         self::assertSame('Content only', $this->choices($q)[0]['label1']);
         self::assertSame([], $this->choices($other));
         $this->env->choiceService->replaceList(
-            $this->env->choiceValidator->validateReplacement(['questionId' => $q, 'choice' => []])
+            ['questionId' => $q, 'choice' => []]
         );
         $this->env->manager->clear();
         self::assertSame([], $this->choices($q));
@@ -143,7 +146,7 @@ class QuestionWorkflowTest extends TestCase
         );
         $this->reject(
             fn () => $this->env->choiceService->replaceList(
-                $this->env->choiceValidator->validateReplacement(['questionId' => $q, 'choice' => $choices])
+                ['questionId' => $q, 'choice' => $choices]
             )
         );
         // Flush afterwards to catch invalid requests that left scheduled ORM removals behind.
@@ -153,8 +156,19 @@ class QuestionWorkflowTest extends TestCase
 
     public static function invalidReplacements(): array
     {
-        return [[null], [7], [['named' => ['label1' => 'Invalid']]], [[false]],
-            [[['label3' => false]]]];
+        return [[null], [7], [false], ['invalid']];
+    }
+
+    public function testChoiceArrayIsRequiredOnlyForChoiceQuestionType(): void
+    {
+        $textQuestion = $this->question('Text', ['type' => 1]);
+        $this->env->choiceService->replaceList(['questionId' => $textQuestion]);
+        $this->env->choiceService->replaceList(['questionId' => $textQuestion, 'choice' => 'unused']);
+        self::assertSame([], $this->choices($textQuestion));
+
+        $choiceQuestion = $this->question('Options', ['type' => Question::TYPE_CHOICE, 'multichoice' => 0]);
+        $this->reject(fn () => $this->env->choiceService->replaceList(['questionId' => $choiceQuestion]));
+        self::assertSame([], $this->choices($choiceQuestion));
     }
 
     public function testChoiceCrudAndMovingBetweenQuestionsKeepsCollectionsAndOrdering(): void
@@ -200,7 +214,10 @@ class QuestionWorkflowTest extends TestCase
             )
         );
         $this->reject(
-            fn () => $this->env->choiceService->create($this->env->choiceValidator->validate(['question' => 999])),
+            fn () => $this->env->choiceService->create($this->env->choiceValidator->validate([
+                'question' => 999,
+                'label1' => 'Missing question',
+            ])),
             EntityNotFoundException::class
         );
         self::assertSame('Kept', $this->env->service->getQuestionData($q)['label1']);
@@ -212,7 +229,7 @@ class QuestionWorkflowTest extends TestCase
         $q = $this->question('Search', ['multichoice' => 1]);
         $this->question('Else');
         $this->env->choiceService->create(
-            $this->env->choiceValidator->validate(['question' => $q, 'label4' => 'Fourth'])
+            $this->env->choiceValidator->validate(['question' => $q, 'label1' => 'Answer', 'label4' => 'Fourth'])
         );
         $params = (new GetQuestionsInputFormatter())->format(['filter' => 'Search', 'type' => 2, 'limit' => 1]);
         self::assertSame(1, $this->env->service->getCount($params));
@@ -238,7 +255,34 @@ class QuestionWorkflowTest extends TestCase
     public static function invalidData(): array
     {
         return [[['type' => false]], [['type' => null]], [['multichoice' => 2]], [['position' => -1]],
-            [['label1' => false]], [['label2' => str_repeat('x', 256)]], [['response' => []]]];
+            [['label1' => false]], [['label1' => str_repeat('x', 256)]], [['response' => []]]];
+    }
+
+    public function testDefaultLanguageIsRequiredAndOtherTranslationsUseTheSharedLabelRules(): void
+    {
+        foreach ([$this->env->validator, $this->env->choiceValidator] as $questionValidator) {
+            $questionValidator->setDefaultLanguageIndex(3);
+            $translation = 'Translation';
+            $data = [
+                'type' => 1,
+                'multichoice' => 0,
+                'question' => 1,
+                'label3' => '  Active language  ',
+                'label1' => '  ' . $translation . '  '
+            ];
+            $validated = $questionValidator->validate($data);
+            self::assertSame('Active language', $validated['label3']);
+            self::assertSame($translation, $validated['label1']);
+            $this->reject(fn () => $questionValidator->validate(array_replace($data, [
+                'label1' => str_repeat('x', 256),
+            ])));
+            $activeLanguageOnly = $questionValidator->validate(array_diff_key($data, ['label1' => true]));
+            self::assertSame('Active language', $activeLanguageOnly['label3']);
+            unset($data['label3']);
+            $this->reject(fn () => $questionValidator->validate($data));
+            $this->reject(fn () => $questionValidator->validate($data + ['label3' => '   ']));
+            self::assertSame([], $questionValidator->validate([], true));
+        }
     }
 
     public function testGlobalDefinitionsIgnoreAnalysisFieldsFromThePayload(): void

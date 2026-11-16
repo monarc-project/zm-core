@@ -59,6 +59,10 @@ class QuestionTestEnvironment
             ? new AnrQuestionValidator([], $translator)
             : $this->definitionValidator;
         $this->choiceValidator = new QuestionChoiceDataInputValidator([], $translator);
+        if ($analysis) {
+            $this->validator->setDefaultLanguageIndex(3);
+            $this->choiceValidator->setDefaultLanguageIndex(3);
+        }
         $service = $namespace . '\\Service\\' . ($analysis ? 'Anr' : '') . 'QuestionService';
         $this->service = new $service($this->questions, $this->choices, $identity);
         if (!$analysis) {

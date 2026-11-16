@@ -39,15 +39,19 @@ trait QuestionControllerAssertionsTrait
         $this->env->manager->close();
     }
 
-    public function testCreatesAndReplacementValidatePayloadsOnce(): void
+    public function testCreatesValidateOnceAndReplacementUsesTheEditorPayload(): void
     {
         $data = ['type' => '2', 'multichoice' => false, 'label1' => 'Question'];
         $questionDataInputValidator = $this->createMock(
             \Monarc\Core\Validator\InputValidator\Question\QuestionDataInputValidator::class
         );
-        $questionDataInputValidator->expects(self::once())->method('validate')
-            ->with($data)
-            ->willReturn(['type' => 2, 'multichoice' => 0, 'label1' => 'Question']);
+        $questionDataInputValidator->expects(self::once())->method('isValid')->with($data)->willReturn(true);
+        $questionDataInputValidator->expects(self::never())->method('validate');
+        $questionDataInputValidator->method('getValidData')->willReturn([
+            'type' => 2,
+            'multichoice' => 0,
+            'label1' => 'Question',
+        ]);
         $questions = new $this->questionControllerClass(
             new GetQuestionsInputFormatter(),
             $questionDataInputValidator,
@@ -62,12 +66,12 @@ trait QuestionControllerAssertionsTrait
         $questionChoiceDataInputValidator = $this->createMock(
             \Monarc\Core\Validator\InputValidator\Question\QuestionChoiceDataInputValidator::class
         );
-        $questionChoiceDataInputValidator->expects(self::once())->method('validate')->with($data)
-            ->willReturn(['question' => $definition, 'label1' => 'Choice']);
-        $questionChoiceDataInputValidator->expects(self::once())->method('validateReplacement')->with($replacement)
-            ->willReturn(['questionId' => $definition, 'choice' => [[
-                'question' => $definition, 'position' => 1, 'label1' => 'Replacement',
-            ]]]);
+        $questionChoiceDataInputValidator->expects(self::once())->method('isValid')->with($data)->willReturn(true);
+        $questionChoiceDataInputValidator->expects(self::never())->method('validate');
+        $questionChoiceDataInputValidator->method('getValidData')->willReturn([
+            'question' => $definition,
+            'label1' => 'Choice',
+        ]);
         $choices = new $this->choiceControllerClass(
             new GetQuestionChoicesInputFormatter(),
             $questionChoiceDataInputValidator,
@@ -93,8 +97,10 @@ trait QuestionControllerAssertionsTrait
         self::assertCount(1, $list['questions']);
         // BackOffice definitions can contain choices.
         $definition = $this->definition();
-        $replacement = $this->request('choices', 'PUT', null, ['questionId' => $definition,
-            'choice' => [['label1' => 'A'], ['label2' => 'B']]]);
+        $replacement = $this->request('choices', 'PUT', null, [
+            'questionId' => $definition,
+            'choice' => [['label1' => 'A'], ['label1' => 'B', 'label2' => 'Translation']]
+        ]);
         self::assertSame(['status' => 'ok'], $replacement);
         $choices = $this->request('choices', 'GET', null, null, ['question' => $definition]);
         self::assertSame(2, $choices['count']);
@@ -115,19 +121,32 @@ trait QuestionControllerAssertionsTrait
             'choices',
             'PUT',
             null,
-            ['questionId' => $q, 'choice' => [['label1' => 'Good'], ['label4' => 0]]]
+            ['questionId' => $q, 'choice' => 'invalid']
         ));
         self::assertSame('Kept', $this->request('choices', 'GET', null)['choices'][0]['label1']);
         $this->reject(fn () => $this->request('choices', 'DELETE', null, [1, 999]), EntityNotFoundException::class);
         self::assertSame(1, $this->env->choices->countAll());
-        $this->reject(fn () => $this->request('questions', 'POST', null, ['type' => 12, 'multichoice' => 0]));
+        $this->reject(
+            fn () => $this->request('questions', 'POST', null, ['type' => 12, 'multichoice' => 0]),
+            Exception::class,
+            400
+        );
         self::assertSame(1, $this->env->questions->countAll());
     }
 
     public function testIndividualQuestionAndChoiceWritesKeepTheirResponseContracts(): void
     {
-        $question = $this->request('questions', 'POST', null, ['type' => 1, 'multichoice' => 0])['id'];
-        $this->request('questions', 'PUT', $question, ['type' => 1, 'multichoice' => 0, 'label2' => 'Updated']);
+        $question = $this->request('questions', 'POST', null, [
+            'type' => 1,
+            'multichoice' => 0,
+            'label1' => 'Question',
+        ])['id'];
+        $this->request('questions', 'PUT', $question, [
+            'type' => 1,
+            'multichoice' => 0,
+            'label1' => 'Question',
+            'label2' => 'Updated',
+        ]);
         $this->request('questions', 'PATCH', $question, ['label3' => 'Partial']);
         $data = $this->request('questions', 'GET', $question);
         self::assertSame('Updated', $data['label2']);
@@ -138,7 +157,11 @@ trait QuestionControllerAssertionsTrait
         $definition = $this->definition();
         $choice = $this->request('choices', 'POST', null, ['question' => $definition, 'label1' => 'First'])['id'];
         self::assertIsInt($choice);
-        $this->request('choices', 'PUT', $choice, ['question' => $definition, 'label2' => 'Changed']);
+        $this->request('choices', 'PUT', $choice, [
+            'question' => $definition,
+            'label1' => 'Choice',
+            'label2' => 'Changed',
+        ]);
         $this->request('choices', 'PATCH', $choice, ['label3' => 'Retained']);
         $data = $this->request('choices', 'GET', $choice);
         self::assertSame('Changed', $data['label2']);
@@ -151,8 +174,8 @@ trait QuestionControllerAssertionsTrait
 
     public function testSingleQuestionCreatesReturnOneIdentifier(): void
     {
-        $one = $this->request('questions', 'POST', null, ['type' => 1, 'multichoice' => 0]);
-        $two = $this->request('questions', 'POST', null, ['type' => 1, 'multichoice' => 0]);
+        $one = $this->request('questions', 'POST', null, ['type' => 1, 'multichoice' => 0, 'label1' => 'Question']);
+        $two = $this->request('questions', 'POST', null, ['type' => 1, 'multichoice' => 0, 'label1' => 'Question']);
         self::assertIsInt($one['id']);
         self::assertIsInt($two['id']);
         self::assertNotSame($one['id'], $two['id']);
@@ -189,13 +212,16 @@ trait QuestionControllerAssertionsTrait
             return $user;
         });
         $container = new ServiceManager(['services' => [
-            'Config' => $config, ConnectedUserService::class => $identity,
+            'Config' => $config,
+            ConnectedUserService::class => $identity,
         ]]);
         $app = $this->createMock(Application::class);
         $app->method('getServiceManager')->willReturn($container);
         $router = TreeRouteStack::factory($config['router']);
-        $routes = ['/api/questions' => 'monarc_api_questions',
-            '/api/questions-choices' => 'monarc_api_questions_choices'];
+        $routes = [
+            '/api/questions' => 'monarc_api_questions',
+            '/api/questions-choices' => 'monarc_api_questions_choices'
+        ];
         foreach ($routes as $uri => $route) {
             $request = new \Laminas\Http\Request();
             $request->setUri($uri);
@@ -260,7 +286,7 @@ trait QuestionControllerAssertionsTrait
         return json_decode((string)$response->getBody(), true, 512, JSON_THROW_ON_ERROR);
     }
 
-    private function reject(callable $action, string $exceptionClass = Exception::class): void
+    private function reject(callable $action, string $exceptionClass = Exception::class, int $code = 412): void
     {
         try {
             $action();
@@ -268,7 +294,7 @@ trait QuestionControllerAssertionsTrait
         } catch (\Exception $error) {
             self::assertInstanceOf($exceptionClass, $error);
             if ($error instanceof Exception) {
-                self::assertSame(412, $error->getCode());
+                self::assertSame($code, $error->getCode());
             }
         }
     }

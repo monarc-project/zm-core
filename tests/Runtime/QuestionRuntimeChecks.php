@@ -10,7 +10,7 @@ namespace Monarc\Core\Tests\Runtime;
 use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\Tools\SchemaValidator;
 use Monarc\Core\Exception\Exception;
-use Monarc\Core\InputFormatter\Question\GetQuestionsInputFormatter;
+use Monarc\FrontOffice\InputFormatter\Question\GetQuestionsInputFormatter as GetAnrQuestionsInputFormatter;
 use Monarc\Core\InputFormatter\Question\GetQuestionChoicesInputFormatter;
 use Monarc\Core\Service\QuestionService;
 use Monarc\Core\Service\QuestionChoiceService;
@@ -36,6 +36,15 @@ class QuestionRuntimeChecks
                         $metadata
                     );
                     self::check($errors === [], 'question association mappings');
+                    if ($scope === 'analysis') {
+                        self::check(
+                            !$metadata->associationMappings['anr']['joinColumns'][0]['nullable'],
+                            'analysis question and choice require an analysis in metadata'
+                        );
+                        $columns = $manager->getConnection()->createSchemaManager()
+                            ->listTableColumns($metadata->getTableName());
+                        self::check($columns['anr_id']->getNotnull(), 'installed anr_id is NOT NULL');
+                    }
                     if ($name === 'QuestionChoice') {
                         self::check(
                             !$metadata->associationMappings['question']['joinColumns'][0]['nullable'],
@@ -74,6 +83,8 @@ class QuestionRuntimeChecks
             $questionChoiceDataInputValidator = $container->get(
                 \Monarc\Core\Validator\InputValidator\Question\QuestionChoiceDataInputValidator::class
             );
+            $questionDataInputValidator->setDefaultLanguageIndex(3);
+            $questionChoiceDataInputValidator->setDefaultLanguageIndex(3);
             $phase = 'question core CRUD';
             $service = $container->get(QuestionService::class);
             $choices = $container->get(QuestionChoiceService::class);
@@ -100,7 +111,10 @@ class QuestionRuntimeChecks
                 'core question service writes to the common manager'
             );
             $other = $service->create($questionDataInputValidator->validate([
-                'label3' => 'Second', 'type' => 1, 'multichoice' => 0, 'implicitPosition' => 1,
+                'label3' => 'Second',
+                'type' => 1,
+                'multichoice' => 0,
+                'implicitPosition' => 1,
             ]));
             self::check($service->getQuestionData($q)['position'] === 2, 'insertion');
             $service->update(
@@ -108,11 +122,10 @@ class QuestionRuntimeChecks
                 $questionDataInputValidator->validate(['implicitPosition' => 1, 'label4' => 'Fourth'], true)
             );
             self::check($service->getQuestionData($other)['position'] === 2, 'movement');
-            $choices->replaceList(
-                $questionChoiceDataInputValidator->validateReplacement(
-                    ['questionId' => $q, 'choice' => [['label3' => 'A'], ['label3' => 'B']]]
-                )
-            );
+            $choices->replaceList([
+                'questionId' => $q,
+                'choice' => [['label3' => 'A'], ['label3' => 'B']],
+            ]);
             self::check(
                 (int)$managers['core']->getConnection()->fetchOne(
                     'SELECT COUNT(*) FROM questions_choices WHERE question_id = ?',
@@ -122,18 +135,17 @@ class QuestionRuntimeChecks
             );
             $params = (new GetQuestionChoicesInputFormatter())->format(['question' => $q]);
             $ids = array_column($choices->getList($params), 'id');
-            self::reject(fn () => $choices->replaceList($questionChoiceDataInputValidator->validateReplacement([
-                'questionId' => $q, 'choice' => [
-                    ['label3' => 'Valid'], ['label1' => ['invalid']],
-                ],
-            ])));
+            self::reject(fn () => $choices->replaceList([
+                'questionId' => $q,
+                'choice' => 'invalid',
+            ]));
             self::check($ids === array_column($choices->getList($params), 'id'), 'invalid replacement is atomic');
-            $choices->replaceList(
-                $questionChoiceDataInputValidator->validateReplacement(['questionId' => $q, 'choice' => []])
-            );
+            $choices->replaceList(['questionId' => $q, 'choice' => []]);
             self::check($choices->getCount($params) === 0, 'empty replacement');
             $result = [
-                'coreCrud' => 'passed', 'questionMappings' => 'clean', 'controllers' => 'resolved',
+                'coreCrud' => 'passed',
+                'questionMappings' => 'clean',
+                'controllers' => 'resolved',
                 'requiredQuestion' => 'metadata/schema checked; NULL inserts rejected',
             ];
             if ($office === 'FrontOffice') {
@@ -148,9 +160,10 @@ class QuestionRuntimeChecks
                 $analysisQuestionDataInputValidator = $container->get(
                     \Monarc\FrontOffice\Validator\InputValidator\Question\QuestionDataInputValidator::class
                 );
+                $analysisQuestionDataInputValidator->setDefaultLanguageIndex($anr->getLanguage());
                 $snapshot = $container->get(\Monarc\FrontOffice\Service\QuestionSnapshotService::class);
                 $custom = $questions->create(
-                    $analysisQuestionDataInputValidator->validate(['label3' => 'Custom']),
+                    $analysisQuestionDataInputValidator->validate(['label' . $anr->getLanguage() => 'Custom']),
                     $anr
                 );
                 $questions->update(
@@ -162,15 +175,19 @@ class QuestionRuntimeChecks
                 self::reject(fn () => $questions->getQuestionData($custom, $foreign), EntityNotFoundException::class);
                 $phase = 'analysis import and cloning';
                 $snapshot->replace($anr, ['questions' => [1 => [
-                    'id' => 100, 'type' => 2, 'isMultiChoice' => false, 'label' => 'Question',
-                    'mode' => 0, 'response' => '200',
+                    'id' => 100,
+                    'type' => 2,
+                    'isMultiChoice' => false,
+                    'label' => 'Question',
+                    'mode' => 0,
+                    'response' => '200',
                     'questionChoices' => [['id' => 200, 'label' => 'Answer', 'position' => 1]],
                 ]]]);
                 $source = $container->get(\Monarc\FrontOffice\Table\QuestionTable::class)->findOrderedQuestions($anr);
                 $copied = $snapshot->copy($source, $foreign);
                 $manager->flush();
                 $snapshot->completeCopy($copied);
-                $copies = $questions->getList((new GetQuestionsInputFormatter())->format([]), $foreign);
+                $copies = $questions->getList((new GetAnrQuestionsInputFormatter())->format(['anr' => $foreign]));
                 self::check(
                     count($copies) === 1 && count($copies[0]['choices']) === 1
                     && $copies[0]['response'] === (string)$copies[0]['choices'][0]['id'],
@@ -178,7 +195,12 @@ class QuestionRuntimeChecks
                 );
                 $phase = 'analysis import tolerates mismatches';
                 $snapshot->replace($anr, ['questions' => [
-                    ['id' => 100, 'type' => 2, 'isMultiChoice' => true, 'response' => '[200,201,999]',
+                    [
+                        'id' => 100,
+                        'type' => 2,
+                        'label' => 'Question',
+                        'isMultiChoice' => true,
+                        'response' => '[200,201,999]',
                         'questionChoices' => [
                             ['id' => 200, 'label' => 'Keep'],
                             ['id' => 200, 'label' => 'Ignore duplicate'],
@@ -188,7 +210,7 @@ class QuestionRuntimeChecks
                     ['id' => 100, 'type' => 1, 'label' => 'Ignore duplicate question'],
                     ['id' => 101, 'type' => 6],
                 ]]);
-                $restored = $questions->getList((new GetQuestionsInputFormatter())->format([]), $anr);
+                $restored = $questions->getList((new GetAnrQuestionsInputFormatter())->format(['anr' => $anr]));
                 self::check(
                     count($restored) === 1 && count($restored[0]['choices']) === 1
                     && $restored[0]['response'] === '[' . $restored[0]['choices'][0]['id'] . ']',
@@ -198,14 +220,14 @@ class QuestionRuntimeChecks
                 $snapshot->replace($anr, ['questions' => [['type' => 6]]]);
                 self::check(
                     json_encode($restored) === json_encode(
-                        $questions->getList((new GetQuestionsInputFormatter())->format([]), $anr)
+                        $questions->getList((new GetAnrQuestionsInputFormatter())->format(['anr' => $anr]))
                     ),
                     'wholly unusable snapshots retain existing questions'
                 );
                 $result['importMismatches'] = 'skipped; valid answers retained';
                 $snapshot->replace($anr, ['questions' => []]);
                 self::check(
-                    $questions->getCount((new GetQuestionsInputFormatter())->format([]), $anr) === 0,
+                    $questions->getCount((new GetAnrQuestionsInputFormatter())->format(['anr' => $anr])) === 0,
                     'empty question import'
                 );
                 $result['analysisCrudScopeAndCopy'] = 'passed';

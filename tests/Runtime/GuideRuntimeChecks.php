@@ -121,9 +121,11 @@ class GuideRuntimeChecks
                 self::assert($items->getGuideItemData($item)['description3'] === 'Runtime item', 'item unchanged');
             } else {
                 $phase = 'guide create';
-                $created = self::decode($guideController->create([
-                    'type' => 1, 'isWithItems' => 1, 'description3' => 'PHP84-02 runtime',
-                ]));
+                $created = self::create($guideController, [
+                    'type' => 1,
+                    'isWithItems' => 1,
+                    'description3' => 'PHP84-02 runtime',
+                ]);
                 $guide = $created['id'];
                 $other = $guides->create(['type' => 2, 'isWithItems' => 0]);
                 self::assert($guides->getGuideData($guide)['type'] === 'Risk analysis context', 'guide label');
@@ -134,7 +136,7 @@ class GuideRuntimeChecks
                     self::assert($error->getCode() === 412, 'duplicate category status');
                 }
                 $phase = 'item create';
-                $first = self::decode($itemController->create(['guide' => $guide, 'description1' => 'First']))['id'];
+                $first = self::create($itemController, ['guide' => $guide, 'description1' => 'First'])['id'];
                 $second = $items->create(['guide' => $guide, 'description1' => 'Second', 'implicitPosition' => 1]);
                 $foreign = $items->create(['guide' => $other, 'description1' => 'Other']);
                 try {
@@ -175,6 +177,16 @@ class GuideRuntimeChecks
             'legacyDeliveryModelReadCount' => count($templateData),
             'questionReadCount' => count($questionsRead),
         ];
+    }
+
+    private static function create(object $controller, array $data): array
+    {
+        $request = (new \Laminas\Diactoros\ServerRequest([], [], '/api/guides', 'POST'))
+            ->withParsedBody($data)->withHeader('Content-Type', 'application/json')
+            ->withBody((new \Laminas\Diactoros\StreamFactory())->createStream(json_encode($data)))
+            ->withAttribute(\Laminas\Router\RouteMatch::class, new \Laminas\Router\RouteMatch([]));
+
+        return self::decode($controller->handle($request));
     }
 
     private static function decode(object $response): array

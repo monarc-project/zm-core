@@ -11,10 +11,12 @@ use Monarc\Core\Validator\InputValidator\AbstractInputValidator;
 
 class GuideItemDataInputValidator extends AbstractInputValidator
 {
-    protected array $integerFields = ['guide', 'position', 'implicitPosition', 'previous'];
-
-    protected array $defaultValues = ['description1' => '', 'description2' => '',
-        'description3' => '', 'description4' => ''];
+    protected array $defaultValues = [
+        'description1' => '',
+        'description2' => '',
+        'description3' => '',
+        'description4' => ''
+    ];
 
     protected function getRules(): array
     {
