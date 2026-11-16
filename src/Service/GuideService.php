@@ -67,7 +67,7 @@ class GuideService
         ]);
     }
 
-    public function create(array $data): int
+    public function create(array $data): Guide
     {
         $this->assertCategoryAvailable($data['type']);
 
@@ -79,7 +79,7 @@ class GuideService
 
         $this->guideTable->save($guide);
 
-        return $guide->getId();
+        return $guide;
     }
 
     public function update(int $id, array $data): void

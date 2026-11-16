@@ -63,6 +63,67 @@ class AbstractRestfulControllerRequestHandlerTest extends TestCase
         self::assertSame($data, json_decode((string)$response->getBody(), true, 512, JSON_THROW_ON_ERROR));
     }
 
+    public function testPatchUsesSharedValidationWithTrustedLanguageAndResetsBeforeFullWrites(): void
+    {
+        $translator = $this->createMock(\Monarc\Core\Validator\InputValidator\InputValidationTranslator::class);
+        $translator->method('translate')->willReturnArgument(0);
+        $inputValidator = new class ([], $translator) extends AbstractInputValidator {
+            protected function getRules(): array
+            {
+                return [
+                    $this->getLabelRule($this->defaultLanguageIndex),
+                    $this->getIntegerRule('position', false),
+                    $this->getTextRule('description'),
+                ];
+            }
+        };
+        $controller = new class ($inputValidator) extends AbstractRestfulControllerRequestHandler {
+            use ControllerRequestResponseHandlerTrait;
+
+            public function __construct(private AbstractInputValidator $inputValidator)
+            {
+            }
+
+            public function create($data)
+            {
+                $this->validatePostParams($this->inputValidator, $data);
+
+                return $this->getPreparedJsonResponse($this->inputValidator->getValidData());
+            }
+
+            public function patch($id, $data)
+            {
+                $this->validatePostParams($this->inputValidator, $data, partial: true);
+
+                return $this->getPreparedJsonResponse($this->inputValidator->getValidData());
+            }
+        };
+        $anr = new class extends AnrSuperClass {
+            public function getLanguage(): int
+            {
+                return 3;
+            }
+        };
+        foreach ([
+            ['PATCH', ['label3' => '  Updated  ', 'position' => '2'], ['label3' => 'Updated', 'position' => 2]],
+            ['PATCH', [], []],
+            ['PATCH', ['unknown' => 'ignored'], []],
+            ['PATCH', ['description' => null], ['description' => null]],
+            ['POST', ['label3' => 'Created'], ['label3' => 'Created']],
+        ] as [$method, $data, $expected]) {
+            $request = (new ServerRequest([], [], '/api/validation', $method))
+                ->withHeader('Content-Type', 'application/json')
+                ->withBody((new StreamFactory())->createStream(json_encode($data, JSON_THROW_ON_ERROR)))
+                ->withParsedBody($data)->withAttribute('anr', $anr)
+                ->withAttribute(RouteMatch::class, new RouteMatch($method === 'PATCH' ? ['id' => '1'] : []));
+            $response = $controller->handle($request);
+            self::assertSame($expected, json_decode((string)$response->getBody(), true, 512, JSON_THROW_ON_ERROR));
+        }
+        $this->expectException(\Monarc\Core\Exception\Exception::class);
+        $this->expectExceptionCode(400);
+        $controller->create([]);
+    }
+
     public static function validationModes(): array
     {
         return [

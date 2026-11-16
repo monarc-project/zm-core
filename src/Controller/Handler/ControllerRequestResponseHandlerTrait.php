@@ -42,7 +42,8 @@ trait ControllerRequestResponseHandlerTrait
     protected function validatePostParams(
         AbstractInputValidator $inputValidator,
         array $params,
-        bool $isBatchData = false
+        bool $isBatchData = false,
+        bool $partial = false
     ): void {
         $this->validateInstance();
         $inputValidator->resetValidation();
@@ -57,7 +58,7 @@ trait ControllerRequestResponseHandlerTrait
 
         $paramsSets = $isBatchData ? $params : [$params];
         foreach ($paramsSets as $rowNum => $paramsSet) {
-            if (!$inputValidator->isValid($paramsSet)) {
+            if (!$inputValidator->isValid($paramsSet, $partial)) {
                 throw new Exception($inputValidator->getErrorMessagesRow($isBatchData, $rowNum), 400);
             }
         }

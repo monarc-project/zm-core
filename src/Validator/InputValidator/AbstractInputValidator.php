@@ -55,14 +55,14 @@ abstract class AbstractInputValidator
         $this->validData = [];
     }
 
-    public function isValid(array $data): bool
+    public function isValid(array $data, bool $partial = false): bool
     {
         $this->initialData = $data;
-        if (!$this->areRulesInitialized) {
+        if (!$this->areRulesInitialized || $partial) {
             /* Rules initialisation is not done in the constructor to allow setting up additional properties and
             options (e.g. defaultLanguageIndex, anr, excludeFilter etc). */
-            $this->initRules();
-            $this->areRulesInitialized = true;
+            $this->initRules($partial);
+            $this->areRulesInitialized = !$partial;
         }
         $this->inputFilter->setData($data);
 
@@ -129,11 +129,6 @@ abstract class AbstractInputValidator
         $values = array_intersect_key($filter->getValues(), $data);
 
         return $partial ? $values : $values + $this->defaultValues;
-    }
-
-    public function validateIds(array $ids): array
-    {
-        return array_values(array_unique(array_map('intval', $ids)));
     }
 
     public function setDefaultLanguageIndex(int $languageIndex): self
@@ -213,10 +208,13 @@ abstract class AbstractInputValidator
         ];
     }
 
-    private function initRules(): void
+    private function initRules(bool $partial = false): void
     {
+        $this->inputFilter = new InputFilter();
         foreach ($this->getRules() as $rule) {
-            $this->inputFilter->add($rule);
+            if (!$partial || array_key_exists($rule['name'], $this->initialData)) {
+                $this->inputFilter->add($rule);
+            }
         }
     }
 }

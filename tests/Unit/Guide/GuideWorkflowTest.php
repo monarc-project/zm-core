@@ -40,6 +40,21 @@ class GuideWorkflowTest extends TestCase
         $this->env->manager->close();
     }
 
+    public function testCreateReturnsThePersistedGuideAndItem(): void
+    {
+        $guide = $this->env->guideService->create(['type' => 1, 'isWithItems' => 1]);
+        self::assertSame($guide, $this->env->guides->findById($guide->getId()));
+        self::assertSame(1, $guide->getType());
+
+        $guideItem = $this->env->itemService->create([
+            'guide' => $guide->getId(),
+            'description1' => 'Created item',
+        ]);
+        self::assertSame($guideItem, $this->env->items->findById($guideItem->getId()));
+        self::assertSame($guide, $guideItem->getGuide());
+        self::assertSame('Created item', $guideItem->getDescriptions()['description1']);
+    }
+
     public function testMappingsReuseDescriptionsAndRemoveUnusedAnalysisColumns(): void
     {
         $validator = new SchemaValidator($this->env->manager);
@@ -139,7 +154,7 @@ class GuideWorkflowTest extends TestCase
     /** @dataProvider invalidGuides */
     public function testInvalidGuideWritesNeverPersist(array $data): void
     {
-        $this->reject(fn () => $this->env->guideService->create($this->env->guideValidator->validate($data)));
+        $this->reject(fn () => $this->env->guideService->create($this->env->guideValidator->validate($data))->getId());
         self::assertSame(0, $this->env->guides->countAll());
     }
 
@@ -171,7 +186,7 @@ class GuideWorkflowTest extends TestCase
         self::assertSame('übersetzt', $this->env->itemService->getGuideItemData($b)['description2']);
         $this->env->itemService->update($c, $this->env->itemValidator->validate(['implicitPosition' => 2], true));
         self::assertSame(['B', 'A', 'D', 'C'], $this->labels($guide));
-        $this->env->itemService->deleteList($this->env->itemValidator->validateIds([$a, $d]));
+        $this->env->itemService->deleteList([$a, $d]);
         self::assertSame(['B', 'C'], $this->labels($guide));
         self::assertSame([1, 2], array_column($this->rows($guide), 'position'));
         self::assertSame($guide, $this->env->itemService->getGuideItemData($b)['guide']['id']);
@@ -249,7 +264,7 @@ class GuideWorkflowTest extends TestCase
         $guide = $this->env->guideService->create($this->env->guideValidator->validate([
             'type' => '1', 'isWithItems' => '0', 'mode' => null,
             'description1' => '  Guide text  ', 'description2' => '', 'description3' => null,
-        ]));
+        ]))->getId();
         $data = $this->env->guideService->getGuideData($guide);
         self::assertSame(0, $data['isWithItems']);
         self::assertSame('  Guide text  ', $data['description1']);
@@ -257,7 +272,7 @@ class GuideWorkflowTest extends TestCase
         $item = $this->env->itemService->create($this->env->itemValidator->validate([
             'guide' => (string)$guide, 'implicitPosition' => '2', 'previous' => null,
             'description1' => '<p>Item text</p>',
-        ]));
+        ]))->getId();
         $this->env->itemService->update(
             $item,
             $this->env->itemValidator->validate(['description2' => '  Translation  '], true)
@@ -300,17 +315,17 @@ class GuideWorkflowTest extends TestCase
         $guide = $this->guide(1);
         $item = $this->item($guide, 'Retained');
         $this->reject(
-            fn () => $this->env->itemService->create($this->env->itemValidator->validate(['guide' => 'bad']))
+            fn () => $this->env->itemService->create($this->env->itemValidator->validate(['guide' => 'bad']))->getId()
         );
         try {
-            $this->env->itemService->deleteList($this->env->itemValidator->validateIds([$item, 999]));
+            $this->env->itemService->deleteList([$item, 999]);
             self::fail('Missing identifier must fail the whole deletion');
         } catch (EntityNotFoundException $error) {
             self::assertStringContainsString('was not found', $error->getMessage());
             self::assertSame(1, $this->env->items->countAll());
         }
         $this->reject(
-            fn () => $this->env->guideService->deleteList($this->env->guideValidator->validateIds([$guide, 'bad'])),
+            fn () => $this->env->guideService->deleteList([$guide, 0]),
             EntityNotFoundException::class
         );
         self::assertSame(['Retained'], $this->labels($guide));
@@ -326,15 +341,15 @@ class GuideWorkflowTest extends TestCase
         $this->reject(fn () => $this->env->guideService->getGuideData(999), EntityNotFoundException::class);
         $this->reject(fn () => $this->env->itemService->getGuideItemData(999), EntityNotFoundException::class);
         $this->reject(
-            fn () => $this->env->itemService->create($this->env->itemValidator->validate(['guide' => 999])),
+            fn () => $this->env->itemService->create($this->env->itemValidator->validate(['guide' => 999]))->getId(),
             EntityNotFoundException::class
         );
         $this->reject(fn () => $this->env->itemService->create($this->env->itemValidator->validate([
             'guide' => $one, 'implicitPosition' => 3, 'previous' => $previous,
-        ])));
+        ]))->getId());
         self::assertSame([], $this->labels($one));
         $this->reject(
-            fn () => $this->env->guideService->deleteList($this->env->guideValidator->validateIds([$one, 999])),
+            fn () => $this->env->guideService->deleteList([$one, 999]),
             EntityNotFoundException::class
         );
         self::assertSame(2, $this->env->guides->countAll());
@@ -349,14 +364,14 @@ class GuideWorkflowTest extends TestCase
         $data = $this->env->guideService->serialize($snapshot, false);
         $data['type'] = 2;
         $data['creator'] = 'spoofed';
-        $copy = $this->env->guideService->create($this->env->guideValidator->validate($data));
+        $copy = $this->env->guideService->create($this->env->guideValidator->validate($data))->getId();
         self::assertNotSame($id, $copy);
         self::assertSame('Copy me', $this->env->guideService->getGuideData($copy)['description3']);
         self::assertSame('guide@example.invalid', $this->env->guideService->getGuideData($copy)['creator']);
         $item = $this->item($id, 'Child');
         $itemData = $this->env->itemService->getGuideItemData($item);
         $itemData['guide'] = $copy;
-        $newItem = $this->env->itemService->create($this->env->itemValidator->validate($itemData));
+        $newItem = $this->env->itemService->create($this->env->itemValidator->validate($itemData))->getId();
         self::assertNotSame($item, $newItem);
         self::assertSame(['Child'], $this->labels($copy));
     }
@@ -377,14 +392,14 @@ class GuideWorkflowTest extends TestCase
     {
         return $this->env->guideService->create($this->env->guideValidator->validate(array_merge([
             'type' => $type, 'isWithItems' => 1, 'description1' => 'Context',
-        ], $extra)));
+        ], $extra)))->getId();
     }
 
     private function item(int $guide, string $label, array $extra = []): int
     {
         return $this->env->itemService->create($this->env->itemValidator->validate(array_merge([
             'guide' => $guide, 'description1' => $label,
-        ], $extra)));
+        ], $extra)))->getId();
     }
 
     private function rows(int $guide): array

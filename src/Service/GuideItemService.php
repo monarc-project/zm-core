@@ -58,7 +58,7 @@ class GuideItemService
         ]);
     }
 
-    public function create(array $data): int
+    public function create(array $data): GuideItem
     {
         $guide = $this->guideTable->findById($data['guide']);
         $this->validatePlacement($data, $guide);
@@ -70,7 +70,7 @@ class GuideItemService
 
         $this->guideItemTable->save($item);
 
-        return $item->getId();
+        return $item;
     }
 
     public function update(int $id, array $data): void

@@ -142,7 +142,11 @@ trait QuestionControllerAssertionsTrait
         $updated = $this->request('questions', 'GET', $question);
         self::assertSame('Translation', $updated['label2']);
         self::assertSame($original['label1'], $updated['label1']);
-        $this->reject(fn () => $this->request('questions', 'PATCH', $question, ['type' => 9]));
+        $this->reject(
+            fn () => $this->request('questions', 'PATCH', $question, ['type' => 9]),
+            Exception::class,
+            400
+        );
         self::assertSame($original['type'], $this->request('questions', 'GET', $question)['type']);
 
         $choice = $this->request('choices', 'POST', null, ['question' => $question, 'label1' => 'First'])['id'];
@@ -150,7 +154,11 @@ trait QuestionControllerAssertionsTrait
         $updatedChoice = $this->request('choices', 'GET', $choice);
         self::assertSame('Updated choice', $updatedChoice['label3']);
         self::assertSame('First', $updatedChoice['label1']);
-        $this->reject(fn () => $this->request('choices', 'PATCH', $choice, ['position' => -1]));
+        $this->reject(
+            fn () => $this->request('choices', 'PATCH', $choice, ['position' => -1]),
+            Exception::class,
+            400
+        );
         self::assertSame(1, $this->request('choices', 'GET', $choice)['position']);
     }
 

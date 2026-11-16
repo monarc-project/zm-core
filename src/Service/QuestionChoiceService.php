@@ -60,7 +60,7 @@ class QuestionChoiceService
         return $questionChoiceData;
     }
 
-    public function create(array $data, ?AnrSuperClass $anr = null): int
+    public function create(array $data, ?AnrSuperClass $anr = null): QuestionChoice
     {
         $question = $this->requireQuestion($data['question'], $anr);
 
@@ -71,7 +71,7 @@ class QuestionChoiceService
 
         $this->questionChoiceTable->save($choice);
 
-        return $choice->getId();
+        return $choice;
     }
 
     public function update(int $id, array $data, ?AnrSuperClass $anr = null): void

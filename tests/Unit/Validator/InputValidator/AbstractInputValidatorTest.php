@@ -46,6 +46,17 @@ class AbstractInputValidatorTest extends TestCase
         self::assertSame($expected[1], $validator->getValidData(1));
     }
 
+    public function testPartialRowsOmitDefaultsAndFullValidationRestoresAllRules(): void
+    {
+        $validator = $this->validator();
+        self::assertTrue($validator->isValid(['text' => 'Patch'], true));
+        self::assertSame(['text' => 'Patch'], $validator->getValidData());
+        self::assertTrue($validator->isValid([]));
+        self::assertSame(['fallback' => 0], $validator->getValidData(1));
+        self::assertTrue($validator->isValid(['optional' => null], true));
+        self::assertSame(['optional' => null], $validator->getValidData(2));
+    }
+
     private function validator(): AbstractInputValidator
     {
         return new class ([], $this->createMock(InputValidationTranslator::class)) extends AbstractInputValidator {

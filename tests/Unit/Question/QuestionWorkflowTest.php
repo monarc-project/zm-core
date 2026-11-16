@@ -39,6 +39,21 @@ class QuestionWorkflowTest extends TestCase
         $this->env->manager->close();
     }
 
+    public function testCreateReturnsThePersistedQuestionAndChoice(): void
+    {
+        $question = $this->env->service->create(['label1' => 'Created question', 'type' => 2, 'multichoice' => 0]);
+        self::assertSame($question, $this->env->questions->findById($question->getId()));
+        self::assertSame('Created question', $question->getLabels()['label1']);
+
+        $questionChoice = $this->env->choiceService->create([
+            'question' => $question->getId(),
+            'label1' => 'Created choice',
+        ]);
+        self::assertSame($questionChoice, $this->env->choices->findById($questionChoice->getId()));
+        self::assertSame($question, $questionChoice->getQuestion());
+        self::assertSame('Created choice', $questionChoice->getLabels()['label1']);
+    }
+
     public function testModernMappingsAndNullableAuditValues(): void
     {
         foreach ([Question::class, QuestionChoice::class] as $class) {
@@ -58,7 +73,7 @@ class QuestionWorkflowTest extends TestCase
         $question = $this->question('Required parent');
         $choice = $this->env->choiceService->create(
             $this->env->choiceValidator->validate(['question' => $question, 'label1' => 'Answer'])
-        );
+        )->getId();
         self::assertSame('guide@example.invalid', $this->env->service->getQuestionData($question)['creator']);
         self::assertSame('guide@example.invalid', $this->env->choiceService->getQuestionChoiceData($choice)['creator']);
         $metadata = $this->env->manager->getClassMetadata(QuestionChoice::class);
@@ -143,7 +158,7 @@ class QuestionWorkflowTest extends TestCase
         $q = $this->question('Kept');
         $c = $this->env->choiceService->create(
             $this->env->choiceValidator->validate(['question' => $q, 'label1' => 'Kept'])
-        );
+        )->getId();
         $this->reject(
             fn () => $this->env->choiceService->replaceList(
                 ['questionId' => $q, 'choice' => $choices]
@@ -177,10 +192,10 @@ class QuestionWorkflowTest extends TestCase
         $other = $this->question('Other');
         $a = $this->env->choiceService->create(
             $this->env->choiceValidator->validate(['question' => $q, 'label1' => 'A'])
-        );
+        )->getId();
         $b = $this->env->choiceService->create(
             $this->env->choiceValidator->validate(['question' => $q, 'label1' => 'B', 'position' => 1])
-        );
+        )->getId();
         self::assertSame(['B', 'A'], array_column($this->choices($q), 'label1'));
         $this->env->choiceService->update($b, $this->env->choiceValidator->validate(['position' => 70000], true));
         self::assertSame(['A', 'B'], array_column($this->choices($q), 'label1'));
@@ -204,7 +219,7 @@ class QuestionWorkflowTest extends TestCase
         self::assertSame(0, $this->env->questions->countAll());
         $q = $this->question('Kept');
         $this->reject(
-            fn () => $this->env->service->deleteList($this->env->validator->validateIds([$q, 999])),
+            fn () => $this->env->service->deleteList([$q, 999]),
             EntityNotFoundException::class
         );
         $this->reject(
@@ -217,7 +232,7 @@ class QuestionWorkflowTest extends TestCase
             fn () => $this->env->choiceService->create($this->env->choiceValidator->validate([
                 'question' => 999,
                 'label1' => 'Missing question',
-            ])),
+            ]))->getId(),
             EntityNotFoundException::class
         );
         self::assertSame('Kept', $this->env->service->getQuestionData($q)['label1']);
@@ -230,7 +245,7 @@ class QuestionWorkflowTest extends TestCase
         $this->question('Else');
         $this->env->choiceService->create(
             $this->env->choiceValidator->validate(['question' => $q, 'label1' => 'Answer', 'label4' => 'Fourth'])
-        );
+        )->getId();
         $params = (new GetQuestionsInputFormatter())->format(['filter' => 'Search', 'type' => 2, 'limit' => 1]);
         self::assertSame(1, $this->env->service->getCount($params));
         $row = $this->env->service->getList($params)[0];
@@ -248,7 +263,7 @@ class QuestionWorkflowTest extends TestCase
         $this->reject(
             fn () => $this->env->service->create(
                 $this->env->validator->validate(array_merge(['type' => 1, 'multichoice' => 0], $data))
-            )
+            )->getId()
         );
     }
 
@@ -308,7 +323,7 @@ class QuestionWorkflowTest extends TestCase
     {
         return $this->env->service->create(
             $this->env->validator->validate(array_merge(['label1' => $label, 'type' => 2, 'multichoice' => 0], $data))
-        );
+        )->getId();
     }
 
     private function rows(): array

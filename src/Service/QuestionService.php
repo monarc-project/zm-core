@@ -64,7 +64,7 @@ class QuestionService
         return $questionData;
     }
 
-    public function create(array $data, ?AnrSuperClass $anr = null): int
+    public function create(array $data, ?AnrSuperClass $anr = null): Question
     {
         $question = new Question();
         $siblings = $this->questionTable->findOrderedQuestions($anr);
@@ -75,7 +75,7 @@ class QuestionService
         $this->placeQuestion($question, $siblings, $data, true);
         $this->questionTable->save($question);
 
-        return $question->getId();
+        return $question;
     }
 
     public function update(int $id, array $data, ?AnrSuperClass $anr = null): void

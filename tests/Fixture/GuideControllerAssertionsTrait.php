@@ -156,7 +156,9 @@ trait GuideControllerAssertionsTrait
             self::assertSame(400, $error->getCode());
         }
         self::assertSame(0, $this->env->guides->countAll());
-        $id = $this->env->guideService->create($this->env->guideValidator->validate(['type' => 1, 'isWithItems' => 1]));
+        $id = $this->env->guideService->create(
+            $this->env->guideValidator->validate(['type' => 1, 'isWithItems' => 1])
+        )->getId();
         $controller->patch($id, ['description1' => 'kept']);
         try {
             $controller->update($id, ['description1' => 'invalid PUT']);
@@ -181,7 +183,7 @@ trait GuideControllerAssertionsTrait
             $this->request($guides, 'PATCH', $guide, data: ['type' => 9, 'description3' => 'Invalid']);
             self::fail('Invalid guide PATCH must fail before mutation.');
         } catch (Exception $error) {
-            self::assertSame(412, $error->getCode());
+            self::assertSame(400, $error->getCode());
         }
         self::assertSame('  Updated guide  ', $this->env->guideService->getGuideData($guide)['description3']);
 
@@ -197,7 +199,7 @@ trait GuideControllerAssertionsTrait
             $this->request($items, 'PATCH', $item, data: ['position' => -1, 'description3' => 'Invalid']);
             self::fail('Invalid item PATCH must fail before mutation.');
         } catch (Exception $error) {
-            self::assertSame(412, $error->getCode());
+            self::assertSame(400, $error->getCode());
         }
         self::assertSame('Updated item', $this->env->itemService->getGuideItemData($item)['description3']);
         self::assertSame(1, $this->env->itemService->getGuideItemData($item)['position']);

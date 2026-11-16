@@ -90,8 +90,8 @@ class GuideRuntimeChecks
             }
             if ($office === 'FrontOffice') {
                 $phase = 'read-only FrontOffice guides';
-                $guide = $guides->create(['type' => 1, 'isWithItems' => 1, 'description3' => 'Runtime guide']);
-                $item = $items->create(['guide' => $guide, 'description3' => 'Runtime item']);
+                $guide = $guides->create(['type' => 1, 'isWithItems' => 1, 'description3' => 'Runtime guide'])->getId();
+                $item = $items->create(['guide' => $guide, 'description3' => 'Runtime item'])->getId();
                 self::assert(
                     self::decode($guideController->get($guide))['description3'] === 'Runtime guide',
                     'FrontOffice guide read'
@@ -127,18 +127,22 @@ class GuideRuntimeChecks
                     'description3' => 'PHP84-02 runtime',
                 ]);
                 $guide = $created['id'];
-                $other = $guides->create(['type' => 2, 'isWithItems' => 0]);
+                $other = $guides->create(['type' => 2, 'isWithItems' => 0])->getId();
                 self::assert($guides->getGuideData($guide)['type'] === 'Risk analysis context', 'guide label');
                 try {
-                    $guides->create(['type' => 1, 'isWithItems' => 1]);
+                    $guides->create(['type' => 1, 'isWithItems' => 1])->getId();
                     throw new \RuntimeException('Duplicate category was accepted.');
                 } catch (Exception $error) {
                     self::assert($error->getCode() === 412, 'duplicate category status');
                 }
                 $phase = 'item create';
                 $first = self::create($itemController, ['guide' => $guide, 'description1' => 'First'])['id'];
-                $second = $items->create(['guide' => $guide, 'description1' => 'Second', 'implicitPosition' => 1]);
-                $foreign = $items->create(['guide' => $other, 'description1' => 'Other']);
+                $second = $items->create([
+                    'guide' => $guide,
+                    'description1' => 'Second',
+                    'implicitPosition' => 1,
+                ])->getId();
+                $foreign = $items->create(['guide' => $other, 'description1' => 'Other'])->getId();
                 try {
                     $itemController->patch($first, ['implicitPosition' => 3, 'previous' => $foreign]);
                     throw new \RuntimeException('Foreign previous item was accepted.');

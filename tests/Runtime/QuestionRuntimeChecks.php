@@ -102,7 +102,7 @@ class QuestionRuntimeChecks
             }
             $q = $service->create(
                 $questionDataInputValidator->validate(['label3' => 'First', 'type' => 2, 'multichoice' => 0])
-            );
+            )->getId();
             self::check(
                 (int)$managers['core']->getConnection()->fetchOne(
                     'SELECT COUNT(*) FROM questions WHERE id = ?',
@@ -115,7 +115,7 @@ class QuestionRuntimeChecks
                 'type' => 1,
                 'multichoice' => 0,
                 'implicitPosition' => 1,
-            ]));
+            ]))->getId();
             self::check($service->getQuestionData($q)['position'] === 2, 'insertion');
             $service->update(
                 $q,
@@ -165,7 +165,7 @@ class QuestionRuntimeChecks
                 $custom = $questions->create(
                     $analysisQuestionDataInputValidator->validate(['label' . $anr->getLanguage() => 'Custom']),
                     $anr
-                );
+                )->getId();
                 $questions->update(
                     $custom,
                     $analysisQuestionDataInputValidator->validate(['response' => '0'], true),
