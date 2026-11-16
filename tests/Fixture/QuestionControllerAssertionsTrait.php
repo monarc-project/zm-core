@@ -134,6 +134,26 @@ trait QuestionControllerAssertionsTrait
         self::assertSame(1, $this->env->questions->countAll());
     }
 
+    public function testQuestionAndChoicePatchValidateOnlySuppliedFields(): void
+    {
+        $question = $this->definition();
+        $original = $this->request('questions', 'GET', $question);
+        $this->request('questions', 'PATCH', $question, ['label2' => '  Translation  ']);
+        $updated = $this->request('questions', 'GET', $question);
+        self::assertSame('Translation', $updated['label2']);
+        self::assertSame($original['label1'], $updated['label1']);
+        $this->reject(fn () => $this->request('questions', 'PATCH', $question, ['type' => 9]));
+        self::assertSame($original['type'], $this->request('questions', 'GET', $question)['type']);
+
+        $choice = $this->request('choices', 'POST', null, ['question' => $question, 'label1' => 'First'])['id'];
+        $this->request('choices', 'PATCH', $choice, ['label3' => '  Updated choice  ']);
+        $updatedChoice = $this->request('choices', 'GET', $choice);
+        self::assertSame('Updated choice', $updatedChoice['label3']);
+        self::assertSame('First', $updatedChoice['label1']);
+        $this->reject(fn () => $this->request('choices', 'PATCH', $choice, ['position' => -1]));
+        self::assertSame(1, $this->request('choices', 'GET', $choice)['position']);
+    }
+
     public function testIndividualQuestionAndChoiceWritesKeepTheirResponseContracts(): void
     {
         $question = $this->request('questions', 'POST', null, [

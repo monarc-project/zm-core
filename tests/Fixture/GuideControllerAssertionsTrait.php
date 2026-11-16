@@ -167,6 +167,42 @@ trait GuideControllerAssertionsTrait
         self::assertSame('kept', $this->env->guideService->getGuideData($id)['description1']);
     }
 
+    public function testGuideAndItemPatchValidateOnlySuppliedFieldsBeforeMutation(): void
+    {
+        $guides = new $this->guideControllerClass(
+            new GetGuidesInputFormatter(),
+            $this->env->guideValidator,
+            $this->env->guideService
+        );
+        $guide = $this->request($guides, 'POST', data: ['type' => 1, 'isWithItems' => 1])['id'];
+        $this->request($guides, 'PATCH', $guide, data: ['description3' => '  Updated guide  ']);
+        self::assertSame('  Updated guide  ', $this->env->guideService->getGuideData($guide)['description3']);
+        try {
+            $this->request($guides, 'PATCH', $guide, data: ['type' => 9, 'description3' => 'Invalid']);
+            self::fail('Invalid guide PATCH must fail before mutation.');
+        } catch (Exception $error) {
+            self::assertSame(412, $error->getCode());
+        }
+        self::assertSame('  Updated guide  ', $this->env->guideService->getGuideData($guide)['description3']);
+
+        $items = new $this->itemControllerClass(
+            new GetGuideItemsInputFormatter(),
+            $this->env->itemValidator,
+            $this->env->itemService
+        );
+        $item = $this->request($items, 'POST', data: ['guide' => $guide, 'description1' => 'Item'])['id'];
+        $this->request($items, 'PATCH', $item, data: ['description3' => 'Updated item']);
+        self::assertSame('Updated item', $this->env->itemService->getGuideItemData($item)['description3']);
+        try {
+            $this->request($items, 'PATCH', $item, data: ['position' => -1, 'description3' => 'Invalid']);
+            self::fail('Invalid item PATCH must fail before mutation.');
+        } catch (Exception $error) {
+            self::assertSame(412, $error->getCode());
+        }
+        self::assertSame('Updated item', $this->env->itemService->getGuideItemData($item)['description3']);
+        self::assertSame(1, $this->env->itemService->getGuideItemData($item)['position']);
+    }
+
     /** @dataProvider unsupportedVerbs */
     public function testUnsupportedCollectionVerbsReturn405(string $method): void
     {

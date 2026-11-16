@@ -68,7 +68,11 @@ abstract class AbstractInputValidator
 
         $isValid = $this->inputFilter->isValid();
         if ($isValid) {
-            $this->validData[] = $this->inputFilter->getValues();
+            $this->validData[] = array_filter(
+                $this->inputFilter->getValues(),
+                static fn ($value, $field): bool => $value !== null || array_key_exists($field, $data),
+                ARRAY_FILTER_USE_BOTH
+            );
         }
 
         return $isValid;
