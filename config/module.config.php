@@ -5,7 +5,7 @@
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
-use Interop\Container\Containerinterface;
+use Psr\Container\ContainerInterface;
 use Doctrine\Persistence\Mapping\Driver\MappingDriverChain;
 use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
 use Monarc\Core\Adapter\Authentication as AdapterAuthentication;
@@ -15,14 +15,11 @@ use Monarc\Core\Model\DbCli;
 use Monarc\Core\Service\Helper\ScalesCacheHelper;
 use Monarc\Core\Service\Model\DbCliFactory;
 use Monarc\Core\Service\Model\DbFactory;
+use Monarc\Core\Scenario;
 use Monarc\Core\Service;
 use Monarc\Core\Storage\Authentication as StorageAuthentication;
 use Monarc\Core\Validator\FieldValidator\LanguageValidator;
 use Monarc\Core\Validator\InputValidator;
-use Monarc\Core\Scenario\Feature\ScenarioCapability;
-use Monarc\Core\Scenario\Service\NullScenarioAuthenticationService;
-use Monarc\Core\Scenario\Service\ScenarioAuthenticationService;
-use Monarc\Core\Scenario\Table\CatalogTable;
 use Ramsey\Uuid\Doctrine\UuidType;
 use Laminas\Di\Container\AutowireFactory;
 use Monarc\Core\Entity as ModelEntity;
@@ -132,17 +129,19 @@ return [
             ModelEntity\QuestionChoice::class => ModelEntity\QuestionChoice::class,
         ],
         'factories' => [
-            ScenarioCapability::class => static function ($container): ScenarioCapability {
+            Scenario\Feature\ScenarioCapability::class => static function (
+                ContainerInterface $container
+            ): Scenario\Feature\ScenarioCapability {
                 $config = $container->get('Config');
-                $capability = new ScenarioCapability($config['scenario'] ?? []);
-                // Validate the final application configuration before a
-                // Scenario route can choose an identity flow.
+                $capability = new Scenario\Feature\ScenarioCapability($config['scenario'] ?? []);
+                /* Validate the final application configuration before a Scenario route can choose an identity flow. */
                 $capability->identityMode();
 
                 return $capability;
             },
-            ScenarioAuthenticationService::class => static function (): ScenarioAuthenticationService {
-                return new NullScenarioAuthenticationService();
+            Scenario\Service\ScenarioAuthenticationService::class =>
+            static function (): Scenario\Service\ScenarioAuthenticationService {
+                return new Scenario\Service\NullScenarioAuthenticationService();
             },
             Db::class => DbFactory::class,
             DbCli::class => DbCliFactory::class,
@@ -234,7 +233,6 @@ return [
             Table\ScaleTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\ScaleCommentTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\ScaleImpactTypeTable::class => Table\Factory\CoreEntityManagerFactory::class,
-            CatalogTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\SoaCategoryTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\SoaScaleCommentTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\ThemeTable::class => Table\Factory\CoreEntityManagerFactory::class,
@@ -242,6 +240,8 @@ return [
             Table\UserTable::class => Table\Factory\ClientEntityManagerFactory::class,
             Table\UserTokenTable::class => Table\Factory\ClientEntityManagerFactory::class,
             Table\VulnerabilityTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Scenario\Table\PackageSourceTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Scenario\Table\CatalogTable::class => Table\Factory\CoreEntityManagerFactory::class,
 
             /* Authentication */
             StorageAuthentication::class => ReflectionBasedAbstractFactory::class,
@@ -255,7 +255,7 @@ return [
             InputValidator\User\PostUserDataInputValidator::class => ReflectionBasedAbstractFactory::class,
             InputValidator\Model\PostModelDataInputValidator::class => ReflectionBasedAbstractFactory::class,
             InputValidator\Asset\PostAssetDataInputValidator::class => static function (
-                Containerinterface $container
+                ContainerInterface $container
             ) {
                 return new InputValidator\Asset\PostAssetDataInputValidator(
                     $container->get('config'),
@@ -264,7 +264,7 @@ return [
                 );
             },
             InputValidator\Threat\PostThreatDataInputValidator::class => static function (
-                Containerinterface $container
+                ContainerInterface $container
             ) {
                 return new InputValidator\Threat\PostThreatDataInputValidator(
                     $container->get('config'),
@@ -273,7 +273,7 @@ return [
                 );
             },
             InputValidator\Vulnerability\PostVulnerabilityDataInputValidator::class => static function (
-                Containerinterface $container
+                ContainerInterface $container
             ) {
                 return new InputValidator\Vulnerability\PostVulnerabilityDataInputValidator(
                     $container->get('config'),
@@ -307,7 +307,7 @@ return [
             InputValidator\MeasureLink\PostMeasureLinkDataInputValidator::class =>
                 ReflectionBasedAbstractFactory::class,
             InputValidator\Measure\PostMeasureDataInputValidator::class => static function (
-                Containerinterface $container
+                ContainerInterface $container
             ) {
                 return new InputValidator\Measure\PostMeasureDataInputValidator(
                     $container->get('config'),
@@ -316,7 +316,7 @@ return [
                 );
             },
             InputValidator\Measure\UpdateMeasureDataInputValidator::class => static function (
-                Containerinterface $container
+                ContainerInterface $container
             ) {
                 return new InputValidator\Measure\UpdateMeasureDataInputValidator(
                     $container->get('config'),
@@ -337,7 +337,7 @@ return [
             InputValidator\RiskSource\PatchRiskSourceDataInputValidator::class =>
                 ReflectionBasedAbstractFactory::class,
             InputValidator\RolfTag\PostRolfTagDataInputValidator::class => static function (
-                Containerinterface $container
+                ContainerInterface $container
             ) {
                 return new InputValidator\RolfTag\PostRolfTagDataInputValidator(
                     $container->get('config'),
@@ -346,7 +346,7 @@ return [
                 );
             },
             InputValidator\RolfRisk\PostRolfRiskDataInputValidator::class => static function (
-                Containerinterface $container
+                ContainerInterface $container
             ) {
                 return new InputValidator\RolfRisk\PostRolfRiskDataInputValidator(
                     $container->get('config'),

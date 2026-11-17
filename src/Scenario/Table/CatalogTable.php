@@ -5,6 +5,7 @@ namespace Monarc\Core\Scenario\Table;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManager;
 use InvalidArgumentException;
+use Monarc\Core\Entity\ScenarioTemplatePackageLink;
 
 /**
  * Owns shared Scenario Library persistence in monarc_common.
@@ -147,6 +148,78 @@ final class CatalogTable
         );
     }
 
+    /** Published links are always read from their stored source snapshot. */
+    public function findTemplatePackage(int $templateId): array
+    {
+        $rows = $this->connection->fetchAllAssociative(
+            'SELECT l.*, s.source_json, s.checksum, s.captured_at '
+            . 'FROM scenario_catalog_template_package_links l '
+            . 'LEFT JOIN scenario_catalog_template_package_snapshots s ON s.link_id = l.id '
+            . 'WHERE l.template_id = ? ORDER BY l.position',
+            [$templateId]
+        );
+
+        return array_map(static fn (array $row): array => [
+            'type' => $row['source_type'],
+            'sourceIdentity' => $row['source_identity'],
+            'guidance' => $row['guidance'],
+            'position' => (int) $row['position'],
+            'source' => $row['source_json'] === null
+                ? null : json_decode($row['source_json'], true, 512, JSON_THROW_ON_ERROR),
+            'checksum' => $row['checksum'],
+            'capturedAt' => $row['captured_at'],
+        ], $rows);
+    }
+
+    /** Called only after the template draft revision has been claimed. */
+    public function replaceTemplatePackage(int $templateId, array $links): void
+    {
+        foreach ($links as $link) {
+            if (!in_array($link['type'] ?? null, ScenarioTemplatePackageLink::SOURCE_TYPES, true)) {
+                throw new InvalidArgumentException('Invalid template package source type.');
+            }
+        }
+        $this->connection->delete('scenario_catalog_template_package_links', ['template_id' => $templateId]);
+        foreach ($links as $position => $link) {
+            $this->connection->insert('scenario_catalog_template_package_links', [
+                'template_id' => $templateId,
+                'source_type' => $link['type'],
+                'source_identity' => $link['sourceIdentity'],
+                'guidance' => $link['guidance'] ?? null,
+                'position' => $position + 1,
+            ]);
+        }
+    }
+
+    public function captureTemplatePackage(int $templateId, PackageSourceTable $sources, bool $publish): void
+    {
+        $links = $this->connection->fetchAllAssociative(
+            'SELECT * FROM scenario_catalog_template_package_links WHERE template_id = ? ORDER BY position',
+            [$templateId]
+        );
+        foreach ($links as $link) {
+            $source = $sources->snapshot($link['source_type'], $link['source_identity']);
+            if ($source === null) {
+                throw new InvalidArgumentException('Package source is inactive, incompatible or unreadable.');
+            }
+            if ($publish) {
+                $json = json_encode($source, JSON_THROW_ON_ERROR);
+                $this->connection->insert('scenario_catalog_template_package_snapshots', [
+                    'link_id' => (int) $link['id'], 'source_json' => $json, 'checksum' => hash('sha256', $json),
+                ]);
+            }
+        }
+    }
+
+    public function claimTemplatePackageRevision(int $templateId, int $revision): bool
+    {
+        return $this->connection->executeStatement(
+            'UPDATE scenario_catalog_templates SET revision = revision + 1 '
+            . 'WHERE id = ? AND revision = ? AND lifecycle = ?',
+            [$templateId, $revision, 'draft']
+        ) === 1;
+    }
+
     /** @return array<int, array{stableUuid: string, version: int}> */
     public function findTemplateEventReferences(int $templateId): array
     {
@@ -202,6 +275,7 @@ final class CatalogTable
             $event['suggestions'] = $this->relations('scenario_catalog_suggestions', 'event', (int) $event['id']);
         }
         unset($event);
+        $template['knowledgeBasePackage'] = $this->findTemplatePackage($templateId);
         $template['risk_scenario_models'] = $this->findTemplateRiskModels($templateId);
         $template['release'] = $this->connection->fetchAssociative(
             'SELECT * FROM scenario_catalog_releases WHERE resource_type = ? AND resource_uuid = ? '
@@ -395,6 +469,9 @@ final class CatalogTable
             ]);
         }
         if ($kind === 'template') {
+            if (array_key_exists('knowledgeBasePackage', $data)) {
+                $this->replaceTemplatePackage($id, $data['knowledgeBasePackage']);
+            }
             foreach ($data['eventRefs'] ?? [] as $position => $eventReference) {
                 $eventId = $this->connection->fetchOne(
                     'SELECT id FROM scenario_catalog_events WHERE stable_uuid = ? AND version = ? '

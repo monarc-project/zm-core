@@ -862,6 +862,55 @@ paths:
       summary: Review, publish, or deprecate a catalog version
       parameters: [{$ref: '#/components/parameters/CatalogKind'}, {$ref: '#/components/parameters/CatalogId'}, {$ref: '#/components/parameters/CatalogAction'}, {$ref: '#/components/parameters/IfMatch'}]
       responses: {'200': {description: Lifecycle transition completed}, '409': {$ref: '#/components/responses/RevisionConflict'}}
+  /backoffice/catalog/package-sources:
+    get:
+      operationId: listScenarioPackageSources
+      summary: Browse active reusable common Knowledge-base sources for template-package authoring (catalog maintainers only)
+      parameters:
+        - {name: type, in: query, required: true, schema: {type: string, enum: [asset, asset-type, threat, vulnerability, referential, risk-source]}}
+        - {$ref: '#/components/parameters/Page'}
+        - {$ref: '#/components/parameters/PageSize'}
+        - {name: search, in: query, schema: {type: string, maxLength: 100}}
+      responses:
+        '200': {description: Source page, content: {application/json: {schema: {$ref: '#/components/schemas/PackageSourcePage'}}}}
+        '401': {description: Authentication required}
+        '403': {description: Catalog role or feature access denied}
+        '422': {description: Unsupported source type or query}
+  /backoffice/catalog/templates/{id}/package:
+    get:
+      operationId: getScenarioTemplatePackage
+      summary: Read ordered draft sources or immutable published package evidence
+      parameters: [{$ref: '#/components/parameters/CatalogId'}, {$ref: '#/components/parameters/CatalogVersion'}]
+      responses:
+        '200': {description: Version-local package, content: {application/json: {schema: {$ref: '#/components/schemas/TemplatePackage'}}}}
+        '401': {description: Authentication required}
+        '403': {description: Catalog role or feature access denied}
+        '404': {description: Template not found}
+    put:
+      operationId: replaceScenarioTemplatePackage
+      summary: Create, edit, remove and reorder a draft template's package links atomically
+      parameters:
+        - {$ref: '#/components/parameters/CatalogId'}
+        - {$ref: '#/components/parameters/IfMatch'}
+        - {name: version, in: query, required: true, schema: {type: integer, minimum: 1}}
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/TemplatePackageWrite'}}}}
+      responses:
+        '200': {description: Audited draft package saved, content: {application/json: {schema: {$ref: '#/components/schemas/TemplatePackage'}}}}
+        '401': {description: Authentication required}
+        '403': {description: Catalog author role required}
+        '404': {description: Template not found}
+        '409': {$ref: '#/components/responses/RevisionConflict'}
+        '422': {description: Unsupported, inactive, duplicate, incompatible or unreadable source}
+  /anrs/{anrId}/template/package:
+    get:
+      operationId: getScenarioInstantiatedTemplatePackage
+      summary: Read guidance exclusively from the authorised ANR's existing selected-template snapshot
+      parameters: [{$ref: '#/components/parameters/AnrId'}]
+      responses:
+        '200': {description: Stored source evidence, content: {application/json: {schema: {$ref: '#/components/schemas/InstantiatedTemplatePackage'}}}}
+        '401': {description: Authentication required}
+        '403': {description: ANR, tenant, office or feature access denied}
+        '404': {description: Scenario analysis not found}
 components:
   securitySchemes:
     monarcToken:
@@ -1034,6 +1083,86 @@ components:
           schema:
             $ref: '#/components/schemas/Error'
   schemas:
+    PackageSourceType:
+      type: string
+      enum: [asset, asset-type, threat, vulnerability, referential, control, risk-source]
+    TemplatePackageAuthorableSourceType:
+      type: string
+      enum: [asset, asset-type, threat, vulnerability, referential, risk-source]
+    PackageSource:
+      type: object
+      required: [type, identity, label, description, code, sourceScope, provenance, sourceVersion, checksum, parent]
+      properties:
+        type: {$ref: '#/components/schemas/PackageSourceType'}
+        identity: {type: string}
+        label: {type: string}
+        description: {type: string}
+        code: {type: string}
+        sourceScope: {type: string, enum: [common-knowledge-base]}
+        provenance: {type: string}
+        sourceVersion: {type: string}
+        checksum: {type: string}
+        parent:
+          nullable: true
+          allOf: [{$ref: '#/components/schemas/PackageSource'}]
+    PackageSourcePage:
+      type: object
+      required: [items, page, pageSize, total]
+      properties:
+        items: {type: array, items: {$ref: '#/components/schemas/PackageSource'}}
+        page: {type: integer}
+        pageSize: {type: integer}
+        total: {type: integer}
+    TemplatePackageLinkWrite:
+      type: object
+      additionalProperties: false
+      required: [type, sourceIdentity]
+      properties:
+        type: {$ref: '#/components/schemas/TemplatePackageAuthorableSourceType'}
+        sourceIdentity: {type: string, minLength: 1, maxLength: 36, description: Identity of an existing readable common source.}
+        guidance: {type: string, maxLength: 10000, nullable: true}
+    TemplatePackageLink:
+      type: object
+      required: [type, sourceIdentity, position, source, checksum, capturedAt]
+      properties:
+        type: {$ref: '#/components/schemas/PackageSourceType'}
+        sourceIdentity: {type: string, description: Identity of an existing readable common source.}
+        guidance: {type: string, maxLength: 10000, nullable: true}
+        position: {type: integer, minimum: 1}
+        source: {nullable: true, allOf: [{$ref: '#/components/schemas/PackageSource'}]}
+        checksum: {type: string, nullable: true}
+        capturedAt: {type: string, nullable: true}
+    TemplatePackageWrite:
+      type: object
+      additionalProperties: false
+      required: [links]
+      properties:
+        links: {type: array, maxItems: 1000, items: {$ref: '#/components/schemas/TemplatePackageLinkWrite'}}
+    TemplatePackage:
+      type: object
+      required: [templateUuid, version, revision, lifecycle, links]
+      properties:
+        templateUuid: {type: string, format: uuid}
+        version: {type: integer}
+        revision: {type: integer}
+        lifecycle: {type: string, enum: [draft, review, published, deprecated]}
+        links: {type: array, items: {$ref: '#/components/schemas/TemplatePackageLink'}}
+    InstantiatedTemplatePackage:
+      type: object
+      required: [compatibility, template, links]
+      properties:
+        compatibility: {type: string, enum: [no_template, legacy_snapshot, snapshot]}
+        template:
+          type: object
+          nullable: true
+          required: [snapshotUuid, stableUuid, version, checksum, provenance]
+          properties:
+            snapshotUuid: {type: string, format: uuid}
+            stableUuid: {type: string, format: uuid}
+            version: {type: integer}
+            checksum: {type: string}
+            provenance: {type: string}
+        links: {type: array, items: {$ref: '#/components/schemas/TemplatePackageLink'}}
     CatalogPage:
       allOf:
         - $ref: '#/components/schemas/Page'
@@ -1079,7 +1208,7 @@ components:
       properties:
         stableUuid: {type: string, format: uuid}
         version: {type: integer, minimum: 1}
-        semanticVersion: {type: string, pattern: '^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?$'}
+        semanticVersion: {type: string, maxLength: 32}
         lifecycle: {type: string, enum: [draft, review, published, deprecated]}
         revision: {type: integer, minimum: 1}
         provenance: {type: string}
@@ -1099,7 +1228,7 @@ components:
       required: [translations]
       properties:
         category: {type: string, maxLength: 100}
-        semanticVersion: {type: string, pattern: '^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?$'}
+        semanticVersion: {type: string, maxLength: 32}
         tags: {type: array, maxItems: 30, items: {type: string, maxLength: 100}}
         references: {type: array, items: {$ref: '#/components/schemas/CatalogReference'}}
         suggestions: {type: array, items: {$ref: '#/components/schemas/CatalogSuggestion'}}
