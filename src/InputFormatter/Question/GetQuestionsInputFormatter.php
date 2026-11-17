@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\InputFormatter\Question;
 
+use Monarc\Core\Entity\QuestionSuperClass;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\InputFormatter\AbstractInputFormatter;
 use Monarc\Core\InputFormatter\FormattedInputParams;
@@ -16,7 +17,10 @@ class GetQuestionsInputFormatter extends AbstractInputFormatter
     protected static array $allowedSearchFields = ['label1', 'label2', 'label3', 'label4'];
 
     protected static array $allowedFilterFields = [
-        'type' => ['type' => 'int', 'inArray' => [1, 2]],
+        'type' => [
+            'type' => 'int',
+            'inArray' => [QuestionSuperClass::TYPE_SINGLE, QuestionSuperClass::TYPE_CHOICE],
+        ],
         'multichoice' => ['type' => 'int', 'inArray' => [0, 1]],
     ];
 

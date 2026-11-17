@@ -55,7 +55,7 @@ class QuestionService
             'questionChoices' => new \stdClass(),
         ]);
 
-        if ($withChoices && $question->getType() === 2) {
+        if ($withChoices && $question->getType() === Question::TYPE_CHOICE) {
             $questionData['choices'] = array_map(function ($choice): array {
                 return array_merge($this->content($choice), ['question' => new \stdClass()]);
             }, $this->questionChoiceTable->findChoicesOfQuestion($question));

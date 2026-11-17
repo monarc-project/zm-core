@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
  * @copyright Copyright (c) 2016-2026 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
@@ -9,6 +9,9 @@ namespace Monarc\Core\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Monarc\Core\Entity\Interfaces\PositionedEntityInterface;
+use Monarc\Core\Entity\Interfaces\PropertyStateEntityInterface;
+use Monarc\Core\Entity\Traits\PropertyStateEntityTrait;
 use Monarc\Core\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Entity\Traits\LabelsEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
@@ -18,12 +21,14 @@ use Monarc\Core\Entity\Traits\UpdateEntityTrait;
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
-class QuestionSuperClass
+class QuestionSuperClass implements PositionedEntityInterface, PropertyStateEntityInterface
 {
+    public const TYPE_SINGLE = 1;
     public const TYPE_CHOICE = 2;
 
     use CreateEntityTrait;
     use UpdateEntityTrait;
+    use PropertyStateEntityTrait;
 
     use LabelsEntityTrait;
 
@@ -49,7 +54,7 @@ class QuestionSuperClass
      *
      * @ORM\Column(name="type", type="smallint", options={"unsigned":true})
      */
-    protected $type = 1;
+    protected $type = self::TYPE_SINGLE;
 
     /**
      * @var int
@@ -107,9 +112,14 @@ class QuestionSuperClass
         return $this;
     }
 
-    public function getPosition()
+    public function getPosition(): int
     {
         return (int)$this->position;
+    }
+
+    public function getImplicitPositionRelationsValues(): array
+    {
+        return [];
     }
 
     public function getType(): int

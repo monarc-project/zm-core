@@ -176,7 +176,7 @@ class QuestionWorkflowTest extends TestCase
 
     public function testChoiceArrayIsRequiredOnlyForChoiceQuestionType(): void
     {
-        $textQuestion = $this->question('Text', ['type' => 1]);
+        $textQuestion = $this->question('Text', ['type' => Question::TYPE_SINGLE]);
         $this->env->choiceService->replaceList(['questionId' => $textQuestion]);
         $this->env->choiceService->replaceList(['questionId' => $textQuestion, 'choice' => 'unused']);
         self::assertSame([], $this->choices($textQuestion));
@@ -262,7 +262,10 @@ class QuestionWorkflowTest extends TestCase
     {
         $this->reject(
             fn () => $this->env->service->create(
-                $this->env->validator->validate(array_merge(['type' => 1, 'multichoice' => 0], $data))
+                $this->env->validator->validate(array_merge([
+                    'type' => Question::TYPE_SINGLE,
+                    'multichoice' => 0,
+                ], $data))
             )->getId()
         );
     }
@@ -279,7 +282,7 @@ class QuestionWorkflowTest extends TestCase
             $questionValidator->setDefaultLanguageIndex(3);
             $translation = 'Translation';
             $data = [
-                'type' => 1,
+                'type' => Question::TYPE_SINGLE,
                 'multichoice' => 0,
                 'question' => 1,
                 'label3' => '  Active language  ',

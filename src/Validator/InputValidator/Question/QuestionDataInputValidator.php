@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Validator\InputValidator\Question;
 
+use Monarc\Core\Entity\QuestionSuperClass;
 use Laminas\Filter\ToString;
 use Monarc\Core\Validator\InputValidator\AbstractInputValidator;
 
@@ -15,7 +16,7 @@ class QuestionDataInputValidator extends AbstractInputValidator
     protected function getRules(): array
     {
         $rules = [
-            $this->getIntegerRule('type', true, 1, 2),
+            $this->getIntegerRule('type', true, QuestionSuperClass::TYPE_SINGLE, QuestionSuperClass::TYPE_CHOICE),
             $this->getIntegerRule('multichoice', true, 0, 1),
             $this->getIntegerRule('position', false),
             $this->getIntegerRule('implicitPosition', false, 1, 3),

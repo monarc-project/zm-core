@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Tests\Runtime;
 
+use Monarc\Core\Entity\Question;
 use Doctrine\ORM\Tools\SchemaValidator;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\InputFormatter\Question\GetQuestionChoicesInputFormatter;
@@ -86,7 +87,7 @@ class QuestionRuntimeChecks
             );
             $other = $service->create($questionDataInputValidator->validate([
                 'label3' => 'Second',
-                'type' => 1,
+                'type' => Question::TYPE_SINGLE,
                 'multichoice' => 0,
                 'implicitPosition' => 1,
             ]))->getId();

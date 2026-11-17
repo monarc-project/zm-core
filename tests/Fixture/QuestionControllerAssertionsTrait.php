@@ -7,6 +7,7 @@
 
 namespace Monarc\Core\Tests\Fixture;
 
+use Monarc\Core\Entity\Question;
 use Doctrine\ORM\EntityNotFoundException;
 use Laminas\Diactoros\ServerRequest;
 use Laminas\Http\Response;
@@ -165,12 +166,12 @@ trait QuestionControllerAssertionsTrait
     public function testIndividualQuestionAndChoiceWritesKeepTheirResponseContracts(): void
     {
         $question = $this->request('questions', 'POST', null, [
-            'type' => 1,
+            'type' => Question::TYPE_SINGLE,
             'multichoice' => 0,
             'label1' => 'Question',
         ])['id'];
         $this->request('questions', 'PUT', $question, [
-            'type' => 1,
+            'type' => Question::TYPE_SINGLE,
             'multichoice' => 0,
             'label1' => 'Question',
             'label2' => 'Updated',
@@ -202,8 +203,16 @@ trait QuestionControllerAssertionsTrait
 
     public function testSingleQuestionCreatesReturnOneIdentifier(): void
     {
-        $one = $this->request('questions', 'POST', null, ['type' => 1, 'multichoice' => 0, 'label1' => 'Question']);
-        $two = $this->request('questions', 'POST', null, ['type' => 1, 'multichoice' => 0, 'label1' => 'Question']);
+        $one = $this->request('questions', 'POST', null, [
+            'type' => Question::TYPE_SINGLE,
+            'multichoice' => 0,
+            'label1' => 'Question',
+        ]);
+        $two = $this->request('questions', 'POST', null, [
+            'type' => Question::TYPE_SINGLE,
+            'multichoice' => 0,
+            'label1' => 'Question',
+        ]);
         self::assertIsInt($one['id']);
         self::assertIsInt($two['id']);
         self::assertNotSame($one['id'], $two['id']);
