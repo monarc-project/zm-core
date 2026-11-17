@@ -7,10 +7,8 @@
 
 namespace Monarc\Core\Tests\Runtime;
 
-use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\Tools\SchemaValidator;
 use Monarc\Core\Exception\Exception;
-use Monarc\FrontOffice\InputFormatter\Question\GetQuestionsInputFormatter as GetAnrQuestionsInputFormatter;
 use Monarc\Core\InputFormatter\Question\GetQuestionChoicesInputFormatter;
 use Monarc\Core\Service\QuestionService;
 use Monarc\Core\Service\QuestionChoiceService;
@@ -19,32 +17,20 @@ use Psr\Container\ContainerInterface;
 /** Local, session-only temporary tables keep all installed question data intact. */
 class QuestionRuntimeChecks
 {
-    public static function run(ContainerInterface $container, string $office, string &$phase): array
+    public static function run(ContainerInterface $container, string &$phase): array
     {
         $managers = ['core' => $container->get('doctrine.entitymanager.orm_default')];
-        if ($office === 'FrontOffice') {
-            $managers['analysis'] = $container->get('doctrine.entitymanager.orm_cli');
-        }
         $temporaryTables = [];
         try {
             foreach ($managers as $scope => $manager) {
                 $phase = $scope . ' question metadata';
-                $namespace = $scope === 'core' ? 'Monarc\\Core' : 'Monarc\\FrontOffice';
+                $namespace = 'Monarc\\Core';
                 foreach (['Question', 'QuestionChoice'] as $name) {
                     $metadata = $manager->getClassMetadata($namespace . '\\Entity\\' . $name);
                     $errors = (new SchemaValidator($manager))->validateClass(
                         $metadata
                     );
                     self::check($errors === [], 'question association mappings');
-                    if ($scope === 'analysis') {
-                        self::check(
-                            !$metadata->associationMappings['anr']['joinColumns'][0]['nullable'],
-                            'analysis question and choice require an analysis in metadata'
-                        );
-                        $columns = $manager->getConnection()->createSchemaManager()
-                            ->listTableColumns($metadata->getTableName());
-                        self::check($columns['anr_id']->getNotnull(), 'installed anr_id is NOT NULL');
-                    }
                     if ($name === 'QuestionChoice') {
                         self::check(
                             !$metadata->associationMappings['question']['joinColumns'][0]['nullable'],
@@ -88,18 +74,6 @@ class QuestionRuntimeChecks
             $phase = 'question core CRUD';
             $service = $container->get(QuestionService::class);
             $choices = $container->get(QuestionChoiceService::class);
-            $prefix = $office === 'FrontOffice' ? 'Monarc\\FrontOffice' : 'Monarc\\BackOffice';
-            $controllerPrefix = $office === 'FrontOffice' ? 'ApiAnrQuestions' : 'ApiQuestions';
-            $controllers = $container->get('ControllerManager');
-            $controllers->get($prefix . '\\Controller\\' . $controllerPrefix . 'Controller');
-            if ($office === 'BackOffice') {
-                $controllers->get($prefix . '\\Controller\\' . $controllerPrefix . 'ChoicesController');
-            } else {
-                self::check(
-                    !$controllers->has($prefix . '\\Controller\\' . $controllerPrefix . 'ChoicesController'),
-                    'FrontOffice choice controller is absent'
-                );
-            }
             $q = $service->create(
                 $questionDataInputValidator->validate(['label3' => 'First', 'type' => 2, 'multichoice' => 0])
             )->getId();
@@ -148,90 +122,6 @@ class QuestionRuntimeChecks
                 'controllers' => 'resolved',
                 'requiredQuestion' => 'metadata/schema checked; NULL inserts rejected',
             ];
-            if ($office === 'FrontOffice') {
-                $phase = 'analysis question CRUD';
-                $manager = $managers['analysis'];
-                $ids = $manager->getConnection()->fetchFirstColumn('SELECT id FROM anrs ORDER BY id LIMIT 2');
-                self::check(count($ids) === 2, 'two local analyses required for scope validation');
-                $table = $container->get(\Monarc\FrontOffice\Table\AnrTable::class);
-                $anr = $table->findById((int)$ids[0]);
-                $foreign = $table->findById((int)$ids[1]);
-                $questions = $container->get(\Monarc\FrontOffice\Service\AnrQuestionService::class);
-                $analysisQuestionDataInputValidator = $container->get(
-                    \Monarc\FrontOffice\Validator\InputValidator\Question\QuestionDataInputValidator::class
-                );
-                $analysisQuestionDataInputValidator->setDefaultLanguageIndex($anr->getLanguage());
-                $snapshot = $container->get(\Monarc\FrontOffice\Service\QuestionSnapshotService::class);
-                $custom = $questions->create(
-                    $analysisQuestionDataInputValidator->validate(['label' . $anr->getLanguage() => 'Custom']),
-                    $anr
-                )->getId();
-                $questions->update(
-                    $custom,
-                    $analysisQuestionDataInputValidator->validate(['response' => '0'], true),
-                    $anr
-                );
-                self::check($questions->getQuestionData($custom, $anr)['response'] === '0', 'zero response');
-                self::reject(fn () => $questions->getQuestionData($custom, $foreign), EntityNotFoundException::class);
-                $phase = 'analysis import and cloning';
-                $snapshot->replace($anr, ['questions' => [1 => [
-                    'id' => 100,
-                    'type' => 2,
-                    'isMultiChoice' => false,
-                    'label' => 'Question',
-                    'mode' => 0,
-                    'response' => '200',
-                    'questionChoices' => [['id' => 200, 'label' => 'Answer', 'position' => 1]],
-                ]]]);
-                $source = $container->get(\Monarc\FrontOffice\Table\QuestionTable::class)->findOrderedQuestions($anr);
-                $copied = $snapshot->copy($source, $foreign);
-                $manager->flush();
-                $snapshot->completeCopy($copied);
-                $copies = $questions->getList((new GetAnrQuestionsInputFormatter())->format(['anr' => $foreign]));
-                self::check(
-                    count($copies) === 1 && count($copies[0]['choices']) === 1
-                    && $copies[0]['response'] === (string)$copies[0]['choices'][0]['id'],
-                    'single choice remapping'
-                );
-                $phase = 'analysis import tolerates mismatches';
-                $snapshot->replace($anr, ['questions' => [
-                    [
-                        'id' => 100,
-                        'type' => 2,
-                        'label' => 'Question',
-                        'isMultiChoice' => true,
-                        'response' => '[200,201,999]',
-                        'questionChoices' => [
-                            ['id' => 200, 'label' => 'Keep'],
-                            ['id' => 200, 'label' => 'Ignore duplicate'],
-                            ['id' => 201, 'question' => 101],
-                        ],
-                    ],
-                    ['id' => 100, 'type' => 1, 'label' => 'Ignore duplicate question'],
-                    ['id' => 101, 'type' => 6],
-                ]]);
-                $restored = $questions->getList((new GetAnrQuestionsInputFormatter())->format(['anr' => $anr]));
-                self::check(
-                    count($restored) === 1 && count($restored[0]['choices']) === 1
-                    && $restored[0]['response'] === '[' . $restored[0]['choices'][0]['id'] . ']',
-                    'mismatches are skipped and valid multiple answers are remapped'
-                );
-                $phase = 'analysis import preserves wholly unusable snapshots';
-                $snapshot->replace($anr, ['questions' => [['type' => 6]]]);
-                self::check(
-                    json_encode($restored) === json_encode(
-                        $questions->getList((new GetAnrQuestionsInputFormatter())->format(['anr' => $anr]))
-                    ),
-                    'wholly unusable snapshots retain existing questions'
-                );
-                $result['importMismatches'] = 'skipped; valid answers retained';
-                $snapshot->replace($anr, ['questions' => []]);
-                self::check(
-                    $questions->getCount((new GetAnrQuestionsInputFormatter())->format(['anr' => $anr])) === 0,
-                    'empty question import'
-                );
-                $result['analysisCrudScopeAndCopy'] = 'passed';
-            }
             $phase = 'question delete ordering';
             $service->delete($q);
             self::check($service->getQuestionData($other)['position'] === 1, 'delete ordering');

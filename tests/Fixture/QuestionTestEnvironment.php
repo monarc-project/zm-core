@@ -19,20 +19,19 @@ use Monarc\Core\Table\AbstractTable;
 use Monarc\Core\Validator\InputValidator\InputValidationTranslator;
 use Monarc\Core\Validator\InputValidator\Question\QuestionDataInputValidator;
 use Monarc\Core\Validator\InputValidator\Question\QuestionChoiceDataInputValidator;
-use Monarc\FrontOffice\Validator\InputValidator\Question\QuestionDataInputValidator as AnrQuestionValidator;
 
 class QuestionTestEnvironment
 {
     public EntityManager $manager;
     public AbstractTable $questions;
     public AbstractTable $choices;
-    public QuestionService|\Monarc\FrontOffice\Service\AnrQuestionService $service;
+    public QuestionService $service;
     public QuestionChoiceService $choiceService;
-    public QuestionDataInputValidator|AnrQuestionValidator $validator;
+    public QuestionDataInputValidator $validator;
     public QuestionDataInputValidator $definitionValidator;
     public QuestionChoiceDataInputValidator $choiceValidator;
 
-    public function __construct(public ConnectedUserService $identity, bool $analysis = false)
+    public function __construct(public ConnectedUserService $identity)
     {
         $config = new Configuration();
         $config->setMetadataDriverImpl(new AnnotationDriver(new AnnotationReader(), [__DIR__ . '/../../src/Entity']));
@@ -40,7 +39,7 @@ class QuestionTestEnvironment
         $config->setProxyNamespace('Php84QuestionTestProxies');
         $config->setAutoGenerateProxyClasses(true);
         $this->manager = EntityManager::create(['driver' => 'pdo_sqlite', 'memory' => true], $config);
-        $namespace = $analysis ? 'Monarc\\FrontOffice' : 'Monarc\\Core';
+        $namespace = 'Monarc\\Core';
         $metadata = array_map(
             fn ($name) => $this->manager->getClassMetadata($namespace . '\\Entity\\' . $name),
             ['Question', 'QuestionChoice']
@@ -55,27 +54,10 @@ class QuestionTestEnvironment
         $this->choices = new $choiceTable($this->manager);
         $translator = new InputValidationTranslator($identity, []);
         $this->definitionValidator = new QuestionDataInputValidator([], $translator);
-        $this->validator = $analysis
-            ? new AnrQuestionValidator([], $translator)
-            : $this->definitionValidator;
+        $this->validator = $this->definitionValidator;
         $this->choiceValidator = new QuestionChoiceDataInputValidator([], $translator);
-        if ($analysis) {
-            $this->validator->setDefaultLanguageIndex(3);
-            $this->choiceValidator->setDefaultLanguageIndex(3);
-        }
-        $service = $namespace . '\\Service\\' . ($analysis ? 'Anr' : '') . 'QuestionService';
+        $service = QuestionService::class;
         $this->service = new $service($this->questions, $this->choices, $identity);
-        if (!$analysis) {
-            $this->choiceService = new QuestionChoiceService($this->choices, $this->questions, $identity);
-        }
-    }
-
-    public function analysis(int $id): \Monarc\FrontOffice\Entity\Anr
-    {
-        $anr = new \Monarc\FrontOffice\Entity\Anr();
-        (new \ReflectionProperty($anr, 'id'))->setValue($anr, $id);
-        $anr->setLanguage(3);
-        $this->manager->getUnitOfWork()->registerManaged($anr, ['id' => $id], []);
-        return $anr;
+        $this->choiceService = new QuestionChoiceService($this->choices, $this->questions, $identity);
     }
 }

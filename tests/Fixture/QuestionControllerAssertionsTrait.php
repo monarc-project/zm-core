@@ -95,7 +95,7 @@ trait QuestionControllerAssertionsTrait
         $list = $this->request('questions', 'GET', null, null, ['filter' => 'New', 'limit' => 1]);
         self::assertSame(1, $list['count']);
         self::assertCount(1, $list['questions']);
-        // BackOffice definitions can contain choices.
+        // Shared definitions can contain choices.
         $definition = $this->definition();
         $replacement = $this->request('choices', 'PUT', null, [
             'questionId' => $definition,

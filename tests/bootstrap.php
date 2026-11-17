@@ -5,12 +5,9 @@
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
-$application = getenv('MONARC_TEST_APP') ?: 'MonarcAppFO';
-if (!in_array($application, ['MonarcAppFO', 'MonarcAppBO'], true)) {
-    throw new RuntimeException('MONARC_TEST_APP must be MonarcAppFO or MonarcAppBO.');
-}
-$applicationDir = getenv('MONARC_TEST_APP_DIR') ?: dirname(__DIR__, 2) . '/' . $application;
-require $applicationDir . '/vendor/autoload.php';
+$applicationDir = getenv('MONARC_TEST_APP_DIR');
+$autoload = $applicationDir ? $applicationDir . '/vendor/autoload.php' : dirname(__DIR__) . '/vendor/autoload.php';
+require $autoload;
 require_once __DIR__ . '/Runtime/MappingBaseline.php';
 date_default_timezone_set('Europe/Luxembourg');
 putenv('APPLICATION_ENV=testing');

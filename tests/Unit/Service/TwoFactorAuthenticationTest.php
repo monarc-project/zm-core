@@ -7,21 +7,17 @@
 
 namespace Monarc\Core\Tests\Unit\Service;
 
-use Composer\InstalledVersions;
 use Laminas\Authentication\Result;
-use Laminas\View\Model\JsonModel;
 use Monarc\Core\Adapter\Authentication;
 use Monarc\Core\Entity\UserSuperClass;
 use Monarc\Core\Service\ActionHistoryService;
 use Monarc\Core\Service\AuthenticationService;
 use Monarc\Core\Service\ConfigService;
-use Monarc\Core\Service\ConnectedUserService;
 use Monarc\Core\Storage\Authentication as AuthenticationStorage;
 use Monarc\Core\Table\UserTable;
 use PHPUnit\Framework\Attributes\PreserveGlobalState;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ResponseInterface;
 use RobThree\Auth\Algorithm;
 use RobThree\Auth\Providers\Qr\EndroidQrCodeProvider;
 use RobThree\Auth\TwoFactorAuth;
@@ -79,35 +75,6 @@ class TwoFactorAuthenticationTest extends TestCase
         ];
     }
 
-    public function testOfficeProfileSetupReturnsPngWithoutSavingUser(): void
-    {
-        $user = $this->officeUser();
-        $user->method('getId')->willReturn(42);
-        $table = $this->createMock(UserTable::class);
-        $table->expects(self::never())->method('save');
-        $result = $this->responseData($this->officeController($user, $table)->get(42));
-
-        self::assertSame(42, $result['id']);
-        self::assertMatchesRegularExpression('/^[A-Z2-7]{32}$/', $result['secret']);
-        $this->assertPng($result['qrcode']);
-    }
-
-    /** @dataProvider validAndInvalidCodes */
-    public function testOfficeActivationOnlyPersistsVerifiedSecret(bool $valid): void
-    {
-        $user = $this->officeUser();
-        $user->expects($valid ? self::once() : self::never())->method('setSecretKey')->with(self::SECRET);
-        $user->expects($valid ? self::once() : self::never())->method('setTwoFactorAuthEnabled')->with(true);
-        $table = $this->createMock(UserTable::class);
-        $table->expects($valid ? self::once() : self::never())->method('save')->with($user);
-        $controller = $this->officeController($user, $table);
-        $code = $valid ? (new TwoFactorAuth(new EndroidQrCodeProvider(), 'MONARC'))->getCode(self::SECRET) : '00000';
-
-        $result = $this->responseData($controller->create(['secretKey' => self::SECRET, 'verificationCode' => $code]));
-
-        self::assertSame($valid, $result['status']);
-    }
-
     /** @dataProvider validAndInvalidCodes */
     public function testExistingTwoFactorLoginAcceptsOnlyVerifiedCodes(bool $valid): void
     {
@@ -161,30 +128,6 @@ class TwoFactorAuthenticationTest extends TestCase
         $adapter->setIdentity('user@example.invalid')->setCredential('test password');
 
         self::assertSame(Result::SUCCESS, $adapter->authenticate('used recovery code')->getCode());
-    }
-
-    private function officeUser(): UserSuperClass
-    {
-        return $this->createMock(InstalledVersions::isInstalled('monarc/frontoffice')
-            ? \Monarc\FrontOffice\Entity\User::class : \Monarc\Core\Entity\User::class);
-    }
-
-    private function officeController(UserSuperClass $user, UserTable $table): object
-    {
-        $identity = $this->createMock(ConnectedUserService::class);
-        $identity->method('getConnectedUser')->willReturn($user);
-        $config = $this->createMock(ConfigService::class);
-        if (InstalledVersions::isInstalled('monarc/frontoffice')) {
-            return new \Monarc\FrontOffice\Controller\ApiUserTwoFAController($config, $table, $identity);
-        }
-
-        return new \Monarc\BackOffice\Controller\ApiUserTwoFAController($config, $identity, $table);
-    }
-
-    private function responseData(ResponseInterface|JsonModel $response): array
-    {
-        return $response instanceof JsonModel ? $response->getVariables()
-            : json_decode((string)$response->getBody(), true, 512, JSON_THROW_ON_ERROR);
     }
 
     private function assertPng(string $uri): void
