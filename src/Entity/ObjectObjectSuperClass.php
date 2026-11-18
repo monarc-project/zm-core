@@ -41,7 +41,7 @@ class ObjectObjectSuperClass implements PositionedEntityInterface, PropertyState
     /**
      * @var ObjectSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="MonarcObject", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="MonarcObject", inversedBy="childrenLinks", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="father_id", referencedColumnName="uuid", nullable=true)
      * })
@@ -51,7 +51,7 @@ class ObjectObjectSuperClass implements PositionedEntityInterface, PropertyState
     /**
      * @var ObjectSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="MonarcObject", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="MonarcObject", inversedBy="parentsLinks", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="child_id", referencedColumnName="uuid", nullable=true)
      * })

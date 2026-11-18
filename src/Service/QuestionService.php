@@ -8,7 +8,6 @@
 namespace Monarc\Core\Service;
 
 use Monarc\Core\Entity\UserSuperClass;
-use Monarc\Core\Entity\AnrSuperClass;
 use Monarc\Core\Entity\Question;
 use Monarc\Core\Entity\QuestionSuperClass;
 use Monarc\Core\Entity\QuestionChoiceSuperClass;
@@ -29,7 +28,7 @@ class QuestionService
         $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
-    public function getList(FormattedInputParams $params, ?AnrSuperClass $anr = null): array
+    public function getList(FormattedInputParams $params): array
     {
         return array_map(
             fn ($question): array => $this->serialize($question, true),
@@ -37,12 +36,12 @@ class QuestionService
         );
     }
 
-    public function getCount(FormattedInputParams $params, ?AnrSuperClass $anr = null): int
+    public function getCount(FormattedInputParams $params): int
     {
         return $this->questionTable->countByParams($params);
     }
 
-    public function getQuestionData(int $id, ?AnrSuperClass $anr = null): array
+    public function getQuestionData(int $id): array
     {
         return $this->serialize($this->questionTable->findById($id));
     }
@@ -50,25 +49,26 @@ class QuestionService
     public function serialize(QuestionSuperClass $question, bool $withChoices = false): array
     {
         $questionData = array_merge($this->content($question), [
-            'type' => $question->getType(), 'multichoice' => (int)$question->isMultiChoice(),
+            'type' => $question->getType(),
+            'multichoice' => (int)$question->isMultiChoice(),
             // Legacy JSON represented the collection as an object; choices is the populated list field.
             'questionChoices' => new \stdClass(),
         ]);
 
         if ($withChoices && $question->getType() === Question::TYPE_CHOICE) {
-            $questionData['choices'] = array_map(function ($choice): array {
-                return array_merge($this->content($choice), ['question' => new \stdClass()]);
+            $questionData['choices'] = array_map(function ($questionChoice): array {
+                return array_merge($this->content($questionChoice), ['question' => new \stdClass()]);
             }, $this->questionChoiceTable->findChoicesOfQuestion($question));
         }
 
         return $questionData;
     }
 
-    public function create(array $data, ?AnrSuperClass $anr = null): Question
+    public function create(array $data): Question
     {
         $question = new Question();
-        $siblings = $this->questionTable->findOrderedQuestions($anr);
-        $this->validatePlacement($data, $anr);
+        $siblings = $this->questionTable->findOrderedQuestions();
+        $this->validatePlacement($data);
 
         $this->applyData($question, $data);
         $question->setCreator($this->connectedUser->getEmail());
@@ -78,36 +78,36 @@ class QuestionService
         return $question;
     }
 
-    public function update(int $id, array $data, ?AnrSuperClass $anr = null): void
+    public function update(int $id, array $data): void
     {
         $question = $this->questionTable->findById($id);
 
-        $this->validatePlacement($data, $anr, $question);
-        $this->placeQuestion($question, $this->questionTable->findOrderedQuestions($anr), $data);
+        $this->validatePlacement($data, $question);
+        $this->placeQuestion($question, $this->questionTable->findOrderedQuestions(), $data);
         $this->applyData($question, $data);
         $question->setUpdater($this->connectedUser->getEmail());
 
         $this->questionTable->save($question);
     }
 
-    public function delete(int $id, ?AnrSuperClass $anr = null): void
+    public function delete(int $id): void
     {
-        $this->deleteList([$id], $anr);
+        $this->deleteList([$id]);
     }
 
-    public function deleteList(array $ids, ?AnrSuperClass $anr = null): void
+    public function deleteList(array $ids): void
     {
         $questions = array_map(fn ($id) => $this->questionTable->findById($id), $ids);
         foreach ($questions as $question) {
-            foreach ($this->questionChoiceTable->findChoicesOfQuestion($question) as $choice) {
-                $question->removeQuestionChoice($choice);
-                $this->questionChoiceTable->remove($choice, false);
+            foreach ($this->questionChoiceTable->findChoicesOfQuestion($question) as $questionChoice) {
+                $question->removeQuestionChoice($questionChoice);
+                $this->questionChoiceTable->remove($questionChoice, false);
             }
             $this->questionTable->remove($question, false);
         }
 
         $this->numberQuestions(array_values(array_filter(
-            $this->questionTable->findOrderedQuestions($anr),
+            $this->questionTable->findOrderedQuestions(),
             fn ($question): bool => !in_array($question->getId(), $ids, true)
         )));
         $this->questionTable->flush();
@@ -124,7 +124,7 @@ class QuestionService
         }
     }
 
-    private function validatePlacement(array $data, ?AnrSuperClass $anr, ?QuestionSuperClass $question = null): void
+    private function validatePlacement(array $data, ?QuestionSuperClass $question = null): void
     {
         if (($data['implicitPosition'] ?? null) === 3) {
             $previous = $this->questionTable->findById($data['previous'] ?? 0);
@@ -137,8 +137,10 @@ class QuestionService
     private function content(QuestionSuperClass|QuestionChoiceSuperClass $questionOrChoice): array
     {
         $questionOrChoiceData = array_merge(['id' => $questionOrChoice->getId()], $questionOrChoice->getLabels(), [
-            'position' => $questionOrChoice->getPosition(), 'creator' => $questionOrChoice->getCreator(),
-            'createdAt' => $questionOrChoice->getCreatedAt(), 'updater' => $questionOrChoice->getUpdater(),
+            'position' => $questionOrChoice->getPosition(),
+            'creator' => $questionOrChoice->getCreator(),
+            'createdAt' => $questionOrChoice->getCreatedAt(),
+            'updater' => $questionOrChoice->getUpdater(),
             'updatedAt' => $questionOrChoice->getUpdatedAt(),
         ]);
 

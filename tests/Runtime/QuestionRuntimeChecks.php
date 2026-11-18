@@ -12,6 +12,7 @@ use Doctrine\ORM\Tools\SchemaValidator;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\InputFormatter\Question\GetQuestionChoicesInputFormatter;
 use Monarc\Core\Service\QuestionService;
+use Monarc\Core\InputFormatter\DeliveryModel\GetDeliveryModelsInputFormatter;
 use Monarc\Core\Service\QuestionChoiceService;
 use Psr\Container\ContainerInterface;
 
@@ -127,10 +128,12 @@ class QuestionRuntimeChecks
             $service->delete($q);
             self::check($service->getQuestionData($other)['position'] === 1, 'delete ordering');
             $service->delete($other);
-            $phase = 'retained legacy delivery read';
-            $result['legacyDeliveryReadCount'] = count($container->get(
+            $phase = 'modern delivery read';
+            $result['deliveryReadCount'] = count($container->get(
                 \Monarc\Core\Service\DeliveriesModelsService::class
-            )->getList(1, 1));
+            )->getList(
+                (new GetDeliveryModelsInputFormatter())->format(['limit' => 1])
+            ));
             return $result;
         } finally {
             foreach ($managers as $manager) {

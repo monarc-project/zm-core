@@ -23,6 +23,16 @@ use Psr\Http\Server\RequestHandlerInterface;
 abstract class AbstractRestfulControllerRequestHandler extends AbstractRestfulController implements
     RequestHandlerInterface
 {
+    protected function processBodyContent(mixed $request)
+    {
+        $contentType = $request->getHeader('Content-Type');
+        if ($contentType && str_starts_with(strtolower($contentType->getFieldValue()), 'multipart/form-data')) {
+            return $request->getPost()->toArray();
+        }
+
+        return parent::processBodyContent($request);
+    }
+
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $laminasRequest = RequestConverter::toLaminas($request);

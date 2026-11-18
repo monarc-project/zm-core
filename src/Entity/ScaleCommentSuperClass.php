@@ -48,7 +48,7 @@ class ScaleCommentSuperClass
     /**
      * @var ScaleSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Scale")
+     * @ORM\ManyToOne(targetEntity="Scale", inversedBy="scaleComments")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="scale_id", referencedColumnName="id", nullable=false, onDelete="CASCADE")
      * })
@@ -58,7 +58,7 @@ class ScaleCommentSuperClass
     /**
      * @var ScaleImpactTypeSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="ScaleImpactType")
+     * @ORM\ManyToOne(targetEntity="ScaleImpactType", inversedBy="scaleComments")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="scale_type_impact_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
      * })

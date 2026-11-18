@@ -10,6 +10,8 @@ namespace Monarc\Core\Service;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\InputFormatter\FormattedInputParams;
 use Monarc\Core\Entity\Anr;
+use Monarc\Core\Entity\Asset;
+use Monarc\Core\Entity\MonarcObject;
 use Monarc\Core\Entity\Model;
 use Monarc\Core\Entity\ObjectSuperClass;
 use Monarc\Core\Entity\UserSuperClass;
@@ -270,5 +272,27 @@ class ModelService
             'showRolfBrut' => (int)$model->showRolfBrut(),
             'status' => $model->getStatus(),
         ];
+    }
+
+    public function validateObjectAcceptance(
+        Model $model,
+        MonarcObject $object,
+        ?Asset $forcedAsset = null
+    ): void {
+        if ($model->isGeneric() && $object->isModeSpecific()) {
+            throw new Exception('You cannot add a specific object to a generic model', 412);
+        }
+
+        /** @var Asset $asset */
+        $asset = $forcedAsset ?? $object->getAsset();
+        if ($asset !== null && !$model->isGeneric() && $asset->isModeSpecific()) {
+            foreach ($asset->getModels() as $assetModel) {
+                if ($assetModel->getId() === $model->getId()) {
+                    return;
+                }
+            }
+
+            throw new Exception('You cannot add an object with specific asset unrelated to a specific model', 412);
+        }
     }
 }

@@ -8,7 +8,6 @@
 namespace Monarc\Core\Service;
 
 use Monarc\Core\Entity\UserSuperClass;
-use Monarc\Core\Entity\AnrSuperClass;
 use Monarc\Core\Entity\QuestionChoice;
 use Monarc\Core\Entity\QuestionChoiceSuperClass;
 use Monarc\Core\Entity\QuestionSuperClass;
@@ -29,69 +28,73 @@ class QuestionChoiceService
         $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
-    public function getList(FormattedInputParams $params, ?AnrSuperClass $anr = null): array
+    public function getList(FormattedInputParams $params): array
     {
-        $params = $this->choiceParams($params, $anr);
         return array_map(
-            fn ($choice): array => $this->serialize($choice),
+            fn ($questionChoice): array => $this->serialize($questionChoice),
             $this->questionChoiceTable->findByParams($params)
         );
     }
 
-    public function getCount(FormattedInputParams $params, ?AnrSuperClass $anr = null): int
+    public function getCount(FormattedInputParams $params): int
     {
-        return $this->questionChoiceTable->countByParams($this->choiceParams($params, $anr));
+        return $this->questionChoiceTable->countByParams($params);
     }
 
-    public function getQuestionChoiceData(int $id, ?AnrSuperClass $anr = null): array
+    public function getQuestionChoiceData(int $id): array
     {
         return $this->serialize($this->questionChoiceTable->findById($id));
     }
 
-    public function serialize(QuestionChoiceSuperClass $choice): array
+    public function serialize(QuestionChoiceSuperClass $questionChoice): array
     {
-        $questionChoiceData = array_merge(['id' => $choice->getId()], $choice->getLabels(), [
-            'position' => $choice->getPosition(), 'creator' => $choice->getCreator(),
-            'createdAt' => $choice->getCreatedAt(), 'updater' => $choice->getUpdater(),
-            'updatedAt' => $choice->getUpdatedAt(),
+        $questionChoiceData = array_merge(['id' => $questionChoice->getId()], $questionChoice->getLabels(), [
+            'position' => $questionChoice->getPosition(),
+            'creator' => $questionChoice->getCreator(),
+            'createdAt' => $questionChoice->getCreatedAt(),
+            'updater' => $questionChoice->getUpdater(),
+            'updatedAt' => $questionChoice->getUpdatedAt(),
             'question' => new \stdClass(),
         ]);
 
         return $questionChoiceData;
     }
 
-    public function create(array $data, ?AnrSuperClass $anr = null): QuestionChoice
+    public function create(array $data): QuestionChoice
     {
-        $question = $this->requireQuestion($data['question'], $anr);
+        $question = $this->requireQuestion($data['question']);
 
-        $choice = new QuestionChoice();
-        $choice->setCreator($this->connectedUser->getEmail());
-        $this->placeChoice($choice, $this->questionChoiceTable->findChoicesOfQuestion($question), $data, true);
-        $choice->setQuestion($question)->setLabels($data);
+        $questionChoice = new QuestionChoice();
+        $questionChoice->setCreator($this->connectedUser->getEmail());
+        $this->placeChoice($questionChoice, $this->questionChoiceTable->findChoicesOfQuestion($question), $data, true);
+        $questionChoice->setQuestion($question)
+            ->setLabels($data);
 
-        $this->questionChoiceTable->save($choice);
+        $this->questionChoiceTable->save($questionChoice);
 
-        return $choice;
+        return $questionChoice;
     }
 
-    public function update(int $id, array $data, ?AnrSuperClass $anr = null): void
+    public function update(int $id, array $data): void
     {
-        $choice = $this->questionChoiceTable->findById($id);
-        $oldQuestion = $choice->getQuestion();
-        $question = $this->requireQuestion($data['question'] ?? $oldQuestion->getId(), $anr);
-        $this->placeChoice($choice, $this->questionChoiceTable->findChoicesOfQuestion($question), $data);
-        $choice->setQuestion($question)->setLabels($data)->setUpdater($this->connectedUser->getEmail());
+        $questionChoice = $this->questionChoiceTable->findById($id);
+        $oldQuestion = $questionChoice->getQuestion();
+        $question = $this->requireQuestion($data['question'] ?? $oldQuestion->getId());
+        $this->placeChoice($questionChoice, $this->questionChoiceTable->findChoicesOfQuestion($question), $data);
+        $questionChoice->setQuestion($question)
+            ->setLabels($data)
+            ->setUpdater($this->connectedUser->getEmail());
         if ($oldQuestion !== $question) {
             $this->numberChoices(array_values(array_filter(
                 $this->questionChoiceTable->findChoicesOfQuestion($oldQuestion),
-                fn ($sibling): bool => $sibling !== $choice
+                fn ($sibling): bool => $sibling !== $questionChoice
             )));
         }
 
-        $this->questionChoiceTable->save($choice);
+        $this->questionChoiceTable->save($questionChoice);
     }
 
-    public function replaceList(array $data, ?AnrSuperClass $anr = null): void
+    public function replaceList(array $data): void
     {
         $question = $this->questionTable->findById((int)$data['questionId']);
         if ($question->getType() !== QuestionSuperClass::TYPE_CHOICE) {
@@ -102,18 +105,20 @@ class QuestionChoiceService
         }
         $newChoices = [];
         foreach ($data['choice'] as $row) {
-            $newChoices[] = (new QuestionChoice())->setLabels($row)->setPosition(count($newChoices) + 1)
+            $newChoices[] = (new QuestionChoice())
+                ->setLabels($row)
+                ->setPosition(count($newChoices) + 1)
                 ->setCreator($this->connectedUser->getEmail());
         }
         $this->questionChoiceTable->beginTransaction();
         try {
-            foreach ($this->questionChoiceTable->findChoicesOfQuestion($question) as $choice) {
-                $question->removeQuestionChoice($choice);
-                $this->questionChoiceTable->remove($choice, false);
+            foreach ($this->questionChoiceTable->findChoicesOfQuestion($question) as $questionChoice) {
+                $question->removeQuestionChoice($questionChoice);
+                $this->questionChoiceTable->remove($questionChoice, false);
             }
-            foreach ($newChoices as $choice) {
-                $choice->setQuestion($question);
-                $this->questionChoiceTable->save($choice, false);
+            foreach ($newChoices as $questionChoice) {
+                $questionChoice->setQuestion($question);
+                $this->questionChoiceTable->save($questionChoice, false);
             }
 
             $this->questionChoiceTable->flush();
@@ -124,38 +129,28 @@ class QuestionChoiceService
         }
     }
 
-    public function delete(int $id, ?AnrSuperClass $anr = null): void
+    public function delete(int $id): void
     {
-        $this->deleteList([$id], $anr);
+        $this->deleteList([$id]);
     }
 
-    public function deleteList(array $ids, ?AnrSuperClass $anr = null): void
+    public function deleteList(array $ids): void
     {
-        $choices = array_map(fn ($id) => $this->questionChoiceTable->findById($id), $ids);
-        foreach ($choices as $choice) {
-            $question = $choice->getQuestion();
-            $question->removeQuestionChoice($choice);
+        $questionChoices = array_map(fn ($id) => $this->questionChoiceTable->findById($id), $ids);
+        foreach ($questionChoices as $questionChoice) {
+            $question = $questionChoice->getQuestion();
+            $question->removeQuestionChoice($questionChoice);
             $this->numberChoices(array_values(array_filter(
                 $this->questionChoiceTable->findChoicesOfQuestion($question),
                 fn ($sibling): bool => !in_array($sibling->getId(), $ids, true)
             )));
 
-            $this->questionChoiceTable->remove($choice, false);
+            $this->questionChoiceTable->remove($questionChoice, false);
         }
         $this->questionChoiceTable->flush();
     }
 
-    private function choiceParams(FormattedInputParams $params, ?AnrSuperClass $anr): FormattedInputParams
-    {
-        $params = clone $params;
-
-        if ($params->hasFilterFor('question')) {
-            $this->questionTable->findById((int)$params->getFilterFor('question')['value']);
-        }
-        return $params;
-    }
-
-    private function requireQuestion(int $id, ?AnrSuperClass $anr): QuestionSuperClass
+    private function requireQuestion(int $id): QuestionSuperClass
     {
         $question = $this->questionTable->findById($id);
         if ($question->getType() !== QuestionSuperClass::TYPE_CHOICE) {

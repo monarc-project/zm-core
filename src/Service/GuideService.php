@@ -92,7 +92,8 @@ class GuideService
         if (isset($data['isWithItems'])) {
             $guide->setIsWithItems($data['isWithItems']);
         }
-        $guide->setDescriptions($data)->setUpdater($this->connectedUser->getEmail());
+        $guide->setDescriptions($data)
+            ->setUpdater($this->connectedUser->getEmail());
 
         $this->guideTable->save($guide);
     }
@@ -107,8 +108,8 @@ class GuideService
         // Resolve every identifier before mutating a batch.
         $guides = array_map(fn (int $id): Guide => $this->guideTable->findById($id), $ids);
         foreach ($guides as $guide) {
-            foreach ($this->guideItemTable->findChildrenOfGuide($guide) as $item) {
-                $this->guideItemTable->remove($item, false);
+            foreach ($this->guideItemTable->findChildrenOfGuide($guide) as $guideItem) {
+                $this->guideItemTable->remove($guideItem, false);
             }
             $this->guideTable->remove($guide, false);
         }

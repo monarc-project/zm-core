@@ -54,7 +54,7 @@ class AmvSuperClass implements PositionedEntityInterface, PropertyStateEntityInt
     /**
      * @var AssetSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Asset")
+     * @ORM\ManyToOne(targetEntity="Asset", inversedBy="amvs")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="asset_id", referencedColumnName="uuid", nullable=false)
      * })

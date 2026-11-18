@@ -54,7 +54,7 @@ class InstanceSuperClass implements PositionedEntityInterface, PropertyStateEnti
     /**
      * @var AnrSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Anr")
+     * @ORM\ManyToOne(targetEntity="Anr", inversedBy="instances")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
      * })
@@ -64,7 +64,7 @@ class InstanceSuperClass implements PositionedEntityInterface, PropertyStateEnti
     /**
      * @var AssetSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Asset")
+     * @ORM\ManyToOne(targetEntity="Asset", inversedBy="instances")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="asset_id", referencedColumnName="uuid", nullable=true)
      * })
@@ -74,7 +74,7 @@ class InstanceSuperClass implements PositionedEntityInterface, PropertyStateEnti
     /**
      * @var ObjectSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="MonarcObject")
+     * @ORM\ManyToOne(targetEntity="MonarcObject", inversedBy="instances")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="object_id", referencedColumnName="uuid", nullable=true)
      * })

@@ -8,7 +8,6 @@
 namespace Monarc\Core\Validator\InputValidator\Question;
 
 use Monarc\Core\Entity\QuestionSuperClass;
-use Laminas\Filter\ToString;
 use Monarc\Core\Validator\InputValidator\AbstractInputValidator;
 
 class QuestionDataInputValidator extends AbstractInputValidator
@@ -21,7 +20,6 @@ class QuestionDataInputValidator extends AbstractInputValidator
             $this->getIntegerRule('position', false),
             $this->getIntegerRule('implicitPosition', false, 1, 3),
             $this->getIntegerRule('previous', false, 1, self::MAX_INTEGER),
-            $this->getTextRule('response', self::MAX_STRING_LENGTH) + ['filters' => [['name' => ToString::class]]],
         ];
         foreach ($this->systemLanguageIndexes as $systemLanguageIndex) {
             $rules[] = $this->getLabelRule($systemLanguageIndex);

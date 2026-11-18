@@ -79,8 +79,6 @@ class GuideWorkflowTest extends TestCase
                 self::assertTrue($columns['guide_id']->getNotnull());
             }
         }
-        self::assertFalse(is_subclass_of(Guide::class, \Monarc\Core\Entity\AbstractEntity::class));
-        self::assertFalse(is_subclass_of(GuideItem::class, \Monarc\Core\Entity\AbstractEntity::class));
     }
 
     public function testCrudPreservesTranslationsTypeLabelsAndAuditFields(): void

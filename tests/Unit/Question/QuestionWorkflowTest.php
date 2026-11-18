@@ -9,7 +9,6 @@ namespace Monarc\Core\Tests\Unit\Question;
 
 use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\Tools\SchemaValidator;
-use Monarc\Core\Entity\AbstractEntity;
 use Monarc\Core\Entity\Question;
 use Monarc\Core\Entity\QuestionChoice;
 use Monarc\Core\Exception\Exception;
@@ -57,7 +56,6 @@ class QuestionWorkflowTest extends TestCase
     public function testModernMappingsAndNullableAuditValues(): void
     {
         foreach ([Question::class, QuestionChoice::class] as $class) {
-            self::assertFalse(is_subclass_of($class, AbstractEntity::class));
             self::assertFalse(method_exists($class, 'exchangeArray'));
             self::assertSame([], (new SchemaValidator($this->env->manager))
                 ->validateClass($this->env->manager->getClassMetadata($class)));
@@ -273,7 +271,7 @@ class QuestionWorkflowTest extends TestCase
     public static function invalidData(): array
     {
         return [[['type' => false]], [['type' => null]], [['multichoice' => 2]], [['position' => -1]],
-            [['label1' => false]], [['label1' => str_repeat('x', 256)]], [['response' => []]]];
+            [['label1' => false]], [['label1' => str_repeat('x', 256)]]];
     }
 
     public function testDefaultLanguageIsRequiredAndOtherTranslationsUseTheSharedLabelRules(): void
@@ -305,9 +303,10 @@ class QuestionWorkflowTest extends TestCase
 
     public function testGlobalDefinitionsIgnoreAnalysisFieldsFromThePayload(): void
     {
-        $id = $this->question('Global', ['anr' => 22]);
+        $id = $this->question('Global', ['anr' => 22, 'mode' => 1, 'response' => []]);
         self::assertSame('Global', $this->env->service->getQuestionData($id)['label1']);
         self::assertArrayNotHasKey('anr', $this->env->service->getQuestionData($id));
+        self::assertArrayNotHasKey('response', $this->env->service->getQuestionData($id));
     }
 
     /** @dataProvider invalidQueries */

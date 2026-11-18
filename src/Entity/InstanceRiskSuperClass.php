@@ -49,7 +49,7 @@ class InstanceRiskSuperClass
     /**
      * @var AmvSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Amv")
+     * @ORM\ManyToOne(targetEntity="Amv", inversedBy="instanceRisks")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="amv_id", referencedColumnName="uuid", nullable=true)
      * })
@@ -89,7 +89,7 @@ class InstanceRiskSuperClass
     /**
      * @var InstanceSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Instance")
+     * @ORM\ManyToOne(targetEntity="Instance", inversedBy="instanceRisks")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="instance_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
      * })

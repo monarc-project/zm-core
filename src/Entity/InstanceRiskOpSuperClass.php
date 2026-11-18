@@ -58,7 +58,7 @@ class InstanceRiskOpSuperClass
     /**
      * @var InstanceSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Instance")
+     * @ORM\ManyToOne(targetEntity="Instance", inversedBy="operationalInstanceRisks")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="instance_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
      * })
@@ -78,7 +78,7 @@ class InstanceRiskOpSuperClass
     /**
      * @var RolfRiskSuperClass|null
      *
-     * @ORM\ManyToOne(targetEntity="RolfRisk")
+     * @ORM\ManyToOne(targetEntity="RolfRisk", inversedBy="operationalInstanceRisks")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="rolf_risk_id", referencedColumnName="id", nullable=true, onDelete="SET NULL")
      * })

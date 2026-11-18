@@ -54,7 +54,8 @@ class ObjectService
         Table\RolfTagTable $rolfTagTable,
         Table\InstanceRiskOpTable $instanceRiskOpTable,
         InstanceRiskOpService $instanceRiskOpService,
-        ConnectedUserService $connectedUserService
+        ConnectedUserService $connectedUserService,
+        private ModelService $modelService
     ) {
         $this->monarcObjectTable = $monarcObjectTable;
         $this->assetTable = $assetTable;
@@ -398,7 +399,7 @@ class ObjectService
 
     private function validateAndAttachObjectToAnr(Entity\MonarcObject $monarcObject, Entity\Anr $anr): void
     {
-        $anr->getModel()->validateObjectAcceptance($monarcObject);
+        $this->modelService->validateObjectAcceptance($anr->getModel(), $monarcObject);
 
         $this->linkObjectAndItsCategoryToAnr($monarcObject, $anr);
 

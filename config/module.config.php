@@ -10,21 +10,14 @@ use Doctrine\Persistence\Mapping\Driver\MappingDriverChain;
 use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
 use Monarc\Core\Adapter\Authentication as AdapterAuthentication;
 use Monarc\Core\Controller;
-use Monarc\Core\Model\Db;
-use Monarc\Core\Model\DbCli;
 use Monarc\Core\Service\Helper\ScalesCacheHelper;
-use Monarc\Core\Service\Model\DbCliFactory;
-use Monarc\Core\Service\Model\DbFactory;
 use Monarc\Core\Service;
 use Monarc\Core\Storage\Authentication as StorageAuthentication;
 use Monarc\Core\Validator\FieldValidator\LanguageValidator;
 use Monarc\Core\Validator\InputValidator;
 use Ramsey\Uuid\Doctrine\UuidType;
 use Laminas\Di\Container\AutowireFactory;
-use Monarc\Core\Entity as ModelEntity;
-use Monarc\Core\Model\Table as DeprecatedTable;
 use Monarc\Core\Table;
-use Monarc\Core\Service\Model\Entity as ServiceModelEntity;
 use Laminas\ServiceManager\AbstractFactory\ReflectionBasedAbstractFactory;
 use Laminas\ServiceManager\Factory\InvokableFactory;
 use Laminas\ServiceManager\Proxy\LazyServiceFactory;
@@ -126,13 +119,9 @@ return [
         'invokables' => [
         ],
         'factories' => [
-            Db::class => DbFactory::class,
-            DbCli::class => DbCliFactory::class,
 
-            // TODO: Services to refactor and replace with autowiring.
-            Service\HistoricalService::class => Service\HistoricalServiceFactory::class,
-            Service\DeliveriesModelsService::class => Service\DeliveriesModelsServiceFactory::class,
             /* Services. */
+            Service\HistoricalService::class => AutowireFactory::class,
             Service\AmvService::class => AutowireFactory::class,
             Service\AnrService::class => AutowireFactory::class,
             Service\UserRoleService::class => AutowireFactory::class,
@@ -171,18 +160,13 @@ return [
             Service\QuestionService::class => AutowireFactory::class,
             Service\QuestionChoiceService::class => AutowireFactory::class,
             Service\GuideService::class => AutowireFactory::class,
+            Service\DeliveriesModelsService::class => AutowireFactory::class,
             Service\GuideItemService::class => AutowireFactory::class,
-            /* Export services. */
             Service\Export\ObjectExportService::class => AutowireFactory::class,
 
-            // TODO: Entities are created in a generic way. Should be removed.
-            ModelEntity\DeliveriesModels::class => ServiceModelEntity\DeliveriesModelsServiceModelEntity::class,
-            ModelEntity\Historical::class => ServiceModelEntity\HistoricalServiceModelEntity::class,
-
             /* Table classes */
-            DeprecatedTable\HistoricalTable::class => AutowireFactory::class,
-            DeprecatedTable\DeliveriesModelsTable::class => AutowireFactory::class,
-
+            Table\HistoricalTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\DeliveriesModelsTable::class => Table\Factory\ClientEntityManagerFactory::class,
             Table\ActionHistoryTable::class => Table\Factory\ClientEntityManagerFactory::class,
             Table\AnrInstanceMetadataFieldTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\AnrTable::class => Table\Factory\CoreEntityManagerFactory::class,
@@ -234,6 +218,8 @@ return [
             InputValidator\Guide\GuideItemDataInputValidator::class => ReflectionBasedAbstractFactory::class,
             InputValidator\Question\QuestionDataInputValidator::class => ReflectionBasedAbstractFactory::class,
             InputValidator\Question\QuestionChoiceDataInputValidator::class => ReflectionBasedAbstractFactory::class,
+            InputValidator\DeliveryModel\DeliveryModelDataInputValidator::class
+                => ReflectionBasedAbstractFactory::class,
             /* Validators */
             InputValidator\InputValidationTranslator::class => ReflectionBasedAbstractFactory::class,
             InputValidator\User\PostUserDataInputValidator::class => ReflectionBasedAbstractFactory::class,
@@ -340,10 +326,6 @@ return [
             },
 
             ScalesCacheHelper::class => AutowireFactory::class,
-        ],
-        'shared' => [
-            ModelEntity\Scale::class => false,
-            ModelEntity\ScaleImpactType::class => false,
         ],
         'lazy_services' => [
             'class_map' => [

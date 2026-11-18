@@ -35,7 +35,7 @@ class AnrInstanceMetadataFieldSuperClass
     /**
      * @var AnrSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Anr")
+     * @ORM\ManyToOne(targetEntity="Anr", inversedBy="anrInstanceMetadataFields")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=false, onDelete="CASCADE")
      * })

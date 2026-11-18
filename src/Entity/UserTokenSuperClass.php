@@ -37,7 +37,7 @@ class UserTokenSuperClass
     /**
      * @var UserSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="User")
+     * @ORM\ManyToOne(targetEntity="User", inversedBy="userTokens")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="user_id", referencedColumnName="id", nullable=false)
      * })

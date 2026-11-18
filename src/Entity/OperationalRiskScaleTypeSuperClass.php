@@ -47,7 +47,7 @@ class OperationalRiskScaleTypeSuperClass
     /**
      * @var OperationalRiskScaleSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="OperationalRiskScale")
+     * @ORM\ManyToOne(targetEntity="OperationalRiskScale", inversedBy="operationalRiskScaleTypes")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="operational_risk_scale_id", referencedColumnName="id", onDelete="CASCADE")
      * })

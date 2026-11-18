@@ -37,7 +37,7 @@ class PasswordTokenSuperClass
     /**
      * @var UserSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="User", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="User", inversedBy="passwordTokens", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="user_id", referencedColumnName="id", nullable=false)
      * })

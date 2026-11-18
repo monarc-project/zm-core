@@ -57,7 +57,7 @@ class ScaleImpactTypeSuperClass
     /**
      * @var ScaleSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Scale")
+     * @ORM\ManyToOne(targetEntity="Scale", inversedBy="scaleImpactTypes")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="scale_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
      * })

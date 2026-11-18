@@ -9,7 +9,6 @@ namespace Monarc\Core\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
-use Monarc\Core\Exception\Exception;
 use Monarc\Core\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Entity\Traits\DescriptionsEntityTrait;
 use Monarc\Core\Entity\Traits\LabelsEntityTrait;
@@ -46,7 +45,7 @@ class Model
     /**
      * @var Anr
      *
-     * @ORM\OneToOne(targetEntity="Anr", cascade={"persist", "REMOVE"})
+     * @ORM\OneToOne(targetEntity="Anr", inversedBy="model", cascade={"persist", "REMOVE"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="SET NULL")
      * })
@@ -268,24 +267,5 @@ class Model
         $this->showRolfBrut = (int)$showRolfBrut;
 
         return $this;
-    }
-
-    public function validateObjectAcceptance(MonarcObject $object, ?Asset $forcedAsset = null): void
-    {
-        if ($this->isGeneric() && $object->isModeSpecific()) {
-            throw new Exception('You cannot add a specific object to a generic model', 412);
-        }
-
-        /** @var Asset $asset */
-        $asset = $forcedAsset ?? $object->getAsset();
-        if ($asset !== null && !$this->isGeneric() && $asset->isModeSpecific()) {
-            foreach ($asset->getModels() as $assetModel) {
-                if ($assetModel->getId() === $this->id) {
-                    return;
-                }
-            }
-
-            throw new Exception('You cannot add an object with specific asset unrelated to a specific model', 412);
-        }
     }
 }

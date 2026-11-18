@@ -47,7 +47,7 @@ class InstanceConsequenceSuperClass
     /**
      * @var InstanceSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Instance")
+     * @ORM\ManyToOne(targetEntity="Instance", inversedBy="instanceConsequences")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="instance_id", referencedColumnName="id", nullable=true)
      * })
@@ -57,7 +57,7 @@ class InstanceConsequenceSuperClass
     /**
      * @var ScaleImpactTypeSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="ScaleImpactType")
+     * @ORM\ManyToOne(targetEntity="ScaleImpactType", inversedBy="instanceConsequences")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="scale_impact_type_id", referencedColumnName="id", nullable=true)
      * })

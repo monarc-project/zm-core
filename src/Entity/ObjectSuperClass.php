@@ -51,7 +51,7 @@ class ObjectSuperClass
     /**
      * @var ObjectCategorySuperClass|null
      *
-     * @ORM\ManyToOne(targetEntity="ObjectCategory")
+     * @ORM\ManyToOne(targetEntity="ObjectCategory", inversedBy="objects")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="object_category_id", referencedColumnName="id", nullable=true)
      * })
@@ -61,7 +61,7 @@ class ObjectSuperClass
     /**
      * @var AssetSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="Asset")
+     * @ORM\ManyToOne(targetEntity="Asset", inversedBy="objects")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="asset_id", referencedColumnName="uuid", nullable=true, onDelete="SET NULL")
      * })
@@ -71,7 +71,7 @@ class ObjectSuperClass
     /**
      * @var RolfTagSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="RolfTag")
+     * @ORM\ManyToOne(targetEntity="RolfTag", inversedBy="objects")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="rolf_tag_id", referencedColumnName="id", nullable=true)
      * })
@@ -105,7 +105,7 @@ class ObjectSuperClass
      *
      * @var ArrayCollection|ObjectSuperClass[]
      *
-     * @ORM\ManyToMany(targetEntity="MonarcObject")
+     * @ORM\ManyToMany(targetEntity="MonarcObject", inversedBy="parents")
      * @ORM\JoinTable(name="objects_objects",
      *  joinColumns={@ORM\JoinColumn(name="father_id", referencedColumnName="uuid")},
      *  inverseJoinColumns={@ORM\JoinColumn(name="child_id", referencedColumnName="uuid")}

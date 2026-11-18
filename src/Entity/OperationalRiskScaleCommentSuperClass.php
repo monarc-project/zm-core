@@ -45,7 +45,7 @@ class OperationalRiskScaleCommentSuperClass
     /**
      * @var OperationalRiskScaleSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="OperationalRiskScale")
+     * @ORM\ManyToOne(targetEntity="OperationalRiskScale", inversedBy="operationalRiskScaleComments")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="operational_risk_scale_id", referencedColumnName="id", onDelete="CASCADE")
      * })
@@ -55,7 +55,7 @@ class OperationalRiskScaleCommentSuperClass
     /**
      * @var OperationalRiskScaleTypeSuperClass
      *
-     * @ORM\ManyToOne(targetEntity="OperationalRiskScaleType")
+     * @ORM\ManyToOne(targetEntity="OperationalRiskScaleType", inversedBy="operationalRiskScaleComments")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="operational_risk_scale_type_id", referencedColumnName="id", onDelete="CASCADE")
      * })

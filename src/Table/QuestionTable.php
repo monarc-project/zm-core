@@ -9,7 +9,6 @@ namespace Monarc\Core\Table;
 
 use Doctrine\ORM\EntityManager;
 use Monarc\Core\Entity\Question;
-use Monarc\Core\Entity\AnrSuperClass;
 
 class QuestionTable extends AbstractTable
 {
@@ -18,11 +17,9 @@ class QuestionTable extends AbstractTable
         parent::__construct($entityManager, $entityName);
     }
 
-    /** Global definitions or the ordered questions of a single analysis. */
-    public function findOrderedQuestions(?AnrSuperClass $anr = null): array
+    /** Ordered global definitions. */
+    public function findOrderedQuestions(): array
     {
-        return $this->getRepository()->findBy($anr === null ? [] : ['anr' => $anr], [
-            'position' => 'ASC', 'id' => 'ASC',
-        ]);
+        return $this->getRepository()->findBy([], ['position' => 'ASC', 'id' => 'ASC']);
     }
 }
