@@ -7,34 +7,32 @@
 
 namespace Monarc\Core\Entity\Traits;
 
+use Doctrine\ORM\Mapping as ORM;
+
 trait DescriptionsEntityTrait
 {
     /**
      * @var string
-     *
-     * @ORM\Column(name="description1", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'description1', type: 'text', nullable: true)]
     protected $description1;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="description2", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'description2', type: 'text', nullable: true)]
     protected $description2;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="description3", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'description3', type: 'text', nullable: true)]
     protected $description3;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="description4", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'description4', type: 'text', nullable: true)]
     protected $description4;
 
     public function getDescription(int $languageIndex): string

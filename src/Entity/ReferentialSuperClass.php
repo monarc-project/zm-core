@@ -15,11 +15,9 @@ use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 
-/**
- * @ORM\Table(name="referentials")
- * @ORM\MappedSuperclass
- * @ORM\HasLifecycleCallbacks()
- */
+#[ORM\Table(name: 'referentials')]
+#[ORM\MappedSuperclass]
+#[ORM\HasLifecycleCallbacks]
 class ReferentialSuperClass
 {
     use CreateEntityTrait;
@@ -29,24 +27,21 @@ class ReferentialSuperClass
 
     /**
      * @var UuidInterface|string
-     *
-     * @ORM\Id
-     * @ORM\Column(name="uuid", type="uuid", unique=true)
      */
+    #[ORM\Id]
+    #[ORM\Column(name: 'uuid', type: 'uuid', unique: true)]
     protected $uuid;
 
     /**
      * @var MeasureSuperClass[]|ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="Measure", mappedBy="referential")
      */
+    #[ORM\OneToMany(targetEntity: 'Measure', mappedBy: 'referential')]
     protected $measures;
 
     /**
      * @var SoaCategorySuperClass[]|ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="SoaCategory", mappedBy="referential")
      */
+    #[ORM\OneToMany(targetEntity: 'SoaCategory', mappedBy: 'referential')]
     protected $categories;
 
     public function __construct()
@@ -55,9 +50,7 @@ class ReferentialSuperClass
         $this->categories = new ArrayCollection();
     }
 
-    /**
-     * @ORM\PrePersist
-     */
+    #[ORM\PrePersist]
     public function generateAndSetUuid(): self
     {
         if ($this->uuid === null) {

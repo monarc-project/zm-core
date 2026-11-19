@@ -9,13 +9,10 @@ namespace Monarc\Core\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Table(name="objects_objects", indexes={
- *      @ORM\Index(name="father_id", columns={"father_id"}),
- *      @ORM\Index(name="child_id", columns={"child_id"})
- * })
- * @ORM\Entity
- */
+#[ORM\Table(name: 'objects_objects')]
+#[ORM\Index(name: 'father_id', columns: ['father_id'])]
+#[ORM\Index(name: 'child_id', columns: ['child_id'])]
+#[ORM\Entity]
 class ObjectObject extends ObjectObjectSuperClass
 {
 }

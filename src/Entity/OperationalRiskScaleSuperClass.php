@@ -12,11 +12,9 @@ use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 
-/**
- * @ORM\Table(name="operational_risks_scales")
- * @ORM\MappedSuperclass
- * @ORM\HasLifecycleCallbacks()
- */
+#[ORM\Table(name: 'operational_risks_scales')]
+#[ORM\MappedSuperclass]
+#[ORM\HasLifecycleCallbacks]
 class OperationalRiskScaleSuperClass
 {
     use CreateEntityTrait;
@@ -27,57 +25,48 @@ class OperationalRiskScaleSuperClass
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
+    #[ORM\Column(name: 'id', type: 'integer', nullable: false)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     protected $id;
 
     /**
      * @var AnrSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Anr")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'Anr')]
+    #[ORM\JoinColumn(name: 'anr_id', referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]
     protected $anr;
 
     /**
      * @var OperationalRiskScaleCommentSuperClass[]|ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="OperationalRiskScaleComment", mappedBy="operationalRiskScale")
-     * @ORM\OrderBy({"scaleIndex" = "ASC"})
      */
+    #[ORM\OneToMany(targetEntity: 'OperationalRiskScaleComment', mappedBy: 'operationalRiskScale')]
+    #[ORM\OrderBy(['scaleIndex' => 'ASC'])]
     protected $operationalRiskScaleComments;
 
     /**
      * @var OperationalRiskScaleTypeSuperClass[]|ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="OperationalRiskScaleType", mappedBy="operationalRiskScale", fetch="EAGER")
      */
+    #[ORM\OneToMany(targetEntity: 'OperationalRiskScaleType', mappedBy: 'operationalRiskScale', fetch: 'EAGER')]
     protected $operationalRiskScaleTypes;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="type", type="smallint", options={"unsigned":true})
      */
+    #[ORM\Column(name: 'type', type: 'smallint', options: ['unsigned' => true])]
     protected $type;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="min", type="smallint", options={"unsigned":true})
      */
+    #[ORM\Column(name: 'min', type: 'smallint', options: ['unsigned' => true])]
     protected $min;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="max", type="smallint", options={"unsigned":true})
      */
+    #[ORM\Column(name: 'max', type: 'smallint', options: ['unsigned' => true])]
     protected $max;
 
     public function __construct()

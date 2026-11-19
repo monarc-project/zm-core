@@ -10,10 +10,8 @@ namespace Monarc\Core\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Table(name="anrs")
- * @ORM\Entity
- */
+#[ORM\Table(name: 'anrs')]
+#[ORM\Entity]
 class Anr extends AnrSuperClass
 {
     use Traits\LabelsEntityTrait;
@@ -21,28 +19,26 @@ class Anr extends AnrSuperClass
 
     /**
      * @var Model|null
-     *
-     * @ORM\OneToOne(targetEntity="Model", mappedBy="anr")
      */
+    #[ORM\OneToOne(targetEntity: 'Model', mappedBy: 'anr')]
     protected $model;
 
     /**
      * @var ArrayCollection|MonarcObject[]
-     *
-     * @ORM\ManyToMany(targetEntity="MonarcObject", mappedBy="anrs")
      */
+    #[ORM\ManyToMany(targetEntity: 'MonarcObject', mappedBy: 'anrs')]
     protected $objects;
 
     /**
      * @var ArrayCollection|ObjectCategory[]
-     *
-     * @ORM\ManyToMany(targetEntity="ObjectCategory", inversedBy="anrs")
-     * @ORM\JoinTable(name="anrs_objects_categories",
-     *  inverseJoinColumns={@ORM\JoinColumn(name="object_category_id", referencedColumnName="id")},
-     *  joinColumns={@ORM\JoinColumn(name="anr_id", referencedColumnName="id")},
-     * )
-     * @ORM\OrderBy({"position" = "ASC"})
      */
+    #[ORM\ManyToMany(targetEntity: 'ObjectCategory', inversedBy: 'anrs')]
+    #[ORM\JoinTable(
+        name: 'anrs_objects_categories',
+        inverseJoinColumns: [new ORM\JoinColumn(name: 'object_category_id', referencedColumnName: 'id')],
+        joinColumns: [new ORM\JoinColumn(name: 'anr_id', referencedColumnName: 'id')]
+    )]
+    #[ORM\OrderBy(['position' => 'ASC'])]
     protected $objectCategories;
 
     public function __construct()
@@ -58,9 +54,13 @@ class Anr extends AnrSuperClass
      *
      * @return Anr
      */
+
     public static function constructFromObject(AnrSuperClass $anr): AnrSuperClass
     {
-        /** @var Anr $newAnr */
+        /**
+         * @var Anr $newAnr
+         */
+
         $newAnr = parent::constructFromObject($anr);
 
         return $newAnr->setLabels($anr->getLabels())->setDescriptions($anr->getDescriptions());

@@ -17,17 +17,14 @@ use Monarc\Core\Entity\Traits\NamesEntityTrait;
 use Monarc\Core\Entity\Traits\PropertyStateEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 
-/**
- * @ORM\Table(name="instances", indexes={
- *      @ORM\Index(name="anr", columns={"anr_id"}),
- *      @ORM\Index(name="asset_id", columns={"asset_id"}),
- *      @ORM\Index(name="object_id", columns={"object_id"}),
- *      @ORM\Index(name="root_id", columns={"root_id"}),
- *      @ORM\Index(name="parent_id", columns={"parent_id"})
- * })
- * @ORM\MappedSuperclass
- * @ORM\HasLifecycleCallbacks()
- */
+#[ORM\Table(name: 'instances')]
+#[ORM\Index(name: 'anr', columns: ['anr_id'])]
+#[ORM\Index(name: 'asset_id', columns: ['asset_id'])]
+#[ORM\Index(name: 'object_id', columns: ['object_id'])]
+#[ORM\Index(name: 'root_id', columns: ['root_id'])]
+#[ORM\Index(name: 'parent_id', columns: ['parent_id'])]
+#[ORM\MappedSuperclass]
+#[ORM\HasLifecycleCallbacks]
 class InstanceSuperClass implements PositionedEntityInterface, PropertyStateEntityInterface
 {
     use CreateEntityTrait;
@@ -44,146 +41,118 @@ class InstanceSuperClass implements PositionedEntityInterface, PropertyStateEnti
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
+    #[ORM\Column(name: 'id', type: 'integer', nullable: false)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     protected $id;
 
     /**
      * @var AnrSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Anr", inversedBy="instances")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'Anr', inversedBy: 'instances')]
+    #[ORM\JoinColumn(name: 'anr_id', referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]
     protected $anr;
 
     /**
      * @var AssetSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Asset", inversedBy="instances")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="asset_id", referencedColumnName="uuid", nullable=true)
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'Asset', inversedBy: 'instances')]
+    #[ORM\JoinColumn(name: 'asset_id', referencedColumnName: 'uuid', nullable: true)]
     protected $asset;
 
     /**
      * @var ObjectSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="MonarcObject", inversedBy="instances")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="object_id", referencedColumnName="uuid", nullable=true)
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'MonarcObject', inversedBy: 'instances')]
+    #[ORM\JoinColumn(name: 'object_id', referencedColumnName: 'uuid', nullable: true)]
     protected $object;
 
     /**
      * @var InstanceSuperClass|null
-     *
-     * @ORM\ManyToOne(targetEntity="Instance")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="root_id", referencedColumnName="id", nullable=true)
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'Instance')]
+    #[ORM\JoinColumn(name: 'root_id', referencedColumnName: 'id', nullable: true)]
     protected $root;
 
     /**
      * @var InstanceSuperClass|null
-     *
-     * @ORM\ManyToOne(targetEntity="Instance", inversedBy="children")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="parent_id", referencedColumnName="id", nullable=true)
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'Instance', inversedBy: 'children')]
+    #[ORM\JoinColumn(name: 'parent_id', referencedColumnName: 'id', nullable: true)]
     protected $parent;
 
     /**
      * @var ArrayCollection|InstanceSuperClass[]
-     *
-     * @ORM\OneToMany(targetEntity="Instance", mappedBy="parent")
-     * @ORM\OrderBy({"position" = "ASC"})
      */
+    #[ORM\OneToMany(targetEntity: 'Instance', mappedBy: 'parent')]
+    #[ORM\OrderBy(['position' => 'ASC'])]
     protected $children;
 
     /**
      * @var InstanceConsequenceSuperClass[]|ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="InstanceConsequence", mappedBy="instance")
      */
+    #[ORM\OneToMany(targetEntity: 'InstanceConsequence', mappedBy: 'instance')]
     protected $instanceConsequences;
 
     /**
      * @var InstanceRiskSuperClass[]|ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="InstanceRisk", orphanRemoval=true, mappedBy="instance")
      */
+    #[ORM\OneToMany(targetEntity: 'InstanceRisk', orphanRemoval: true, mappedBy: 'instance')]
     protected $instanceRisks;
 
     /**
      * @var InstanceRiskOpSuperClass[]|ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="InstanceRiskOp", orphanRemoval=true, mappedBy="instance")
      */
+    #[ORM\OneToMany(targetEntity: 'InstanceRiskOp', orphanRemoval: true, mappedBy: 'instance')]
     protected $operationalInstanceRisks;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="level", type="smallint", options={"unsigned":true, "default":1})
      */
+    #[ORM\Column(name: 'level', type: 'smallint', options: ['unsigned' => true, 'default' => 1])]
     protected $level = 1;
 
     /**
      * @var int "-1" - means the value is inherited from one of its parents.
-     *
-     * @ORM\Column(name="c", type="smallint", options={"unsigned":true, "default":1})
      */
+    #[ORM\Column(name: 'c', type: 'smallint', options: ['unsigned' => true, 'default' => 1])]
     protected $c = -1;
 
     /**
      * @var int "-1" - means the value is inherited from one of its parents.
-     *
-     * @ORM\Column(name="i", type="smallint", options={"unsigned":true, "default":1})
      */
+    #[ORM\Column(name: 'i', type: 'smallint', options: ['unsigned' => true, 'default' => 1])]
     protected $i = -1;
 
     /**
      * @var int "-1" - means the value is inherited from one of its parents.
-     *
-     * @ORM\Column(name="d", type="smallint", options={"unsigned":true, "default":1})
      */
+    #[ORM\Column(name: 'd', type: 'smallint', options: ['unsigned' => true, 'default' => 1])]
     protected $d = -1;
 
     /**
      * @var int 1 - the confidentiality value is inherited, 0 - not inherited.
-     *
-     * @ORM\Column(name="ch", type="smallint", options={"unsigned":true, "default":1})
      */
+    #[ORM\Column(name: 'ch', type: 'smallint', options: ['unsigned' => true, 'default' => 1])]
     protected $ch = 1;
 
     /**
      * @var int 1 - the integrity value is inherited, 0 - not inherited.
-     *
-     * @ORM\Column(name="ih", type="smallint", options={"unsigned":true, "default":1})
      */
+    #[ORM\Column(name: 'ih', type: 'smallint', options: ['unsigned' => true, 'default' => 1])]
     protected $ih = 1;
 
     /**
      * @var int 1 - the availability value is inherited, 0 - not inherited.
-     *
-     * @ORM\Column(name="dh", type="smallint", options={"unsigned":true, "default":1})
      */
+    #[ORM\Column(name: 'dh', type: 'smallint', options: ['unsigned' => true, 'default' => 1])]
     protected $dh = 1;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="position", type="smallint", options={"unsigned":true, "default":1})
      */
+    #[ORM\Column(name: 'position', type: 'smallint', options: ['unsigned' => true, 'default' => 1])]
     protected $position = 1;
 
     public function __construct()
@@ -514,6 +483,7 @@ class InstanceSuperClass implements PositionedEntityInterface, PropertyStateEnti
      * Returns the instance hierarchy array ordered from its root through all the children to the instance itself.
      * Each element is a normalized array of the instances' names, ids, parent and root objects.
      */
+
     public function getHierarchyArray(): array
     {
         if ($this->isRoot()) {
@@ -546,6 +516,7 @@ class InstanceSuperClass implements PositionedEntityInterface, PropertyStateEnti
     /**
      * @return int[]
      */
+
     public function getSelfAndChildrenIds(): array
     {
         $childrenIds = [];
@@ -559,6 +530,7 @@ class InstanceSuperClass implements PositionedEntityInterface, PropertyStateEnti
     /**
      * @return self[]
      */
+
     public function getSelfAndChildrenInstances(): array
     {
         $childrenInstances = [];

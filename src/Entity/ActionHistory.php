@@ -9,12 +9,9 @@ namespace Monarc\Core\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Table(name="actions_history", indexes={
- *      @ORM\Index(name="action", columns={"action"}),
- * })
- * @ORM\Entity
- */
+#[ORM\Table(name: 'actions_history')]
+#[ORM\Index(name: 'action', columns: ['action'])]
+#[ORM\Entity]
 class ActionHistory extends ActionHistorySuperClass
 {
 }

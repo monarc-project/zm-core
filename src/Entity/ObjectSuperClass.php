@@ -17,15 +17,12 @@ use Ramsey\Uuid\Lazy\LazyUuidFromString;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 
-/**
- * @ORM\Table(name="objects", indexes={
- *      @ORM\Index(name="object_category_id", columns={"object_category_id"}),
- *      @ORM\Index(name="asset_id", columns={"asset_id"}),
- *      @ORM\Index(name="rolf_tag_id", columns={"rolf_tag_id"})
- * })
- * @ORM\MappedSuperclass
- * @ORM\HasLifecycleCallbacks()
- */
+#[ORM\Table(name: 'objects')]
+#[ORM\Index(name: 'object_category_id', columns: ['object_category_id'])]
+#[ORM\Index(name: 'asset_id', columns: ['asset_id'])]
+#[ORM\Index(name: 'rolf_tag_id', columns: ['rolf_tag_id'])]
+#[ORM\MappedSuperclass]
+#[ORM\HasLifecycleCallbacks]
 class ObjectSuperClass
 {
     use CreateEntityTrait;
@@ -42,61 +39,48 @@ class ObjectSuperClass
 
     /**
      * @var LazyUuidFromString|UuidInterface|string
-     *
-     * @ORM\Column(name="uuid", type="uuid", nullable=false)
-     * @ORM\Id
      */
+    #[ORM\Column(name: 'uuid', type: 'uuid', nullable: false)]
+    #[ORM\Id]
     protected $uuid;
 
     /**
      * @var ObjectCategorySuperClass|null
-     *
-     * @ORM\ManyToOne(targetEntity="ObjectCategory", inversedBy="objects")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="object_category_id", referencedColumnName="id", nullable=true)
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'ObjectCategory', inversedBy: 'objects')]
+    #[ORM\JoinColumn(name: 'object_category_id', referencedColumnName: 'id', nullable: true)]
     protected $category;
 
     /**
      * @var AssetSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Asset", inversedBy="objects")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="asset_id", referencedColumnName="uuid", nullable=true, onDelete="SET NULL")
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'Asset', inversedBy: 'objects')]
+    #[ORM\JoinColumn(name: 'asset_id', referencedColumnName: 'uuid', nullable: true, onDelete: 'SET NULL')]
     protected $asset;
 
     /**
      * @var RolfTagSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="RolfTag", inversedBy="objects")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="rolf_tag_id", referencedColumnName="id", nullable=true)
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'RolfTag', inversedBy: 'objects')]
+    #[ORM\JoinColumn(name: 'rolf_tag_id', referencedColumnName: 'id', nullable: true)]
     protected $rolfTag;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="mode", type="smallint", options={"unsigned":true, "default":1})
      */
+    #[ORM\Column(name: 'mode', type: 'smallint', options: ['unsigned' => true, 'default' => 1])]
     protected $mode = self::MODE_GENERIC;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="scope", type="smallint", options={"unsigned":true, "default":1})
      */
+    #[ORM\Column(name: 'scope', type: 'smallint', options: ['unsigned' => true, 'default' => 1])]
     protected $scope = self::SCOPE_LOCAL;
 
     /**
      * @var ArrayCollection|ObjectSuperClass[]
-     *
-     * @ORM\ManyToMany(targetEntity="MonarcObject", mappedBy="children")
      */
+    #[ORM\ManyToMany(targetEntity: 'MonarcObject', mappedBy: 'children')]
     protected $parents;
 
     /**
@@ -104,37 +88,34 @@ class ObjectSuperClass
      *       Ordered list can be retrieved with use $childrenLinks relation.
      *
      * @var ArrayCollection|ObjectSuperClass[]
-     *
-     * @ORM\ManyToMany(targetEntity="MonarcObject", inversedBy="parents")
-     * @ORM\JoinTable(name="objects_objects",
-     *  joinColumns={@ORM\JoinColumn(name="father_id", referencedColumnName="uuid")},
-     *  inverseJoinColumns={@ORM\JoinColumn(name="child_id", referencedColumnName="uuid")}
-     * )
      */
+    #[ORM\ManyToMany(targetEntity: 'MonarcObject', inversedBy: 'parents')]
+    #[ORM\JoinTable(
+        name: 'objects_objects',
+        joinColumns: [new ORM\JoinColumn(name: 'father_id', referencedColumnName: 'uuid')],
+        inverseJoinColumns: [new ORM\JoinColumn(name: 'child_id', referencedColumnName: 'uuid')]
+    )]
     protected $children;
 
     /**
      * @var ArrayCollection|ObjectObjectSuperClass[]
-     *
-     * @ORM\OneToMany(targetEntity="ObjectObject", mappedBy="child")
      */
+    #[ORM\OneToMany(targetEntity: 'ObjectObject', mappedBy: 'child')]
     protected $parentsLinks;
 
     /**
      * @var ArrayCollection|ObjectObjectSuperClass[]
-     *
-     * @ORM\OneToMany(targetEntity="ObjectObject", mappedBy="parent")
-     * @ORM\OrderBy({"position": "ASC"})
      */
+    #[ORM\OneToMany(targetEntity: 'ObjectObject', mappedBy: 'parent')]
+    #[ORM\OrderBy(['position' => 'ASC'])]
     protected $childrenLinks;
 
     /**
      * Note: On BackofficeOffice side the instances list includes all the instances across all the models.
      *
      * @var ArrayCollection|InstanceSuperClass[]
-     *
-     * @ORM\OneToMany(targetEntity="Instance", mappedBy="object")
      */
+    #[ORM\OneToMany(targetEntity: 'Instance', mappedBy: 'object')]
     protected $instances;
 
     public function __construct()
@@ -146,9 +127,7 @@ class ObjectSuperClass
         $this->instances = new ArrayCollection();
     }
 
-    /**
-     * @ORM\PrePersist
-     */
+    #[ORM\PrePersist]
     public function generateAndSetUuid(): self
     {
         if ($this->uuid === null) {
@@ -306,6 +285,7 @@ class ObjectSuperClass
      * Note: If the method use used, the order has to be performed manually due to the Doctrine limitation.
      * It's not allowed to use addParent or addChild methods due to the doctrine limitation of 2 fields relation on FO.
      */
+
     public function getChildren()
     {
         return $this->children;
@@ -324,6 +304,7 @@ class ObjectSuperClass
     /**
      * The links are used to keep the order of the objects' composition.
      */
+
     public function getParentsLinks()
     {
         return $this->parentsLinks;

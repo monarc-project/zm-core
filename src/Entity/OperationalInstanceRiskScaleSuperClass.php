@@ -11,11 +11,9 @@ use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 
-/**
- * @ORM\Table(name="operational_instance_risks_scales")
- * @ORM\MappedSuperclass
- * @ORM\HasLifecycleCallbacks()
- */
+#[ORM\Table(name: 'operational_instance_risks_scales')]
+#[ORM\MappedSuperclass]
+#[ORM\HasLifecycleCallbacks]
 class OperationalInstanceRiskScaleSuperClass
 {
     use CreateEntityTrait;
@@ -23,62 +21,49 @@ class OperationalInstanceRiskScaleSuperClass
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
+    #[ORM\Column(name: 'id', type: 'integer', nullable: false)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     protected $id;
 
     /**
      * @var AnrSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Anr")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'Anr')]
+    #[ORM\JoinColumn(name: 'anr_id', referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]
     protected $anr;
 
     /**
      * @var InstanceRiskOpSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="InstanceRiskOp", inversedBy="operationalInstanceRiskScales")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="instance_risk_op_id", referencedColumnName="id", onDelete="CASCADE")
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'InstanceRiskOp', inversedBy: 'operationalInstanceRiskScales')]
+    #[ORM\JoinColumn(name: 'instance_risk_op_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
     protected $operationalInstanceRisk;
 
     /**
      * @var OperationalRiskScaleTypeSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="OperationalRiskScaleType", inversedBy="operationalInstanceRiskScales")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="operational_risk_scale_type_id", referencedColumnName="id", onDelete="CASCADE")
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'OperationalRiskScaleType', inversedBy: 'operationalInstanceRiskScales')]
+    #[ORM\JoinColumn(name: 'operational_risk_scale_type_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
     protected $operationalRiskScaleType;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="brut_value", type="integer", options={"default": -1})
      */
+    #[ORM\Column(name: 'brut_value', type: 'integer', options: ['default' => -1])]
     protected $brutValue = -1;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="net_value", type="integer", options={"default": -1})
      */
+    #[ORM\Column(name: 'net_value', type: 'integer', options: ['default' => -1])]
     protected $netValue = -1;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="targeted_value", type="integer", options={"default": -1})
      */
+    #[ORM\Column(name: 'targeted_value', type: 'integer', options: ['default' => -1])]
     protected $targetedValue = -1;
 
     public static function constructFromObject(

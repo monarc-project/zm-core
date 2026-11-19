@@ -7,7 +7,7 @@
 
 use Interop\Container\Containerinterface;
 use Doctrine\Persistence\Mapping\Driver\MappingDriverChain;
-use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
+use Doctrine\ORM\Mapping\Driver\AttributeDriver;
 use Monarc\Core\Adapter\Authentication as AdapterAuthentication;
 use Monarc\Core\Controller;
 use Monarc\Core\Service\Helper\ScalesCacheHelper;
@@ -41,8 +41,7 @@ return [
         ],
         'driver' => [
             'Monarc_core_driver' => [
-                'class' => AnnotationDriver::class,
-                'cache' => 'array',
+                'class' => AttributeDriver::class,
                 'paths' => [__DIR__ . '/../src/Entity'],
             ],
             'orm_default' => [
@@ -51,8 +50,7 @@ return [
                 ],
             ],
             'Monarc_cli_driver' => [
-                'class' => AnnotationDriver::class,
-                'cache' => 'array',
+                'class' => AttributeDriver::class,
                 'paths' => [__DIR__ . '/../src/Entity'],
             ],
             'orm_cli' => [
@@ -62,8 +60,7 @@ return [
                 ],
             ],
             'Monarc_cli_fo_driver' => [
-                'class' => AnnotationDriver::class,
-                'cache' => 'array',
+                'class' => AttributeDriver::class,
                 'paths' => [__DIR__ . '/../src/Entity'],
             ],
             'orm_cli_fo' => [

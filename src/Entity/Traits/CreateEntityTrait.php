@@ -8,26 +8,23 @@
 namespace Monarc\Core\Entity\Traits;
 
 use DateTime;
+use Doctrine\ORM\Mapping as ORM;
 
 trait CreateEntityTrait
 {
     /**
      * @var string
-     *
-     * @ORM\Column(name="creator", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'creator', type: 'string', length: 255, nullable: true)]
     protected $creator;
 
     /**
      * @var DateTime
-     *
-     * @ORM\Column(name="created_at", type="datetime", nullable=true)
      */
+    #[ORM\Column(name: 'created_at', type: 'datetime', nullable: true)]
     protected $createdAt;
 
-    /**
-     * @ORM\PrePersist
-     */
+    #[ORM\PrePersist]
     public function setCreatedAtValue(): self
     {
         $this->createdAt = new DateTime();

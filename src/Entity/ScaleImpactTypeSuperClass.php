@@ -13,14 +13,11 @@ use Monarc\Core\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Entity\Traits\LabelsEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 
-/**
- * @ORM\Table(name="scales_impact_types", indexes={
- *      @ORM\Index(name="anr", columns={"anr_id"}),
- *      @ORM\Index(name="scale_id", columns={"scale_id"})
- * })
- * @ORM\MappedSuperclass
- * @ORM\HasLifecycleCallbacks()
- */
+#[ORM\Table(name: 'scales_impact_types')]
+#[ORM\Index(name: 'anr', columns: ['anr_id'])]
+#[ORM\Index(name: 'scale_id', columns: ['scale_id'])]
+#[ORM\MappedSuperclass]
+#[ORM\HasLifecycleCallbacks]
 class ScaleImpactTypeSuperClass
 {
     use CreateEntityTrait;
@@ -39,65 +36,52 @@ class ScaleImpactTypeSuperClass
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
+    #[ORM\Column(name: 'id', type: 'integer', nullable: false)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     protected $id;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Anr")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
-     * })
-     */
+    #[ORM\ManyToOne(targetEntity: 'Anr')]
+    #[ORM\JoinColumn(name: 'anr_id', referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]
     protected $anr;
 
     /**
      * @var ScaleSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Scale", inversedBy="scaleImpactTypes")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="scale_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'Scale', inversedBy: 'scaleImpactTypes')]
+    #[ORM\JoinColumn(name: 'scale_id', referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]
     protected $scale;
 
     /**
      * @var ScaleCommentSuperClass[]|ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="ScaleComment", mappedBy="scaleImpactType")
-     * @ORM\OrderBy({"scaleIndex" = "ASC"})
      */
+    #[ORM\OneToMany(targetEntity: 'ScaleComment', mappedBy: 'scaleImpactType')]
+    #[ORM\OrderBy(['scaleIndex' => 'ASC'])]
     protected $scaleComments;
 
     /**
      * @var InstanceConsequenceSuperClass[]|ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="InstanceConsequence", mappedBy="scaleImpactType")
      */
+    #[ORM\OneToMany(targetEntity: 'InstanceConsequence', mappedBy: 'scaleImpactType')]
     protected $instanceConsequences;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="type", type="smallint", options={"unsigned":true})
      */
+    #[ORM\Column(name: 'type', type: 'smallint', options: ['unsigned' => true])]
     protected $type;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="is_sys", type="smallint", options={"unsigned":true})
      */
+    #[ORM\Column(name: 'is_sys', type: 'smallint', options: ['unsigned' => true])]
     protected $isSys = 0;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="is_hidden", type="smallint", options={"unsigned":true})
      */
+    #[ORM\Column(name: 'is_hidden', type: 'smallint', options: ['unsigned' => true])]
     protected $isHidden = 0;
 
     public function __construct()

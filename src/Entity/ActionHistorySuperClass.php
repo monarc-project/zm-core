@@ -9,11 +9,9 @@ namespace Monarc\Core\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Table(name="actions_history")
- * @ORM\MappedSuperclass
- * @ORM\HasLifecycleCallbacks()
- */
+#[ORM\Table(name: 'actions_history')]
+#[ORM\MappedSuperclass]
+#[ORM\HasLifecycleCallbacks]
 class ActionHistorySuperClass
 {
     use Traits\CreateEntityTrait;
@@ -25,42 +23,35 @@ class ActionHistorySuperClass
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
+    #[ORM\Column(name: 'id', type: 'integer', nullable: false)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     protected $id;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="action", type="string", length=100, nullable=false)
      */
+    #[ORM\Column(name: 'action', type: 'string', length: 100, nullable: false)]
     protected $action;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="data", type="string", length=4096, nullable=false)
      */
+    #[ORM\Column(name: 'data', type: 'string', length: 4096, nullable: false)]
     protected $data = '';
 
     /**
      * @var ?UserSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="User", cascade={"persist"})
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="user_id", referencedColumnName="id", nullable=true)
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'User', cascade: ['persist'])]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: true)]
     protected $user;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="status", type="smallint", options={"unsigned":true, "default":0})
      */
+    #[ORM\Column(name: 'status', type: 'smallint', options: ['unsigned' => true, 'default' => 0])]
     protected $status = self::STATUS_SUCCESS;
 
     public function getId(): ?int

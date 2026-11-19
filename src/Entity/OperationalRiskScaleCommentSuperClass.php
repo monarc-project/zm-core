@@ -11,13 +11,10 @@ use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 
-/**
- * @ORM\Table(name="operational_risks_scales_comments", indexes={
- *      @ORM\Index(name="scale_id", columns={"scale_id"})
- * })
- * @ORM\MappedSuperclass
- * @ORM\HasLifecycleCallbacks()
- */
+#[ORM\Table(name: 'operational_risks_scales_comments')]
+#[ORM\Index(name: 'scale_id', columns: ['scale_id'])]
+#[ORM\MappedSuperclass]
+#[ORM\HasLifecycleCallbacks]
 class OperationalRiskScaleCommentSuperClass
 {
     use CreateEntityTrait;
@@ -25,62 +22,49 @@ class OperationalRiskScaleCommentSuperClass
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
+    #[ORM\Column(name: 'id', type: 'integer', nullable: false)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     protected $id;
 
     /**
      * @var AnrSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Anr")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'Anr')]
+    #[ORM\JoinColumn(name: 'anr_id', referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]
     protected $anr;
 
     /**
      * @var OperationalRiskScaleSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="OperationalRiskScale", inversedBy="operationalRiskScaleComments")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="operational_risk_scale_id", referencedColumnName="id", onDelete="CASCADE")
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'OperationalRiskScale', inversedBy: 'operationalRiskScaleComments')]
+    #[ORM\JoinColumn(name: 'operational_risk_scale_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
     protected $operationalRiskScale;
 
     /**
      * @var OperationalRiskScaleTypeSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="OperationalRiskScaleType", inversedBy="operationalRiskScaleComments")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="operational_risk_scale_type_id", referencedColumnName="id", onDelete="CASCADE")
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'OperationalRiskScaleType', inversedBy: 'operationalRiskScaleComments')]
+    #[ORM\JoinColumn(name: 'operational_risk_scale_type_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
     protected $operationalRiskScaleType;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="scale_value", type="integer", options={"unsigned": true})
      */
+    #[ORM\Column(name: 'scale_value', type: 'integer', options: ['unsigned' => true])]
     protected $scaleValue;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="scale_index", type="integer", options={"unsigned": true})
      */
+    #[ORM\Column(name: 'scale_index', type: 'integer', options: ['unsigned' => true])]
     protected $scaleIndex;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="is_hidden", type="smallint", options={"default": 0})
      */
+    #[ORM\Column(name: 'is_hidden', type: 'smallint', options: ['default' => 0])]
     protected $isHidden = 0;
 
     public function getId()

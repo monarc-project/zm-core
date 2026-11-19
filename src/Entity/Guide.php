@@ -14,36 +14,31 @@ use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 
 /**
  * Guide
- *
- * @ORM\Table(name="guides")
- * @ORM\Entity
- * @ORM\HasLifecycleCallbacks()
  */
+#[ORM\Table(name: 'guides')]
+#[ORM\Entity]
+#[ORM\HasLifecycleCallbacks]
 class Guide
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
     use DescriptionsEntityTrait;
 
-    /**
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     */
+    #[ORM\Column(name: 'id', type: 'integer', nullable: false)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     protected int $id;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="type", type="smallint", options={"unsigned":true})
      */
+    #[ORM\Column(name: 'type', type: 'smallint', options: ['unsigned' => true])]
     protected $type;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="is_with_items", type="smallint", options={"unsigned":true})
      */
+    #[ORM\Column(name: 'is_with_items', type: 'smallint', options: ['unsigned' => true])]
     protected $isWithItems;
 
     public function getId(): int

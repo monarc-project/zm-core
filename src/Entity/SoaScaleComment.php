@@ -10,10 +10,8 @@ namespace Monarc\Core\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Entity\Traits\LabelTranslationKeyEntityTrait;
 
-/**
- * @ORM\Table(name="soa_scale_comments")
- * @ORM\Entity
- */
+#[ORM\Table(name: 'soa_scale_comments')]
+#[ORM\Entity]
 class SoaScaleComment extends SoaScaleCommentSuperClass
 {
     use LabelTranslationKeyEntityTrait;

@@ -7,13 +7,20 @@
 
 namespace Monarc\Core\Entity\Traits;
 
+use Doctrine\ORM\Mapping as ORM;
+
 trait LabelTranslationKeyEntityTrait
 {
     /**
      * @var string
-     *
-     * @ORM\Column(name="label_translation_key", type="string", length=255, nullable=false, options={"default": ""})
      */
+    #[ORM\Column(
+        name: 'label_translation_key',
+        type: 'string',
+        length: 255,
+        nullable: false,
+        options: ['default' => '']
+    )]
     protected $labelTranslationKey = '';
 
     public function getLabelTranslationKey(): string

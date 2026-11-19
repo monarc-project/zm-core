@@ -12,11 +12,9 @@ use Monarc\Core\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Entity\Traits\DescriptionsEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 
-/**
- * @ORM\Table(name="deliveries_models")
- * @ORM\Entity
- * @ORM\HasLifecycleCallbacks()
- */
+#[ORM\Table(name: 'deliveries_models')]
+#[ORM\Entity]
+#[ORM\HasLifecycleCallbacks]
 class DeliveriesModels
 {
     use CreateEntityTrait;
@@ -34,52 +32,46 @@ class DeliveriesModels
 
     /**
      * @var integer
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
+    #[ORM\Column(name: 'id', type: 'integer', nullable: false)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     protected int $id;
 
     /**
      * @var integer
-     * @ORM\Column(name="category", type="smallint", length=4, options={"default":0})
      */
+    #[ORM\Column(name: 'category', type: 'smallint', length: 4, options: ['default' => 0])]
     protected int $category = 0;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="path1", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'path1', type: 'string', length: 255, nullable: true)]
     protected ?string $path1 = null;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="path2", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'path2', type: 'string', length: 255, nullable: true)]
     protected ?string $path2 = null;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="path3", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'path3', type: 'string', length: 255, nullable: true)]
     protected ?string $path3 = null;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="path4", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'path4', type: 'string', length: 255, nullable: true)]
     protected ?string $path4 = null;
 
     /**
      * @var boolean
-     *
-     * @ORM\Column(name="editable", type="boolean", options={"default":true})
      */
+    #[ORM\Column(name: 'editable', type: 'boolean', options: ['default' => true])]
     protected bool $editable = true;
 
     public function getPath(int $languageIndex): ?string

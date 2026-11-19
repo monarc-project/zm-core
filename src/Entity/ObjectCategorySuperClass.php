@@ -16,15 +16,12 @@ use Monarc\Core\Entity\Traits\LabelsEntityTrait;
 use Monarc\Core\Entity\Traits\PropertyStateEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 
-/**
- * @ORM\Table(name="objects_categories", indexes={
- *      @ORM\Index(name="root_id", columns={"root_id"}),
- *      @ORM\Index(name="parent_id", columns={"parent_id"}),
- *      @ORM\Index(name="position", columns={"position"})
- * })
- * @ORM\MappedSuperclass
- * @ORM\HasLifecycleCallbacks()
- */
+#[ORM\Table(name: 'objects_categories')]
+#[ORM\Index(name: 'root_id', columns: ['root_id'])]
+#[ORM\Index(name: 'parent_id', columns: ['parent_id'])]
+#[ORM\Index(name: 'position', columns: ['position'])]
+#[ORM\MappedSuperclass]
+#[ORM\HasLifecycleCallbacks]
 class ObjectCategorySuperClass implements PositionedEntityInterface, PropertyStateEntityInterface
 {
     use CreateEntityTrait;
@@ -36,53 +33,43 @@ class ObjectCategorySuperClass implements PositionedEntityInterface, PropertySta
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
+    #[ORM\Column(name: 'id', type: 'integer', nullable: false)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     protected $id;
 
     /**
      * @var ObjectCategorySuperClass|null
-     *
-     * @ORM\ManyToOne(targetEntity="ObjectCategory")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="root_id", referencedColumnName="id", nullable=true)
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'ObjectCategory')]
+    #[ORM\JoinColumn(name: 'root_id', referencedColumnName: 'id', nullable: true)]
     protected $root;
 
     /**
      * @var ObjectCategorySuperClass|null
-     *
-     * @ORM\ManyToOne(targetEntity="ObjectCategory", inversedBy="children")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="parent_id", referencedColumnName="id", nullable=true)
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'ObjectCategory', inversedBy: 'children')]
+    #[ORM\JoinColumn(name: 'parent_id', referencedColumnName: 'id', nullable: true)]
     protected $parent;
 
     /**
      * @var ArrayCollection|ObjectCategorySuperClass[]
-     *
-     * @ORM\OneToMany(targetEntity="ObjectCategory", mappedBy="parent")
-     * @ORM\OrderBy({"position" = "ASC"})
      */
+    #[ORM\OneToMany(targetEntity: 'ObjectCategory', mappedBy: 'parent')]
+    #[ORM\OrderBy(['position' => 'ASC'])]
     protected $children;
 
     /**
      * @var ObjectSuperClass[]|ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="MonarcObject", mappedBy="category")
      */
+    #[ORM\OneToMany(targetEntity: 'MonarcObject', mappedBy: 'category')]
     protected $objects;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="position", type="smallint", options={"unsigned":true, "default":1})
      */
+    #[ORM\Column(name: 'position', type: 'smallint', options: ['unsigned' => true, 'default' => 1])]
     protected $position = 1;
 
     public function __construct()
@@ -162,6 +149,7 @@ class ObjectCategorySuperClass implements PositionedEntityInterface, PropertySta
     /**
      * @return int[]
      */
+
     public function getRecursiveChildrenIds(): array
     {
         $childrenIds = [];

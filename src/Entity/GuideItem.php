@@ -14,48 +14,54 @@ use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 
 /**
  * Guide
- *
- * @ORM\Table(name="guides_items", indexes={
- *      @ORM\Index(name="guide_id", columns={"guide_id"}),
- *      @ORM\Index(name="position", columns={"position"})
- * })
- * @ORM\Entity
- * @ORM\AttributeOverrides({
- *   @ORM\AttributeOverride(name="description1", column=@ORM\Column(name="description1", type="text", nullable=false)),
- *   @ORM\AttributeOverride(name="description2", column=@ORM\Column(name="description2", type="text", nullable=false)),
- *   @ORM\AttributeOverride(name="description3", column=@ORM\Column(name="description3", type="text", nullable=false)),
- *   @ORM\AttributeOverride(name="description4", column=@ORM\Column(name="description4", type="text", nullable=false))
- * })
- * @ORM\HasLifecycleCallbacks()
  */
+#[ORM\Table(name: 'guides_items')]
+#[ORM\Index(name: 'guide_id', columns: ['guide_id'])]
+#[ORM\Index(name: 'position', columns: ['position'])]
+#[ORM\Entity]
+#[ORM\AttributeOverrides(
+    [
+        new ORM\AttributeOverride(
+            name: 'description1',
+            column: new ORM\Column(name: 'description1', type: 'text', nullable: false)
+        ),
+        new ORM\AttributeOverride(
+            name: 'description2',
+            column: new ORM\Column(name: 'description2', type: 'text', nullable: false)
+        ),
+        new ORM\AttributeOverride(
+            name: 'description3',
+            column: new ORM\Column(name: 'description3', type: 'text', nullable: false)
+        ),
+        new ORM\AttributeOverride(
+            name: 'description4',
+            column: new ORM\Column(name: 'description4', type: 'text', nullable: false)
+        )
+    ]
+)]
+#[ORM\HasLifecycleCallbacks]
 class GuideItem
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
     use DescriptionsEntityTrait;
 
-    /**
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     */
+    #[ORM\Column(name: 'id', type: 'integer', nullable: false)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     protected int $id;
 
     /**
      * @var Guide
-     *
-     * @ORM\ManyToOne(targetEntity="Monarc\Core\Entity\Guide")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="guide_id", referencedColumnName="id", nullable=false)
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'Monarc\\Core\\Entity\\Guide')]
+    #[ORM\JoinColumn(name: 'guide_id', referencedColumnName: 'id', nullable: false)]
     protected Guide $guide;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="position", type="smallint", options={"unsigned":true})
      */
+    #[ORM\Column(name: 'position', type: 'smallint', options: ['unsigned' => true])]
     protected $position;
 
     public function __construct()

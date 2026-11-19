@@ -7,11 +7,10 @@
 
 namespace Monarc\Core\Tests\Fixture;
 
-use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
+use Doctrine\ORM\Mapping\Driver\AttributeDriver;
 use Doctrine\ORM\Tools\SchemaTool;
 use Monarc\Core\Entity;
 use Monarc\Core\Service;
@@ -31,7 +30,7 @@ class HistoricalTestEnvironment
             Type::addType(UuidType::NAME, UuidType::class);
         }
         $config = new Configuration();
-        $config->setMetadataDriverImpl(new AnnotationDriver(new AnnotationReader()));
+        $config->setMetadataDriverImpl(new AttributeDriver([]));
         $config->setProxyDir(sys_get_temp_dir());
         $config->setProxyNamespace('HistoricalTestProxies');
         $this->manager = EntityManager::create(['driver' => 'pdo_sqlite', 'memory' => true], $config);

@@ -10,23 +10,20 @@ namespace Monarc\Core\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Table(name="threats", indexes={
- *      @ORM\Index(name="theme_id", columns={"theme_id"})
- * })
- * @ORM\Entity
- */
+#[ORM\Table(name: 'threats')]
+#[ORM\Index(name: 'theme_id', columns: ['theme_id'])]
+#[ORM\Entity]
 class Threat extends ThreatSuperClass
 {
     /**
      * @var Model[]|ArrayCollection
-     *
-     * @ORM\ManyToMany(targetEntity="Model", inversedBy="threats", cascade={"persist"})
-     * @ORM\JoinTable(name="threats_models",
-     *  joinColumns={@ORM\JoinColumn(name="threat_id", referencedColumnName="uuid")},
-     *  inverseJoinColumns={@ORM\JoinColumn(name="model_id", referencedColumnName="id")}
-     * )
      */
+    #[ORM\ManyToMany(targetEntity: 'Model', inversedBy: 'threats', cascade: ['persist'])]
+    #[ORM\JoinTable(
+        name: 'threats_models',
+        joinColumns: [new ORM\JoinColumn(name: 'threat_id', referencedColumnName: 'uuid')],
+        inverseJoinColumns: [new ORM\JoinColumn(name: 'model_id', referencedColumnName: 'id')]
+    )]
     protected $models;
 
     public function __construct()

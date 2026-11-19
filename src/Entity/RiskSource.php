@@ -9,16 +9,10 @@ namespace Monarc\Core\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Table(
- *     name="risk_sources",
- *     indexes={
- *         @ORM\Index(name="risk_sources_is_active_indx", columns={"is_active"})
- *     }
- * )
- * @ORM\Entity
- * @ORM\HasLifecycleCallbacks()
- */
+#[ORM\Table(name: 'risk_sources')]
+#[ORM\Index(name: 'risk_sources_is_active_indx', columns: ['is_active'])]
+#[ORM\Entity]
+#[ORM\HasLifecycleCallbacks]
 class RiskSource extends RiskSourceSuperClass
 {
 }

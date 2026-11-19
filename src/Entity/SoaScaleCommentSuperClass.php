@@ -11,13 +11,10 @@ use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 
-/**
- * @ORM\Table(name="soa_scale_comments", indexes={
- *      @ORM\Index(name="anr", columns={"anr_id"})
- * })
- * @ORM\MappedSuperclass
- * @ORM\HasLifecycleCallbacks()
- */
+#[ORM\Table(name: 'soa_scale_comments')]
+#[ORM\Index(name: 'anr', columns: ['anr_id'])]
+#[ORM\MappedSuperclass]
+#[ORM\HasLifecycleCallbacks]
 class SoaScaleCommentSuperClass
 {
     use CreateEntityTrait;
@@ -25,47 +22,41 @@ class SoaScaleCommentSuperClass
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
+    #[ORM\Column(name: 'id', type: 'integer', nullable: false)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     protected $id;
 
     /**
      * @var AnrSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Anr")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'Anr')]
+    #[ORM\JoinColumn(name: 'anr_id', referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]
     protected $anr;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="scale_index", type="integer", options={"unsigned": true})
      */
+    #[ORM\Column(name: 'scale_index', type: 'integer', options: ['unsigned' => true])]
     protected $scaleIndex;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="is_hidden", type="smallint", options={"default": 0})
      */
+    #[ORM\Column(name: 'is_hidden', type: 'smallint', options: ['default' => 0])]
     protected $isHidden = 0;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="colour", type="string", length=255, options={"default": ""})
      */
+    #[ORM\Column(name: 'colour', type: 'string', length: 255, options: ['default' => ''])]
     protected $colour = '';
 
     /**
      * @return int
      */
+
     public function getId()
     {
         return $this->id;

@@ -7,10 +7,9 @@
 
 namespace Monarc\Core\Tests\Fixture;
 
-use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
+use Doctrine\ORM\Mapping\Driver\AttributeDriver;
 use Doctrine\ORM\Tools\SchemaTool;
 use Monarc\Core\Entity\DeliveriesModels;
 use Monarc\Core\Service\ConnectedUserService;
@@ -33,7 +32,7 @@ class DeliveryModelTestEnvironment
     public function __construct(ConnectedUserService $identity)
     {
         $config = new Configuration();
-        $config->setMetadataDriverImpl(new AnnotationDriver(new AnnotationReader()));
+        $config->setMetadataDriverImpl(new AttributeDriver([]));
         $config->setProxyDir(sys_get_temp_dir());
         $config->setProxyNamespace('DeliveryModelTestProxies');
         $this->manager = EntityManager::create(['driver' => 'pdo_sqlite', 'memory' => true], $config);

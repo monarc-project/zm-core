@@ -9,10 +9,8 @@ namespace Monarc\Core\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Table(name="referentials")
- * @ORM\Entity
- */
+#[ORM\Table(name: 'referentials')]
+#[ORM\Entity]
 class Referential extends ReferentialSuperClass
 {
 }

@@ -12,37 +12,33 @@ use Monarc\Core\Entity\Traits\CreateEntityTrait;
 
 /**
  * User Role
- *
- * @ORM\Table(name="users_roles")
- * @ORM\MappedSuperclass
- * @ORM\HasLifecycleCallbacks()
  */
+#[ORM\Table(name: 'users_roles')]
+#[ORM\MappedSuperclass]
+#[ORM\HasLifecycleCallbacks]
 class UserRoleSuperClass
 {
     use CreateEntityTrait;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
+    #[ORM\Column(name: 'id', type: 'integer', nullable: false)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     protected $id;
 
     /**
      * @var UserSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="User", cascade={"persist", "remove"}, inversedBy="roles")
-     * @ORM\JoinColumn(name="user_id", referencedColumnName="id", nullable=false)
      */
+    #[ORM\ManyToOne(targetEntity: 'User', cascade: ['persist', 'remove'], inversedBy: 'roles')]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
     protected $user;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="role", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'role', type: 'string', length: 255, nullable: true)]
     protected $role;
 
     public function __construct(UserSuperClass $user, string $role)

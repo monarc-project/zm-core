@@ -16,11 +16,9 @@ use Monarc\Core\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Entity\Traits\LabelsEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 
-/**
- * @ORM\Table(name="questions")
- * @ORM\MappedSuperclass
- * @ORM\HasLifecycleCallbacks()
- */
+#[ORM\Table(name: 'questions')]
+#[ORM\MappedSuperclass]
+#[ORM\HasLifecycleCallbacks]
 class QuestionSuperClass implements PositionedEntityInterface, PropertyStateEntityInterface
 {
     public const TYPE_SINGLE = 1;
@@ -34,40 +32,35 @@ class QuestionSuperClass implements PositionedEntityInterface, PropertyStateEnti
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
+    #[ORM\Column(name: 'id', type: 'integer', nullable: false)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     protected int $id;
 
     /**
      * @var QuestionChoiceSuperClass[]|ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="QuestionChoice", mappedBy="question", orphanRemoval=true)
-     * @ORM\OrderBy({"position": "ASC", "id": "ASC"})
      */
+    #[ORM\OneToMany(targetEntity: 'QuestionChoice', mappedBy: 'question', orphanRemoval: true)]
+    #[ORM\OrderBy(['position' => 'ASC', 'id' => 'ASC'])]
     protected $questionChoices;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="type", type="smallint", options={"unsigned":true})
      */
+    #[ORM\Column(name: 'type', type: 'smallint', options: ['unsigned' => true])]
     protected $type = self::TYPE_SINGLE;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="multichoice", type="smallint", options={"unsigned":true})
      */
+    #[ORM\Column(name: 'multichoice', type: 'smallint', options: ['unsigned' => true])]
     protected $multichoice = 0;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="position", type="smallint", options={"unsigned":true})
      */
+    #[ORM\Column(name: 'position', type: 'smallint', options: ['unsigned' => true])]
     protected $position = 0;
 
     public function __construct()
@@ -78,6 +71,7 @@ class QuestionSuperClass implements PositionedEntityInterface, PropertyStateEnti
     /**
      * @return int
      */
+
     public function getId(): int
     {
         return $this->id;

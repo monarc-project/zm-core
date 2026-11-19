@@ -7,11 +7,10 @@
 
 namespace Monarc\Core\Tests\Fixture;
 
-use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
+use Doctrine\ORM\Mapping\Driver\AttributeDriver;
 use Doctrine\Persistence\Mapping\Driver\MappingDriverChain;
 use Ramsey\Uuid\Doctrine\UuidType;
 
@@ -22,7 +21,7 @@ final class MappingTestEnvironment
     {
         $chain = new MappingDriverChain();
         foreach ($drivers[$name]['drivers'] as $namespace => $driver) {
-            $chain->addDriver(new AnnotationDriver(new AnnotationReader(), $drivers[$driver]['paths']), $namespace);
+            $chain->addDriver(new AttributeDriver($drivers[$driver]['paths']), $namespace);
         }
         if (!Type::hasType('uuid')) {
             Type::addType('uuid', UuidType::class);

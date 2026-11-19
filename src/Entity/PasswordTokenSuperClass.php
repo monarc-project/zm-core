@@ -10,45 +10,36 @@ namespace Monarc\Core\Entity;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Table(name="passwords_tokens", indexes={
- *      @ORM\Index(name="user_id", columns={"user_id"})
- * }), uniqueConstraints={@ORM\UniqueConstraint(name="token", columns={"token"})}
- * @ORM\MappedSuperclass
- */
+#[ORM\Table(name: 'passwords_tokens')]
+#[ORM\Index(name: 'user_id', columns: ['user_id'])]
+#[ORM\MappedSuperclass]
 class PasswordTokenSuperClass
 {
     /**
      * @var integer
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
+    #[ORM\Column(name: 'id', type: 'integer', nullable: false)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     protected $id;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="token", type="string", length=255, nullable=false)
      */
+    #[ORM\Column(name: 'token', type: 'string', length: 255, nullable: false)]
     protected $token;
 
     /**
      * @var UserSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="User", inversedBy="passwordTokens", cascade={"persist"})
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="user_id", referencedColumnName="id", nullable=false)
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'User', inversedBy: 'passwordTokens', cascade: ['persist'])]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
     protected $user;
 
     /**
      * @var DateTime
-     *
-     * @ORM\Column(name="date_end", type="datetime", nullable=true)
      */
+    #[ORM\Column(name: 'date_end', type: 'datetime', nullable: true)]
     protected $dateEnd;
 
     public function __construct(string $token, UserSuperClass $user, DateTime $dateEnd)

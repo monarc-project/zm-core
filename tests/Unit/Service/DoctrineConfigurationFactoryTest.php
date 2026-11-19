@@ -7,10 +7,9 @@
 
 namespace Monarc\Core\Tests\Unit\Service;
 
-use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadataFactory;
-use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
+use Doctrine\ORM\Mapping\Driver\AttributeDriver;
 use Doctrine\ORM\Proxy\ProxyFactory;
 use Doctrine\Persistence\Proxy;
 use Monarc\Core\Entity\Guide;
@@ -33,7 +32,7 @@ class DoctrineConfigurationFactoryTest extends TestCase
         $previous = getenv('APP_ENV');
         $blockedDirectory = tempnam(sys_get_temp_dir(), 'monarc-proxy-');
         $cache = (new DoctrineCacheServiceFactory())(new ServiceManager(), 'tests');
-        $driver = new AnnotationDriver(new AnnotationReader(), [dirname(__DIR__, 3) . '/src/Entity']);
+        $driver = new AttributeDriver([dirname(__DIR__, 3) . '/src/Entity']);
         $services = [
             'config' => ['doctrine' => ['configuration' => [$managerName => [
                 'generate_proxies' => $enabled,

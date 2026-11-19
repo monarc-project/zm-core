@@ -9,8 +9,7 @@ namespace Monarc\Core\Tests\Fixture;
 
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Configuration;
-use Doctrine\Common\Annotations\AnnotationReader;
-use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
+use Doctrine\ORM\Mapping\Driver\AttributeDriver;
 use Doctrine\ORM\Tools\SchemaTool;
 use Monarc\Core\Entity\Guide;
 use Monarc\Core\Entity\GuideItem;
@@ -37,7 +36,7 @@ class GuideTestEnvironment
     public function __construct(ConnectedUserService $identity)
     {
         $config = new Configuration();
-        $config->setMetadataDriverImpl(new AnnotationDriver(new AnnotationReader(), [__DIR__ . '/../../src/Entity']));
+        $config->setMetadataDriverImpl(new AttributeDriver([__DIR__ . '/../../src/Entity']));
         $config->setProxyDir(sys_get_temp_dir());
         $config->setProxyNamespace('Php84GuideTestProxies');
         $config->setAutoGenerateProxyClasses(true);

@@ -10,45 +10,36 @@ namespace Monarc\Core\Entity;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Table(name="user_tokens", indexes={
- *      @ORM\Index(name="user_id", columns={"user_id"})
- * })
- * @ORM\MappedSuperclass
- */
+#[ORM\Table(name: 'user_tokens')]
+#[ORM\Index(name: 'user_id', columns: ['user_id'])]
+#[ORM\MappedSuperclass]
 class UserTokenSuperClass
 {
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer", precision=0, scale=0, nullable=false, unique=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
+    #[ORM\Column(name: 'id', type: 'integer', precision: 0, scale: 0, nullable: false, unique: false)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     protected $id;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="token", type="string", length=255, precision=0, scale=0, nullable=true, unique=false)
      */
+    #[ORM\Column(name: 'token', type: 'string', length: 255, precision: 0, scale: 0, nullable: true, unique: false)]
     protected $token;
 
     /**
      * @var UserSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="User", inversedBy="userTokens")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="user_id", referencedColumnName="id", nullable=false)
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'User', inversedBy: 'userTokens')]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
     protected $user;
 
     /**
      * @var DateTime
-     *
-     * @ORM\Column(name="date_end", type="datetime", precision=0, scale=0, nullable=true, unique=false)
      */
+    #[ORM\Column(name: 'date_end', type: 'datetime', precision: 0, scale: 0, nullable: true, unique: false)]
     protected $dateEnd;
 
     public function getUser(): UserSuperClass

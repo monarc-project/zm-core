@@ -15,17 +15,11 @@ use Monarc\Core\Entity\Traits\PropertyStateEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 use Monarc\Core\Traits\TranslationNormalizationTrait;
 
-/**
- * @ORM\Table(
- *     name="anr_reassessment_triggers",
- *     indexes={
- *         @ORM\Index(name="anr_reassessment_triggers_position_indx", columns={"position"}),
- *         @ORM\Index(name="anr_reassessment_triggers_is_active_indx", columns={"is_active"})
- *     }
- * )
- * @ORM\MappedSuperclass
- * @ORM\HasLifecycleCallbacks()
- */
+#[ORM\Table(name: 'anr_reassessment_triggers')]
+#[ORM\Index(name: 'anr_reassessment_triggers_position_indx', columns: ['position'])]
+#[ORM\Index(name: 'anr_reassessment_triggers_is_active_indx', columns: ['is_active'])]
+#[ORM\MappedSuperclass]
+#[ORM\HasLifecycleCallbacks]
 class ReassessmentTriggerSuperClass implements PositionedEntityInterface, PropertyStateEntityInterface
 {
     use PropertyStateEntityTrait;
@@ -33,26 +27,24 @@ class ReassessmentTriggerSuperClass implements PositionedEntityInterface, Proper
     use UpdateEntityTrait;
     use TranslationNormalizationTrait;
 
-    /**
-     * @ORM\Column(name="id", type="integer", nullable=false, options={"unsigned": true})
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     */
+    #[ORM\Column(name: 'id', type: 'integer', nullable: false, options: ['unsigned' => true])]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     protected int $id;
 
-    /** @ORM\Column(name="trigger_type", type="text", nullable=true) */
+    #[ORM\Column(name: 'trigger_type', type: 'text', nullable: true)]
     protected ?string $triggerType = null;
 
-    /** @ORM\Column(name="description", type="text", nullable=false) */
+    #[ORM\Column(name: 'description', type: 'text', nullable: false)]
     protected string $description;
 
-    /** @ORM\Column(name="monitoring_approach", type="text", nullable=true) */
+    #[ORM\Column(name: 'monitoring_approach', type: 'text', nullable: true)]
     protected ?string $monitoringApproach = null;
 
-    /** @ORM\Column(name="is_active", type="boolean", nullable=false, options={"default": 1}) */
+    #[ORM\Column(name: 'is_active', type: 'boolean', nullable: false, options: ['default' => 1])]
     protected bool $isActive = true;
 
-    /** @ORM\Column(name="position", type="integer", nullable=false, options={"unsigned": true, "default": 0}) */
+    #[ORM\Column(name: 'position', type: 'integer', nullable: false, options: ['unsigned' => true, 'default' => 0])]
     protected int $position = 0;
 
     public function getId(): int
@@ -128,6 +120,7 @@ class ReassessmentTriggerSuperClass implements PositionedEntityInterface, Proper
     /**
      * @return array<string, string>
      */
+
     public function getTriggerTypeTranslations(): array
     {
         return $this->decodeTranslations($this->triggerType);
@@ -136,6 +129,7 @@ class ReassessmentTriggerSuperClass implements PositionedEntityInterface, Proper
     /**
      * @param array<string, string> $triggerTypeTranslations
      */
+
     public function setTriggerTypeTranslations(array $triggerTypeTranslations): self
     {
         $this->triggerType = $triggerTypeTranslations === []
@@ -148,6 +142,7 @@ class ReassessmentTriggerSuperClass implements PositionedEntityInterface, Proper
     /**
      * @return array<string, string>
      */
+
     public function getDescriptionTranslations(): array
     {
         return $this->decodeTranslations($this->description);
@@ -156,6 +151,7 @@ class ReassessmentTriggerSuperClass implements PositionedEntityInterface, Proper
     /**
      * @param array<string, string> $descriptionTranslations
      */
+
     public function setDescriptionTranslations(array $descriptionTranslations): self
     {
         $this->description = $this->encodeTranslations($descriptionTranslations);
@@ -166,6 +162,7 @@ class ReassessmentTriggerSuperClass implements PositionedEntityInterface, Proper
     /**
      * @return array<string, string>
      */
+
     public function getMonitoringApproachTranslations(): array
     {
         return $this->decodeTranslations($this->monitoringApproach);
@@ -174,6 +171,7 @@ class ReassessmentTriggerSuperClass implements PositionedEntityInterface, Proper
     /**
      * @param array<string, string> $monitoringApproachTranslations
      */
+
     public function setMonitoringApproachTranslations(array $monitoringApproachTranslations): self
     {
         $this->monitoringApproach = $monitoringApproachTranslations === []
@@ -186,6 +184,7 @@ class ReassessmentTriggerSuperClass implements PositionedEntityInterface, Proper
     /**
      * @return array<string, string>
      */
+
     private function decodeTranslations(?string $value): array
     {
         if ($value === null || $value === '') {
@@ -199,6 +198,7 @@ class ReassessmentTriggerSuperClass implements PositionedEntityInterface, Proper
     /**
      * @param array<string, string> $translations
      */
+
     private function encodeTranslations(array $translations): string
     {
         return json_encode($this->normalizeTranslations($translations), JSON_THROW_ON_ERROR);

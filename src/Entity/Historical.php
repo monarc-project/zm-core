@@ -11,33 +11,29 @@ use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Entity\Traits\LabelsEntityTrait;
 
-/**
- * @ORM\Table(name="historicals")
- * @ORM\Entity
- * @ORM\HasLifecycleCallbacks()
- */
+#[ORM\Table(name: 'historicals')]
+#[ORM\Entity]
+#[ORM\HasLifecycleCallbacks]
 class Historical
 {
     use LabelsEntityTrait;
     use CreateEntityTrait;
 
-    /**
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     */
+    #[ORM\Column(name: 'id', type: 'integer', nullable: false)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     protected int $id;
 
-    /** @ORM\Column(name="type", type="string", length=255, nullable=true) */
+    #[ORM\Column(name: 'type', type: 'string', length: 255, nullable: true)]
     protected ?string $type = null;
 
-    /** @ORM\Column(name="source_id", type="string", length=64, nullable=true) */
+    #[ORM\Column(name: 'source_id', type: 'string', length: 64, nullable: true)]
     protected ?string $sourceId = null;
 
-    /** @ORM\Column(name="action", type="string", length=255, nullable=true) */
+    #[ORM\Column(name: 'action', type: 'string', length: 255, nullable: true)]
     protected ?string $action = null;
 
-    /** @ORM\Column(name="details", type="text", nullable=true) */
+    #[ORM\Column(name: 'details', type: 'text', nullable: true)]
     protected ?string $details = null;
 
     public function getId(): int

@@ -14,13 +14,10 @@ use Monarc\Core\Entity\Traits\DescriptionsEntityTrait;
 use Monarc\Core\Entity\Traits\LabelsEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 
-/**
- * @ORM\Table(name="rolf_risks", indexes={
- *      @ORM\Index(name="code", columns={"code"})
- * })
- * @ORM\MappedSuperclass
- * @ORM\HasLifecycleCallbacks()
- */
+#[ORM\Table(name: 'rolf_risks')]
+#[ORM\Index(name: 'code', columns: ['code'])]
+#[ORM\MappedSuperclass]
+#[ORM\HasLifecycleCallbacks]
 class RolfRiskSuperClass
 {
     use CreateEntityTrait;
@@ -31,47 +28,44 @@ class RolfRiskSuperClass
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
+    #[ORM\Column(name: 'id', type: 'integer', nullable: false)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     protected $id;
 
     /**
      * @var RolfTagSuperClass[]|ArrayCollection
-     *
-     * @ORM\ManyToMany(targetEntity="RolfTag", inversedBy="risks")
-     * @ORM\JoinTable(name="rolf_risks_tags",
-     *  joinColumns={@ORM\JoinColumn(name="rolf_risk_id", referencedColumnName="id")},
-     *  inverseJoinColumns={@ORM\JoinColumn(name="rolf_tag_id", referencedColumnName="id")}
-     * )
      */
+    #[ORM\ManyToMany(targetEntity: 'RolfTag', inversedBy: 'risks')]
+    #[ORM\JoinTable(
+        name: 'rolf_risks_tags',
+        joinColumns: [new ORM\JoinColumn(name: 'rolf_risk_id', referencedColumnName: 'id')],
+        inverseJoinColumns: [new ORM\JoinColumn(name: 'rolf_tag_id', referencedColumnName: 'id')]
+    )]
     protected $tags;
 
     /**
      * @var MeasureSuperClass[]|ArrayCollection
-     *
-     * @ORM\ManyToMany(targetEntity="Measure", mappedBy="rolfRisks")
-     * @ORM\JoinTable(name="measures_rolf_risks",
-     *  joinColumns={@ORM\JoinColumn(name="rolf_risk_id", referencedColumnName="id")},
-     *  inverseJoinColumns={@ORM\JoinColumn(name="measure_id", referencedColumnName="uuid")}
-     * )
      */
+    #[ORM\ManyToMany(targetEntity: 'Measure', mappedBy: 'rolfRisks')]
+    #[ORM\JoinTable(
+        name: 'measures_rolf_risks',
+        joinColumns: [new ORM\JoinColumn(name: 'rolf_risk_id', referencedColumnName: 'id')],
+        inverseJoinColumns: [new ORM\JoinColumn(name: 'measure_id', referencedColumnName: 'uuid')]
+    )]
     protected $measures;
 
     /**
      * @var InstanceRiskOpSuperClass[]|ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="InstanceRiskOp", mappedBy="rolfRisk")
      */
+    #[ORM\OneToMany(targetEntity: 'InstanceRiskOp', mappedBy: 'rolfRisk')]
     protected $operationalInstanceRisks;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="code", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'code', type: 'string', length: 255, nullable: true)]
     protected $code;
 
     public function __construct()

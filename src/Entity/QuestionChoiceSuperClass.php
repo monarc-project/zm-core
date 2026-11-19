@@ -12,13 +12,10 @@ use Monarc\Core\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Entity\Traits\LabelsEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 
-/**
- * @ORM\Table(name="questions_choices", indexes={
- *      @ORM\Index(name="question_id", columns={"question_id"}),
- * })
- * @ORM\MappedSuperclass
- * @ORM\HasLifecycleCallbacks()
- */
+#[ORM\Table(name: 'questions_choices')]
+#[ORM\Index(name: 'question_id', columns: ['question_id'])]
+#[ORM\MappedSuperclass]
+#[ORM\HasLifecycleCallbacks]
 class QuestionChoiceSuperClass
 {
     use CreateEntityTrait;
@@ -28,33 +25,29 @@ class QuestionChoiceSuperClass
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
+    #[ORM\Column(name: 'id', type: 'integer', nullable: false)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     protected int $id;
 
     /**
      * @var QuestionSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Question", inversedBy="questionChoices")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="question_id", referencedColumnName="id", nullable=false)
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'Question', inversedBy: 'questionChoices')]
+    #[ORM\JoinColumn(name: 'question_id', referencedColumnName: 'id', nullable: false)]
     protected QuestionSuperClass $question;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="position", type="smallint", options={"unsigned":true})
      */
+    #[ORM\Column(name: 'position', type: 'smallint', options: ['unsigned' => true])]
     protected $position = 0;
 
     /**
      * @return int
      */
+
     public function getId(): int
     {
         return $this->id;

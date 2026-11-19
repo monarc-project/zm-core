@@ -7,34 +7,32 @@
 
 namespace Monarc\Core\Entity\Traits;
 
+use Doctrine\ORM\Mapping as ORM;
+
 trait NamesEntityTrait
 {
     /**
      * @var string
-     *
-     * @ORM\Column(name="name1", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'name1', type: 'string', length: 255, nullable: true)]
     protected $name1;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="name2", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'name2', type: 'string', length: 255, nullable: true)]
     protected $name2;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="name3", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'name3', type: 'string', length: 255, nullable: true)]
     protected $name3;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="name4", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'name4', type: 'string', length: 255, nullable: true)]
     protected $name4;
 
     public function getName(int $languageIndex): string

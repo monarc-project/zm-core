@@ -12,13 +12,10 @@ use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 
-/**
- * @ORM\Table(name="scales", indexes={
- *      @ORM\Index(name="anr", columns={"anr_id"})
- * })
- * @ORM\MappedSuperclass
- * @ORM\HasLifecycleCallbacks()
- */
+#[ORM\Table(name: 'scales')]
+#[ORM\Index(name: 'anr', columns: ['anr_id'])]
+#[ORM\MappedSuperclass]
+#[ORM\HasLifecycleCallbacks]
 class ScaleSuperClass
 {
     use CreateEntityTrait;
@@ -30,57 +27,48 @@ class ScaleSuperClass
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
+    #[ORM\Column(name: 'id', type: 'integer', nullable: false)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     protected $id;
 
     /**
      * @var AnrSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Anr")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=false, onDelete="CASCADE")
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'Anr')]
+    #[ORM\JoinColumn(name: 'anr_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     protected $anr;
 
     /**
      * @var ScaleCommentSuperClass[]|ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="ScaleComment", mappedBy="scale")
-     * @ORM\OrderBy({"scaleIndex" = "ASC"})
      */
+    #[ORM\OneToMany(targetEntity: 'ScaleComment', mappedBy: 'scale')]
+    #[ORM\OrderBy(['scaleIndex' => 'ASC'])]
     protected $scaleComments;
 
     /**
      * @var ScaleImpactTypeSuperClass[]|ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="ScaleImpactType", mappedBy="scale")
      */
+    #[ORM\OneToMany(targetEntity: 'ScaleImpactType', mappedBy: 'scale')]
     protected $scaleImpactTypes;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="type", type="smallint", options={"unsigned":true})
      */
+    #[ORM\Column(name: 'type', type: 'smallint', options: ['unsigned' => true])]
     protected $type;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="min", type="smallint", options={"unsigned":true})
      */
+    #[ORM\Column(name: 'min', type: 'smallint', options: ['unsigned' => true])]
     protected $min;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="max", type="smallint", options={"unsigned":true})
      */
+    #[ORM\Column(name: 'max', type: 'smallint', options: ['unsigned' => true])]
     protected $max;
 
     public function __construct(AnrSuperClass $anr, array $data)
