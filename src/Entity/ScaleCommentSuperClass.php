@@ -12,15 +12,12 @@ use Monarc\Core\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 use Monarc\Core\Exception\Exception;
 
-/**
- * @ORM\Table(name="scales_comments", indexes={
- *      @ORM\Index(name="anr", columns={"anr_id"}),
- *      @ORM\Index(name="scale_id", columns={"scale_id"}),
- *      @ORM\Index(name="scale_type_impact_id", columns={"scale_type_impact_id"})
- * })
- * @ORM\MappedSuperclass
- * @ORM\HasLifecycleCallbacks()
- */
+#[ORM\Table(name: 'scales_comments')]
+#[ORM\Index(name: 'anr', columns: ['anr_id'])]
+#[ORM\Index(name: 'scale_id', columns: ['scale_id'])]
+#[ORM\Index(name: 'scale_type_impact_id', columns: ['scale_type_impact_id'])]
+#[ORM\MappedSuperclass]
+#[ORM\HasLifecycleCallbacks]
 class ScaleCommentSuperClass
 {
     use CreateEntityTrait;
@@ -28,83 +25,67 @@ class ScaleCommentSuperClass
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
+    #[ORM\Column(name: 'id', type: 'integer', nullable: false)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     protected $id;
 
     /**
      * @var AnrSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Anr")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=false, onDelete="CASCADE")
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'Anr')]
+    #[ORM\JoinColumn(name: 'anr_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     protected $anr;
 
     /**
      * @var ScaleSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Scale")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="scale_id", referencedColumnName="id", nullable=false, onDelete="CASCADE")
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'Scale', inversedBy: 'scaleComments')]
+    #[ORM\JoinColumn(name: 'scale_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     protected $scale;
 
     /**
      * @var ScaleImpactTypeSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="ScaleImpactType")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="scale_type_impact_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'ScaleImpactType', inversedBy: 'scaleComments')]
+    #[ORM\JoinColumn(name: 'scale_type_impact_id', referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]
     protected $scaleImpactType;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="scale_index", type="integer", options={"unsigned":true})
      */
+    #[ORM\Column(name: 'scale_index', type: 'integer', options: ['unsigned' => true])]
     protected $scaleIndex;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="scale_value", type="integer", options={"unsigned":true})
      */
+    #[ORM\Column(name: 'scale_value', type: 'integer', options: ['unsigned' => true])]
     protected $scaleValue;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="comment1", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'comment1', type: 'text', nullable: true)]
     protected $comment1;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="comment2", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'comment2', type: 'text', nullable: true)]
     protected $comment2;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="comment3", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'comment3', type: 'text', nullable: true)]
     protected $comment3;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="comment4", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'comment4', type: 'text', nullable: true)]
     protected $comment4;
 
     public static function constructFromObject(ScaleCommentSuperClass $scaleComment): ScaleCommentSuperClass

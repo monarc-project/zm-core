@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2026 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -16,6 +16,7 @@ use Monarc\Core\Service\ConfigService;
 use Laminas\Authentication\Adapter\AbstractAdapter;
 use Laminas\Authentication\Result;
 use RobThree\Auth\TwoFactorAuth;
+use RobThree\Auth\Providers\Qr\EndroidQrCodeProvider;
 
 /**
  * Class Authentication is an implementation of AbstractAdapter that takes care of authenticating of user.
@@ -117,7 +118,7 @@ class Authentication extends AbstractAdapter
             /* tokens are the verification code and the otp secret */
             $tokens = explode(':', $token);
             // verify the submitted OTP token
-            $tfa = new TwoFactorAuth('MONARC TwoFactorAuth');
+            $tfa = new TwoFactorAuth(new EndroidQrCodeProvider(), 'MONARC TwoFactorAuth');
             if ($tokens !== false && $tfa->verifyCode($tokens[0], $tokens[1])) {
                 $user->setSecretKey($tokens[0]);
                 $user->setTwoFactorAuthEnabled(true);
@@ -140,7 +141,7 @@ class Authentication extends AbstractAdapter
         }
 
         /* Verify the submitted OTP token. */
-        $tfa = new TwoFactorAuth('MONARC TwoFactorAuth');
+        $tfa = new TwoFactorAuth(new EndroidQrCodeProvider(), 'MONARC TwoFactorAuth');
         if ($tfa->verifyCode($user->getSecretKey(), $token)) {
             $this->actionHistoryService->createActionHistory(ActionHistorySuperClass::ACTION_LOGIN_ATTEMPT, [
                 'identity' => $identity,

@@ -11,11 +11,9 @@ use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Table(name="users")
- * @ORM\MappedSuperclass
- * @ORM\HasLifecycleCallbacks()
- */
+#[ORM\Table(name: 'users')]
+#[ORM\MappedSuperclass]
+#[ORM\HasLifecycleCallbacks]
 abstract class UserSuperClass
 {
     use Traits\CreateEntityTrait;
@@ -28,116 +26,100 @@ abstract class UserSuperClass
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
+    #[ORM\Column(name: 'id', type: 'integer', nullable: false)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     protected $id;
 
     /**
      * @var DateTime
-     *
-     * @ORM\Column(name="date_start", type="date", nullable=true)
      */
+    #[ORM\Column(name: 'date_start', type: 'date', nullable: true)]
     protected $dateStart;
 
     /**
      * @var DateTime
-     *
-     * @ORM\Column(name="date_end", type="date", nullable=true)
      */
+    #[ORM\Column(name: 'date_end', type: 'date', nullable: true)]
     protected $dateEnd;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="status", type="smallint", nullable=false)
      */
+    #[ORM\Column(name: 'status', type: 'smallint', nullable: false)]
     protected $status = self::STATUS_ACTIVE;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="firstname", type="string", length=255, nullable=false)
      */
+    #[ORM\Column(name: 'firstname', type: 'string', length: 255, nullable: false)]
     protected $firstname = '';
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="lastname", type="string", length=255, nullable=false)
      */
+    #[ORM\Column(name: 'lastname', type: 'string', length: 255, nullable: false)]
     protected $lastname = '';
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="email", type="string", length=255, nullable=false)
      */
+    #[ORM\Column(name: 'email', type: 'string', length: 255, nullable: false)]
     protected $email;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="password", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'password', type: 'string', length: 255, nullable: true)]
     protected $password = '';
 
     /**
      * @var boolean
-     *
-     * @ORM\Column(name="is_two_factor_enabled", type="boolean", options={"default":false})
      */
+    #[ORM\Column(name: 'is_two_factor_enabled', type: 'boolean', options: ['default' => false])]
     protected $isTwoFactorAuthEnabled = false;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="secret_key", type="string", length=255, options={"default":""})
      */
+    #[ORM\Column(name: 'secret_key', type: 'string', length: 255, options: ['default' => ''])]
     protected $secretKey = '';
 
     /**
      * @var array
-     *
-     * @ORM\Column(name="recovery_codes", type="array", length=250, options={"default":""})
      */
+    #[ORM\Column(name: 'recovery_codes', type: 'array', length: 250, options: ['default' => ''])]
     protected $recoveryCodes = [];
 
     /**
      * @var integer
-     *
-     * @ORM\Column(name="language", type="integer", precision=0, scale=0, nullable=false)
      */
+    #[ORM\Column(name: 'language', type: 'integer', precision: 0, scale: 0, nullable: false)]
     protected $language = 1;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="mosp_api_key", type="string", length=255, nullable=false)
      */
+    #[ORM\Column(name: 'mosp_api_key', type: 'string', length: 255, nullable: false)]
     protected $mospApiKey;
 
     /**
      * @var UserTokenSuperClass[]|ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="UserToken", mappedBy="user", cascade={"persist", "remove"})
      */
+    #[ORM\OneToMany(targetEntity: 'UserToken', mappedBy: 'user', cascade: ['persist', 'remove'])]
     protected $userTokens;
 
     /**
      * @var PasswordTokenSuperClass[]|ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="PasswordToken", mappedBy="user", cascade={"persist", "remove"})
      */
+    #[ORM\OneToMany(targetEntity: 'PasswordToken', mappedBy: 'user', cascade: ['persist', 'remove'])]
     protected $passwordTokens;
 
     /**
      * @var ArrayCollection|UserRoleSuperClass[]
-     *
-     * @ORM\OneToMany(targetEntity="UserRole", orphanRemoval=true, mappedBy="user", cascade={"persist", "remove"})
      */
+    #[ORM\OneToMany(targetEntity: 'UserRole', orphanRemoval: true, mappedBy: 'user', cascade: ['persist', 'remove'])]
     protected $roles;
 
     public function __construct(array $data)

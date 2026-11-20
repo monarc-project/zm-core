@@ -7,11 +7,10 @@
 
 namespace Monarc\Core\Service;
 
-use Laminas\Mail\Transport\Smtp as SmtpTransport;
-use Laminas\Mail\Transport\SmtpOptions;
-use Laminas\Mail\Message;
-use Laminas\Mime\Message as MimeMessage;
-use Laminas\Mime\Part;
+use Symfony\Component\Mailer\Transport;
+use Symfony\Component\Mailer\Transport\TransportInterface;
+use Symfony\Component\Mime\Address;
+use Symfony\Component\Mime\Email;
 
 class MailService
 {
@@ -27,23 +26,44 @@ class MailService
 
     public function send(string $email, string $subject, string $message, array $from): void
     {
-        $transport = new SmtpTransport();
-        if (!empty($this->smtpOptions)) {
-            $transport->setOptions(new SmtpOptions($this->smtpOptions));
+        $mimeMessage = (new Email())
+            ->from(new Address($from['from'], $from['name']))
+            ->to(new Address($email, $email))
+            ->subject($subject)
+            ->html($message);
+
+        $this->createTransport()->send($mimeMessage);
+    }
+
+    private function createTransport(): TransportInterface
+    {
+        $connectionConfig = $this->smtpOptions['connection_config'] ?? [];
+        $host = $this->smtpOptions['host'] ?? 'localhost';
+        $port = (int) ($this->smtpOptions['port'] ?? 25);
+        $ssl = strtolower((string) ($connectionConfig['ssl'] ?? ''));
+        $scheme = $ssl === 'ssl' ? 'smtps' : 'smtp';
+
+        $credentials = '';
+        if (isset($connectionConfig['username'])) {
+            $credentials = rawurlencode((string) $connectionConfig['username']);
+            $credentials .= ':' . rawurlencode((string) ($connectionConfig['password'] ?? '')) . '@';
         }
 
-        $html = new Part($message);
-        $html->type = 'text/html';
+        $query = [];
+        if ($ssl === 'tls') {
+            $query['require_tls'] = 'true';
+        }
 
-        $body = new MimeMessage();
-        $body->setParts([$html]);
+        $authMode = $this->smtpOptions['connection_class'] ?? null;
+        if (in_array($authMode, ['plain', 'login', 'cram-md5'], true)) {
+            $query['auth_mode'] = $authMode;
+        }
 
-        $mimeMessage = (new Message())
-            ->setBody($body)
-            ->setFrom($from['from'], $from['name'])
-            ->addTo($email, $email)
-            ->setSubject($subject);
+        $dsn = sprintf('%s://%s%s:%d', $scheme, $credentials, $host, $port);
+        if ($query !== []) {
+            $dsn .= '?' . http_build_query($query, '', '&', PHP_QUERY_RFC3986);
+        }
 
-        $transport->send($mimeMessage);
+        return Transport::fromDsn($dsn);
     }
 }

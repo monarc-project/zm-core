@@ -9,12 +9,9 @@ namespace Monarc\Core\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Table(name="rolf_risks", indexes={
- *      @ORM\Index(name="code", columns={"code"})
- * })
- * @ORM\Entity
- */
+#[ORM\Table(name: 'rolf_risks')]
+#[ORM\Index(name: 'code', columns: ['code'])]
+#[ORM\Entity]
 class RolfRisk extends RolfRiskSuperClass
 {
 }

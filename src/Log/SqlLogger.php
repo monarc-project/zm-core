@@ -2,8 +2,8 @@
 
 namespace Monarc\Core\Log;
 
-use Laminas\Log\Logger;
 use Doctrine\DBAL\Logging\DebugStack;
+use Psr\Log\LoggerInterface;
 
 class SqlLogger extends DebugStack
 {
@@ -16,7 +16,7 @@ class SqlLogger extends DebugStack
      */
     public $enabled = false;
 
-    public function __construct(Logger $logger)
+    public function __construct(LoggerInterface $logger)
     {
         $this->logger = $logger;
     }
@@ -26,7 +26,7 @@ class SqlLogger extends DebugStack
         parent::stopQuery();
     }
 
-    public function startQuery($sql, array $params = null, array $types = null)
+    public function startQuery($sql, ?array $params = null, ?array $types = null)
     {
         if($this->enabled){
             parent::startQuery($sql, $params, $types);

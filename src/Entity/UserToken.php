@@ -9,12 +9,10 @@ namespace Monarc\Core\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Table(name="user_tokens", uniqueConstraints={@ORM\UniqueConstraint(name="token", columns={"token"})}, indexes={
- *      @ORM\Index(name="user_id", columns={"user_id"})
- * })
- * @ORM\Entity
- */
+#[ORM\Table(name: 'user_tokens')]
+#[ORM\UniqueConstraint(name: 'token', columns: ['token'])]
+#[ORM\Index(name: 'user_id', columns: ['user_id'])]
+#[ORM\Entity]
 class UserToken extends UserTokenSuperClass
 {
 }

@@ -14,14 +14,11 @@ use Monarc\Core\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Entity\Traits\PropertyStateEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 
-/**
- * @ORM\Table(name="objects_objects", indexes={
- *      @ORM\Index(name="father_id", columns={"father_id"}),
- *      @ORM\Index(name="child_id", columns={"child_id"})
- * })
- * @ORM\MappedSuperclass
- * @ORM\HasLifecycleCallbacks()
- */
+#[ORM\Table(name: 'objects_objects')]
+#[ORM\Index(name: 'father_id', columns: ['father_id'])]
+#[ORM\Index(name: 'child_id', columns: ['child_id'])]
+#[ORM\MappedSuperclass]
+#[ORM\HasLifecycleCallbacks]
 class ObjectObjectSuperClass implements PositionedEntityInterface, PropertyStateEntityInterface
 {
     use CreateEntityTrait;
@@ -31,38 +28,30 @@ class ObjectObjectSuperClass implements PositionedEntityInterface, PropertyState
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
+    #[ORM\Column(name: 'id', type: 'integer', nullable: false)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     protected $id;
 
     /**
      * @var ObjectSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="MonarcObject", cascade={"persist"})
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="father_id", referencedColumnName="uuid", nullable=true)
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'MonarcObject', inversedBy: 'childrenLinks', cascade: ['persist'])]
+    #[ORM\JoinColumn(name: 'father_id', referencedColumnName: 'uuid', nullable: true)]
     protected $parent;
 
     /**
      * @var ObjectSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="MonarcObject", cascade={"persist"})
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="child_id", referencedColumnName="uuid", nullable=true)
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'MonarcObject', inversedBy: 'parentsLinks', cascade: ['persist'])]
+    #[ORM\JoinColumn(name: 'child_id', referencedColumnName: 'uuid', nullable: true)]
     protected $child;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="position", type="smallint", options={"unsigned":true, "default":1})
      */
+    #[ORM\Column(name: 'position', type: 'smallint', options: ['unsigned' => true, 'default' => 1])]
     protected $position = 1;
 
     public function getImplicitPositionRelationsValues(): array

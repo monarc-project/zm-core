@@ -11,7 +11,7 @@ use Throwable;
 
 class UserNotLoggedInException extends \Exception
 {
-    public function __construct($message = 'User is not logged in.', $code = 401, Throwable $previous = null)
+    public function __construct($message = 'User is not logged in.', $code = 401, ?Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);
     }

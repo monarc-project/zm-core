@@ -10,10 +10,8 @@ namespace Monarc\Core\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Entity\Traits\LabelTranslationKeyEntityTrait;
 
-/**
- * @ORM\Table(name="operational_risks_scales_types")
- * @ORM\Entity
- */
+#[ORM\Table(name: 'operational_risks_scales_types')]
+#[ORM\Entity]
 class OperationalRiskScaleType extends OperationalRiskScaleTypeSuperClass
 {
     use LabelTranslationKeyEntityTrait;

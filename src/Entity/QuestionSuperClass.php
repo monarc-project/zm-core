@@ -1,7 +1,7 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2026 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -9,82 +9,72 @@ namespace Monarc\Core\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Monarc\Core\Entity\Interfaces\PositionedEntityInterface;
+use Monarc\Core\Entity\Interfaces\PropertyStateEntityInterface;
+use Monarc\Core\Entity\Traits\PropertyStateEntityTrait;
 use Monarc\Core\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Entity\Traits\LabelsEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 
-/**
- * @ORM\Table(name="questions")
- * @ORM\MappedSuperclass
- * @ORM\HasLifecycleCallbacks()
- */
-class QuestionSuperClass extends AbstractEntity
+#[ORM\Table(name: 'questions')]
+#[ORM\MappedSuperclass]
+#[ORM\HasLifecycleCallbacks]
+class QuestionSuperClass implements PositionedEntityInterface, PropertyStateEntityInterface
 {
+    public const TYPE_SINGLE = 1;
+    public const TYPE_CHOICE = 2;
+
     use CreateEntityTrait;
     use UpdateEntityTrait;
+    use PropertyStateEntityTrait;
 
     use LabelsEntityTrait;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    protected $id;
+    #[ORM\Column(name: 'id', type: 'integer', nullable: false)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
+    protected int $id;
 
     /**
      * @var QuestionChoiceSuperClass[]|ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="QuestionChoice", mappedBy="question")
      */
+    #[ORM\OneToMany(targetEntity: 'QuestionChoice', mappedBy: 'question', orphanRemoval: true)]
+    #[ORM\OrderBy(['position' => 'ASC', 'id' => 'ASC'])]
     protected $questionChoices;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="type", type="smallint", options={"unsigned":true})
      */
-    protected $type;
+    #[ORM\Column(name: 'type', type: 'smallint', options: ['unsigned' => true])]
+    protected $type = self::TYPE_SINGLE;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="multichoice", type="smallint", options={"unsigned":true})
      */
-    protected $multichoice;
+    #[ORM\Column(name: 'multichoice', type: 'smallint', options: ['unsigned' => true])]
+    protected $multichoice = 0;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="position", type="smallint", options={"unsigned":true})
      */
-    protected $position;
+    #[ORM\Column(name: 'position', type: 'smallint', options: ['unsigned' => true])]
+    protected $position = 0;
 
-    public function __construct($obj = null)
+    public function __construct()
     {
-        parent::__construct($obj);
-
         $this->questionChoices = new ArrayCollection();
     }
 
     /**
      * @return int
      */
-    public function getId()
+
+    public function getId(): int
     {
         return $this->id;
-    }
-
-    /**
-     * @param int $id
-     */
-    public function setId($id): self
-    {
-        $this->id = $id;
-
-        return $this;
     }
 
     public function getQuestionChoices()
@@ -102,6 +92,13 @@ class QuestionSuperClass extends AbstractEntity
         return $this;
     }
 
+    public function removeQuestionChoice(QuestionChoiceSuperClass $choice): self
+    {
+        $this->questionChoices->removeElement($choice);
+
+        return $this;
+    }
+
     public function setPosition(int $position): self
     {
         $this->position = $position;
@@ -109,9 +106,14 @@ class QuestionSuperClass extends AbstractEntity
         return $this;
     }
 
-    public function getPosition()
+    public function getPosition(): int
     {
         return (int)$this->position;
+    }
+
+    public function getImplicitPositionRelationsValues(): array
+    {
+        return [];
     }
 
     public function getType(): int
@@ -135,54 +137,6 @@ class QuestionSuperClass extends AbstractEntity
 
     public function isMultiChoice(): bool
     {
-        return $this->multichoice === 1;
-    }
-
-    // TODO: Related to the refactoring of all: questions order is a bit different.
-    protected $parameters = [
-        'isParentRelative' => false // for the autopositionner
-    ];
-
-    public function getInputFilter($partial = false)
-    {
-        if (!$this->inputFilter) {
-            parent::getInputFilter($partial);
-
-            $this->inputFilter->add([
-                'name' => 'type',
-                'required' => $partial ? false : true,
-                'allow_empty' => true,
-                'continue_if_empty' => true,
-                'filters' => [],
-                'validators' => [
-                    [
-                        'name' => 'InArray',
-                        'options' => [
-                            'haystack' => [1, 2],
-                        ],
-                        'default' => 1,
-                    ],
-                ],
-            ]);
-
-            $this->inputFilter->add([
-                'name' => 'multichoice',
-                'required' => $partial ? false : true,
-                'allow_empty' => true,
-                'continue_if_empty' => true,
-                'filters' => [],
-                'validators' => [
-                    [
-                        'name' => 'InArray',
-                        'options' => [
-                            'haystack' => [0, 1],
-                        ],
-                        'default' => 0,
-                    ],
-                ],
-            ]);
-        }
-
-        return $this->inputFilter;
+        return (bool)$this->multichoice;
     }
 }

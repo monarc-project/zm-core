@@ -11,15 +11,10 @@ use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 
-/**
- * @ORM\Table(name="translations",
- *   uniqueConstraints={
- *     @ORM\UniqueConstraint(name="key_lang_unq", columns={"key", "lang"})
- *   }
- * )
- * @ORM\MappedSuperclass
- * @ORM\HasLifecycleCallbacks()
- */
+#[ORM\Table(name: 'translations')]
+#[ORM\UniqueConstraint(name: 'key_lang_unq', columns: ['key', 'lang'])]
+#[ORM\MappedSuperclass]
+#[ORM\HasLifecycleCallbacks]
 class TranslationSuperClass
 {
     use CreateEntityTrait;
@@ -32,49 +27,41 @@ class TranslationSuperClass
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
+    #[ORM\Column(name: 'id', type: 'integer', nullable: false)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     protected $id;
 
     /**
      * @var AnrSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Anr")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'Anr')]
+    #[ORM\JoinColumn(name: 'anr_id', referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]
     protected $anr;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="type", type="string", length=255)
      */
+    #[ORM\Column(name: 'type', type: 'string', length: 255)]
     protected $type;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="translation_key", type="string", length=255)
      */
+    #[ORM\Column(name: 'translation_key', type: 'string', length: 255)]
     protected $key;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="lang", type="string", length=2, options={"fixed"=true})
      */
+    #[ORM\Column(name: 'lang', type: 'string', length: 2, options: ['fixed' => true])]
     protected $lang;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="value", type="text", nullable=false)
      */
+    #[ORM\Column(name: 'value', type: 'text', nullable: false)]
     protected $value;
 
     public static function constructFromObject(TranslationSuperClass $translation): TranslationSuperClass

@@ -10,12 +10,9 @@ namespace Monarc\Core\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Entity\Traits\LabelTranslationKeyEntityTrait;
 
-/**
- * @ORM\Table(name="operational_risks_scales_comments", indexes={
- *      @ORM\Index(name="scale_id", columns={"scale_id"})
- * })
- * @ORM\Entity
- */
+#[ORM\Table(name: 'operational_risks_scales_comments')]
+#[ORM\Index(name: 'scale_id', columns: ['scale_id'])]
+#[ORM\Entity]
 class OperationalRiskScaleComment extends OperationalRiskScaleCommentSuperClass
 {
     use LabelTranslationKeyEntityTrait;

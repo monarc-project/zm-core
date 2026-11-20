@@ -9,19 +9,15 @@ namespace Monarc\Core\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
-use Monarc\Core\Exception\Exception;
 use Monarc\Core\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Entity\Traits\DescriptionsEntityTrait;
 use Monarc\Core\Entity\Traits\LabelsEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 
-/**
- * @ORM\Table(name="models", indexes={
- *      @ORM\Index(name="anr", columns={"anr_id"})
- * })
- * @ORM\Entity
- * @ORM\HasLifecycleCallbacks()
- */
+#[ORM\Table(name: 'models')]
+#[ORM\Index(name: 'anr', columns: ['anr_id'])]
+#[ORM\Entity]
+#[ORM\HasLifecycleCallbacks]
 class Model
 {
     use CreateEntityTrait;
@@ -36,74 +32,65 @@ class Model
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
+    #[ORM\Column(name: 'id', type: 'integer', nullable: false)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     protected $id;
 
     /**
      * @var Anr
-     *
-     * @ORM\OneToOne(targetEntity="Anr", cascade={"persist", "REMOVE"})
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="SET NULL")
-     * })
      */
+    #[ORM\OneToOne(targetEntity: 'Anr', inversedBy: 'model', cascade: ['persist', 'REMOVE'])]
+    #[ORM\JoinColumn(name: 'anr_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     protected $anr;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="status", type="smallint", options={"unsigned":true, "default":1})
      */
+    #[ORM\Column(name: 'status', type: 'smallint', options: ['unsigned' => true, 'default' => 1])]
     protected $status = 1;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="are_scales_updatable", type="smallint", options={"unsigned":true, "default":1})
      */
+    #[ORM\Column(name: 'are_scales_updatable', type: 'smallint', options: ['unsigned' => true, 'default' => 1])]
     protected $areScalesUpdatable = 1;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="is_default", type="smallint", options={"unsigned":true, "default":0})
      */
+    #[ORM\Column(name: 'is_default', type: 'smallint', options: ['unsigned' => true, 'default' => 0])]
     protected $isDefault = 0;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="is_generic", type="smallint", options={"unsigned":true, "default":1})
      */
+    #[ORM\Column(name: 'is_generic', type: 'smallint', options: ['unsigned' => true, 'default' => 1])]
     protected $isGeneric = 1;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="show_rolf_brut", type="smallint", options={"unsigned":true, "default":1})
      */
+    #[ORM\Column(name: 'show_rolf_brut', type: 'smallint', options: ['unsigned' => true, 'default' => 1])]
     protected $showRolfBrut = 1;
 
     /**
      * @var Asset[]|ArrayCollection
-     * @ORM\ManyToMany(targetEntity="Asset", mappedBy="models")
      */
+    #[ORM\ManyToMany(targetEntity: 'Asset', mappedBy: 'models')]
     protected $assets;
 
     /**
      * @var Threat[]|ArrayCollection
-     * @ORM\ManyToMany(targetEntity="Threat", mappedBy="models")
      */
+    #[ORM\ManyToMany(targetEntity: 'Threat', mappedBy: 'models')]
     protected $threats;
 
     /**
      * @var Vulnerability[]|ArrayCollection
-     * @ORM\ManyToMany(targetEntity="Vulnerability", mappedBy="models")
      */
+    #[ORM\ManyToMany(targetEntity: 'Vulnerability', mappedBy: 'models')]
     protected $vulnerabilities;
 
     public function __construct()
@@ -268,24 +255,5 @@ class Model
         $this->showRolfBrut = (int)$showRolfBrut;
 
         return $this;
-    }
-
-    public function validateObjectAcceptance(MonarcObject $object, Asset $forcedAsset = null): void
-    {
-        if ($this->isGeneric() && $object->isModeSpecific()) {
-            throw new Exception('You cannot add a specific object to a generic model', 412);
-        }
-
-        /** @var Asset $asset */
-        $asset = $forcedAsset ?? $object->getAsset();
-        if ($asset !== null && !$this->isGeneric() && $asset->isModeSpecific()) {
-            foreach ($asset->getModels() as $assetModel) {
-                if ($assetModel->getId() === $this->id) {
-                    return;
-                }
-            }
-
-            throw new Exception('You cannot add an object with specific asset unrelated to a specific model', 412);
-        }
     }
 }

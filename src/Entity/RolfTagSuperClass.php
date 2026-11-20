@@ -13,11 +13,10 @@ use Monarc\Core\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Entity\Traits\LabelsEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 
-/**
- * @ORM\Table(name="rolf_tags", indexes={@ORM\Index(name="code", columns={"code"})})
- * @ORM\MappedSuperclass
- * @ORM\HasLifecycleCallbacks()
- */
+#[ORM\Table(name: 'rolf_tags')]
+#[ORM\Index(name: 'code', columns: ['code'])]
+#[ORM\MappedSuperclass]
+#[ORM\HasLifecycleCallbacks]
 class RolfTagSuperClass
 {
     use CreateEntityTrait;
@@ -27,32 +26,28 @@ class RolfTagSuperClass
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
+    #[ORM\Column(name: 'id', type: 'integer', nullable: false)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     protected $id;
 
     /**
      * @var RolfRiskSuperClass[]|ArrayCollection
-     *
-     * @ORM\ManyToMany(targetEntity="RolfRisk", mappedBy="tags")
      */
+    #[ORM\ManyToMany(targetEntity: 'RolfRisk', mappedBy: 'tags')]
     protected $risks;
 
     /**
      * @var ArrayCollection|ObjectSuperClass[]
-     *
-     * @ORM\OneToMany(targetEntity="MonarcObject", mappedBy="rolfTag")
      */
+    #[ORM\OneToMany(targetEntity: 'MonarcObject', mappedBy: 'rolfTag')]
     protected $objects;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="code", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'code', type: 'string', length: 255, nullable: true)]
     protected $code;
 
     public function __construct()

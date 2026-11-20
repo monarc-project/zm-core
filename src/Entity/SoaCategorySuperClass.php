@@ -11,47 +11,38 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Entity\Traits\LabelsEntityTrait;
 
-/**
- * @ORM\Table(name="soacategory", indexes={
- *       @ORM\Index(name="referential", columns={"referential_uuid"})
- * })
- * @ORM\MappedSuperclass
- */
+#[ORM\Table(name: 'soacategory')]
+#[ORM\Index(name: 'referential', columns: ['referential_uuid'])]
+#[ORM\MappedSuperclass]
 class SoaCategorySuperClass
 {
     use LabelsEntityTrait;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
+    #[ORM\Column(name: 'id', type: 'integer', nullable: false)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     protected $id;
 
     /**
      * @var ReferentialSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Referential", inversedBy="categories")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="referential_uuid", referencedColumnName="uuid", nullable=true)
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'Referential', inversedBy: 'categories')]
+    #[ORM\JoinColumn(name: 'referential_uuid', referencedColumnName: 'uuid', nullable: true)]
     protected $referential;
 
     /**
      * @var MeasureSuperClass[]|ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="Measure", mappedBy="category")
      */
+    #[ORM\OneToMany(targetEntity: 'Measure', mappedBy: 'category')]
     protected $measures;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="status", type="smallint", options={"unsigned":true, "default":1})
      */
+    #[ORM\Column(name: 'status', type: 'smallint', options: ['unsigned' => true, 'default' => 1])]
     protected $status = 1;
 
     public function __construct()

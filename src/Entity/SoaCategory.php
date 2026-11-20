@@ -9,10 +9,8 @@ namespace Monarc\Core\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Table(name="soacategory")
- * @ORM\Entity
- */
+#[ORM\Table(name: 'soacategory')]
+#[ORM\Entity]
 class SoaCategory extends SoaCategorySuperClass
 {
 }

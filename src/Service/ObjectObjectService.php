@@ -36,7 +36,8 @@ class ObjectObjectService
         private InstanceTable $instanceTable,
         private ObjectCategoryTable $objectCategoryTable,
         private InstanceService $instanceService,
-        ConnectedUserService $connectedUserService
+        ConnectedUserService $connectedUserService,
+        private ModelService $modelService
     ) {
         $this->connectedUser = $connectedUserService->getConnectedUser();
     }
@@ -66,7 +67,7 @@ class ObjectObjectService
         /** @var Asset $asset */
         $asset = $parentObject->getAsset();
         foreach ($asset->getModels() as $model) {
-            $model->validateObjectAcceptance($childObject);
+            $this->modelService->validateObjectAcceptance($model, $childObject);
         }
 
         /* Ensure the child object and all its children are linked to the same anrs as parent linked, link if not. */

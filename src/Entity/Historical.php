@@ -1,7 +1,7 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2026 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -9,99 +9,83 @@ namespace Monarc\Core\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Entity\Traits\CreateEntityTrait;
+use Monarc\Core\Entity\Traits\LabelsEntityTrait;
 
-/**
- * Historical
- *
- * @ORM\Table(name="historicals")
- * @ORM\Entity
- * @ORM\HasLifecycleCallbacks()
- */
-class Historical extends AbstractEntity
+#[ORM\Table(name: 'historicals')]
+#[ORM\Entity]
+#[ORM\HasLifecycleCallbacks]
+class Historical
 {
+    use LabelsEntityTrait;
     use CreateEntityTrait;
 
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     */
-    protected $id;
+    #[ORM\Column(name: 'id', type: 'integer', nullable: false)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
+    protected int $id;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="type", type="string", length=255, nullable=true)
-     */
-    protected $type;
+    #[ORM\Column(name: 'type', type: 'string', length: 255, nullable: true)]
+    protected ?string $type = null;
 
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="source_id", type="integer", nullable=true)
-     */
-    protected $sourceId;
+    #[ORM\Column(name: 'source_id', type: 'string', length: 64, nullable: true)]
+    protected ?string $sourceId = null;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="action", type="string", length=255, nullable=true)
-     */
-    protected $action;
+    #[ORM\Column(name: 'action', type: 'string', length: 255, nullable: true)]
+    protected ?string $action = null;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label1", type="string", length=255, nullable=true)
-     */
-    protected $label1;
+    #[ORM\Column(name: 'details', type: 'text', nullable: true)]
+    protected ?string $details = null;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label2", type="string", length=255, nullable=true)
-     */
-    protected $label2;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label3", type="string", length=255, nullable=true)
-     */
-    protected $label3;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="label4", type="string", length=255, nullable=true)
-     */
-    protected $label4;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="details", type="text", nullable=true)
-     */
-    protected $details;
-
-    /**
-     * @return int
-     */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
 
-    /**
-     * @param int $id
-     * @return Model
-     */
-    public function setId($id)
+    public function getType(): ?string
     {
-        $this->id = $id;
+        return $this->type;
+    }
+
+    public function setType(?string $type): self
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    public function getSourceId(): ?string
+    {
+        return $this->sourceId;
+    }
+
+    public function setSourceId(?string $sourceId): self
+    {
+        $this->sourceId = $sourceId;
+
+        return $this;
+    }
+
+    public function getAction(): ?string
+    {
+        return $this->action;
+    }
+
+    public function setAction(?string $action): self
+    {
+        $this->action = $action;
+
+        return $this;
+    }
+
+    public function getDetails(): ?string
+    {
+        return $this->details;
+    }
+
+    public function setDetails(?string $details): self
+    {
+        $this->details = $details;
+
         return $this;
     }
 }
-

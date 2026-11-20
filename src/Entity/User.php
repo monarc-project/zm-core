@@ -9,10 +9,9 @@ namespace Monarc\Core\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Table(name="users", uniqueConstraints={@ORM\UniqueConstraint(name="email", columns={"email"})})
- * @ORM\Entity
- */
+#[ORM\Table(name: 'users')]
+#[ORM\UniqueConstraint(name: 'email', columns: ['email'])]
+#[ORM\Entity]
 class User extends UserSuperClass
 {
     protected function createRole(string $role): UserRoleSuperClass

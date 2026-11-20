@@ -11,11 +11,9 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Entity\Traits;
 
-/**
- * @ORM\Table(name="anrs")
- * @ORM\MappedSuperclass
- * @ORM\HasLifecycleCallbacks()
- */
+#[ORM\Table(name: 'anrs')]
+#[ORM\MappedSuperclass]
+#[ORM\HasLifecycleCallbacks]
 class AnrSuperClass
 {
     use Traits\CreateEntityTrait;
@@ -28,210 +26,194 @@ class AnrSuperClass
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
+    #[ORM\Column(name: 'id', type: 'integer', nullable: false)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     protected $id;
 
     /**
      * @var ArrayCollection|InstanceSuperClass[]
-     *
-     * @ORM\OneToMany(targetEntity="Instance", mappedBy="anr")
      */
+    #[ORM\OneToMany(targetEntity: 'Instance', mappedBy: 'anr')]
     protected $instances;
 
     /**
      * @var AnrInstanceMetadataFieldSuperClass[]|ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="AnrInstanceMetadataField", mappedBy="anr")
      */
+    #[ORM\OneToMany(targetEntity: 'AnrInstanceMetadataField', mappedBy: 'anr')]
     protected $anrInstanceMetadataFields;
 
     /**
      * Informational risks min threshold setting.
      *
      * @var int
-     *
-     * @ORM\Column(name="seuil1", type="integer", options={"unsigned":true, "default":4})
      */
+    #[ORM\Column(name: 'seuil1', type: 'integer', options: ['unsigned' => true, 'default' => 4])]
     protected $seuil1 = 4;
 
     /**
      * Informational risks max threshold setting.
      *
      * @var int
-     *
-     * @ORM\Column(name="seuil2", type="integer", options={"unsigned":true, "default":8})
      */
+    #[ORM\Column(name: 'seuil2', type: 'integer', options: ['unsigned' => true, 'default' => 8])]
     protected $seuil2 = 8;
 
     /**
      * Operational risks min threshold setting.
      *
      * @var int
-     *
-     * @ORM\Column(name="seuil_rolf1", type="integer", options={"unsigned":true, "default":4})
      */
+    #[ORM\Column(name: 'seuil_rolf1', type: 'integer', options: ['unsigned' => true, 'default' => 4])]
     protected $seuilRolf1 = 4;
 
     /**
      * Operational risks max threshold setting.
      *
      * @var int
-     *
-     * @ORM\Column(name="seuil_rolf2", type="integer", options={"unsigned":true, "default":8})
      */
+    #[ORM\Column(name: 'seuil_rolf2', type: 'integer', options: ['unsigned' => true, 'default' => 8])]
     protected $seuilRolf2 = 8;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="seuil_traitement", type="integer", options={"unsigned":true})
      */
+    #[ORM\Column(name: 'seuil_traitement', type: 'integer', options: ['unsigned' => true])]
     protected $seuilTraitement = 0;
 
     /**
      * Used to mark different steps initialisation/completion (applied to all $init.., $eval... properties).
      *
      * @var int
-     *
-     * @ORM\Column(name="init_anr_context", type="smallint", options={"unsigned":true, "default":0})
      */
+    #[ORM\Column(name: 'init_anr_context', type: 'smallint', options: ['unsigned' => true, 'default' => 0])]
     protected $initAnrContext = 0;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="init_eval_context", type="smallint", options={"unsigned":true, "default":0})
      */
+    #[ORM\Column(name: 'init_eval_context', type: 'smallint', options: ['unsigned' => true, 'default' => 0])]
     protected $initEvalContext = 0;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="init_risk_context", type="smallint", options={"unsigned":true, "default":0})
      */
+    #[ORM\Column(name: 'init_risk_context', type: 'smallint', options: ['unsigned' => true, 'default' => 0])]
     protected $initRiskContext = 0;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="init_reassessment_strategy", type="smallint", options={"unsigned":true, "default":0})
      */
+    #[ORM\Column(
+        name: 'init_reassessment_strategy',
+        type: 'smallint',
+        options: ['unsigned' => true, 'default' => 0]
+    )]
     protected $initReassessmentStrategy = 0;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="init_def_context", type="smallint", options={"unsigned":true, "default":0})
      */
+    #[ORM\Column(name: 'init_def_context', type: 'smallint', options: ['unsigned' => true, 'default' => 0])]
     protected $initDefContext = 0;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="init_livrable_done", type="smallint", options={"unsigned":true, "default":0})
      */
+    #[ORM\Column(name: 'init_livrable_done', type: 'smallint', options: ['unsigned' => true, 'default' => 0])]
     protected $initLivrableDone = 0;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="model_summary", type="smallint", options={"unsigned":true, "default":0})
      */
+    #[ORM\Column(name: 'model_summary', type: 'smallint', options: ['unsigned' => true, 'default' => 0])]
     protected $modelSummary = 0;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="model_livrable_done", type="smallint", options={"unsigned":true, "default":0})
      */
+    #[ORM\Column(name: 'model_livrable_done', type: 'smallint', options: ['unsigned' => true, 'default' => 0])]
     protected $modelLivrableDone = 0;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="eval_risks", type="smallint", options={"unsigned":true, "default":0})
      */
+    #[ORM\Column(name: 'eval_risks', type: 'smallint', options: ['unsigned' => true, 'default' => 0])]
     protected $evalRisks = 0;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="eval_plan_risks", type="smallint", options={"unsigned":true, "default":0})
      */
+    #[ORM\Column(name: 'eval_plan_risks', type: 'smallint', options: ['unsigned' => true, 'default' => 0])]
     protected $evalPlanRisks = 0;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="eval_livrable_done", type="smallint", options={"unsigned":true, "default":0})
      */
+    #[ORM\Column(name: 'eval_livrable_done', type: 'smallint', options: ['unsigned' => true, 'default' => 0])]
     protected $evalLivrableDone = 0;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="manage_risks", type="smallint", options={"unsigned":true, "default":0})
      */
+    #[ORM\Column(name: 'manage_risks', type: 'smallint', options: ['unsigned' => true, 'default' => 0])]
     protected $manageRisks = 0;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="manage_reassessment_triggers", type="smallint", options={"unsigned":true, "default":0})
      */
+    #[ORM\Column(
+        name: 'manage_reassessment_triggers',
+        type: 'smallint',
+        options: ['unsigned' => true, 'default' => 0]
+    )]
     protected $manageReassessmentTriggers = 0;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="context_ana_risk", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'context_ana_risk', type: 'text', nullable: true)]
     protected $contextAnaRisk;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="context_gest_risk", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'context_gest_risk', type: 'text', nullable: true)]
     protected $contextGestRisk;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="synth_threat", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'synth_threat', type: 'text', nullable: true)]
     protected $synthThreat;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="synth_act", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'synth_act', type: 'text', nullable: true)]
     protected $synthAct;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="cache_model_show_rolf_brut", type="smallint", options={"unsigned":true, "default":0})
      */
+    #[ORM\Column(
+        name: 'cache_model_show_rolf_brut',
+        type: 'smallint',
+        options: ['unsigned' => true, 'default' => 0]
+    )]
     protected $cacheModelShowRolfBrut = 0;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="show_rolf_brut", type="smallint", options={"unsigned":true, "default":0})
      */
+    #[ORM\Column(name: 'show_rolf_brut', type: 'smallint', options: ['unsigned' => true, 'default' => 0])]
     protected $showRolfBrut = 0;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="status", type="smallint", nullable=false, options={"unsigned":true})
      */
+    #[ORM\Column(name: 'status', type: 'smallint', nullable: false, options: ['unsigned' => true])]
     protected $status = self::STATUS_ACTIVE;
 
     public function __construct()
@@ -244,6 +226,7 @@ class AnrSuperClass
      * Only the primitive data types properties values are set to the new object.
      * The relation properties have to be recreated manually.
      */
+
     public static function constructFromObject(AnrSuperClass $anr): AnrSuperClass
     {
         return (new static())

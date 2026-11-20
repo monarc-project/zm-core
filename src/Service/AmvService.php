@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2026 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -101,7 +101,7 @@ class AmvService implements PositionUpdatableServiceInterface
 
         $this->createInstanceRiskForInstances($asset, $amv);
 
-        $this->amvTable->save($amv);
+        $this->amvTable->save($amv, false);
 
         $this->historize(
             $amv,
@@ -111,6 +111,8 @@ class AmvService implements PositionUpdatableServiceInterface
             'asset => ' . $amv->getAsset()->getCode() . ' /  threat => ' . $amv->getThreat()->getCode()
             . ' / vulnerability => ' . $amv->getVulnerability()->getCode()
         );
+
+        $this->amvTable->save($amv);
 
         /** @var Entity\Amv */
         return $amv;
@@ -555,7 +557,7 @@ class AmvService implements PositionUpdatableServiceInterface
             'label3' => $label,
             'label4' => $label,
             'details' => $details,
-        ]);
+        ], false);
     }
 
     private function prepareAmvDataResult(Entity\Amv $amv, bool $includePositionFields = false): array

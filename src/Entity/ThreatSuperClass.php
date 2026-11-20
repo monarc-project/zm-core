@@ -15,13 +15,10 @@ use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 
-/**
- * @ORM\Table(name="threats", indexes={
- *      @ORM\Index(name="theme_id", columns={"theme_id"})
- * })
- * @ORM\MappedSuperclass
- * @ORM\HasLifecycleCallbacks()
- */
+#[ORM\Table(name: 'threats')]
+#[ORM\Index(name: 'theme_id', columns: ['theme_id'])]
+#[ORM\MappedSuperclass]
+#[ORM\HasLifecycleCallbacks]
 class ThreatSuperClass
 {
     use CreateEntityTrait;
@@ -37,89 +34,74 @@ class ThreatSuperClass
     public const MODE_SPECIFIC = 1;
 
     /**
-    * @var UuidInterface|string
-    *
-    * @ORM\Column(name="uuid", type="uuid", nullable=false)
-    * @ORM\Id
-    */
+     * @var UuidInterface|string
+     */
+    #[ORM\Column(name: 'uuid', type: 'uuid', nullable: false)]
+    #[ORM\Id]
     protected $uuid;
 
     /**
      * @var ThemeSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Theme")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="theme_id", referencedColumnName="id", nullable=true)
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'Theme')]
+    #[ORM\JoinColumn(name: 'theme_id', referencedColumnName: 'id', nullable: true)]
     protected $theme;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="status", type="smallint", options={"unsigned":true, "default":1})
      */
+    #[ORM\Column(name: 'status', type: 'smallint', options: ['unsigned' => true, 'default' => 1])]
     protected $status = self::STATUS_ACTIVE;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="mode", type="smallint", options={"unsigned":true, "default":0})
      */
+    #[ORM\Column(name: 'mode', type: 'smallint', options: ['unsigned' => true, 'default' => 0])]
     protected $mode = self::MODE_GENERIC;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="code", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'code', type: 'string', length: 255, nullable: true)]
     protected $code;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="trend", type="smallint", options={"unsigned":true, "default":0})
      */
+    #[ORM\Column(name: 'trend', type: 'smallint', options: ['unsigned' => true, 'default' => 0])]
     protected $trend = 0;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="qualification", type="smallint", options={"unsigned":false, "default":-1})
      */
+    #[ORM\Column(name: 'qualification', type: 'smallint', options: ['unsigned' => false, 'default' => -1])]
     protected $qualification = -1;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="c", type="smallint", options={"unsigned":true, "default":1})
      */
+    #[ORM\Column(name: 'c', type: 'smallint', options: ['unsigned' => true, 'default' => 1])]
     protected $c = 1;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="i", type="smallint", options={"unsigned":true, "default":1})
      */
+    #[ORM\Column(name: 'i', type: 'smallint', options: ['unsigned' => true, 'default' => 1])]
     protected $i = 1;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="a", type="smallint", options={"unsigned":true, "default":1})
      */
+    #[ORM\Column(name: 'a', type: 'smallint', options: ['unsigned' => true, 'default' => 1])]
     protected $a = 1;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="comment", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'comment', type: 'text', nullable: true)]
     protected $comment;
 
-    /**
-     * @ORM\PrePersist
-     */
+    #[ORM\PrePersist]
     public function generateAndSetUuid(): self
     {
         if ($this->uuid === null) {

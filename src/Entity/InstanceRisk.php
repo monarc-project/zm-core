@@ -9,17 +9,14 @@ namespace Monarc\Core\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Table(name="instances_risks", indexes={
- *      @ORM\Index(name="anr", columns={"anr_id"}),
- *      @ORM\Index(name="amv_id", columns={"amv_id"}),
- *      @ORM\Index(name="asset_id", columns={"asset_id"}),
- *      @ORM\Index(name="threat_id", columns={"threat_id"}),
- *      @ORM\Index(name="vulnerability_id", columns={"vulnerability_id"}),
- *      @ORM\Index(name="instance_id", columns={"instance_id"})
- * })
- * @ORM\Entity
- */
+#[ORM\Table(name: 'instances_risks')]
+#[ORM\Index(name: 'anr', columns: ['anr_id'])]
+#[ORM\Index(name: 'amv_id', columns: ['amv_id'])]
+#[ORM\Index(name: 'asset_id', columns: ['asset_id'])]
+#[ORM\Index(name: 'threat_id', columns: ['threat_id'])]
+#[ORM\Index(name: 'vulnerability_id', columns: ['vulnerability_id'])]
+#[ORM\Index(name: 'instance_id', columns: ['instance_id'])]
+#[ORM\Entity]
 class InstanceRisk extends InstanceRiskSuperClass
 {
 }
