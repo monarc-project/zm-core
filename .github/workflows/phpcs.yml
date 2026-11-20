@@ -14,8 +14,10 @@ jobs:
 
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
+      env:
+        update: "true"
       with:
-        php-version: '8.4.27'
+        php-version: '8.4'
         extensions: imagick, intl, mysql, bcmath, openssl
         ini-values: post_max_size=256M, short_open_tag=On
         tools: pecl, cs2pr, phpcs
