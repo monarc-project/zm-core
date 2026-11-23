@@ -41,10 +41,11 @@ class PasswordService
     public function passwordForgotten(string $email)
     {
         $user = $this->userTable->findByEmail($email);
+        $host = $this->configService->getHost();
         $token = uniqid(bin2hex(random_bytes(random_int(20, 40))), true);
 
         $subject = 'Restore password';
-        $link = $this->configService->getHost() . '/#/passwordforgotten/' . htmlentities($token);
+        $link = $host . '/#/passwordforgotten/' . htmlentities($token);
 
         $passwordToken = new PasswordToken($token, $user, new DateTime('+1 day'));
         $this->passwordTokenTable->save($passwordToken);
