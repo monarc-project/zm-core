@@ -9,10 +9,10 @@ namespace Monarc\Core\Validator\InputValidator;
 
 use Laminas\Filter\StringTrim;
 use Laminas\InputFilter\InputFilter;
-use Laminas\Validator\Between;
 use Laminas\Validator\Callback;
 use Laminas\Validator\Digits;
 use Laminas\Validator\AbstractValidator;
+use Laminas\Validator\NumberComparison;
 use Laminas\Validator\StringLength;
 use Monarc\Core\Exception\Exception;
 
@@ -144,7 +144,7 @@ abstract class AbstractInputValidator
     {
         $validators = [['name' => Digits::class]];
         if ($min !== null && $max !== null) {
-            $validators[] = ['name' => Between::class, 'options' => ['min' => $min, 'max' => $max]];
+            $validators[] = ['name' => NumberComparison::class, 'options' => ['min' => $min, 'max' => $max]];
         }
 
         return [

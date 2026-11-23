@@ -13,9 +13,11 @@ use Monarc\Core\InputFormatter\FormattedInputParams;
 
 class GetGuidesInputFormatter extends AbstractInputFormatter
 {
+    private const ALLOWED_TYPES = [1, 2, 3, 4];
+
     protected static array $allowedSearchFields = ['description1', 'description2', 'description3', 'description4'];
 
-    protected static array $allowedFilterFields = ['type' => ['type' => 'int', 'inArray' => [1, 2, 3, 4]]];
+    protected static array $allowedFilterFields = ['type' => ['type' => 'int', 'inArray' => self::ALLOWED_TYPES]];
 
     protected static string $defaultOrderFields = 'id';
 

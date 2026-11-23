@@ -66,7 +66,7 @@ class QuestionChoiceService
 
         $questionChoice = new QuestionChoice();
         $questionChoice->setCreator($this->connectedUser->getEmail());
-        $this->placeChoice($questionChoice, $this->questionChoiceTable->findChoicesOfQuestion($question), $data, true);
+        $this->placeChoice($questionChoice, $this->questionChoiceTable->findChoicesOfQuestion($question), $data);
         $questionChoice->setQuestion($question)
             ->setLabels($data);
 
@@ -168,17 +168,15 @@ class QuestionChoiceService
 
     private function placeChoice(
         QuestionChoiceSuperClass $questionChoice,
-        array $siblings,
-        array $data,
-        bool $isNew = false
+        array $questionChoices,
+        array $data
     ): void {
-        $siblings = array_values(array_filter($siblings, fn ($sibling): bool => $sibling !== $questionChoice));
-        if (count($siblings) >= 65535) {
-            throw new Exception('Too many records', 412);
-        }
-        $position = $data['position'] ?? ($isNew ? count($siblings) + 1 : max(1, $questionChoice->getPosition()));
-        $position = max(1, $position);
-        array_splice($siblings, min($position, count($siblings) + 1) - 1, 0, [$questionChoice]);
-        $this->numberChoices($siblings);
+        $questionChoices = array_values(array_filter(
+            $questionChoices,
+            fn ($existingChoice): bool => $existingChoice !== $questionChoice
+        ));
+        $position = $data['position'] ?? ($questionChoice->getPosition() ?: count($questionChoices) + 1);
+        array_splice($questionChoices, max(0, min($position - 1, count($questionChoices))), 0, [$questionChoice]);
+        $this->numberChoices($questionChoices);
     }
 }

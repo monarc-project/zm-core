@@ -14,20 +14,27 @@ use Monarc\Core\Entity\User;
 use Monarc\Core\Exception\Exception;
 use Monarc\Core\InputFormatter\DeliveryModel\GetDeliveryModelsInputFormatter;
 use Monarc\Core\Service\ConnectedUserService;
+use Monarc\Core\Service\ConfigService;
+use Monarc\Core\Service\DeliveriesModelsService;
 use Monarc\Core\Tests\Fixture\DeliveryModelTestEnvironment;
+use Monarc\Core\Validator\InputValidator\DeliveryModel\DeliveryModelDataInputValidator;
+use Monarc\Core\Validator\InputValidator\InputValidationTranslator;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
+use ZipArchive;
 
 /** @coversNothing */
 class DeliveryModelWorkflowTest extends TestCase
 {
     private DeliveryModelTestEnvironment $env;
 
+    private ConnectedUserService $connectedUserService;
+
     protected function setUp(): void
     {
         require_once __DIR__ . '/../../Fixture/DeliveryModelTestEnvironment.php';
-        $identity = $this->createMock(ConnectedUserService::class);
-        $identity->method('getConnectedUser')->willReturn(new User([
+        $this->connectedUserService = $this->createMock(ConnectedUserService::class);
+        $this->connectedUserService->method('getConnectedUser')->willReturn(new User([
             'firstname' => 'Editor',
             'lastname' => 'Templates',
             'email' => 'editor@example.invalid',
@@ -35,7 +42,7 @@ class DeliveryModelWorkflowTest extends TestCase
             'role' => [],
             'creator' => 'test',
         ]));
-        $this->env = new DeliveryModelTestEnvironment($identity);
+        $this->env = new DeliveryModelTestEnvironment($this->connectedUserService);
     }
 
     protected function tearDown(): void
@@ -167,16 +174,63 @@ class DeliveryModelWorkflowTest extends TestCase
     public function testUploadMetadataAndLanguageKeysAreValidatedBeforeFileMoves(): void
     {
         $upload = $this->env->upload();
+        $emptyUpload = $this->env->upload();
+        file_put_contents($emptyUpload['tmp_name'], '');
+        clearstatcache(true, $emptyUpload['tmp_name']);
         foreach ([
-            [1 => array_replace($upload, ['size' => $upload['size'] + 1])],
+            [1 => $emptyUpload],
             [1 => array_replace($upload, ['name' => 'template.php'])],
             [1 => array_replace($upload, ['error' => UPLOAD_ERR_INI_SIZE])],
+            [1 => [$upload]],
             [5 => $upload],
         ] as $files) {
             $this->env->validator->resetValidation();
             self::assertFalse($this->env->validator->isValid(['file' => $files], true));
             self::assertFileExists($upload['tmp_name']);
         }
+        self::assertSame(0, $this->env->table->countAll());
+    }
+
+    public function testUploadsUseOnlyConfiguredDataLanguagesAndPreserveTheirIndexes(): void
+    {
+        $environment = new DeliveryModelTestEnvironment($this->connectedUserService, [1, 3]);
+        try {
+            $file = $environment->upload();
+            self::assertTrue($environment->validator->isValid(['category' => 1, 'file' => [3 => $file]]));
+            self::assertSame([3 => $file], $environment->validator->getValidData()['file']);
+            $environment->validator->resetValidation();
+            self::assertFalse($environment->validator->isValid(['category' => 1, 'file' => [2 => $file]]));
+            self::assertArrayHasKey('file', $environment->validator->getErrorMessages());
+            self::assertFileExists($file['tmp_name']);
+        } finally {
+            $environment->close();
+        }
+    }
+
+    public function testProductionUploadRulesRejectFilesThatWereNotUploadedThroughHttp(): void
+    {
+        $validator = new DeliveryModelDataInputValidator(
+            ['languages' => ['fr' => ['index' => 1]]],
+            new InputValidationTranslator($this->connectedUserService, [])
+        );
+        $file = $this->env->upload();
+
+        self::assertFalse($validator->isValid(['category' => 1, 'file' => [1 => $file]]));
+        self::assertArrayHasKey('file', $validator->getErrorMessages());
+        self::assertFileExists($file['tmp_name']);
+    }
+
+    public function testDocxPackageRequiresBothContentTypesAndWordDocument(): void
+    {
+        $file = $this->env->upload();
+        $zip = new ZipArchive();
+        $zip->open($file['tmp_name']);
+        $zip->deleteName('word/document.xml');
+        $zip->close();
+        clearstatcache(true, $file['tmp_name']);
+
+        self::assertFalse($this->env->validator->isValid(['category' => 1, 'file' => [1 => $file]]));
+        self::assertFileExists($file['tmp_name']);
         self::assertSame(0, $this->env->table->countAll());
     }
 
@@ -256,15 +310,44 @@ class DeliveryModelWorkflowTest extends TestCase
         $this->reject(fn () => $this->env->service->getDeliveryModelData(999), EntityNotFoundException::class);
     }
 
-    public function testGenerationUsesSelectedLanguageThenDefaultEnglishInSameCategory(): void
+    /** @dataProvider defaultLanguages */
+    public function testGenerationUsesSelectedLanguageThenConfiguredDefaultInSameCategory(
+        int $defaultLanguageIndex,
+        int $missingLanguageIndex
+    ): void {
+        $service = new DeliveriesModelsService(
+            $this->env->table,
+            $this->connectedUserService,
+            new ConfigService(['defaultLanguageIndex' => $defaultLanguageIndex])
+        );
+        $selected = $this->create(['file' => [4 => $this->env->upload('Selected')]]);
+        $default = $this->create([
+            'editable' => 0,
+            'file' => [$defaultLanguageIndex => $this->env->upload('Default')],
+        ]);
+        $path = $service->getGenerationPath($selected->getId(), 4, 1);
+        self::assertSame(basename($selected->getPath(4)), basename($path));
+        $path = $service->getGenerationPath($selected->getId(), $missingLanguageIndex, 1);
+        self::assertSame(basename($default->getPath($defaultLanguageIndex)), basename($path));
+        $this->reject(fn () => $service->getGenerationPath($selected->getId(), $missingLanguageIndex, 2));
+    }
+
+    public static function defaultLanguages(): array
     {
-        $selected = $this->create(['file' => [1 => $this->env->upload('Selected')]]);
-        $default = $this->create(['editable' => 0, 'file' => [2 => $this->env->upload('Default')]]);
-        $path = $this->env->service->getGenerationPath($selected->getId(), 1, 1);
-        self::assertSame(basename($selected->getPath(1)), basename($path));
-        $path = $this->env->service->getGenerationPath($selected->getId(), 3, 1);
-        self::assertSame(basename($default->getPath(2)), basename($path));
-        $this->reject(fn () => $this->env->service->getGenerationPath($selected->getId(), 3, 2));
+        return [
+            'French' => [1, 3],
+            'English' => [2, 3],
+            'German' => [3, 1],
+            'Dutch' => [4, 3],
+        ];
+    }
+
+    public function testMissingDefaultLanguageDoesNotFallBackToEnglish(): void
+    {
+        $selected = $this->create(['file' => [4 => $this->env->upload('Selected')]]);
+        $this->create(['editable' => 0, 'file' => [2 => $this->env->upload('English')]]);
+
+        $this->reject(fn () => $this->env->service->getGenerationPath($selected->getId(), 3, 1));
     }
 
     private function create(array $data = []): DeliveriesModels

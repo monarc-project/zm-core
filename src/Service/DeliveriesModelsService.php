@@ -24,11 +24,15 @@ class DeliveriesModelsService
 
     private UserSuperClass $connectedUser;
 
+    private int $defaultLanguageIndex;
+
     public function __construct(
         private DeliveriesModelsTable $deliveriesModelsTable,
-        ConnectedUserService $connectedUserService
+        ConnectedUserService $connectedUserService,
+        ConfigService $configService
     ) {
         $this->connectedUser = $connectedUserService->getConnectedUser();
+        $this->defaultLanguageIndex = (int)$configService->getConfigOption('defaultLanguageIndex');
     }
 
     public function getList(FormattedInputParams $params): array
@@ -162,8 +166,11 @@ class DeliveriesModelsService
         $deliveryModel = $this->deliveriesModelsTable->findById($id);
         $path = $this->readablePath($deliveryModel->getPath($language));
         if ($path === null) {
-            $defaultTemplate = $this->deliveriesModelsTable->findDefaultEnglishTemplate($category);
-            $path = $this->readablePath($defaultTemplate?->getPath(2));
+            $defaultTemplate = $this->deliveriesModelsTable->findDefaultTemplate(
+                $category,
+                $this->defaultLanguageIndex
+            );
+            $path = $this->readablePath($defaultTemplate?->getPath($this->defaultLanguageIndex));
         }
         if ($path === null) {
             throw new Exception('Document template not found', 404);

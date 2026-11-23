@@ -195,14 +195,24 @@ class QuestionWorkflowTest extends TestCase
             $this->env->choiceValidator->validate(['question' => $q, 'label1' => 'B', 'position' => 1])
         )->getId();
         self::assertSame(['B', 'A'], array_column($this->choices($q), 'label1'));
+        $this->env->choiceService->update($a, $this->env->choiceValidator->validate(['label1' => 'Updated A'], true));
+        self::assertSame(['B', 'Updated A'], array_column($this->choices($q), 'label1'));
+        $this->env->choiceService->update($a, $this->env->choiceValidator->validate(['position' => 0], true));
+        self::assertSame(['Updated A', 'B'], array_column($this->choices($q), 'label1'));
+        $this->env->choiceService->update($b, $this->env->choiceValidator->validate(['position' => 1], true));
         $this->env->choiceService->update($b, $this->env->choiceValidator->validate(['position' => 70000], true));
-        self::assertSame(['A', 'B'], array_column($this->choices($q), 'label1'));
+        self::assertSame(['Updated A', 'B'], array_column($this->choices($q), 'label1'));
+        $this->env->choiceService->create(
+            $this->env->choiceValidator->validate(['question' => $other, 'label1' => 'Other choice'])
+        );
         $this->env->choiceService->update($b, $this->env->choiceValidator->validate(['question' => $other], true));
         self::assertSame([1], array_column($this->choices($q), 'position'));
+        self::assertSame(['Other choice', 'B'], array_column($this->choices($other), 'label1'));
+        self::assertSame([1, 2], array_column($this->choices($other), 'position'));
         self::assertSame($other, $this->env->choices->findById($b)->getQuestion()->getId());
         self::assertInstanceOf(\stdClass::class, $this->env->choiceService->getQuestionChoiceData($b)['question']);
         $this->env->manager->clear();
-        self::assertCount(1, $this->env->questions->findById($other)->getQuestionChoices());
+        self::assertCount(2, $this->env->questions->findById($other)->getQuestionChoices());
         $this->env->service->delete($other);
         self::assertSame(1, $this->env->choices->countAll());
         $this->env->choiceService->delete($a);
@@ -253,6 +263,30 @@ class QuestionWorkflowTest extends TestCase
         self::assertArrayHasKey('questionChoices', $row);
         self::assertArrayHasKey('createdAt', $row);
         self::assertArrayNotHasKey('anr', $row);
+    }
+
+    public function testMultichoiceFiltersNormalizeBooleansAndLegacyIntegerValues(): void
+    {
+        $singleChoiceQuestion = $this->question('Single choice', ['multichoice' => 0]);
+        $multiChoiceQuestion = $this->question('Multiple choices', ['multichoice' => 1]);
+        foreach ([
+            [0, false],
+            [1, true],
+            ['0', false],
+            ['1', true],
+            [false, false],
+            [true, true],
+            ['false', false],
+            ['true', true],
+        ] as [$value, $isMultiChoice]) {
+            $params = (new GetQuestionsInputFormatter())->format(['multichoice' => $value]);
+            self::assertSame($isMultiChoice, $params->getFilterFor('multichoice')['value']);
+            self::assertSame(1, $this->env->service->getCount($params));
+            self::assertSame(
+                [$isMultiChoice ? $multiChoiceQuestion : $singleChoiceQuestion],
+                array_column($this->env->service->getList($params), 'id')
+            );
+        }
     }
 
     /** @dataProvider invalidData */
@@ -318,7 +352,7 @@ class QuestionWorkflowTest extends TestCase
     public static function invalidQueries(): array
     {
         return [[['order' => 'position;DROP TABLE questions']], [['order' => ['id']]], [['filter' => []]],
-            [['limit' => -1]], [['type' => 4]], [['multichoice' => 5]]];
+            [['limit' => -1]], [['type' => 4]]];
     }
 
     private function question(string $label, array $data = []): int

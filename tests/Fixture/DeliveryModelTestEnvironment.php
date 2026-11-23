@@ -11,8 +11,13 @@ use Doctrine\ORM\Configuration;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\Driver\AttributeDriver;
 use Doctrine\ORM\Tools\SchemaTool;
+use Laminas\InputFilter\FileInput;
+use Laminas\Validator\Callback;
+use Laminas\Validator\File\UploadFile;
+use Laminas\Validator\ValidatorChain;
 use Monarc\Core\Entity\DeliveriesModels;
 use Monarc\Core\Service\ConnectedUserService;
+use Monarc\Core\Service\ConfigService;
 use Monarc\Core\Service\DeliveriesModelsService;
 use Monarc\Core\Table\DeliveriesModelsTable;
 use Monarc\Core\Validator\InputValidator\DeliveryModel\DeliveryModelDataInputValidator;
@@ -29,7 +34,7 @@ class DeliveryModelTestEnvironment
     public string $directory;
     private string|false $previousDirectory;
 
-    public function __construct(ConnectedUserService $identity)
+    public function __construct(ConnectedUserService $identity, array $languageIndexes = [1, 2, 3, 4])
     {
         $config = new Configuration();
         $config->setMetadataDriverImpl(new AttributeDriver([]));
@@ -57,7 +62,8 @@ class DeliveryModelTestEnvironment
                 parent::remove($entity, $flushAll);
             }
         };
-        $this->service = new class ($this->table, $identity) extends DeliveriesModelsService {
+        $configService = new ConfigService(['defaultLanguageIndex' => 1]);
+        $this->service = new class ($this->table, $identity, $configService) extends DeliveriesModelsService {
             public int $failMove = 0;
             private int $moves = 0;
 
@@ -75,7 +81,30 @@ class DeliveryModelTestEnvironment
                 return $path;
             }
         };
-        $this->validator = new DeliveryModelDataInputValidator([], new InputValidationTranslator($identity, []));
+        $validatorConfig = [
+            'languages' => array_map(static fn (int $index): array => ['index' => $index], $languageIndexes),
+        ];
+        $this->validator = new class ($validatorConfig, new InputValidationTranslator($identity, [])) extends
+            DeliveryModelDataInputValidator {
+            protected function getUploadInput(): FileInput
+            {
+                $input = parent::getUploadInput();
+                $chain = new ValidatorChain();
+                foreach ($input->getValidatorChain()->getValidators() as $specification) {
+                    $validator = $specification['instance'];
+                    // CLI fixtures are ordinary files; real HTTP probes retain the SAPI upload validator.
+                    if ($validator instanceof UploadFile) {
+                        $validator = new Callback([
+                            'callback' => static fn (array $file): bool => $file['error'] === UPLOAD_ERR_OK,
+                        ]);
+                    }
+                    $chain->attach($validator, true);
+                }
+                $input->setAutoPrependUploadValidator(false)->setValidatorChain($chain);
+
+                return $input;
+            }
+        };
         $this->directory = sys_get_temp_dir() . '/php84-deliveries-' . bin2hex(random_bytes(8));
         mkdir($this->directory, 0775, true);
         $this->previousDirectory = getenv('APP_CONF_DIR');

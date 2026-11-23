@@ -22,12 +22,14 @@ class DeliveriesModelsTable extends AbstractTable
         return $this->getRepository()->count(['category' => $category]);
     }
 
-    public function findDefaultEnglishTemplate(int $category): ?DeliveriesModels
+    public function findDefaultTemplate(int $category, int $languageIndex): ?DeliveriesModels
     {
+        $pathField = 't.path' . $languageIndex;
+
         return $this->getRepository()->createQueryBuilder('t')
             ->where('t.category = :category')
-            ->andWhere('t.path2 IS NOT NULL')
-            ->andWhere("t.path2 <> ''")
+            ->andWhere($pathField . ' IS NOT NULL')
+            ->andWhere($pathField . " <> ''")
             ->setParameter('category', $category)
             ->orderBy('t.editable', 'ASC')
             ->addOrderBy('t.id', 'ASC')

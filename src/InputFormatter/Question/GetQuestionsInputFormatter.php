@@ -14,14 +14,13 @@ use Monarc\Core\InputFormatter\FormattedInputParams;
 
 class GetQuestionsInputFormatter extends AbstractInputFormatter
 {
+    protected const ALLOWED_TYPES = [QuestionSuperClass::TYPE_SINGLE, QuestionSuperClass::TYPE_CHOICE];
+
     protected static array $allowedSearchFields = ['label1', 'label2', 'label3', 'label4'];
 
     protected static array $allowedFilterFields = [
-        'type' => [
-            'type' => 'int',
-            'inArray' => [QuestionSuperClass::TYPE_SINGLE, QuestionSuperClass::TYPE_CHOICE],
-        ],
-        'multichoice' => ['type' => 'int', 'inArray' => [0, 1]],
+        'type' => ['type' => 'int', 'inArray' => self::ALLOWED_TYPES],
+        'multichoice' => ['type' => 'boolean'],
     ];
 
     protected static string $defaultOrderFields = 'position:id';
@@ -33,7 +32,7 @@ class GetQuestionsInputFormatter extends AbstractInputFormatter
 
     public function format(array $inputParams): FormattedInputParams
     {
-        foreach (['page', 'limit', 'type', 'multichoice', 'question'] as $field) {
+        foreach (['page', 'limit', 'type', 'question'] as $field) {
             if (isset($inputParams[$field])
                 && ((!is_int($inputParams[$field])
                     && !(is_string($inputParams[$field]) && ctype_digit($inputParams[$field])))

@@ -10,7 +10,7 @@ namespace Monarc\Core\Validator\FieldValidator;
 use Laminas\Validator\AbstractValidator;
 use ZipArchive;
 
-/** Validate all languages before the service moves any uploaded file. */
+/** Check the DOCX package after the standard file validators have passed. */
 class DeliveryModelUpload extends AbstractValidator
 {
     private const INVALID = 'invalidTemplate';
@@ -19,43 +19,18 @@ class DeliveryModelUpload extends AbstractValidator
 
     public function isValid($value)
     {
-        if (!is_array($value)) {
-            $this->error(self::INVALID);
-
-            return false;
-        }
-        foreach ($value as $language => $file) {
-            if (!in_array($language, [1, 2, 3, 4], true)
-                || !is_array($file)
-                || ($file['error'] ?? null) !== UPLOAD_ERR_OK
-                || !is_string($file['name'] ?? null)
-                || strtolower(pathinfo($file['name'], PATHINFO_EXTENSION)) !== 'docx'
-                || !is_string($file['tmp_name'] ?? null)
-                || !is_file($file['tmp_name'])
-                || !is_readable($file['tmp_name'])
-                || ($file['size'] ?? 0) <= 0
-                || filesize($file['tmp_name']) !== $file['size']
-            ) {
-                $this->error(self::INVALID);
-
-                return false;
-            }
-            $zip = new ZipArchive();
-            if ($zip->open($file['tmp_name']) !== true) {
-                $this->error(self::INVALID);
-
-                return false;
-            }
+        $zip = new ZipArchive();
+        if ($zip->open($value['tmp_name']) === true) {
             $valid = $zip->locateName('[Content_Types].xml') !== false
                 && $zip->locateName('word/document.xml') !== false;
             $zip->close();
-            if (!$valid) {
-                $this->error(self::INVALID);
-
-                return false;
+            if ($valid) {
+                return true;
             }
         }
 
-        return true;
+        $this->error(self::INVALID);
+
+        return false;
     }
 }
