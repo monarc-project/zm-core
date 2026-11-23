@@ -100,7 +100,7 @@ class ReassessmentTriggerInputValidatorTest extends TestCase
     /**
      * @covers \Monarc\Core\Validator\InputValidator\ReassessmentTrigger\PatchReassessmentTriggerDataInputValidator::getValidData
      */
-    public function testPatchValidatorReturnsNullForMissingOptionalFields(): void
+    public function testPatchValidatorOmitsMissingOptionalNullFields(): void
     {
         $validator = new PatchReassessmentTriggerDataInputValidator(
             ['defaultLanguageIndex' => 1],
@@ -116,7 +116,7 @@ class ReassessmentTriggerInputValidatorTest extends TestCase
 
         $validatedData = $validator->getValidData();
         self::assertSame(4, $validatedData['position']);
-        self::assertNull($validatedData['isActive']);
+        self::assertArrayNotHasKey('isActive', $validatedData);
     }
 
     /**

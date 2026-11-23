@@ -7,34 +7,32 @@
 
 namespace Monarc\Core\Entity\Traits;
 
+use Doctrine\ORM\Mapping as ORM;
+
 trait LabelsEntityTrait
 {
     /**
      * @var string
-     *
-     * @ORM\Column(name="label1", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'label1', type: 'string', length: 255, nullable: true)]
     protected $label1;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="label2", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'label2', type: 'string', length: 255, nullable: true)]
     protected $label2;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="label3", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'label3', type: 'string', length: 255, nullable: true)]
     protected $label3;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="label4", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'label4', type: 'string', length: 255, nullable: true)]
     protected $label4;
 
     public function getLabel(int $languageIndex): string

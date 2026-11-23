@@ -17,11 +17,9 @@ use Ramsey\Uuid\Lazy\LazyUuidFromString;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 
-/**
- * @ORM\Table(name="assets")
- * @ORM\MappedSuperclass
- * @ORM\HasLifecycleCallbacks()
- */
+#[ORM\Table(name: 'assets')]
+#[ORM\MappedSuperclass]
+#[ORM\HasLifecycleCallbacks]
 class AssetSuperClass
 {
     use CreateEntityTrait;
@@ -40,61 +38,53 @@ class AssetSuperClass
     public const STATUS_INACTIVE = 0;
 
     /**
-    * @var LazyUuidFromString|UuidInterface|string
-    *
-    * @ORM\Column(name="uuid", type="uuid", nullable=false)
-    * @ORM\Id
-    */
+     * @var LazyUuidFromString|UuidInterface|string
+     */
+    #[ORM\Column(name: 'uuid', type: 'uuid', nullable: false)]
+    #[ORM\Id]
     protected $uuid;
 
     /**
      * @var ArrayCollection|AmvSuperClass[]
-     *
-     * @ORM\OneToMany(targetEntity="Amv", mappedBy="asset")
-     * @ORM\OrderBy({"position": "ASC"})
      */
+    #[ORM\OneToMany(targetEntity: 'Amv', mappedBy: 'asset')]
+    #[ORM\OrderBy(['position' => 'ASC'])]
     protected $amvs;
 
     /**
      * @var ArrayCollection|ObjectSuperClass[]
-     *
-     * @ORM\OneToMany(targetEntity="MonarcObject", mappedBy="asset")
      */
+    #[ORM\OneToMany(targetEntity: 'MonarcObject', mappedBy: 'asset')]
     protected $objects;
 
     /**
      * @var ArrayCollection|InstanceSuperClass[]
-     *
-     * @ORM\OneToMany(targetEntity="Instance", mappedBy="asset")
      */
+    #[ORM\OneToMany(targetEntity: 'Instance', mappedBy: 'asset')]
     protected $instances;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="status", type="smallint", options={"unsigned":true, "default":1})
      */
+    #[ORM\Column(name: 'status', type: 'smallint', options: ['unsigned' => true, 'default' => 1])]
     protected $status = self::STATUS_ACTIVE;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="mode", type="smallint", options={"unsigned":true, "default":0})
      */
+    #[ORM\Column(name: 'mode', type: 'smallint', options: ['unsigned' => true, 'default' => 0])]
     protected $mode = self::MODE_GENERIC;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="type", type="smallint", options={"unsigned":true, "default":1})
      */
+    #[ORM\Column(name: 'type', type: 'smallint', options: ['unsigned' => true, 'default' => 1])]
     protected $type = self::TYPE_PRIMARY;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="code", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'code', type: 'string', length: 255, nullable: true)]
     protected $code;
 
     public function __construct()
@@ -104,9 +94,7 @@ class AssetSuperClass
         $this->instances = new ArrayCollection();
     }
 
-    /**
-     * @ORM\PrePersist
-     */
+    #[ORM\PrePersist]
     public function generateAndSetUuid(): self
     {
         if ($this->uuid === null) {

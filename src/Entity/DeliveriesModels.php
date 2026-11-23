@@ -1,7 +1,7 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2026 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -11,16 +11,11 @@ use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Entity\Traits\DescriptionsEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
-use Monarc\Core\Validator\FieldValidator\UniqueDeliveryModel;
 
-/**
- * @ORM\Table(name="deliveries_models", indexes={
- *      @ORM\Index(name="anr_id", columns={"anr_id"})
- * })
- * @ORM\Entity
- * @ORM\HasLifecycleCallbacks()
- */
-class DeliveriesModels extends AbstractEntity
+#[ORM\Table(name: 'deliveries_models')]
+#[ORM\Entity]
+#[ORM\HasLifecycleCallbacks]
+class DeliveriesModels
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
@@ -37,78 +32,62 @@ class DeliveriesModels extends AbstractEntity
 
     /**
      * @var integer
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    protected $id;
+    #[ORM\Column(name: 'id', type: 'integer', nullable: false)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
+    protected int $id;
 
     /**
      * @var integer
-     * @ORM\Column(name="category", type="smallint", length=4, options={"default":0})
      */
-    protected $category;
+    #[ORM\Column(name: 'category', type: 'smallint', length: 4, options: ['default' => 0])]
+    protected int $category = 0;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="path1", type="string", length=255, nullable=true)
      */
-    protected $path1;
+    #[ORM\Column(name: 'path1', type: 'string', length: 255, nullable: true)]
+    protected ?string $path1 = null;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="path2", type="string", length=255, nullable=true)
      */
-    protected $path2;
+    #[ORM\Column(name: 'path2', type: 'string', length: 255, nullable: true)]
+    protected ?string $path2 = null;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="path3", type="string", length=255, nullable=true)
      */
-    protected $path3;
+    #[ORM\Column(name: 'path3', type: 'string', length: 255, nullable: true)]
+    protected ?string $path3 = null;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="path4", type="string", length=255, nullable=true)
      */
-    protected $path4;
+    #[ORM\Column(name: 'path4', type: 'string', length: 255, nullable: true)]
+    protected ?string $path4 = null;
 
     /**
      * @var boolean
-     *
-     * @ORM\Column(name="editable", type="boolean", options={"default":true})
      */
-    protected $editable;
+    #[ORM\Column(name: 'editable', type: 'boolean', options: ['default' => true])]
+    protected bool $editable = true;
 
-    /**
-     * @var AnrSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Anr")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true)
-     * })
-     */
-    protected $anr;
-
-    public function getPath(int $languageIndex): string
+    public function getPath(int $languageIndex): ?string
     {
         if (!\in_array($languageIndex, range(1, 4), true)) {
             return '';
         }
 
-        return (string)$this->{'path' . $languageIndex};
+        return $this->{'path' . $languageIndex};
     }
 
     public function setPath(array $paths): self
     {
         foreach (range(1, 4) as $index) {
             $key = 'path' . $index;
-            if (isset($paths[$key])) {
+            if (array_key_exists($key, $paths)) {
                 $this->{$key} = $paths[$key];
             }
         }
@@ -126,127 +105,31 @@ class DeliveriesModels extends AbstractEntity
         ];
     }
 
-    public function getInputFilter($partial = false)
+    public function getId(): int
     {
-        if ((!$partial)==1) {
-            $partial = true;
-        } else {
-            $partial = false;
-        }
-        if (!$this->inputFilter) {
-            $dirFile = './data/';
-            $appconfdir = getenv('APP_CONF_DIR') ?: '';
-            if( ! empty($appconfdir) ){
-                $dirFile = $appconfdir . '/data/';
-            }
-            $dirFile .= 'monarc/models/';
-            if (!is_dir($dirFile)) {
-                mkdir($dirFile, 0775, true);
-            }
-
-            parent::getInputFilter($partial);
-
-            $this->inputFilter->add(array(
-                'name' => 'category',
-                'required' => !($this->get('id') > 0),
-                'allow_empty' => false,
-                'filters' => array(
-                    array('name' => 'ToInt',),
-                ),
-                'validators' => array(
-                    array(
-                        'name' => 'InArray',
-                        'options' => array(
-                            'haystack' => array(
-                              self::MODEL_CONTEXT_VALIDATION,
-                              self::MODEL_ASSETS_AND_MODELS_VALIDATION,
-                              self::MODEL_RISK_ANALYSIS,
-                              self::MODEL_IMPLEMENTATION_PLAN,
-                              self::MODEL_STATEMENT_OF_APPLICABILITY,
-                              self::MODEL_RECORD_OF_PROCESSING_ACTIVITIES,
-                              self::MODEL_ALL_RECORD_OF_PROCESSING_ACTIVITIES
-                            ),
-                        ),
-                    ),
-                    array(
-                        // TODO: move the validator in the creation part, as it requires a db connection.
-                        'name' => UniqueDeliveryModel::class,
-                        'options' => array(
-                            'adapter' => $this->getDbAdapter(),
-                            'category' => $this->get('category'),
-                            'id' => $this->get('id'),
-
-                        ),
-                    ),
-                ),
-            ));
-
-            for ($i = 1; $i <= 4; $i++) {
-                $this->inputFilter->add(array(
-                    'name' => 'path' . $i,
-                    'required' => ($this->getLanguage() == $i && !$partial && !$this->get('id')),
-                    'allow_empty' => false,
-                    'filters' => array(
-                        array(
-                            'name' => 'Laminas\Filter\File\RenameUpload',
-                            'options' => array(
-                                'randomize' => true,
-                                'target' => $dirFile . $this->{"path$i"},
-                            ),
-                        ),
-                    ),
-                    'validators' => array(),
-                ));
-
-                $this->inputFilter->add(array(
-                    'name' => "description$i",
-                    'required' => ($this->getLanguage() == $i && !$partial),
-                    'allow_empty' => false,
-                    'filters' => array(),
-                    'validators' => array(),
-                ));
-            }
-        }
-        return $this->inputFilter;
+        return $this->id;
     }
 
-    public function exchangeArray(array $options, $partial = false)
+    public function getCategory(): int
     {
-        parent::exchangeArray($options);
+        return $this->category;
+    }
 
-        $languages = [
-            1 => 'FR',
-            2 => 'EN',
-            3 => 'DE',
-            4 => 'NE',
-        ];
+    public function setCategory(int $category): self
+    {
+        $this->category = $category;
 
-        $dirFile = './data';
-        $appconfdir = getenv('APP_CONF_DIR') ? getenv('APP_CONF_DIR') : '';
-        if( ! empty($appconfdir) ){
-            $dirFile = $appconfdir . DIRECTORY_SEPARATOR . 'data';
-        }
-        $dirFile .= DIRECTORY_SEPARATOR . 'monarc/models';
-        if (!is_dir($dirFile)) {
-            mkdir($dirFile, 0775, true);
-        }
+        return $this;
+    }
 
-        for ($i = 1; $i <= 4; ++$i) {
-            if (!empty($this->{'path' . $i}['tmp_name']) && file_exists($this->{'path' . $i}['tmp_name'])) {
-                $info = pathinfo($this->{'path' . $i}['tmp_name']);
-                $dirFileAbsolute =  $dirFile . DIRECTORY_SEPARATOR . $languages[$i];
-                $dirFileRelative = './data/monarc/models' . DIRECTORY_SEPARATOR . $languages[$i];
-                if (!is_dir($dirFileAbsolute)) {
-                    mkdir($dirFileAbsolute, 0775, true);
-                }
-                $newFileName = uniqid() . '_' . $this->{'path' . $i}['name'];
-                $newFileRelative = $dirFileRelative . DIRECTORY_SEPARATOR . $newFileName;
-                $targetFile = $dirFileAbsolute . DIRECTORY_SEPARATOR . $newFileName;
-                rename($this->{'path' . $i}['tmp_name'], $targetFile);
+    public function isEditable(): bool
+    {
+        return $this->editable;
+    }
 
-                $this->{'path' . $i} = $newFileRelative;
-            }
-        }
+    public function setEditable(bool $editable): self
+    {
+        $this->editable = $editable;
 
         return $this;
     }

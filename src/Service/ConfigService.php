@@ -1,7 +1,7 @@
 <?php
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016 - 2026 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -76,32 +76,31 @@ class ConfigService
         ));
     }
 
+    /**
+     * Returns the configured public base URL (including any installation path), without a trailing slash.
+     *
+     * The value must come from server-side configuration only. Deriving it from the request
+     * Host header (HTTP_HOST / X-Forwarded-Host) would let an unauthenticated attacker poison
+     * absolute URLs such as the password reset link, so this method fails closed instead.
+     *
+     * @throws \RuntimeException when publicHost is not configured as an absolute http(s) URL.
+     */
     public function getHost(): string
     {
-        if (!empty($this->config['publicHost'])) {
-            return $this->config['publicHost'];
+        $host = $this->config['publicHost'] ?? '';
+        if (!is_string($host)
+            || filter_var($host, FILTER_VALIDATE_URL) === false
+            || !preg_match('#^https?://#i', $host)
+            || strpbrk($host, '@?#') !== false
+        ) {
+            throw new \RuntimeException(
+                'The "publicHost" configuration option must be an absolute http(s) base URL'
+                . ' without credentials, a query string or a fragment'
+                . ' (e.g. https://monarc.example.org/client).'
+            );
         }
 
-        // Determine HTTP/HTTPS proto, and HTTP_HOST
-        if (isset($_SERVER['X_FORWARDED_PROTO'])) {
-            $proto = strtolower($_SERVER['X_FORWARDED_PROTO']);
-        } elseif (isset($_SERVER['X_URL_SCHEME'])) {
-            $proto = strtolower($_SERVER['X_URL_SCHEME']);
-        } elseif (isset($_SERVER['X_FORWARDED_SSL'])) {
-            $proto = strtolower($_SERVER['X_FORWARDED_SSL']) === 'on' ? 'https' : 'http';
-        } elseif (isset($_SERVER['FRONT_END_HTTPS'])) { // Microsoft variant
-            $proto = strtolower($_SERVER['FRONT_END_HTTPS']) === 'on' ? 'https' : 'http';
-        } elseif (isset($_SERVER['HTTPS'])) {
-            $proto = 'https';
-        } else {
-            $proto = 'http';
-        }
-
-        if (isset($_SERVER['X_FORWARDED_HOST'])) {
-            return $proto. '://' . $_SERVER['X_FORWARDED_HOST'];
-        }
-
-        return $proto. '://' . $_SERVER['HTTP_HOST'];
+        return rtrim($host, '/');
     }
 
     public function getAppVersion(): array

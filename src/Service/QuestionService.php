@@ -1,192 +1,189 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2020 SMILE GIE Securitymadein.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2026 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
 namespace Monarc\Core\Service;
 
+use Monarc\Core\Entity\UserSuperClass;
 use Monarc\Core\Entity\Question;
+use Monarc\Core\Entity\QuestionSuperClass;
+use Monarc\Core\Entity\QuestionChoiceSuperClass;
+use Monarc\Core\Exception\Exception;
+use Monarc\Core\InputFormatter\FormattedInputParams;
+use Monarc\Core\Table\QuestionTable;
+use Monarc\Core\Table\QuestionChoiceTable;
 
-/**
- * Question Service
- *
- * Class QuestionService
- * @package Monarc\Core\Service
- */
-class QuestionService extends AbstractService
+class QuestionService
 {
-    protected $choiceTable;
-    protected $anrTable;
-    protected $userAnrTable;
+    private UserSuperClass $connectedUser;
 
-    protected $dependencies = ['anr'];
-
-    /**
-     * @inheritdoc
-     */
-    public function getList($page = 1, $limit = 25, $order = null, $filter = null, $filterAnd = null)
-    {
-        if (empty($order)) {
-            $order = 'position';
-        }
-
-        $data = $this->get('table')->fetchAllFiltered(
-            array_keys($this->get('entity')->getJsonArray()),
-            $page,
-            $limit,
-            $this->parseFrontendOrder($order),
-            $this->parseFrontendFilter($filter, $this->filterColumns),
-            $filterAnd
-        );
-
-        // Append choices
-        foreach ($data as &$d) {
-            if ($d['type'] == 2) {
-                $d['choices'] = $this->get('choiceTable')->fetchAllFiltered([], 1, 0, null, null, ['question' => $d['id']]);
-
-                if (!empty($filterAnd['anr']) && !$d['multichoice']) {
-                    $c = $this->get('choiceTable')->getEntityClass();
-                    $empty = new $c();
-                    array_unshift($d['choices'], $empty->getJsonArray());
-                }
-            }
-        }
-
-        return $data;
+    public function __construct(
+        private QuestionTable $questionTable,
+        private QuestionChoiceTable $questionChoiceTable,
+        ConnectedUserService $connectedUserService
+    ) {
+        $this->connectedUser = $connectedUserService->getConnectedUser();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function create($data, $last = true)
+    public function getList(FormattedInputParams $params): array
     {
-        $dependencies = property_exists($this, 'dependencies') ? $this->dependencies : [];
-
-        /** @var Question $question */
-        $question = $this->get('entity');
-
-        $table = $this->get('table');
-        if (!empty($data['anr'])) {
-            $data['mode'] = 1;
-            $data['implicitPosition'] = \Monarc\Core\Entity\AbstractEntity::IMP_POS_END;
-            $data['type'] = 1; // on force en textarea uniquement
-            $data['multichoice'] = 0;
-            unset($data['position']);
-        }
-        //bo case manage position
-        // quick fix : TO-DO : improve the position management
-        if (!empty($data['implicitPosition']) && empty($data['anr'])) {
-            if ($data['implicitPosition'] == 1) { //the first
-                $table->movePosition(0);
-                $data['position'] = 1;
-            } else {
-                if ($data['implicitPosition'] == 2) { // the last
-                    $data['position'] = $table->maxQuestionPosition() + 1;
-                } else { //in the middle
-                    if ($data['previous']) {
-                        $previous = $this->get('table')->getEntity($data['previous']);
-                        $table->movePosition($previous->position);
-                        $data['position'] = $previous->position + 1;
-                    }
-                }
-            }
-        }
-
-        $question->exchangeArray($data);
-        $this->setDependencies($question, $dependencies);
-
-        $question->setCreator(
-            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
+        return array_map(
+            fn ($question): array => $this->serialize($question, true),
+            $this->questionTable->findByParams($params)
         );
-
-        return $this->get('table')->save($question);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function update($id, $data)
+    public function getCount(FormattedInputParams $params): int
     {
-        /** @var Question $question */
-        $question = $this->get('table')->getEntity($id);
-        $question->setDbAdapter($this->get('table')->getDb());
-        $table = $this->get('table');
-        //FO case
-        if (!empty($data['anr'])) {
-            if ($data['anr'] == $question->get('anr')->get('id')) {
-                if ($question->get('mode')) {
-                    unset(
-                        $data['type'],
-                        $data['position'],
-                        $data['multichoice']
-                    );
-                } else {
-                    // on ne met pas à jour la question
-                    unset(
-                        $data['label1'],
-                        $data['label2'],
-                        $data['label3'],
-                        $data['label4']
-                    );
-                }
-                unset($data['mode']);
-            } else {
-                throw new \Monarc\Core\Exception\Exception('Anr ids diffence', 412);
-            }
-        }
-        //bo case manage position
-        // quick fix : TO DO : improve the position management
-        if (!empty($data['implicitPosition']) && empty($data['anr']))
-        {
-          if($data['implicitPosition']==1)//the first
-          {
-            if($data['position'] != $table->minQuestionPosition())
-            {
-              $table->movePosition(0);
-              $data['position']= 1;
-            }
-          }
-          else if ($data['implicitPosition']==2)// the last
-          {
-            if($data['position'] != $table->maxQuestionPosition())
-              $data['position']= $table->maxQuestionPosition()+1;
-          }
-          else { //in the middle
-              if($data['previous'] != $table->getPrevious($data['position']))
-              {
-                $previous = $this->get('table')->getEntity($data['previous']);
-                $table->movePosition($previous->position);
-                $data['position'] = $previous->position+1;
-
-              }
-          }
-        }
-
-        $question->exchangeArray($data);
-
-        $dependencies = property_exists($this, 'dependencies') ? $this->dependencies : [];
-        $this->setDependencies($question, $dependencies);
-
-        $question->setUpdater(
-            $this->getConnectedUser()->getFirstname() . ' ' . $this->getConnectedUser()->getLastname()
-        );
-
-        return $this->get('table')->save($question);
+        return $this->questionTable->countByParams($params);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function delete($id)
+    public function getQuestionData(int $id): array
     {
-        $entity = $this->getEntity($id);
+        return $this->serialize($this->questionTable->findById($id));
+    }
 
-        if (!empty($entity['anr']) && isset($entity['mode']) && !$entity['mode']) {
-            throw new \Monarc\Core\Exception\Exception('Delete question is not possible', 412);
+    public function serialize(QuestionSuperClass $question, bool $withChoices = false): array
+    {
+        $questionData = array_merge($this->content($question), [
+            'type' => $question->getType(),
+            'multichoice' => (int)$question->isMultiChoice(),
+            // Legacy JSON represented the collection as an object; choices is the populated list field.
+            'questionChoices' => new \stdClass(),
+        ]);
+
+        if ($withChoices && $question->getType() === Question::TYPE_CHOICE) {
+            $questionData['choices'] = array_map(function ($questionChoice): array {
+                return array_merge($this->content($questionChoice), ['question' => new \stdClass()]);
+            }, $this->questionChoiceTable->findChoicesOfQuestion($question));
         }
 
-        $this->get('table')->delete($id);
+        return $questionData;
+    }
+
+    public function create(array $data): Question
+    {
+        $question = new Question();
+        $siblings = $this->questionTable->findOrderedQuestions();
+        $this->validatePlacement($data);
+
+        $this->applyData($question, $data);
+        $question->setCreator($this->connectedUser->getEmail());
+        $this->placeQuestion($question, $siblings, $data, true);
+        $this->questionTable->save($question);
+
+        return $question;
+    }
+
+    public function update(int $id, array $data): void
+    {
+        $question = $this->questionTable->findById($id);
+
+        $this->validatePlacement($data, $question);
+        $this->placeQuestion($question, $this->questionTable->findOrderedQuestions(), $data);
+        $this->applyData($question, $data);
+        $question->setUpdater($this->connectedUser->getEmail());
+
+        $this->questionTable->save($question);
+    }
+
+    public function delete(int $id): void
+    {
+        $this->deleteList([$id]);
+    }
+
+    public function deleteList(array $ids): void
+    {
+        $questions = array_map(fn ($id) => $this->questionTable->findById($id), $ids);
+        foreach ($questions as $question) {
+            foreach ($this->questionChoiceTable->findChoicesOfQuestion($question) as $questionChoice) {
+                $question->removeQuestionChoice($questionChoice);
+                $this->questionChoiceTable->remove($questionChoice, false);
+            }
+            $this->questionTable->remove($question, false);
+        }
+
+        $this->numberQuestions(array_values(array_filter(
+            $this->questionTable->findOrderedQuestions(),
+            fn ($question): bool => !in_array($question->getId(), $ids, true)
+        )));
+        $this->questionTable->flush();
+    }
+
+    private function applyData(QuestionSuperClass $question, array $data): void
+    {
+        $question->setLabels($data);
+        if (isset($data['type'])) {
+            $question->setType($data['type']);
+        }
+        if (isset($data['multichoice'])) {
+            $question->setIsMultiChoice((bool)$data['multichoice']);
+        }
+    }
+
+    private function validatePlacement(array $data, ?QuestionSuperClass $question = null): void
+    {
+        if (($data['implicitPosition'] ?? null) === 3) {
+            $previous = $this->questionTable->findById($data['previous'] ?? 0);
+            if ($previous === $question) {
+                throw new Exception('Invalid previous question', 412);
+            }
+        }
+    }
+
+    private function content(QuestionSuperClass|QuestionChoiceSuperClass $questionOrChoice): array
+    {
+        $questionOrChoiceData = array_merge(['id' => $questionOrChoice->getId()], $questionOrChoice->getLabels(), [
+            'position' => $questionOrChoice->getPosition(),
+            'creator' => $questionOrChoice->getCreator(),
+            'createdAt' => $questionOrChoice->getCreatedAt(),
+            'updater' => $questionOrChoice->getUpdater(),
+            'updatedAt' => $questionOrChoice->getUpdatedAt(),
+        ]);
+
+        return $questionOrChoiceData;
+    }
+
+    private function numberQuestions(array $questions): void
+    {
+        foreach ($questions as $index => $question) {
+            $question->setPosition($index + 1);
+        }
+    }
+
+    private function placeQuestion(
+        QuestionSuperClass $question,
+        array $siblings,
+        array $data,
+        bool $isNew = false
+    ): void {
+        $siblings = array_values(array_filter($siblings, fn ($sibling): bool => $sibling !== $question));
+        if (count($siblings) >= 65535) {
+            throw new Exception('Too many records', 412);
+        }
+        $position = $isNew ? count($siblings) + 1 : max(1, $question->getPosition());
+        if (($data['implicitPosition'] ?? null) === 1) {
+            $position = 1;
+        } elseif (($data['implicitPosition'] ?? null) === 2) {
+            $position = count($siblings) + 1;
+        } elseif (($data['implicitPosition'] ?? null) === 3) {
+            $position = null;
+            foreach ($siblings as $index => $sibling) {
+                if ($sibling->getId() === ($data['previous'] ?? null)) {
+                    $position = $index + 2;
+                }
+            }
+            if ($position === null) {
+                throw new Exception('Previous record must belong to the same scope', 412);
+            }
+        } elseif (isset($data['position'])) {
+            $position = max(1, $data['position']);
+        }
+        array_splice($siblings, min($position, count($siblings) + 1) - 1, 0, [$question]);
+
+        $this->numberQuestions($siblings);
     }
 }

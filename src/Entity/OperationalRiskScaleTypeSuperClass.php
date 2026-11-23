@@ -12,14 +12,11 @@ use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 
-/**
- * @ORM\Table(name="operational_risks_scales_types", indexes={
- *     @ORM\Index(name="anr_id", columns={"anr_id"}),
- *     @ORM\Index(name="scale_id", columns={"scale_id"})
- * })
- * @ORM\MappedSuperclass
- * @ORM\HasLifecycleCallbacks()
- */
+#[ORM\Table(name: 'operational_risks_scales_types')]
+#[ORM\Index(name: 'anr_id', columns: ['anr_id'])]
+#[ORM\Index(name: 'scale_id', columns: ['scale_id'])]
+#[ORM\MappedSuperclass]
+#[ORM\HasLifecycleCallbacks]
 class OperationalRiskScaleTypeSuperClass
 {
     use CreateEntityTrait;
@@ -27,53 +24,43 @@ class OperationalRiskScaleTypeSuperClass
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
+    #[ORM\Column(name: 'id', type: 'integer', nullable: false)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     protected $id;
 
     /**
      * @var AnrSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Anr")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'Anr')]
+    #[ORM\JoinColumn(name: 'anr_id', referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]
     protected $anr;
 
     /**
      * @var OperationalRiskScaleSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="OperationalRiskScale")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="operational_risk_scale_id", referencedColumnName="id", onDelete="CASCADE")
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'OperationalRiskScale', inversedBy: 'operationalRiskScaleTypes')]
+    #[ORM\JoinColumn(name: 'operational_risk_scale_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
     protected $operationalRiskScale;
 
     /**
      * @var OperationalRiskScaleCommentSuperClass[]|ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="OperationalRiskScaleComment", mappedBy="operationalRiskScaleType")
-     * @ORM\OrderBy({"scaleIndex" = "ASC"})
      */
+    #[ORM\OneToMany(targetEntity: 'OperationalRiskScaleComment', mappedBy: 'operationalRiskScaleType')]
+    #[ORM\OrderBy(['scaleIndex' => 'ASC'])]
     protected $operationalRiskScaleComments;
 
     /**
      * @var OperationalInstanceRiskScaleSuperClass[]|ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="OperationalInstanceRiskScale", mappedBy="operationalRiskScaleType")
      */
+    #[ORM\OneToMany(targetEntity: 'OperationalInstanceRiskScale', mappedBy: 'operationalRiskScaleType')]
     protected $operationalInstanceRiskScales;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="is_hidden", type="smallint", options={"default": 0})
      */
+    #[ORM\Column(name: 'is_hidden', type: 'smallint', options: ['default' => 0])]
     protected $isHidden = 0;
 
     public function __construct()

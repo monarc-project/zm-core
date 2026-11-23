@@ -17,15 +17,12 @@ use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 
-/**
- * @ORM\Table(name="amvs", indexes={
- *      @ORM\Index(name="asset", columns={"asset_id"}),
- *      @ORM\Index(name="threat", columns={"threat_id"}),
- *      @ORM\Index(name="vulnerability", columns={"vulnerability_id"}),
- * })
- * @ORM\MappedSuperclass
- * @ORM\HasLifecycleCallbacks()
- */
+#[ORM\Table(name: 'amvs')]
+#[ORM\Index(name: 'asset', columns: ['asset_id'])]
+#[ORM\Index(name: 'threat', columns: ['threat_id'])]
+#[ORM\Index(name: 'vulnerability', columns: ['vulnerability_id'])]
+#[ORM\MappedSuperclass]
+#[ORM\HasLifecycleCallbacks]
 class AmvSuperClass implements PositionedEntityInterface, PropertyStateEntityInterface
 {
     use CreateEntityTrait;
@@ -38,68 +35,54 @@ class AmvSuperClass implements PositionedEntityInterface, PropertyStateEntityInt
 
     /**
      * @var UuidInterface|string
-     *
-     * @ORM\Column(name="uuid", type="uuid", nullable=false)
-     * @ORM\Id
      */
+    #[ORM\Column(name: 'uuid', type: 'uuid', nullable: false)]
+    #[ORM\Id]
     protected $uuid;
 
     /**
      * @var InstanceRiskSuperClass[]|ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="InstanceRisk", mappedBy="amv")
      */
+    #[ORM\OneToMany(targetEntity: 'InstanceRisk', mappedBy: 'amv')]
     protected $instanceRisks;
 
     /**
      * @var AssetSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Asset")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="asset_id", referencedColumnName="uuid", nullable=false)
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'Asset', inversedBy: 'amvs')]
+    #[ORM\JoinColumn(name: 'asset_id', referencedColumnName: 'uuid', nullable: false)]
     protected $asset;
 
     /**
      * @var ThreatSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Threat")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="threat_id", referencedColumnName="uuid", nullable=false)
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'Threat')]
+    #[ORM\JoinColumn(name: 'threat_id', referencedColumnName: 'uuid', nullable: false)]
     protected $threat;
 
     /**
      * @var VulnerabilitySuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Vulnerability")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="vulnerability_id", referencedColumnName="uuid", nullable=false)
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'Vulnerability')]
+    #[ORM\JoinColumn(name: 'vulnerability_id', referencedColumnName: 'uuid', nullable: false)]
     protected $vulnerability;
 
     /**
      * @var ArrayCollection|MeasureSuperClass[]
-     *
-     * @ORM\ManyToMany(targetEntity="Measure", mappedBy="amvs")
      */
+    #[ORM\ManyToMany(targetEntity: 'Measure', mappedBy: 'amvs')]
     protected $measures;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="position", type="smallint", options={"unsigned":true, "default":1})
      */
+    #[ORM\Column(name: 'position', type: 'smallint', options: ['unsigned' => true, 'default' => 1])]
     protected $position = 1;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="status", type="smallint", options={"unsigned":true, "default":1})
      */
+    #[ORM\Column(name: 'status', type: 'smallint', options: ['unsigned' => true, 'default' => 1])]
     protected $status = 1;
 
     public function __construct()
@@ -113,9 +96,7 @@ class AmvSuperClass implements PositionedEntityInterface, PropertyStateEntityInt
         return ['asset' => $this->asset];
     }
 
-    /**
-     * @ORM\PrePersist
-     */
+    #[ORM\PrePersist]
     public function generateAndSetUuid(): self
     {
         if ($this->uuid === null) {

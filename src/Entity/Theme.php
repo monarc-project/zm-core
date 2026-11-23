@@ -9,10 +9,8 @@ namespace Monarc\Core\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Table(name="themes")
- * @ORM\Entity
- */
+#[ORM\Table(name: 'themes')]
+#[ORM\Entity]
 class Theme extends ThemeSuperClass
 {
 }

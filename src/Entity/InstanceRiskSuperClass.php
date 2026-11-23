@@ -11,18 +11,15 @@ use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 
-/**
- * @ORM\Table(name="instances_risks", indexes={
- *      @ORM\Index(name="anr", columns={"anr_id"}),
- *      @ORM\Index(name="amv_id", columns={"amv_id"}),
- *      @ORM\Index(name="asset_id", columns={"asset_id"}),
- *      @ORM\Index(name="threat_id", columns={"threat_id"}),
- *      @ORM\Index(name="vulnerability_id", columns={"vulnerability_id"}),
- *      @ORM\Index(name="instance_id", columns={"instance_id"})
- * })
- * @ORM\MappedSuperclass
- * @ORM\HasLifecycleCallbacks()
- */
+#[ORM\Table(name: 'instances_risks')]
+#[ORM\Index(name: 'anr', columns: ['anr_id'])]
+#[ORM\Index(name: 'amv_id', columns: ['amv_id'])]
+#[ORM\Index(name: 'asset_id', columns: ['asset_id'])]
+#[ORM\Index(name: 'threat_id', columns: ['threat_id'])]
+#[ORM\Index(name: 'vulnerability_id', columns: ['vulnerability_id'])]
+#[ORM\Index(name: 'instance_id', columns: ['instance_id'])]
+#[ORM\MappedSuperclass]
+#[ORM\HasLifecycleCallbacks]
 class InstanceRiskSuperClass
 {
     use CreateEntityTrait;
@@ -39,61 +36,45 @@ class InstanceRiskSuperClass
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
+    #[ORM\Column(name: 'id', type: 'integer', nullable: false)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     protected $id;
 
     /**
      * @var AmvSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Amv")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="amv_id", referencedColumnName="uuid", nullable=true)
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'Amv', inversedBy: 'instanceRisks')]
+    #[ORM\JoinColumn(name: 'amv_id', referencedColumnName: 'uuid', nullable: true)]
     protected $amv;
 
     /**
      * @var AssetSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Asset")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="asset_id", referencedColumnName="uuid", nullable=true)
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'Asset')]
+    #[ORM\JoinColumn(name: 'asset_id', referencedColumnName: 'uuid', nullable: true)]
     protected $asset;
 
     /**
      * @var ThreatSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Threat")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="threat_id", referencedColumnName="uuid", nullable=true)
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'Threat')]
+    #[ORM\JoinColumn(name: 'threat_id', referencedColumnName: 'uuid', nullable: true)]
     protected $threat;
 
     /**
      * @var VulnerabilitySuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Vulnerability")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="vulnerability_id", referencedColumnName="uuid", nullable=true)
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'Vulnerability')]
+    #[ORM\JoinColumn(name: 'vulnerability_id', referencedColumnName: 'uuid', nullable: true)]
     protected $vulnerability;
 
     /**
      * @var InstanceSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Instance")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="instance_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'Instance', inversedBy: 'instanceRisks')]
+    #[ORM\JoinColumn(name: 'instance_id', referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]
     protected $instance;
 
     /**
@@ -101,19 +82,15 @@ class InstanceRiskSuperClass
      * Doctrine's double field relation issue.
      *
      * @var AnrSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Anr")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'Anr')]
+    #[ORM\JoinColumn(name: 'anr_id', referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]
     protected $anr;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="`specific`", type="smallint", options={"unsigned":true, "default":0})
      */
+    #[ORM\Column(name: '`specific`', type: 'smallint', options: ['unsigned' => true, 'default' => 0])]
     protected $specific = 0;
 
     /**
@@ -123,86 +100,74 @@ class InstanceRiskSuperClass
      * 0 - means the value is set manually on the risks table.
      *
      * @var int
-     *
-     * @ORM\Column(name="mh", type="smallint", options={"unsigned":true, "default":1})
      */
+    #[ORM\Column(name: 'mh', type: 'smallint', options: ['unsigned' => true, 'default' => 1])]
     protected $isThreatRateNotSetOrModifiedExternally = 1;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="threat_rate", type="smallint", options={"unsigned":false, "default":-1})
      */
+    #[ORM\Column(name: 'threat_rate', type: 'smallint', options: ['unsigned' => false, 'default' => -1])]
     protected $threatRate = -1;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="vulnerability_rate", type="smallint", options={"unsigned":false, "default":-1})
      */
+    #[ORM\Column(name: 'vulnerability_rate', type: 'smallint', options: ['unsigned' => false, 'default' => -1])]
     protected $vulnerabilityRate = -1;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="kind_of_measure", type="smallint", options={"unsigned":true, "default":5})
      */
+    #[ORM\Column(name: 'kind_of_measure', type: 'smallint', options: ['unsigned' => true, 'default' => 5])]
     protected $kindOfMeasure = 5;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="reduction_amount", type="smallint", options={"unsigned":true, "default":0})
      */
+    #[ORM\Column(name: 'reduction_amount', type: 'smallint', options: ['unsigned' => true, 'default' => 0])]
     protected $reductionAmount = 0;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="comment", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'comment', type: 'text', nullable: true)]
     protected $comment;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="comment_after", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'comment_after', type: 'text', nullable: true)]
     protected $commentAfter;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="risk_c", type="smallint", options={"unsigned":false, "default":-1})
      */
+    #[ORM\Column(name: 'risk_c', type: 'smallint', options: ['unsigned' => false, 'default' => -1])]
     protected $riskConfidentiality = -1;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="risk_i", type="smallint", options={"unsigned":false, "default":-1})
      */
+    #[ORM\Column(name: 'risk_i', type: 'smallint', options: ['unsigned' => false, 'default' => -1])]
     protected $riskIntegrity = -1;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="risk_d", type="smallint", options={"unsigned":false, "default":-1})
      */
+    #[ORM\Column(name: 'risk_d', type: 'smallint', options: ['unsigned' => false, 'default' => -1])]
     protected $riskAvailability = -1;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="cache_max_risk", type="smallint", options={"unsigned":false, "default":-1})
      */
+    #[ORM\Column(name: 'cache_max_risk', type: 'smallint', options: ['unsigned' => false, 'default' => -1])]
     protected $cacheMaxRisk = -1;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="cache_targeted_risk", type="smallint", options={"unsigned":false, "default":-1})
      */
+    #[ORM\Column(name: 'cache_targeted_risk', type: 'smallint', options: ['unsigned' => false, 'default' => -1])]
     protected $cacheTargetedRisk = -1;
 
     public static function constructFromObject(InstanceRiskSuperClass $sourceInstanceRisk): InstanceRiskSuperClass

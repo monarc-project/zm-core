@@ -13,7 +13,7 @@ use Laminas\I18n\Translator\Translator;
 
 class TranslateServiceFactory implements FactoryInterface
 {
-    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
+    public function __invoke(ContainerInterface $container, $requestedName, ?array $options = null)
     {
         $projectRoot = \defined('PROJECT_ROOT') ? PROJECT_ROOT : '';
         $baseDir = $projectRoot . 'node_modules/ng_client/po/';

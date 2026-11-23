@@ -1,40 +1,38 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2026 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
 namespace Monarc\Core\Entity\Traits;
 
+use Doctrine\ORM\Mapping as ORM;
+
 trait DescriptionsEntityTrait
 {
     /**
      * @var string
-     *
-     * @ORM\Column(name="description1", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'description1', type: 'text', nullable: true)]
     protected $description1;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="description2", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'description2', type: 'text', nullable: true)]
     protected $description2;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="description3", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'description3', type: 'text', nullable: true)]
     protected $description3;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="description4", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'description4', type: 'text', nullable: true)]
     protected $description4;
 
     public function getDescription(int $languageIndex): string
@@ -50,7 +48,7 @@ trait DescriptionsEntityTrait
     {
         foreach (range(1, 4) as $index) {
             $key = 'description' . $index;
-            if (isset($descriptions[$key])) {
+            if (array_key_exists($key, $descriptions)) {
                 $this->{$key} = $descriptions[$key];
             }
         }

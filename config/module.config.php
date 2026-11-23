@@ -1,30 +1,23 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2024 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2026 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
 use Interop\Container\Containerinterface;
 use Doctrine\Persistence\Mapping\Driver\MappingDriverChain;
-use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
+use Doctrine\ORM\Mapping\Driver\AttributeDriver;
 use Monarc\Core\Adapter\Authentication as AdapterAuthentication;
 use Monarc\Core\Controller;
-use Monarc\Core\Model\Db;
-use Monarc\Core\Model\DbCli;
 use Monarc\Core\Service\Helper\ScalesCacheHelper;
-use Monarc\Core\Service\Model\DbCliFactory;
-use Monarc\Core\Service\Model\DbFactory;
 use Monarc\Core\Service;
 use Monarc\Core\Storage\Authentication as StorageAuthentication;
 use Monarc\Core\Validator\FieldValidator\LanguageValidator;
 use Monarc\Core\Validator\InputValidator;
 use Ramsey\Uuid\Doctrine\UuidType;
 use Laminas\Di\Container\AutowireFactory;
-use Monarc\Core\Entity as ModelEntity;
-use Monarc\Core\Model\Table as DeprecatedTable;
 use Monarc\Core\Table;
-use Monarc\Core\Service\Model\Entity as ServiceModelEntity;
 use Laminas\ServiceManager\AbstractFactory\ReflectionBasedAbstractFactory;
 use Laminas\ServiceManager\Factory\InvokableFactory;
 use Laminas\ServiceManager\Proxy\LazyServiceFactory;
@@ -48,8 +41,7 @@ return [
         ],
         'driver' => [
             'Monarc_core_driver' => [
-                'class' => AnnotationDriver::class,
-                'cache' => 'array',
+                'class' => AttributeDriver::class,
                 'paths' => [__DIR__ . '/../src/Entity'],
             ],
             'orm_default' => [
@@ -58,8 +50,7 @@ return [
                 ],
             ],
             'Monarc_cli_driver' => [
-                'class' => AnnotationDriver::class,
-                'cache' => 'array',
+                'class' => AttributeDriver::class,
                 'paths' => [__DIR__ . '/../src/Entity'],
             ],
             'orm_cli' => [
@@ -69,8 +60,7 @@ return [
                 ],
             ],
             'Monarc_cli_fo_driver' => [
-                'class' => AnnotationDriver::class,
-                'cache' => 'array',
+                'class' => AttributeDriver::class,
                 'paths' => [__DIR__ . '/../src/Entity'],
             ],
             'orm_cli_fo' => [
@@ -124,21 +114,11 @@ return [
     ],
     'service_manager' => [
         'invokables' => [
-            ModelEntity\Question::class => ModelEntity\Question::class,
-            ModelEntity\QuestionChoice::class => ModelEntity\QuestionChoice::class,
         ],
         'factories' => [
-            Db::class => DbFactory::class,
-            DbCli::class => DbCliFactory::class,
 
-            // TODO: Services to refactor and replace with autowiring.
-            Service\QuestionService::class => Service\QuestionServiceFactory::class,
-            Service\QuestionChoiceService::class => Service\QuestionChoiceServiceFactory::class,
-            Service\GuideService::class => Service\GuideServiceFactory::class,
-            Service\GuideItemService::class => Service\GuideItemServiceFactory::class,
-            Service\HistoricalService::class => Service\HistoricalServiceFactory::class,
-            Service\DeliveriesModelsService::class => Service\DeliveriesModelsServiceFactory::class,
             /* Services. */
+            Service\HistoricalService::class => AutowireFactory::class,
             Service\AmvService::class => AutowireFactory::class,
             Service\AnrService::class => AutowireFactory::class,
             Service\UserRoleService::class => AutowireFactory::class,
@@ -174,22 +154,16 @@ return [
             Service\RolfTagService::class => AutowireFactory::class,
             Service\ReferentialService::class => AutowireFactory::class,
             Service\SoaScaleCommentService::class => AutowireFactory::class,
-            /* Export services. */
+            Service\QuestionService::class => AutowireFactory::class,
+            Service\QuestionChoiceService::class => AutowireFactory::class,
+            Service\GuideService::class => AutowireFactory::class,
+            Service\DeliveriesModelsService::class => AutowireFactory::class,
+            Service\GuideItemService::class => AutowireFactory::class,
             Service\Export\ObjectExportService::class => AutowireFactory::class,
 
-            // TODO: Entities are created in a generic way. Should be removed.
-            ModelEntity\DeliveriesModels::class => ServiceModelEntity\DeliveriesModelsServiceModelEntity::class,
-            ModelEntity\GuideItem::class => ServiceModelEntity\GuideItemServiceModelEntity::class,
-            ModelEntity\Guide::class => ServiceModelEntity\GuideServiceModelEntity::class,
-            ModelEntity\Historical::class => ServiceModelEntity\HistoricalServiceModelEntity::class,
-
             /* Table classes */
-            DeprecatedTable\QuestionTable::class => AutowireFactory::class,
-            DeprecatedTable\QuestionChoiceTable::class => AutowireFactory::class,
-            DeprecatedTable\GuideTable::class => AutowireFactory::class,
-            DeprecatedTable\GuideItemTable::class => AutowireFactory::class,
-            DeprecatedTable\HistoricalTable::class => AutowireFactory::class,
-            DeprecatedTable\DeliveriesModelsTable::class => AutowireFactory::class,
+            Table\HistoricalTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\DeliveriesModelsTable::class => Table\Factory\ClientEntityManagerFactory::class,
             Table\ActionHistoryTable::class => Table\Factory\ClientEntityManagerFactory::class,
             Table\AnrInstanceMetadataFieldTable::class => Table\Factory\CoreEntityManagerFactory::class,
             Table\AnrTable::class => Table\Factory\CoreEntityManagerFactory::class,
@@ -224,6 +198,10 @@ return [
             Table\UserTable::class => Table\Factory\ClientEntityManagerFactory::class,
             Table\UserTokenTable::class => Table\Factory\ClientEntityManagerFactory::class,
             Table\VulnerabilityTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\QuestionTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\QuestionChoiceTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\GuideTable::class => Table\Factory\CoreEntityManagerFactory::class,
+            Table\GuideItemTable::class => Table\Factory\CoreEntityManagerFactory::class,
 
             /* Authentication */
             StorageAuthentication::class => ReflectionBasedAbstractFactory::class,
@@ -233,6 +211,12 @@ return [
             Service\TranslateService::class => Service\TranslateServiceFactory::class,
             Service\ReassessmentTriggerService::class => AutowireFactory::class,
 
+            InputValidator\Guide\GuideDataInputValidator::class => ReflectionBasedAbstractFactory::class,
+            InputValidator\Guide\GuideItemDataInputValidator::class => ReflectionBasedAbstractFactory::class,
+            InputValidator\Question\QuestionDataInputValidator::class => ReflectionBasedAbstractFactory::class,
+            InputValidator\Question\QuestionChoiceDataInputValidator::class => ReflectionBasedAbstractFactory::class,
+            InputValidator\DeliveryModel\DeliveryModelDataInputValidator::class
+                => ReflectionBasedAbstractFactory::class,
             /* Validators */
             InputValidator\InputValidationTranslator::class => ReflectionBasedAbstractFactory::class,
             InputValidator\User\PostUserDataInputValidator::class => ReflectionBasedAbstractFactory::class,
@@ -339,10 +323,6 @@ return [
             },
 
             ScalesCacheHelper::class => AutowireFactory::class,
-        ],
-        'shared' => [
-            ModelEntity\Scale::class => false,
-            ModelEntity\ScaleImpactType::class => false,
         ],
         'lazy_services' => [
             'class_map' => [

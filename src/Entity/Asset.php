@@ -10,21 +10,19 @@ namespace Monarc\Core\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Table(name="assets")
- * @ORM\Entity
- */
+#[ORM\Table(name: 'assets')]
+#[ORM\Entity]
 class Asset extends AssetSuperClass
 {
     /**
      * @var Model[]|ArrayCollection
-     *
-     * @ORM\ManyToMany(targetEntity="Model", inversedBy="assets", cascade={"persist"})
-     * @ORM\JoinTable(name="assets_models",
-     *  joinColumns={@ORM\JoinColumn(name="asset_id", referencedColumnName="uuid")},
-     *  inverseJoinColumns={@ORM\JoinColumn(name="model_id", referencedColumnName="id")}
-     * )
      */
+    #[ORM\ManyToMany(targetEntity: 'Model', inversedBy: 'assets', cascade: ['persist'])]
+    #[ORM\JoinTable(
+        name: 'assets_models',
+        joinColumns: [new ORM\JoinColumn(name: 'asset_id', referencedColumnName: 'uuid')],
+        inverseJoinColumns: [new ORM\JoinColumn(name: 'model_id', referencedColumnName: 'id')]
+    )]
     protected $models;
 
     public function __construct()

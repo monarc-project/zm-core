@@ -10,21 +10,17 @@ namespace Monarc\Core\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Table(name="objects_categories", indexes={
- *      @ORM\Index(name="root_id", columns={"root_id"}),
- *      @ORM\Index(name="parent_id", columns={"parent_id"}),
- *      @ORM\Index(name="position", columns={"position"})
- * })
- * @ORM\Entity
- */
+#[ORM\Table(name: 'objects_categories')]
+#[ORM\Index(name: 'root_id', columns: ['root_id'])]
+#[ORM\Index(name: 'parent_id', columns: ['parent_id'])]
+#[ORM\Index(name: 'position', columns: ['position'])]
+#[ORM\Entity]
 class ObjectCategory extends ObjectCategorySuperClass
 {
     /**
      * @var Anr[]|ArrayCollection
-     *
-     * @ORM\ManyToMany(targetEntity="Anr", mappedBy="objectCategories", cascade={"persist"})
      */
+    #[ORM\ManyToMany(targetEntity: 'Anr', mappedBy: 'objectCategories', cascade: ['persist'])]
     protected $anrs;
 
     public function __construct()

@@ -30,7 +30,8 @@ class AssetService
         Table\MonarcObjectTable $monarcObjectTable,
         Table\ModelTable $modelTable,
         AmvService $amvService,
-        ConnectedUserService $connectedUserService
+        ConnectedUserService $connectedUserService,
+        private ModelService $modelService
     ) {
         $this->assetTable = $assetTable;
         $this->monarcObjectTable = $monarcObjectTable;
@@ -226,7 +227,7 @@ class AssetService
                 foreach ($asset->getObjects() as $monarcObject) {
                     foreach ($monarcObject->getChildren() as $childObject) {
                         foreach ($asset->getModels() as $model) {
-                            $model->validateObjectAcceptance($childObject);
+                            $this->modelService->validateObjectAcceptance($model, $childObject);
                         }
                     }
                 }
@@ -241,7 +242,7 @@ class AssetService
                     /** @var Entity\Asset $objectAsset */
                     $objectAsset = $parentObject->getAsset();
                     foreach ($objectAsset->getModels() as $model) {
-                        $model->validateObjectAcceptance($parentObject, $asset);
+                        $this->modelService->validateObjectAcceptance($model, $parentObject, $asset);
                     }
                 }
             }

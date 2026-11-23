@@ -1,20 +1,18 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2026 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
 namespace Monarc\Core;
 
-use Laminas\ServiceManager\ServiceLocatorInterface;
 use Monarc\Core\Service\AuthenticationService;
 use Laminas\Http\Request;
 use Laminas\Mvc\MvcEvent;
+use Laminas\Mvc\Middleware\MiddlewareController;
 use Laminas\View\Model\JsonModel;
 use Laminas\Router\RouteMatch;
-use Monarc\Core\Validator\FieldValidator\UniqueEmail;
-use Monarc\Core\Validator\FieldValidator\UniqueDeliveryModel;
 
 class Module
 {
@@ -24,6 +22,14 @@ class Module
             $eventManager = $e->getApplication()->getEventManager();
 
             $eventManager->attach(MvcEvent::EVENT_ROUTE, [$this, 'MCEventRoute'], -100);
+            // Parse multipart PUT/PATCH before the middleware controller's PSR-7 bridge reads php://input.
+            // request_parse_body() must consume that stream first; POST uploads are already parsed by PHP.
+            $eventManager->getSharedManager()->attach(
+                MiddlewareController::class,
+                MvcEvent::EVENT_DISPATCH,
+                new EventListener\MultipartBodyListener(),
+                100
+            );
             $eventManager->attach(MvcEvent::EVENT_DISPATCH_ERROR, [$this, 'onDispatchError'], 0);
             $eventManager->attach(MvcEvent::EVENT_RENDER_ERROR, [$this, 'onRenderError'], 0);
         }
@@ -32,21 +38,6 @@ class Module
     public function getConfig()
     {
         return include __DIR__ . '/config/module.config.php';
-    }
-
-    public function getDefaultLanguage(ServiceLocatorInterface $sm)
-    {
-        return $sm->get('Config')['defaultLanguageIndex'];
-    }
-
-    public function getValidatorConfig()
-    {
-        return [
-            'invokables' => [
-                UniqueEmail::class => UniqueEmail::class,
-                UniqueDeliveryModel::class => UniqueDeliveryModel::class,
-            ],
-        ];
     }
 
     public function onDispatchError(MvcEvent $e)

@@ -12,16 +12,13 @@ use Doctrine\ORM\Mapping as ORM;
 use Monarc\Core\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 
-/**
- * @ORM\Table(name="instances_risks_op", indexes={
- *      @ORM\Index(name="anr_id", columns={"anr_id"}),
- *      @ORM\Index(name="instance_id", columns={"instance_id"}),
- *      @ORM\Index(name="object_id", columns={"object_id"}),
- *      @ORM\Index(name="rolf_risk_id", columns={"rolf_risk_id"})
- * })
- * @ORM\MappedSuperclass
- * @ORM\HasLifecycleCallbacks()
- */
+#[ORM\Table(name: 'instances_risks_op')]
+#[ORM\Index(name: 'anr_id', columns: ['anr_id'])]
+#[ORM\Index(name: 'instance_id', columns: ['instance_id'])]
+#[ORM\Index(name: 'object_id', columns: ['object_id'])]
+#[ORM\Index(name: 'rolf_risk_id', columns: ['rolf_risk_id'])]
+#[ORM\MappedSuperclass]
+#[ORM\HasLifecycleCallbacks]
 class InstanceRiskOpSuperClass
 {
     use CreateEntityTrait;
@@ -38,191 +35,158 @@ class InstanceRiskOpSuperClass
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
+    #[ORM\Column(name: 'id', type: 'integer', nullable: false)]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     protected $id;
 
     /**
      * @var AnrSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Anr")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="anr_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'Anr')]
+    #[ORM\JoinColumn(name: 'anr_id', referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]
     protected $anr;
 
     /**
      * @var InstanceSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Instance")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="instance_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'Instance', inversedBy: 'operationalInstanceRisks')]
+    #[ORM\JoinColumn(name: 'instance_id', referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]
     protected $instance;
 
     /**
      * @var ObjectSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="MonarcObject")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="object_id", referencedColumnName="uuid", nullable=true)
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'MonarcObject')]
+    #[ORM\JoinColumn(name: 'object_id', referencedColumnName: 'uuid', nullable: true)]
     protected $object;
 
     /**
      * @var RolfRiskSuperClass|null
-     *
-     * @ORM\ManyToOne(targetEntity="RolfRisk")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="rolf_risk_id", referencedColumnName="id", nullable=true, onDelete="SET NULL")
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'RolfRisk', inversedBy: 'operationalInstanceRisks')]
+    #[ORM\JoinColumn(name: 'rolf_risk_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     protected $rolfRisk;
 
     /**
      * @var OperationalInstanceRiskScaleSuperClass[]|ArrayCollection
-     *
-     * @ORM\OneToMany(targetEntity="OperationalInstanceRiskScale", mappedBy="operationalInstanceRisk")
      */
+    #[ORM\OneToMany(targetEntity: 'OperationalInstanceRiskScale', mappedBy: 'operationalInstanceRisk')]
     protected $operationalInstanceRiskScales;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="risk_cache_code", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'risk_cache_code', type: 'string', length: 255, nullable: true)]
     protected $riskCacheCode;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="risk_cache_label1", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'risk_cache_label1', type: 'string', length: 255, nullable: true)]
     protected $riskCacheLabel1;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="risk_cache_label2", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'risk_cache_label2', type: 'string', length: 255, nullable: true)]
     protected $riskCacheLabel2;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="risk_cache_label3", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'risk_cache_label3', type: 'string', length: 255, nullable: true)]
     protected $riskCacheLabel3;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="risk_cache_label4", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'risk_cache_label4', type: 'string', length: 255, nullable: true)]
     protected $riskCacheLabel4;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="risk_cache_description1", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'risk_cache_description1', type: 'text', nullable: true)]
     protected $riskCacheDescription1;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="risk_cache_description2", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'risk_cache_description2', type: 'text', nullable: true)]
     protected $riskCacheDescription2;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="risk_cache_description3", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'risk_cache_description3', type: 'text', nullable: true)]
     protected $riskCacheDescription3;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="risk_cache_description4", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'risk_cache_description4', type: 'text', nullable: true)]
     protected $riskCacheDescription4;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="brut_prob", type="smallint", options={"unsigned":false, "default":-1})
      */
+    #[ORM\Column(name: 'brut_prob', type: 'smallint', options: ['unsigned' => false, 'default' => -1])]
     protected $brutProb = -1;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="net_prob", type="smallint", options={"unsigned":false, "default":-1})
      */
+    #[ORM\Column(name: 'net_prob', type: 'smallint', options: ['unsigned' => false, 'default' => -1])]
     protected $netProb = -1;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="targeted_prob", type="smallint", options={"unsigned":false, "default":-1})
      */
+    #[ORM\Column(name: 'targeted_prob', type: 'smallint', options: ['unsigned' => false, 'default' => -1])]
     protected $targetedProb = -1;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="cache_brut_risk", type="smallint", options={"unsigned":false, "default":-1})
      */
+    #[ORM\Column(name: 'cache_brut_risk', type: 'smallint', options: ['unsigned' => false, 'default' => -1])]
     protected $cacheBrutRisk = -1;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="cache_net_risk", type="smallint", options={"unsigned":false, "default":-1})
      */
+    #[ORM\Column(name: 'cache_net_risk', type: 'smallint', options: ['unsigned' => false, 'default' => -1])]
     protected $cacheNetRisk = -1;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="cache_targeted_risk", type="smallint", options={"unsigned":false, "default":-1})
      */
+    #[ORM\Column(name: 'cache_targeted_risk', type: 'smallint', options: ['unsigned' => false, 'default' => -1])]
     protected $cacheTargetedRisk = -1;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="kind_of_measure", type="smallint", options={"unsigned":true, "default":5})
      */
+    #[ORM\Column(name: 'kind_of_measure', type: 'smallint', options: ['unsigned' => true, 'default' => 5])]
     protected $kindOfMeasure = 5;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="comment", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'comment', type: 'text', nullable: true)]
     protected $comment;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="mitigation", type="text", nullable=true)
      */
+    #[ORM\Column(name: 'mitigation', type: 'text', nullable: true)]
     protected $mitigation;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="`specific`", type="smallint", options={"unsigned":true, "default":0})
      */
+    #[ORM\Column(name: '`specific`', type: 'smallint', options: ['unsigned' => true, 'default' => 0])]
     protected $specific = 0;
 
     public function __construct()

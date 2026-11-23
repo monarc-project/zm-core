@@ -9,14 +9,11 @@ namespace Monarc\Core\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Table(name="amvs", indexes={
- *      @ORM\Index(name="asset", columns={"asset_id"}),
- *      @ORM\Index(name="threat", columns={"threat_id"}),
- *      @ORM\Index(name="vulnerability", columns={"vulnerability_id"}),
- * })
- * @ORM\Entity
- */
+#[ORM\Table(name: 'amvs')]
+#[ORM\Index(name: 'asset', columns: ['asset_id'])]
+#[ORM\Index(name: 'threat', columns: ['threat_id'])]
+#[ORM\Index(name: 'vulnerability', columns: ['vulnerability_id'])]
+#[ORM\Entity]
 class Amv extends AmvSuperClass
 {
 }

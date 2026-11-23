@@ -9,10 +9,8 @@ namespace Monarc\Core\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Table(name="users_roles")
- * @ORM\Entity
- */
+#[ORM\Table(name: 'users_roles')]
+#[ORM\Entity]
 class UserRole extends UserRoleSuperClass
 {
     public const SUPER_ADMIN = 'superadmin';

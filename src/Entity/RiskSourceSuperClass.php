@@ -12,36 +12,28 @@ use Monarc\Core\Entity\Traits\CreateEntityTrait;
 use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 use Monarc\Core\Traits\TranslationNormalizationTrait;
 
-/**
- * @ORM\Table(
- *     name="risk_sources",
- *     indexes={
- *         @ORM\Index(name="risk_sources_is_active_indx", columns={"is_active"})
- *     }
- * )
- * @ORM\MappedSuperclass
- * @ORM\HasLifecycleCallbacks()
- */
+#[ORM\Table(name: 'risk_sources')]
+#[ORM\Index(name: 'risk_sources_is_active_indx', columns: ['is_active'])]
+#[ORM\MappedSuperclass]
+#[ORM\HasLifecycleCallbacks]
 class RiskSourceSuperClass
 {
     use CreateEntityTrait;
     use UpdateEntityTrait;
     use TranslationNormalizationTrait;
 
-    /**
-     * @ORM\Column(name="id", type="integer", nullable=false, options={"unsigned": true})
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     */
+    #[ORM\Column(name: 'id', type: 'integer', nullable: false, options: ['unsigned' => true])]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     protected int $id;
 
-    /** @ORM\Column(name="label", type="text", nullable=false) */
+    #[ORM\Column(name: 'label', type: 'text', nullable: false)]
     protected string $label;
 
-    /** @ORM\Column(name="is_default", type="boolean", nullable=false, options={"default": 0}) */
+    #[ORM\Column(name: 'is_default', type: 'boolean', nullable: false, options: ['default' => 0])]
     protected bool $isDefault = false;
 
-    /** @ORM\Column(name="is_active", type="boolean", nullable=false, options={"default": 1}) */
+    #[ORM\Column(name: 'is_active', type: 'boolean', nullable: false, options: ['default' => 1])]
     protected bool $isActive = true;
 
     public function getId(): int
@@ -88,6 +80,7 @@ class RiskSourceSuperClass
     /**
      * @return array<string, string>
      */
+
     public function getLabelTranslations(): array
     {
         return $this->decodeTranslations($this->label);
@@ -96,6 +89,7 @@ class RiskSourceSuperClass
     /**
      * @param array<string, string> $labelTranslations
      */
+
     public function setLabelTranslations(array $labelTranslations): self
     {
         $this->label = $this->encodeTranslations($labelTranslations);
@@ -106,6 +100,7 @@ class RiskSourceSuperClass
     /**
      * @return array<string, string>
      */
+
     private function decodeTranslations(string $value): array
     {
         if ($value === '') {
@@ -120,6 +115,7 @@ class RiskSourceSuperClass
     /**
      * @param array<string, string> $translations
      */
+
     private function encodeTranslations(array $translations): string
     {
         return json_encode($this->normalizeTranslations($translations), JSON_THROW_ON_ERROR);

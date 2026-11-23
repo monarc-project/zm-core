@@ -1,15 +1,18 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2026 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
 namespace Monarc\Core\Controller\Handler;
 
 use Laminas\Diactoros\Response;
+use Laminas\Diactoros\Response\JsonResponse;
+use Laminas\Http\Response as LaminasResponse;
 use Laminas\Mvc\Controller\AbstractRestfulController;
 use Laminas\Mvc\MvcEvent;
+use Laminas\Psr7Bridge\Psr7Response;
 use Laminas\Router\RouteMatch;
 use Laminas\View\Model\ViewModel;
 use Monarc\Core\Request\Psr7Bridge\RequestConverter;
@@ -20,6 +23,16 @@ use Psr\Http\Server\RequestHandlerInterface;
 abstract class AbstractRestfulControllerRequestHandler extends AbstractRestfulController implements
     RequestHandlerInterface
 {
+    protected function processBodyContent(mixed $request)
+    {
+        $contentType = $request->getHeader('Content-Type');
+        if ($contentType && str_starts_with(strtolower($contentType->getFieldValue()), 'multipart/form-data')) {
+            return $request->getPost()->toArray();
+        }
+
+        return parent::processBodyContent($request);
+    }
+
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $laminasRequest = RequestConverter::toLaminas($request);
@@ -30,8 +43,19 @@ abstract class AbstractRestfulControllerRequestHandler extends AbstractRestfulCo
 
         $result = $this->dispatch($laminasRequest);
 
+        if ($result instanceof LaminasResponse) {
+            return Psr7Response::fromLaminas($result);
+        }
+        if (is_array($result)) {
+            return new JsonResponse($result, $this->getResponse()->getStatusCode());
+        }
+
         /* Handles the case of the missing controller's action or other dispatching issues. */
         if ($result instanceof ViewModel) {
+            if ($this->getResponse()->getStatusCode() === 405) {
+                return new JsonResponse($result->getVariables(), 405);
+            }
+
             $content = json_encode([
                 'errors' => [
                     [

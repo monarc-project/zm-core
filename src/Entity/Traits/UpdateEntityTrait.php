@@ -8,26 +8,23 @@
 namespace Monarc\Core\Entity\Traits;
 
 use DateTime;
+use Doctrine\ORM\Mapping as ORM;
 
 trait UpdateEntityTrait
 {
     /**
      * @var string
-     *
-     * @ORM\Column(name="updater", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'updater', type: 'string', length: 255, nullable: true)]
     protected $updater;
 
     /**
      * @var DateTime
-     *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
      */
+    #[ORM\Column(name: 'updated_at', type: 'datetime', nullable: true)]
     protected $updatedAt;
 
-    /**
-     * @ORM\PreUpdate
-     */
+    #[ORM\PreUpdate]
     public function setUpdatedAtValue(): self
     {
         $this->updatedAt = new DateTime();
@@ -35,9 +32,7 @@ trait UpdateEntityTrait
         return $this;
     }
 
-    /**
-     * @ORM\PrePersist
-     */
+    #[ORM\PrePersist]
     public function resetUpdatedAtValue(): self
     {
         $this->updatedAt = null;

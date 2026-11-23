@@ -19,7 +19,7 @@ return [
     // Monarc\Core\Validator\FieldValidator\UniqueCode
     'The code is unique. Please, specify another value.' => 'Le code est unique. Veuillez spécifier une autre valeur.',
 
-    // Monarc\Core\Validator\FieldValidator\UniqueDeliveryModel
+    // Delivery model category capacity
     'This category is already used.' => 'Cette catégorie est déjà utilisée.',
     'Maximum number of templates reached for this category.' =>
         'Nombre maximum de modèles atteint pour cette catégorie.',

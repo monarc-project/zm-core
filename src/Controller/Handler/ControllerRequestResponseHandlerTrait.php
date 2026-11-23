@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 /**
  * @link      https://github.com/monarc-project for the canonical source repository
- * @copyright Copyright (c) 2016-2023 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
+ * @copyright Copyright (c) 2016-2026 Luxembourg House of Cybersecurity LHC.lu - Licensed under GNU Affero GPL v3
  * @license   MONARC is licensed under GNU Affero General Public License version 3
  */
 
@@ -42,9 +42,11 @@ trait ControllerRequestResponseHandlerTrait
     protected function validatePostParams(
         AbstractInputValidator $inputValidator,
         array $params,
-        bool $isBatchData = false
+        bool $isBatchData = false,
+        bool $partial = false
     ): void {
         $this->validateInstance();
+        $inputValidator->resetValidation();
 
         if ($this instanceof RequestHandlerInterface) {
             /** @var AnrSuperClass|null $anr */
@@ -56,7 +58,7 @@ trait ControllerRequestResponseHandlerTrait
 
         $paramsSets = $isBatchData ? $params : [$params];
         foreach ($paramsSets as $rowNum => $paramsSet) {
-            if (!$inputValidator->isValid($paramsSet)) {
+            if (!$inputValidator->isValid($paramsSet, $partial)) {
                 throw new Exception($inputValidator->getErrorMessagesRow($isBatchData, $rowNum), 400);
             }
         }
@@ -65,7 +67,7 @@ trait ControllerRequestResponseHandlerTrait
     /**
      * @return JsonModel|JsonResponse
      */
-    protected function getPreparedJsonResponse(array $responseData = null): object
+    protected function getPreparedJsonResponse(?array $responseData = null): object
     {
         if ($this instanceof RequestHandlerInterface) {
             return new JsonResponse($responseData);

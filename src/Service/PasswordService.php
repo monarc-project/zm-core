@@ -43,11 +43,11 @@ class PasswordService
         $user = $this->userTable->findByEmail($email);
         $token = uniqid(bin2hex(random_bytes(random_int(20, 40))), true);
 
-        $passwordToken = new PasswordToken($token, $user, new DateTime('+1 day'));
-        $this->passwordTokenTable->save($passwordToken);
-
         $subject = 'Restore password';
         $link = $this->configService->getHost() . '/#/passwordforgotten/' . htmlentities($token);
+
+        $passwordToken = new PasswordToken($token, $user, new DateTime('+1 day'));
+        $this->passwordTokenTable->save($passwordToken);
         $nameFrom = $this->configService->getEmail()['name'];
         $message = <<<EMAIL_MESSAGE
 <p>Hello,</p>
@@ -141,8 +141,6 @@ EMAIL_MESSAGE;
     }
 
     /**
-     * TODO: Move to the Controller action validation.
-     *
      * Validates that the password matches the required strength policy (special chars, lower/uppercase, number)
      *
      * @param string $password

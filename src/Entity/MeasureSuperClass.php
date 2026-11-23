@@ -15,14 +15,11 @@ use Monarc\Core\Entity\Traits\UpdateEntityTrait;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 
-/**
- * @ORM\Table(name="measures", indexes={
- *      @ORM\Index(name="category", columns={"soacategory_id"}),
- *      @ORM\Index(name="referential", columns={"referential_uuid"})
- * })
- * @ORM\MappedSuperclass
- * @ORM\HasLifecycleCallbacks()
- */
+#[ORM\Table(name: 'measures')]
+#[ORM\Index(name: 'category', columns: ['soacategory_id'])]
+#[ORM\Index(name: 'referential', columns: ['referential_uuid'])]
+#[ORM\MappedSuperclass]
+#[ORM\HasLifecycleCallbacks]
 class MeasureSuperClass
 {
     use CreateEntityTrait;
@@ -34,77 +31,68 @@ class MeasureSuperClass
 
     /**
      * @var UuidInterface|string
-     *
-     * @ORM\Column(name="uuid", type="uuid", nullable=false)
-     * @ORM\Id
      */
+    #[ORM\Column(name: 'uuid', type: 'uuid', nullable: false)]
+    #[ORM\Id]
     protected $uuid;
 
     /**
      * @var ReferentialSuperClass
-     *
-     * @ORM\ManyToOne(targetEntity="Referential", inversedBy="measures")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="referential_uuid", referencedColumnName="uuid", nullable=true)
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'Referential', inversedBy: 'measures')]
+    #[ORM\JoinColumn(name: 'referential_uuid', referencedColumnName: 'uuid', nullable: true)]
     protected $referential;
 
     /**
      * @var SoaCategorySuperClass|null
-     *
-     * @ORM\ManyToOne(targetEntity="SoaCategory", inversedBy="measures")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="soacategory_id", referencedColumnName="id", nullable=true, onDelete="SET NULL")
-     * })
      */
+    #[ORM\ManyToOne(targetEntity: 'SoaCategory', inversedBy: 'measures')]
+    #[ORM\JoinColumn(name: 'soacategory_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     protected $category;
 
     /**
      * @var ArrayCollection|AmvSuperClass[]
-     *
-     * @ORM\ManyToMany(targetEntity="Amv", inversedBy="measures")
-     * @ORM\JoinTable(name="measures_amvs",
-     *   inverseJoinColumns={@ORM\JoinColumn(name="amv_id", referencedColumnName="uuid")},
-     *   joinColumns={@ORM\JoinColumn(name="measure_id", referencedColumnName="uuid")},
-     * )
      */
+    #[ORM\ManyToMany(targetEntity: 'Amv', inversedBy: 'measures')]
+    #[ORM\JoinTable(
+        name: 'measures_amvs',
+        inverseJoinColumns: [new ORM\JoinColumn(name: 'amv_id', referencedColumnName: 'uuid')],
+        joinColumns: [new ORM\JoinColumn(name: 'measure_id', referencedColumnName: 'uuid')]
+    )]
     protected $amvs;
 
     /**
      * @var ArrayCollection|RolfRiskSuperClass[]
-     *
-     * @ORM\ManyToMany(targetEntity="RolfRisk", inversedBy="measures")
-     * @ORM\JoinTable(name="measures_rolf_risks",
-     *   inverseJoinColumns={@ORM\JoinColumn(name="rolf_risk_id", referencedColumnName="id")},
-     *   joinColumns={@ORM\JoinColumn(name="measure_id", referencedColumnName="uuid")},
-     * )
      */
+    #[ORM\ManyToMany(targetEntity: 'RolfRisk', inversedBy: 'measures')]
+    #[ORM\JoinTable(
+        name: 'measures_rolf_risks',
+        inverseJoinColumns: [new ORM\JoinColumn(name: 'rolf_risk_id', referencedColumnName: 'id')],
+        joinColumns: [new ORM\JoinColumn(name: 'measure_id', referencedColumnName: 'uuid')]
+    )]
     protected $rolfRisks;
 
     /**
      * @var MeasureSuperClass[]|ArrayCollection
-     *
-     * @ORM\ManyToMany(targetEntity="Measure")
-     * @ORM\JoinTable(name="measures_measures",
-     *   joinColumns={@ORM\JoinColumn(name="master_measure_id", referencedColumnName="uuid")},
-     *   inverseJoinColumns={@ORM\JoinColumn(name="linked_measure_id", referencedColumnName="uuid")}
-     * )
      */
+    #[ORM\ManyToMany(targetEntity: 'Measure')]
+    #[ORM\JoinTable(
+        name: 'measures_measures',
+        joinColumns: [new ORM\JoinColumn(name: 'master_measure_id', referencedColumnName: 'uuid')],
+        inverseJoinColumns: [new ORM\JoinColumn(name: 'linked_measure_id', referencedColumnName: 'uuid')]
+    )]
     protected $linkedMeasures;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="code", type="string", length=255, nullable=true)
      */
+    #[ORM\Column(name: 'code', type: 'string', length: 255, nullable: true)]
     protected $code;
 
     /**
      * @var int
-     *
-     * @ORM\Column(name="status", type="smallint", options={"unsigned":true, "default":1})
      */
+    #[ORM\Column(name: 'status', type: 'smallint', options: ['unsigned' => true, 'default' => 1])]
     protected $status = self::STATUS_ACTIVE;
 
     public function __construct()
@@ -114,9 +102,7 @@ class MeasureSuperClass
         $this->linkedMeasures = new ArrayCollection();
     }
 
-    /**
-     * @ORM\PrePersist
-     */
+    #[ORM\PrePersist]
     public function generateAndSetUuid(): self
     {
         if ($this->uuid === null) {
