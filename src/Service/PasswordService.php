@@ -43,8 +43,6 @@ class PasswordService
         $user = $this->userTable->findByEmail($email);
         $token = uniqid(bin2hex(random_bytes(random_int(20, 40))), true);
 
-        // Build the link first: getHost() fails closed on a misconfigured instance, so this
-        // throws before an unauthenticated request can persist a password token.
         $subject = 'Restore password';
         $link = $this->configService->getHost() . '/#/passwordforgotten/' . htmlentities($token);
 
@@ -143,8 +141,6 @@ EMAIL_MESSAGE;
     }
 
     /**
-     * TODO: Move to the Controller action validation.
-     *
      * Validates that the password matches the required strength policy (special chars, lower/uppercase, number)
      *
      * @param string $password

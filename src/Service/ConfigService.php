@@ -77,7 +77,7 @@ class ConfigService
     }
 
     /**
-     * Returns the configured public base URL (scheme + host), without a trailing slash.
+     * Returns the configured public base URL (including any installation path), without a trailing slash.
      *
      * The value must come from server-side configuration only. Deriving it from the request
      * Host header (HTTP_HOST / X-Forwarded-Host) would let an unauthenticated attacker poison
@@ -87,16 +87,20 @@ class ConfigService
      */
     public function getHost(): string
     {
-        $host = rtrim((string)($this->config['publicHost'] ?? ''), '/');
-        if (!preg_match('#^https?://[^/]+#i', $host)) {
+        $host = $this->config['publicHost'] ?? '';
+        if (!is_string($host)
+            || filter_var($host, FILTER_VALIDATE_URL) === false
+            || !preg_match('#^https?://#i', $host)
+            || strpbrk($host, '@?#') !== false
+        ) {
             throw new \RuntimeException(
-                'The "publicHost" configuration option must be an absolute http(s) URL'
-                . ' (e.g. https://monarc.example.org). It is required to build public URLs'
-                . ' such as the password reset link, and is never derived from the request Host header.'
+                'The "publicHost" configuration option must be an absolute http(s) base URL'
+                . ' without credentials, a query string or a fragment'
+                . ' (e.g. https://monarc.example.org/client).'
             );
         }
 
-        return $host;
+        return rtrim($host, '/');
     }
 
     public function getAppVersion(): array
