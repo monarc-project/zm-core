@@ -31,4 +31,53 @@ class ConfigServiceTest extends TestCase
         self::assertSame([1 => 'fr', 2 => 'en', 3 => 'de'], $service->getActiveLanguageCodes());
         self::assertSame(['fr', 'en'], $service->getUiLanguageCodes());
     }
+
+    /**
+     * @covers ConfigService::getHost
+     */
+    public function testGetHostReturnsConfiguredPublicHostWithoutTrailingSlash(): void
+    {
+        self::assertSame(
+            'https://monarc.example.org',
+            (new ConfigService(['publicHost' => 'https://monarc.example.org/']))->getHost()
+        );
+    }
+
+    /**
+     * @covers ConfigService::getHost
+     * @dataProvider invalidPublicHostProvider
+     */
+    public function testGetHostFailsClosedWhenPublicHostIsNotAnAbsoluteUrl($publicHost): void
+    {
+        $this->expectException(\RuntimeException::class);
+        (new ConfigService($publicHost === '__absent__' ? [] : ['publicHost' => $publicHost]))->getHost();
+    }
+
+    public function invalidPublicHostProvider(): array
+    {
+        return [
+            'absent' => ['__absent__'],
+            'empty' => [''],
+            'slash only' => ['/'],
+            'missing scheme' => ['monarc.example.org'],
+            'scheme only' => ['https://'],
+        ];
+    }
+
+    /**
+     * @covers ConfigService::getHost
+     */
+    public function testGetHostIgnoresForgedRequestHostHeader(): void
+    {
+        $_SERVER['HTTP_HOST'] = 'attacker.example';
+        $_SERVER['X_FORWARDED_HOST'] = 'attacker.example';
+        try {
+            self::assertSame(
+                'https://monarc.example.org',
+                (new ConfigService(['publicHost' => 'https://monarc.example.org']))->getHost()
+            );
+        } finally {
+            unset($_SERVER['HTTP_HOST'], $_SERVER['X_FORWARDED_HOST']);
+        }
+    }
 }

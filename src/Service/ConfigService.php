@@ -76,32 +76,27 @@ class ConfigService
         ));
     }
 
+    /**
+     * Returns the configured public base URL (scheme + host), without a trailing slash.
+     *
+     * The value must come from server-side configuration only. Deriving it from the request
+     * Host header (HTTP_HOST / X-Forwarded-Host) would let an unauthenticated attacker poison
+     * absolute URLs such as the password reset link, so this method fails closed instead.
+     *
+     * @throws \RuntimeException when publicHost is not configured as an absolute http(s) URL.
+     */
     public function getHost(): string
     {
-        if (!empty($this->config['publicHost'])) {
-            return $this->config['publicHost'];
+        $host = rtrim((string)($this->config['publicHost'] ?? ''), '/');
+        if (!preg_match('#^https?://[^/]+#i', $host)) {
+            throw new \RuntimeException(
+                'The "publicHost" configuration option must be an absolute http(s) URL'
+                . ' (e.g. https://monarc.example.org). It is required to build public URLs'
+                . ' such as the password reset link, and is never derived from the request Host header.'
+            );
         }
 
-        // Determine HTTP/HTTPS proto, and HTTP_HOST
-        if (isset($_SERVER['X_FORWARDED_PROTO'])) {
-            $proto = strtolower($_SERVER['X_FORWARDED_PROTO']);
-        } elseif (isset($_SERVER['X_URL_SCHEME'])) {
-            $proto = strtolower($_SERVER['X_URL_SCHEME']);
-        } elseif (isset($_SERVER['X_FORWARDED_SSL'])) {
-            $proto = strtolower($_SERVER['X_FORWARDED_SSL']) === 'on' ? 'https' : 'http';
-        } elseif (isset($_SERVER['FRONT_END_HTTPS'])) { // Microsoft variant
-            $proto = strtolower($_SERVER['FRONT_END_HTTPS']) === 'on' ? 'https' : 'http';
-        } elseif (isset($_SERVER['HTTPS'])) {
-            $proto = 'https';
-        } else {
-            $proto = 'http';
-        }
-
-        if (isset($_SERVER['X_FORWARDED_HOST'])) {
-            return $proto. '://' . $_SERVER['X_FORWARDED_HOST'];
-        }
-
-        return $proto. '://' . $_SERVER['HTTP_HOST'];
+        return $host;
     }
 
     public function getAppVersion(): array

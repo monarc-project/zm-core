@@ -43,11 +43,13 @@ class PasswordService
         $user = $this->userTable->findByEmail($email);
         $token = uniqid(bin2hex(random_bytes(random_int(20, 40))), true);
 
-        $passwordToken = new PasswordToken($token, $user, new DateTime('+1 day'));
-        $this->passwordTokenTable->save($passwordToken);
-
+        // Build the link first: getHost() fails closed on a misconfigured instance, so this
+        // throws before an unauthenticated request can persist a password token.
         $subject = 'Restore password';
         $link = $this->configService->getHost() . '/#/passwordforgotten/' . htmlentities($token);
+
+        $passwordToken = new PasswordToken($token, $user, new DateTime('+1 day'));
+        $this->passwordTokenTable->save($passwordToken);
         $nameFrom = $this->configService->getEmail()['name'];
         $message = <<<EMAIL_MESSAGE
 <p>Hello,</p>
